@@ -367,7 +367,7 @@ bool isNativeTypeNode(zval *node)
 
 } // namespace
 
-void pt_register_property_hooks_processor()
+PT_MINIT_REGISTRATION(pt_register_property_hooks_processor)
 {
 	pt_php_property_assign = zend_string_init_interned(PT_LC("propertyAssign"), 1);
 	pt_php_property_assignment = zend_string_init_interned(PT_LC("property assignment"), 1);

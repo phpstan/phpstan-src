@@ -150,7 +150,7 @@ using phpstanturbo::UnresolvableTypeHelper;
 
 #include "reg.h"
 
-void pt_register_unresolvable_type_helper()
+PT_MINIT_REGISTRATION(pt_register_unresolvable_type_helper)
 {
 	reg::Class cls("PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper");
 	ptdecl::UnresolvableTypeHelper::declareClass(cls);

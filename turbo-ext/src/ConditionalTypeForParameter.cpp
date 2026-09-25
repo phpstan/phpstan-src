@@ -490,7 +490,7 @@ bool pt_conditional_type_for_parameter_new(zval *out, zend_string *parameterName
 
 #define PT_THIS ConditionalTypeForParameter(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_conditional_type_for_parameter()
+PT_MINIT_REGISTRATION(pt_register_conditional_type_for_parameter)
 {
 
 	reg::Class cls("PHPStan\\Type\\ConditionalTypeForParameter");

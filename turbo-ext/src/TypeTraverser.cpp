@@ -180,7 +180,7 @@ static bool pt_tt_check_cb(zval *cb, uint32_t argNum)
 	return false;
 }
 
-void pt_register_type_traverser()
+PT_MINIT_REGISTRATION(pt_register_type_traverser)
 {
 	pt_tt_str_map_internal = zend_string_init_interned("mapInternal", sizeof("mapInternal") - 1, 1);
 	pt_tt_str_traverse_internal = zend_string_init_interned("traverseInternal", sizeof("traverseInternal") - 1, 1);

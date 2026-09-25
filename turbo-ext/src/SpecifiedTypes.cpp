@@ -1045,7 +1045,7 @@ zv::Val pt_specified_types_union_with(zend_object *specifiedTypes, zval *other)
 
 #define PT_ST_THIS SpecifiedTypes(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_specified_types()
+PT_MINIT_REGISTRATION(pt_register_specified_types)
 {
 	reg::Class cls("PHPStan\\Analyser\\SpecifiedTypes");
 	ptdecl::SpecifiedTypes::declareClass(cls);

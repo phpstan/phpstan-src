@@ -1947,7 +1947,7 @@ zv::Val pt_statements_handler_get_variable_mention_flow(zval *handler, zval *stm
 
 #include "reg.h"
 
-void pt_register_statements_handler()
+PT_MINIT_REGISTRATION(pt_register_statements_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StatementsHandler");
 	ptdecl::StatementsHandler::declareClass(cls);

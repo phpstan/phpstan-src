@@ -1334,7 +1334,7 @@ static void pt_irt_bound(INTERNAL_FUNCTION_PARAMETERS, bool (IntegerRangeType::*
 	RETURN_LONG(bound.value);
 }
 
-void pt_register_integer_range_type()
+PT_MINIT_REGISTRATION(pt_register_integer_range_type)
 {
 	reg::Class cls("PHPStan\\Type\\IntegerRangeType");
 	ptdecl::IntegerRangeType::declareClass(cls);

@@ -107,7 +107,7 @@ using phpstanturbo::PossiblyImpureCallExprHandler;
 
 #include "reg.h"
 
-void pt_register_possibly_impure_call_expr_handler()
+PT_MINIT_REGISTRATION(pt_register_possibly_impure_call_expr_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Virtual\\PossiblyImpureCallExprHandler");
 	ptdecl::PossiblyImpureCallExprHandler::declareClass(cls);

@@ -422,7 +422,7 @@ zv::Val pt_static_property_fetch_handler_compose_result(zval *handler, zval *exp
 
 #include "reg.h"
 
-void pt_register_static_property_fetch_handler()
+PT_MINIT_REGISTRATION(pt_register_static_property_fetch_handler)
 {
 	pt_spfh_static_property_access = zend_string_init_interned(PT_LC("staticPropertyAccess"), 1);
 	pt_spfh_static_property_access_description = zend_string_init_interned(PT_LC("static property access"), 1);

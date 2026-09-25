@@ -68,7 +68,7 @@ using phpstanturbo::LabelHandler;
 
 #include "reg.h"
 
-void pt_register_label_handler()
+PT_MINIT_REGISTRATION(pt_register_label_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\LabelHandler");
 	ptdecl::LabelHandler::declareClass(cls);

@@ -67,7 +67,7 @@ zv::Val pt_type_projection_helper_describe(zval *type, zval *variance, zval *lev
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
-void pt_register_type_projection_helper()
+PT_MINIT_REGISTRATION(pt_register_type_projection_helper)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TypeProjectionHelper");
 	ptdecl::TypeProjectionHelper::declareClass(cls);

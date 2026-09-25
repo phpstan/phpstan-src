@@ -515,7 +515,7 @@ static bool pt_tth_check_arg(zval *value, int classIdx, uint32_t argNum)
 	return false;
 }
 
-void pt_register_template_type_helper()
+PT_MINIT_REGISTRATION(pt_register_template_type_helper)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateTypeHelper");
 	ptdecl::TemplateTypeHelper::declareClass(cls);

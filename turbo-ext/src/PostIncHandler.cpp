@@ -130,7 +130,7 @@ using phpstanturbo::PostIncHandler;
 
 #include "reg.h"
 
-void pt_register_post_inc_handler()
+PT_MINIT_REGISTRATION(pt_register_post_inc_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\PostIncHandler");
 	ptdecl::PostIncHandler::declareClass(cls);

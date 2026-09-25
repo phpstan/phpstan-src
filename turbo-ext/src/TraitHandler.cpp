@@ -94,7 +94,7 @@ using phpstanturbo::TraitHandler;
 
 #include "reg.h"
 
-void pt_register_trait_handler()
+PT_MINIT_REGISTRATION(pt_register_trait_handler)
 {
 	pt_th_trait_exists = zend_string_init_interned(PT_LC("trait_exists"), 1);
 

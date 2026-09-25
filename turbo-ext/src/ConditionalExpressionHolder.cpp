@@ -73,7 +73,7 @@ using phpstanturbo::ConditionalExpressionHolder;
 #include "reg.h"
 
 
-void pt_register_conditional_expression_holder()
+PT_MINIT_REGISTRATION(pt_register_conditional_expression_holder)
 {
 	reg::Class cls("PHPStan\\Analyser\\ConditionalExpressionHolder");
 	ptdecl::ConditionalExpressionHolder::declareClass(cls);

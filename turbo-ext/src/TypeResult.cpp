@@ -94,7 +94,7 @@ zv::Val pt_type_result_new(zval *type, zval *reasons)
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
-void pt_register_type_result()
+PT_MINIT_REGISTRATION(pt_register_type_result)
 {
 	reg::Class cls("PHPStan\\Type\\TypeResult");
 	ptdecl::TypeResult::declareClass(cls);

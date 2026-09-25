@@ -845,7 +845,7 @@ zv::Val pt_arguments_normalizer_reorder_call_user_func_array_arguments(zval *cal
 		PT_RETURN_VAL(ArgumentsNormalizer::method(call, scope)); \
 	}
 
-void pt_register_arguments_normalizer()
+PT_MINIT_REGISTRATION(pt_register_arguments_normalizer)
 {
 	pt_an_original_arg = zend_string_init_interned(PT_LC("originalArg"), 1);
 	pt_an_callback = zend_string_init_interned(PT_LC("callback"), 1);

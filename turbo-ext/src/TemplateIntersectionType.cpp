@@ -62,7 +62,7 @@ bool pt_template_intersection_type_new(zval *out, zval *scope, zval *strategy, z
 
 #define PT_THIS TemplateIntersectionType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_intersection_type()
+PT_MINIT_REGISTRATION(pt_register_template_intersection_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateIntersectionType");
 	ptdecl::TemplateIntersectionType::declareClass(cls);

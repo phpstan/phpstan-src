@@ -534,7 +534,7 @@ zv::Val pt_type_new_generic_class_string(zval *type)
 
 #define PT_THIS GenericClassStringType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_generic_class_string_type()
+PT_MINIT_REGISTRATION(pt_register_generic_class_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\GenericClassStringType");
 	ptdecl::GenericClassStringType::declareClass(cls);

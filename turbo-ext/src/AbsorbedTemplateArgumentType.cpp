@@ -40,7 +40,7 @@ bool pt_absorbed_template_argument_type_new(zval *out, zend_string *reason)
 
 /* {{{ registration */
 
-void pt_register_absorbed_template_argument_type()
+PT_MINIT_REGISTRATION(pt_register_absorbed_template_argument_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\AbsorbedTemplateArgumentType");
 	ptdecl::AbsorbedTemplateArgumentType::declareClass(cls);

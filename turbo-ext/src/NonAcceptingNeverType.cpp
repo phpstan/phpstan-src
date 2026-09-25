@@ -71,7 +71,7 @@ bool pt_non_accepting_never_type_new(zval *out)
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
-void pt_register_non_accepting_never_type()
+PT_MINIT_REGISTRATION(pt_register_non_accepting_never_type)
 {
 	reg::Class cls("PHPStan\\Type\\NonAcceptingNeverType");
 	ptdecl::NonAcceptingNeverType::declareClass(cls);

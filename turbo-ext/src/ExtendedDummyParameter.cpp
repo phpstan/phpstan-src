@@ -164,7 +164,7 @@ zv::Val pt_extended_dummy_parameter_new(uint32_t argc, zval *argv)
 
 #define PT_EDP_THIS ExtendedDummyParameter(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_extended_dummy_parameter()
+PT_MINIT_REGISTRATION(pt_register_extended_dummy_parameter)
 {
 	reg::Class cls("PHPStan\\Reflection\\Php\\ExtendedDummyParameter");
 	ptdecl::ExtendedDummyParameter::declareClass(cls);

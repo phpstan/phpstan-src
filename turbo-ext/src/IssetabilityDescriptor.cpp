@@ -411,7 +411,7 @@ zv::Val pt_issetability_descriptor_resolve(zval *descriptor, zval *scope, bool u
 
 #include "reg.h"
 
-void pt_register_issetability_descriptor()
+PT_MINIT_REGISTRATION(pt_register_issetability_descriptor)
 {
 	pt_id_kind_variable = zend_string_init_interned(PT_LC("variable"), 1);
 	pt_id_kind_offset = zend_string_init_interned(PT_LC("offset"), 1);

@@ -136,7 +136,7 @@ zv::Val pt_prepared_assign_target_new(uint32_t argc, zval *argv)
 
 #include "reg.h"
 
-void pt_register_prepared_assign_target()
+PT_MINIT_REGISTRATION(pt_register_prepared_assign_target)
 {
 	reg::Class cls("PHPStan\\Analyser\\PreparedAssignTarget");
 	ptdecl::PreparedAssignTarget::declareClass(cls);

@@ -306,9 +306,6 @@ zv::Val pt_constant_string_get_value(zend_object *object);
 	return pt_type_callback_result_check(retval);
 }
 
-/* module startup: the internal helper classes the trait code needs */
-ZEND_COLD void pt_register_type_traits();
-
 /* }}} */
 
 /* {{{ trait registrars — one per PHP trait, every method with its twin's

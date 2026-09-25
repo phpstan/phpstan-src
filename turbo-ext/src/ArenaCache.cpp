@@ -1173,7 +1173,7 @@ void pt_arena_mshutdown()
 	phpstanturbo::ArenaCache::destroy();
 }
 
-void pt_register_arena_cache()
+PT_MINIT_REGISTRATION(pt_register_arena_cache)
 {
 	reg::Class cls("PHPStan\\Cache\\ArenaCache");
 	ptdecl::ArenaCache::declareClass(cls);

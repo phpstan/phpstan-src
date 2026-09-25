@@ -304,7 +304,7 @@ bool pt_contextual_closure_parameter_resolver_resolve(zval *resolver, zval *scop
 
 #include "reg.h"
 
-void pt_register_contextual_closure_parameter_resolver()
+PT_MINIT_REGISTRATION(pt_register_contextual_closure_parameter_resolver)
 {
 	pt_ccpr_array_map_args = zend_string_init_interned(PT_LC("arrayMapArgs"), 1);
 	pt_ccpr_immediately_invoked_args = zend_string_init_interned(PT_LC("immediatelyInvokedClosureArgs"), 1);

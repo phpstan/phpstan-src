@@ -92,7 +92,7 @@ using phpstanturbo::NamespaceHandler;
 
 #include "reg.h"
 
-void pt_register_namespace_handler()
+PT_MINIT_REGISTRATION(pt_register_namespace_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\NamespaceHandler");
 	ptdecl::NamespaceHandler::declareClass(cls);

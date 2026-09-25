@@ -409,7 +409,7 @@ bool pt_conditional_type_new(zval *out, zval *subject, zval *target, zval *ifTyp
 
 #define PT_THIS ConditionalType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_conditional_type()
+PT_MINIT_REGISTRATION(pt_register_conditional_type)
 {
 	reg::Class cls("PHPStan\\Type\\ConditionalType");
 	ptdecl::ConditionalType::declareClass(cls);

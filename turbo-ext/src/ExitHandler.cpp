@@ -131,7 +131,7 @@ using phpstanturbo::ExitHandler;
 
 #include "reg.h"
 
-void pt_register_exit_handler()
+PT_MINIT_REGISTRATION(pt_register_exit_handler)
 {
 	pt_exh_exit = zend_string_init_interned(PT_LC("exit"), 1);
 	pt_exh_die = zend_string_init_interned(PT_LC("die"), 1);

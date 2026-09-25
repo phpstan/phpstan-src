@@ -146,7 +146,7 @@ using phpstanturbo::InstantiationCallableNodeHandler;
 
 #include "reg.h"
 
-void pt_register_instantiation_callable_node_handler()
+PT_MINIT_REGISTRATION(pt_register_instantiation_callable_node_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Virtual\\InstantiationCallableNodeHandler");
 	ptdecl::InstantiationCallableNodeHandler::declareClass(cls);

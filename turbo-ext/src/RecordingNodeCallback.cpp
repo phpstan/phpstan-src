@@ -91,7 +91,7 @@ bool pt_recording_node_callback_record(zend_object *callback, zval *node, zval *
 
 #include "reg.h"
 
-void pt_register_recording_node_callback()
+PT_MINIT_REGISTRATION(pt_register_recording_node_callback)
 {
 	reg::Class cls("PHPStan\\Analyser\\RecordingNodeCallback");
 	ptdecl::RecordingNodeCallback::declareClass(cls);

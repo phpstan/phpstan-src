@@ -964,7 +964,7 @@ zv::Val pt_closure_processor_process_immediately_called_callable(zval *processor
 
 #include "reg.h"
 
-void pt_register_closure_processor()
+PT_MINIT_REGISTRATION(pt_register_closure_processor)
 {
 	ptclosure::initStrings();
 	pt_cp_closure_call_args = zend_string_init_interned(PT_LC("closureCallArgs"), 1);

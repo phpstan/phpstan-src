@@ -74,7 +74,7 @@ using phpstanturbo::GotoHandler;
 
 #include "reg.h"
 
-void pt_register_goto_handler()
+PT_MINIT_REGISTRATION(pt_register_goto_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\GotoHandler");
 	ptdecl::GotoHandler::declareClass(cls);

@@ -91,7 +91,7 @@ zv::Val pt_internal_statement_exit_point_to_public(zval *exitPoint)
 
 #include "reg.h"
 
-void pt_register_internal_statement_exit_point()
+PT_MINIT_REGISTRATION(pt_register_internal_statement_exit_point)
 {
 	reg::Class cls("PHPStan\\Analyser\\InternalStatementExitPoint");
 	ptdecl::InternalStatementExitPoint::declareClass(cls);

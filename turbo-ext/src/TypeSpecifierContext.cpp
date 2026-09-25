@@ -223,7 +223,7 @@ static void pt_tsc_return_object(zval *return_value, zend_object *context)
 	RETURN_OBJ_COPY(context);
 }
 
-void pt_register_type_specifier_context()
+PT_MINIT_REGISTRATION(pt_register_type_specifier_context)
 {
 	reg::Class cls("PHPStan\\Analyser\\TypeSpecifierContext");
 	ptdecl::TypeSpecifierContext::declareClass(cls);

@@ -416,7 +416,7 @@ zv::Val pt_issetability_resolution_not_empty(zval *resolution)
 
 #include "reg.h"
 
-void pt_register_issetability_resolution()
+PT_MINIT_REGISTRATION(pt_register_issetability_resolution)
 {
 	reg::Class cls("PHPStan\\Analyser\\IssetabilityResolution");
 	ptdecl::IssetabilityResolution::declareClass(cls);

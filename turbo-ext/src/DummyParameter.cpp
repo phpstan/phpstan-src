@@ -130,7 +130,7 @@ zv::Val pt_dummy_parameter_new(zend_string *name, zval *type, bool optional, zva
 
 #define PT_DP_THIS DummyParameter(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_dummy_parameter()
+PT_MINIT_REGISTRATION(pt_register_dummy_parameter)
 {
 	reg::Class cls("PHPStan\\Reflection\\Php\\DummyParameter");
 	ptdecl::DummyParameter::declareClass(cls);

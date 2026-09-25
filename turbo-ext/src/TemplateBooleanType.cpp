@@ -57,7 +57,7 @@ bool pt_template_boolean_type_new(zval *out, zval *scope, zval *strategy, zval *
 
 #define PT_THIS TemplateBooleanType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_boolean_type()
+PT_MINIT_REGISTRATION(pt_register_template_boolean_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateBooleanType");
 	ptdecl::TemplateBooleanType::declareClass(cls);

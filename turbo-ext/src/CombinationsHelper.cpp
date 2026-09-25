@@ -113,7 +113,7 @@ using phpstanturbo::CombinationsHelper;
 
 #include "reg.h"
 
-void pt_register_combinations_helper()
+PT_MINIT_REGISTRATION(pt_register_combinations_helper)
 {
 	reg::Class cls("PHPStan\\Internal\\CombinationsHelper");
 	ptdecl::CombinationsHelper::declareClass(cls);

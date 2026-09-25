@@ -272,7 +272,7 @@ using phpstanturbo::PipeHandler;
 
 #include "reg.h"
 
-void pt_register_pipe_handler()
+PT_MINIT_REGISTRATION(pt_register_pipe_handler)
 {
 	pt_pph_virtual_pipe_operator_call = zend_string_init_interned(PT_LC("virtualPipeOperatorCall"), 1);
 	pt_pph_printer_cache_key = zend_string_init_interned(PT_LC("phpstan_cache_printer"), 1);

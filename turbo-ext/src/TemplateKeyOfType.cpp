@@ -96,7 +96,7 @@ bool pt_template_key_of_type_new(zval *out, zval *scope, zval *strategy, zval *v
 
 #define PT_THIS TemplateKeyOfType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_key_of_type()
+PT_MINIT_REGISTRATION(pt_register_template_key_of_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateKeyOfType");
 	ptdecl::TemplateKeyOfType::declareClass(cls);

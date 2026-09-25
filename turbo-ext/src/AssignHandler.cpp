@@ -4706,7 +4706,7 @@ zv::Val pt_assign_handler_process_virtual_assign(zval *handler, zval *nodeScopeR
 
 #include "reg.h"
 
-void pt_register_assign_handler()
+PT_MINIT_REGISTRATION(pt_register_assign_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\AssignHandler");
 	ptdecl::AssignHandler::declareClass(cls);

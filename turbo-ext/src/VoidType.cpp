@@ -157,7 +157,7 @@ bool pt_void_type_new(zval *out)
 
 #define PT_THIS VoidType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_void_type()
+PT_MINIT_REGISTRATION(pt_register_void_type)
 {
 	reg::Class cls("PHPStan\\Type\\VoidType");
 	ptdecl::VoidType::declareClass(cls);

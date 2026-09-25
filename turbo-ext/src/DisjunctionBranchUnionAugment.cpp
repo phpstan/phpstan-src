@@ -231,7 +231,7 @@ zv::Val pt_disjunction_branch_union_augment_evaluate(zend_object *augment, zval 
 
 #include "reg.h"
 
-void pt_register_disjunction_branch_union_augment()
+PT_MINIT_REGISTRATION(pt_register_disjunction_branch_union_augment)
 {
 	reg::Class cls("PHPStan\\Analyser\\DisjunctionBranchUnionAugment");
 	ptdecl::DisjunctionBranchUnionAugment::declareClass(cls);

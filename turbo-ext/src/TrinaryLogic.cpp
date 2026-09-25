@@ -300,7 +300,7 @@ static void pt_trinary_and_or(INTERNAL_FUNCTION_PARAMETERS, bool isAnd)
 	(isAnd ? self.and_(operandPtr, rest, restCount) : self.or_(operandPtr, rest, restCount)).intoReturnValue(return_value);
 }
 
-void pt_register_trinary_logic()
+PT_MINIT_REGISTRATION(pt_register_trinary_logic)
 {
 	reg::Class cls("PHPStan\\TrinaryLogic");
 	ptdecl::TrinaryLogic::declareClass(cls);

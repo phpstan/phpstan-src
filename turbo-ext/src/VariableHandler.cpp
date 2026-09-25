@@ -523,7 +523,7 @@ zv::Val pt_variable_handler_compose_result(zval *handler, zval *nodeScopeResolve
 
 #include "reg.h"
 
-void pt_register_variable_handler()
+PT_MINIT_REGISTRATION(pt_register_variable_handler)
 {
 	pt_vh_superglobal_identifier = zend_string_init_interned(PT_LC("superglobal"), 1);
 	pt_vh_superglobal_description = zend_string_init_interned(PT_LC("access to superglobal variable"), 1);

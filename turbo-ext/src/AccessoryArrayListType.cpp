@@ -354,7 +354,7 @@ static void pt_aal_one_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (AccessoryArra
 	PT_RETURN_VAL((PT_THIS.*method)(type));
 }
 
-void pt_register_accessory_array_list_type()
+PT_MINIT_REGISTRATION(pt_register_accessory_array_list_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryArrayListType");
 	ptdecl::AccessoryArrayListType::declareClass(cls);

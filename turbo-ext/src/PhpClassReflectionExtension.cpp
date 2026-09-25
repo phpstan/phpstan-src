@@ -2891,7 +2891,7 @@ zv::Val pt_php_class_reflection_extension_get_native_method(zend_object *extensi
 
 /* {{{ registration — the engine ABI glue */
 
-void pt_register_php_class_reflection_extension()
+PT_MINIT_REGISTRATION(pt_register_php_class_reflection_extension)
 {
 	reg::Class cls("PHPStan\\Reflection\\Php\\PhpClassReflectionExtension");
 	ptdecl::PhpClassReflectionExtension::declareClass(cls);

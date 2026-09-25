@@ -83,7 +83,7 @@ static const pt_native_visitor pt_new_assigned_to_property_entry = {
 	NULL,
 };
 
-void pt_register_new_assigned_to_property_visitor()
+PT_MINIT_REGISTRATION(pt_register_new_assigned_to_property_visitor)
 {
 	pt_new_assigned_to_property_attribute_str = zend_string_init_interned(pt_new_assigned_to_property_attribute, sizeof(pt_new_assigned_to_property_attribute) - 1, 1);
 

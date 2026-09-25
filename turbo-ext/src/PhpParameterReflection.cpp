@@ -388,7 +388,7 @@ zv::Val pt_php_parameter_reflection_call(zend_object *parameter, pt_parameter_re
 
 #define PT_PPR_THIS PhpParameterReflection(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_php_parameter_reflection()
+PT_MINIT_REGISTRATION(pt_register_php_parameter_reflection)
 {
 	reg::Class cls("PHPStan\\Reflection\\Php\\PhpParameterReflection");
 	ptdecl::PhpParameterReflection::declareClass(cls);

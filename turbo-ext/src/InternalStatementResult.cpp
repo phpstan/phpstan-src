@@ -376,7 +376,7 @@ zv::Val pt_internal_statement_result_to_public(zval *result)
 
 #include "reg.h"
 
-void pt_register_internal_statement_result()
+PT_MINIT_REGISTRATION(pt_register_internal_statement_result)
 {
 	reg::Class cls("PHPStan\\Analyser\\InternalStatementResult");
 	ptdecl::InternalStatementResult::declareClass(cls);

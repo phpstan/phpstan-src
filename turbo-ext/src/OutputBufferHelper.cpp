@@ -226,7 +226,7 @@ static void pt_obh_level_decrementing_functions_constant(zval *out)
 	pt_persistent_list_into(out, pt_obh_level_decrementing_functions_list);
 }
 
-void pt_register_output_buffer_helper()
+PT_MINIT_REGISTRATION(pt_register_output_buffer_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper");
 	ptdecl::OutputBufferHelper::declareClass(cls);

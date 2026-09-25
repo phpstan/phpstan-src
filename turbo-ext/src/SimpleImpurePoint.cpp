@@ -469,7 +469,7 @@ bool pt_simple_impure_point_resolve_verdict(zval *variant, zval *scope, zval *ar
 
 #include "reg.h"
 
-void pt_register_simple_impure_point()
+PT_MINIT_REGISTRATION(pt_register_simple_impure_point)
 {
 	pt_sip_function_call = zend_string_init_interned(PT_LC("functionCall"), 1);
 	pt_sip_method_call = zend_string_init_interned(PT_LC("methodCall"), 1);

@@ -132,8 +132,11 @@ Never hand-merge generated files. Regenerate them in the commit being replayed:
 | `src/Turbo/TurboExtensionEnabler.php` version | keep the base's value, bump at the end |
 
 For registries that both sides append to, take the union of both sides' entries. These include
-`$covered` / `$coveredElsewhere` in `turbo-ext/tests/smoke.php`, MINIT registrations in `main.cpp`,
-source lists in the turbo-ext build files, `VENDORED_CLASS_MAP`, and `pt_class_refs` keys.
+`$covered` / `$coveredElsewhere` in `turbo-ext/tests/smoke.php`, `VENDORED_CLASS_MAP`, and
+`pt_class_refs` keys. MINIT registrations and the build files' source lists no longer exist: a
+replayed commit that adds a `pt_register_*()` call to `main.cpp`, its declaration to `support.h` or
+a `.cpp` name to `config.w32` drops that hunk and defines the function with
+`PT_MINIT_REGISTRATION(pt_register_*)` in its own file instead.
 
 ## 4. Replay
 

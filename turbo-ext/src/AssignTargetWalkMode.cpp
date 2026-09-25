@@ -83,7 +83,7 @@ zv::Val pt_assign_target_walk_mode_new(bool enterExpressionAssign, bool produces
 
 #include "reg.h"
 
-void pt_register_assign_target_walk_mode()
+PT_MINIT_REGISTRATION(pt_register_assign_target_walk_mode)
 {
 	reg::Class cls("PHPStan\\Analyser\\AssignTargetWalkMode");
 	ptdecl::AssignTargetWalkMode::declareClass(cls);

@@ -183,7 +183,7 @@ zv::Val pt_changed_type_property_reflection_get_original_reflection(zend_object 
 
 #include "reg.h"
 
-void pt_register_changed_type_property_reflection()
+PT_MINIT_REGISTRATION(pt_register_changed_type_property_reflection)
 {
 	reg::Class cls("PHPStan\\Reflection\\Dummy\\ChangedTypePropertyReflection");
 	ptdecl::ChangedTypePropertyReflection::declareClass(cls);

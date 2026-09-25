@@ -1490,7 +1490,7 @@ static void pt_mt_trinary(INTERNAL_FUNCTION_PARAMETERS, zend_long (MixedType::*m
 	PT_RETURN_TRINARY_OR_THROW((PT_THIS.*method)());
 }
 
-void pt_register_mixed_type()
+PT_MINIT_REGISTRATION(pt_register_mixed_type)
 {
 	/* the identity callback holder: registered under a builder name other
 	 * than `cls` on purpose — the side-by-side parity scan pairs

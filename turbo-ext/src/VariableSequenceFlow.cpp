@@ -73,7 +73,7 @@ zv::Val pt_variable_sequence_flow_new(zend_string *kind, zval *children)
 
 #include "reg.h"
 
-void pt_register_variable_sequence_flow()
+PT_MINIT_REGISTRATION(pt_register_variable_sequence_flow)
 {
 	reg::Class cls("PHPStan\\Analyser\\VariableSequenceFlow");
 	ptdecl::VariableSequenceFlow::declareClass(cls);

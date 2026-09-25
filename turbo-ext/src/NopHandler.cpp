@@ -68,7 +68,7 @@ using phpstanturbo::NopHandler;
 
 #include "reg.h"
 
-void pt_register_nop_handler()
+PT_MINIT_REGISTRATION(pt_register_nop_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\NopHandler");
 	ptdecl::NopHandler::declareClass(cls);

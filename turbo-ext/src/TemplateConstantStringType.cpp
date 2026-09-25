@@ -62,7 +62,7 @@ bool pt_template_constant_string_type_new(zval *out, zval *scope, zval *strategy
 
 #define PT_THIS TemplateConstantStringType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_constant_string_type()
+PT_MINIT_REGISTRATION(pt_register_template_constant_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateConstantStringType");
 	ptdecl::TemplateConstantStringType::declareClass(cls);

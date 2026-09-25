@@ -423,7 +423,7 @@ using phpstanturbo::WhileHandler;
 
 #include "reg.h"
 
-void pt_register_while_handler()
+PT_MINIT_REGISTRATION(pt_register_while_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\WhileHandler");
 	ptdecl::WhileHandler::declareClass(cls);

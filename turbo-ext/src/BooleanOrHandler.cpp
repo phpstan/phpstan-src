@@ -291,7 +291,7 @@ using phpstanturbo::BooleanOrHandler;
 
 #include "reg.h"
 
-void pt_register_boolean_or_handler()
+PT_MINIT_REGISTRATION(pt_register_boolean_or_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\BooleanOrHandler");
 	ptdecl::BooleanOrHandler::declareClass(cls);

@@ -74,7 +74,7 @@ using phpstanturbo::InlineHtmlHandler;
 
 #include "reg.h"
 
-void pt_register_inline_html_handler()
+PT_MINIT_REGISTRATION(pt_register_inline_html_handler)
 {
 	pt_ihh_between_php_tags = zend_string_init_interned(PT_LC("betweenPhpTags"), 1);
 	pt_ihh_description = zend_string_init_interned(PT_LC("output between PHP opening and closing tags"), 1);

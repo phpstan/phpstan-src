@@ -197,7 +197,7 @@ using phpstanturbo::CastStringHandler;
 
 #include "reg.h"
 
-void pt_register_cast_string_handler()
+PT_MINIT_REGISTRATION(pt_register_cast_string_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\CastStringHandler");
 	ptdecl::CastStringHandler::declareClass(cls);

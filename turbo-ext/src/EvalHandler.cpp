@@ -125,7 +125,7 @@ using phpstanturbo::EvalHandler;
 
 #include "reg.h"
 
-void pt_register_eval_handler()
+PT_MINIT_REGISTRATION(pt_register_eval_handler)
 {
 	pt_evh_eval = zend_string_init_interned(PT_LC("eval"), 1);
 

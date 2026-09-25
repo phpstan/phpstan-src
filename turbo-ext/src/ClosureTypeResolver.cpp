@@ -1512,7 +1512,7 @@ namespace {
 
 } // namespace
 
-void pt_register_closure_type_resolver()
+PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 {
 	pt_ctr_free_variable_roots = zend_string_init_interned(PT_LC("phpstanFreeVariableRoots"), 1);
 	pt_ctr_this_root = zend_string_init_interned(PT_LC("$this"), 1);

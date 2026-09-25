@@ -207,7 +207,7 @@ zv::Val pt_changed_type_method_reflection_call(zend_object *method, pt_method_re
 
 #include "reg.h"
 
-void pt_register_changed_type_method_reflection()
+PT_MINIT_REGISTRATION(pt_register_changed_type_method_reflection)
 {
 	reg::Class cls("PHPStan\\Reflection\\Dummy\\ChangedTypeMethodReflection");
 	ptdecl::ChangedTypeMethodReflection::declareClass(cls);

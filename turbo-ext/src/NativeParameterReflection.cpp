@@ -236,7 +236,7 @@ zv::Val pt_native_parameter_reflection_union(zval *parameter, zval *other)
 
 #define PT_THIS NativeParameterReflection(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_native_parameter_reflection()
+PT_MINIT_REGISTRATION(pt_register_native_parameter_reflection)
 {
 
 	reg::Class cls("PHPStan\\Reflection\\Native\\NativeParameterReflection");

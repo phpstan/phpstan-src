@@ -103,7 +103,7 @@ using phpstanturbo::ExistingArrayDimFetchHandler;
 
 #include "reg.h"
 
-void pt_register_existing_array_dim_fetch_handler()
+PT_MINIT_REGISTRATION(pt_register_existing_array_dim_fetch_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Virtual\\ExistingArrayDimFetchHandler");
 	ptdecl::ExistingArrayDimFetchHandler::declareClass(cls);

@@ -130,7 +130,7 @@ using phpstanturbo::PostDecHandler;
 
 #include "reg.h"
 
-void pt_register_post_dec_handler()
+PT_MINIT_REGISTRATION(pt_register_post_dec_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\PostDecHandler");
 	ptdecl::PostDecHandler::declareClass(cls);

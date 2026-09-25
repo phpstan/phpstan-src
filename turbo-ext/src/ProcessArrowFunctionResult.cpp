@@ -75,7 +75,7 @@ zv::Val pt_process_arrow_function_result_new(zval *expressionResult, zval *arrow
 
 #include "reg.h"
 
-void pt_register_process_arrow_function_result()
+PT_MINIT_REGISTRATION(pt_register_process_arrow_function_result)
 {
 	reg::Class cls("PHPStan\\Analyser\\ProcessArrowFunctionResult");
 	ptdecl::ProcessArrowFunctionResult::declareClass(cls);

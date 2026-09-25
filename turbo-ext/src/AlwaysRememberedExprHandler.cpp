@@ -165,7 +165,7 @@ using phpstanturbo::AlwaysRememberedExprHandler;
 
 #include "reg.h"
 
-void pt_register_always_remembered_expr_handler()
+PT_MINIT_REGISTRATION(pt_register_always_remembered_expr_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Virtual\\AlwaysRememberedExprHandler");
 	ptdecl::AlwaysRememberedExprHandler::declareClass(cls);

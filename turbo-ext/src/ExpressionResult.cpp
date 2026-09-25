@@ -1525,7 +1525,7 @@ bool pt_er_callable_arg(zval *arg, uint32_t argNum, bool nullable, zval *&out)
 
 } // namespace
 
-void pt_register_expression_result()
+PT_MINIT_REGISTRATION(pt_register_expression_result)
 {
 	pt_er_read_variable_names_attribute = zend_string_init_interned(PT_LC("readVariableNames"), 1);
 

@@ -96,7 +96,7 @@ bool pt_template_union_type_new(zval *out, zval *scope, zval *strategy, zval *va
 
 #define PT_THIS TemplateUnionType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_union_type()
+PT_MINIT_REGISTRATION(pt_register_template_union_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateUnionType");
 	ptdecl::TemplateUnionType::declareClass(cls);

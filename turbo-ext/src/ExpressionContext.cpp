@@ -588,7 +588,7 @@ zv::Val pt_expression_context_get_value_flow_target(zval *context)
 
 #include "reg.h"
 
-void pt_register_expression_context()
+PT_MINIT_REGISTRATION(pt_register_expression_context)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExpressionContext");
 	ptdecl::ExpressionContext::declareClass(cls);

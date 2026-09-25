@@ -52,7 +52,7 @@ using phpstanturbo::NodeScanner;
 
 #include "reg.h"
 
-void pt_register_node_scanner()
+PT_MINIT_REGISTRATION(pt_register_node_scanner)
 {
 	reg::Class cls("PHPStan\\Node\\NodeScanner");
 	ptdecl::NodeScanner::declareClass(cls);

@@ -377,7 +377,7 @@ bool pt_template_argument_constraints_facts(zval *constraints, pt_template_argum
 
 #define PT_TAC_THIS TemplateArgumentConstraints(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_argument_constraints()
+PT_MINIT_REGISTRATION(pt_register_template_argument_constraints)
 {
 	reg::Class cls("PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
 	ptdecl::TemplateArgumentConstraints::declareClass(cls);

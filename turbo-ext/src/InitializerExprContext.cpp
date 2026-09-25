@@ -797,7 +797,7 @@ zv::Val pt_initializer_expr_context_create_empty()
 
 #define PT_IEC_THIS InitializerExprContext(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_initializer_expr_context()
+PT_MINIT_REGISTRATION(pt_register_initializer_expr_context)
 {
 	pt_iec_closure = zend_string_init_interned(PT_LC("{closure}"), 1);
 

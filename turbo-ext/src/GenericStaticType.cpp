@@ -553,7 +553,7 @@ bool pt_generic_static_type_new(zval *out, zval *classReflection, zval *types, z
 
 #define PT_THIS GenericStaticType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_generic_static_type()
+PT_MINIT_REGISTRATION(pt_register_generic_static_type)
 {
 
 	reg::Class cls("PHPStan\\Type\\Generic\\GenericStaticType");

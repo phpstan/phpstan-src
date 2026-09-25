@@ -433,7 +433,7 @@ static void ZEND_FASTCALL utaDelegate(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(PT_THIS.delegateNamed(fn->common.function_name, argc, argc > 0 ? ZEND_CALL_ARG(execute_data, 1) : NULL));
 }
 
-void pt_register_unresolved_template_argument_type()
+PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 {
 
 	reg::Class cls("PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType");

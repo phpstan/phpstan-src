@@ -67,7 +67,7 @@ static const pt_native_visitor pt_immediately_invoked_closure_entry = {
 	NULL,
 };
 
-void pt_register_immediately_invoked_closure_visitor()
+PT_MINIT_REGISTRATION(pt_register_immediately_invoked_closure_visitor)
 {
 	pt_immediately_invoked_closure_attribute_str = zend_string_init_interned(pt_immediately_invoked_closure_attribute, sizeof(pt_immediately_invoked_closure_attribute) - 1, 1);
 	pt_immediately_invoked_closure_args_attribute_str = zend_string_init_interned(pt_immediately_invoked_closure_args_attribute, sizeof(pt_immediately_invoked_closure_args_attribute) - 1, 1);

@@ -231,7 +231,7 @@ bool pt_constant_float_type_new(zval *out, double value)
 
 #define PT_THIS ConstantFloatType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_constant_float_type()
+PT_MINIT_REGISTRATION(pt_register_constant_float_type)
 {
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantFloatType");
 	ptdecl::ConstantFloatType::declareClass(cls);

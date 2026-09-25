@@ -190,7 +190,7 @@ bool pt_key_of_type_new(zval *out, zval *type)
 
 #define PT_THIS KeyOfType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_key_of_type()
+PT_MINIT_REGISTRATION(pt_register_key_of_type)
 {
 	reg::Class cls("PHPStan\\Type\\KeyOfType");
 	ptdecl::KeyOfType::declareClass(cls);

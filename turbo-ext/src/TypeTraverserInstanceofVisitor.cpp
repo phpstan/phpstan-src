@@ -104,7 +104,7 @@ static const pt_native_visitor pt_type_traverser_instanceof_entry = {
 	TypeTraverserInstanceofVisitor::beforeTraverse,
 };
 
-void pt_register_type_traverser_instanceof_visitor()
+PT_MINIT_REGISTRATION(pt_register_type_traverser_instanceof_visitor)
 {
 	pt_type_traverser_instanceof_attribute_str = zend_string_init_interned(pt_type_traverser_instanceof_attribute, sizeof(pt_type_traverser_instanceof_attribute) - 1, 1);
 

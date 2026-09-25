@@ -279,7 +279,7 @@ inline void setNullable(zval *slot, zval *value)
 
 } // namespace
 
-void pt_register_issetability_link_info()
+PT_MINIT_REGISTRATION(pt_register_issetability_link_info)
 {
 	pt_ili_kind_variable = zend_string_init_interned(PT_LC("variable"), 1);
 	pt_ili_kind_offset = zend_string_init_interned(PT_LC("offset"), 1);

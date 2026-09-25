@@ -220,7 +220,7 @@ static void pt_pbr_return_object(zval *return_value, zend_object *object)
 		Z_PARAM_OBJECT_OF_CLASS(var, pt_ce_passed_by_reference) \
 	ZEND_PARSE_PARAMETERS_END()
 
-void pt_register_passed_by_reference()
+PT_MINIT_REGISTRATION(pt_register_passed_by_reference)
 {
 	reg::Class cls("PHPStan\\Reflection\\PassedByReference");
 	ptdecl::PassedByReference::declareClass(cls);

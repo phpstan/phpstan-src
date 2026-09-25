@@ -1946,7 +1946,7 @@ zv::Val pt_identical_narrowing_helper_capture_first_arg_result(zval *helper, zva
 
 #define PT_INH_THIS IdenticalNarrowingHelper(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_identical_narrowing_helper()
+PT_MINIT_REGISTRATION(pt_register_identical_narrowing_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\IdenticalNarrowingHelper");
 	ptdecl::IdenticalNarrowingHelper::declareClass(cls);

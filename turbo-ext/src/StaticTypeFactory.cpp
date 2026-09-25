@@ -212,7 +212,7 @@ void pt_static_type_factory_rshutdown()
 		PT_RETURN_VAL(StaticTypeFactory::fn()); \
 	}
 
-void pt_register_static_type_factory()
+PT_MINIT_REGISTRATION(pt_register_static_type_factory)
 {
 	reg::Class cls("PHPStan\\Type\\StaticTypeFactory");
 	ptdecl::StaticTypeFactory::declareClass(cls);

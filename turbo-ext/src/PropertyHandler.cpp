@@ -370,7 +370,7 @@ using phpstanturbo::PropertyHandler;
 
 #include "reg.h"
 
-void pt_register_property_handler()
+PT_MINIT_REGISTRATION(pt_register_property_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\PropertyHandler");
 	ptdecl::PropertyHandler::declareClass(cls);

@@ -846,7 +846,7 @@ static void ZEND_FASTCALL lrasEmptyArray0(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_EMPTY_ARRAY();
 }
 
-void pt_register_late_resolvable_array_shape_type()
+PT_MINIT_REGISTRATION(pt_register_late_resolvable_array_shape_type)
 {
 	reg::Class cls("PHPStan\\Type\\LateResolvableArrayShapeType");
 	ptdecl::LateResolvableArrayShapeType::declareClass(cls);

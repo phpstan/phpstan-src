@@ -1042,7 +1042,7 @@ void pt_type_combinator_cache_clear()
 	TypeCombinatorCache::clear();
 }
 
-void pt_register_type_combinator_cache()
+PT_MINIT_REGISTRATION(pt_register_type_combinator_cache)
 {
 	reg::Class cls("PHPStan\\Type\\TypeCombinatorCache");
 	ptdecl::TypeCombinatorCache::declareClass(cls);

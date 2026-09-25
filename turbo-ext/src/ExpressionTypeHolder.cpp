@@ -80,7 +80,7 @@ using phpstanturbo::ExpressionTypeHolder;
 #include "reg.h"
 
 
-void pt_register_expression_type_holder()
+PT_MINIT_REGISTRATION(pt_register_expression_type_holder)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExpressionTypeHolder");
 	ptdecl::ExpressionTypeHolder::declareClass(cls);

@@ -119,7 +119,7 @@ using phpstanturbo::ThrowHandler;
 
 #include "reg.h"
 
-void pt_register_throw_handler()
+PT_MINIT_REGISTRATION(pt_register_throw_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ThrowHandler");
 	ptdecl::ThrowHandler::declareClass(cls);

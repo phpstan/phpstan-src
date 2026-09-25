@@ -12287,7 +12287,7 @@ static void pt_ms_custom_serialization_methods_constant(zval *out)
 	pt_persistent_list_into(out, pt_ms_custom_serialization_methods_list);
 }
 
-void pt_register_mutating_scope()
+PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 {
 	using namespace pt_ms;
 

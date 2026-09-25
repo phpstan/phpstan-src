@@ -23,7 +23,7 @@ bool pt_circular_type_alias_error_type_new(zval *out, zend_string *reason)
 
 /* {{{ registration */
 
-void pt_register_circular_type_alias_error_type()
+PT_MINIT_REGISTRATION(pt_register_circular_type_alias_error_type)
 {
 	reg::Class cls("PHPStan\\Type\\CircularTypeAliasErrorType");
 	ptdecl::CircularTypeAliasErrorType::declareClass(cls);

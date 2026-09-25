@@ -2953,7 +2953,7 @@ static void pt_ut_equal_union_classes(zval *out)
 	Z_TYPE_INFO_P(out) = IS_ARRAY;
 }
 
-void pt_register_union_type()
+PT_MINIT_REGISTRATION(pt_register_union_type)
 {
 	reg::Class cls("PHPStan\\Type\\UnionType");
 	ptdecl::UnionType::declareClass(cls);

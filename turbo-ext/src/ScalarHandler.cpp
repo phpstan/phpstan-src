@@ -129,7 +129,7 @@ using phpstanturbo::ScalarHandler;
 
 #include "reg.h"
 
-void pt_register_scalar_handler()
+PT_MINIT_REGISTRATION(pt_register_scalar_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ScalarHandler");
 	ptdecl::ScalarHandler::declareClass(cls);

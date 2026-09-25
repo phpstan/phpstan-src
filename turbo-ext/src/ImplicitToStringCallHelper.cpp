@@ -232,7 +232,7 @@ zv::Val pt_implicit_to_string_call_helper_process_implicit_to_string_call(zval *
 
 #include "reg.h"
 
-void pt_register_implicit_to_string_call_helper()
+PT_MINIT_REGISTRATION(pt_register_implicit_to_string_call_helper)
 {
 	pt_itsch_to_string = zend_string_init_interned(PT_LC("__toString"), 1);
 	pt_itsch_method_call = zend_string_init_interned(PT_LC("methodCall"), 1);

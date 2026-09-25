@@ -57,7 +57,7 @@ bool pt_template_string_type_new(zval *out, zval *scope, zval *strategy, zval *v
 
 #define PT_THIS TemplateStringType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_string_type()
+PT_MINIT_REGISTRATION(pt_register_template_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateStringType");
 	ptdecl::TemplateStringType::declareClass(cls);

@@ -551,7 +551,7 @@ static void pt_adis_no_args(INTERNAL_FUNCTION_PARAMETERS, zv::Val (AccessoryDeci
 	PT_RETURN_VAL((PT_THIS.*method)());
 }
 
-void pt_register_accessory_decimal_integer_string_type()
+PT_MINIT_REGISTRATION(pt_register_accessory_decimal_integer_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryDecimalIntegerStringType");
 	ptdecl::AccessoryDecimalIntegerStringType::declareClass(cls);

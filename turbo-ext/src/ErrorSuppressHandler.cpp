@@ -110,7 +110,7 @@ using phpstanturbo::ErrorSuppressHandler;
 
 #include "reg.h"
 
-void pt_register_error_suppress_handler()
+PT_MINIT_REGISTRATION(pt_register_error_suppress_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ErrorSuppressHandler");
 	ptdecl::ErrorSuppressHandler::declareClass(cls);

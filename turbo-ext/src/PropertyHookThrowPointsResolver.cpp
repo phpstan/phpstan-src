@@ -365,7 +365,7 @@ bool pt_php_version_supports_property_hooks(zval *phpVersion, bool &out)
 
 #include "reg.h"
 
-void pt_register_property_hook_throw_points_resolver()
+PT_MINIT_REGISTRATION(pt_register_property_hook_throw_points_resolver)
 {
 	reg::Class cls("PHPStan\\Analyser\\PropertyHookThrowPointsResolver");
 	ptdecl::PropertyHookThrowPointsResolver::declareClass(cls);

@@ -399,7 +399,7 @@ zv::Val pt_conditional_expression_holder_helper_build_conditional_holder_recipe(
 
 #include "reg.h"
 
-void pt_register_conditional_expression_holder_helper()
+PT_MINIT_REGISTRATION(pt_register_conditional_expression_holder_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\ConditionalExpressionHolderHelper");
 	ptdecl::ConditionalExpressionHolderHelper::declareClass(cls);

@@ -92,7 +92,7 @@ zv::Val pt_internal_end_statement_result_to_public(zval *endStatement)
 
 #include "reg.h"
 
-void pt_register_internal_end_statement_result()
+PT_MINIT_REGISTRATION(pt_register_internal_end_statement_result)
 {
 	reg::Class cls("PHPStan\\Analyser\\InternalEndStatementResult");
 	ptdecl::InternalEndStatementResult::declareClass(cls);

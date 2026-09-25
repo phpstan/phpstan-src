@@ -1331,7 +1331,7 @@ zv::Val pt_constant_string_get_value(zend_object *object)
 
 #define PT_THIS ConstantStringType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_constant_string_type()
+PT_MINIT_REGISTRATION(pt_register_constant_string_type)
 {
 
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantStringType");

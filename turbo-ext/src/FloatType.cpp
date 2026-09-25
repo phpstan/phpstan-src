@@ -224,7 +224,7 @@ bool pt_float_type_new(zval *out)
 
 #define PT_THIS FloatType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_float_type()
+PT_MINIT_REGISTRATION(pt_register_float_type)
 {
 	reg::Class cls("PHPStan\\Type\\FloatType");
 	ptdecl::FloatType::declareClass(cls);

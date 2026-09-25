@@ -292,7 +292,7 @@ static void pt_hpt_one_name(INTERNAL_FUNCTION_PARAMETERS, zend_long (HasProperty
 	PT_RETURN_TRINARY_OR_THROW((PT_THIS.*method)(propertyName));
 }
 
-void pt_register_has_property_type()
+PT_MINIT_REGISTRATION(pt_register_has_property_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\HasPropertyType");
 	ptdecl::HasPropertyType::declareClass(cls);

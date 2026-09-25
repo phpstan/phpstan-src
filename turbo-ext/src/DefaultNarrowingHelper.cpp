@@ -2219,7 +2219,7 @@ zv::Val pt_default_narrowing_helper_specify_types_from_conditional_return_type(z
 
 #define PT_DNH_THIS DefaultNarrowingHelper(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_default_narrowing_helper()
+PT_MINIT_REGISTRATION(pt_register_default_narrowing_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 	ptdecl::DefaultNarrowingHelper::declareClass(cls);

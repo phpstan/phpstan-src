@@ -69,7 +69,7 @@ using phpstanturbo::TypeExprHandler;
 
 #include "reg.h"
 
-void pt_register_type_expr_handler()
+PT_MINIT_REGISTRATION(pt_register_type_expr_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Virtual\\TypeExprHandler");
 	ptdecl::TypeExprHandler::declareClass(cls);

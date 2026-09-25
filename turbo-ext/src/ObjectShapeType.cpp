@@ -1241,7 +1241,7 @@ static void ZEND_FASTCALL ostUnresolvedInstancePropertyPrototype(INTERNAL_FUNCTI
 	PT_RETURN_VAL(PT_THIS.getUnresolvedInstancePropertyPrototype(propertyName));
 }
 
-void pt_register_object_shape_type()
+PT_MINIT_REGISTRATION(pt_register_object_shape_type)
 {
 	/* the reason decorator holder: registered under a builder name other
 	 * than `cls` on purpose — the side-by-side parity scan pairs

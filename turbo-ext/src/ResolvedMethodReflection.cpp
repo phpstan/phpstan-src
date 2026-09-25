@@ -395,7 +395,7 @@ zend_long pt_extended_method_reflection_trinary(zval *method, pt_method_reflecti
 
 #include "reg.h"
 
-void pt_register_resolved_method_reflection()
+PT_MINIT_REGISTRATION(pt_register_resolved_method_reflection)
 {
 	reg::Class cls("PHPStan\\Reflection\\ResolvedMethodReflection");
 	ptdecl::ResolvedMethodReflection::declareClass(cls);

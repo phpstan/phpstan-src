@@ -554,7 +554,7 @@ zv::Val pt_php_property_reflection_get_native_reflection(zend_object *property)
 
 #include "reg.h"
 
-void pt_register_php_property_reflection()
+PT_MINIT_REGISTRATION(pt_register_php_property_reflection)
 {
 	reg::Class cls("PHPStan\\Reflection\\Php\\PhpPropertyReflection");
 	ptdecl::PhpPropertyReflection::declareClass(cls);

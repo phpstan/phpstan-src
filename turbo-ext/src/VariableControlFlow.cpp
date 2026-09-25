@@ -140,7 +140,7 @@ zv::Val pt_variable_control_flow_new(zend_string *kind, const pt_variable_contro
 
 #include "reg.h"
 
-void pt_register_variable_control_flow()
+PT_MINIT_REGISTRATION(pt_register_variable_control_flow)
 {
 	reg::Class cls("PHPStan\\Analyser\\VariableControlFlow");
 	ptdecl::VariableControlFlow::declareClass(cls);

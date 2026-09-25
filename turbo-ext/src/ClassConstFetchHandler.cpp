@@ -271,7 +271,7 @@ using phpstanturbo::ClassConstFetchHandler;
 
 #include "reg.h"
 
-void pt_register_class_const_fetch_handler()
+PT_MINIT_REGISTRATION(pt_register_class_const_fetch_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ClassConstFetchHandler");
 	ptdecl::ClassConstFetchHandler::declareClass(cls);

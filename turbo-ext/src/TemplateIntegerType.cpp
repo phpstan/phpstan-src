@@ -57,7 +57,7 @@ bool pt_template_integer_type_new(zval *out, zval *scope, zval *strategy, zval *
 
 #define PT_THIS TemplateIntegerType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_integer_type()
+PT_MINIT_REGISTRATION(pt_register_template_integer_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateIntegerType");
 	ptdecl::TemplateIntegerType::declareClass(cls);

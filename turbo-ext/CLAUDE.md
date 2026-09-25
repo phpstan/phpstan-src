@@ -32,10 +32,13 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    shadowed service at once.
 3. **Implement natively**: one class per `.cpp` in `src/`, namespace
    `PHPStanTurbo`, class **non-final**, `instanceof`-style checks instead of
-   exact class-entry comparisons. Hot classes are registered with the raw
-   Zend API in `main.cpp`'s MINIT (raw handler pointers, nothing that
-   allocates per call). Reuse the `pt_*` helpers in
-   `support.h`/`support.cpp` before writing new ones.
+   exact class-entry comparisons. The file registers its class with the raw
+   Zend API (raw handler pointers, nothing that allocates per call) from its
+   own `PT_MINIT_REGISTRATION(pt_register_foo) { ... }` function
+   (`support.h`): MINIT runs every such function, and the build files glob
+   `src/*.cpp` — a new file needs no edit in `main.cpp`, `support.h` or
+   `config.w32`. Reuse the `pt_*` helpers in `support.h`/`support.cpp`
+   before writing new ones.
 
    **Style**: the logic lives in a C++ handle class in `namespace
    phpstan_turbo` that mirrors the PHP twin method for method (see

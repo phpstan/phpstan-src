@@ -332,7 +332,7 @@ zv::Val pt_conditional_expression_holder_recipe_evaluate(zend_object *recipe, zv
 
 #include "reg.h"
 
-void pt_register_conditional_expression_holder_recipe()
+PT_MINIT_REGISTRATION(pt_register_conditional_expression_holder_recipe)
 {
 	reg::Class cls("PHPStan\\Analyser\\ConditionalExpressionHolderRecipe");
 	ptdecl::ConditionalExpressionHolderRecipe::declareClass(cls);

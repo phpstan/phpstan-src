@@ -180,7 +180,7 @@ using phpstanturbo::StaticMethodCallableNodeHandler;
 
 #include "reg.h"
 
-void pt_register_static_method_callable_node_handler()
+PT_MINIT_REGISTRATION(pt_register_static_method_callable_node_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Virtual\\StaticMethodCallableNodeHandler");
 	ptdecl::StaticMethodCallableNodeHandler::declareClass(cls);

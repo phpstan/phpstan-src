@@ -127,7 +127,7 @@ using phpstanturbo::PreDecHandler;
 
 #include "reg.h"
 
-void pt_register_pre_dec_handler()
+PT_MINIT_REGISTRATION(pt_register_pre_dec_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\PreDecHandler");
 	ptdecl::PreDecHandler::declareClass(cls);

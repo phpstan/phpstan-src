@@ -191,7 +191,7 @@ using phpstanturbo::ShellExecHandler;
 
 #include "reg.h"
 
-void pt_register_shell_exec_handler()
+PT_MINIT_REGISTRATION(pt_register_shell_exec_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ShellExecHandler");
 	ptdecl::ShellExecHandler::declareClass(cls);

@@ -2700,7 +2700,7 @@ zv::Val pt_parameters_acceptor_selector_combine_acceptors(zval *acceptors)
 
 #include "reg.h"
 
-void pt_register_parameters_acceptor_selector()
+PT_MINIT_REGISTRATION(pt_register_parameters_acceptor_selector)
 {
 	pt_pas_original_arg = zend_string_init_interned(PT_LC("originalArg"), 1);
 	pt_pas_array_map_args = zend_string_init_interned(PT_LC("arrayMapArgs"), 1);

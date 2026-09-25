@@ -180,7 +180,7 @@ zv::Val pt_trivial_parameters_acceptor_call(zend_object *acceptor, pt_parameters
 
 #define PT_TPA_THIS TrivialParametersAcceptor(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_trivial_parameters_acceptor()
+PT_MINIT_REGISTRATION(pt_register_trivial_parameters_acceptor)
 {
 	pt_tpa_function_call = zend_string_init_interned(ZEND_STRL("functionCall"), 1);
 	pt_tpa_callable = zend_string_init_interned(ZEND_STRL("callable"), 1);

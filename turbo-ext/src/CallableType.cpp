@@ -1007,7 +1007,7 @@ static void ZEND_FASTCALL ctObjectWithoutClass0(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_new_object_without_class_type());
 }
 
-void pt_register_callable_type()
+PT_MINIT_REGISTRATION(pt_register_callable_type)
 {
 	static const reg::Arg parametersArg = reg::withDefault(pt_callable_nullable_array_arg("parameters"), "null");
 	static const reg::Arg templateTagsArg = reg::withDefault(reg::arrayArg("templateTags"), "[]");

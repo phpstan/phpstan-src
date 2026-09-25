@@ -190,7 +190,7 @@ bool pt_new_object_type_new(zval *out, zval *type)
 
 #define PT_THIS NewObjectType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_new_object_type()
+PT_MINIT_REGISTRATION(pt_register_new_object_type)
 {
 	reg::Class cls("PHPStan\\Type\\NewObjectType");
 	ptdecl::NewObjectType::declareClass(cls);

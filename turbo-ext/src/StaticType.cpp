@@ -1018,7 +1018,7 @@ static void stUnresolvedPrototype(INTERNAL_FUNCTION_PARAMETERS, const char *prot
 	PT_RETURN_VAL(PT_THIS.unresolvedPrototype(prototypeLcname, prototypeLen, isMethod, &nameZv, scope));
 }
 
-void pt_register_static_type()
+PT_MINIT_REGISTRATION(pt_register_static_type)
 {
 	/* the callback holder: registered under a builder name other than
 	 * `cls` on purpose — the side-by-side parity scan pairs

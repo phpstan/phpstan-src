@@ -819,7 +819,7 @@ static void pt_hovt_one_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (HasOffsetVal
 	PT_RETURN_VAL((PT_THIS.*method)(type));
 }
 
-void pt_register_has_offset_value_type()
+PT_MINIT_REGISTRATION(pt_register_has_offset_value_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\HasOffsetValueType");
 	ptdecl::HasOffsetValueType::declareClass(cls);

@@ -144,7 +144,7 @@ static const pt_native_visitor pt_try_catch_type_entry = {
 	TryCatchTypeVisitor::beforeTraverse,
 };
 
-void pt_register_try_catch_type_visitor()
+PT_MINIT_REGISTRATION(pt_register_try_catch_type_visitor)
 {
 	pt_try_catch_type_attribute_str = zend_string_init_interned(pt_try_catch_type_attribute, sizeof(pt_try_catch_type_attribute) - 1, 1);
 

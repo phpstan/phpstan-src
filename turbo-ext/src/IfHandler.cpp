@@ -436,7 +436,7 @@ using phpstanturbo::IfHandler;
 
 #include "reg.h"
 
-void pt_register_if_handler()
+PT_MINIT_REGISTRATION(pt_register_if_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\IfHandler");
 	ptdecl::IfHandler::declareClass(cls);

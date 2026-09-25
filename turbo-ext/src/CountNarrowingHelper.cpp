@@ -431,7 +431,7 @@ zv::Val pt_count_narrowing_helper_specify_count_size(zval *helper, zval *countFu
 
 #include "reg.h"
 
-void pt_register_count_narrowing_helper()
+PT_MINIT_REGISTRATION(pt_register_count_narrowing_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\CountNarrowingHelper");
 	ptdecl::CountNarrowingHelper::declareClass(cls);

@@ -1954,7 +1954,7 @@ using phpstanturbo::ForeachHandler;
 
 #include "reg.h"
 
-void pt_register_foreach_handler()
+PT_MINIT_REGISTRATION(pt_register_foreach_handler)
 {
 	pt_feh_identical_narrowing_helper_class = zend_string_init_interned(PT_LC("PHPStan\\Analyser\\ExprHandler\\Helper\\IdenticalNarrowingHelper"), 1);
 	pt_feh_traversable_class = zend_string_init_interned(PT_LC("Traversable"), 1);

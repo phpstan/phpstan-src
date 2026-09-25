@@ -303,7 +303,7 @@ zv::Val pt_disjunction_holder_projection_augment_evaluate(zend_object *augment, 
 
 #include "reg.h"
 
-void pt_register_disjunction_holder_projection_augment()
+PT_MINIT_REGISTRATION(pt_register_disjunction_holder_projection_augment)
 {
 	reg::Class cls("PHPStan\\Analyser\\DisjunctionHolderProjectionAugment");
 	ptdecl::DisjunctionHolderProjectionAugment::declareClass(cls);

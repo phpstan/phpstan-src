@@ -1064,7 +1064,7 @@ static void ZEND_FASTCALL gotGetUnresolvedInstancePropertyPrototype(INTERNAL_FUN
 static void ZEND_FASTCALL gotGetUnresolvedStaticPropertyPrototype(INTERNAL_FUNCTION_PARAMETERS) { pt_got_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getUnresolvedStaticPropertyPrototype); }
 static void ZEND_FASTCALL gotGetUnresolvedMethodPrototype(INTERNAL_FUNCTION_PARAMETERS) { pt_got_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getUnresolvedMethodPrototype); }
 
-void pt_register_generic_object_type()
+PT_MINIT_REGISTRATION(pt_register_generic_object_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\GenericObjectType");
 	ptdecl::GenericObjectType::declareClass(cls);

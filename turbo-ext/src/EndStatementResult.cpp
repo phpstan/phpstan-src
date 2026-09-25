@@ -71,7 +71,7 @@ zv::Val pt_end_statement_result_new(zval *statement, zval *result)
 
 #include "reg.h"
 
-void pt_register_end_statement_result()
+PT_MINIT_REGISTRATION(pt_register_end_statement_result)
 {
 	reg::Class cls("PHPStan\\Analyser\\EndStatementResult");
 	ptdecl::EndStatementResult::declareClass(cls);

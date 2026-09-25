@@ -55,7 +55,7 @@ static const pt_native_visitor pt_magic_constant_param_default_entry = {
 	NULL,
 };
 
-void pt_register_magic_constant_param_default_visitor()
+PT_MINIT_REGISTRATION(pt_register_magic_constant_param_default_visitor)
 {
 	pt_magic_constant_param_default_attribute_str = zend_string_init_interned(pt_magic_constant_param_default_attribute, sizeof(pt_magic_constant_param_default_attribute) - 1, 1);
 

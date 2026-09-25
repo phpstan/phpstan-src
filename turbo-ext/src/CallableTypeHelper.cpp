@@ -432,7 +432,7 @@ zv::Val pt_callable_type_helper_is_parameters_acceptor_super_type_of(zval *ours,
 
 #define PT_CTH_ACCEPTOR_CLASS "PHPStan\\Reflection\\Callables\\CallableParametersAcceptor"
 
-void pt_register_callable_type_helper()
+PT_MINIT_REGISTRATION(pt_register_callable_type_helper)
 {
 	reg::Class cls("PHPStan\\Type\\CallableTypeHelper");
 	ptdecl::CallableTypeHelper::declareClass(cls);

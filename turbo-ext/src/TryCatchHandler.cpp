@@ -775,7 +775,7 @@ using phpstanturbo::TryCatchHandler;
 
 #include "reg.h"
 
-void pt_register_try_catch_handler()
+PT_MINIT_REGISTRATION(pt_register_try_catch_handler)
 {
 	pt_tch_throwable_class = zend_string_init_interned(PT_LC("Throwable"), 1);
 	pt_tch_exception_class = zend_string_init_interned(PT_LC("Exception"), 1);

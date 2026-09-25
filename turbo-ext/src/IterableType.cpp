@@ -845,7 +845,7 @@ static void ZEND_FASTCALL itEmptyArray0(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_EMPTY_ARRAY();
 }
 
-void pt_register_iterable_type()
+PT_MINIT_REGISTRATION(pt_register_iterable_type)
 {
 
 	reg::Class cls("PHPStan\\Type\\IterableType");

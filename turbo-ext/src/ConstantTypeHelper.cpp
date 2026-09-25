@@ -175,7 +175,7 @@ zv::Val pt_constant_type_helper_get_type_from_value(zval *value)
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
-void pt_register_constant_type_helper()
+PT_MINIT_REGISTRATION(pt_register_constant_type_helper)
 {
 	reg::Class cls("PHPStan\\Type\\ConstantTypeHelper");
 	ptdecl::ConstantTypeHelper::declareClass(cls);

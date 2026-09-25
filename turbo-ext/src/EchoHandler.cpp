@@ -161,7 +161,7 @@ using phpstanturbo::EchoHandler;
 
 #include "reg.h"
 
-void pt_register_echo_handler()
+PT_MINIT_REGISTRATION(pt_register_echo_handler)
 {
 	pt_eh_echo = zend_string_init_interned(PT_LC("echo"), 1);
 

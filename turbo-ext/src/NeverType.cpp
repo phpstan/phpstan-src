@@ -276,7 +276,7 @@ static void ZEND_FASTCALL ntShouldNotHappen2(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_THROWS();
 }
 
-void pt_register_never_type()
+PT_MINIT_REGISTRATION(pt_register_never_type)
 {
 	reg::Class cls("PHPStan\\Type\\NeverType");
 	ptdecl::NeverType::declareClass(cls);

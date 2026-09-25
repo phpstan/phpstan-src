@@ -173,7 +173,7 @@ zv::Val pt_arrow_function_handler_get_variable_flow(zval *expr, zval *bodyResult
 
 #include "reg.h"
 
-void pt_register_arrow_function_handler()
+PT_MINIT_REGISTRATION(pt_register_arrow_function_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ArrowFunctionHandler");
 	ptdecl::ArrowFunctionHandler::declareClass(cls);

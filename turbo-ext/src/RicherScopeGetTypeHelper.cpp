@@ -364,7 +364,7 @@ namespace {
 
 } // namespace
 
-void pt_register_richer_scope_get_type_helper()
+PT_MINIT_REGISTRATION(pt_register_richer_scope_get_type_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\RicherScopeGetTypeHelper");
 	ptdecl::RicherScopeGetTypeHelper::declareClass(cls);

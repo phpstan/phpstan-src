@@ -250,7 +250,7 @@ bool pt_constant_integer_get_value(zend_object *object, zend_long &out)
 
 #define PT_THIS ConstantIntegerType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_constant_integer_type()
+PT_MINIT_REGISTRATION(pt_register_constant_integer_type)
 {
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantIntegerType");
 	ptdecl::ConstantIntegerType::declareClass(cls);

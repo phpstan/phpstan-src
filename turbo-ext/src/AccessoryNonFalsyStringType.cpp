@@ -324,7 +324,7 @@ static void pt_anfs_one_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (AccessoryNon
 	PT_RETURN_VAL((PT_THIS.*method)(type));
 }
 
-void pt_register_accessory_non_falsy_string_type()
+PT_MINIT_REGISTRATION(pt_register_accessory_non_falsy_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryNonFalsyStringType");
 	ptdecl::AccessoryNonFalsyStringType::declareClass(cls);

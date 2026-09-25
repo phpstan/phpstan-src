@@ -212,10 +212,7 @@ using phpstanturbo::ScopeContext;
 
 #include "reg.h"
 
-
-void pt_register_scope_context();
-
-void pt_register_scope_context()
+PT_MINIT_REGISTRATION(pt_register_scope_context)
 {
 	reg::Class cls("PHPStan\\Analyser\\ScopeContext");
 	ptdecl::ScopeContext::declareClass(cls);

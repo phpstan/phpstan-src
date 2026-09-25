@@ -361,7 +361,7 @@ static void ZEND_FASTCALL owctEmptyArray0(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_EMPTY_ARRAY();
 }
 
-void pt_register_object_without_class_type()
+PT_MINIT_REGISTRATION(pt_register_object_without_class_type)
 {
 	reg::Class cls("PHPStan\\Type\\ObjectWithoutClassType");
 	ptdecl::ObjectWithoutClassType::declareClass(cls);

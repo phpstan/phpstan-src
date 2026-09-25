@@ -549,7 +549,7 @@ namespace {
 
 } // namespace
 
-void pt_register_variable_flow()
+PT_MINIT_REGISTRATION(pt_register_variable_flow)
 {
 	ZVAL_NULL(&pt_vf_null);
 	for (int i = 0; i < PT_VF_KIND_COUNT; i++) {

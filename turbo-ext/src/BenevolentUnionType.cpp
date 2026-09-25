@@ -490,7 +490,7 @@ static void ZEND_FASTCALL buPickFromTypes(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(zv::Val(std::move(values)));
 }
 
-void pt_register_benevolent_union_type()
+PT_MINIT_REGISTRATION(pt_register_benevolent_union_type)
 {
 	reg::Class cls("PHPStan\\Type\\BenevolentUnionType");
 	ptdecl::BenevolentUnionType::declareClass(cls);

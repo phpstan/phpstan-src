@@ -102,7 +102,7 @@ bool pt_parameters_processor_process_params(zval *processor, zval *nodeScopeReso
 
 #include "reg.h"
 
-void pt_register_parameters_processor()
+PT_MINIT_REGISTRATION(pt_register_parameters_processor)
 {
 	reg::Class cls("PHPStan\\Analyser\\ParametersProcessor");
 	ptdecl::ParametersProcessor::declareClass(cls);

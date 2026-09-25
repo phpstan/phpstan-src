@@ -220,7 +220,7 @@ static void ZEND_FASTCALL smtShouldNotHappen2(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_THROWS();
 }
 
-void pt_register_strict_mixed_type()
+PT_MINIT_REGISTRATION(pt_register_strict_mixed_type)
 {
 	reg::Class cls("PHPStan\\Type\\StrictMixedType");
 	ptdecl::StrictMixedType::declareClass(cls);

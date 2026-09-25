@@ -416,7 +416,7 @@ static void pt_null_comparison_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (*meth
 	PT_RETURN_VAL(method());
 }
 
-void pt_register_null_type()
+PT_MINIT_REGISTRATION(pt_register_null_type)
 {
 	reg::Class cls("PHPStan\\Type\\NullType");
 	ptdecl::NullType::declareClass(cls);

@@ -248,7 +248,7 @@ using phpstanturbo::InterpolatedStringHandler;
 
 #include "reg.h"
 
-void pt_register_interpolated_string_handler()
+PT_MINIT_REGISTRATION(pt_register_interpolated_string_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\InterpolatedStringHandler");
 	ptdecl::InterpolatedStringHandler::declareClass(cls);

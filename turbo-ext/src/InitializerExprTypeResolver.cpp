@@ -5598,7 +5598,7 @@ IetrBinaryKind binaryKindOf(zval *node, bool &ok)
 
 } // namespace
 
-void pt_register_initializer_expr_type_resolver()
+PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 {
 	reg::Class cls("PHPStan\\Reflection\\InitializerExprTypeResolver");
 	ptdecl::InitializerExprTypeResolver::declareClass(cls);

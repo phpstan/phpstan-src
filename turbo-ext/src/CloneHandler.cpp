@@ -167,7 +167,7 @@ zv::Val pt_clone_handler_resolve_clone_type(zval *exprType)
 
 #include "reg.h"
 
-void pt_register_clone_handler()
+PT_MINIT_REGISTRATION(pt_register_clone_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\CloneHandler");
 	ptdecl::CloneHandler::declareClass(cls);

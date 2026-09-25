@@ -271,7 +271,7 @@ zv::Val pt_function_variant_new(uint32_t argc, zval *argv)
 
 #define PT_FV_THIS FunctionVariant(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_function_variant()
+PT_MINIT_REGISTRATION(pt_register_function_variant)
 {
 	reg::Class cls("PHPStan\\Reflection\\FunctionVariant");
 	ptdecl::FunctionVariant::declareClass(cls);

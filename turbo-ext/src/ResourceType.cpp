@@ -49,7 +49,7 @@ static void ZEND_FASTCALL rtError1(INTERNAL_FUNCTION_PARAMETERS)
 
 /* {{{ registration */
 
-void pt_register_resource_type()
+PT_MINIT_REGISTRATION(pt_register_resource_type)
 {
 	reg::Class cls("PHPStan\\Type\\ResourceType");
 	ptdecl::ResourceType::declareClass(cls);

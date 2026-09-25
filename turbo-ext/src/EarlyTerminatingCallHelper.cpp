@@ -214,7 +214,7 @@ bool pt_early_terminating_call_helper_is_early_terminating_function_call(zval *h
 
 #include "reg.h"
 
-void pt_register_early_terminating_call_helper()
+PT_MINIT_REGISTRATION(pt_register_early_terminating_call_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\EarlyTerminatingCallHelper");
 	ptdecl::EarlyTerminatingCallHelper::declareClass(cls);

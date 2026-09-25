@@ -508,7 +508,7 @@ using phpstanturbo::CoalesceHandler;
 
 #include "reg.h"
 
-void pt_register_coalesce_handler()
+PT_MINIT_REGISTRATION(pt_register_coalesce_handler)
 {
 	pt_ch_operator_description = zend_string_init_interned(PT_LC("on left side of ??"), 1);
 

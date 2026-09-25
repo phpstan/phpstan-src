@@ -518,7 +518,7 @@ zv::Val pt_boolean_narrowing_helper_specify_disjunction(zend_object *helper, zva
 
 #include "reg.h"
 
-void pt_register_boolean_narrowing_helper()
+PT_MINIT_REGISTRATION(pt_register_boolean_narrowing_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\BooleanNarrowingHelper");
 	ptdecl::BooleanNarrowingHelper::declareClass(cls);

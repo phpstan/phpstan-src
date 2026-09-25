@@ -311,7 +311,7 @@ static void ZEND_FASTCALL neaMixed1(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_new_mixed_type());
 }
 
-void pt_register_non_empty_array_type()
+PT_MINIT_REGISTRATION(pt_register_non_empty_array_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\NonEmptyArrayType");
 	ptdecl::NonEmptyArrayType::declareClass(cls);

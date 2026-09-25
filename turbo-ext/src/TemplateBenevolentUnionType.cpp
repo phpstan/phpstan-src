@@ -106,7 +106,7 @@ bool pt_template_benevolent_union_type_new(zval *out, zval *scope, zval *strateg
 
 #define PT_THIS TemplateBenevolentUnionType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_benevolent_union_type()
+PT_MINIT_REGISTRATION(pt_register_template_benevolent_union_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateBenevolentUnionType");
 	ptdecl::TemplateBenevolentUnionType::declareClass(cls);

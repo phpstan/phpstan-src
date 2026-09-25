@@ -754,32 +754,6 @@ function checkGeneratedArtifacts(PHPStan\Build\TurboAttributeCollector $collecto
 }
 
 /**
- * The Unix builds glob their sources (the Makefile wildcard, config.m4's
- * echo), but config.w32 lists them explicitly — a new .cpp missing from that
- * list only surfaces as an unresolved external on the Windows link.
- *
- * @return list<string> problems
- */
-function checkWindowsSources(): array
-{
-	$problems = [];
-	preg_match_all('~(\w+)\.cpp~', file_get_contents('turbo-ext/config.w32'), $m);
-	$listed = $m[1];
-	$actual = array_map(
-		static fn ($f) => basename($f, '.cpp'),
-		array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')),
-	);
-	foreach (array_diff($actual, $listed) as $missing) {
-		$problems[] = sprintf('%s.cpp is missing from the source lists in turbo-ext/config.w32 — the Windows build would fail with an unresolved external at link time', $missing);
-	}
-	foreach (array_diff($listed, $actual) as $extra) {
-		$problems[] = sprintf('turbo-ext/config.w32 mentions %s.cpp, which does not exist under turbo-ext/src/', $extra);
-	}
-
-	return $problems;
-}
-
-/**
  * Every lowercase identifier the native code passes as PT_LC("...") — the
  * lowercased method names of by-name calls into userland, $this-dispatch and
  * function-table lookups — must name something that exists: a method of a
@@ -863,7 +837,7 @@ function checkLowercaseNameLiterals(): array
 }
 
 $failed = false;
-foreach (array_merge(checkStructure($manifest), checkGeneratedArtifacts($collector, $collected), checkWindowsSources(), checkLowercaseNameLiterals()) as $problem) {
+foreach (array_merge(checkStructure($manifest), checkGeneratedArtifacts($collector, $collected), checkLowercaseNameLiterals()) as $problem) {
 	printf("✗ %s\n", $problem);
 	$failed = true;
 }

@@ -220,7 +220,7 @@ using phpstanturbo::YieldHandler;
 
 #include "reg.h"
 
-void pt_register_yield_handler()
+PT_MINIT_REGISTRATION(pt_register_yield_handler)
 {
 	pt_yh_yield = zend_string_init_interned(PT_LC("yield"), 1);
 	pt_yh_generator = zend_string_init_interned(PT_LC("Generator"), 1);

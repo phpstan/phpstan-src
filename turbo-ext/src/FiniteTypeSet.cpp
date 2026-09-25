@@ -309,7 +309,7 @@ bool pt_finite_type_set_key(zval *out, zval *type)
 
 #define PT_FTS_THIS FiniteTypeSet(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_finite_type_set()
+PT_MINIT_REGISTRATION(pt_register_finite_type_set)
 {
 
 	reg::Class cls("PHPStan\\Type\\FiniteTypeSet");

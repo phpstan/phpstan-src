@@ -497,7 +497,7 @@ zv::Val pt_array_dim_fetch_handler_compose_result(zval *handler, zval *nodeScope
 
 #include "reg.h"
 
-void pt_register_array_dim_fetch_handler()
+PT_MINIT_REGISTRATION(pt_register_array_dim_fetch_handler)
 {
 	pt_adfh_offset_get = zend_string_init_interned(PT_LC("offsetGet"), 1);
 	pt_adfh_array_access = zend_string_init_interned(PT_LC("ArrayAccess"), 1);

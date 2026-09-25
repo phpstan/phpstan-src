@@ -227,7 +227,7 @@ zv::Val pt_statement_context_enter_unrolled_foreach(zval *context, zend_long tot
 
 #include "reg.h"
 
-void pt_register_statement_context()
+PT_MINIT_REGISTRATION(pt_register_statement_context)
 {
 	reg::Class cls("PHPStan\\Analyser\\StatementContext");
 	ptdecl::StatementContext::declareClass(cls);

@@ -221,7 +221,7 @@ bool pt_this_type_new(zval *out, zval *classReflection, zval *subtractedType)
 
 #define PT_THIS ThisType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_this_type()
+PT_MINIT_REGISTRATION(pt_register_this_type)
 {
 
 	reg::Class cls("PHPStan\\Type\\ThisType");

@@ -329,7 +329,7 @@ static void pt_aucs_one_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (AccessoryUpp
 	PT_RETURN_VAL((PT_THIS.*method)(type));
 }
 
-void pt_register_accessory_uppercase_string_type()
+PT_MINIT_REGISTRATION(pt_register_accessory_uppercase_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryUppercaseStringType");
 	ptdecl::AccessoryUppercaseStringType::declareClass(cls);

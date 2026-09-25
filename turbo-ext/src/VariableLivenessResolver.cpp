@@ -1663,7 +1663,7 @@ zv::Val pt_variable_liveness_resolver_resolve(zval *function, zval *flow)
 
 #include "reg.h"
 
-void pt_register_variable_liveness_resolver()
+PT_MINIT_REGISTRATION(pt_register_variable_liveness_resolver)
 {
 	reg::Class cls("PHPStan\\Analyser\\VariableLivenessResolver");
 	ptdecl::VariableLivenessResolver::declareClass(cls);

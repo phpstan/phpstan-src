@@ -3583,7 +3583,7 @@ static void ZEND_FASTCALL otGetUnresolvedInstancePropertyPrototype(INTERNAL_FUNC
 static void ZEND_FASTCALL otGetUnresolvedStaticPropertyPrototype(INTERNAL_FUNCTION_PARAMETERS) { pt_ot_property_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, phpstanturbo::PT_OT_STATIC_PROPERTY); }
 static void ZEND_FASTCALL otGetUnresolvedMethodPrototype(INTERNAL_FUNCTION_PARAMETERS) { pt_ot_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getUnresolvedMethodPrototype); }
 
-void pt_register_object_type()
+PT_MINIT_REGISTRATION(pt_register_object_type)
 {
 	/* the callback holder: registered under a builder name other than
 	 * `cls` on purpose — the side-by-side parity scan pairs

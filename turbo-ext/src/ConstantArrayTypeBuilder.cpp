@@ -1180,7 +1180,7 @@ zv::Val pt_constant_array_type_builder_get_array(zval *builder)
 
 #define PT_THIS ConstantArrayTypeBuilder(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_constant_array_type_builder()
+PT_MINIT_REGISTRATION(pt_register_constant_array_type_builder)
 {
 
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder");

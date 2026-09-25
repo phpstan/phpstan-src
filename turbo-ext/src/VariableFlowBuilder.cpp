@@ -636,7 +636,7 @@ zv::Val pt_variable_flow_builder_arguments(zval *call, zval *argsResult, zval *s
 	return VariableFlowBuilder::arguments(call, argsResult, storage);
 }
 
-void pt_register_variable_flow_builder()
+PT_MINIT_REGISTRATION(pt_register_variable_flow_builder)
 {
 	reg::Class cls("PHPStan\\Analyser\\VariableFlowBuilder");
 	ptdecl::VariableFlowBuilder::declareClass(cls);

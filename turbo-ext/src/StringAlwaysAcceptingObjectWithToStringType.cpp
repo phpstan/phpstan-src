@@ -137,7 +137,7 @@ bool pt_string_always_accepting_object_with_to_string_type_new(zval *out)
 
 #define PT_THIS StringAlwaysAcceptingObjectWithToStringType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_string_always_accepting_object_with_to_string_type()
+PT_MINIT_REGISTRATION(pt_register_string_always_accepting_object_with_to_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\StringAlwaysAcceptingObjectWithToStringType");
 	ptdecl::StringAlwaysAcceptingObjectWithToStringType::declareClass(cls);

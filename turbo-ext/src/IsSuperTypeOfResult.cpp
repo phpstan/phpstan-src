@@ -575,7 +575,7 @@ zv::Val pt_is_super_type_of_result_lazy_max_min(zval *objects, zval *callback)
 
 /* }}} */
 
-void pt_register_is_super_type_of_result()
+PT_MINIT_REGISTRATION(pt_register_is_super_type_of_result)
 {
 	reg::Class cls("PHPStan\\Type\\IsSuperTypeOfResult");
 	ptdecl::IsSuperTypeOfResult::declareClass(cls);

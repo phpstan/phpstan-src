@@ -302,7 +302,7 @@ static void pt_als_one_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (AccessoryLite
 	PT_RETURN_VAL((PT_THIS.*method)(type));
 }
 
-void pt_register_accessory_literal_string_type()
+PT_MINIT_REGISTRATION(pt_register_accessory_literal_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryLiteralStringType");
 	ptdecl::AccessoryLiteralStringType::declareClass(cls);

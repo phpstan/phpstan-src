@@ -160,7 +160,7 @@ using phpstanturbo::DeclareHandler;
 
 #include "reg.h"
 
-void pt_register_declare_handler()
+PT_MINIT_REGISTRATION(pt_register_declare_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\DeclareHandler");
 	ptdecl::DeclareHandler::declareClass(cls);

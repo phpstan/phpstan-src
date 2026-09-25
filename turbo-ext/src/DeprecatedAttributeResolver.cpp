@@ -284,7 +284,7 @@ bool pt_deprecated_attribute_resolver_get_deprecated_attribute(zval *resolver, z
 
 #include "reg.h"
 
-void pt_register_deprecated_attribute_resolver()
+PT_MINIT_REGISTRATION(pt_register_deprecated_attribute_resolver)
 {
 	reg::Class cls("PHPStan\\Analyser\\DeprecatedAttributeResolver");
 	ptdecl::DeprecatedAttributeResolver::declareClass(cls);

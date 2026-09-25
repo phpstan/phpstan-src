@@ -98,7 +98,7 @@ zv::Val pt_extended_function_variant_new(uint32_t argc, zval *argv)
 
 #define PT_EFV_THIS ExtendedFunctionVariant(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_extended_function_variant()
+PT_MINIT_REGISTRATION(pt_register_extended_function_variant)
 {
 	reg::Class cls("PHPStan\\Reflection\\ExtendedFunctionVariant");
 	ptdecl::ExtendedFunctionVariant::declareClass(cls);

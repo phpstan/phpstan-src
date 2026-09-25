@@ -119,7 +119,7 @@ using phpstanturbo::BlockHandler;
 
 #include "reg.h"
 
-void pt_register_block_handler()
+PT_MINIT_REGISTRATION(pt_register_block_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\BlockHandler");
 	ptdecl::BlockHandler::declareClass(cls);

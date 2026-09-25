@@ -140,7 +140,7 @@ zend_string *pt_expr_printer_print_uncached(zval *exprPrinter, zend_object *node
 
 #include "reg.h"
 
-void pt_register_expr_printer()
+PT_MINIT_REGISTRATION(pt_register_expr_printer)
 {
 	reg::Class cls("PHPStan\\Node\\Printer\\ExprPrinter");
 	ptdecl::ExprPrinter::declareClass(cls);

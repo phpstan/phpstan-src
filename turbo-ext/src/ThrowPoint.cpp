@@ -132,7 +132,7 @@ zv::Val pt_throw_point_create_implicit(zval *scope, zval *node, zval *type)
 
 #include "reg.h"
 
-void pt_register_throw_point()
+PT_MINIT_REGISTRATION(pt_register_throw_point)
 {
 	pt_tp_throwable = zend_string_init_interned(PT_LC("Throwable"), 1);
 

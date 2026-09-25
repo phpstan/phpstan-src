@@ -832,7 +832,7 @@ static void cltDelegateMember(INTERNAL_FUNCTION_PARAMETERS, const char *lcname, 
 	cltDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, lcname, len, 2, 2);
 }
 
-void pt_register_closure_type()
+PT_MINIT_REGISTRATION(pt_register_closure_type)
 {
 	static const reg::Arg parametersArg = reg::withDefault(pt_callable_nullable_array_arg("parameters"), "null");
 	static const reg::Arg impurePointsArg = reg::withDefault(pt_callable_nullable_array_arg("impurePoints"), "null");

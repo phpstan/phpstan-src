@@ -150,7 +150,7 @@ zv::Val pt_virtual_expr_result_helper_create_unset_offset_expr_result(zval *help
 
 #include "reg.h"
 
-void pt_register_virtual_expr_result_helper()
+PT_MINIT_REGISTRATION(pt_register_virtual_expr_result_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\VirtualExprResultHelper");
 	ptdecl::VirtualExprResultHelper::declareClass(cls);

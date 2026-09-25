@@ -635,7 +635,7 @@ zv::Val pt_loop_written_variable_names_collect(zval *loop, zval *passFlow)
 
 #include "reg.h"
 
-void pt_register_loop_written_variable_names()
+PT_MINIT_REGISTRATION(pt_register_loop_written_variable_names)
 {
 	reg::Class cls("PHPStan\\Analyser\\LoopWrittenVariableNames");
 	ptdecl::LoopWrittenVariableNames::declareClass(cls);

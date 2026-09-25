@@ -80,7 +80,7 @@ static const pt_native_visitor pt_declare_position_entry = {
 	DeclarePositionVisitor::beforeTraverse,
 };
 
-void pt_register_declare_position_visitor()
+PT_MINIT_REGISTRATION(pt_register_declare_position_visitor)
 {
 	pt_declare_position_attribute_str = zend_string_init_interned(pt_declare_position_attribute, sizeof(pt_declare_position_attribute) - 1, 1);
 

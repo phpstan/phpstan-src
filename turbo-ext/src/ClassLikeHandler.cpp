@@ -515,7 +515,7 @@ using phpstanturbo::ClassLikeHandler;
 
 #include "reg.h"
 
-void pt_register_class_like_handler()
+PT_MINIT_REGISTRATION(pt_register_class_like_handler)
 {
 	pt_clh_interface_exists = zend_string_init_interned(PT_LC("interface_exists"), 1);
 	pt_clh_class_exists = zend_string_init_interned(PT_LC("class_exists"), 1);

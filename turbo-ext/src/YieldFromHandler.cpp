@@ -152,7 +152,7 @@ using phpstanturbo::YieldFromHandler;
 
 #include "reg.h"
 
-void pt_register_yield_from_handler()
+PT_MINIT_REGISTRATION(pt_register_yield_from_handler)
 {
 	pt_yfh_yield_from_identifier = zend_string_init_interned(PT_LC("yieldFrom"), 1);
 	pt_yfh_yield_from_description = zend_string_init_interned(PT_LC("yield from"), 1);

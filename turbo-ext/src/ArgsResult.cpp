@@ -212,7 +212,7 @@ zv::Val pt_args_result_require_arg_result(zval *argsResult, zval *argValue)
 
 #include "reg.h"
 
-void pt_register_args_result()
+PT_MINIT_REGISTRATION(pt_register_args_result)
 {
 	reg::Class cls("PHPStan\\Analyser\\ArgsResult");
 	ptdecl::ArgsResult::declareClass(cls);

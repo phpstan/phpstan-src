@@ -105,7 +105,7 @@ zv::Val pt_expression_result_storage_find(zval *storage, zval *expr)
 
 #include "reg.h"
 
-void pt_register_expression_result_storage()
+PT_MINIT_REGISTRATION(pt_register_expression_result_storage)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExpressionResultStorage");
 	ptdecl::ExpressionResultStorage::declareClass(cls);

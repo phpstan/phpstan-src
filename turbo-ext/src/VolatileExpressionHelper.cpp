@@ -339,7 +339,7 @@ zv::Val pt_volatile_expression_helper_invalidate_negative_existence_checks(zval 
 
 #include "reg.h"
 
-void pt_register_volatile_expression_helper()
+PT_MINIT_REGISTRATION(pt_register_volatile_expression_helper)
 {
 	pt_veh_volatile_function_names_list = pt_persistent_string_list(pt_veh_volatile_function_names, sizeof(pt_veh_volatile_function_names) / sizeof(pt_veh_volatile_function_names[0]));
 	pt_veh_existence_check_function_names_list = pt_persistent_string_list(pt_veh_existence_check_function_names, sizeof(pt_veh_existence_check_function_names) / sizeof(pt_veh_existence_check_function_names[0]));

@@ -78,7 +78,7 @@ bool pt_template_generic_object_type_new(zval *out, zval *scope, zval *strategy,
 
 #define PT_THIS TemplateGenericObjectType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_generic_object_type()
+PT_MINIT_REGISTRATION(pt_register_template_generic_object_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateGenericObjectType");
 	ptdecl::TemplateGenericObjectType::declareClass(cls);

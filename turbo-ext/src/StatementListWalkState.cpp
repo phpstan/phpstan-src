@@ -87,7 +87,7 @@ zv::Val pt_statement_list_walk_state_to_result(zval *state)
 
 #include "reg.h"
 
-void pt_register_statement_list_walk_state()
+PT_MINIT_REGISTRATION(pt_register_statement_list_walk_state)
 {
 	reg::Class cls("PHPStan\\Analyser\\StatementListWalkState");
 	ptdecl::StatementListWalkState::declareClass(cls);

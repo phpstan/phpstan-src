@@ -166,7 +166,7 @@ using phpstanturbo::UnaryPlusHandler;
 
 #include "reg.h"
 
-void pt_register_unary_plus_handler()
+PT_MINIT_REGISTRATION(pt_register_unary_plus_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\UnaryPlusHandler");
 	ptdecl::UnaryPlusHandler::declareClass(cls);

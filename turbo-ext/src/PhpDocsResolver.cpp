@@ -973,7 +973,7 @@ bool pt_php_docs_resolver_get_php_docs(zval *resolver, zval *scope, zval *node, 
 
 #include "reg.h"
 
-void pt_register_php_docs_resolver()
+PT_MINIT_REGISTRATION(pt_register_php_docs_resolver)
 {
 	pt_pdr_construct = zend_string_init_interned(PT_LC("__construct"), 1);
 

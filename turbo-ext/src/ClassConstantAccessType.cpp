@@ -209,7 +209,7 @@ bool pt_class_constant_access_type_new(zval *out, zval *type, zend_string *const
 
 #define PT_THIS ClassConstantAccessType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_class_constant_access_type()
+PT_MINIT_REGISTRATION(pt_register_class_constant_access_type)
 {
 	reg::Class cls("PHPStan\\Type\\ClassConstantAccessType");
 	ptdecl::ClassConstantAccessType::declareClass(cls);

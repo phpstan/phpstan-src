@@ -96,7 +96,7 @@ zv::Val pt_variable_access_flow_new(zend_string *kind, zval *name, zval *write, 
 
 #include "reg.h"
 
-void pt_register_variable_access_flow()
+PT_MINIT_REGISTRATION(pt_register_variable_access_flow)
 {
 	reg::Class cls("PHPStan\\Analyser\\VariableAccessFlow");
 	ptdecl::VariableAccessFlow::declareClass(cls);

@@ -61,7 +61,7 @@ static const pt_native_visitor pt_array_filter_arg_entry = {
 	NULL,
 };
 
-void pt_register_array_filter_arg_visitor()
+PT_MINIT_REGISTRATION(pt_register_array_filter_arg_visitor)
 {
 	pt_array_filter_arg_attribute_str = zend_string_init_interned(pt_array_filter_arg_attribute, sizeof(pt_array_filter_arg_attribute) - 1, 1);
 

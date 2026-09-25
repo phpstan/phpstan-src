@@ -308,7 +308,7 @@ zv::Val pt_inc_dec_type_helper_get_type_callback(zval *helper, zval *varExpr, zv
 
 #include "reg.h"
 
-void pt_register_inc_dec_type_helper()
+PT_MINIT_REGISTRATION(pt_register_inc_dec_type_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\IncDecTypeHelper");
 	ptdecl::IncDecTypeHelper::declareClass(cls);

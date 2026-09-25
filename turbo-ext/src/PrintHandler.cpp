@@ -147,7 +147,7 @@ using phpstanturbo::PrintHandler;
 
 #include "reg.h"
 
-void pt_register_print_handler()
+PT_MINIT_REGISTRATION(pt_register_print_handler)
 {
 	pt_prh_print = zend_string_init_interned(PT_LC("print"), 1);
 

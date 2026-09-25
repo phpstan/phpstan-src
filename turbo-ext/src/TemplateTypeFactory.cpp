@@ -206,7 +206,7 @@ zv::Val pt_template_type_factory_create(zval *scope, zval *name, zval *bound, zv
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
-void pt_register_template_type_factory()
+PT_MINIT_REGISTRATION(pt_register_template_type_factory)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateTypeFactory");
 	ptdecl::TemplateTypeFactory::declareClass(cls);

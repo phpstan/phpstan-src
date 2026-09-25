@@ -346,7 +346,7 @@ zv::Val pt_template_argument_resolver_resolve(zval *resolver, zval *constraints,
 
 #include "reg.h"
 
-void pt_register_template_argument_resolver()
+PT_MINIT_REGISTRATION(pt_register_template_argument_resolver)
 {
 	pt_tar_marker = zend_string_init_interned(PT_LC("marker"), 1);
 	pt_tar_initial = zend_string_init_interned(PT_LC("initial"), 1);

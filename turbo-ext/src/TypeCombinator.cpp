@@ -4029,7 +4029,7 @@ static bool requireTypeArguments(uint32_t count, zval *types)
 	return true;
 }
 
-void pt_register_type_combinator()
+PT_MINIT_REGISTRATION(pt_register_type_combinator)
 {
 
 	reg::Class cls("PHPStan\\Type\\TypeCombinator");

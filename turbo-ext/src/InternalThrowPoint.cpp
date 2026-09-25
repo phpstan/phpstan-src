@@ -189,7 +189,7 @@ zv::Val pt_internal_throw_point_create_from_public(zval *throwPoint, zval *scope
 
 #include "reg.h"
 
-void pt_register_internal_throw_point()
+PT_MINIT_REGISTRATION(pt_register_internal_throw_point)
 {
 	reg::Class cls("PHPStan\\Analyser\\InternalThrowPoint");
 	ptdecl::InternalThrowPoint::declareClass(cls);

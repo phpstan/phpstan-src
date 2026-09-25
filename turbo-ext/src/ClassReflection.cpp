@@ -4666,7 +4666,7 @@ inline constexpr const char *resolvedPhpDocBlock = "PHPStan\\PhpDoc\\ResolvedPhp
 
 } // namespace pt_cr
 
-void pt_register_class_reflection()
+PT_MINIT_REGISTRATION(pt_register_class_reflection)
 {
 	using namespace pt_cr;
 

@@ -124,7 +124,7 @@ zv::Val pt_process_closure_result_apply_by_ref_use_scope(zval *result, zval *sco
 
 #include "reg.h"
 
-void pt_register_process_closure_result()
+PT_MINIT_REGISTRATION(pt_register_process_closure_result)
 {
 	reg::Class cls("PHPStan\\Analyser\\ProcessClosureResult");
 	ptdecl::ProcessClosureResult::declareClass(cls);

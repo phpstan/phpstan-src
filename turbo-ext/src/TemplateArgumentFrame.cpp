@@ -410,7 +410,7 @@ zv::Val pt_template_argument_frame_resolution_cache_key_suffix(zval *frame)
 
 #include "reg.h"
 
-void pt_register_template_argument_frame()
+PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 {
 	pt_taf_original_site_str = zend_string_init_interned(pt_taf_original_site, strlen(pt_taf_original_site), 1);
 

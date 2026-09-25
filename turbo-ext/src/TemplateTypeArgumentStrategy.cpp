@@ -121,7 +121,7 @@ zv::Val pt_template_type_argument_strategy_accepts(zval *left, zval *right, bool
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
-void pt_register_template_type_argument_strategy()
+PT_MINIT_REGISTRATION(pt_register_template_type_argument_strategy)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateTypeArgumentStrategy");
 	ptdecl::TemplateTypeArgumentStrategy::declareClass(cls);

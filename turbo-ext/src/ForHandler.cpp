@@ -793,7 +793,7 @@ using phpstanturbo::ForHandler;
 
 #include "reg.h"
 
-void pt_register_for_handler()
+PT_MINIT_REGISTRATION(pt_register_for_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\ForHandler");
 	ptdecl::ForHandler::declareClass(cls);

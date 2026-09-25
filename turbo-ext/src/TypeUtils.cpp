@@ -477,7 +477,7 @@ zv::Val pt_type_utils_find_this_type(zval *type)
 		PT_RETURN_VAL(TypeUtils::fn(type)); \
 	}
 
-void pt_register_type_utils()
+PT_MINIT_REGISTRATION(pt_register_type_utils)
 {
 	reg::Class cls("PHPStan\\Type\\TypeUtils");
 	ptdecl::TypeUtils::declareClass(cls);

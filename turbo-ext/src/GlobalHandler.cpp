@@ -166,7 +166,7 @@ using phpstanturbo::GlobalHandler;
 
 #include "reg.h"
 
-void pt_register_global_handler()
+PT_MINIT_REGISTRATION(pt_register_global_handler)
 {
 	pt_gh_global = zend_string_init_interned(PT_LC("global"), 1);
 	pt_gh_global_variable = zend_string_init_interned(PT_LC("global variable"), 1);

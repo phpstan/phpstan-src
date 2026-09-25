@@ -193,7 +193,7 @@ zv::Val pt_native_closure_to_closure(zval *closure)
 	return pt_type_closure_over(pt_native_closure_invoke_fn, pt_ce_native_closure, Z_OBJ_P(closure));
 }
 
-void pt_register_native_closure()
+PT_MINIT_REGISTRATION(pt_register_native_closure)
 {
 	memcpy(&pt_native_closure_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	pt_native_closure_handlers.offset = offsetof(NativeClosureObject, std);

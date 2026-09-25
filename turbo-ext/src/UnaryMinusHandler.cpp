@@ -184,7 +184,7 @@ using phpstanturbo::UnaryMinusHandler;
 
 #include "reg.h"
 
-void pt_register_unary_minus_handler()
+PT_MINIT_REGISTRATION(pt_register_unary_minus_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\UnaryMinusHandler");
 	ptdecl::UnaryMinusHandler::declareClass(cls);

@@ -430,7 +430,7 @@ using phpstanturbo::SwitchHandler;
 
 #include "reg.h"
 
-void pt_register_switch_handler()
+PT_MINIT_REGISTRATION(pt_register_switch_handler)
 {
 	pt_swh_identical_narrowing_helper_class = zend_string_init_interned(PT_LC("PHPStan\\Analyser\\ExprHandler\\Helper\\IdenticalNarrowingHelper"), 1);
 

@@ -65,7 +65,7 @@ bool pt_template_object_shape_type_new(zval *out, zval *scope, zval *strategy, z
 
 #define PT_THIS TemplateObjectShapeType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_object_shape_type()
+PT_MINIT_REGISTRATION(pt_register_template_object_shape_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateObjectShapeType");
 	ptdecl::TemplateObjectShapeType::declareClass(cls);

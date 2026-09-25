@@ -85,7 +85,7 @@ static void ZEND_FASTCALL npcShouldNotHappen2(INTERNAL_FUNCTION_PARAMETERS)
 
 /* {{{ registration */
 
-void pt_register_nonexistent_parent_class_type()
+PT_MINIT_REGISTRATION(pt_register_nonexistent_parent_class_type)
 {
 	reg::Class cls("PHPStan\\Type\\NonexistentParentClassType");
 	ptdecl::NonexistentParentClassType::declareClass(cls);

@@ -799,7 +799,7 @@ using phpstanturbo::AssignOpHandler;
 
 #include "reg.h"
 
-void pt_register_assign_op_handler()
+PT_MINIT_REGISTRATION(pt_register_assign_op_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\AssignOpHandler");
 	ptdecl::AssignOpHandler::declareClass(cls);

@@ -113,7 +113,7 @@ using phpstanturbo::ExpressionResultStorageStack;
 
 #include "reg.h"
 
-void pt_register_expression_result_storage_stack()
+PT_MINIT_REGISTRATION(pt_register_expression_result_storage_stack)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExpressionResultStorageStack");
 	ptdecl::ExpressionResultStorageStack::declareClass(cls);

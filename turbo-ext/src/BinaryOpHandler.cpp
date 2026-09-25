@@ -1691,7 +1691,7 @@ using phpstanturbo::BinaryOpHandler;
 
 #include "reg.h"
 
-void pt_register_binary_op_handler()
+PT_MINIT_REGISTRATION(pt_register_binary_op_handler)
 {
 	pt_boh_division_by_zero_error = zend_string_init_interned(PT_LC("DivisionByZeroError"), 1);
 	pt_boh_countable = zend_string_init_interned(PT_LC("Countable"), 1);

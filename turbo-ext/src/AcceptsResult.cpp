@@ -753,7 +753,7 @@ zv::Val pt_accepts_result_lazy_max_min(zval *objects, zval *callback)
 
 /* }}} */
 
-void pt_register_accepts_result()
+PT_MINIT_REGISTRATION(pt_register_accepts_result)
 {
 	reg::Class cls("PHPStan\\Type\\AcceptsResult");
 	ptdecl::AcceptsResult::declareClass(cls);

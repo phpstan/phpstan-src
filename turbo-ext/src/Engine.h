@@ -106,8 +106,6 @@ zif_handler pt_native_closure_invoke_handler();
  * pending exception */
 zv::Val pt_native_closure_to_closure(zval *closure);
 
-ZEND_COLD void pt_register_native_closure();
-
 /* }}} */
 
 /* {{{ ExpressionResult creation

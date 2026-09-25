@@ -200,7 +200,7 @@ bool pt_attributes_handler_process_attribute_groups(zval *handler, zval *nodeSco
 
 #include "reg.h"
 
-void pt_register_attributes_handler()
+PT_MINIT_REGISTRATION(pt_register_attributes_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\AttributesHandler");
 	ptdecl::AttributesHandler::declareClass(cls);

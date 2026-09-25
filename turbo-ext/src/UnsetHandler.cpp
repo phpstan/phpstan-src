@@ -459,7 +459,7 @@ using phpstanturbo::UnsetHandler;
 
 #include "reg.h"
 
-void pt_register_unset_handler()
+PT_MINIT_REGISTRATION(pt_register_unset_handler)
 {
 	pt_uh_array_access = zend_string_init_interned(PT_LC("ArrayAccess"), 1);
 	pt_uh_method_throw_point_helper = zend_string_init_interned(PT_LC("PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper"), 1);

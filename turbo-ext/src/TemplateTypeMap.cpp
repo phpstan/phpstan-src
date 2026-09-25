@@ -494,7 +494,7 @@ zv::Val pt_type_template_type_map_new(zval *types, zval *lowerBoundTypes)
 		PT_RETURN_VAL(PT_TTM_THIS.method(Z_OBJ_P(other))); \
 	}
 
-void pt_register_template_type_map()
+PT_MINIT_REGISTRATION(pt_register_template_type_map)
 {
 	static const reg::Arg returnsSelf = reg::obj("", PT_TTM_CLASS);
 

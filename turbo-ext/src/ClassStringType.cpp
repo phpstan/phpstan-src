@@ -102,7 +102,7 @@ bool pt_class_string_type_new(zval *out)
 
 #define PT_THIS ClassStringType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_class_string_type()
+PT_MINIT_REGISTRATION(pt_register_class_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\ClassStringType");
 	ptdecl::ClassStringType::declareClass(cls);

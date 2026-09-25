@@ -921,7 +921,7 @@ zv::Val pt_resolved_function_variant_get_return_type_with_unresolved_template_ar
 
 #define PT_RFV_THIS ResolvedFunctionVariantWithOriginal(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_resolved_function_variant_with_original()
+PT_MINIT_REGISTRATION(pt_register_resolved_function_variant_with_original)
 {
 	reg::Class cls("PHPStan\\Reflection\\ResolvedFunctionVariantWithOriginal");
 	ptdecl::ResolvedFunctionVariantWithOriginal::declareClass(cls);

@@ -65,7 +65,7 @@ bool pt_template_object_without_class_type_new(zval *out, zval *scope, zval *str
 
 #define PT_THIS TemplateObjectWithoutClassType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_object_without_class_type()
+PT_MINIT_REGISTRATION(pt_register_template_object_without_class_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateObjectWithoutClassType");
 	ptdecl::TemplateObjectWithoutClassType::declareClass(cls);

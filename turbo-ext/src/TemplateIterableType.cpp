@@ -65,7 +65,7 @@ bool pt_template_iterable_type_new(zval *out, zval *scope, zval *strategy, zval 
 
 #define PT_THIS TemplateIterableType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_iterable_type()
+PT_MINIT_REGISTRATION(pt_register_template_iterable_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateIterableType");
 	ptdecl::TemplateIterableType::declareClass(cls);

@@ -64,7 +64,7 @@ static const pt_native_visitor pt_implode_arg_entry = {
 	NULL,
 };
 
-void pt_register_implode_arg_visitor()
+PT_MINIT_REGISTRATION(pt_register_implode_arg_visitor)
 {
 	pt_implode_arg_attribute_str = zend_string_init_interned(pt_implode_arg_attribute, sizeof(pt_implode_arg_attribute) - 1, 1);
 

@@ -227,7 +227,7 @@ static void ZEND_FASTCALL oaEmptyArray0(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_EMPTY_ARRAY();
 }
 
-void pt_register_offset_access_type()
+PT_MINIT_REGISTRATION(pt_register_offset_access_type)
 {
 	reg::Class cls("PHPStan\\Type\\OffsetAccessType");
 	ptdecl::OffsetAccessType::declareClass(cls);

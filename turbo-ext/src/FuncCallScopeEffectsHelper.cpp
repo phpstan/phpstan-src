@@ -1416,7 +1416,7 @@ zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper,
 
 #include "reg.h"
 
-void pt_register_func_call_scope_effects_helper()
+PT_MINIT_REGISTRATION(pt_register_func_call_scope_effects_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\FuncCallScopeEffectsHelper");
 	ptdecl::FuncCallScopeEffectsHelper::declareClass(cls);

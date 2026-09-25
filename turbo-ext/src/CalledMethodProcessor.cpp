@@ -518,7 +518,7 @@ bool pt_called_method_processor_clear_called_method_results(zval *processor)
 
 #include "reg.h"
 
-void pt_register_called_method_processor()
+PT_MINIT_REGISTRATION(pt_register_called_method_processor)
 {
 	reg::Class cls("PHPStan\\Analyser\\CalledMethodProcessor");
 	ptdecl::CalledMethodProcessor::declareClass(cls);

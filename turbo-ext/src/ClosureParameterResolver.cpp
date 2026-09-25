@@ -249,7 +249,7 @@ zv::Val pt_closure_parameter_resolver_resolve_callable_type_for_scope(zval *reso
 
 #include "reg.h"
 
-void pt_register_closure_parameter_resolver()
+PT_MINIT_REGISTRATION(pt_register_closure_parameter_resolver)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureParameterResolver");
 	ptdecl::ClosureParameterResolver::declareClass(cls);

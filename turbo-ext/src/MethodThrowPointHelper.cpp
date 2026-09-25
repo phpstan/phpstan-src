@@ -301,7 +301,7 @@ zv::Val pt_method_throw_point_helper_get_throw_points_for_call_on_type(zval *hel
 
 #include "reg.h"
 
-void pt_register_method_throw_point_helper()
+PT_MINIT_REGISTRATION(pt_register_method_throw_point_helper)
 {
 	pt_mtph_throwable = zend_string_init_interned(PT_LC("Throwable"), 1);
 	pt_mtph_invoke = zend_string_init_interned(PT_LC("invoke"), 1);

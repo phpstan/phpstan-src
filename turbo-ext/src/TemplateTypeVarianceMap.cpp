@@ -173,7 +173,7 @@ zv::Val pt_type_template_type_variance_map_new(zval *variances)
 
 #define PT_TTVM_THIS TemplateTypeVarianceMap(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_type_variance_map()
+PT_MINIT_REGISTRATION(pt_register_template_type_variance_map)
 {
 
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateTypeVarianceMap");

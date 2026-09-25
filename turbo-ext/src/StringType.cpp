@@ -412,7 +412,7 @@ zv::Val pt_string_type_try_remove(zend_object *self, zval *typeToRemove)
 
 #define PT_THIS StringType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_string_type()
+PT_MINIT_REGISTRATION(pt_register_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\StringType");
 	ptdecl::StringType::declareClass(cls);

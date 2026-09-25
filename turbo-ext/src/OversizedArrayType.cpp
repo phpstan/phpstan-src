@@ -261,7 +261,7 @@ static void pt_oa_one_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (OversizedArray
 	PT_RETURN_VAL((PT_THIS.*method)(type));
 }
 
-void pt_register_oversized_array_type()
+PT_MINIT_REGISTRATION(pt_register_oversized_array_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\OversizedArrayType");
 	ptdecl::OversizedArrayType::declareClass(cls);

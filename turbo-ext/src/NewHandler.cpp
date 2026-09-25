@@ -1734,7 +1734,7 @@ using phpstanturbo::NewHandler;
 
 #include "reg.h"
 
-void pt_register_new_handler()
+PT_MINIT_REGISTRATION(pt_register_new_handler)
 {
 	pt_nh_new = zend_string_init_interned(PT_LC("new"), 1);
 	pt_nh_instantiation_of_unknown_class = zend_string_init_interned(PT_LC("instantiation of unknown class"), 1);

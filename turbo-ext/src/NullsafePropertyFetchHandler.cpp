@@ -696,7 +696,7 @@ using phpstanturbo::NullsafePropertyFetchHandler;
 
 #include "reg.h"
 
-void pt_register_nullsafe_property_fetch_handler()
+PT_MINIT_REGISTRATION(pt_register_nullsafe_property_fetch_handler)
 {
 	pt_npfh_virtual_nullsafe_property_fetch = zend_string_init_interned(PT_LC("virtualNullsafePropertyFetch"), 1);
 	pt_npfh_null = zend_string_init_interned(PT_LC("null"), 1);

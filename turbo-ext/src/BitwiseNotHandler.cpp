@@ -166,7 +166,7 @@ using phpstanturbo::BitwiseNotHandler;
 
 #include "reg.h"
 
-void pt_register_bitwise_not_handler()
+PT_MINIT_REGISTRATION(pt_register_bitwise_not_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\BitwiseNotHandler");
 	ptdecl::BitwiseNotHandler::declareClass(cls);

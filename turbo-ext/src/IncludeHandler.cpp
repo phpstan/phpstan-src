@@ -137,7 +137,7 @@ using phpstanturbo::IncludeHandler;
 
 #include "reg.h"
 
-void pt_register_include_handler()
+PT_MINIT_REGISTRATION(pt_register_include_handler)
 {
 	pt_inh_include = zend_string_init_interned(PT_LC("include"), 1);
 	pt_inh_require = zend_string_init_interned(PT_LC("require"), 1);

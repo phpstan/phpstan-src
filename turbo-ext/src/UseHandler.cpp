@@ -84,7 +84,7 @@ using phpstanturbo::UseHandler;
 
 #include "reg.h"
 
-void pt_register_use_handler()
+PT_MINIT_REGISTRATION(pt_register_use_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\UseHandler");
 	ptdecl::UseHandler::declareClass(cls);

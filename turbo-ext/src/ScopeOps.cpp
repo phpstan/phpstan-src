@@ -1856,7 +1856,7 @@ static void pt_so_compositional_virtual_key_prefixes_constant(zval *out)
 	pt_persistent_list_into(out, pt_so_compositional_virtual_key_prefixes_list);
 }
 
-void pt_register_scope_ops()
+PT_MINIT_REGISTRATION(pt_register_scope_ops)
 {
 	reg::Class cls("PHPStan\\Analyser\\ScopeOps");
 	ptdecl::ScopeOps::declareClass(cls);

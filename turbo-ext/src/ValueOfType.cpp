@@ -258,7 +258,7 @@ bool pt_value_of_type_new(zval *out, zval *type)
 
 #define PT_THIS ValueOfType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_value_of_type()
+PT_MINIT_REGISTRATION(pt_register_value_of_type)
 {
 	reg::Class cls("PHPStan\\Type\\ValueOfType");
 	ptdecl::ValueOfType::declareClass(cls);

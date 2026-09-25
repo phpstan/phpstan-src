@@ -337,7 +337,7 @@ static void pt_hmt_no_args(INTERNAL_FUNCTION_PARAMETERS, zv::Val (HasMethodType:
 	PT_RETURN_VAL((PT_THIS.*method)());
 }
 
-void pt_register_has_method_type()
+PT_MINIT_REGISTRATION(pt_register_has_method_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\HasMethodType");
 	ptdecl::HasMethodType::declareClass(cls);

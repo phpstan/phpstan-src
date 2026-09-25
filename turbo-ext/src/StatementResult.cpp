@@ -149,7 +149,7 @@ zv::Val pt_statement_result_new(zval *scope, bool hasYield, bool isAlwaysTermina
 
 #include "reg.h"
 
-void pt_register_statement_result()
+PT_MINIT_REGISTRATION(pt_register_statement_result)
 {
 	reg::Class cls("PHPStan\\Analyser\\StatementResult");
 	ptdecl::StatementResult::declareClass(cls);

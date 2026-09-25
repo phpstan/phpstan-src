@@ -181,7 +181,7 @@ zv::Val pt_callback_unresolved_method_prototype_reflection_new(uint32_t argc, zv
 
 #define PT_THIS CallbackUnresolvedMethodPrototypeReflection(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_callback_unresolved_method_prototype_reflection()
+PT_MINIT_REGISTRATION(pt_register_callback_unresolved_method_prototype_reflection)
 {
 	static const char *selfClass = "PHPStan\\Reflection\\Type\\CallbackUnresolvedMethodPrototypeReflection";
 	static const char *extendedMethodReflectionClass = "PHPStan\\Reflection\\ExtendedMethodReflection";

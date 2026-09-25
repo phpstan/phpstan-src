@@ -360,7 +360,7 @@ zv::Val pt_resolved_property_reflection_get_original_reflection(zend_object *pro
 
 #include "reg.h"
 
-void pt_register_resolved_property_reflection()
+PT_MINIT_REGISTRATION(pt_register_resolved_property_reflection)
 {
 	reg::Class cls("PHPStan\\Reflection\\ResolvedPropertyReflection");
 	ptdecl::ResolvedPropertyReflection::declareClass(cls);

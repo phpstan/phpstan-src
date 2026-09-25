@@ -232,7 +232,7 @@ using phpstanturbo::ConstFetchHandler;
 
 #include "reg.h"
 
-void pt_register_const_fetch_handler()
+PT_MINIT_REGISTRATION(pt_register_const_fetch_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ConstFetchHandler");
 	ptdecl::ConstFetchHandler::declareClass(cls);

@@ -172,7 +172,7 @@ zv::Val SymbolFinderInFiles::findSymbols(HashTable *files, bool supportsEnums)
 
 #include "reg.h"
 
-void pt_register_symbol_finder_in_files()
+PT_MINIT_REGISTRATION(pt_register_symbol_finder_in_files)
 {
 	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles");
 	ptdecl::SymbolFinderInFiles::declareClass(cls);

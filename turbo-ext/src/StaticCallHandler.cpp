@@ -1456,7 +1456,7 @@ using phpstanturbo::StaticCallHandler;
 
 #include "reg.h"
 
-void pt_register_static_call_handler()
+PT_MINIT_REGISTRATION(pt_register_static_call_handler)
 {
 	pt_sch_method_call = zend_string_init_interned(PT_LC("methodCall"), 1);
 	pt_sch_unknown_method = zend_string_init_interned(PT_LC("call to unknown method"), 1);

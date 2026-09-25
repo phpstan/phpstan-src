@@ -312,7 +312,7 @@ zv::Val pt_lru_cache_all(zval *cache)
 
 #include "reg.h"
 
-void pt_register_lru_cache()
+PT_MINIT_REGISTRATION(pt_register_lru_cache)
 {
 	reg::Class cls("PHPStan\\Internal\\LruCache");
 	ptdecl::LruCache::declareClass(cls);

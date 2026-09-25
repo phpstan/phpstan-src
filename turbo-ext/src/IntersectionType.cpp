@@ -3179,7 +3179,7 @@ static void ZEND_FASTCALL itNo0(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_COPY(pt_trinary_singleton(PT_TRI_NO));
 }
 
-void pt_register_intersection_type()
+PT_MINIT_REGISTRATION(pt_register_intersection_type)
 {
 	reg::Class cls("PHPStan\\Type\\IntersectionType");
 	ptdecl::IntersectionType::declareClass(cls);

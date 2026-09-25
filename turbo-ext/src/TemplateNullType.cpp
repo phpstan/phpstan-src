@@ -57,7 +57,7 @@ bool pt_template_null_type_new(zval *out, zval *scope, zval *strategy, zval *var
 
 #define PT_THIS TemplateNullType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_null_type()
+PT_MINIT_REGISTRATION(pt_register_template_null_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateNullType");
 	ptdecl::TemplateNullType::declareClass(cls);

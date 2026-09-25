@@ -532,7 +532,7 @@ using phpstanturbo::InstanceofHandler;
 
 #include "reg.h"
 
-void pt_register_instanceof_handler()
+PT_MINIT_REGISTRATION(pt_register_instanceof_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\InstanceofHandler");
 	ptdecl::InstanceofHandler::declareClass(cls);

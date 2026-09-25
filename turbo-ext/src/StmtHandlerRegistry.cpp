@@ -165,7 +165,7 @@ zv::Val pt_stmt_handler_registry_resolve(zend_object *stmt, zval *container)
 
 #include "reg.h"
 
-void pt_register_stmt_handler_registry()
+PT_MINIT_REGISTRATION(pt_register_stmt_handler_registry)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandlerRegistry");
 	ptdecl::StmtHandlerRegistry::declareClass(cls);

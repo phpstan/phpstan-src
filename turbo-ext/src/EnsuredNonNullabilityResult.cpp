@@ -74,7 +74,7 @@ zv::Val pt_ensured_non_nullability_result_new(zval *scope, zval *specifiedExpres
 
 #include "reg.h"
 
-void pt_register_ensured_non_nullability_result()
+PT_MINIT_REGISTRATION(pt_register_ensured_non_nullability_result)
 {
 	reg::Class cls("PHPStan\\Analyser\\EnsuredNonNullabilityResult");
 	ptdecl::EnsuredNonNullabilityResult::declareClass(cls);

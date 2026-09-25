@@ -7199,7 +7199,7 @@ static void ZEND_FASTCALL catTraverse(INTERNAL_FUNCTION_PARAMETERS)
 	pt_cat_callable(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::traverse);
 }
 
-void pt_register_constant_array_type()
+PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 {
 	pt_carr_identifier_regex = zend_string_init_interned(PT_LC("~^(?:[\\\\]?+[a-z_\\x80-\\xFF][0-9a-z_\\x80-\\xFF-]*+)++$~si"), 1);
 

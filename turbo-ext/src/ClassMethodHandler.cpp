@@ -725,7 +725,7 @@ using phpstanturbo::ClassMethodHandler;
 
 #include "reg.h"
 
-void pt_register_class_method_handler()
+PT_MINIT_REGISTRATION(pt_register_class_method_handler)
 {
 	pt_cmh_property_assign = zend_string_init_interned(PT_LC("propertyAssign"), 1);
 	pt_cmh_property_assignment = zend_string_init_interned(PT_LC("property assignment"), 1);

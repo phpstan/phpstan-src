@@ -311,7 +311,7 @@ zv::Val pt_union_type_helper_sort_types(zval *types)
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
-void pt_register_union_type_helper()
+PT_MINIT_REGISTRATION(pt_register_union_type_helper)
 {
 	reg::Class cls("PHPStan\\Type\\UnionTypeHelper");
 	ptdecl::UnionTypeHelper::declareClass(cls);

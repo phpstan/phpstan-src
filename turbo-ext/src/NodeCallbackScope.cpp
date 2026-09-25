@@ -523,7 +523,7 @@ namespace {
 
 } // namespace
 
-void pt_register_node_callback_scope()
+PT_MINIT_REGISTRATION(pt_register_node_callback_scope)
 {
 	reg::Class cls("PHPStan\\Analyser\\NodeCallbackScope");
 	ptdecl::NodeCallbackScope::declareClass(cls);

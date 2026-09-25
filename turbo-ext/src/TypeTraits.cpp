@@ -1352,7 +1352,7 @@ void pt_type_trait_constant_numeric_comparison(reg::Class &cls)
 
 static ZEND_COLD void pt_register_native_callback();
 
-void pt_register_type_traits()
+PT_MINIT_REGISTRATION(pt_register_type_traits)
 {
 	/* the generalize() callback holder: registered under a builder name
 	 * other than `cls` on purpose — the side-by-side parity scan pairs

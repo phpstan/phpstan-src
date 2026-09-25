@@ -268,7 +268,7 @@ zv::Val pt_method_call_return_type_helper_method_call_return_type(zval *helper, 
 
 #include "reg.h"
 
-void pt_register_method_call_return_type_helper()
+PT_MINIT_REGISTRATION(pt_register_method_call_return_type_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper");
 	ptdecl::MethodCallReturnTypeHelper::declareClass(cls);

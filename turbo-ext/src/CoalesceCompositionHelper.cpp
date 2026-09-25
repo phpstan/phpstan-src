@@ -247,7 +247,7 @@ zv::Val pt_coalesce_composition_helper_compose_type(zval *helper, zval *nodeScop
 
 #include "reg.h"
 
-void pt_register_coalesce_composition_helper()
+PT_MINIT_REGISTRATION(pt_register_coalesce_composition_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\CoalesceCompositionHelper");
 	ptdecl::CoalesceCompositionHelper::declareClass(cls);

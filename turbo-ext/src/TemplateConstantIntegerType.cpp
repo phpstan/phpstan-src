@@ -64,7 +64,7 @@ bool pt_template_constant_integer_type_new(zval *out, zval *scope, zval *strateg
 
 #define PT_THIS TemplateConstantIntegerType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_constant_integer_type()
+PT_MINIT_REGISTRATION(pt_register_template_constant_integer_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateConstantIntegerType");
 	ptdecl::TemplateConstantIntegerType::declareClass(cls);

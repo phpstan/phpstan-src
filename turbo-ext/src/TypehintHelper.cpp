@@ -409,7 +409,7 @@ zv::Val pt_typehint_helper_decide_type(zval *type, zval *phpDocType)
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
-void pt_register_typehint_helper()
+PT_MINIT_REGISTRATION(pt_register_typehint_helper)
 {
 	reg::Class cls("PHPStan\\Type\\TypehintHelper");
 	ptdecl::TypehintHelper::declareClass(cls);

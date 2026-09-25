@@ -1367,7 +1367,7 @@ zv::Val pt_match_handler_get_captured_arm_scopes_and_types(zval *handler, zval *
 
 #include "reg.h"
 
-void pt_register_match_handler()
+PT_MINIT_REGISTRATION(pt_register_match_handler)
 {
 	pt_mh_unhandled_match_error = zend_string_init_interned(PT_LC("UnhandledMatchError"), 1);
 	pt_mh_in_array = zend_string_init_interned(PT_LC("in_array"), 1);

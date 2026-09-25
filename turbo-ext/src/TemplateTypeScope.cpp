@@ -180,7 +180,7 @@ bool pt_template_type_scope_is_anonymous(zval *scope, bool &out)
 #define PT_TTS_THIS TemplateTypeScope(Z_OBJ_P(ZEND_THIS))
 #define PT_TTS_CLASS "PHPStan\\Type\\Generic\\TemplateTypeScope"
 
-void pt_register_template_type_scope()
+PT_MINIT_REGISTRATION(pt_register_template_type_scope)
 {
 
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateTypeScope");

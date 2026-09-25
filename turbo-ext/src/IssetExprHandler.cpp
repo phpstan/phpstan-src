@@ -109,7 +109,7 @@ using phpstanturbo::IssetExprHandler;
 
 #include "reg.h"
 
-void pt_register_isset_expr_handler()
+PT_MINIT_REGISTRATION(pt_register_isset_expr_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Virtual\\IssetExprHandler");
 	ptdecl::IssetExprHandler::declareClass(cls);

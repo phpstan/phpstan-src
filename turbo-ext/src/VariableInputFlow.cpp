@@ -87,7 +87,7 @@ zv::Val pt_variable_input_flow_new(zend_long writeId, zval *targetId)
 
 #include "reg.h"
 
-void pt_register_variable_input_flow()
+PT_MINIT_REGISTRATION(pt_register_variable_input_flow)
 {
 	pt_vif_sequence = zend_string_init_interned("sequence", sizeof("sequence") - 1, 1);
 

@@ -987,7 +987,7 @@ using phpstanturbo::NodeTraverser;
 
 #define NODE_VISITOR_CLASS "PhpParser\\NodeVisitor"
 
-void pt_register_node_traverser()
+PT_MINIT_REGISTRATION(pt_register_node_traverser)
 {
 	reg::Class cls("PhpParser\\NodeTraverser");
 	ptdecl::NodeTraverser::declareClass(cls);

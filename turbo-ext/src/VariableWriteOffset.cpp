@@ -73,7 +73,7 @@ zv::Val pt_variable_write_offset_from_type(zval *dimType)
 
 #include "reg.h"
 
-void pt_register_variable_write_offset()
+PT_MINIT_REGISTRATION(pt_register_variable_write_offset)
 {
 	reg::Class cls("PHPStan\\Analyser\\VariableWriteOffset");
 	ptdecl::VariableWriteOffset::declareClass(cls);

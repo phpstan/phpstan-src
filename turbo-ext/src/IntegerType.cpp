@@ -241,7 +241,7 @@ zv::Val pt_integer_type_exponentiate(zend_object *self, zval *exponent)
 
 #define PT_THIS IntegerType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_integer_type()
+PT_MINIT_REGISTRATION(pt_register_integer_type)
 {
 	reg::Class cls("PHPStan\\Type\\IntegerType");
 	ptdecl::IntegerType::declareClass(cls);

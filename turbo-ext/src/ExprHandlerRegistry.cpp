@@ -277,7 +277,7 @@ zv::Val pt_expr_handler_registry_resolve(zend_object *expr, zval *container)
 
 #include "reg.h"
 
-void pt_register_expr_handler_registry()
+PT_MINIT_REGISTRATION(pt_register_expr_handler_registry)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandlerRegistry");
 	ptdecl::ExprHandlerRegistry::declareClass(cls);

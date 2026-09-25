@@ -522,7 +522,7 @@ static void pt_ttv_return_is(zval *return_value, zval *thisZv, zend_long varianc
 	RETURN_BOOL(value == variance);
 }
 
-void pt_register_template_type_variance()
+PT_MINIT_REGISTRATION(pt_register_template_type_variance)
 {
 
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateTypeVariance");

@@ -532,6 +532,35 @@ void pt_support_rshutdown();
 
 /* }}} */
 
+/* {{{ module-startup registrations
+ *
+ * Each file registers its classes from a function it defines with
+ * PT_MINIT_REGISTRATION(pt_register_foo) { ... }: the macro links the
+ * function into a list when the extension is loaded, and MINIT runs the
+ * list in name order (pt_minit_registrations_run()) — a new file needs no
+ * edit anywhere else. The order is free: the shadowing classes are only
+ * recorded at startup and declared at activation, each parent first
+ * (Shadow.cpp), and the internal helper classes name no other class. */
+
+struct pt_minit_registration {
+	const char *name;
+	void (*run)();
+	pt_minit_registration *next;
+
+	/* links itself into the name-ordered list; the objects are file-statics
+	 * constructed while the extension is loaded, before MINIT */
+	pt_minit_registration(const char *name, void (*run)()) noexcept;
+};
+
+void pt_minit_registrations_run();
+
+#define PT_MINIT_REGISTRATION(fn) \
+	static ZEND_COLD void fn(); \
+	static pt_minit_registration fn##_minit_registration{#fn, &fn}; \
+	static ZEND_COLD void fn()
+
+/* }}} */
+
 /* {{{ native class entries (registered in the per-class files) */
 
 extern zend_class_entry *pt_ce_trinary;
@@ -586,89 +615,6 @@ bool pt_shadow_is_active();
  * too. realName is the shadowed class's real name. */
 [[nodiscard]] bool pt_shadow_instanceof(zend_class_entry *ce, zend_class_entry *nativeCe, const char *realName, size_t realNameLen);
 
-ZEND_COLD void pt_register_trinary_logic();
-ZEND_COLD void pt_register_expression_type_holder();
-ZEND_COLD void pt_register_conditional_expression_holder();
-ZEND_COLD void pt_register_combinations_helper();
-ZEND_COLD void pt_register_node_traverser();
-/* the PHPStan\Parser\*Visitor ports the native NodeTraverser dispatches
- * without an engine call (pt_native_visitor, ParserVisitors.h) */
-ZEND_COLD void pt_register_array_filter_arg_visitor();
-ZEND_COLD void pt_register_array_find_arg_visitor();
-ZEND_COLD void pt_register_array_map_arg_visitor();
-ZEND_COLD void pt_register_array_offset_normalizing_visitor();
-ZEND_COLD void pt_register_array_walk_arg_visitor();
-ZEND_COLD void pt_register_arrow_function_arg_visitor();
-ZEND_COLD void pt_register_closure_arg_visitor();
-ZEND_COLD void pt_register_closure_bind_arg_visitor();
-ZEND_COLD void pt_register_closure_bind_to_var_visitor();
-ZEND_COLD void pt_register_curl_set_opt_arg_visitor();
-ZEND_COLD void pt_register_curl_set_opt_array_arg_visitor();
-ZEND_COLD void pt_register_declare_position_visitor();
-ZEND_COLD void pt_register_immediately_invoked_closure_visitor();
-ZEND_COLD void pt_register_implode_arg_visitor();
-ZEND_COLD void pt_register_magic_constant_param_default_visitor();
-ZEND_COLD void pt_register_new_assigned_to_property_visitor();
-ZEND_COLD void pt_register_parent_stmt_types_visitor();
-ZEND_COLD void pt_register_trait_collecting_visitor();
-ZEND_COLD void pt_register_try_catch_type_visitor();
-ZEND_COLD void pt_register_type_traverser_instanceof_visitor();
-ZEND_COLD void pt_register_scope_ops();
-ZEND_COLD void pt_register_node_scanner();
-ZEND_COLD void pt_register_expr_printer();
-ZEND_COLD void pt_register_parser_runner();
-ZEND_COLD void pt_register_type_combinator_cache();
-ZEND_COLD void pt_register_arena_cache();
-ZEND_COLD void pt_register_expression_result_storage();
-ZEND_COLD void pt_register_expression_result_storage_stack();
-ZEND_COLD void pt_register_class_statements_gatherer();
-ZEND_COLD void pt_register_php_file_cleaner();
-ZEND_COLD void pt_register_symbol_finder_in_files();
-ZEND_COLD void pt_register_scope_context();
-ZEND_COLD void pt_register_is_super_type_of_result();
-ZEND_COLD void pt_register_accepts_result();
-/* the Type ports; registered after the result classes their return types
- * name (a plan naming a class declared later would make the linker autoload
- * the PHP twin) — BooleanType before its child ConstantBooleanType,
- * IntegerType before its children ConstantIntegerType and IntegerRangeType
- * (and after BooleanType, whose class their toBoolean() return type names) */
-ZEND_COLD void pt_register_type_traits();
-ZEND_COLD void pt_register_boolean_type();
-ZEND_COLD void pt_register_constant_boolean_type();
-ZEND_COLD void pt_register_integer_type();
-ZEND_COLD void pt_register_constant_integer_type();
-ZEND_COLD void pt_register_integer_range_type();
-/* StringType before its children ConstantStringType and ClassStringType,
- * ClassStringType before its child GenericClassStringType; all after the
- * integer family, whose classes their bodies instantiate */
-ZEND_COLD void pt_register_string_type();
-ZEND_COLD void pt_register_constant_string_type();
-ZEND_COLD void pt_register_class_string_type();
-ZEND_COLD void pt_register_generic_class_string_type();
-/* FloatType before its child ConstantFloatType, then NullType and
- * VoidType; all after the string family, whose classes their bodies
- * instantiate (FloatType::toString()) */
-ZEND_COLD void pt_register_float_type();
-ZEND_COLD void pt_register_constant_float_type();
-ZEND_COLD void pt_register_null_type();
-ZEND_COLD void pt_register_void_type();
-/* the never/mixed family after the string family (their bodies instantiate
- * its classes); NeverType before MixedType (the constructor drops a NeverType
- * subtracted type), StrictMixedType last (isAcceptedBy() names MixedType) */
-ZEND_COLD void pt_register_never_type();
-ZEND_COLD void pt_register_mixed_type();
-ZEND_COLD void pt_register_strict_mixed_type();
-/* the object family after the never/mixed family (their bodies instantiate
- * its classes): ObjectWithoutClassType first (the others' isSuperTypeOf()
- * and toObjectTypeForIsACheck() name it), StaticType before its children
- * ThisType and GenericStaticType, then ObjectShapeType and
- * NonexistentParentClassType */
-ZEND_COLD void pt_register_object_without_class_type();
-ZEND_COLD void pt_register_static_type();
-ZEND_COLD void pt_register_this_type();
-ZEND_COLD void pt_register_generic_static_type();
-ZEND_COLD void pt_register_object_shape_type();
-ZEND_COLD void pt_register_nonexistent_parent_class_type();
 void pt_integer_range_type_rinit();
 void pt_is_super_type_of_result_rinit();
 void pt_is_super_type_of_result_rshutdown();
@@ -998,15 +944,6 @@ extern zend_class_entry *pt_ce_accessory_array_list_type;
 extern zend_class_entry *pt_ce_oversized_array_type;
 extern zend_class_entry *pt_ce_has_offset_type;
 extern zend_class_entry *pt_ce_has_offset_value_type;
-/* the array family after the never/mixed family (ArrayType's constructor
- * probes MixedType and StrictMixedType); ArrayType first, then the five
- * accessories (their getDefaultBaseType() instantiates ArrayType) */
-ZEND_COLD void pt_register_array_type();
-ZEND_COLD void pt_register_non_empty_array_type();
-ZEND_COLD void pt_register_accessory_array_list_type();
-ZEND_COLD void pt_register_oversized_array_type();
-ZEND_COLD void pt_register_has_offset_type();
-ZEND_COLD void pt_register_has_offset_value_type();
 /* new ArrayType($keyType, $itemType) / new NonEmptyArrayType() /
  * new AccessoryArrayListType() / new OversizedArrayType() /
  * new HasOffsetType($offsetType) / new HasOffsetValueType($offsetType, $valueType)
@@ -1034,19 +971,6 @@ extern zend_class_entry *pt_ce_accessory_uppercase_string_type;
 extern zend_class_entry *pt_ce_accessory_decimal_integer_string_type;
 extern zend_class_entry *pt_ce_has_method_type;
 extern zend_class_entry *pt_ce_has_property_type;
-/* the string accessories after the array family (their bodies instantiate
- * nothing of each other at registration; the order among them only follows
- * the twins' cross-references: NumericString before DecimalIntegerString,
- * NonEmptyString before NonFalsyString), then the member accessories */
-ZEND_COLD void pt_register_accessory_numeric_string_type();
-ZEND_COLD void pt_register_accessory_non_empty_string_type();
-ZEND_COLD void pt_register_accessory_non_falsy_string_type();
-ZEND_COLD void pt_register_accessory_literal_string_type();
-ZEND_COLD void pt_register_accessory_lowercase_string_type();
-ZEND_COLD void pt_register_accessory_uppercase_string_type();
-ZEND_COLD void pt_register_accessory_decimal_integer_string_type();
-ZEND_COLD void pt_register_has_method_type();
-ZEND_COLD void pt_register_has_property_type();
 /* new AccessoryNumericStringType() / new AccessoryNonEmptyStringType() /
  * new AccessoryNonFalsyStringType() / new AccessoryLiteralStringType() /
  * new AccessoryLowercaseStringType() / new AccessoryUppercaseStringType() /
@@ -1069,12 +993,6 @@ bool pt_has_property_type_new(zval *out, zend_string *propertyName);
 extern zend_class_entry *pt_ce_object_type;
 extern zend_class_entry *pt_ce_generic_object_type;
 extern zend_class_entry *pt_ce_enum_case_object_type;
-/* registered after the never/mixed family (their bodies instantiate
- * its classes); ObjectType before its children GenericObjectType and
- * EnumCaseObjectType */
-ZEND_COLD void pt_register_object_type();
-ZEND_COLD void pt_register_generic_object_type();
-ZEND_COLD void pt_register_enum_case_object_type();
 void pt_object_type_rinit();
 void pt_object_type_rshutdown();
 /* new ObjectType($className, $subtractedType, $classReflection) / new
@@ -1092,13 +1010,6 @@ bool pt_enum_case_object_type_new(zval *out, zend_string *className, zend_string
 extern zend_class_entry *pt_ce_iterable_type;
 extern zend_class_entry *pt_ce_callable_type;
 extern zend_class_entry *pt_ce_closure_type;
-/* registered at the end of the Type block: IterableType, then CallableType
- * (MixedType's isIterable()/isCallable() probes instantiate them), then
- * ClosureType (its toCoercedArgumentType() instantiates CallableType, its
- * constructor ObjectType) */
-ZEND_COLD void pt_register_iterable_type();
-ZEND_COLD void pt_register_callable_type();
-ZEND_COLD void pt_register_closure_type();
 /* new IterableType($keyType, $itemType) / new CallableType($parameters,
  * $returnType, $variadic, $templateTypeMap, $resolvedTemplateTypeMap,
  * $templateTags, $isPure, $assertions) / new ClosureType($parameters,
@@ -1117,9 +1028,6 @@ bool pt_closure_type_new(zval *out, zval *parameters = NULL, zval *returnType = 
 /* merged from the parallel port branch */
 /* the array-shape type (ConstantArrayType.cpp) */
 extern zend_class_entry *pt_ce_constant_array_type;
-/* ConstantArrayType after the whole array family (its bodies instantiate
- * ArrayType and every accessory) */
-ZEND_COLD void pt_register_constant_array_type();
 /* new ConstantArrayType($keyTypes, $valueTypes, $nextAutoIndexes = [0],
  * $optionalKeys = [], $isList = null, $unsealed = null) — an instance of the
  * shadowing class, the arguments borrowed and checked as the twin's typed
@@ -1135,12 +1043,6 @@ ZEND_COLD void pt_register_constant_array_type();
 extern zend_class_entry *pt_ce_union_type;
 extern zend_class_entry *pt_ce_benevolent_union_type;
 extern zend_class_entry *pt_ce_intersection_type;
-/* the compound family after the array family (their bodies instantiate
- * its classes): UnionType first, then its child BenevolentUnionType, then
- * IntersectionType (whose bodies instantiate both) */
-ZEND_COLD void pt_register_union_type();
-ZEND_COLD void pt_register_benevolent_union_type();
-ZEND_COLD void pt_register_intersection_type();
 /* new UnionType($types, $normalized) / new BenevolentUnionType($types,
  * $normalized) / new IntersectionType($types) — instances of the shadowing
  * classes ($types borrowed, checked as the twins' `array` parameters and
@@ -1157,14 +1059,6 @@ extern zend_class_entry *pt_ce_type_traverser;
 extern zend_class_entry *pt_ce_verbosity_level;
 extern zend_class_entry *pt_ce_recursion_guard;
 extern zend_class_entry *pt_ce_finite_type_set;
-/* registered at the end of the Type block: TypeTraverser first
- * (VerbosityLevel::getRecommendedLevelByType() runs it), then
- * VerbosityLevel (RecursionGuard::run() describes with its value level),
- * RecursionGuard, FiniteTypeSet (its containedIn() names TrinaryLogic) */
-ZEND_COLD void pt_register_type_traverser();
-ZEND_COLD void pt_register_verbosity_level();
-ZEND_COLD void pt_register_recursion_guard();
-ZEND_COLD void pt_register_finite_type_set();
 /* TypeTraverser::map($type, $cb) — $cb a TypeTraverserCallable or any
  * callable (borrowed); false = pending exception */
 [[nodiscard]] bool pt_type_traverser_map(zval *out, zval *type, zval *cb);
@@ -1214,19 +1108,6 @@ extern zend_class_entry *pt_ce_non_accepting_never_type;
 extern zend_class_entry *pt_ce_string_always_accepting_object_with_to_string_type;
 extern zend_class_entry *pt_ce_string_never_accepting_object_with_to_string_type;
 extern zend_class_entry *pt_ce_resource_type;
-/* registered at the end of the Type block, each child after its parent:
- * ErrorType (MixedType's child), then its children
- * CircularTypeAliasErrorType and AbsorbedTemplateArgumentType,
- * NonAcceptingNeverType (NeverType's child), the two StringType children,
- * and ResourceType (a Type of its own, whose bodies instantiate the
- * scalar classes and ConstantArrayType) */
-ZEND_COLD void pt_register_error_type();
-ZEND_COLD void pt_register_circular_type_alias_error_type();
-ZEND_COLD void pt_register_absorbed_template_argument_type();
-ZEND_COLD void pt_register_non_accepting_never_type();
-ZEND_COLD void pt_register_string_always_accepting_object_with_to_string_type();
-ZEND_COLD void pt_register_string_never_accepting_object_with_to_string_type();
-ZEND_COLD void pt_register_resource_type();
 /* new ErrorType($reason) / new CircularTypeAliasErrorType($reason) / new
  * AbsorbedTemplateArgumentType($reason) ($reason borrowed, NULL for the
  * twins' null default) / new NonAcceptingNeverType() / new
@@ -1244,22 +1125,15 @@ bool pt_resource_type_new(zval *out);
  * $reason slot, then MixedType's constructor body), for the children's
  * inherited constructor; $reason borrowed, NULL for null */
 void pt_error_type_construct(zend_object *self, zend_string *reason);
-/* the static type helpers (TypeUtils.cpp) — registered after the Type
- * block (its return types name ThisType) */
+/* the static type helpers (TypeUtils.cpp) */
 extern zend_class_entry *pt_ce_type_utils;
-ZEND_COLD void pt_register_type_utils();
-/* the native-type decision helpers (TypehintHelper.cpp) — registered after
- * the Type block */
+/* the native-type decision helpers (TypehintHelper.cpp) */
 extern zend_class_entry *pt_ce_typehint_helper;
-ZEND_COLD void pt_register_typehint_helper();
 
 /* merged from the parallel port branch */
-/* the static combinator (TypeCombinator.cpp) */
+/* the static combinator (TypeCombinator.cpp); TypeCombinatorCache.cpp calls
+ * its do*() entry points directly */
 extern zend_class_entry *pt_ce_type_combinator;
-/* TypeCombinator after the whole Type family (its bodies instantiate the
- * compound, array and accessory classes); TypeCombinatorCache.cpp calls its
- * do*() entry points directly */
-ZEND_COLD void pt_register_type_combinator();
 namespace zv { class Val; }
 /* A copy of a node's attributes without its printed expression key
  * (ExprPrinter::ATTRIBUTE_CACHE_KEY): a node built from another node's
@@ -1311,17 +1185,6 @@ extern zend_class_entry *pt_ce_template_type_map;
 extern zend_class_entry *pt_ce_template_type_scope;
 extern zend_class_entry *pt_ce_template_type_reference;
 extern zend_class_entry *pt_ce_template_type_helper;
-/* registered at the end of the Type block, after FiniteTypeSet:
- * TemplateTypeVariance first (the maps', the reference's and the helper's
- * signatures name it), then TemplateTypeVarianceMap, TemplateTypeMap,
- * TemplateTypeScope, TemplateTypeReference and TemplateTypeHelper (its
- * signatures name the maps) */
-ZEND_COLD void pt_register_template_type_variance();
-ZEND_COLD void pt_register_template_type_variance_map();
-ZEND_COLD void pt_register_template_type_map();
-ZEND_COLD void pt_register_template_type_scope();
-ZEND_COLD void pt_register_template_type_reference();
-ZEND_COLD void pt_register_template_type_helper();
 /* the twin's private variance constants */
 #define PT_TEMPLATE_TYPE_VARIANCE_INVARIANT 1
 #define PT_TEMPLATE_TYPE_VARIANCE_COVARIANT 2
@@ -1384,18 +1247,6 @@ extern zend_class_entry *pt_ce_conditional_type;
 extern zend_class_entry *pt_ce_conditional_type_for_parameter;
 extern zend_class_entry *pt_ce_late_resolvable_array_shape_type;
 extern zend_class_entry *pt_ce_unresolved_template_argument_type;
-/* registered at the end of the Type block (their bodies instantiate the
- * scalar, compound and array classes); ConditionalType before
- * ConditionalTypeForParameter (whose toConditional() instantiates it) */
-ZEND_COLD void pt_register_key_of_type();
-ZEND_COLD void pt_register_value_of_type();
-ZEND_COLD void pt_register_offset_access_type();
-ZEND_COLD void pt_register_class_constant_access_type();
-ZEND_COLD void pt_register_new_object_type();
-ZEND_COLD void pt_register_conditional_type();
-ZEND_COLD void pt_register_conditional_type_for_parameter();
-ZEND_COLD void pt_register_late_resolvable_array_shape_type();
-ZEND_COLD void pt_register_unresolved_template_argument_type();
 /* new KeyOfType($type) / new ValueOfType($type) / new OffsetAccessType($type,
  * $offset) / new ClassConstantAccessType($type, $constantName) / new
  * NewObjectType($type) / new ConditionalType($subject, $target, $if, $else,
@@ -1446,31 +1297,6 @@ extern zend_class_entry *pt_ce_template_object_without_class_type;
 extern zend_class_entry *pt_ce_template_strict_mixed_type;
 extern zend_class_entry *pt_ce_template_string_type;
 extern zend_class_entry *pt_ce_template_union_type;
-/* registered after the whole Type family: the two strategies (the trait's
- * getStrategy() names their interface, toArgument() instantiates one),
- * then the Template*Type classes, each after its native parent (all of
- * which precede them) */
-ZEND_COLD void pt_register_template_type_argument_strategy();
-ZEND_COLD void pt_register_template_type_parameter_strategy();
-ZEND_COLD void pt_register_template_array_type();
-ZEND_COLD void pt_register_template_benevolent_union_type();
-ZEND_COLD void pt_register_template_boolean_type();
-ZEND_COLD void pt_register_template_constant_array_type();
-ZEND_COLD void pt_register_template_constant_integer_type();
-ZEND_COLD void pt_register_template_constant_string_type();
-ZEND_COLD void pt_register_template_float_type();
-ZEND_COLD void pt_register_template_generic_object_type();
-ZEND_COLD void pt_register_template_integer_type();
-ZEND_COLD void pt_register_template_intersection_type();
-ZEND_COLD void pt_register_template_iterable_type();
-ZEND_COLD void pt_register_template_mixed_type();
-ZEND_COLD void pt_register_template_null_type();
-ZEND_COLD void pt_register_template_object_shape_type();
-ZEND_COLD void pt_register_template_object_type();
-ZEND_COLD void pt_register_template_object_without_class_type();
-ZEND_COLD void pt_register_template_strict_mixed_type();
-ZEND_COLD void pt_register_template_string_type();
-ZEND_COLD void pt_register_template_union_type();
 /* new TemplateTypeArgumentStrategy() / new TemplateTypeParameterStrategy()
  * / new Template<X>Type($scope, $templateTypeStrategy, $templateTypeVariance,
  * $name, $bound, $default) — instances of the shadowing classes (every
@@ -1498,12 +1324,9 @@ bool pt_template_strict_mixed_type_new(zval *out, zval *scope, zval *strategy, z
 bool pt_template_string_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
 bool pt_template_union_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
 /* the static template helpers (TemplateTypeFactory.cpp,
- * TypeProjectionHelper.cpp), registered after the Template*Type classes
- * the factory instantiates */
+ * TypeProjectionHelper.cpp) */
 extern zend_class_entry *pt_ce_template_type_factory;
 extern zend_class_entry *pt_ce_type_projection_helper;
-ZEND_COLD void pt_register_template_type_factory();
-ZEND_COLD void pt_register_type_projection_helper();
 namespace zv { class Val; }
 /* TypeProjectionHelper::describe($type, $variance, $level) ($variance NULL
  * or IS_NULL for null); an owned string, UNDEF = pending exception */
@@ -1522,19 +1345,6 @@ extern zend_class_entry *pt_ce_static_type_factory;
 extern zend_class_entry *pt_ce_type_result;
 extern zend_class_entry *pt_ce_callable_type_helper;
 extern zend_class_entry *pt_ce_get_template_type_type;
-/* registered at the end of the Type block (their signatures name
- * ConstantArrayType, IsSuperTypeOfResult and the Type classes their
- * bodies instantiate): the builder first (ConstantTypeHelper's body uses
- * it), then the helpers, TypeResult, and GetTemplateTypeType last (its
- * trait methods' return types name BooleanType, EnumCaseObjectType and
- * TemplateTypeMap) */
-ZEND_COLD void pt_register_constant_array_type_builder();
-ZEND_COLD void pt_register_union_type_helper();
-ZEND_COLD void pt_register_constant_type_helper();
-ZEND_COLD void pt_register_static_type_factory();
-ZEND_COLD void pt_register_type_result();
-ZEND_COLD void pt_register_callable_type_helper();
-ZEND_COLD void pt_register_get_template_type_type();
 /* the twin's `static $falsey` & co. — the memoized types StaticTypeFactory
  * hands out, held per request */
 void pt_static_type_factory_rinit();
@@ -1577,10 +1387,8 @@ zv::Val pt_callable_type_helper_is_parameters_acceptor_super_type_of(zval *ours,
  * (borrowed); UNDEF = pending exception */
 zv::Val pt_get_template_type_type_new(zval *type, zend_string *ancestorClassName, zend_string *templateTypeName);
 
-/* TemplateKeyOfType.cpp — registered after KeyOfType and the rest of the
- * template family (its parent, and the factory that instantiates it) */
+/* TemplateKeyOfType.cpp */
 extern zend_class_entry *pt_ce_template_key_of_type;
-ZEND_COLD void pt_register_template_key_of_type();
 /* new TemplateKeyOfType($scope, $templateTypeStrategy, $templateTypeVariance,
  * $name, $bound, $default) — an instance of the shadowing class (every
  * argument borrowed, $default NULL or IS_NULL for null, $bound checked
@@ -1612,11 +1420,8 @@ zv::Val pt_mutating_scope_get_function(zend_object *scope);
 extern zend_class_entry *pt_ce_scope_context;
 zval *pt_scope_context_class_reflection(zend_object *context);
 
-/* LruCache.cpp — registered at the END of the sequence (it names no
- * shadowed class; ObjectType's description-key LRU instantiates it at run
- * time) */
+/* LruCache.cpp */
 extern zend_class_entry *pt_ce_lru_cache;
-ZEND_COLD void pt_register_lru_cache();
 /* new LruCache($maxCount, $maxWeight, $weightEvictionFloorCount) — an
  * instance of the shadowing class; false = pending exception */
 [[nodiscard]] bool pt_lru_cache_new(zval *out, zend_long maxCount = 0, zend_long maxWeight = 0, zend_long weightEvictionFloorCount = 0);
@@ -1674,15 +1479,6 @@ extern zend_class_entry *pt_ce_called_on_type_unresolved_property_prototype_refl
 extern zend_class_entry *pt_ce_callback_unresolved_method_prototype_reflection;
 extern zend_class_entry *pt_ce_callback_unresolved_property_prototype_reflection;
 
-/* registered after the Type family: their signatures name TemplateTypeMap
- * and the Type interface */
-ZEND_COLD void pt_register_unresolvable_type_helper();
-ZEND_COLD void pt_register_native_parameter_reflection();
-ZEND_COLD void pt_register_called_on_type_unresolved_method_prototype_reflection();
-ZEND_COLD void pt_register_called_on_type_unresolved_property_prototype_reflection();
-ZEND_COLD void pt_register_callback_unresolved_method_prototype_reflection();
-ZEND_COLD void pt_register_callback_unresolved_property_prototype_reflection();
-
 /* new <Class>(...$argv) — instances of the shadowing classes over values
  * as PHP code hands them (borrowed): directly when the arguments already
  * have the constructor's parameter types, through its parameter parsing
@@ -1698,7 +1494,6 @@ zv::Val pt_callback_unresolved_property_prototype_reflection_new(uint32_t argc, 
 /* the native MutatingScope (MutatingScope.cpp): PHPStan\Analyser\MutatingScope
  * itself once activateShadowing() ran, NULL before that */
 extern zend_class_entry *pt_ce_mutating_scope;
-ZEND_COLD void pt_register_mutating_scope();
 /* forgets the internal scope factory's slot offsets */
 void pt_mutating_scope_rinit();
 /* the file / traitReflection slots of a native ScopeContext, next to
@@ -1763,7 +1558,6 @@ zv::Val pt_expression_result_storage_stack_current(zval *stack);
 /* the native ClassReflection (ClassReflection.cpp), shadowing
  * PHPStan\Reflection\ClassReflection */
 extern zend_class_entry *pt_ce_class_reflection;
-ZEND_COLD void pt_register_class_reflection();
 /* the getters the Type kernel calls millions of times per run: a direct
  * C++ call into the native body when the object is the shadowing class
  * (the common case), the PHP method when it is a foreign object.
@@ -1834,20 +1628,13 @@ zv::Val pt_conditional_type_resolver_resolve_for_call(zval *declaredType, zval *
 
 /* }}} */
 
-/* {{{ the NodeScopeResolver-adjacent helper services (VolatileExpressionHelper.cpp,
- * VariableFlow.cpp, VariableFlowBuilder.cpp) — registered at the END of the
- * sequence (their signatures name the Type interface and their own classes;
- * VariableFlow before VariableFlowBuilder, whose return types name it) */
+/* {{{ the NodeScopeResolver-adjacent helper services
+ * (VolatileExpressionHelper.cpp, VariableFlow.cpp,
+ * VariableFlowBuilder.cpp) */
 
 extern zend_class_entry *pt_ce_variable_flow;
-ZEND_COLD void pt_register_volatile_expression_helper();
-ZEND_COLD void pt_register_variable_flow();
-ZEND_COLD void pt_register_variable_flow_builder();
-ZEND_COLD void pt_register_variable_liveness_resolver();
-/* ExpressionResult.cpp — registered after VariableFlow (its signatures name
- * it) */
+/* ExpressionResult.cpp */
 extern zend_class_entry *pt_ce_expression_result;
-ZEND_COLD void pt_register_expression_result();
 /* $result->getVariableFlow() — the slot of a native result, the method
  * otherwise; UNDEF = pending exception */
 zv::Val pt_expression_result_variable_flow(zval *result);
@@ -1892,18 +1679,14 @@ zv::Val pt_variable_flow_throwing(zval *type, bool canContinue, bool canContainA
 
 
 /* PhpClassReflectionExtension.cpp — the shadowing member factory behind
- * ClassReflection's has*()/get*() methods; registered at the END of the
- * sequence (its signatures name ClassReflection and the Type family, and
- * its constructor instantiates the native LruCache) */
+ * ClassReflection's has*()/get*() methods */
 extern zend_class_entry *pt_ce_php_class_reflection_extension;
-ZEND_COLD void pt_register_php_class_reflection_extension();
 
 /* {{{ the narrowing value classes (TypeSpecifierContext.cpp,
- * SpecifiedTypes.cpp) — registered at the END of the sequence */
+ * SpecifiedTypes.cpp) */
 
 /* TypeSpecifierContext.cpp — the shadowing PHPStan\Analyser\TypeSpecifierContext */
 extern zend_class_entry *pt_ce_type_specifier_context;
-ZEND_COLD void pt_register_type_specifier_context();
 /* TypeSpecifierContext::CONTEXT_*; PT_TSC_NULL stands for the null
  * context's $value, PT_TSC_UNINITIALIZED for a never-written one */
 #define PT_TSC_CONTEXT_TRUE 0b0001
@@ -1937,7 +1720,6 @@ zv::Val pt_type_specifier_context_negate(zend_object *context);
 
 /* SpecifiedTypes.cpp — the shadowing PHPStan\Analyser\SpecifiedTypes */
 extern zend_class_entry *pt_ce_specified_types;
-ZEND_COLD void pt_register_specified_types();
 /* new SpecifiedTypes($sureTypes, $sureNotTypes) — NULL for the [] defaults,
  * the arrays borrowed; UNDEF = pending exception */
 zv::Val pt_specified_types_new(zval *sureTypes = NULL, zval *sureNotTypes = NULL);
@@ -1975,17 +1757,12 @@ zv::Val pt_specified_types_set_equality(zend_object *specifiedTypes);
 
 /* {{{ the analysis-engine value classes and handler registries
  * (ExpressionContext.cpp, StatementContext.cpp, ExprHandlerRegistry.cpp,
- * StmtHandlerRegistry.cpp) — registered at the END of the sequence (their
- * signatures name the Type interface and PHP analyser classes only) */
+ * StmtHandlerRegistry.cpp) */
 
 extern zend_class_entry *pt_ce_expression_context;
 extern zend_class_entry *pt_ce_statement_context;
 extern zend_class_entry *pt_ce_expr_handler_registry;
 extern zend_class_entry *pt_ce_stmt_handler_registry;
-ZEND_COLD void pt_register_expression_context();
-ZEND_COLD void pt_register_statement_context();
-ZEND_COLD void pt_register_expr_handler_registry();
-ZEND_COLD void pt_register_stmt_handler_registry();
 
 /* ExpressionContext::createTopLevel($resolveTemplateArguments) /
  * createDeep($resolveTemplateArguments); UNDEF = pending exception */
@@ -2076,8 +1853,6 @@ zv::Val pt_variable_flow_all_read_all();
 /* the handler ports */
 extern zend_class_entry *pt_ce_scalar_handler;
 extern zend_class_entry *pt_ce_variable_handler;
-ZEND_COLD void pt_register_scalar_handler();
-ZEND_COLD void pt_register_variable_handler();
 /* $variableHandler->composeResult($nodeScopeResolver, $expr, $nameResult,
  * $storage, $beforeScope, $context) ($nameResult / $context NULL for null,
  * everything borrowed); UNDEF = pending exception */
@@ -2087,29 +1862,24 @@ zv::Val pt_variable_handler_compose_result(zval *handler, zval *nodeScopeResolve
 
 /* {{{ the analyser value classes the handlers trade results with
  * (ImpurePoint.cpp, ThrowPoint.cpp, InternalThrowPoint.cpp, ArgsResult.cpp,
- * IssetabilityDescriptor.cpp) — registered at the END of the sequence, after
- * MutatingScope and ExpressionResult, whose classes their signatures name.
- * The classes are final: an entry taking an instance answers natively for
- * the native class entry and through the method for anything else (the PHP
- * twin declared next to the native class in the differential tests). Every
- * argument is borrowed, NULL for a null where noted; UNDEF / false = pending
- * exception. The getters that only read a slot are inline in
- * AnalyserValues.h. */
+ * IssetabilityDescriptor.cpp). The classes are final: an entry taking an
+ * instance answers natively for the native class entry and through the method
+ * for anything else (the PHP twin declared next to the native class in the
+ * differential tests). Every argument is borrowed, NULL for a null where
+ * noted; UNDEF / false = pending exception. The getters that only read a slot
+ * are inline in AnalyserValues.h. */
 
 extern zend_class_entry *pt_ce_impure_point;
-ZEND_COLD void pt_register_impure_point();
 /* new ImpurePoint($scope, $node, $identifier, $description, $certain) */
 zv::Val pt_impure_point_new(zval *scope, zval *node, zend_string *identifier, zend_string *description, bool certain);
 
 extern zend_class_entry *pt_ce_throw_point;
-ZEND_COLD void pt_register_throw_point();
 /* ThrowPoint::createExplicit($scope, $type, $node, $canContainAnyThrowable) /
  * ThrowPoint::createImplicit($scope, $node, $type) ($type NULL for null) */
 zv::Val pt_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable);
 zv::Val pt_throw_point_create_implicit(zval *scope, zval *node, zval *type = NULL);
 
 extern zend_class_entry *pt_ce_internal_throw_point;
-ZEND_COLD void pt_register_internal_throw_point();
 /* InternalThrowPoint::createExplicit(...) / ::createImplicit($scope, $node,
  * $type) ($type NULL for null) / ::createFromPublic($throwPoint, $scope) */
 zv::Val pt_internal_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable);
@@ -2121,7 +1891,6 @@ zv::Val pt_internal_throw_point_to_public(zval *throwPoint);
 zv::Val pt_internal_throw_point_subtract_catch_type(zval *throwPoint, zval *catchType);
 
 extern zend_class_entry *pt_ce_args_result;
-ZEND_COLD void pt_register_args_result();
 /* new ArgsResult($expressionResult, $resolvedParametersAcceptor, $argResults,
  * $byRefArguments) ($resolvedParametersAcceptor NULL for null,
  * $byRefArguments NULL for []) */
@@ -2131,7 +1900,6 @@ zv::Val pt_args_result_new(zval *expressionResult, zval *resolvedParametersAccep
 zv::Val pt_args_result_require_arg_result(zval *argsResult, zval *argValue);
 
 extern zend_class_entry *pt_ce_issetability_descriptor;
-ZEND_COLD void pt_register_issetability_descriptor();
 /* IssetabilityDescriptor::variable($variableName) / ::offset($varResult,
  * $dimResult) / ::property($innerResult, $reflectionResolver, $propertyFetch)
  * ($innerResult NULL for null; the resolver any callable — the twin's
@@ -2163,10 +1931,8 @@ zv::Val pt_mutating_scope_get_native_type(zend_object *scope, zval *expr);
 
 /* {{{ the statement results (StatementExitPoint.cpp, StatementResult.cpp,
  * EndStatementResult.cpp, InternalStatementExitPoint.cpp,
- * InternalStatementResult.cpp, InternalEndStatementResult.cpp) — registered
- * after the value classes above, the public ones before the internal ones
- * whose toPublic() return them. Conventions as above; the slot getters are
- * inline in AnalyserValues.h. */
+ * InternalStatementResult.cpp, InternalEndStatementResult.cpp). Conventions
+ * as above; the slot getters are inline in AnalyserValues.h. */
 
 extern zend_class_entry *pt_ce_statement_exit_point;
 extern zend_class_entry *pt_ce_statement_result;
@@ -2174,12 +1940,6 @@ extern zend_class_entry *pt_ce_end_statement_result;
 extern zend_class_entry *pt_ce_internal_statement_exit_point;
 extern zend_class_entry *pt_ce_internal_statement_result;
 extern zend_class_entry *pt_ce_internal_end_statement_result;
-ZEND_COLD void pt_register_statement_exit_point();
-ZEND_COLD void pt_register_statement_result();
-ZEND_COLD void pt_register_end_statement_result();
-ZEND_COLD void pt_register_internal_statement_exit_point();
-ZEND_COLD void pt_register_internal_statement_result();
-ZEND_COLD void pt_register_internal_end_statement_result();
 
 /* new StatementExitPoint($statement, $scope) / new EndStatementResult($statement,
  * $result) / new StatementResult($scope, $hasYield, $isAlwaysTerminating,
@@ -2222,11 +1982,10 @@ zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool 
 /* }}} */
 
 /* {{{ TemplateArgumentFrame.cpp, AssignTargetWalkMode.cpp,
- * PreparedAssignTarget.cpp — registered after the statement results.
- * Conventions as above; the slot getters are inline in AnalyserValues.h. */
+ * PreparedAssignTarget.cpp. Conventions as above; the slot getters are inline
+ * in AnalyserValues.h. */
 
 extern zend_class_entry *pt_ce_template_argument_frame;
-ZEND_COLD void pt_register_template_argument_frame();
 /* TemplateArgumentFrame::returnTypeOfCall($acceptor, $scope, $site,
  * $allowUnresolved) ($allowUnresolved -1 for null, else 0/1) */
 zv::Val pt_template_argument_frame_return_type_of_call(zval *acceptor, zval *scope, zval *site, int allowUnresolved = -1);
@@ -2247,13 +2006,11 @@ zv::Val pt_mutating_scope_get_current_template_argument_frame(zend_object *scope
 [[nodiscard]] bool pt_mutating_scope_native_types_promoted(zend_object *scope, bool &out);
 
 extern zend_class_entry *pt_ce_assign_target_walk_mode;
-ZEND_COLD void pt_register_assign_target_walk_mode();
 /* new AssignTargetWalkMode(...) — what assign() / virtualAssign() /
  * readModifyWrite() / coalesceReadModifyWrite() return fresh each call */
 zv::Val pt_assign_target_walk_mode_new(bool enterExpressionAssign, bool producesTargetReadResult, bool issetSemanticsForRead);
 
 extern zend_class_entry *pt_ce_prepared_assign_target;
-ZEND_COLD void pt_register_prepared_assign_target();
 /* new PreparedAssignTarget(...$argv): the constructor's positional
  * arguments in the twin's order (at least the 11 required ones), an
  * omitted or UNDEF optional one taking its default */
@@ -2261,22 +2018,16 @@ zv::Val pt_prepared_assign_target_new(uint32_t argc, zval *argv);
 
 /* }}} */
 
-/* {{{ RecordingNodeCallback.cpp — registered after the value classes above */
+/* {{{ RecordingNodeCallback.cpp */
 
 extern zend_class_entry *pt_ce_recording_node_callback;
-ZEND_COLD void pt_register_recording_node_callback();
 /* $callback($node, $scope) on an instance of the shadowing class: the pair
  * recorded (pt_type_call_callable() recognizes the class itself); false =
  * pending exception */
 [[nodiscard]] bool pt_recording_node_callback_record(zend_object *callback, zval *node, zval *scope);
 /* {{{ the analyser helper services (EarlyTerminatingCallHelper.cpp,
- * MethodCallReturnTypeHelper.cpp, MethodThrowPointHelper.cpp) — registered
- * at the END of the sequence (their signatures name MutatingScope, the Type
- * interface and PHP classes only) */
+ * MethodCallReturnTypeHelper.cpp, MethodThrowPointHelper.cpp) */
 
-ZEND_COLD void pt_register_early_terminating_call_helper();
-ZEND_COLD void pt_register_method_call_return_type_helper();
-ZEND_COLD void pt_register_method_throw_point_helper();
 
 /* MutatingScope.cpp — $scope->filterTypeWithMethod($type, $methodName) /
  * ->getMethodReflection($type, $methodName) / ->getStateType($expr) /
@@ -2303,20 +2054,13 @@ zv::Val pt_extensions_collection_get_all(zend_object *collection);
 
 /* {{{ the boolean narrowing cluster (ConditionalExpressionHolderRecipe.cpp,
  * DisjunctionBranchUnionAugment.cpp, DisjunctionHolderProjectionAugment.cpp,
- * ConditionalExpressionHolderHelper.cpp, BooleanNarrowingHelper.cpp) —
- * registered at the END of the sequence, the value classes before the
- * helpers constructing them */
+ * ConditionalExpressionHolderHelper.cpp, BooleanNarrowingHelper.cpp) */
 
 extern zend_class_entry *pt_ce_conditional_expression_holder_recipe;
 extern zend_class_entry *pt_ce_disjunction_branch_union_augment;
 extern zend_class_entry *pt_ce_disjunction_holder_projection_augment;
 extern zend_class_entry *pt_ce_conditional_expression_holder_helper;
 extern zend_class_entry *pt_ce_boolean_narrowing_helper;
-ZEND_COLD void pt_register_conditional_expression_holder_recipe();
-ZEND_COLD void pt_register_disjunction_branch_union_augment();
-ZEND_COLD void pt_register_disjunction_holder_projection_augment();
-ZEND_COLD void pt_register_conditional_expression_holder_helper();
-ZEND_COLD void pt_register_boolean_narrowing_helper();
 /* new ConditionalExpressionHolderRecipe($conditionEntries, $holderEntries,
  * $holdersFromSureTypes) / new DisjunctionBranchUnionAugment($nodeScopeResolver,
  * $defaultNarrowingHelper, $candidates) / new DisjunctionHolderProjectionAugment(
@@ -2344,11 +2088,9 @@ zv::Val pt_boolean_narrowing_helper_specify_disjunction(zend_object *helper, zva
 
 /* }}} */
 
-/* {{{ TypeSpecifier.cpp — the shadowing PHPStan\Analyser\TypeSpecifier,
- * registered at the END of the sequence */
+/* {{{ TypeSpecifier.cpp — the shadowing PHPStan\Analyser\TypeSpecifier */
 
 extern zend_class_entry *pt_ce_type_specifier;
-ZEND_COLD void pt_register_type_specifier();
 /* $typeSpecifier->specifyTypesInCondition($scope, $expr, $context) — the
  * native body for the shadowing class, the method otherwise (arguments
  * borrowed); UNDEF = pending exception */
@@ -2397,7 +2139,6 @@ zv::Val pt_specified_types_new_with_root_expr(zval *sureTypes, zval *sureNotType
  * for null; $chainResults the by-reference array, IS_REFERENCE or not);
  * UNDEF / false = pending exception */
 extern zend_class_entry *pt_ce_default_narrowing_helper;
-ZEND_COLD void pt_register_default_narrowing_helper();
 zv::Val pt_default_narrowing_helper_specify_types_for_node(zval *helper, zval *scope, zval *node, zval *context);
 zv::Val pt_default_narrowing_helper_specify_default_types(zval *helper, zval *expr, zval *context);
 zv::Val pt_default_narrowing_helper_specify_default_types_with_plain_twin(zval *helper, zval *expr, zval *exprResult, zval *context, zval *s);
@@ -2422,7 +2163,6 @@ zv::Val pt_default_narrowing_helper_specify_types_from_conditional_return_type(z
  * name otherwise (everything borrowed; a nullable argument NULL or IS_NULL
  * for null); UNDEF = pending exception */
 extern zend_class_entry *pt_ce_identical_narrowing_helper;
-ZEND_COLD void pt_register_identical_narrowing_helper();
 zv::Val pt_identical_narrowing_helper_specify_identical(zval *helper, zval *nodeScopeResolver, zval *left, zval *right, zval *leftResult, zval *rightResult, zval *context, zval *evaluationScope, zval *leftArgResult, zval *rightArgResult, zval *identicalTypeCallback);
 zv::Val pt_identical_narrowing_helper_specify_equal(zval *helper, zval *nodeScopeResolver, zval *left, zval *right, zval *leftResult, zval *rightResult, zval *context, zval *evaluationScope, zval *leftArgResult, zval *rightArgResult);
 zv::Val pt_identical_narrowing_helper_specify_identical_against_type(zval *helper, zval *subject, zval *subjectResult, zval *constantExpr, zval *constantType, zval *context, zval *evaluationScope, zval *subjectArgResult, zval *identicalTypeCallback);
@@ -2435,10 +2175,6 @@ extern zend_class_entry *pt_ce_statement_list_walk_state;
 extern zend_class_entry *pt_ce_non_nullability_helper;
 extern zend_class_entry *pt_ce_statements_handler;
 extern zend_class_entry *pt_ce_node_scope_resolver;
-ZEND_COLD void pt_register_statement_list_walk_state();
-ZEND_COLD void pt_register_non_nullability_helper();
-ZEND_COLD void pt_register_statements_handler();
-ZEND_COLD void pt_register_node_scope_resolver();
 
 /* NodeScopeResolver.cpp — $nodeScopeResolver->processExprNode(...) /
  * processStmtNode(...) / processStmtNodesInternal(...) /
@@ -2552,13 +2288,10 @@ zv::Val pt_variable_flow_all_mention_all();
 
 /* {{{ ChangedTypeMethodReflection.cpp, ResolvedMethodReflection.cpp — the
  * method reflections the member prototypes create (TypeTraits.cpp), which
- * every method call's reflection goes through; registered after the Type
- * family and ClassReflection, whose classes their signatures name */
+ * every method call's reflection goes through */
 
 extern zend_class_entry *pt_ce_changed_type_method_reflection;
 extern zend_class_entry *pt_ce_resolved_method_reflection;
-ZEND_COLD void pt_register_changed_type_method_reflection();
-ZEND_COLD void pt_register_resolved_method_reflection();
 /* new ChangedTypeMethodReflection(...) / new ResolvedMethodReflection(...)
  * (borrowed, already of the constructor's parameter types; NULL or IS_NULL
  * for a nullable null); UNDEF = pending exception */
@@ -2616,10 +2349,9 @@ zv::Val pt_class_reflection_get_display_name(zend_object *classReflection, bool 
 
 /* }}} */
 
-/* {{{ SimpleImpurePoint.cpp — registered after the method reflections */
+/* {{{ SimpleImpurePoint.cpp */
 
 extern zend_class_entry *pt_ce_simple_impure_point;
-ZEND_COLD void pt_register_simple_impure_point();
 /* new SimpleImpurePoint($identifier, $description, $certain); UNDEF =
  * pending exception */
 zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain);
@@ -2639,13 +2371,10 @@ struct pt_simple_impure_point_data
 
 /* }}} */
 
-/* {{{ MethodCallHandler.cpp, DynamicReturnTypeStoragePrimer.cpp — registered
- * after the method reflections and SimpleImpurePoint */
+/* {{{ MethodCallHandler.cpp, DynamicReturnTypeStoragePrimer.cpp */
 
 extern zend_class_entry *pt_ce_method_call_handler;
 extern zend_class_entry *pt_ce_dynamic_return_type_storage_primer;
-ZEND_COLD void pt_register_dynamic_return_type_storage_primer();
-ZEND_COLD void pt_register_method_call_handler();
 /* $popPrimedStorage = $primer->pushPrimedStorage($scope, $argsResult) and,
  * in the caller's finally, $popPrimedStorage(): the native primer pushes
  * and records whether it did (no closure), any other primer's method runs
@@ -2760,31 +2489,23 @@ zv::Val pt_variable_flow_choice(uint32_t argc, zval *argv);
  * $assignedValueResult / $assignedExprResult NULL for null); UNDEF = pending
  * exception */
 extern zend_class_entry *pt_ce_assign_handler;
-ZEND_COLD void pt_register_assign_handler();
 zv::Val pt_assign_handler_prepare_target(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *var, zval *assignedExpr, zval *nodeCallback, zval *context, zval *mode);
 zv::Val pt_assign_handler_apply_write(zval *handler, zval *nodeScopeResolver, zval *target, zval *valueResult, zval *assignedValueResult, zval *stmt, zval *storage, zval *nodeCallback, zval *context);
 zv::Val pt_assign_handler_process_virtual_assign(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *var, zval *assignedExpr, zval *nodeCallback, zval *assignedExprResult);
-/* AssignOpHandler.cpp — registered after AssignHandler */
+/* AssignOpHandler.cpp */
 extern zend_class_entry *pt_ce_assign_op_handler;
-ZEND_COLD void pt_register_assign_op_handler();
 
 /* }}} */
 
 /* {{{ the statement handlers (ExpressionHandler.cpp, ReturnHandler.cpp,
  * EchoHandler.cpp, BlockHandler.cpp, NopHandler.cpp) and the direct entries
- * they read through — registered at the END of the sequence (their
- * signatures name MutatingScope, the contexts and the statement results) */
+ * they read through */
 
 extern zend_class_entry *pt_ce_expression_handler;
 extern zend_class_entry *pt_ce_return_handler;
 extern zend_class_entry *pt_ce_echo_handler;
 extern zend_class_entry *pt_ce_block_handler;
 extern zend_class_entry *pt_ce_nop_handler;
-ZEND_COLD void pt_register_expression_handler();
-ZEND_COLD void pt_register_return_handler();
-ZEND_COLD void pt_register_echo_handler();
-ZEND_COLD void pt_register_block_handler();
-ZEND_COLD void pt_register_nop_handler();
 
 /* ExpressionResult.cpp — $result->getTruthyScope() / ->getFalseyScope()
  * (withScope() is declared with the walk hub's entries): the native body for
@@ -2825,14 +2546,11 @@ zv::Val pt_node_scope_resolver_collect_return_send(zval *nodeScopeResolver, zval
 
 /* {{{ the declaration statement handlers (ClassMethodHandler.cpp,
  * FunctionHandler.cpp, ClassLikeHandler.cpp) and the direct entries they
- * call — registered at the END of the sequence */
+ * call */
 
 extern zend_class_entry *pt_ce_class_method_handler;
 extern zend_class_entry *pt_ce_function_handler;
 extern zend_class_entry *pt_ce_class_like_handler;
-ZEND_COLD void pt_register_class_method_handler();
-ZEND_COLD void pt_register_function_handler();
-ZEND_COLD void pt_register_class_like_handler();
 
 /* MutatingScope.cpp — $scope->enterClassMethod(...$argv) (the 20 positional
  * arguments) / ->enterFunction(...$argv) (the 16 positional arguments) /
@@ -2883,18 +2601,15 @@ zv::Val pt_class_statements_gatherer_get(zval *gatherer, pt_class_statements_gat
 
 /* }}} */
 
-/* {{{ IfHandler.cpp — registered at the END of the sequence */
+/* {{{ IfHandler.cpp */
 
 extern zend_class_entry *pt_ce_if_handler;
-ZEND_COLD void pt_register_if_handler();
 
 /* }}} */
 
-/* {{{ StaticCallHandler.cpp — registered after MethodCallHandler; the call
- * handlers share CallHandlerSupport.h */
+/* {{{ StaticCallHandler.cpp — the call handlers share CallHandlerSupport.h */
 
 extern zend_class_entry *pt_ce_static_call_handler;
-ZEND_COLD void pt_register_static_call_handler();
 
 /* MutatingScope.cpp — $scope->resolveName($name) /
  * ->enterClosureBind($thisType, $nativeThisType, $scopeClasses) ($thisType /
@@ -2918,10 +2633,9 @@ zv::Val pt_type_specifier_get_static_method_type_specifying_extensions_for_class
 
 /* }}} */
 
-/* {{{ NewHandler.cpp — registered after StaticCallHandler */
+/* {{{ NewHandler.cpp */
 
 extern zend_class_entry *pt_ce_new_handler;
-ZEND_COLD void pt_register_new_handler();
 
 /* ClassReflection.cpp — $classReflection->isFinal() (false = pending
  * exception) / ->asFinal() / ->getTemplateTypeMap() /
@@ -2954,20 +2668,15 @@ zv::Val pt_template_type_map_map(zval *map, zval *cb);
 
 /* {{{ the VariableFlow subclasses (VariableAccessFlow.cpp,
  * VariableSequenceFlow.cpp, VariableInputFlow.cpp, VariableControlFlow.cpp):
- * final native subclasses of the native VariableFlow, registered after it.
- * The factories construct a fresh instance with every promoted slot written
- * (borrowed arguments; NULL for null, or [] for an array parameter); readers
- * compare the class entry and read ptdecl::Variable*Flow::slot in place.
- * UNDEF = pending exception */
+ * final native subclasses of the native VariableFlow. The factories construct
+ * a fresh instance with every promoted slot written (borrowed arguments; NULL
+ * for null, or [] for an array parameter); readers compare the class entry
+ * and read ptdecl::Variable*Flow::slot in place. UNDEF = pending exception */
 
 extern zend_class_entry *pt_ce_variable_access_flow;
 extern zend_class_entry *pt_ce_variable_sequence_flow;
 extern zend_class_entry *pt_ce_variable_input_flow;
 extern zend_class_entry *pt_ce_variable_control_flow;
-ZEND_COLD void pt_register_variable_access_flow();
-ZEND_COLD void pt_register_variable_sequence_flow();
-ZEND_COLD void pt_register_variable_input_flow();
-ZEND_COLD void pt_register_variable_control_flow();
 
 /* a constructor's assignment of a promoted readonly slot declared by
  * `declaring`: the engine's "Cannot modify readonly property" Error when the
@@ -3012,7 +2721,6 @@ zv::Val pt_variable_control_flow_new(zend_string *kind, const pt_variable_contro
  * pass $changed). The resulting scope, UNDEF = pending exception */
 
 extern zend_class_entry *pt_ce_var_annotation_processor;
-ZEND_COLD void pt_register_var_annotation_processor();
 zv::Val pt_var_annotation_processor_process_var_annotation(zval *processor, zval *scope, zval *variableNames, zval *node, bool *changed);
 /* {{{ the function-call cluster (FunctionReflectionAccess.cpp,
  * OutputBufferHelper.cpp, FuncCallScopeEffectsHelper.cpp) */
@@ -3046,21 +2754,18 @@ zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *o
  * native callers (the native body for the native class, the method by name
  * otherwise); ok = false / UNDEF = pending exception */
 extern zend_class_entry *pt_ce_output_buffer_helper;
-ZEND_COLD void pt_register_output_buffer_helper();
 zend_long pt_output_buffer_helper_get_level_delta(zval *helper, zend_string *functionName, bool &ok);
 zv::Val pt_output_buffer_helper_apply_level_delta(zval *helper, zval *nodeScopeResolver, zval *scope, zend_long delta);
 
 /* FuncCallScopeEffectsHelper.cpp — the same; $functionReflection /
  * $parametersAcceptor NULL (or IS_NULL) for null */
 extern zend_class_entry *pt_ce_func_call_scope_effects_helper;
-ZEND_COLD void pt_register_func_call_scope_effects_helper();
 zv::Val pt_func_call_scope_effects_helper_apply_array_walk_result(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *arrayWalkArrayArg, zval *arrayWalkValueTypes, zval *argsResult, zval *scope, zval *storage, zval *nodeCallback);
 zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback);
 
 /* FuncCallHandler.cpp — the shadowing class (processExpr() is its handler
  * entry) */
 extern zend_class_entry *pt_ce_func_call_handler;
-ZEND_COLD void pt_register_func_call_handler();
 
 /* TypeSpecifier.cpp — $typeSpecifier->getFunctionTypeSpecifyingExtensions();
  * EarlyTerminatingCallHelper.cpp —
@@ -3088,11 +2793,10 @@ zv::Val pt_reflection_provider_get_function(zval *provider, zval *nameNode, zval
 
 /* }}} */
 
-/* {{{ ArgumentsHandler.cpp — the shadowing PHPStan\Analyser\ArgumentsHandler,
- * registered at the END of the sequence */
+/* {{{ ArgumentsHandler.cpp — the shadowing
+ * PHPStan\Analyser\ArgumentsHandler */
 
 extern zend_class_entry *pt_ce_arguments_handler;
-ZEND_COLD void pt_register_arguments_handler();
 /* $argumentsHandler->processArgs($nodeScopeResolver, $stmt, $calleeReflection,
  * $nakedMethodReflection, $parametersAcceptors, $namedArgumentsVariants,
  * $callLike, $scope, $storage, $nodeCallback, $context,
@@ -3132,15 +2836,12 @@ zv::Val pt_type_utils_find_callable_type(zval *type);
 /* }}} */
 
 /* {{{ the parameter value classes (PassedByReference.cpp, DummyParameter.cpp,
- * ExtendedDummyParameter.cpp) — registered at the END of the sequence, the
- * parent before the child; the slot readers are inline in ParameterValues.h */
+ * ExtendedDummyParameter.cpp); the slot readers are inline in
+ * ParameterValues.h */
 
 extern zend_class_entry *pt_ce_passed_by_reference;
 extern zend_class_entry *pt_ce_dummy_parameter;
 extern zend_class_entry *pt_ce_extended_dummy_parameter;
-ZEND_COLD void pt_register_passed_by_reference();
-ZEND_COLD void pt_register_dummy_parameter();
-ZEND_COLD void pt_register_extended_dummy_parameter();
 /* the twin's private mode constants */
 #define PT_PASSED_BY_REFERENCE_NO 1
 #define PT_PASSED_BY_REFERENCE_READS_ARGUMENT 2
@@ -3172,11 +2873,10 @@ zv::Val pt_extended_dummy_parameter_new(uint32_t argc, zval *argv);
 
 /* }}} */
 
-/* {{{ ArgumentsNormalizer.cpp — the shadowing PHPStan\Analyser\ArgumentsNormalizer,
- * registered at the END of the sequence */
+/* {{{ ArgumentsNormalizer.cpp — the shadowing
+ * PHPStan\Analyser\ArgumentsNormalizer */
 
 extern zend_class_entry *pt_ce_arguments_normalizer;
-ZEND_COLD void pt_register_arguments_normalizer();
 /* ArgumentsNormalizer::reorderArgs($parametersAcceptor, $callArgs) (the list
  * or null) / ::reorderFuncArguments($acceptor, $functionCall) /
  * ::reorderMethodArguments($acceptor, $methodCall) /
@@ -3193,11 +2893,9 @@ zv::Val pt_arguments_normalizer_reorder_new_arguments(zval *parametersAcceptor, 
 /* }}} */
 
 /* {{{ ParametersAcceptorSelector.cpp — the shadowing
- * PHPStan\Reflection\ParametersAcceptorSelector, registered at the END of the
- * sequence */
+ * PHPStan\Reflection\ParametersAcceptorSelector */
 
 extern zend_class_entry *pt_ce_parameters_acceptor_selector;
-ZEND_COLD void pt_register_parameters_acceptor_selector();
 /* ParametersAcceptorSelector::selectFromArgs($scope, $args, $acceptors,
  * $namedArgumentsVariants) / ::selectFromTypes($types, $acceptors, $unpack) /
  * ::combineVariantsForNormalization($args, $variants, $namedArgumentsVariants)
@@ -3222,16 +2920,12 @@ zv::Val pt_parameters_acceptor_selector_apply_intrinsic_arg_overrides(zval *args
 
 /* {{{ the property fetch handlers (PropertyHookThrowPointsResolver.cpp,
  * PropertyFetchHandler.cpp, StaticPropertyFetchHandler.cpp,
- * NullsafePropertyFetchHandler.cpp) — registered after FuncCallHandler */
+ * NullsafePropertyFetchHandler.cpp) */
 
 extern zend_class_entry *pt_ce_property_hook_throw_points_resolver;
 extern zend_class_entry *pt_ce_property_fetch_handler;
 extern zend_class_entry *pt_ce_static_property_fetch_handler;
 extern zend_class_entry *pt_ce_nullsafe_property_fetch_handler;
-ZEND_COLD void pt_register_property_hook_throw_points_resolver();
-ZEND_COLD void pt_register_property_fetch_handler();
-ZEND_COLD void pt_register_static_property_fetch_handler();
-ZEND_COLD void pt_register_nullsafe_property_fetch_handler();
 
 /* $resolver->getThrowPointsFromPropertyHook($scope, $propertyFetch,
  * $propertyReflection, $hookName) — the native body for the shadowing class
@@ -3291,13 +2985,10 @@ zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScop
 
 /* }}} */
 
-/* {{{ ArrayDimFetchHandler.cpp, VariableWriteOffset.cpp — registered after
- * the property fetch handlers */
+/* {{{ ArrayDimFetchHandler.cpp, VariableWriteOffset.cpp */
 
 extern zend_class_entry *pt_ce_variable_write_offset;
 extern zend_class_entry *pt_ce_array_dim_fetch_handler;
-ZEND_COLD void pt_register_variable_write_offset();
-ZEND_COLD void pt_register_array_dim_fetch_handler();
 
 /* VariableWriteOffset::fromType($dimType): the int|string offset or PHP
  * null; UNDEF = pending exception */
@@ -3311,24 +3002,18 @@ zv::Val pt_array_dim_fetch_handler_compose_result(zval *handler, zval *nodeScope
 
 /* }}} */
 
-/* {{{ ConstFetchHandler.cpp, ClassConstFetchHandler.cpp — registered after
- * ArrayDimFetchHandler */
+/* {{{ ConstFetchHandler.cpp, ClassConstFetchHandler.cpp */
 
 extern zend_class_entry *pt_ce_const_fetch_handler;
 extern zend_class_entry *pt_ce_class_const_fetch_handler;
-ZEND_COLD void pt_register_const_fetch_handler();
-ZEND_COLD void pt_register_class_const_fetch_handler();
 
 /* }}} */
 
 /* {{{ AttributesHandler.cpp, ParametersProcessor.cpp — the shadowing
- * PHPStan\Analyser\AttributesHandler / ParametersProcessor, registered at the
- * END of the sequence (the processor after the handler its constructor names) */
+ * PHPStan\Analyser\AttributesHandler / ParametersProcessor */
 
 extern zend_class_entry *pt_ce_attributes_handler;
 extern zend_class_entry *pt_ce_parameters_processor;
-ZEND_COLD void pt_register_attributes_handler();
-ZEND_COLD void pt_register_parameters_processor();
 /* $attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt,
  * $attrGroups, $scope, $storage, $nodeCallback) /
  * $parametersProcessor->processParams($nodeScopeResolver, $stmt, $params,
@@ -3342,15 +3027,11 @@ ZEND_COLD void pt_register_parameters_processor();
 
 /* {{{ ContextualClosureParameterResolver.cpp, ClosureParameterResolver.cpp,
  * ClosureTypeResolver.cpp — the shadowing closure resolvers of
- * PHPStan\Analyser\ExprHandler\Helper, registered at the END of the sequence
- * (their signatures name the walk hub, MutatingScope and the Type interface) */
+ * PHPStan\Analyser\ExprHandler\Helper */
 
 extern zend_class_entry *pt_ce_contextual_closure_parameter_resolver;
 extern zend_class_entry *pt_ce_closure_parameter_resolver;
 extern zend_class_entry *pt_ce_closure_type_resolver;
-ZEND_COLD void pt_register_contextual_closure_parameter_resolver();
-ZEND_COLD void pt_register_closure_type_resolver();
-ZEND_COLD void pt_register_closure_parameter_resolver();
 /* $contextualClosureParameterResolver->hasIntrinsicArgs($expr) /
  * ->resolve($scope, $expr, $storage, $passedToType, $nativePassedToType) and
  * $closureParameterResolver->resolve($scope, $expr, $storage, $callArgs,
@@ -3400,20 +3081,13 @@ zv::Val pt_native_parameter_reflection_union(zval *parameter, zval *other);
 
 /* {{{ ProcessClosureResult.cpp, ProcessArrowFunctionResult.cpp,
  * ClosureProcessor.cpp, ClosureHandler.cpp, ArrowFunctionHandler.cpp — the
- * shadowing closure walk, registered at the END of the sequence (the result
- * classes before the processor whose signatures name them, the handlers
- * after the processor their constructors name) */
+ * shadowing closure walk */
 
 extern zend_class_entry *pt_ce_process_closure_result;
 extern zend_class_entry *pt_ce_process_arrow_function_result;
 extern zend_class_entry *pt_ce_closure_processor;
 extern zend_class_entry *pt_ce_closure_handler;
 extern zend_class_entry *pt_ce_arrow_function_handler;
-ZEND_COLD void pt_register_process_closure_result();
-ZEND_COLD void pt_register_process_arrow_function_result();
-ZEND_COLD void pt_register_closure_processor();
-ZEND_COLD void pt_register_closure_handler();
-ZEND_COLD void pt_register_arrow_function_handler();
 /* new ProcessClosureResult(...) / new ProcessArrowFunctionResult(...) (every
  * argument borrowed and of the constructor's type; $byRefClosureResultScope
  * NULL or IS_NULL for null, $byRefUses NULL for []); the slot readers are in
@@ -3461,17 +3135,12 @@ zv::Val pt_variable_flow_arrow(zval *arrow, zval *body, zval *outputs);
 /* }}} */
 
 /* {{{ the operator handlers: BooleanAndHandler.cpp, BooleanOrHandler.cpp,
- * BooleanNotHandler.cpp, TernaryHandler.cpp (OperatorHandlers.h) —
- * registered after the statement and call handlers */
+ * BooleanNotHandler.cpp, TernaryHandler.cpp (OperatorHandlers.h) */
 
 extern zend_class_entry *pt_ce_boolean_and_handler;
 extern zend_class_entry *pt_ce_boolean_or_handler;
 extern zend_class_entry *pt_ce_boolean_not_handler;
 extern zend_class_entry *pt_ce_ternary_handler;
-ZEND_COLD void pt_register_boolean_and_handler();
-ZEND_COLD void pt_register_boolean_or_handler();
-ZEND_COLD void pt_register_boolean_not_handler();
-ZEND_COLD void pt_register_ternary_handler();
 /* $ternaryHandler->getCapturedResults($expr): [$condResult, $ifResult,
  * $elseResult] or null — the native body for the native class, the method
  * otherwise (borrowed); UNDEF = pending exception */
@@ -3487,21 +3156,17 @@ zv::Val pt_expression_result_get_specified_types(zval *result, zval *context, bo
 
 /* }}} */
 
-/* {{{ BinaryOpHandler.cpp (OperatorHandlers.h) — registered after the
- * boolean operator handlers */
+/* {{{ BinaryOpHandler.cpp (OperatorHandlers.h) */
 
 extern zend_class_entry *pt_ce_binary_op_handler;
-ZEND_COLD void pt_register_binary_op_handler();
 
 /* }}} */
 
-/* {{{ CoalesceHandler.cpp, CoalesceCompositionHelper.cpp (OperatorHandlers.h)
- * — registered after the binary operator handler */
+/* {{{ CoalesceHandler.cpp, CoalesceCompositionHelper.cpp
+ * (OperatorHandlers.h) */
 
 extern zend_class_entry *pt_ce_coalesce_composition_helper;
 extern zend_class_entry *pt_ce_coalesce_handler;
-ZEND_COLD void pt_register_coalesce_composition_helper();
-ZEND_COLD void pt_register_coalesce_handler();
 /* $helper->getFalseySpecifiedTypes($s, $evaluationScope, $leftExpr,
  * $leftResult, $rootExpr, $context) / ->getRightSideScopeSpecifiedTypes($s,
  * $leftExpr, $leftResult, $chainResults, $rootExpr) / ->composeType(
@@ -3518,27 +3183,17 @@ zv::Val pt_coalesce_composition_helper_compose_type(zval *helper, zval *nodeScop
 /* {{{ the loop and control-flow statement handlers (BreakContinueHandler.cpp,
  * LabelHandler.cpp, GotoHandler.cpp, WhileHandler.cpp, DoWhileHandler.cpp,
  * ForHandler.cpp, SwitchHandler.cpp, TryCatchHandler.cpp, ForeachHandler.cpp)
- * and the direct entries they added to their collaborators — registered at
- * the END of the sequence */
+ * and the direct entries they added to their collaborators */
 
 extern zend_class_entry *pt_ce_break_continue_handler;
 extern zend_class_entry *pt_ce_label_handler;
 extern zend_class_entry *pt_ce_goto_handler;
-ZEND_COLD void pt_register_break_continue_handler();
-ZEND_COLD void pt_register_label_handler();
-ZEND_COLD void pt_register_goto_handler();
 extern zend_class_entry *pt_ce_while_handler;
 extern zend_class_entry *pt_ce_do_while_handler;
 extern zend_class_entry *pt_ce_for_handler;
-ZEND_COLD void pt_register_while_handler();
-ZEND_COLD void pt_register_do_while_handler();
-ZEND_COLD void pt_register_for_handler();
 extern zend_class_entry *pt_ce_switch_handler;
 extern zend_class_entry *pt_ce_try_catch_handler;
-ZEND_COLD void pt_register_switch_handler();
-ZEND_COLD void pt_register_try_catch_handler();
 extern zend_class_entry *pt_ce_foreach_handler;
-ZEND_COLD void pt_register_foreach_handler();
 
 /* VariableFlow.cpp — VariableFlow::all(VariableFlow::OPAQUE) /
  * ::loop($condition, $body, $update, $atLeastOnce, $canExit, $canRepeat) /
@@ -3586,17 +3241,12 @@ zv::Val pt_node_scope_resolver_narrow_scope_with_condition(zval *nodeScopeResolv
 
 /* {{{ PhpDocsResolver.cpp, DeprecatedAttributeResolver.cpp,
  * PropertyHooksProcessor.cpp, CalledMethodProcessor.cpp — the declaration
- * processors, registered after the declaration handlers (the processors
- * before the ones whose constructors name them) */
+ * processors */
 
 extern zend_class_entry *pt_ce_php_docs_resolver;
 extern zend_class_entry *pt_ce_deprecated_attribute_resolver;
 extern zend_class_entry *pt_ce_property_hooks_processor;
 extern zend_class_entry *pt_ce_called_method_processor;
-ZEND_COLD void pt_register_php_docs_resolver();
-ZEND_COLD void pt_register_deprecated_attribute_resolver();
-ZEND_COLD void pt_register_property_hooks_processor();
-ZEND_COLD void pt_register_called_method_processor();
 
 /* $phpDocsResolver->getPhpDocs($scope, $node) without the array: the 21
  * values of the twin's list, owned. For the shadowing class every item is
@@ -3700,8 +3350,7 @@ extern zend_class_entry *pt_ce_node_traverser;
 
 /* {{{ PropertyHandler.cpp, ClassConstHandler.cpp, ConstHandler.cpp,
  * EnumCaseHandler.cpp, TraitUseHandler.cpp, TraitHandler.cpp — the
- * declaration statement handlers, registered after the declaration
- * processors their constructors name */
+ * declaration statement handlers */
 
 extern zend_class_entry *pt_ce_property_handler;
 extern zend_class_entry *pt_ce_class_const_handler;
@@ -3709,20 +3358,13 @@ extern zend_class_entry *pt_ce_const_handler;
 extern zend_class_entry *pt_ce_enum_case_handler;
 extern zend_class_entry *pt_ce_trait_use_handler;
 extern zend_class_entry *pt_ce_trait_handler;
-ZEND_COLD void pt_register_property_handler();
-ZEND_COLD void pt_register_class_const_handler();
-ZEND_COLD void pt_register_const_handler();
-ZEND_COLD void pt_register_enum_case_handler();
-ZEND_COLD void pt_register_trait_use_handler();
-ZEND_COLD void pt_register_trait_handler();
 
 /* }}} */
 
 /* {{{ NamespaceHandler.cpp, UseHandler.cpp, GroupUseHandler.cpp,
  * DeclareHandler.cpp, InlineHtmlHandler.cpp, GlobalHandler.cpp,
  * StaticVariableHandler.cpp, UnsetHandler.cpp — the remaining statement
- * handlers, registered after VarAnnotationProcessor and AssignHandler their
- * constructors name */
+ * handlers */
 
 extern zend_class_entry *pt_ce_namespace_handler;
 extern zend_class_entry *pt_ce_use_handler;
@@ -3732,14 +3374,6 @@ extern zend_class_entry *pt_ce_inline_html_handler;
 extern zend_class_entry *pt_ce_global_handler;
 extern zend_class_entry *pt_ce_static_variable_handler;
 extern zend_class_entry *pt_ce_unset_handler;
-ZEND_COLD void pt_register_namespace_handler();
-ZEND_COLD void pt_register_use_handler();
-ZEND_COLD void pt_register_group_use_handler();
-ZEND_COLD void pt_register_declare_handler();
-ZEND_COLD void pt_register_inline_html_handler();
-ZEND_COLD void pt_register_global_handler();
-ZEND_COLD void pt_register_static_variable_handler();
-ZEND_COLD void pt_register_unset_handler();
 /* VariableFlow.cpp — VariableFlow::discard($write) (borrowed); UNDEF =
  * pending exception */
 zv::Val pt_variable_flow_discard(zval *write);
@@ -3747,9 +3381,9 @@ zv::Val pt_variable_flow_discard(zval *write);
 /* }}} */
 
 /* {{{ the unary, cast and string expression handlers (CastHandler.cpp,
- * CastStringHandler.cpp, InterpolatedStringHandler.cpp, UnaryMinusHandler.cpp,
- * UnaryPlusHandler.cpp, BitwiseNotHandler.cpp — SimpleExprHandlers.h) and
- * ImplicitToStringCallHelper.cpp — registered at the END of the sequence */
+ * CastStringHandler.cpp, InterpolatedStringHandler.cpp,
+ * UnaryMinusHandler.cpp, UnaryPlusHandler.cpp, BitwiseNotHandler.cpp —
+ * SimpleExprHandlers.h) and ImplicitToStringCallHelper.cpp */
 
 extern zend_class_entry *pt_ce_implicit_to_string_call_helper;
 extern zend_class_entry *pt_ce_cast_handler;
@@ -3758,13 +3392,6 @@ extern zend_class_entry *pt_ce_interpolated_string_handler;
 extern zend_class_entry *pt_ce_unary_minus_handler;
 extern zend_class_entry *pt_ce_unary_plus_handler;
 extern zend_class_entry *pt_ce_bitwise_not_handler;
-ZEND_COLD void pt_register_implicit_to_string_call_helper();
-ZEND_COLD void pt_register_cast_handler();
-ZEND_COLD void pt_register_cast_string_handler();
-ZEND_COLD void pt_register_interpolated_string_handler();
-ZEND_COLD void pt_register_unary_minus_handler();
-ZEND_COLD void pt_register_unary_plus_handler();
-ZEND_COLD void pt_register_bitwise_not_handler();
 
 /* $implicitToStringCallHelper->processImplicitToStringCall($expr, $scope,
  * $exprResult): the native body for the native class, the method otherwise
@@ -3778,20 +3405,15 @@ zv::Val pt_mutating_scope_obtain_result_for_node(zend_object *scope, zend_object
 
 /* }}} */
 
-/* {{{ the increment / decrement handlers (PreIncHandler.cpp, PreDecHandler.cpp,
- * PostIncHandler.cpp, PostDecHandler.cpp — SimpleExprHandlers.h) and
- * IncDecTypeHelper.cpp — registered at the END of the sequence */
+/* {{{ the increment / decrement handlers (PreIncHandler.cpp,
+ * PreDecHandler.cpp, PostIncHandler.cpp, PostDecHandler.cpp —
+ * SimpleExprHandlers.h) and IncDecTypeHelper.cpp */
 
 extern zend_class_entry *pt_ce_inc_dec_type_helper;
 extern zend_class_entry *pt_ce_pre_inc_handler;
 extern zend_class_entry *pt_ce_pre_dec_handler;
 extern zend_class_entry *pt_ce_post_inc_handler;
 extern zend_class_entry *pt_ce_post_dec_handler;
-ZEND_COLD void pt_register_inc_dec_type_helper();
-ZEND_COLD void pt_register_pre_inc_handler();
-ZEND_COLD void pt_register_pre_dec_handler();
-ZEND_COLD void pt_register_post_inc_handler();
-ZEND_COLD void pt_register_post_dec_handler();
 
 /* $incDecTypeHelper->getTypeCallback($varExpr, $varResult, $increment): the
  * native closure holder for the native class (callable wherever the twin's
@@ -3803,9 +3425,9 @@ zv::Val pt_inc_dec_type_helper_get_type_callback(zval *helper, zval *varExpr, zv
 
 /* {{{ the clone, eval, exit, include, print, shell-exec, throw,
  * error-suppress and pipe handlers (CloneHandler.cpp, EvalHandler.cpp,
- * ExitHandler.cpp, IncludeHandler.cpp, PrintHandler.cpp, ShellExecHandler.cpp,
- * ThrowHandler.cpp, ErrorSuppressHandler.cpp, PipeHandler.cpp —
- * SimpleExprHandlers.h) — registered at the END of the sequence */
+ * ExitHandler.cpp, IncludeHandler.cpp, PrintHandler.cpp,
+ * ShellExecHandler.cpp, ThrowHandler.cpp, ErrorSuppressHandler.cpp,
+ * PipeHandler.cpp — SimpleExprHandlers.h) */
 
 extern zend_class_entry *pt_ce_clone_handler;
 extern zend_class_entry *pt_ce_eval_handler;
@@ -3816,15 +3438,6 @@ extern zend_class_entry *pt_ce_shell_exec_handler;
 extern zend_class_entry *pt_ce_throw_handler;
 extern zend_class_entry *pt_ce_error_suppress_handler;
 extern zend_class_entry *pt_ce_pipe_handler;
-ZEND_COLD void pt_register_clone_handler();
-ZEND_COLD void pt_register_eval_handler();
-ZEND_COLD void pt_register_exit_handler();
-ZEND_COLD void pt_register_include_handler();
-ZEND_COLD void pt_register_print_handler();
-ZEND_COLD void pt_register_shell_exec_handler();
-ZEND_COLD void pt_register_throw_handler();
-ZEND_COLD void pt_register_error_suppress_handler();
-ZEND_COLD void pt_register_pipe_handler();
 
 /* CloneHandler::resolveCloneType($exprType) (borrowed); UNDEF = pending
  * exception */
@@ -3833,15 +3446,11 @@ zv::Val pt_clone_handler_resolve_clone_type(zval *exprType);
 /* }}} */
 
 /* {{{ the yield handlers (YieldHandler.cpp, YieldFromHandler.cpp —
- * SimpleExprHandlers.h) and CountNarrowingHelper.cpp — registered at the END
- * of the sequence */
+ * SimpleExprHandlers.h) and CountNarrowingHelper.cpp */
 
 extern zend_class_entry *pt_ce_yield_handler;
 extern zend_class_entry *pt_ce_yield_from_handler;
 extern zend_class_entry *pt_ce_count_narrowing_helper;
-ZEND_COLD void pt_register_yield_handler();
-ZEND_COLD void pt_register_yield_from_handler();
-ZEND_COLD void pt_register_count_narrowing_helper();
 
 /* $countNarrowingHelper->isNormalCountCall($countFuncCall, $typeToCount,
  * $scope): the PT_TRI_* value of the answer, -1 = pending exception /
@@ -3852,9 +3461,9 @@ ZEND_COLD void pt_register_count_narrowing_helper();
 zend_long pt_count_narrowing_helper_is_normal_count_call(zval *helper, zval *countFuncCall, zval *typeToCount, zval *scope);
 zv::Val pt_count_narrowing_helper_specify_count_size(zval *helper, zval *countFuncCall, zval *type, zval *sizeType, zval *context, zval *scope, zval *rootExpr);
 
-/* {{{ the virtual expression handlers (ExprHandler\Virtual\*: AlwaysRememberedExprHandler.cpp
- * ... UnsetOffsetExprHandler.cpp) and VirtualExprResultHelper.cpp — registered
- * at the END of the sequence */
+/* {{{ the virtual expression handlers (ExprHandler\Virtual\*:
+ * AlwaysRememberedExprHandler.cpp ... UnsetOffsetExprHandler.cpp) and
+ * VirtualExprResultHelper.cpp */
 
 extern zend_class_entry *pt_ce_virtual_expr_result_helper;
 extern zend_class_entry *pt_ce_type_expr_handler;
@@ -3866,16 +3475,6 @@ extern zend_class_entry *pt_ce_isset_expr_handler;
 extern zend_class_entry *pt_ce_possibly_impure_call_expr_handler;
 extern zend_class_entry *pt_ce_set_existing_offset_value_type_expr_handler;
 extern zend_class_entry *pt_ce_set_offset_value_type_expr_handler;
-ZEND_COLD void pt_register_virtual_expr_result_helper();
-ZEND_COLD void pt_register_type_expr_handler();
-ZEND_COLD void pt_register_native_type_expr_handler();
-ZEND_COLD void pt_register_unset_offset_expr_handler();
-ZEND_COLD void pt_register_always_remembered_expr_handler();
-ZEND_COLD void pt_register_existing_array_dim_fetch_handler();
-ZEND_COLD void pt_register_isset_expr_handler();
-ZEND_COLD void pt_register_possibly_impure_call_expr_handler();
-ZEND_COLD void pt_register_set_existing_offset_value_type_expr_handler();
-ZEND_COLD void pt_register_set_offset_value_type_expr_handler();
 
 /* VirtualExprResultHelper.cpp — $helper->createTypeExprResult($scope, $expr)
  * / ->createUnsetOffsetExprResult($scope, $expr, $varResult, $dimResult): the
@@ -3888,36 +3487,24 @@ extern zend_class_entry *pt_ce_function_callable_node_handler;
 extern zend_class_entry *pt_ce_method_callable_node_handler;
 extern zend_class_entry *pt_ce_static_method_callable_node_handler;
 extern zend_class_entry *pt_ce_instantiation_callable_node_handler;
-ZEND_COLD void pt_register_function_callable_node_handler();
-ZEND_COLD void pt_register_method_callable_node_handler();
-ZEND_COLD void pt_register_static_method_callable_node_handler();
-ZEND_COLD void pt_register_instantiation_callable_node_handler();
 
 /* }}} */
 
-/* {{{ InstanceofHandler.cpp, ArrayHandler.cpp — registered at the END of the
- * sequence */
+/* {{{ InstanceofHandler.cpp, ArrayHandler.cpp */
 
 extern zend_class_entry *pt_ce_instanceof_handler;
 extern zend_class_entry *pt_ce_array_handler;
-ZEND_COLD void pt_register_instanceof_handler();
-ZEND_COLD void pt_register_array_handler();
 
 /* }}} */
 
-/* {{{ EnsuredNonNullabilityResult.cpp, EnsuredNonNullabilityResultExpression.cpp,
- * IssetabilityLinkInfo.cpp, IssetabilityResolution.cpp — registered after
- * ArrayHandler (their signatures name MutatingScope, TrinaryLogic and the
- * Type family); the readers are in AnalyserValues.h */
+/* {{{ EnsuredNonNullabilityResult.cpp,
+ * EnsuredNonNullabilityResultExpression.cpp, IssetabilityLinkInfo.cpp,
+ * IssetabilityResolution.cpp; the readers are in AnalyserValues.h */
 
 extern zend_class_entry *pt_ce_ensured_non_nullability_result;
 extern zend_class_entry *pt_ce_ensured_non_nullability_result_expression;
 extern zend_class_entry *pt_ce_issetability_link_info;
 extern zend_class_entry *pt_ce_issetability_resolution;
-ZEND_COLD void pt_register_ensured_non_nullability_result();
-ZEND_COLD void pt_register_ensured_non_nullability_result_expression();
-ZEND_COLD void pt_register_issetability_link_info();
-ZEND_COLD void pt_register_issetability_resolution();
 
 /* new EnsuredNonNullabilityResult($scope, $specifiedExpressions) / new
  * EnsuredNonNullabilityResultExpression($expression, $originalType,
@@ -3955,22 +3542,17 @@ zv::Val pt_issetability_resolution_not_empty(zval *resolution);
 
 /* }}} */
 
-/* {{{ IssetHandler.cpp, EmptyHandler.cpp, NullsafeMethodCallHandler.cpp —
- * registered after IssetabilityResolution */
+/* {{{ IssetHandler.cpp, EmptyHandler.cpp, NullsafeMethodCallHandler.cpp */
 
 extern zend_class_entry *pt_ce_isset_handler;
 extern zend_class_entry *pt_ce_empty_handler;
 extern zend_class_entry *pt_ce_nullsafe_method_call_handler;
-ZEND_COLD void pt_register_isset_handler();
-ZEND_COLD void pt_register_empty_handler();
-ZEND_COLD void pt_register_nullsafe_method_call_handler();
 
 /* }}} */
 
-/* {{{ MatchHandler.cpp — registered after NullsafeMethodCallHandler */
+/* {{{ MatchHandler.cpp */
 
 extern zend_class_entry *pt_ce_match_handler;
-ZEND_COLD void pt_register_match_handler();
 
 /* $matchHandler->getCapturedArmScopesAndTypes($expr): the native body for
  * the native class, the method otherwise; the list of [scope, type] pairs or
@@ -3985,13 +3567,10 @@ zv::Val pt_mutating_scope_enter_match(zend_object *scope, zend_object *expr, zva
 zv::Val pt_mutating_scope_add_type_to_expression(zend_object *scope, zend_object *expr, zval *type);
 zv::Val pt_mutating_scope_remove_type_from_expression(zend_object *scope, zend_object *expr, zval *typeToRemove);
 /* {{{ PhpParameterReflection.cpp, ExtendedNativeParameterReflection.cpp —
- * the parameter reflections of userland and built-in functions, registered
- * after the parameter value classes (PassedByReference, DummyParameter) */
+ * the parameter reflections of userland and built-in functions */
 
 extern zend_class_entry *pt_ce_php_parameter_reflection;
 extern zend_class_entry *pt_ce_extended_native_parameter_reflection;
-ZEND_COLD void pt_register_php_parameter_reflection();
-ZEND_COLD void pt_register_extended_native_parameter_reflection();
 /* the ParameterReflection / ExtendedParameterReflection interfaces' methods */
 enum pt_parameter_reflection_member
 {
@@ -4032,20 +3611,15 @@ zv::Val pt_extended_native_parameter_reflection_new(uint32_t argc, zval *argv);
 /* }}} */
 
 /* {{{ FunctionVariant.cpp, ExtendedFunctionVariant.cpp,
- * ExtendedCallableFunctionVariant.cpp, ResolvedFunctionVariantWithOriginal.cpp,
- * TrivialParametersAcceptor.cpp — the parameters acceptors, registered after
- * the parameter reflections (the parent variants before their children) */
+ * ExtendedCallableFunctionVariant.cpp,
+ * ResolvedFunctionVariantWithOriginal.cpp, TrivialParametersAcceptor.cpp —
+ * the parameters acceptors */
 
 extern zend_class_entry *pt_ce_function_variant;
 extern zend_class_entry *pt_ce_extended_function_variant;
 extern zend_class_entry *pt_ce_extended_callable_function_variant;
 extern zend_class_entry *pt_ce_resolved_function_variant_with_original;
 extern zend_class_entry *pt_ce_trivial_parameters_acceptor;
-ZEND_COLD void pt_register_function_variant();
-ZEND_COLD void pt_register_extended_function_variant();
-ZEND_COLD void pt_register_extended_callable_function_variant();
-ZEND_COLD void pt_register_resolved_function_variant_with_original();
-ZEND_COLD void pt_register_trivial_parameters_acceptor();
 /* the ParametersAcceptor / ExtendedParametersAcceptor / ResolvedFunctionVariant
  * / CallableParametersAcceptor methods without arguments */
 enum pt_parameters_acceptor_member
@@ -4111,11 +3685,9 @@ zv::Val pt_trivial_parameters_acceptor_new(zend_string *callableName = NULL);
 
 /* }}} */
 
-/* {{{ Assertions.cpp — the @phpstan-assert tags of a function or method,
- * registered after the parameters acceptors */
+/* {{{ Assertions.cpp — the @phpstan-assert tags of a function or method */
 
 extern zend_class_entry *pt_ce_assertions;
-ZEND_COLD void pt_register_assertions();
 /* Assertions::createEmpty() / ::createFromResolvedPhpDocBlock($phpDocBlock)
  * (borrowed); UNDEF = pending exception */
 zv::Val pt_assertions_create_empty();
@@ -4165,11 +3737,9 @@ zv::Val pt_php_class_reflection_extension_get_native_method(zend_object *extensi
 
 /* }}} */
 
-/* {{{ NodeCallbackScope.cpp — registered after MatchHandler (its parent
- * MutatingScope is registered long before) */
+/* {{{ NodeCallbackScope.cpp */
 
 extern zend_class_entry *pt_ce_node_callback_scope;
-ZEND_COLD void pt_register_node_callback_scope();
 
 /* the native class's bodies for a receiver of exactly that class (the
  * dispatching pt_mutating_scope_* entries route NodeCallbackScope receivers
@@ -4205,11 +3775,9 @@ zv::Val pt_mutating_scope_parent_get_parent_scope(zend_object *scope);
 zv::Val pt_mutating_scope_create_walk_scope(zend_object *scope);
 zv::Val pt_mutating_scope_filter_by_value(zend_object *scope, zend_object *expr, bool truthy);
 /* {{{ InitializerExprTypeResolver.cpp — the shadowing
- * PHPStan\Reflection\InitializerExprTypeResolver (a final DI service),
- * registered after Assertions */
+ * PHPStan\Reflection\InitializerExprTypeResolver (a final DI service) */
 
 extern zend_class_entry *pt_ce_initializer_expr_type_resolver;
-ZEND_COLD void pt_register_initializer_expr_type_resolver();
 /* the twin's public const CALCULATE_SCALARS_LIMIT — the one place the native
  * code reads it from (the class constant is declared with the same value) */
 #define PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT 128
@@ -4280,11 +3848,9 @@ zv::Val pt_initializer_expr_type_resolver_get_bitwise_not_type(zval *resolver, z
 /* }}} */
 
 /* {{{ InitializerExprContext.cpp — the context a constant expression is
- * priced in; registered after the assertions (its signatures name the Scope
- * interface, ClassReflection and PHP classes only) */
+ * priced in */
 
 extern zend_class_entry *pt_ce_initializer_expr_context;
-ZEND_COLD void pt_register_initializer_expr_context();
 /* InitializerExprContext::fromScope($scope) / ::fromClassReflection($classReflection)
  * / ::fromClass($className, $fileName) / ::fromFunction($functionName, $fileName)
  * / ::fromClassMethod($className, $traitName, $methodName, $fileName) /
@@ -4308,16 +3874,11 @@ zv::Val pt_initializer_expr_context_create_empty();
 
 /* {{{ the template argument inference of the two-pass body walk
  * (TemplateArgumentConstraints.cpp, TemplateArgumentObserver.cpp,
- * TemplateArgumentResolver.cpp), registered after the initializer
- * expression context — their signatures name the Type interface, the
- * template machinery, TemplateArgumentFrame and PHP classes only */
+ * TemplateArgumentResolver.cpp) */
 
 extern zend_class_entry *pt_ce_template_argument_constraints;
 extern zend_class_entry *pt_ce_template_argument_observer;
 extern zend_class_entry *pt_ce_template_argument_resolver;
-ZEND_COLD void pt_register_template_argument_constraints();
-ZEND_COLD void pt_register_template_argument_observer();
-ZEND_COLD void pt_register_template_argument_resolver();
 /* TemplateArgumentConstraints::createEmpty() (a fresh instance, as the
  * twin's `new self()`) / $constraints->isEmpty() / ->merge($other) /
  * ->withSite($marker) / ->withSend($marker, $type, $variance) /
@@ -4354,17 +3915,11 @@ zv::Val pt_template_argument_resolver_resolve(zval *resolver, zval *constraints,
 /* }}} */
 
 /* {{{ the analyser helpers RicherScopeGetTypeHelper.cpp,
- * NullsafeOperatorHelper.cpp and LoopWrittenVariableNames.cpp, registered
- * after the template argument inference (their signatures name the Scope
- * interface, php-parser, the Type interface, NodeScopeResolver and
- * VariableFlow) */
+ * NullsafeOperatorHelper.cpp and LoopWrittenVariableNames.cpp */
 
 extern zend_class_entry *pt_ce_richer_scope_get_type_helper;
 extern zend_class_entry *pt_ce_nullsafe_operator_helper;
 extern zend_class_entry *pt_ce_loop_written_variable_names;
-ZEND_COLD void pt_register_richer_scope_get_type_helper();
-ZEND_COLD void pt_register_nullsafe_operator_helper();
-ZEND_COLD void pt_register_loop_written_variable_names();
 /* $helper->getIdenticalResult($scope, $expr, $nodeScopeResolver, $leftType,
  * $rightType) / ->getNotIdenticalResult(...) ($nodeScopeResolver, $leftType,
  * $rightType NULL or IS_NULL for null): the native body for the native
@@ -4480,15 +4035,11 @@ zv::Val pt_member_adapter_get_declaring_class_name(zval *adapter);
 /* }}} */
 
 /* {{{ the property reflections (PhpPropertyReflection.cpp,
- * ChangedTypePropertyReflection.cpp, ResolvedPropertyReflection.cpp) —
- * registered at the END of the sequence */
+ * ChangedTypePropertyReflection.cpp, ResolvedPropertyReflection.cpp) */
 
 extern zend_class_entry *pt_ce_php_property_reflection;
 extern zend_class_entry *pt_ce_changed_type_property_reflection;
 extern zend_class_entry *pt_ce_resolved_property_reflection;
-ZEND_COLD void pt_register_php_property_reflection();
-ZEND_COLD void pt_register_changed_type_property_reflection();
-ZEND_COLD void pt_register_resolved_property_reflection();
 
 /* the ExtendedPropertyReflection interface's methods without arguments */
 enum pt_property_reflection_member

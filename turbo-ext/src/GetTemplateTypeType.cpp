@@ -271,7 +271,7 @@ zv::Val pt_get_template_type_type_new(zval *type, zend_string *ancestorClassName
 
 #define PT_THIS GetTemplateTypeType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_get_template_type_type()
+PT_MINIT_REGISTRATION(pt_register_get_template_type_type)
 {
 	reg::Class cls("PHPStan\\Type\\Helper\\GetTemplateTypeType");
 	ptdecl::GetTemplateTypeType::declareClass(cls);

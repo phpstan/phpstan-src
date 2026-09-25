@@ -84,7 +84,7 @@ zv::Val pt_impure_point_new(zval *scope, zval *node, zend_string *identifier, ze
 
 #include "reg.h"
 
-void pt_register_impure_point()
+PT_MINIT_REGISTRATION(pt_register_impure_point)
 {
 	reg::Class cls("PHPStan\\Analyser\\ImpurePoint");
 	ptdecl::ImpurePoint::declareClass(cls);

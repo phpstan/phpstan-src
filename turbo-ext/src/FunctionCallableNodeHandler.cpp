@@ -182,7 +182,7 @@ using phpstanturbo::FunctionCallableNodeHandler;
 
 #include "reg.h"
 
-void pt_register_function_callable_node_handler()
+PT_MINIT_REGISTRATION(pt_register_function_callable_node_handler)
 {
 	ptveh::initLiterals();
 

@@ -604,7 +604,7 @@ zv::Val pt_class_statements_gatherer_get(zval *gatherer, pt_class_statements_gat
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
-void pt_register_class_statements_gatherer()
+PT_MINIT_REGISTRATION(pt_register_class_statements_gatherer)
 {
 	reg::Class cls("PHPStan\\Node\\ClassStatementsGatherer");
 	ptdecl::ClassStatementsGatherer::declareClass(cls);

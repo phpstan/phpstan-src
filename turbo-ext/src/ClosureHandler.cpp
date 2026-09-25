@@ -165,7 +165,7 @@ zv::Val pt_closure_handler_get_variable_flow(zval *expr)
 
 #include "reg.h"
 
-void pt_register_closure_handler()
+PT_MINIT_REGISTRATION(pt_register_closure_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ClosureHandler");
 	ptdecl::ClosureHandler::declareClass(cls);

@@ -585,7 +585,7 @@ using phpstanturbo::ArrayHandler;
 
 #include "reg.h"
 
-void pt_register_array_handler()
+PT_MINIT_REGISTRATION(pt_register_array_handler)
 {
 	pt_arh_is_callable = zend_string_init_interned(PT_LC("is_callable"), 1);
 

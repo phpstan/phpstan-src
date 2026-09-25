@@ -214,7 +214,7 @@ zv::Val pt_extended_native_parameter_reflection_call(zend_object *parameter, pt_
 
 #define PT_ENPR_THIS ExtendedNativeParameterReflection(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_extended_native_parameter_reflection()
+PT_MINIT_REGISTRATION(pt_register_extended_native_parameter_reflection)
 {
 	reg::Class cls("PHPStan\\Reflection\\Native\\ExtendedNativeParameterReflection");
 	ptdecl::ExtendedNativeParameterReflection::declareClass(cls);

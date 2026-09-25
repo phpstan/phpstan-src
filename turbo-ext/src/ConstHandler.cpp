@@ -167,7 +167,7 @@ using phpstanturbo::ConstHandler;
 
 #include "reg.h"
 
-void pt_register_const_handler()
+PT_MINIT_REGISTRATION(pt_register_const_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\ConstHandler");
 	ptdecl::ConstHandler::declareClass(cls);

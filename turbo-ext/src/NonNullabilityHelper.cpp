@@ -905,7 +905,7 @@ zv::Val pt_non_nullability_helper_revert_non_nullability(zval *helper, zval *sco
 
 #include "reg.h"
 
-void pt_register_non_nullability_helper()
+PT_MINIT_REGISTRATION(pt_register_non_nullability_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\NonNullabilityHelper");
 	ptdecl::NonNullabilityHelper::declareClass(cls);

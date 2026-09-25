@@ -226,7 +226,7 @@ using phpstanturbo::StaticVariableHandler;
 
 #include "reg.h"
 
-void pt_register_static_variable_handler()
+PT_MINIT_REGISTRATION(pt_register_static_variable_handler)
 {
 	pt_svh_static = zend_string_init_interned(PT_LC("static"), 1);
 	pt_svh_static_variable = zend_string_init_interned(PT_LC("static variable"), 1);

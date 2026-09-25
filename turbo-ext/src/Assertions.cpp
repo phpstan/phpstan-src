@@ -491,7 +491,7 @@ zval *pt_assertions_all(zval *assertions, zv::Val &hold)
 
 #define PT_AS_THIS Assertions(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_assertions()
+PT_MINIT_REGISTRATION(pt_register_assertions)
 {
 	reg::Class cls("PHPStan\\Reflection\\Assertions");
 	ptdecl::Assertions::declareClass(cls);

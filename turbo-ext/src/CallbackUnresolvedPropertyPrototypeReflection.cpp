@@ -178,7 +178,7 @@ zv::Val pt_callback_unresolved_property_prototype_reflection_new(uint32_t argc, 
 
 #define PT_THIS CallbackUnresolvedPropertyPrototypeReflection(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_callback_unresolved_property_prototype_reflection()
+PT_MINIT_REGISTRATION(pt_register_callback_unresolved_property_prototype_reflection)
 {
 	static const char *selfClass = "PHPStan\\Reflection\\Type\\CallbackUnresolvedPropertyPrototypeReflection";
 	static const char *extendedPropertyReflectionClass = "PHPStan\\Reflection\\ExtendedPropertyReflection";

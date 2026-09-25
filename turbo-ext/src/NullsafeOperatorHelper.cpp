@@ -340,7 +340,7 @@ zv::Val pt_nullsafe_operator_helper_get_nullsafe_shortcircuited_expr_respecting_
 
 #include "reg.h"
 
-void pt_register_nullsafe_operator_helper()
+PT_MINIT_REGISTRATION(pt_register_nullsafe_operator_helper)
 {
 	reg::Class cls("PHPStan\\Analyser\\NullsafeOperatorHelper");
 	ptdecl::NullsafeOperatorHelper::declareClass(cls);

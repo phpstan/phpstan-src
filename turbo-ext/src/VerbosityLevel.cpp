@@ -443,7 +443,7 @@ static void pt_vl_return_is(zval *return_value, zval *thisZv, zend_long level)
 	RETURN_BOOL(value == level);
 }
 
-void pt_register_verbosity_level()
+PT_MINIT_REGISTRATION(pt_register_verbosity_level)
 {
 
 	reg::Class cls("PHPStan\\Type\\VerbosityLevel");

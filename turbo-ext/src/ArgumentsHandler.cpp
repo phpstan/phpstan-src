@@ -2883,7 +2883,7 @@ bool pt_arguments_handler_process_dropped_args(zval *handler, zval *nodeScopeRes
 
 #include "reg.h"
 
-void pt_register_arguments_handler()
+PT_MINIT_REGISTRATION(pt_register_arguments_handler)
 {
 	pt_ah_original_arg = zend_string_init_interned(PT_LC("originalArg"), 1);
 	pt_ah_contains_closure = zend_string_init_interned(PT_LC("phpstanArgContainsClosure"), 1);

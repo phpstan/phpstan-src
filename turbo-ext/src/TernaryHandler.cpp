@@ -910,7 +910,7 @@ zv::Val pt_ternary_handler_get_captured_results(zval *handler, zval *expr)
 
 #include "reg.h"
 
-void pt_register_ternary_handler()
+PT_MINIT_REGISTRATION(pt_register_ternary_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\TernaryHandler");
 	ptdecl::TernaryHandler::declareClass(cls);

@@ -2327,7 +2327,7 @@ using phpstanturbo::FuncCallHandler;
 
 #include "reg.h"
 
-void pt_register_func_call_handler()
+PT_MINIT_REGISTRATION(pt_register_func_call_handler)
 {
 	pt_fch_closure_name = zend_string_init_interned(PT_LC("Closure"), 1);
 	pt_fch_throwable_name = zend_string_init_interned(PT_LC("Throwable"), 1);

@@ -71,7 +71,7 @@ zv::Val pt_statement_exit_point_new(zval *statement, zval *scope)
 
 #include "reg.h"
 
-void pt_register_statement_exit_point()
+PT_MINIT_REGISTRATION(pt_register_statement_exit_point)
 {
 	reg::Class cls("PHPStan\\Analyser\\StatementExitPoint");
 	ptdecl::StatementExitPoint::declareClass(cls);

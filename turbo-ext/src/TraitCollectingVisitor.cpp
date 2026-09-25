@@ -51,7 +51,7 @@ static const pt_native_visitor pt_trait_collecting_entry = {
 	NULL,
 };
 
-void pt_register_trait_collecting_visitor()
+PT_MINIT_REGISTRATION(pt_register_trait_collecting_visitor)
 {
 	reg::Class cls("PHPStan\\Parser\\TraitCollectingVisitor");
 	ptdecl::TraitCollectingVisitor::declareClass(cls);

@@ -98,7 +98,7 @@ using phpstanturbo::EnumCaseHandler;
 
 #include "reg.h"
 
-void pt_register_enum_case_handler()
+PT_MINIT_REGISTRATION(pt_register_enum_case_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\EnumCaseHandler");
 	ptdecl::EnumCaseHandler::declareClass(cls);

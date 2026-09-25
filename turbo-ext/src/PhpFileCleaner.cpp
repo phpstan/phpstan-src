@@ -23,7 +23,7 @@ static zend_class_entry *pt_ce_php_file_cleaner = nullptr;
 
 #include "reg.h"
 
-void pt_register_php_file_cleaner()
+PT_MINIT_REGISTRATION(pt_register_php_file_cleaner)
 {
 	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner");
 	ptdecl::PhpFileCleaner::declareClass(cls);

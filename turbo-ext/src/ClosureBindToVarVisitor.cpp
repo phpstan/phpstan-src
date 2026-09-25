@@ -68,7 +68,7 @@ static const pt_native_visitor pt_closure_bind_to_var_entry = {
 	NULL,
 };
 
-void pt_register_closure_bind_to_var_visitor()
+PT_MINIT_REGISTRATION(pt_register_closure_bind_to_var_visitor)
 {
 	pt_closure_bind_to_var_attribute_str = zend_string_init_interned(pt_closure_bind_to_var_attribute, sizeof(pt_closure_bind_to_var_attribute) - 1, 1);
 

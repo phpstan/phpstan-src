@@ -104,7 +104,7 @@ zv::Val pt_extended_callable_function_variant_new(uint32_t argc, zval *argv)
 
 #define PT_ECFV_THIS ExtendedCallableFunctionVariant(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_extended_callable_function_variant()
+PT_MINIT_REGISTRATION(pt_register_extended_callable_function_variant)
 {
 	reg::Class cls("PHPStan\\Reflection\\ExtendedCallableFunctionVariant");
 	ptdecl::ExtendedCallableFunctionVariant::declareClass(cls);

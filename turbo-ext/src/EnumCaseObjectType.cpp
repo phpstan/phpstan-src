@@ -539,7 +539,7 @@ static void ZEND_FASTCALL ecotGetSubtractedType(INTERNAL_FUNCTION_PARAMETERS)
 static void ZEND_FASTCALL ecotGetUnresolvedInstancePropertyPrototype(INTERNAL_FUNCTION_PARAMETERS) { pt_ecot_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &EnumCaseObjectType::getUnresolvedInstancePropertyPrototype); }
 static void ZEND_FASTCALL ecotGetClassStringType(INTERNAL_FUNCTION_PARAMETERS) { pt_ecot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &EnumCaseObjectType::getClassStringType); }
 
-void pt_register_enum_case_object_type()
+PT_MINIT_REGISTRATION(pt_register_enum_case_object_type)
 {
 	reg::Class cls("PHPStan\\Type\\Enum\\EnumCaseObjectType");
 	ptdecl::EnumCaseObjectType::declareClass(cls);

@@ -76,7 +76,7 @@ bool pt_template_array_type_new(zval *out, zval *scope, zval *strategy, zval *va
 
 #define PT_THIS TemplateArrayType(Z_OBJ_P(ZEND_THIS))
 
-void pt_register_template_array_type()
+PT_MINIT_REGISTRATION(pt_register_template_array_type)
 {
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateArrayType");
 	ptdecl::TemplateArrayType::declareClass(cls);

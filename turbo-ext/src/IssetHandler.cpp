@@ -705,7 +705,7 @@ using phpstanturbo::IssetHandler;
 
 #include "reg.h"
 
-void pt_register_isset_handler()
+PT_MINIT_REGISTRATION(pt_register_isset_handler)
 {
 	pt_ish_array_access = zend_string_init_interned(PT_LC("ArrayAccess"), 1);
 	pt_ish_offset_exists = zend_string_init_interned(PT_LC("offsetExists"), 1);

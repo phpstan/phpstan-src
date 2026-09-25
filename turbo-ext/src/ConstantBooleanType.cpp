@@ -258,7 +258,7 @@ static void pt_cbt_comparison_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (Consta
 	PT_RETURN_VAL((PT_THIS.*method)());
 }
 
-void pt_register_constant_boolean_type()
+PT_MINIT_REGISTRATION(pt_register_constant_boolean_type)
 {
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantBooleanType");
 	ptdecl::ConstantBooleanType::declareClass(cls);

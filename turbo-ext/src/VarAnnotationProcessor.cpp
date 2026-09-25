@@ -298,7 +298,7 @@ zv::Val pt_var_annotation_processor_process_var_annotation(zval *processor, zval
 
 #include "reg.h"
 
-void pt_register_var_annotation_processor()
+PT_MINIT_REGISTRATION(pt_register_var_annotation_processor)
 {
 	reg::Class cls("PHPStan\\Analyser\\VarAnnotationProcessor");
 	ptdecl::VarAnnotationProcessor::declareClass(cls);

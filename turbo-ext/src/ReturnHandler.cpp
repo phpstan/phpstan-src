@@ -162,7 +162,7 @@ using phpstanturbo::ReturnHandler;
 
 #include "reg.h"
 
-void pt_register_return_handler()
+PT_MINIT_REGISTRATION(pt_register_return_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\ReturnHandler");
 	ptdecl::ReturnHandler::declareClass(cls);

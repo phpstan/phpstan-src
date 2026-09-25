@@ -1230,7 +1230,7 @@ using phpstanturbo::ParserEngine;
 
 #include "../reg.h"
 
-void pt_register_parser_runner(void)
+PT_MINIT_REGISTRATION(pt_register_parser_runner)
 {
 	reg::Class cls("PHPStan\\Parser\\ParserRunner");
 	ptdecl::ParserRunner::declareClass(cls);

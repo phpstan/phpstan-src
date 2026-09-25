@@ -133,7 +133,7 @@ bool pt_template_type_reference_parts(zval *reference, zv::Val &type, zv::Val &p
 #define PT_TTR_THIS TemplateTypeReference(Z_OBJ_P(ZEND_THIS))
 #define PT_TTR_TEMPLATE_TYPE "PHPStan\\Type\\Generic\\TemplateType"
 
-void pt_register_template_type_reference()
+PT_MINIT_REGISTRATION(pt_register_template_type_reference)
 {
 
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateTypeReference");

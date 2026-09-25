@@ -158,7 +158,7 @@ bool pt_dynamic_return_type_storage_primer_pop(pt_primed_storage &primed)
 
 #include "reg.h"
 
-void pt_register_dynamic_return_type_storage_primer()
+PT_MINIT_REGISTRATION(pt_register_dynamic_return_type_storage_primer)
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\DynamicReturnTypeStoragePrimer");
 	ptdecl::DynamicReturnTypeStoragePrimer::declareClass(cls);

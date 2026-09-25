@@ -172,7 +172,7 @@ bool pt_recursion_guard_active()
 
 #include "reg.h"
 
-void pt_register_recursion_guard()
+PT_MINIT_REGISTRATION(pt_register_recursion_guard)
 {
 	reg::Class cls("PHPStan\\Type\\RecursionGuard");
 	ptdecl::RecursionGuard::declareClass(cls);

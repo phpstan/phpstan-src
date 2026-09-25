@@ -998,7 +998,7 @@ zv::Val pt_template_argument_observer_collect_call(zval *observer, zval *site, z
 
 #include "reg.h"
 
-void pt_register_template_argument_observer()
+PT_MINIT_REGISTRATION(pt_register_template_argument_observer)
 {
 	reg::Class cls("PHPStan\\Analyser\\Generics\\TemplateArgumentObserver");
 	ptdecl::TemplateArgumentObserver::declareClass(cls);

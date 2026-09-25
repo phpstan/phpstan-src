@@ -1023,7 +1023,7 @@ zv::Val pt_type_specifier_get_function_type_specifying_extensions(zval *typeSpec
 	return pt_type_call(Z_OBJ_P(typeSpecifier), PT_LC("getfunctiontypespecifyingextensions"), 0, NULL);
 }
 
-void pt_register_type_specifier()
+PT_MINIT_REGISTRATION(pt_register_type_specifier)
 {
 	reg::Class cls("PHPStan\\Analyser\\TypeSpecifier");
 	ptdecl::TypeSpecifier::declareClass(cls);

@@ -507,7 +507,7 @@ using phpstanturbo::TraitUseHandler;
 
 #include "reg.h"
 
-void pt_register_trait_use_handler()
+PT_MINIT_REGISTRATION(pt_register_trait_use_handler)
 {
 	pt_tuh_flags = zend_string_init_interned(PT_LC("flags"), 1);
 	pt_tuh_name = zend_string_init_interned(PT_LC("name"), 1);

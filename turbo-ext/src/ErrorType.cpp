@@ -132,7 +132,7 @@ static void ZEND_FASTCALL etError0(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(ErrorType::create());
 }
 
-void pt_register_error_type()
+PT_MINIT_REGISTRATION(pt_register_error_type)
 {
 	reg::Class cls("PHPStan\\Type\\ErrorType");
 	ptdecl::ErrorType::declareClass(cls);

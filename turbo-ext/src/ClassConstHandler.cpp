@@ -169,7 +169,7 @@ using phpstanturbo::ClassConstHandler;
 
 #include "reg.h"
 
-void pt_register_class_const_handler()
+PT_MINIT_REGISTRATION(pt_register_class_const_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\ClassConstHandler");
 	ptdecl::ClassConstHandler::declareClass(cls);

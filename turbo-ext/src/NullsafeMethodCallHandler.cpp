@@ -727,7 +727,7 @@ using phpstanturbo::NullsafeMethodCallHandler;
 
 #include "reg.h"
 
-void pt_register_nullsafe_method_call_handler()
+PT_MINIT_REGISTRATION(pt_register_nullsafe_method_call_handler)
 {
 	pt_nmch_virtual_nullsafe_method_call = zend_string_init_interned(PT_LC("virtualNullsafeMethodCall"), 1);
 	pt_nmch_original_site_attribute = zend_string_init_interned(PT_LC("templateArgumentOriginalSite"), 1);

@@ -2239,7 +2239,7 @@ namespace {
 
 } // namespace
 
-void pt_register_node_scope_resolver()
+PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 {
 	reg::Class cls("PHPStan\\Analyser\\NodeScopeResolver");
 	/* not final: every $this-call dispatches through the object's class

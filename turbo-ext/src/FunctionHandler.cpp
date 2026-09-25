@@ -336,7 +336,7 @@ using phpstanturbo::FunctionHandler;
 
 #include "reg.h"
 
-void pt_register_function_handler()
+PT_MINIT_REGISTRATION(pt_register_function_handler)
 {
 	pt_fh_property_assign = zend_string_init_interned(PT_LC("propertyAssign"), 1);
 	pt_fh_property_assignment = zend_string_init_interned(PT_LC("property assignment"), 1);

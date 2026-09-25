@@ -329,7 +329,7 @@ static void pt_alcs_one_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (AccessoryLow
 	PT_RETURN_VAL((PT_THIS.*method)(type));
 }
 
-void pt_register_accessory_lowercase_string_type()
+PT_MINIT_REGISTRATION(pt_register_accessory_lowercase_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryLowercaseStringType");
 	ptdecl::AccessoryLowercaseStringType::declareClass(cls);

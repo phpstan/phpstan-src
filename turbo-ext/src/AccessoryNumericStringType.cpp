@@ -376,7 +376,7 @@ static void pt_ans_one_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (AccessoryNume
 	PT_RETURN_VAL((PT_THIS.*method)(type));
 }
 
-void pt_register_accessory_numeric_string_type()
+PT_MINIT_REGISTRATION(pt_register_accessory_numeric_string_type)
 {
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryNumericStringType");
 	ptdecl::AccessoryNumericStringType::declareClass(cls);

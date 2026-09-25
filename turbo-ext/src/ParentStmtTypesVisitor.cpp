@@ -87,7 +87,7 @@ static const pt_native_visitor pt_parent_stmt_types_entry = {
 	ParentStmtTypesVisitor::beforeTraverse,
 };
 
-void pt_register_parent_stmt_types_visitor()
+PT_MINIT_REGISTRATION(pt_register_parent_stmt_types_visitor)
 {
 	pt_parent_stmt_types_attribute_str = zend_string_init_interned(pt_parent_stmt_types_attribute, sizeof(pt_parent_stmt_types_attribute) - 1, 1);
 

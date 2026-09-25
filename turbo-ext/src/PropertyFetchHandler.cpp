@@ -447,7 +447,7 @@ zv::Val pt_property_fetch_handler_compose_result(zval *handler, zval *nodeScopeR
 
 #include "reg.h"
 
-void pt_register_property_fetch_handler()
+PT_MINIT_REGISTRATION(pt_register_property_fetch_handler)
 {
 	pt_pfh_get = zend_string_init_interned(PT_LC("get"), 1);
 

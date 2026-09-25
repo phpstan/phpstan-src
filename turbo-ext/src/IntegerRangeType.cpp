@@ -27,6 +27,10 @@ namespace sigs = ptdecl::IntegerRangeType::sig;
 
 zend_class_entry *pt_ce_integer_range_type = nullptr;
 
+/* the twin's private const FLOAT_ABOVE_INT_MAX = PHP_INT_MAX + 1.0: the first
+ * double above ZEND_LONG_MAX, exact on 64-bit (2^63) and 32-bit (2^31) builds */
+static constexpr double PT_IRT_FLOAT_ABOVE_INT_MAX = (double) ZEND_LONG_MAX + 1.0;
+
 /* nothing is memoized per request since InitializerExprTypeResolver's
  * CALCULATE_SCALARS_LIMIT became a native constant */
 void pt_integer_range_type_rinit()
@@ -171,26 +175,26 @@ public:
 
 	/* the createAll*() family: the range of integers beyond an int|float
 	 * $value. An int goes straight to fromInterval(); anything else is
-	 * first held against the int limits — a float the way the VM compares
-	 * int with float (both as doubles), any other value loosely — and what
-	 * passes is then rounded by ceil()/floor() and (int)-cast, which is
-	 * where a non-number fails under strict_types. */
+	 * held against the int limits — a float the way the VM compares int
+	 * with float (both as doubles), any other value loosely — and rounded
+	 * by ceil()/floor() and (int)-cast, which is where a non-number fails
+	 * under strict_types. Where the ceil() is held against the max instead
+	 * of $value (createAllSmallerThan(), createAllGreaterThanOrEqualTo()),
+	 * it is taken first, in the twin's order. */
 
 	/* fromInterval(null, $value, -1) */
 	static zv::Val createAllSmallerThan(zval *value)
 	{
 		if (Z_TYPE_P(value) == IS_LONG) return fromInterval(NullableLong::null(), NullableLong::of(Z_LVAL_P(value)), -1);
-		int againstMax, againstMin;
-		if (UNEXPECTED(!compareToLimits(value, againstMax, againstMin))) return zv::Val();
-		if (againstMax >= 0) { /* $value >= PHP_INT_MAX */
+		double ceiled;
+		if (UNEXPECTED(!roundToDouble(value, true, ceiled))) return zv::Val();
+		if (ceiled >= PT_IRT_FLOAT_ABOVE_INT_MAX) { /* $ceil >= self::FLOAT_ABOVE_INT_MAX */
 			return integer();
 		}
-		if (againstMin <= 0) { /* $value <= PHP_INT_MIN */
+		if (Z_DVAL_P(value) <= (double) ZEND_LONG_MIN) { /* $value <= PHP_INT_MIN */
 			return never();
 		}
-		zend_long rounded;
-		if (UNEXPECTED(!roundToLong(value, true, rounded))) return zv::Val();
-		return fromInterval(NullableLong::null(), NullableLong::of(rounded), -1);
+		return fromInterval(NullableLong::null(), NullableLong::of(zend_dval_to_lval(ceiled)), -1);
 	}
 
 	/* fromInterval(null, $value) */
@@ -231,17 +235,17 @@ public:
 	static zv::Val createAllGreaterThanOrEqualTo(zval *value)
 	{
 		if (Z_TYPE_P(value) == IS_LONG) return fromInterval(NullableLong::of(Z_LVAL_P(value)), NullableLong::null(), 0);
-		int againstMax, againstMin;
-		if (UNEXPECTED(!compareToLimits(value, againstMax, againstMin))) return zv::Val();
+		int againstMin;
+		if (UNEXPECTED(!compareToMin(value, againstMin))) return zv::Val();
 		if (againstMin <= 0) { /* $value <= PHP_INT_MIN */
 			return integer();
 		}
-		if (againstMax >= 0) { /* $value >= PHP_INT_MAX */
+		double ceiled;
+		if (UNEXPECTED(!roundToDouble(value, true, ceiled))) return zv::Val();
+		if (ceiled >= PT_IRT_FLOAT_ABOVE_INT_MAX) { /* $ceil >= self::FLOAT_ABOVE_INT_MAX */
 			return never();
 		}
-		zend_long rounded;
-		if (UNEXPECTED(!roundToLong(value, true, rounded))) return zv::Val();
-		return fromInterval(NullableLong::of(rounded), NullableLong::null(), 0);
+		return fromInterval(NullableLong::of(zend_dval_to_lval(ceiled)), NullableLong::null(), 0);
 	}
 
 	/* $this->min / $this->max; false with an Error pending when the
@@ -1128,33 +1132,57 @@ private:
 	 * false = pending exception */
 	[[nodiscard]] static bool compareToLimits(zval *value, int &againstMax, int &againstMin)
 	{
+		return compareToMax(value, againstMax) && compareToMin(value, againstMin);
+	}
+
+	[[nodiscard]] static bool compareToMax(zval *value, int &againstMax)
+	{
 		if (EXPECTED(Z_TYPE_P(value) == IS_DOUBLE)) {
 			double d = Z_DVAL_P(value);
 			double max = (double) ZEND_LONG_MAX;
-			double min = (double) ZEND_LONG_MIN;
 			againstMax = d > max ? 1 : (d < max ? -1 : (d == max ? 0 : -1));
-			againstMin = d < min ? -1 : (d > min ? 1 : (d == min ? 0 : 1));
 			return true;
 		}
 		zval limit;
 		ZVAL_LONG(&limit, ZEND_LONG_MAX);
 		againstMax = zend_compare(value, &limit);
-		if (UNEXPECTED(EG(exception))) return false;
+		return !EG(exception);
+	}
+
+	[[nodiscard]] static bool compareToMin(zval *value, int &againstMin)
+	{
+		if (EXPECTED(Z_TYPE_P(value) == IS_DOUBLE)) {
+			double d = Z_DVAL_P(value);
+			double min = (double) ZEND_LONG_MIN;
+			againstMin = d < min ? -1 : (d > min ? 1 : (d == min ? 0 : 1));
+			return true;
+		}
+		zval limit;
 		ZVAL_LONG(&limit, ZEND_LONG_MIN);
 		againstMin = zend_compare(value, &limit);
 		return !EG(exception);
 	}
 
-	/* (int) ceil($value) / (int) floor($value) for a non-int $value: a
-	 * float rounds and casts as the engine casts; anything else is what
-	 * ceil()/floor() reject under strict_types. false = pending exception */
-	[[nodiscard]] static bool roundToLong(zval *value, bool useCeil, zend_long &out)
+	/* ceil($value) / floor($value) for a non-int $value: a float rounds;
+	 * anything else is what ceil()/floor() reject under strict_types.
+	 * false = pending exception */
+	[[nodiscard]] static bool roundToDouble(zval *value, bool useCeil, double &out)
 	{
 		if (UNEXPECTED(Z_TYPE_P(value) != IS_DOUBLE)) {
 			zend_type_error("%s(): Argument #1 ($num) must be of type int|float, %s given", useCeil ? "ceil" : "floor", zend_zval_value_name(value));
 			return false;
 		}
-		out = zend_dval_to_lval(useCeil ? ceil(Z_DVAL_P(value)) : floor(Z_DVAL_P(value)));
+		out = useCeil ? ceil(Z_DVAL_P(value)) : floor(Z_DVAL_P(value));
+		return true;
+	}
+
+	/* (int) ceil($value) / (int) floor($value) for a non-int $value, cast as
+	 * the engine casts. false = pending exception */
+	[[nodiscard]] static bool roundToLong(zval *value, bool useCeil, zend_long &out)
+	{
+		double rounded;
+		if (UNEXPECTED(!roundToDouble(value, useCeil, rounded))) return false;
+		out = zend_dval_to_lval(rounded);
 		return true;
 	}
 
@@ -1334,6 +1362,11 @@ static void pt_irt_bound(INTERNAL_FUNCTION_PARAMETERS, bool (IntegerRangeType::*
 	RETURN_LONG(bound.value);
 }
 
+static void pt_irt_float_above_int_max_constant(zval *out)
+{
+	ZVAL_DOUBLE(out, PT_IRT_FLOAT_ABOVE_INT_MAX);
+}
+
 void pt_register_integer_range_type()
 {
 	reg::Class cls("PHPStan\\Type\\IntegerRangeType");
@@ -1341,6 +1374,7 @@ void pt_register_integer_range_type()
 	/* "min" and "max" must stay the first two declared properties
 	 * (slots::min, slots::max) */
 	ptdecl::IntegerRangeType::declareProperties(cls);
+	cls.privateClassConstantValue("FLOAT_ABOVE_INT_MAX", pt_irt_float_above_int_max_constant);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_long min, max;

@@ -1699,6 +1699,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(10, $errors[0]->getLine());
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15310(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15310.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Function Bug15310\\reproduce() return type with generic class Bug15310\\ExampleType does not specify its types: TValue', $errors[0]->getMessage());
+		$this->assertSame(39, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

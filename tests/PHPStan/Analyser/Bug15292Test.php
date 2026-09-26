@@ -33,7 +33,7 @@ class Bug15292Test extends RuleTestCase
 		};
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testCallableLikeValuesAreNotReflected(): void
 	{
 		Bug15292MethodsClassReflectionExtension::$askedMethods = [];

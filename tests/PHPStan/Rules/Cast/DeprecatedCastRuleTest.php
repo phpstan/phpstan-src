@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Cast;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -15,7 +14,7 @@ class DeprecatedCastRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DeprecatedCastRule(new PhpVersion(PHP_VERSION_ID));
+		return new DeprecatedCastRule();
 	}
 
 	public function testRule(): void
@@ -43,6 +42,30 @@ class DeprecatedCastRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/deprecated-cast.php'], $errors);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		$errors = [
+			[
+				'Non-standard (integer) cast is deprecated in PHP 8.5. Use (int) instead.',
+				8,
+			],
+		];
+		if (PHP_VERSION_ID < 80500) {
+			$errors = [
+				[
+					'Non-standard (integer) cast is deprecated in PHP 8.5. Use (int) instead.',
+					12,
+				],
+			];
+		}
+		$errors[] = [
+			'Non-standard (integer) cast is deprecated in PHP 8.5. Use (int) instead.',
+			15,
+		];
+
+		$this->analyse([__DIR__ . '/data/deprecated-cast-php-versions.php'], $errors);
 	}
 
 }

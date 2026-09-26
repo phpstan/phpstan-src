@@ -10,6 +10,7 @@ use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\NarrowedSubjectType;
@@ -230,47 +231,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	{
 		$references = $type->getReferencedTemplateTypes($positionVariance);
 
-		$objectCb = function (Type $type, callable $traverse) use ($references): Type {
-			if (
-				$type instanceof TemplateType
-				&& !$type instanceof NarrowedSubjectType
-				&& !$type->isArgument()
-				&& $type->getScope()->getFunctionName() !== null
-			) {
-				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
-				if ($newType === null || $newType instanceof ErrorType) {
-					return $traverse($type);
-				}
-
-				$newType = TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
-				$variance = TemplateTypeVariance::createInvariant();
-				foreach ($references as $reference) {
-					// this uses identity to distinguish between different occurrences of the same template type
-					// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
-					if ($reference->getType() === $type) {
-						$variance = $reference->getPositionVariance();
-						break;
-					}
-				}
-
-				$callSiteVariance = $this->callSiteVarianceMap->getVariance($type->getName());
-				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
-					return $newType;
-				}
-
-				if (!$callSiteVariance->covariant() && $variance->covariant()) {
-					return $traverse($type->getBound());
-				}
-
-				if (!$callSiteVariance->contravariant() && $variance->contravariant()) {
-					return new NonAcceptingNeverType();
-				}
-
-				return $newType;
-			}
-
-			return $traverse($type);
-		};
+		$objectCb = fn (Type $type, callable $traverse): Type => $this->resolveTemplateTypeInGenericType($type, $traverse, $references, null);
 
 		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references, $objectCb): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
@@ -311,6 +272,73 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 
 			return $traverse($type);
 		});
+	}
+
+	/**
+	 * @param callable(Type): Type $traverse
+	 * @param list<TemplateTypeReference> $references
+	 * @param string|null $keepInferredName a template type whose inferred type is not generalized here
+	 */
+	private function resolveTemplateTypeInGenericType(Type $type, callable $traverse, array $references, ?string $keepInferredName): Type
+	{
+		if (
+			$type instanceof NarrowedSubjectType
+			&& $keepInferredName === null
+			&& !$type->isArgument()
+			&& $type->getScope()->getFunctionName() !== null
+		) {
+			// generalize what the branch knows about the subject, not the subject: in the
+			// else branch of `(T is \UnitEnum ? array-key : T)` with T of array-key|\UnitEnum,
+			// T is a scalar and an inferred 'foo' stays 'foo'. Only the subject is taken as
+			// inferred - a template type in the target is generalized as the condition sees it.
+			$subjectName = $type->getName();
+			$resolved = TypeTraverser::map($type, fn (Type $type, callable $traverse): Type => $this->resolveTemplateTypeInGenericType($type, $traverse, $references, $subjectName));
+
+			return TemplateTypeHelper::generalizeInferredTemplateType($type, $resolved);
+		}
+
+		if (
+			$type instanceof TemplateType
+			&& !$type instanceof NarrowedSubjectType
+			&& !$type->isArgument()
+			&& $type->getScope()->getFunctionName() !== null
+		) {
+			$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
+			if ($newType === null || $newType instanceof ErrorType) {
+				return $traverse($type);
+			}
+
+			if ($type->getName() !== $keepInferredName) {
+				$newType = TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
+			}
+
+			$variance = TemplateTypeVariance::createInvariant();
+			foreach ($references as $reference) {
+				// this uses identity to distinguish between different occurrences of the same template type
+				// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
+				if ($reference->getType() === $type) {
+					$variance = $reference->getPositionVariance();
+					break;
+				}
+			}
+
+			$callSiteVariance = $this->callSiteVarianceMap->getVariance($type->getName());
+			if ($callSiteVariance === null || $callSiteVariance->invariant()) {
+				return $newType;
+			}
+
+			if (!$callSiteVariance->covariant() && $variance->covariant()) {
+				return $traverse($type->getBound());
+			}
+
+			if (!$callSiteVariance->contravariant() && $variance->contravariant()) {
+				return new NonAcceptingNeverType();
+			}
+
+			return $newType;
+		}
+
+		return $traverse($type);
 	}
 
 	/**

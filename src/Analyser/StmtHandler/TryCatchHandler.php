@@ -71,6 +71,9 @@ final class TryCatchHandler implements StmtHandler
 		$branchScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
 		$branchScope = $branchScopeResult->getScope();
 		$finalScope = $branchScopeResult->isAlwaysTerminating() ? null : $branchScope;
+		// what the template argument observation collected in every block,
+		// including the ones that end by leaving the try-catch
+		$blockScopes = [$branchScope];
 
 		$exitPoints = [];
 		$finallyExitPoints = [];
@@ -246,6 +249,7 @@ final class TryCatchHandler implements StmtHandler
 
 			$catchScopeResult = $nodeScopeResolver->processStmtNodesInternal($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $storage, $nodeCallback, $context);
 			$catchScopeForFinally = $catchScopeResult->getScope();
+			$blockScopes[] = $catchScopeForFinally;
 			$catchFlows[] = [$originalCatchType, VariableFlow::sequence($catchNode->var !== null ? VariableFlowBuilder::targetWrite($catchNode->var, VariableWrite::KIND_CATCH, $catchScopeForFinally, $storage) : null, $catchScopeResult->getVariableFlow())];
 
 			$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
@@ -297,6 +301,7 @@ final class TryCatchHandler implements StmtHandler
 			$throwPointsForLater = array_merge($throwPointsForLater, $finallyResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $finallyResult->getImpurePoints());
 			$finallyScope = $finallyResult->getScope();
+			$blockScopes[] = $finallyScope;
 			$finalScope = $finallyResult->isAlwaysTerminating() ? $finalScope : $finalScope->processFinallyScope($finallyScope, $originalFinallyScope);
 			if (!$finallyResult->isAlwaysTerminating()) {
 				// the finally block runs after the exit point, so its changes are
@@ -327,6 +332,10 @@ final class TryCatchHandler implements StmtHandler
 				), $scope, $storage);
 			}
 			$exitPoints = array_merge($exitPoints, $finallyResult->getExitPoints());
+		}
+
+		foreach ($blockScopes as $blockScope) {
+			$finalScope = $finalScope->addTemplateArgumentConstraints($blockScope->getTemplateArgumentConstraints());
 		}
 
 		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: array_merge($throwPoints, $throwPointsForLater), impurePoints: $impurePoints, variableFlow: VariableFlow::tryCatch($branchScopeResult->getVariableFlow(), $catchFlows, $finallyFlow));

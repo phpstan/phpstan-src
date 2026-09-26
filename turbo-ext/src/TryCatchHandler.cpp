@@ -164,6 +164,10 @@ public:
 		bool alwaysTerminating;
 		if (UNEXPECTED(!pt_internal_statement_result_is_always_terminating(branch, alwaysTerminating))) return zv::Val();
 		zv::Val finalScope = alwaysTerminating ? zv::Val::null() : zv::Val::copyOf(branchScope.ref());
+		// what the template argument observation collected in every block,
+		// including the ones that end by leaving the try-catch
+		zv::Arr blockScopes = zv::Arr::empty();
+		blockScopes.push(zv::Val::copyOf(branchScope.ref()));
 
 		zv::Arr exitPoints = zv::Arr::empty();
 		zv::Arr finallyExitPoints = zv::Arr::empty();
@@ -489,6 +493,7 @@ public:
 				if (UNEXPECTED(resultScope == NULL)) return zv::Val();
 				catchScopeForFinally = zv::Val::copyOf(zv::Ref(resultScope));
 			}
+			blockScopes.push(zv::Val::copyOf(catchScopeForFinally.ref()));
 			{
 				zv::Val writeFlow = zv::Val::null();
 				zval *catchVar = ptsh::readNodeProperty(pt_tch_catch_var_site, catchNode, PT_LC("var"));
@@ -626,6 +631,7 @@ public:
 				if (UNEXPECTED(resultScope == NULL)) return zv::Val();
 				finallyScope = zv::Val::copyOf(zv::Ref(resultScope));
 			}
+			blockScopes.push(zv::Val::copyOf(finallyScope.ref()));
 			if (!finallyAlwaysTerminating) {
 				zv::Val processed = pt_mutating_scope_process_finally_scope(Z_OBJ_P(finalScope.raw()), Z_OBJ_P(finallyScope.raw()), Z_OBJ_P(originalFinallyScope.raw()));
 				if (UNEXPECTED(processed.isUndef())) return zv::Val();
@@ -694,6 +700,13 @@ public:
 			if (UNEXPECTED(bodyFlow == NULL)) return zv::Val();
 			variableFlow = pt_variable_flow_try_catch(bodyFlow, catchFlows.raw(), finallyFlow.raw());
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
+		}
+		for (auto entry : blockScopes.arrRef()) {
+			zv::Val constraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(entry.value().raw()));
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			zv::Val joined = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(finalScope.raw()), constraints.raw());
+			if (UNEXPECTED(joined.isUndef())) return zv::Val();
+			finalScope = std::move(joined);
 		}
 		return pt_internal_statement_result_new(finalScope.raw(), hasYield, alwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw());
 	}

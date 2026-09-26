@@ -94,6 +94,9 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	private TrinaryLogic $isStatic;
 
+	/** @var array<int, string> */
+	private array $cachedDescriptions = [];
+
 	/**
 	 * @api
 	 * @param list<ParameterReflection>|null $parameters
@@ -312,7 +315,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return $level->handle(
+		return $this->cachedDescriptions[$level->getLevelValue()] ??= $level->handle(
 			static fn (): string => 'Closure',
 			function (): string {
 				if ($this->isCommonCallable) {

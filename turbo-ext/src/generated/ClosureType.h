@@ -22,11 +22,12 @@ inline constexpr uint32_t acceptsNamedArguments = 8;
 inline constexpr uint32_t mustUseReturnValue = 9;
 inline constexpr uint32_t assertions = 10;
 inline constexpr uint32_t isStatic = 11;
-inline constexpr uint32_t variadic = 12;
-inline constexpr uint32_t templateTags = 13;
-inline constexpr uint32_t throwPoints = 14;
-inline constexpr uint32_t invalidateExpressions = 15;
-inline constexpr uint32_t usedVariables = 16;
+inline constexpr uint32_t cachedDescriptions = 12;
+inline constexpr uint32_t variadic = 13;
+inline constexpr uint32_t templateTags = 14;
+inline constexpr uint32_t throwPoints = 15;
+inline constexpr uint32_t invalidateExpressions = 16;
+inline constexpr uint32_t usedVariables = 17;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -49,6 +50,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("mustUseReturnValue", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\TrinaryLogic");
 	cls.property("assertions", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\Assertions");
 	cls.property("isStatic", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\TrinaryLogic");
+	cls.property("cachedDescriptions", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("variadic", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 	cls.property("templateTags", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 	cls.property("throwPoints", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);

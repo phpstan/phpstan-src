@@ -52,18 +52,12 @@ class DeprecatedCastRuleTest extends RuleTestCase
 				8,
 			],
 		];
-		if (PHP_VERSION_ID < 80500) {
-			$errors = [
-				[
-					'Non-standard (integer) cast is deprecated in PHP 8.5. Use (int) instead.',
-					12,
-				],
+		if (PHP_VERSION_ID >= 80500) {
+			$errors[] = [
+				'Non-standard (integer) cast is deprecated in PHP 8.5. Use (int) instead.',
+				15,
 			];
 		}
-		$errors[] = [
-			'Non-standard (integer) cast is deprecated in PHP 8.5. Use (int) instead.',
-			15,
-		];
 
 		$this->analyse([__DIR__ . '/data/deprecated-cast-php-versions.php'], $errors);
 	}

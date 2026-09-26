@@ -1098,13 +1098,14 @@ class NodeScopeResolver
 
 	/**
 	 * The template argument frame of the body being walked while it observes
-	 * a body that created unresolved template arguments - null otherwise, so
-	 * every observation hook costs a null check outside the observation pass.
+	 * a body that created unresolved template arguments (or, in the closure
+	 * observation pass, closure signatures) - null otherwise, so every
+	 * observation hook costs a null check outside the observation passes.
 	 */
 	public function observingTemplateArgumentFrame(MutatingScope $scope): ?TemplateArgumentFrame
 	{
 		$frame = $scope->getCurrentTemplateArgumentFrame();
-		if ($frame === null || !$frame->isObserving() || $scope->getTemplateArgumentConstraints() === null) {
+		if ($frame === null || !$frame->isObservingClosures() || $scope->getTemplateArgumentConstraints() === null) {
 			return null;
 		}
 

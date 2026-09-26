@@ -55,6 +55,9 @@ final class TemplateArgumentStats
 		'closureParametersUnobserved' => 0,
 		'closureParametersDeclared' => 0,
 		'closureSitesSettled' => 0,
+		'closureObservationPasses' => 0,
+		'closureObservationStatements' => 0,
+		'closureObservationStatementsReplayed' => 0,
 	];
 
 	public static function enableFromEnvironment(): void

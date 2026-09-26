@@ -1198,7 +1198,7 @@ public:
 		if (UNEXPECTED(frame.isUndef())) return zv::Val();
 		if (frame.isNull()) return zv::Val::null();
 		bool observing;
-		if (UNEXPECTED(!templateArgumentFrameIsObserving(frame.raw(), observing))) return zv::Val();
+		if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(frame.raw(), observing))) return zv::Val();
 		if (!observing) return zv::Val::null();
 		zv::Val constraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(scope));
 		if (UNEXPECTED(constraints.isUndef())) return zv::Val();

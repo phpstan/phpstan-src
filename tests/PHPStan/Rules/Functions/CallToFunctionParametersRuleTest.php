@@ -933,6 +933,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureSignatureFromUsagesOfGenericObject(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-signature-from-usages-generics.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testExplode(): void
 	{
 		$this->analyse([__DIR__ . '/data/explode-80.php'], [

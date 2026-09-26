@@ -183,10 +183,10 @@ zv::Val templateArgumentObserverCollectSend(zval *observer, zval *declared, zval
 
 
 /* $templateArgumentResolver->resolve($constraints, $parentFrame,
- * $statementStartTokenPositions) */
-zv::Val templateArgumentResolverResolve(zval *resolver, zval *constraints, zval *parentFrame, zval *positions)
+ * $statementStartTokenPositions, $parentNode, $stmts) */
+zv::Val templateArgumentResolverResolve(zval *resolver, zval *constraints, zval *parentFrame, zval *positions, zval *parentNode, zval *stmts)
 {
-	return pt_template_argument_resolver_resolve(resolver, constraints, parentFrame, positions);
+	return pt_template_argument_resolver_resolve(resolver, constraints, parentFrame, positions, parentNode, stmts);
 }
 
 /* $frame->firstSiteStatementIndex() / hasSiteAtOrAfter($i) /
@@ -1376,7 +1376,7 @@ private:
 			finalConstraints = templateArgumentConstraintsCreateEmpty();
 			if (UNEXPECTED(finalConstraints.isUndef())) return zv::Val();
 		}
-		zv::Val frame = templateArgumentResolverResolve(OBJ_PROP_NUM(self, slots::templateArgumentResolver), finalConstraints.raw(), parentFrame.raw(), statementStartTokenPositions.raw());
+		zv::Val frame = templateArgumentResolverResolve(OBJ_PROP_NUM(self, slots::templateArgumentResolver), finalConstraints.raw(), parentFrame.raw(), statementStartTokenPositions.raw(), parentNode, stmts);
 		if (UNEXPECTED(frame.isUndef())) return zv::Val();
 		{
 			zv::Val snapshot = snapshotEntry(state.raw(), recording.raw());
@@ -1384,6 +1384,14 @@ private:
 			entries.separate();
 			zend_hash_index_update(entries.table(), (zend_ulong) stmtCount, snapshot.raw());
 			ZVAL_UNDEF(snapshot.raw());
+		}
+		{
+			bool observingClosures;
+			if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(frame.raw(), observingClosures))) return zv::Val();
+			if (observingClosures) {
+				frame = observeClosureSignatures(nodeScopeResolver, parentNode, stmts, frame.raw(), entries.raw(), storage, observationContext.raw(), statementStartTokenPositions.raw());
+				if (UNEXPECTED(frame.isUndef())) return zv::Val();
+			}
 		}
 
 		zv::Val firstSiteStatementIndex = frameFirstSiteStatementIndex(frame.raw());
@@ -1409,19 +1417,8 @@ private:
 		zval *firstEntry = entryAt(entries.raw(), firstSite);
 		if (UNEXPECTED(firstEntry == NULL)) return zv::Val();
 		if (UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, recording.raw(), 0, zval_get_long(entryOffset(firstEntry)), nodeCallback, storage, scope.raw()))) return zv::Val();
-		bool hasLabels = false;
-		for (auto entry : zv::ArrRef(stmtsHeld.raw())) {
-			zval *stmt = entry.value().deref().raw();
-			bool isLabel;
-			if (UNEXPECTED(!isInstance(stmt, PT_CLASS_LABEL_STMT, isLabel))) return zv::Val();
-			if (!isLabel) {
-				zv::Val nested = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("nestedBackwardGotoLabels"));
-				if (UNEXPECTED(nested.isUndef())) return zv::Val();
-				if (nested.isNull()) continue;
-			}
-			hasLabels = true;
-			break;
-		}
+		bool hasLabels;
+		if (UNEXPECTED(!containsLabels(stmtsHeld.raw(), hasLabels))) return zv::Val();
 		state = cloneObject(entryState(firstEntry));
 		if (UNEXPECTED(state.isUndef())) return zv::Val();
 		{
@@ -1499,6 +1496,160 @@ private:
 
 		if (UNEXPECTED(!restoreParentFrame(state.raw(), parentFrame.raw(), parentConstraints.raw()))) return zv::Val();
 		return pt_statement_list_walk_state_to_result(state.raw());
+	}
+
+	/* the private observeClosureSignatures() */
+	zv::Val observeClosureSignatures(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *frame, zval *entries, zval *storageArg, zval *context, zval *statementStartTokenPositions)
+	{
+		zv::Val firstSiteStatementIndex = frameFirstSiteStatementIndex(frame);
+		if (UNEXPECTED(firstSiteStatementIndex.isUndef())) return zv::Val();
+		zend_long start = firstSiteStatementIndex.isNull() ? 0 : zval_get_long(firstSiteStatementIndex.raw());
+		zval *startEntry = entryAt(entries, start);
+		if (UNEXPECTED(startEntry == NULL)) return zv::Val();
+		zv::Val state = cloneObject(entryState(startEntry));
+		if (UNEXPECTED(state.isUndef())) return zv::Val();
+		{
+			zval *clonedScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
+			zv::Val reframed = pt_mutating_scope_with_template_argument_frame(Z_OBJ_P(clonedScope), frame);
+			if (UNEXPECTED(reframed.isUndef())) return zv::Val();
+			zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(std::move(reframed));
+		}
+		// the second pass replays the observation pass's recording against the storage
+		zv::Val storage = pt_expression_result_storage_duplicate(storageArg);
+		if (UNEXPECTED(storage.isUndef())) return zv::Val();
+		zv::Val nodeCallback = pt_type_new(PT_CLASS_NOOP_NODE_CALLBACK, 0, NULL);
+		if (UNEXPECTED(nodeCallback.isUndef())) return zv::Val();
+		HashTable *stmtsTable = Z_ARRVAL_P(stmts);
+		zend_long stmtCount = zend_hash_num_elements(stmtsTable);
+		bool hasLabels;
+		if (UNEXPECTED(!containsLabels(stmts, hasLabels))) return zv::Val();
+		bool statsEnabled;
+		if (UNEXPECTED(!templateArgumentStatsEnabled(statsEnabled))) return zv::Val();
+		zv::Val suspendedGatherers = pt_node_scope_resolver_suspend_node_gatherers(nodeScopeResolver);
+		if (UNEXPECTED(suspendedGatherers.isUndef())) return zv::Val();
+		zv::Val scope = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)));
+		if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope.raw()), storage.raw()))) {
+			(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
+			return zv::Val();
+		}
+		observeClosureSignaturesFrom(nodeScopeResolver, parentNode, stmts, stmtsTable, frame, entries, state.raw(), storage.raw(), nodeCallback.raw(), context, start, stmtCount, hasLabels, statsEnabled);
+		pt_finally([&]() {
+			(void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope.raw()));
+			(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
+		});
+		if (UNEXPECTED(EG(exception))) return zv::Val();
+
+		zval *stateScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
+		zv::Val constraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(stateScope));
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		if (constraints.isNull()) {
+			constraints = templateArgumentConstraintsCreateEmpty();
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+		return pt_template_argument_resolver_resolve_observed_closures(OBJ_PROP_NUM(self, slots::templateArgumentResolver), constraints.raw(), frame, statementStartTokenPositions);
+	}
+
+	/* observeClosureSignatures()'s try block: the statements from $start on,
+	 * walked or carried over; false = pending exception */
+	bool observeClosureSignaturesFrom(zval *nodeScopeResolver, zval *parentNode, zval *stmts, HashTable *stmtsTable, zval *frame, zval *entries, zval *state, zval *storage, zval *nodeCallback, zval *context, zend_long start, zend_long stmtCount, bool hasLabels, bool statsEnabled)
+	{
+		for (zend_long i = start; i < stmtCount; i++) {
+			zval *recordedEntryPair = entryAt(entries, i);
+			if (UNEXPECTED(recordedEntryPair == NULL)) return false;
+			zval *recordedEntry = entryState(recordedEntryPair);
+			zend_object *stateObject = Z_OBJ_P(state);
+			zend_object *recordedEntryObject = Z_OBJ_P(recordedEntry);
+			zv::Val differingRoots = zv::Val::null();
+			bool stateTerminated = Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE;
+			bool entryTerminated = Z_TYPE_P(OBJ_PROP_NUM(recordedEntryObject, stateSlots::alreadyTerminated)) == IS_TRUE;
+			if (stateTerminated == entryTerminated) {
+				differingRoots = pt_mutating_scope_get_differing_variable_roots(Z_OBJ_P(OBJ_PROP_NUM(stateObject, stateSlots::scope)), Z_OBJ_P(OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope)));
+				if (UNEXPECTED(differingRoots.isUndef())) return false;
+			}
+			if (differingRoots.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(differingRoots.raw())) == 0) {
+				bool hasSite;
+				if (UNEXPECTED(!frameHasSiteAtOrAfter(frame, i, hasSite))) return false;
+				if (!hasSite) {
+					// converged with the observation pass: the rest of its facts stand
+					if (statsEnabled && UNEXPECTED(!templateArgumentStatsIncrement(PT_LC("closureObservationStatementsReplayed"), stmtCount - i))) return false;
+					zval *finalEntryPair = entryAt(entries, stmtCount);
+					if (UNEXPECTED(finalEntryPair == NULL)) return false;
+					zval *finalState = entryState(finalEntryPair);
+					zv::Val carried = withRecordedConstraints(OBJ_PROP_NUM(stateObject, stateSlots::scope), OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope), OBJ_PROP_NUM(Z_OBJ_P(finalState), stateSlots::scope));
+					if (UNEXPECTED(carried.isUndef())) return false;
+					zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)).assign(std::move(carried));
+					return true;
+				}
+			}
+
+			zval *stmt = zend_hash_index_find(stmtsTable, (zend_ulong) i);
+			if (UNEXPECTED(stmt == NULL)) {
+				zend_throw_error(NULL, "phpstan_turbo: the function-like body's statements are not a list");
+				return false;
+			}
+			ZVAL_DEREF(stmt);
+			bool reWalk = differingRoots.isNull() || hasLabels;
+			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame, i, reWalk))) return false;
+			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), reWalk))) return false;
+			if (reWalk) {
+				if (statsEnabled && UNEXPECTED(!templateArgumentStatsIncrement(PT_LC("closureObservationStatements"), 1))) return false;
+				if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state, storage, nodeCallback, context, true))) return false;
+				continue;
+			}
+
+			if (statsEnabled && UNEXPECTED(!templateArgumentStatsIncrement(PT_LC("closureObservationStatementsReplayed"), 1))) return false;
+			zval *recordedExitPair = entryAt(entries, i + 1);
+			if (UNEXPECTED(recordedExitPair == NULL)) return false;
+			zval *recordedExit = entryState(recordedExitPair);
+			if (UNEXPECTED(!appendRecordedStatementResults(state, recordedEntry, recordedExit))) return false;
+			zval *currentScope = OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope);
+			zval *recordedEntryScope = OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope);
+			zval *recordedExitScope = OBJ_PROP_NUM(Z_OBJ_P(recordedExit), stateSlots::scope);
+			zv::Val delta = pt_mutating_scope_with_recorded_statement_delta(Z_OBJ_P(currentScope), Z_OBJ_P(recordedEntryScope), Z_OBJ_P(recordedExitScope));
+			if (UNEXPECTED(delta.isUndef())) return false;
+			zv::Val carried = withRecordedConstraints(delta.raw(), recordedEntryScope, recordedExitScope);
+			if (UNEXPECTED(carried.isUndef())) return false;
+			zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)).assign(std::move(carried));
+		}
+		return true;
+	}
+
+	/* the private withRecordedConstraints(); UNDEF = pending exception */
+	static zv::Val withRecordedConstraints(zval *scope, zval *recordedEntry, zval *recordedExit)
+	{
+		zv::Val recorded = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(recordedExit));
+		if (UNEXPECTED(recorded.isUndef())) return zv::Val();
+		if (recorded.isNull()) return zv::Val::copyOf(zv::Ref(scope));
+		zv::Val current = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(scope));
+		if (UNEXPECTED(current.isUndef())) return zv::Val();
+		if (current.isNull()) {
+			current = templateArgumentConstraintsCreateEmpty();
+			if (UNEXPECTED(current.isUndef())) return zv::Val();
+		}
+		zv::Val entryConstraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(recordedEntry));
+		if (UNEXPECTED(entryConstraints.isUndef())) return zv::Val();
+		zv::Val carried = pt_template_argument_constraints_with_recorded_facts(current.raw(), entryConstraints.raw(), recorded.raw());
+		if (UNEXPECTED(carried.isUndef())) return zv::Val();
+		return pt_mutating_scope_with_template_argument_constraints(Z_OBJ_P(scope), carried.raw());
+	}
+
+	/* the private containsLabels(); false = pending exception */
+	[[nodiscard]] static bool containsLabels(zval *stmts, bool &out)
+	{
+		for (auto entry : zv::ArrRef(stmts)) {
+			zval *stmt = entry.value().deref().raw();
+			bool isLabel;
+			if (UNEXPECTED(!isInstance(stmt, PT_CLASS_LABEL_STMT, isLabel))) return false;
+			if (!isLabel) {
+				zv::Val nested = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("nestedBackwardGotoLabels"));
+				if (UNEXPECTED(nested.isUndef())) return false;
+				if (nested.isNull()) continue;
+			}
+			out = true;
+			return true;
+		}
+		out = false;
+		return true;
 	}
 
 	/* [clone $state, $recording->count()] */

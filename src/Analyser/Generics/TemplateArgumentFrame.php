@@ -63,6 +63,7 @@ final class TemplateArgumentFrame
 	 * @param array<int, true> $siteStatementIndexes
 	 * @param Node\Stmt[] $closureSignatureStmts the statements of $closureSignatureBody
 	 * @param array<int, true> $settledClosureSites spl_object_id() of the closure nodes
+	 * @param bool $observingClosures the template arguments are resolved, the closure signatures observed again
 	 */
 	public function __construct(
 		private readonly ?self $parent,
@@ -71,8 +72,29 @@ final class TemplateArgumentFrame
 		private readonly ?Node $closureSignatureBody = null,
 		private readonly array $closureSignatureStmts = [],
 		private readonly array $settledClosureSites = [],
+		private readonly bool $observingClosures = false,
 	)
 	{
+	}
+
+	/**
+	 * The resolved frame with the closure signatures observed in the closure
+	 * observation pass (see TemplateArgumentResolver::resolveObservedClosures()).
+	 *
+	 * @param array<string, Type> $closureResolutions
+	 * @param array<int, true> $closureSiteStatementIndexes
+	 * @param array<int, true> $settledClosureSites
+	 */
+	public function withObservedClosures(array $closureResolutions, array $closureSiteStatementIndexes, array $settledClosureSites): self
+	{
+		return new self(
+			$this->parent,
+			($this->resolutions ?? []) + $closureResolutions,
+			$this->siteStatementIndexes + $closureSiteStatementIndexes,
+			$this->closureSignatureBody,
+			$this->closureSignatureStmts,
+			$settledClosureSites,
+		);
 	}
 
 	/**
@@ -107,6 +129,16 @@ final class TemplateArgumentFrame
 	public function isObserving(): bool
 	{
 		return $this->resolutions === null;
+	}
+
+	/**
+	 * Whether closures get signature markers and their sends are collected:
+	 * in the observation pass, and in the closure observation pass that walks
+	 * with the template arguments already resolved.
+	 */
+	public function isObservingClosures(): bool
+	{
+		return $this->resolutions === null || $this->observingClosures;
 	}
 
 	public function firstSiteStatementIndex(): ?int

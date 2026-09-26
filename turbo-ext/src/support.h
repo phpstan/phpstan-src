@@ -2000,7 +2000,9 @@ zv::Val pt_template_argument_frame_return_type_of_call(zval *acceptor, zval *sco
 /* new TemplateArgumentFrame($parent, $resolutions, $siteStatementIndexes)
  * ($parent / $resolutions NULL or IS_NULL for null, $siteStatementIndexes
  * NULL for []) */
-zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL, zval *settledClosureSites = NULL);
+zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL, zval *settledClosureSites = NULL, bool observingClosures = false);
+/* $frame->withObservedClosures($closureResolutions, $closureSiteStatementIndexes, $settledClosureSites); UNDEF = pending exception */
+zv::Val pt_template_argument_frame_with_observed_closures(zval *frame, zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites);
 /* $frame->isSettledClosureSite($site); false = pending exception */
 [[nodiscard]] bool pt_template_argument_frame_is_settled_closure_site(zval *frame, zval *site, bool &out);
 /* $frame->getClosureSignatureBody() / getClosureSignatureStmts(); UNDEF =
@@ -3929,6 +3931,8 @@ zv::Val pt_template_argument_constraints_create_empty();
 [[nodiscard]] bool pt_template_argument_constraints_is_empty(zval *constraints, bool &out);
 [[nodiscard]] bool pt_template_argument_constraints_is_empty_of(zend_object *constraints, bool &out);
 zv::Val pt_template_argument_constraints_merge(zval *constraints, zval *other);
+/* $constraints->withRecordedFacts($entry, $exit) ($entry: the null zval for null); UNDEF = pending exception */
+zv::Val pt_template_argument_constraints_with_recorded_facts(zval *constraints, zval *entry, zval *exit);
 zv::Val pt_template_argument_constraints_with_site(zval *constraints, zval *marker);
 zv::Val pt_template_argument_constraints_with_send(zval *constraints, zval *marker, zval *type, zval *variance);
 zv::Val pt_template_argument_constraints_with_lower_bound(zval *constraints, zval *marker, zval *type);
@@ -3957,7 +3961,8 @@ zv::Val pt_template_argument_observer_collect_closure_argument(zval *observer, z
 zv::Val pt_template_argument_observer_collect_closure_arguments(zval *observer, zval *acceptor, zval *argumentTypes, bool isPure);
 zv::Val pt_template_argument_observer_collect_escape(zval *observer, zval *type);
 [[nodiscard]] bool pt_template_argument_observer_carries_closure_signature_markers(zval *observer, zval *types, bool &out);
-zv::Val pt_template_argument_resolver_resolve(zval *resolver, zval *constraints, zval *parent, zval *statementStartTokenPositions);
+zv::Val pt_template_argument_resolver_resolve(zval *resolver, zval *constraints, zval *parent, zval *statementStartTokenPositions, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL);
+zv::Val pt_template_argument_resolver_resolve_observed_closures(zval *resolver, zval *constraints, zval *frame, zval *statementStartTokenPositions);
 
 /* }}} */
 

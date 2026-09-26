@@ -92,7 +92,7 @@ final class ClosureSignatureInference
 		}
 
 		$frame = $scope->getCurrentTemplateArgumentFrame();
-		if ($frame === null || !$frame->isObserving()) {
+		if ($frame === null || !$frame->isObservingClosures()) {
 			return $frame;
 		}
 
@@ -113,7 +113,7 @@ final class ClosureSignatureInference
 	{
 		$frame = $this->getFrame($scope);
 
-		return $frame !== null && $frame->isObserving();
+		return $frame !== null && $frame->isObservingClosures();
 	}
 
 	/**
@@ -137,7 +137,7 @@ final class ClosureSignatureInference
 				continue;
 			}
 
-			if ($frame->isObserving() || $frame->isSettledClosureSite($expr)) {
+			if ($frame->isObservingClosures() || $frame->isSettledClosureSite($expr)) {
 				$type = $this->createParameterMarker($expr, $parameter);
 			} else {
 				$type = $frame->resolve($expr, self::parameterTemplateName($parameter->getName()));
@@ -170,7 +170,7 @@ final class ClosureSignatureInference
 	public function getBodyParameters(MutatingScope $scope, Closure|ArrowFunction $expr): ?array
 	{
 		$frame = $this->getFrame($scope);
-		if ($frame === null || $frame->isObserving() || $frame->isSettledClosureSite($expr)) {
+		if ($frame === null || $frame->isObservingClosures() || $frame->isSettledClosureSite($expr)) {
 			return null;
 		}
 
@@ -210,7 +210,7 @@ final class ClosureSignatureInference
 			return $returnType;
 		}
 		$frame = $this->getFrame($scope);
-		if ($frame === null || (!$frame->isObserving() && !$frame->isSettledClosureSite($expr)) || !self::returnsContextTypedExpression($expr)) {
+		if ($frame === null || (!$frame->isObservingClosures() && !$frame->isSettledClosureSite($expr)) || !self::returnsContextTypedExpression($expr)) {
 			return $returnType;
 		}
 
@@ -228,7 +228,7 @@ final class ClosureSignatureInference
 	public function getExpectedReturnType(MutatingScope $scope, Closure|ArrowFunction $expr): ?Type
 	{
 		$frame = $this->getFrame($scope);
-		if ($frame === null || $frame->isObserving()) {
+		if ($frame === null || $frame->isObservingClosures()) {
 			return null;
 		}
 
@@ -250,7 +250,7 @@ final class ClosureSignatureInference
 	{
 		$constraints = TemplateArgumentConstraints::createEmpty();
 		$frame = $this->getFrame($scope);
-		if ($frame === null || !$frame->isObserving()) {
+		if ($frame === null || !$frame->isObservingClosures()) {
 			return $constraints;
 		}
 

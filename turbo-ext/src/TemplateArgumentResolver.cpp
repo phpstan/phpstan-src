@@ -123,95 +123,71 @@ namespace phpstanturbo {
 class TemplateArgumentResolver
 {
 public:
-	/* Mirrors resolve(). */
-	static zv::Val resolve(zval *constraints, zval *parent, zval *statementStartTokenPositions)
+	/* Mirrors resolve(); $closureSignatureBody / $closureSignatureStmts NULL
+	 * for null / [] */
+	static zv::Val resolve(zval *constraints, zval *parent, zval *statementStartTokenPositions, zval *closureSignatureBody, zval *closureSignatureStmts)
 	{
-		State state{zv::Arr::create(0), zv::Arr::create(0), zv::Arr::create(0), statementStartTokenPositions};
-		zv::Arr siteStatementIndexes = zv::Arr::create(0);
+		State state{zv::Arr::create(0), zv::Arr::create(0), zv::Arr::create(0), zv::Arr::create(0), statementStartTokenPositions, false};
 		if (UNEXPECTED(!pt_template_argument_constraints_facts(constraints, &fact, &state))) return zv::Val();
+		zv::Val resolutions = solve(state.observations.raw(), parent);
+		if (UNEXPECTED(resolutions.isUndef())) return zv::Val();
+		zv::Val settledClosureSites = settleClosureSites(state.observations.raw(), resolutions.raw());
+		if (UNEXPECTED(settledClosureSites.isUndef())) return zv::Val();
 
-		zv::Val resolutions;
-		if (zend_hash_num_elements(state.observations.table()) == 0) {
-			/* (new TemplateArgumentSolver([], $parent))->solve() */
-			resolutions = zv::Val(zv::Arr::empty());
-		} else {
-			zval nullParent;
-			ZVAL_NULL(&nullParent);
-			zv::Args argv{state.observations.raw(), parent != NULL ? parent : &nullParent};
-			zv::Val solver = pt_type_new(PT_CLASS_TEMPLATE_ARGUMENT_SOLVER, 2, argv);
-			if (UNEXPECTED(solver.isUndef())) return zv::Val();
-			resolutions = pt_call_method_cached(pt_tar_solve_site, Z_OBJ_P(solver.raw()), PT_LC("solve"), 0, NULL);
-			if (UNEXPECTED(resolutions.isUndef())) return zv::Val();
-		}
-		if (UNEXPECTED(Z_TYPE_P(resolutions.raw()) != IS_ARRAY)) {
-			zend_type_error("PHPStan\\Analyser\\Generics\\TemplateArgumentFrame::__construct(): Argument #2 ($resolutions) must be of type ?array, %s given", zend_zval_value_name(resolutions.raw()));
-			return zv::Val();
-		}
+		if (zend_hash_num_elements(Z_ARRVAL_P(settledClosureSites.raw())) < zend_hash_num_elements(state.closureSiteIds.table())) {
+			bool changed;
+			if (UNEXPECTED(!hasChangedTemplateArgument(state.observations.raw(), resolutions.raw(), changed))) return zv::Val();
+			if (changed) {
+				zv::Arr templateSiteStatementIndexes = zv::Arr::create(0);
+				for (auto entry : zv::ArrRef(state.siteIndexes.raw())) {
+					if (zend_hash_index_exists(state.closureSiteIds.table(), entry.indexKey())) continue;
+					zval marked;
+					ZVAL_TRUE(&marked);
+					zend_hash_index_update(templateSiteStatementIndexes.table(), (zend_ulong) Z_LVAL_P(entry.value().raw()), &marked);
+				}
+				/* array_diff_key($resolutions, $closureKeys) */
+				zval templateResolutions;
+				ZVAL_ARR(&templateResolutions, zend_array_dup(Z_ARRVAL_P(resolutions.raw())));
+				zv::Val templateResolutionsHolder = zv::Val::adopt(templateResolutions);
+				for (auto entry : zv::ArrRef(state.observations.raw())) {
+					zval *marker = observationMarker(entry.value().deref().raw());
+					if (UNEXPECTED(marker == NULL)) continue;
+					bool closureMarker;
+					if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(marker, closureMarker))) return zv::Val();
+					if (!closureMarker) continue;
+					zend_string *key = entry.stringKeyOrNull();
+					if (key != NULL) {
+						zend_symtable_del(Z_ARRVAL_P(templateResolutionsHolder.raw()), key);
+					} else {
+						zend_hash_index_del(Z_ARRVAL_P(templateResolutionsHolder.raw()), entry.indexKey());
+					}
+				}
+				bool enabled;
+				if (UNEXPECTED(!statsEnabled(enabled))) return zv::Val();
+				if (enabled && UNEXPECTED(!statsIncrement(PT_LC("closureObservationPasses"), 1))) return zv::Val();
 
-		// a closure site whose every marker resolved to what it stood for in the
-		// observation pass is settled: the second pass keeps its markers, so the
-		// recorded walk of its statement - and of every statement it reaches -
-		// stands and is replayed
-		zv::Arr settledClosureSites = zv::Arr::create(0);
-		for (auto entry : zv::ArrRef(state.observations.raw())) {
-			zval *observation = entry.value().deref().raw();
-			zval *marker = Z_TYPE_P(observation) == IS_ARRAY ? zend_hash_find(Z_ARRVAL_P(observation), pt_tar_marker) : NULL;
-			if (UNEXPECTED(marker == NULL)) continue;
-			ZVAL_DEREF(marker);
-			bool closureMarker;
-			if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(marker, closureMarker))) return zv::Val();
-			if (!closureMarker) continue;
-			zv::Val site = markerSite(marker);
-			if (UNEXPECTED(site.isUndef())) return zv::Val();
-			zend_ulong id = Z_OBJ_HANDLE_P(site.raw());
-			zval *existing = zend_hash_index_find(settledClosureSites.table(), id);
-			if (existing != NULL && Z_TYPE_P(existing) != IS_TRUE) continue;
-			zend_string *key = entry.stringKeyOrNull();
-			zval *resolution = key != NULL ? zend_symtable_find(Z_ARRVAL_P(resolutions.raw()), key) : zend_hash_index_find(Z_ARRVAL_P(resolutions.raw()), entry.indexKey());
-			if (resolution != NULL) {
-				ZVAL_DEREF(resolution);
-				if (Z_TYPE_P(resolution) == IS_NULL) resolution = NULL;
+				return pt_template_argument_frame_new(parent, templateResolutionsHolder.raw(), templateSiteStatementIndexes.raw(), closureSignatureBody, closureSignatureStmts, NULL, true);
 			}
-			bool returnMarker;
-			if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_return(marker, returnMarker))) return zv::Val();
-			bool settled;
-			if (returnMarker) {
-				settled = resolution == NULL || instanceof_function(Z_OBJCE_P(resolution), pt_ce_mixed_type);
-			} else if (resolution == NULL) {
-				settled = true;
-			} else {
-				zv::Val delegate = pt_type_call(Z_OBJ_P(marker), PT_LC("getdelegate"), 0, NULL);
-				if (UNEXPECTED(delegate.isUndef())) return zv::Val();
-				zv::Val equal = pt_type_op(Z_OBJ_P(resolution), PT_OP_EQUALS, 1, delegate.raw());
-				if (UNEXPECTED(equal.isUndef())) return zv::Val();
-				settled = Z_TYPE_P(equal.raw()) == IS_TRUE;
-			}
-			zval settledZv;
-			ZVAL_BOOL(&settledZv, settled);
-			zend_hash_index_update(settledClosureSites.table(), id, &settledZv);
-		}
-		zv::Arr settledTrue = zv::Arr::create(0);
-		for (auto entry : zv::ArrRef(settledClosureSites.raw())) {
-			if (Z_TYPE_P(entry.value().raw()) != IS_TRUE) continue;
-			zval marked;
-			ZVAL_TRUE(&marked);
-			zend_hash_index_update(settledTrue.table(), entry.indexKey(), &marked);
 		}
 
-		for (auto entry : zv::ArrRef(state.siteIndexes.raw())) {
-			if (zend_hash_index_exists(settledTrue.table(), entry.indexKey())) continue;
-			zval marked;
-			ZVAL_TRUE(&marked);
-			zend_hash_index_update(siteStatementIndexes.table(), (zend_ulong) Z_LVAL_P(entry.value().raw()), &marked);
-		}
-		uint32_t settledCount = zend_hash_num_elements(settledTrue.table());
-		if (settledCount > 0) {
-			bool enabled;
-			if (UNEXPECTED(!statsEnabled(enabled))) return zv::Val();
-			if (enabled && UNEXPECTED(!statsIncrement(PT_LC("closureSitesSettled"), settledCount))) return zv::Val();
-		}
+		if (UNEXPECTED(!countSettled(settledClosureSites.raw()))) return zv::Val();
+		zv::Val siteStatementIndexes = collectSiteStatementIndexes(state.siteIndexes.raw(), settledClosureSites.raw());
+		return pt_template_argument_frame_new(parent, resolutions.raw(), siteStatementIndexes.raw(), NULL, NULL, settledClosureSites.raw());
+	}
 
-		return pt_template_argument_frame_new(parent, resolutions.raw(), siteStatementIndexes.raw(), NULL, NULL, settledTrue.raw());
+	/* Mirrors resolveObservedClosures(). */
+	static zv::Val resolveObservedClosures(zval *constraints, zval *frame, zval *statementStartTokenPositions)
+	{
+		State state{zv::Arr::create(0), zv::Arr::create(0), zv::Arr::create(0), zv::Arr::create(0), statementStartTokenPositions, true};
+		if (UNEXPECTED(!pt_template_argument_constraints_facts(constraints, &fact, &state))) return zv::Val();
+		zv::Val resolutions = solve(state.observations.raw(), frame);
+		if (UNEXPECTED(resolutions.isUndef())) return zv::Val();
+		zv::Val settledClosureSites = settleClosureSites(state.observations.raw(), resolutions.raw());
+		if (UNEXPECTED(settledClosureSites.isUndef())) return zv::Val();
+		if (UNEXPECTED(!countSettled(settledClosureSites.raw()))) return zv::Val();
+		zv::Val siteStatementIndexes = collectSiteStatementIndexes(state.siteIndexes.raw(), settledClosureSites.raw());
+
+		return pt_template_argument_frame_with_observed_closures(frame, resolutions.raw(), siteStatementIndexes.raw(), settledClosureSites.raw());
 	}
 
 	/* Mirrors locateStatement(). */
@@ -247,6 +223,148 @@ public:
 	}
 
 private:
+	/* (new TemplateArgumentSolver($observations, $parent))->solve() - [] for
+	 * no observations whatever the parent */
+	static zv::Val solve(zval *observations, zval *parent)
+	{
+		zv::Val resolutions;
+		if (zend_hash_num_elements(Z_ARRVAL_P(observations)) == 0) {
+			resolutions = zv::Val(zv::Arr::empty());
+		} else {
+			zval nullParent;
+			ZVAL_NULL(&nullParent);
+			zv::Args argv{observations, parent != NULL ? parent : &nullParent};
+			zv::Val solver = pt_type_new(PT_CLASS_TEMPLATE_ARGUMENT_SOLVER, 2, argv);
+			if (UNEXPECTED(solver.isUndef())) return zv::Val();
+			resolutions = pt_call_method_cached(pt_tar_solve_site, Z_OBJ_P(solver.raw()), PT_LC("solve"), 0, NULL);
+			if (UNEXPECTED(resolutions.isUndef())) return zv::Val();
+		}
+		if (UNEXPECTED(Z_TYPE_P(resolutions.raw()) != IS_ARRAY)) {
+			zend_type_error("PHPStan\\Analyser\\Generics\\TemplateArgumentFrame::__construct(): Argument #2 ($resolutions) must be of type ?array, %s given", zend_zval_value_name(resolutions.raw()));
+			return zv::Val();
+		}
+		return resolutions;
+	}
+
+	/* $observation['marker'] (borrowed); NULL for none */
+	static zval *observationMarker(zval *observation)
+	{
+		zval *marker = Z_TYPE_P(observation) == IS_ARRAY ? zend_hash_find(Z_ARRVAL_P(observation), pt_tar_marker) : NULL;
+		if (marker == NULL) return NULL;
+		ZVAL_DEREF(marker);
+		return marker;
+	}
+
+	/* $resolutions[$key] ?? null for the observation entry (borrowed); NULL for none */
+	static zval *resolutionOf(zval *resolutions, const zv::ArrayEntry &entry)
+	{
+		zend_string *key = entry.stringKeyOrNull();
+		zval *resolution = key != NULL ? zend_symtable_find(Z_ARRVAL_P(resolutions), key) : zend_hash_index_find(Z_ARRVAL_P(resolutions), entry.indexKey());
+		if (resolution == NULL) return NULL;
+		ZVAL_DEREF(resolution);
+		return Z_TYPE_P(resolution) == IS_NULL ? NULL : resolution;
+	}
+
+	/* Mirrors settleClosureSites(). */
+	static zv::Val settleClosureSites(zval *observations, zval *resolutions)
+	{
+		zv::Arr settledClosureSites = zv::Arr::create(0);
+		for (auto entry : zv::ArrRef(observations)) {
+			zval *marker = observationMarker(entry.value().deref().raw());
+			if (UNEXPECTED(marker == NULL)) continue;
+			bool closureMarker;
+			if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(marker, closureMarker))) return zv::Val();
+			if (!closureMarker) continue;
+			zv::Val site = markerSite(marker);
+			if (UNEXPECTED(site.isUndef())) return zv::Val();
+			zend_ulong id = Z_OBJ_HANDLE_P(site.raw());
+			zval *existing = zend_hash_index_find(settledClosureSites.table(), id);
+			if (existing != NULL && Z_TYPE_P(existing) != IS_TRUE) continue;
+			zval *resolution = resolutionOf(resolutions, entry);
+			bool returnMarker;
+			if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_return(marker, returnMarker))) return zv::Val();
+			bool settled;
+			if (returnMarker) {
+				settled = resolution == NULL || instanceof_function(Z_OBJCE_P(resolution), pt_ce_mixed_type);
+			} else if (resolution == NULL) {
+				settled = true;
+			} else {
+				zv::Val delegate = pt_type_call(Z_OBJ_P(marker), PT_LC("getdelegate"), 0, NULL);
+				if (UNEXPECTED(delegate.isUndef())) return zv::Val();
+				zv::Val equal = pt_type_op(Z_OBJ_P(resolution), PT_OP_EQUALS, 1, delegate.raw());
+				if (UNEXPECTED(equal.isUndef())) return zv::Val();
+				settled = Z_TYPE_P(equal.raw()) == IS_TRUE;
+			}
+			zval settledZv;
+			ZVAL_BOOL(&settledZv, settled);
+			zend_hash_index_update(settledClosureSites.table(), id, &settledZv);
+		}
+		zv::Arr settledTrue = zv::Arr::create(0);
+		for (auto entry : zv::ArrRef(settledClosureSites.raw())) {
+			if (Z_TYPE_P(entry.value().raw()) != IS_TRUE) continue;
+			zval marked;
+			ZVAL_TRUE(&marked);
+			zend_hash_index_update(settledTrue.table(), entry.indexKey(), &marked);
+		}
+		return zv::Val(std::move(settledTrue));
+	}
+
+	/* TemplateArgumentStats::increment('closureSitesSettled', count($settledClosureSites))
+	 * when there are any; false = pending exception */
+	[[nodiscard]] static bool countSettled(zval *settledClosureSites)
+	{
+		uint32_t settledCount = zend_hash_num_elements(Z_ARRVAL_P(settledClosureSites));
+		if (settledCount == 0) return true;
+		bool enabled;
+		if (UNEXPECTED(!statsEnabled(enabled))) return false;
+		return !enabled || statsIncrement(PT_LC("closureSitesSettled"), settledCount);
+	}
+
+	/* Mirrors hasChangedTemplateArgument(); false = pending exception */
+	[[nodiscard]] static bool hasChangedTemplateArgument(zval *observations, zval *resolutions, bool &out)
+	{
+		for (auto entry : zv::ArrRef(observations)) {
+			zval *observation = entry.value().deref().raw();
+			zval *marker = observationMarker(observation);
+			if (UNEXPECTED(marker == NULL)) continue;
+			bool closureMarker;
+			if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(marker, closureMarker))) return false;
+			if (closureMarker) continue;
+			zval *resolution = resolutionOf(resolutions, entry);
+			if (resolution == NULL) continue;
+			/* $observation['initial'] ?? $marker->getDelegate() */
+			zval *initial = zend_hash_find(Z_ARRVAL_P(observation), pt_tar_initial);
+			if (initial != NULL) ZVAL_DEREF(initial);
+			zv::Val delegate;
+			if (initial == NULL || Z_TYPE_P(initial) == IS_NULL) {
+				delegate = pt_type_call(Z_OBJ_P(marker), PT_LC("getdelegate"), 0, NULL);
+				if (UNEXPECTED(delegate.isUndef())) return false;
+				initial = delegate.raw();
+			}
+			zv::Val equal = pt_type_op(Z_OBJ_P(resolution), PT_OP_EQUALS, 1, initial);
+			if (UNEXPECTED(equal.isUndef())) return false;
+			if (Z_TYPE_P(equal.raw()) != IS_TRUE) {
+				out = true;
+				return true;
+			}
+		}
+		out = false;
+		return true;
+	}
+
+	/* Mirrors collectSiteStatementIndexes(). */
+	static zv::Val collectSiteStatementIndexes(zval *siteIndexes, zval *settledClosureSites)
+	{
+		zv::Arr siteStatementIndexes = zv::Arr::create(0);
+		for (auto entry : zv::ArrRef(siteIndexes)) {
+			if (zend_hash_index_exists(Z_ARRVAL_P(settledClosureSites), entry.indexKey())) continue;
+			zval marked;
+			ZVAL_TRUE(&marked);
+			zend_hash_index_update(siteStatementIndexes.table(), (zend_ulong) Z_LVAL_P(entry.value().raw()), &marked);
+		}
+		return zv::Val(std::move(siteStatementIndexes));
+	}
+
 	/* $observation[$key][] = $value ($value owned); false = pending exception */
 	[[nodiscard]] static bool appendTo(HashTable *table, zend_string *key, zval *value)
 	{
@@ -272,7 +390,9 @@ private:
 		zv::Arr observations;
 		zv::Arr sites;
 		zv::Arr siteIndexes; /* spl_object_id($site) => its statement index */
+		zv::Arr closureSiteIds; /* spl_object_id($site) => true for the closure sites */
 		zval *statementStartTokenPositions;
+		bool closuresOnly;
 	};
 
 	/* the foreach body over one [$marker, $type, $variance, $unconstraining]
@@ -284,6 +404,9 @@ private:
 		zval *type = factItem(factZv, 1);
 		zval *variance = factItem(factZv, 2);
 		bool unconstraining = zend_is_true(factItem(factZv, 3));
+		bool closureMarker;
+		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(marker, closureMarker))) return false;
+		if (state.closuresOnly && !closureMarker) return true;
 
 		/* $key = spl_object_id($marker->getSite()) . '#' . $marker->getTemplateName() */
 		zv::Val site = markerSite(marker);
@@ -392,13 +515,16 @@ private:
 		zval indexZv;
 		ZVAL_LONG(&indexZv, index);
 		zend_hash_index_update(state.siteIndexes.table(), id, &indexZv);
+		if (closureMarker) {
+			zval marked;
+			ZVAL_TRUE(&marked);
+			zend_hash_index_update(state.closureSiteIds.table(), id, &marked);
+		}
 
 		bool enabled;
 		if (UNEXPECTED(!statsEnabled(enabled))) return false;
-		if (!enabled) return true;
-		bool closureSite;
-		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(marker, closureSite))) return false;
-		return statsIncrementSitesCreated(closureSite);
+		if (!enabled || state.closuresOnly) return true;
+		return statsIncrementSitesCreated(closureMarker);
 	}
 };
 
@@ -408,19 +534,33 @@ using phpstanturbo::TemplateArgumentResolver;
 
 /* {{{ direct entries (support.h) */
 
-zv::Val pt_template_argument_resolver_resolve(zval *resolver, zval *constraints, zval *parent, zval *statementStartTokenPositions)
+zv::Val pt_template_argument_resolver_resolve(zval *resolver, zval *constraints, zval *parent, zval *statementStartTokenPositions, zval *closureSignatureBody, zval *closureSignatureStmts)
 {
 	if (UNEXPECTED(Z_TYPE_P(resolver) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function resolve() on %s", zend_zval_value_name(resolver));
 		return zv::Val();
 	}
 	if (EXPECTED(Z_OBJCE_P(resolver) == pt_ce_template_argument_resolver && Z_TYPE_P(constraints) == IS_OBJECT && Z_OBJCE_P(constraints) == pt_ce_template_argument_constraints && Z_TYPE_P(statementStartTokenPositions) == IS_ARRAY)) {
-		return TemplateArgumentResolver::resolve(constraints, parent, statementStartTokenPositions);
+		return TemplateArgumentResolver::resolve(constraints, parent, statementStartTokenPositions, closureSignatureBody, closureSignatureStmts);
 	}
-	zval nullParent;
-	ZVAL_NULL(&nullParent);
-	zv::Args argv{constraints, parent != NULL ? parent : &nullParent, statementStartTokenPositions};
-	return pt_type_call(Z_OBJ_P(resolver), PT_LC("resolve"), 3, argv);
+	zval nullZv, emptyZv;
+	ZVAL_NULL(&nullZv);
+	ZVAL_EMPTY_ARRAY(&emptyZv);
+	zv::Args argv{constraints, parent != NULL ? parent : &nullZv, statementStartTokenPositions, closureSignatureBody != NULL ? closureSignatureBody : &nullZv, closureSignatureStmts != NULL ? closureSignatureStmts : &emptyZv};
+	return pt_type_call(Z_OBJ_P(resolver), PT_LC("resolve"), 5, argv);
+}
+
+zv::Val pt_template_argument_resolver_resolve_observed_closures(zval *resolver, zval *constraints, zval *frame, zval *statementStartTokenPositions)
+{
+	if (UNEXPECTED(Z_TYPE_P(resolver) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function resolveObservedClosures() on %s", zend_zval_value_name(resolver));
+		return zv::Val();
+	}
+	if (EXPECTED(Z_OBJCE_P(resolver) == pt_ce_template_argument_resolver && Z_TYPE_P(constraints) == IS_OBJECT && Z_OBJCE_P(constraints) == pt_ce_template_argument_constraints && Z_TYPE_P(statementStartTokenPositions) == IS_ARRAY)) {
+		return TemplateArgumentResolver::resolveObservedClosures(constraints, frame, statementStartTokenPositions);
+	}
+	zv::Args argv{constraints, frame, statementStartTokenPositions};
+	return pt_type_call(Z_OBJ_P(resolver), PT_LC("resolveobservedclosures"), 3, argv);
 }
 
 /* }}} */
@@ -442,15 +582,28 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_resolver)
 	ptdecl::TemplateArgumentResolver::declareProperties(cls);
 
 	cls.method(sigs::resolve, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *constraints, *parent, *statementStartTokenPositions;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		zval *constraints, *parent, *statementStartTokenPositions, *closureSignatureBody = NULL, *closureSignatureStmts = NULL;
+		ZEND_PARSE_PARAMETERS_START(3, 5)
 			Z_PARAM_OBJECT_OF_CLASS(constraints, pt_ce_template_argument_constraints)
 			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(parent, pt_ce_template_argument_frame)
 			Z_PARAM_ARRAY(statementStartTokenPositions)
+			Z_PARAM_OPTIONAL
+			Z_PARAM_OBJECT_OR_NULL(closureSignatureBody)
+			Z_PARAM_ARRAY(closureSignatureStmts)
 		ZEND_PARSE_PARAMETERS_END();
 		zval nullParent;
 		ZVAL_NULL(&nullParent);
-		PT_RETURN_VAL(TemplateArgumentResolver::resolve(constraints, parent != NULL ? parent : &nullParent, statementStartTokenPositions));
+		PT_RETURN_VAL(TemplateArgumentResolver::resolve(constraints, parent != NULL ? parent : &nullParent, statementStartTokenPositions, closureSignatureBody, closureSignatureStmts));
+	});
+
+	cls.method(sigs::resolveObservedClosures, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *constraints, *frame, *statementStartTokenPositions;
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_OBJECT_OF_CLASS(constraints, pt_ce_template_argument_constraints)
+			Z_PARAM_OBJECT_OF_CLASS(frame, pt_ce_template_argument_frame)
+			Z_PARAM_ARRAY(statementStartTokenPositions)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(TemplateArgumentResolver::resolveObservedClosures(constraints, frame, statementStartTokenPositions));
 	});
 
 	cls.shadow(&pt_ce_template_argument_resolver);

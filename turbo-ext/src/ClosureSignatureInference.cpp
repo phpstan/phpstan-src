@@ -457,7 +457,7 @@ public:
 			out = false;
 			return true;
 		}
-		return pt_template_argument_frame_is_observing(frame.raw(), out);
+		return pt_template_argument_frame_is_observing_closures(frame.raw(), out);
 	}
 
 	/* Mirrors getSignatureParameters() */
@@ -467,7 +467,7 @@ public:
 		if (UNEXPECTED(!getFrame(scope, frame))) return zv::Val();
 		if (frame.isNull()) return zv::Val::copyOf(zv::Ref(declaredParameters));
 		bool observing;
-		if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame.raw(), observing))) return zv::Val();
+		if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(frame.raw(), observing))) return zv::Val();
 
 		bool keepsMarkers = observing;
 		if (!keepsMarkers && UNEXPECTED(!pt_template_argument_frame_is_settled_closure_site(frame.raw(), expr, keepsMarkers))) return zv::Val();
@@ -519,7 +519,7 @@ public:
 		if (UNEXPECTED(!getFrame(scope, frame))) return zv::Val();
 		if (frame.isNull()) return zv::Val::null();
 		bool observing;
-		if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame.raw(), observing))) return zv::Val();
+		if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(frame.raw(), observing))) return zv::Val();
 		if (observing) return zv::Val::null();
 		bool settled;
 		if (UNEXPECTED(!pt_template_argument_frame_is_settled_closure_site(frame.raw(), expr, settled))) return zv::Val();
@@ -584,7 +584,7 @@ public:
 		if (UNEXPECTED(!getFrame(scope, frame))) return zv::Val();
 		if (frame.isNull()) return zv::Val::copyOf(zv::Ref(returnType));
 		bool observing;
-		if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame.raw(), observing))) return zv::Val();
+		if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(frame.raw(), observing))) return zv::Val();
 		if (!observing) {
 			bool settled;
 			if (UNEXPECTED(!pt_template_argument_frame_is_settled_closure_site(frame.raw(), expr, settled))) return zv::Val();
@@ -608,7 +608,7 @@ public:
 		if (UNEXPECTED(!getFrame(scope, frame))) return zv::Val();
 		if (frame.isNull()) return zv::Val::null();
 		bool observing;
-		if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame.raw(), observing))) return zv::Val();
+		if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(frame.raw(), observing))) return zv::Val();
 		if (observing) return zv::Val::null();
 
 		zv::Val type = pt_template_argument_frame_resolve(frame.raw(), expr, pt_csi_return_template_name);
@@ -626,7 +626,7 @@ public:
 		if (UNEXPECTED(!getFrame(scope, frame))) return zv::Val();
 		if (frame.isNull()) return constraints;
 		bool observing;
-		if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame.raw(), observing))) return zv::Val();
+		if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(frame.raw(), observing))) return zv::Val();
 		if (!observing) return constraints;
 
 		zv::Val acceptors = pt_type_call(Z_OBJ_P(closureType), PT_LC("getcallableparametersacceptors"), 1, scope);
@@ -713,7 +713,7 @@ private:
 		if (UNEXPECTED(out.isUndef())) return false;
 		if (out.isNull()) return true;
 		bool observing;
-		if (UNEXPECTED(!pt_template_argument_frame_is_observing(out.raw(), observing))) return false;
+		if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(out.raw(), observing))) return false;
 		if (!observing) return true;
 		// the body is scanned only once one of its closures asks
 		zv::Val body = pt_template_argument_frame_get_closure_signature_body(out.raw());

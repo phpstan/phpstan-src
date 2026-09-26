@@ -54,6 +54,15 @@ final class TemplateTypeHelper
 					return $traverse($type->getDefault() ?? $type->getBound());
 				}
 
+				if (
+					$newType instanceof TemplateType
+					&& !$newType->isArgument()
+					&& $newType->getName() === $type->getName()
+					&& $newType->getScope()->equals($type->getScope())
+				) {
+					return $traverse($type);
+				}
+
 				$callSiteVariance = $callSiteVariances->getVariance($type->getName());
 				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
 					return $newType;

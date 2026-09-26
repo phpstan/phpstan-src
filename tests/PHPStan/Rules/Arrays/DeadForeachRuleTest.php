@@ -65,4 +65,9 @@ class DeadForeachRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8056.php'], []);
 	}
 
+	public function testBug15147(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15147.php'], []);
+	}
+
 }

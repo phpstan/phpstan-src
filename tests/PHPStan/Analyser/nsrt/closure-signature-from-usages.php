@@ -38,6 +38,16 @@ function takesMixed(mixed $m): void
 {
 }
 
+/**
+ * @template T of \BackedEnum|int|string
+ * @param \Closure(T): string $cb
+ * @return list<T>
+ */
+function takesConvertor(\Closure $cb): array
+{
+	return [];
+}
+
 function takesBareCallable(callable $cb): void
 {
 }
@@ -484,6 +494,15 @@ class Foo
 
 		$c = fn () => fn ($y) => assertType('string', $y);
 		takesFactory($c);
+	}
+
+	public function settledClosureSentToGenericTarget(): void
+	{
+		$convertor = static function (int|string $value): string {
+			assertType('int|string', $value);
+			return 'x' . $value;
+		};
+		assertType('list<int|string>', takesConvertor($convertor));
 	}
 
 }

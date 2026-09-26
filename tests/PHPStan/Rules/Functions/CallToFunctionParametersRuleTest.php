@@ -914,6 +914,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testClosureSignatureFromUsages(): void
 	{
 		$this->analyse([__DIR__ . '/data/closure-signature-from-usages.php'], [

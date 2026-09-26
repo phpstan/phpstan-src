@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace ClosureSignatureFromUsagesRule;
 
@@ -35,4 +35,21 @@ function (): void {
 		return $x;
 	};
 	takesIntToStringCallback($identity);
+};
+
+/**
+ * @template T of \BackedEnum|int|string
+ * @param \Closure(T): string $cb
+ * @return list<T>
+ */
+function takesConvertor(\Closure $cb): array
+{
+	return [];
+}
+
+function (): void {
+	$convertor = static function (int|string $value): string {
+		return 'x' . $value;
+	};
+	takesConvertor($convertor);
 };

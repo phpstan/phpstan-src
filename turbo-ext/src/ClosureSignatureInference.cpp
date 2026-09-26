@@ -479,7 +479,13 @@ public:
 			if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
 			zend_long mode = pt_passed_by_reference_mode(passedByReference.raw());
 			if (UNEXPECTED(mode < 0)) return zv::Val();
-			if (mode != PT_PASSED_BY_REFERENCE_NO) {
+			bool isVariadicParameter = false;
+			if (mode == PT_PASSED_BY_REFERENCE_NO) {
+				zv::Val isVariadic = pt_parameter_reflection_call(parameter, PT_PR_IS_VARIADIC);
+				if (UNEXPECTED(isVariadic.isUndef())) return zv::Val();
+				isVariadicParameter = zend_is_true(isVariadic.raw());
+			}
+			if (mode != PT_PASSED_BY_REFERENCE_NO || isVariadicParameter) {
 				parameters.push(zv::Val::copyOf(zv::Ref(parameter)));
 				continue;
 			}

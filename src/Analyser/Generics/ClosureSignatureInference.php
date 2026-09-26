@@ -132,7 +132,9 @@ final class ClosureSignatureInference
 
 		$parameters = [];
 		foreach ($declaredParameters as $parameter) {
-			if (!$parameter->passedByReference()->no()) {
+			// a variadic parameter collects arguments of different positions into
+			// one list - spread again, one element type fits none of them
+			if (!$parameter->passedByReference()->no() || $parameter->isVariadic()) {
 				$parameters[] = $parameter;
 				continue;
 			}
@@ -210,7 +212,11 @@ final class ClosureSignatureInference
 			return $returnType;
 		}
 		$frame = $this->getFrame($scope);
-		if ($frame === null || (!$frame->isObservingClosures() && !$frame->isSettledClosureSite($expr)) || !self::returnsContextTypedExpression($expr)) {
+		if (
+			$frame === null
+			|| (!$frame->isObservingClosures() && !$frame->isSettledClosureSite($expr))
+			|| !self::returnsContextTypedExpression($expr)
+		) {
 			return $returnType;
 		}
 

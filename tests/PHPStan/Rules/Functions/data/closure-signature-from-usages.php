@@ -52,4 +52,8 @@ function (): void {
 		return 'x' . $value;
 	};
 	takesConvertor($convertor);
+
+	$inner = static fn (string $a, float $b): array => [$a, $b];
+	$outer = static fn (mixed ...$args): array => $inner(...$args);
+	$outer('x', 1.0);
 };

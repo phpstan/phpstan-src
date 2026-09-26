@@ -408,7 +408,7 @@ class Foo
 		$c(1);
 
 		$d = function (...$xs) {
-			assertType('array<int<0, max>|string, 1|2>', $xs);
+			assertType('array<int<0, max>|string, mixed>', $xs);
 		};
 		$d(1, 2);
 	}
@@ -503,6 +503,16 @@ class Foo
 			return 'x' . $value;
 		};
 		assertType('list<int|string>', takesConvertor($convertor));
+	}
+
+	public function variadicParameterKeepsDeclaredType(): void
+	{
+		$inner = static fn (string $a, float $b): array => [$a, $b];
+		$outer = static function (mixed ...$args) use ($inner): array {
+			assertType('array<int<0, max>|string, mixed>', $args);
+			return $inner(...$args);
+		};
+		$outer('x', 1.0);
 	}
 
 }

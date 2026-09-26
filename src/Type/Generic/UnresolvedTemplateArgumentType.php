@@ -160,6 +160,12 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 			return sprintf('unresolved#%d(%s)', spl_object_id($this->site), $this->getDelegate()->describe($level));
 		}
 
+		if ($this->site instanceof Expr\Closure || $this->site instanceof Expr\ArrowFunction) {
+			// a closure signature marker outlives the observation pass when its
+			// site settled on the declared types it stands for
+			return $this->getDelegate()->describe($level);
+		}
+
 		return sprintf('unresolved(%s)', $this->getDelegate()->describe($level));
 	}
 

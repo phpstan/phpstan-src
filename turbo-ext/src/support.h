@@ -2000,7 +2000,9 @@ zv::Val pt_template_argument_frame_return_type_of_call(zval *acceptor, zval *sco
 /* new TemplateArgumentFrame($parent, $resolutions, $siteStatementIndexes)
  * ($parent / $resolutions NULL or IS_NULL for null, $siteStatementIndexes
  * NULL for []) */
-zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL);
+zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL, zval *settledClosureSites = NULL);
+/* $frame->isSettledClosureSite($site); false = pending exception */
+[[nodiscard]] bool pt_template_argument_frame_is_settled_closure_site(zval *frame, zval *site, bool &out);
 /* $frame->getClosureSignatureBody() / getClosureSignatureStmts(); UNDEF =
  * pending exception */
 zv::Val pt_template_argument_frame_get_closure_signature_body(zval *frame);

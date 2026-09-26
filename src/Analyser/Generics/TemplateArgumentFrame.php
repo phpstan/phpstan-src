@@ -62,6 +62,7 @@ final class TemplateArgumentFrame
 	 * @param array<string, Type>|null $resolutions null during collection
 	 * @param array<int, true> $siteStatementIndexes
 	 * @param Node\Stmt[] $closureSignatureStmts the statements of $closureSignatureBody
+	 * @param array<int, true> $settledClosureSites spl_object_id() of the closure nodes
 	 */
 	public function __construct(
 		private readonly ?self $parent,
@@ -69,8 +70,23 @@ final class TemplateArgumentFrame
 		private readonly array $siteStatementIndexes = [],
 		private readonly ?Node $closureSignatureBody = null,
 		private readonly array $closureSignatureStmts = [],
+		private readonly array $settledClosureSites = [],
 	)
 	{
+	}
+
+	/**
+	 * Whether the closure's signature resolved to exactly what its markers stood
+	 * for while observing - its ClosureType keeps them, see
+	 * TemplateArgumentResolver::resolve().
+	 */
+	public function isSettledClosureSite(Expr $site): bool
+	{
+		if (isset($this->settledClosureSites[spl_object_id($site)])) {
+			return true;
+		}
+
+		return $this->parent !== null && $this->parent->isSettledClosureSite($site);
 	}
 
 	/**

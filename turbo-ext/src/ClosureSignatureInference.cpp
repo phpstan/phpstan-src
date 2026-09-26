@@ -469,6 +469,9 @@ public:
 		bool observing;
 		if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame.raw(), observing))) return zv::Val();
 
+		bool keepsMarkers = observing;
+		if (!keepsMarkers && UNEXPECTED(!pt_template_argument_frame_is_settled_closure_site(frame.raw(), expr, keepsMarkers))) return zv::Val();
+
 		zv::Arr parameters = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(declaredParameters)));
 		for (auto entry : zv::ArrRef(declaredParameters)) {
 			zval *parameter = entry.value().deref().raw();
@@ -483,7 +486,7 @@ public:
 			zv::Val name = pt_parameter_reflection_call(parameter, PT_PR_GET_NAME);
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
 			zv::Val type;
-			if (observing) {
+			if (keepsMarkers) {
 				type = createParameterMarker(expr, parameter, Z_STR_P(name.raw()));
 			} else {
 				zv::Str templateName = parameterTemplateName(Z_STR_P(name.raw()));
@@ -518,6 +521,9 @@ public:
 		bool observing;
 		if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame.raw(), observing))) return zv::Val();
 		if (observing) return zv::Val::null();
+		bool settled;
+		if (UNEXPECTED(!pt_template_argument_frame_is_settled_closure_site(frame.raw(), expr, settled))) return zv::Val();
+		if (settled) return zv::Val::null();
 
 		zval *params = ptclosure::prop(ptclosure::paramsSite, expr, PT_LC("params"));
 		if (UNEXPECTED(params == NULL)) return zv::Val();
@@ -579,7 +585,11 @@ public:
 		if (frame.isNull()) return zv::Val::copyOf(zv::Ref(returnType));
 		bool observing;
 		if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame.raw(), observing))) return zv::Val();
-		if (!observing) return zv::Val::copyOf(zv::Ref(returnType));
+		if (!observing) {
+			bool settled;
+			if (UNEXPECTED(!pt_template_argument_frame_is_settled_closure_site(frame.raw(), expr, settled))) return zv::Val();
+			if (!settled) return zv::Val::copyOf(zv::Ref(returnType));
+		}
 		bool returnsContextTyped;
 		if (UNEXPECTED(!returnsContextTypedExpression(expr, returnsContextTyped))) return zv::Val();
 		if (!returnsContextTyped) return zv::Val::copyOf(zv::Ref(returnType));

@@ -137,7 +137,7 @@ final class ClosureSignatureInference
 				continue;
 			}
 
-			if ($frame->isObserving()) {
+			if ($frame->isObserving() || $frame->isSettledClosureSite($expr)) {
 				$type = $this->createParameterMarker($expr, $parameter);
 			} else {
 				$type = $frame->resolve($expr, self::parameterTemplateName($parameter->getName()));
@@ -170,7 +170,7 @@ final class ClosureSignatureInference
 	public function getBodyParameters(MutatingScope $scope, Closure|ArrowFunction $expr): ?array
 	{
 		$frame = $this->getFrame($scope);
-		if ($frame === null || $frame->isObserving()) {
+		if ($frame === null || $frame->isObserving() || $frame->isSettledClosureSite($expr)) {
 			return null;
 		}
 
@@ -210,7 +210,7 @@ final class ClosureSignatureInference
 			return $returnType;
 		}
 		$frame = $this->getFrame($scope);
-		if ($frame === null || !$frame->isObserving() || !self::returnsContextTypedExpression($expr)) {
+		if ($frame === null || (!$frame->isObserving() && !$frame->isSettledClosureSite($expr)) || !self::returnsContextTypedExpression($expr)) {
 			return $returnType;
 		}
 

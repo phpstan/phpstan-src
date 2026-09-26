@@ -4,7 +4,9 @@ namespace PHPStan\Analyser\Generics;
 
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
+use function array_filter;
 use function count;
 use function spl_object_id;
 
@@ -19,6 +21,7 @@ final class TemplateArgumentResolver
 		$observations = [];
 		$sites = [];
 		$siteStatementIndexes = [];
+		$siteIndexes = [];
 		foreach ($constraints->getFacts() as [$marker, $type, $variance, $unconstraining]) {
 			$key = spl_object_id($marker->getSite()) . '#' . $marker->getTemplateName();
 			if ($unconstraining && !isset($observations[$key])) {
@@ -52,7 +55,7 @@ final class TemplateArgumentResolver
 				continue;
 			}
 			$sites[$id] = $site;
-			$siteStatementIndexes[$this->locateStatement($site->getStartTokenPos(), $statementStartTokenPositions)] = true;
+			$siteIndexes[$id] = $this->locateStatement($site->getStartTokenPos(), $statementStartTokenPositions);
 			if (!TemplateArgumentStats::$enabled) {
 				continue;
 			}
@@ -60,7 +63,44 @@ final class TemplateArgumentResolver
 			TemplateArgumentStats::increment(ClosureSignatureInference::isClosureSignatureMarker($marker) ? 'closureSitesCreated' : 'sitesCreated');
 		}
 
-		return new TemplateArgumentFrame($parent, (new TemplateArgumentSolver($observations, $parent))->solve(), $siteStatementIndexes);
+		$resolutions = (new TemplateArgumentSolver($observations, $parent))->solve();
+
+		// a closure site whose every marker resolved to what it stood for in the
+		// observation pass is settled: the second pass keeps its markers, so the
+		// recorded walk of its statement - and of every statement it reaches -
+		// stands and is replayed
+		$settledClosureSites = [];
+		foreach ($observations as $key => $observation) {
+			$marker = $observation['marker'];
+			if (!ClosureSignatureInference::isClosureSignatureMarker($marker)) {
+				continue;
+			}
+			$id = spl_object_id($marker->getSite());
+			$settled = $settledClosureSites[$id] ?? true;
+			if (!$settled) {
+				continue;
+			}
+			$resolution = $resolutions[$key] ?? null;
+			if (ClosureSignatureInference::isReturnMarker($marker)) {
+				$settled = $resolution === null || $resolution instanceof MixedType;
+			} else {
+				$settled = $resolution === null || $resolution->equals($marker->getDelegate());
+			}
+			$settledClosureSites[$id] = $settled;
+		}
+		$settledClosureSites = array_filter($settledClosureSites);
+
+		foreach ($siteIndexes as $id => $index) {
+			if (isset($settledClosureSites[$id])) {
+				continue;
+			}
+			$siteStatementIndexes[$index] = true;
+		}
+		if (TemplateArgumentStats::$enabled && count($settledClosureSites) > 0) {
+			TemplateArgumentStats::increment('closureSitesSettled', count($settledClosureSites));
+		}
+
+		return new TemplateArgumentFrame($parent, $resolutions, $siteStatementIndexes, settledClosureSites: $settledClosureSites);
 	}
 
 	/** @param list<int> $positions */

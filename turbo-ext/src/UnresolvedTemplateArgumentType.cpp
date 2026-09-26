@@ -232,9 +232,13 @@ public:
 		zend_long levelValue;
 		if (UNEXPECTED(!pt_verbosity_level_value_of(level, levelValue))) return zv::Val();
 		zval *s = NULL;
+		bool closureSite = false;
 		if (levelValue == PT_VERBOSITY_LEVEL_CACHE) {
 			s = site();
 			if (UNEXPECTED(s == NULL)) return zv::Val();
+		} else if (UNEXPECTED(!hasClosureSite(closureSite))) {
+			// read before the delegate, as the twin's instanceof check reads $site
+			return zv::Val();
 		}
 		zv::Val delegate = getDelegate();
 		if (UNEXPECTED(delegate.isUndef())) return zv::Val();
@@ -248,6 +252,9 @@ public:
 			/* spl_object_id($this->site) */
 			return zv::Val::adoptString(zend_strpprintf(0, "unresolved#" ZEND_LONG_FMT "(%s)", (zend_long) Z_OBJ_HANDLE_P(s), ZSTR_VAL(Z_STR_P(description.raw()))));
 		}
+		// a closure signature marker outlives the observation pass when its
+		// site settled on the declared types it stands for
+		if (closureSite) return description;
 		return zv::Val::adoptString(zend_strpprintf(0, "unresolved(%s)", ZSTR_VAL(Z_STR_P(description.raw()))));
 	}
 

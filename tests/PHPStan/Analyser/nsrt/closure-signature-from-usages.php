@@ -289,6 +289,42 @@ class Foo
 		yield $c;
 	}
 
+	/** @return \Generator<int, Closure(int): void> */
+	public function yieldToTypedGenerator(): \Generator
+	{
+		$c = function ($a): void {
+			assertType('int', $a);
+		};
+		yield $c;
+	}
+
+	/** @return \Generator<callable(string): void, int> */
+	public function yieldKeyToTypedGenerator(): \Generator
+	{
+		$c = function ($a): void {
+			assertType('string', $a);
+		};
+		yield $c => 1;
+	}
+
+	/** @return \Generator<int, callable(int): void> */
+	public function yieldFromToTypedGenerator(): \Generator
+	{
+		$c = function ($a): void {
+			assertType('int', $a);
+		};
+		yield from [$c];
+	}
+
+	/** @return iterable<int, callable(int): void> */
+	public function yieldToTypedIterable(): iterable
+	{
+		$c = function ($a): void {
+			assertType('int', $a);
+		};
+		yield $c;
+	}
+
 	public function escapeViaInclude(): void
 	{
 		$c = function ($a) {

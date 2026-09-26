@@ -50,11 +50,10 @@ public:
 	explicit YieldFromHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *templateArgumentObserver) const
+	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
-		pt_write_slot(self, slots::templateArgumentObserver, templateArgumentObserver);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -80,17 +79,12 @@ public:
 		if (UNEXPECTED(!child.read(exprResult.raw()))) return zv::Val();
 		zv::Val resultScope = zv::Val::copyOf(zv::Ref(child.scope));
 		{
-			zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, resultScope.raw());
-			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
-			if (Z_TYPE_P(observingFrame.raw()) == IS_OBJECT) {
-				// the consumer of the generator can do anything with what it yields
-				zv::Val yieldedType = pt_expression_result_get_type(exprResult.raw());
-				if (UNEXPECTED(yieldedType.isUndef())) return zv::Val();
-				zv::Val constraints = pt_template_argument_observer_collect_escape(OBJ_PROP_NUM(self, slots::templateArgumentObserver), yieldedType.raw());
-				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
-				resultScope = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(resultScope.raw()), constraints.raw());
-				if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
-			}
+			zv::Val delegatedType = pt_expression_result_get_type(exprResult.raw());
+			if (UNEXPECTED(delegatedType.isUndef())) return zv::Val();
+			zv::Val constraints = pt_node_scope_resolver_collect_yield_from_send(nodeScopeResolver, resultScope.raw(), delegatedType.raw());
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			resultScope = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(resultScope.raw()), constraints.raw());
+			if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
 		}
 
 		zv::Val throwPoint = pt_internal_throw_point_create_implicit(resultScope.raw(), expr);
@@ -181,9 +175,9 @@ PT_MINIT_REGISTRATION(pt_register_yield_from_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expressionResultFactory, *defaultNarrowingHelper, *templateArgumentObserver;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper, templateArgumentObserver)) RETURN_THROWS();
-		YieldFromHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper, templateArgumentObserver);
+		zval *expressionResultFactory, *defaultNarrowingHelper;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper)) RETURN_THROWS();
+		YieldFromHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

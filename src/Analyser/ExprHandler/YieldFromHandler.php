@@ -12,7 +12,6 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
-use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -37,7 +36,6 @@ final class YieldFromHandler implements ExprHandler
 	public function __construct(
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
-		private TemplateArgumentObserver $templateArgumentObserver,
 	)
 	{
 	}
@@ -52,10 +50,7 @@ final class YieldFromHandler implements ExprHandler
 		$beforeScope = $scope;
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$scope = $exprResult->getScope();
-		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
-			// the consumer of the generator can do anything with what it yields
-			$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectEscape($exprResult->getType()));
-		}
+		$scope = $scope->addTemplateArgumentConstraints($nodeScopeResolver->collectYieldFromSend($scope, $exprResult->getType()));
 
 		$throwPoint = InternalThrowPoint::createImplicit($scope, $expr);
 

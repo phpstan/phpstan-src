@@ -2553,6 +2553,10 @@ zv::Val pt_mutating_scope_get_anonymous_function_reflection(zend_object *scope);
 [[nodiscard]] bool pt_node_scope_resolver_push_node_gatherer(zval *nodeScopeResolver, zval *gatherer);
 [[nodiscard]] bool pt_node_scope_resolver_pop_node_gatherer(zval *nodeScopeResolver);
 zv::Val pt_node_scope_resolver_collect_return_send(zval *nodeScopeResolver, zval *scope, zval *returnedResult);
+/* ->collectYieldSend($scope, $keyType, $valueType) (NULL for null) /
+ * ->collectYieldFromSend($scope, $delegatedType); UNDEF = pending exception */
+zv::Val pt_node_scope_resolver_collect_yield_send(zval *nodeScopeResolver, zval *scope, zval *keyType, zval *valueType);
+zv::Val pt_node_scope_resolver_collect_yield_from_send(zval *nodeScopeResolver, zval *scope, zval *delegatedType);
 
 /* }}} */
 

@@ -149,7 +149,13 @@ inline constexpr char strings[] =
 	"observingTemplateArgumentFrame\0" /* 2111 */
 	"returnedResult\0" /* 2142 */
 	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 2157 */
-	"collectReturnSend"; /* 2211 */
+	"collectReturnSend\0" /* 2211 */
+	"keyType\0" /* 2229 */
+	"valueType\0" /* 2237 */
+	"collectYieldSend\0" /* 2247 */
+	"delegatedType\0" /* 2264 */
+	"collectYieldFromSend\0" /* 2278 */
+	"getDeclaredReturnType"; /* 2299 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 10), /* __construct $container */
 	reg::packed(48, 0, 73), /* __construct $templateArgumentObserver */
@@ -301,6 +307,15 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(502, 0, 508), /* collectReturnSend $scope */
 	reg::packed(2142, 0, 656), /* collectReturnSend $returnedResult */
 	reg::packed(371, 0, 2157), /* collectReturnSend return */
+	reg::packed(502, 0, 508), /* collectYieldSend $scope */
+	reg::packed(2229, MAY_BE_NULL, 1324), /* collectYieldSend $keyType */
+	reg::packed(2237, MAY_BE_NULL, 1324), /* collectYieldSend $valueType */
+	reg::packed(371, 0, 2157), /* collectYieldSend return */
+	reg::packed(502, 0, 508), /* collectYieldFromSend $scope */
+	reg::packed(2264, 0, 1324), /* collectYieldFromSend $delegatedType */
+	reg::packed(371, 0, 2157), /* collectYieldFromSend return */
+	reg::packed(502, 0, 508), /* getDeclaredReturnType $scope */
+	reg::packed(371, MAY_BE_NULL, 1324), /* getDeclaredReturnType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -349,6 +364,9 @@ inline constexpr sigtab::Sig callNodeCallbackWithExpression = { { 2015 /* callNo
 inline constexpr sigtab::Sig callNodeCallback = { { 2046 /* callNodeCallback */, 4, 140, 4, 144, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig observingTemplateArgumentFrame = { { 2111 /* observingTemplateArgumentFrame */, 1, 145, 1, 146, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig collectReturnSend = { { 2211 /* collectReturnSend */, 2, 147, 2, 149, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectYieldSend = { { 2247 /* collectYieldSend */, 3, 150, 3, 153, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectYieldFromSend = { { 2278 /* collectYieldFromSend */, 2, 154, 2, 156, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDeclaredReturnType = { { 2299 /* getDeclaredReturnType */, 1, 157, 1, 158, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::NodeScopeResolver

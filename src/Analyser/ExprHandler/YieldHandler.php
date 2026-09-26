@@ -12,7 +12,6 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
-use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -38,7 +37,6 @@ final class YieldHandler implements ExprHandler
 	public function __construct(
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
-		private TemplateArgumentObserver $templateArgumentObserver,
 	)
 	{
 	}
@@ -81,15 +79,11 @@ final class YieldHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 		}
 
-		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
-			// the consumer of the generator can do anything with what it yields
-			foreach ([$keyResult, $valueResult] as $yieldedResult) {
-				if ($yieldedResult === null) {
-					continue;
-				}
-				$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectEscape($yieldedResult->getType()));
-			}
-		}
+		$scope = $scope->addTemplateArgumentConstraints($nodeScopeResolver->collectYieldSend(
+			$scope,
+			$keyResult !== null ? $keyResult->getType() : null,
+			$valueResult !== null ? $valueResult->getType() : null,
+		));
 
 		// the enclosing function is lexical - the generator TSend type does not
 		// vary with the scope the callback is later invoked on - resolve it once here.

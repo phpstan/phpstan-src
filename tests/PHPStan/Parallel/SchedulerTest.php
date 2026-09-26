@@ -195,6 +195,78 @@ class SchedulerTest extends TestCase
 		$this->assertSame(1, $schedule->getNumberOfProcesses());
 	}
 
+	public function testAdaptiveWorkerCountLeavesFullRunsAlone(): void
+	{
+		// from ~800 files the sqrt rule saturates at the usable cores, so a full
+		// run is scheduled exactly as it is without the toggle
+		foreach ([800, 4524] as $numberOfFiles) {
+			$files = array_fill(0, $numberOfFiles, 'file.php');
+			$legacy = (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, $files, static fn (string $file): int => 0);
+			$adaptive = (new Scheduler(20, Scheduler::AUTO, 2, true))->scheduleWork(14, $files, static fn (string $file): int => 0);
+
+			$this->assertSame($legacy->getNumberOfProcesses(), $adaptive->getNumberOfProcesses());
+			$this->assertSame($legacy->getJobs(), $adaptive->getJobs());
+		}
+	}
+
+	public function testAdaptiveWorkerCountParallelisesSmallRuns(): void
+	{
+		// 50 files is one worker today, because jobSize 20 and 2 jobs per process
+		// ask for 40 files before a second worker is allowed
+		$files = array_fill(0, 50, 'file.php');
+		$callback = static fn (string $file): int => 0;
+
+		$this->assertSame(1, (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, $files, $callback)->getNumberOfProcesses());
+		$this->assertSame(4, (new Scheduler(20, Scheduler::AUTO, 2, true))->scheduleWork(14, $files, $callback)->getNumberOfProcesses());
+	}
+
+	public function testAdaptiveWorkerCountKeepsTinyRunsSerial(): void
+	{
+		// below the threshold a second worker does not pay for its own startup
+		$callback = static fn (string $file): int => 0;
+		$scheduler = new Scheduler(20, Scheduler::AUTO, 2, true);
+
+		$this->assertSame(1, $scheduler->scheduleWork(14, array_fill(0, 1, 'file.php'), $callback)->getNumberOfProcesses());
+		$this->assertSame(1, $scheduler->scheduleWork(14, array_fill(0, 8, 'file.php'), $callback)->getNumberOfProcesses());
+		$this->assertSame(2, $scheduler->scheduleWork(14, array_fill(0, 9, 'file.php'), $callback)->getNumberOfProcesses());
+	}
+
+	public function testAdaptiveWorkerCountIsNeverBelowTheDefault(): void
+	{
+		// the rule exists to stop small runs being starved, never to take workers away
+		// from large ones - sqrt() alone dips under the existing formula between roughly
+		// 400 and 800 files, which measured 13% slower at 600
+		$callback = static fn (string $file): int => 0;
+		foreach ([1, 5, 9, 25, 50, 100, 200, 300, 400, 600, 800, 1424, 4524] as $numberOfFiles) {
+			$files = array_fill(0, $numberOfFiles, 'file.php');
+			$legacy = (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, $files, $callback);
+			$adaptive = (new Scheduler(20, Scheduler::AUTO, 2, true))->scheduleWork(14, $files, $callback);
+
+			$this->assertGreaterThanOrEqual(
+				$legacy->getNumberOfProcesses(),
+				$adaptive->getNumberOfProcesses(),
+				sprintf('%d files', $numberOfFiles),
+			);
+		}
+	}
+
+	public function testAdaptiveWorkerCountNeverExceedsTheJobCount(): void
+	{
+		// a worker with no job never starts, so the schedule must not claim one
+		$callback = static fn (string $file): int => 0;
+		$schedule = (new Scheduler(20, Scheduler::AUTO, 2, true))->scheduleWork(14, array_fill(0, 3, 'file.php'), $callback);
+
+		$this->assertLessThanOrEqual(count($schedule->getJobs()), $schedule->getNumberOfProcesses());
+	}
+
+	public function testAdaptiveWorkerCountStillRespectsAnExplicitLimit(): void
+	{
+		$callback = static fn (string $file): int => 0;
+		$schedule = (new Scheduler(20, 2, 2, true))->scheduleWork(14, array_fill(0, 200, 'file.php'), $callback);
+
+		$this->assertSame(2, $schedule->getNumberOfProcesses());
+	}
+
 	public function testAnExplicitLimitStillWins(): void
 	{
 		$scheduler = new Scheduler(1, 20, 1);

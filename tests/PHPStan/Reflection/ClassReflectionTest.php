@@ -395,7 +395,8 @@ class ClassReflectionTest extends PHPStanTestCase
 		$classReflection = $reflectionProvider->getClass($className);
 
 		$this->assertFalse($classReflection->hasInstanceProperty($propertyName));
-		$this->assertTrue($classReflection->hasProperty($propertyName)); // @phpstan-ignore method.deprecated
+		// @phpstan-ignore method.deprecated
+		$this->assertTrue($classReflection->hasProperty($propertyName));
 		$this->assertTrue($classReflection->hasStaticProperty($propertyName));
 		$this->assertFalse($classReflection->hasInstanceProperty($propertyName));
 	}

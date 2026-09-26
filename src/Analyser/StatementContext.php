@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Type;
 
 /**
  * Object of this class is one of the parameters of `NodeScopeResolver::processStmtNodes()`.
@@ -20,6 +21,8 @@ final class StatementContext
 		private bool $isTopLevel,
 		private int $foreachUnrollFactor = 1,
 		private bool $resolveTemplateArguments = true,
+		private ?Type $expectedReturnType = null,
+		private ?Type $nativeExpectedReturnType = null,
 	)
 	{
 	}
@@ -61,13 +64,37 @@ final class StatementContext
 			return $this;
 		}
 
-		return new self($this->isTopLevel, $this->foreachUnrollFactor, false);
+		return new self($this->isTopLevel, $this->foreachUnrollFactor, false, $this->expectedReturnType, $this->nativeExpectedReturnType);
+	}
+
+	/**
+	 * The type the returned expressions of an anonymous function are expected
+	 * to have, from the callable type it is passed to - an expected type for
+	 * the closures, arrow functions and array literals it returns.
+	 */
+	public function withExpectedReturnType(?Type $expectedReturnType, ?Type $nativeExpectedReturnType): self
+	{
+		if ($expectedReturnType === null && $nativeExpectedReturnType === null) {
+			return $this;
+		}
+
+		return new self($this->isTopLevel, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $expectedReturnType, $nativeExpectedReturnType);
+	}
+
+	public function getExpectedReturnType(): ?Type
+	{
+		return $this->expectedReturnType;
+	}
+
+	public function getNativeExpectedReturnType(): ?Type
+	{
+		return $this->nativeExpectedReturnType;
 	}
 
 	public function enterDeep(): self
 	{
 		if ($this->isTopLevel) {
-			return new self(false, $this->foreachUnrollFactor, $this->resolveTemplateArguments);
+			return new self(false, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $this->expectedReturnType, $this->nativeExpectedReturnType);
 		}
 
 		return $this;
@@ -75,7 +102,7 @@ final class StatementContext
 
 	public function enterUnrolledForeach(int $totalKeys): self
 	{
-		return new self($this->isTopLevel, $this->foreachUnrollFactor * $totalKeys, $this->resolveTemplateArguments);
+		return new self($this->isTopLevel, $this->foreachUnrollFactor * $totalKeys, $this->resolveTemplateArguments, $this->expectedReturnType, $this->nativeExpectedReturnType);
 	}
 
 }

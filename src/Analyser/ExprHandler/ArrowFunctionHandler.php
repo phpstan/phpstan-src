@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -34,6 +35,7 @@ final class ArrowFunctionHandler implements ExprHandler
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private ClosureProcessor $closureProcessor,
+		private ClosureSignatureInference $closureSignatureInference,
 	)
 	{
 	}
@@ -84,7 +86,7 @@ final class ArrowFunctionHandler implements ExprHandler
 		);
 
 		return $this->expressionResultFactory->create(
-			$result->getScope(),
+			$result->getScope()->addTemplateArgumentConstraints($this->closureSignatureInference->collectSites($scope, $type)),
 			beforeScope: $scope,
 			expr: $expr,
 			variableFlow: $result->getVariableFlow(),

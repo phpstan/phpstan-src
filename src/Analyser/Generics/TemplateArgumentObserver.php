@@ -3,10 +3,12 @@
 namespace PHPStan\Analyser\Generics;
 
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -18,6 +20,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
+use function array_filter;
 use function array_merge;
 use function count;
 use function is_string;
@@ -50,11 +53,11 @@ final class TemplateArgumentObserver
 	}
 
 	/** Skip ordinary recursive generic relationships that cannot contribute a constraint. */
-	private function containsMarker(Type $type): bool
+	private function containsMarker(Type $type, bool $templateArgumentsOnly = false): bool
 	{
 		$contains = false;
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains): Type {
-			if ($type instanceof UnresolvedTemplateArgumentType) {
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains, $templateArgumentsOnly): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType && (!$templateArgumentsOnly || !ClosureSignatureInference::isClosureSignatureMarker($type))) {
 				$contains = true;
 			}
 			return $contains ? $type : $traverse($type);
@@ -64,7 +67,216 @@ final class TemplateArgumentObserver
 
 	public function collectSend(Type $declared, Type $actual): TemplateArgumentConstraints
 	{
-		return $this->observeSend(TemplateArgumentConstraints::createEmpty(), $declared, $actual);
+		$constraints = $this->observeSend(TemplateArgumentConstraints::createEmpty(), $declared, $actual);
+
+		return $this->observeClosureSend($constraints, $declared, $actual);
+	}
+
+	/**
+	 * A call argument flows into its parameter: the closures it carries learn
+	 * what they will be invoked with (see ClosureSignatureInference).
+	 */
+	public function collectClosureArgument(Type $parameterType, Type $argumentType): TemplateArgumentConstraints
+	{
+		return $this->observeClosureSend(TemplateArgumentConstraints::createEmpty(), $parameterType, $argumentType);
+	}
+
+	/**
+	 * The call's arguments against the acceptor resolved from all of them - a
+	 * generic callable(T) parameter is only informative once T is.
+	 *
+	 * A pure callee cannot invoke what it takes as mixed, so such a parameter
+	 * is no escape.
+	 *
+	 * @param array<int|string, Type> $argumentTypes
+	 */
+	public function collectClosureArguments(ParametersAcceptor $acceptor, array $argumentTypes, bool $isPure): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		$parameters = null;
+		$parametersByName = null;
+		foreach ($argumentTypes as $i => $argumentType) {
+			if (!$this->containsClosureSignatureMarker($argumentType)) {
+				continue;
+			}
+			if ($parameters === null) {
+				$parameters = $acceptor->getParameters();
+				$parametersByName = [];
+				foreach ($parameters as $parameter) {
+					$parametersByName[$parameter->getName()] = $parameter;
+				}
+			}
+			$parameter = is_string($i) ? ($parametersByName[$i] ?? null) : ($parameters[$i] ?? null);
+			$parameter ??= $acceptor->isVariadic() && count($parameters) > 0 ? $parameters[count($parameters) - 1] : null;
+			if ($parameter === null) {
+				$constraints = $this->escapeClosures($constraints, $argumentType);
+				continue;
+			}
+			$parameterType = $parameter->getType();
+			if ($isPure && $parameterType instanceof MixedType && !$parameterType instanceof TemplateType) {
+				continue;
+			}
+			$constraints = $this->observeClosureSend($constraints, $parameterType, $argumentType);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * The value leaves the body for somewhere nothing describes (a yielded value,
+	 * an offset of a property): the closures it carries can be invoked with
+	 * anything.
+	 */
+	public function collectEscape(Type $type): TemplateArgumentConstraints
+	{
+		if (!$this->containsClosureSignatureMarker($type)) {
+			return TemplateArgumentConstraints::createEmpty();
+		}
+
+		return $this->escapeClosures(TemplateArgumentConstraints::createEmpty(), $type);
+	}
+
+	/** @param array<int|string, Type> $types */
+	public function carriesClosureSignatureMarkers(array $types): bool
+	{
+		foreach ($types as $type) {
+			if ($this->containsClosureSignatureMarker($type)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function containsClosureSignatureMarker(Type $type): bool
+	{
+		$contains = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType && ClosureSignatureInference::isClosureSignatureMarker($type)) {
+				$contains = true;
+			}
+			return $contains ? $type : $traverse($type);
+		});
+		return $contains;
+	}
+
+	/**
+	 * $actual, carrying closures whose signature is being inferred, flows into
+	 * $declared. A callable target with a signature puts its parameter types as
+	 * lower bounds on the closure's parameters and its return type as an upper
+	 * bound on the closure's return; any other target lets the closure escape -
+	 * whoever ends up invoking it can pass anything.
+	 */
+	private function observeClosureSend(TemplateArgumentConstraints $constraints, Type $declared, Type $actual): TemplateArgumentConstraints
+	{
+		if (!$this->containsClosureSignatureMarker($actual)) {
+			return $constraints;
+		}
+		if ($actual instanceof UnionType) {
+			foreach ($actual->getTypes() as $member) {
+				$constraints = $this->observeClosureSend($constraints, $declared, $member);
+			}
+
+			return $constraints;
+		}
+		if ($actual instanceof ClosureType) {
+			return $this->observeClosureSendToCallable($constraints, $declared, $actual);
+		}
+		if (
+			!$actual->isObject()->yes()
+			&& $actual->isIterable()->yes()
+			&& !$declared->isObject()->yes()
+			&& $declared->isIterable()->yes()
+		) {
+			$constraints = $this->observeClosureSend($constraints, $declared->getIterableKeyType(), $actual->getIterableKeyType());
+
+			return $this->observeClosureSend($constraints, $declared->getIterableValueType(), $actual->getIterableValueType());
+		}
+
+		return $this->escapeClosures($constraints, $actual);
+	}
+
+	private function observeClosureSendToCallable(TemplateArgumentConstraints $constraints, Type $declared, ClosureType $actual): TemplateArgumentConstraints
+	{
+		if ($declared instanceof UnionType && !$declared instanceof TemplateType) {
+			$declared = TypeCombinator::union(...array_filter($declared->getTypes(), static fn (Type $member): bool => !$member->isCallable()->no()));
+		}
+		if ($declared instanceof MixedType || !$declared->isCallable()->yes()) {
+			return $this->escapeClosures($constraints, $actual);
+		}
+
+		$closureParameters = $actual->getParameters();
+		$returnMarker = $actual->getReturnType();
+		foreach ($declared->getCallableParametersAcceptors(new OutOfClassScope()) as $acceptor) {
+			$targetParameters = $acceptor->getParameters();
+			if (count($targetParameters) === 0 && $acceptor->isVariadic()) {
+				// callable, Closure: the parameters are not described
+				$constraints = $this->escapeClosures($constraints, $actual);
+				continue;
+			}
+			foreach ($closureParameters as $i => $closureParameter) {
+				$marker = $closureParameter->getType();
+				if (!$marker instanceof UnresolvedTemplateArgumentType || !ClosureSignatureInference::isClosureSignatureMarker($marker)) {
+					continue;
+				}
+				if ($closureParameter->isVariadic()) {
+					for ($j = $i; $j < count($targetParameters); $j++) {
+						$constraints = $constraints->withLowerBound($marker, $targetParameters[$j]->getType());
+					}
+					continue;
+				}
+				if (isset($targetParameters[$i])) {
+					$constraints = $constraints->withLowerBound($marker, $targetParameters[$i]->getType());
+					continue;
+				}
+				if (!$acceptor->isVariadic() || count($targetParameters) === 0) {
+					// never passed: the closure parameter keeps its default
+					continue;
+				}
+
+				$constraints = $constraints->withLowerBound($marker, $targetParameters[count($targetParameters) - 1]->getType());
+			}
+
+			$targetReturnType = $acceptor->getReturnType();
+			if ($returnMarker instanceof UnresolvedTemplateArgumentType && ClosureSignatureInference::isReturnMarker($returnMarker)) {
+				if (!$targetReturnType->isVoid()->yes() && !$targetReturnType instanceof MixedType) {
+					$constraints = $constraints->withSend($returnMarker, $targetReturnType, TemplateTypeVariance::createCovariant());
+				}
+				$returnedType = $returnMarker->getInitialType();
+			} else {
+				$returnedType = $returnMarker;
+			}
+			if ($returnedType === null) {
+				continue;
+			}
+
+			// a closure returning closures: the returned ones are sent on
+			$constraints = $this->observeClosureSend($constraints, $targetReturnType, $returnedType);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * The closures in $type go where nothing describes how they are invoked.
+	 */
+	private function escapeClosures(TemplateArgumentConstraints $constraints, Type $type): TemplateArgumentConstraints
+	{
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constraints): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType) {
+				if (ClosureSignatureInference::isClosureSignatureMarker($type) && !ClosureSignatureInference::isReturnMarker($type)) {
+					$constraints = $constraints->withUnconstrainingSend($type);
+				}
+				$initial = $type->getInitialType();
+				if ($initial !== null) {
+					$traverse($initial);
+				}
+				return $type;
+			}
+			return $traverse($type);
+		});
+
+		return $constraints;
 	}
 
 	public function collectArgument(Type $parameterType, Type $argumentType, bool $isPure = false): TemplateArgumentConstraints
@@ -95,7 +307,9 @@ final class TemplateArgumentObserver
 		}
 		$hasMarkers = false;
 		foreach ($argumentTypes as $argumentType) {
-			if (!$this->containsMarker($argumentType)) {
+			// a closure whose signature is being inferred is sent through
+			// collectClosureArguments(), it holds no template argument
+			if (!$this->containsMarker($argumentType, true)) {
 				continue;
 			}
 			$hasMarkers = true;

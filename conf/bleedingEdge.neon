@@ -28,5 +28,6 @@ parameters:
 		checkImportedClassNameCase: true
 		sortWithoutEffect: true
 		unresolvedTemplateArguments: true
+		closureSignaturesFromUsages: true
 		unusedVariable: true
 		unusedParameters: true

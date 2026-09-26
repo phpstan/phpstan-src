@@ -364,7 +364,56 @@ public:
 		zend_long ownStaticValue = pt_type_trinary_value(ownStatic);
 		zend_long theirStaticValue = ownStaticValue >= 0 ? pt_type_trinary_value(theirStatic) : -1;
 		if (UNEXPECTED(theirStaticValue < 0)) return false;
-		out = ownStaticValue == theirStaticValue;
+		if (ownStaticValue != theirStaticValue) {
+			out = false;
+			return true;
+		}
+		return hasEqualUnresolvedSignature(Z_OBJ_P(type), out);
+	}
+
+	/* Mirrors the private hasEqualUnresolvedSignature(): the markers of a
+	 * signature still being inferred describe as their delegates; false with
+	 * an exception pending */
+	[[nodiscard]] bool hasEqualUnresolvedSignature(zend_object *other, bool &out) const
+	{
+		out = true;
+		zval *ownReturn = returnType();
+		zval *theirReturn = slot(other, slots::returnType, "returnType");
+		if (UNEXPECTED(ownReturn == NULL || theirReturn == NULL)) return false;
+		if (UNEXPECTED(!unresolvedPairEqual(ownReturn, theirReturn, out))) return false;
+		if (!out) return true;
+		zval *ownParameters = parameters();
+		zval *theirParameters = slot(other, slots::parameters, "parameters");
+		if (UNEXPECTED(ownParameters == NULL || theirParameters == NULL)) return false;
+		for (auto entry : zv::ArrRef(ownParameters)) {
+			zval *theirParameter = entry.hasStringKey()
+				? zend_hash_find(Z_ARRVAL_P(theirParameters), entry.stringKey())
+				: zend_hash_index_find(Z_ARRVAL_P(theirParameters), entry.indexKey());
+			if (theirParameter == NULL || Z_TYPE_P(theirParameter) == IS_NULL) continue;
+			zval *ownParameter = entry.value().raw();
+			zv::Val ownType = pt_type_call(Z_OBJ_P(ownParameter), PT_LC("gettype"), 0, NULL);
+			if (UNEXPECTED(ownType.isUndef())) return false;
+			zv::Val theirType = pt_type_call(Z_OBJ_P(theirParameter), PT_LC("gettype"), 0, NULL);
+			if (UNEXPECTED(theirType.isUndef())) return false;
+			if (UNEXPECTED(!unresolvedPairEqual(ownType.raw(), theirType.raw(), out))) return false;
+			if (!out) return true;
+		}
+		return true;
+	}
+
+	/* true unless one of the two is an unresolved template argument that
+	 * does not equal the other; false with an exception pending */
+	[[nodiscard]] static bool unresolvedPairEqual(zval *ours, zval *theirs, bool &out)
+	{
+		bool oursIsMarker = Z_TYPE_P(ours) == IS_OBJECT && instanceof_function(Z_OBJCE_P(ours), pt_ce_unresolved_template_argument_type);
+		bool theirsIsMarker = Z_TYPE_P(theirs) == IS_OBJECT && instanceof_function(Z_OBJCE_P(theirs), pt_ce_unresolved_template_argument_type);
+		if (!oursIsMarker && !theirsIsMarker) {
+			out = true;
+			return true;
+		}
+		zv::Val equal = pt_type_op(Z_OBJ_P(ours), PT_OP_EQUALS, 1, theirs);
+		if (UNEXPECTED(equal.isUndef())) return false;
+		out = Z_TYPE_P(equal.raw()) == IS_TRUE;
 		return true;
 	}
 

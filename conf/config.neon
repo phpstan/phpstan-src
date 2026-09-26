@@ -59,7 +59,8 @@ parameters:
 		switchConditionAlwaysFalse: false
 		checkImportedClassNameCase: false
 		sortWithoutEffect: false
-		unresolvedTemplateArguments: false
+		unresolvedTemplateArguments: true
+		closureSignaturesFromUsages: true
 		unusedVariable: false
 		unusedParameters: false
 	fileExtensions:

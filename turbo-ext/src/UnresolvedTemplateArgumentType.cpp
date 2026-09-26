@@ -184,6 +184,47 @@ public:
 		return true;
 	}
 
+	/* $this->site instanceof Expr\Closure || $this->site instanceof
+	 * Expr\ArrowFunction (ClosureSignatureInference::isClosureSignatureMarker());
+	 * false = pending exception */
+	[[nodiscard]] bool hasClosureSite(bool &out) const
+	{
+		zval *s = site();
+		if (UNEXPECTED(s == NULL)) return false;
+		return siteIsClosureLike(s, out);
+	}
+
+	[[nodiscard]] static bool siteIsClosureLike(zval *site, bool &out)
+	{
+		out = false;
+		if (Z_TYPE_P(site) != IS_OBJECT) return true;
+		zend_class_entry *closureCe = pt_class(PT_CLASS_CLOSURE_EXPR);
+		if (UNEXPECTED(closureCe == NULL)) return false;
+		if (instanceof_function(Z_OBJCE_P(site), closureCe)) {
+			out = true;
+			return true;
+		}
+		zend_class_entry *arrowCe = pt_class(PT_CLASS_ARROW_FUNCTION);
+		if (UNEXPECTED(arrowCe == NULL)) return false;
+		out = instanceof_function(Z_OBJCE_P(site), arrowCe);
+		return true;
+	}
+
+	/* Mirrors the private isDistinctClosureParameter(); false = pending
+	 * exception */
+	[[nodiscard]] bool isDistinctClosureParameter(zval *type, bool &out) const
+	{
+		out = false;
+		if (Z_TYPE_P(type) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(type), pt_ce_unresolved_template_argument_type)) return true;
+		bool equal;
+		if (UNEXPECTED(!equals(type, equal))) return false;
+		if (equal) return true;
+		bool ours;
+		if (UNEXPECTED(!hasClosureSite(ours))) return false;
+		if (!ours) return true;
+		return UnresolvedTemplateArgumentType(Z_OBJ_P(type)).hasClosureSite(out);
+	}
+
 	/* 'unresolved#<site id>(<delegate>)' at the cache level,
 	 * 'unresolved(<delegate>)' otherwise; UNDEF = pending exception */
 	zv::Val describe(zval *level) const
@@ -414,6 +455,23 @@ bool pt_unresolved_template_argument_type_new(zval *out, zval *site, zval *templ
 	return pt_val_into(UnresolvedTemplateArgumentType::create(site, templateType, initialType), out);
 }
 
+bool pt_unresolved_template_argument_type_is_closure_signature(zval *marker, bool &out)
+{
+	return UnresolvedTemplateArgumentType(Z_OBJ_P(marker)).hasClosureSite(out);
+}
+
+bool pt_unresolved_template_argument_type_is_closure_return(zval *marker, bool &out)
+{
+	UnresolvedTemplateArgumentType handle(Z_OBJ_P(marker));
+	zv::Val name = handle.getTemplateName();
+	if (UNEXPECTED(name.isUndef())) return false;
+	if (Z_TYPE_P(name.raw()) != IS_STRING || !zend_string_equals_literal(Z_STR_P(name.raw()), "@return")) {
+		out = false;
+		return true;
+	}
+	return handle.hasClosureSite(out);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS UnresolvedTemplateArgumentType(Z_OBJ_P(ZEND_THIS))
@@ -463,8 +521,29 @@ PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 
 	cls.method<&UnresolvedTemplateArgumentType::describe, zp::Obj>(sigs::describe);
 
-	cls.method(sigs::accepts, utaDelegate);
-	cls.method(sigs::isSuperTypeOf, utaDelegate);
+	/* a distinct closure parameter marker answers maybe before delegating */
+	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {
+		if (ZEND_NUM_ARGS() >= 1 && Z_TYPE_P(ZEND_CALL_ARG(execute_data, 1)) == IS_OBJECT) {
+			bool distinct;
+			if (UNEXPECTED(!PT_THIS.isDistinctClosureParameter(ZEND_CALL_ARG(execute_data, 1), distinct))) RETURN_THROWS();
+			if (distinct) {
+				if (UNEXPECTED(!pt_accepts_result_singleton(return_value, PT_TRI_MAYBE))) RETURN_THROWS();
+				return;
+			}
+		}
+		utaDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	});
+	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
+		if (ZEND_NUM_ARGS() >= 1 && Z_TYPE_P(ZEND_CALL_ARG(execute_data, 1)) == IS_OBJECT) {
+			bool distinct;
+			if (UNEXPECTED(!PT_THIS.isDistinctClosureParameter(ZEND_CALL_ARG(execute_data, 1), distinct))) RETURN_THROWS();
+			if (distinct) {
+				if (UNEXPECTED(!pt_is_super_type_of_result_singleton(return_value, PT_TRI_MAYBE))) RETURN_THROWS();
+				return;
+			}
+		}
+		utaDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	});
 
 	cls.method<&UnresolvedTemplateArgumentType::isAcceptedBy, zp::Obj, zp::Bool>(sigs::isAcceptedBy);
 

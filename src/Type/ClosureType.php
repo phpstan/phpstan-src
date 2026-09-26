@@ -44,6 +44,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
@@ -279,7 +280,34 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 		return $this->describe(VerbosityLevel::precise()) === $type->describe(VerbosityLevel::precise())
 			&& $this->isPure()->equals($type->isPure())
-			&& $this->isStatic->equals($type->isStatic);
+			&& $this->isStatic->equals($type->isStatic)
+			&& $this->hasEqualUnresolvedSignature($type);
+	}
+
+	/**
+	 * An unresolved template argument describes as its delegate, but a closure
+	 * whose signature is still being inferred is not the same closure as one
+	 * with the delegate types (see ClosureSignatureInference).
+	 */
+	private function hasEqualUnresolvedSignature(self $other): bool
+	{
+		$pairs = [[$this->returnType, $other->returnType]];
+		foreach ($this->parameters as $i => $parameter) {
+			if (!isset($other->parameters[$i])) {
+				continue;
+			}
+			$pairs[] = [$parameter->getType(), $other->parameters[$i]->getType()];
+		}
+		foreach ($pairs as [$ours, $theirs]) {
+			if (!$ours instanceof UnresolvedTemplateArgumentType && !$theirs instanceof UnresolvedTemplateArgumentType) {
+				continue;
+			}
+			if (!$ours->equals($theirs)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public function describe(VerbosityLevel $level): string

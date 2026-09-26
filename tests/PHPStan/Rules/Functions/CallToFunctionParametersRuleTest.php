@@ -914,6 +914,24 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClosureSignatureFromUsages(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-signature-from-usages.php'], [
+			[
+				'Parameter #1 $string of function strlen expects string, int given.',
+				21,
+			],
+			[
+				'Parameter #1 $string of function strlen expects string, int given.',
+				25,
+			],
+			[
+				'Parameter #1 $cb of function ClosureSignatureFromUsagesRule\\takesIntToStringCallback expects callable(int): string, Closure(int): int given.',
+				37,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testExplode(): void
 	{

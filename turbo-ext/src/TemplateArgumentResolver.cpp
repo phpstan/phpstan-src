@@ -53,11 +53,16 @@ zend_string *pt_tar_unconstraining_send = nullptr;
 	return true;
 }
 
-/* TemplateArgumentStats::increment('sitesCreated'); false = pending exception */
-[[nodiscard]] bool statsIncrementSitesCreated()
+/* TemplateArgumentStats::increment('sitesCreated' / 'closureSitesCreated');
+ * false = pending exception */
+[[nodiscard]] bool statsIncrementSitesCreated(bool closureSite)
 {
 	zval counter;
-	ZVAL_STRINGL(&counter, "sitesCreated", sizeof("sitesCreated") - 1);
+	if (closureSite) {
+		ZVAL_STRINGL(&counter, "closureSitesCreated", sizeof("closureSitesCreated") - 1);
+	} else {
+		ZVAL_STRINGL(&counter, "sitesCreated", sizeof("sitesCreated") - 1);
+	}
 	zv::Val result = pt_call_static_cached(pt_tar_stats_increment_site, PT_CLASS_TEMPLATE_ARGUMENT_STATS, PT_LC("increment"), 1, &counter);
 	zval_ptr_dtor(&counter);
 	return !result.isUndef();
@@ -315,7 +320,9 @@ private:
 		bool enabled;
 		if (UNEXPECTED(!statsEnabled(enabled))) return false;
 		if (!enabled) return true;
-		return statsIncrementSitesCreated();
+		bool closureSite;
+		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(marker, closureSite))) return false;
+		return statsIncrementSitesCreated(closureSite);
 	}
 };
 

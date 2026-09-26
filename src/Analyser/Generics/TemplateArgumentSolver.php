@@ -3,9 +3,11 @@
 namespace PHPStan\Analyser\Generics;
 
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\MutatingScope;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -198,6 +200,10 @@ final class TemplateArgumentSolver
 	 */
 	private function resolveObservation(array $observation): Type
 	{
+		if (ClosureSignatureInference::isClosureSignatureMarker($observation['marker'])) {
+			return $this->resolveClosureSignatureObservation($observation);
+		}
+
 		$initial = $observation['initial'] !== null ? $this->substituteResolutions($observation['initial']) : null;
 		$template = $observation['marker']->getTemplate();
 		$lowerBounds = [];
@@ -280,6 +286,83 @@ final class TemplateArgumentSolver
 			TemplateArgumentStats::increment(count($lowerBounds) > 0 ? 'resolvedWithLowerBounds' : 'resolvedToInitial');
 		}
 		return TypeCombinator::union(...$parts);
+	}
+
+	/**
+	 * A closure parameter is contravariant: everything it is invoked with, and
+	 * the parameter types of the callables it is sent to, flow into it - their
+	 * union, narrowed to the declared type. A send to a target that describes no
+	 * parameters (mixed, callable, Closure) lets anything flow in.
+	 *
+	 * The return is covariant: the return types of the callables the closure is
+	 * sent to bound it from above; their intersection is the type its returned
+	 * expressions are expected to have (mixed when nothing bounds it).
+	 *
+	 * @param array{
+	 *     marker: UnresolvedTemplateArgumentType,
+	 *     initial: Type|null,
+	 *     sends: list<array{Type, TemplateTypeVariance}>,
+	 *     lowerBounds: list<Type>,
+	 *     unconstrainingSend: bool,
+	 * } $observation
+	 */
+	private function resolveClosureSignatureObservation(array $observation): Type
+	{
+		$marker = $observation['marker'];
+		if (ClosureSignatureInference::isReturnMarker($marker)) {
+			$upperBounds = [];
+			foreach ($observation['sends'] as [$sent]) {
+				$upperBounds[] = $this->substituteResolutions($sent);
+			}
+			if ($upperBounds === []) {
+				return new MixedType();
+			}
+			$upperBound = TypeCombinator::intersect(...$upperBounds);
+			if ($upperBound instanceof NeverType) {
+				return new MixedType();
+			}
+
+			return $upperBound;
+		}
+
+		$declared = $marker->getDelegate();
+		if ($observation['unconstrainingSend']) {
+			if (TemplateArgumentStats::$enabled) {
+				TemplateArgumentStats::increment('closureParametersEscaped');
+			}
+			return $declared;
+		}
+		$lowerBounds = [];
+		foreach ($observation['lowerBounds'] as $lowerBound) {
+			$lowerBounds[] = $this->substituteResolutions($lowerBound);
+		}
+		if ($lowerBounds === []) {
+			if (TemplateArgumentStats::$enabled) {
+				TemplateArgumentStats::increment('closureParametersUnobserved');
+			}
+			return $declared;
+		}
+
+		// the default value of an optional parameter
+		foreach ($observation['sends'] as [$sent]) {
+			$lowerBounds[] = $sent;
+		}
+		$inferred = TypeCombinator::union(...$lowerBounds);
+		if (!$declared->isSuperTypeOf($inferred)->yes()) {
+			// an invocation the declared type rejects is reported against the
+			// declared type, which is also all the body can rely on
+			if (TemplateArgumentStats::$enabled) {
+				TemplateArgumentStats::increment('closureParametersDeclared');
+			}
+			return $declared;
+		}
+
+		$resolved = MutatingScope::intersectButNotNever($declared, $inferred);
+		if (TemplateArgumentStats::$enabled) {
+			TemplateArgumentStats::increment($resolved->equals($declared) ? 'closureParametersDeclared' : 'closureParametersInferred');
+		}
+
+		return $resolved;
 	}
 
 	/**

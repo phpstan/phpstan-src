@@ -11,6 +11,7 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\Generics\TemplateArgumentStats;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -85,6 +86,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		private NodeScopeResolver $nodeScopeResolver,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ContextualClosureParameterResolver $contextualClosureParameterResolver,
+		private ClosureSignatureInference $closureSignatureInference,
 	)
 	{
 	}
@@ -126,7 +128,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		?ExpressionResultStorage $storage = null,
 	): ClosureType
 	{
-		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage);
+		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage);
 
 		// A shallow reflection is the closure/arrow function's signature without
 		// walking its body: parameters plus the DECLARED return type. Used at scope
@@ -147,7 +149,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$cachedTypes = $this->findCachedTypes($expr);
 		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
 		if (array_key_exists($cacheKey, $cachedTypes)) {
-			return $this->createClosureTypeFromCache($expr, $parameters, $isVariadic, $cachedTypes[$cacheKey]);
+			return $this->createClosureTypeFromCache($scope, $expr, $parameters, $isVariadic, $cachedTypes[$cacheKey], $contextFree);
 		}
 		if (self::$resolveClosureTypeDepth >= 2) {
 			return new ClosureType(
@@ -211,7 +213,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			// result rather than reading the still-unprocessed body expression
 			$returnType = $this->resolveArrowFunctionReturnType($scope, $arrowScope, $expr, false, $walkStorage);
 
-			return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, [], $cacheKey);
+			return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, [], $cacheKey, $contextFree);
 		}
 
 		self::$resolveClosureTypeDepth++;
@@ -285,6 +287,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$cacheKey,
 			false,
 			$walkStorage,
+			$contextFree,
 		);
 	}
 
@@ -316,7 +319,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		?Type $nativePassedToType = null,
 	): ClosureType
 	{
-		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, $nativePassedToType);
+		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, $nativePassedToType);
 
 		return $this->buildClosureTypeFromClosureWalk(
 			$scope,
@@ -340,6 +343,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			),
 			$native,
 			$storage,
+			$contextFree,
 		);
 	}
 
@@ -366,7 +370,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		?Type $nativePassedToType = null,
 	): ClosureType
 	{
-		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, $nativePassedToType);
+		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, $nativePassedToType);
 
 		$returnType = $this->resolveArrowFunctionReturnType($scope, $arrowScope, $expr, $native, $storage);
 
@@ -378,7 +382,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$expr,
 			$native ? $nativeCallableParameters : $callableParameters,
 			$parameters,
-		));
+		), $contextFree);
 	}
 
 	/**
@@ -508,6 +512,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		?string $cacheKey = null,
 		bool $native = false,
 		?ExpressionResultStorage $storage = null,
+		bool $contextFree = false,
 	): ClosureType
 	{
 		$onlyNeverExecutionEnds = $this->deriveOnlyNeverExecutionEnds($executionEnds);
@@ -612,7 +617,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			break;
 		}
 
-		return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, $usedVariables, $cacheKey);
+		return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, $usedVariables, $cacheKey, $contextFree);
 	}
 
 	private function resolveArrowFunctionReturnType(
@@ -786,7 +791,11 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * Builds the closure/arrow function's declared parameters (independent of the
 	 * body walk) and the callable parameter acceptors derived from the call site.
 	 *
-	 * @return array{list<NativeParameterReflection>, bool, ParameterReflection[]|null, ParameterReflection[]|null}
+	 * The last element tells whether nothing types the closure where it is
+	 * written - its signature is then inferred from its usages (see
+	 * ClosureSignatureInference) and the parameters reflect that.
+	 *
+	 * @return array{list<NativeParameterReflection>, bool, ParameterReflection[]|null, ParameterReflection[]|null, bool}
 	 */
 	private function buildParametersAndAcceptors(
 		MutatingScope $scope,
@@ -806,8 +815,12 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			}
 		}
 		$parameterTypes = $this->contextualClosureParameterResolver->resolve($scope, $expr, $storage, $passedToType, $nativePassedToType);
+		$contextFree = $passedToType === null && !$this->contextualClosureParameterResolver->hasOwnContext($expr);
+		if ($contextFree) {
+			$parameters = $this->closureSignatureInference->getSignatureParameters($scope, $expr, $parameters);
+		}
 
-		return [$parameters, $isVariadic, $parameterTypes->parameters, $parameterTypes->nativeParameters];
+		return [$parameters, $isVariadic, $parameterTypes->parameters, $parameterTypes->nativeParameters, $contextFree];
 	}
 
 	/**
@@ -815,10 +828,12 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * @param array{returnType: Type, throwPoints: SimpleThrowPoint[], impurePoints: SimpleImpurePoint[], invalidateExpressions: InvalidateExprNode[], usedVariables: string[]} $cachedClosureData
 	 */
 	private function createClosureTypeFromCache(
+		MutatingScope $scope,
 		Node\Expr\Closure|ArrowFunction $expr,
 		array $parameters,
 		bool $isVariadic,
 		array $cachedClosureData,
+		bool $contextFree,
 	): ClosureType
 	{
 		$mustUseReturnValue = TrinaryLogic::createNo();
@@ -833,7 +848,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 		return new ClosureType(
 			$parameters,
-			$cachedClosureData['returnType'],
+			$contextFree ? $this->closureSignatureInference->getSignatureReturnType($scope, $expr, $cachedClosureData['returnType']) : $cachedClosureData['returnType'],
 			$isVariadic,
 			TemplateTypeMap::createEmpty(),
 			TemplateTypeMap::createEmpty(),
@@ -871,6 +886,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $invalidateExpressions,
 		array $usedVariables,
 		?string $cacheKey = null,
+		bool $contextFree = false,
 	): ClosureType
 	{
 		foreach ($parameters as $parameter) {
@@ -913,7 +929,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 		return new ClosureType(
 			$parameters,
-			$returnType,
+			$contextFree ? $this->closureSignatureInference->getSignatureReturnType($scope, $expr, $returnType) : $returnType,
 			$isVariadic,
 			TemplateTypeMap::createEmpty(),
 			TemplateTypeMap::createEmpty(),

@@ -28,42 +28,58 @@ class StatementContext
 public:
 	explicit StatementContext(zend_object *self) : self(self) {}
 
-	/* the constructor body: the promoted properties */
-	void construct(bool isTopLevel, zend_long foreachUnrollFactor, bool resolveTemplateArguments)
+	/* the constructor body: the promoted properties; a NULL type is null */
+	void construct(bool isTopLevel, zend_long foreachUnrollFactor, bool resolveTemplateArguments, zval *expectedReturnType, zval *nativeExpectedReturnType)
 	{
 		writeSlot(slots::isTopLevel, isTopLevel ? IS_TRUE : IS_FALSE, 0);
 		writeSlot(slots::foreachUnrollFactor, IS_LONG, foreachUnrollFactor);
 		writeSlot(slots::resolveTemplateArguments, resolveTemplateArguments ? IS_TRUE : IS_FALSE, 0);
+		writeObjectSlot(slots::expectedReturnType, expectedReturnType);
+		writeObjectSlot(slots::nativeExpectedReturnType, nativeExpectedReturnType);
 	}
 
 	/* Mirrors createTopLevel(). */
 	static zv::Val createTopLevel(bool resolveTemplateArguments)
 	{
-		return newSelf(true, 1, resolveTemplateArguments);
+		return newSelf(true, 1, resolveTemplateArguments, nullptr, nullptr);
 	}
 
 	/* Mirrors createDeep(). */
 	static zv::Val createDeep(bool resolveTemplateArguments)
 	{
-		return newSelf(false, 1, resolveTemplateArguments);
+		return newSelf(false, 1, resolveTemplateArguments, nullptr, nullptr);
 	}
 
 	bool isTopLevel() const { return Z_TYPE_P(slot(slots::isTopLevel)) == IS_TRUE; }
 	zend_long getForeachUnrollFactor() const { return Z_LVAL_P(slot(slots::foreachUnrollFactor)); }
 	bool shouldResolveTemplateArguments() const { return Z_TYPE_P(slot(slots::resolveTemplateArguments)) == IS_TRUE; }
+	/* borrowed: the Type object, or NULL for null */
+	zval *expectedReturnType() const { return objectSlot(slots::expectedReturnType); }
+	zval *nativeExpectedReturnType() const { return objectSlot(slots::nativeExpectedReturnType); }
+
+	zv::Val getExpectedReturnType() const { return slotValue(slots::expectedReturnType); }
+	zv::Val getNativeExpectedReturnType() const { return slotValue(slots::nativeExpectedReturnType); }
+
+	/* Mirrors withExpectedReturnType(). */
+	zv::Val withExpectedReturnType(zval *expectedReturnType, zval *nativeExpectedReturnType) const
+	{
+		if (expectedReturnType == nullptr && nativeExpectedReturnType == nullptr) return thisValue();
+
+		return newSelf(isTopLevel(), getForeachUnrollFactor(), shouldResolveTemplateArguments(), expectedReturnType, nativeExpectedReturnType);
+	}
 
 	/* Mirrors withoutTemplateArgumentResolution(). */
 	zv::Val withoutTemplateArgumentResolution() const
 	{
 		if (!shouldResolveTemplateArguments()) return thisValue();
 
-		return newSelf(isTopLevel(), getForeachUnrollFactor(), false);
+		return newSelf(isTopLevel(), getForeachUnrollFactor(), false, expectedReturnType(), nativeExpectedReturnType());
 	}
 
 	/* Mirrors enterDeep(). */
 	zv::Val enterDeep() const
 	{
-		if (isTopLevel()) return newSelf(false, getForeachUnrollFactor(), shouldResolveTemplateArguments());
+		if (isTopLevel()) return newSelf(false, getForeachUnrollFactor(), shouldResolveTemplateArguments(), expectedReturnType(), nativeExpectedReturnType());
 
 		return thisValue();
 	}
@@ -79,7 +95,7 @@ public:
 			return zv::Val();
 		}
 
-		return newSelf(isTopLevel(), product, shouldResolveTemplateArguments());
+		return newSelf(isTopLevel(), product, shouldResolveTemplateArguments(), expectedReturnType(), nativeExpectedReturnType());
 	}
 
 private:
@@ -107,6 +123,33 @@ private:
 
 	zval *slot(uint32_t index) const { return OBJ_PROP_NUM(self, index); }
 
+	zval *objectSlot(uint32_t index) const
+	{
+		zval *p = slot(index);
+		return Z_TYPE_P(p) == IS_OBJECT ? p : nullptr;
+	}
+
+	zv::Val slotValue(uint32_t index) const
+	{
+		zval value;
+		ZVAL_COPY(&value, slot(index));
+		return zv::Val::adopt(value);
+	}
+
+	/* a nullable Type property: NULL writes null */
+	void writeObjectSlot(uint32_t index, zval *value)
+	{
+		zval *p = slot(index);
+		zval old;
+		ZVAL_COPY_VALUE(&old, p);
+		if (value != nullptr && Z_TYPE_P(value) == IS_OBJECT) {
+			ZVAL_COPY(p, value);
+		} else {
+			ZVAL_NULL(p);
+		}
+		zval_ptr_dtor(&old);
+	}
+
 	zv::Val thisValue() const
 	{
 		zval value;
@@ -128,11 +171,11 @@ private:
 	}
 
 	/* new self(...) — the class is final */
-	static zv::Val newSelf(bool isTopLevel, zend_long foreachUnrollFactor, bool resolveTemplateArguments)
+	static zv::Val newSelf(bool isTopLevel, zend_long foreachUnrollFactor, bool resolveTemplateArguments, zval *expectedReturnType, zval *nativeExpectedReturnType)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_statement_context) != SUCCESS)) return zv::Val();
-		StatementContext(Z_OBJ(object)).construct(isTopLevel, foreachUnrollFactor, resolveTemplateArguments);
+		StatementContext(Z_OBJ(object)).construct(isTopLevel, foreachUnrollFactor, resolveTemplateArguments, expectedReturnType, nativeExpectedReturnType);
 		return zv::Val::adopt(object);
 	}
 };
@@ -214,6 +257,27 @@ zv::Val pt_statement_context_enter_deep(zval *context)
 	return pt_type_call(Z_OBJ_P(context), PT_LC("enterdeep"), 0, NULL);
 }
 
+zv::Val pt_statement_context_with_expected_return_type(zval *context, zval *expectedReturnType, zval *nativeExpectedReturnType)
+{
+	if (isNative(context)) return StatementContext(Z_OBJ_P(context)).withExpectedReturnType(expectedReturnType, nativeExpectedReturnType);
+	zval argv[2];
+	if (expectedReturnType != nullptr) ZVAL_COPY_VALUE(&argv[0], expectedReturnType); else ZVAL_NULL(&argv[0]);
+	if (nativeExpectedReturnType != nullptr) ZVAL_COPY_VALUE(&argv[1], nativeExpectedReturnType); else ZVAL_NULL(&argv[1]);
+	return pt_type_call(Z_OBJ_P(context), PT_LC("withexpectedreturntype"), 2, argv);
+}
+
+zv::Val pt_statement_context_get_expected_return_type(zval *context)
+{
+	if (isNative(context)) return StatementContext(Z_OBJ_P(context)).getExpectedReturnType();
+	return pt_type_call(Z_OBJ_P(context), PT_LC("getexpectedreturntype"), 0, NULL);
+}
+
+zv::Val pt_statement_context_get_native_expected_return_type(zval *context)
+{
+	if (isNative(context)) return StatementContext(Z_OBJ_P(context)).getNativeExpectedReturnType();
+	return pt_type_call(Z_OBJ_P(context), PT_LC("getnativeexpectedreturntype"), 0, NULL);
+}
+
 zv::Val pt_statement_context_enter_unrolled_foreach(zval *context, zend_long totalKeys)
 {
 	if (isNative(context)) return StatementContext(Z_OBJ_P(context)).enterUnrolledForeach(totalKeys);
@@ -239,13 +303,17 @@ PT_MINIT_REGISTRATION(pt_register_statement_context)
 		bool isTopLevel;
 		zend_long foreachUnrollFactor = 1;
 		bool resolveTemplateArguments = true;
-		ZEND_PARSE_PARAMETERS_START(1, 3)
+		zval *expectedReturnType = nullptr;
+		zval *nativeExpectedReturnType = nullptr;
+		ZEND_PARSE_PARAMETERS_START(1, 5)
 			Z_PARAM_BOOL(isTopLevel)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_LONG(foreachUnrollFactor)
 			Z_PARAM_BOOL(resolveTemplateArguments)
+			Z_PARAM_OBJECT_OR_NULL(expectedReturnType)
+			Z_PARAM_OBJECT_OR_NULL(nativeExpectedReturnType)
 		ZEND_PARSE_PARAMETERS_END();
-		StatementContext(Z_OBJ_P(ZEND_THIS)).construct(isTopLevel, foreachUnrollFactor, resolveTemplateArguments);
+		StatementContext(Z_OBJ_P(ZEND_THIS)).construct(isTopLevel, foreachUnrollFactor, resolveTemplateArguments, expectedReturnType, nativeExpectedReturnType);
 	});
 
 	cls.method(sigs::createTopLevel, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -276,6 +344,26 @@ PT_MINIT_REGISTRATION(pt_register_statement_context)
 	});
 
 	cls.method<&StatementContext::withoutTemplateArgumentResolution>(sigs::withoutTemplateArgumentResolution);
+
+	cls.method(sigs::withExpectedReturnType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expectedReturnType = nullptr;
+		zval *nativeExpectedReturnType = nullptr;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT_OR_NULL(expectedReturnType)
+			Z_PARAM_OBJECT_OR_NULL(nativeExpectedReturnType)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(StatementContext(Z_OBJ_P(ZEND_THIS)).withExpectedReturnType(expectedReturnType, nativeExpectedReturnType));
+	});
+
+	cls.method(sigs::getExpectedReturnType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(StatementContext(Z_OBJ_P(ZEND_THIS)).getExpectedReturnType());
+	});
+
+	cls.method(sigs::getNativeExpectedReturnType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(StatementContext(Z_OBJ_P(ZEND_THIS)).getNativeExpectedReturnType());
+	});
 	cls.method<&StatementContext::enterDeep>(sigs::enterDeep);
 
 	cls.method(sigs::enterUnrolledForeach, [](INTERNAL_FUNCTION_PARAMETERS) {

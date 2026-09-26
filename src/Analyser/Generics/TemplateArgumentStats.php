@@ -49,6 +49,11 @@ final class TemplateArgumentStats
 		'resolvedWithLowerBounds' => 0,
 		'resolvedToInitial' => 0,
 		'resolvedUnconstrained' => 0,
+		'closureSitesCreated' => 0,
+		'closureParametersInferred' => 0,
+		'closureParametersEscaped' => 0,
+		'closureParametersUnobserved' => 0,
+		'closureParametersDeclared' => 0,
 	];
 
 	public static function enableFromEnvironment(): void

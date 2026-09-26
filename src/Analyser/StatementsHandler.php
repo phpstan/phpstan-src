@@ -544,7 +544,7 @@ final class StatementsHandler
 		}
 		$parentFrame = $scope->getCurrentTemplateArgumentFrame();
 		$parentConstraints = $scope->getTemplateArgumentConstraints();
-		$frame = new TemplateArgumentFrame($parentFrame);
+		$frame = new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts);
 		if (TemplateArgumentStats::$enabled) {
 			TemplateArgumentStats::increment('bodiesWalked');
 			TemplateArgumentStats::increment('statementsTotal', count($stmts));

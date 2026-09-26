@@ -57,6 +57,7 @@ parametersSchema:
 		checkImportedClassNameCase: bool()
 		sortWithoutEffect: bool()
 		unresolvedTemplateArguments: bool()
+		closureSignaturesFromUsages: bool()
 		unusedVariable: bool()
 		unusedParameters: bool()
 	])

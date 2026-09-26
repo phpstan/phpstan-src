@@ -11,6 +11,7 @@ namespace ptdecl::ContextualClosureParameterResolver {
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
 inline constexpr uint32_t nodeScopeResolver = 0;
+inline constexpr uint32_t closureSignatureInference = 1;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -22,6 +23,7 @@ inline void declareClass(reg::Class &cls)
 inline void declareProperties(reg::Class &cls)
 {
 	cls.property("nodeScopeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\NodeScopeResolver");
+	cls.property("closureSignatureInference", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\Generics\\ClosureSignatureInference");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -29,44 +31,63 @@ namespace sigtab {
 inline constexpr char strings[] =
 	"nodeScopeResolver\0" /* 0 */
 	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 18 */
-	"__construct\0" /* 53 */
-	"expr\0" /* 65 */
-	"PhpParser\\Node\\Expr\\Closure|PhpParser\\Node\\Expr\\ArrowFunction\0" /* 70 */
-	"\0" /* 132 */
-	"hasIntrinsicArgs\0" /* 133 */
-	"scope\0" /* 150 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 156 */
-	"storage\0" /* 187 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 195 */
-	"passedToType\0" /* 236 */
-	"PHPStan\\Type\\Type\0" /* 249 */
-	"nativePassedToType\0" /* 267 */
-	"PHPStan\\Analyser\\ClosureParameterTypes\0" /* 286 */
-	"resolve\0" /* 325 */
-	"createPassedToTypeParameters"; /* 333 */
+	"closureSignatureInference\0" /* 53 */
+	"PHPStan\\Analyser\\Generics\\ClosureSignatureInference\0" /* 79 */
+	"__construct\0" /* 131 */
+	"expr\0" /* 143 */
+	"PhpParser\\Node\\Expr\\Closure|PhpParser\\Node\\Expr\\ArrowFunction\0" /* 148 */
+	"\0" /* 210 */
+	"hasIntrinsicArgs\0" /* 211 */
+	"hasOwnContext\0" /* 228 */
+	"scope\0" /* 242 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 248 */
+	"storage\0" /* 279 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 287 */
+	"passedToType\0" /* 328 */
+	"PHPStan\\Type\\Type\0" /* 341 */
+	"nativePassedToType\0" /* 359 */
+	"PHPStan\\Analyser\\ClosureParameterTypes\0" /* 378 */
+	"resolve\0" /* 417 */
+	"resolveExpectedReturnTypes\0" /* 425 */
+	"createPassedToTypeReturnType\0" /* 452 */
+	"createPassedToTypeParameters"; /* 481 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
-	reg::packed(65, 0, 70), /* hasIntrinsicArgs $expr */
-	reg::packed(132, MAY_BE_BOOL), /* hasIntrinsicArgs return */
-	reg::packed(150, 0, 156), /* resolve $scope */
-	reg::packed(65, 0, 70), /* resolve $expr */
-	reg::packed(187, MAY_BE_NULL, 195), /* resolve $storage */
-	reg::packed(236, MAY_BE_NULL, 249), /* resolve $passedToType */
-	reg::packed(267, MAY_BE_NULL, 249), /* resolve $nativePassedToType */
-	reg::packed(132, 0, 286), /* resolve return */
-	reg::packed(150, 0, 156), /* createPassedToTypeParameters $scope */
-	reg::packed(236, MAY_BE_NULL, 249), /* createPassedToTypeParameters $passedToType */
-	reg::packed(132, MAY_BE_NULL | MAY_BE_ARRAY), /* createPassedToTypeParameters return */
+	reg::packed(53, 0, 79), /* __construct $closureSignatureInference */
+	reg::packed(143, 0, 148), /* hasIntrinsicArgs $expr */
+	reg::packed(210, MAY_BE_BOOL), /* hasIntrinsicArgs return */
+	reg::packed(143, 0, 148), /* hasOwnContext $expr */
+	reg::packed(210, MAY_BE_BOOL), /* hasOwnContext return */
+	reg::packed(242, 0, 248), /* resolve $scope */
+	reg::packed(143, 0, 148), /* resolve $expr */
+	reg::packed(279, MAY_BE_NULL, 287), /* resolve $storage */
+	reg::packed(328, MAY_BE_NULL, 341), /* resolve $passedToType */
+	reg::packed(359, MAY_BE_NULL, 341), /* resolve $nativePassedToType */
+	reg::packed(210, 0, 378), /* resolve return */
+	reg::packed(242, 0, 248), /* resolveExpectedReturnTypes $scope */
+	reg::packed(143, 0, 148), /* resolveExpectedReturnTypes $expr */
+	reg::packed(328, MAY_BE_NULL, 341), /* resolveExpectedReturnTypes $passedToType */
+	reg::packed(359, MAY_BE_NULL, 341), /* resolveExpectedReturnTypes $nativePassedToType */
+	reg::packed(210, MAY_BE_ARRAY), /* resolveExpectedReturnTypes return */
+	reg::packed(242, 0, 248), /* createPassedToTypeReturnType $scope */
+	reg::packed(328, MAY_BE_NULL, 341), /* createPassedToTypeReturnType $passedToType */
+	reg::packed(210, MAY_BE_NULL, 341), /* createPassedToTypeReturnType return */
+	reg::packed(242, 0, 248), /* createPassedToTypeParameters $scope */
+	reg::packed(328, MAY_BE_NULL, 341), /* createPassedToTypeParameters $passedToType */
+	reg::packed(210, MAY_BE_NULL | MAY_BE_ARRAY), /* createPassedToTypeParameters return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 53 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasIntrinsicArgs = { { 133 /* hasIntrinsicArgs */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolve = { { 325 /* resolve */, 5, 3, 5, 8, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createPassedToTypeParameters = { { 333 /* createPassedToTypeParameters */, 2, 9, 2, 11, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 131 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasIntrinsicArgs = { { 211 /* hasIntrinsicArgs */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasOwnContext = { { 228 /* hasOwnContext */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolve = { { 417 /* resolve */, 5, 6, 5, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveExpectedReturnTypes = { { 425 /* resolveExpectedReturnTypes */, 4, 12, 4, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createPassedToTypeReturnType = { { 452 /* createPassedToTypeReturnType */, 2, 17, 2, 19, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createPassedToTypeParameters = { { 481 /* createPassedToTypeParameters */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ContextualClosureParameterResolver

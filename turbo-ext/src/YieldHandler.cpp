@@ -15,6 +15,7 @@
  */
 
 #include "support.h"
+#include "Engine.h"
 #include "generated/YieldHandler.h"
 
 namespace slots = ptdecl::YieldHandler::slot;
@@ -52,10 +53,11 @@ public:
 	explicit YieldHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper) const
+	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *templateArgumentObserver) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
+		pt_write_slot(self, slots::templateArgumentObserver, templateArgumentObserver);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -135,6 +137,26 @@ public:
 				if (UNEXPECTED(points == NULL || !ptse::mergeInto(impurePoints, points))) return zv::Val();
 			}
 			if (!isAlwaysTerminating && UNEXPECTED(!pt_expression_result_is_always_terminating(valueResult.raw(), isAlwaysTerminating))) return zv::Val();
+		}
+
+		{
+			zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, scope);
+			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+			if (Z_TYPE_P(observingFrame.raw()) == IS_OBJECT) {
+				// the consumer of the generator can do anything with what it yields
+				zval *yieldedResults[2] = {keyResult.raw(), valueResult.raw()};
+				for (zval *yieldedResult : yieldedResults) {
+					if (Z_TYPE_P(yieldedResult) == IS_NULL) continue;
+					zv::Val yieldedType = pt_expression_result_get_type(yieldedResult);
+					if (UNEXPECTED(yieldedType.isUndef())) return zv::Val();
+					zv::Val constraints = pt_template_argument_observer_collect_escape(OBJ_PROP_NUM(self, slots::templateArgumentObserver), yieldedType.raw());
+					if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+					zv::Val constrained = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope), constraints.raw());
+					if (UNEXPECTED(constrained.isUndef())) return zv::Val();
+					scopeHold = std::move(constrained);
+					scope = scopeHold.raw();
+				}
+			}
 		}
 
 		// the enclosing function is lexical - the generator TSend type does not
@@ -233,9 +255,9 @@ PT_MINIT_REGISTRATION(pt_register_yield_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expressionResultFactory, *defaultNarrowingHelper;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper)) RETURN_THROWS();
-		YieldHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper);
+		zval *expressionResultFactory, *defaultNarrowingHelper, *templateArgumentObserver;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper, templateArgumentObserver)) RETURN_THROWS();
+		YieldHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper, templateArgumentObserver);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

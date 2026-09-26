@@ -84,7 +84,16 @@ public:
 		if (Z_TYPE_P(expr) != IS_NULL) {
 			bool resolveTemplateArguments;
 			if (UNEXPECTED(!pt_statement_context_should_resolve_template_arguments(context, resolveTemplateArguments))) return zv::Val();
-			zv::Val expressionContext = pt_expression_context_create_deep(resolveTemplateArguments);
+			zv::Val deepContext = pt_expression_context_create_deep(resolveTemplateArguments);
+			if (UNEXPECTED(deepContext.isUndef())) return zv::Val();
+			zv::Val expectedReturnType = pt_statement_context_get_expected_return_type(context);
+			if (UNEXPECTED(expectedReturnType.isUndef())) return zv::Val();
+			zv::Val nativeExpectedReturnType = pt_statement_context_get_native_expected_return_type(context);
+			if (UNEXPECTED(nativeExpectedReturnType.isUndef())) return zv::Val();
+			zv::Val expressionContext = pt_expression_context_enter_passed_to_type(
+				deepContext.raw(),
+				Z_TYPE_P(expectedReturnType.raw()) == IS_OBJECT ? expectedReturnType.raw() : NULL,
+				Z_TYPE_P(nativeExpectedReturnType.raw()) == IS_OBJECT ? nativeExpectedReturnType.raw() : NULL);
 			if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 			zv::Val result = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, expr, stmtScope.raw(), storage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();

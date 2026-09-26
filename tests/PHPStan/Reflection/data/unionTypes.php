@@ -38,7 +38,7 @@ function (Foo $foo): void {
 
 function (): void {
 	$f = function (int|bool $foo): Foo|Bar {
-		assertType('bool|int', $foo);
+		assertType('1', $foo);
 	};
 
 	assertType('NativeUnionTypes\\Bar|NativeUnionTypes\\Foo', $f(1));

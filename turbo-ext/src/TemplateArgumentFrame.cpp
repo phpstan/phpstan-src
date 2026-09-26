@@ -85,9 +85,10 @@ public:
 
 	/* __construct(private readonly ?self $parent, private readonly ?array
 	 * $resolutions = null, private readonly array $siteStatementIndexes =
-	 * []); NULL for null / []. false = pending exception (a repeated
-	 * construction modifies readonly properties) */
-	[[nodiscard]] bool construct(zval *parent, zval *resolutions, zval *siteStatementIndexes) const
+	 * [], private readonly ?Node $closureSignatureBody = null, private
+	 * readonly array $closureSignatureStmts = []); NULL for null / []. false =
+	 * pending exception (a repeated construction modifies readonly properties) */
+	[[nodiscard]] bool construct(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(OBJ_PROP_NUM(self, slots::parent)) != IS_UNDEF)) {
 			zend_throw_error(NULL, "Cannot modify readonly property %s::$parent", ZSTR_VAL(self->ce->name));
@@ -112,16 +113,33 @@ public:
 			ZVAL_EMPTY_ARRAY(&value);
 			pt_write_slot(self, slots::siteStatementIndexes, &value);
 		}
+		if (closureSignatureBody != NULL) {
+			pt_write_slot(self, slots::closureSignatureBody, closureSignatureBody);
+		} else {
+			ZVAL_NULL(&value);
+			pt_write_slot(self, slots::closureSignatureBody, &value);
+		}
+		if (closureSignatureStmts != NULL) {
+			pt_write_slot(self, slots::closureSignatureStmts, closureSignatureStmts);
+		} else {
+			ZVAL_EMPTY_ARRAY(&value);
+			pt_write_slot(self, slots::closureSignatureStmts, &value);
+		}
 		return true;
 	}
 
+	/* Mirrors getClosureSignatureBody() / getClosureSignatureStmts(): the
+	 * slots (borrowed) */
+	zval *closureSignatureBody() const { return OBJ_PROP_NUM(self, slots::closureSignatureBody); }
+	zval *closureSignatureStmts() const { return OBJ_PROP_NUM(self, slots::closureSignatureStmts); }
+
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val create(zval *parent, zval *resolutions, zval *siteStatementIndexes)
+	static zv::Val create(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_template_argument_frame) != SUCCESS)) return zv::Val();
 		zv::Val frame = zv::Val::adopt(object);
-		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(frame.raw())).construct(parent, resolutions, siteStatementIndexes))) return zv::Val();
+		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(frame.raw())).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts))) return zv::Val();
 		return frame;
 	}
 
@@ -374,9 +392,21 @@ zv::Val pt_template_argument_frame_return_type_of_call(zval *acceptor, zval *sco
 	return TemplateArgumentFrame::returnTypeOfCall(acceptor, scope, site, allowUnresolved);
 }
 
-zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions, zval *siteStatementIndexes)
+zv::Val pt_template_argument_frame_get_closure_signature_body(zval *frame)
 {
-	return TemplateArgumentFrame::create(parent != NULL && Z_TYPE_P(parent) == IS_NULL ? NULL : parent, resolutions != NULL && Z_TYPE_P(resolutions) == IS_NULL ? NULL : resolutions, siteStatementIndexes);
+	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return zv::Val::copyOf(zv::Ref(TemplateArgumentFrame(Z_OBJ_P(frame)).closureSignatureBody()));
+	return pt_type_call(Z_OBJ_P(frame), PT_LC("getclosuresignaturebody"), 0, NULL);
+}
+
+zv::Val pt_template_argument_frame_get_closure_signature_stmts(zval *frame)
+{
+	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return zv::Val::copyOf(zv::Ref(TemplateArgumentFrame(Z_OBJ_P(frame)).closureSignatureStmts()));
+	return pt_type_call(Z_OBJ_P(frame), PT_LC("getclosuresignaturestmts"), 0, NULL);
+}
+
+zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts)
+{
+	return TemplateArgumentFrame::create(parent != NULL && Z_TYPE_P(parent) == IS_NULL ? NULL : parent, resolutions != NULL && Z_TYPE_P(resolutions) == IS_NULL ? NULL : resolutions, siteStatementIndexes, closureSignatureBody != NULL && Z_TYPE_P(closureSignatureBody) == IS_NULL ? NULL : closureSignatureBody, closureSignatureStmts);
 }
 
 /* the twin is final: the native class entry answers natively, anything
@@ -434,14 +464,26 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 	});
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *parent, *resolutions = NULL, *siteStatementIndexes = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 3)
+		zval *parent, *resolutions = NULL, *siteStatementIndexes = NULL, *closureSignatureBody = NULL, *closureSignatureStmts = NULL;
+		ZEND_PARSE_PARAMETERS_START(1, 5)
 			Z_PARAM_OBJECT_OR_NULL(parent)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_OR_NULL(resolutions)
 			Z_PARAM_ARRAY(siteStatementIndexes)
+			Z_PARAM_OBJECT_OR_NULL(closureSignatureBody)
+			Z_PARAM_ARRAY(closureSignatureStmts)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).construct(parent, resolutions, siteStatementIndexes))) RETURN_THROWS();
+		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts))) RETURN_THROWS();
+	});
+
+	cls.method(sigs::getClosureSignatureBody, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_COPY(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).closureSignatureBody());
+	});
+
+	cls.method(sigs::getClosureSignatureStmts, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_COPY(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).closureSignatureStmts());
 	});
 
 	cls.method<&TemplateArgumentFrame::isObserving>(sigs::isObserving);

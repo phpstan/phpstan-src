@@ -4614,6 +4614,7 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\AttributesHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ParametersProcessor::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\ContextualClosureParameterResolver::class => 'walk-trace.php',
+	\PHPStan\Analyser\Generics\ClosureSignatureInference::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\ClosureParameterResolver::class => 'walk-trace.php',
 	\PHPStan\Analyser\ClosureProcessor::class => 'walk-trace.php',

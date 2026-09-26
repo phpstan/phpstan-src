@@ -57,7 +57,7 @@ final class TemplateArgumentResolver
 				continue;
 			}
 
-			TemplateArgumentStats::increment('sitesCreated');
+			TemplateArgumentStats::increment(ClosureSignatureInference::isClosureSignatureMarker($marker) ? 'closureSitesCreated' : 'sitesCreated');
 		}
 
 		return new TemplateArgumentFrame($parent, (new TemplateArgumentSolver($observations, $parent))->solve(), $siteStatementIndexes);

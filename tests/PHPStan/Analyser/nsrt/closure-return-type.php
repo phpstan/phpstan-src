@@ -32,7 +32,7 @@ class Foo
 		$f = function (string $s) {
 			return $s;
 		};
-		assertType('string', $f('foo'));
+		assertType('\'foo\'', $f('foo'));
 
 		$f = function () use ($i) {
 			return $i;

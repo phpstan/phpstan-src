@@ -253,12 +253,14 @@ public:
 	explicit ClosureProcessor(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *container, zval *expressionResultFactory, zval *closureParameterResolver, zval *closureTypeResolver)
+	void construct(zval *container, zval *expressionResultFactory, zval *closureParameterResolver, zval *closureTypeResolver, zval *contextualClosureParameterResolver, zval *closureSignatureInference)
 	{
 		writeSlot(slots::container, container);
 		writeSlot(slots::expressionResultFactory, expressionResultFactory);
 		writeSlot(slots::closureParameterResolver, closureParameterResolver);
 		writeSlot(slots::closureTypeResolver, closureTypeResolver);
+		writeSlot(slots::contextualClosureParameterResolver, contextualClosureParameterResolver);
+		writeSlot(slots::closureSignatureInference, closureSignatureInference);
 	}
 
 	/* Mirrors processClosureNode() over processClosureNodeInternal()
@@ -343,6 +345,8 @@ public:
 		zv::Val callArgsHold = callArgs != NULL ? zv::Val::copyOf(zv::Ref(callArgs)) : zv::Val::null();
 		zv::Val callableParameters, nativeCallableParameters;
 		if (UNEXPECTED(!pt_closure_parameter_resolver_resolve(slot(slots::closureParameterResolver), scopeArg, expr, storage, callArgsHold.raw(), passedToType, nativePassedToType, callableParameters, nativeCallableParameters))) return zv::Val();
+		zv::Val expectedReturnType, nativeExpectedReturnType;
+		if (UNEXPECTED(!pt_contextual_closure_parameter_resolver_resolve_expected_return_types(slot(slots::contextualClosureParameterResolver), scopeArg, expr, passedToType, nativePassedToType, expectedReturnType, nativeExpectedReturnType))) return zv::Val();
 		zv::Val arrowFunctionScope = pt_mutating_scope_enter_arrow_function(Z_OBJ_P(scopeArg), expr, callableParameters.raw(), nativeCallableParameters.raw());
 		if (UNEXPECTED(arrowFunctionScope.isUndef())) return zv::Val();
 		if (UNEXPECTED(!arrowFunctionScope.ref().isObject())) {
@@ -377,7 +381,11 @@ public:
 			bool resolveTemplateArguments = false;
 			if (EXPECTED(body != NULL) && EXPECTED(pt_expression_context_should_resolve_template_arguments(context, resolveTemplateArguments))) {
 				zv::Val bodyHold = zv::Val::copyOf(zv::Ref(body));
-				zv::Val bodyContext = pt_expression_context_create_top_level(resolveTemplateArguments);
+				zv::Val topLevelContext = pt_expression_context_create_top_level(resolveTemplateArguments);
+				zv::Val bodyContext = topLevelContext.isUndef() ? zv::Val() : pt_expression_context_enter_passed_to_type(
+					topLevelContext.raw(),
+					expectedReturnType.ref().isObject() ? expectedReturnType.raw() : NULL,
+					nativeExpectedReturnType.ref().isObject() ? nativeExpectedReturnType.raw() : NULL);
 				if (EXPECTED(!bodyContext.isUndef())) {
 					exprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, bodyHold.raw(), arrowFunctionScope.raw(), storage, nodeCallback, bodyContext.raw());
 				}
@@ -485,11 +493,23 @@ private:
 		zv::Arr byRefUses = zv::Arr::empty();
 		zv::Val callableParameters;
 		zv::Val nativeCallableParameters;
+		zv::Val expectedReturnType;
+		zv::Val nativeExpectedReturnType;
 		/* the gatherer's by-reference captures (IS_REFERENCE zvals) */
 		zval captures[PT_CP_CLOSURE_GATHERER_CAPTURES];
 		zv::Val gatherer;
 		zv::Val statementResult; /* InternalStatementResult */
 		zv::Val closureResultScope; /* UNDEF = the non-by-ref path */
+
+		/* $statementContext->withExpectedReturnType($expectedReturnType,
+		 * $nativeExpectedReturnType); UNDEF = pending exception */
+		zv::Val withExpectedReturnType(zval *statementContext)
+		{
+			return pt_statement_context_with_expected_return_type(
+				statementContext,
+				expectedReturnType.ref().isObject() ? expectedReturnType.raw() : NULL,
+				nativeExpectedReturnType.ref().isObject() ? nativeExpectedReturnType.raw() : NULL);
+		}
 
 		ClosureWalk()
 		{
@@ -534,6 +554,20 @@ private:
 		zv::Val closureCallArgsHold = closureCallArgs != NULL ? zv::Val::copyOf(zv::Ref(closureCallArgs)) : zv::Val::null();
 		zval *closureParameterResolver = slot(slots::closureParameterResolver);
 		if (UNEXPECTED(!pt_closure_parameter_resolver_resolve(closureParameterResolver, w.scope.raw(), w.expr, w.storage, closureCallArgsHold.raw(), passedToType, nativePassedToType, w.callableParameters, w.nativeCallableParameters))) return false;
+		if (UNEXPECTED(!pt_contextual_closure_parameter_resolver_resolve_expected_return_types(slot(slots::contextualClosureParameterResolver), w.scope.raw(), w.expr, passedToType, nativePassedToType, w.expectedReturnType, w.nativeExpectedReturnType))) return false;
+		bool observing;
+		if (UNEXPECTED(!pt_closure_signature_inference_is_observing(slot(slots::closureSignatureInference), w.scope.raw(), observing))) return false;
+		if (observing) {
+			// the closure's own body may invoke it (use (&$self)): its sites must
+			// exist before the body is observed
+			zv::Val shallowType = pt_closure_type_resolver_get_closure_type(slot(slots::closureTypeResolver), w.scope.raw(), w.expr, true, w.storage);
+			if (UNEXPECTED(shallowType.isUndef())) return false;
+			zv::Val sites = ptclosure::inferenceCollectSites(slot(slots::closureSignatureInference), w.scope.raw(), shallowType.raw());
+			if (UNEXPECTED(sites.isUndef())) return false;
+			zv::Val sited = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(w.scope.raw()), sites.raw());
+			if (UNEXPECTED(sited.isUndef())) return false;
+			w.scope = std::move(sited);
+		}
 
 		zval *uses = ptclosure::prop(ptclosure::usesSite, w.expr, PT_LC("uses"));
 		if (UNEXPECTED(uses == NULL)) return false;
@@ -692,7 +726,8 @@ private:
 			bool resolveTemplateArguments = false;
 			if (EXPECTED(stmts != NULL) && EXPECTED(pt_expression_context_should_resolve_template_arguments(w.context, resolveTemplateArguments))) {
 				zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
-				zv::Val statementContext = pt_statement_context_create_top_level(resolveTemplateArguments);
+				zv::Val topLevelContext = pt_statement_context_create_top_level(resolveTemplateArguments);
+				zv::Val statementContext = topLevelContext.isUndef() ? zv::Val() : w.withExpectedReturnType(topLevelContext.raw());
 				if (EXPECTED(!statementContext.isUndef())) {
 					w.statementResult = pt_node_scope_resolver_process_stmt_nodes_internal(w.nodeScopeResolver, w.expr, stmtsHold.raw(), w.closureScope(), w.storage, w.nodeCallback, statementContext.raw());
 				}
@@ -724,7 +759,9 @@ private:
 			// deep context, like the loop handlers' own convergence passes: inner
 			// loops walk single-pass here and only the final walk below (top-level)
 			// runs their full convergence
-			zv::Val passContext = pt_statement_context_create_deep(false);
+			zv::Val deepContext = pt_statement_context_create_deep(false);
+			if (UNEXPECTED(deepContext.isUndef())) return false;
+			zv::Val passContext = w.withExpectedReturnType(deepContext.raw());
 			if (UNEXPECTED(passContext.isUndef())) return false;
 			zv::Val intermediaryClosureScopeResult = pt_node_scope_resolver_process_stmt_nodes_internal(w.nodeScopeResolver, w.expr, stmtsHold.raw(), w.closureScope(), storage.raw(), bodyRecording.raw(), passContext.raw());
 			if (UNEXPECTED(intermediaryClosureScopeResult.isUndef())) return false;
@@ -823,7 +860,9 @@ private:
 		}
 		bool resolveTemplateArguments = false;
 		if (UNEXPECTED(!pt_expression_context_should_resolve_template_arguments(w.context, resolveTemplateArguments))) return false;
-		zv::Val statementContext = pt_statement_context_create_top_level(resolveTemplateArguments);
+		zv::Val topLevelContext = pt_statement_context_create_top_level(resolveTemplateArguments);
+		if (UNEXPECTED(topLevelContext.isUndef())) return false;
+		zv::Val statementContext = w.withExpectedReturnType(topLevelContext.raw());
 		if (UNEXPECTED(statementContext.isUndef())) return false;
 		w.statementResult = pt_node_scope_resolver_process_stmt_nodes_internal(w.nodeScopeResolver, w.expr, stmts, w.closureScope(), w.storage, w.nodeCallback, statementContext.raw());
 		return !w.statementResult.isUndef();
@@ -979,9 +1018,9 @@ PT_MINIT_REGISTRATION(pt_register_closure_processor)
 	/* the DI service's constructor: the generated arginfo names the twin's
 	 * parameter classes exactly */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *container, *expressionResultFactory, *closureParameterResolver, *closureTypeResolver;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, container, expressionResultFactory, closureParameterResolver, closureTypeResolver)) RETURN_THROWS();
-		ClosureProcessor(Z_OBJ_P(ZEND_THIS)).construct(container, expressionResultFactory, closureParameterResolver, closureTypeResolver);
+		zval *container, *expressionResultFactory, *closureParameterResolver, *closureTypeResolver, *contextualClosureParameterResolver, *closureSignatureInference;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, container, expressionResultFactory, closureParameterResolver, closureTypeResolver, contextualClosureParameterResolver, closureSignatureInference)) RETURN_THROWS();
+		ClosureProcessor(Z_OBJ_P(ZEND_THIS)).construct(container, expressionResultFactory, closureParameterResolver, closureTypeResolver, contextualClosureParameterResolver, closureSignatureInference);
 	});
 
 	cls.method(sigs::processClosureNode, [](INTERNAL_FUNCTION_PARAMETERS) {

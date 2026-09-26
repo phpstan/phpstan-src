@@ -10,6 +10,8 @@ use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\ArrowFunctionHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureParameterResolver;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
+use PHPStan\Analyser\ExprHandler\Helper\ContextualClosureParameterResolver;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\ClosureReturnStatementsNode;
@@ -51,6 +53,8 @@ final class ClosureProcessor
 		private ExpressionResultFactory $expressionResultFactory,
 		private ClosureParameterResolver $closureParameterResolver,
 		private ClosureTypeResolver $closureTypeResolver,
+		private ContextualClosureParameterResolver $contextualClosureParameterResolver,
+		private ClosureSignatureInference $closureSignatureInference,
 	)
 	{
 	}
@@ -107,6 +111,12 @@ final class ClosureProcessor
 		$parameterTypes = $this->closureParameterResolver->resolve($scope, $expr, $storage, $closureCallArgs, $passedToType, $nativePassedToType);
 		$callableParameters = $parameterTypes->parameters;
 		$nativeCallableParameters = $parameterTypes->nativeParameters;
+		[$expectedReturnType, $nativeExpectedReturnType] = $this->contextualClosureParameterResolver->resolveExpectedReturnTypes($scope, $expr, $passedToType, $nativePassedToType);
+		// the closure's own body may invoke it (use (&$self)): its sites must
+		// exist before the body is observed
+		if ($this->closureSignatureInference->isObserving($scope)) {
+			$scope = $scope->addTemplateArgumentConstraints($this->closureSignatureInference->collectSites($scope, $this->closureTypeResolver->getClosureType($scope, $expr, true, $storage)));
+		}
 
 		$useScope = $scope;
 		foreach ($expr->uses as $use) {
@@ -219,7 +229,7 @@ final class ClosureProcessor
 		if (count($byRefUses) === 0) {
 			$nodeScopeResolver->pushNodeGatherer($closureStmtsGatherer);
 			try {
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
+				$statementResult = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments())->withExpectedReturnType($expectedReturnType, $nativeExpectedReturnType));
 			} finally {
 				$nodeScopeResolver->popNodeGatherer();
 			}
@@ -266,7 +276,7 @@ final class ClosureProcessor
 			// loops walk single-pass here and only the final walk below (top-level)
 			// runs their full convergence - otherwise every closure-convergence
 			// pass would re-converge every inner loop from scratch
-			$intermediaryClosureScopeResult = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $bodyRecording, StatementContext::createDeep(resolveTemplateArguments: false));
+			$intermediaryClosureScopeResult = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $bodyRecording, StatementContext::createDeep(resolveTemplateArguments: false)->withExpectedReturnType($expectedReturnType, $nativeExpectedReturnType));
 			// the candidate to replace the final walk when this pass's entry
 			// turns out to be the fixpoint
 			if ($bodyRecording instanceof RecordingNodeCallback) {
@@ -320,7 +330,7 @@ final class ClosureProcessor
 				$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $closureScope);
 				$statementResult = $replayPassResult;
 			} else {
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
+				$statementResult = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments())->withExpectedReturnType($expectedReturnType, $nativeExpectedReturnType));
 			}
 		} finally {
 			$nodeScopeResolver->popNodeGatherer();
@@ -445,6 +455,7 @@ final class ClosureProcessor
 		$parameterTypes = $this->closureParameterResolver->resolve($scope, $expr, $storage, $arrowFunctionCallArgs, $passedToType, $nativePassedToType);
 		$callableParameters = $parameterTypes->parameters;
 		$nativeCallableParameters = $parameterTypes->nativeParameters;
+		[$expectedReturnType, $nativeExpectedReturnType] = $this->contextualClosureParameterResolver->resolveExpectedReturnTypes($scope, $expr, $passedToType, $nativePassedToType);
 		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters, $nativeCallableParameters);
 		if ($arrowFunctionScope->getAnonymousFunctionReflection() === null) {
 			throw new ShouldNotHappenException();
@@ -482,7 +493,7 @@ final class ClosureProcessor
 
 		$nodeScopeResolver->pushNodeGatherer($arrowFunctionStmtsGatherer);
 		try {
-			$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
+			$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments())->enterPassedToType($expectedReturnType, $nativeExpectedReturnType));
 		} finally {
 			$nodeScopeResolver->popNodeGatherer();
 		}

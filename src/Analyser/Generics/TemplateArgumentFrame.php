@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\Generics;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -60,13 +61,31 @@ final class TemplateArgumentFrame
 	/**
 	 * @param array<string, Type>|null $resolutions null during collection
 	 * @param array<int, true> $siteStatementIndexes
+	 * @param Node\Stmt[] $closureSignatureStmts the statements of $closureSignatureBody
 	 */
 	public function __construct(
 		private readonly ?self $parent,
 		private readonly ?array $resolutions = null,
 		private readonly array $siteStatementIndexes = [],
+		private readonly ?Node $closureSignatureBody = null,
+		private readonly array $closureSignatureStmts = [],
 	)
 	{
+	}
+
+	/**
+	 * The function-like body the frame observes, asked only when a closure in
+	 * it has its signature inferred (see ClosureSignatureInference::isClosedBody()).
+	 */
+	public function getClosureSignatureBody(): ?Node
+	{
+		return $this->closureSignatureBody;
+	}
+
+	/** @return Node\Stmt[] */
+	public function getClosureSignatureStmts(): array
+	{
+		return $this->closureSignatureStmts;
 	}
 
 	public function isObserving(): bool

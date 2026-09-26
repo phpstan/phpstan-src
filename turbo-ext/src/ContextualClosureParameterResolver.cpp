@@ -29,6 +29,9 @@ namespace {
 zend_string *pt_ccpr_array_map_args = nullptr;
 zend_string *pt_ccpr_immediately_invoked_args = nullptr;
 zend_string *pt_ccpr_item = nullptr;
+/* ClosureArgVisitor::ATTRIBUTE_NAME / ArrowFunctionArgVisitor::ATTRIBUTE_NAME */
+zend_string *pt_ccpr_closure_call_args = nullptr;
+zend_string *pt_ccpr_arrow_function_call_args = nullptr;
 
 
 /* static fn (Type $innerType) => $innerType->isCallable()->yes() */
@@ -56,11 +59,43 @@ class ContextualClosureParameterResolver
 public:
 	explicit ContextualClosureParameterResolver(zend_object *self) : self(self) {}
 
-	/* the constructor body: the promoted property */
-	void construct(zval *nodeScopeResolver)
+	/* the constructor body: the promoted properties */
+	void construct(zval *nodeScopeResolver, zval *closureSignatureInference)
 	{
 		zv::ObjRef(self).propAtWrite(slots::nodeScopeResolver, zv::Val::copyOf(zv::Ref(nodeScopeResolver)));
 		Z_PROP_FLAG_P(OBJ_PROP_NUM(self, slots::nodeScopeResolver)) = 0;
+		zv::ObjRef(self).propAtWrite(slots::closureSignatureInference, zv::Val::copyOf(zv::Ref(closureSignatureInference)));
+		Z_PROP_FLAG_P(OBJ_PROP_NUM(self, slots::closureSignatureInference)) = 0;
+	}
+
+	/* Mirrors hasOwnContext() */
+	static bool hasOwnContext(zval *expr)
+	{
+		if (hasIntrinsicArgs(expr)) return true;
+		zval *closureCallArgs = ptclosure::attribute(expr, pt_ccpr_closure_call_args);
+		if (closureCallArgs != NULL && Z_TYPE_P(closureCallArgs) != IS_NULL) return true;
+		zval *arrowFunctionCallArgs = ptclosure::attribute(expr, pt_ccpr_arrow_function_call_args);
+		return arrowFunctionCallArgs != NULL && Z_TYPE_P(arrowFunctionCallArgs) != IS_NULL;
+	}
+
+	/* Mirrors resolveExpectedReturnTypes(): the two types (null or a Type) */
+	[[nodiscard]] bool resolveExpectedReturnTypes(zval *scope, zval *expr, zval *passedToType, zval *nativePassedToType, zv::Val &expected, zv::Val &nativeExpected) const
+	{
+		if (hasOwnContext(expr)) {
+			expected = zv::Val::null();
+			nativeExpected = zv::Val::null();
+			return true;
+		}
+		if (passedToType == NULL) {
+			expected = ptclosure::inferenceGetExpectedReturnType(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, expr);
+			if (UNEXPECTED(expected.isUndef())) return false;
+			nativeExpected = zv::Val::null();
+			return true;
+		}
+		expected = createPassedToTypeReturnType(scope, passedToType);
+		if (UNEXPECTED(expected.isUndef())) return false;
+		nativeExpected = createPassedToTypeReturnType(scope, nativePassedToType);
+		return !nativeExpected.isUndef();
 	}
 
 	/* Mirrors hasIntrinsicArgs() */
@@ -84,6 +119,14 @@ public:
 			if (intrinsicArgs != NULL && Z_TYPE_P(intrinsicArgs) == IS_NULL) intrinsicArgs = NULL;
 		}
 		if (EXPECTED(intrinsicArgs == NULL)) {
+			if (passedToType == NULL && !hasOwnContext(expr)) {
+				// nothing types the closure where it is written: the second pass
+				// of the enclosing body walks it with what its usages resolved
+				parameters = ptclosure::inferenceGetBodyParameters(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, expr);
+				if (UNEXPECTED(parameters.isUndef())) return false;
+				nativeParameters = zv::Val::null();
+				return true;
+			}
 			parameters = createPassedToTypeParameters(scope, passedToType);
 			if (UNEXPECTED(parameters.isUndef())) return false;
 			nativeParameters = createPassedToTypeParameters(scope, nativePassedToType);
@@ -221,6 +264,67 @@ private:
 		return callableParameters;
 	}
 
+	/* Mirrors createPassedToTypeReturnType() ($passedToType NULL for null):
+	 * the type or null */
+	static zv::Val createPassedToTypeReturnType(zval *scope, zval *passedToType)
+	{
+		if (passedToType == NULL) return zv::Val::null();
+		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(passedToType), PT_OP_IS_CALLABLE, 0, NULL);
+		if (UNEXPECTED(isCallable < 0)) return zv::Val();
+		if (isCallable == PT_TRI_NO) return zv::Val::null();
+
+		zv::Val filtered;
+		if (instanceof_function(Z_OBJCE_P(passedToType), pt_ce_union_type)) {
+			zv::Val filter = pt_native_closure(&isCallableYesBody);
+			filtered = pt_type_call(Z_OBJ_P(passedToType), PT_LC("filtertypes"), 1, filter.raw());
+			if (UNEXPECTED(filtered.isUndef())) return zv::Val();
+			if (UNEXPECTED(!filtered.ref().isObject())) {
+				zend_throw_error(NULL, "Call to a member function isCallable() on %s", zend_zval_value_name(filtered.raw()));
+				return zv::Val();
+			}
+			passedToType = filtered.raw();
+			isCallable = pt_type_op_trinary(Z_OBJ_P(passedToType), PT_OP_IS_CALLABLE, 0, NULL);
+			if (UNEXPECTED(isCallable < 0)) return zv::Val();
+			if (isCallable == PT_TRI_NO) return zv::Val::null();
+		}
+
+		zv::Val acceptors = pt_type_call(Z_OBJ_P(passedToType), PT_LC("getcallableparametersacceptors"), 1, scope);
+		if (UNEXPECTED(acceptors.isUndef())) return zv::Val();
+		if (UNEXPECTED(!acceptors.ref().isArray())) {
+			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(acceptors.raw()));
+			if (UNEXPECTED(EG(exception))) return zv::Val();
+			return zv::Val::null();
+		}
+		zv::Arr returnTypes = zv::Arr::create(0);
+		for (zv::ArrayEntry entry : zv::ArrRef(acceptors.raw())) {
+			zval *acceptor = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(acceptor) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getReturnType() on %s", zend_zval_value_name(acceptor));
+				return zv::Val();
+			}
+			zv::Val returnType = pt_parameters_acceptor_call(acceptor, PT_PA_GET_RETURN_TYPE);
+			if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+			if (instanceof_function(Z_OBJCE_P(returnType.raw()), pt_ce_mixed_type)) return zv::Val::null();
+			zend_long isVoid = pt_type_op_trinary(Z_OBJ_P(returnType.raw()), PT_OP_IS_VOID, 0, NULL);
+			if (UNEXPECTED(isVoid < 0)) return zv::Val();
+			if (isVoid == PT_TRI_YES) return zv::Val::null();
+			zv::Val hasTemplate = pt_type_op(Z_OBJ_P(returnType.raw()), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
+			if (UNEXPECTED(hasTemplate.isUndef())) return zv::Val();
+			if (Z_TYPE_P(hasTemplate.raw()) == IS_TRUE) return zv::Val::null();
+			returnTypes.push(std::move(returnType));
+		}
+		uint32_t count = zend_hash_num_elements(returnTypes.table());
+		if (count == 0) return zv::Val::null();
+		zval *argv = (zval *) safe_emalloc(count, sizeof(zval), 0);
+		uint32_t i = 0;
+		for (zv::ArrayEntry entry : zv::ArrRef(returnTypes.raw())) {
+			ZVAL_COPY_VALUE(&argv[i++], entry.value().raw());
+		}
+		zv::Val union_ = pt_type_combinator_union(count, argv);
+		efree(argv);
+		return union_;
+	}
+
 	/* array_map(static fn (ParameterReflection $callableParameter) => new
 	 * NativeParameterReflection(...), $acceptor->getParameters()) — keys kept */
 	static zv::Val mapToNativeParameters(zval *acceptor)
@@ -286,6 +390,35 @@ bool pt_contextual_closure_parameter_resolver_has_intrinsic_args(zval *resolver,
 	return true;
 }
 
+bool pt_contextual_closure_parameter_resolver_has_own_context(zval *resolver, zval *expr, bool &out)
+{
+	if (EXPECTED(Z_OBJCE_P(resolver) == pt_ce_contextual_closure_parameter_resolver)) {
+		out = ContextualClosureParameterResolver::hasOwnContext(expr);
+		return true;
+	}
+	zv::Val result = pt_type_call(Z_OBJ_P(resolver), PT_LC("hasowncontext"), 1, expr);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+bool pt_contextual_closure_parameter_resolver_resolve_expected_return_types(zval *resolver, zval *scope, zval *expr, zval *passedToType, zval *nativePassedToType, zv::Val &expected, zv::Val &nativeExpected)
+{
+	if (passedToType != NULL && Z_TYPE_P(passedToType) == IS_NULL) passedToType = NULL;
+	if (nativePassedToType != NULL && Z_TYPE_P(nativePassedToType) == IS_NULL) nativePassedToType = NULL;
+	if (EXPECTED(Z_OBJCE_P(resolver) == pt_ce_contextual_closure_parameter_resolver)) return ContextualClosureParameterResolver(Z_OBJ_P(resolver)).resolveExpectedReturnTypes(scope, expr, passedToType, nativePassedToType, expected, nativeExpected);
+	zval null;
+	ZVAL_NULL(&null);
+	zv::Args argv{scope, expr, passedToType != NULL ? passedToType : &null, nativePassedToType != NULL ? nativePassedToType : &null};
+	zv::Val pair = pt_type_call(Z_OBJ_P(resolver), PT_LC("resolveexpectedreturntypes"), 4, argv);
+	if (UNEXPECTED(pair.isUndef())) return false;
+	zval *first = Z_TYPE_P(pair.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(pair.raw()), 0) : NULL;
+	zval *second = Z_TYPE_P(pair.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(pair.raw()), 1) : NULL;
+	expected = first != NULL ? zv::Val::copyOf(zv::Ref(first)) : zv::Val::null();
+	nativeExpected = second != NULL ? zv::Val::copyOf(zv::Ref(second)) : zv::Val::null();
+	return true;
+}
+
 bool pt_contextual_closure_parameter_resolver_resolve(zval *resolver, zval *scope, zval *expr, zval *storage, zval *passedToType, zval *nativePassedToType, zv::Val &parameters, zv::Val &nativeParameters)
 {
 	if (storage != NULL && Z_TYPE_P(storage) == IS_NULL) storage = NULL;
@@ -309,6 +442,8 @@ PT_MINIT_REGISTRATION(pt_register_contextual_closure_parameter_resolver)
 	pt_ccpr_array_map_args = zend_string_init_interned(PT_LC("arrayMapArgs"), 1);
 	pt_ccpr_immediately_invoked_args = zend_string_init_interned(PT_LC("immediatelyInvokedClosureArgs"), 1);
 	pt_ccpr_item = zend_string_init_interned(PT_LC("item"), 1);
+	pt_ccpr_closure_call_args = zend_string_init_interned(PT_LC("closureCallArgs"), 1);
+	pt_ccpr_arrow_function_call_args = zend_string_init_interned(PT_LC("arrowFunctionCallArgs"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\ContextualClosureParameterResolver");
 	ptdecl::ContextualClosureParameterResolver::declareClass(cls);
@@ -317,9 +452,31 @@ PT_MINIT_REGISTRATION(pt_register_contextual_closure_parameter_resolver)
 	/* the DI service's constructor: the generated arginfo names the twin's
 	 * parameter class exactly */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *nodeScopeResolver;
-		if (!zp::parse<zp::Obj>(execute_data, nodeScopeResolver)) RETURN_THROWS();
-		ContextualClosureParameterResolver(Z_OBJ_P(ZEND_THIS)).construct(nodeScopeResolver);
+		zval *nodeScopeResolver, *closureSignatureInference;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, nodeScopeResolver, closureSignatureInference)) RETURN_THROWS();
+		ContextualClosureParameterResolver(Z_OBJ_P(ZEND_THIS)).construct(nodeScopeResolver, closureSignatureInference);
+	});
+
+	cls.method(sigs::hasOwnContext, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr;
+		if (!zp::parse<zp::Obj>(execute_data, expr)) RETURN_THROWS();
+		RETURN_BOOL(ContextualClosureParameterResolver::hasOwnContext(expr));
+	});
+
+	cls.method(sigs::resolveExpectedReturnTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *expr, *passedToType, *nativePassedToType;
+		ZEND_PARSE_PARAMETERS_START(4, 4)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(expr)
+			Z_PARAM_OBJECT_OR_NULL(passedToType)
+			Z_PARAM_OBJECT_OR_NULL(nativePassedToType)
+		ZEND_PARSE_PARAMETERS_END();
+		zv::Val expected, nativeExpected;
+		if (UNEXPECTED(!ContextualClosureParameterResolver(Z_OBJ_P(ZEND_THIS)).resolveExpectedReturnTypes(scope, expr, passedToType, nativePassedToType, expected, nativeExpected))) RETURN_THROWS();
+		zv::Arr pair = zv::Arr::create(2);
+		pair.push(std::move(expected));
+		pair.push(std::move(nativeExpected));
+		PT_RETURN_VAL(zv::Val(std::move(pair)));
 	});
 
 	cls.method(sigs::hasIntrinsicArgs, [](INTERNAL_FUNCTION_PARAMETERS) {

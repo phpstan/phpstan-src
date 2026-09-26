@@ -165,12 +165,33 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		if ($this->isDistinctClosureParameter($type)) {
+			return AcceptsResult::createMaybe();
+		}
+
 		return $this->getDelegate()->accepts($type, $strictTypes);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
+		if ($this->isDistinctClosureParameter($type)) {
+			return IsSuperTypeOfResult::createMaybe();
+		}
+
 		return $this->getDelegate()->isSuperTypeOf($type);
+	}
+
+	/**
+	 * Two closures whose parameter types are still being inferred are not
+	 * interchangeable - Closure(unresolved(mixed)) must not absorb another one
+	 * in a union, or the invocations of the union would reach only one of them.
+	 */
+	private function isDistinctClosureParameter(Type $type): bool
+	{
+		return $type instanceof self
+			&& !$this->equals($type)
+			&& ($this->site instanceof Expr\Closure || $this->site instanceof Expr\ArrowFunction)
+			&& ($type->site instanceof Expr\Closure || $type->site instanceof Expr\ArrowFunction);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

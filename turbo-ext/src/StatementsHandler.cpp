@@ -181,6 +181,7 @@ zv::Val templateArgumentObserverCollectSend(zval *observer, zval *declared, zval
 	return pt_template_argument_observer_collect_send(observer, declared, actual);
 }
 
+
 /* $templateArgumentResolver->resolve($constraints, $parentFrame,
  * $statementStartTokenPositions) */
 zv::Val templateArgumentResolverResolve(zval *resolver, zval *constraints, zval *parentFrame, zval *positions)
@@ -1329,7 +1330,7 @@ private:
 		if (UNEXPECTED(parentFrame.isUndef())) return zv::Val();
 		zv::Val parentConstraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(scopeArg));
 		if (UNEXPECTED(parentConstraints.isUndef())) return zv::Val();
-		zv::Val observationFrame = pt_template_argument_frame_new(parentFrame.raw());
+		zv::Val observationFrame = pt_template_argument_frame_new(parentFrame.raw(), NULL, NULL, parentNode, stmts);
 		if (UNEXPECTED(observationFrame.isUndef())) return zv::Val();
 		bool statsEnabled;
 		if (UNEXPECTED(!templateArgumentStatsEnabled(statsEnabled))) return zv::Val();

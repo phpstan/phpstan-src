@@ -13,6 +13,8 @@ namespace slot {
 inline constexpr uint32_t isTopLevel = 0;
 inline constexpr uint32_t foreachUnrollFactor = 1;
 inline constexpr uint32_t resolveTemplateArguments = 2;
+inline constexpr uint32_t expectedReturnType = 3;
+inline constexpr uint32_t nativeExpectedReturnType = 4;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -26,6 +28,8 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("isTopLevel", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 	cls.property("foreachUnrollFactor", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_LONG);
 	cls.property("resolveTemplateArguments", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
+	cls.property("expectedReturnType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Type\\Type");
+	cls.property("nativeExpectedReturnType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Type\\Type");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -36,47 +40,64 @@ inline constexpr char strings[] =
 	"1\0" /* 31 */
 	"resolveTemplateArguments\0" /* 33 */
 	"true\0" /* 58 */
-	"__construct\0" /* 63 */
-	"\0" /* 75 */
-	"PHPStan\\Analyser\\StatementContext\0" /* 76 */
-	"createTopLevel\0" /* 110 */
-	"createDeep\0" /* 125 */
-	"getForeachUnrollFactor\0" /* 136 */
-	"shouldResolveTemplateArguments\0" /* 159 */
-	"withoutTemplateArgumentResolution\0" /* 190 */
-	"enterDeep\0" /* 224 */
-	"totalKeys\0" /* 234 */
-	"enterUnrolledForeach"; /* 244 */
+	"expectedReturnType\0" /* 63 */
+	"PHPStan\\Type\\Type\0" /* 82 */
+	"null\0" /* 100 */
+	"nativeExpectedReturnType\0" /* 105 */
+	"__construct\0" /* 130 */
+	"\0" /* 142 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 143 */
+	"createTopLevel\0" /* 177 */
+	"createDeep\0" /* 192 */
+	"getForeachUnrollFactor\0" /* 203 */
+	"shouldResolveTemplateArguments\0" /* 226 */
+	"withoutTemplateArgumentResolution\0" /* 257 */
+	"withExpectedReturnType\0" /* 291 */
+	"getExpectedReturnType\0" /* 314 */
+	"getNativeExpectedReturnType\0" /* 336 */
+	"enterDeep\0" /* 364 */
+	"totalKeys\0" /* 374 */
+	"enterUnrolledForeach"; /* 384 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_BOOL), /* __construct $isTopLevel */
 	reg::packed(11, MAY_BE_LONG, reg::NoString, false, false, 31), /* __construct $foreachUnrollFactor */
 	reg::packed(33, MAY_BE_BOOL, reg::NoString, false, false, 58), /* __construct $resolveTemplateArguments */
+	reg::packed(63, MAY_BE_NULL, 82, false, false, 100), /* __construct $expectedReturnType */
+	reg::packed(105, MAY_BE_NULL, 82, false, false, 100), /* __construct $nativeExpectedReturnType */
 	reg::packed(33, MAY_BE_BOOL, reg::NoString, false, false, 58), /* createTopLevel $resolveTemplateArguments */
-	reg::packed(75, 0, 76), /* createTopLevel return */
+	reg::packed(142, 0, 143), /* createTopLevel return */
 	reg::packed(33, MAY_BE_BOOL, reg::NoString, false, false, 58), /* createDeep $resolveTemplateArguments */
-	reg::packed(75, 0, 76), /* createDeep return */
-	reg::packed(75, MAY_BE_BOOL), /* isTopLevel return */
-	reg::packed(75, MAY_BE_LONG), /* getForeachUnrollFactor return */
-	reg::packed(75, MAY_BE_BOOL), /* shouldResolveTemplateArguments return */
-	reg::packed(75, 0, 76), /* withoutTemplateArgumentResolution return */
-	reg::packed(75, 0, 76), /* enterDeep return */
-	reg::packed(234, MAY_BE_LONG), /* enterUnrolledForeach $totalKeys */
-	reg::packed(75, 0, 76), /* enterUnrolledForeach return */
+	reg::packed(142, 0, 143), /* createDeep return */
+	reg::packed(142, MAY_BE_BOOL), /* isTopLevel return */
+	reg::packed(142, MAY_BE_LONG), /* getForeachUnrollFactor return */
+	reg::packed(142, MAY_BE_BOOL), /* shouldResolveTemplateArguments return */
+	reg::packed(142, 0, 143), /* withoutTemplateArgumentResolution return */
+	reg::packed(63, MAY_BE_NULL, 82), /* withExpectedReturnType $expectedReturnType */
+	reg::packed(105, MAY_BE_NULL, 82), /* withExpectedReturnType $nativeExpectedReturnType */
+	reg::packed(142, 0, 143), /* withExpectedReturnType return */
+	reg::packed(142, MAY_BE_NULL, 82), /* getExpectedReturnType return */
+	reg::packed(142, MAY_BE_NULL, 82), /* getNativeExpectedReturnType return */
+	reg::packed(142, 0, 143), /* enterDeep return */
+	reg::packed(374, MAY_BE_LONG), /* enterUnrolledForeach $totalKeys */
+	reg::packed(142, 0, 143), /* enterUnrolledForeach return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 63 /* __construct */, 1, 0, 3, reg::NoArg, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createTopLevel = { { 110 /* createTopLevel */, 0, 3, 1, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig createDeep = { { 125 /* createDeep */, 0, 5, 1, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig isTopLevel = { { 0 /* isTopLevel */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getForeachUnrollFactor = { { 136 /* getForeachUnrollFactor */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig shouldResolveTemplateArguments = { { 159 /* shouldResolveTemplateArguments */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withoutTemplateArgumentResolution = { { 190 /* withoutTemplateArgumentResolution */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterDeep = { { 224 /* enterDeep */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterUnrolledForeach = { { 244 /* enterUnrolledForeach */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 130 /* __construct */, 1, 0, 5, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createTopLevel = { { 177 /* createTopLevel */, 0, 5, 1, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createDeep = { { 192 /* createDeep */, 0, 7, 1, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isTopLevel = { { 0 /* isTopLevel */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getForeachUnrollFactor = { { 203 /* getForeachUnrollFactor */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shouldResolveTemplateArguments = { { 226 /* shouldResolveTemplateArguments */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withoutTemplateArgumentResolution = { { 257 /* withoutTemplateArgumentResolution */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withExpectedReturnType = { { 291 /* withExpectedReturnType */, 2, 13, 2, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExpectedReturnType = { { 314 /* getExpectedReturnType */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeExpectedReturnType = { { 336 /* getNativeExpectedReturnType */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterDeep = { { 364 /* enterDeep */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterUnrolledForeach = { { 384 /* enterUnrolledForeach */, 1, 19, 1, 20, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StatementContext

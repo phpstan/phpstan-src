@@ -27,70 +27,106 @@ inline constexpr char strings[] =
 	"\0" /* 23 */
 	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 24 */
 	"collectSites\0" /* 78 */
-	"containsMarker\0" /* 91 */
-	"declared\0" /* 106 */
-	"actual\0" /* 115 */
-	"collectSend\0" /* 122 */
-	"parameterType\0" /* 134 */
-	"argumentType\0" /* 148 */
-	"isPure\0" /* 161 */
-	"false\0" /* 168 */
-	"collectArgument\0" /* 174 */
-	"site\0" /* 190 */
-	"PhpParser\\Node\\Expr\0" /* 195 */
-	"acceptor\0" /* 215 */
-	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 224 */
-	"argumentTypes\0" /* 262 */
-	"classTemplates\0" /* 276 */
-	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 291 */
-	"null\0" /* 328 */
-	"collectCall\0" /* 333 */
-	"templates\0" /* 345 */
-	"constraints\0" /* 355 */
-	"replaceInferableTemplates\0" /* 367 */
-	"isCallArgument\0" /* 393 */
-	"observeSend\0" /* 408 */
-	"observeArgument\0" /* 420 */
-	"observeLowerBound\0" /* 436 */
-	"declaredArgument\0" /* 454 */
-	"isUninformativeSendTarget\0" /* 471 */
-	"hasOnlyInferableTemplates"; /* 497 */
+	"templateArgumentsOnly\0" /* 91 */
+	"false\0" /* 113 */
+	"containsMarker\0" /* 119 */
+	"declared\0" /* 134 */
+	"actual\0" /* 143 */
+	"collectSend\0" /* 150 */
+	"parameterType\0" /* 162 */
+	"argumentType\0" /* 176 */
+	"collectClosureArgument\0" /* 189 */
+	"acceptor\0" /* 212 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 221 */
+	"argumentTypes\0" /* 259 */
+	"isPure\0" /* 273 */
+	"collectClosureArguments\0" /* 280 */
+	"collectEscape\0" /* 304 */
+	"types\0" /* 318 */
+	"carriesClosureSignatureMarkers\0" /* 324 */
+	"containsClosureSignatureMarker\0" /* 355 */
+	"constraints\0" /* 386 */
+	"observeClosureSend\0" /* 398 */
+	"PHPStan\\Type\\ClosureType\0" /* 417 */
+	"observeClosureSendToCallable\0" /* 442 */
+	"escapeClosures\0" /* 471 */
+	"collectArgument\0" /* 486 */
+	"site\0" /* 502 */
+	"PhpParser\\Node\\Expr\0" /* 507 */
+	"classTemplates\0" /* 527 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 542 */
+	"null\0" /* 579 */
+	"collectCall\0" /* 584 */
+	"templates\0" /* 596 */
+	"replaceInferableTemplates\0" /* 606 */
+	"isCallArgument\0" /* 632 */
+	"observeSend\0" /* 647 */
+	"observeArgument\0" /* 659 */
+	"observeLowerBound\0" /* 675 */
+	"declaredArgument\0" /* 693 */
+	"isUninformativeSendTarget\0" /* 710 */
+	"hasOnlyInferableTemplates"; /* 736 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* collectSites $type */
 	reg::packed(23, 0, 24), /* collectSites return */
 	reg::packed(0, 0, 5), /* containsMarker $type */
+	reg::packed(91, MAY_BE_BOOL, reg::NoString, false, false, 113), /* containsMarker $templateArgumentsOnly */
 	reg::packed(23, MAY_BE_BOOL), /* containsMarker return */
-	reg::packed(106, 0, 5), /* collectSend $declared */
-	reg::packed(115, 0, 5), /* collectSend $actual */
+	reg::packed(134, 0, 5), /* collectSend $declared */
+	reg::packed(143, 0, 5), /* collectSend $actual */
 	reg::packed(23, 0, 24), /* collectSend return */
-	reg::packed(134, 0, 5), /* collectArgument $parameterType */
-	reg::packed(148, 0, 5), /* collectArgument $argumentType */
-	reg::packed(161, MAY_BE_BOOL, reg::NoString, false, false, 168), /* collectArgument $isPure */
+	reg::packed(162, 0, 5), /* collectClosureArgument $parameterType */
+	reg::packed(176, 0, 5), /* collectClosureArgument $argumentType */
+	reg::packed(23, 0, 24), /* collectClosureArgument return */
+	reg::packed(212, 0, 221), /* collectClosureArguments $acceptor */
+	reg::packed(259, MAY_BE_ARRAY), /* collectClosureArguments $argumentTypes */
+	reg::packed(273, MAY_BE_BOOL), /* collectClosureArguments $isPure */
+	reg::packed(23, 0, 24), /* collectClosureArguments return */
+	reg::packed(0, 0, 5), /* collectEscape $type */
+	reg::packed(23, 0, 24), /* collectEscape return */
+	reg::packed(318, MAY_BE_ARRAY), /* carriesClosureSignatureMarkers $types */
+	reg::packed(23, MAY_BE_BOOL), /* carriesClosureSignatureMarkers return */
+	reg::packed(0, 0, 5), /* containsClosureSignatureMarker $type */
+	reg::packed(23, MAY_BE_BOOL), /* containsClosureSignatureMarker return */
+	reg::packed(386, 0, 24), /* observeClosureSend $constraints */
+	reg::packed(134, 0, 5), /* observeClosureSend $declared */
+	reg::packed(143, 0, 5), /* observeClosureSend $actual */
+	reg::packed(23, 0, 24), /* observeClosureSend return */
+	reg::packed(386, 0, 24), /* observeClosureSendToCallable $constraints */
+	reg::packed(134, 0, 5), /* observeClosureSendToCallable $declared */
+	reg::packed(143, 0, 417), /* observeClosureSendToCallable $actual */
+	reg::packed(23, 0, 24), /* observeClosureSendToCallable return */
+	reg::packed(386, 0, 24), /* escapeClosures $constraints */
+	reg::packed(0, 0, 5), /* escapeClosures $type */
+	reg::packed(23, 0, 24), /* escapeClosures return */
+	reg::packed(162, 0, 5), /* collectArgument $parameterType */
+	reg::packed(176, 0, 5), /* collectArgument $argumentType */
+	reg::packed(273, MAY_BE_BOOL, reg::NoString, false, false, 113), /* collectArgument $isPure */
 	reg::packed(23, 0, 24), /* collectArgument return */
-	reg::packed(190, 0, 195), /* collectCall $site */
-	reg::packed(215, 0, 224), /* collectCall $acceptor */
-	reg::packed(262, MAY_BE_ARRAY), /* collectCall $argumentTypes */
-	reg::packed(276, MAY_BE_NULL, 291, false, false, 328), /* collectCall $classTemplates */
+	reg::packed(502, 0, 507), /* collectCall $site */
+	reg::packed(212, 0, 221), /* collectCall $acceptor */
+	reg::packed(259, MAY_BE_ARRAY), /* collectCall $argumentTypes */
+	reg::packed(527, MAY_BE_NULL, 542, false, false, 579), /* collectCall $classTemplates */
 	reg::packed(23, 0, 24), /* collectCall return */
 	reg::packed(0, 0, 5), /* replaceInferableTemplates $type */
-	reg::packed(190, 0, 195), /* replaceInferableTemplates $site */
-	reg::packed(345, 0, 291), /* replaceInferableTemplates $templates */
-	reg::packed(355, 0, 24, true, false), /* replaceInferableTemplates $constraints */
+	reg::packed(502, 0, 507), /* replaceInferableTemplates $site */
+	reg::packed(596, 0, 542), /* replaceInferableTemplates $templates */
+	reg::packed(386, 0, 24, true, false), /* replaceInferableTemplates $constraints */
 	reg::packed(23, 0, 5), /* replaceInferableTemplates return */
-	reg::packed(355, 0, 24), /* observeSend $constraints */
-	reg::packed(106, 0, 5), /* observeSend $declared */
-	reg::packed(115, 0, 5), /* observeSend $actual */
-	reg::packed(393, MAY_BE_BOOL, reg::NoString, false, false, 168), /* observeSend $isCallArgument */
+	reg::packed(386, 0, 24), /* observeSend $constraints */
+	reg::packed(134, 0, 5), /* observeSend $declared */
+	reg::packed(143, 0, 5), /* observeSend $actual */
+	reg::packed(632, MAY_BE_BOOL, reg::NoString, false, false, 113), /* observeSend $isCallArgument */
 	reg::packed(23, 0, 24), /* observeSend return */
-	reg::packed(355, 0, 24), /* observeArgument $constraints */
-	reg::packed(134, 0, 5), /* observeArgument $parameterType */
-	reg::packed(148, 0, 5), /* observeArgument $argumentType */
+	reg::packed(386, 0, 24), /* observeArgument $constraints */
+	reg::packed(162, 0, 5), /* observeArgument $parameterType */
+	reg::packed(176, 0, 5), /* observeArgument $argumentType */
 	reg::packed(23, 0, 24), /* observeArgument return */
-	reg::packed(355, 0, 24), /* observeLowerBound $constraints */
-	reg::packed(134, 0, 5), /* observeLowerBound $parameterType */
-	reg::packed(148, 0, 5), /* observeLowerBound $argumentType */
+	reg::packed(386, 0, 24), /* observeLowerBound $constraints */
+	reg::packed(162, 0, 5), /* observeLowerBound $parameterType */
+	reg::packed(176, 0, 5), /* observeLowerBound $argumentType */
 	reg::packed(23, 0, 24), /* observeLowerBound return */
-	reg::packed(454, 0, 5), /* isUninformativeSendTarget $declaredArgument */
+	reg::packed(693, 0, 5), /* isUninformativeSendTarget $declaredArgument */
 	reg::packed(23, MAY_BE_BOOL), /* isUninformativeSendTarget return */
 	reg::packed(0, 0, 5), /* hasOnlyInferableTemplates $type */
 	reg::packed(23, MAY_BE_BOOL), /* hasOnlyInferableTemplates return */
@@ -101,16 +137,24 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig collectSites = { { 78 /* collectSites */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig containsMarker = { { 91 /* containsMarker */, 1, 2, 1, 3, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig collectSend = { { 122 /* collectSend */, 2, 4, 2, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig collectArgument = { { 174 /* collectArgument */, 2, 7, 3, 10, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig collectCall = { { 333 /* collectCall */, 3, 11, 4, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig replaceInferableTemplates = { { 367 /* replaceInferableTemplates */, 4, 16, 4, 20, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeSend = { { 408 /* observeSend */, 3, 21, 4, 25, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeArgument = { { 420 /* observeArgument */, 3, 26, 3, 29, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeLowerBound = { { 436 /* observeLowerBound */, 3, 30, 3, 33, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isUninformativeSendTarget = { { 471 /* isUninformativeSendTarget */, 1, 34, 1, 35, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig hasOnlyInferableTemplates = { { 497 /* hasOnlyInferableTemplates */, 1, 36, 1, 37, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig containsMarker = { { 119 /* containsMarker */, 1, 2, 2, 4, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectSend = { { 150 /* collectSend */, 2, 5, 2, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectClosureArgument = { { 189 /* collectClosureArgument */, 2, 8, 2, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectClosureArguments = { { 280 /* collectClosureArguments */, 3, 11, 3, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectEscape = { { 304 /* collectEscape */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig carriesClosureSignatureMarkers = { { 324 /* carriesClosureSignatureMarkers */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig containsClosureSignatureMarker = { { 355 /* containsClosureSignatureMarker */, 1, 19, 1, 20, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeClosureSend = { { 398 /* observeClosureSend */, 3, 21, 3, 24, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeClosureSendToCallable = { { 442 /* observeClosureSendToCallable */, 3, 25, 3, 28, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig escapeClosures = { { 471 /* escapeClosures */, 2, 29, 2, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectArgument = { { 486 /* collectArgument */, 2, 32, 3, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectCall = { { 584 /* collectCall */, 3, 36, 4, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig replaceInferableTemplates = { { 606 /* replaceInferableTemplates */, 4, 41, 4, 45, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeSend = { { 647 /* observeSend */, 3, 46, 4, 50, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeArgument = { { 659 /* observeArgument */, 3, 51, 3, 54, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeLowerBound = { { 675 /* observeLowerBound */, 3, 55, 3, 58, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isUninformativeSendTarget = { { 710 /* isUninformativeSendTarget */, 1, 59, 1, 60, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasOnlyInferableTemplates = { { 736 /* hasOnlyInferableTemplates */, 1, 61, 1, 62, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateArgumentObserver

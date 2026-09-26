@@ -1271,6 +1271,11 @@ zv::Val pt_conditional_type_for_parameter_resolve_in_type(zval *type, zval *getS
 zv::Val pt_conditional_type_for_parameter_narrow_template_type(zval *type, zval *templateType);
 bool pt_late_resolvable_array_shape_type_create(zval *out, zval *items, zval *unsealed, zend_string *kind);
 bool pt_unresolved_template_argument_type_new(zval *out, zval *site, zval *templateType, zval *initialType);
+/* ClosureSignatureInference::isClosureSignatureMarker($marker) /
+ * isReturnMarker($marker) on an instance of the shadowing class; false =
+ * pending exception */
+[[nodiscard]] bool pt_unresolved_template_argument_type_is_closure_signature(zval *marker, bool &out);
+[[nodiscard]] bool pt_unresolved_template_argument_type_is_closure_return(zval *marker, bool &out);
 
 
 /* merged from the parallel port branch */
@@ -1823,6 +1828,9 @@ zv::Val pt_statement_context_create_deep(bool resolveTemplateArguments = true);
 zv::Val pt_statement_context_without_template_argument_resolution(zval *context);
 zv::Val pt_statement_context_enter_deep(zval *context);
 zv::Val pt_statement_context_enter_unrolled_foreach(zval *context, zend_long totalKeys);
+zv::Val pt_statement_context_with_expected_return_type(zval *context, zval *expectedReturnType, zval *nativeExpectedReturnType);
+zv::Val pt_statement_context_get_expected_return_type(zval *context);
+zv::Val pt_statement_context_get_native_expected_return_type(zval *context);
 
 /* ExprHandlerRegistry::resolve($expr, $container) /
  * StmtHandlerRegistry::resolve($stmt, $container): the handler or null
@@ -1992,7 +2000,11 @@ zv::Val pt_template_argument_frame_return_type_of_call(zval *acceptor, zval *sco
 /* new TemplateArgumentFrame($parent, $resolutions, $siteStatementIndexes)
  * ($parent / $resolutions NULL or IS_NULL for null, $siteStatementIndexes
  * NULL for []) */
-zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL);
+zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL);
+/* $frame->getClosureSignatureBody() / getClosureSignatureStmts(); UNDEF =
+ * pending exception */
+zv::Val pt_template_argument_frame_get_closure_signature_body(zval *frame);
+zv::Val pt_template_argument_frame_get_closure_signature_stmts(zval *frame);
 /* $frame->resolve($site, $templateName) (the type or null) /
  * ->resolveOrUnconstrained($site, $template) /
  * ->getResolutionCacheKeySuffix() */
@@ -3041,6 +3053,27 @@ extern zend_class_entry *pt_ce_closure_type_resolver;
  * nullable ones NULL or IS_NULL for null, everything borrowed); false =
  * pending exception */
 [[nodiscard]] bool pt_contextual_closure_parameter_resolver_has_intrinsic_args(zval *resolver, zval *expr, bool &out);
+/* $contextualClosureParameterResolver->hasOwnContext($expr) /
+ * ->resolveExpectedReturnTypes($scope, $expr, $passedToType,
+ * $nativePassedToType) (the two types, each null or a Type); false = pending
+ * exception */
+[[nodiscard]] bool pt_contextual_closure_parameter_resolver_has_own_context(zval *resolver, zval *expr, bool &out);
+/* ClosureSignatureInference.cpp — $closureSignatureInference->collectSites(
+ * $scope, $closureType) / getSignatureParameters($scope, $expr,
+ * $declaredParameters) / getSignatureReturnType($scope, $expr, $returnType) /
+ * getBodyParameters($scope, $expr) / getExpectedReturnType($scope, $expr) /
+ * isClosedBody($functionLike, $stmts): the native bodies for the native
+ * service, the methods otherwise; UNDEF / false = pending exception */
+extern zend_class_entry *pt_ce_closure_signature_inference;
+zv::Val pt_closure_signature_inference_collect_sites(zval *inference, zval *scope, zval *closureType);
+zv::Val pt_closure_signature_inference_get_signature_parameters(zval *inference, zval *scope, zval *expr, zval *declaredParameters);
+zv::Val pt_closure_signature_inference_get_signature_return_type(zval *inference, zval *scope, zval *expr, zval *returnType);
+zv::Val pt_closure_signature_inference_get_body_parameters(zval *inference, zval *scope, zval *expr);
+zv::Val pt_closure_signature_inference_get_expected_return_type(zval *inference, zval *scope, zval *expr);
+[[nodiscard]] bool pt_closure_signature_inference_is_closed_body(zval *inference, zval *functionLike, zval *stmts, bool &out);
+/* $closureSignatureInference->isObserving($scope); false = pending exception */
+[[nodiscard]] bool pt_closure_signature_inference_is_observing(zval *inference, zval *scope, bool &out);
+[[nodiscard]] bool pt_contextual_closure_parameter_resolver_resolve_expected_return_types(zval *resolver, zval *scope, zval *expr, zval *passedToType, zval *nativePassedToType, zv::Val &expected, zv::Val &nativeExpected);
 [[nodiscard]] bool pt_contextual_closure_parameter_resolver_resolve(zval *resolver, zval *scope, zval *expr, zval *storage, zval *passedToType, zval *nativePassedToType, zv::Val &parameters, zv::Val &nativeParameters);
 [[nodiscard]] bool pt_closure_parameter_resolver_resolve(zval *resolver, zval *scope, zval *expr, zval *storage, zval *callArgs, zval *passedToType, zval *nativePassedToType, zv::Val &parameters, zv::Val &nativeParameters);
 /* $closureParameterResolver->resolveCallableTypeForScope($expr, $scope);
@@ -3910,6 +3943,14 @@ zv::Val pt_template_argument_observer_collect_sites(zval *observer, zval *type);
 zv::Val pt_template_argument_observer_collect_send(zval *observer, zval *declared, zval *actual);
 zv::Val pt_template_argument_observer_collect_argument(zval *observer, zval *parameterType, zval *argumentType, bool isPure);
 zv::Val pt_template_argument_observer_collect_call(zval *observer, zval *site, zval *acceptor, zval *argumentTypes, zval *classTemplates);
+/* $observer->collectClosureArgument($parameterType, $argumentType) /
+ * collectClosureArguments($acceptor, $argumentTypes, $isPure) /
+ * collectEscape($type) / carriesClosureSignatureMarkers($types); UNDEF /
+ * false = pending exception */
+zv::Val pt_template_argument_observer_collect_closure_argument(zval *observer, zval *parameterType, zval *argumentType);
+zv::Val pt_template_argument_observer_collect_closure_arguments(zval *observer, zval *acceptor, zval *argumentTypes, bool isPure);
+zv::Val pt_template_argument_observer_collect_escape(zval *observer, zval *type);
+[[nodiscard]] bool pt_template_argument_observer_carries_closure_signature_markers(zval *observer, zval *types, bool &out);
 zv::Val pt_template_argument_resolver_resolve(zval *resolver, zval *constraints, zval *parent, zval *statementStartTokenPositions);
 
 /* }}} */

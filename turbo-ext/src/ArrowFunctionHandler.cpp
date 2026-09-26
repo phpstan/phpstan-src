@@ -31,12 +31,13 @@ public:
 	explicit ArrowFunctionHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *closureTypeResolver, zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *closureProcessor)
+	void construct(zval *closureTypeResolver, zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *closureProcessor, zval *closureSignatureInference)
 	{
 		writeSlot(slots::closureTypeResolver, closureTypeResolver);
 		writeSlot(slots::expressionResultFactory, expressionResultFactory);
 		writeSlot(slots::defaultNarrowingHelper, defaultNarrowingHelper);
 		writeSlot(slots::closureProcessor, closureProcessor);
+		writeSlot(slots::closureSignatureInference, closureSignatureInference);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -85,8 +86,13 @@ public:
 		}
 
 		zv::Val scopeHold;
-		zval *resultScope = pt_expression_result_scope(result, scopeHold);
-		if (UNEXPECTED(resultScope == NULL)) return zv::Val();
+		zval *resultScopeRead = pt_expression_result_scope(result, scopeHold);
+		if (UNEXPECTED(resultScopeRead == NULL)) return zv::Val();
+		zv::Val sites = ptclosure::inferenceCollectSites(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, types[0].raw());
+		if (UNEXPECTED(sites.isUndef())) return zv::Val();
+		zv::Val constrainedScope = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(resultScopeRead), sites.raw());
+		if (UNEXPECTED(constrainedScope.isUndef())) return zv::Val();
+		zval *resultScope = constrainedScope.raw();
 		zv::Val variableFlow = pt_expression_result_variable_flow(result);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		bool hasYield = false;
@@ -182,9 +188,9 @@ PT_MINIT_REGISTRATION(pt_register_arrow_function_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *closureTypeResolver, *expressionResultFactory, *defaultNarrowingHelper, *closureProcessor;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, closureTypeResolver, expressionResultFactory, defaultNarrowingHelper, closureProcessor)) RETURN_THROWS();
-		ArrowFunctionHandler(Z_OBJ_P(ZEND_THIS)).construct(closureTypeResolver, expressionResultFactory, defaultNarrowingHelper, closureProcessor);
+		zval *closureTypeResolver, *expressionResultFactory, *defaultNarrowingHelper, *closureProcessor, *closureSignatureInference;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, closureTypeResolver, expressionResultFactory, defaultNarrowingHelper, closureProcessor, closureSignatureInference)) RETURN_THROWS();
+		ArrowFunctionHandler(Z_OBJ_P(ZEND_THIS)).construct(closureTypeResolver, expressionResultFactory, defaultNarrowingHelper, closureProcessor, closureSignatureInference);
 	});
 
 	cls.method<&ArrowFunctionHandler::supports, zp::Obj>(sigs::supports);

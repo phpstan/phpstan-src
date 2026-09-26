@@ -1480,6 +1480,15 @@ final class AssignHandler implements ExprHandler
 				}
 			}
 
+			if (
+				(!$var instanceof Variable || !is_string($var->name) || in_array($var->name, Scope::SUPERGLOBAL_VARIABLES, true))
+				&& $nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null
+			) {
+				// an offset of a property or a superglobal: whoever reads it later
+				// can invoke the closures written into it with anything
+				$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectEscape($writtenValueType));
+			}
+
 			foreach ($additionalExpressions as $k => $additionalExpression) {
 				[$expr, $type] = $additionalExpression;
 				$nativeType = $type;
@@ -1848,6 +1857,7 @@ final class AssignHandler implements ExprHandler
 		}
 
 		$constraints = $constraints->merge($this->templateArgumentObserver->collectArgument($parameters[1]->getType(), $valueType));
+		$constraints = $constraints->merge($this->templateArgumentObserver->collectClosureArgument($parameters[1]->getType(), $valueType));
 		return $constraints;
 	}
 

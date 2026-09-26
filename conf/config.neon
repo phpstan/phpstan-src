@@ -60,6 +60,7 @@ parameters:
 		checkImportedClassNameCase: false
 		sortWithoutEffect: false
 		unresolvedTemplateArguments: false
+		closureSignaturesFromUsages: false
 		unusedVariable: false
 		unusedParameters: false
 	fileExtensions:

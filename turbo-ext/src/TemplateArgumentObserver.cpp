@@ -156,6 +156,9 @@ inline uint32_t countOf(zval *array)
 
 void collectSitesBody(zval *constraints, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 void containsMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value);
+void containsTemplateArgumentMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value);
+void containsClosureSignatureMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value);
+void escapeClosuresBody(zval *constraints, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 void replaceInferableTemplatesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value);
 
 } // namespace
@@ -181,11 +184,11 @@ public:
 	}
 
 	/* Mirrors containsMarker(); false = pending exception */
-	[[nodiscard]] static bool containsMarker(zval *type, bool &out)
+	[[nodiscard]] static bool containsMarker(zval *type, bool &out, bool templateArgumentsOnly = false)
 	{
 		zval contains;
 		ZVAL_FALSE(&contains);
-		zv::Val callback = pt_type_native_callback(containsMarkerBody, &contains, NULL);
+		zv::Val callback = pt_type_native_callback(templateArgumentsOnly ? containsTemplateArgumentMarkerBody : containsMarkerBody, &contains, NULL);
 		if (UNEXPECTED(callback.isUndef())) return false;
 		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return false;
@@ -196,7 +199,297 @@ public:
 	/* Mirrors collectSend(). */
 	static zv::Val collectSend(zval *declared, zval *actual)
 	{
-		return observeSend(pt_template_argument_constraints_create_empty(), declared, actual, false);
+		zv::Val constraints = observeSend(pt_template_argument_constraints_create_empty(), declared, actual, false);
+
+		return observeClosureSend(std::move(constraints), declared, actual);
+	}
+
+	/* Mirrors collectClosureArgument(). */
+	static zv::Val collectClosureArgument(zval *parameterType, zval *argumentType)
+	{
+		return observeClosureSend(pt_template_argument_constraints_create_empty(), parameterType, argumentType);
+	}
+
+	/* Mirrors collectClosureArguments(). */
+	static zv::Val collectClosureArguments(zval *acceptor, zval *argumentTypes, bool isPure)
+	{
+		zv::Val constraints = pt_template_argument_constraints_create_empty();
+		zv::Val parameters;
+		zv::Arr parametersByName = zv::Arr::create(0);
+		uint32_t parameterCount = 0;
+		for (auto entry : zv::ArrRef(argumentTypes)) {
+			zval *argumentType = entry.value().deref().raw();
+			bool contains;
+			if (UNEXPECTED(!containsClosureSignatureMarker(argumentType, contains))) return zv::Val();
+			if (!contains) continue;
+			if (parameters.isUndef()) {
+				parameters = pt_parameters_acceptor_call(acceptor, PT_PA_GET_PARAMETERS);
+				if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+				for (auto parameterEntry : zv::ArrRef(parameters.raw())) {
+					zval *parameter = parameterEntry.value().deref().raw();
+					zv::Val name = pt_parameter_reflection_call(parameter, PT_PR_GET_NAME);
+					if (UNEXPECTED(name.isUndef())) return zv::Val();
+					zval *slot = Z_TYPE_P(name.raw()) == IS_STRING
+						? zend_symtable_update(parametersByName.table(), Z_STR_P(name.raw()), parameter)
+						: zend_hash_index_update(parametersByName.table(), (zend_ulong) zval_get_long(name.raw()), parameter);
+					Z_TRY_ADDREF_P(slot);
+				}
+				parameterCount = countOf(parameters.raw());
+			}
+			zval *parameter;
+			zend_string *key = entry.stringKeyOrNull();
+			if (key != NULL) {
+				parameter = zend_hash_find(parametersByName.table(), key);
+			} else {
+				parameter = listItem(parameters.raw(), entry.indexKey());
+			}
+			if (parameter != NULL) {
+				ZVAL_DEREF(parameter);
+			}
+			if (parameter == NULL || Z_TYPE_P(parameter) == IS_NULL) {
+				bool variadic;
+				if (UNEXPECTED(!pt_parameters_acceptor_bool(acceptor, PT_PA_IS_VARIADIC, variadic))) return zv::Val();
+				parameter = variadic && parameterCount > 0 ? listItem(parameters.raw(), parameterCount - 1) : NULL;
+			}
+			if (parameter == NULL || Z_TYPE_P(parameter) == IS_NULL) {
+				constraints = escapeClosures(std::move(constraints), argumentType);
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+				continue;
+			}
+			zv::Val parameterHold = zv::Val::copyOf(zv::Ref(parameter));
+			zv::Val parameterType = pt_parameter_reflection_call(parameterHold.raw(), PT_PR_GET_TYPE);
+			if (UNEXPECTED(parameterType.isUndef())) return zv::Val();
+			if (isPure) {
+				bool plainMixed;
+				if (UNEXPECTED(!isPlainMixed(parameterType.raw(), plainMixed))) return zv::Val();
+				if (plainMixed) continue;
+			}
+			constraints = observeClosureSend(std::move(constraints), parameterType.raw(), argumentType);
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+
+		return constraints;
+	}
+
+	/* Mirrors collectEscape(). */
+	static zv::Val collectEscape(zval *type)
+	{
+		bool contains;
+		if (UNEXPECTED(!containsClosureSignatureMarker(type, contains))) return zv::Val();
+		if (!contains) return pt_template_argument_constraints_create_empty();
+
+		return escapeClosures(pt_template_argument_constraints_create_empty(), type);
+	}
+
+	/* Mirrors carriesClosureSignatureMarkers(); false = pending exception */
+	[[nodiscard]] static bool carriesClosureSignatureMarkers(zval *types, bool &out)
+	{
+		out = false;
+		for (auto entry : zv::ArrRef(types)) {
+			if (UNEXPECTED(!containsClosureSignatureMarker(entry.value().deref().raw(), out))) return false;
+			if (out) return true;
+		}
+		return true;
+	}
+
+	/* Mirrors containsClosureSignatureMarker(); false = pending exception */
+	[[nodiscard]] static bool containsClosureSignatureMarker(zval *type, bool &out)
+	{
+		zval contains;
+		ZVAL_FALSE(&contains);
+		zv::Val callback = pt_type_native_callback(containsClosureSignatureMarkerBody, &contains, NULL);
+		if (UNEXPECTED(callback.isUndef())) return false;
+		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
+		if (UNEXPECTED(mapped.isUndef())) return false;
+		out = Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) == IS_TRUE;
+		return true;
+	}
+
+	/* Mirrors observeClosureSend(). */
+	static zv::Val observeClosureSend(zv::Val constraints, zval *declared, zval *actual)
+	{
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		bool contains;
+		if (UNEXPECTED(!containsClosureSignatureMarker(actual, contains))) return zv::Val();
+		if (!contains) return constraints;
+		if (isInstance(actual, pt_ce_union_type)) {
+			zv::Val types = pt_type_op(Z_OBJ_P(actual), PT_OP_GET_TYPES, 0, NULL);
+			if (UNEXPECTED(types.isUndef())) return zv::Val();
+			for (auto entry : zv::ArrRef(types.raw())) {
+				constraints = observeClosureSend(std::move(constraints), declared, entry.value().deref().raw());
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			}
+			return constraints;
+		}
+		if (isInstance(actual, pt_ce_closure_type)) {
+			return observeClosureSendToCallable(std::move(constraints), declared, actual);
+		}
+		bool actualObject, actualIterable;
+		if (UNEXPECTED(!trinaryYes(actual, PT_LC("isobject"), actualObject))) return zv::Val();
+		if (!actualObject) {
+			if (UNEXPECTED(!trinaryYes(actual, PT_LC("isiterable"), actualIterable))) return zv::Val();
+			if (actualIterable) {
+				bool declaredObject;
+				if (UNEXPECTED(!trinaryYes(declared, PT_LC("isobject"), declaredObject))) return zv::Val();
+				if (!declaredObject) {
+					bool declaredIterable;
+					if (UNEXPECTED(!trinaryYes(declared, PT_LC("isiterable"), declaredIterable))) return zv::Val();
+					if (declaredIterable) {
+						zv::Val declaredKey = pt_type_op(Z_OBJ_P(declared), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
+						if (UNEXPECTED(declaredKey.isUndef())) return zv::Val();
+						zv::Val actualKey = pt_type_op(Z_OBJ_P(actual), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
+						if (UNEXPECTED(actualKey.isUndef())) return zv::Val();
+						constraints = observeClosureSend(std::move(constraints), declaredKey.raw(), actualKey.raw());
+						if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+						zv::Val declaredValue = pt_type_op(Z_OBJ_P(declared), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
+						if (UNEXPECTED(declaredValue.isUndef())) return zv::Val();
+						zv::Val actualValue = pt_type_op(Z_OBJ_P(actual), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
+						if (UNEXPECTED(actualValue.isUndef())) return zv::Val();
+						return observeClosureSend(std::move(constraints), declaredValue.raw(), actualValue.raw());
+					}
+				}
+			}
+		}
+
+		return escapeClosures(std::move(constraints), actual);
+	}
+
+	/* Mirrors observeClosureSendToCallable(). */
+	static zv::Val observeClosureSendToCallable(zv::Val constraints, zval *declaredArg, zval *actual)
+	{
+		zv::Val declared = zv::Val::copyOf(zv::Ref(declaredArg));
+		bool declaredTemplate;
+		if (UNEXPECTED(!isTemplateType(declared.raw(), declaredTemplate))) return zv::Val();
+		if (isInstance(declared.raw(), pt_ce_union_type) && !declaredTemplate) {
+			zv::Val types = pt_type_op(Z_OBJ_P(declared.raw()), PT_OP_GET_TYPES, 0, NULL);
+			if (UNEXPECTED(types.isUndef())) return zv::Val();
+			zv::Arr kept = zv::Arr::create(0);
+			for (auto entry : zv::ArrRef(types.raw())) {
+				zval *member = entry.value().deref().raw();
+				zend_long callable = pt_type_call_trinary(Z_OBJ_P(member), PT_LC("iscallable"), 0, NULL);
+				if (UNEXPECTED(callable < 0)) return zv::Val();
+				if (callable == PT_TRI_NO) continue;
+				kept.push(zv::Val::copyOf(zv::Ref(member)));
+			}
+			HashTable *keptTable = kept.table();
+			uint32_t keptCount = zend_hash_num_elements(keptTable);
+			zval *keptArgv = keptCount > 0 ? (zval *) safe_emalloc(keptCount, sizeof(zval), 0) : NULL;
+			uint32_t k = 0;
+			for (auto entry : zv::ArrRef(kept.raw())) {
+				ZVAL_COPY_VALUE(&keptArgv[k++], entry.value().raw());
+			}
+			declared = pt_type_combinator_union(keptCount, keptArgv);
+			if (keptArgv != NULL) efree(keptArgv);
+			if (UNEXPECTED(declared.isUndef())) return zv::Val();
+		}
+		bool declaredMixed = isInstance(declared.raw(), pt_ce_mixed_type);
+		bool declaredCallable = false;
+		if (!declaredMixed && UNEXPECTED(!trinaryYes(declared.raw(), PT_LC("iscallable"), declaredCallable))) return zv::Val();
+		if (declaredMixed || !declaredCallable) {
+			return escapeClosures(std::move(constraints), actual);
+		}
+
+		zv::Val closureParameters = pt_type_call(Z_OBJ_P(actual), PT_LC("getparameters"), 0, NULL);
+		if (UNEXPECTED(closureParameters.isUndef())) return zv::Val();
+		zv::Val returnMarker = pt_type_call(Z_OBJ_P(actual), PT_LC("getreturntype"), 0, NULL);
+		if (UNEXPECTED(returnMarker.isUndef())) return zv::Val();
+		zv::Val outOfClassScope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
+		if (UNEXPECTED(outOfClassScope.isUndef())) return zv::Val();
+		zv::Val acceptors = pt_type_call(Z_OBJ_P(declared.raw()), PT_LC("getcallableparametersacceptors"), 1, outOfClassScope.raw());
+		if (UNEXPECTED(acceptors.isUndef())) return zv::Val();
+		for (auto acceptorEntry : zv::ArrRef(acceptors.raw())) {
+			zv::Val acceptor = zv::Val::copyOf(acceptorEntry.value().deref());
+			zv::Val targetParameters = pt_parameters_acceptor_call(acceptor.raw(), PT_PA_GET_PARAMETERS);
+			if (UNEXPECTED(targetParameters.isUndef())) return zv::Val();
+			uint32_t targetCount = countOf(targetParameters.raw());
+			bool acceptorVariadic;
+			if (UNEXPECTED(!pt_parameters_acceptor_bool(acceptor.raw(), PT_PA_IS_VARIADIC, acceptorVariadic))) return zv::Val();
+			if (targetCount == 0 && acceptorVariadic) {
+				/* callable, Closure: the parameters are not described */
+				constraints = escapeClosures(std::move(constraints), actual);
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+				continue;
+			}
+			for (auto parameterEntry : zv::ArrRef(closureParameters.raw())) {
+				zval *closureParameter = parameterEntry.value().deref().raw();
+				zv::Val marker = pt_parameter_reflection_call(closureParameter, PT_PR_GET_TYPE);
+				if (UNEXPECTED(marker.isUndef())) return zv::Val();
+				if (!isMarker(marker.raw())) continue;
+				bool closureMarker;
+				if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(marker.raw(), closureMarker))) return zv::Val();
+				if (!closureMarker) continue;
+				zend_ulong i = parameterEntry.indexKey();
+				bool variadic;
+				if (UNEXPECTED(!pt_parameter_reflection_bool(closureParameter, PT_PR_IS_VARIADIC, variadic))) return zv::Val();
+				if (variadic) {
+					for (zend_ulong j = i; j < targetCount; j++) {
+						zval *target = listItem(targetParameters.raw(), j);
+						if (target == NULL) continue;
+						zv::Val targetType = pt_parameter_reflection_call(target, PT_PR_GET_TYPE);
+						if (UNEXPECTED(targetType.isUndef())) return zv::Val();
+						constraints = pt_template_argument_constraints_with_lower_bound(constraints.raw(), marker.raw(), targetType.raw());
+						if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+					}
+					continue;
+				}
+				zval *target = listItem(targetParameters.raw(), i);
+				if (target != NULL && Z_TYPE_P(target) != IS_NULL) {
+					zv::Val targetType = pt_parameter_reflection_call(target, PT_PR_GET_TYPE);
+					if (UNEXPECTED(targetType.isUndef())) return zv::Val();
+					constraints = pt_template_argument_constraints_with_lower_bound(constraints.raw(), marker.raw(), targetType.raw());
+					if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+					continue;
+				}
+				if (!acceptorVariadic || targetCount == 0) {
+					/* never passed: the closure parameter keeps its default */
+					continue;
+				}
+				zval *last = listItem(targetParameters.raw(), targetCount - 1);
+				if (last == NULL) continue;
+				zv::Val lastType = pt_parameter_reflection_call(last, PT_PR_GET_TYPE);
+				if (UNEXPECTED(lastType.isUndef())) return zv::Val();
+				constraints = pt_template_argument_constraints_with_lower_bound(constraints.raw(), marker.raw(), lastType.raw());
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			}
+
+			zv::Val targetReturnType = pt_parameters_acceptor_call(acceptor.raw(), PT_PA_GET_RETURN_TYPE);
+			if (UNEXPECTED(targetReturnType.isUndef())) return zv::Val();
+			zv::Val returnedType;
+			bool closureReturn = false;
+			if (isMarker(returnMarker.raw()) && UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_return(returnMarker.raw(), closureReturn))) return zv::Val();
+			if (closureReturn) {
+				bool isVoid;
+				if (UNEXPECTED(!trinaryYes(targetReturnType.raw(), PT_LC("isvoid"), isVoid))) return zv::Val();
+				if (!isVoid && !isInstance(targetReturnType.raw(), pt_ce_mixed_type)) {
+					zv::Val covariant = pt_type_template_type_variance(PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
+					if (UNEXPECTED(covariant.isUndef())) return zv::Val();
+					constraints = pt_template_argument_constraints_with_send(constraints.raw(), returnMarker.raw(), targetReturnType.raw(), covariant.raw());
+					if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+				}
+				returnedType = markerInitialType(returnMarker.raw());
+				if (UNEXPECTED(returnedType.isUndef())) return zv::Val();
+			} else {
+				returnedType = zv::Val::copyOf(zv::Ref(returnMarker.raw()));
+			}
+			if (Z_TYPE_P(returnedType.raw()) != IS_OBJECT) continue;
+
+			/* a closure returning closures: the returned ones are sent on */
+			constraints = observeClosureSend(std::move(constraints), targetReturnType.raw(), returnedType.raw());
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+
+		return constraints;
+	}
+
+	/* Mirrors escapeClosures(). */
+	static zv::Val escapeClosures(zv::Val constraints, zval *type)
+	{
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		zv::Val callback = pt_type_native_callback(escapeClosuresBody, constraints.raw(), NULL);
+		if (UNEXPECTED(callback.isUndef())) return zv::Val();
+		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
+		if (UNEXPECTED(mapped.isUndef())) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(pt_type_native_callback_state(callback.raw(), 0)));
 	}
 
 	/* Mirrors collectArgument(). */
@@ -248,7 +541,9 @@ public:
 		bool hasMarkers = false;
 		for (auto entry : zv::ArrRef(argumentTypes)) {
 			bool contains;
-			if (UNEXPECTED(!containsMarker(entry.value().deref().raw(), contains))) return zv::Val();
+			/* a closure whose signature is being inferred is sent through
+			 * collectClosureArguments(), it holds no template argument */
+			if (UNEXPECTED(!containsMarker(entry.value().deref().raw(), contains, true))) return zv::Val();
 			if (!contains) continue;
 			hasMarkers = true;
 			break;
@@ -868,6 +1163,92 @@ void containsMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv,
 	traversed.intoReturnValue(return_value);
 }
 
+/* containsMarker($type, true)'s traversal: a template argument marker only */
+void containsTemplateArgumentMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) state1;
+	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_type_error("TemplateArgumentObserver::containsMarker() traversal: expected (Type $type, callable $traverse)");
+		return;
+	}
+	zval *type = &argv[0];
+	if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
+		bool closureMarker;
+		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(type, closureMarker))) return;
+		if (!closureMarker) {
+			zval_ptr_dtor(contains);
+			ZVAL_TRUE(contains);
+		}
+	}
+	if (Z_TYPE_P(contains) == IS_TRUE) {
+		ZVAL_COPY(return_value, type);
+		return;
+	}
+	zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
+	if (UNEXPECTED(traversed.isUndef())) return;
+	traversed.intoReturnValue(return_value);
+}
+
+/* containsClosureSignatureMarker()'s traversal */
+void containsClosureSignatureMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) state1;
+	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_type_error("TemplateArgumentObserver::containsClosureSignatureMarker() traversal: expected (Type $type, callable $traverse)");
+		return;
+	}
+	zval *type = &argv[0];
+	if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
+		bool closureMarker;
+		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(type, closureMarker))) return;
+		if (closureMarker) {
+			zval_ptr_dtor(contains);
+			ZVAL_TRUE(contains);
+		}
+	}
+	if (Z_TYPE_P(contains) == IS_TRUE) {
+		ZVAL_COPY(return_value, type);
+		return;
+	}
+	zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
+	if (UNEXPECTED(traversed.isUndef())) return;
+	traversed.intoReturnValue(return_value);
+}
+
+/* escapeClosures()'s traversal: static function (Type $type, callable
+ * $traverse) use (&$constraints): Type */
+void escapeClosuresBody(zval *constraints, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) state1;
+	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_type_error("TemplateArgumentObserver::escapeClosures() traversal: expected (Type $type, callable $traverse)");
+		return;
+	}
+	zval *type = &argv[0];
+	if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
+		bool closureMarker;
+		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(type, closureMarker))) return;
+		bool returnMarker = false;
+		if (closureMarker && UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_return(type, returnMarker))) return;
+		if (closureMarker && !returnMarker) {
+			zv::Val next = pt_template_argument_constraints_with_unconstraining_send(constraints, type);
+			if (UNEXPECTED(next.isUndef())) return;
+			zv::Ref(constraints).assign(std::move(next));
+		}
+		zv::Val initial = markerInitialType(type);
+		if (UNEXPECTED(initial.isUndef())) return;
+		if (Z_TYPE_P(initial.raw()) != IS_NULL) {
+			zv::Val traversed = pt_type_call_callable(&argv[1], 1, initial.raw());
+			if (UNEXPECTED(traversed.isUndef())) return;
+		}
+		ZVAL_COPY(return_value, type);
+		return;
+	}
+	zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
+	if (UNEXPECTED(traversed.isUndef())) return;
+	traversed.intoReturnValue(return_value);
+}
+
 /* function (Type $type, callable $traverse) use ($site, $templates, &$constraints): Type
  * — captures: $this, $site, $templates, the reference */
 void replaceInferableTemplatesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -992,6 +1373,39 @@ zv::Val pt_template_argument_observer_collect_call(zval *observer, zval *site, z
 	return pt_type_call(Z_OBJ_P(observer), PT_LC("collectcall"), 4, argv);
 }
 
+zv::Val pt_template_argument_observer_collect_closure_argument(zval *observer, zval *parameterType, zval *argumentType)
+{
+	if (UNEXPECTED(!observerReceiver(observer, "collectClosureArgument"))) return zv::Val();
+	if (EXPECTED(Z_OBJCE_P(observer) == pt_ce_template_argument_observer && Z_TYPE_P(parameterType) == IS_OBJECT && Z_TYPE_P(argumentType) == IS_OBJECT)) return TemplateArgumentObserver::collectClosureArgument(parameterType, argumentType);
+	zv::Args argv{parameterType, argumentType};
+	return pt_type_call(Z_OBJ_P(observer), PT_LC("collectclosureargument"), 2, argv);
+}
+
+zv::Val pt_template_argument_observer_collect_closure_arguments(zval *observer, zval *acceptor, zval *argumentTypes, bool isPure)
+{
+	if (UNEXPECTED(!observerReceiver(observer, "collectClosureArguments"))) return zv::Val();
+	if (EXPECTED(Z_OBJCE_P(observer) == pt_ce_template_argument_observer && Z_TYPE_P(acceptor) == IS_OBJECT && Z_TYPE_P(argumentTypes) == IS_ARRAY)) return TemplateArgumentObserver::collectClosureArguments(acceptor, argumentTypes, isPure);
+	zv::Args argv{acceptor, argumentTypes, isPure};
+	return pt_type_call(Z_OBJ_P(observer), PT_LC("collectclosurearguments"), 3, argv);
+}
+
+zv::Val pt_template_argument_observer_collect_escape(zval *observer, zval *type)
+{
+	if (UNEXPECTED(!observerReceiver(observer, "collectEscape"))) return zv::Val();
+	if (EXPECTED(Z_OBJCE_P(observer) == pt_ce_template_argument_observer && Z_TYPE_P(type) == IS_OBJECT)) return TemplateArgumentObserver::collectEscape(type);
+	return pt_type_call(Z_OBJ_P(observer), PT_LC("collectescape"), 1, type);
+}
+
+bool pt_template_argument_observer_carries_closure_signature_markers(zval *observer, zval *types, bool &out)
+{
+	if (UNEXPECTED(!observerReceiver(observer, "carriesClosureSignatureMarkers"))) return false;
+	if (EXPECTED(Z_OBJCE_P(observer) == pt_ce_template_argument_observer && Z_TYPE_P(types) == IS_ARRAY)) return TemplateArgumentObserver::carriesClosureSignatureMarkers(types, out);
+	zv::Val result = pt_type_call(Z_OBJ_P(observer), PT_LC("carriesclosuresignaturemarkers"), 1, types);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = Z_TYPE_P(result.raw()) == IS_TRUE;
+	return true;
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -1045,6 +1459,44 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_observer)
 		zval null;
 		ZVAL_NULL(&null);
 		PT_RETURN_VAL(TemplateArgumentObserver::collectCall(ZEND_THIS, site, acceptor, argumentTypes, classTemplates != NULL ? classTemplates : &null));
+	});
+
+	cls.method(sigs::collectClosureArgument, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *parameterType, *argumentType;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT_OF_CLASS(parameterType, pt_class(PT_CLASS_TYPE))
+			Z_PARAM_OBJECT_OF_CLASS(argumentType, pt_class(PT_CLASS_TYPE))
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(TemplateArgumentObserver::collectClosureArgument(parameterType, argumentType));
+	});
+
+	cls.method(sigs::collectClosureArguments, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *acceptor, *argumentTypes;
+		bool isPure;
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_OBJECT_OF_CLASS(acceptor, pt_class(PT_CLASS_PARAMETERS_ACCEPTOR))
+			Z_PARAM_ARRAY(argumentTypes)
+			Z_PARAM_BOOL(isPure)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(TemplateArgumentObserver::collectClosureArguments(acceptor, argumentTypes, isPure));
+	});
+
+	cls.method(sigs::collectEscape, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(type, pt_class(PT_CLASS_TYPE))
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(TemplateArgumentObserver::collectEscape(type));
+	});
+
+	cls.method(sigs::carriesClosureSignatureMarkers, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *types;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_ARRAY(types)
+		ZEND_PARSE_PARAMETERS_END();
+		bool out;
+		if (UNEXPECTED(!TemplateArgumentObserver::carriesClosureSignatureMarkers(types, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.shadow(&pt_ce_template_argument_observer);

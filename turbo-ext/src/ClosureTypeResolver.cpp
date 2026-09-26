@@ -323,11 +323,12 @@ public:
 	explicit ClosureTypeResolver(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *nodeScopeResolver, zval *initializerExprTypeResolver, zval *contextualClosureParameterResolver)
+	void construct(zval *nodeScopeResolver, zval *initializerExprTypeResolver, zval *contextualClosureParameterResolver, zval *closureSignatureInference)
 	{
 		writeSlot(slots::nodeScopeResolver, zv::Val::copyOf(zv::Ref(nodeScopeResolver)));
 		writeSlot(slots::initializerExprTypeResolver, zv::Val::copyOf(zv::Ref(initializerExprTypeResolver)));
 		writeSlot(slots::contextualClosureParameterResolver, zv::Val::copyOf(zv::Ref(contextualClosureParameterResolver)));
+		writeSlot(slots::closureSignatureInference, zv::Val::copyOf(zv::Ref(closureSignatureInference)));
 	}
 
 	/* Mirrors resetFileAnalysisState() */
@@ -352,7 +353,7 @@ public:
 		zval *cached = zend_symtable_find(Z_ARRVAL_P(cachedTypes.raw()), cacheKey.get());
 		if (cached != NULL) {
 			ZVAL_DEREF(cached);
-			return createClosureTypeFromCache(expr, p.parameters.raw(), p.isVariadic, cached);
+			return createClosureTypeFromCache(scope, expr, p.parameters.raw(), p.isVariadic, cached, p.contextFree);
 		}
 		if (pt_ctr_resolve_closure_type_depth >= 2) return signatureClosureType(scope, expr, p.parameters.raw(), p.isVariadic);
 
@@ -375,7 +376,7 @@ public:
 		// promoted scope answer from this build instead of re-walking
 		zv::Str cacheKey = flavourCacheKey(scope, expr, p, native);
 		if (UNEXPECTED(cacheKey.isNull())) return zv::Val();
-		return buildClosureTypeFromClosureWalk(scope, expr, p.parameters.raw(), p.isVariadic, returnStatements, yieldStatements, executionEnds, publicThrowPoints.raw(), impurePoints, invalidateExpressions, cacheKey.get(), native, storage);
+		return buildClosureTypeFromClosureWalk(scope, expr, p.parameters.raw(), p.isVariadic, returnStatements, yieldStatements, executionEnds, publicThrowPoints.raw(), impurePoints, invalidateExpressions, cacheKey.get(), native, storage, p.contextFree);
 	}
 
 	/* Mirrors buildClosureTypeForArrowFunction() (the nullable ones NULL for null) */
@@ -388,7 +389,7 @@ public:
 		zv::Str cacheKey = flavourCacheKey(scope, expr, p, native);
 		if (UNEXPECTED(cacheKey.isNull())) return zv::Val();
 		zv::Arr usedVariables = zv::Arr::empty();
-		return assembleClosureType(scope, expr, p.parameters.raw(), p.isVariadic, returnType.raw(), throwPoints, impurePoints, false, invalidateExpressions, usedVariables.raw(), cacheKey.get());
+		return assembleClosureType(scope, expr, p.parameters.raw(), p.isVariadic, returnType.raw(), throwPoints, impurePoints, false, invalidateExpressions, usedVariables.raw(), cacheKey.get(), p.contextFree);
 	}
 
 	/* Mirrors getDeclaredClosureType() */
@@ -410,6 +411,8 @@ private:
 		bool isVariadic = false;
 		zv::Val callableParameters; /* null for null */
 		zv::Val nativeCallableParameters;
+		/* nothing types the closure where it is written (ClosureSignatureInference) */
+		bool contextFree = false;
 	};
 
 	void writeSlot(uint32_t index, zv::Val value)
@@ -695,7 +698,7 @@ private:
 	}
 
 	/* Mirrors buildClosureTypeFromClosureWalk() ($cacheKey / $storage NULL for null) */
-	zv::Val buildClosureTypeFromClosureWalk(zval *scope, zval *expr, zval *parameters, bool isVariadic, zval *returnStatements, zval *yieldStatements, zval *executionEnds, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zend_string *cacheKey, bool native, zval *storage)
+	zv::Val buildClosureTypeFromClosureWalk(zval *scope, zval *expr, zval *parameters, bool isVariadic, zval *returnStatements, zval *yieldStatements, zval *executionEnds, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zend_string *cacheKey, bool native, zval *storage, bool contextFree)
 	{
 		int onlyNeverExecutionEnds = deriveOnlyNeverExecutionEnds(executionEnds);
 		if (UNEXPECTED(onlyNeverExecutionEnds == -2)) return zv::Val();
@@ -798,7 +801,7 @@ private:
 			}
 		}
 
-		return assembleClosureType(scope, expr, parameters, isVariadic, returnType.raw(), throwPoints, impurePoints, hasByRefUse, invalidateExpressions, usedVariables.raw(), cacheKey);
+		return assembleClosureType(scope, expr, parameters, isVariadic, returnType.raw(), throwPoints, impurePoints, hasByRefUse, invalidateExpressions, usedVariables.raw(), cacheKey, contextFree);
 	}
 
 	/* the key and value types of a Yield_ / YieldFrom node read on readScope;
@@ -1094,11 +1097,21 @@ private:
 				}
 			}
 		}
-		return pt_contextual_closure_parameter_resolver_resolve(OBJ_PROP_NUM(self, slots::contextualClosureParameterResolver), scope, expr, storage, passedToType, nativePassedToType, p.callableParameters, p.nativeCallableParameters);
+		zval *contextualResolver = OBJ_PROP_NUM(self, slots::contextualClosureParameterResolver);
+		if (UNEXPECTED(!pt_contextual_closure_parameter_resolver_resolve(contextualResolver, scope, expr, storage, passedToType, nativePassedToType, p.callableParameters, p.nativeCallableParameters))) return false;
+		bool hasOwnContext = false;
+		if (passedToType == NULL && UNEXPECTED(!pt_contextual_closure_parameter_resolver_has_own_context(contextualResolver, expr, hasOwnContext))) return false;
+		p.contextFree = passedToType == NULL && !hasOwnContext;
+		if (p.contextFree) {
+			zv::Val signatureParameters = ptclosure::inferenceGetSignatureParameters(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, expr, p.parameters.raw());
+			if (UNEXPECTED(signatureParameters.isUndef())) return false;
+			p.parameters = std::move(signatureParameters);
+		}
+		return true;
 	}
 
 	/* Mirrors createClosureTypeFromCache() */
-	static zv::Val createClosureTypeFromCache(zval *expr, zval *parameters, bool isVariadic, zval *cachedClosureData)
+	zv::Val createClosureTypeFromCache(zval *scope, zval *expr, zval *parameters, bool isVariadic, zval *cachedClosureData, bool contextFree)
 	{
 		zval *mustUseReturnValue = mustUseReturnValueOf(expr);
 		if (UNEXPECTED(mustUseReturnValue == NULL)) return zv::Val();
@@ -1118,6 +1131,12 @@ private:
 		}
 		/* the cached arrays kept alive over the construction */
 		zv::Val entryHold = zv::Val::copyOf(zv::Ref(cachedClosureData));
+		zv::Val signatureReturnType;
+		if (contextFree) {
+			signatureReturnType = ptclosure::inferenceGetSignatureReturnType(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, expr, returnType);
+			if (UNEXPECTED(signatureReturnType.isUndef())) return zv::Val();
+			returnType = signatureReturnType.raw();
+		}
 		return newClosureType(expr, parameters, returnType, isVariadic, throwPoints, impurePoints, invalidateExpressions, usedVariables, mustUseReturnValue);
 	}
 
@@ -1230,7 +1249,7 @@ private:
 
 	/* Mirrors assembleClosureType() — byRefUse: the by-ref-use impure point
 	 * buildClosureTypeFromClosureWalk() appends ($cacheKey NULL for null) */
-	zv::Val assembleClosureType(zval *scope, zval *expr, zval *parameters, bool isVariadic, zval *returnType, zval *throwPoints, zval *impurePoints, bool byRefUse, zval *invalidateExpressions, zval *usedVariables, zend_string *cacheKey)
+	zv::Val assembleClosureType(zval *scope, zval *expr, zval *parameters, bool isVariadic, zval *returnType, zval *throwPoints, zval *impurePoints, bool byRefUse, zval *invalidateExpressions, zval *usedVariables, zend_string *cacheKey, bool contextFree = false)
 	{
 		uint32_t byRefParameters = 0;
 		if (EXPECTED(Z_TYPE_P(parameters) == IS_ARRAY)) {
@@ -1260,6 +1279,12 @@ private:
 
 		zval *mustUseReturnValue = mustUseReturnValueOf(expr);
 		if (UNEXPECTED(mustUseReturnValue == NULL)) return zv::Val();
+		zv::Val signatureReturnType;
+		if (contextFree) {
+			signatureReturnType = ptclosure::inferenceGetSignatureReturnType(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, expr, returnType);
+			if (UNEXPECTED(signatureReturnType.isUndef())) return zv::Val();
+			returnType = signatureReturnType.raw();
+		}
 		return newClosureType(expr, parameters, returnType, isVariadic, throwPointsForClosureType.raw(), impurePointsForClosureType.raw(), invalidateExpressions, usedVariables, mustUseReturnValue);
 	}
 
@@ -1362,7 +1387,7 @@ private:
 		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 
 		zv::Arr usedVariables = zv::Arr::empty();
-		return assembleClosureType(scope, expr, p.parameters.raw(), p.isVariadic, returnType.raw(), throwPoints.raw(), impurePoints.raw(), false, Z_REFVAL_P(invalidateExpressions.raw()), usedVariables.raw(), cacheKey);
+		return assembleClosureType(scope, expr, p.parameters.raw(), p.isVariadic, returnType.raw(), throwPoints.raw(), impurePoints.raw(), false, Z_REFVAL_P(invalidateExpressions.raw()), usedVariables.raw(), cacheKey, p.contextFree);
 	}
 
 	/* the closure body walk of getClosureType() */
@@ -1429,7 +1454,7 @@ private:
 		zv::Val impurePoints = mergeLists(Z_REFVAL_P(closureImpurePoints.raw()), resultImpurePoints);
 		if (UNEXPECTED(impurePoints.isUndef())) return zv::Val();
 
-		return buildClosureTypeFromClosureWalk(scope, expr, p.parameters.raw(), p.isVariadic, Z_REFVAL_P(closureReturnStatements.raw()), Z_REFVAL_P(closureYieldStatements.raw()), Z_REFVAL_P(closureExecutionEnds.raw()), throwPointsOwned.raw(), impurePoints.raw(), Z_REFVAL_P(invalidateExpressions.raw()), cacheKey, false, walkStorage.raw());
+		return buildClosureTypeFromClosureWalk(scope, expr, p.parameters.raw(), p.isVariadic, Z_REFVAL_P(closureReturnStatements.raw()), Z_REFVAL_P(closureYieldStatements.raw()), Z_REFVAL_P(closureExecutionEnds.raw()), throwPointsOwned.raw(), impurePoints.raw(), Z_REFVAL_P(invalidateExpressions.raw()), cacheKey, false, walkStorage.raw(), p.contextFree);
 	}
 };
 
@@ -1536,9 +1561,9 @@ PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 	/* the DI service's constructor: the generated arginfo names the twin's
 	 * parameter classes exactly */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *nodeScopeResolver, *initializerExprTypeResolver, *contextualClosureParameterResolver;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, nodeScopeResolver, initializerExprTypeResolver, contextualClosureParameterResolver)) RETURN_THROWS();
-		ClosureTypeResolver(Z_OBJ_P(ZEND_THIS)).construct(nodeScopeResolver, initializerExprTypeResolver, contextualClosureParameterResolver);
+		zval *nodeScopeResolver, *initializerExprTypeResolver, *contextualClosureParameterResolver, *closureSignatureInference;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, nodeScopeResolver, initializerExprTypeResolver, contextualClosureParameterResolver, closureSignatureInference)) RETURN_THROWS();
+		ClosureTypeResolver(Z_OBJ_P(ZEND_THIS)).construct(nodeScopeResolver, initializerExprTypeResolver, contextualClosureParameterResolver, closureSignatureInference);
 	});
 
 	cls.method(sigs::resetFileAnalysisState, [](INTERNAL_FUNCTION_PARAMETERS) {

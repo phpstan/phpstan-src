@@ -3268,4 +3268,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testOversizedArrayUnionWithEmptyArray(): void
+	{
+		$this->analyse([__DIR__ . '/data/oversized-array-union-with-empty-array.php'], [
+			[
+				'Parameter #1 $a of function OversizedArrayUnionWithEmptyArrayRule\\nonEmpty expects non-empty-array<string, string>, array{}|(non-empty-array<literal-string&non-falsy-string, literal-string&non-falsy-string>) given.',
+				286,
+				'array{}|(non-empty-array<literal-string&non-falsy-string, literal-string&non-falsy-string>) might be empty.',
+			],
+		]);
+	}
+
 }

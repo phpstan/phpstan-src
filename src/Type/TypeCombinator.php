@@ -1038,6 +1038,28 @@ final class TypeCombinator
 	}
 
 	/**
+	 * @param Type[] $arrayTypes
+	 */
+	private static function findEmptyArrayNextToOversizedArray(array $arrayTypes): ?Type
+	{
+		if (count($arrayTypes) < 2) {
+			return null;
+		}
+
+		$emptyArray = null;
+		$hasOversizedArray = false;
+		foreach ($arrayTypes as $arrayType) {
+			if ($arrayType->isOversizedArray()->yes()) {
+				$hasOversizedArray = true;
+			} elseif ($emptyArray === null && $arrayType->isConstantArray()->yes() && $arrayType->isIterableAtLeastOnce()->no()) {
+				$emptyArray = $arrayType;
+			}
+		}
+
+		return $hasOversizedArray ? $emptyArray : null;
+	}
+
+	/**
 	 * @param list<Type> $arrayTypes
 	 * @return Type[]
 	 */
@@ -1045,6 +1067,22 @@ final class TypeCombinator
 	{
 		if ($arrayTypes === []) {
 			return [];
+		}
+
+		$emptyArray = self::findEmptyArrayNextToOversizedArray($arrayTypes);
+		if ($emptyArray !== null) {
+			// like reduceArrays() does when it generalizes to an oversized array:
+			// folded into it, the empty array would be lost to the oversized
+			// accessory, which accepts only arrays that hold something
+			$otherArrayTypes = [];
+			foreach ($arrayTypes as $arrayType) {
+				if ($arrayType->isConstantArray()->yes() && $arrayType->isIterableAtLeastOnce()->no()) {
+					continue;
+				}
+				$otherArrayTypes[] = $arrayType;
+			}
+
+			return [$emptyArray, ...self::processArrayTypes($otherArrayTypes)];
 		}
 
 		$accessoryTypes = self::processArrayAccessoryTypes($arrayTypes);

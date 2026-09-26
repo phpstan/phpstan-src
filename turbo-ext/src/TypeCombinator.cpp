@@ -1776,10 +1776,70 @@ public:
 		return zv::Val(std::move(commonAccessoryTypes));
 	}
 
+	/* $type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no();
+	 * -1 = pending exception */
+	static int isEmptyConstantArray(zval *type)
+	{
+		zend_long isConstantArray = callTrinary(type, PT_LC("isconstantarray"));
+		if (UNEXPECTED(isConstantArray < 0)) return -1;
+		if (isConstantArray != PT_TRI_YES) return 0;
+		zend_long atLeastOnce = callTrinary(type, PT_LC("isiterableatleastonce"));
+		if (UNEXPECTED(atLeastOnce < 0)) return -1;
+		return atLeastOnce == PT_TRI_NO ? 1 : 0;
+	}
+
+	/* private static findEmptyArrayNextToOversizedArray(Type[] $arrayTypes): ?Type */
+	static zv::Val findEmptyArrayNextToOversizedArray(TypeList &arrayTypes)
+	{
+		if (arrayTypes.size() < 2) return zv::Val::null();
+
+		zv::Val emptyArray = zv::Val::null();
+		bool hasOversizedArray = false;
+		for (zv::Val &arrayType : arrayTypes) {
+			zend_long oversized = callTrinary(arrayType.raw(), PT_LC("isoversizedarray"));
+			PT_FAIL_IF_NEG(oversized);
+			if (oversized == PT_TRI_YES) {
+				hasOversizedArray = true;
+				continue;
+			}
+			if (!emptyArray.isNull()) continue;
+			int empty = isEmptyConstantArray(arrayType.raw());
+			PT_FAIL_IF_NEG(empty);
+			if (empty == 1) emptyArray = zv::Val::copyOf(arrayType.ref());
+		}
+
+		return hasOversizedArray ? std::move(emptyArray) : zv::Val::null();
+	}
+
 	/* private static processArrayTypes(list<Type> $arrayTypes): Type[] */
 	static zv::Val processArrayTypes(TypeList &arrayTypes)
 	{
 		if (arrayTypes.empty()) return zv::Val(zv::Arr::create(0));
+
+		{
+			zv::Val emptyArray = findEmptyArrayNextToOversizedArray(arrayTypes);
+			PT_FAIL_IF_UNDEF(emptyArray);
+			if (!emptyArray.isNull()) {
+				// like reduceArrays() does when it generalizes to an oversized array:
+				// folded into it, the empty array would be lost to the oversized
+				// accessory, which accepts only arrays that hold something
+				TypeList otherArrayTypes;
+				for (zv::Val &arrayType : arrayTypes) {
+					int empty = isEmptyConstantArray(arrayType.raw());
+					PT_FAIL_IF_NEG(empty);
+					if (empty == 1) continue;
+					otherArrayTypes.push_back(zv::Val::copyOf(arrayType.ref()));
+				}
+				zv::Val processed = processArrayTypes(otherArrayTypes);
+				PT_FAIL_IF_UNDEF(processed);
+				zv::Arr result = zv::Arr::create(1 + countOf(processed.raw()));
+				result.push(std::move(emptyArray));
+				for (zv::ArrayEntry entry : zv::ArrRef(processed.raw())) {
+					result.push(zv::Ref(entry.value().raw()));
+				}
+				return zv::Val(std::move(result));
+			}
+		}
 
 		zv::Val accessoryTypesArray = processArrayAccessoryTypes(arrayTypes);
 		PT_FAIL_IF_UNDEF(accessoryTypesArray);

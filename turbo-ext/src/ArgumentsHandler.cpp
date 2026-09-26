@@ -2611,8 +2611,10 @@ private:
 			if (!invalidate) {
 				zv::Val declaringClass = calleeGetDeclaringClass(w.nakedMethodReflection);
 				if (UNEXPECTED(declaringClass.isUndef())) return false;
+				zv::Val nonFinalDeclaringClass = pt_type_call(Z_OBJ_P(declaringClass.raw()), PT_LC("withoutfinalbykeywordoverride"), 0, NULL);
+				if (UNEXPECTED(nonFinalDeclaringClass.isUndef())) return false;
 				zval thisType;
-				if (UNEXPECTED(!pt_this_type_new(&thisType, declaringClass.raw()))) return false;
+				if (UNEXPECTED(!pt_this_type_new(&thisType, nonFinalDeclaringClass.raw()))) return false;
 				zv::Val thisTypeHold = zv::Val::adopt(thisType);
 				zv::Val isSuperType = pt_type_op(Z_OBJ_P(thisTypeHold.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, nakedReturnType.raw());
 				if (UNEXPECTED(isSuperType.isUndef())) return false;

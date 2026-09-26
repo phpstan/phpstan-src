@@ -1801,6 +1801,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(39, $errors[0]->getLine());
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15320(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15320.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Call to method Bug15320Rule\\Model::setStatic() on a separate line has no effect.', $errors[0]->getMessage());
+		$this->assertSame(14, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

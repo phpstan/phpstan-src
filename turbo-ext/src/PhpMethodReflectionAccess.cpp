@@ -196,11 +196,13 @@ Answer hasSideEffects(zend_object *method, zv::Val &out)
 		return PT_PMR_ANSWERED;
 	}
 
-	/* (new ThisType($this->declaringClass))->isSuperTypeOf($this->getReturnType())->yes() */
+	/* (new ThisType($this->declaringClass->withoutFinalByKeywordOverride()))->isSuperTypeOf($this->getReturnType())->yes() */
 	zval *declaringClass = slotOf(method, PT_PMR_DECLARING_CLASS);
-	if (UNEXPECTED(declaringClass == NULL)) return PT_PMR_UNANSWERED;
+	if (UNEXPECTED(declaringClass == NULL || Z_TYPE_P(declaringClass) != IS_OBJECT)) return PT_PMR_UNANSWERED;
+	zv::Val nonFinalDeclaringClass = pt_type_call(Z_OBJ_P(declaringClass), PT_LC("withoutfinalbykeywordoverride"), 0, NULL);
+	if (UNEXPECTED(nonFinalDeclaringClass.isUndef())) return PT_PMR_EXCEPTION;
 	zval thisTypeZv;
-	if (UNEXPECTED(!pt_this_type_new(&thisTypeZv, declaringClass))) return PT_PMR_EXCEPTION;
+	if (UNEXPECTED(!pt_this_type_new(&thisTypeZv, nonFinalDeclaringClass.raw()))) return PT_PMR_EXCEPTION;
 	zv::Val thisType = zv::Val::adopt(thisTypeZv);
 	zv::Val result = pt_type_op(Z_OBJ_P(thisType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, returnType);
 	if (UNEXPECTED(result.isUndef())) return PT_PMR_EXCEPTION;

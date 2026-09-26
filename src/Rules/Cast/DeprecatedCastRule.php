@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Cast;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -17,10 +16,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 final class DeprecatedCastRule implements Rule
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function getNodeType(): string
 	{
 		return Cast::class;
@@ -28,7 +23,7 @@ final class DeprecatedCastRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$this->phpVersion->deprecatesNonStandardCasts()) {
+		if (!$scope->getPhpVersion()->deprecatesNonStandardCasts()->yes()) {
 			return [];
 		}
 

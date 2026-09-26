@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "5b70eaf93cb95247cf6644585c462ddf",
+  "content-hash": "a618a73986a9ff4359d223346882de08",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -6717,16 +6717,16 @@
     },
     {
       "name": "shipmonk/dead-code-detector",
-      "version": "1.0.0",
+      "version": "1.4.2",
       "source": {
         "type": "git",
         "url": "https://github.com/shipmonk-rnd/dead-code-detector.git",
-        "reference": "dd909a6e267ae03837f166bc5e9d2f0851b14ff0"
+        "reference": "431c13453eeb1790e15c8674ad4d6318218849bc"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/shipmonk-rnd/dead-code-detector/zipball/dd909a6e267ae03837f166bc5e9d2f0851b14ff0",
-        "reference": "dd909a6e267ae03837f166bc5e9d2f0851b14ff0",
+        "url": "https://api.github.com/repos/shipmonk-rnd/dead-code-detector/zipball/431c13453eeb1790e15c8674ad4d6318218849bc",
+        "reference": "431c13453eeb1790e15c8674ad4d6318218849bc",
         "shasum": ""
       },
       "require": {
@@ -6743,18 +6743,20 @@
         "laravel/framework": "^10.0 || ^11.0 || ^12.0",
         "nette/application": "^3.1",
         "nette/component-model": "^3.0",
+        "nette/neon": "^3.4",
         "nette/tester": "^2.4",
         "nette/utils": "^3.0 || ^4.0",
         "nikic/php-parser": "^5.4.0",
+        "phpat/phpat": "^0.12",
         "phpbench/phpbench": "^1.2",
         "phpstan/phpstan-phpunit": "^2.0.16",
         "phpstan/phpstan-strict-rules": "^2.0.10",
         "phpstan/phpstan-symfony": "^2.0.15",
         "phpunit/phpcov": "^9.0.2",
         "phpunit/phpunit": "^10.5.46",
-        "shipmonk/coding-standard": "^0.2.2",
+        "shipmonk/coding-standard": "^0.3.0",
         "shipmonk/composer-dependency-analyser": "^1.8.4",
-        "shipmonk/coverage-guard": "^1.0.2",
+        "shipmonk/coverage-guard": "^1.1.0",
         "shipmonk/name-collision-detector": "^2.1.1",
         "shipmonk/phpstan-dev": "^0.1.6",
         "shipmonk/phpstan-rules": "^4.3.6",
@@ -6762,6 +6764,7 @@
         "symfony/dependency-injection": "^5.4 || ^6.0 || ^7.0 || ^8.0",
         "symfony/doctrine-bridge": "^5.4 || ^6.0 || ^7.0 || ^8.0",
         "symfony/event-dispatcher": "^5.4 || ^6.0 || ^7.0 || ^8.0",
+        "symfony/form": "^5.4 || ^6.0 || ^7.0 || ^8.0",
         "symfony/framework-bundle": "^5.4 || ^6.0 || ^7.0 || ^8.0",
         "symfony/http-kernel": "^5.4 || ^6.0 || ^7.0 || ^8.0",
         "symfony/routing": "^5.4 || ^6.0 || ^7.0 || ^8.0",
@@ -6797,9 +6800,9 @@
       ],
       "support": {
         "issues": "https://github.com/shipmonk-rnd/dead-code-detector/issues",
-        "source": "https://github.com/shipmonk-rnd/dead-code-detector/tree/1.0.0"
+        "source": "https://github.com/shipmonk-rnd/dead-code-detector/tree/1.4.2"
       },
-      "time": "2026-04-08T10:39:05+00:00"
+      "time": "2026-09-18T07:50:08+00:00"
     },
     {
       "name": "shipmonk/name-collision-detector",

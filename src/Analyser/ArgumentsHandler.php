@@ -832,7 +832,7 @@ final class ArgumentsHandler
 						}
 						if (
 							$nakedReturnType === null
-							|| !(new ThisType($nakedMethodReflection->getDeclaringClass()))->isSuperTypeOf($nakedReturnType)->yes()
+							|| !(new ThisType($nakedMethodReflection->getDeclaringClass()->withoutFinalByKeywordOverride()))->isSuperTypeOf($nakedReturnType)->yes()
 							|| $nakedMethodReflection->isPure()->no()
 						) {
 							$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($arg->value), $scope, $storage);

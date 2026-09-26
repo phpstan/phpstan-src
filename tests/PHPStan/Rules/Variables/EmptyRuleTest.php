@@ -304,4 +304,11 @@ class EmptyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10783(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10783.php'], []);
+	}
+
 }

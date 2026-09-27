@@ -2007,6 +2007,8 @@ zv::Val pt_template_argument_frame_with_observed_closures(zval *frame, zval *clo
 [[nodiscard]] bool pt_template_argument_frame_is_settled_closure_site(zval *frame, zval *site, bool &out);
 /* $frame->getClosureSignatureBody() / getClosureSignatureStmts(); UNDEF =
  * pending exception */
+/* $frame->getParent() (PHP null at the top); UNDEF = pending exception */
+zv::Val pt_template_argument_frame_get_parent(zval *frame);
 zv::Val pt_template_argument_frame_get_closure_signature_body(zval *frame);
 zv::Val pt_template_argument_frame_get_closure_signature_stmts(zval *frame);
 /* $frame->resolve($site, $templateName) (the type or null) /
@@ -3079,6 +3081,10 @@ zv::Val pt_closure_signature_inference_get_signature_return_type(zval *inference
 zv::Val pt_closure_signature_inference_get_body_parameters(zval *inference, zval *scope, zval *expr);
 zv::Val pt_closure_signature_inference_get_expected_return_type(zval *inference, zval *scope, zval *expr);
 [[nodiscard]] bool pt_closure_signature_inference_is_closed_body(zval *inference, zval *functionLike, zval *stmts, bool &out);
+/* ClosureSignatureInference::infersInvocationReturnType() (false = pending
+ * exception) / findAssignedClosures() (UNDEF = pending exception) */
+[[nodiscard]] bool pt_closure_signature_inference_infers_invocation_return_type(zval *inference, zval *scope, zval *closureType, bool &out);
+zv::Val pt_closure_signature_inference_find_assigned_closures(zval *inference, zval *scope, zend_string *name);
 /* $closureSignatureInference->isObserving($scope); false = pending exception */
 [[nodiscard]] bool pt_closure_signature_inference_is_observing(zval *inference, zval *scope, bool &out);
 [[nodiscard]] bool pt_contextual_closure_parameter_resolver_resolve_expected_return_types(zval *resolver, zval *scope, zval *expr, zval *passedToType, zval *nativePassedToType, zv::Val &expected, zv::Val &nativeExpected);
@@ -3087,12 +3093,12 @@ zv::Val pt_closure_signature_inference_get_expected_return_type(zval *inference,
 /* $closureParameterResolver->resolveCallableTypeForScope($expr, $scope);
  * UNDEF = pending exception */
 zv::Val pt_closure_parameter_resolver_resolve_callable_type_for_scope(zval *resolver, zval *expr, zval *scope);
-/* $closureTypeResolver->getClosureType($scope, $expr, $shallow, $storage) /
+/* $closureTypeResolver->getClosureType($scope, $expr, $shallow, $storage, $passedToType) /
  * ->buildClosureTypeForClosure(...) / ->buildClosureTypeForArrowFunction(...)
  * / ->getDeclaredClosureType($scope, $expr) — the native bodies for the
  * shadowing class, the methods otherwise (the nullable ones NULL or IS_NULL
  * for null, everything borrowed); UNDEF = pending exception */
-zv::Val pt_closure_type_resolver_get_closure_type(zval *resolver, zval *scope, zval *expr, bool shallow, zval *storage);
+zv::Val pt_closure_type_resolver_get_closure_type(zval *resolver, zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType = NULL);
 zv::Val pt_closure_type_resolver_build_closure_type_for_closure(zval *resolver, zval *scope, zval *expr, zval *returnStatements, zval *yieldStatements, zval *executionEnds, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, bool native = false, zval *storage = NULL, zval *passedToType = NULL, zval *nativePassedToType = NULL);
 zv::Val pt_closure_type_resolver_build_closure_type_for_arrow_function(zval *resolver, zval *scope, zval *expr, zval *arrowScope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, bool native = false, zval *storage = NULL, zval *passedToType = NULL, zval *nativePassedToType = NULL);
 zv::Val pt_closure_type_resolver_get_declared_closure_type(zval *resolver, zval *scope, zval *expr);

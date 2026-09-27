@@ -64,7 +64,7 @@ final class TemplateArgumentResolver
 			TemplateArgumentStats::increment('closureSitesSettled', count($settledClosureSites));
 		}
 
-		return new TemplateArgumentFrame($parent, $resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), settledClosureSites: $settledClosureSites);
+		return new TemplateArgumentFrame($parent, $resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), $closureSignatureBody, $closureSignatureStmts, $settledClosureSites);
 	}
 
 	/**

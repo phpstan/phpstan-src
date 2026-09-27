@@ -172,7 +172,7 @@ public:
 
 		if (UNEXPECTED(!countSettled(settledClosureSites.raw()))) return zv::Val();
 		zv::Val siteStatementIndexes = collectSiteStatementIndexes(state.siteIndexes.raw(), settledClosureSites.raw());
-		return pt_template_argument_frame_new(parent, resolutions.raw(), siteStatementIndexes.raw(), NULL, NULL, settledClosureSites.raw());
+		return pt_template_argument_frame_new(parent, resolutions.raw(), siteStatementIndexes.raw(), closureSignatureBody, closureSignatureStmts, settledClosureSites.raw());
 	}
 
 	/* Mirrors resolveObservedClosures(). */

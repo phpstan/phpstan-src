@@ -337,11 +337,11 @@ public:
 		writeSlot(slots::cachedTypes, zv::Val(zv::Arr::empty()));
 	}
 
-	/* Mirrors getClosureType() ($storage NULL for null) */
-	zv::Val getClosureType(zval *scope, zval *expr, bool shallow, zval *storage)
+	/* Mirrors getClosureType() ($storage, $passedToType NULL for null) */
+	zv::Val getClosureType(zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType = NULL)
 	{
 		Parameters p;
-		if (UNEXPECTED(!buildParametersAndAcceptors(scope, expr, storage, NULL, NULL, p))) return zv::Val();
+		if (UNEXPECTED(!buildParametersAndAcceptors(scope, expr, storage, passedToType, NULL, p))) return zv::Val();
 
 		// A shallow reflection is the closure/arrow function's signature without
 		// walking its body: parameters plus the DECLARED return type.
@@ -1464,18 +1464,19 @@ using phpstanturbo::ClosureTypeResolver;
 
 /* {{{ direct entries (support.h) */
 
-zv::Val pt_closure_type_resolver_get_closure_type(zval *resolver, zval *scope, zval *expr, bool shallow, zval *storage)
+zv::Val pt_closure_type_resolver_get_closure_type(zval *resolver, zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType)
 {
 	if (storage != NULL && Z_TYPE_P(storage) == IS_NULL) storage = NULL;
-	if (EXPECTED(Z_TYPE_P(resolver) == IS_OBJECT && Z_OBJCE_P(resolver) == pt_ce_closure_type_resolver)) return ClosureTypeResolver(Z_OBJ_P(resolver)).getClosureType(scope, expr, shallow, storage);
+	if (passedToType != NULL && Z_TYPE_P(passedToType) == IS_NULL) passedToType = NULL;
+	if (EXPECTED(Z_TYPE_P(resolver) == IS_OBJECT && Z_OBJCE_P(resolver) == pt_ce_closure_type_resolver)) return ClosureTypeResolver(Z_OBJ_P(resolver)).getClosureType(scope, expr, shallow, storage, passedToType);
 	if (UNEXPECTED(Z_TYPE_P(resolver) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function getClosureType() on %s", zend_zval_value_name(resolver));
 		return zv::Val();
 	}
 	zval null;
 	ZVAL_NULL(&null);
-	zv::Args argv{scope, expr, shallow, storage != NULL ? storage : &null};
-	return pt_type_call(Z_OBJ_P(resolver), PT_LC("getclosuretype"), 4, argv);
+	zv::Args argv{scope, expr, shallow, storage != NULL ? storage : &null, passedToType != NULL ? passedToType : &null};
+	return pt_type_call(Z_OBJ_P(resolver), PT_LC("getclosuretype"), 5, argv);
 }
 
 zv::Val pt_closure_type_resolver_build_closure_type_for_closure(zval *resolver, zval *scope, zval *expr, zval *returnStatements, zval *yieldStatements, zval *executionEnds, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, bool native, zval *storage, zval *passedToType, zval *nativePassedToType)
@@ -1572,17 +1573,18 @@ PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 	});
 
 	cls.method(sigs::getClosureType, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *expr, *storage = NULL;
+		zval *scope, *expr, *storage = NULL, *passedToType = NULL;
 		bool shallow = false;
-		ZEND_PARSE_PARAMETERS_START(2, 4)
+		ZEND_PARSE_PARAMETERS_START(2, 5)
 			Z_PARAM_OBJECT_OF_CLASS(scope, pt_ce_mutating_scope)
 			Z_PARAM_OBJECT(expr)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(shallow)
 			Z_PARAM_OBJECT_OR_NULL(storage)
+			Z_PARAM_OBJECT_OR_NULL(passedToType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!isClosureLike(expr, false, false))) RETURN_THROWS();
-		PT_RETURN_VAL(ClosureTypeResolver(Z_OBJ_P(ZEND_THIS)).getClosureType(scope, expr, shallow, storage));
+		PT_RETURN_VAL(ClosureTypeResolver(Z_OBJ_P(ZEND_THIS)).getClosureType(scope, expr, shallow, storage, passedToType));
 	});
 
 	cls.method(sigs::buildClosureTypeForClosure, [](INTERNAL_FUNCTION_PARAMETERS) {

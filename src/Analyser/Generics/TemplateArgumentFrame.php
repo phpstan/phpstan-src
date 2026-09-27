@@ -111,6 +111,12 @@ final class TemplateArgumentFrame
 		return $this->parent !== null && $this->parent->isSettledClosureSite($site);
 	}
 
+	/** The frame of the body this frame's body is written in. */
+	public function getParent(): ?self
+	{
+		return $this->parent;
+	}
+
 	/**
 	 * The function-like body the frame observes, asked only when a closure in
 	 * it has its signature inferred (see ClosureSignatureInference::isClosedBody()).

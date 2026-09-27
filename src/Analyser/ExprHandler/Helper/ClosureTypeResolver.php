@@ -120,15 +120,19 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * the closure-as-call-arg store sites) feed the gathered returns/yields to
 	 * buildClosureType() instead, which constructs the same ClosureType without
 	 * a second walk.
+	 *
+	 * $passedToType types the parameters like a callable parameter the closure
+	 * is passed to does - FuncCallHandler passes the arguments of an invocation.
 	 */
 	public function getClosureType(
 		MutatingScope $scope,
 		Node\Expr\Closure|ArrowFunction $expr,
 		bool $shallow = false,
 		?ExpressionResultStorage $storage = null,
+		?Type $passedToType = null,
 	): ClosureType
 	{
-		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage);
+		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType);
 
 		// A shallow reflection is the closure/arrow function's signature without
 		// walking its body: parameters plus the DECLARED return type. Used at scope

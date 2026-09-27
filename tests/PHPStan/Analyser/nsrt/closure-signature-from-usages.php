@@ -38,6 +38,26 @@ function takesMixed(mixed $m): void
 {
 }
 
+class InvokedCountry
+{
+
+	public static function tryFrom(mixed $value): ?self
+	{
+		return null;
+	}
+
+}
+
+class InvokedRegion
+{
+
+	public static function tryFrom(mixed $value): ?self
+	{
+		return null;
+	}
+
+}
+
 /**
  * @template T of \BackedEnum|int|string
  * @param \Closure(T): string $cb
@@ -100,7 +120,7 @@ class Foo
 	{
 		$f = fn ($a) => $a;
 		$f(1);
-		assertType("1|'x'", $f('x'));
+		assertType("'x'", $f('x'));
 	}
 
 	public function arrayOffsets(): void
@@ -513,6 +533,37 @@ class Foo
 			return $inner(...$args);
 		};
 		$outer('x', 1.0);
+	}
+
+	public function invocationReturnsWhatTheBodyReturnsForItsArguments(mixed $a, mixed $b): void
+	{
+		$toEnumList = static function (mixed $value, string $enumClassName): array {
+			assertType("'ClosureSignatureFromUsages\\\\InvokedCountry'|'ClosureSignatureFromUsages\\\\InvokedRegion'", $enumClassName);
+			$enumValues = [];
+			foreach ((array) $value as $val) {
+				$enumValue = $enumClassName::tryFrom($val);
+				if ($enumValue !== null) {
+					$enumValues[] = $enumValue;
+				}
+			}
+			return $enumValues;
+		};
+		assertType('list<ClosureSignatureFromUsages\\InvokedCountry>', $toEnumList($a, InvokedCountry::class));
+		assertType('list<ClosureSignatureFromUsages\\InvokedRegion>', $toEnumList($b, InvokedRegion::class));
+
+		$inner = static function (mixed $value) use ($toEnumList): void {
+			assertType('array{}|array{ClosureSignatureFromUsages\\InvokedCountry}', $toEnumList($value, InvokedCountry::class));
+		};
+		$inner(1);
+	}
+
+	public function invocationOfAReassignedVariable(): void
+	{
+		$f = static fn (int|string $x): int|string => $x;
+		assertType('1', $f(1));
+		$f = static fn (int|string $x): string => 'other';
+		assertType("'other'", $f(1));
+		$f('a');
 	}
 
 }

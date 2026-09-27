@@ -195,6 +195,9 @@ public:
 		}
 	}
 
+	/* Mirrors getParent(): the slot (borrowed) */
+	zval *parent() const { return OBJ_PROP_NUM(self, slots::parent); }
+
 	/* Mirrors getClosureSignatureBody() / getClosureSignatureStmts(): the
 	 * slots (borrowed) */
 	zval *closureSignatureBody() const { return OBJ_PROP_NUM(self, slots::closureSignatureBody); }
@@ -483,6 +486,12 @@ zv::Val pt_template_argument_frame_return_type_of_call(zval *acceptor, zval *sco
 	return TemplateArgumentFrame::returnTypeOfCall(acceptor, scope, site, allowUnresolved);
 }
 
+zv::Val pt_template_argument_frame_get_parent(zval *frame)
+{
+	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return zv::Val::copyOf(zv::Ref(TemplateArgumentFrame(Z_OBJ_P(frame)).parent()));
+	return pt_type_call(Z_OBJ_P(frame), PT_LC("getparent"), 0, NULL);
+}
+
 zv::Val pt_template_argument_frame_get_closure_signature_body(zval *frame)
 {
 	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return zv::Val::copyOf(zv::Ref(TemplateArgumentFrame(Z_OBJ_P(frame)).closureSignatureBody()));
@@ -604,6 +613,11 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 		bool out;
 		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).isSettledClosureSite(site, out))) RETURN_THROWS();
 		RETURN_BOOL(out);
+	});
+
+	cls.method(sigs::getParent, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_COPY(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).parent());
 	});
 
 	cls.method(sigs::getClosureSignatureBody, [](INTERNAL_FUNCTION_PARAMETERS) {

@@ -27,6 +27,7 @@ use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\FuncCallScopeEffectsHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -52,14 +53,18 @@ use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\CallableType;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
@@ -67,6 +72,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -112,6 +118,7 @@ final class FuncCallHandler implements ExprHandler
 		private ArgumentsHandler $argumentsHandler,
 		private ClosureProcessor $closureProcessor,
 		private AssignHandler $assignHandler,
+		private ClosureSignatureInference $closureSignatureInference,
 	)
 	{
 	}
@@ -341,6 +348,17 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
+		if (
+			$resolvedParametersAcceptor !== null
+			&& $nameResult !== null
+			&& $expr->name instanceof Expr\Variable
+			&& is_string($expr->name->name)
+		) {
+			$invokedClosureType = $this->resolveInvokedClosureType($nodeScopeResolver, $normalizedExpr, $expr->name->name, $nameResult->getType(), $argsResult->getScope(), $storage);
+			if ($invokedClosureType !== null) {
+				$resolvedParametersAcceptor = $invokedClosureType->getCallableParametersAcceptors($scope)[0];
+			}
+		}
 		// arguments walked ahead of the callee: the scope already carries them
 		// and the callee walk's own effects (a closure's by-ref uses) on top
 		if ($argumentsWalkedAhead === null) {
@@ -762,6 +780,63 @@ final class FuncCallHandler implements ExprHandler
 		// the typeCallback keeps void; ExpressionResult projects void->null for
 		// value reads, getKeepVoidType() keeps it
 		return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $reflectionScope, $expr);
+	}
+
+	/**
+	 * A closure whose signature is inferred from its invocations (see
+	 * ClosureSignatureInference) joins the arguments of all of them; invoked
+	 * with narrower ones, it returns what its body returns for these. The
+	 * variable holds the closure it was assigned when the type it holds is the
+	 * type the closure was created with.
+	 */
+	private function resolveInvokedClosureType(NodeScopeResolver $nodeScopeResolver, FuncCall $call, string $name, Type $calleeType, MutatingScope $scope, ExpressionResultStorage $storage): ?ClosureType
+	{
+		if (!$calleeType instanceof ClosureType || !$this->closureSignatureInference->infersInvocationReturnType($scope, $calleeType)) {
+			return null;
+		}
+		$parameters = $calleeType->getParameters();
+		$args = $call->getArgs();
+		if ($args === [] || count($args) > count($parameters)) {
+			return null;
+		}
+
+		$narrower = false;
+		$callableParameters = [];
+		foreach ($parameters as $i => $parameter) {
+			if ($parameter->isVariadic() || !$parameter->passedByReference()->no()) {
+				return null;
+			}
+			$type = $parameter->getType();
+			if (isset($args[$i])) {
+				if ($args[$i]->name !== null || $args[$i]->unpack) {
+					return null;
+				}
+				$argumentType = $nodeScopeResolver->readTypeOfMaybeStored($args[$i]->value, $scope);
+				// an argument the signature rejects is reported against it
+				if (!$type->isSuperTypeOf($argumentType)->yes()) {
+					return null;
+				}
+				if (!$argumentType->isSuperTypeOf($type)->yes()) {
+					$narrower = true;
+					$type = $argumentType;
+				}
+			}
+			$callableParameters[] = new NativeParameterReflection($parameter->getName(), $parameter->isOptional(), $type, PassedByReference::createNo(), false, null);
+		}
+		if (!$narrower) {
+			return null;
+		}
+
+		foreach ($this->closureSignatureInference->findAssignedClosures($scope, $name) as $closure) {
+			$creationResult = $storage->findExpressionResult($closure);
+			if ($creationResult === null || !$creationResult->getType()->equals($calleeType)) {
+				continue;
+			}
+
+			return $this->closureTypeResolver->getClosureType($creationResult->getBeforeScope(), $closure, false, $storage, new CallableType($callableParameters, new MixedType(), false));
+		}
+
+		return null;
 	}
 
 	/**

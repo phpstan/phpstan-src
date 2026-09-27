@@ -62,11 +62,17 @@ inline constexpr char strings[] =
 	"stmts\0" /* 684 */
 	"isClosedBody\0" /* 690 */
 	"scanClosedBody\0" /* 703 */
-	"target\0" /* 718 */
-	"PhpParser\\Node\\Expr\0" /* 725 */
-	"names\0" /* 745 */
-	"collectTargetNames\0" /* 751 */
-	"isContextTyped"; /* 770 */
+	"PHPStan\\Type\\ClosureType\0" /* 718 */
+	"infersInvocationReturnType\0" /* 743 */
+	"name\0" /* 770 */
+	"findAssignedClosures\0" /* 775 */
+	"body\0" /* 796 */
+	"getAssignedClosures\0" /* 801 */
+	"target\0" /* 821 */
+	"PhpParser\\Node\\Expr\0" /* 828 */
+	"names\0" /* 848 */
+	"collectTargetNames\0" /* 854 */
+	"isContextTyped"; /* 873 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_BOOL), /* __construct $enabled */
 	reg::packed(20, 0, 27), /* isClosureSignatureMarker $marker */
@@ -107,10 +113,19 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(656, 0, 669), /* scanClosedBody $functionLike */
 	reg::packed(684, MAY_BE_ARRAY), /* scanClosedBody $stmts */
 	reg::packed(79, MAY_BE_BOOL), /* scanClosedBody return */
-	reg::packed(718, 0, 725), /* collectTargetNames $target */
-	reg::packed(745, MAY_BE_ARRAY, reg::NoString, true, false), /* collectTargetNames $names */
+	reg::packed(156, 0, 162), /* infersInvocationReturnType $scope */
+	reg::packed(463, 0, 718), /* infersInvocationReturnType $closureType */
+	reg::packed(79, MAY_BE_BOOL), /* infersInvocationReturnType return */
+	reg::packed(156, 0, 162), /* findAssignedClosures $scope */
+	reg::packed(770, MAY_BE_STRING), /* findAssignedClosures $name */
+	reg::packed(79, MAY_BE_ARRAY), /* findAssignedClosures return */
+	reg::packed(796, 0, 669), /* getAssignedClosures $body */
+	reg::packed(684, MAY_BE_ARRAY), /* getAssignedClosures $stmts */
+	reg::packed(79, MAY_BE_ARRAY), /* getAssignedClosures return */
+	reg::packed(821, 0, 828), /* collectTargetNames $target */
+	reg::packed(848, MAY_BE_ARRAY, reg::NoString, true, false), /* collectTargetNames $names */
 	reg::packed(79, MAY_BE_VOID), /* collectTargetNames return */
-	reg::packed(262, 0, 725), /* isContextTyped $expr */
+	reg::packed(262, 0, 828), /* isContextTyped $expr */
 	reg::packed(79, MAY_BE_BOOL), /* isContextTyped return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -133,8 +148,11 @@ inline constexpr sigtab::Sig createParameterMarker = { { 604 /* createParameterM
 inline constexpr sigtab::Sig returnsContextTypedExpression = { { 626 /* returnsContextTypedExpression */, 1, 31, 1, 32, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig isClosedBody = { { 690 /* isClosedBody */, 2, 33, 2, 35, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig scanClosedBody = { { 703 /* scanClosedBody */, 2, 36, 2, 38, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig collectTargetNames = { { 751 /* collectTargetNames */, 2, 39, 2, 41, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig isContextTyped = { { 770 /* isContextTyped */, 1, 42, 1, 43, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig infersInvocationReturnType = { { 743 /* infersInvocationReturnType */, 2, 39, 2, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findAssignedClosures = { { 775 /* findAssignedClosures */, 2, 42, 2, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAssignedClosures = { { 801 /* getAssignedClosures */, 2, 45, 2, 47, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig collectTargetNames = { { 854 /* collectTargetNames */, 2, 48, 2, 50, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isContextTyped = { { 873 /* isContextTyped */, 1, 51, 1, 52, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ClosureSignatureInference

@@ -139,8 +139,8 @@ class Foo
 			assertType("1|'a'", $v);
 			return new Box($v);
 		};
-		assertType("ClosureSignatureFromUsagesGenerics\Box<1|'a'>", $make(1));
-		assertType("ClosureSignatureFromUsagesGenerics\Box<1|'a'>", $make('a'));
+		assertType('ClosureSignatureFromUsagesGenerics\Box<1>', $make(1));
+		assertType("ClosureSignatureFromUsagesGenerics\Box<'a'>", $make('a'));
 	}
 
 	public function closureFeedsGenericObject(): void

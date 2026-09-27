@@ -29,6 +29,7 @@ namespace {
 zend_string *pt_csi_return_template_name = nullptr;
 zend_string *pt_csi_closed_body_attribute = nullptr;
 zend_string *pt_csi_returns_context_typed_attribute = nullptr;
+zend_string *pt_csi_assigned_closures_attribute = nullptr;
 
 pt_method_site pt_csi_get_sub_node_names_site;
 pt_method_site pt_csi_get_params_site;
@@ -50,6 +51,8 @@ pt_property_site pt_csi_item_value_site;
 pt_property_site pt_csi_return_expr_site;
 pt_property_site pt_csi_arrow_expr_site;
 pt_property_site pt_csi_stmts_site;
+pt_property_site pt_csi_assign_var_site;
+pt_property_site pt_csi_assign_expr_site;
 
 /* $value instanceof <class-map class>; false = pending exception */
 [[nodiscard]] bool isA(zval *value, int classIdx, bool &out)
@@ -146,6 +149,90 @@ zv::Val popNode(zv::Arr &stack)
 	zend_hash_index_del(table, count - 1);
 	table->nNextFreeElement = count - 1;
 	return value;
+}
+
+/* infersInvocationReturnType()'s traversal: whether the type holds an
+ * UnresolvedTemplateArgumentType */
+void containsMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) state1;
+	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_type_error("ClosureSignatureInference::infersInvocationReturnType() traversal: expected (Type $type, callable $traverse)");
+		return;
+	}
+	zval *type = &argv[0];
+	if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
+		zval_ptr_dtor(contains);
+		ZVAL_TRUE(contains);
+	}
+	if (Z_TYPE_P(contains) == IS_TRUE) {
+		ZVAL_COPY(return_value, type);
+		return;
+	}
+	zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
+	if (UNEXPECTED(traversed.isUndef())) return;
+	traversed.intoReturnValue(return_value);
+}
+
+/* one node of getAssignedClosures(): a closure or an arrow function assigned
+ * to a named variable is added under the name; false = pending exception */
+[[nodiscard]] bool collectAssignedClosure(zval *node, zv::Arr &assigned)
+{
+	bool is;
+	if (UNEXPECTED(!isA(node, PT_CLASS_ASSIGN_EXPR, is))) return false;
+	if (!is) return true;
+	zval *var = read(pt_csi_assign_var_site, node, PT_LC("var"));
+	if (UNEXPECTED(var == NULL)) return false;
+	if (UNEXPECTED(!isA(var, PT_CLASS_VARIABLE, is))) return false;
+	if (!is) return true;
+	zval *name = read(pt_csi_variable_name_site, var, PT_LC("name"));
+	if (UNEXPECTED(name == NULL)) return false;
+	if (Z_TYPE_P(name) != IS_STRING) return true;
+	zval *value = read(pt_csi_assign_expr_site, node, PT_LC("expr"));
+	if (UNEXPECTED(value == NULL)) return false;
+	if (UNEXPECTED(!isA(value, PT_CLASS_CLOSURE_EXPR, is))) return false;
+	if (!is && UNEXPECTED(!isA(value, PT_CLASS_ARROW_FUNCTION, is))) return false;
+	if (!is) return true;
+	assigned.separate();
+	zval *list = zend_symtable_find(assigned.table(), Z_STR_P(name));
+	if (list == NULL) {
+		zval empty;
+		ZVAL_EMPTY_ARRAY(&empty);
+		list = zend_symtable_update(assigned.table(), Z_STR_P(name), &empty);
+	}
+	SEPARATE_ARRAY(list);
+	Z_TRY_ADDREF_P(value);
+	zend_hash_next_index_insert(Z_ARRVAL_P(list), value);
+	return true;
+}
+
+/* Mirrors the private static getAssignedClosures(); UNDEF = pending exception */
+zv::Val getAssignedClosures(zval *body, zval *stmts)
+{
+	zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(body), ZSTR_VAL(pt_csi_assigned_closures_attribute), ZSTR_LEN(pt_csi_assigned_closures_attribute));
+	if (UNEXPECTED(cached.isUndef())) return zv::Val();
+	if (!cached.isNull()) return cached;
+
+	zv::Arr assigned = zv::Arr::create(0);
+	zv::Arr stack = zv::Arr::create(0);
+	if (Z_TYPE_P(stmts) == IS_ARRAY) {
+		for (auto entry : zv::ArrRef(stmts)) {
+			stack.push(zv::Val::copyOf(entry.value().deref()));
+		}
+	}
+	for (;;) {
+		zv::Val node = popNode(stack);
+		if (node.isUndef()) break;
+		bool skip;
+		if (UNEXPECTED(!isA(node.raw(), PT_CLASS_FUNCTION_LIKE, skip))) return zv::Val();
+		if (!skip && UNEXPECTED(!isA(node.raw(), PT_CLASS_CLASS_LIKE_STMT, skip))) return zv::Val();
+		if (skip) continue;
+		if (UNEXPECTED(!collectAssignedClosure(node.raw(), assigned))) return zv::Val();
+		if (UNEXPECTED(!pushSubNodes(node.raw(), stack))) return zv::Val();
+	}
+	zv::Val result(std::move(assigned));
+	if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(body), ZSTR_VAL(pt_csi_assigned_closures_attribute), ZSTR_LEN(pt_csi_assigned_closures_attribute), result.raw()))) return zv::Val();
+	return result;
 }
 
 /* Mirrors isContextTyped(); false = pending exception */
@@ -701,6 +788,54 @@ public:
 		return true;
 	}
 
+	/* Mirrors infersInvocationReturnType(); false = pending exception */
+	[[nodiscard]] bool infersInvocationReturnType(zval *scope, zval *closureType, bool &out) const
+	{
+		out = false;
+		if (!enabled()) return true;
+		zv::Val frame = pt_mutating_scope_get_current_template_argument_frame(Z_OBJ_P(scope));
+		if (UNEXPECTED(frame.isUndef())) return false;
+		if (frame.isNull()) return true;
+
+		zval contains;
+		ZVAL_FALSE(&contains);
+		zv::Val callback = pt_type_native_callback(containsMarkerBody, &contains, NULL);
+		if (UNEXPECTED(callback.isUndef())) return false;
+		zv::Val mapped = pt_type_traverser_map_of(closureType, callback.raw());
+		if (UNEXPECTED(mapped.isUndef())) return false;
+		out = Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) != IS_TRUE;
+		return true;
+	}
+
+	/* Mirrors findAssignedClosures(); UNDEF = pending exception */
+	zv::Val findAssignedClosures(zval *scope, zend_string *name) const
+	{
+		zv::Arr closures = zv::Arr::empty();
+		if (!enabled()) return zv::Val(std::move(closures));
+
+		zv::Val frame = pt_mutating_scope_get_current_template_argument_frame(Z_OBJ_P(scope));
+		if (UNEXPECTED(frame.isUndef())) return zv::Val();
+		while (!frame.isNull()) {
+			zv::Val body = pt_template_argument_frame_get_closure_signature_body(frame.raw());
+			if (UNEXPECTED(body.isUndef())) return zv::Val();
+			if (!body.isNull()) {
+				zv::Val stmts = pt_template_argument_frame_get_closure_signature_stmts(frame.raw());
+				if (UNEXPECTED(stmts.isUndef())) return zv::Val();
+				zv::Val assigned = getAssignedClosures(body.raw(), stmts.raw());
+				if (UNEXPECTED(assigned.isUndef())) return zv::Val();
+				zval *list = zend_symtable_find(Z_ARRVAL_P(assigned.raw()), name);
+				if (list != NULL && Z_TYPE_P(list) == IS_ARRAY) {
+					for (auto entry : zv::ArrRef(list)) {
+						closures.push(zv::Ref(entry.value().deref().raw()));
+					}
+				}
+			}
+			frame = pt_template_argument_frame_get_parent(frame.raw());
+			if (UNEXPECTED(frame.isUndef())) return zv::Val();
+		}
+		return zv::Val(std::move(closures));
+	}
+
 private:
 	zend_object *self;
 
@@ -810,6 +945,27 @@ bool pt_closure_signature_inference_is_observing(zval *inference, zval *scope, b
 	return true;
 }
 
+bool pt_closure_signature_inference_infers_invocation_return_type(zval *inference, zval *scope, zval *closureType, bool &out)
+{
+	if (isNative(inference)) return ClosureSignatureInference(Z_OBJ_P(inference)).infersInvocationReturnType(scope, closureType, out);
+	zv::Args argv{scope, closureType};
+	zv::Val result = pt_type_call(Z_OBJ_P(inference), PT_LC("infersinvocationreturntype"), 2, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+zv::Val pt_closure_signature_inference_find_assigned_closures(zval *inference, zval *scope, zend_string *name)
+{
+	if (isNative(inference)) return ClosureSignatureInference(Z_OBJ_P(inference)).findAssignedClosures(scope, name);
+	zval nameZv;
+	ZVAL_STR_COPY(&nameZv, name);
+	zv::Args argv{scope, &nameZv};
+	zv::Val result = pt_type_call(Z_OBJ_P(inference), PT_LC("findassignedclosures"), 2, argv);
+	zval_ptr_dtor(&nameZv);
+	return result;
+}
+
 bool pt_closure_signature_inference_is_closed_body(zval *inference, zval *functionLike, zval *stmts, bool &out)
 {
 	if (isNative(inference)) return ClosureSignatureInference(Z_OBJ_P(inference)).isClosedBody(functionLike, stmts, out);
@@ -831,12 +987,14 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 	pt_csi_return_template_name = zend_string_init_interned(PT_LC("@return"), 1);
 	pt_csi_closed_body_attribute = zend_string_init_interned(PT_LC("closureSignatureClosedBody"), 1);
 	pt_csi_returns_context_typed_attribute = zend_string_init_interned(PT_LC("closureSignatureReturnsContextTyped"), 1);
+	pt_csi_assigned_closures_attribute = zend_string_init_interned(PT_LC("closureSignatureAssignedClosures"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\Generics\\ClosureSignatureInference");
 	ptdecl::ClosureSignatureInference::declareClass(cls);
 	ptdecl::ClosureSignatureInference::declareProperties(cls);
 	cls.publicClassConstantString("RETURN_TEMPLATE_NAME", "@return");
 	cls.privateClassConstantString("CLOSED_BODY_ATTRIBUTE", "closureSignatureClosedBody");
+	cls.privateClassConstantString("ASSIGNED_CLOSURES_ATTRIBUTE", "closureSignatureAssignedClosures");
 
 	/* the real parameter types: the DI container autowires the service by
 	 * reflecting the constructor */
@@ -908,6 +1066,24 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 		zval *scope, *closureType;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, scope, closureType)) RETURN_THROWS();
 		PT_RETURN_VAL(ClosureSignatureInference(Z_OBJ_P(ZEND_THIS)).collectSites(scope, closureType));
+	});
+
+	cls.method(sigs::infersInvocationReturnType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *closureType;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, scope, closureType)) RETURN_THROWS();
+		bool out;
+		if (UNEXPECTED(!ClosureSignatureInference(Z_OBJ_P(ZEND_THIS)).infersInvocationReturnType(scope, closureType, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
+	});
+
+	cls.method(sigs::findAssignedClosures, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope;
+		zend_string *name;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_STR(name)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(ClosureSignatureInference(Z_OBJ_P(ZEND_THIS)).findAssignedClosures(scope, name));
 	});
 
 	cls.method(sigs::isClosedBody, [](INTERNAL_FUNCTION_PARAMETERS) {

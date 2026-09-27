@@ -12,12 +12,14 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 use function array_keys;
 use function array_pop;
 use function count;
@@ -54,6 +56,8 @@ final class ClosureSignatureInference
 	public const RETURN_TEMPLATE_NAME = '@return';
 
 	private const CLOSED_BODY_ATTRIBUTE = 'closureSignatureClosedBody';
+
+	private const ASSIGNED_CLOSURES_ATTRIBUTE = 'closureSignatureAssignedClosures';
 
 	public function __construct(
 		#[AutowiredParameter(ref: '%featureToggles.closureSignaturesFromUsages%')]
@@ -452,6 +456,103 @@ final class ClosureSignatureInference
 		}
 
 		return true;
+	}
+
+	/**
+	 * Whether an invocation of the closure returns what the body returns for
+	 * its arguments (see FuncCallHandler): its signature is resolved - a body
+	 * walked once, with no sites of its own, invokes the resolved closures of
+	 * the body it is written in.
+	 */
+	public function infersInvocationReturnType(MutatingScope $scope, ClosureType $closureType): bool
+	{
+		if (!$this->enabled || $scope->getCurrentTemplateArgumentFrame() === null) {
+			return false;
+		}
+
+		$containsMarker = false;
+		TypeTraverser::map($closureType, static function (Type $type, callable $traverse) use (&$containsMarker): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType) {
+				$containsMarker = true;
+			}
+
+			return $containsMarker ? $type : $traverse($type);
+		});
+
+		return !$containsMarker;
+	}
+
+	/**
+	 * The closures and arrow functions assigned to the local variable in the
+	 * body being walked and - a variable a closure captures - in the bodies
+	 * enclosing it.
+	 *
+	 * @return list<Closure|ArrowFunction>
+	 */
+	public function findAssignedClosures(MutatingScope $scope, string $name): array
+	{
+		if (!$this->enabled) {
+			return [];
+		}
+
+		$closures = [];
+		for ($frame = $scope->getCurrentTemplateArgumentFrame(); $frame !== null; $frame = $frame->getParent()) {
+			$body = $frame->getClosureSignatureBody();
+			if ($body === null) {
+				continue;
+			}
+			foreach (self::getAssignedClosures($body, $frame->getClosureSignatureStmts())[$name] ?? [] as $closure) {
+				$closures[] = $closure;
+			}
+		}
+
+		return $closures;
+	}
+
+	/**
+	 * @param Node\Stmt[] $stmts
+	 * @return array<string, list<Closure|ArrowFunction>>
+	 */
+	private static function getAssignedClosures(Node $body, array $stmts): array
+	{
+		/** @var array<string, list<Closure|ArrowFunction>>|null $cached */
+		$cached = $body->getAttribute(self::ASSIGNED_CLOSURES_ATTRIBUTE);
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$assigned = [];
+		$stack = $stmts;
+		while (count($stack) > 0) {
+			$node = array_pop($stack);
+			if ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike) {
+				continue;
+			}
+			if (
+				$node instanceof Expr\Assign
+				&& $node->var instanceof Expr\Variable
+				&& is_string($node->var->name)
+				&& ($node->expr instanceof Closure || $node->expr instanceof ArrowFunction)
+			) {
+				$assigned[$node->var->name][] = $node->expr;
+			}
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$subNode = $node->$subNodeName;
+				if ($subNode instanceof Node) {
+					$stack[] = $subNode;
+				} elseif (is_array($subNode)) {
+					foreach ($subNode as $item) {
+						if (!$item instanceof Node) {
+							continue;
+						}
+						$stack[] = $item;
+					}
+				}
+			}
+		}
+		$body->setAttribute(self::ASSIGNED_CLOSURES_ATTRIBUTE, $assigned);
+
+		return $assigned;
 	}
 
 	/**

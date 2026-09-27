@@ -2013,13 +2013,18 @@ zv::Val pt_template_argument_frame_get_local_by_ref_sites(zval *frame);
 /* TemplateArgumentFrame::getStaticVariableTypes() ([phpdoc, native] or PHP
  * null) / withStaticVariableTypes(); UNDEF = pending exception */
 zv::Val pt_template_argument_frame_get_static_variable_types(zval *frame, zval *var);
-zv::Val pt_template_argument_frame_with_static_variable_types(zval *frame, zval *staticVariableTypes, zval *statementIndexes);
+zv::Val pt_template_argument_frame_with_static_variable_types(zval *frame, zval *staticVariableTypes, zval *statementIndexes, zval *conditionalExpressions = NULL);
+/* TemplateArgumentFrame::getStaticVariableConditionalExpressions() */
+zv::Val pt_template_argument_frame_get_static_variable_conditional_expressions(zval *frame, zval *stmt);
 /* StaticVariableInference.cpp: getSites() / isInferred() (false = pending
  * exception) / getResolvedTypes() on the service; UNDEF = pending exception */
 extern zend_class_entry *pt_ce_static_variable_inference;
 zv::Val pt_static_variable_inference_get_sites(zval *inference, zval *functionLike, zval *stmts);
 [[nodiscard]] bool pt_static_variable_inference_is_inferred(zval *inference, zval *scope, zval *var, bool &out);
 zv::Val pt_static_variable_inference_get_resolved_types(zval *inference, zval *scope, zval *var);
+zv::Val pt_static_variable_inference_get_runs(zval *inference, zval *functionLike, zval *stmts);
+zv::Val pt_static_variable_inference_get_resolved_conditional_expressions(zval *inference, zval *scope, zval *stmt);
+[[nodiscard]] bool pt_static_variable_inference_can_run_user_code(zval *inference, zval *node, zval *scope, bool &out);
 /* $frame->isSettledClosureSite($site); false = pending exception */
 [[nodiscard]] bool pt_template_argument_frame_is_settled_closure_site(zval *frame, zval *site, bool &out);
 /* $frame->getClosureSignatureBody() / getClosureSignatureStmts(); UNDEF =

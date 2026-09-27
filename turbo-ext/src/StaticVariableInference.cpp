@@ -5,8 +5,10 @@
  * A DI service (#[AutowiredService]): the constructor keeps the twin's
  * arginfo so Nette autowires it. getSites() scans a function-like body once
  * (cached in a node attribute) for the `static` variables whose type is
- * inferred; isInferred() / getResolvedTypes() answer StaticVariableHandler
- * from the current template argument frame. The direct entries
+ * inferred and getRuns() for the runs of `static` statements among them;
+ * isInferred() / getResolvedTypes() / getResolvedConditionalExpressions()
+ * answer StaticVariableHandler from the current template argument frame, and
+ * canRunUserCode() StatementsHandler. The direct entries
  * pt_static_variable_inference_*() serve the native StaticVariableHandler and
  * StatementsHandler.
  */
@@ -37,6 +39,7 @@ pt_property_site pt_svi_assign_expr_site;
 pt_property_site pt_svi_global_vars_site;
 pt_property_site pt_svi_static_vars_site;
 pt_property_site pt_svi_static_var_var_site;
+pt_property_site pt_svi_static_var_default_site;
 pt_property_site pt_svi_fetch_var_site;
 pt_property_site pt_svi_items_site;
 pt_property_site pt_svi_item_value_site;
@@ -333,9 +336,11 @@ class StaticVariableInference
 public:
 	explicit StaticVariableInference(zend_object *self) : self(self) {}
 
-	/* the constructor body: the promoted property */
-	void construct(bool enabled)
+	/* the constructor body: the promoted properties */
+	void construct(zval *reflectionProvider, bool enabled)
 	{
+		zv::ObjRef(self).propAtWrite(slots::reflectionProvider, zv::Val::copyOf(zv::Ref(reflectionProvider)));
+		Z_PROP_FLAG_P(OBJ_PROP_NUM(self, slots::reflectionProvider)) = 0;
 		zv::ObjRef(self).propAtWrite(slots::enabled, zv::Val::boolean(enabled));
 		Z_PROP_FLAG_P(OBJ_PROP_NUM(self, slots::enabled)) = 0;
 	}
@@ -388,6 +393,132 @@ public:
 		return pt_template_argument_frame_get_static_variable_types(frame.raw(), var);
 	}
 
+	/* Mirrors getRuns() */
+	zv::Val getRuns(zval *functionLike, zval *stmts) const
+	{
+		zv::Val sites = getSites(functionLike, stmts);
+		if (UNEXPECTED(sites.isUndef())) return zv::Val();
+		zv::ScratchTable siteIds(8);
+		for (auto entry : zv::ArrRef(sites.raw())) {
+			zval *var = zend_hash_index_find(Z_ARRVAL_P(entry.value().deref().raw()), 0);
+			if (UNEXPECTED(var == NULL || Z_TYPE_P(var) != IS_OBJECT)) continue;
+			zval marked;
+			ZVAL_TRUE(&marked);
+			zend_hash_index_update(siteIds.table(), Z_OBJ_HANDLE_P(var), &marked);
+		}
+		if (zend_hash_num_elements(siteIds.table()) < 2) return zv::Val(zv::Arr::empty());
+
+		zv::Arr runs = zv::Arr::empty();
+		zv::Arr run = zv::Arr::create(0);
+		zv::Val last = zv::Val::null();
+		auto flush = [&]() {
+			if (!last.isNull() && zend_hash_num_elements(run.table()) >= 2) {
+				zv::Arr entry = zv::Arr::create(2);
+				entry.push(std::move(last));
+				entry.push(std::move(run));
+				runs.push(std::move(entry));
+			}
+			run = zv::Arr::create(0);
+			last = zv::Val::null();
+		};
+		for (auto entry : zv::ArrRef(stmts)) {
+			zval *stmt = entry.value().deref().raw();
+			bool is;
+			if (UNEXPECTED(!isA(stmt, PT_CLASS_NOP_STMT, is))) return zv::Val();
+			if (is) continue;
+			if (UNEXPECTED(!isA(stmt, PT_CLASS_STATIC_STMT, is))) return zv::Val();
+			bool onlySites = false;
+			zval *vars = NULL;
+			if (is) {
+				vars = read(pt_svi_static_vars_site, stmt, PT_LC("vars"));
+				if (UNEXPECTED(vars == NULL)) return zv::Val();
+				onlySites = Z_TYPE_P(vars) == IS_ARRAY;
+				if (onlySites) {
+					for (auto varEntry : zv::ArrRef(vars)) {
+						zval *var = read(pt_svi_static_var_var_site, varEntry.value().deref().raw(), PT_LC("var"));
+						if (UNEXPECTED(var == NULL)) return zv::Val();
+						if (Z_TYPE_P(var) != IS_OBJECT || !zend_hash_index_exists(siteIds.table(), Z_OBJ_HANDLE_P(var))) {
+							onlySites = false;
+							break;
+						}
+					}
+				}
+			}
+			if (!onlySites) {
+				flush();
+				continue;
+			}
+			for (auto varEntry : zv::ArrRef(vars)) {
+				zval *staticVar = varEntry.value().deref().raw();
+				zval *var = read(pt_svi_static_var_var_site, staticVar, PT_LC("var"));
+				if (UNEXPECTED(var == NULL)) return zv::Val();
+				zval *name = read(pt_svi_variable_name_site, var, PT_LC("name"));
+				if (UNEXPECTED(name == NULL)) return zv::Val();
+				if (UNEXPECTED(Z_TYPE_P(name) != IS_STRING)) continue;
+				zval *defaultValue = read(pt_svi_static_var_default_site, staticVar, PT_LC("default"));
+				if (UNEXPECTED(defaultValue == NULL)) return zv::Val();
+				run.set(Z_STR_P(name), zv::Val::copyOf(zv::Ref(defaultValue)));
+			}
+			last = zv::Val::copyOf(zv::Ref(stmt));
+		}
+		flush();
+		return zv::Val(std::move(runs));
+	}
+
+	/* Mirrors getResolvedConditionalExpressions() */
+	static zv::Val getResolvedConditionalExpressions(zval *scope, zval *stmt)
+	{
+		zv::Val frame = pt_mutating_scope_get_current_template_argument_frame(Z_OBJ_P(scope));
+		if (UNEXPECTED(frame.isUndef())) return zv::Val();
+		if (frame.isNull()) return zv::Val(zv::Arr::empty());
+		return pt_template_argument_frame_get_static_variable_conditional_expressions(frame.raw(), stmt);
+	}
+
+	/* Mirrors canRunUserCode(); false = pending exception */
+	[[nodiscard]] bool canRunUserCode(zval *node, zval *scope, bool &out) const
+	{
+		out = false;
+		bool is;
+		if (UNEXPECTED(!isA(node, PT_CLASS_CALL_LIKE, is))) return false;
+		if (!is) return true;
+		out = true;
+		if (UNEXPECTED(!isA(node, PT_CLASS_FUNC_CALL, is))) return false;
+		if (!is) return true;
+		zval *name = read(pt_svi_func_call_name_site, node, PT_LC("name"));
+		if (UNEXPECTED(name == NULL)) return false;
+		if (UNEXPECTED(!isA(name, PT_CLASS_NAME, is))) return false;
+		if (!is) return true;
+		zend_object *provider = Z_OBJ_P(OBJ_PROP_NUM(self, slots::reflectionProvider));
+		zv::Args argv{name, scope};
+		zv::Val has = pt_type_call(provider, PT_LC("hasfunction"), 2, argv);
+		if (UNEXPECTED(has.isUndef())) return false;
+		if (!zend_is_true(has.raw())) return true;
+		zv::Val function = pt_type_call(provider, PT_LC("getfunction"), 2, argv);
+		if (UNEXPECTED(function.isUndef())) return false;
+		zv::Val builtin = pt_type_call(Z_OBJ_P(function.raw()), PT_LC("isbuiltin"), 0, NULL);
+		if (UNEXPECTED(builtin.isUndef())) return false;
+		if (!zend_is_true(builtin.raw())) return true;
+		zval className;
+		ZVAL_STR(&className, zend_string_init_interned(PT_LC("Closure"), 0));
+		zv::Val closureType = pt_type_new_object_type(&className);
+		if (UNEXPECTED(closureType.isUndef())) return false;
+		zv::Val variants = pt_type_call(Z_OBJ_P(function.raw()), PT_LC("getvariants"), 0, NULL);
+		if (UNEXPECTED(variants.isUndef())) return false;
+		for (auto variantEntry : zv::ArrRef(variants.raw())) {
+			zv::Val parameters = pt_type_call(Z_OBJ_P(variantEntry.value().deref().raw()), PT_LC("getparameters"), 0, NULL);
+			if (UNEXPECTED(parameters.isUndef())) return false;
+			for (auto parameterEntry : zv::ArrRef(parameters.raw())) {
+				zv::Val type = pt_type_call(Z_OBJ_P(parameterEntry.value().deref().raw()), PT_LC("gettype"), 0, NULL);
+				if (UNEXPECTED(type.isUndef())) return false;
+				zv::Val isSuperType = pt_type_op(Z_OBJ_P(type.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, closureType.raw());
+				if (UNEXPECTED(isSuperType.isUndef())) return false;
+				if (pt_type_result_trinary(isSuperType.raw()) != PT_TRI_NO) return true;
+			}
+		}
+		out = false;
+		return true;
+	}
+
 private:
 	zend_object *self;
 };
@@ -432,6 +563,30 @@ zv::Val pt_static_variable_inference_get_resolved_types(zval *inference, zval *s
 	return pt_type_call(Z_OBJ_P(inference), PT_LC("getresolvedtypes"), 2, argv);
 }
 
+zv::Val pt_static_variable_inference_get_runs(zval *inference, zval *functionLike, zval *stmts)
+{
+	if (isNative(inference)) return StaticVariableInference(Z_OBJ_P(inference)).getRuns(functionLike, stmts);
+	zv::Args argv{functionLike, stmts};
+	return pt_type_call(Z_OBJ_P(inference), PT_LC("getruns"), 2, argv);
+}
+
+zv::Val pt_static_variable_inference_get_resolved_conditional_expressions(zval *inference, zval *scope, zval *stmt)
+{
+	if (isNative(inference)) return StaticVariableInference::getResolvedConditionalExpressions(scope, stmt);
+	zv::Args argv{scope, stmt};
+	return pt_type_call(Z_OBJ_P(inference), PT_LC("getresolvedconditionalexpressions"), 2, argv);
+}
+
+bool pt_static_variable_inference_can_run_user_code(zval *inference, zval *node, zval *scope, bool &out)
+{
+	if (isNative(inference)) return StaticVariableInference(Z_OBJ_P(inference)).canRunUserCode(node, scope, out);
+	zv::Args argv{node, scope};
+	zv::Val result = pt_type_call(Z_OBJ_P(inference), PT_LC("canrunusercode"), 2, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -450,11 +605,36 @@ PT_MINIT_REGISTRATION(pt_register_static_variable_inference)
 	/* the real parameter types: the DI container autowires the service by
 	 * reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *reflectionProvider;
 		bool enabled;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT(reflectionProvider)
 			Z_PARAM_BOOL(enabled)
 		ZEND_PARSE_PARAMETERS_END();
-		StaticVariableInference(Z_OBJ_P(ZEND_THIS)).construct(enabled);
+		StaticVariableInference(Z_OBJ_P(ZEND_THIS)).construct(reflectionProvider, enabled);
+	});
+
+	cls.method(sigs::getRuns, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *functionLike, *stmts;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT(functionLike)
+			Z_PARAM_ARRAY(stmts)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(StaticVariableInference(Z_OBJ_P(ZEND_THIS)).getRuns(functionLike, stmts));
+	});
+
+	cls.method(sigs::getResolvedConditionalExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *stmt;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, scope, stmt)) RETURN_THROWS();
+		PT_RETURN_VAL(StaticVariableInference::getResolvedConditionalExpressions(scope, stmt));
+	});
+
+	cls.method(sigs::canRunUserCode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *node, *scope;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, node, scope)) RETURN_THROWS();
+		bool out;
+		if (UNEXPECTED(!StaticVariableInference(Z_OBJ_P(ZEND_THIS)).canRunUserCode(node, scope, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.method(sigs::getSites, [](INTERNAL_FUNCTION_PARAMETERS) {

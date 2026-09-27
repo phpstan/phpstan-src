@@ -98,6 +98,18 @@ public:
 		zv::Val annotatedScope = pt_var_annotation_processor_process_var_annotation(OBJ_PROP_NUM(self, slots::varAnnotationProcessor), scopeHold.raw(), vars.raw(), stmt, NULL);
 		if (UNEXPECTED(annotatedScope.isUndef())) return zv::Val();
 
+		// how the types of a run of `static` variables depend on each other -
+		// see StaticVariableInference::getRuns()
+		zv::Val conditionalExpressions = pt_static_variable_inference_get_resolved_conditional_expressions(OBJ_PROP_NUM(self, slots::staticVariableInference), annotatedScope.raw(), stmt);
+		if (UNEXPECTED(conditionalExpressions.isUndef())) return zv::Val();
+		for (auto entry : zv::ArrRef(conditionalExpressions.raw())) {
+			zend_string *exprString = entry.stringKeyOrNull();
+			if (UNEXPECTED(exprString == NULL)) continue;
+			zv::Val added = pt_mutating_scope_add_conditional_expressions(Z_OBJ_P(annotatedScope.raw()), exprString, Z_ARRVAL_P(entry.value().deref().raw()));
+			if (UNEXPECTED(added.isUndef())) return zv::Val();
+			annotatedScope = std::move(added);
+		}
+
 		zv::Val variableFlow = pt_variable_flow_sequence_list(variableFlows.table());
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zval emptyArray;

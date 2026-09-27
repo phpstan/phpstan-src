@@ -10,7 +10,8 @@ namespace ptdecl::StaticVariableInference {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t enabled = 0;
+inline constexpr uint32_t reflectionProvider = 0;
+inline constexpr uint32_t enabled = 1;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -21,64 +22,90 @@ inline void declareClass(reg::Class &cls)
 /* the properties the class declares itself, in declaration order (a used trait's come from its registrar) */
 inline void declareProperties(reg::Class &cls)
 {
+	cls.property("reflectionProvider", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\ReflectionProvider");
 	cls.property("enabled", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {
 inline constexpr char strings[] =
-	"enabled\0" /* 0 */
-	"__construct\0" /* 8 */
-	"functionLike\0" /* 20 */
-	"PhpParser\\Node\0" /* 33 */
-	"stmts\0" /* 48 */
-	"\0" /* 54 */
-	"getSites\0" /* 55 */
-	"scope\0" /* 64 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 70 */
-	"var\0" /* 101 */
-	"PhpParser\\Node\\Expr\\Variable\0" /* 105 */
-	"isInferred\0" /* 134 */
-	"getResolvedTypes\0" /* 145 */
-	"scanSites\0" /* 162 */
-	"expr\0" /* 172 */
-	"PhpParser\\Node\\Expr\0" /* 177 */
-	"names\0" /* 197 */
-	"collectRootNames\0" /* 203 */
-	"stmt\0" /* 220 */
-	"PhpParser\\Node\\Stmt\\Static_\0" /* 225 */
-	"hasVarTag"; /* 253 */
+	"reflectionProvider\0" /* 0 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 19 */
+	"enabled\0" /* 57 */
+	"__construct\0" /* 65 */
+	"functionLike\0" /* 77 */
+	"PhpParser\\Node\0" /* 90 */
+	"stmts\0" /* 105 */
+	"\0" /* 111 */
+	"getSites\0" /* 112 */
+	"scope\0" /* 121 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 127 */
+	"var\0" /* 158 */
+	"PhpParser\\Node\\Expr\\Variable\0" /* 162 */
+	"isInferred\0" /* 191 */
+	"getResolvedTypes\0" /* 202 */
+	"getRuns\0" /* 219 */
+	"stmt\0" /* 227 */
+	"PhpParser\\Node\\Stmt\\Static_\0" /* 232 */
+	"getResolvedConditionalExpressions\0" /* 260 */
+	"node\0" /* 294 */
+	"canRunUserCode\0" /* 299 */
+	"siteIds\0" /* 314 */
+	"declaresOnlySites\0" /* 322 */
+	"scanSites\0" /* 340 */
+	"expr\0" /* 350 */
+	"PhpParser\\Node\\Expr\0" /* 355 */
+	"names\0" /* 375 */
+	"collectRootNames\0" /* 381 */
+	"hasVarTag"; /* 398 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, MAY_BE_BOOL), /* __construct $enabled */
-	reg::packed(20, 0, 33), /* getSites $functionLike */
-	reg::packed(48, MAY_BE_ARRAY), /* getSites $stmts */
-	reg::packed(54, MAY_BE_ARRAY), /* getSites return */
-	reg::packed(64, 0, 70), /* isInferred $scope */
-	reg::packed(101, 0, 105), /* isInferred $var */
-	reg::packed(54, MAY_BE_BOOL), /* isInferred return */
-	reg::packed(64, 0, 70), /* getResolvedTypes $scope */
-	reg::packed(101, 0, 105), /* getResolvedTypes $var */
-	reg::packed(54, MAY_BE_NULL | MAY_BE_ARRAY), /* getResolvedTypes return */
-	reg::packed(48, MAY_BE_ARRAY), /* scanSites $stmts */
-	reg::packed(54, MAY_BE_ARRAY), /* scanSites return */
-	reg::packed(172, 0, 177), /* collectRootNames $expr */
-	reg::packed(197, MAY_BE_ARRAY, reg::NoString, true, false), /* collectRootNames $names */
-	reg::packed(54, MAY_BE_VOID), /* collectRootNames return */
-	reg::packed(220, 0, 225), /* hasVarTag $stmt */
-	reg::packed(54, MAY_BE_BOOL), /* hasVarTag return */
+	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
+	reg::packed(57, MAY_BE_BOOL), /* __construct $enabled */
+	reg::packed(77, 0, 90), /* getSites $functionLike */
+	reg::packed(105, MAY_BE_ARRAY), /* getSites $stmts */
+	reg::packed(111, MAY_BE_ARRAY), /* getSites return */
+	reg::packed(121, 0, 127), /* isInferred $scope */
+	reg::packed(158, 0, 162), /* isInferred $var */
+	reg::packed(111, MAY_BE_BOOL), /* isInferred return */
+	reg::packed(121, 0, 127), /* getResolvedTypes $scope */
+	reg::packed(158, 0, 162), /* getResolvedTypes $var */
+	reg::packed(111, MAY_BE_NULL | MAY_BE_ARRAY), /* getResolvedTypes return */
+	reg::packed(77, 0, 90), /* getRuns $functionLike */
+	reg::packed(105, MAY_BE_ARRAY), /* getRuns $stmts */
+	reg::packed(111, MAY_BE_ARRAY), /* getRuns return */
+	reg::packed(121, 0, 127), /* getResolvedConditionalExpressions $scope */
+	reg::packed(227, 0, 232), /* getResolvedConditionalExpressions $stmt */
+	reg::packed(111, MAY_BE_ARRAY), /* getResolvedConditionalExpressions return */
+	reg::packed(294, 0, 90), /* canRunUserCode $node */
+	reg::packed(121, 0, 127), /* canRunUserCode $scope */
+	reg::packed(111, MAY_BE_BOOL), /* canRunUserCode return */
+	reg::packed(227, 0, 232), /* declaresOnlySites $stmt */
+	reg::packed(314, MAY_BE_ARRAY), /* declaresOnlySites $siteIds */
+	reg::packed(111, MAY_BE_BOOL), /* declaresOnlySites return */
+	reg::packed(105, MAY_BE_ARRAY), /* scanSites $stmts */
+	reg::packed(111, MAY_BE_ARRAY), /* scanSites return */
+	reg::packed(350, 0, 355), /* collectRootNames $expr */
+	reg::packed(375, MAY_BE_ARRAY, reg::NoString, true, false), /* collectRootNames $names */
+	reg::packed(111, MAY_BE_VOID), /* collectRootNames return */
+	reg::packed(227, 0, 232), /* hasVarTag $stmt */
+	reg::packed(111, MAY_BE_BOOL), /* hasVarTag return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 8 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getSites = { { 55 /* getSites */, 2, 1, 2, 3, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isInferred = { { 134 /* isInferred */, 2, 4, 2, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getResolvedTypes = { { 145 /* getResolvedTypes */, 2, 7, 2, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig scanSites = { { 162 /* scanSites */, 1, 10, 1, 11, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig collectRootNames = { { 203 /* collectRootNames */, 2, 12, 2, 14, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig hasVarTag = { { 253 /* hasVarTag */, 1, 15, 1, 16, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 65 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSites = { { 112 /* getSites */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInferred = { { 191 /* isInferred */, 2, 5, 2, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedTypes = { { 202 /* getResolvedTypes */, 2, 8, 2, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getRuns = { { 219 /* getRuns */, 2, 11, 2, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedConditionalExpressions = { { 260 /* getResolvedConditionalExpressions */, 2, 14, 2, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canRunUserCode = { { 299 /* canRunUserCode */, 2, 17, 2, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig declaresOnlySites = { { 322 /* declaresOnlySites */, 2, 20, 2, 22, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig scanSites = { { 340 /* scanSites */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig collectRootNames = { { 381 /* collectRootNames */, 2, 25, 2, 27, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasVarTag = { { 398 /* hasVarTag */, 1, 28, 1, 29, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::StaticVariableInference

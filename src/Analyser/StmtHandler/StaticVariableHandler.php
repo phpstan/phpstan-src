@@ -97,6 +97,12 @@ final class StaticVariableHandler implements StmtHandler
 
 		$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
 
+		// how the types of a run of `static` variables depend on each other -
+		// see StaticVariableInference::getRuns()
+		foreach ($this->staticVariableInference->getResolvedConditionalExpressions($scope, $stmt) as $exprString => $holders) {
+			$scope = $scope->addConditionalExpressions($exprString, $holders);
+		}
+
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows));
 	}
 

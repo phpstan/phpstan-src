@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\Generics;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
@@ -66,6 +67,7 @@ final class TemplateArgumentFrame
 	 * @param bool $observingClosures the template arguments are resolved, the closure signatures observed again
 	 * @param array<int, array{Expr\Closure, int, bool}> $byRefSites spl_object_id() of the closure node => the node, its statement index, whether every invocation was seen
 	 * @param array<int, array{Expr\Variable, Type, Type}> $staticVariableTypes spl_object_id() of a `static` variable node => the node, its phpdoc and native type - see StaticVariableInference
+	 * @param array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}> $staticVariableConditionalExpressions spl_object_id() of the last statement of a run of `static` statements => the statement, the conditional expressions between the run's variables - see StaticVariableInference::getRuns()
 	 */
 	public function __construct(
 		private readonly ?self $parent,
@@ -77,6 +79,7 @@ final class TemplateArgumentFrame
 		private readonly bool $observingClosures = false,
 		private readonly array $byRefSites = [],
 		private readonly array $staticVariableTypes = [],
+		private readonly array $staticVariableConditionalExpressions = [],
 	)
 	{
 	}
@@ -95,13 +98,27 @@ final class TemplateArgumentFrame
 	}
 
 	/**
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	public function getStaticVariableConditionalExpressions(Node\Stmt\Static_ $stmt): array
+	{
+		$conditionalExpressions = $this->staticVariableConditionalExpressions[spl_object_id($stmt)] ?? null;
+		if ($conditionalExpressions === null || $conditionalExpressions[0] !== $stmt) {
+			return [];
+		}
+
+		return $conditionalExpressions[1];
+	}
+
+	/**
 	 * The frame with the inferred types of the body's `static` variables; the
 	 * statements holding them are walked again in the second pass.
 	 *
 	 * @param array<int, array{Expr\Variable, Type, Type}> $staticVariableTypes
 	 * @param array<int, true> $statementIndexes
+	 * @param array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}> $conditionalExpressions
 	 */
-	public function withStaticVariableTypes(array $staticVariableTypes, array $statementIndexes): self
+	public function withStaticVariableTypes(array $staticVariableTypes, array $statementIndexes, array $conditionalExpressions = []): self
 	{
 		return new self(
 			$this->parent,
@@ -113,6 +130,7 @@ final class TemplateArgumentFrame
 			$this->observingClosures,
 			$this->byRefSites,
 			$staticVariableTypes,
+			$conditionalExpressions,
 		);
 	}
 
@@ -171,6 +189,7 @@ final class TemplateArgumentFrame
 			$settledClosureSites,
 			byRefSites: $byRefSites,
 			staticVariableTypes: $this->staticVariableTypes,
+			staticVariableConditionalExpressions: $this->staticVariableConditionalExpressions,
 		);
 	}
 

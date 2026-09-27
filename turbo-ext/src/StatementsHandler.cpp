@@ -1389,6 +1389,7 @@ private:
 		zv::Val staticSites = pt_static_variable_inference_get_sites(OBJ_PROP_NUM(self, slots::staticVariableInference), parentNode, stmts);
 		if (UNEXPECTED(staticSites.isUndef())) return zv::Val();
 		zv::Val staticVariableTypes = zv::Val(zv::Arr::empty());
+		zv::Val staticVariableConditionalExpressions = zv::Val(zv::Arr::empty());
 		zv::Arr staticStatementIndexes = zv::Arr::empty();
 		if (staticSites.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(staticSites.raw())) > 0) {
 			for (auto entry : zv::ArrRef(staticSites.raw())) {
@@ -1402,12 +1403,13 @@ private:
 			zv::Val inferred = inferStaticVariableTypes(nodeScopeResolver, parentNode, stmts, staticSites.raw(), staticStatementIndexes.raw(), parentFrame.raw(), entries.raw(), recording.raw(), storage, observationContext.raw());
 			if (UNEXPECTED(inferred.isUndef())) return zv::Val();
 			staticVariableTypes = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 0)));
-			finalConstraints = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 1)));
+			staticVariableConditionalExpressions = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 1)));
+			finalConstraints = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 2)));
 		}
 		zv::Val frame = templateArgumentResolverResolve(OBJ_PROP_NUM(self, slots::templateArgumentResolver), finalConstraints.raw(), parentFrame.raw(), statementStartTokenPositions.raw(), parentNode, stmts);
 		if (UNEXPECTED(frame.isUndef())) return zv::Val();
 		if (zend_hash_num_elements(Z_ARRVAL_P(staticVariableTypes.raw())) > 0) {
-			frame = pt_template_argument_frame_with_static_variable_types(frame.raw(), staticVariableTypes.raw(), staticStatementIndexes.raw());
+			frame = pt_template_argument_frame_with_static_variable_types(frame.raw(), staticVariableTypes.raw(), staticStatementIndexes.raw(), staticVariableConditionalExpressions.raw());
 			if (UNEXPECTED(frame.isUndef())) return zv::Val();
 		}
 		{
@@ -1590,7 +1592,8 @@ private:
 	}
 
 	/* the private inferStaticVariableTypes(): [the site types, the
-	 * constraints]; UNDEF = pending exception */
+	 * conditional expressions of the runs, the constraints]; UNDEF = pending
+	 * exception */
 	zv::Val inferStaticVariableTypes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *staticSites, zval *staticStatementIndexes, zval *parentFrame, zval *entries, zval *recording, zval *storageArg, zval *context)
 	{
 		HashTable *stmtsTable = Z_ARRVAL_P(stmts);
@@ -1616,18 +1619,28 @@ private:
 		}
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
+		zv::Val runs = pt_static_variable_inference_get_runs(OBJ_PROP_NUM(self, slots::staticVariableInference), parentNode, stmts);
+		if (UNEXPECTED(runs.isUndef())) return zv::Val();
 		zv::Val types = collectStaticVariableTypes(bodyScope.raw(), names.raw(), recording, entryState(finalEntry), &emptyArray);
 		if (UNEXPECTED(types.isUndef())) return zv::Val();
+		zv::Val conditionalExpressions = zv::Val(zv::Arr::empty());
+		if (zend_hash_num_elements(Z_ARRVAL_P(runs.raw())) > 0) {
+			zv::Val stateScopes = collectStaticVariableStateScopes(bodyScope.raw(), recording, entryState(finalEntry), &emptyArray);
+			if (UNEXPECTED(stateScopes.isUndef())) return zv::Val();
+			conditionalExpressions = collectStaticVariableConditionalExpressions(runs.raw(), stateScopes.raw(), storageArg, NULL, &emptyArray, types.raw());
+			if (UNEXPECTED(conditionalExpressions.isUndef())) return zv::Val();
+		}
 		bool hasLabels;
 		if (UNEXPECTED(!containsLabels(stmts, hasLabels))) return zv::Val();
 		zend_long count = 0;
+		zend_long conditionalExpressionsCount = 0;
 		zv::Val constraints;
 		for (;;) {
 			zv::Val siteTypes = staticSiteTypes(staticSites, types.raw());
 			if (UNEXPECTED(siteTypes.isUndef())) return zv::Val();
 			zv::Val observingFrame = pt_template_argument_frame_new(parentFrame, NULL, NULL, parentNode, stmts);
 			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
-			zv::Val frame = pt_template_argument_frame_with_static_variable_types(observingFrame.raw(), siteTypes.raw(), staticStatementIndexes);
+			zv::Val frame = pt_template_argument_frame_with_static_variable_types(observingFrame.raw(), siteTypes.raw(), staticStatementIndexes, conditionalExpressions.raw());
 			if (UNEXPECTED(frame.isUndef())) return zv::Val();
 
 			zval *startEntry = entryAt(entries, start);
@@ -1645,6 +1658,7 @@ private:
 			zv::Val walkRecording = newRecordingNodeCallback();
 			if (UNEXPECTED(walkRecording.isUndef())) return zv::Val();
 			zv::Arr replayedScopes = zv::Arr::empty();
+			zv::Arr carriedOverScopes = zv::Arr::empty();
 			zv::Val suspendedGatherers = pt_node_scope_resolver_suspend_node_gatherers(nodeScopeResolver);
 			if (UNEXPECTED(suspendedGatherers.isUndef())) return zv::Val();
 			zv::Val pushedScope = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)));
@@ -1652,7 +1666,7 @@ private:
 				(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
 				return zv::Val();
 			}
-			(void) observeStaticVariablesFrom(nodeScopeResolver, parentNode, stmts, stmtsTable, frame.raw(), entries, state.raw(), walkStorage.raw(), walkRecording.raw(), context, start, stmtCount, hasLabels, replayedScopes);
+			(void) observeStaticVariablesFrom(nodeScopeResolver, parentNode, stmts, stmtsTable, frame.raw(), entries, state.raw(), walkStorage.raw(), walkRecording.raw(), context, start, stmtCount, hasLabels, replayedScopes, carriedOverScopes);
 			pt_finally([&]() {
 				(void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(pushedScope.raw()));
 				(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
@@ -1669,6 +1683,15 @@ private:
 
 			zv::Val walkTypes = collectStaticVariableTypes(bodyScope.raw(), names.raw(), walkRecording.raw(), state.raw(), replayedScopes.raw());
 			if (UNEXPECTED(walkTypes.isUndef())) return zv::Val();
+			bool hasRuns = zend_hash_num_elements(Z_ARRVAL_P(runs.raw())) > 0;
+			zv::Val stateScopes = zv::Val(zv::Arr::empty());
+			zv::Val walkConditionalExpressions = zv::Val(zv::Arr::empty());
+			if (hasRuns) {
+				stateScopes = collectStaticVariableStateScopes(bodyScope.raw(), walkRecording.raw(), state.raw(), carriedOverScopes.raw());
+				if (UNEXPECTED(stateScopes.isUndef())) return zv::Val();
+				walkConditionalExpressions = collectStaticVariableConditionalExpressions(runs.raw(), stateScopes.raw(), storageArg, types.raw(), conditionalExpressions.raw(), types.raw());
+				if (UNEXPECTED(walkConditionalExpressions.isUndef())) return zv::Val();
+			}
 			bool converged = true;
 			for (auto entry : zv::ArrRef(names.raw())) {
 				zend_string *name = Z_STR_P(entry.value().raw());
@@ -1686,25 +1709,53 @@ private:
 					break;
 				}
 			}
+			bool conditionalExpressionsConverged;
+			if (UNEXPECTED(!equalStaticVariableConditionalExpressions(conditionalExpressions.raw(), walkConditionalExpressions.raw(), conditionalExpressionsConverged))) return zv::Val();
 			count++;
-			if (converged || count >= PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT) break;
+			if (converged && conditionalExpressionsConverged) break;
+			if (converged) {
+				// the conditional expressions follow the types
+				conditionalExpressionsCount++;
+				if (conditionalExpressionsCount >= PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT) {
+					runs = zv::Val(zv::Arr::empty());
+					walkConditionalExpressions = zv::Val(zv::Arr::empty());
+				}
+			} else if (count >= PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT) {
+				if (!hasRuns) break;
+				// the conditional expressions keep changing: the walks go on
+				// without them - what they narrowed the types to is joined with
+				// what the variables take without them
+				runs = zv::Val(zv::Arr::empty());
+				walkConditionalExpressions = zv::Val(zv::Arr::empty());
+				count = 0;
+			}
 
-			types = joinStaticVariableTypes(bodyScope.raw(), names.raw(), types.raw(), walkTypes.raw(), count > PT_SH_GENERALIZE_AFTER_ITERATION_LIMIT);
-			if (UNEXPECTED(types.isUndef())) return zv::Val();
+			zv::Val joinedTypes = joinStaticVariableTypes(bodyScope.raw(), names.raw(), types.raw(), walkTypes.raw(), count > PT_SH_GENERALIZE_AFTER_ITERATION_LIMIT);
+			if (UNEXPECTED(joinedTypes.isUndef())) return zv::Val();
+			if (zend_hash_num_elements(Z_ARRVAL_P(runs.raw())) > 0 && !converged) {
+				// the next walk enters with the joined types - the conditions
+				// cover them
+				walkConditionalExpressions = collectStaticVariableConditionalExpressions(runs.raw(), stateScopes.raw(), storageArg, types.raw(), conditionalExpressions.raw(), joinedTypes.raw());
+				if (UNEXPECTED(walkConditionalExpressions.isUndef())) return zv::Val();
+			}
+			types = std::move(joinedTypes);
+			conditionalExpressions = std::move(walkConditionalExpressions);
 		}
 
 		zv::Val siteTypes = staticSiteTypes(staticSites, types.raw());
 		if (UNEXPECTED(siteTypes.isUndef())) return zv::Val();
-		zv::Arr result = zv::Arr::create(2);
+		zv::Arr result = zv::Arr::create(3);
 		result.push(std::move(siteTypes));
+		result.push(std::move(conditionalExpressions));
 		result.push(std::move(constraints));
 		return zv::Val(std::move(result));
 	}
 
 	/* inferStaticVariableTypes()'s try block: the statements from $start on,
-	 * walked or carried over, each carried-over entry scope into
-	 * $replayedScopes; false = pending exception */
-	bool observeStaticVariablesFrom(zval *nodeScopeResolver, zval *parentNode, zval *stmts, HashTable *stmtsTable, zval *frame, zval *entries, zval *state, zval *storage, zval *nodeCallback, zval *context, zend_long start, zend_long stmtCount, bool hasLabels, zv::Arr &replayedScopes)
+	 * walked or carried over, each walked exit scope and carried-over entry
+	 * scope into $replayedScopes, each carried-over entry scope into
+	 * $carriedOverScopes; false = pending exception */
+	bool observeStaticVariablesFrom(zval *nodeScopeResolver, zval *parentNode, zval *stmts, HashTable *stmtsTable, zval *frame, zval *entries, zval *state, zval *storage, zval *nodeCallback, zval *context, zend_long start, zend_long stmtCount, bool hasLabels, zv::Arr &replayedScopes, zv::Arr &carriedOverScopes)
 	{
 		for (zend_long i = start; i < stmtCount; i++) {
 			zval *recordedEntryPair = entryAt(entries, i);
@@ -1752,6 +1803,7 @@ private:
 			// the statement does not read what changed: the variables keep
 			// their types through it
 			replayedScopes.push(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)));
+			carriedOverScopes.push(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)));
 			zval *recordedExitPair = entryAt(entries, i + 1);
 			if (UNEXPECTED(recordedExitPair == NULL)) return false;
 			zval *recordedExit = entryState(recordedExitPair);
@@ -1911,6 +1963,442 @@ private:
 			types.set(name, zv::Val(std::move(pair)));
 		}
 		return zv::Val(std::move(types));
+	}
+
+	/* the private collectStaticVariableStateScopes(): the scopes of the body
+	 * where a call can leave its `static` variables for the next one; UNDEF =
+	 * pending exception */
+	zv::Val collectStaticVariableStateScopes(zval *bodyScope, zval *recording, zval *endState, zval *moreScopes)
+	{
+		zv::Arr scopes = zv::Arr::empty();
+		for (auto entry : zv::ArrRef(moreScopes)) {
+			scopes.push(zv::Ref(entry.value().deref().raw()));
+		}
+		zend_object *endStateObject = Z_OBJ_P(endState);
+		scopes.push(zv::Ref(OBJ_PROP_NUM(endStateObject, stateSlots::scope)));
+		zval *exitPoints = OBJ_PROP_NUM(endStateObject, stateSlots::exitPoints);
+		if (Z_TYPE_P(exitPoints) == IS_ARRAY) {
+			for (auto entry : zv::ArrRef(exitPoints)) {
+				zv::Val hold;
+				zval *scope = pt_internal_statement_exit_point_scope(entry.value().deref().raw(), hold);
+				if (UNEXPECTED(scope == NULL)) return zv::Val();
+				scopes.push(zv::Ref(scope));
+			}
+		}
+		zval *throwPoints = OBJ_PROP_NUM(endStateObject, stateSlots::throwPoints);
+		if (Z_TYPE_P(throwPoints) == IS_ARRAY) {
+			for (auto entry : zv::ArrRef(throwPoints)) {
+				zval *throwPoint = entry.value().deref().raw();
+				bool isExplicit;
+				if (UNEXPECTED(!pt_internal_throw_point_is_explicit(throwPoint, isExplicit))) return zv::Val();
+				if (!isExplicit) continue;
+				zv::Val hold;
+				zval *scope = pt_internal_throw_point_scope(throwPoint, hold);
+				if (UNEXPECTED(scope == NULL)) return zv::Val();
+				scopes.push(zv::Ref(scope));
+			}
+		}
+		zval *pairs = OBJ_PROP_NUM(Z_OBJ_P(recording), ptdecl::RecordingNodeCallback::slot::pairs);
+		if (Z_TYPE_P(pairs) == IS_ARRAY) {
+			zval *inference = OBJ_PROP_NUM(self, slots::staticVariableInference);
+			for (auto entry : zv::ArrRef(pairs)) {
+				HashTable *pair = Z_ARRVAL_P(entry.value().deref().raw());
+				zval *node = zend_hash_index_find(pair, 0);
+				zval *scope = zend_hash_index_find(pair, 1);
+				if (UNEXPECTED(node == NULL || scope == NULL)) continue;
+				if (Z_TYPE_P(scope) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(scope), pt_ce_mutating_scope)) continue;
+				bool canRunUserCode;
+				if (UNEXPECTED(!pt_static_variable_inference_can_run_user_code(inference, node, scope, canRunUserCode))) return zv::Val();
+				if (!canRunUserCode) continue;
+				scopes.push(zv::Ref(scope));
+			}
+		}
+
+		zv::Val bodyFunction = pt_mutating_scope_get_function(Z_OBJ_P(bodyScope));
+		if (UNEXPECTED(bodyFunction.isUndef())) return zv::Val();
+		zv::Val bodyReflection = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(bodyScope));
+		if (UNEXPECTED(bodyReflection.isUndef())) return zv::Val();
+		zv::Arr bodyScopes = zv::Arr::empty();
+		zv::ScratchTable seen(64);
+		for (auto entry : zv::ArrRef(scopes.raw())) {
+			zval *scope = entry.value().raw();
+			zend_ulong id = Z_OBJ_HANDLE_P(scope);
+			if (zend_hash_index_exists(seen.table(), id)) continue;
+			zval marked;
+			ZVAL_TRUE(&marked);
+			zend_hash_index_add(seen.table(), id, &marked);
+			zv::Val reflection = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(scope));
+			if (UNEXPECTED(reflection.isUndef())) return zv::Val();
+			if (!zend_is_identical(reflection.raw(), bodyReflection.raw())) continue;
+			zv::Val function = pt_mutating_scope_get_function(Z_OBJ_P(scope));
+			if (UNEXPECTED(function.isUndef())) return zv::Val();
+			if (!zend_is_identical(function.raw(), bodyFunction.raw())) continue;
+			bodyScopes.push(zv::Ref(scope));
+		}
+		return zv::Val(std::move(bodyScopes));
+	}
+
+	/* $a->equals($b) of two types; false = pending exception */
+	[[nodiscard]] static bool typeEquals(zval *a, zval *b, bool &out)
+	{
+		zv::Val equals = pt_type_op(Z_OBJ_P(a), PT_OP_EQUALS, 1, b);
+		if (UNEXPECTED(equals.isUndef())) return false;
+		out = Z_TYPE_P(equals.raw()) == IS_TRUE;
+		return true;
+	}
+
+	/* $a->isSuperTypeOf($b) of two types as a trinary value; false = pending
+	 * exception */
+	[[nodiscard]] static bool typeIsSuperTypeOf(zval *a, zval *b, zend_long &out)
+	{
+		zv::Val isSuperType = pt_type_op(Z_OBJ_P(a), PT_OP_IS_SUPER_TYPE_OF, 1, b);
+		if (UNEXPECTED(isSuperType.isUndef())) return false;
+		out = pt_type_result_trinary(isSuperType.raw());
+		return true;
+	}
+
+	/* TypeCombinator::union($a, $b); UNDEF = pending exception */
+	static zv::Val unionOf(zval *a, zval *b)
+	{
+		zval argv[2];
+		ZVAL_COPY_VALUE(&argv[0], a);
+		ZVAL_COPY_VALUE(&argv[1], b);
+		return pt_type_combinator_union(2, argv);
+	}
+
+	/* $state[$name] of a state list entry (borrowed) */
+	static zval *stateType(zval *state, zend_string *name)
+	{
+		return zend_hash_find(Z_ARRVAL_P(state), name);
+	}
+
+	/* the private static equalConditionalExpressionHolders(); false =
+	 * pending exception */
+	[[nodiscard]] static bool equalConditionalExpressionHolders(zval *a, zval *b, bool &out)
+	{
+		out = false;
+		zend_object *aObject = Z_OBJ_P(a);
+		zend_object *bObject = Z_OBJ_P(b);
+		bool equal;
+		if (UNEXPECTED(!pt_holder_equals(OBJ_PROP_NUM(aObject, PT_CEH_PROP_TYPEHOLDER), OBJ_PROP_NUM(bObject, PT_CEH_PROP_TYPEHOLDER), &equal))) return false;
+		if (!equal) return true;
+		HashTable *aConditions = Z_ARRVAL_P(OBJ_PROP_NUM(aObject, PT_CEH_PROP_CONDS));
+		HashTable *bConditions = Z_ARRVAL_P(OBJ_PROP_NUM(bObject, PT_CEH_PROP_CONDS));
+		if (zend_hash_num_elements(aConditions) != zend_hash_num_elements(bConditions)) return true;
+		for (auto entry : zv::TableRef(aConditions)) {
+			zend_string *key = entry.stringKeyOrNull();
+			zval *bCondition = key != NULL ? zend_hash_find(bConditions, key) : zend_hash_index_find(bConditions, entry.indexKey());
+			if (bCondition == NULL) return true;
+			if (UNEXPECTED(!pt_holder_equals(entry.value().raw(), bCondition, &equal))) return false;
+			if (!equal) return true;
+		}
+		out = true;
+		return true;
+	}
+
+	/* the private static equalStaticVariableConditionalExpressions(); false
+	 * = pending exception */
+	[[nodiscard]] static bool equalStaticVariableConditionalExpressions(zval *a, zval *b, bool &out)
+	{
+		out = false;
+		if (zend_hash_num_elements(Z_ARRVAL_P(a)) != zend_hash_num_elements(Z_ARRVAL_P(b))) return true;
+		for (auto entry : zv::ArrRef(a)) {
+			zval *bRun = zend_hash_index_find(Z_ARRVAL_P(b), entry.indexKey());
+			if (bRun == NULL) return true;
+			HashTable *aConditionalExpressions = Z_ARRVAL_P(zend_hash_index_find(Z_ARRVAL_P(entry.value().raw()), 1));
+			HashTable *bConditionalExpressions = Z_ARRVAL_P(zend_hash_index_find(Z_ARRVAL_P(bRun), 1));
+			if (zend_hash_num_elements(aConditionalExpressions) != zend_hash_num_elements(bConditionalExpressions)) return true;
+			for (auto targetEntry : zv::TableRef(aConditionalExpressions)) {
+				zval *bHolders = zend_hash_find(bConditionalExpressions, targetEntry.stringKeyOrNull());
+				if (bHolders == NULL) return true;
+				HashTable *aHolders = Z_ARRVAL_P(targetEntry.value().raw());
+				if (zend_hash_num_elements(aHolders) != zend_hash_num_elements(Z_ARRVAL_P(bHolders))) return true;
+				for (auto aHolder : zv::TableRef(aHolders)) {
+					bool found = false;
+					for (auto bHolder : zv::ArrRef(bHolders)) {
+						bool equal;
+						if (UNEXPECTED(!equalConditionalExpressionHolders(aHolder.value().raw(), bHolder.value().raw(), equal))) return false;
+						if (equal) {
+							found = true;
+							break;
+						}
+					}
+					if (!found) return true;
+				}
+			}
+		}
+		out = true;
+		return true;
+	}
+
+	/* the private static isWalkedStaticVariableState(); false = pending
+	 * exception */
+	[[nodiscard]] static bool isWalkedStaticVariableState(zval *state, zval *types, zval *scope, zval *walkedConditionalExpressions, bool &out)
+	{
+		out = false;
+		for (auto entry : zv::ArrRef(state)) {
+			zval *known = zend_hash_find(Z_ARRVAL_P(types), entry.stringKeyOrNull());
+			if (UNEXPECTED(known == NULL)) return true;
+			bool equal;
+			if (UNEXPECTED(!typeEquals(entry.value().raw(), zend_hash_index_find(Z_ARRVAL_P(known), 0), equal))) return false;
+			if (!equal) return true;
+		}
+		if (walkedConditionalExpressions == NULL) {
+			out = true;
+			return true;
+		}
+		zv::Val scopeConditionalExpressions = pt_mutating_scope_get_conditional_expressions(Z_OBJ_P(scope));
+		if (UNEXPECTED(scopeConditionalExpressions.isUndef())) return false;
+		for (auto targetEntry : zv::ArrRef(walkedConditionalExpressions)) {
+			zval *scopeHolders = zend_hash_find(Z_ARRVAL_P(scopeConditionalExpressions.raw()), targetEntry.stringKeyOrNull());
+			for (auto holder : zv::ArrRef(targetEntry.value().raw())) {
+				bool found = false;
+				if (scopeHolders != NULL) {
+					for (auto scopeHolder : zv::ArrRef(scopeHolders)) {
+						bool equal;
+						if (UNEXPECTED(!equalConditionalExpressionHolders(holder.value().raw(), scopeHolder.value().raw(), equal))) return false;
+						if (equal) {
+							found = true;
+							break;
+						}
+					}
+				}
+				if (!found) return true;
+			}
+		}
+		out = true;
+		return true;
+	}
+
+	/* new ConditionalExpressionHolder(['$' . $guardName =>
+	 * ExpressionTypeHolder::createYes(new Variable($guardName), $guardType)],
+	 * ExpressionTypeHolder::createYes(new Variable($targetName), $targetType));
+	 * UNDEF = pending exception */
+	static zv::Val newStaticVariableConditionalExpressionHolder(zend_string *guardName, zval *guardType, zend_string *targetName, zval *targetType)
+	{
+		zval guardNameZv;
+		ZVAL_STR(&guardNameZv, guardName);
+		zv::Val guardVariable = pt_type_new(PT_CLASS_VARIABLE, 1, &guardNameZv);
+		if (UNEXPECTED(guardVariable.isUndef())) return zv::Val();
+		zval targetNameZv;
+		ZVAL_STR(&targetNameZv, targetName);
+		zv::Val targetVariable = pt_type_new(PT_CLASS_VARIABLE, 1, &targetNameZv);
+		if (UNEXPECTED(targetVariable.isUndef())) return zv::Val();
+		zval guardHolder;
+		pt_holder_create(&guardHolder, guardVariable.raw(), guardType, PT_TRI_YES);
+		zv::Val guardHolderHold = zv::Val::adopt(guardHolder);
+		zval typeHolder;
+		pt_holder_create(&typeHolder, targetVariable.raw(), targetType, PT_TRI_YES);
+		zv::Val typeHolderHold = zv::Val::adopt(typeHolder);
+		zv::Arr conditions = zv::Arr::create(1);
+		zend_string *guardKey = zend_string_concat2(PT_LC("$"), ZSTR_VAL(guardName), ZSTR_LEN(guardName));
+		conditions.set(guardKey, std::move(guardHolderHold));
+		zend_string_release(guardKey);
+		zval holderRaw;
+		object_init_ex(&holderRaw, pt_ce_cond_expr_holder);
+		zv::Val holder = zv::Val::adopt(holderRaw);
+		zv::ObjRef holderObject(holder.ref().asObject());
+		holderObject.propAtWrite(PT_CEH_PROP_CONDS, std::move(conditions));
+		holderObject.propAtWrite(PT_CEH_PROP_TYPEHOLDER, std::move(typeHolderHold));
+		return holder;
+	}
+
+	/* the private collectStaticVariableConditionalExpressions(); $types NULL
+	 * while observing; UNDEF = pending exception */
+	static zv::Val collectStaticVariableConditionalExpressions(zval *runs, zval *scopes, zval *storage, zval *types, zval *walkedConditionalExpressions, zval *enteredTypes)
+	{
+		zv::Arr conditionalExpressions = zv::Arr::empty();
+		for (auto runEntry : zv::ArrRef(runs)) {
+			HashTable *run = Z_ARRVAL_P(runEntry.value().deref().raw());
+			zval *stmt = zend_hash_index_find(run, 0);
+			zval *defaults = zend_hash_index_find(run, 1);
+			if (UNEXPECTED(stmt == NULL || defaults == NULL)) continue;
+			ZVAL_DEREF(defaults);
+
+			zv::Arr defaultState = zv::Arr::create(0);
+			for (auto defaultEntry : zv::ArrRef(defaults)) {
+				zval *defaultExpr = defaultEntry.value().deref().raw();
+				zv::Val defaultType;
+				if (Z_TYPE_P(defaultExpr) == IS_OBJECT) {
+					zv::Val defaultResult = pt_expression_result_storage_find(storage, defaultExpr);
+					if (UNEXPECTED(defaultResult.isUndef())) return zv::Val();
+					if (!defaultResult.isNull()) {
+						defaultType = pt_expression_result_get_type(defaultResult.raw());
+						if (UNEXPECTED(defaultType.isUndef())) return zv::Val();
+					}
+				}
+				if (defaultType.isUndef()) {
+					zval nullType;
+					if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
+					defaultType = zv::Val::adopt(nullType);
+				}
+				defaultState.set(defaultEntry.stringKeyOrNull(), std::move(defaultType));
+			}
+			zval *walkedRun = walkedConditionalExpressions != NULL ? zend_hash_index_find(Z_ARRVAL_P(walkedConditionalExpressions), Z_OBJ_HANDLE_P(stmt)) : NULL;
+			zval *walkedRunConditionalExpressions = walkedRun != NULL ? zend_hash_index_find(Z_ARRVAL_P(walkedRun), 1) : NULL;
+			zval emptyArray;
+			ZVAL_EMPTY_ARRAY(&emptyArray);
+
+			zv::Arr states = zv::Arr::empty();
+			states.push(std::move(defaultState));
+			zv::Val never = pt_type_new_never_type();
+			if (UNEXPECTED(never.isUndef())) return zv::Val();
+			for (auto scopeEntry : zv::ArrRef(scopes)) {
+				zval *scope = scopeEntry.value().raw();
+				zv::Arr state = zv::Arr::create(0);
+				bool complete = true;
+				for (auto defaultEntry : zv::ArrRef(defaults)) {
+					zend_string *name = defaultEntry.stringKeyOrNull();
+					zv::Val has = pt_mutating_scope_has_variable_type(Z_OBJ_P(scope), name);
+					if (UNEXPECTED(has.isUndef())) return zv::Val();
+					if (pt_type_trinary_value(has.raw()) != PT_TRI_YES) {
+						complete = false;
+						break;
+					}
+					zv::Val type = pt_mutating_scope_get_variable_type(Z_OBJ_P(scope), name);
+					if (UNEXPECTED(type.isUndef())) return zv::Val();
+					zend_long isNever;
+					if (UNEXPECTED(!typeIsSuperTypeOf(never.raw(), type.raw(), isNever))) return zv::Val();
+					if (isNever == PT_TRI_YES) {
+						// an unreachable scope
+						complete = false;
+						break;
+					}
+					state.set(name, std::move(type));
+				}
+				if (!complete) continue;
+				if (types != NULL) {
+					bool walked;
+					if (UNEXPECTED(!isWalkedStaticVariableState(state.raw(), types, scope, walkedRunConditionalExpressions != NULL ? walkedRunConditionalExpressions : &emptyArray, walked))) return zv::Val();
+					if (walked) continue;
+				}
+				bool seen = false;
+				for (auto seenEntry : zv::ArrRef(states.raw())) {
+					bool equal = true;
+					for (auto typeEntry : zv::ArrRef(seenEntry.value().raw())) {
+						if (UNEXPECTED(!typeEquals(typeEntry.value().raw(), stateType(state.raw(), typeEntry.stringKeyOrNull()), equal))) return zv::Val();
+						if (!equal) break;
+					}
+					if (equal) {
+						seen = true;
+						break;
+					}
+				}
+				if (seen) continue;
+				states.push(std::move(state));
+			}
+			if (zend_hash_num_elements(states.table()) < 2) continue;
+
+			zv::Arr joinedTypes = zv::Arr::create(0);
+			for (auto defaultEntry : zv::ArrRef(defaults)) {
+				zend_string *name = defaultEntry.stringKeyOrNull();
+				zv::Arr list = zv::Arr::create(0);
+				for (auto stateEntry : zv::ArrRef(states.raw())) {
+					list.push(zv::Ref(stateType(stateEntry.value().raw(), name)));
+				}
+				zv::Val joined = unionOfList(list.table());
+				if (UNEXPECTED(joined.isUndef())) return zv::Val();
+				joinedTypes.set(name, std::move(joined));
+			}
+
+			zv::Arr runConditionalExpressions = zv::Arr::create(0);
+			for (auto targetEntry : zv::ArrRef(defaults)) {
+				zend_string *targetName = targetEntry.stringKeyOrNull();
+				zv::Arr targetTypes = zv::Arr::empty();
+				for (auto stateEntry : zv::ArrRef(states.raw())) {
+					zval *stateTargetType = stateType(stateEntry.value().raw(), targetName);
+					bool seen = false;
+					for (auto seenEntry : zv::ArrRef(targetTypes.raw())) {
+						if (UNEXPECTED(!typeEquals(seenEntry.value().raw(), stateTargetType, seen))) return zv::Val();
+						if (seen) break;
+					}
+					if (!seen) targetTypes.push(zv::Ref(stateTargetType));
+				}
+				zval *joinedTarget = zend_hash_find(joinedTypes.table(), targetName);
+				zval *enteredTarget = zend_hash_find(Z_ARRVAL_P(enteredTypes), targetName);
+				if (UNEXPECTED(enteredTarget == NULL)) continue;
+				for (auto targetTypeEntry : zv::ArrRef(targetTypes.raw())) {
+					zv::Val targetType = zv::Val::copyOf(zv::Ref(targetTypeEntry.value().raw()));
+					bool isJoined;
+					if (UNEXPECTED(!typeEquals(targetType.raw(), joinedTarget, isJoined))) return zv::Val();
+					if (isJoined) continue;
+					zv::Arr otherStates = zv::Arr::empty();
+					for (auto stateEntry : zv::ArrRef(states.raw())) {
+						zend_long isSuperType;
+						if (UNEXPECTED(!typeIsSuperTypeOf(targetType.raw(), stateType(stateEntry.value().raw(), targetName), isSuperType))) return zv::Val();
+						if (isSuperType == PT_TRI_YES) continue;
+						otherStates.push(zv::Ref(stateEntry.value().raw()));
+					}
+					// what the target holds in none of the other states - of
+					// everything it can hold - covers the target type in a form
+					// that does not change with every walk
+					zv::Val remainingTargetType = unionOf(zend_hash_index_find(Z_ARRVAL_P(enteredTarget), 0), joinedTarget);
+					if (UNEXPECTED(remainingTargetType.isUndef())) return zv::Val();
+					for (auto otherEntry : zv::ArrRef(otherStates.raw())) {
+						zv::Val removed = pt_type_combinator_remove(remainingTargetType.raw(), stateType(otherEntry.value().raw(), targetName));
+						if (UNEXPECTED(removed.isUndef())) return zv::Val();
+						remainingTargetType = std::move(removed);
+					}
+					zend_long coversTarget;
+					if (UNEXPECTED(!typeIsSuperTypeOf(remainingTargetType.raw(), targetType.raw(), coversTarget))) return zv::Val();
+					if (coversTarget == PT_TRI_YES) targetType = std::move(remainingTargetType);
+
+					for (auto guardEntry : zv::ArrRef(defaults)) {
+						zend_string *guardName = guardEntry.stringKeyOrNull();
+						if (zend_string_equals(guardName, targetName)) continue;
+						// what the guard can hold in no state the target type
+						// leaves out - of everything it can hold, the walked
+						// type included, so a guard narrowed from that still
+						// matches
+						zval *enteredGuard = zend_hash_find(Z_ARRVAL_P(enteredTypes), guardName);
+						if (UNEXPECTED(enteredGuard == NULL)) continue;
+						zv::Val guardType = unionOf(zend_hash_index_find(Z_ARRVAL_P(enteredGuard), 0), zend_hash_find(joinedTypes.table(), guardName));
+						if (UNEXPECTED(guardType.isUndef())) return zv::Val();
+						for (auto otherEntry : zv::ArrRef(otherStates.raw())) {
+							zv::Val removed = pt_type_combinator_remove(guardType.raw(), stateType(otherEntry.value().raw(), guardName));
+							if (UNEXPECTED(removed.isUndef())) return zv::Val();
+							guardType = std::move(removed);
+						}
+						zend_long isNever;
+						if (UNEXPECTED(!typeIsSuperTypeOf(never.raw(), guardType.raw(), isNever))) return zv::Val();
+						if (isNever == PT_TRI_YES) continue;
+						bool disjoint = true;
+						for (auto otherEntry : zv::ArrRef(otherStates.raw())) {
+							// remove() keeps what it cannot subtract
+							zend_long overlaps;
+							if (UNEXPECTED(!typeIsSuperTypeOf(guardType.raw(), stateType(otherEntry.value().raw(), guardName), overlaps))) return zv::Val();
+							if (overlaps != PT_TRI_NO) {
+								disjoint = false;
+								break;
+							}
+						}
+						if (!disjoint) continue;
+						zv::Val holder = newStaticVariableConditionalExpressionHolder(guardName, guardType.raw(), targetName, targetType.raw());
+						if (UNEXPECTED(holder.isUndef())) return zv::Val();
+						zend_string *targetKey = zend_string_concat2(PT_LC("$"), ZSTR_VAL(targetName), ZSTR_LEN(targetName));
+						runConditionalExpressions.separate();
+						zval *list = zend_hash_find(runConditionalExpressions.table(), targetKey);
+						if (list == NULL) {
+							zval empty;
+							array_init(&empty);
+							list = zend_hash_add_new(runConditionalExpressions.table(), targetKey, &empty);
+						}
+						zend_string_release(targetKey);
+						SEPARATE_ARRAY(list);
+						zval holderZv = holder.take();
+						zend_hash_next_index_insert(Z_ARRVAL_P(list), &holderZv);
+					}
+				}
+			}
+			if (zend_hash_num_elements(runConditionalExpressions.table()) == 0) continue;
+			zv::Arr entry = zv::Arr::create(2);
+			entry.push(zv::Ref(stmt));
+			entry.push(std::move(runConditionalExpressions));
+			conditionalExpressions.separate();
+			zval entryZv = zv::Val(std::move(entry)).take();
+			zend_hash_index_update(conditionalExpressions.table(), Z_OBJ_HANDLE_P(stmt), &entryZv);
+		}
+		return zv::Val(std::move(conditionalExpressions));
 	}
 
 	/* TypeCombinator::union(...$list); UNDEF = pending exception */

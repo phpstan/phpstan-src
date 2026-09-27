@@ -33,8 +33,10 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_column;
 use function array_fill_keys;
 use function array_key_exists;
 use function array_keys;
@@ -580,16 +582,17 @@ final class StatementsHandler
 		$constraints = $state->scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty();
 		$staticSites = $this->staticVariableInference->getSites($parentNode, $stmts);
 		$staticVariableTypes = [];
+		$staticVariableConditionalExpressions = [];
 		$staticStatementIndexes = [];
 		if ($staticSites !== []) {
 			foreach ($staticSites as [, $index]) {
 				$staticStatementIndexes[$index] = true;
 			}
-			[$staticVariableTypes, $constraints] = $this->inferStaticVariableTypes($nodeScopeResolver, $parentNode, $stmts, $staticSites, $staticStatementIndexes, $parentFrame, $entries, $recording, $storage, $observationContext);
+			[$staticVariableTypes, $staticVariableConditionalExpressions, $constraints] = $this->inferStaticVariableTypes($nodeScopeResolver, $parentNode, $stmts, $staticSites, $staticStatementIndexes, $parentFrame, $entries, $recording, $storage, $observationContext);
 		}
 		$frame = $this->templateArgumentResolver->resolve($constraints, $parentFrame, $statementStartTokenPositions, $parentNode, $stmts);
 		if ($staticVariableTypes !== []) {
-			$frame = $frame->withStaticVariableTypes($staticVariableTypes, $staticStatementIndexes);
+			$frame = $frame->withStaticVariableTypes($staticVariableTypes, $staticStatementIndexes, $staticVariableConditionalExpressions);
 		}
 		if ($frame->isObservingClosures()) {
 			$frame = $this->observeClosureSignatures($nodeScopeResolver, $parentNode, $stmts, $frame, $entries, $storage, $observationContext, $statementStartTokenPositions);
@@ -684,11 +687,17 @@ final class StatementsHandler
 	 * generalized like a loop's variables. The facts of the last walk are the
 	 * ones the template arguments and closure signatures are resolved from.
 	 *
+	 * The variables of a run of `static` statements (see
+	 * StaticVariableInference::getRuns()) hold one of the states a call left
+	 * them in together, so the walks also carry how their types depend on each
+	 * other after the run - until those conditional expressions converge too,
+	 * or are given up.
+	 *
 	 * @param Node\Stmt[] $stmts
 	 * @param non-empty-list<array{Expr\Variable, int, string}> $staticSites
 	 * @param array<int, true> $staticStatementIndexes
 	 * @param array<int, array{StatementListWalkState, int}> $entries
-	 * @return array{array<int, array{Expr\Variable, Type, Type}>, TemplateArgumentConstraints}
+	 * @return array{array<int, array{Expr\Variable, Type, Type}>, array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}>, TemplateArgumentConstraints}
 	 */
 	private function inferStaticVariableTypes(
 		NodeScopeResolver $nodeScopeResolver,
@@ -712,16 +721,21 @@ final class StatementsHandler
 			$start = min($start, $index);
 		}
 		$names = array_keys($names);
-		$types = $this->collectStaticVariableTypes($bodyScope, $names, $recording, $entries[$stmtCount][0], []);
+		$runs = $this->staticVariableInference->getRuns($parentNode, $stmts);
+		$types = $this->collectStaticVariableTypes($names, $this->collectStaticVariableScopes($bodyScope, $recording, $entries[$stmtCount][0], []));
+		$conditionalExpressions = $runs !== []
+			? $this->collectStaticVariableConditionalExpressions($runs, $this->collectStaticVariableStateScopes($bodyScope, $recording, $entries[$stmtCount][0], []), $storage, null, [], $types)
+			: [];
 		$hasLabels = $this->containsLabels($stmts);
 		$count = 0;
+		$conditionalExpressionsCount = 0;
 		while (true) {
 			$siteTypes = [];
 			foreach ($staticSites as [$var, , $name]) {
 				[$type, $nativeType] = $types[$name];
 				$siteTypes[spl_object_id($var)] = [$var, $type, $nativeType];
 			}
-			$frame = (new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts))->withStaticVariableTypes($siteTypes, $staticStatementIndexes);
+			$frame = (new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts))->withStaticVariableTypes($siteTypes, $staticStatementIndexes, $conditionalExpressions);
 
 			$state = clone $entries[$start][0];
 			$state->scope = $state->scope->withTemplateArgumentFrame($frame);
@@ -729,6 +743,8 @@ final class StatementsHandler
 			$walkRecording = new RecordingNodeCallback();
 			/** @var list<MutatingScope> $replayedScopes */
 			$replayedScopes = [];
+			/** @var list<MutatingScope> $carriedOverScopes the entry scopes of the statements not walked again */
+			$carriedOverScopes = [];
 			$suspendedGatherers = $nodeScopeResolver->suspendNodeGatherers();
 			$pushedScope = $state->scope;
 			$pushedScope->pushExpressionResultStorage($walkStorage);
@@ -760,6 +776,7 @@ final class StatementsHandler
 					// the statement does not read what changed: the variables keep
 					// their types through it
 					$replayedScopes[] = $state->scope;
+					$carriedOverScopes[] = $state->scope;
 					$recordedExit = $entries[$i + 1][0];
 					$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
 					$state->scope = $this->withRecordedConstraints(
@@ -774,8 +791,12 @@ final class StatementsHandler
 			}
 			$constraints = $state->scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty();
 
-			$walkTypes = $this->collectStaticVariableTypes($bodyScope, $names, $walkRecording, $state, $replayedScopes);
-			$converged = true;
+			$walkTypes = $this->collectStaticVariableTypes($names, $this->collectStaticVariableScopes($bodyScope, $walkRecording, $state, $replayedScopes));
+			$stateScopes = $runs !== [] ? $this->collectStaticVariableStateScopes($bodyScope, $walkRecording, $state, $carriedOverScopes) : [];
+			$walkConditionalExpressions = $runs !== []
+				? $this->collectStaticVariableConditionalExpressions($runs, $stateScopes, $storage, $types, $conditionalExpressions, $types)
+				: [];
+			$typesConverged = true;
 			foreach ($names as $name) {
 				if (
 					$types[$name][0]->isSuperTypeOf($walkTypes[$name][0])->yes()
@@ -783,15 +804,41 @@ final class StatementsHandler
 				) {
 					continue;
 				}
-				$converged = false;
+				$typesConverged = false;
 				break;
 			}
+			$conditionalExpressionsConverged = self::equalStaticVariableConditionalExpressions($conditionalExpressions, $walkConditionalExpressions);
 			$count++;
-			if ($converged || $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
+			if ($typesConverged && $conditionalExpressionsConverged) {
 				break;
+			}
+			if ($typesConverged) {
+				// the conditional expressions follow the types
+				$conditionalExpressionsCount++;
+				if ($conditionalExpressionsCount >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
+					$runs = [];
+					$walkConditionalExpressions = [];
+				}
+			} elseif ($count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
+				if ($runs === []) {
+					break;
+				}
+				// the conditional expressions keep changing: the walks go on
+				// without them - what they narrowed the types to is joined with
+				// what the variables take without them
+				$runs = [];
+				$walkConditionalExpressions = [];
+				$count = 0;
 			}
 
-			$types = $this->joinStaticVariableTypes($bodyScope, $names, $types, $walkTypes, $count > NodeScopeResolver::GENERALIZE_AFTER_ITERATION);
+			$joinedTypes = $this->joinStaticVariableTypes($bodyScope, $names, $types, $walkTypes, $count > NodeScopeResolver::GENERALIZE_AFTER_ITERATION);
+			if ($runs !== [] && !$typesConverged) {
+				// the next walk enters with the joined types - the conditions
+				// cover them
+				$walkConditionalExpressions = $this->collectStaticVariableConditionalExpressions($runs, $stateScopes, $storage, $types, $conditionalExpressions, $joinedTypes);
+			}
+			$types = $joinedTypes;
+			$conditionalExpressions = $walkConditionalExpressions;
 		}
 
 		$siteTypes = [];
@@ -800,19 +847,18 @@ final class StatementsHandler
 			$siteTypes[spl_object_id($var)] = [$var, $type, $nativeType];
 		}
 
-		return [$siteTypes, $constraints];
+		return [$siteTypes, $conditionalExpressions, $constraints];
 	}
 
 	/**
-	 * The [phpdoc, native] types the variables take in the scopes the walk
-	 * recorded in the body (not in the function-likes nested in it), at its
-	 * end, returns and throws, and in $moreScopes.
+	 * The scopes the walk recorded in the body (not in the function-likes
+	 * nested in it), at its end, returns and throws, and $moreScopes - where the
+	 * body leaves its `static` variables, or runs itself again.
 	 *
-	 * @param list<string> $names
 	 * @param list<MutatingScope> $moreScopes
-	 * @return array<string, array{Type, Type}>
+	 * @return list<MutatingScope>
 	 */
-	private function collectStaticVariableTypes(MutatingScope $bodyScope, array $names, RecordingNodeCallback $recording, StatementListWalkState $endState, array $moreScopes): array
+	private function collectStaticVariableScopes(MutatingScope $bodyScope, RecordingNodeCallback $recording, StatementListWalkState $endState, array $moreScopes): array
 	{
 		$scopes = $moreScopes;
 		$scopes[] = $endState->scope;
@@ -828,10 +874,7 @@ final class StatementsHandler
 
 		$bodyFunction = $bodyScope->getFunction();
 		$bodyReflection = $bodyScope->getAnonymousFunctionReflection();
-		$typesByName = [];
-		foreach ($names as $name) {
-			$typesByName[$name] = [[], []];
-		}
+		$bodyScopes = [];
 		$seen = [];
 		foreach ($scopes as $scope) {
 			if (!$scope instanceof MutatingScope) {
@@ -845,6 +888,75 @@ final class StatementsHandler
 			if ($scope->getAnonymousFunctionReflection() !== $bodyReflection || $scope->getFunction() !== $bodyFunction) {
 				continue;
 			}
+			$bodyScopes[] = $scope;
+		}
+
+		return $bodyScopes;
+	}
+
+	/**
+	 * The scopes of the body where a call can leave its `static` variables for
+	 * the next one: its end, returns and explicit throws, the calls that can
+	 * run it again (see StaticVariableInference::canRunUserCode()), and
+	 * $moreScopes.
+	 *
+	 * @param list<MutatingScope> $moreScopes
+	 * @return list<MutatingScope>
+	 */
+	private function collectStaticVariableStateScopes(MutatingScope $bodyScope, RecordingNodeCallback $recording, StatementListWalkState $endState, array $moreScopes): array
+	{
+		$scopes = $moreScopes;
+		$scopes[] = $endState->scope;
+		foreach ($endState->exitPoints as $exitPoint) {
+			$scopes[] = $exitPoint->getScope();
+		}
+		foreach ($endState->throwPoints as $throwPoint) {
+			if (!$throwPoint->isExplicit()) {
+				continue;
+			}
+			$scopes[] = $throwPoint->getScope();
+		}
+		foreach ($recording->getPairs() as [$node, $scope]) {
+			if (!$scope instanceof MutatingScope || !$this->staticVariableInference->canRunUserCode($node, $scope)) {
+				continue;
+			}
+			$scopes[] = $scope;
+		}
+
+		$bodyFunction = $bodyScope->getFunction();
+		$bodyReflection = $bodyScope->getAnonymousFunctionReflection();
+		$bodyScopes = [];
+		$seen = [];
+		foreach ($scopes as $scope) {
+			$id = spl_object_id($scope);
+			if (isset($seen[$id])) {
+				continue;
+			}
+			$seen[$id] = true;
+			if ($scope->getAnonymousFunctionReflection() !== $bodyReflection || $scope->getFunction() !== $bodyFunction) {
+				continue;
+			}
+			$bodyScopes[] = $scope;
+		}
+
+		return $bodyScopes;
+	}
+
+	/**
+	 * The [phpdoc, native] types the variables take in the scopes (see
+	 * collectStaticVariableScopes()).
+	 *
+	 * @param list<string> $names
+	 * @param list<MutatingScope> $scopes
+	 * @return array<string, array{Type, Type}>
+	 */
+	private function collectStaticVariableTypes(array $names, array $scopes): array
+	{
+		$typesByName = [];
+		foreach ($names as $name) {
+			$typesByName[$name] = [[], []];
+		}
+		foreach ($scopes as $scope) {
 			foreach ($names as $name) {
 				if ($scope->hasVariableType($name)->no()) {
 					continue;
@@ -862,6 +974,234 @@ final class StatementsHandler
 		}
 
 		return $types;
+	}
+
+	/**
+	 * How the types of the variables of each run of `static` statements depend
+	 * on each other right after the run: they hold their defaults, or the state
+	 * a call left them in together - in one of the scopes where every variable
+	 * of the run is bound (see collectStaticVariableStateScopes()). A scope
+	 * where they still hold what the walk entered the run with ($types and
+	 * $walkedConditionalExpressions) adds no state.
+	 *
+	 * For each type a variable holds in some of the states, what another
+	 * variable holds in none of the other states - of everything it can hold -
+	 * becomes the condition of a conditional expression, like the guards
+	 * MutatingScope::mergeWith() derives from the branches it merges.
+	 *
+	 * @param list<array{Node\Stmt\Static_, array<string, Expr|null>}> $runs
+	 * @param list<MutatingScope> $scopes
+	 * @param array<string, array{Type, Type}>|null $types
+	 * @param array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}> $walkedConditionalExpressions
+	 * @param array<string, array{Type, Type}> $enteredTypes the types the next walk enters the run with
+	 * @return array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}>
+	 */
+	private function collectStaticVariableConditionalExpressions(array $runs, array $scopes, ExpressionResultStorage $storage, ?array $types, array $walkedConditionalExpressions, array $enteredTypes): array
+	{
+		$conditionalExpressions = [];
+		foreach ($runs as [$stmt, $defaults]) {
+			$names = array_keys($defaults);
+			$defaultState = [];
+			foreach ($defaults as $name => $default) {
+				$defaultResult = $default !== null ? $storage->findExpressionResult($default) : null;
+				$defaultState[$name] = $defaultResult !== null ? $defaultResult->getType() : new NullType();
+			}
+			/** @var non-empty-list<array<string, Type>> $states */
+			$states = [$defaultState];
+			foreach ($scopes as $scope) {
+				$state = [];
+				foreach ($names as $name) {
+					if (!$scope->hasVariableType($name)->yes()) {
+						continue 2;
+					}
+					$type = $scope->getVariableType($name);
+					if ((new NeverType())->isSuperTypeOf($type)->yes()) {
+						// an unreachable scope
+						continue 2;
+					}
+					$state[$name] = $type;
+				}
+				if ($types !== null && self::isWalkedStaticVariableState($state, $types, $scope, $walkedConditionalExpressions[spl_object_id($stmt)][1] ?? [])) {
+					continue;
+				}
+				foreach ($states as $seenState) {
+					if (self::equalStaticVariableStates($seenState, $state)) {
+						continue 2;
+					}
+				}
+				$states[] = $state;
+			}
+			if (count($states) < 2) {
+				continue;
+			}
+
+			$joinedTypes = [];
+			foreach ($names as $name) {
+				$joinedTypes[$name] = TypeCombinator::union(...array_column($states, $name));
+			}
+			$runConditionalExpressions = [];
+			foreach ($names as $targetName) {
+				/** @var list<Type> $targetTypes */
+				$targetTypes = [];
+				foreach ($states as $state) {
+					foreach ($targetTypes as $targetType) {
+						if ($targetType->equals($state[$targetName])) {
+							continue 2;
+						}
+					}
+					$targetTypes[] = $state[$targetName];
+				}
+				foreach ($targetTypes as $targetType) {
+					if ($targetType->equals($joinedTypes[$targetName])) {
+						continue;
+					}
+					$otherStates = [];
+					foreach ($states as $state) {
+						if ($targetType->isSuperTypeOf($state[$targetName])->yes()) {
+							continue;
+						}
+						$otherStates[] = $state;
+					}
+					// what the target holds in none of the other states - of
+					// everything it can hold - covers the target type in a form
+					// that does not change with every walk
+					$remainingTargetType = TypeCombinator::union($enteredTypes[$targetName][0], $joinedTypes[$targetName]);
+					foreach ($otherStates as $otherState) {
+						$remainingTargetType = TypeCombinator::remove($remainingTargetType, $otherState[$targetName]);
+					}
+					if ($remainingTargetType->isSuperTypeOf($targetType)->yes()) {
+						$targetType = $remainingTargetType;
+					}
+					foreach ($names as $guardName) {
+						if ($guardName === $targetName) {
+							continue;
+						}
+						// what the guard can hold in no state the target type
+						// leaves out - of everything it can hold, the walked
+						// type included, so a guard narrowed from that still
+						// matches
+						$guardType = TypeCombinator::union($enteredTypes[$guardName][0], $joinedTypes[$guardName]);
+						foreach ($otherStates as $otherState) {
+							$guardType = TypeCombinator::remove($guardType, $otherState[$guardName]);
+						}
+						if ((new NeverType())->isSuperTypeOf($guardType)->yes()) {
+							continue;
+						}
+						foreach ($otherStates as $otherState) {
+							// remove() keeps what it cannot subtract
+							if (!$guardType->isSuperTypeOf($otherState[$guardName])->no()) {
+								continue 2;
+							}
+						}
+						$runConditionalExpressions['$' . $targetName][] = new ConditionalExpressionHolder(
+							['$' . $guardName => ExpressionTypeHolder::createYes(new Expr\Variable($guardName), $guardType)],
+							ExpressionTypeHolder::createYes(new Expr\Variable($targetName), $targetType),
+						);
+					}
+				}
+			}
+			if ($runConditionalExpressions === []) {
+				continue;
+			}
+			$conditionalExpressions[spl_object_id($stmt)] = [$stmt, $runConditionalExpressions];
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * Whether the variables hold the types the walk entered the run with, still
+	 * bound by its conditional expressions.
+	 *
+	 * @param array<string, Type> $state
+	 * @param array<string, array{Type, Type}> $types
+	 * @param array<string, ConditionalExpressionHolder[]> $walkedConditionalExpressions
+	 */
+	private static function isWalkedStaticVariableState(array $state, array $types, MutatingScope $scope, array $walkedConditionalExpressions): bool
+	{
+		foreach ($state as $name => $type) {
+			if (!$type->equals($types[$name][0])) {
+				return false;
+			}
+		}
+		$scopeConditionalExpressions = $scope->getConditionalExpressions();
+		foreach ($walkedConditionalExpressions as $exprString => $holders) {
+			foreach ($holders as $holder) {
+				foreach ($scopeConditionalExpressions[$exprString] ?? [] as $scopeHolder) {
+					if (self::equalConditionalExpressionHolders($holder, $scopeHolder)) {
+						continue 2;
+					}
+				}
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param array<string, Type> $a
+	 * @param array<string, Type> $b
+	 */
+	private static function equalStaticVariableStates(array $a, array $b): bool
+	{
+		foreach ($a as $name => $type) {
+			if (!$type->equals($b[$name])) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}> $a
+	 * @param array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}> $b
+	 */
+	private static function equalStaticVariableConditionalExpressions(array $a, array $b): bool
+	{
+		if (count($a) !== count($b)) {
+			return false;
+		}
+		foreach ($a as $id => [, $aConditionalExpressions]) {
+			if (!isset($b[$id]) || count($aConditionalExpressions) !== count($b[$id][1])) {
+				return false;
+			}
+			foreach ($aConditionalExpressions as $exprString => $aHolders) {
+				$bHolders = $b[$id][1][$exprString] ?? null;
+				if ($bHolders === null || count($aHolders) !== count($bHolders)) {
+					return false;
+				}
+				foreach ($aHolders as $aHolder) {
+					foreach ($bHolders as $bHolder) {
+						if (self::equalConditionalExpressionHolders($aHolder, $bHolder)) {
+							continue 2;
+						}
+					}
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private static function equalConditionalExpressionHolders(ConditionalExpressionHolder $a, ConditionalExpressionHolder $b): bool
+	{
+		if (!$a->getTypeHolder()->equals($b->getTypeHolder())) {
+			return false;
+		}
+		$bConditions = $b->getConditionExpressionTypeHolders();
+		if (count($a->getConditionExpressionTypeHolders()) !== count($bConditions)) {
+			return false;
+		}
+		foreach ($a->getConditionExpressionTypeHolders() as $exprString => $condition) {
+			if (!isset($bConditions[$exprString]) || !$condition->equals($bConditions[$exprString])) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

@@ -87,6 +87,8 @@ final class ClosureSignatureInference
 
 	private const ASSIGNED_CLOSURES_ATTRIBUTE = 'closureSignatureAssignedClosures';
 
+	private const REBOUND_VARIABLES_ATTRIBUTE = 'closureSignatureReboundVariables';
+
 	public function __construct(
 		#[AutowiredParameter(ref: '%featureToggles.closureSignaturesFromUsages%')]
 		private bool $enabled,
@@ -136,6 +138,19 @@ final class ClosureSignatureInference
 		if (!$frame->isObservingClosures() && $frame->getByRefSiteMode($expr) === null) {
 			return [];
 		}
+		$body = $frame->getClosureSignatureBody();
+		if ($body === null) {
+			return [];
+		}
+		$reboundNames = self::getReboundVariableNames($body, $frame->getClosureSignatureStmts());
+		foreach ($names as $name) {
+			// unset or bound to another reference, the variable no longer is the
+			// one the closure writes to - its effects stay the creation-time fixpoint
+			if (isset($reboundNames[$name])) {
+				return [];
+			}
+		}
+
 		$markers = [];
 		foreach ($names as $name) {
 			$markers[$name] = new UnresolvedTemplateArgumentType(
@@ -551,6 +566,106 @@ final class ClosureSignatureInference
 		}
 
 		return false;
+	}
+
+	/**
+	 * The variables the body unsets or binds to another reference - `unset()`,
+	 * `=&`, a by-reference foreach value or destructuring, `static`, `global`.
+	 * A by-ref use of such a variable may no longer share its value with the
+	 * body's variable where the closure is invoked.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @return array<string, true>
+	 */
+	private static function getReboundVariableNames(Node $body, array $stmts): array
+	{
+		/** @var array<string, true>|null $cached */
+		$cached = $body->getAttribute(self::REBOUND_VARIABLES_ATTRIBUTE);
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$names = [];
+		$stack = $stmts;
+		while (count($stack) > 0) {
+			$node = array_pop($stack);
+			if ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike) {
+				continue;
+			}
+			if ($node instanceof Node\Stmt\Unset_) {
+				foreach ($node->vars as $var) {
+					self::collectVariableName($var, $names);
+				}
+			} elseif ($node instanceof Expr\AssignRef) {
+				self::collectVariableName($node->var, $names);
+			} elseif ($node instanceof Node\Stmt\Foreach_) {
+				if ($node->byRef) {
+					self::collectVariableName($node->valueVar, $names);
+				}
+				self::collectByRefItemNames($node->valueVar, $names);
+			} elseif ($node instanceof Expr\Assign) {
+				self::collectByRefItemNames($node->var, $names);
+			} elseif ($node instanceof Node\Stmt\Static_) {
+				foreach ($node->vars as $staticVar) {
+					self::collectVariableName($staticVar->var, $names);
+				}
+			} elseif ($node instanceof Node\Stmt\Global_) {
+				foreach ($node->vars as $var) {
+					self::collectVariableName($var, $names);
+				}
+			}
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$subNode = $node->$subNodeName;
+				if ($subNode instanceof Node) {
+					$stack[] = $subNode;
+				} elseif (is_array($subNode)) {
+					foreach ($subNode as $item) {
+						if (!$item instanceof Node) {
+							continue;
+						}
+						$stack[] = $item;
+					}
+				}
+			}
+		}
+		$body->setAttribute(self::REBOUND_VARIABLES_ATTRIBUTE, $names);
+
+		return $names;
+	}
+
+	/**
+	 * @param array<string, true> $names
+	 */
+	private static function collectVariableName(Node $node, array &$names): void
+	{
+		if (!$node instanceof Expr\Variable || !is_string($node->name)) {
+			return;
+		}
+
+		$names[$node->name] = true;
+	}
+
+	/**
+	 * The variables a destructuring target binds by reference: `[&$x] = ...`.
+	 *
+	 * @param array<string, true> $names
+	 */
+	private static function collectByRefItemNames(Expr $target, array &$names): void
+	{
+		if (!$target instanceof Expr\List_ && !$target instanceof Expr\Array_) {
+			return;
+		}
+
+		foreach ($target->items as $item) {
+			if ($item === null) {
+				continue;
+			}
+			if ($item->byRef) {
+				self::collectVariableName($item->value, $names);
+				continue;
+			}
+			self::collectByRefItemNames($item->value, $names);
+		}
 	}
 
 	/** @return non-empty-string */

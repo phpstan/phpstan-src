@@ -2,7 +2,9 @@
 
 namespace ClosureByRefUsesAtInvocation;
 
+use PHPStan\TrinaryLogic;
 use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertVariableCertainty;
 
 function takesCallable(callable $cb): void
 {
@@ -443,6 +445,63 @@ class Foo
 		$d = $e ?? $c;
 		$d();
 		assertType("1|'a'", $x);
+	}
+
+	public function unsetBetweenCreationAndInvocation(): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		unset($x);
+		$c();
+		assertVariableCertainty(TrinaryLogic::createNo(), $x);
+	}
+
+	public function referenceReboundBetweenCreationAndInvocation(): void
+	{
+		$x = 1;
+		$y = 2;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		$x = &$y;
+		$c();
+		assertType('2', $x);
+		assertType('2', $y);
+	}
+
+	/**
+	 * @param non-empty-list<int> $list
+	 */
+	public function referenceReboundByForeach(array $list): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		foreach ($list as &$x) {
+		}
+		$c();
+		assertType('int', $x);
+	}
+
+	/**
+	 * @param array{int} $list
+	 */
+	public function referenceReboundByDestructuring(array $list): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		[&$x] = $list;
+		$c();
+		assertType('int', $x);
 	}
 
 }

@@ -74,33 +74,37 @@ inline constexpr char strings[] =
 	"stmts\0" /* 809 */
 	"names\0" /* 815 */
 	"bodyYieldsOrInvokes\0" /* 821 */
-	"parameterName\0" /* 841 */
-	"parameterTemplateName\0" /* 855 */
-	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 877 */
-	"getFrame\0" /* 925 */
-	"isObserving\0" /* 934 */
-	"declaredParameters\0" /* 946 */
-	"getSignatureParameters\0" /* 965 */
-	"getBodyParameters\0" /* 988 */
-	"returnType\0" /* 1006 */
-	"getSignatureReturnType\0" /* 1017 */
-	"getExpectedReturnType\0" /* 1040 */
-	"collectSites\0" /* 1062 */
-	"parameter\0" /* 1075 */
-	"PHPStan\\Reflection\\Native\\NativeParameterReflection\0" /* 1085 */
-	"createParameterMarker\0" /* 1137 */
-	"returnsContextTypedExpression\0" /* 1159 */
-	"functionLike\0" /* 1189 */
-	"PhpParser\\Node\0" /* 1202 */
-	"isClosedBody\0" /* 1217 */
-	"scanClosedBody\0" /* 1230 */
-	"infersInvocationReturnType\0" /* 1245 */
-	"findAssignedClosures\0" /* 1272 */
-	"body\0" /* 1293 */
-	"getAssignedClosures\0" /* 1298 */
-	"target\0" /* 1318 */
-	"collectTargetNames\0" /* 1325 */
-	"isContextTyped"; /* 1344 */
+	"body\0" /* 841 */
+	"PhpParser\\Node\0" /* 846 */
+	"getReboundVariableNames\0" /* 861 */
+	"node\0" /* 885 */
+	"collectVariableName\0" /* 890 */
+	"target\0" /* 910 */
+	"collectByRefItemNames\0" /* 917 */
+	"parameterName\0" /* 939 */
+	"parameterTemplateName\0" /* 953 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 975 */
+	"getFrame\0" /* 1023 */
+	"isObserving\0" /* 1032 */
+	"declaredParameters\0" /* 1044 */
+	"getSignatureParameters\0" /* 1063 */
+	"getBodyParameters\0" /* 1086 */
+	"returnType\0" /* 1104 */
+	"getSignatureReturnType\0" /* 1115 */
+	"getExpectedReturnType\0" /* 1138 */
+	"collectSites\0" /* 1160 */
+	"parameter\0" /* 1173 */
+	"PHPStan\\Reflection\\Native\\NativeParameterReflection\0" /* 1183 */
+	"createParameterMarker\0" /* 1235 */
+	"returnsContextTypedExpression\0" /* 1257 */
+	"functionLike\0" /* 1287 */
+	"isClosedBody\0" /* 1300 */
+	"scanClosedBody\0" /* 1313 */
+	"infersInvocationReturnType\0" /* 1328 */
+	"findAssignedClosures\0" /* 1355 */
+	"getAssignedClosures\0" /* 1376 */
+	"collectTargetNames\0" /* 1396 */
+	"isContextTyped"; /* 1415 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_BOOL), /* __construct $enabled */
 	reg::packed(20, 0, 27), /* isClosureSignatureMarker $marker */
@@ -152,22 +156,31 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(809, MAY_BE_ARRAY), /* bodyYieldsOrInvokes $stmts */
 	reg::packed(815, MAY_BE_ARRAY), /* bodyYieldsOrInvokes $names */
 	reg::packed(79, MAY_BE_BOOL), /* bodyYieldsOrInvokes return */
-	reg::packed(841, MAY_BE_STRING), /* parameterTemplateName $parameterName */
+	reg::packed(841, 0, 846), /* getReboundVariableNames $body */
+	reg::packed(809, MAY_BE_ARRAY), /* getReboundVariableNames $stmts */
+	reg::packed(79, MAY_BE_ARRAY), /* getReboundVariableNames return */
+	reg::packed(885, 0, 846), /* collectVariableName $node */
+	reg::packed(815, MAY_BE_ARRAY, reg::NoString, true, false), /* collectVariableName $names */
+	reg::packed(79, MAY_BE_VOID), /* collectVariableName return */
+	reg::packed(910, 0, 622), /* collectByRefItemNames $target */
+	reg::packed(815, MAY_BE_ARRAY, reg::NoString, true, false), /* collectByRefItemNames $names */
+	reg::packed(79, MAY_BE_VOID), /* collectByRefItemNames return */
+	reg::packed(939, MAY_BE_STRING), /* parameterTemplateName $parameterName */
 	reg::packed(79, MAY_BE_STRING), /* parameterTemplateName return */
 	reg::packed(134, 0, 140), /* getFrame $scope */
-	reg::packed(79, MAY_BE_NULL, 877), /* getFrame return */
+	reg::packed(79, MAY_BE_NULL, 975), /* getFrame return */
 	reg::packed(134, 0, 140), /* isObserving $scope */
 	reg::packed(79, MAY_BE_BOOL), /* isObserving return */
 	reg::packed(134, 0, 140), /* getSignatureParameters $scope */
 	reg::packed(171, 0, 176), /* getSignatureParameters $expr */
-	reg::packed(946, MAY_BE_ARRAY), /* getSignatureParameters $declaredParameters */
+	reg::packed(1044, MAY_BE_ARRAY), /* getSignatureParameters $declaredParameters */
 	reg::packed(79, MAY_BE_ARRAY), /* getSignatureParameters return */
 	reg::packed(134, 0, 140), /* getBodyParameters $scope */
 	reg::packed(171, 0, 176), /* getBodyParameters $expr */
 	reg::packed(79, MAY_BE_NULL | MAY_BE_ARRAY), /* getBodyParameters return */
 	reg::packed(134, 0, 140), /* getSignatureReturnType $scope */
 	reg::packed(171, 0, 176), /* getSignatureReturnType $expr */
-	reg::packed(1006, 0, 307), /* getSignatureReturnType $returnType */
+	reg::packed(1104, 0, 307), /* getSignatureReturnType $returnType */
 	reg::packed(79, 0, 307), /* getSignatureReturnType return */
 	reg::packed(134, 0, 140), /* getExpectedReturnType $scope */
 	reg::packed(171, 0, 176), /* getExpectedReturnType $expr */
@@ -176,14 +189,14 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(642, 0, 307), /* collectSites $closureType */
 	reg::packed(79, 0, 410), /* collectSites return */
 	reg::packed(171, 0, 176), /* createParameterMarker $expr */
-	reg::packed(1075, 0, 1085), /* createParameterMarker $parameter */
+	reg::packed(1173, 0, 1183), /* createParameterMarker $parameter */
 	reg::packed(79, 0, 27), /* createParameterMarker return */
 	reg::packed(171, 0, 176), /* returnsContextTypedExpression $expr */
 	reg::packed(79, MAY_BE_BOOL), /* returnsContextTypedExpression return */
-	reg::packed(1189, 0, 1202), /* isClosedBody $functionLike */
+	reg::packed(1287, 0, 846), /* isClosedBody $functionLike */
 	reg::packed(809, MAY_BE_ARRAY), /* isClosedBody $stmts */
 	reg::packed(79, MAY_BE_BOOL), /* isClosedBody return */
-	reg::packed(1189, 0, 1202), /* scanClosedBody $functionLike */
+	reg::packed(1287, 0, 846), /* scanClosedBody $functionLike */
 	reg::packed(809, MAY_BE_ARRAY), /* scanClosedBody $stmts */
 	reg::packed(79, MAY_BE_BOOL), /* scanClosedBody return */
 	reg::packed(134, 0, 140), /* infersInvocationReturnType $scope */
@@ -192,10 +205,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(134, 0, 140), /* findAssignedClosures $scope */
 	reg::packed(302, MAY_BE_STRING), /* findAssignedClosures $name */
 	reg::packed(79, MAY_BE_ARRAY), /* findAssignedClosures return */
-	reg::packed(1293, 0, 1202), /* getAssignedClosures $body */
+	reg::packed(841, 0, 846), /* getAssignedClosures $body */
 	reg::packed(809, MAY_BE_ARRAY), /* getAssignedClosures $stmts */
 	reg::packed(79, MAY_BE_ARRAY), /* getAssignedClosures return */
-	reg::packed(1318, 0, 622), /* collectTargetNames $target */
+	reg::packed(910, 0, 622), /* collectTargetNames $target */
 	reg::packed(815, MAY_BE_ARRAY, reg::NoString, true, false), /* collectTargetNames $names */
 	reg::packed(79, MAY_BE_VOID), /* collectTargetNames return */
 	reg::packed(171, 0, 622), /* isContextTyped $expr */
@@ -226,23 +239,26 @@ inline constexpr sigtab::Sig collectByRefEntryTypes = { { 707 /* collectByRefEnt
 inline constexpr sigtab::Sig getArrowFunctionOuterVariables = { { 764 /* getArrowFunctionOuterVariables */, 1, 43, 1, 44, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig byRefUseNames = { { 795 /* byRefUseNames */, 1, 45, 1, 46, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig bodyYieldsOrInvokes = { { 821 /* bodyYieldsOrInvokes */, 2, 47, 2, 49, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig parameterTemplateName = { { 855 /* parameterTemplateName */, 1, 50, 1, 51, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getFrame = { { 925 /* getFrame */, 1, 52, 1, 53, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isObserving = { { 934 /* isObserving */, 1, 54, 1, 55, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getSignatureParameters = { { 965 /* getSignatureParameters */, 3, 56, 3, 59, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getBodyParameters = { { 988 /* getBodyParameters */, 2, 60, 2, 62, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getSignatureReturnType = { { 1017 /* getSignatureReturnType */, 3, 63, 3, 66, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getExpectedReturnType = { { 1040 /* getExpectedReturnType */, 2, 67, 2, 69, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig collectSites = { { 1062 /* collectSites */, 2, 70, 2, 72, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createParameterMarker = { { 1137 /* createParameterMarker */, 2, 73, 2, 75, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig returnsContextTypedExpression = { { 1159 /* returnsContextTypedExpression */, 1, 76, 1, 77, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig isClosedBody = { { 1217 /* isClosedBody */, 2, 78, 2, 80, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig scanClosedBody = { { 1230 /* scanClosedBody */, 2, 81, 2, 83, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig infersInvocationReturnType = { { 1245 /* infersInvocationReturnType */, 2, 84, 2, 86, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig findAssignedClosures = { { 1272 /* findAssignedClosures */, 2, 87, 2, 89, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getAssignedClosures = { { 1298 /* getAssignedClosures */, 2, 90, 2, 92, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig collectTargetNames = { { 1325 /* collectTargetNames */, 2, 93, 2, 95, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig isContextTyped = { { 1344 /* isContextTyped */, 1, 96, 1, 97, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getReboundVariableNames = { { 861 /* getReboundVariableNames */, 2, 50, 2, 52, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig collectVariableName = { { 890 /* collectVariableName */, 2, 53, 2, 55, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig collectByRefItemNames = { { 917 /* collectByRefItemNames */, 2, 56, 2, 58, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig parameterTemplateName = { { 953 /* parameterTemplateName */, 1, 59, 1, 60, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getFrame = { { 1023 /* getFrame */, 1, 61, 1, 62, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isObserving = { { 1032 /* isObserving */, 1, 63, 1, 64, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSignatureParameters = { { 1063 /* getSignatureParameters */, 3, 65, 3, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getBodyParameters = { { 1086 /* getBodyParameters */, 2, 69, 2, 71, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSignatureReturnType = { { 1115 /* getSignatureReturnType */, 3, 72, 3, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExpectedReturnType = { { 1138 /* getExpectedReturnType */, 2, 76, 2, 78, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectSites = { { 1160 /* collectSites */, 2, 79, 2, 81, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createParameterMarker = { { 1235 /* createParameterMarker */, 2, 82, 2, 84, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig returnsContextTypedExpression = { { 1257 /* returnsContextTypedExpression */, 1, 85, 1, 86, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isClosedBody = { { 1300 /* isClosedBody */, 2, 87, 2, 89, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig scanClosedBody = { { 1313 /* scanClosedBody */, 2, 90, 2, 92, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig infersInvocationReturnType = { { 1328 /* infersInvocationReturnType */, 2, 93, 2, 95, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findAssignedClosures = { { 1355 /* findAssignedClosures */, 2, 96, 2, 98, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAssignedClosures = { { 1376 /* getAssignedClosures */, 2, 99, 2, 101, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig collectTargetNames = { { 1396 /* collectTargetNames */, 2, 102, 2, 104, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isContextTyped = { { 1415 /* isContextTyped */, 1, 105, 1, 106, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ClosureSignatureInference

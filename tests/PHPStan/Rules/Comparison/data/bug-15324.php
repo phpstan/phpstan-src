@@ -64,3 +64,31 @@ function doBar(string $s, string $literals, int $length, int $zeroOrThree, int $
 	if (substr($s, 0, 4) === 12345) {} // always false
 
 }
+
+/**
+ * @param int<0, 3> $range
+ * @param int<2, 4> $upToFour
+ * @param int<-1, 3> $possiblyNegative
+ * @param int<0, max> $unbounded
+ * @param int<-3, -1> $negativeRange
+ * @param int<-4, -1> $negativeRangeToFour
+ * @param int<min, -1> $unboundedNegative
+ * @param int<-3, 0> $possiblyZeroOffset
+ */
+function doRange(string $s, int $range, int $upToFour, int $possiblyNegative, int $unbounded, int $negativeRange, int $negativeRangeToFour, int $unboundedNegative, int $possiblyZeroOffset): void
+{
+	if (substr($s, 0, $range) === 'abcd') {} // always false
+	if (substr($s, 0, $range) === 'abc') {} // fine
+	if (substr($s, 0, $upToFour) === 'abcde') {} // always false
+	if (substr($s, 0, $upToFour) === 'abcd') {} // fine
+	if (substr($s, 0, $possiblyNegative) === 'abcd') {} // fine
+	if (substr($s, 0, $unbounded) === 'abcd') {} // fine
+	if (mb_substr($s, 0, $range) === 'äöüß') {} // always false
+	if (mb_strcut($s, 0, $range) === 'abcd') {} // always false
+
+	if (substr($s, $negativeRange) === 'abcd') {} // always false
+	if (substr($s, $negativeRange) === 'abc') {} // fine
+	if (substr($s, $negativeRangeToFour) === 'abcd') {} // fine
+	if (substr($s, $unboundedNegative) === 'abcd') {} // fine
+	if (substr($s, $possiblyZeroOffset) === 'abcd') {} // fine
+}

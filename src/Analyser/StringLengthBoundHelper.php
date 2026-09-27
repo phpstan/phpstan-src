@@ -10,16 +10,15 @@ use PhpParser\Node\Name;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use function count;
 use function in_array;
-use function is_int;
 use function is_string;
-use function max;
 use function mb_check_encoding;
 use function mb_list_encodings;
 use function mb_strlen;
-use function min;
 use function strlen;
 use function strtolower;
 
@@ -69,9 +68,17 @@ final class StringLengthBoundHelper
 			return false;
 		}
 
+		[$boundType, $fromNegativeOffset, $unit] = $maxLength;
 		foreach ($values as $value) {
-			$length = $maxLength[1] === null ? strlen($value) : $this->getCharacterCount($value, $maxLength[1]);
-			if ($length === null || $length <= $maxLength[0]) {
+			$length = $unit === null ? strlen($value) : $this->getCharacterCount($value, $unit);
+			if ($length === null) {
+				return false;
+			}
+
+			$shorterBoundType = $fromNegativeOffset
+				? IntegerRangeType::fromInterval(1 - $length, null)
+				: IntegerRangeType::fromInterval(null, $length - 1);
+			if (!$shorterBoundType->isSuperTypeOf($boundType)->yes()) {
 				return false;
 			}
 		}
@@ -80,7 +87,7 @@ final class StringLengthBoundHelper
 	}
 
 	/**
-	 * @return array{int, string|true|null}|null the maximum length and how it is measured: null for bytes, true for characters in the internal encoding, a string for characters in that encoding
+	 * @return array{Type, bool, string|true|null}|null the integer type bounding the length (a negative `$offset` when the bool is true, the maximum length otherwise) and how the length is measured: null for bytes, true for characters in the internal encoding, a string for characters in that encoding
 	 */
 	private function getMaxLength(Scope $scope, Expr $expr, ?NodeScopeResolver $nodeScopeResolver): ?array
 	{
@@ -92,7 +99,7 @@ final class StringLengthBoundHelper
 				return null;
 			}
 
-			return [1, null];
+			return [new ConstantIntegerType(1), false, null];
 		}
 
 		if (!$expr instanceof FuncCall || !$expr->name instanceof Name) {
@@ -116,7 +123,7 @@ final class StringLengthBoundHelper
 		}
 
 		if ($functionName === 'chr') {
-			return count($args) === 1 ? [1, null] : null;
+			return count($args) === 1 ? [new ConstantIntegerType(1), false, null] : null;
 		}
 
 		if (count($args) < 2) {
@@ -138,17 +145,11 @@ final class StringLengthBoundHelper
 		if (isset($args[2])) {
 			$lengthType = $this->getType($scope, $args[2], $nodeScopeResolver);
 			if (!$lengthType->isNull()->yes()) {
-				$lengthValues = $this->getIntegerValues($lengthType);
-				if ($lengthValues === null) {
+				if (!IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($lengthType)->yes()) {
 					return null;
 				}
 
-				$maxLength = max($lengthValues);
-				if (min($lengthValues) < 0) {
-					return null;
-				}
-
-				return [$maxLength, $unit];
+				return [$lengthType, false, $unit];
 			}
 		}
 
@@ -156,36 +157,12 @@ final class StringLengthBoundHelper
 			return null;
 		}
 
-		$offsetValues = $this->getIntegerValues($this->getType($scope, $args[1], $nodeScopeResolver));
-		if ($offsetValues === null || max($offsetValues) >= 0) {
+		$offsetType = $this->getType($scope, $args[1], $nodeScopeResolver);
+		if (!IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($offsetType)->yes()) {
 			return null;
 		}
 
-		return [-min($offsetValues), $unit];
-	}
-
-	/**
-	 * @return non-empty-list<int>|null
-	 */
-	private function getIntegerValues(Type $type): ?array
-	{
-		if (!$type->isConstantScalarValue()->yes()) {
-			return null;
-		}
-
-		$values = [];
-		foreach ($type->getConstantScalarValues() as $value) {
-			if (!is_int($value)) {
-				return null;
-			}
-			$values[] = $value;
-		}
-
-		if (count($values) === 0) {
-			return null;
-		}
-
-		return $values;
+		return [$offsetType, true, $unit];
 	}
 
 	private function getCharacterCount(string $value, string|true $encoding): ?int

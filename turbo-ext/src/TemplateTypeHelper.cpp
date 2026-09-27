@@ -260,6 +260,39 @@ void TemplateTypeHelper::resolveTemplateTypesCallback(zval *state0, zval *state1
 				return;
 			}
 
+			/* the template type standing in for itself keeps the bound
+			 * narrowed at this occurrence - see the twin */
+			bool newIsTemplate;
+			if (UNEXPECTED(!pt_tth_is_template(newType.raw(), newIsTemplate))) return;
+			if (newIsTemplate) {
+				zv::Val newName = pt_tth_name(newType.raw());
+				if (UNEXPECTED(newName.isUndef())) return;
+				if (zend_string_equals(Z_STR_P(newName.raw()), Z_STR_P(name.raw()))) {
+					zv::Val newScope = pt_type_call(Z_OBJ_P(newType.raw()), PT_LC("getscope"), 0, NULL);
+					if (UNEXPECTED(newScope.isUndef())) return;
+					zv::Val scope = pt_type_call(Z_OBJ_P(type), PT_LC("getscope"), 0, NULL);
+					if (UNEXPECTED(scope.isUndef())) return;
+					if (UNEXPECTED(!zv::Ref(newScope.raw()).isObject())) {
+						zend_type_error("phpstan_turbo: getScope() must return an object");
+						return;
+					}
+					zv::Val scopesEqual = pt_type_call(Z_OBJ_P(newScope.raw()), PT_LC("equals"), 1, scope.raw());
+					if (UNEXPECTED(scopesEqual.isUndef())) return;
+					if (zend_is_true(scopesEqual.raw())) {
+						zv::Val newIsArgument = pt_type_call(Z_OBJ_P(newType.raw()), PT_LC("isargument"), 0, NULL);
+						if (UNEXPECTED(newIsArgument.isUndef())) return;
+						if (!zend_is_true(newIsArgument.raw())) {
+							(void) pt_type_traverser_traverse(return_value, traverse, type);
+							return;
+						}
+						zv::Val argument = pt_type_call(Z_OBJ_P(type), PT_LC("toargument"), 0, NULL);
+						if (UNEXPECTED(argument.isUndef())) return;
+						(void) pt_type_traverser_traverse(return_value, traverse, argument.raw());
+						return;
+					}
+				}
+			}
+
 			bool isError;
 			if (UNEXPECTED(!pt_type_instanceof_ce(newType.raw(), pt_ce_error_type, isError))) return;
 			if (isError && !zend_is_true(keepErrorTypes)) {

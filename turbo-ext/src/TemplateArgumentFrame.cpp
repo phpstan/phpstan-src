@@ -93,9 +93,10 @@ public:
 	 * $settledClosureSites = [], private readonly bool $observingClosures =
 	 * false, private readonly array $byRefSites = [], private readonly array
 	 * $staticVariableTypes = [], private readonly array
-	 * $staticVariableConditionalExpressions = []); NULL for null / []. false =
-	 * pending exception (a repeated construction modifies readonly properties) */
-	[[nodiscard]] bool construct(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites, zval *staticVariableTypes, zval *staticVariableConditionalExpressions) const
+	 * $staticVariableConditionalExpressions = [], private readonly array
+	 * $suppressedVarTagStatements = []); NULL for null / []. false = pending
+	 * exception (a repeated construction modifies readonly properties) */
+	[[nodiscard]] bool construct(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites, zval *staticVariableTypes, zval *staticVariableConditionalExpressions, zval *suppressedVarTagStatements) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(OBJ_PROP_NUM(self, slots::parent)) != IS_UNDEF)) {
 			zend_throw_error(NULL, "Cannot modify readonly property %s::$parent", ZSTR_VAL(self->ce->name));
@@ -158,7 +159,50 @@ public:
 			ZVAL_EMPTY_ARRAY(&value);
 			pt_write_slot(self, slots::staticVariableConditionalExpressions, &value);
 		}
+		if (suppressedVarTagStatements != NULL) {
+			pt_write_slot(self, slots::suppressedVarTagStatements, suppressedVarTagStatements);
+		} else {
+			ZVAL_EMPTY_ARRAY(&value);
+			pt_write_slot(self, slots::suppressedVarTagStatements, &value);
+		}
 		return true;
+	}
+
+	/* Mirrors isVarTagSuppressed(): ($this->suppressedVarTagStatements[
+	 * spl_object_id($stmt)] ?? null) === $stmt; false = pending exception */
+	[[nodiscard]] bool isVarTagSuppressed(zval *stmt, bool &out) const
+	{
+		zval *suppressed = pt_typed_slot(self, slots::suppressedVarTagStatements, self->ce, "suppressedVarTagStatements");
+		if (UNEXPECTED(suppressed == NULL)) return false;
+		zval *found = zend_hash_index_find(Z_ARRVAL_P(suppressed), Z_OBJ_HANDLE_P(stmt));
+		out = found != NULL && Z_TYPE_P(found) == IS_OBJECT && Z_OBJ_P(found) == Z_OBJ_P(stmt);
+		return true;
+	}
+
+	/* Mirrors withSuppressedVarTags(); UNDEF = pending exception */
+	zv::Val withSuppressedVarTags(zval *suppressedVarTagStatements, zval *statementIndexes) const
+	{
+		zval *parent = pt_typed_slot(self, slots::parent, self->ce, "parent");
+		if (UNEXPECTED(parent == NULL)) return zv::Val();
+		zval *resolutions = pt_typed_slot(self, slots::resolutions, self->ce, "resolutions");
+		if (UNEXPECTED(resolutions == NULL)) return zv::Val();
+		zval *indexes = pt_typed_slot(self, slots::siteStatementIndexes, self->ce, "siteStatementIndexes");
+		if (UNEXPECTED(indexes == NULL)) return zv::Val();
+		zv::Val mergedIndexes = arrayUnion(Z_ARRVAL_P(indexes), Z_ARRVAL_P(statementIndexes));
+		zval *body = OBJ_PROP_NUM(self, slots::closureSignatureBody);
+		return create(
+			Z_TYPE_P(parent) == IS_NULL ? NULL : parent,
+			Z_TYPE_P(resolutions) == IS_NULL ? NULL : resolutions,
+			mergedIndexes.raw(),
+			Z_TYPE_P(body) == IS_NULL ? NULL : body,
+			OBJ_PROP_NUM(self, slots::closureSignatureStmts),
+			OBJ_PROP_NUM(self, slots::settledClosureSites),
+			Z_TYPE_P(OBJ_PROP_NUM(self, slots::observingClosures)) == IS_TRUE,
+			OBJ_PROP_NUM(self, slots::byRefSites),
+			OBJ_PROP_NUM(self, slots::staticVariableTypes),
+			OBJ_PROP_NUM(self, slots::staticVariableConditionalExpressions),
+			suppressedVarTagStatements
+		);
 	}
 
 	/* Mirrors getStaticVariableTypes(): [phpdoc, native] or PHP null */
@@ -215,7 +259,8 @@ public:
 			Z_TYPE_P(OBJ_PROP_NUM(self, slots::observingClosures)) == IS_TRUE,
 			OBJ_PROP_NUM(self, slots::byRefSites),
 			staticVariableTypes,
-			conditionalExpressions
+			conditionalExpressions,
+			OBJ_PROP_NUM(self, slots::suppressedVarTagStatements)
 		);
 	}
 
@@ -336,12 +381,12 @@ public:
 	zval *closureSignatureStmts() const { return OBJ_PROP_NUM(self, slots::closureSignatureStmts); }
 
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val create(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites, zval *staticVariableTypes = NULL, zval *staticVariableConditionalExpressions = NULL)
+	static zv::Val create(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites, zval *staticVariableTypes = NULL, zval *staticVariableConditionalExpressions = NULL, zval *suppressedVarTagStatements = NULL)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_template_argument_frame) != SUCCESS)) return zv::Val();
 		zv::Val frame = zv::Val::adopt(object);
-		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(frame.raw())).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites, staticVariableTypes, staticVariableConditionalExpressions))) return zv::Val();
+		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(frame.raw())).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites, staticVariableTypes, staticVariableConditionalExpressions, suppressedVarTagStatements))) return zv::Val();
 		return frame;
 	}
 
@@ -685,6 +730,22 @@ zv::Val pt_template_argument_frame_get_static_variable_conditional_expressions(z
 	return pt_type_call(Z_OBJ_P(frame), PT_LC("getstaticvariableconditionalexpressions"), 1, stmt);
 }
 
+bool pt_template_argument_frame_is_var_tag_suppressed(zval *frame, zval *stmt, bool &out)
+{
+	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return TemplateArgumentFrame(Z_OBJ_P(frame)).isVarTagSuppressed(stmt, out);
+	zv::Val result = pt_type_call(Z_OBJ_P(frame), PT_LC("isvartagsuppressed"), 1, stmt);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+zv::Val pt_template_argument_frame_with_suppressed_var_tags(zval *frame, zval *suppressedVarTagStatements, zval *statementIndexes)
+{
+	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return TemplateArgumentFrame(Z_OBJ_P(frame)).withSuppressedVarTags(suppressedVarTagStatements, statementIndexes);
+	zv::Args argv{suppressedVarTagStatements, statementIndexes};
+	return pt_type_call(Z_OBJ_P(frame), PT_LC("withsuppressedvartags"), 2, argv);
+}
+
 zv::Val pt_template_argument_frame_get_local_by_ref_sites(zval *frame)
 {
 	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return TemplateArgumentFrame(Z_OBJ_P(frame)).getLocalByRefSites();
@@ -748,9 +809,9 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 	});
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *parent, *resolutions = NULL, *siteStatementIndexes = NULL, *closureSignatureBody = NULL, *closureSignatureStmts = NULL, *settledClosureSites = NULL, *byRefSites = NULL, *staticVariableTypes = NULL, *staticVariableConditionalExpressions = NULL;
+		zval *parent, *resolutions = NULL, *siteStatementIndexes = NULL, *closureSignatureBody = NULL, *closureSignatureStmts = NULL, *settledClosureSites = NULL, *byRefSites = NULL, *staticVariableTypes = NULL, *staticVariableConditionalExpressions = NULL, *suppressedVarTagStatements = NULL;
 		bool observingClosures = false;
-		ZEND_PARSE_PARAMETERS_START(1, 10)
+		ZEND_PARSE_PARAMETERS_START(1, 11)
 			Z_PARAM_OBJECT_OR_NULL(parent)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_OR_NULL(resolutions)
@@ -762,8 +823,9 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 			Z_PARAM_ARRAY(byRefSites)
 			Z_PARAM_ARRAY(staticVariableTypes)
 			Z_PARAM_ARRAY(staticVariableConditionalExpressions)
+			Z_PARAM_ARRAY(suppressedVarTagStatements)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites, staticVariableTypes, staticVariableConditionalExpressions))) RETURN_THROWS();
+		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites, staticVariableTypes, staticVariableConditionalExpressions, suppressedVarTagStatements))) RETURN_THROWS();
 	});
 
 	cls.method(sigs::withObservedClosures, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -797,6 +859,25 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 		zval empty;
 		ZVAL_EMPTY_ARRAY(&empty);
 		PT_RETURN_VAL(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).withStaticVariableTypes(staticVariableTypes, statementIndexes, conditionalExpressions != NULL ? conditionalExpressions : &empty));
+	});
+
+	cls.method(sigs::isVarTagSuppressed, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *stmt;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT(stmt)
+		ZEND_PARSE_PARAMETERS_END();
+		bool out;
+		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).isVarTagSuppressed(stmt, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
+	});
+
+	cls.method(sigs::withSuppressedVarTags, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *suppressedVarTagStatements, *statementIndexes;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_ARRAY(suppressedVarTagStatements)
+			Z_PARAM_ARRAY(statementIndexes)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).withSuppressedVarTags(suppressedVarTagStatements, statementIndexes));
 	});
 
 	cls.method(sigs::isSettledClosureSite, [](INTERNAL_FUNCTION_PARAMETERS) {

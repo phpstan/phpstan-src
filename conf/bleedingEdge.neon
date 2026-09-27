@@ -31,6 +31,7 @@ parameters:
 		closureSignaturesFromUsages: true
 		staticVariablesFromUsages: true
 		backedEnumFromParameterType: true
+		varTagsReflectUsages: true
 		unusedVariable: true
 		unusedParameters: true
 		reuseCollectedDataRuleErrors: true

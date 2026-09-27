@@ -12,6 +12,7 @@ namespace ptdecl::StaticVariableHandler {
 namespace slot {
 inline constexpr uint32_t varAnnotationProcessor = 0;
 inline constexpr uint32_t staticVariableInference = 1;
+inline constexpr uint32_t varTagUsagesInference = 2;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -25,6 +26,7 @@ inline void declareProperties(reg::Class &cls)
 {
 	cls.property("varAnnotationProcessor", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\VarAnnotationProcessor");
 	cls.property("staticVariableInference", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\Generics\\StaticVariableInference");
+	cls.property("varTagUsagesInference", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\Generics\\VarTagUsagesInference");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -34,43 +36,46 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\VarAnnotationProcessor\0" /* 23 */
 	"staticVariableInference\0" /* 63 */
 	"PHPStan\\Analyser\\Generics\\StaticVariableInference\0" /* 87 */
-	"__construct\0" /* 137 */
-	"stmt\0" /* 149 */
-	"PhpParser\\Node\\Stmt\0" /* 154 */
-	"\0" /* 174 */
-	"supports\0" /* 175 */
-	"nodeScopeResolver\0" /* 184 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 202 */
-	"scope\0" /* 237 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 243 */
-	"storage\0" /* 274 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 282 */
-	"nodeCallback\0" /* 323 */
-	"context\0" /* 336 */
-	"PHPStan\\Analyser\\StatementContext\0" /* 344 */
-	"PHPStan\\Analyser\\InternalStatementResult\0" /* 378 */
-	"processStmt"; /* 419 */
+	"varTagUsagesInference\0" /* 137 */
+	"PHPStan\\Analyser\\Generics\\VarTagUsagesInference\0" /* 159 */
+	"__construct\0" /* 207 */
+	"stmt\0" /* 219 */
+	"PhpParser\\Node\\Stmt\0" /* 224 */
+	"\0" /* 244 */
+	"supports\0" /* 245 */
+	"nodeScopeResolver\0" /* 254 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 272 */
+	"scope\0" /* 307 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 313 */
+	"storage\0" /* 344 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 352 */
+	"nodeCallback\0" /* 393 */
+	"context\0" /* 406 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 414 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 448 */
+	"processStmt"; /* 489 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 23), /* __construct $varAnnotationProcessor */
 	reg::packed(63, 0, 87), /* __construct $staticVariableInference */
-	reg::packed(149, 0, 154), /* supports $stmt */
-	reg::packed(174, MAY_BE_BOOL), /* supports return */
-	reg::packed(184, 0, 202), /* processStmt $nodeScopeResolver */
-	reg::packed(149, 0, 154), /* processStmt $stmt */
-	reg::packed(237, 0, 243), /* processStmt $scope */
-	reg::packed(274, 0, 282), /* processStmt $storage */
-	reg::packed(323, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
-	reg::packed(336, 0, 344), /* processStmt $context */
-	reg::packed(174, 0, 378), /* processStmt return */
+	reg::packed(137, 0, 159), /* __construct $varTagUsagesInference */
+	reg::packed(219, 0, 224), /* supports $stmt */
+	reg::packed(244, MAY_BE_BOOL), /* supports return */
+	reg::packed(254, 0, 272), /* processStmt $nodeScopeResolver */
+	reg::packed(219, 0, 224), /* processStmt $stmt */
+	reg::packed(307, 0, 313), /* processStmt $scope */
+	reg::packed(344, 0, 352), /* processStmt $storage */
+	reg::packed(393, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(406, 0, 414), /* processStmt $context */
+	reg::packed(244, 0, 448), /* processStmt return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 137 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 175 /* supports */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processStmt = { { 419 /* processStmt */, 6, 4, 6, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 207 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 245 /* supports */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 489 /* processStmt */, 6, 5, 6, 11, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StaticVariableHandler

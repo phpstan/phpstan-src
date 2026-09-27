@@ -63,6 +63,7 @@ parameters:
 		closureSignaturesFromUsages: false
 		staticVariablesFromUsages: false
 		backedEnumFromParameterType: false
+		varTagsReflectUsages: false
 		unusedVariable: false
 		unusedParameters: false
 		reuseCollectedDataRuleErrors: false

@@ -28,6 +28,7 @@ class Foo
 		assertType('1', $x);
 		$c();
 		assertType("'a'", $x);
+		assertType('Closure(): void', $c);
 	}
 
 	public function invokedTwice(): void
@@ -40,6 +41,7 @@ class Foo
 		$c();
 		$c();
 		assertType("'a'", $x);
+		assertType('Closure(): void', $c);
 	}
 
 	public function incrementedTwice(): void
@@ -52,6 +54,7 @@ class Foo
 		$inc();
 		$inc();
 		assertType('2', $i);
+		assertType('Closure(): void', $inc);
 	}
 
 	public function incrementedInLoop(): void
@@ -65,6 +68,7 @@ class Foo
 			$inc();
 		}
 		assertType('int<1, max>', $i);
+		assertType('Closure(): void', $inc);
 	}
 
 	public function invokedConditionally(bool $b): void
@@ -78,6 +82,7 @@ class Foo
 			$c();
 		}
 		assertType("1|'a'", $x);
+		assertType('Closure(): void', $c);
 	}
 
 	public function neverInvoked(): void
@@ -88,6 +93,7 @@ class Foo
 			$x = 'a';
 		};
 		assertType('1', $x);
+		assertType('Closure(): void', $c);
 	}
 
 	public function modifiedBeforeInvocation(): void
@@ -99,6 +105,7 @@ class Foo
 		$y = 'b';
 		$d();
 		assertType("'b'", $y);
+		assertType('Closure(): void', $d);
 	}
 
 	public function undefinedBeforeCreation(): void
@@ -110,6 +117,7 @@ class Foo
 		assertType('null', $x);
 		$c();
 		assertType("'a'", $x);
+		assertType('Closure(): void', $c);
 	}
 
 	public function byValueCaptureAtCreation(): void
@@ -123,6 +131,7 @@ class Foo
 		$v = 2;
 		$c();
 		assertType('1', $x);
+		assertType('Closure(): void', $c);
 	}
 
 	public function accumulator(): void
@@ -134,6 +143,7 @@ class Foo
 		$add(1);
 		$add(2);
 		assertType('array{1, 2}', $items);
+		assertType('Closure(1|2): void', $add);
 	}
 
 	/** @param list<int> $values */
@@ -147,6 +157,7 @@ class Foo
 		};
 		$c($values);
 		assertType('int<0, max>', $sum);
+		assertType('Closure(list<int>): void', $c);
 	}
 
 	public function catchAfterInvocation(): void
@@ -162,6 +173,7 @@ class Foo
 		} catch (\Exception $e) {
 			assertType("1|'a'", $x);
 		}
+		assertType('Closure(): void', $c);
 	}
 
 	public function escapesAsArgument(): void
@@ -173,6 +185,7 @@ class Foo
 		};
 		takesCallable($c);
 		assertType("1|'a'", $x);
+		assertType('Closure(): void', $c);
 	}
 
 	public function escapesToProperty(): void
@@ -184,6 +197,7 @@ class Foo
 		};
 		$this->callback = $c;
 		assertType("1|'a'", $x);
+		assertType('Closure(): void', $c);
 	}
 
 	public function escapesByCapture(): void
@@ -198,6 +212,8 @@ class Foo
 		};
 		$g();
 		assertType("1|'a'", $x);
+		assertType('Closure(): void', $c);
+		assertType('Closure(): void', $g);
 	}
 
 	public function escapedButAlsoInvokedLocally(): void
@@ -211,6 +227,7 @@ class Foo
 		$x = 2;
 		$c();
 		assertType("2|'a'", $x);
+		assertType('Closure(): void', $c);
 	}
 
 	public function immediatelyInvoked(): void
@@ -235,6 +252,7 @@ class Foo
 			throw new \Exception();
 		}
 		$c();
+		assertType('Closure(): void', $c);
 	}
 
 	public function invokedBeforeReturn(bool $b): void
@@ -249,6 +267,7 @@ class Foo
 			return;
 		}
 		$c();
+		assertType('Closure(): void', $c);
 	}
 
 	public function invokedInTry(): void
@@ -265,6 +284,7 @@ class Foo
 		} catch (\Exception $e) {
 			assertType("1|'a'", $x);
 		}
+		assertType('Closure(): void', $c);
 	}
 
 	public function invokedInSwitchBreak(int $i): void
@@ -285,6 +305,7 @@ class Foo
 			default:
 				$c();
 		}
+		assertType('Closure(): void', $c);
 	}
 
 	/** @param list<bool> $a */
@@ -303,6 +324,68 @@ class Foo
 			$c();
 			break;
 		}
+		assertType('Closure(): void', $c);
+	}
+
+	public function parametersAndReturn(): void
+	{
+		$x = 1;
+		$c = function ($p) use (&$x) {
+			assertType("2|'a'", $p);
+			assertType("1|'a'", $x);
+			$x = $p;
+			return $x;
+		};
+		$c('a');
+		assertType("'a'", $x);
+		$c(2);
+		assertType('2', $x);
+		assertType("Closure(2|'a'): (2|'a')", $c);
+	}
+
+	public function escapesByArrowFunctionCapture(): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		$g = fn () => $c();
+		$g();
+		assertType("1|'a'", $x);
+		assertType('Closure(): void', $c);
+		assertType('Closure(): void', $g);
+	}
+
+	public function arrowFunctionCapturesByValue(): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType('1', $x);
+			$x = 'a';
+		};
+		$before = fn () => $x;
+		$c();
+		$after = fn () => $x;
+		assertType("'a'", $x);
+		assertType('Closure(): void', $c);
+		assertType('Closure(): 1', $before);
+		assertType("Closure(): 'a'", $after);
+		assertType('1', $before());
+		assertType("'a'", $after());
+	}
+
+	public function arrowFunctionInvokedWithCapturedValue(): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			$x = 'a';
+		};
+		$f = fn ($a) => $a;
+		assertType('1', $f($x));
+		$c();
+		assertType("'a'", $f($x));
+		assertType("Closure(1|'a'): (1|'a')", $f);
 	}
 
 }

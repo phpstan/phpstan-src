@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\CoalesceCompositionHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -100,6 +101,10 @@ final class CoalesceHandler implements ExprHandler
 			$scope = $scope->applySpecifiedTypes($leftIssetTypes)->addTemplateArgumentConstraints($rightResult->getScope()->getTemplateArgumentConstraints());
 		} else {
 			$scope = $scope->applySpecifiedTypes($leftIssetTypes)->mergeWith($rightResult->getScope());
+		}
+
+		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
+			$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInUnion([$condResult->getType(), $rightExprType]));
 		}
 
 		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, $rightResult, 'on left side of ??'), $beforeScope, $storage, $context);

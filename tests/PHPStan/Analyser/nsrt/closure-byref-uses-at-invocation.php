@@ -388,4 +388,61 @@ class Foo
 		assertType("Closure(1|'a'): (1|'a')", $f);
 	}
 
+	public function invokedThroughInvokeMethod(): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		$c->__invoke();
+		assertType("1|'a'", $x);
+	}
+
+	public function invokedThroughNullsafeInvokeMethod(): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		$c?->__invoke();
+		assertType("1|'a'", $x);
+	}
+
+	public function invokedThroughCallMethod(): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		$c->call($this);
+		assertType("1|'a'", $x);
+	}
+
+	public function invokedThroughArrayCallable(): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		$callable = [$c, '__invoke'];
+		$callable();
+		assertType("1|'a'", $x);
+	}
+
+	public function invokedAsAbsorbedUnionMember(?\Closure $e): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType("1|'a'", $x);
+			$x = 'a';
+		};
+		$d = $e ?? $c;
+		$d();
+		assertType("1|'a'", $x);
+	}
+
 }

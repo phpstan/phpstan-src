@@ -21,6 +21,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -499,6 +500,13 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 		}
 
 		$scope = $scope->addTemplateArgumentConstraints($scopeForMatchNodeCallback->getTemplateArgumentConstraints());
+		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
+			$armTypes = [];
+			foreach ($armTypeResults as [$armResult, $bodyScope]) {
+				$armTypes[] = $armResult->getTypeOnScope($bodyScope, false);
+			}
+			$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInUnion($armTypes));
+		}
 
 		ksort($armNodes, SORT_NUMERIC);
 

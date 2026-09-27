@@ -219,6 +219,18 @@ public:
 			currentScope = pt_mutating_scope_restore_original_scope_after_closure_bind(Z_OBJ_P(currentScope.raw()), originalScope);
 			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 		}
+		zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, currentScope.raw());
+		if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+		if (!observingFrame.isNull()) {
+			// a method of a closure - __invoke(), call(), bindTo() - runs it or
+			// hands it on where nothing follows its signature
+			zv::Val receiverType = pt_expression_result_get_type(varResult.raw());
+			if (UNEXPECTED(receiverType.isUndef())) return zv::Val();
+			zv::Val escapes = pt_closure_signature_inference_collect_escapes(receiverType.raw());
+			if (UNEXPECTED(escapes.isUndef())) return zv::Val();
+			currentScope = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(currentScope.raw()), escapes.raw());
+			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
+		}
 		zv::Val parametersAcceptor = zv::Val::null();
 		zv::Val variants = zv::Val(zv::Arr::empty());
 		zv::Val namedArgumentsVariants = zv::Val::null();

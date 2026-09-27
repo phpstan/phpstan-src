@@ -159,7 +159,6 @@ void containsMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv,
 void containsTemplateArgumentMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 zv::Val escapeByRefUses(zv::Val constraints, zval *closureType);
 void containsClosureSignatureMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value);
-void escapeClosuresBody(zval *constraints, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 void replaceInferableTemplatesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value);
 
 } // namespace
@@ -489,11 +488,9 @@ public:
 	static zv::Val escapeClosures(zv::Val constraints, zval *type)
 	{
 		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
-		zv::Val callback = pt_type_native_callback(escapeClosuresBody, constraints.raw(), NULL);
-		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
-		if (UNEXPECTED(mapped.isUndef())) return zv::Val();
-		return zv::Val::copyOf(zv::Ref(pt_type_native_callback_state(callback.raw(), 0)));
+		zv::Val escapes = pt_closure_signature_inference_collect_escapes(type);
+		if (UNEXPECTED(escapes.isUndef())) return zv::Val();
+		return pt_template_argument_constraints_merge(constraints.raw(), escapes.raw());
 	}
 
 	/* Mirrors collectArgument(). */
@@ -1235,45 +1232,6 @@ void containsClosureSignatureMarkerBody(zval *contains, zval *state1, uint32_t a
 		}
 	}
 	if (Z_TYPE_P(contains) == IS_TRUE) {
-		ZVAL_COPY(return_value, type);
-		return;
-	}
-	zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
-	if (UNEXPECTED(traversed.isUndef())) return;
-	traversed.intoReturnValue(return_value);
-}
-
-/* escapeClosures()'s traversal: static function (Type $type, callable
- * $traverse) use (&$constraints): Type */
-void escapeClosuresBody(zval *constraints, zval *state1, uint32_t argc, zval *argv, zval *return_value)
-{
-	(void) state1;
-	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
-		zend_type_error("TemplateArgumentObserver::escapeClosures() traversal: expected (Type $type, callable $traverse)");
-		return;
-	}
-	zval *type = &argv[0];
-	if (instanceof_function(Z_OBJCE_P(type), pt_ce_closure_type)) {
-		zv::Val next = escapeByRefUses(zv::Val::copyOf(zv::Ref(constraints)), type);
-		if (UNEXPECTED(next.isUndef())) return;
-		zv::Ref(constraints).assign(std::move(next));
-	}
-	if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
-		bool closureMarker;
-		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(type, closureMarker))) return;
-		bool returnMarker = false;
-		if (closureMarker && UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_return(type, returnMarker))) return;
-		if (closureMarker && !returnMarker) {
-			zv::Val next = pt_template_argument_constraints_with_unconstraining_send(constraints, type);
-			if (UNEXPECTED(next.isUndef())) return;
-			zv::Ref(constraints).assign(std::move(next));
-		}
-		zv::Val initial = markerInitialType(type);
-		if (UNEXPECTED(initial.isUndef())) return;
-		if (Z_TYPE_P(initial.raw()) != IS_NULL) {
-			zv::Val traversed = pt_type_call_callable(&argv[1], 1, initial.raw());
-			if (UNEXPECTED(traversed.isUndef())) return;
-		}
 		ZVAL_COPY(return_value, type);
 		return;
 	}

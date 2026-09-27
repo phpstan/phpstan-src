@@ -877,4 +877,231 @@ class Foo
 		assertType("Closure('x'|int, int|null=): array{mixed, mixed}", $f);
 	}
 
+	public function returnContextualTypingStoredAndInvoked(): void
+	{
+		$c = function () {
+			return function ($x): void {
+				assertType('mixed', $x);
+			};
+		};
+		takesFactory($c);
+		$c()(5);
+
+		$f = fn () => fn ($y) => assertType('mixed', $y);
+		takesFactory($f);
+		$f()(5);
+	}
+
+	public function returnContextualTypingStoredAndEscaped(): void
+	{
+		$c = function () {
+			return function ($x): void {
+				assertType('mixed', $x);
+			};
+		};
+		takesFactory($c);
+		takesBareCallable($c);
+
+		$f = fn () => fn ($y) => assertType('mixed', $y);
+		takesFactory($f);
+		takesBareCallable($f);
+	}
+
+	public function invokedThroughClosureMethods(string $method): void
+	{
+		$invoke = function ($a) {
+			assertType('mixed', $a);
+		};
+		$invoke('x');
+		$invoke->__invoke(5);
+		assertType('Closure(mixed): void', $invoke);
+
+		$arrowInvoke = fn ($a) => assertType('mixed', $a);
+		$arrowInvoke('x');
+		$arrowInvoke->__invoke(5);
+		assertType('Closure(mixed): mixed', $arrowInvoke);
+
+		$nullsafe = function ($a) {
+			assertType('mixed', $a);
+		};
+		$nullsafe('x');
+		$nullsafe?->__invoke(5);
+
+		$dynamic = function ($a) {
+			assertType('mixed', $a);
+		};
+		$dynamic('x');
+		$dynamic->$method(5);
+	}
+
+	public function invokedThroughArrayCallable(): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$callable = [$c, '__invoke'];
+		$callable(5);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f('x');
+		$arrowCallable = [$f, '__invoke'];
+		$arrowCallable(5);
+	}
+
+	public function invokedAsUnionMember(bool $b): void
+	{
+		$c = function ($a) {
+			assertType("5|'x'", $a);
+		};
+		$c(5);
+		$d = $b ? $c : 'strlen';
+		$d('x');
+
+		$f = fn ($a) => assertType("6|'y'", $a);
+		$f(6);
+		$g = $b ? $f : 'strlen';
+		$g('y');
+	}
+
+	public function notAbsorbedByNull(bool $b): void
+	{
+		$c = function ($a) {
+			assertType("5|'x'", $a);
+		};
+		$c('x');
+		$d = $b ? $c : null;
+		if ($d !== null) {
+			$d(5);
+		}
+
+		$f = fn ($a) => assertType("6|'y'", $a);
+		$f('y');
+		$g = null;
+		if ($b) {
+			$g = $f;
+		}
+		if ($g !== null) {
+			$g(6);
+		}
+	}
+
+	public function absorbedByScopeMerge(?Closure $e): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $e;
+		if ($d === null) {
+			$d = $c;
+		}
+		$d(5);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f('x');
+		$g = $e;
+		if ($g === null) {
+			$g = $f;
+		}
+		$g(5);
+	}
+
+	public function absorbedByTernary(callable $e, bool $b): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $b ? $c : $e;
+		$d(5);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f('x');
+		$g = $b ? $f : $e;
+		$g(5);
+	}
+
+	public function absorbedByShortTernary(mixed $m): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $m ?: $c;
+		$d(5);
+	}
+
+	public function absorbedByCoalesce(?Closure $e): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $e ?? $c;
+		$d(5);
+	}
+
+	public function absorbedByCoalesceAssign(?Closure $e): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$e ??= $c;
+		$e(5);
+	}
+
+	public function absorbedByMatch(int $i, Closure $e): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = match ($i) {
+			1 => $c,
+			default => $e,
+		};
+		$d(5);
+	}
+
+	/**
+	 * @param Closure(mixed): void $e
+	 */
+	public function absorbedByWiderClosure(Closure $e, bool $b): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $b ? $c : $e;
+		$d(5);
+	}
+
+	/**
+	 * @param list<Closure> $list
+	 */
+	public function absorbedByArrayWrite(array $list): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$list[] = $c;
+		$list[0](5);
+	}
+
+	/**
+	 * @param list<Closure> $list
+	 */
+	public function absorbedByArraySpread(array $list): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$all = [...$list, $c];
+		$all[0](5);
+	}
+
 }

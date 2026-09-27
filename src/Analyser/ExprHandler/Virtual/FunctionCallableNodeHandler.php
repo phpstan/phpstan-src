@@ -11,6 +11,7 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -55,6 +56,11 @@ final class FunctionCallableNodeHandler implements ExprHandler
 		if ($expr->getName() instanceof Expr) {
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$scope = $nameResult->getScope();
+			if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null && !self::isClosureObject($nameResult->getType())) {
+				// the callable built from anything but a closure object runs the
+				// closures it carries where nothing follows their signature
+				$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectEscapes($nameResult->getType()));
+			}
 			$hasYield = $nameResult->hasYield();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();
@@ -85,6 +91,10 @@ final class FunctionCallableNodeHandler implements ExprHandler
 				throw new ShouldNotHappenException();
 			}
 			$callableType = $nameResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
+			if (self::isClosureObject($callableType)) {
+				// the first-class callable of a closure object is the object itself
+				return $callableType;
+			}
 			if (!$callableType->isCallable()->yes()) {
 				return new ObjectType(Closure::class);
 			}
@@ -97,6 +107,11 @@ final class FunctionCallableNodeHandler implements ExprHandler
 		}
 
 		return $this->initializerExprTypeResolver->getFirstClassCallableType($originalNode, InitializerExprContext::fromScope($scope), $scope->nativeTypesPromoted);
+	}
+
+	private static function isClosureObject(Type $type): bool
+	{
+		return (new ObjectType(Closure::class))->isSuperTypeOf($type)->yes();
 	}
 
 }

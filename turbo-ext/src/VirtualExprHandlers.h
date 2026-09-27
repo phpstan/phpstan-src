@@ -227,6 +227,34 @@ inline zv::Val closureObjectType()
 	return zv::Val::adopt(out);
 }
 
+/* (new ObjectType(Closure::class))->isSuperTypeOf($type)->yes(); false =
+ * pending exception */
+[[nodiscard]] inline bool isClosureObject(zval *type, bool &out)
+{
+	zv::Val closure = closureObjectType();
+	if (UNEXPECTED(closure.isUndef())) return false;
+	zv::Val result = pt_type_op(Z_OBJ_P(closure.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, type);
+	if (UNEXPECTED(result.isUndef())) return false;
+	zval *value = result.raw();
+	zend_long trinary = Z_TYPE_P(value) == IS_OBJECT && Z_OBJCE_P(value) == pt_ce_trinary ? pt_trinary_value(Z_OBJ_P(value)) : pt_type_result_trinary(value);
+	if (UNEXPECTED(trinary < 0)) return false;
+	out = trinary == PT_TRI_YES;
+	return true;
+}
+
+/* the escapes of the closures a callable's receiver or callee carries
+ * (ClosureSignatureInference::collectEscapes()) onto $scope while the frame
+ * observes; UNDEF = pending exception */
+inline zv::Val addClosureEscapes(zval *nodeScopeResolver, zval *scope, zval *type)
+{
+	zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, scope);
+	if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+	if (observingFrame.isNull()) return zv::Val::copyOf(zv::Ref(scope));
+	zv::Val escapes = pt_closure_signature_inference_collect_escapes(type);
+	if (UNEXPECTED(escapes.isUndef())) return zv::Val();
+	return pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope), escapes.raw());
+}
+
 /* }}} */
 
 } // namespace ptveh

@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\BooleanNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
@@ -141,6 +142,12 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 
 		$finalScope = $finalScope->addTemplateArgumentConstraints($ifTrueScope->getTemplateArgumentConstraints())
 			->addTemplateArgumentConstraints($ifFalseScope->getTemplateArgumentConstraints());
+		if ($nodeScopeResolver->observingTemplateArgumentFrame($finalScope) !== null) {
+			$finalScope = $finalScope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInUnion([
+				$ifResult !== null ? $ifResult->getTypeOnScope($ifProcessingScope, false) : $ternaryCondResult->getType(),
+				$elseResult->getTypeOnScope($elseProcessingScope, false),
+			]));
+		}
 
 		// lazily memoized merged-falsey scope of the (cond && if) disjunct
 		$aFalseyScope = null;

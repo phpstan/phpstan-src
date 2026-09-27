@@ -23,6 +23,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\UnionType;
 use function array_keys;
 use function array_pop;
 use function count;
@@ -135,7 +136,6 @@ final class ClosureSignatureInference
 		if (!$frame->isObservingClosures() && $frame->getByRefSiteMode($expr) === null) {
 			return [];
 		}
-
 		$markers = [];
 		foreach ($names as $name) {
 			$markers[$name] = new UnresolvedTemplateArgumentType(
@@ -225,6 +225,142 @@ final class ClosureSignatureInference
 		});
 
 		return $constraints;
+	}
+
+	/**
+	 * The closures in $type go where nothing describes how they are invoked:
+	 * their parameters keep the declared types, their returned closures are
+	 * typed by nothing and their by-ref uses keep the creation-time fixpoint.
+	 */
+	public static function collectEscapes(Type $type): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		foreach (self::collectMarkers($type) as $marker) {
+			$constraints = $constraints->withUnconstrainingSend($marker);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * The callee of a call: a closure written where nothing types it learns its
+	 * arguments through the call's parameters, but the value it returns goes
+	 * where nothing follows it. A closure carried by any other callee - the
+	 * object of an array callable - is invoked as nothing describes.
+	 */
+	public static function collectInvokedCallee(Type $calleeType): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		foreach ($calleeType instanceof UnionType ? $calleeType->getTypes() : [$calleeType] as $member) {
+			if (!$member instanceof ClosureType) {
+				$constraints = $constraints->merge(self::collectEscapes($member));
+				continue;
+			}
+			$returnType = $member->getReturnType();
+			if (!$returnType instanceof UnresolvedTemplateArgumentType || !self::isReturnMarker($returnType)) {
+				continue;
+			}
+			$constraints = $constraints->withUnconstrainingSend($returnType);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * $input was merged into $result - two branches of a variable, the arms of
+	 * a ternary, a value written into an array. A union absorbs a closure into a
+	 * wider member (Closure, callable, mixed, a closure with declared
+	 * parameters): nothing follows the closures whose markers $result lost, so
+	 * they escape.
+	 */
+	public static function collectAbsorbed(Type $input, Type $result): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		if ($input === $result) {
+			return $constraints;
+		}
+		$markers = self::collectMarkers($input);
+		if ($markers === []) {
+			return $constraints;
+		}
+		$kept = self::collectMarkers($result);
+		foreach ($markers as $key => $marker) {
+			if (isset($kept[$key])) {
+				continue;
+			}
+			$constraints = $constraints->withUnconstrainingSend($marker);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * The values of $types merged into their union - the branches of a ternary,
+	 * of `??`, the arms of a match. See collectAbsorbed().
+	 *
+	 * @param list<Type> $types
+	 */
+	public static function collectAbsorbedInUnion(array $types): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		$carriesMarkers = false;
+		foreach ($types as $type) {
+			if (!self::hasMarkers($type)) {
+				continue;
+			}
+			$carriesMarkers = true;
+			break;
+		}
+		if (!$carriesMarkers) {
+			return $constraints;
+		}
+
+		$union = TypeCombinator::union(...$types);
+		foreach ($types as $type) {
+			$constraints = $constraints->merge(self::collectAbsorbed($type, $union));
+		}
+
+		return $constraints;
+	}
+
+	/** Whether $type carries a closure written where nothing types it. */
+	public static function hasMarkers(Type $type): bool
+	{
+		return self::collectMarkers($type) !== [];
+	}
+
+	/**
+	 * The markers of the closures written where nothing types them in $type -
+	 * of their parameters, returns and by-ref uses - keyed by site and name.
+	 *
+	 * @return array<string, UnresolvedTemplateArgumentType>
+	 */
+	private static function collectMarkers(Type $type): array
+	{
+		$markers = [];
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$markers): Type {
+			if ($type instanceof ClosureType) {
+				foreach ($type->getByRefUseTypes() as $marker) {
+					if (!$marker instanceof UnresolvedTemplateArgumentType) {
+						continue;
+					}
+					$markers[spl_object_id($marker->getSite()) . '#' . $marker->getTemplateName()] = $marker;
+				}
+			}
+			if ($type instanceof UnresolvedTemplateArgumentType) {
+				if (self::isClosureSignatureMarker($type)) {
+					$markers[spl_object_id($type->getSite()) . '#' . $type->getTemplateName()] = $type;
+				}
+				$initial = $type->getInitialType();
+				if ($initial !== null) {
+					$traverse($initial);
+				}
+				return $type;
+			}
+			return $traverse($type);
+		});
+
+		return $markers;
 	}
 
 	/**

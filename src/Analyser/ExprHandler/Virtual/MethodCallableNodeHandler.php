@@ -12,6 +12,7 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -50,6 +51,11 @@ final class MethodCallableNodeHandler implements ExprHandler
 		$beforeScope = $scope;
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->getVar(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 		$scope = $varResult->getScope();
+		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
+			// the callable of a closure's method runs it where nothing follows
+			// its signature
+			$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectEscapes($varResult->getType()));
+		}
 		$hasYield = $varResult->hasYield();
 		$throwPoints = $varResult->getThrowPoints();
 		$impurePoints = $varResult->getImpurePoints();

@@ -17,12 +17,16 @@ final class PipeTransformerVisitor extends NodeVisitorAbstract
 
 	public const ORIGINAL_VARIADIC_PLACEHOLDER_ATTRIBUTE_NAME = 'originalVariadicPlaceholderAttrs';
 
+	private bool $rewroteAnyPipe = false;
+
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if (!$node instanceof Node\Expr\BinaryOp\Pipe) {
 			return null;
 		}
+
+		$this->rewroteAnyPipe = true;
 
 		if ($node->right instanceof Node\Expr\FuncCall && $node->right->isFirstClassCallable()) {
 			return new FuncCall($node->right->name, [
@@ -56,6 +60,11 @@ final class PipeTransformerVisitor extends NodeVisitorAbstract
 		], attributes: [
 			self::ORIGINAL_PIPE_ATTRIBUTE_NAME => $node->getAttributes(),
 		]);
+	}
+
+	public function rewroteAnyPipe(): bool
+	{
+		return $this->rewroteAnyPipe;
 	}
 
 }

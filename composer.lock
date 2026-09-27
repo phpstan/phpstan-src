@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "cad9b5987264fb333d323dd9c723a39c",
+  "content-hash": "6fc6edc64442be59b109f4efbd9d5a85",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -341,23 +341,23 @@
     },
     {
       "name": "fidry/cpu-core-counter",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "source": {
         "type": "git",
         "url": "https://github.com/theofidry/cpu-core-counter.git",
-        "reference": "db9508f7b1474469d9d3c53b86f817e344732678"
+        "reference": "7cbeb03e286fa81b2bbe0e6bd6b8a27c71a3144d"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/theofidry/cpu-core-counter/zipball/db9508f7b1474469d9d3c53b86f817e344732678",
-        "reference": "db9508f7b1474469d9d3c53b86f817e344732678",
+        "url": "https://api.github.com/repos/theofidry/cpu-core-counter/zipball/7cbeb03e286fa81b2bbe0e6bd6b8a27c71a3144d",
+        "reference": "7cbeb03e286fa81b2bbe0e6bd6b8a27c71a3144d",
         "shasum": ""
       },
       "require": {
         "php": "^7.2 || ^8.0"
       },
       "require-dev": {
-        "fidry/makefile": "^0.2.0",
+        "fidry/makefile": "^0.2.0 || ^1.1.2",
         "fidry/php-cs-fixer-config": "^1.1.2",
         "phpstan/extension-installer": "^1.2.0",
         "phpstan/phpstan": "^2.0",
@@ -365,6 +365,7 @@
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpunit/phpunit": "^8.5.31 || ^9.5.26",
+        "symfony/polyfill-mbstring": "^1.33",
         "webmozarts/strict-phpunit": "^7.5"
       },
       "type": "library",
@@ -390,7 +391,7 @@
       ],
       "support": {
         "issues": "https://github.com/theofidry/cpu-core-counter/issues",
-        "source": "https://github.com/theofidry/cpu-core-counter/tree/1.3.0"
+        "source": "https://github.com/theofidry/cpu-core-counter/tree/1.4.0"
       },
       "funding": [
         {
@@ -398,7 +399,7 @@
           "type": "github"
         }
       ],
-      "time": "2025-08-14T07:29:31+00:00"
+      "time": "2026-09-27T17:40:20+00:00"
     },
     {
       "name": "guzzlehttp/guzzle",

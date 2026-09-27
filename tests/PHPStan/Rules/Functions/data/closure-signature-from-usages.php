@@ -57,3 +57,19 @@ function (): void {
 	$outer = static fn (mixed ...$args): array => $inner(...$args);
 	$outer('x', 1.0);
 };
+
+/**
+ * @param list<int> $args
+ */
+function unpackedArguments(array $args): void
+{
+	$c = function ($a, $b = null) {
+	};
+	$c('x');
+	$c(...$args);
+
+	$d = function ($a) {
+	};
+	$d(...[5]);
+	$d(...['a' => 'y']);
+}

@@ -685,11 +685,16 @@ final class ArgumentsHandler
 					// still its bound there - observe the declared parameter type,
 					// where such a template is uninformative and the receiver's
 					// class-level arguments are already in place
-					$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectArgument(
-						$this->findOriginalParameterType($argMetadataAcceptor, $parameter) ?? $parameter->getType(),
-						$gatheredArgTypeByIndex[$i],
-						($calleeReflection instanceof FunctionReflection || $calleeReflection instanceof ExtendedMethodReflection) && $calleeReflection->isPure()->yes(),
-					));
+					$isPure = ($calleeReflection instanceof FunctionReflection || $calleeReflection instanceof ExtendedMethodReflection) && $calleeReflection->isPure()->yes();
+					if ($originalArg->unpack) {
+						$scope = $this->observeUnpackedArgument($scope, $argMetadataAcceptor, $i, $gatheredArgTypeByIndex[$i], $isPure);
+					} else {
+						$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectArgument(
+							$this->findOriginalParameterType($argMetadataAcceptor, $parameter) ?? $parameter->getType(),
+							$gatheredArgTypeByIndex[$i],
+							$isPure,
+						));
+					}
 				}
 			}
 
@@ -1272,6 +1277,64 @@ final class ArgumentsHandler
 		}
 
 		return null;
+	}
+
+	/**
+	 * An unpacked argument passes its values, not itself: each value is observed
+	 * against the parameter it lands in - by position, or by name for a string
+	 * key. Values of an array whose keys are not known may land in any parameter
+	 * from the argument's position on, and with string keys in any at all.
+	 */
+	private function observeUnpackedArgument(MutatingScope $scope, ParametersAcceptor $acceptor, int $position, Type $unpackedType, bool $isPure): MutatingScope
+	{
+		$parameters = $acceptor->getParameters();
+		$constantArrays = $unpackedType->getConstantArrays();
+		if (count($constantArrays) === 0) {
+			$valueType = $unpackedType->getIterableValueType();
+			$from = $unpackedType->getIterableKeyType()->isString()->no() ? $position : 0;
+			for ($k = $from; $k < count($parameters); $k++) {
+				$scope = $this->observeArgumentValue($scope, $acceptor, $parameters[$k], $valueType, $isPure);
+			}
+
+			return $scope;
+		}
+
+		foreach ($constantArrays as $constantArray) {
+			$valueTypes = $constantArray->getValueTypes();
+			foreach ($constantArray->getKeyTypes() as $j => $keyType) {
+				$key = $keyType->getValue();
+				$parameter = null;
+				if (is_string($key)) {
+					foreach ($parameters as $candidate) {
+						if ($candidate->getName() !== $key) {
+							continue;
+						}
+						$parameter = $candidate;
+						break;
+					}
+				} else {
+					$parameter = $parameters[$position + $j] ?? null;
+				}
+				if ($parameter === null && $acceptor->isVariadic() && count($parameters) > 0) {
+					$parameter = $parameters[count($parameters) - 1];
+				}
+				if ($parameter === null) {
+					continue;
+				}
+				$scope = $this->observeArgumentValue($scope, $acceptor, $parameter, $valueTypes[$j], $isPure);
+			}
+		}
+
+		return $scope;
+	}
+
+	private function observeArgumentValue(MutatingScope $scope, ParametersAcceptor $acceptor, ParameterReflection $parameter, Type $valueType, bool $isPure): MutatingScope
+	{
+		return $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectArgument(
+			$this->findOriginalParameterType($acceptor, $parameter) ?? $parameter->getType(),
+			$valueType,
+			$isPure,
+		));
 	}
 
 	/**

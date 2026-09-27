@@ -851,4 +851,30 @@ class Foo
 		assertType("static-Closure(1|'a'): 'other'", $c);
 	}
 
+	/**
+	 * @param list<int> $args
+	 */
+	public function unpackedArguments(array $args): void
+	{
+		$c = function ($a, $b = null) {
+			assertType("'x'|int", $a);
+			assertType('int|null', $b);
+		};
+		$c('x');
+		$c(...$args);
+		assertType("Closure('x'|int, int|null=): void", $c);
+
+		$d = function ($a) {
+			assertType("5|'y'", $a);
+		};
+		$d(...[5]);
+		$d(...['a' => 'y']);
+		assertType("Closure(5|'y'): void", $d);
+
+		$f = fn ($a, $b = null) => [assertType("'x'|int", $a), assertType('int|null', $b)];
+		$f('x');
+		$f(...$args);
+		assertType("Closure('x'|int, int|null=): array{mixed, mixed}", $f);
+	}
+
 }

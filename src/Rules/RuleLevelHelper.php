@@ -195,6 +195,56 @@ final class RuleLevelHelper
 	}
 
 	/**
+	 * accepts() for a relationship accepts() does not describe - whether the
+	 * values of $subType fit into $superType, e.g. what a declared type must
+	 * hold - with the same rule level: nullables and unions are checked from
+	 * their levels on, and `mixed` and benevolent unions the level does not
+	 * check yet fit.
+	 *
+	 * @api
+	 */
+	public function isSuperTypeOf(Type $superType, Type $subType): RuleLevelHelperAcceptsResult
+	{
+		[$subType, $checkForUnion] = $this->transformAcceptedType($superType, $subType);
+		$superType = $this->transformCommonType($superType);
+
+		$isSuperType = $superType->isSuperTypeOf($subType);
+		if (!$isSuperType->yes() && $this->containsUncheckedType($subType)) {
+			// the level lets them in like accepts() does - `mixed` fits
+			// anywhere, a benevolent union where one of its members does
+			$accepts = $superType->accepts($subType, true);
+
+			return new RuleLevelHelperAcceptsResult(
+				$checkForUnion ? $accepts->yes() : !$accepts->no(),
+				$accepts->reasons,
+			);
+		}
+
+		return new RuleLevelHelperAcceptsResult(
+			$checkForUnion ? $isSuperType->yes() : !$isSuperType->no(),
+			$isSuperType->reasons,
+		);
+	}
+
+	/**
+	 * The `mixed` transformCommonType() left as it is (checked mixed became
+	 * StrictMixedType) and the benevolent unions transformAcceptedType() did.
+	 */
+	private function containsUncheckedType(Type $type): bool
+	{
+		$contains = false;
+		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$contains): Type {
+			if ($type instanceof MixedType || ($type instanceof BenevolentUnionType && !$this->checkBenevolentUnionTypes)) {
+				$contains = true;
+			}
+
+			return $contains ? $type : $traverse($type);
+		});
+
+		return $contains;
+	}
+
+	/**
 	 * @api
 	 * @param callable(Type $type): bool $unionTypeCriteriaCallback
 	 */

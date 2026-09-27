@@ -574,7 +574,7 @@ final class StatementsHandler
 		$scope = $scope->withTemplateArgumentFrame($frame)->withTemplateArgumentConstraints(null);
 		$recording = new RecordingNodeCallback();
 		$state = new StatementListWalkState($scope);
-		/** @var list<array{StatementListWalkState, int}> $entries the state and recording offset before each statement, plus the final ones */
+		/** @var array<int, array{StatementListWalkState, int}> $entries the state and recording offset before each statement, plus the final ones */
 		$entries = [];
 		$observationContext = $context->withoutTemplateArgumentResolution();
 		$suspendedGatherers = $nodeScopeResolver->suspendNodeGatherers();

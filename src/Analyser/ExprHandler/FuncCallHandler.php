@@ -560,6 +560,9 @@ final class FuncCallHandler implements ExprHandler
 
 		$byRefWrittenNames = [];
 		if ($nameType !== null) {
+			if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
+				$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectInvokedCallee($nameType));
+			}
 			[$scope, $byRefThrowPoints, $byRefWrittenNames] = $this->processByRefInvocations($nodeScopeResolver, $normalizedExpr, $nameType, $scope, $storage);
 			$throwPoints = array_merge($throwPoints, $byRefThrowPoints);
 		}

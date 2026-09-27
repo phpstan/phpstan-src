@@ -15,6 +15,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -146,6 +147,9 @@ final class ArrayHandler implements ExprHandler
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $itemCallbackScope, $storage);
 		}
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
+		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
+			$scope = $this->collectAbsorbedItems($expr, $itemResults, $scope);
+		}
 
 		return $this->expressionResultFactory->create(
 			$scope,
@@ -198,6 +202,34 @@ final class ArrayHandler implements ExprHandler
 			},
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 		);
+	}
+
+	/**
+	 * A literal generalized by an unpacked item absorbs the closures of its items
+	 * into a wider value type - see ClosureSignatureInference::collectAbsorbed().
+	 *
+	 * @param array<int, ExpressionResult> $itemResults
+	 */
+	private function collectAbsorbedItems(Array_ $expr, array $itemResults, MutatingScope $scope): MutatingScope
+	{
+		$itemTypes = [];
+		foreach ($expr->items as $arrayItem) {
+			$itemType = $itemResults[spl_object_id($arrayItem->value)]->getType();
+			if (!ClosureSignatureInference::hasMarkers($itemType)) {
+				continue;
+			}
+			$itemTypes[] = $itemType;
+		}
+		if ($itemTypes === []) {
+			return $scope;
+		}
+
+		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => $itemResults[spl_object_id($inner)]->getType());
+		foreach ($itemTypes as $itemType) {
+			$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbed($itemType, $arrayType));
+		}
+
+		return $scope;
 	}
 
 	private function getExpectedArrayType(?Type $type): ?Type

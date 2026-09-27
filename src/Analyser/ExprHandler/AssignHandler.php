@@ -36,6 +36,7 @@ use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\ImpurePoint;
@@ -1454,6 +1455,10 @@ final class AssignHandler implements ExprHandler
 						TrinaryLogic::createYes(),
 						[],
 					);
+					if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
+						// the array's value type may absorb the closures written into it
+						$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbed($writtenValueType, $valueToWrite));
+					}
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 						$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);

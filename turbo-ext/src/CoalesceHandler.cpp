@@ -209,6 +209,16 @@ public:
 			scope = pt_mutating_scope_merge_with(Z_OBJ_P(leftIsSetScope.raw()), rightResultScope);
 		}
 		if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		{
+			zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, scope.raw());
+			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+			if (!observingFrame.isNull()) {
+				zv::Val condType = pt_expression_result_get_type(condResult.raw());
+				if (UNEXPECTED(condType.isUndef())) return zv::Val();
+				scope = pt_closure_signature_inference_add_absorbed_in_union_of_two(scope.raw(), condType.raw(), rightExprType.raw());
+				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			}
+		}
 
 		{
 			zval description;

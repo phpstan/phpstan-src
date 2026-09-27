@@ -8449,7 +8449,67 @@ public:
 		} else {
 			constraints = zv::Val::null();
 		}
-		return pt_mutating_scope_add_template_argument_constraints(mergedObject, constraints.raw());
+		zv::Val result = pt_mutating_scope_add_template_argument_constraints(mergedObject, constraints.raw());
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		if (otherScope == NULL || Z_TYPE_P(otherScope) != IS_OBJECT) return result;
+		zend_object *resultObject = requireObject(result, "collectAbsorbedClosures");
+		if (UNEXPECTED(resultObject == NULL)) return zv::Val();
+		zv::Val resultConstraints = pt_mutating_scope_get_template_argument_constraints(resultObject);
+		if (UNEXPECTED(resultConstraints.isUndef())) return zv::Val();
+		if (resultConstraints.isNull()) return result;
+		zv::Val frame = pt_mutating_scope_get_current_template_argument_frame(resultObject);
+		if (UNEXPECTED(frame.isUndef())) return zv::Val();
+		if (frame.isNull()) return result;
+		bool observingClosures;
+		if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(frame.raw(), observingClosures))) return zv::Val();
+		if (!observingClosures) return result;
+
+		zv::Val absorbed = collectAbsorbedClosures(resultObject, self, Z_OBJ_P(otherScope));
+		if (UNEXPECTED(absorbed.isUndef())) return zv::Val();
+		return pt_mutating_scope_add_template_argument_constraints(resultObject, absorbed.raw());
+	}
+
+	/* private (twin collectAbsorbedClosures(), called on the merged scope):
+	 * the closures a variable held on one side of the merge and the merged
+	 * variable lost - PHP null when there are none */
+	static zv::Val collectAbsorbedClosures(zend_object *merged, zend_object *ours, zend_object *theirs)
+	{
+		zval *mergedTypes = otherProp(merged, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
+		if (UNEXPECTED(mergedTypes == NULL)) return zv::Val();
+		HashTable *ourTable = otherTable(ours, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
+		if (UNEXPECTED(ourTable == NULL)) return zv::Val();
+		HashTable *theirTable = otherTable(theirs, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
+		if (UNEXPECTED(theirTable == NULL)) return zv::Val();
+		zv::Val mergedHold = zv::Val::copyOf(zv::Ref(mergedTypes).deref());
+		if (UNEXPECTED(!mergedHold.ref().isArray())) return zv::Val::null();
+		zv::Val constraints = zv::Val::null();
+		for (auto entry : zv::ArrRef(mergedHold.raw())) {
+			zval *holder = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(holder) != IS_OBJECT)) continue;
+			zval *holderType = OBJ_PROP_NUM(Z_OBJ_P(holder), PT_ETH_PROP_TYPE);
+			zend_string *key = entry.stringKeyOrNull();
+			HashTable *sides[2] = {ourTable, theirTable};
+			for (HashTable *side : sides) {
+				zval *sideHolder = key != NULL ? zend_hash_find(side, key) : zend_hash_index_find(side, entry.indexKey());
+				if (sideHolder == NULL) continue;
+				ZVAL_DEREF(sideHolder);
+				if (Z_TYPE_P(sideHolder) != IS_OBJECT || Z_OBJ_P(sideHolder) == Z_OBJ_P(holder)) continue;
+				zval *sideType = OBJ_PROP_NUM(Z_OBJ_P(sideHolder), PT_ETH_PROP_TYPE);
+				if (Z_TYPE_P(sideType) == IS_OBJECT && Z_TYPE_P(holderType) == IS_OBJECT && Z_OBJ_P(sideType) == Z_OBJ_P(holderType)) continue;
+				zv::Val absorbed = pt_closure_signature_inference_collect_absorbed(sideType, holderType);
+				if (UNEXPECTED(absorbed.isUndef())) return zv::Val();
+				bool isEmpty;
+				if (UNEXPECTED(!pt_template_argument_constraints_is_empty(absorbed.raw(), isEmpty))) return zv::Val();
+				if (isEmpty) continue;
+				if (constraints.isNull()) {
+					constraints = std::move(absorbed);
+					continue;
+				}
+				constraints = pt_template_argument_constraints_merge(constraints.raw(), absorbed.raw());
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			}
+		}
+		return constraints;
 	}
 
 	/* private (twin 4393) */

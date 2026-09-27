@@ -70,6 +70,13 @@ class Foo
 		$col = new Collection([1, 2]);
 		takesInts($col);
 		assertType('ClosureSignatureFromUsagesGenerics\Collection<string>', $col->map($c));
+		assertType('Closure(int): decimal-int-string', $c);
+
+		$f = fn ($x) => (string) $x;
+		$arrowCol = new Collection([1, 2]);
+		takesInts($arrowCol);
+		assertType('ClosureSignatureFromUsagesGenerics\Collection<string>', $arrowCol->map($f));
+		assertType('Closure(int): decimal-int-string', $f);
 	}
 
 	public function invokedWithValueReadOutOfWidenedObject(): void
@@ -80,6 +87,13 @@ class Foo
 		$col = new Collection([1, 2]);
 		takesInts($col);
 		$c($col->first());
+		assertType('Closure(int): void', $c);
+
+		$f = fn ($x) => assertType('int', $x);
+		$arrowCol = new Collection([1, 2]);
+		takesInts($arrowCol);
+		$f($arrowCol->first());
+		assertType('Closure(int): mixed', $f);
 	}
 
 	public function invokedWithValueReadOutOfWidenedObjectThroughVariable(): void
@@ -91,6 +105,7 @@ class Foo
 		takesInts($col);
 		$first = $col->first();
 		$c($first);
+		assertType('Closure(int): void', $c);
 	}
 
 	public function factsOfStatementsNotReadingWidenedObject(): void
@@ -103,6 +118,7 @@ class Foo
 		$unrelated = 'unrelated';
 		$c('s');
 		$c($col->first());
+		assertType("Closure('s'|int): void", $c);
 	}
 
 	public function mappedOverPropertyOfWidenedObject(): void
@@ -111,6 +127,7 @@ class Foo
 		$col = new Collection([1, 2]);
 		takesInts($col);
 		array_map($c, $col->items);
+		assertType('Closure(int): mixed', $c);
 	}
 
 	public function mappedOverMethodOfWidenedObject(): void
@@ -121,6 +138,7 @@ class Foo
 		$col = new Collection([1, 2]);
 		takesInts($col);
 		array_map($c, $col->all());
+		assertType('Closure(int): void', $c);
 	}
 
 	public function invokedWithWidenedObject(): void
@@ -131,6 +149,13 @@ class Foo
 		$box = new Box(1);
 		$c($box);
 		takesIntBox($box);
+		assertType('Closure(ClosureSignatureFromUsagesGenerics\Box<int>): void', $c);
+
+		$f = fn ($b) => assertType('ClosureSignatureFromUsagesGenerics\Box<int>', $b);
+		$arrowBox = new Box(1);
+		$f($arrowBox);
+		takesIntBox($arrowBox);
+		assertType('Closure(ClosureSignatureFromUsagesGenerics\Box<int>): mixed', $f);
 	}
 
 	public function closureCreatesGenericObject(): void
@@ -141,6 +166,7 @@ class Foo
 		};
 		assertType('ClosureSignatureFromUsagesGenerics\Box<1>', $make(1));
 		assertType("ClosureSignatureFromUsagesGenerics\Box<'a'>", $make('a'));
+		assertType("Closure(1|'a'): ClosureSignatureFromUsagesGenerics\Box<1|'a'>", $make);
 	}
 
 	public function closureFeedsGenericObject(): void
@@ -152,6 +178,7 @@ class Foo
 		$push(5);
 		takesInts($col);
 		assertType('ClosureSignatureFromUsagesGenerics\Collection<int>', $col);
+		assertType('Closure(5): void', $push);
 	}
 
 }

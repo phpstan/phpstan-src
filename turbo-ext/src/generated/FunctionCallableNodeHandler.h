@@ -59,7 +59,9 @@ inline constexpr char strings[] =
 	"PHPStan\\Node\\FunctionCallableNode\0" /* 535 */
 	"nameResult\0" /* 569 */
 	"PHPStan\\Type\\Type\0" /* 580 */
-	"resolveType"; /* 598 */
+	"resolveType\0" /* 598 */
+	"type\0" /* 610 */
+	"isClosureObject"; /* 615 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 24), /* __construct $expressionResultFactory */
 	reg::packed(65, 0, 88), /* __construct $defaultNarrowingHelper */
@@ -78,6 +80,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(234, 0, 535), /* resolveType $expr */
 	reg::packed(569, MAY_BE_NULL, 489), /* resolveType $nameResult */
 	reg::packed(259, 0, 580), /* resolveType return */
+	reg::packed(610, 0, 580), /* isClosureObject $type */
+	reg::packed(259, MAY_BE_BOOL), /* isClosureObject return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -88,6 +92,7 @@ inline constexpr sigtab::Sig __construct = { { 222 /* __construct */, 3, 0, 3, r
 inline constexpr sigtab::Sig supports = { { 260 /* supports */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 523 /* processExpr */, 7, 5, 7, 12, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig resolveType = { { 598 /* resolveType */, 3, 13, 3, 16, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isClosureObject = { { 615 /* isClosureObject */, 1, 17, 1, 18, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::FunctionCallableNodeHandler

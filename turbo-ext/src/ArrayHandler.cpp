@@ -356,6 +356,14 @@ public:
 			if (UNEXPECTED(literalArrayNode.isUndef())) return zv::Val();
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, literalArrayNode.raw(), scope.raw(), storage))) return zv::Val();
 		}
+		{
+			zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, scope.raw());
+			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+			if (!observingFrame.isNull()) {
+				scope = collectAbsorbedItems(expr, itemResults.raw(), scope.raw());
+				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			}
+		}
 
 		zv::Val variableFlow = pt_variable_flow_sequence_list(variableFlows.table());
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
@@ -367,6 +375,50 @@ public:
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+	}
+
+	/* Mirrors collectAbsorbedItems() */
+	zv::Val collectAbsorbedItems(zval *expr, zval *itemResults, zval *scopeArg) const
+	{
+		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeArg));
+		zval *items = exprItems(expr);
+		if (UNEXPECTED(items == NULL)) return zv::Val();
+		if (Z_TYPE_P(items) != IS_ARRAY) return scope;
+		zv::Val itemsHold = zv::Val::copyOf(zv::Ref(items));
+		zv::Arr itemTypes = zv::Arr::create(0);
+		for (zv::ArrayEntry entry : zv::ArrRef(itemsHold.raw())) {
+			zval *arrayItem = entry.value().deref().raw();
+			zval *value = itemValue(arrayItem);
+			if (UNEXPECTED(value == NULL)) return zv::Val();
+			zval *itemResult = zend_hash_index_find(Z_ARRVAL_P(itemResults), Z_OBJ_HANDLE_P(value));
+			if (UNEXPECTED(itemResult == NULL)) {
+				zend_error(E_WARNING, "Undefined array key %u", Z_OBJ_HANDLE_P(value));
+				return zv::Val();
+			}
+			zv::Val itemType = pt_expression_result_get_type(itemResult);
+			if (UNEXPECTED(itemType.isUndef())) return zv::Val();
+			bool hasMarkers;
+			if (UNEXPECTED(!pt_closure_signature_inference_has_markers(itemType.raw(), hasMarkers))) return zv::Val();
+			if (!hasMarkers) continue;
+			itemTypes.push(std::move(itemType));
+		}
+		if (zend_hash_num_elements(itemTypes.table()) == 0) return scope;
+
+		zv::Val arrayType;
+		{
+			ItemTypeFrame frame{itemResults, false};
+			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame, &itemTypeCallable};
+			arrayType = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback);
+			if (UNEXPECTED(arrayType.isUndef())) return zv::Val();
+		}
+		zv::Val itemTypesHold(std::move(itemTypes));
+		for (zv::ArrayEntry entry : zv::ArrRef(itemTypesHold.raw())) {
+			zv::Val absorbed = pt_closure_signature_inference_collect_absorbed(entry.value().deref().raw(), arrayType.raw());
+			if (UNEXPECTED(absorbed.isUndef())) return zv::Val();
+			scope = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope.raw()), absorbed.raw());
+			if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		}
+		return scope;
 	}
 
 	/* the handler entry (Engine.h) */

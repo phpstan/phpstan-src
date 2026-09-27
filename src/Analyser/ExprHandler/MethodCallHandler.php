@@ -21,6 +21,7 @@ use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -119,6 +120,11 @@ final class MethodCallHandler implements ExprHandler
 		$scope = $varResult->getScope();
 		if (isset($closureCallScope)) {
 			$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
+		}
+		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
+			// a method of a closure - __invoke(), call(), bindTo() - runs it or
+			// hands it on where nothing follows its signature
+			$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectEscapes($varResult->getType()));
 		}
 		$parametersAcceptor = null;
 		$variants = [];

@@ -3067,6 +3067,12 @@ private:
 				AH_VALB(assignNode, newVariableAssignNode(var, typeExpr.raw()));
 				AH_OKB(nsrCallNodeCallback(nsr, nodeCallback, assignNode.raw(), scopeBeforeAssignEval.raw(), storage));
 				AH_SETB(scope, pt_mutating_scope_assign_variable(Z_OBJ_P(scope.raw()), varName, valueToWrite.raw(), nativeValueToWrite.raw(), ahTrinary(PT_TRI_YES)));
+				AH_VALB(observingFrame, pt_node_scope_resolver_observing_template_argument_frame(nsr, scope.raw()));
+				if (!observingFrame.isNull()) {
+					// the array's value type may absorb the closures written into it
+					AH_VALB(absorbed, pt_closure_signature_inference_collect_absorbed(writtenValueType.raw(), valueToWrite.raw()));
+					AH_SETB(scope, pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope.raw()), absorbed.raw()));
+				}
 			} else {
 				if (ahIs(var, PT_CLASS_PROPERTY_FETCH) || ahIs(var, PT_CLASS_STATIC_PROPERTY_FETCH)) {
 					AH_OKB(emitPropertyAssignAndInitialize(nsr, nodeCallback, storage, var, assignedPropertyExpr, isAssignOp, scopeBeforeAssignEval.raw(), scope));

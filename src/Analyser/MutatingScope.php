@@ -24,6 +24,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
@@ -4467,7 +4468,40 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public function mergeWith(?self $otherScope, bool $preserveVacuousConditionals = false): self
 	{
-		return $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals)->addTemplateArgumentConstraints($otherScope !== null ? $otherScope->getTemplateArgumentConstraints() : null);
+		$merged = $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals)->addTemplateArgumentConstraints($otherScope !== null ? $otherScope->getTemplateArgumentConstraints() : null);
+		if (
+			$otherScope === null
+			|| $merged->templateArgumentConstraints === null
+			|| $merged->templateArgumentFrame === null
+			|| !$merged->templateArgumentFrame->isObservingClosures()
+		) {
+			return $merged;
+		}
+
+		return $merged->addTemplateArgumentConstraints($merged->collectAbsorbedClosures($this, $otherScope));
+	}
+
+	/**
+	 * The closures a variable held on one side of a merge and the merged
+	 * variable lost - see ClosureSignatureInference::collectAbsorbed().
+	 */
+	private function collectAbsorbedClosures(self $ours, self $theirs): ?TemplateArgumentConstraints
+	{
+		$constraints = null;
+		foreach ($this->expressionTypes as $key => $holder) {
+			foreach ([$ours->expressionTypes[$key] ?? null, $theirs->expressionTypes[$key] ?? null] as $sideHolder) {
+				if ($sideHolder === null || $sideHolder === $holder || $sideHolder->getType() === $holder->getType()) {
+					continue;
+				}
+				$absorbed = ClosureSignatureInference::collectAbsorbed($sideHolder->getType(), $holder->getType());
+				if ($absorbed->isEmpty()) {
+					continue;
+				}
+				$constraints = $constraints === null ? $absorbed : $constraints->merge($absorbed);
+			}
+		}
+
+		return $constraints;
 	}
 
 	private function mergeWithVariableState(?self $otherScope, bool $preserveVacuousConditionals = false): self

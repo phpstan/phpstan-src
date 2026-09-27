@@ -15,6 +15,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\CoalesceCompositionHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -108,8 +109,12 @@ final class AssignOpHandler implements ExprHandler
 		$rhsResult = $valueResult;
 		if ($expr instanceof Expr\AssignOp\Coalesce) {
 			$rightResult = $valueResult;
+			$coalescedScope = $rightResult->getScope()->mergeWith($valueBeforeScope);
+			if ($nodeScopeResolver->observingTemplateArgumentFrame($coalescedScope) !== null) {
+				$coalescedScope = $coalescedScope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInUnion([$condResult->getType(), $rightResult->getType()]));
+			}
 			$valueResult = $this->expressionResultFactory->create(
-				$rightResult->getScope()->mergeWith($valueBeforeScope),
+				$coalescedScope,
 				$valueBeforeScope,
 				$expr->expr,
 				$rightResult->hasYield(),

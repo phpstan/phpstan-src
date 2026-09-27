@@ -2170,12 +2170,6 @@ private:
 		if (!templateArgumentFrame.isNull() && a.parameter != NULL) {
 			// the metadata acceptor is resolved against the arguments gathered
 			// before this one: observe the declared parameter type
-			zv::Val parameterType = findOriginalParameterType(a.argMetadataAcceptor, a.parameter);
-			if (UNEXPECTED(parameterType.isUndef())) return false;
-			if (parameterType.isNull()) {
-				parameterType = parameterGetType(a.parameter);
-				if (UNEXPECTED(parameterType.isUndef())) return false;
-			}
 			bool isPure = false;
 			bool isFunction = false, isExtendedMethod = false;
 			if (UNEXPECTED(!isA(w.calleeReflection, PT_CLASS_FUNCTION_REFLECTION, isFunction))) return false;
@@ -2185,12 +2179,109 @@ private:
 				if (UNEXPECTED(pure < 0)) return false;
 				isPure = pure == PT_TRI_YES;
 			}
-			zv::Val constraints = templateArgumentObserverCollectArgument(slot(slots::templateArgumentObserver), parameterType.raw(), &record.gathered, isPure);
-			if (UNEXPECTED(constraints.isUndef())) return false;
-			zv::Val constrained = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(w.scope.raw()), constraints.raw());
-			if (UNEXPECTED(constrained.isUndef())) return false;
-			w.scope = std::move(constrained);
+			bool unpack = false;
+			if (UNEXPECTED(!argUnpack(originalArgOf(record.arg), unpack))) return false;
+			if (unpack) {
+				return observeUnpackedArgument(w, a.argMetadataAcceptor, record.key, &record.gathered, isPure);
+			}
+			return observeArgumentValue(w, a.argMetadataAcceptor, a.parameter, &record.gathered, isPure);
 		}
+		return true;
+	}
+
+	/* Mirrors observeUnpackedArgument(): each value of the unpacked argument
+	 * against the parameter it lands in; false = pending exception */
+	zend_never_inline bool observeUnpackedArgument(Walk &w, zval *acceptor, zend_ulong position, zval *unpackedType, bool isPure) const
+	{
+		zv::Val parameters = acceptorGetParameters(acceptor);
+		if (UNEXPECTED(parameters.isUndef() || !requireArray(parameters.raw(), "count(): Argument #1 ($value)"))) return false;
+		HashTable *parameterTable = Z_ARRVAL_P(parameters.raw());
+		if (UNEXPECTED(Z_TYPE_P(unpackedType) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getConstantArrays() on %s", zend_zval_value_name(unpackedType));
+			return false;
+		}
+		zv::Val constantArrays = pt_type_op(Z_OBJ_P(unpackedType), PT_OP_GET_CONSTANT_ARRAYS, 0, NULL);
+		if (UNEXPECTED(constantArrays.isUndef() || !requireArray(constantArrays.raw(), "count(): Argument #1 ($value)"))) return false;
+		if (zend_hash_num_elements(Z_ARRVAL_P(constantArrays.raw())) == 0) {
+			zv::Val valueType = pt_type_op(Z_OBJ_P(unpackedType), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
+			if (UNEXPECTED(valueType.isUndef())) return false;
+			zv::Val keyType = pt_type_op(Z_OBJ_P(unpackedType), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
+			if (UNEXPECTED(keyType.isUndef())) return false;
+			if (UNEXPECTED(!keyType.ref().isObject())) {
+				zend_throw_error(NULL, "Call to a member function isString() on %s", zend_zval_value_name(keyType.raw()));
+				return false;
+			}
+			zend_long isString = pt_type_op_trinary(Z_OBJ_P(keyType.raw()), PT_OP_IS_STRING, 0, NULL);
+			if (UNEXPECTED(isString < 0)) return false;
+			for (zend_ulong k = isString == PT_TRI_NO ? position : 0; k < zend_hash_num_elements(parameterTable); k++) {
+				zval *parameter = readIndex(parameterTable, k);
+				if (UNEXPECTED(parameter == NULL)) return false;
+				if (UNEXPECTED(!observeArgumentValue(w, acceptor, parameter, valueType.raw(), isPure))) return false;
+			}
+			return true;
+		}
+
+		for (zv::ArrayEntry entry : zv::ArrRef(constantArrays.raw())) {
+			zval *constantArray = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(constantArray) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getValueTypes() on %s", zend_zval_value_name(constantArray));
+				return false;
+			}
+			zv::Val values = pt_type_op(Z_OBJ_P(constantArray), PT_OP_GET_VALUE_TYPES, 0, NULL);
+			if (UNEXPECTED(values.isUndef())) return false;
+			zv::Val keyTypes = pt_type_op(Z_OBJ_P(constantArray), PT_OP_GET_KEY_TYPES, 0, NULL);
+			if (UNEXPECTED(keyTypes.isUndef())) return false;
+			if (UNEXPECTED(!requireArray(values.raw(), "getValueTypes()") || !requireArray(keyTypes.raw(), "foreach() argument"))) return false;
+			for (zv::ArrayEntry keyEntry : zv::ArrRef(keyTypes.raw())) {
+				zend_ulong j = keyEntry.indexKey();
+				zval *keyType = keyEntry.value().deref().raw();
+				if (UNEXPECTED(Z_TYPE_P(keyType) != IS_OBJECT)) {
+					zend_throw_error(NULL, "Call to a member function getValue() on %s", zend_zval_value_name(keyType));
+					return false;
+				}
+				zv::Val key = pt_type_op(Z_OBJ_P(keyType), PT_OP_GET_VALUE, 0, NULL);
+				if (UNEXPECTED(key.isUndef())) return false;
+				zval *parameter = NULL;
+				if (key.ref().isString()) {
+					for (zv::ArrayEntry candidateEntry : zv::ArrRef(parameters.raw())) {
+						zval *candidate = candidateEntry.value().deref().raw();
+						zv::Val candidateName = parameterGetName(candidate);
+						if (UNEXPECTED(candidateName.isUndef())) return false;
+						if (!candidateName.ref().isString() || !zend_string_equals(Z_STR_P(candidateName.raw()), Z_STR_P(key.raw()))) continue;
+						parameter = candidate;
+						break;
+					}
+				} else {
+					parameter = issetIndex(parameterTable, position + j);
+				}
+				if (parameter == NULL && zend_hash_num_elements(parameterTable) > 0) {
+					bool variadic = false;
+					if (UNEXPECTED(!acceptorIsVariadic(acceptor, variadic))) return false;
+					if (variadic) parameter = arrayLast(parameterTable);
+				}
+				if (parameter == NULL) continue;
+				zval *valueType = readIndex(Z_ARRVAL_P(values.raw()), j);
+				if (UNEXPECTED(valueType == NULL)) return false;
+				if (UNEXPECTED(!observeArgumentValue(w, acceptor, parameter, valueType, isPure))) return false;
+			}
+		}
+		return true;
+	}
+
+	/* Mirrors observeArgumentValue(); false = pending exception */
+	zend_never_inline bool observeArgumentValue(Walk &w, zval *acceptor, zval *parameter, zval *valueType, bool isPure) const
+	{
+		zv::Val parameterType = findOriginalParameterType(acceptor, parameter);
+		if (UNEXPECTED(parameterType.isUndef())) return false;
+		if (parameterType.isNull()) {
+			parameterType = parameterGetType(parameter);
+			if (UNEXPECTED(parameterType.isUndef())) return false;
+		}
+		zv::Val constraints = templateArgumentObserverCollectArgument(slot(slots::templateArgumentObserver), parameterType.raw(), valueType, isPure);
+		if (UNEXPECTED(constraints.isUndef())) return false;
+		zv::Val constrained = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(w.scope.raw()), constraints.raw());
+		if (UNEXPECTED(constrained.isUndef())) return false;
+		w.scope = std::move(constrained);
 		return true;
 	}
 

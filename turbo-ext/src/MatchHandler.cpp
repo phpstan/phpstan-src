@@ -682,6 +682,22 @@ public:
 
 		scope = addTemplateArgumentConstraintsOf(scope.raw(), scopeForMatchNodeCallback.raw());
 		if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		{
+			MH_VAL(observingFrame, pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, scope.raw()));
+			if (!observingFrame.isNull()) {
+				zv::Arr armTypes = zv::Arr::create(zend_hash_num_elements(armTypeResults.table()));
+				for (zv::ArrayEntry entry : zv::TableRef(armTypeResults.table())) {
+					zval *armTypeResult = entry.value().deref().raw();
+					zval *armResult = zend_hash_index_find(Z_ARRVAL_P(armTypeResult), 0);
+					zval *bodyScope = zend_hash_index_find(Z_ARRVAL_P(armTypeResult), 1);
+					MH_VAL(armType, pt_expression_result_get_type_on_scope(armResult, bodyScope, false));
+					armTypes.push(std::move(armType));
+				}
+				zv::Val armTypesHold(std::move(armTypes));
+				scope = pt_closure_signature_inference_add_absorbed_in_union(scope.raw(), armTypesHold.raw());
+				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			}
+		}
 
 		// ksort($armNodes, SORT_NUMERIC) + array_values(): the arms' own order
 		{

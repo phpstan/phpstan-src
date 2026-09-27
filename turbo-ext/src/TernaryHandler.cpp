@@ -213,6 +213,21 @@ public:
 		}
 		zv::Val resultScope = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(constrainedScope.raw()), ifFalseConstraints.raw());
 		if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
+		{
+			zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, resultScope.raw());
+			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+			if (!observingFrame.isNull()) {
+				zv::Val branchTypes[2];
+				branchTypes[0] = !ifResult.isNull()
+					? pt_expression_result_get_type_on_scope(ifResult.raw(), ifProcessingScope.raw(), false)
+					: pt_expression_result_get_type(ternaryCondResult.raw());
+				if (UNEXPECTED(branchTypes[0].isUndef())) return zv::Val();
+				branchTypes[1] = pt_expression_result_get_type_on_scope(elseResult.raw(), elseProcessingScope.raw(), false);
+				if (UNEXPECTED(branchTypes[1].isUndef())) return zv::Val();
+				resultScope = pt_closure_signature_inference_add_absorbed_in_union_of_two(resultScope.raw(), branchTypes[0].raw(), branchTypes[1].raw());
+				if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
+			}
+		}
 
 		// lazily memoized merged-falsey scope of the (cond && if) disjunct
 		zval aFalseyScope;

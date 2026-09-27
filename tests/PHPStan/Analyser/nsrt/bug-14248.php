@@ -19,4 +19,5 @@ function doFoo(): void
 	$s();
 	$a++;
 	$s();
+	assertType('Closure(): (0|1)', $s);
 }

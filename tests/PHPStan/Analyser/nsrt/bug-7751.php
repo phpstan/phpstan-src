@@ -23,4 +23,5 @@ function doFoo(): void
 	$foo = [];
 
 	$test();
+	assertType('Closure(): void', $test);
 }

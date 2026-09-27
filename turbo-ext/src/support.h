@@ -3121,6 +3121,21 @@ zv::Val pt_closure_signature_inference_collect_capture_escapes(zval *type);
 zv::Val pt_closure_signature_inference_collect_invocation(zval *scope, zval *call, zval *closureType, bool observing);
 zv::Val pt_closure_signature_inference_collect_by_ref_entry_types(zval *scope);
 zv::Val pt_closure_signature_inference_get_arrow_function_outer_variables(zval *expr);
+/* ClosureSignatureInference's static collectEscapes($type) /
+ * collectInvokedCallee($calleeType) / collectAbsorbed($input, $result) /
+ * collectAbsorbedInUnion($types) (UNDEF = pending exception) and
+ * hasMarkers($type) (false = pending exception) */
+zv::Val pt_closure_signature_inference_collect_escapes(zval *type);
+zv::Val pt_closure_signature_inference_collect_invoked_callee(zval *calleeType);
+zv::Val pt_closure_signature_inference_collect_absorbed(zval *input, zval *result);
+zv::Val pt_closure_signature_inference_collect_absorbed_in_union(zval *types);
+[[nodiscard]] bool pt_closure_signature_inference_has_markers(zval *type, bool &out);
+/* the handlers' `$scope->addTemplateArgumentConstraints(
+ * ClosureSignatureInference::collectAbsorbedInUnion($types))` for the list
+ * $types (the caller checks the frame observes); UNDEF = pending exception */
+zv::Val pt_closure_signature_inference_add_absorbed_in_union(zval *scope, zval *types);
+/* the same for two types */
+zv::Val pt_closure_signature_inference_add_absorbed_in_union_of_two(zval *scope, zval *first, zval *second);
 /* $closureSignatureInference->isObserving($scope); false = pending exception */
 [[nodiscard]] bool pt_closure_signature_inference_is_observing(zval *inference, zval *scope, bool &out);
 [[nodiscard]] bool pt_contextual_closure_parameter_resolver_resolve_expected_return_types(zval *resolver, zval *scope, zval *expr, zval *passedToType, zval *nativePassedToType, zv::Val &expected, zv::Val &nativeExpected);

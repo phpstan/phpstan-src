@@ -144,11 +144,17 @@ inline constexpr char strings[] =
 	"call\0" /* 1978 */
 	"resolveClosureThisType\0" /* 1983 */
 	"acceptor\0" /* 2006 */
-	"findOriginalParameterType\0" /* 2015 */
-	"argResults\0" /* 2041 */
-	"argValue\0" /* 2052 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 2061 */
-	"readArgResult"; /* 2095 */
+	"position\0" /* 2015 */
+	"unpackedType\0" /* 2024 */
+	"isPure\0" /* 2037 */
+	"observeUnpackedArgument\0" /* 2044 */
+	"valueType\0" /* 2068 */
+	"observeArgumentValue\0" /* 2078 */
+	"findOriginalParameterType\0" /* 2099 */
+	"argResults\0" /* 2125 */
+	"argValue\0" /* 2136 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 2145 */
+	"readArgResult"; /* 2179 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 25), /* __construct $templateArgumentObserver */
 	reg::packed(76, 0, 100), /* __construct $expressionResultFactory */
@@ -242,12 +248,24 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1758, 0, 1768), /* resolveClosureThisType $parameter */
 	reg::packed(1149, 0, 1155), /* resolveClosureThisType $scope */
 	reg::packed(1320, MAY_BE_NULL, 1420), /* resolveClosureThisType return */
+	reg::packed(1149, 0, 1155), /* observeUnpackedArgument $scope */
+	reg::packed(2006, 0, 1608), /* observeUnpackedArgument $acceptor */
+	reg::packed(2015, MAY_BE_LONG), /* observeUnpackedArgument $position */
+	reg::packed(2024, 0, 1420), /* observeUnpackedArgument $unpackedType */
+	reg::packed(2037, MAY_BE_BOOL), /* observeUnpackedArgument $isPure */
+	reg::packed(1320, 0, 1155), /* observeUnpackedArgument return */
+	reg::packed(1149, 0, 1155), /* observeArgumentValue $scope */
+	reg::packed(2006, 0, 1608), /* observeArgumentValue $acceptor */
+	reg::packed(1758, 0, 1768), /* observeArgumentValue $parameter */
+	reg::packed(2068, 0, 1420), /* observeArgumentValue $valueType */
+	reg::packed(2037, MAY_BE_BOOL), /* observeArgumentValue $isPure */
+	reg::packed(1320, 0, 1155), /* observeArgumentValue return */
 	reg::packed(2006, 0, 1608), /* findOriginalParameterType $acceptor */
 	reg::packed(1758, 0, 1768), /* findOriginalParameterType $parameter */
 	reg::packed(1320, MAY_BE_NULL, 1420), /* findOriginalParameterType return */
-	reg::packed(2041, MAY_BE_ARRAY), /* readArgResult $argResults */
-	reg::packed(2052, 0, 1463), /* readArgResult $argValue */
-	reg::packed(1320, 0, 2061), /* readArgResult return */
+	reg::packed(2125, MAY_BE_ARRAY), /* readArgResult $argResults */
+	reg::packed(2136, 0, 1463), /* readArgResult $argValue */
+	reg::packed(1320, 0, 2145), /* readArgResult return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -268,8 +286,10 @@ inline constexpr sigtab::Sig shouldInvalidateCallbackExpressions = { { 1845 /* s
 inline constexpr sigtab::Sig getParameterTypeFromParameterClosureTypeExtension = { { 1881 /* getParameterTypeFromParameterClosureTypeExtension */, 4, 77, 4, 81, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig getParameterOutExtensionsType = { { 1948 /* getParameterOutExtensionsType */, 4, 82, 4, 86, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig resolveClosureThisType = { { 1983 /* resolveClosureThisType */, 4, 87, 4, 91, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig findOriginalParameterType = { { 2015 /* findOriginalParameterType */, 2, 92, 2, 94, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig readArgResult = { { 2095 /* readArgResult */, 2, 95, 2, 97, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeUnpackedArgument = { { 2044 /* observeUnpackedArgument */, 5, 92, 5, 97, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeArgumentValue = { { 2078 /* observeArgumentValue */, 5, 98, 5, 103, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findOriginalParameterType = { { 2099 /* findOriginalParameterType */, 2, 104, 2, 106, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig readArgResult = { { 2179 /* readArgResult */, 2, 107, 2, 109, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ArgumentsHandler

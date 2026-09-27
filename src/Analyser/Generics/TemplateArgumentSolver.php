@@ -296,7 +296,9 @@ final class TemplateArgumentSolver
 	 *
 	 * The return is covariant: the return types of the callables the closure is
 	 * sent to bound it from above; their intersection is the type its returned
-	 * expressions are expected to have (mixed when nothing bounds it).
+	 * expressions are expected to have - mixed when nothing bounds it, or when
+	 * the closure is also invoked here or escapes, so that what it returns is
+	 * used by something the bounds do not describe.
 	 *
 	 * @param array{
 	 *     marker: UnresolvedTemplateArgumentType,
@@ -320,6 +322,10 @@ final class TemplateArgumentSolver
 			return TypeCombinator::union(...$parts);
 		}
 		if (ClosureSignatureInference::isReturnMarker($marker)) {
+			if ($observation['unconstrainingSend']) {
+				// the returned value also goes where nothing types it
+				return new MixedType();
+			}
 			$upperBounds = [];
 			foreach ($observation['sends'] as [$sent]) {
 				$upperBounds[] = $this->substituteResolutions($sent);

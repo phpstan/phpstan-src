@@ -1158,6 +1158,15 @@ public:
 
 		zv::Arr byRefWrittenNames = zv::Arr::empty();
 		if (!calleeNameType.isNull()) {
+			zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, scope.raw());
+			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+			if (!observingFrame.isNull()) {
+				zv::Val invokedCallee = pt_closure_signature_inference_collect_invoked_callee(calleeNameType.raw());
+				if (UNEXPECTED(invokedCallee.isUndef())) return zv::Val();
+				zv::Val added = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope.raw()), invokedCallee.raw());
+				if (UNEXPECTED(added.isUndef())) return zv::Val();
+				scope = std::move(added);
+			}
 			zv::Val invoked = processByRefInvocations(nodeScopeResolver, normalizedExpr.raw(), calleeNameType.raw(), scope.raw(), storage);
 			if (UNEXPECTED(invoked.isUndef())) return zv::Val();
 			scope = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(invoked.raw()), 0)));

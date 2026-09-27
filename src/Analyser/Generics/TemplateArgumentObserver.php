@@ -283,24 +283,7 @@ final class TemplateArgumentObserver
 	 */
 	private function escapeClosures(TemplateArgumentConstraints $constraints, Type $type): TemplateArgumentConstraints
 	{
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constraints): Type {
-			if ($type instanceof ClosureType) {
-				$constraints = self::escapeByRefUses($constraints, $type);
-			}
-			if ($type instanceof UnresolvedTemplateArgumentType) {
-				if (ClosureSignatureInference::isClosureSignatureMarker($type) && !ClosureSignatureInference::isReturnMarker($type)) {
-					$constraints = $constraints->withUnconstrainingSend($type);
-				}
-				$initial = $type->getInitialType();
-				if ($initial !== null) {
-					$traverse($initial);
-				}
-				return $type;
-			}
-			return $traverse($type);
-		});
-
-		return $constraints;
+		return $constraints->merge(ClosureSignatureInference::collectEscapes($type));
 	}
 
 	public function collectArgument(Type $parameterType, Type $argumentType, bool $isPure = false): TemplateArgumentConstraints

@@ -34,6 +34,7 @@ zend_string *pt_csi_assigned_closures_attribute = nullptr;
 zend_string *pt_csi_invocation_template_name = nullptr;
 zend_string *pt_csi_by_ref_uses_attribute = nullptr;
 zend_string *pt_csi_arrow_function_outer_variables_attribute = nullptr;
+zend_string *pt_csi_rebound_variables_attribute = nullptr;
 constexpr char pt_csi_by_ref_template_prefix = '&';
 constexpr char pt_csi_entry_template_prefix = '~';
 
@@ -66,6 +67,15 @@ pt_property_site pt_csi_by_ref_use_var_site;
 pt_property_site pt_csi_by_ref_variable_name_site;
 pt_property_site pt_csi_by_ref_param_var_site;
 pt_property_site pt_csi_by_ref_func_call_name_site;
+pt_property_site pt_csi_rebound_vars_site;
+pt_property_site pt_csi_rebound_var_site;
+pt_property_site pt_csi_rebound_by_ref_site;
+pt_property_site pt_csi_rebound_value_var_site;
+pt_property_site pt_csi_rebound_items_site;
+pt_property_site pt_csi_rebound_item_by_ref_site;
+pt_property_site pt_csi_rebound_item_value_site;
+pt_property_site pt_csi_rebound_static_var_site;
+pt_property_site pt_csi_rebound_variable_name_site;
 
 /* $value instanceof <class-map class>; false = pending exception */
 [[nodiscard]] bool isA(zval *value, int classIdx, bool &out)
@@ -729,6 +739,202 @@ bool collectEntryFact(void *data, zval *fact)
 	return true;
 }
 
+/* Mirrors collectVariableName(): a Variable with a string name into $names;
+ * false = pending exception */
+[[nodiscard]] bool collectReboundVariableName(zval *node, zv::Arr &names)
+{
+	bool isVariable;
+	if (UNEXPECTED(!isA(node, PT_CLASS_VARIABLE, isVariable))) return false;
+	if (!isVariable) return true;
+	zval *name = read(pt_csi_rebound_variable_name_site, node, PT_LC("name"));
+	if (UNEXPECTED(name == NULL)) return false;
+	if (Z_TYPE_P(name) == IS_STRING) names.set(Z_STR_P(name), zv::Val::boolean(true));
+	return true;
+}
+
+/* collectVariableName() over each node of $node->$property (an array);
+ * false = pending exception */
+[[nodiscard]] bool collectReboundVariableNames(zval *node, pt_property_site &site, const char *property, size_t len, zv::Arr &names)
+{
+	zval *vars = read(site, node, property, len);
+	if (UNEXPECTED(vars == NULL)) return false;
+	if (Z_TYPE_P(vars) != IS_ARRAY) return true;
+	zv::Val varsHold = zv::Val::copyOf(zv::Ref(vars));
+	for (auto entry : zv::ArrRef(varsHold.raw())) {
+		if (UNEXPECTED(!collectReboundVariableName(entry.value().deref().raw(), names))) return false;
+	}
+	return true;
+}
+
+/* Mirrors collectByRefItemNames(); false = pending exception */
+[[nodiscard]] bool collectByRefItemNames(zval *target, zv::Arr &names)
+{
+	bool isList, isArray = false;
+	if (UNEXPECTED(!isA(target, PT_CLASS_LIST_EXPR, isList))) return false;
+	if (!isList && UNEXPECTED(!isA(target, PT_CLASS_ARRAY_EXPR, isArray))) return false;
+	if (!isList && !isArray) return true;
+	zval *items = read(pt_csi_rebound_items_site, target, PT_LC("items"));
+	if (UNEXPECTED(items == NULL)) return false;
+	if (Z_TYPE_P(items) != IS_ARRAY) return true;
+	zv::Val itemsHold = zv::Val::copyOf(zv::Ref(items));
+	for (auto entry : zv::ArrRef(itemsHold.raw())) {
+		zval *item = entry.value().deref().raw();
+		if (Z_TYPE_P(item) == IS_NULL) continue;
+		zval *byRef = read(pt_csi_rebound_item_by_ref_site, item, PT_LC("byRef"));
+		if (UNEXPECTED(byRef == NULL)) return false;
+		bool itemByRef = zend_is_true(byRef);
+		zval *value = read(pt_csi_rebound_item_value_site, item, PT_LC("value"));
+		if (UNEXPECTED(value == NULL)) return false;
+		zv::Val valueHold = zv::Val::copyOf(zv::Ref(value));
+		if (itemByRef) {
+			if (UNEXPECTED(!collectReboundVariableName(valueHold.raw(), names))) return false;
+			continue;
+		}
+		bool ok = true;
+		pt_engine_with_stack([&]() { ok = collectByRefItemNames(valueHold.raw(), names); });
+		if (UNEXPECTED(!ok)) return false;
+	}
+	return true;
+}
+
+/* one node of getReboundVariableNames(); false = pending exception */
+[[nodiscard]] bool collectReboundNode(zval *node, zv::Arr &names)
+{
+	bool is;
+	if (UNEXPECTED(!isA(node, PT_CLASS_UNSET_STMT, is))) return false;
+	if (is) return collectReboundVariableNames(node, pt_csi_rebound_vars_site, PT_LC("vars"), names);
+	if (UNEXPECTED(!isA(node, PT_CLASS_ASSIGN_REF_EXPR, is))) return false;
+	if (is) {
+		zval *var = read(pt_csi_rebound_var_site, node, PT_LC("var"));
+		if (UNEXPECTED(var == NULL)) return false;
+		zv::Val varHold = zv::Val::copyOf(zv::Ref(var));
+		return collectReboundVariableName(varHold.raw(), names);
+	}
+	if (UNEXPECTED(!isA(node, PT_CLASS_FOREACH_STMT, is))) return false;
+	if (is) {
+		zval *byRef = read(pt_csi_rebound_by_ref_site, node, PT_LC("byRef"));
+		if (UNEXPECTED(byRef == NULL)) return false;
+		bool foreachByRef = zend_is_true(byRef);
+		zval *valueVar = read(pt_csi_rebound_value_var_site, node, PT_LC("valueVar"));
+		if (UNEXPECTED(valueVar == NULL)) return false;
+		zv::Val valueVarHold = zv::Val::copyOf(zv::Ref(valueVar));
+		if (foreachByRef && UNEXPECTED(!collectReboundVariableName(valueVarHold.raw(), names))) return false;
+		return collectByRefItemNames(valueVarHold.raw(), names);
+	}
+	if (UNEXPECTED(!isA(node, PT_CLASS_ASSIGN_EXPR, is))) return false;
+	if (is) {
+		zval *var = read(pt_csi_rebound_var_site, node, PT_LC("var"));
+		if (UNEXPECTED(var == NULL)) return false;
+		zv::Val varHold = zv::Val::copyOf(zv::Ref(var));
+		return collectByRefItemNames(varHold.raw(), names);
+	}
+	if (UNEXPECTED(!isA(node, PT_CLASS_STATIC_STMT, is))) return false;
+	if (is) {
+		zval *vars = read(pt_csi_rebound_vars_site, node, PT_LC("vars"));
+		if (UNEXPECTED(vars == NULL)) return false;
+		if (Z_TYPE_P(vars) != IS_ARRAY) return true;
+		zv::Val varsHold = zv::Val::copyOf(zv::Ref(vars));
+		for (auto entry : zv::ArrRef(varsHold.raw())) {
+			zval *var = read(pt_csi_rebound_static_var_site, entry.value().deref().raw(), PT_LC("var"));
+			if (UNEXPECTED(var == NULL)) return false;
+			zv::Val varHold = zv::Val::copyOf(zv::Ref(var));
+			if (UNEXPECTED(!collectReboundVariableName(varHold.raw(), names))) return false;
+		}
+		return true;
+	}
+	if (UNEXPECTED(!isA(node, PT_CLASS_GLOBAL_STMT, is))) return false;
+	if (is) return collectReboundVariableNames(node, pt_csi_rebound_vars_site, PT_LC("vars"), names);
+	return true;
+}
+
+/* Mirrors the private static getReboundVariableNames(): the attribute-cached
+ * set; UNDEF = pending exception */
+zv::Val getReboundVariableNames(zval *body, zval *stmts)
+{
+	zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(body), ZSTR_VAL(pt_csi_rebound_variables_attribute), ZSTR_LEN(pt_csi_rebound_variables_attribute));
+	if (UNEXPECTED(cached.isUndef())) return zv::Val();
+	if (!cached.isNull()) return cached;
+
+	zv::Arr names = zv::Arr::create(0);
+	zv::Arr stack = zv::Arr::create(0);
+	if (Z_TYPE_P(stmts) == IS_ARRAY) {
+		for (auto entry : zv::ArrRef(stmts)) {
+			stack.push(zv::Val::copyOf(entry.value().deref()));
+		}
+	}
+	for (;;) {
+		zv::Val node = popNode(stack);
+		if (node.isUndef()) break;
+		bool skip;
+		if (UNEXPECTED(!isA(node.raw(), PT_CLASS_FUNCTION_LIKE, skip))) return zv::Val();
+		if (!skip && UNEXPECTED(!isA(node.raw(), PT_CLASS_CLASS_LIKE_STMT, skip))) return zv::Val();
+		if (skip) continue;
+		if (UNEXPECTED(!collectReboundNode(node.raw(), names))) return zv::Val();
+		if (UNEXPECTED(!pushSubNodes(node.raw(), stack))) return zv::Val();
+	}
+	zv::Val result(std::move(names));
+	if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(body), ZSTR_VAL(pt_csi_rebound_variables_attribute), ZSTR_LEN(pt_csi_rebound_variables_attribute), result.raw()))) return zv::Val();
+	return result;
+}
+
+/* the key collectMarkers() files a marker under: spl_object_id($site) . '#'
+ * . $templateName; false = pending exception */
+[[nodiscard]] bool addMarker(zval *markers, zval *marker)
+{
+	zval *site = pt_unresolved_template_argument_type_site(marker);
+	if (UNEXPECTED(site == NULL)) return false;
+	zv::Val templateName = pt_unresolved_template_argument_type_get_template_name(marker);
+	if (UNEXPECTED(templateName.isUndef())) return false;
+	if (UNEXPECTED(!templateName.ref().isString())) {
+		zend_type_error("Unsupported operand types: string . %s", zend_zval_value_name(templateName.raw()));
+		return false;
+	}
+	zv::Str key = zv::Str::adopt(zend_strpprintf(0, "%u#%s", Z_OBJ_HANDLE_P(site), Z_STRVAL_P(templateName.raw())));
+	SEPARATE_ARRAY(markers);
+	Z_TRY_ADDREF_P(marker);
+	zend_symtable_update(Z_ARRVAL_P(markers), key.get(), marker);
+	return true;
+}
+
+/* collectMarkers()'s traversal: static function (Type $type, callable
+ * $traverse) use (&$markers): Type — the markers in the first state slot */
+void collectMarkersBody(zval *markers, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) state1;
+	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_type_error("ClosureSignatureInference::collectMarkers() traversal: expected (Type $type, callable $traverse)");
+		return;
+	}
+	zval *type = &argv[0];
+	if (instanceof_function(Z_OBJCE_P(type), pt_ce_closure_type)) {
+		zv::Val byRefUseTypes = pt_closure_type_get_by_ref_use_types(type);
+		if (UNEXPECTED(byRefUseTypes.isUndef())) return;
+		if (byRefUseTypes.ref().isArray()) {
+			for (auto entry : zv::ArrRef(byRefUseTypes.raw())) {
+				zval *marker = entry.value().deref().raw();
+				if (Z_TYPE_P(marker) != IS_OBJECT || Z_OBJCE_P(marker) != pt_ce_unresolved_template_argument_type) continue;
+				if (UNEXPECTED(!addMarker(markers, marker))) return;
+			}
+		}
+	}
+	if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
+		bool closureMarker;
+		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(type, closureMarker))) return;
+		if (closureMarker && UNEXPECTED(!addMarker(markers, type))) return;
+		zv::Val initial = pt_type_call(Z_OBJ_P(type), PT_LC("getinitialtype"), 0, NULL);
+		if (UNEXPECTED(initial.isUndef())) return;
+		if (!initial.isNull()) {
+			zv::Val traversed = pt_type_call_callable(&argv[1], 1, initial.raw());
+			if (UNEXPECTED(traversed.isUndef())) return;
+		}
+		ZVAL_COPY(return_value, type);
+		return;
+	}
+	zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
+	if (UNEXPECTED(traversed.isUndef())) return;
+	traversed.intoReturnValue(return_value);
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -793,6 +999,21 @@ public:
 			zv::Val mode = pt_template_argument_frame_get_by_ref_site_mode(frame.raw(), expr);
 			if (UNEXPECTED(mode.isUndef())) return zv::Val();
 			if (mode.isNull()) return zv::Val(zv::Arr::empty());
+		}
+		zv::Val body = pt_template_argument_frame_get_closure_signature_body(frame.raw());
+		if (UNEXPECTED(body.isUndef())) return zv::Val();
+		if (body.isNull()) return zv::Val(zv::Arr::empty());
+		zv::Val stmts = pt_template_argument_frame_get_closure_signature_stmts(frame.raw());
+		if (UNEXPECTED(stmts.isUndef())) return zv::Val();
+		zv::Val reboundNames = getReboundVariableNames(body.raw(), stmts.raw());
+		if (UNEXPECTED(reboundNames.isUndef())) return zv::Val();
+		for (auto entry : zv::ArrRef(names.raw())) {
+			zval *name = entry.value().deref().raw();
+			// unset or bound to another reference, the variable no longer is the
+			// one the closure writes to - its effects stay the creation-time fixpoint
+			if (Z_TYPE_P(name) == IS_STRING && zend_symtable_find(Z_ARRVAL_P(reboundNames.raw()), Z_STR_P(name)) != NULL) {
+				return zv::Val(zv::Arr::empty());
+			}
 		}
 
 		zv::Arr markers = zv::Arr::empty();
@@ -870,6 +1091,134 @@ public:
 		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 		return zv::Val::copyOf(zv::Ref(pt_type_native_callback_state(callback.raw(), 0)));
+	}
+
+	/* Mirrors the private static collectMarkers(): the markers keyed by site
+	 * and name */
+	static zv::Val collectMarkers(zval *type)
+	{
+		zv::Val markers(zv::Arr::create(0));
+		zv::Val callback = pt_type_native_callback(collectMarkersBody, markers.raw(), NULL);
+		if (UNEXPECTED(callback.isUndef())) return zv::Val();
+		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
+		if (UNEXPECTED(mapped.isUndef())) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(pt_type_native_callback_state(callback.raw(), 0)));
+	}
+
+	/* withUnconstrainingSend() of every marker of $markers not in $kept (or
+	 * of every marker when $kept is NULL) onto $constraints */
+	static zv::Val unconstrainMarkers(zv::Val constraints, zval *markers, zval *kept)
+	{
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		for (auto entry : zv::ArrRef(markers)) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (kept != NULL && key != NULL && zend_symtable_find(Z_ARRVAL_P(kept), key) != NULL) continue;
+			constraints = pt_template_argument_constraints_with_unconstraining_send(constraints.raw(), entry.value().deref().raw());
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+		return constraints;
+	}
+
+	/* Mirrors collectEscapes() */
+	static zv::Val collectEscapes(zval *type)
+	{
+		zv::Val constraints = pt_template_argument_constraints_create_empty();
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		zv::Val markers = collectMarkers(type);
+		if (UNEXPECTED(markers.isUndef())) return zv::Val();
+		return unconstrainMarkers(std::move(constraints), markers.raw(), NULL);
+	}
+
+	/* Mirrors collectInvokedCallee() */
+	static zv::Val collectInvokedCallee(zval *calleeType)
+	{
+		zv::Val constraints = pt_template_argument_constraints_create_empty();
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		zv::Val members;
+		if (instanceof_function(Z_OBJCE_P(calleeType), pt_ce_union_type)) {
+			members = pt_union_type_get_types(Z_OBJ_P(calleeType));
+			if (UNEXPECTED(members.isUndef())) return zv::Val();
+		} else {
+			zv::Arr single = zv::Arr::create(1);
+			single.push(zv::Val::copyOf(zv::Ref(calleeType)));
+			members = zv::Val(std::move(single));
+		}
+		for (auto entry : zv::ArrRef(members.raw())) {
+			zval *member = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(member) != IS_OBJECT)) continue;
+			if (!instanceof_function(Z_OBJCE_P(member), pt_ce_closure_type)) {
+				zv::Val escapes = collectEscapes(member);
+				if (UNEXPECTED(escapes.isUndef())) return zv::Val();
+				constraints = pt_template_argument_constraints_merge(constraints.raw(), escapes.raw());
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+				continue;
+			}
+			zv::Val returnType = pt_type_call(Z_OBJ_P(member), PT_LC("getreturntype"), 0, NULL);
+			if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+			if (!returnType.ref().isObject() || Z_OBJCE_P(returnType.raw()) != pt_ce_unresolved_template_argument_type) continue;
+			bool returnMarker;
+			if (UNEXPECTED(!isReturnMarker(returnType.raw(), returnMarker))) return zv::Val();
+			if (!returnMarker) continue;
+			constraints = pt_template_argument_constraints_with_unconstraining_send(constraints.raw(), returnType.raw());
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+		return constraints;
+	}
+
+	/* Mirrors collectAbsorbed() */
+	static zv::Val collectAbsorbed(zval *input, zval *result)
+	{
+		zv::Val constraints = pt_template_argument_constraints_create_empty();
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		if (Z_TYPE_P(input) == IS_OBJECT && Z_TYPE_P(result) == IS_OBJECT && Z_OBJ_P(input) == Z_OBJ_P(result)) return constraints;
+		zv::Val markers = collectMarkers(input);
+		if (UNEXPECTED(markers.isUndef())) return zv::Val();
+		if (zend_hash_num_elements(Z_ARRVAL_P(markers.raw())) == 0) return constraints;
+		zv::Val kept = collectMarkers(result);
+		if (UNEXPECTED(kept.isUndef())) return zv::Val();
+		return unconstrainMarkers(std::move(constraints), markers.raw(), kept.raw());
+	}
+
+	/* Mirrors hasMarkers() */
+	[[nodiscard]] static bool hasMarkers(zval *type, bool &out)
+	{
+		zv::Val markers = collectMarkers(type);
+		if (UNEXPECTED(markers.isUndef())) return false;
+		out = zend_hash_num_elements(Z_ARRVAL_P(markers.raw())) > 0;
+		return true;
+	}
+
+	/* Mirrors collectAbsorbedInUnion() */
+	static zv::Val collectAbsorbedInUnion(zval *types)
+	{
+		zv::Val constraints = pt_template_argument_constraints_create_empty();
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		bool carriesMarkers = false;
+		for (auto entry : zv::ArrRef(types)) {
+			bool has;
+			if (UNEXPECTED(!hasMarkers(entry.value().deref().raw(), has))) return zv::Val();
+			if (!has) continue;
+			carriesMarkers = true;
+			break;
+		}
+		if (!carriesMarkers) return constraints;
+
+		uint32_t count = zend_hash_num_elements(Z_ARRVAL_P(types));
+		zval *argv = static_cast<zval *>(safe_emalloc(count, sizeof(zval), 0));
+		uint32_t i = 0;
+		for (auto entry : zv::ArrRef(types)) {
+			ZVAL_COPY_VALUE(&argv[i++], entry.value().deref().raw());
+		}
+		zv::Val unionType = pt_type_combinator_union(count, argv);
+		efree(argv);
+		if (UNEXPECTED(unionType.isUndef())) return zv::Val();
+		for (auto entry : zv::ArrRef(types)) {
+			zv::Val absorbed = collectAbsorbed(entry.value().deref().raw(), unionType.raw());
+			if (UNEXPECTED(absorbed.isUndef())) return zv::Val();
+			constraints = pt_template_argument_constraints_merge(constraints.raw(), absorbed.raw());
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+		return constraints;
 	}
 
 	/* Mirrors collectInvocation() */
@@ -1483,6 +1832,47 @@ zv::Val pt_closure_signature_inference_collect_capture_escapes(zval *type)
 	return ClosureSignatureInference::collectCaptureEscapes(type);
 }
 
+zv::Val pt_closure_signature_inference_collect_escapes(zval *type)
+{
+	return ClosureSignatureInference::collectEscapes(type);
+}
+
+zv::Val pt_closure_signature_inference_collect_invoked_callee(zval *calleeType)
+{
+	return ClosureSignatureInference::collectInvokedCallee(calleeType);
+}
+
+zv::Val pt_closure_signature_inference_collect_absorbed(zval *input, zval *result)
+{
+	return ClosureSignatureInference::collectAbsorbed(input, result);
+}
+
+zv::Val pt_closure_signature_inference_collect_absorbed_in_union(zval *types)
+{
+	return ClosureSignatureInference::collectAbsorbedInUnion(types);
+}
+
+bool pt_closure_signature_inference_has_markers(zval *type, bool &out)
+{
+	return ClosureSignatureInference::hasMarkers(type, out);
+}
+
+zv::Val pt_closure_signature_inference_add_absorbed_in_union(zval *scope, zval *types)
+{
+	zv::Val absorbed = ClosureSignatureInference::collectAbsorbedInUnion(types);
+	if (UNEXPECTED(absorbed.isUndef())) return zv::Val();
+	return pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope), absorbed.raw());
+}
+
+zv::Val pt_closure_signature_inference_add_absorbed_in_union_of_two(zval *scope, zval *first, zval *second)
+{
+	zv::Arr list = zv::Arr::create(2);
+	list.push(zv::Val::copyOf(zv::Ref(first)));
+	list.push(zv::Val::copyOf(zv::Ref(second)));
+	zv::Val listHold(std::move(list));
+	return pt_closure_signature_inference_add_absorbed_in_union(scope, listHold.raw());
+}
+
 zv::Val pt_closure_signature_inference_collect_invocation(zval *scope, zval *call, zval *closureType, bool observing)
 {
 	return ClosureSignatureInference::collectInvocation(scope, call, closureType, observing);
@@ -1513,6 +1903,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 	pt_csi_invocation_template_name = zend_string_init_interned(PT_LC("@invokes"), 1);
 	pt_csi_by_ref_uses_attribute = zend_string_init_interned(PT_LC("closureSignatureByRefUses"), 1);
 	pt_csi_arrow_function_outer_variables_attribute = zend_string_init_interned(PT_LC("closureSignatureArrowFunctionOuterVariables"), 1);
+	pt_csi_rebound_variables_attribute = zend_string_init_interned(PT_LC("closureSignatureReboundVariables"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\Generics\\ClosureSignatureInference");
 	ptdecl::ClosureSignatureInference::declareClass(cls);
@@ -1525,6 +1916,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 	cls.privateClassConstantString("ARROW_FUNCTION_OUTER_VARIABLES_ATTRIBUTE", "closureSignatureArrowFunctionOuterVariables");
 	cls.privateClassConstantString("CLOSED_BODY_ATTRIBUTE", "closureSignatureClosedBody");
 	cls.privateClassConstantString("ASSIGNED_CLOSURES_ATTRIBUTE", "closureSignatureAssignedClosures");
+	cls.privateClassConstantString("REBOUND_VARIABLES_ATTRIBUTE", "closureSignatureReboundVariables");
 
 	/* the real parameter types: the DI container autowires the service by
 	 * reflecting the constructor */
@@ -1595,6 +1987,40 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 		zval *type;
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		PT_RETURN_VAL(ClosureSignatureInference::collectCaptureEscapes(type));
+	});
+
+	cls.method(sigs::collectEscapes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		PT_RETURN_VAL(ClosureSignatureInference::collectEscapes(type));
+	});
+
+	cls.method(sigs::collectInvokedCallee, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *calleeType;
+		if (!zp::parse<zp::Obj>(execute_data, calleeType)) RETURN_THROWS();
+		PT_RETURN_VAL(ClosureSignatureInference::collectInvokedCallee(calleeType));
+	});
+
+	cls.method(sigs::collectAbsorbed, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *input, *result;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, input, result)) RETURN_THROWS();
+		PT_RETURN_VAL(ClosureSignatureInference::collectAbsorbed(input, result));
+	});
+
+	cls.method(sigs::collectAbsorbedInUnion, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *types;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_ARRAY(types)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(ClosureSignatureInference::collectAbsorbedInUnion(types));
+	});
+
+	cls.method(sigs::hasMarkers, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		bool out;
+		if (UNEXPECTED(!ClosureSignatureInference::hasMarkers(type, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.method(sigs::collectInvocation, [](INTERNAL_FUNCTION_PARAMETERS) {

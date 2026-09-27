@@ -103,17 +103,29 @@ class Foo
 	/** @var mixed */
 	private $untypedHandler;
 
+	/** @var Closure(int): mixed */
+	private Closure $typedArrowHandler;
+
 	public function userExample(): void
 	{
 		$c = function ($a) {
 			assertType('1|2|string', $a);
 			assertNativeType('mixed', $a);
 		};
+		assertType('Closure(1|2|string): void', $c);
 		$c(1);
 		$c(2);
 
 		doFoo($c);
 		assertType('Closure(1|2|string): void', $c);
+
+		$f = fn ($a) => assertType('1|2|string', $a);
+		assertType('Closure(1|2|string): mixed', $f);
+		$f(1);
+		$f(2);
+
+		doFoo($f);
+		assertType('Closure(1|2|string): mixed', $f);
 	}
 
 	public function arrowFunction(): void
@@ -121,6 +133,15 @@ class Foo
 		$f = fn ($a) => $a;
 		$f(1);
 		assertType("'x'", $f('x'));
+		assertType("Closure(1|'x'): (1|'x')", $f);
+
+		$c = function ($a) {
+			assertType("1|'x'", $a);
+			return $a;
+		};
+		$c(1);
+		assertType("'x'", $c('x'));
+		assertType("Closure(1|'x'): (1|'x')", $c);
 	}
 
 	public function arrayOffsets(): void
@@ -137,6 +158,19 @@ class Foo
 			},
 		];
 		$literal['b']('foo');
+		assertType('array{a: Closure(5): void}', $h);
+		assertType("array{b: Closure('foo'): void}", $literal);
+
+		$arrowH = [];
+		$arrowH['a'] = fn ($x) => assertType('6', $x);
+		$arrowH['a'](6);
+
+		$arrowLiteral = [
+			'b' => fn ($y) => assertType("'bar'", $y),
+		];
+		$arrowLiteral['b']('bar');
+		assertType('array{a: Closure(6): mixed}', $arrowH);
+		assertType("array{b: Closure('bar'): mixed}", $arrowLiteral);
 	}
 
 	public function listOfClosures(): void
@@ -150,6 +184,7 @@ class Foo
 		foreach ($hs as $h) {
 			$h('s');
 		}
+		assertType("array{Closure('s'): void, Closure('s'): mixed}", $hs);
 	}
 
 	public function aliasAndUnion(bool $b): void
@@ -166,6 +201,19 @@ class Foo
 			assertType('2', $q);
 		};
 		$e(2);
+		assertType('Closure(1): void', $c);
+		assertType('Closure(1): void', $d);
+		assertType('Closure(2): void', $e);
+
+		$f = fn ($a) => assertType('3', $a);
+		$g = $f;
+		$g(3);
+		assertType('Closure(3): mixed', $f);
+		assertType('Closure(3): mixed', $g);
+
+		$h = $b ? fn ($p) => assertType('4', $p) : fn ($q) => assertType('4', $q);
+		$h(4);
+		assertType('Closure(4): mixed', $h);
 	}
 
 	/**
@@ -199,6 +247,25 @@ class Foo
 			return (string) $value;
 		};
 		assertType('ClosureSignatureFromUsages\Collection<string>', $collection->map($collectionMapper));
+
+		assertType('Closure(int, int): int<-1, 1>', $cmp);
+		assertType('Closure(1|2): (1|2)', $mapper);
+		assertType('Closure(string): bool', $filter);
+		assertType('Closure(int): decimal-int-string', $collectionMapper);
+
+		$arrowCmp = fn ($a, $b) => $a <=> $b;
+		usort($ints, $arrowCmp);
+		$arrowMapper = fn ($i) => $i;
+		array_map($arrowMapper, [1, 2]);
+		$arrowFilter = fn ($s) => $s !== '';
+		array_filter($strings, $arrowFilter);
+		$arrowCollectionMapper = fn ($value) => (string) $value;
+		assertType('ClosureSignatureFromUsages\Collection<string>', $collection->map($arrowCollectionMapper));
+
+		assertType('Closure(int, int): int<-1, 1>', $arrowCmp);
+		assertType('Closure(1|2): (1|2)', $arrowMapper);
+		assertType('Closure(string): bool', $arrowFilter);
+		assertType('Closure(int): decimal-int-string', $arrowCollectionMapper);
 	}
 
 	/**
@@ -209,8 +276,20 @@ class Foo
 		$c = function ($a): void {
 			assertType('int', $a);
 		};
+		assertType('Closure(int): void', $c);
 
 		return $c;
+	}
+
+	/**
+	 * @return Closure(int): string
+	 */
+	public function returnedArrowFunction(): Closure
+	{
+		$f = fn ($a) => (string) $a;
+		assertType('Closure(int): decimal-int-string', $f);
+
+		return $f;
 	}
 
 	public function typedProperty(): void
@@ -219,6 +298,11 @@ class Foo
 			assertType('int', $a);
 		};
 		$this->typedHandler = $c;
+		assertType('Closure(int): void', $c);
+
+		$f = fn ($a) => assertType('int', $a);
+		$this->typedArrowHandler = $f;
+		assertType('Closure(int): mixed', $f);
 	}
 
 	public function varTag(): void
@@ -227,6 +311,11 @@ class Foo
 		$c = function ($a): void {
 			assertType('int', $a);
 		};
+		assertType('callable(int): void', $c);
+
+		/** @var callable(int): mixed $f */
+		$f = fn ($a) => assertType('int', $a);
+		assertType('callable(int): mixed', $f);
 	}
 
 	public function escapeToUntypedProperty(): void
@@ -236,6 +325,12 @@ class Foo
 		};
 		$c(1);
 		$this->untypedHandler = $c;
+		assertType('Closure(mixed): void', $c);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f(1);
+		$this->untypedHandler = $f;
+		assertType('Closure(mixed): mixed', $f);
 	}
 
 	public function escapeToMixedAndBareCallables(): void
@@ -262,6 +357,31 @@ class Foo
 			assertType('mixed', $a);
 		};
 		call_user_func($f, 1);
+
+		assertType('Closure(mixed): void', $c);
+		assertType('Closure(mixed): void', $d);
+		assertType('Closure(mixed): void', $e);
+		assertType('Closure(mixed): void', $f);
+
+		$arrowC = fn ($a) => assertType('mixed', $a);
+		$arrowC(1);
+		takesMixed($arrowC);
+
+		$arrowD = fn ($a) => assertType('mixed', $a);
+		$arrowD(1);
+		takesBareCallable($arrowD);
+
+		$arrowE = fn ($a) => assertType('mixed', $a);
+		$arrowE(1);
+		takesBareClosure($arrowE);
+
+		$arrowF = fn ($a) => assertType('mixed', $a);
+		call_user_func($arrowF, 1);
+
+		assertType('Closure(mixed): mixed', $arrowC);
+		assertType('Closure(mixed): mixed', $arrowD);
+		assertType('Closure(mixed): mixed', $arrowE);
+		assertType('Closure(mixed): mixed', $arrowF);
 	}
 
 	public function escapeViaGetDefinedVars(): void
@@ -270,8 +390,12 @@ class Foo
 			assertType('mixed', $a);
 		};
 		$c(1);
+		$f = fn ($a) => assertType('mixed', $a);
+		$f(1);
 		$vars = get_defined_vars();
 		takesMixed($vars);
+		assertType('Closure(mixed): void', $c);
+		assertType('Closure(mixed): mixed', $f);
 	}
 
 	public function escapeViaPropertyOffset(): void
@@ -281,6 +405,12 @@ class Foo
 		};
 		$c(1);
 		$this->untypedHandler['x'] = $c;
+		assertType('Closure(mixed): void', $c);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f(1);
+		$this->untypedHandler['y'] = $f;
+		assertType('Closure(mixed): mixed', $f);
 	}
 
 	public function escapeViaGlobal(): void
@@ -290,6 +420,12 @@ class Foo
 			assertType('mixed', $a);
 		};
 		$globalHandler(1);
+		assertType('Closure(mixed): void', $globalHandler);
+
+		global $globalArrowHandler;
+		$globalArrowHandler = fn ($a) => assertType('mixed', $a);
+		$globalArrowHandler(1);
+		assertType('Closure(mixed): mixed', $globalArrowHandler);
 	}
 
 	public function escapeViaGlobalsArray(): void
@@ -299,15 +435,27 @@ class Foo
 		};
 		$c(1);
 		$GLOBALS['handler'] = $c;
+		assertType('Closure(mixed): void', $c);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f(1);
+		$GLOBALS['arrowHandler'] = $f;
+		assertType('Closure(mixed): mixed', $f);
 	}
 
-	public function escapeViaByRefParameter(&$out): void
+	public function escapeViaByRefParameter(&$out, &$arrowOut): void
 	{
 		$c = function ($a) {
 			assertType('mixed', $a);
 		};
 		$c(1);
 		$out = $c;
+		assertType('Closure(mixed): void', $c);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f(1);
+		$arrowOut = $f;
+		assertType('Closure(mixed): mixed', $f);
 	}
 
 	public function escapeViaYield(): \Generator
@@ -317,15 +465,26 @@ class Foo
 		};
 		$c(1);
 		yield $c;
+		assertType('Closure(mixed): void', $c);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f(1);
+		yield $f;
+		assertType('Closure(mixed): mixed', $f);
 	}
 
-	/** @return \Generator<int, Closure(int): void> */
+	/** @return \Generator<int, Closure(int): mixed> */
 	public function yieldToTypedGenerator(): \Generator
 	{
 		$c = function ($a): void {
 			assertType('int', $a);
 		};
 		yield $c;
+		assertType('Closure(int): void', $c);
+
+		$f = fn ($a) => assertType('int', $a);
+		yield $f;
+		assertType('Closure(int): mixed', $f);
 	}
 
 	/** @return \Generator<callable(string): void, int> */
@@ -335,6 +494,7 @@ class Foo
 			assertType('string', $a);
 		};
 		yield $c => 1;
+		assertType('Closure(string): void', $c);
 	}
 
 	/** @return \Generator<int, callable(int): void> */
@@ -344,15 +504,21 @@ class Foo
 			assertType('int', $a);
 		};
 		yield from [$c];
+		assertType('Closure(int): void', $c);
 	}
 
-	/** @return iterable<int, callable(int): void> */
+	/** @return iterable<int, callable(int): mixed> */
 	public function yieldToTypedIterable(): iterable
 	{
 		$c = function ($a): void {
 			assertType('int', $a);
 		};
 		yield $c;
+		assertType('Closure(int): void', $c);
+
+		$f = fn ($a) => assertType('int', $a);
+		yield $f;
+		assertType('Closure(int): mixed', $f);
 	}
 
 	public function escapeViaInclude(): void
@@ -361,7 +527,11 @@ class Foo
 			assertType('mixed', $a);
 		};
 		$c(1);
+		$f = fn ($a) => assertType('mixed', $a);
+		$f(1);
 		include __DIR__ . '/closure-signature-from-usages-included.php';
+		assertType('Closure(mixed): void', $c);
+		assertType('Closure(mixed): mixed', $f);
 	}
 
 	public function escapeViaDynamicVariable(string $name): void
@@ -370,6 +540,10 @@ class Foo
 			assertType('mixed', $a);
 		};
 		$c(1);
+		$f = fn ($a) => assertType('mixed', $a);
+		assertType('Closure(mixed): void', $c);
+		assertType('Closure(mixed): mixed', $f);
+		$f(1);
 		$$name = 'foo';
 	}
 
@@ -382,9 +556,20 @@ class Foo
 			};
 			$c(1);
 			$out = $c;
+			assertType('Closure(mixed): void', $c);
 		};
 		$g();
 		takesBareCallable($out);
+
+		$arrowOut = null;
+		$h = function () use (&$arrowOut) {
+			$f = fn ($a) => assertType('mixed', $a);
+			$f(1);
+			$arrowOut = $f;
+			assertType('Closure(mixed): mixed', $f);
+		};
+		$h();
+		takesBareCallable($arrowOut);
 	}
 
 	public function neverUsed(): void
@@ -392,6 +577,10 @@ class Foo
 		$c = function ($a) {
 			assertType('mixed', $a);
 		};
+		assertType('Closure(mixed): void', $c);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		assertType('Closure(mixed): mixed', $f);
 	}
 
 	public function typedParameters(): void
@@ -418,6 +607,29 @@ class Foo
 		};
 		$g([1]);
 		takesMixed($g);
+
+		assertType('Closure(array{1}): void', $c);
+		assertType('Closure(non-empty-array<int>): void', $d);
+		assertType("Closure(5, 'x'): void", $e);
+		assertType('Closure(array): void', $g);
+
+		$arrowC = fn (array $a) => assertType('array{2}', $a);
+		$arrowC([2]);
+
+		$arrowD = fn (array $a) => assertType('non-empty-array<int>', $a);
+		takesNonEmptyArrayCallback($arrowD);
+
+		$arrowE = fn (int $a, $b) => [assertType('6', $a), assertType("'y'", $b)];
+		$arrowE(6, 'y');
+
+		$arrowG = fn (array $a) => assertType('array', $a);
+		$arrowG([2]);
+		takesMixed($arrowG);
+
+		assertType('Closure(array{2}): mixed', $arrowC);
+		assertType('Closure(non-empty-array<int>): mixed', $arrowD);
+		assertType("Closure(6, 'y'): array{mixed, mixed}", $arrowE);
+		assertType('Closure(array): mixed', $arrowG);
 	}
 
 	public function defaultAndVariadic(): void
@@ -431,6 +643,16 @@ class Foo
 			assertType('array<int<0, max>|string, mixed>', $xs);
 		};
 		$d(1, 2);
+		assertType('Closure(1|null=): void', $c);
+		assertType('Closure(mixed ...): void', $d);
+
+		$f = fn ($a = null) => $a;
+		assertType('1', $f(1));
+		assertType('Closure(1|null=): (1|null)', $f);
+
+		$g = fn (...$xs) => assertType('array<int<0, max>|string, mixed>', $xs);
+		$g(1, 2);
+		assertType('Closure(mixed ...): mixed', $g);
 	}
 
 	public function nestedUse(): void
@@ -442,6 +664,22 @@ class Foo
 			$c(1);
 		};
 		$c('x');
+		assertType("Closure(1|'x'): void", $c);
+
+		$f = fn ($a) => assertType("2|'y'", $a);
+		$h = fn () => $f(2);
+		$f('y');
+		assertType("Closure(2|'y'): mixed", $f);
+		assertType('Closure(): mixed', $h);
+
+		$i = fn ($a) => $a;
+		$j = function () use ($i) {
+			return $i(3);
+		};
+		$i('z');
+		assertType("Closure(3|'z'): (3|'z')", $i);
+		assertType('Closure(): 3', $j);
+		assertType('3', $j());
 	}
 
 	public function recursion(): void
@@ -454,6 +692,7 @@ class Foo
 			return $n * $fact($n - 1);
 		};
 		$fact(5);
+		assertType('Closure(float|int): (float|int)', $fact);
 	}
 
 	public function recursionThroughByRefUse(\stdClass $o): void
@@ -465,6 +704,7 @@ class Foo
 			}
 		};
 		$check($o, true);
+		assertType('Closure(stdClass, bool): void', $check);
 	}
 
 	public function reassignment(): void
@@ -473,10 +713,19 @@ class Foo
 			assertType('1', $a);
 		};
 		$c(1);
+		assertType('Closure(1): void', $c);
 		$c = function ($b) {
 			assertType("'x'", $b);
 		};
 		$c('x');
+		assertType("Closure('x'): void", $c);
+
+		$f = fn ($a) => assertType('2', $a);
+		$f(2);
+		assertType('Closure(2): mixed', $f);
+		$f = fn ($b) => assertType("'y'", $b);
+		$f('y');
+		assertType("Closure('y'): mixed", $f);
 	}
 
 	public function arrayOfCallbacks(): void
@@ -485,6 +734,11 @@ class Foo
 			assertType('int', $a);
 		};
 		takesCallbacks([$c]);
+		assertType('Closure(int): void', $c);
+
+		$f = fn ($a) => assertType('int', $a);
+		takesCallbacks([$f]);
+		assertType('Closure(int): mixed', $f);
 	}
 
 	public function returnContextualTypingStored(): void
@@ -523,6 +777,11 @@ class Foo
 			return 'x' . $value;
 		};
 		assertType('list<int|string>', takesConvertor($convertor));
+		assertType('static-Closure(int|string): non-falsy-string', $convertor);
+
+		$arrowConvertor = static fn (int|string $value): string => 'x' . $value;
+		assertType('list<int|string>', takesConvertor($arrowConvertor));
+		assertType('static-Closure(int|string): non-falsy-string', $arrowConvertor);
 	}
 
 	public function variadicParameterKeepsDeclaredType(): void
@@ -533,6 +792,12 @@ class Foo
 			return $inner(...$args);
 		};
 		$outer('x', 1.0);
+		assertType('static-Closure(string, float): array{string, float}', $inner);
+		assertType('static-Closure(mixed ...): array{string, float}', $outer);
+
+		$arrowOuter = static fn (mixed ...$args): array => $inner(...$args);
+		$arrowOuter('x', 1.0);
+		assertType('static-Closure(mixed ...): array{string, float}', $arrowOuter);
 	}
 
 	public function invocationReturnsWhatTheBodyReturnsForItsArguments(mixed $a, mixed $b): void
@@ -555,6 +820,13 @@ class Foo
 			assertType('array{}|array{ClosureSignatureFromUsages\\InvokedCountry}', $toEnumList($value, InvokedCountry::class));
 		};
 		$inner(1);
+		assertType("static-Closure(mixed, 'ClosureSignatureFromUsages\\\\InvokedCountry'|'ClosureSignatureFromUsages\\\\InvokedRegion'): list<ClosureSignatureFromUsages\\InvokedCountry|ClosureSignatureFromUsages\\InvokedRegion>", $toEnumList);
+		assertType('static-Closure(1): void', $inner);
+
+		$arrowToEnumList = static fn (mixed $value, string $enumClassName): ?object => $enumClassName::tryFrom($value);
+		assertType('ClosureSignatureFromUsages\\InvokedCountry|null', $arrowToEnumList($a, InvokedCountry::class));
+		assertType('ClosureSignatureFromUsages\\InvokedRegion|null', $arrowToEnumList($b, InvokedRegion::class));
+		assertType("static-Closure(mixed, 'ClosureSignatureFromUsages\\\\InvokedCountry'|'ClosureSignatureFromUsages\\\\InvokedRegion'): (ClosureSignatureFromUsages\\InvokedCountry|ClosureSignatureFromUsages\\InvokedRegion|null)", $arrowToEnumList);
 	}
 
 	public function invocationOfAReassignedVariable(): void
@@ -564,6 +836,272 @@ class Foo
 		$f = static fn (int|string $x): string => 'other';
 		assertType("'other'", $f(1));
 		$f('a');
+		assertType("static-Closure(1|'a'): 'other'", $f);
+
+		$c = static function (int|string $x): int|string {
+			return $x;
+		};
+		assertType('1', $c(1));
+		assertType('static-Closure(1): 1', $c);
+		$c = static function (int|string $x): string {
+			return 'other';
+		};
+		assertType("'other'", $c(1));
+		$c('a');
+		assertType("static-Closure(1|'a'): 'other'", $c);
+	}
+
+	/**
+	 * @param list<int> $args
+	 */
+	public function unpackedArguments(array $args): void
+	{
+		$c = function ($a, $b = null) {
+			assertType("'x'|int", $a);
+			assertType('int|null', $b);
+		};
+		$c('x');
+		$c(...$args);
+		assertType("Closure('x'|int, int|null=): void", $c);
+
+		$d = function ($a) {
+			assertType("5|'y'", $a);
+		};
+		$d(...[5]);
+		$d(...['a' => 'y']);
+		assertType("Closure(5|'y'): void", $d);
+
+		$f = fn ($a, $b = null) => [assertType("'x'|int", $a), assertType('int|null', $b)];
+		$f('x');
+		$f(...$args);
+		assertType("Closure('x'|int, int|null=): array{mixed, mixed}", $f);
+	}
+
+	public function returnContextualTypingStoredAndInvoked(): void
+	{
+		$c = function () {
+			return function ($x): void {
+				assertType('mixed', $x);
+			};
+		};
+		takesFactory($c);
+		$c()(5);
+
+		$f = fn () => fn ($y) => assertType('mixed', $y);
+		takesFactory($f);
+		$f()(5);
+	}
+
+	public function returnContextualTypingStoredAndEscaped(): void
+	{
+		$c = function () {
+			return function ($x): void {
+				assertType('mixed', $x);
+			};
+		};
+		takesFactory($c);
+		takesBareCallable($c);
+
+		$f = fn () => fn ($y) => assertType('mixed', $y);
+		takesFactory($f);
+		takesBareCallable($f);
+	}
+
+	public function invokedThroughClosureMethods(string $method): void
+	{
+		$invoke = function ($a) {
+			assertType('mixed', $a);
+		};
+		$invoke('x');
+		$invoke->__invoke(5);
+		assertType('Closure(mixed): void', $invoke);
+
+		$arrowInvoke = fn ($a) => assertType('mixed', $a);
+		$arrowInvoke('x');
+		$arrowInvoke->__invoke(5);
+		assertType('Closure(mixed): mixed', $arrowInvoke);
+
+		$nullsafe = function ($a) {
+			assertType('mixed', $a);
+		};
+		$nullsafe('x');
+		$nullsafe?->__invoke(5);
+
+		$dynamic = function ($a) {
+			assertType('mixed', $a);
+		};
+		$dynamic('x');
+		$dynamic->$method(5);
+	}
+
+	public function invokedThroughArrayCallable(): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$callable = [$c, '__invoke'];
+		$callable(5);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f('x');
+		$arrowCallable = [$f, '__invoke'];
+		$arrowCallable(5);
+	}
+
+	public function invokedAsUnionMember(bool $b): void
+	{
+		$c = function ($a) {
+			assertType("5|'x'", $a);
+		};
+		$c(5);
+		$d = $b ? $c : 'strlen';
+		$d('x');
+
+		$f = fn ($a) => assertType("6|'y'", $a);
+		$f(6);
+		$g = $b ? $f : 'strlen';
+		$g('y');
+	}
+
+	public function notAbsorbedByNull(bool $b): void
+	{
+		$c = function ($a) {
+			assertType("5|'x'", $a);
+		};
+		$c('x');
+		$d = $b ? $c : null;
+		if ($d !== null) {
+			$d(5);
+		}
+
+		$f = fn ($a) => assertType("6|'y'", $a);
+		$f('y');
+		$g = null;
+		if ($b) {
+			$g = $f;
+		}
+		if ($g !== null) {
+			$g(6);
+		}
+	}
+
+	public function absorbedByScopeMerge(?Closure $e): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $e;
+		if ($d === null) {
+			$d = $c;
+		}
+		$d(5);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f('x');
+		$g = $e;
+		if ($g === null) {
+			$g = $f;
+		}
+		$g(5);
+	}
+
+	public function absorbedByTernary(callable $e, bool $b): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $b ? $c : $e;
+		$d(5);
+
+		$f = fn ($a) => assertType('mixed', $a);
+		$f('x');
+		$g = $b ? $f : $e;
+		$g(5);
+	}
+
+	public function absorbedByShortTernary(mixed $m): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $m ?: $c;
+		$d(5);
+	}
+
+	public function absorbedByCoalesce(?Closure $e): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $e ?? $c;
+		$d(5);
+	}
+
+	public function absorbedByCoalesceAssign(?Closure $e): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$e ??= $c;
+		$e(5);
+	}
+
+	public function absorbedByMatch(int $i, Closure $e): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = match ($i) {
+			1 => $c,
+			default => $e,
+		};
+		$d(5);
+	}
+
+	/**
+	 * @param Closure(mixed): void $e
+	 */
+	public function absorbedByWiderClosure(Closure $e, bool $b): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$d = $b ? $c : $e;
+		$d(5);
+	}
+
+	/**
+	 * @param list<Closure> $list
+	 */
+	public function absorbedByArrayWrite(array $list): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$list[] = $c;
+		$list[0](5);
+	}
+
+	/**
+	 * @param list<Closure> $list
+	 */
+	public function absorbedByArraySpread(array $list): void
+	{
+		$c = function ($a) {
+			assertType('mixed', $a);
+		};
+		$c('x');
+		$all = [...$list, $c];
+		$all[0](5);
 	}
 
 }

@@ -52,12 +52,15 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExpressionContext\0" /* 372 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 407 */
 	"processExpr\0" /* 441 */
-	"type\0" /* 453 */
-	"PHPStan\\Type\\Type\0" /* 458 */
-	"getExpectedArrayType\0" /* 476 */
-	"arrayType\0" /* 497 */
-	"keyType\0" /* 507 */
-	"getExpectedValueType"; /* 515 */
+	"PhpParser\\Node\\Expr\\Array_\0" /* 453 */
+	"itemResults\0" /* 480 */
+	"collectAbsorbedItems\0" /* 492 */
+	"type\0" /* 513 */
+	"PHPStan\\Type\\Type\0" /* 518 */
+	"getExpectedArrayType\0" /* 536 */
+	"arrayType\0" /* 557 */
+	"keyType\0" /* 567 */
+	"getExpectedValueType"; /* 575 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
 	reg::packed(75, 0, 99), /* __construct $expressionResultFactory */
@@ -71,11 +74,15 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(351, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
 	reg::packed(364, 0, 372), /* processExpr $context */
 	reg::packed(177, 0, 407), /* processExpr return */
-	reg::packed(453, MAY_BE_NULL, 458), /* getExpectedArrayType $type */
-	reg::packed(177, MAY_BE_NULL, 458), /* getExpectedArrayType return */
-	reg::packed(497, MAY_BE_NULL, 458), /* getExpectedValueType $arrayType */
-	reg::packed(507, 0, 458), /* getExpectedValueType $keyType */
-	reg::packed(177, MAY_BE_NULL, 458), /* getExpectedValueType return */
+	reg::packed(152, 0, 453), /* collectAbsorbedItems $expr */
+	reg::packed(480, MAY_BE_ARRAY), /* collectAbsorbedItems $itemResults */
+	reg::packed(265, 0, 271), /* collectAbsorbedItems $scope */
+	reg::packed(177, 0, 271), /* collectAbsorbedItems return */
+	reg::packed(513, MAY_BE_NULL, 518), /* getExpectedArrayType $type */
+	reg::packed(177, MAY_BE_NULL, 518), /* getExpectedArrayType return */
+	reg::packed(557, MAY_BE_NULL, 518), /* getExpectedValueType $arrayType */
+	reg::packed(567, 0, 518), /* getExpectedValueType $keyType */
+	reg::packed(177, MAY_BE_NULL, 518), /* getExpectedValueType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -85,8 +92,9 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 140 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig supports = { { 178 /* supports */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 441 /* processExpr */, 7, 4, 7, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getExpectedArrayType = { { 476 /* getExpectedArrayType */, 1, 12, 1, 13, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getExpectedValueType = { { 515 /* getExpectedValueType */, 2, 14, 2, 16, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectAbsorbedItems = { { 492 /* collectAbsorbedItems */, 3, 12, 3, 15, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getExpectedArrayType = { { 536 /* getExpectedArrayType */, 1, 16, 1, 17, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getExpectedValueType = { { 575 /* getExpectedValueType */, 2, 18, 2, 20, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayHandler

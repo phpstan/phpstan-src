@@ -23,6 +23,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\UnionType;
 use function array_keys;
 use function array_pop;
 use function count;
@@ -86,6 +87,8 @@ final class ClosureSignatureInference
 
 	private const ASSIGNED_CLOSURES_ATTRIBUTE = 'closureSignatureAssignedClosures';
 
+	private const REBOUND_VARIABLES_ATTRIBUTE = 'closureSignatureReboundVariables';
+
 	public function __construct(
 		#[AutowiredParameter(ref: '%featureToggles.closureSignaturesFromUsages%')]
 		private bool $enabled,
@@ -134,6 +137,18 @@ final class ClosureSignatureInference
 		}
 		if (!$frame->isObservingClosures() && $frame->getByRefSiteMode($expr) === null) {
 			return [];
+		}
+		$body = $frame->getClosureSignatureBody();
+		if ($body === null) {
+			return [];
+		}
+		$reboundNames = self::getReboundVariableNames($body, $frame->getClosureSignatureStmts());
+		foreach ($names as $name) {
+			// unset or bound to another reference, the variable no longer is the
+			// one the closure writes to - its effects stay the creation-time fixpoint
+			if (isset($reboundNames[$name])) {
+				return [];
+			}
 		}
 
 		$markers = [];
@@ -225,6 +240,142 @@ final class ClosureSignatureInference
 		});
 
 		return $constraints;
+	}
+
+	/**
+	 * The closures in $type go where nothing describes how they are invoked:
+	 * their parameters keep the declared types, their returned closures are
+	 * typed by nothing and their by-ref uses keep the creation-time fixpoint.
+	 */
+	public static function collectEscapes(Type $type): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		foreach (self::collectMarkers($type) as $marker) {
+			$constraints = $constraints->withUnconstrainingSend($marker);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * The callee of a call: a closure written where nothing types it learns its
+	 * arguments through the call's parameters, but the value it returns goes
+	 * where nothing follows it. A closure carried by any other callee - the
+	 * object of an array callable - is invoked as nothing describes.
+	 */
+	public static function collectInvokedCallee(Type $calleeType): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		foreach ($calleeType instanceof UnionType ? $calleeType->getTypes() : [$calleeType] as $member) {
+			if (!$member instanceof ClosureType) {
+				$constraints = $constraints->merge(self::collectEscapes($member));
+				continue;
+			}
+			$returnType = $member->getReturnType();
+			if (!$returnType instanceof UnresolvedTemplateArgumentType || !self::isReturnMarker($returnType)) {
+				continue;
+			}
+			$constraints = $constraints->withUnconstrainingSend($returnType);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * $input was merged into $result - two branches of a variable, the arms of
+	 * a ternary, a value written into an array. A union absorbs a closure into a
+	 * wider member (Closure, callable, mixed, a closure with declared
+	 * parameters): nothing follows the closures whose markers $result lost, so
+	 * they escape.
+	 */
+	public static function collectAbsorbed(Type $input, Type $result): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		if ($input === $result) {
+			return $constraints;
+		}
+		$markers = self::collectMarkers($input);
+		if ($markers === []) {
+			return $constraints;
+		}
+		$kept = self::collectMarkers($result);
+		foreach ($markers as $key => $marker) {
+			if (isset($kept[$key])) {
+				continue;
+			}
+			$constraints = $constraints->withUnconstrainingSend($marker);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * The values of $types merged into their union - the branches of a ternary,
+	 * of `??`, the arms of a match. See collectAbsorbed().
+	 *
+	 * @param list<Type> $types
+	 */
+	public static function collectAbsorbedInUnion(array $types): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		$carriesMarkers = false;
+		foreach ($types as $type) {
+			if (!self::hasMarkers($type)) {
+				continue;
+			}
+			$carriesMarkers = true;
+			break;
+		}
+		if (!$carriesMarkers) {
+			return $constraints;
+		}
+
+		$union = TypeCombinator::union(...$types);
+		foreach ($types as $type) {
+			$constraints = $constraints->merge(self::collectAbsorbed($type, $union));
+		}
+
+		return $constraints;
+	}
+
+	/** Whether $type carries a closure written where nothing types it. */
+	public static function hasMarkers(Type $type): bool
+	{
+		return self::collectMarkers($type) !== [];
+	}
+
+	/**
+	 * The markers of the closures written where nothing types them in $type -
+	 * of their parameters, returns and by-ref uses - keyed by site and name.
+	 *
+	 * @return array<string, UnresolvedTemplateArgumentType>
+	 */
+	private static function collectMarkers(Type $type): array
+	{
+		$markers = [];
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$markers): Type {
+			if ($type instanceof ClosureType) {
+				foreach ($type->getByRefUseTypes() as $marker) {
+					if (!$marker instanceof UnresolvedTemplateArgumentType) {
+						continue;
+					}
+					$markers[spl_object_id($marker->getSite()) . '#' . $marker->getTemplateName()] = $marker;
+				}
+			}
+			if ($type instanceof UnresolvedTemplateArgumentType) {
+				if (self::isClosureSignatureMarker($type)) {
+					$markers[spl_object_id($type->getSite()) . '#' . $type->getTemplateName()] = $type;
+				}
+				$initial = $type->getInitialType();
+				if ($initial !== null) {
+					$traverse($initial);
+				}
+				return $type;
+			}
+			return $traverse($type);
+		});
+
+		return $markers;
 	}
 
 	/**
@@ -415,6 +566,106 @@ final class ClosureSignatureInference
 		}
 
 		return false;
+	}
+
+	/**
+	 * The variables the body unsets or binds to another reference - `unset()`,
+	 * `=&`, a by-reference foreach value or destructuring, `static`, `global`.
+	 * A by-ref use of such a variable may no longer share its value with the
+	 * body's variable where the closure is invoked.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @return array<string, true>
+	 */
+	private static function getReboundVariableNames(Node $body, array $stmts): array
+	{
+		/** @var array<string, true>|null $cached */
+		$cached = $body->getAttribute(self::REBOUND_VARIABLES_ATTRIBUTE);
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$names = [];
+		$stack = $stmts;
+		while (count($stack) > 0) {
+			$node = array_pop($stack);
+			if ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike) {
+				continue;
+			}
+			if ($node instanceof Node\Stmt\Unset_) {
+				foreach ($node->vars as $var) {
+					self::collectVariableName($var, $names);
+				}
+			} elseif ($node instanceof Expr\AssignRef) {
+				self::collectVariableName($node->var, $names);
+			} elseif ($node instanceof Node\Stmt\Foreach_) {
+				if ($node->byRef) {
+					self::collectVariableName($node->valueVar, $names);
+				}
+				self::collectByRefItemNames($node->valueVar, $names);
+			} elseif ($node instanceof Expr\Assign) {
+				self::collectByRefItemNames($node->var, $names);
+			} elseif ($node instanceof Node\Stmt\Static_) {
+				foreach ($node->vars as $staticVar) {
+					self::collectVariableName($staticVar->var, $names);
+				}
+			} elseif ($node instanceof Node\Stmt\Global_) {
+				foreach ($node->vars as $var) {
+					self::collectVariableName($var, $names);
+				}
+			}
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$subNode = $node->$subNodeName;
+				if ($subNode instanceof Node) {
+					$stack[] = $subNode;
+				} elseif (is_array($subNode)) {
+					foreach ($subNode as $item) {
+						if (!$item instanceof Node) {
+							continue;
+						}
+						$stack[] = $item;
+					}
+				}
+			}
+		}
+		$body->setAttribute(self::REBOUND_VARIABLES_ATTRIBUTE, $names);
+
+		return $names;
+	}
+
+	/**
+	 * @param array<string, true> $names
+	 */
+	private static function collectVariableName(Node $node, array &$names): void
+	{
+		if (!$node instanceof Expr\Variable || !is_string($node->name)) {
+			return;
+		}
+
+		$names[$node->name] = true;
+	}
+
+	/**
+	 * The variables a destructuring target binds by reference: `[&$x] = ...`.
+	 *
+	 * @param array<string, true> $names
+	 */
+	private static function collectByRefItemNames(Expr $target, array &$names): void
+	{
+		if (!$target instanceof Expr\List_ && !$target instanceof Expr\Array_) {
+			return;
+		}
+
+		foreach ($target->items as $item) {
+			if ($item === null) {
+				continue;
+			}
+			if ($item->byRef) {
+				self::collectVariableName($item->value, $names);
+				continue;
+			}
+			self::collectByRefItemNames($item->value, $names);
+		}
 	}
 
 	/** @return non-empty-string */

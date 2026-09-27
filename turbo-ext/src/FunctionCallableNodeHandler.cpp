@@ -71,6 +71,22 @@ public:
 			if (UNEXPECTED(nameResult.isUndef())) return zv::Val();
 			currentScope = pt_expression_result_scope(nameResult.raw(), scopeHold);
 			if (UNEXPECTED(currentScope == NULL)) return zv::Val();
+			zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, currentScope);
+			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+			if (!observingFrame.isNull()) {
+				zv::Val nameType = pt_expression_result_get_type(nameResult.raw());
+				if (UNEXPECTED(nameType.isUndef())) return zv::Val();
+				bool closureObject;
+				if (UNEXPECTED(!ptveh::isClosureObject(nameType.raw(), closureObject))) return zv::Val();
+				if (!closureObject) {
+					// the callable built from anything but a closure object runs the
+					// closures it carries where nothing follows their signature
+					zv::Val escapedScope = ptveh::addClosureEscapes(nodeScopeResolver, currentScope, nameType.raw());
+					if (UNEXPECTED(escapedScope.isUndef())) return zv::Val();
+					scopeHold = std::move(escapedScope);
+					currentScope = scopeHold.raw();
+				}
+			}
 			if (UNEXPECTED(!pt_expression_result_has_yield(nameResult.raw(), hasYield))) return zv::Val();
 			throwPoints = pt_expression_result_throw_points(nameResult.raw(), throwPointsHold);
 			if (UNEXPECTED(throwPoints == NULL)) return zv::Val();
@@ -115,6 +131,12 @@ public:
 			if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), nativeTypesPromoted))) return zv::Val();
 			zv::Val callableType = pt_expression_result_get_type_on_scope(nameResult, scope, nativeTypesPromoted);
 			if (UNEXPECTED(callableType.isUndef())) return zv::Val();
+			bool closureObject;
+			if (UNEXPECTED(!ptveh::isClosureObject(callableType.raw(), closureObject))) return zv::Val();
+			if (closureObject) {
+				// the first-class callable of a closure object is the object itself
+				return callableType;
+			}
 			zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(callableType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
 			if (UNEXPECTED(isCallable < 0)) return zv::Val();
 			if (isCallable != PT_TRI_YES) {
@@ -228,6 +250,14 @@ PT_MINIT_REGISTRATION(pt_register_function_callable_node_handler)
 			Z_PARAM_OBJECT_OR_NULL(nameResult)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(FunctionCallableNodeHandler(Z_OBJ_P(ZEND_THIS)).resolveType(scope, expr, nameResult));
+	});
+
+	cls.method(sigs::isClosureObject, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		bool out;
+		if (UNEXPECTED(!ptveh::isClosureObject(type, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.shadow(&pt_ce_function_callable_node_handler);

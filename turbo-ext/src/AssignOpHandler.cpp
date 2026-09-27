@@ -443,6 +443,14 @@ public:
 			rightResult = zv::Val::copyOf(valueResult.ref());
 			AOH_VAL(rightScope, aohResultScope(rightResult.raw()));
 			AOH_VAL(mergedScope, pt_mutating_scope_merge_with(Z_OBJ_P(rightScope.raw()), valueBeforeScope.raw(), false));
+			{
+				AOH_VAL(observingFrame, pt_node_scope_resolver_observing_template_argument_frame(nsr, mergedScope.raw()));
+				if (!observingFrame.isNull()) {
+					AOH_VAL(condType, pt_expression_result_get_type(condResult.raw()));
+					AOH_VAL(rightType, pt_expression_result_get_type(rightResult.raw()));
+					AOH_SET(mergedScope, pt_closure_signature_inference_add_absorbed_in_union_of_two(mergedScope.raw(), condType.raw(), rightType.raw()));
+				}
+			}
 			bool hasYield;
 			AOH_OK(pt_expression_result_has_yield(rightResult.raw(), hasYield));
 			bool isAlwaysTerminating;

@@ -60,6 +60,14 @@ public:
 		if (UNEXPECTED(varResult.isUndef())) return zv::Val();
 		zval *currentScope = pt_expression_result_scope(varResult.raw(), scopeHold);
 		if (UNEXPECTED(currentScope == NULL)) return zv::Val();
+		// the callable of a closure's method runs it where nothing follows its
+		// signature
+		zv::Val varType = pt_expression_result_get_type(varResult.raw());
+		if (UNEXPECTED(varType.isUndef())) return zv::Val();
+		zv::Val escapedScope = ptveh::addClosureEscapes(nodeScopeResolver, currentScope, varType.raw());
+		if (UNEXPECTED(escapedScope.isUndef())) return zv::Val();
+		scopeHold = std::move(escapedScope);
+		currentScope = scopeHold.raw();
 		bool hasYield;
 		if (UNEXPECTED(!pt_expression_result_has_yield(varResult.raw(), hasYield))) return zv::Val();
 		zval *borrowed = pt_expression_result_throw_points(varResult.raw(), throwPointsHold);

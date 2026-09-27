@@ -12,6 +12,7 @@ namespace ptdecl::RicherScopeGetTypeHelper {
 namespace slot {
 inline constexpr uint32_t initializerExprTypeResolver = 0;
 inline constexpr uint32_t propertyReflectionFinder = 1;
+inline constexpr uint32_t stringLengthBoundHelper = 2;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -24,6 +25,7 @@ inline void declareProperties(reg::Class &cls)
 {
 	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\InitializerExprTypeResolver");
 	cls.property("propertyReflectionFinder", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Rules\\Properties\\PropertyReflectionFinder");
+	cls.property("stringLengthBoundHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\StringLengthBoundHelper");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -33,46 +35,49 @@ inline constexpr char strings[] =
 	"PHPStan\\Reflection\\InitializerExprTypeResolver\0" /* 28 */
 	"propertyReflectionFinder\0" /* 75 */
 	"PHPStan\\Rules\\Properties\\PropertyReflectionFinder\0" /* 100 */
-	"__construct\0" /* 150 */
-	"scope\0" /* 162 */
-	"PHPStan\\Analyser\\Scope\0" /* 168 */
-	"expr\0" /* 191 */
-	"PhpParser\\Node\\Expr\\BinaryOp\\Identical\0" /* 196 */
-	"nodeScopeResolver\0" /* 235 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 253 */
-	"null\0" /* 288 */
-	"leftType\0" /* 293 */
-	"PHPStan\\Type\\Type\0" /* 302 */
-	"rightType\0" /* 320 */
-	"\0" /* 330 */
-	"PHPStan\\Type\\TypeResult\0" /* 331 */
-	"getIdenticalResult\0" /* 355 */
-	"PhpParser\\Node\\Expr\\BinaryOp\\NotIdentical\0" /* 374 */
-	"getNotIdenticalResult"; /* 416 */
+	"stringLengthBoundHelper\0" /* 150 */
+	"PHPStan\\Analyser\\StringLengthBoundHelper\0" /* 174 */
+	"__construct\0" /* 215 */
+	"scope\0" /* 227 */
+	"PHPStan\\Analyser\\Scope\0" /* 233 */
+	"expr\0" /* 256 */
+	"PhpParser\\Node\\Expr\\BinaryOp\\Identical\0" /* 261 */
+	"nodeScopeResolver\0" /* 300 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 318 */
+	"null\0" /* 353 */
+	"leftType\0" /* 358 */
+	"PHPStan\\Type\\Type\0" /* 367 */
+	"rightType\0" /* 385 */
+	"\0" /* 395 */
+	"PHPStan\\Type\\TypeResult\0" /* 396 */
+	"getIdenticalResult\0" /* 420 */
+	"PhpParser\\Node\\Expr\\BinaryOp\\NotIdentical\0" /* 439 */
+	"getNotIdenticalResult"; /* 481 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
 	reg::packed(75, 0, 100), /* __construct $propertyReflectionFinder */
-	reg::packed(162, 0, 168), /* getIdenticalResult $scope */
-	reg::packed(191, 0, 196), /* getIdenticalResult $expr */
-	reg::packed(235, MAY_BE_NULL, 253, false, false, 288), /* getIdenticalResult $nodeScopeResolver */
-	reg::packed(293, MAY_BE_NULL, 302, false, false, 288), /* getIdenticalResult $leftType */
-	reg::packed(320, MAY_BE_NULL, 302, false, false, 288), /* getIdenticalResult $rightType */
-	reg::packed(330, 0, 331), /* getIdenticalResult return */
-	reg::packed(162, 0, 168), /* getNotIdenticalResult $scope */
-	reg::packed(191, 0, 374), /* getNotIdenticalResult $expr */
-	reg::packed(235, MAY_BE_NULL, 253, false, false, 288), /* getNotIdenticalResult $nodeScopeResolver */
-	reg::packed(293, MAY_BE_NULL, 302, false, false, 288), /* getNotIdenticalResult $leftType */
-	reg::packed(320, MAY_BE_NULL, 302, false, false, 288), /* getNotIdenticalResult $rightType */
-	reg::packed(330, 0, 331), /* getNotIdenticalResult return */
+	reg::packed(150, 0, 174), /* __construct $stringLengthBoundHelper */
+	reg::packed(227, 0, 233), /* getIdenticalResult $scope */
+	reg::packed(256, 0, 261), /* getIdenticalResult $expr */
+	reg::packed(300, MAY_BE_NULL, 318, false, false, 353), /* getIdenticalResult $nodeScopeResolver */
+	reg::packed(358, MAY_BE_NULL, 367, false, false, 353), /* getIdenticalResult $leftType */
+	reg::packed(385, MAY_BE_NULL, 367, false, false, 353), /* getIdenticalResult $rightType */
+	reg::packed(395, 0, 396), /* getIdenticalResult return */
+	reg::packed(227, 0, 233), /* getNotIdenticalResult $scope */
+	reg::packed(256, 0, 439), /* getNotIdenticalResult $expr */
+	reg::packed(300, MAY_BE_NULL, 318, false, false, 353), /* getNotIdenticalResult $nodeScopeResolver */
+	reg::packed(358, MAY_BE_NULL, 367, false, false, 353), /* getNotIdenticalResult $leftType */
+	reg::packed(385, MAY_BE_NULL, 367, false, false, 353), /* getNotIdenticalResult $rightType */
+	reg::packed(395, 0, 396), /* getNotIdenticalResult return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 150 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getIdenticalResult = { { 355 /* getIdenticalResult */, 2, 2, 5, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNotIdenticalResult = { { 416 /* getNotIdenticalResult */, 2, 8, 5, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 215 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIdenticalResult = { { 420 /* getIdenticalResult */, 2, 3, 5, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNotIdenticalResult = { { 481 /* getNotIdenticalResult */, 2, 9, 5, 14, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::RicherScopeGetTypeHelper

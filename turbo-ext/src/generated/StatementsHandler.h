@@ -14,7 +14,8 @@ inline constexpr uint32_t debugTemplateArguments = 0;
 inline constexpr uint32_t fileTypeMapper = 1;
 inline constexpr uint32_t templateArgumentObserver = 2;
 inline constexpr uint32_t templateArgumentResolver = 3;
-inline constexpr uint32_t unresolvedTemplateArguments = 4;
+inline constexpr uint32_t container = 4;
+inline constexpr uint32_t unresolvedTemplateArguments = 5;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -29,6 +30,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("fileTypeMapper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\FileTypeMapper");
 	cls.property("templateArgumentObserver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentObserver");
 	cls.property("templateArgumentResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentResolver");
+	cls.property("container", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\DependencyInjection\\Container");
 	cls.property("unresolvedTemplateArguments", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
@@ -41,217 +43,232 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\Generics\\TemplateArgumentObserver\0" /* 68 */
 	"templateArgumentResolver\0" /* 119 */
 	"PHPStan\\Analyser\\Generics\\TemplateArgumentResolver\0" /* 144 */
-	"unresolvedTemplateArguments\0" /* 195 */
-	"__construct\0" /* 223 */
-	"nodeScopeResolver\0" /* 235 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 253 */
-	"nodes\0" /* 288 */
-	"scope\0" /* 294 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 300 */
-	"expressionResultStorage\0" /* 331 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 355 */
-	"nodeCallback\0" /* 396 */
-	"\0" /* 409 */
-	"processNodesWithStorage\0" /* 410 */
-	"parentNode\0" /* 434 */
-	"PhpParser\\Node\0" /* 445 */
-	"bodyStmts\0" /* 460 */
-	"storage\0" /* 470 */
-	"context\0" /* 478 */
-	"PHPStan\\Analyser\\StatementContext\0" /* 486 */
-	"gotoNameMatcher\0" /* 520 */
-	"Closure\0" /* 536 */
-	"mergeBodyScopeEachIteration\0" /* 544 */
-	"resolveBackwardGotoScope\0" /* 572 */
-	"labelName\0" /* 597 */
-	"alreadyTerminated\0" /* 607 */
-	"exitPoints\0" /* 625 */
-	"mergeForwardGotoExitPoints\0" /* 636 */
-	"nextStmts\0" /* 663 */
-	"processUnreachableStatement\0" /* 673 */
-	"earlyBinding\0" /* 701 */
-	"getNextUnreachableStatements\0" /* 714 */
-	"stmts\0" /* 743 */
-	"PHPStan\\Analyser\\InternalStatementResult\0" /* 749 */
-	"doProcessStmtNodes\0" /* 790 */
-	"i\0" /* 809 */
-	"stmt\0" /* 811 */
-	"PhpParser\\Node\\Stmt\0" /* 816 */
-	"state\0" /* 836 */
-	"PHPStan\\Analyser\\StatementListWalkState\0" /* 842 */
-	"shouldCheckLastStatement\0" /* 882 */
-	"processStatementStep\0" /* 907 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 928 */
-	"readEndStatementExprResult\0" /* 962 */
-	"processBodyStmtNodesTwoPass\0" /* 989 */
-	"frame\0" /* 1017 */
-	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 1023 */
-	"entries\0" /* 1071 */
-	"statementStartTokenPositions\0" /* 1079 */
-	"observeClosureSignatures\0" /* 1108 */
-	"recordedEntry\0" /* 1133 */
-	"recordedExit\0" /* 1147 */
-	"withRecordedConstraints\0" /* 1160 */
-	"containsLabels\0" /* 1184 */
-	"from\0" /* 1199 */
-	"to\0" /* 1204 */
-	"appendRecordedStatementResults\0" /* 1207 */
-	"PHPStan\\Analyser\\VariableFlow\0" /* 1238 */
-	"getVariableMentionFlow\0" /* 1268 */
-	"variableNames\0" /* 1291 */
-	"statementMentionsAnyVariable\0" /* 1305 */
-	"node\0" /* 1334 */
-	"names\0" /* 1339 */
-	"mentionsEverything\0" /* 1345 */
-	"collectMentionedVariables\0" /* 1364 */
-	"statement\0" /* 1390 */
-	"getOverridingThrowPoints\0" /* 1400 */
-	"defaultExpr\0" /* 1425 */
-	"PhpParser\\Node\\Expr\0" /* 1437 */
-	"processStmtVarAnnotation\0" /* 1457 */
-	"PHPStan\\PhpDoc\\Tag\\VarTag\0" /* 1482 */
-	"findSingleVariableLessVarTag\0" /* 1508 */
-	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 1537 */
-	"emitVarTagChangedNode"; /* 1591 */
+	"container\0" /* 195 */
+	"PHPStan\\DependencyInjection\\Container\0" /* 205 */
+	"unresolvedTemplateArguments\0" /* 243 */
+	"__construct\0" /* 271 */
+	"nodeScopeResolver\0" /* 283 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 301 */
+	"nodes\0" /* 336 */
+	"scope\0" /* 342 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 348 */
+	"expressionResultStorage\0" /* 379 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 403 */
+	"nodeCallback\0" /* 444 */
+	"\0" /* 457 */
+	"processNodesWithStorage\0" /* 458 */
+	"parentNode\0" /* 482 */
+	"PhpParser\\Node\0" /* 493 */
+	"bodyStmts\0" /* 508 */
+	"storage\0" /* 518 */
+	"context\0" /* 526 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 534 */
+	"gotoNameMatcher\0" /* 568 */
+	"Closure\0" /* 584 */
+	"mergeBodyScopeEachIteration\0" /* 592 */
+	"resolveBackwardGotoScope\0" /* 620 */
+	"labelName\0" /* 645 */
+	"alreadyTerminated\0" /* 655 */
+	"exitPoints\0" /* 673 */
+	"mergeForwardGotoExitPoints\0" /* 684 */
+	"nextStmts\0" /* 711 */
+	"processUnreachableStatement\0" /* 721 */
+	"earlyBinding\0" /* 749 */
+	"getNextUnreachableStatements\0" /* 762 */
+	"stmts\0" /* 791 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 797 */
+	"doProcessStmtNodes\0" /* 838 */
+	"i\0" /* 857 */
+	"stmt\0" /* 859 */
+	"PhpParser\\Node\\Stmt\0" /* 864 */
+	"state\0" /* 884 */
+	"PHPStan\\Analyser\\StatementListWalkState\0" /* 890 */
+	"shouldCheckLastStatement\0" /* 930 */
+	"processStatementStep\0" /* 955 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 976 */
+	"readEndStatementExprResult\0" /* 1010 */
+	"processBodyStmtNodesTwoPass\0" /* 1037 */
+	"PHPStan\\Analyser\\ClosureProcessor\0" /* 1065 */
+	"getClosureProcessor\0" /* 1099 */
+	"frame\0" /* 1119 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 1125 */
+	"processDeferredByRefClosureBodies\0" /* 1173 */
+	"entries\0" /* 1207 */
+	"statementStartTokenPositions\0" /* 1215 */
+	"observeClosureSignatures\0" /* 1244 */
+	"recordedEntry\0" /* 1269 */
+	"recordedExit\0" /* 1283 */
+	"withRecordedConstraints\0" /* 1296 */
+	"containsLabels\0" /* 1320 */
+	"from\0" /* 1335 */
+	"to\0" /* 1340 */
+	"appendRecordedStatementResults\0" /* 1343 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 1374 */
+	"getVariableMentionFlow\0" /* 1404 */
+	"variableNames\0" /* 1427 */
+	"statementMentionsAnyVariable\0" /* 1441 */
+	"node\0" /* 1470 */
+	"names\0" /* 1475 */
+	"mentionsEverything\0" /* 1481 */
+	"collectMentionedVariables\0" /* 1500 */
+	"statement\0" /* 1526 */
+	"getOverridingThrowPoints\0" /* 1536 */
+	"defaultExpr\0" /* 1561 */
+	"PhpParser\\Node\\Expr\0" /* 1573 */
+	"processStmtVarAnnotation\0" /* 1593 */
+	"PHPStan\\PhpDoc\\Tag\\VarTag\0" /* 1618 */
+	"findSingleVariableLessVarTag\0" /* 1644 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 1673 */
+	"emitVarTagChangedNode"; /* 1727 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 15), /* __construct $fileTypeMapper */
 	reg::packed(43, 0, 68), /* __construct $templateArgumentObserver */
 	reg::packed(119, 0, 144), /* __construct $templateArgumentResolver */
-	reg::packed(195, MAY_BE_BOOL), /* __construct $unresolvedTemplateArguments */
-	reg::packed(235, 0, 253), /* processNodesWithStorage $nodeScopeResolver */
-	reg::packed(288, MAY_BE_ARRAY), /* processNodesWithStorage $nodes */
-	reg::packed(294, 0, 300), /* processNodesWithStorage $scope */
-	reg::packed(331, 0, 355), /* processNodesWithStorage $expressionResultStorage */
-	reg::packed(396, MAY_BE_CALLABLE), /* processNodesWithStorage $nodeCallback */
-	reg::packed(409, MAY_BE_VOID), /* processNodesWithStorage return */
-	reg::packed(235, 0, 253), /* resolveBackwardGotoScope $nodeScopeResolver */
-	reg::packed(434, 0, 445), /* resolveBackwardGotoScope $parentNode */
-	reg::packed(460, MAY_BE_ARRAY), /* resolveBackwardGotoScope $bodyStmts */
-	reg::packed(294, 0, 300), /* resolveBackwardGotoScope $scope */
-	reg::packed(470, 0, 355), /* resolveBackwardGotoScope $storage */
-	reg::packed(478, 0, 486), /* resolveBackwardGotoScope $context */
-	reg::packed(520, 0, 536), /* resolveBackwardGotoScope $gotoNameMatcher */
-	reg::packed(544, MAY_BE_BOOL), /* resolveBackwardGotoScope $mergeBodyScopeEachIteration */
-	reg::packed(409, 0, 300), /* resolveBackwardGotoScope return */
-	reg::packed(597, MAY_BE_STRING), /* mergeForwardGotoExitPoints $labelName */
-	reg::packed(294, 0, 300), /* mergeForwardGotoExitPoints $scope */
-	reg::packed(607, MAY_BE_BOOL), /* mergeForwardGotoExitPoints $alreadyTerminated */
-	reg::packed(625, MAY_BE_ARRAY), /* mergeForwardGotoExitPoints $exitPoints */
-	reg::packed(409, MAY_BE_ARRAY), /* mergeForwardGotoExitPoints return */
-	reg::packed(235, 0, 253), /* processUnreachableStatement $nodeScopeResolver */
-	reg::packed(663, MAY_BE_ARRAY), /* processUnreachableStatement $nextStmts */
-	reg::packed(294, 0, 300), /* processUnreachableStatement $scope */
-	reg::packed(470, 0, 355), /* processUnreachableStatement $storage */
-	reg::packed(396, MAY_BE_CALLABLE), /* processUnreachableStatement $nodeCallback */
-	reg::packed(409, MAY_BE_VOID), /* processUnreachableStatement return */
-	reg::packed(288, MAY_BE_ARRAY), /* getNextUnreachableStatements $nodes */
-	reg::packed(701, MAY_BE_BOOL), /* getNextUnreachableStatements $earlyBinding */
-	reg::packed(409, MAY_BE_ARRAY), /* getNextUnreachableStatements return */
-	reg::packed(235, 0, 253), /* doProcessStmtNodes $nodeScopeResolver */
-	reg::packed(434, 0, 445), /* doProcessStmtNodes $parentNode */
-	reg::packed(743, MAY_BE_ARRAY), /* doProcessStmtNodes $stmts */
-	reg::packed(294, 0, 300), /* doProcessStmtNodes $scope */
-	reg::packed(470, 0, 355), /* doProcessStmtNodes $storage */
-	reg::packed(396, MAY_BE_CALLABLE), /* doProcessStmtNodes $nodeCallback */
-	reg::packed(478, 0, 486), /* doProcessStmtNodes $context */
-	reg::packed(409, 0, 749), /* doProcessStmtNodes return */
-	reg::packed(235, 0, 253), /* processStatementStep $nodeScopeResolver */
-	reg::packed(434, 0, 445), /* processStatementStep $parentNode */
-	reg::packed(743, MAY_BE_ARRAY), /* processStatementStep $stmts */
-	reg::packed(809, MAY_BE_LONG), /* processStatementStep $i */
-	reg::packed(811, 0, 816), /* processStatementStep $stmt */
-	reg::packed(836, 0, 842), /* processStatementStep $state */
-	reg::packed(470, 0, 355), /* processStatementStep $storage */
-	reg::packed(396, MAY_BE_CALLABLE), /* processStatementStep $nodeCallback */
-	reg::packed(478, 0, 486), /* processStatementStep $context */
-	reg::packed(882, MAY_BE_BOOL), /* processStatementStep $shouldCheckLastStatement */
-	reg::packed(409, MAY_BE_VOID), /* processStatementStep return */
-	reg::packed(811, 0, 816), /* readEndStatementExprResult $stmt */
-	reg::packed(470, 0, 355), /* readEndStatementExprResult $storage */
-	reg::packed(409, MAY_BE_NULL, 928), /* readEndStatementExprResult return */
-	reg::packed(235, 0, 253), /* processBodyStmtNodesTwoPass $nodeScopeResolver */
-	reg::packed(434, 0, 445), /* processBodyStmtNodesTwoPass $parentNode */
-	reg::packed(743, MAY_BE_ARRAY), /* processBodyStmtNodesTwoPass $stmts */
-	reg::packed(294, 0, 300), /* processBodyStmtNodesTwoPass $scope */
-	reg::packed(470, 0, 355), /* processBodyStmtNodesTwoPass $storage */
-	reg::packed(396, MAY_BE_CALLABLE), /* processBodyStmtNodesTwoPass $nodeCallback */
-	reg::packed(478, 0, 486), /* processBodyStmtNodesTwoPass $context */
-	reg::packed(409, 0, 749), /* processBodyStmtNodesTwoPass return */
-	reg::packed(235, 0, 253), /* observeClosureSignatures $nodeScopeResolver */
-	reg::packed(434, 0, 445), /* observeClosureSignatures $parentNode */
-	reg::packed(743, MAY_BE_ARRAY), /* observeClosureSignatures $stmts */
-	reg::packed(1017, 0, 1023), /* observeClosureSignatures $frame */
-	reg::packed(1071, MAY_BE_ARRAY), /* observeClosureSignatures $entries */
-	reg::packed(470, 0, 355), /* observeClosureSignatures $storage */
-	reg::packed(478, 0, 486), /* observeClosureSignatures $context */
-	reg::packed(1079, MAY_BE_ARRAY), /* observeClosureSignatures $statementStartTokenPositions */
-	reg::packed(409, 0, 1023), /* observeClosureSignatures return */
-	reg::packed(294, 0, 300), /* withRecordedConstraints $scope */
-	reg::packed(1133, 0, 300), /* withRecordedConstraints $recordedEntry */
-	reg::packed(1147, 0, 300), /* withRecordedConstraints $recordedExit */
-	reg::packed(409, 0, 300), /* withRecordedConstraints return */
-	reg::packed(743, MAY_BE_ARRAY), /* containsLabels $stmts */
-	reg::packed(409, MAY_BE_BOOL), /* containsLabels return */
-	reg::packed(836, 0, 842), /* appendRecordedStatementResults $state */
-	reg::packed(1199, 0, 842), /* appendRecordedStatementResults $from */
-	reg::packed(1204, 0, 842), /* appendRecordedStatementResults $to */
-	reg::packed(409, MAY_BE_VOID), /* appendRecordedStatementResults return */
-	reg::packed(811, 0, 816), /* getVariableMentionFlow $stmt */
-	reg::packed(409, MAY_BE_NULL, 1238), /* getVariableMentionFlow return */
-	reg::packed(811, 0, 816), /* statementMentionsAnyVariable $stmt */
-	reg::packed(1291, MAY_BE_ARRAY), /* statementMentionsAnyVariable $variableNames */
-	reg::packed(409, MAY_BE_BOOL), /* statementMentionsAnyVariable return */
-	reg::packed(1334, 0, 445), /* collectMentionedVariables $node */
-	reg::packed(1339, MAY_BE_ARRAY, reg::NoString, true, false), /* collectMentionedVariables $names */
-	reg::packed(1345, MAY_BE_BOOL, reg::NoString, true, false), /* collectMentionedVariables $mentionsEverything */
-	reg::packed(409, MAY_BE_VOID), /* collectMentionedVariables return */
-	reg::packed(1390, 0, 816), /* getOverridingThrowPoints $statement */
-	reg::packed(294, 0, 300), /* getOverridingThrowPoints $scope */
-	reg::packed(409, MAY_BE_NULL | MAY_BE_ARRAY), /* getOverridingThrowPoints return */
-	reg::packed(235, 0, 253), /* processStmtVarAnnotation $nodeScopeResolver */
-	reg::packed(294, 0, 300), /* processStmtVarAnnotation $scope */
-	reg::packed(470, 0, 355), /* processStmtVarAnnotation $storage */
-	reg::packed(811, 0, 816), /* processStmtVarAnnotation $stmt */
-	reg::packed(1425, MAY_BE_NULL, 1437), /* processStmtVarAnnotation $defaultExpr */
-	reg::packed(396, MAY_BE_CALLABLE), /* processStmtVarAnnotation $nodeCallback */
-	reg::packed(409, 0, 300), /* processStmtVarAnnotation return */
-	reg::packed(294, 0, 300), /* findSingleVariableLessVarTag $scope */
-	reg::packed(811, 0, 816), /* findSingleVariableLessVarTag $stmt */
-	reg::packed(409, MAY_BE_NULL, 1482), /* findSingleVariableLessVarTag return */
-	reg::packed(235, 0, 253), /* emitVarTagChangedNode $nodeScopeResolver */
-	reg::packed(294, 0, 300), /* emitVarTagChangedNode $scope */
-	reg::packed(470, 0, 355), /* emitVarTagChangedNode $storage */
-	reg::packed(811, 0, 816), /* emitVarTagChangedNode $stmt */
-	reg::packed(1425, 0, 1437), /* emitVarTagChangedNode $defaultExpr */
-	reg::packed(396, MAY_BE_CALLABLE), /* emitVarTagChangedNode $nodeCallback */
-	reg::packed(409, 0, 1537), /* emitVarTagChangedNode return */
+	reg::packed(195, 0, 205), /* __construct $container */
+	reg::packed(243, MAY_BE_BOOL), /* __construct $unresolvedTemplateArguments */
+	reg::packed(283, 0, 301), /* processNodesWithStorage $nodeScopeResolver */
+	reg::packed(336, MAY_BE_ARRAY), /* processNodesWithStorage $nodes */
+	reg::packed(342, 0, 348), /* processNodesWithStorage $scope */
+	reg::packed(379, 0, 403), /* processNodesWithStorage $expressionResultStorage */
+	reg::packed(444, MAY_BE_CALLABLE), /* processNodesWithStorage $nodeCallback */
+	reg::packed(457, MAY_BE_VOID), /* processNodesWithStorage return */
+	reg::packed(283, 0, 301), /* resolveBackwardGotoScope $nodeScopeResolver */
+	reg::packed(482, 0, 493), /* resolveBackwardGotoScope $parentNode */
+	reg::packed(508, MAY_BE_ARRAY), /* resolveBackwardGotoScope $bodyStmts */
+	reg::packed(342, 0, 348), /* resolveBackwardGotoScope $scope */
+	reg::packed(518, 0, 403), /* resolveBackwardGotoScope $storage */
+	reg::packed(526, 0, 534), /* resolveBackwardGotoScope $context */
+	reg::packed(568, 0, 584), /* resolveBackwardGotoScope $gotoNameMatcher */
+	reg::packed(592, MAY_BE_BOOL), /* resolveBackwardGotoScope $mergeBodyScopeEachIteration */
+	reg::packed(457, 0, 348), /* resolveBackwardGotoScope return */
+	reg::packed(645, MAY_BE_STRING), /* mergeForwardGotoExitPoints $labelName */
+	reg::packed(342, 0, 348), /* mergeForwardGotoExitPoints $scope */
+	reg::packed(655, MAY_BE_BOOL), /* mergeForwardGotoExitPoints $alreadyTerminated */
+	reg::packed(673, MAY_BE_ARRAY), /* mergeForwardGotoExitPoints $exitPoints */
+	reg::packed(457, MAY_BE_ARRAY), /* mergeForwardGotoExitPoints return */
+	reg::packed(283, 0, 301), /* processUnreachableStatement $nodeScopeResolver */
+	reg::packed(711, MAY_BE_ARRAY), /* processUnreachableStatement $nextStmts */
+	reg::packed(342, 0, 348), /* processUnreachableStatement $scope */
+	reg::packed(518, 0, 403), /* processUnreachableStatement $storage */
+	reg::packed(444, MAY_BE_CALLABLE), /* processUnreachableStatement $nodeCallback */
+	reg::packed(457, MAY_BE_VOID), /* processUnreachableStatement return */
+	reg::packed(336, MAY_BE_ARRAY), /* getNextUnreachableStatements $nodes */
+	reg::packed(749, MAY_BE_BOOL), /* getNextUnreachableStatements $earlyBinding */
+	reg::packed(457, MAY_BE_ARRAY), /* getNextUnreachableStatements return */
+	reg::packed(283, 0, 301), /* doProcessStmtNodes $nodeScopeResolver */
+	reg::packed(482, 0, 493), /* doProcessStmtNodes $parentNode */
+	reg::packed(791, MAY_BE_ARRAY), /* doProcessStmtNodes $stmts */
+	reg::packed(342, 0, 348), /* doProcessStmtNodes $scope */
+	reg::packed(518, 0, 403), /* doProcessStmtNodes $storage */
+	reg::packed(444, MAY_BE_CALLABLE), /* doProcessStmtNodes $nodeCallback */
+	reg::packed(526, 0, 534), /* doProcessStmtNodes $context */
+	reg::packed(457, 0, 797), /* doProcessStmtNodes return */
+	reg::packed(283, 0, 301), /* processStatementStep $nodeScopeResolver */
+	reg::packed(482, 0, 493), /* processStatementStep $parentNode */
+	reg::packed(791, MAY_BE_ARRAY), /* processStatementStep $stmts */
+	reg::packed(857, MAY_BE_LONG), /* processStatementStep $i */
+	reg::packed(859, 0, 864), /* processStatementStep $stmt */
+	reg::packed(884, 0, 890), /* processStatementStep $state */
+	reg::packed(518, 0, 403), /* processStatementStep $storage */
+	reg::packed(444, MAY_BE_CALLABLE), /* processStatementStep $nodeCallback */
+	reg::packed(526, 0, 534), /* processStatementStep $context */
+	reg::packed(930, MAY_BE_BOOL), /* processStatementStep $shouldCheckLastStatement */
+	reg::packed(457, MAY_BE_VOID), /* processStatementStep return */
+	reg::packed(859, 0, 864), /* readEndStatementExprResult $stmt */
+	reg::packed(518, 0, 403), /* readEndStatementExprResult $storage */
+	reg::packed(457, MAY_BE_NULL, 976), /* readEndStatementExprResult return */
+	reg::packed(283, 0, 301), /* processBodyStmtNodesTwoPass $nodeScopeResolver */
+	reg::packed(482, 0, 493), /* processBodyStmtNodesTwoPass $parentNode */
+	reg::packed(791, MAY_BE_ARRAY), /* processBodyStmtNodesTwoPass $stmts */
+	reg::packed(342, 0, 348), /* processBodyStmtNodesTwoPass $scope */
+	reg::packed(518, 0, 403), /* processBodyStmtNodesTwoPass $storage */
+	reg::packed(444, MAY_BE_CALLABLE), /* processBodyStmtNodesTwoPass $nodeCallback */
+	reg::packed(526, 0, 534), /* processBodyStmtNodesTwoPass $context */
+	reg::packed(457, 0, 797), /* processBodyStmtNodesTwoPass return */
+	reg::packed(457, 0, 1065), /* getClosureProcessor return */
+	reg::packed(283, 0, 301), /* processDeferredByRefClosureBodies $nodeScopeResolver */
+	reg::packed(1119, 0, 1125), /* processDeferredByRefClosureBodies $frame */
+	reg::packed(884, 0, 890), /* processDeferredByRefClosureBodies $state */
+	reg::packed(518, 0, 403), /* processDeferredByRefClosureBodies $storage */
+	reg::packed(444, MAY_BE_CALLABLE), /* processDeferredByRefClosureBodies $nodeCallback */
+	reg::packed(457, MAY_BE_VOID), /* processDeferredByRefClosureBodies return */
+	reg::packed(283, 0, 301), /* observeClosureSignatures $nodeScopeResolver */
+	reg::packed(482, 0, 493), /* observeClosureSignatures $parentNode */
+	reg::packed(791, MAY_BE_ARRAY), /* observeClosureSignatures $stmts */
+	reg::packed(1119, 0, 1125), /* observeClosureSignatures $frame */
+	reg::packed(1207, MAY_BE_ARRAY), /* observeClosureSignatures $entries */
+	reg::packed(518, 0, 403), /* observeClosureSignatures $storage */
+	reg::packed(526, 0, 534), /* observeClosureSignatures $context */
+	reg::packed(1215, MAY_BE_ARRAY), /* observeClosureSignatures $statementStartTokenPositions */
+	reg::packed(457, 0, 1125), /* observeClosureSignatures return */
+	reg::packed(342, 0, 348), /* withRecordedConstraints $scope */
+	reg::packed(1269, 0, 348), /* withRecordedConstraints $recordedEntry */
+	reg::packed(1283, 0, 348), /* withRecordedConstraints $recordedExit */
+	reg::packed(457, 0, 348), /* withRecordedConstraints return */
+	reg::packed(791, MAY_BE_ARRAY), /* containsLabels $stmts */
+	reg::packed(457, MAY_BE_BOOL), /* containsLabels return */
+	reg::packed(884, 0, 890), /* appendRecordedStatementResults $state */
+	reg::packed(1335, 0, 890), /* appendRecordedStatementResults $from */
+	reg::packed(1340, 0, 890), /* appendRecordedStatementResults $to */
+	reg::packed(457, MAY_BE_VOID), /* appendRecordedStatementResults return */
+	reg::packed(859, 0, 864), /* getVariableMentionFlow $stmt */
+	reg::packed(457, MAY_BE_NULL, 1374), /* getVariableMentionFlow return */
+	reg::packed(859, 0, 864), /* statementMentionsAnyVariable $stmt */
+	reg::packed(1427, MAY_BE_ARRAY), /* statementMentionsAnyVariable $variableNames */
+	reg::packed(457, MAY_BE_BOOL), /* statementMentionsAnyVariable return */
+	reg::packed(1470, 0, 493), /* collectMentionedVariables $node */
+	reg::packed(1475, MAY_BE_ARRAY, reg::NoString, true, false), /* collectMentionedVariables $names */
+	reg::packed(1481, MAY_BE_BOOL, reg::NoString, true, false), /* collectMentionedVariables $mentionsEverything */
+	reg::packed(457, MAY_BE_VOID), /* collectMentionedVariables return */
+	reg::packed(1526, 0, 864), /* getOverridingThrowPoints $statement */
+	reg::packed(342, 0, 348), /* getOverridingThrowPoints $scope */
+	reg::packed(457, MAY_BE_NULL | MAY_BE_ARRAY), /* getOverridingThrowPoints return */
+	reg::packed(283, 0, 301), /* processStmtVarAnnotation $nodeScopeResolver */
+	reg::packed(342, 0, 348), /* processStmtVarAnnotation $scope */
+	reg::packed(518, 0, 403), /* processStmtVarAnnotation $storage */
+	reg::packed(859, 0, 864), /* processStmtVarAnnotation $stmt */
+	reg::packed(1561, MAY_BE_NULL, 1573), /* processStmtVarAnnotation $defaultExpr */
+	reg::packed(444, MAY_BE_CALLABLE), /* processStmtVarAnnotation $nodeCallback */
+	reg::packed(457, 0, 348), /* processStmtVarAnnotation return */
+	reg::packed(342, 0, 348), /* findSingleVariableLessVarTag $scope */
+	reg::packed(859, 0, 864), /* findSingleVariableLessVarTag $stmt */
+	reg::packed(457, MAY_BE_NULL, 1618), /* findSingleVariableLessVarTag return */
+	reg::packed(283, 0, 301), /* emitVarTagChangedNode $nodeScopeResolver */
+	reg::packed(342, 0, 348), /* emitVarTagChangedNode $scope */
+	reg::packed(518, 0, 403), /* emitVarTagChangedNode $storage */
+	reg::packed(859, 0, 864), /* emitVarTagChangedNode $stmt */
+	reg::packed(1561, 0, 1573), /* emitVarTagChangedNode $defaultExpr */
+	reg::packed(444, MAY_BE_CALLABLE), /* emitVarTagChangedNode $nodeCallback */
+	reg::packed(457, 0, 1673), /* emitVarTagChangedNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 223 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processNodesWithStorage = { { 410 /* processNodesWithStorage */, 5, 4, 5, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveBackwardGotoScope = { { 572 /* resolveBackwardGotoScope */, 8, 10, 8, 18, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig mergeForwardGotoExitPoints = { { 636 /* mergeForwardGotoExitPoints */, 4, 19, 4, 23, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processUnreachableStatement = { { 673 /* processUnreachableStatement */, 5, 24, 5, 29, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getNextUnreachableStatements = { { 714 /* getNextUnreachableStatements */, 2, 30, 2, 32, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig doProcessStmtNodes = { { 790 /* doProcessStmtNodes */, 7, 33, 7, 40, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processStatementStep = { { 907 /* processStatementStep */, 10, 41, 10, 51, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig readEndStatementExprResult = { { 962 /* readEndStatementExprResult */, 2, 52, 2, 54, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processBodyStmtNodesTwoPass = { { 989 /* processBodyStmtNodesTwoPass */, 7, 55, 7, 62, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeClosureSignatures = { { 1108 /* observeClosureSignatures */, 8, 63, 8, 71, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig withRecordedConstraints = { { 1160 /* withRecordedConstraints */, 3, 72, 3, 75, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig containsLabels = { { 1184 /* containsLabels */, 1, 76, 1, 77, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig appendRecordedStatementResults = { { 1207 /* appendRecordedStatementResults */, 3, 78, 3, 81, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getVariableMentionFlow = { { 1268 /* getVariableMentionFlow */, 1, 82, 1, 83, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig statementMentionsAnyVariable = { { 1305 /* statementMentionsAnyVariable */, 2, 84, 2, 86, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig collectMentionedVariables = { { 1364 /* collectMentionedVariables */, 3, 87, 3, 90, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getOverridingThrowPoints = { { 1400 /* getOverridingThrowPoints */, 2, 91, 2, 93, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processStmtVarAnnotation = { { 1457 /* processStmtVarAnnotation */, 6, 94, 6, 100, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig findSingleVariableLessVarTag = { { 1508 /* findSingleVariableLessVarTag */, 2, 101, 2, 103, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig emitVarTagChangedNode = { { 1591 /* emitVarTagChangedNode */, 6, 104, 6, 110, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 271 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processNodesWithStorage = { { 458 /* processNodesWithStorage */, 5, 5, 5, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveBackwardGotoScope = { { 620 /* resolveBackwardGotoScope */, 8, 11, 8, 19, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig mergeForwardGotoExitPoints = { { 684 /* mergeForwardGotoExitPoints */, 4, 20, 4, 24, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processUnreachableStatement = { { 721 /* processUnreachableStatement */, 5, 25, 5, 30, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getNextUnreachableStatements = { { 762 /* getNextUnreachableStatements */, 2, 31, 2, 33, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig doProcessStmtNodes = { { 838 /* doProcessStmtNodes */, 7, 34, 7, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStatementStep = { { 955 /* processStatementStep */, 10, 42, 10, 52, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig readEndStatementExprResult = { { 1010 /* readEndStatementExprResult */, 2, 53, 2, 55, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processBodyStmtNodesTwoPass = { { 1037 /* processBodyStmtNodesTwoPass */, 7, 56, 7, 63, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getClosureProcessor = { { 1099 /* getClosureProcessor */, 0, 64, 0, 64, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processDeferredByRefClosureBodies = { { 1173 /* processDeferredByRefClosureBodies */, 5, 65, 5, 70, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeClosureSignatures = { { 1244 /* observeClosureSignatures */, 8, 71, 8, 79, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig withRecordedConstraints = { { 1296 /* withRecordedConstraints */, 3, 80, 3, 83, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig containsLabels = { { 1320 /* containsLabels */, 1, 84, 1, 85, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig appendRecordedStatementResults = { { 1343 /* appendRecordedStatementResults */, 3, 86, 3, 89, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getVariableMentionFlow = { { 1404 /* getVariableMentionFlow */, 1, 90, 1, 91, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig statementMentionsAnyVariable = { { 1441 /* statementMentionsAnyVariable */, 2, 92, 2, 94, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectMentionedVariables = { { 1500 /* collectMentionedVariables */, 3, 95, 3, 98, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getOverridingThrowPoints = { { 1536 /* getOverridingThrowPoints */, 2, 99, 2, 101, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmtVarAnnotation = { { 1593 /* processStmtVarAnnotation */, 6, 102, 6, 108, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findSingleVariableLessVarTag = { { 1644 /* findSingleVariableLessVarTag */, 2, 109, 2, 111, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig emitVarTagChangedNode = { { 1727 /* emitVarTagChangedNode */, 6, 112, 6, 118, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StatementsHandler

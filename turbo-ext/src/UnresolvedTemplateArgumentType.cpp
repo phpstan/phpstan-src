@@ -467,6 +467,16 @@ bool pt_unresolved_template_argument_type_is_closure_signature(zval *marker, boo
 	return UnresolvedTemplateArgumentType(Z_OBJ_P(marker)).hasClosureSite(out);
 }
 
+zval *pt_unresolved_template_argument_type_site(zval *marker)
+{
+	return UnresolvedTemplateArgumentType(Z_OBJ_P(marker)).site();
+}
+
+zv::Val pt_unresolved_template_argument_type_get_template_name(zval *marker)
+{
+	return UnresolvedTemplateArgumentType(Z_OBJ_P(marker)).getTemplateName();
+}
+
 bool pt_unresolved_template_argument_type_is_closure_return(zval *marker, bool &out)
 {
 	UnresolvedTemplateArgumentType handle(Z_OBJ_P(marker));

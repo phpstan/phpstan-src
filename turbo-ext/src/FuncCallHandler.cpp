@@ -254,6 +254,9 @@ pt_property_site pt_fch_variable_name_site;
 pt_property_site pt_fch_string_value_site;
 pt_property_site pt_fch_inner_name_site;
 pt_property_site pt_fch_attributes_site;
+pt_property_site pt_fch_closure_uses_site;
+pt_property_site pt_fch_use_by_ref_site;
+pt_property_site pt_fch_use_var_site;
 
 /* $value instanceof <class-map class> — a class not declared yet has no
  * instances (no autoload, as instanceof); false with an exception pending
@@ -513,6 +516,253 @@ public:
 		}
 	}
 
+	/* Mirrors processByRefInvocations(): [the scope, the throw points, the
+	 * names of the by-ref variables]; UNDEF = pending exception */
+	zv::Val processByRefInvocations(zval *nodeScopeResolver, zval *call, zval *calleeType, zval *scopeArg, zval *storage) const
+	{
+		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeArg));
+		zv::Val members;
+		if (instanceof_function(Z_OBJCE_P(calleeType), pt_ce_union_type)) {
+			members = pt_type_op(Z_OBJ_P(calleeType), PT_OP_GET_TYPES, 0, NULL);
+			if (UNEXPECTED(members.isUndef())) return zv::Val();
+		} else {
+			zv::Arr single = zv::Arr::create(1);
+			single.push(zv::Ref(calleeType));
+			members = zv::Val(std::move(single));
+		}
+		zv::Arr closureTypes = zv::Arr::empty();
+		bool hasOtherMember = false;
+		for (zv::ArrayEntry entry : zv::ArrRef(members.raw())) {
+			zval *member = entry.value().deref().raw();
+			if (Z_TYPE_P(member) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(member), pt_ce_closure_type)) {
+				hasOtherMember = true;
+				continue;
+			}
+			zv::Val byRefUseTypes = pt_closure_type_get_by_ref_use_types(member);
+			if (UNEXPECTED(byRefUseTypes.isUndef())) return zv::Val();
+			zval *marker = NULL;
+			if (byRefUseTypes.ref().isArray()) {
+				for (zv::ArrayEntry first : zv::ArrRef(byRefUseTypes.raw())) {
+					marker = first.value().deref().raw();
+					break;
+				}
+			}
+			zval *site = NULL;
+			if (marker != NULL && Z_TYPE_P(marker) == IS_OBJECT && Z_OBJCE_P(marker) == pt_ce_unresolved_template_argument_type) {
+				site = pt_unresolved_template_argument_type_site(marker);
+				if (UNEXPECTED(site == NULL)) return zv::Val();
+				if (!isA(site, PT_CLASS_CLOSURE_EXPR)) site = NULL;
+				if (UNEXPECTED(EG(exception))) return zv::Val();
+			}
+			if (site == NULL) {
+				hasOtherMember = true;
+				continue;
+			}
+			zv::Arr pair = zv::Arr::create(2);
+			pair.push(zv::Ref(member));
+			pair.push(zv::Ref(site));
+			closureTypes.push(std::move(pair));
+		}
+		zv::Arr result = zv::Arr::create(3);
+		if (zend_hash_num_elements(closureTypes.table()) == 0) {
+			result.push(std::move(scope));
+			result.push(zv::Val(zv::Arr::empty()));
+			result.push(zv::Val(zv::Arr::empty()));
+			return zv::Val(std::move(result));
+		}
+
+		zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, scope.raw());
+		if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+		bool observing = !observingFrame.isNull();
+		zv::Arr argumentTypes = zv::Arr::empty();
+		zv::Val args = callArgs(call);
+		if (UNEXPECTED(args.isUndef())) return zv::Val();
+		for (zv::ArrayEntry entry : zv::ArrRef(args.raw())) {
+			zval *arg = entry.value().deref().raw();
+			zval *argName = nodeProp(pt_fch_arg_name_site, arg, PT_LC("name"));
+			if (UNEXPECTED(argName == NULL)) return zv::Val();
+			if (Z_TYPE_P(argName) != IS_NULL) break;
+			zval *unpack = nodeProp(pt_fch_arg_unpack_site, arg, PT_LC("unpack"));
+			if (UNEXPECTED(unpack == NULL)) return zv::Val();
+			if (zend_is_true(unpack)) break;
+			zval *value = nodeProp(pt_fch_arg_value_site, arg, PT_LC("value"));
+			if (UNEXPECTED(value == NULL)) return zv::Val();
+			zv::Val valueHold = zv::Val::copyOf(zv::Ref(value));
+			zv::Val argumentType = pt_node_scope_resolver_read_type_of_maybe_stored(nodeScopeResolver, valueHold.raw(), scope.raw());
+			if (UNEXPECTED(argumentType.isUndef())) return zv::Val();
+			argumentTypes.separate();
+			zval typeZv = argumentType.take();
+			zend_hash_index_update(argumentTypes.table(), entry.indexKey(), &typeZv);
+		}
+
+		zv::Arr invocations = zv::Arr::empty();
+		zv::Arr byRefNames = zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(closureTypes.raw())) {
+			zval *closureType = zend_hash_index_find(Z_ARRVAL_P(entry.value().raw()), 0);
+			zval *site = zend_hash_index_find(Z_ARRVAL_P(entry.value().raw()), 1);
+			zv::Val mode = zv::Val::null();
+			if (!observing) {
+				mode = pt_closure_signature_inference_get_by_ref_site_mode(slot(slots::closureSignatureInference), scope.raw(), site);
+				if (UNEXPECTED(mode.isUndef())) return zv::Val();
+			}
+			zv::Val creationScope = zv::Val::null();
+			if (observing || !mode.isNull()) {
+				creationScope = pt_closure_signature_inference_find_creation_scope(scope.raw(), storage, site);
+				if (UNEXPECTED(creationScope.isUndef())) return zv::Val();
+			}
+			if (creationScope.isNull()) {
+				hasOtherMember = true;
+				continue;
+			}
+			bool local = mode.ref().isString() && zend_string_equals_literal(Z_STR_P(mode.raw()), "local");
+			if (observing || local) {
+				zv::Val invocation = pt_closure_signature_inference_collect_invocation(scope.raw(), call, closureType, observing);
+				if (UNEXPECTED(invocation.isUndef())) return zv::Val();
+				zv::Val added = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope.raw()), invocation.raw());
+				if (UNEXPECTED(added.isUndef())) return zv::Val();
+				scope = std::move(added);
+			}
+			zv::Arr invocationEntry = zv::Arr::create(4);
+			invocationEntry.push(zv::Ref(site));
+			invocationEntry.push(zv::Ref(closureType));
+			invocationEntry.push(std::move(creationScope));
+			invocationEntry.push(zv::Val::boolean(!local));
+			invocations.push(std::move(invocationEntry));
+			zval *uses = nodeProp(pt_fch_closure_uses_site, site, PT_LC("uses"));
+			if (UNEXPECTED(uses == NULL)) return zv::Val();
+			zv::Val usesHold = zv::Val::copyOf(zv::Ref(uses));
+			for (zv::ArrayEntry useEntry : zv::ArrRef(usesHold.raw())) {
+				zval *use = useEntry.value().deref().raw();
+				zval *byRef = nodeProp(pt_fch_use_by_ref_site, use, PT_LC("byRef"));
+				if (UNEXPECTED(byRef == NULL)) return zv::Val();
+				if (!zend_is_true(byRef)) continue;
+				zval *var = nodeProp(pt_fch_use_var_site, use, PT_LC("var"));
+				if (UNEXPECTED(var == NULL)) return zv::Val();
+				zval *name = nodeProp(pt_fch_variable_name_site, var, PT_LC("name"));
+				if (UNEXPECTED(name == NULL)) return zv::Val();
+				if (Z_TYPE_P(name) != IS_STRING) continue;
+				byRefNames.set(Z_STR_P(name), zv::Val::boolean(true));
+			}
+		}
+
+		zv::Val resultScope = hasOtherMember ? zv::Val::copyOf(zv::Ref(scope.raw())) : zv::Val::null();
+		zv::Val throwPoints = zv::Val(zv::Arr::empty());
+		for (zv::ArrayEntry entry : zv::ArrRef(invocations.raw())) {
+			HashTable *invocation = Z_ARRVAL_P(entry.value().raw());
+			zval *site = zend_hash_index_find(invocation, 0);
+			zval *closureType = zend_hash_index_find(invocation, 1);
+			zval *creationScope = zend_hash_index_find(invocation, 2);
+			bool untilFixpoint = Z_TYPE_P(zend_hash_index_find(invocation, 3)) == IS_TRUE;
+			zv::Val invokedScope = zv::Val::null();
+			if (observing) {
+				invokedScope = findCreationFixpointScope(scope.raw(), storage, site, closureType, argumentTypes.raw());
+				if (UNEXPECTED(invokedScope.isUndef())) return zv::Val();
+			}
+			if (!invokedScope.isNull()) {
+				if (resultScope.isNull()) {
+					resultScope = std::move(invokedScope);
+				} else {
+					zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(resultScope.raw()), invokedScope.raw());
+					if (UNEXPECTED(merged.isUndef())) return zv::Val();
+					resultScope = std::move(merged);
+				}
+				continue;
+			}
+			zv::Val invoked = pt_closure_processor_process_by_ref_invocation(slot(slots::closureProcessor), nodeScopeResolver, site, call, scope.raw(), storage, argumentTypes.raw(), creationScope, untilFixpoint);
+			if (UNEXPECTED(invoked.isUndef())) return zv::Val();
+			zval *invoked0 = zend_hash_index_find(Z_ARRVAL_P(invoked.raw()), 0);
+			zval *invoked1 = zend_hash_index_find(Z_ARRVAL_P(invoked.raw()), 1);
+			if (resultScope.isNull()) {
+				resultScope = zv::Val::copyOf(zv::Ref(invoked0));
+			} else {
+				zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(resultScope.raw()), invoked0);
+				if (UNEXPECTED(merged.isUndef())) return zv::Val();
+				resultScope = std::move(merged);
+			}
+			if (UNEXPECTED(!arrayMerge(throwPoints, invoked1))) return zv::Val();
+		}
+
+		result.push(resultScope.isNull() ? std::move(scope) : std::move(resultScope));
+		result.push(std::move(throwPoints));
+		zv::Arr names = zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(byRefNames.raw())) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (key != NULL) {
+				names.push(zv::Val::string(key));
+			} else {
+				names.push(zv::Val::integer((zend_long) entry.indexKey()));
+			}
+		}
+		result.push(std::move(names));
+		return zv::Val(std::move(result));
+	}
+
+	/* Mirrors findCreationFixpointScope(): the scope or PHP null; UNDEF =
+	 * pending exception */
+	static zv::Val findCreationFixpointScope(zval *scopeArg, zval *storage, zval *site, zval *closureType, zval *argumentTypes)
+	{
+		zv::Val closureThrowPoints = pt_type_call(Z_OBJ_P(closureType), PT_LC("getthrowpoints"), 0, NULL);
+		if (UNEXPECTED(closureThrowPoints.isUndef())) return zv::Val();
+		if (!closureThrowPoints.ref().isArray() || zend_hash_num_elements(Z_ARRVAL_P(closureThrowPoints.raw())) > 0) return zv::Val::null();
+		zv::Val creationResult = pt_expression_result_storage_find(storage, site);
+		if (UNEXPECTED(creationResult.isUndef())) return zv::Val();
+		if (creationResult.isNull()) return zv::Val::null();
+		zv::Val parameters = pt_type_call(Z_OBJ_P(closureType), PT_LC("getparameters"), 0, NULL);
+		if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+		for (zv::ArrayEntry entry : zv::ArrRef(parameters.raw())) {
+			zval *argumentType = entry.stringKeyOrNull() == NULL ? zend_hash_index_find(Z_ARRVAL_P(argumentTypes), entry.indexKey()) : zend_symtable_find(Z_ARRVAL_P(argumentTypes), entry.stringKeyOrNull());
+			if (argumentType == NULL || Z_TYPE_P(argumentType) == IS_NULL) continue;
+			zv::Val parameterType = pt_parameter_reflection_call(entry.value().deref().raw(), PT_PR_GET_TYPE);
+			if (UNEXPECTED(parameterType.isUndef())) return zv::Val();
+			zv::Val isSuperType = pt_type_op(Z_OBJ_P(parameterType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, argumentType);
+			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
+			if (pt_type_result_trinary(isSuperType.raw()) != PT_TRI_YES) return zv::Val::null();
+		}
+
+		zv::Val fixpointScopeHold;
+		zval *fixpointScope = pt_expression_result_scope(creationResult.raw(), fixpointScopeHold);
+		if (UNEXPECTED(fixpointScope == NULL)) return zv::Val();
+		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeArg));
+		zval *uses = nodeProp(pt_fch_closure_uses_site, site, PT_LC("uses"));
+		if (UNEXPECTED(uses == NULL)) return zv::Val();
+		zv::Val usesHold = zv::Val::copyOf(zv::Ref(uses));
+		for (zv::ArrayEntry useEntry : zv::ArrRef(usesHold.raw())) {
+			zval *use = useEntry.value().deref().raw();
+			zval *byRef = nodeProp(pt_fch_use_by_ref_site, use, PT_LC("byRef"));
+			if (UNEXPECTED(byRef == NULL)) return zv::Val();
+			if (!zend_is_true(byRef)) continue;
+			zval *var = nodeProp(pt_fch_use_var_site, use, PT_LC("var"));
+			if (UNEXPECTED(var == NULL)) return zv::Val();
+			zval *nameZv = nodeProp(pt_fch_variable_name_site, var, PT_LC("name"));
+			if (UNEXPECTED(nameZv == NULL)) return zv::Val();
+			if (Z_TYPE_P(nameZv) != IS_STRING) continue;
+			zend_string *name = Z_STR_P(nameZv);
+			zv::Val fixpointHas = pt_mutating_scope_has_variable_type(Z_OBJ_P(fixpointScope), name);
+			if (UNEXPECTED(fixpointHas.isUndef())) return zv::Val();
+			if (pt_type_trinary_value(fixpointHas.raw()) != PT_TRI_YES) return zv::Val::null();
+			zv::Val fixpointType = pt_mutating_scope_get_variable_type(Z_OBJ_P(fixpointScope), name);
+			if (UNEXPECTED(fixpointType.isUndef())) return zv::Val();
+			zv::Val has = pt_mutating_scope_has_variable_type(Z_OBJ_P(scope.raw()), name);
+			if (UNEXPECTED(has.isUndef())) return zv::Val();
+			zv::Val type;
+			if (pt_type_trinary_value(has.raw()) == PT_TRI_YES) {
+				type = pt_mutating_scope_get_variable_type(Z_OBJ_P(scope.raw()), name);
+				if (UNEXPECTED(type.isUndef())) return zv::Val();
+			} else {
+				zval nullType;
+				if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
+				type = zv::Val::adopt(nullType);
+			}
+			zv::Val isSuperType = pt_type_op(Z_OBJ_P(fixpointType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, type.raw());
+			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
+			if (pt_type_result_trinary(isSuperType.raw()) != PT_TRI_YES) return zv::Val::null();
+			zv::Val assigned = pt_mutating_scope_assign_variable(Z_OBJ_P(scope.raw()), name, fixpointType.raw(), fixpointType.raw(), pt_trinary_singleton(PT_TRI_YES));
+			if (UNEXPECTED(assigned.isUndef())) return zv::Val();
+			scope = std::move(assigned);
+		}
+		return scope;
+	}
+
 	/* Mirrors supports(); false = pending exception */
 	[[nodiscard]] bool supports(zval *expr, bool &out) const
 	{
@@ -535,6 +785,7 @@ public:
 		zv::Val namedArgumentsVariants = zv::Val::null();
 		zv::Val functionReflection = zv::Val::null();
 		zv::Val nameResult = zv::Val::null();
+		zv::Val calleeNameType = zv::Val::null(); /* the twin's $nameType */
 		bool hasYield = false;
 		zv::Val throwPoints = zv::Val(zv::Arr::empty());
 		zv::Val impurePoints = zv::Val(zv::Arr::empty());
@@ -598,6 +849,7 @@ public:
 			if (UNEXPECTED(nameResult.isUndef())) return zv::Val();
 			zv::Val nameType = pt_expression_result_get_type(nameResult.raw());
 			if (UNEXPECTED(nameType.isUndef())) return zv::Val();
+			calleeNameType = zv::Val::copyOf(zv::Ref(nameType.raw()));
 			zend_long isCallable = typeOpTrinary(nameType.raw(), PT_OP_IS_CALLABLE, "isCallable");
 			if (UNEXPECTED(isCallable < 0)) return zv::Val();
 			if (isCallable != PT_TRI_NO) {
@@ -857,6 +1109,7 @@ public:
 			}
 			zv::Val nameType = pt_expression_result_get_type_on_scope(stored.raw(), scope.raw(), false);
 			if (UNEXPECTED(nameType.isUndef())) return zv::Val();
+			calleeNameType = zv::Val::copyOf(zv::Ref(nameType.raw()));
 			bool invokable;
 			if (UNEXPECTED(!isInvokableObject(nameType.raw(), invokable))) return zv::Val();
 			if (invokable && UNEXPECTED(!processInvoke(nodeScopeResolver, stmt, normalizedExpr.raw(), normalizedName, scope.raw(), storage, context.raw(), throwPoints, impurePoints, isAlwaysTerminating))) return zv::Val();
@@ -903,11 +1156,42 @@ public:
 			ptcall::appendTo(throwPoints, std::move(throwPoint));
 		}
 
+		zv::Arr byRefWrittenNames = zv::Arr::empty();
+		if (!calleeNameType.isNull()) {
+			zv::Val invoked = processByRefInvocations(nodeScopeResolver, normalizedExpr.raw(), calleeNameType.raw(), scope.raw(), storage);
+			if (UNEXPECTED(invoked.isUndef())) return zv::Val();
+			scope = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(invoked.raw()), 0)));
+			if (UNEXPECTED(!arrayMerge(throwPoints, zend_hash_index_find(Z_ARRVAL_P(invoked.raw()), 1)))) return zv::Val();
+			byRefWrittenNames = zv::Arr::copyOfTable(Z_ARRVAL_P(zend_hash_index_find(Z_ARRVAL_P(invoked.raw()), 2)));
+		}
+
 		zv::Val effects = pt_func_call_scope_effects_helper_apply_call_scope_effects(slot(slots::scopeEffectsHelper), nodeScopeResolver, stmt, normalizedExpr.raw(), functionReflection.raw(), parametersAcceptor.raw(), argsResult.raw(), scope.raw(), scopeBeforeArgs, storage, nodeCallback);
 		if (UNEXPECTED(effects.isUndef())) return zv::Val();
 		scope = std::move(effects);
 
-		zval flows[5];
+		// the invoked closure reads and writes its by-ref variables here
+		zv::Val byRefFlow = zv::Val::null();
+		uint32_t byRefWrittenCount = zend_hash_num_elements(byRefWrittenNames.table());
+		if (byRefWrittenCount > 0) {
+			zv::Arr byRefFlows = zv::Arr::create(byRefWrittenCount);
+			for (zv::ArrayEntry entry : zv::ArrRef(byRefWrittenNames.raw())) {
+				zval *byRefWrittenName = entry.value().deref().raw();
+				if (UNEXPECTED(Z_TYPE_P(byRefWrittenName) != IS_STRING)) continue;
+				zv::Val flow = pt_variable_flow_escape(Z_STR_P(byRefWrittenName));
+				if (UNEXPECTED(flow.isUndef())) return zv::Val();
+				byRefFlows.push(std::move(flow));
+			}
+			uint32_t flowCount = zend_hash_num_elements(byRefFlows.table());
+			zval *flowArgv = (zval *) safe_emalloc(flowCount, sizeof(zval), 0);
+			uint32_t f = 0;
+			for (zv::ArrayEntry entry : zv::ArrRef(byRefFlows.raw())) {
+				ZVAL_COPY_VALUE(&flowArgv[f++], entry.value().raw());
+			}
+			byRefFlow = pt_variable_flow_sequence(flowCount, flowArgv);
+			efree(flowArgv);
+			if (UNEXPECTED(byRefFlow.isUndef())) return zv::Val();
+		}
+		zval flows[6];
 		zv::Val nameFlow = zv::Val::null();
 		if (!nameResult.isNull()) {
 			nameFlow = pt_expression_result_variable_flow(nameResult.raw());
@@ -936,8 +1220,9 @@ public:
 		ZVAL_COPY_VALUE(&flows[1], argumentsFlow.raw());
 		ZVAL_COPY_VALUE(&flows[2], callFlow.raw());
 		ZVAL_COPY_VALUE(&flows[3], throwsFlow.raw());
-		ZVAL_COPY_VALUE(&flows[4], exitFlow.raw());
-		zv::Val variableFlow = pt_variable_flow_sequence(5, flows);
+		ZVAL_COPY_VALUE(&flows[4], byRefFlow.raw());
+		ZVAL_COPY_VALUE(&flows[5], exitFlow.raw());
+		zv::Val variableFlow = pt_variable_flow_sequence(6, flows);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 
 		return pt_expression_result_finalize(preliminaryResult.raw(), scope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw());
@@ -1038,6 +1323,18 @@ private:
 			bool equals;
 			if (UNEXPECTED(!pt_type_op_bool(Z_OBJ_P(creationType.raw()), PT_OP_EQUALS, 1, calleeType, equals))) return zv::Val();
 			if (!equals) continue;
+			if (isA(closure, PT_CLASS_CLOSURE_EXPR)) {
+				zval *uses = nodeProp(pt_fch_closure_uses_site, closure, PT_LC("uses"));
+				if (UNEXPECTED(uses == NULL)) return zv::Val();
+				zv::Val usesHold = zv::Val::copyOf(zv::Ref(uses));
+				for (zv::ArrayEntry useEntry : zv::ArrRef(usesHold.raw())) {
+					zval *byRef = nodeProp(pt_fch_use_by_ref_site, useEntry.value().deref().raw(), PT_LC("byRef"));
+					if (UNEXPECTED(byRef == NULL)) return zv::Val();
+					// what it returns depends on its by-ref variables where it
+					// runs - see processByRefInvocations()
+					if (zend_is_true(byRef)) return zv::Val::null();
+				}
+			}
 
 			zv::Val beforeScopeHold;
 			zval *beforeScope = pt_expression_result_before_scope(creationResult.raw(), beforeScopeHold);

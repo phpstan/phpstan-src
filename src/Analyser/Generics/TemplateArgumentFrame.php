@@ -64,6 +64,7 @@ final class TemplateArgumentFrame
 	 * @param Node\Stmt[] $closureSignatureStmts the statements of $closureSignatureBody
 	 * @param array<int, true> $settledClosureSites spl_object_id() of the closure nodes
 	 * @param bool $observingClosures the template arguments are resolved, the closure signatures observed again
+	 * @param array<int, array{Expr\Closure, int, bool}> $byRefSites spl_object_id() of the closure node => the node, its statement index, whether every invocation was seen
 	 */
 	public function __construct(
 		private readonly ?self $parent,
@@ -73,8 +74,44 @@ final class TemplateArgumentFrame
 		private readonly array $closureSignatureStmts = [],
 		private readonly array $settledClosureSites = [],
 		private readonly bool $observingClosures = false,
+		private readonly array $byRefSites = [],
 	)
 	{
+	}
+
+	/**
+	 * How the second pass treats the by-ref uses of a closure created in this
+	 * frame's body - see ClosureSignatureInference::getByRefSiteMode().
+	 *
+	 * @return 'local'|'escaped'|null
+	 */
+	public function getByRefSiteMode(Expr $site): ?string
+	{
+		$byRefSite = $this->byRefSites[spl_object_id($site)] ?? null;
+		if ($byRefSite !== null && $byRefSite[0] === $site) {
+			return $byRefSite[2] ? 'local' : 'escaped';
+		}
+
+		return $this->parent !== null ? $this->parent->getByRefSiteMode($site) : null;
+	}
+
+	/**
+	 * The closures of this frame's body whose every invocation was seen, with
+	 * the index of the statement creating them.
+	 *
+	 * @return list<array{Expr\Closure, int}>
+	 */
+	public function getLocalByRefSites(): array
+	{
+		$sites = [];
+		foreach ($this->byRefSites as [$site, $statementIndex, $local]) {
+			if (!$local) {
+				continue;
+			}
+			$sites[] = [$site, $statementIndex];
+		}
+
+		return $sites;
 	}
 
 	/**
@@ -84,8 +121,9 @@ final class TemplateArgumentFrame
 	 * @param array<string, Type> $closureResolutions
 	 * @param array<int, true> $closureSiteStatementIndexes
 	 * @param array<int, true> $settledClosureSites
+	 * @param array<int, array{Expr\Closure, int, bool}> $byRefSites
 	 */
-	public function withObservedClosures(array $closureResolutions, array $closureSiteStatementIndexes, array $settledClosureSites): self
+	public function withObservedClosures(array $closureResolutions, array $closureSiteStatementIndexes, array $settledClosureSites, array $byRefSites = []): self
 	{
 		return new self(
 			$this->parent,
@@ -94,6 +132,7 @@ final class TemplateArgumentFrame
 			$this->closureSignatureBody,
 			$this->closureSignatureStmts,
 			$settledClosureSites,
+			byRefSites: $byRefSites,
 		);
 	}
 

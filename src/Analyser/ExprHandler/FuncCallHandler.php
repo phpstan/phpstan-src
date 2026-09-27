@@ -60,6 +60,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -72,14 +73,19 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use Throwable;
 use WeakReference;
 use function array_filter;
+use function array_key_first;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
@@ -132,6 +138,7 @@ final class FuncCallHandler implements ExprHandler
 	{
 		$beforeScope = $scope;
 		$parametersAcceptor = null;
+		$nameType = null;
 		$variants = [];
 		$namedArgumentsVariants = null;
 		$functionReflection = null;
@@ -551,17 +558,164 @@ final class FuncCallHandler implements ExprHandler
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 
+		$byRefWrittenNames = [];
+		if ($nameType !== null) {
+			[$scope, $byRefThrowPoints, $byRefWrittenNames] = $this->processByRefInvocations($nodeScopeResolver, $normalizedExpr, $nameType, $scope, $storage);
+			$throwPoints = array_merge($throwPoints, $byRefThrowPoints);
+		}
+
 		$scope = $this->scopeEffectsHelper->applyCallScopeEffects($nodeScopeResolver, $stmt, $normalizedExpr, $functionReflection, $parametersAcceptor, $argsResult, $scope, $scopeBeforeArgs, $storage, $nodeCallback);
 
+		// the invoked closure reads and writes its by-ref variables here
+		$byRefFlows = [];
+		foreach ($byRefWrittenNames as $byRefWrittenName) {
+			$byRefFlows[] = VariableFlow::escape($byRefWrittenName);
+		}
+		$byRefFlow = $byRefFlows === [] ? null : VariableFlow::sequence(...$byRefFlows);
 		$variableFlow = VariableFlow::sequence(
 			$nameResult !== null ? $nameResult->getVariableFlow() : null,
 			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
 			self::getCallVariableFlow($functionReflection !== null ? $functionReflection->getName() : null, $normalizedExpr, $argsResult, $scope),
 			VariableFlowBuilder::throws($expr, $throwPoints),
+			$byRefFlow,
 			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
 		);
 
 		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
+	}
+
+	/**
+	 * Invoking a closure whose by-ref uses are followed to where it runs (see
+	 * ClosureSignatureInference): the by-ref variables take the body's exit
+	 * types here. Observing, the invocation's state joins the closure's entry
+	 * and the effects are the fixpoint from here, containing whatever the
+	 * second pass computes; there, a closure whose every invocation was seen
+	 * runs once, an escaped one converges again.
+	 *
+	 * @return array{MutatingScope, list<InternalThrowPoint>, list<string>}
+	 */
+	private function processByRefInvocations(NodeScopeResolver $nodeScopeResolver, FuncCall $call, Type $calleeType, MutatingScope $scope, ExpressionResultStorage $storage): array
+	{
+		$members = $calleeType instanceof UnionType ? $calleeType->getTypes() : [$calleeType];
+		$closureTypes = [];
+		$hasOtherMember = false;
+		foreach ($members as $member) {
+			if (!$member instanceof ClosureType) {
+				$hasOtherMember = true;
+				continue;
+			}
+			$byRefUseTypes = $member->getByRefUseTypes();
+			$marker = $byRefUseTypes[array_key_first($byRefUseTypes) ?? ''] ?? null;
+			if (!$marker instanceof UnresolvedTemplateArgumentType || !$marker->getSite() instanceof Expr\Closure) {
+				$hasOtherMember = true;
+				continue;
+			}
+			$closureTypes[] = [$member, $marker->getSite()];
+		}
+		if ($closureTypes === []) {
+			return [$scope, [], []];
+		}
+
+		$observing = $nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null;
+		$argumentTypes = [];
+		foreach ($call->getArgs() as $i => $arg) {
+			if ($arg->name !== null || $arg->unpack) {
+				break;
+			}
+			$argumentTypes[$i] = $nodeScopeResolver->readTypeOfMaybeStored($arg->value, $scope);
+		}
+
+		$invocations = [];
+		$byRefNames = [];
+		foreach ($closureTypes as [$closureType, $site]) {
+			$mode = $observing ? null : $this->closureSignatureInference->getByRefSiteMode($scope, $site);
+			$creationScope = $observing || $mode !== null ? ClosureSignatureInference::findCreationScope($scope, $storage, $site) : null;
+			if ($creationScope === null) {
+				$hasOtherMember = true;
+				continue;
+			}
+			if ($observing || $mode === 'local') {
+				$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectInvocation($scope, $call, $closureType, $observing));
+			}
+			$invocations[] = [$site, $closureType, $creationScope, $mode !== 'local'];
+			foreach ($site->uses as $use) {
+				if (!$use->byRef || !is_string($use->var->name)) {
+					continue;
+				}
+				$byRefNames[$use->var->name] = true;
+			}
+		}
+
+		$resultScope = $hasOtherMember ? $scope : null;
+		$throwPoints = [];
+		foreach ($invocations as [$site, $closureType, $creationScope, $untilFixpoint]) {
+			$invokedScope = $observing ? $this->findCreationFixpointScope($scope, $storage, $site, $closureType, $argumentTypes) : null;
+			if ($invokedScope !== null) {
+				$resultScope = $resultScope === null ? $invokedScope : $resultScope->mergeWith($invokedScope);
+				continue;
+			}
+			[$invokedScope, $invocationThrowPoints] = $this->closureProcessor->processByRefInvocation(
+				$nodeScopeResolver,
+				$site,
+				$call,
+				$scope,
+				$storage,
+				$argumentTypes,
+				$creationScope,
+				$untilFixpoint,
+			);
+			$resultScope = $resultScope === null ? $invokedScope : $resultScope->mergeWith($invokedScope);
+			$throwPoints = array_merge($throwPoints, $invocationThrowPoints);
+		}
+
+		return [$resultScope ?? $scope, $throwPoints, array_keys($byRefNames)];
+	}
+
+	/**
+	 * While observing, the creation of the closure left its by-ref variables at
+	 * the fixpoint of any number of runs from where it was created. An
+	 * invocation from within that fixpoint - with arguments its parameters
+	 * accept, and nothing a catch could see in the middle of a run - adds
+	 * nothing to it, so the variables stay at it without walking the body.
+	 *
+	 * @param array<int, Type> $argumentTypes
+	 */
+	private function findCreationFixpointScope(MutatingScope $scope, ExpressionResultStorage $storage, Expr\Closure $site, ClosureType $closureType, array $argumentTypes): ?MutatingScope
+	{
+		if ($closureType->getThrowPoints() !== []) {
+			return null;
+		}
+		$creationResult = $storage->findExpressionResult($site);
+		if ($creationResult === null) {
+			return null;
+		}
+		foreach ($closureType->getParameters() as $i => $parameter) {
+			if (!isset($argumentTypes[$i])) {
+				continue;
+			}
+			if (!$parameter->getType()->isSuperTypeOf($argumentTypes[$i])->yes()) {
+				return null;
+			}
+		}
+
+		$fixpointScope = $creationResult->getScope();
+		foreach ($site->uses as $use) {
+			if (!$use->byRef || !is_string($use->var->name)) {
+				continue;
+			}
+			$name = $use->var->name;
+			if (!$fixpointScope->hasVariableType($name)->yes()) {
+				return null;
+			}
+			$fixpointType = $fixpointScope->getVariableType($name);
+			$type = $scope->hasVariableType($name)->yes() ? $scope->getVariableType($name) : new NullType();
+			if (!$fixpointType->isSuperTypeOf($type)->yes()) {
+				return null;
+			}
+			$scope = $scope->assignVariable($name, $fixpointType, $fixpointType, TrinaryLogic::createYes());
+		}
+
+		return $scope;
 	}
 
 	private function getFunctionThrowPoint(
@@ -831,6 +985,15 @@ final class FuncCallHandler implements ExprHandler
 			$creationResult = $storage->findExpressionResult($closure);
 			if ($creationResult === null || !$creationResult->getType()->equals($calleeType)) {
 				continue;
+			}
+			if ($closure instanceof Expr\Closure) {
+				foreach ($closure->uses as $use) {
+					// what it returns depends on its by-ref variables where it
+					// runs - see processByRefInvocations()
+					if ($use->byRef) {
+						return null;
+					}
+				}
 			}
 
 			return $this->closureTypeResolver->getClosureType($creationResult->getBeforeScope(), $closure, false, $storage, new CallableType($callableParameters, new MixedType(), false));

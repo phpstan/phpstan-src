@@ -14,8 +14,8 @@ function (): void {
 	};
 	$callback();
 
-	assertType('DateTime|null', $value);
-	assertNativeType('DateTime|null', $value);
+	assertType('DateTime', $value);
+	assertNativeType('DateTime', $value);
 
 	assertType('null', $other);
 	assertNativeType('null', $other);

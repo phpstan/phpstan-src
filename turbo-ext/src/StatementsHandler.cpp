@@ -55,6 +55,7 @@ namespace {
  * once they are ported) */
 
 pt_method_site pt_sh_get_return_type_site;
+pt_method_site pt_sh_get_by_type_site;
 pt_method_site pt_sh_get_attributes_site;
 pt_method_site pt_sh_get_start_token_pos_site;
 pt_method_site pt_sh_get_start_line_site;
@@ -475,12 +476,13 @@ public:
 	explicit StatementsHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties, then the twin's body */
-	void construct(zval *fileTypeMapper, zval *templateArgumentObserver, zval *templateArgumentResolver, bool unresolvedTemplateArguments)
+	void construct(zval *fileTypeMapper, zval *templateArgumentObserver, zval *templateArgumentResolver, zval *container, bool unresolvedTemplateArguments)
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::fileTypeMapper, zv::Val::copyOf(zv::Ref(fileTypeMapper)));
 		object.propAtWrite(slots::templateArgumentObserver, zv::Val::copyOf(zv::Ref(templateArgumentObserver)));
 		object.propAtWrite(slots::templateArgumentResolver, zv::Val::copyOf(zv::Ref(templateArgumentResolver)));
+		object.propAtWrite(slots::container, zv::Val::copyOf(zv::Ref(container)));
 		object.propAtWrite(slots::unresolvedTemplateArguments, zv::Val::boolean(unresolvedTemplateArguments));
 		const char *debug = getenv("PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG");
 		object.propAtWrite(slots::debugTemplateArguments, zv::Val::boolean(debug != NULL && strcmp(debug, "1") == 0));
@@ -1463,7 +1465,16 @@ private:
 					if (UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, recording.raw(), offset, recorded, nodeCallback, storage, scope.raw()))) return zv::Val();
 					zval *finalState = entryState(finalEntryHeld.raw());
 					if (UNEXPECTED(!appendRecordedStatementResults(state.raw(), recordedEntry, finalState))) return zv::Val();
-					zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(finalState), stateSlots::scope))));
+					// the recorded end scope, with what this pass collected
+					{
+						zval *stateScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
+						zv::Val collected = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(stateScope));
+						if (UNEXPECTED(collected.isUndef())) return zv::Val();
+						zv::Val endScope = pt_mutating_scope_with_template_argument_constraints(Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ_P(finalState), stateSlots::scope)), collected.raw());
+						if (UNEXPECTED(endScope.isUndef())) return zv::Val();
+						zv::Ref(stateScope).assign(std::move(endScope));
+					}
+					if (UNEXPECTED(!processDeferredByRefClosureBodies(nodeScopeResolver, frame.raw(), state.raw(), storage, nodeCallback))) return zv::Val();
 					if (UNEXPECTED(!restoreParentFrame(state.raw(), parentFrame.raw(), parentConstraints.raw()))) return zv::Val();
 					return pt_statement_list_walk_state_to_result(state.raw());
 				}
@@ -1493,9 +1504,66 @@ private:
 			if (UNEXPECTED(delta.isUndef())) return zv::Val();
 			zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(std::move(delta));
 		}
+		if (UNEXPECTED(!processDeferredByRefClosureBodies(nodeScopeResolver, frame.raw(), state.raw(), storage, nodeCallback))) return zv::Val();
 
 		if (UNEXPECTED(!restoreParentFrame(state.raw(), parentFrame.raw(), parentConstraints.raw()))) return zv::Val();
 		return pt_statement_list_walk_state_to_result(state.raw());
+	}
+
+	/* Mirrors the private getClosureProcessor(): looked up instead of
+	 * injected; UNDEF = pending exception */
+	zv::Val getClosureProcessor() const
+	{
+		zval *container = OBJ_PROP_NUM(self, slots::container);
+		if (UNEXPECTED(Z_TYPE_P(container) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getByType() on %s", zend_zval_value_name(container));
+			return zv::Val();
+		}
+		zval className;
+		ZVAL_STRINGL(&className, "PHPStan\\Analyser\\ClosureProcessor", sizeof("PHPStan\\Analyser\\ClosureProcessor") - 1);
+		zv::Val service = pt_call_method_cached(pt_sh_get_by_type_site, Z_OBJ_P(container), PT_LC("getbytype"), 1, &className);
+		zval_ptr_dtor(&className);
+		return service;
+	}
+
+	/* Mirrors the private processDeferredByRefClosureBodies(); false =
+	 * pending exception */
+	[[nodiscard]] bool processDeferredByRefClosureBodies(zval *nodeScopeResolver, zval *frame, zval *state, zval *storage, zval *nodeCallback) const
+	{
+		zv::Val sites = pt_template_argument_frame_get_local_by_ref_sites(frame);
+		if (UNEXPECTED(sites.isUndef())) return false;
+		if (!sites.ref().isArray() || zend_hash_num_elements(Z_ARRVAL_P(sites.raw())) == 0) return true;
+
+		// the invocations are collected from the end of the body joined with
+		// where it returned; the body is entered from where the closure was
+		// created, which knows what its uses were narrowed to
+		zv::Val result = pt_statement_list_walk_state_to_result(state);
+		if (UNEXPECTED(result.isUndef())) return false;
+		zv::Val endScopeHold;
+		zval *endScope = pt_internal_statement_result_scope(result.raw(), endScopeHold);
+		if (UNEXPECTED(endScope == NULL)) return false;
+		zv::Val endScopeKept = zv::Val::copyOf(zv::Ref(endScope));
+		zv::Val entryTypes = pt_closure_signature_inference_collect_by_ref_entry_types(endScopeKept.raw());
+		if (UNEXPECTED(entryTypes.isUndef())) return false;
+		for (zv::ArrayEntry entry : zv::ArrRef(sites.raw())) {
+			zval *site = zend_hash_index_find(Z_ARRVAL_P(entry.value().deref().raw()), 0);
+			if (UNEXPECTED(site == NULL)) continue;
+			zv::Val creationResult = pt_expression_result_storage_find(storage, site);
+			if (UNEXPECTED(creationResult.isUndef())) return false;
+			zv::Val creationScopeHold;
+			zval *creationScope = endScopeKept.raw();
+			if (!creationResult.isNull()) {
+				creationScope = pt_expression_result_before_scope(creationResult.raw(), creationScopeHold);
+				if (UNEXPECTED(creationScope == NULL)) return false;
+			}
+			zv::Val processor = getClosureProcessor();
+			if (UNEXPECTED(processor.isUndef())) return false;
+			zval *siteEntryTypes = zend_hash_index_find(Z_ARRVAL_P(entryTypes.raw()), Z_OBJ_HANDLE_P(site));
+			zval empty;
+			ZVAL_EMPTY_ARRAY(&empty);
+			if (UNEXPECTED(!pt_closure_processor_process_deferred_by_ref_closure_body(processor.raw(), nodeScopeResolver, site, creationScope, storage, nodeCallback, siteEntryTypes != NULL ? siteEntryTypes : &empty))) return false;
+		}
+		return true;
 	}
 
 	/* the private observeClosureSignatures() */
@@ -2109,15 +2177,16 @@ PT_MINIT_REGISTRATION(pt_register_statements_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *fileTypeMapper, *templateArgumentObserver, *templateArgumentResolver;
+		zval *fileTypeMapper, *templateArgumentObserver, *templateArgumentResolver, *container;
 		bool unresolvedTemplateArguments;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(5, 5)
 			Z_PARAM_OBJECT(fileTypeMapper)
 			Z_PARAM_OBJECT(templateArgumentObserver)
 			Z_PARAM_OBJECT(templateArgumentResolver)
+			Z_PARAM_OBJECT(container)
 			Z_PARAM_BOOL(unresolvedTemplateArguments)
 		ZEND_PARSE_PARAMETERS_END();
-		StatementsHandler(Z_OBJ_P(ZEND_THIS)).construct(fileTypeMapper, templateArgumentObserver, templateArgumentResolver, unresolvedTemplateArguments);
+		StatementsHandler(Z_OBJ_P(ZEND_THIS)).construct(fileTypeMapper, templateArgumentObserver, templateArgumentResolver, container, unresolvedTemplateArguments);
 	});
 
 	cls.method(sigs::processNodesWithStorage, [](INTERNAL_FUNCTION_PARAMETERS) {

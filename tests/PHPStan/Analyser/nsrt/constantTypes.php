@@ -132,9 +132,9 @@ class Foo
 		assertType('int<2, max>', $staticIntProperty);
 		assertType('1|2', $anotherIntProperty);
 		assertType('1|2', $anotherStaticIntProperty);
-		assertType('int<0, max>', $variableIncrementedInClosurePassedByReference);
+		assertType('0', $variableIncrementedInClosurePassedByReference);
 		assertType('0', $anotherVariableIncrementedInClosure);
-		assertType('0|1', $yetAnotherVariableInClosurePassedByReference);
+		assertType('0', $yetAnotherVariableInClosurePassedByReference);
 		assertType('1', $variableIncrementedInFinally);
 	}
 

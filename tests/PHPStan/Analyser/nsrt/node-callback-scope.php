@@ -336,32 +336,32 @@ function (): void {
 function (): void {
 	$a = 0;
 	$cb = function () use (&$a): void {
-		assertType('0|\'s\'', $a);
+		assertType('0', $a);
 		$a = 's';
 	};
-	assertType('0|\'s\'', $a);
+	assertType('0', $a);
 };
 
 function (): void {
 	$a = 0;
 	$b = 0;
 	$cb = function () use (&$a, $b): void {
-		assertType('int<0, max>', $a);
+		assertType('0', $a);
 		assertType('0', $b);
 		$a = $a + 1;
 		$b = 1;
 	};
-	assertType('int<0, max>', $a);
+	assertType('0', $a);
 	assertType('0', $b);
 };
 
 function (): void {
 	$a = 0;
 	$cb = function () use (&$a): void {
-		assertType('0|1', $a);
+		assertType('0', $a);
 		$a = 1;
 	};
-	assertType('0|1', $a);
+	assertType('0', $a);
 };
 
 class FooWithStaticMethods

@@ -42,13 +42,14 @@ inline constexpr char strings[] =
 	"observations\0" /* 303 */
 	"resolutions\0" /* 316 */
 	"settleClosureSites\0" /* 328 */
-	"hasChangedTemplateArgument\0" /* 347 */
-	"siteIndexes\0" /* 374 */
-	"settledClosureSites\0" /* 386 */
-	"collectSiteStatementIndexes\0" /* 406 */
-	"tokenPosition\0" /* 434 */
-	"positions\0" /* 448 */
-	"locateStatement"; /* 458 */
+	"siteIndexes\0" /* 347 */
+	"collectByRefSites\0" /* 359 */
+	"hasChangedTemplateArgument\0" /* 377 */
+	"settledClosureSites\0" /* 404 */
+	"collectSiteStatementIndexes\0" /* 424 */
+	"tokenPosition\0" /* 452 */
+	"positions\0" /* 466 */
+	"locateStatement"; /* 476 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 12), /* resolve $constraints */
 	reg::packed(66, MAY_BE_NULL, 73), /* resolve $parent */
@@ -68,14 +69,17 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(303, MAY_BE_ARRAY), /* settleClosureSites $observations */
 	reg::packed(316, MAY_BE_ARRAY), /* settleClosureSites $resolutions */
 	reg::packed(216, MAY_BE_ARRAY), /* settleClosureSites return */
+	reg::packed(303, MAY_BE_ARRAY), /* collectByRefSites $observations */
+	reg::packed(347, MAY_BE_ARRAY), /* collectByRefSites $siteIndexes */
+	reg::packed(216, MAY_BE_ARRAY), /* collectByRefSites return */
 	reg::packed(303, MAY_BE_ARRAY), /* hasChangedTemplateArgument $observations */
 	reg::packed(316, MAY_BE_ARRAY), /* hasChangedTemplateArgument $resolutions */
 	reg::packed(216, MAY_BE_BOOL), /* hasChangedTemplateArgument return */
-	reg::packed(374, MAY_BE_ARRAY), /* collectSiteStatementIndexes $siteIndexes */
-	reg::packed(386, MAY_BE_ARRAY), /* collectSiteStatementIndexes $settledClosureSites */
+	reg::packed(347, MAY_BE_ARRAY), /* collectSiteStatementIndexes $siteIndexes */
+	reg::packed(404, MAY_BE_ARRAY), /* collectSiteStatementIndexes $settledClosureSites */
 	reg::packed(216, MAY_BE_ARRAY), /* collectSiteStatementIndexes return */
-	reg::packed(434, MAY_BE_LONG), /* locateStatement $tokenPosition */
-	reg::packed(448, MAY_BE_ARRAY), /* locateStatement $positions */
+	reg::packed(452, MAY_BE_LONG), /* locateStatement $tokenPosition */
+	reg::packed(466, MAY_BE_ARRAY), /* locateStatement $positions */
 	reg::packed(216, MAY_BE_LONG), /* locateStatement return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -87,9 +91,10 @@ inline constexpr sigtab::Sig resolve = { { 217 /* resolve */, 3, 0, 5, 5, ZEND_A
 inline constexpr sigtab::Sig resolveObservedClosures = { { 231 /* resolveObservedClosures */, 3, 6, 3, 9, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig collectObservations = { { 283 /* collectObservations */, 4, 10, 4, 14, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig settleClosureSites = { { 328 /* settleClosureSites */, 2, 15, 2, 17, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig hasChangedTemplateArgument = { { 347 /* hasChangedTemplateArgument */, 2, 18, 2, 20, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig collectSiteStatementIndexes = { { 406 /* collectSiteStatementIndexes */, 2, 21, 2, 23, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig locateStatement = { { 458 /* locateStatement */, 2, 24, 2, 26, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectByRefSites = { { 359 /* collectByRefSites */, 2, 18, 2, 20, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig hasChangedTemplateArgument = { { 377 /* hasChangedTemplateArgument */, 2, 21, 2, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectSiteStatementIndexes = { { 424 /* collectSiteStatementIndexes */, 2, 24, 2, 26, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig locateStatement = { { 476 /* locateStatement */, 2, 27, 2, 29, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateArgumentResolver

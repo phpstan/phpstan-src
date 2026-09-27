@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\Generics;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\Closure;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -64,7 +65,7 @@ final class TemplateArgumentResolver
 			TemplateArgumentStats::increment('closureSitesSettled', count($settledClosureSites));
 		}
 
-		return new TemplateArgumentFrame($parent, $resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), $closureSignatureBody, $closureSignatureStmts, $settledClosureSites);
+		return new TemplateArgumentFrame($parent, $resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), $closureSignatureBody, $closureSignatureStmts, $settledClosureSites, byRefSites: $this->collectByRefSites($observations, $siteIndexes));
 	}
 
 	/**
@@ -83,7 +84,7 @@ final class TemplateArgumentResolver
 			TemplateArgumentStats::increment('closureSitesSettled', count($settledClosureSites));
 		}
 
-		return $frame->withObservedClosures($resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), $settledClosureSites);
+		return $frame->withObservedClosures($resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), $settledClosureSites, $this->collectByRefSites($observations, $siteIndexes));
 	}
 
 	/**
@@ -172,7 +173,12 @@ final class TemplateArgumentResolver
 				continue;
 			}
 			$resolution = $resolutions[$key] ?? null;
-			if (ClosureSignatureInference::isReturnMarker($marker)) {
+			if (ClosureSignatureInference::isByRefMarker($marker)) {
+				// every invocation seen: the second pass applies the effects where
+				// it runs; escaped: the creation-time fixpoint, seeded with the
+				// states it was invoked from
+				$settled = $observation['unconstrainingSend'] && ($resolution === null || $resolution->equals($marker->getDelegate()));
+			} elseif (ClosureSignatureInference::isReturnMarker($marker)) {
 				$settled = $resolution === null || $resolution instanceof MixedType;
 			} else {
 				$settled = $resolution === null || $resolution->equals($marker->getDelegate());
@@ -189,6 +195,34 @@ final class TemplateArgumentResolver
 		}
 
 		return $settled;
+	}
+
+	/**
+	 * @param array<string, array{marker: UnresolvedTemplateArgumentType, initial: Type|null, sends: list<array{Type, TemplateTypeVariance}>, lowerBounds: list<Type>, unconstrainingSend: bool}> $observations
+	 * @param array<int, int> $siteIndexes
+	 * @return array<int, array{Closure, int, bool}>
+	 */
+	private function collectByRefSites(array $observations, array $siteIndexes): array
+	{
+		$byRefSites = [];
+		foreach ($observations as $observation) {
+			$marker = $observation['marker'];
+			if (!ClosureSignatureInference::isByRefMarker($marker)) {
+				continue;
+			}
+			$site = $marker->getSite();
+			if (!$site instanceof Closure) {
+				continue;
+			}
+			$id = spl_object_id($site);
+			if (!isset($siteIndexes[$id])) {
+				continue;
+			}
+			$local = !$observation['unconstrainingSend'] && ($byRefSites[$id][2] ?? true);
+			$byRefSites[$id] = [$site, $siteIndexes[$id], $local];
+		}
+
+		return $byRefSites;
 	}
 
 	/**

@@ -25,6 +25,8 @@ use PHPStan\Node\ReturnStatement;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
+use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -37,6 +39,7 @@ use function array_map;
 use function array_merge;
 use function count;
 use function in_array;
+use function is_string;
 
 /**
  * Walks closure and arrow function bodies for NodeScopeResolver and builds
@@ -159,6 +162,9 @@ final class ClosureProcessor
 				}
 			}
 			$nodeScopeResolver->processExprNode($stmt, $use->var, $useScope, $storage, $nodeCallback, $context->withoutValueFlow());
+			if (is_string($use->var->name) && $scope->hasVariableType($use->var->name)->yes() && $this->closureSignatureInference->isObserving($scope)) {
+				$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectCaptureEscapes($scope->getVariableType($use->var->name)));
+			}
 			if (!$use->byRef) {
 				continue;
 			}
@@ -170,14 +176,36 @@ final class ClosureProcessor
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->returnType, $scope, $storage);
 		}
 
+		// the second pass of a body whose observation followed the closure: every
+		// invocation seen (local) - the effects apply where it runs and the body
+		// is analysed once all of them are known (see
+		// processDeferredByRefClosureBody()); escaped - the fixpoint starts from
+		// the states it was created in and invoked from. Both enter with the
+		// creation state joined with the invocations' ones
+		$byRefMode = count($byRefUses) > 0 ? $this->closureSignatureInference->getByRefSiteMode($scope, $expr) : null;
+		$byRefEntrySource = $scope;
+		if ($byRefMode !== null) {
+			foreach ($byRefUses as $use) {
+				if (!is_string($use->var->name)) {
+					continue;
+				}
+				$seed = $this->closureSignatureInference->getByRefSeed($scope, $expr, $use->var->name);
+				if ($seed === null) {
+					continue;
+				}
+				$byRefEntrySource = $byRefEntrySource->assignVariable($use->var->name, $seed, $seed, TrinaryLogic::createYes());
+			}
+		}
+		$bodyNodeCallback = $byRefMode === 'local' ? new NoopNodeCallback() : $nodeCallback;
+
 		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
-		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
+		$closureScope = $closureScope->processClosureScope($byRefEntrySource, null, $byRefUses);
 		$closureType = $closureScope->getAnonymousFunctionReflection();
 		if (!$closureType instanceof ClosureType) {
 			throw new ShouldNotHappenException();
 		}
 
-		$nodeScopeResolver->callNodeCallback($nodeCallback, new InClosureNode($closureType, $expr), $closureScope, $storage);
+		$nodeScopeResolver->callNodeCallback($bodyNodeCallback, new InClosureNode($closureType, $expr), $closureScope, $storage);
 
 		$executionEnds = [];
 		$gatheredReturnStatements = [];
@@ -267,7 +295,10 @@ final class ClosureProcessor
 		$replayPassResult = null;
 		$replayEntryScope = null;
 		$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($expr, $expr->stmts);
-		do {
+		// a local site's entry already holds every invocation's state: one walk
+		// for the closure's own results (the rules and the inference of what is
+		// inside run in the deferred one)
+		while ($byRefMode !== 'local' && $count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
 			$prevScope = $closureScope;
 
 			$storage = $originalStorage->duplicate();
@@ -305,7 +336,7 @@ final class ClosureProcessor
 				$closureScope = $prevScope->generalizeWith($closureScope);
 			}
 			$count++;
-		} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+		}
 
 		if ($closureResultScope === null) {
 			$closureResultScope = $closureScope;
@@ -327,11 +358,207 @@ final class ClosureProcessor
 				// compares by identity (the state is equals-identical anyway).
 				$closureScope = $replayEntryScope;
 				$originalStorage->mergeResults($replayPassStorage);
-				$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $closureScope);
+				$nodeScopeResolver->replayRecording($replayBodyRecording, $bodyNodeCallback, $originalStorage, $closureScope);
 				$statementResult = $replayPassResult;
 			} else {
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments())->withExpectedReturnType($expectedReturnType, $nativeExpectedReturnType));
+				$statementResult = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $bodyNodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments())->withExpectedReturnType($expectedReturnType, $nativeExpectedReturnType));
 			}
+		} finally {
+			$nodeScopeResolver->popNodeGatherer();
+		}
+		$publicStatementResult = $statementResult->toPublic();
+		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions, $storage);
+		$nodeScopeResolver->callNodeCallback($bodyNodeCallback, new ClosureReturnStatementsNode(
+			$expr,
+			$gatheredReturnStatements,
+			$gatheredReturnStatementsAfterFinally,
+			$gatheredYieldStatements,
+			$publicStatementResult,
+			$executionEnds,
+			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
+		), $closureReturnStatementsNodeScope, $storage);
+		$nodeScopeResolver->callNodeCallback($bodyNodeCallback, VariableLivenessResolver::resolve($expr, $statementResult->getVariableFlow()), $closureReturnStatementsNodeScope, $storage);
+
+		return new ProcessClosureResult(
+			$scope->addTemplateArgumentConstraints($statementResult->getScope()->getTemplateArgumentConstraints()),
+			$statementResult->getThrowPoints(),
+			$statementResult->getImpurePoints(),
+			$invalidateExpressions,
+			$gatheredReturnStatementsWithScope,
+			$gatheredYieldStatementsWithScope,
+			$executionEnds,
+			array_merge($closureImpurePoints, $statementResult->getImpurePoints()),
+			// nothing runs at creation - an undefined by-ref variable is defined as null
+			$byRefMode === 'local' ? $scope : $closureResultScope,
+			$byRefUses,
+		);
+	}
+
+	/**
+	 * An invocation of a closure whose by-ref effects apply where it runs: its
+	 * body is walked from the invocation's state - the by-ref variables as they
+	 * are here, the other uses as they were captured at the closure's creation,
+	 * the parameters as the arguments - once, or until the by-ref variables
+	 * converge when the invocation may repeat unseen (the closure escaped, or
+	 * the observation pass, which must contain every narrower second pass). The
+	 * by-ref variables leave with the body's exit types.
+	 *
+	 * @param array<int, Type> $argumentTypes by position
+	 * @return array{MutatingScope, list<InternalThrowPoint>}
+	 */
+	public function processByRefInvocation(
+		NodeScopeResolver $nodeScopeResolver,
+		Expr\Closure $expr,
+		Expr $call,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		array $argumentTypes,
+		MutatingScope $creationScope,
+		bool $untilFixpoint,
+	): array
+	{
+		$byRefUses = [];
+		foreach ($expr->uses as $use) {
+			if (!$use->byRef) {
+				continue;
+			}
+			$byRefUses[] = $use;
+		}
+		$callableParameters = [];
+		foreach ($expr->params as $i => $param) {
+			if ($param->variadic || !$param->var instanceof Variable || !is_string($param->var->name)) {
+				break;
+			}
+			$callableParameters[] = new DummyParameter($param->var->name, $argumentTypes[$i] ?? new MixedType(), false, null, false, null);
+		}
+		$enter = fn (MutatingScope $byRefSource): MutatingScope => $this->enterWithCapturedUses($scope, $expr, $callableParameters, $creationScope)->processClosureScope($byRefSource, null, $byRefUses);
+
+		$entryScope = $enter($scope);
+		$exitScope = null;
+		$throwPoints = [];
+		$count = 0;
+		do {
+			$result = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $entryScope, $storage->duplicate(), new NoopNodeCallback(), StatementContext::createTopLevel(false));
+			$passExitScope = $result->getScope();
+			foreach ($result->getExitPoints() as $exitPoint) {
+				$passExitScope = $passExitScope->mergeWith($exitPoint->getScope());
+			}
+			$exitScope = $exitScope === null ? $passExitScope : $exitScope->mergeWith($passExitScope);
+			foreach ($result->getThrowPoints() as $throwPoint) {
+				$throwScope = $this->assignByRefUses($scope, $throwPoint->getScope(), $byRefUses);
+				$throwPoints[] = $throwPoint->isExplicit()
+					? InternalThrowPoint::createExplicit($throwScope, $throwPoint->getType(), $call, $throwPoint->canContainAnyThrowable())
+					: InternalThrowPoint::createImplicit($throwScope, $call);
+			}
+			if (!$untilFixpoint) {
+				break;
+			}
+
+			// the next run starts from any state a run may have left
+			$nextEntryScope = $enter($this->assignByRefUses($scope, $entryScope, $byRefUses)->mergeWith($this->assignByRefUses($scope, $passExitScope, $byRefUses)));
+			if ($nextEntryScope->equals($entryScope)) {
+				break;
+			}
+			if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
+				$nextEntryScope = $entryScope->generalizeWith($nextEntryScope);
+			}
+			$entryScope = $nextEntryScope;
+			$count++;
+		} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+
+		if ($untilFixpoint) {
+			// zero or more runs: the state before them joins the ones after
+			$exitScope = $exitScope->mergeWith($entryScope);
+		}
+
+		return [$this->assignByRefUses($scope, $exitScope, $byRefUses), $throwPoints];
+	}
+
+	/**
+	 * The one walk of the body of a closure whose every invocation was seen,
+	 * after the enclosing body's second pass, entered from the scope it was
+	 * created in: the by-ref variables as the union of their types at the
+	 * invocations (as at the creation when there was none). The rules inside
+	 * the body are reported here.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param array<string, Type> $byRefEntryTypes
+	 */
+	public function processDeferredByRefClosureBody(
+		NodeScopeResolver $nodeScopeResolver,
+		Expr\Closure $expr,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		array $byRefEntryTypes,
+	): void
+	{
+		$parameterTypes = $this->closureParameterResolver->resolve($scope, $expr, $storage, $expr->getAttribute(ClosureArgVisitor::ATTRIBUTE_NAME), null, null);
+		[$expectedReturnType, $nativeExpectedReturnType] = $this->contextualClosureParameterResolver->resolveExpectedReturnTypes($scope, $expr, null, null);
+		$byRefUses = [];
+		$byRefSource = $scope;
+		foreach ($expr->uses as $use) {
+			if (!$use->byRef || !is_string($use->var->name)) {
+				continue;
+			}
+			$byRefUses[] = $use;
+			if (!isset($byRefEntryTypes[$use->var->name])) {
+				continue;
+			}
+			$type = $byRefEntryTypes[$use->var->name];
+			$byRefSource = $byRefSource->assignVariable($use->var->name, $type, $type, TrinaryLogic::createYes());
+		}
+		$closureScope = $scope->enterAnonymousFunction($expr, $parameterTypes->parameters, $parameterTypes->nativeParameters)->processClosureScope($byRefSource, null, $byRefUses);
+		$closureType = $closureScope->getAnonymousFunctionReflection();
+		if (!$closureType instanceof ClosureType) {
+			throw new ShouldNotHappenException();
+		}
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new InClosureNode($closureType, $expr), $closureScope, $storage);
+
+		$executionEnds = [];
+		$gatheredReturnStatements = [];
+		$gatheredReturnStatementsAfterFinally = [];
+		$gatheredReturnStatementsWithScope = [];
+		$gatheredYieldStatements = [];
+		$gatheredYieldStatementsWithScope = [];
+		$closureImpurePoints = [];
+		$invalidateExpressions = [];
+		$closureStmtsGatherer = static function (Node $node, Scope $nodeScope) use (&$executionEnds, &$gatheredReturnStatements, &$gatheredReturnStatementsAfterFinally, &$gatheredReturnStatementsWithScope, &$gatheredYieldStatements, &$gatheredYieldStatementsWithScope, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
+			if ($nodeScope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+				return;
+			}
+			if ($node instanceof PropertyAssignNode) {
+				$closureImpurePoints[] = new ImpurePoint($nodeScope, $node, 'propertyAssign', 'property assignment', true);
+				$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
+				return;
+			}
+			if ($node instanceof ExecutionEndNode) {
+				$executionEnds[] = $node;
+				return;
+			}
+			if ($node instanceof ReturnAfterFinallyNode) {
+				$gatheredReturnStatementsAfterFinally[] = new ReturnStatement($nodeScope, $node->getReturnNode());
+				return;
+			}
+			if ($node instanceof InvalidateExprNode) {
+				$invalidateExpressions[] = $node;
+				return;
+			}
+			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+				$gatheredYieldStatements[] = $node;
+				$gatheredYieldStatementsWithScope[] = [$node, $nodeScope];
+			}
+			if (!$node instanceof Return_) {
+				return;
+			}
+
+			$gatheredReturnStatements[] = new ReturnStatement($nodeScope, $node);
+			$gatheredReturnStatementsWithScope[] = [$node, $nodeScope];
+		};
+
+		$nodeScopeResolver->pushNodeGatherer($closureStmtsGatherer);
+		try {
+			$statementResult = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel(true)->withExpectedReturnType($expectedReturnType, $nativeExpectedReturnType));
 		} finally {
 			$nodeScopeResolver->popNodeGatherer();
 		}
@@ -347,19 +574,45 @@ final class ClosureProcessor
 			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureReturnStatementsNodeScope, $storage);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, VariableLivenessResolver::resolve($expr, $statementResult->getVariableFlow()), $closureReturnStatementsNodeScope, $storage);
+	}
 
-		return new ProcessClosureResult(
-			$scope->addTemplateArgumentConstraints($statementResult->getScope()->getTemplateArgumentConstraints()),
-			$statementResult->getThrowPoints(),
-			$statementResult->getImpurePoints(),
-			$invalidateExpressions,
-			$gatheredReturnStatementsWithScope,
-			$gatheredYieldStatementsWithScope,
-			$executionEnds,
-			array_merge($closureImpurePoints, $statementResult->getImpurePoints()),
-			$closureResultScope,
-			$byRefUses,
-		);
+	/**
+	 * The closure entered from $scope with its by-value uses as they were
+	 * captured at its creation.
+	 *
+	 * @param ParameterReflection[] $callableParameters
+	 */
+	private function enterWithCapturedUses(MutatingScope $scope, Expr\Closure $expr, array $callableParameters, MutatingScope $creationScope): MutatingScope
+	{
+		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $callableParameters);
+		foreach ($expr->uses as $use) {
+			if ($use->byRef || !is_string($use->var->name)) {
+				continue;
+			}
+			$type = $creationScope->hasVariableType($use->var->name)->yes() ? $creationScope->getVariableType($use->var->name) : new NullType();
+			$closureScope = $closureScope->assignVariable($use->var->name, $type, $type, TrinaryLogic::createYes());
+		}
+
+		return $closureScope;
+	}
+
+	/**
+	 * $scope with the by-ref variables as $source has them (null where it does
+	 * not define them), invalidating what was known about their contents.
+	 *
+	 * @param Node\ClosureUse[] $byRefUses
+	 */
+	private function assignByRefUses(MutatingScope $scope, MutatingScope $source, array $byRefUses): MutatingScope
+	{
+		foreach ($byRefUses as $use) {
+			if (!is_string($use->var->name)) {
+				continue;
+			}
+			$type = $source->hasVariableType($use->var->name)->yes() ? $source->getVariableType($use->var->name) : new NullType();
+			$scope = $scope->assignVariable($use->var->name, $type, $type, TrinaryLogic::createYes());
+		}
+
+		return $scope;
 	}
 
 	/**
@@ -447,6 +700,14 @@ final class ClosureProcessor
 	{
 		$context ??= ExpressionContext::createTopLevel();
 		$this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
+		if ($this->closureSignatureInference->isObserving($scope)) {
+			foreach (ClosureSignatureInference::getArrowFunctionOuterVariables($expr) as $name) {
+				if (!$scope->hasVariableType($name)->yes()) {
+					continue;
+				}
+				$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectCaptureEscapes($scope->getVariableType($name)));
+			}
+		}
 		if ($expr->returnType !== null) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->returnType, $scope, $storage);
 		}

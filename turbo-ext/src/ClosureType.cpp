@@ -65,6 +65,7 @@ struct ClosureTypeArguments
 	zval *mustUseReturnValue;
 	zval *assertions;
 	zval *isStatic;
+	zval *byRefUseTypes;
 };
 
 /* Mirrors PHPStan\Type\ClosureType. State lives in the PHP object's slots. */
@@ -93,6 +94,7 @@ public:
 		writeSlot(slots::throwPoints, a.throwPoints != NULL ? a.throwPoints : &emptyArray);
 		writeSlot(slots::invalidateExpressions, a.invalidateExpressions != NULL ? a.invalidateExpressions : &emptyArray);
 		writeSlot(slots::usedVariables, a.usedVariables != NULL ? a.usedVariables : &emptyArray);
+		writeSlot(slots::byRefUseTypes, a.byRefUseTypes != NULL ? a.byRefUseTypes : &emptyArray);
 
 		writeSlot(slots::acceptsNamedArguments, a.acceptsNamedArguments != NULL ? a.acceptsNamedArguments : pt_trinary_singleton(PT_TRI_YES));
 		writeSlot(slots::mustUseReturnValue, a.mustUseReturnValue != NULL ? a.mustUseReturnValue : pt_trinary_singleton(PT_TRI_MAYBE));
@@ -180,6 +182,7 @@ public:
 	zval *throwPoints() const { return slot(self, slots::throwPoints, "throwPoints"); }
 	zval *invalidateExpressions() const { return slot(self, slots::invalidateExpressions, "invalidateExpressions"); }
 	zval *usedVariables() const { return slot(self, slots::usedVariables, "usedVariables"); }
+	zval *byRefUseTypes() const { return slot(self, slots::byRefUseTypes, "byRefUseTypes"); }
 
 	static zval *slot(zend_object *object, uint32_t index, const char *name) { return pt_typed_slot(object, index, pt_ce_closure_type, name); }
 
@@ -397,6 +400,29 @@ public:
 			if (UNEXPECTED(theirType.isUndef())) return false;
 			if (UNEXPECTED(!unresolvedPairEqual(ownType.raw(), theirType.raw(), out))) return false;
 			if (!out) return true;
+		}
+		/* the by-ref use markers, by variable name */
+		zval *ownByRef = byRefUseTypes();
+		zval *theirByRef = slot(other, slots::byRefUseTypes, "byRefUseTypes");
+		if (UNEXPECTED(ownByRef == NULL || theirByRef == NULL)) return false;
+		if (zend_hash_num_elements(Z_ARRVAL_P(ownByRef)) != zend_hash_num_elements(Z_ARRVAL_P(theirByRef))) {
+			out = false;
+			return true;
+		}
+		for (auto entry : zv::ArrRef(ownByRef)) {
+			zval *theirType = entry.hasStringKey()
+				? zend_hash_find(Z_ARRVAL_P(theirByRef), entry.stringKey())
+				: zend_hash_index_find(Z_ARRVAL_P(theirByRef), entry.indexKey());
+			if (theirType == NULL || Z_TYPE_P(theirType) == IS_NULL) {
+				out = false;
+				return true;
+			}
+			zv::Val equal = pt_type_op(Z_OBJ_P(entry.value().raw()), PT_OP_EQUALS, 1, theirType);
+			if (UNEXPECTED(equal.isUndef())) return false;
+			if (Z_TYPE_P(equal.raw()) != IS_TRUE) {
+				out = false;
+				return true;
+			}
 		}
 		return true;
 	}
@@ -791,7 +817,8 @@ private:
 		a.mustUseReturnValue = a.acceptsNamedArguments != NULL ? mustUseReturnValue() : NULL;
 		a.assertions = a.mustUseReturnValue != NULL ? assertions() : NULL;
 		a.isStatic = a.assertions != NULL ? isStatic() : NULL;
-		if (UNEXPECTED(a.isStatic == NULL)) return false;
+		a.byRefUseTypes = a.isStatic != NULL ? byRefUseTypes() : NULL;
+		if (UNEXPECTED(a.byRefUseTypes == NULL)) return false;
 		a.variadic = zend_is_true(variadic);
 		return true;
 	}
@@ -802,10 +829,20 @@ private:
 using phpstanturbo::ClosureType;
 using phpstanturbo::ClosureTypeArguments;
 
-bool pt_closure_type_new(zval *out, zval *parameters, zval *returnType, bool variadic, zval *templateTypeMap, zval *resolvedTemplateTypeMap, zval *callSiteVarianceMap, zval *templateTags, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *usedVariables, zval *acceptsNamedArguments, zval *mustUseReturnValue, zval *assertions, zval *isStatic)
+bool pt_closure_type_new(zval *out, zval *parameters, zval *returnType, bool variadic, zval *templateTypeMap, zval *resolvedTemplateTypeMap, zval *callSiteVarianceMap, zval *templateTags, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *usedVariables, zval *acceptsNamedArguments, zval *mustUseReturnValue, zval *assertions, zval *isStatic, zval *byRefUseTypes)
 {
-	ClosureTypeArguments a = { parameters, returnType, variadic, templateTypeMap, resolvedTemplateTypeMap, callSiteVarianceMap, templateTags, throwPoints, impurePoints, invalidateExpressions, usedVariables, acceptsNamedArguments, mustUseReturnValue, assertions, isStatic };
+	ClosureTypeArguments a = { parameters, returnType, variadic, templateTypeMap, resolvedTemplateTypeMap, callSiteVarianceMap, templateTags, throwPoints, impurePoints, invalidateExpressions, usedVariables, acceptsNamedArguments, mustUseReturnValue, assertions, isStatic, byRefUseTypes };
 	return pt_val_into(ClosureType::create(a), out);
+}
+
+zv::Val pt_closure_type_get_by_ref_use_types(zval *closureType)
+{
+	if (EXPECTED(Z_OBJCE_P(closureType) == pt_ce_closure_type)) {
+		zval *byRefUseTypes = ClosureType(Z_OBJ_P(closureType)).byRefUseTypes();
+		if (UNEXPECTED(byRefUseTypes == NULL)) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(byRefUseTypes));
+	}
+	return pt_type_call(Z_OBJ_P(closureType), PT_LC("getbyrefusetypes"), 0, NULL);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -931,10 +968,11 @@ PT_MINIT_REGISTRATION(pt_register_closure_type)
 		reg::withDefault(reg::obj("mustUseReturnValue", ptcls::trinaryLogic, true), "null"),
 		reg::withDefault(reg::obj("assertions", "PHPStan\\Reflection\\Assertions", true), "null"),
 		reg::withDefault(reg::obj("isStatic", ptcls::trinaryLogic, true), "null"),
+		reg::withDefault(reg::arrayArg("byRefUseTypes"), "[]"),
 	}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ClosureTypeArguments a = {};
 		a.variadic = true;
-		ZEND_PARSE_PARAMETERS_START(0, 15)
+		ZEND_PARSE_PARAMETERS_START(0, 16)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_OR_NULL(a.parameters)
 			Z_PARAM_OBJECT_OR_NULL(a.returnType)
@@ -951,6 +989,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_type)
 			Z_PARAM_OBJECT_OR_NULL(a.mustUseReturnValue)
 			Z_PARAM_OBJECT_OR_NULL(a.assertions)
 			Z_PARAM_OBJECT_OR_NULL(a.isStatic)
+			Z_PARAM_ARRAY(a.byRefUseTypes)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_THIS.construct(a);
 	});
@@ -958,6 +997,10 @@ PT_MINIT_REGISTRATION(pt_register_closure_type)
 	cls.method(sigs::getAsserts, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		cltReturnSlot(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_THIS.assertions());
+	});
+	cls.method(sigs::getByRefUseTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		cltReturnSlot(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_THIS.byRefUseTypes());
 	});
 	cls.method(sigs::getTemplateTags, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

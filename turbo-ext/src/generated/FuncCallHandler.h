@@ -110,45 +110,51 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExpressionContext\0" /* 1339 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 1374 */
 	"processExpr\0" /* 1408 */
-	"functionReflection\0" /* 1420 */
-	"PHPStan\\Reflection\\FunctionReflection\0" /* 1439 */
-	"parametersAcceptor\0" /* 1477 */
-	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1496 */
-	"returnType\0" /* 1534 */
-	"PHPStan\\Type\\Type\0" /* 1545 */
-	"normalizedFuncCall\0" /* 1563 */
-	"PhpParser\\Node\\Expr\\FuncCall\0" /* 1582 */
-	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 1611 */
-	"getFunctionThrowPoint\0" /* 1647 */
-	"reflectionScope\0" /* 1669 */
-	"nativeTypesPromoted\0" /* 1685 */
-	"nameResult\0" /* 1705 */
-	"preResolvedAcceptor\0" /* 1716 */
-	"argsResult\0" /* 1736 */
-	"PHPStan\\Analyser\\ArgsResult\0" /* 1747 */
-	"resolveReturnType\0" /* 1775 */
-	"call\0" /* 1793 */
-	"name\0" /* 1798 */
-	"calleeType\0" /* 1803 */
-	"PHPStan\\Type\\ClosureType\0" /* 1814 */
-	"resolveInvokedClosureType\0" /* 1839 */
-	"normalizedExpr\0" /* 1865 */
-	"resolvedParametersAcceptor\0" /* 1880 */
-	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1907 */
-	"null\0" /* 1945 */
-	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1950 */
-	"specifyTypes\0" /* 1982 */
-	"specifyTypesFromCallableCall\0" /* 1995 */
-	"defaultFuncCallNarrowing\0" /* 2024 */
-	"isFuncCallNarrowable\0" /* 2049 */
-	"normalizedNode\0" /* 2070 */
-	"getDynamicFunctionReturnType\0" /* 2085 */
-	"functionName\0" /* 2114 */
-	"args\0" /* 2127 */
-	"PHPStan\\Analyser\\VariableFlow\0" /* 2132 */
-	"getCallVariableFlow\0" /* 2162 */
-	"type\0" /* 2182 */
-	"compactNames"; /* 2187 */
+	"call\0" /* 1420 */
+	"PhpParser\\Node\\Expr\\FuncCall\0" /* 1425 */
+	"calleeType\0" /* 1454 */
+	"PHPStan\\Type\\Type\0" /* 1465 */
+	"processByRefInvocations\0" /* 1483 */
+	"site\0" /* 1507 */
+	"PhpParser\\Node\\Expr\\Closure\0" /* 1512 */
+	"closureType\0" /* 1540 */
+	"PHPStan\\Type\\ClosureType\0" /* 1552 */
+	"argumentTypes\0" /* 1577 */
+	"findCreationFixpointScope\0" /* 1591 */
+	"functionReflection\0" /* 1617 */
+	"PHPStan\\Reflection\\FunctionReflection\0" /* 1636 */
+	"parametersAcceptor\0" /* 1674 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1693 */
+	"returnType\0" /* 1731 */
+	"normalizedFuncCall\0" /* 1742 */
+	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 1761 */
+	"getFunctionThrowPoint\0" /* 1797 */
+	"reflectionScope\0" /* 1819 */
+	"nativeTypesPromoted\0" /* 1835 */
+	"nameResult\0" /* 1855 */
+	"preResolvedAcceptor\0" /* 1866 */
+	"argsResult\0" /* 1886 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 1897 */
+	"resolveReturnType\0" /* 1925 */
+	"name\0" /* 1943 */
+	"resolveInvokedClosureType\0" /* 1948 */
+	"normalizedExpr\0" /* 1974 */
+	"resolvedParametersAcceptor\0" /* 1989 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 2016 */
+	"null\0" /* 2054 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 2059 */
+	"specifyTypes\0" /* 2091 */
+	"specifyTypesFromCallableCall\0" /* 2104 */
+	"defaultFuncCallNarrowing\0" /* 2133 */
+	"isFuncCallNarrowable\0" /* 2158 */
+	"normalizedNode\0" /* 2179 */
+	"getDynamicFunctionReturnType\0" /* 2194 */
+	"functionName\0" /* 2223 */
+	"args\0" /* 2236 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 2241 */
+	"getCallVariableFlow\0" /* 2271 */
+	"type\0" /* 2291 */
+	"compactNames"; /* 2296 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
 	reg::packed(57, 0, 92), /* __construct $dynamicFunctionThrowTypeExtensions */
@@ -177,62 +183,74 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1318, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
 	reg::packed(1331, 0, 1339), /* processExpr $context */
 	reg::packed(1144, 0, 1374), /* processExpr return */
-	reg::packed(1420, 0, 1439), /* getFunctionThrowPoint $functionReflection */
-	reg::packed(1477, MAY_BE_NULL, 1496), /* getFunctionThrowPoint $parametersAcceptor */
-	reg::packed(1534, 0, 1545), /* getFunctionThrowPoint $returnType */
-	reg::packed(1563, 0, 1582), /* getFunctionThrowPoint $normalizedFuncCall */
+	reg::packed(1154, 0, 1172), /* processByRefInvocations $nodeScopeResolver */
+	reg::packed(1420, 0, 1425), /* processByRefInvocations $call */
+	reg::packed(1454, 0, 1465), /* processByRefInvocations $calleeType */
+	reg::packed(1232, 0, 1238), /* processByRefInvocations $scope */
+	reg::packed(1269, 0, 1277), /* processByRefInvocations $storage */
+	reg::packed(1144, MAY_BE_ARRAY), /* processByRefInvocations return */
+	reg::packed(1232, 0, 1238), /* findCreationFixpointScope $scope */
+	reg::packed(1269, 0, 1277), /* findCreationFixpointScope $storage */
+	reg::packed(1507, 0, 1512), /* findCreationFixpointScope $site */
+	reg::packed(1540, 0, 1552), /* findCreationFixpointScope $closureType */
+	reg::packed(1577, MAY_BE_ARRAY), /* findCreationFixpointScope $argumentTypes */
+	reg::packed(1144, MAY_BE_NULL, 1238), /* findCreationFixpointScope return */
+	reg::packed(1617, 0, 1636), /* getFunctionThrowPoint $functionReflection */
+	reg::packed(1674, MAY_BE_NULL, 1693), /* getFunctionThrowPoint $parametersAcceptor */
+	reg::packed(1731, 0, 1465), /* getFunctionThrowPoint $returnType */
+	reg::packed(1742, 0, 1425), /* getFunctionThrowPoint $normalizedFuncCall */
 	reg::packed(1232, 0, 1238), /* getFunctionThrowPoint $scope */
 	reg::packed(1331, 0, 1339), /* getFunctionThrowPoint $context */
-	reg::packed(1144, MAY_BE_NULL, 1611), /* getFunctionThrowPoint return */
+	reg::packed(1144, MAY_BE_NULL, 1761), /* getFunctionThrowPoint return */
 	reg::packed(1154, 0, 1172), /* resolveReturnType $nodeScopeResolver */
-	reg::packed(1669, 0, 1238), /* resolveReturnType $reflectionScope */
-	reg::packed(1685, MAY_BE_BOOL), /* resolveReturnType $nativeTypesPromoted */
+	reg::packed(1819, 0, 1238), /* resolveReturnType $reflectionScope */
+	reg::packed(1835, MAY_BE_BOOL), /* resolveReturnType $nativeTypesPromoted */
 	reg::packed(1119, 0, 1124), /* resolveReturnType $expr */
-	reg::packed(1705, MAY_BE_NULL, 1374), /* resolveReturnType $nameResult */
-	reg::packed(1716, MAY_BE_NULL, 1496), /* resolveReturnType $preResolvedAcceptor */
-	reg::packed(1736, 0, 1747), /* resolveReturnType $argsResult */
-	reg::packed(1144, 0, 1545), /* resolveReturnType return */
+	reg::packed(1855, MAY_BE_NULL, 1374), /* resolveReturnType $nameResult */
+	reg::packed(1866, MAY_BE_NULL, 1693), /* resolveReturnType $preResolvedAcceptor */
+	reg::packed(1886, 0, 1897), /* resolveReturnType $argsResult */
+	reg::packed(1144, 0, 1465), /* resolveReturnType return */
 	reg::packed(1154, 0, 1172), /* resolveInvokedClosureType $nodeScopeResolver */
-	reg::packed(1793, 0, 1582), /* resolveInvokedClosureType $call */
-	reg::packed(1798, MAY_BE_STRING), /* resolveInvokedClosureType $name */
-	reg::packed(1803, 0, 1545), /* resolveInvokedClosureType $calleeType */
+	reg::packed(1420, 0, 1425), /* resolveInvokedClosureType $call */
+	reg::packed(1943, MAY_BE_STRING), /* resolveInvokedClosureType $name */
+	reg::packed(1454, 0, 1465), /* resolveInvokedClosureType $calleeType */
 	reg::packed(1232, 0, 1238), /* resolveInvokedClosureType $scope */
 	reg::packed(1269, 0, 1277), /* resolveInvokedClosureType $storage */
-	reg::packed(1144, MAY_BE_NULL, 1814), /* resolveInvokedClosureType return */
+	reg::packed(1144, MAY_BE_NULL, 1552), /* resolveInvokedClosureType return */
 	reg::packed(1232, 0, 1238), /* specifyTypes $scope */
 	reg::packed(1119, 0, 1124), /* specifyTypes $expr */
-	reg::packed(1865, 0, 1582), /* specifyTypes $normalizedExpr */
-	reg::packed(1705, MAY_BE_NULL, 1374), /* specifyTypes $nameResult */
-	reg::packed(1880, MAY_BE_NULL, 1496), /* specifyTypes $resolvedParametersAcceptor */
-	reg::packed(1331, 0, 1907), /* specifyTypes $context */
-	reg::packed(1736, MAY_BE_NULL, 1747, false, false, 1945), /* specifyTypes $argsResult */
-	reg::packed(1144, 0, 1950), /* specifyTypes return */
-	reg::packed(1331, 0, 1907), /* specifyTypesFromCallableCall $context */
-	reg::packed(1793, 0, 1582), /* specifyTypesFromCallableCall $call */
-	reg::packed(1705, MAY_BE_NULL, 1374), /* specifyTypesFromCallableCall $nameResult */
-	reg::packed(1880, MAY_BE_NULL, 1496), /* specifyTypesFromCallableCall $resolvedParametersAcceptor */
+	reg::packed(1974, 0, 1425), /* specifyTypes $normalizedExpr */
+	reg::packed(1855, MAY_BE_NULL, 1374), /* specifyTypes $nameResult */
+	reg::packed(1989, MAY_BE_NULL, 1693), /* specifyTypes $resolvedParametersAcceptor */
+	reg::packed(1331, 0, 2016), /* specifyTypes $context */
+	reg::packed(1886, MAY_BE_NULL, 1897, false, false, 2054), /* specifyTypes $argsResult */
+	reg::packed(1144, 0, 2059), /* specifyTypes return */
+	reg::packed(1331, 0, 2016), /* specifyTypesFromCallableCall $context */
+	reg::packed(1420, 0, 1425), /* specifyTypesFromCallableCall $call */
+	reg::packed(1855, MAY_BE_NULL, 1374), /* specifyTypesFromCallableCall $nameResult */
+	reg::packed(1989, MAY_BE_NULL, 1693), /* specifyTypesFromCallableCall $resolvedParametersAcceptor */
 	reg::packed(1232, 0, 1238), /* specifyTypesFromCallableCall $scope */
-	reg::packed(1144, MAY_BE_NULL, 1950), /* specifyTypesFromCallableCall return */
+	reg::packed(1144, MAY_BE_NULL, 2059), /* specifyTypesFromCallableCall return */
 	reg::packed(1232, 0, 1238), /* defaultFuncCallNarrowing $scope */
-	reg::packed(1119, 0, 1582), /* defaultFuncCallNarrowing $expr */
-	reg::packed(1705, MAY_BE_NULL, 1374), /* defaultFuncCallNarrowing $nameResult */
-	reg::packed(1331, 0, 1907), /* defaultFuncCallNarrowing $context */
-	reg::packed(1144, 0, 1950), /* defaultFuncCallNarrowing return */
+	reg::packed(1119, 0, 1425), /* defaultFuncCallNarrowing $expr */
+	reg::packed(1855, MAY_BE_NULL, 1374), /* defaultFuncCallNarrowing $nameResult */
+	reg::packed(1331, 0, 2016), /* defaultFuncCallNarrowing $context */
+	reg::packed(1144, 0, 2059), /* defaultFuncCallNarrowing return */
 	reg::packed(1232, 0, 1238), /* isFuncCallNarrowable $scope */
-	reg::packed(1119, 0, 1582), /* isFuncCallNarrowable $expr */
-	reg::packed(1705, MAY_BE_NULL, 1374), /* isFuncCallNarrowable $nameResult */
+	reg::packed(1119, 0, 1425), /* isFuncCallNarrowable $expr */
+	reg::packed(1855, MAY_BE_NULL, 1374), /* isFuncCallNarrowable $nameResult */
 	reg::packed(1144, MAY_BE_BOOL), /* isFuncCallNarrowable return */
 	reg::packed(1232, 0, 1238), /* getDynamicFunctionReturnType $scope */
-	reg::packed(2070, 0, 1582), /* getDynamicFunctionReturnType $normalizedNode */
-	reg::packed(1420, 0, 1439), /* getDynamicFunctionReturnType $functionReflection */
-	reg::packed(1736, 0, 1747), /* getDynamicFunctionReturnType $argsResult */
-	reg::packed(1144, MAY_BE_NULL, 1545), /* getDynamicFunctionReturnType return */
-	reg::packed(2114, MAY_BE_NULL | MAY_BE_STRING), /* getCallVariableFlow $functionName */
-	reg::packed(1793, 0, 1582), /* getCallVariableFlow $call */
-	reg::packed(2127, 0, 1747), /* getCallVariableFlow $args */
+	reg::packed(2179, 0, 1425), /* getDynamicFunctionReturnType $normalizedNode */
+	reg::packed(1617, 0, 1636), /* getDynamicFunctionReturnType $functionReflection */
+	reg::packed(1886, 0, 1897), /* getDynamicFunctionReturnType $argsResult */
+	reg::packed(1144, MAY_BE_NULL, 1465), /* getDynamicFunctionReturnType return */
+	reg::packed(2223, MAY_BE_NULL | MAY_BE_STRING), /* getCallVariableFlow $functionName */
+	reg::packed(1420, 0, 1425), /* getCallVariableFlow $call */
+	reg::packed(2236, 0, 1897), /* getCallVariableFlow $args */
 	reg::packed(1232, 0, 1238), /* getCallVariableFlow $scope */
-	reg::packed(1144, MAY_BE_NULL, 2132), /* getCallVariableFlow return */
-	reg::packed(2182, 0, 1545), /* compactNames $type */
+	reg::packed(1144, MAY_BE_NULL, 2241), /* getCallVariableFlow return */
+	reg::packed(2291, 0, 1465), /* compactNames $type */
 	reg::packed(1144, MAY_BE_NULL | MAY_BE_ARRAY), /* compactNames return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -243,16 +261,18 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 1107 /* __construct */, 17, 0, 17, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig supports = { { 1145 /* supports */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 1408 /* processExpr */, 7, 19, 7, 26, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFunctionThrowPoint = { { 1647 /* getFunctionThrowPoint */, 6, 27, 6, 33, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveReturnType = { { 1775 /* resolveReturnType */, 7, 34, 7, 41, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveInvokedClosureType = { { 1839 /* resolveInvokedClosureType */, 6, 42, 6, 48, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig specifyTypes = { { 1982 /* specifyTypes */, 6, 49, 7, 56, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig specifyTypesFromCallableCall = { { 1995 /* specifyTypesFromCallableCall */, 5, 57, 5, 62, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig defaultFuncCallNarrowing = { { 2024 /* defaultFuncCallNarrowing */, 4, 63, 4, 67, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isFuncCallNarrowable = { { 2049 /* isFuncCallNarrowable */, 3, 68, 3, 71, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getDynamicFunctionReturnType = { { 2085 /* getDynamicFunctionReturnType */, 4, 72, 4, 76, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getCallVariableFlow = { { 2162 /* getCallVariableFlow */, 4, 77, 4, 81, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig compactNames = { { 2187 /* compactNames */, 1, 82, 1, 83, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig processByRefInvocations = { { 1483 /* processByRefInvocations */, 5, 27, 5, 32, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findCreationFixpointScope = { { 1591 /* findCreationFixpointScope */, 5, 33, 5, 38, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getFunctionThrowPoint = { { 1797 /* getFunctionThrowPoint */, 6, 39, 6, 45, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveReturnType = { { 1925 /* resolveReturnType */, 7, 46, 7, 53, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveInvokedClosureType = { { 1948 /* resolveInvokedClosureType */, 6, 54, 6, 60, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyTypes = { { 2091 /* specifyTypes */, 6, 61, 7, 68, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyTypesFromCallableCall = { { 2104 /* specifyTypesFromCallableCall */, 5, 69, 5, 74, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig defaultFuncCallNarrowing = { { 2133 /* defaultFuncCallNarrowing */, 4, 75, 4, 79, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isFuncCallNarrowable = { { 2158 /* isFuncCallNarrowable */, 3, 80, 3, 83, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getDynamicFunctionReturnType = { { 2194 /* getDynamicFunctionReturnType */, 4, 84, 4, 88, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getCallVariableFlow = { { 2271 /* getCallVariableFlow */, 4, 89, 4, 93, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig compactNames = { { 2296 /* compactNames */, 1, 94, 1, 95, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::FuncCallHandler

@@ -33,6 +33,9 @@ constexpr const char *pt_taf_synthetic_site = "templateArgumentSyntheticSite";
 constexpr const char *pt_taf_original_site = "templateArgumentOriginalSite";
 /* ORIGINAL_SITE_ATTRIBUTE as a permanent interned string */
 zend_string *pt_taf_original_site_str = nullptr;
+/* getByRefSiteMode()'s results, permanent interned strings */
+zend_string *pt_taf_local = nullptr;
+zend_string *pt_taf_escaped = nullptr;
 
 /* $object->method() by name; UNDEF = pending exception */
 zv::Val call0(zval *object, const char *lcname, size_t len, const char *method)
@@ -88,9 +91,10 @@ public:
 	 * [], private readonly ?Node $closureSignatureBody = null, private
 	 * readonly array $closureSignatureStmts = [], private readonly array
 	 * $settledClosureSites = [], private readonly bool $observingClosures =
-	 * false); NULL for null / []. false = pending exception (a repeated
-	 * construction modifies readonly properties) */
-	[[nodiscard]] bool construct(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures) const
+	 * false, private readonly array $byRefSites = []); NULL for null / [].
+	 * false = pending exception (a repeated construction modifies readonly
+	 * properties) */
+	[[nodiscard]] bool construct(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(OBJ_PROP_NUM(self, slots::parent)) != IS_UNDEF)) {
 			zend_throw_error(NULL, "Cannot modify readonly property %s::$parent", ZSTR_VAL(self->ce->name));
@@ -135,14 +139,68 @@ public:
 		}
 		ZVAL_BOOL(&value, observingClosures);
 		pt_write_slot(self, slots::observingClosures, &value);
+		if (byRefSites != NULL) {
+			pt_write_slot(self, slots::byRefSites, byRefSites);
+		} else {
+			ZVAL_EMPTY_ARRAY(&value);
+			pt_write_slot(self, slots::byRefSites, &value);
+		}
 		return true;
+	}
+
+	/* Mirrors getByRefSiteMode(): the entry of this frame's byRefSites for
+	 * spl_object_id($site) holding that very node, then the parent's; the
+	 * interned 'local' / 'escaped', or PHP null. UNDEF = pending exception */
+	zv::Val getByRefSiteMode(zval *site) const
+	{
+		zend_ulong id = Z_OBJ_HANDLE_P(site);
+		zend_object *frame = self;
+		for (;;) {
+			zval *sites = OBJ_PROP_NUM(frame, slots::byRefSites);
+			zval *found = Z_TYPE_P(sites) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(sites), id) : NULL;
+			if (found != NULL && Z_TYPE_P(found) == IS_ARRAY) {
+				zval *node = zend_hash_index_find(Z_ARRVAL_P(found), 0);
+				if (node != NULL && Z_TYPE_P(node) == IS_OBJECT && Z_OBJ_P(node) == Z_OBJ_P(site)) {
+					zval *local = zend_hash_index_find(Z_ARRVAL_P(found), 2);
+					return zv::Val::string(local != NULL && zend_is_true(local) ? pt_taf_local : pt_taf_escaped);
+				}
+			}
+			zval *parent = pt_typed_slot(frame, slots::parent, frame->ce, "parent");
+			if (UNEXPECTED(parent == NULL)) return zv::Val();
+			if (Z_TYPE_P(parent) == IS_NULL) return zv::Val::null();
+			if (UNEXPECTED(Z_OBJCE_P(parent) != frame->ce)) return pt_type_call(Z_OBJ_P(parent), PT_LC("getbyrefsitemode"), 1, site);
+			frame = Z_OBJ_P(parent);
+		}
+	}
+
+	/* Mirrors getLocalByRefSites(): [$site, $statementIndex] of every local
+	 * entry, in order */
+	zv::Val getLocalByRefSites() const
+	{
+		zval *sites = pt_typed_slot(self, slots::byRefSites, self->ce, "byRefSites");
+		if (UNEXPECTED(sites == NULL)) return zv::Val();
+		zv::Arr result = zv::Arr::empty();
+		for (auto entry : zv::ArrRef(sites)) {
+			zval *byRefSite = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(byRefSite) != IS_ARRAY)) continue;
+			zval *site = zend_hash_index_find(Z_ARRVAL_P(byRefSite), 0);
+			zval *statementIndex = zend_hash_index_find(Z_ARRVAL_P(byRefSite), 1);
+			zval *local = zend_hash_index_find(Z_ARRVAL_P(byRefSite), 2);
+			if (local == NULL || !zend_is_true(local) || site == NULL || statementIndex == NULL) continue;
+			zv::Arr pair = zv::Arr::create(2);
+			pair.push(zv::Ref(site));
+			pair.push(zv::Ref(statementIndex));
+			result.push(std::move(pair));
+		}
+		return zv::Val(std::move(result));
 	}
 
 	/* Mirrors withObservedClosures(): new self($this->parent,
 	 * ($this->resolutions ?? []) + $closureResolutions,
 	 * $this->siteStatementIndexes + $closureSiteStatementIndexes, the body,
-	 * its statements, $settledClosureSites); UNDEF = pending exception */
-	zv::Val withObservedClosures(zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites) const
+	 * its statements, $settledClosureSites, byRefSites: $byRefSites); UNDEF =
+	 * pending exception */
+	zv::Val withObservedClosures(zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites, zval *byRefSites) const
 	{
 		zval *parent = pt_typed_slot(self, slots::parent, self->ce, "parent");
 		if (UNEXPECTED(parent == NULL)) return zv::Val();
@@ -160,7 +218,8 @@ public:
 			Z_TYPE_P(body) == IS_NULL ? NULL : body,
 			OBJ_PROP_NUM(self, slots::closureSignatureStmts),
 			settledClosureSites,
-			false
+			false,
+			byRefSites
 		);
 	}
 
@@ -204,12 +263,12 @@ public:
 	zval *closureSignatureStmts() const { return OBJ_PROP_NUM(self, slots::closureSignatureStmts); }
 
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val create(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures)
+	static zv::Val create(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_template_argument_frame) != SUCCESS)) return zv::Val();
 		zv::Val frame = zv::Val::adopt(object);
-		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(frame.raw())).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures))) return zv::Val();
+		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(frame.raw())).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites))) return zv::Val();
 		return frame;
 	}
 
@@ -513,16 +572,28 @@ bool pt_template_argument_frame_is_settled_closure_site(zval *frame, zval *site,
 	return true;
 }
 
-zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures)
+zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites)
 {
-	return TemplateArgumentFrame::create(parent != NULL && Z_TYPE_P(parent) == IS_NULL ? NULL : parent, resolutions != NULL && Z_TYPE_P(resolutions) == IS_NULL ? NULL : resolutions, siteStatementIndexes, closureSignatureBody != NULL && Z_TYPE_P(closureSignatureBody) == IS_NULL ? NULL : closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures);
+	return TemplateArgumentFrame::create(parent != NULL && Z_TYPE_P(parent) == IS_NULL ? NULL : parent, resolutions != NULL && Z_TYPE_P(resolutions) == IS_NULL ? NULL : resolutions, siteStatementIndexes, closureSignatureBody != NULL && Z_TYPE_P(closureSignatureBody) == IS_NULL ? NULL : closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites);
 }
 
-zv::Val pt_template_argument_frame_with_observed_closures(zval *frame, zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites)
+zv::Val pt_template_argument_frame_with_observed_closures(zval *frame, zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites, zval *byRefSites)
 {
-	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return TemplateArgumentFrame(Z_OBJ_P(frame)).withObservedClosures(closureResolutions, closureSiteStatementIndexes, settledClosureSites);
-	zv::Args argv{closureResolutions, closureSiteStatementIndexes, settledClosureSites};
-	return pt_type_call(Z_OBJ_P(frame), PT_LC("withobservedclosures"), 3, argv);
+	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return TemplateArgumentFrame(Z_OBJ_P(frame)).withObservedClosures(closureResolutions, closureSiteStatementIndexes, settledClosureSites, byRefSites);
+	zv::Args argv{closureResolutions, closureSiteStatementIndexes, settledClosureSites, byRefSites};
+	return pt_type_call(Z_OBJ_P(frame), PT_LC("withobservedclosures"), 4, argv);
+}
+
+zv::Val pt_template_argument_frame_get_by_ref_site_mode(zval *frame, zval *site)
+{
+	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return TemplateArgumentFrame(Z_OBJ_P(frame)).getByRefSiteMode(site);
+	return pt_type_call(Z_OBJ_P(frame), PT_LC("getbyrefsitemode"), 1, site);
+}
+
+zv::Val pt_template_argument_frame_get_local_by_ref_sites(zval *frame)
+{
+	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return TemplateArgumentFrame(Z_OBJ_P(frame)).getLocalByRefSites();
+	return pt_type_call(Z_OBJ_P(frame), PT_LC("getlocalbyrefsites"), 0, NULL);
 }
 
 /* the twin is final: the native class entry answers natively, anything
@@ -559,6 +630,8 @@ zv::Val pt_template_argument_frame_resolution_cache_key_suffix(zval *frame)
 PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 {
 	pt_taf_original_site_str = zend_string_init_interned(pt_taf_original_site, strlen(pt_taf_original_site), 1);
+	pt_taf_local = zend_string_init_interned(PT_LC("local"), 1);
+	pt_taf_escaped = zend_string_init_interned(PT_LC("escaped"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\Generics\\TemplateArgumentFrame");
 	ptdecl::TemplateArgumentFrame::declareClass(cls);
@@ -580,9 +653,9 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 	});
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *parent, *resolutions = NULL, *siteStatementIndexes = NULL, *closureSignatureBody = NULL, *closureSignatureStmts = NULL, *settledClosureSites = NULL;
+		zval *parent, *resolutions = NULL, *siteStatementIndexes = NULL, *closureSignatureBody = NULL, *closureSignatureStmts = NULL, *settledClosureSites = NULL, *byRefSites = NULL;
 		bool observingClosures = false;
-		ZEND_PARSE_PARAMETERS_START(1, 7)
+		ZEND_PARSE_PARAMETERS_START(1, 8)
 			Z_PARAM_OBJECT_OR_NULL(parent)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_OR_NULL(resolutions)
@@ -591,19 +664,26 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 			Z_PARAM_ARRAY(closureSignatureStmts)
 			Z_PARAM_ARRAY(settledClosureSites)
 			Z_PARAM_BOOL(observingClosures)
+			Z_PARAM_ARRAY(byRefSites)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures))) RETURN_THROWS();
+		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites))) RETURN_THROWS();
 	});
 
 	cls.method(sigs::withObservedClosures, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *closureResolutions, *closureSiteStatementIndexes, *settledClosureSites;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		zval *closureResolutions, *closureSiteStatementIndexes, *settledClosureSites, *byRefSites = NULL;
+		ZEND_PARSE_PARAMETERS_START(3, 4)
 			Z_PARAM_ARRAY(closureResolutions)
 			Z_PARAM_ARRAY(closureSiteStatementIndexes)
 			Z_PARAM_ARRAY(settledClosureSites)
+			Z_PARAM_OPTIONAL
+			Z_PARAM_ARRAY(byRefSites)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).withObservedClosures(closureResolutions, closureSiteStatementIndexes, settledClosureSites));
+		PT_RETURN_VAL(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).withObservedClosures(closureResolutions, closureSiteStatementIndexes, settledClosureSites, byRefSites));
 	});
+
+	cls.method<&TemplateArgumentFrame::getByRefSiteMode, zp::Obj>(sigs::getByRefSiteMode);
+
+	cls.method<&TemplateArgumentFrame::getLocalByRefSites>(sigs::getLocalByRefSites);
 
 	cls.method(sigs::isSettledClosureSite, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *site;

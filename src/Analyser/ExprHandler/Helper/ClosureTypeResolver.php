@@ -864,6 +864,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			acceptsNamedArguments: TrinaryLogic::createYes(),
 			mustUseReturnValue: $mustUseReturnValue,
 			isStatic: TrinaryLogic::createFromBoolean($expr->static),
+			byRefUseTypes: $contextFree ? $this->closureSignatureInference->getByRefUseMarkers($scope, $expr) : [],
 		);
 	}
 
@@ -945,6 +946,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			acceptsNamedArguments: TrinaryLogic::createYes(),
 			mustUseReturnValue: $mustUseReturnValue,
 			isStatic: TrinaryLogic::createFromBoolean($expr->static),
+			byRefUseTypes: $contextFree ? $this->closureSignatureInference->getByRefUseMarkers($scope, $expr) : [],
 		);
 	}
 

@@ -1023,7 +1023,7 @@ extern zend_class_entry *pt_ce_closure_type;
  * exception */
 [[nodiscard]] bool pt_iterable_type_new(zval *out, zval *keyType, zval *itemType);
 bool pt_callable_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *templateTags = NULL, zval *isPure = NULL, zval *assertions = NULL);
-bool pt_closure_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *callSiteVarianceMap = NULL, zval *templateTags = NULL, zval *throwPoints = NULL, zval *impurePoints = NULL, zval *invalidateExpressions = NULL, zval *usedVariables = NULL, zval *acceptsNamedArguments = NULL, zval *mustUseReturnValue = NULL, zval *assertions = NULL, zval *isStatic = NULL);
+bool pt_closure_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *callSiteVarianceMap = NULL, zval *templateTags = NULL, zval *throwPoints = NULL, zval *impurePoints = NULL, zval *invalidateExpressions = NULL, zval *usedVariables = NULL, zval *acceptsNamedArguments = NULL, zval *mustUseReturnValue = NULL, zval *assertions = NULL, zval *isStatic = NULL, zval *byRefUseTypes = NULL);
 
 /* merged from the parallel port branch */
 /* the array-shape type (ConstantArrayType.cpp) */
@@ -1276,6 +1276,9 @@ bool pt_unresolved_template_argument_type_new(zval *out, zval *site, zval *templ
  * pending exception */
 [[nodiscard]] bool pt_unresolved_template_argument_type_is_closure_signature(zval *marker, bool &out);
 [[nodiscard]] bool pt_unresolved_template_argument_type_is_closure_return(zval *marker, bool &out);
+/* $marker->getSite() (borrowed; NULL = pending exception) / ->getTemplateName() (UNDEF = pending exception) */
+zval *pt_unresolved_template_argument_type_site(zval *marker);
+zv::Val pt_unresolved_template_argument_type_get_template_name(zval *marker);
 
 
 /* merged from the parallel port branch */
@@ -2000,9 +2003,13 @@ zv::Val pt_template_argument_frame_return_type_of_call(zval *acceptor, zval *sco
 /* new TemplateArgumentFrame($parent, $resolutions, $siteStatementIndexes)
  * ($parent / $resolutions NULL or IS_NULL for null, $siteStatementIndexes
  * NULL for []) */
-zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL, zval *settledClosureSites = NULL, bool observingClosures = false);
+zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL, zval *settledClosureSites = NULL, bool observingClosures = false, zval *byRefSites = NULL);
 /* $frame->withObservedClosures($closureResolutions, $closureSiteStatementIndexes, $settledClosureSites); UNDEF = pending exception */
-zv::Val pt_template_argument_frame_with_observed_closures(zval *frame, zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites);
+zv::Val pt_template_argument_frame_with_observed_closures(zval *frame, zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites, zval *byRefSites = NULL);
+/* TemplateArgumentFrame::getByRefSiteMode(): 'local' / 'escaped' / PHP null; UNDEF = pending exception */
+zv::Val pt_template_argument_frame_get_by_ref_site_mode(zval *frame, zval *site);
+/* TemplateArgumentFrame::getLocalByRefSites(); UNDEF = pending exception */
+zv::Val pt_template_argument_frame_get_local_by_ref_sites(zval *frame);
 /* $frame->isSettledClosureSite($site); false = pending exception */
 [[nodiscard]] bool pt_template_argument_frame_is_settled_closure_site(zval *frame, zval *site, bool &out);
 /* $frame->getClosureSignatureBody() / getClosureSignatureStmts(); UNDEF =
@@ -3085,6 +3092,20 @@ zv::Val pt_closure_signature_inference_get_expected_return_type(zval *inference,
  * exception) / findAssignedClosures() (UNDEF = pending exception) */
 [[nodiscard]] bool pt_closure_signature_inference_infers_invocation_return_type(zval *inference, zval *scope, zval *closureType, bool &out);
 zv::Val pt_closure_signature_inference_find_assigned_closures(zval *inference, zval *scope, zend_string *name);
+/* ClosureSignatureInference's by-ref follow-up: isByRefMarker() (false =
+ * pending exception), getByRefUseMarkers() / getByRefSiteMode() /
+ * getByRefSeed() on the service, and the static findCreationScope() /
+ * collectCaptureEscapes() / collectInvocation() / collectByRefEntryTypes() /
+ * getArrowFunctionOuterVariables(); UNDEF = pending exception */
+[[nodiscard]] bool pt_closure_signature_inference_is_by_ref_marker(zval *marker, bool &out);
+zv::Val pt_closure_signature_inference_get_by_ref_use_markers(zval *inference, zval *scope, zval *expr);
+zv::Val pt_closure_signature_inference_get_by_ref_site_mode(zval *inference, zval *scope, zval *expr);
+zv::Val pt_closure_signature_inference_get_by_ref_seed(zval *inference, zval *scope, zval *expr, zend_string *name);
+zv::Val pt_closure_signature_inference_find_creation_scope(zval *scope, zval *storage, zval *expr);
+zv::Val pt_closure_signature_inference_collect_capture_escapes(zval *type);
+zv::Val pt_closure_signature_inference_collect_invocation(zval *scope, zval *call, zval *closureType, bool observing);
+zv::Val pt_closure_signature_inference_collect_by_ref_entry_types(zval *scope);
+zv::Val pt_closure_signature_inference_get_arrow_function_outer_variables(zval *expr);
 /* $closureSignatureInference->isObserving($scope); false = pending exception */
 [[nodiscard]] bool pt_closure_signature_inference_is_observing(zval *inference, zval *scope, bool &out);
 [[nodiscard]] bool pt_contextual_closure_parameter_resolver_resolve_expected_return_types(zval *resolver, zval *scope, zval *expr, zval *passedToType, zval *nativePassedToType, zv::Val &expected, zv::Val &nativeExpected);
@@ -3093,6 +3114,8 @@ zv::Val pt_closure_signature_inference_find_assigned_closures(zval *inference, z
 /* $closureParameterResolver->resolveCallableTypeForScope($expr, $scope);
  * UNDEF = pending exception */
 zv::Val pt_closure_parameter_resolver_resolve_callable_type_for_scope(zval *resolver, zval *expr, zval *scope);
+/* $closureType->getByRefUseTypes(); UNDEF = pending exception */
+zv::Val pt_closure_type_get_by_ref_use_types(zval *closureType);
 /* $closureTypeResolver->getClosureType($scope, $expr, $shallow, $storage, $passedToType) /
  * ->buildClosureTypeForClosure(...) / ->buildClosureTypeForArrowFunction(...)
  * / ->getDeclaredClosureType($scope, $expr) — the native bodies for the
@@ -3151,6 +3174,11 @@ zv::Val pt_process_arrow_function_result_new(zval *expressionResult, zval *arrow
 zv::Val pt_closure_processor_process_closure_node(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *passedToType, zval *nativePassedToType = NULL);
 zv::Val pt_closure_processor_process_arrow_function_node(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *passedToType, zval *nativePassedToType = NULL, zval *context = NULL);
 zv::Val pt_closure_processor_process_immediately_called_callable(zval *processor, zval *scope, zval *invalidatedExpressions, zval *uses);
+/* ClosureProcessor::processByRefInvocation() ([the scope, the throw
+ * points]) / processDeferredByRefClosureBody(); UNDEF / false = pending
+ * exception */
+zv::Val pt_closure_processor_process_by_ref_invocation(zval *processor, zval *nodeScopeResolver, zval *expr, zval *call, zval *scope, zval *storage, zval *argumentTypes, zval *creationScope, bool untilFixpoint);
+[[nodiscard]] bool pt_closure_processor_process_deferred_by_ref_closure_body(zval *processor, zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *byRefEntryTypes);
 /* ClosureHandler::getVariableFlow($closure) / ArrowFunctionHandler::getVariableFlow($arrowFunction,
  * $bodyResult) (the flow or null); UNDEF = pending exception */
 zv::Val pt_closure_handler_get_variable_flow(zval *expr);

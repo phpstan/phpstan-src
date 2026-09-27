@@ -15,11 +15,11 @@ function () {
 	assertType('1', $incrementedInside);
 	assertType('null', $fooOrNull);
 	$callback = function () use (&$progressStarted, $anotherVariable, &$untouchedPassedByRef, &$incrementedInside, &$fooOrNull): void {
-		assertType('1|bool', $progressStarted);
+		assertType('false', $progressStarted);
 		assertType('false', $anotherVariable);
 		assertType('null', $untouchedPassedByRef);
-		assertType('int<1, max>', $incrementedInside);
-		assertType('ClosurePassedByReference\Foo|null', $fooOrNull);
+		assertType('1', $incrementedInside);
+		assertType('null', $fooOrNull);
 		if (doFoo()) {
 			$progressStarted = 1;
 			return;
@@ -36,22 +36,22 @@ function () {
 
 		$incrementedInside++;
 
-		assertType('1|true', $progressStarted);
+		assertType('true', $progressStarted);
 
 		assertType('true', $anotherVariable);
 
-		assertType('int<2, max>', $incrementedInside);
+		assertType('2', $incrementedInside);
 
 		assertType('ClosurePassedByReference\Foo', $fooOrNull);
 	};
 
-	assertType('1|bool', $progressStarted);
+	assertType('false', $progressStarted);
 
 	assertType('false', $anotherVariable);
 
 	assertType('null', $untouchedPassedByRef);
 
-	assertType('int<1, max>', $incrementedInside);
+	assertType('1', $incrementedInside);
 
-	assertType('ClosurePassedByReference\Foo|null', $fooOrNull);
+	assertType('null', $fooOrNull);
 };

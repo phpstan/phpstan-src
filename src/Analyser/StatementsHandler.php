@@ -11,6 +11,7 @@ use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Goto_;
+use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
@@ -18,6 +19,7 @@ use PHPStan\Analyser\Generics\TemplateArgumentResolver;
 use PHPStan\Analyser\Generics\TemplateArgumentStats;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\UnreachableStatementNode;
@@ -40,6 +42,7 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function spl_object_id;
 use function sprintf;
 
 /**
@@ -62,6 +65,7 @@ final class StatementsHandler
 		private FileTypeMapper $fileTypeMapper,
 		private TemplateArgumentObserver $templateArgumentObserver,
 		private TemplateArgumentResolver $templateArgumentResolver,
+		private Container $container,
 		#[AutowiredParameter(ref: '%featureToggles.unresolvedTemplateArguments%')]
 		private bool $unresolvedTemplateArguments,
 	)
@@ -606,7 +610,9 @@ final class StatementsHandler
 				}
 				$nodeScopeResolver->replayRecordingRange($recording, $offset, $recording->count(), $nodeCallback, $storage, $scope);
 				$this->appendRecordedStatementResults($state, $recordedEntry, $entries[$stmtCount][0]);
-				$state->scope = $entries[$stmtCount][0]->scope;
+				// the recorded end scope, with what this pass collected
+				$state->scope = $entries[$stmtCount][0]->scope->withTemplateArgumentConstraints($state->scope->getTemplateArgumentConstraints());
+				$this->processDeferredByRefClosureBodies($nodeScopeResolver, $frame, $state, $storage, $nodeCallback);
 
 				$state->scope = $state->scope->withTemplateArgumentFrame($parentFrame)->withTemplateArgumentConstraints($parentConstraints);
 				return $state->toResult();
@@ -642,9 +648,51 @@ final class StatementsHandler
 			$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
 			$state->scope = $state->scope->withRecordedStatementDelta($recordedEntry->scope, $recordedExit->scope);
 		}
+		$this->processDeferredByRefClosureBodies($nodeScopeResolver, $frame, $state, $storage, $nodeCallback);
 
 		$state->scope = $state->scope->withTemplateArgumentFrame($parentFrame)->withTemplateArgumentConstraints($parentConstraints);
 		return $state->toResult();
+	}
+
+	/**
+	 * Looked up instead of injected: the closure processor walks closure bodies
+	 * through the statements handler, which constructor injection cannot express.
+	 */
+	private function getClosureProcessor(): ClosureProcessor
+	{
+		return $this->container->getByType(ClosureProcessor::class);
+	}
+
+	/**
+	 * The one analysed walk of every closure of the body whose every invocation
+	 * was seen: with the second pass done, the types its by-ref variables had
+	 * at the invocations are known (see ClosureProcessor::processDeferredByRefClosureBody()).
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processDeferredByRefClosureBodies(NodeScopeResolver $nodeScopeResolver, TemplateArgumentFrame $frame, StatementListWalkState $state, ExpressionResultStorage $storage, callable $nodeCallback): void
+	{
+		$sites = $frame->getLocalByRefSites();
+		if ($sites === []) {
+			return;
+		}
+
+		// the invocations are collected from the end of the body joined with
+		// where it returned; the body is entered from where the closure was
+		// created, which knows what its uses were narrowed to
+		$endScope = $state->toResult()->getScope();
+		$entryTypes = ClosureSignatureInference::collectByRefEntryTypes($endScope);
+		foreach ($sites as [$site]) {
+			$creationResult = $storage->findExpressionResult($site);
+			$this->getClosureProcessor()->processDeferredByRefClosureBody(
+				$nodeScopeResolver,
+				$site,
+				$creationResult !== null ? $creationResult->getBeforeScope() : $endScope,
+				$storage,
+				$nodeCallback,
+				$entryTypes[spl_object_id($site)] ?? [],
+			);
+		}
 	}
 
 	/**

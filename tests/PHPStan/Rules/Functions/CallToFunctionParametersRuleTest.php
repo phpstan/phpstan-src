@@ -934,6 +934,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureByRefUsesAtInvocation(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-byref-uses-at-invocation.php'], [
+			[
+				'Parameter #1 $string of function strlen expects string, int given.',
+				24,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testClosureSignatureFromUsagesOfGenericObject(): void
 	{
 		$this->analyse([__DIR__ . '/data/closure-signature-from-usages-generics.php'], []);

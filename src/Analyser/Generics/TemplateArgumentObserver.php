@@ -152,7 +152,10 @@ final class TemplateArgumentObserver
 	{
 		$contains = false;
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains): Type {
-			if ($type instanceof UnresolvedTemplateArgumentType && ClosureSignatureInference::isClosureSignatureMarker($type)) {
+			if (
+				($type instanceof UnresolvedTemplateArgumentType && ClosureSignatureInference::isClosureSignatureMarker($type))
+				|| ($type instanceof ClosureType && $type->getByRefUseTypes() !== [])
+			) {
 				$contains = true;
 			}
 			return $contains ? $type : $traverse($type);
@@ -204,6 +207,8 @@ final class TemplateArgumentObserver
 		if ($declared instanceof MixedType || !$declared->isCallable()->yes()) {
 			return $this->escapeClosures($constraints, $actual);
 		}
+		// whoever is given the closure invokes it when it chooses
+		$constraints = self::escapeByRefUses($constraints, $actual);
 
 		$closureParameters = $actual->getParameters();
 		$returnMarker = $actual->getReturnType();
@@ -258,11 +263,30 @@ final class TemplateArgumentObserver
 	}
 
 	/**
+	 * The closure's value goes where it can be invoked at any time: its by-ref
+	 * uses keep the creation-time fixpoint.
+	 */
+	private static function escapeByRefUses(TemplateArgumentConstraints $constraints, ClosureType $closureType): TemplateArgumentConstraints
+	{
+		foreach ($closureType->getByRefUseTypes() as $marker) {
+			if (!$marker instanceof UnresolvedTemplateArgumentType) {
+				continue;
+			}
+			$constraints = $constraints->withUnconstrainingSend($marker);
+		}
+
+		return $constraints;
+	}
+
+	/**
 	 * The closures in $type go where nothing describes how they are invoked.
 	 */
 	private function escapeClosures(TemplateArgumentConstraints $constraints, Type $type): TemplateArgumentConstraints
 	{
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constraints): Type {
+			if ($type instanceof ClosureType) {
+				$constraints = self::escapeByRefUses($constraints, $type);
+			}
 			if ($type instanceof UnresolvedTemplateArgumentType) {
 				if (ClosureSignatureInference::isClosureSignatureMarker($type) && !ClosureSignatureInference::isReturnMarker($type)) {
 					$constraints = $constraints->withUnconstrainingSend($type);

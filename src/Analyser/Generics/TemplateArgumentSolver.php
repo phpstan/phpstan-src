@@ -309,6 +309,16 @@ final class TemplateArgumentSolver
 	private function resolveClosureSignatureObservation(array $observation): Type
 	{
 		$marker = $observation['marker'];
+		if (ClosureSignatureInference::isByRefMarker($marker)) {
+			// the entry of an escaped closure's fixpoint: the state it was created
+			// in and every state it was invoked from
+			$parts = [$marker->getDelegate()];
+			foreach ($observation['lowerBounds'] as $lowerBound) {
+				$parts[] = $this->substituteResolutions($lowerBound);
+			}
+
+			return TypeCombinator::union(...$parts);
+		}
 		if (ClosureSignatureInference::isReturnMarker($marker)) {
 			$upperBounds = [];
 			foreach ($observation['sends'] as [$sent]) {

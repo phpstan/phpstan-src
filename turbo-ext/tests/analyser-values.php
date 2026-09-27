@@ -661,6 +661,19 @@ foreach (['php' => [\PHPStan\Analyser\Generics\TemplateArgumentFrame::class, \PH
 			}
 		}
 	}
+	// the by-ref closure sites: found by the node's id holding that very node, then in the parents
+	$byRefRoot = new $frameClass(null, [], byRefSites: [$id('site') => [$avSites['site'], 4, true], $id('other site') => [$avSites['other site'], 2, false], 12345678 => [$avSites['with original'], 9, true]]);
+	$byRefLeaf = new $frameClass($byRefRoot, [], byRefSites: [$id('other site') => [$avSites['other site'], 1, true]]);
+	$byRefObserved = $byRefLeaf->withObservedClosures([], [], [], [$id('site') => [$avSites['site'], 7, false]]);
+	$byRefUnobserved = $byRefLeaf->withObservedClosures([], [], []);
+	foreach (['root' => $byRefRoot, 'leaf' => $byRefLeaf, 'observed' => $byRefObserved, 'unobserved' => $byRefUnobserved, 'none' => $observing] as $label => $frame) {
+		$row = [];
+		foreach ($avSites as $siteLabel => $site) {
+			$row['mode ' . $siteLabel] = $frame->getByRefSiteMode($site);
+		}
+		$row['local'] = array_map(static fn (array $byRefSite): array => [$byRefSite[0]->getAttribute('label'), $byRefSite[1]], $frame->getLocalByRefSites());
+		$r['by-ref frame ' . $label] = $row;
+	}
 	$r['frame constants'] = [$frameClass::SYNTHETIC_SITE_ATTRIBUTE, $frameClass::ORIGINAL_SITE_ATTRIBUTE];
 	$r['frame uninitialized'] = [
 		$avCatch(static fn () => (new \ReflectionClass($frameClass))->newInstanceWithoutConstructor()->isObserving()),
@@ -708,6 +721,15 @@ foreach ($avFrameResults['php'] as $label => $described) {
 }
 check(!str_contains(json_encode($avFrameResults['php']['return type frame with original true']), 'with original') && str_contains(json_encode($avFrameResults['php']['return type frame with original true']), 'site'), 'TemplateArgumentFrame: the fixture passes the original site');
 check(str_contains(json_encode($avFrameResults['php']['frame leaf']['or unconstrained site bound U']), 'array<int, string>'), 'TemplateArgumentFrame: the fixture resolves a bound through the frames (' . json_encode($avFrameResults['php']['frame leaf']['or unconstrained site bound U']) . ')');
+check(
+	($avFrameResults['php']['by-ref frame leaf']['mode site'] ?? null) === 'local'
+	&& ($avFrameResults['php']['by-ref frame leaf']['mode other site'] ?? null) === 'local'
+	&& ($avFrameResults['php']['by-ref frame root']['mode other site'] ?? null) === 'escaped'
+	&& array_key_exists('mode with original', $avFrameResults['php']['by-ref frame root'] ?? []) && $avFrameResults['php']['by-ref frame root']['mode with original'] === null
+	&& ($avFrameResults['php']['by-ref frame observed']['mode site'] ?? null) === 'escaped'
+	&& ($avFrameResults['php']['by-ref frame root']['local'] ?? null) === [['site', 4], ['with original', 9]],
+	'TemplateArgumentFrame: the by-ref fixture exercises the lookup, the parents and the id mismatch: ' . json_encode(array_intersect_key($avFrameResults['php'], array_flip(['by-ref frame root', 'by-ref frame leaf', 'by-ref frame observed']))),
+);
 
 // ---- RecordingNodeCallback ----
 // Invoked the ways PHP invokes a callable object, and through a native

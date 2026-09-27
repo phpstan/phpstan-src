@@ -8,7 +8,7 @@ function () {
 	$fooOrNull = null;
 	assertType('null', $fooOrNull);
 	$callback = function () use (&$fooOrNull): void {
-		assertType('ClosurePassedByReference\Foo|null', $fooOrNull);
+		assertType('null', $fooOrNull);
 		if ($fooOrNull === null) {
 			$fooOrNull = new Foo();
 		}
@@ -18,5 +18,5 @@ function () {
 		return $fooOrNull;
 	};
 
-	assertType('ClosurePassedByReference\Foo|null', $fooOrNull);
+	assertType('null', $fooOrNull);
 };

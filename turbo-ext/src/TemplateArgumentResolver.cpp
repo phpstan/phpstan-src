@@ -172,7 +172,9 @@ public:
 
 		if (UNEXPECTED(!countSettled(settledClosureSites.raw()))) return zv::Val();
 		zv::Val siteStatementIndexes = collectSiteStatementIndexes(state.siteIndexes.raw(), settledClosureSites.raw());
-		return pt_template_argument_frame_new(parent, resolutions.raw(), siteStatementIndexes.raw(), closureSignatureBody, closureSignatureStmts, settledClosureSites.raw());
+		zv::Val byRefSites = collectByRefSites(state.observations.raw(), state.siteIndexes.raw());
+		if (UNEXPECTED(byRefSites.isUndef())) return zv::Val();
+		return pt_template_argument_frame_new(parent, resolutions.raw(), siteStatementIndexes.raw(), closureSignatureBody, closureSignatureStmts, settledClosureSites.raw(), false, byRefSites.raw());
 	}
 
 	/* Mirrors resolveObservedClosures(). */
@@ -186,8 +188,10 @@ public:
 		if (UNEXPECTED(settledClosureSites.isUndef())) return zv::Val();
 		if (UNEXPECTED(!countSettled(settledClosureSites.raw()))) return zv::Val();
 		zv::Val siteStatementIndexes = collectSiteStatementIndexes(state.siteIndexes.raw(), settledClosureSites.raw());
+		zv::Val byRefSites = collectByRefSites(state.observations.raw(), state.siteIndexes.raw());
+		if (UNEXPECTED(byRefSites.isUndef())) return zv::Val();
 
-		return pt_template_argument_frame_with_observed_closures(frame, resolutions.raw(), siteStatementIndexes.raw(), settledClosureSites.raw());
+		return pt_template_argument_frame_with_observed_closures(frame, resolutions.raw(), siteStatementIndexes.raw(), settledClosureSites.raw(), byRefSites.raw());
 	}
 
 	/* Mirrors locateStatement(). */
@@ -281,10 +285,25 @@ private:
 			zval *existing = zend_hash_index_find(settledClosureSites.table(), id);
 			if (existing != NULL && Z_TYPE_P(existing) != IS_TRUE) continue;
 			zval *resolution = resolutionOf(resolutions, entry);
-			bool returnMarker;
-			if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_return(marker, returnMarker))) return zv::Val();
+			bool byRefMarker;
+			if (UNEXPECTED(!pt_closure_signature_inference_is_by_ref_marker(marker, byRefMarker))) return zv::Val();
+			bool returnMarker = false;
+			if (!byRefMarker && UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_return(marker, returnMarker))) return zv::Val();
 			bool settled;
-			if (returnMarker) {
+			if (byRefMarker) {
+				// every invocation seen: the second pass applies the effects where
+				// it runs; escaped: the creation-time fixpoint, seeded with the
+				// states it was invoked from
+				zval *unconstraining = zend_hash_find(Z_ARRVAL_P(entry.value().deref().raw()), pt_tar_unconstraining_send);
+				settled = unconstraining != NULL && zend_is_true(unconstraining);
+				if (settled && resolution != NULL) {
+					zv::Val delegate = pt_type_call(Z_OBJ_P(marker), PT_LC("getdelegate"), 0, NULL);
+					if (UNEXPECTED(delegate.isUndef())) return zv::Val();
+					zv::Val equal = pt_type_op(Z_OBJ_P(resolution), PT_OP_EQUALS, 1, delegate.raw());
+					if (UNEXPECTED(equal.isUndef())) return zv::Val();
+					settled = Z_TYPE_P(equal.raw()) == IS_TRUE;
+				}
+			} else if (returnMarker) {
 				settled = resolution == NULL || instanceof_function(Z_OBJCE_P(resolution), pt_ce_mixed_type);
 			} else if (resolution == NULL) {
 				settled = true;
@@ -307,6 +326,46 @@ private:
 			zend_hash_index_update(settledTrue.table(), entry.indexKey(), &marked);
 		}
 		return zv::Val(std::move(settledTrue));
+	}
+
+	/* Mirrors collectByRefSites(): spl_object_id() of the closure => [the
+	 * closure, its statement index, whether no observation of its by-ref
+	 * markers escaped] */
+	static zv::Val collectByRefSites(zval *observations, zval *siteIndexes)
+	{
+		zv::Arr byRefSites = zv::Arr::empty();
+		for (auto entry : zv::ArrRef(observations)) {
+			zval *observation = entry.value().deref().raw();
+			zval *marker = observationMarker(observation);
+			if (UNEXPECTED(marker == NULL)) continue;
+			bool byRefMarker;
+			if (UNEXPECTED(!pt_closure_signature_inference_is_by_ref_marker(marker, byRefMarker))) return zv::Val();
+			if (!byRefMarker) continue;
+			zv::Val site = markerSite(marker);
+			if (UNEXPECTED(site.isUndef())) return zv::Val();
+			zend_ulong id = Z_OBJ_HANDLE_P(site.raw());
+			zval *statementIndex = zend_hash_index_find(Z_ARRVAL_P(siteIndexes), id);
+			if (statementIndex == NULL || Z_TYPE_P(statementIndex) == IS_NULL) continue;
+			zval *unconstraining = zend_hash_find(Z_ARRVAL_P(observation), pt_tar_unconstraining_send);
+			bool local = !(unconstraining != NULL && zend_is_true(unconstraining));
+			if (local) {
+				zval *existing = zend_hash_index_find(byRefSites.table(), id);
+				if (existing != NULL && Z_TYPE_P(existing) == IS_ARRAY) {
+					zval *existingLocal = zend_hash_index_find(Z_ARRVAL_P(existing), 2);
+					local = existingLocal == NULL || zend_is_true(existingLocal);
+				}
+			}
+			zv::Arr byRefSite = zv::Arr::create(3);
+			byRefSite.push(std::move(site));
+			byRefSite.push(zv::Ref(statementIndex));
+			byRefSite.push(zv::Val::boolean(local));
+			byRefSites.separate();
+			zval value;
+			ZVAL_COPY_VALUE(&value, byRefSite.raw());
+			ZVAL_UNDEF(byRefSite.raw());
+			zend_hash_index_update(byRefSites.table(), id, &value);
+		}
+		return zv::Val(std::move(byRefSites));
 	}
 
 	/* TemplateArgumentStats::increment('closureSitesSettled', count($settledClosureSites))

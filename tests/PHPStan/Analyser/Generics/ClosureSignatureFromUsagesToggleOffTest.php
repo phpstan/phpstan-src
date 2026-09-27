@@ -8,7 +8,8 @@ use function array_merge;
 
 /**
  * With unresolved template arguments on but closure signature inference off,
- * a closure written where nothing types it keeps its declared signature.
+ * a closure written where nothing types it keeps its declared signature, and
+ * its by-ref uses the fixpoint of every number of invocations from its creation.
  */
 class ClosureSignatureFromUsagesToggleOffTest extends TypeInferenceTestCase
 {
@@ -17,6 +18,7 @@ class ClosureSignatureFromUsagesToggleOffTest extends TypeInferenceTestCase
 	public static function dataFileAsserts(): iterable
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/closure-signature-from-usages-off.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/closure-byref-uses-at-invocation-off.php');
 	}
 
 	/**

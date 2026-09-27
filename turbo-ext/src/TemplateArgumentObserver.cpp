@@ -157,6 +157,7 @@ inline uint32_t countOf(zval *array)
 void collectSitesBody(zval *constraints, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 void containsMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 void containsTemplateArgumentMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value);
+zv::Val escapeByRefUses(zv::Val constraints, zval *closureType);
 void containsClosureSignatureMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 void escapeClosuresBody(zval *constraints, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 void replaceInferableTemplatesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value);
@@ -388,6 +389,9 @@ public:
 		if (declaredMixed || !declaredCallable) {
 			return escapeClosures(std::move(constraints), actual);
 		}
+		// whoever is given the closure invokes it when it chooses
+		constraints = escapeByRefUses(std::move(constraints), actual);
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
 
 		zv::Val closureParameters = pt_type_call(Z_OBJ_P(actual), PT_LC("getparameters"), 0, NULL);
 		if (UNEXPECTED(closureParameters.isUndef())) return zv::Val();
@@ -1190,6 +1194,23 @@ void containsTemplateArgumentMarkerBody(zval *contains, zval *state1, uint32_t a
 }
 
 /* containsClosureSignatureMarker()'s traversal */
+/* Mirrors escapeByRefUses(): withUnconstrainingSend() of each marker of
+ * the closure's by-ref uses; UNDEF = pending exception */
+zv::Val escapeByRefUses(zv::Val constraints, zval *closureType)
+{
+	if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+	zv::Val markers = pt_closure_type_get_by_ref_use_types(closureType);
+	if (UNEXPECTED(markers.isUndef())) return zv::Val();
+	if (!markers.ref().isArray()) return constraints;
+	for (auto entry : zv::ArrRef(markers.raw())) {
+		zval *marker = entry.value().deref().raw();
+		if (Z_TYPE_P(marker) != IS_OBJECT || Z_OBJCE_P(marker) != pt_ce_unresolved_template_argument_type) continue;
+		constraints = pt_template_argument_constraints_with_unconstraining_send(constraints.raw(), marker);
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+	}
+	return constraints;
+}
+
 void containsClosureSignatureMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 {
 	(void) state1;
@@ -1202,6 +1223,13 @@ void containsClosureSignatureMarkerBody(zval *contains, zval *state1, uint32_t a
 		bool closureMarker;
 		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(type, closureMarker))) return;
 		if (closureMarker) {
+			zval_ptr_dtor(contains);
+			ZVAL_TRUE(contains);
+		}
+	} else if (instanceof_function(Z_OBJCE_P(type), pt_ce_closure_type)) {
+		zv::Val markers = pt_closure_type_get_by_ref_use_types(type);
+		if (UNEXPECTED(markers.isUndef())) return;
+		if (markers.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(markers.raw())) > 0) {
 			zval_ptr_dtor(contains);
 			ZVAL_TRUE(contains);
 		}
@@ -1225,6 +1253,11 @@ void escapeClosuresBody(zval *constraints, zval *state1, uint32_t argc, zval *ar
 		return;
 	}
 	zval *type = &argv[0];
+	if (instanceof_function(Z_OBJCE_P(type), pt_ce_closure_type)) {
+		zv::Val next = escapeByRefUses(zv::Val::copyOf(zv::Ref(constraints)), type);
+		if (UNEXPECTED(next.isUndef())) return;
+		zv::Ref(constraints).assign(std::move(next));
+	}
 	if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
 		bool closureMarker;
 		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(type, closureMarker))) return;

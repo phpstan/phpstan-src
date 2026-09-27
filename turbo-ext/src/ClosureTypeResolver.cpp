@@ -1132,12 +1132,15 @@ private:
 		/* the cached arrays kept alive over the construction */
 		zv::Val entryHold = zv::Val::copyOf(zv::Ref(cachedClosureData));
 		zv::Val signatureReturnType;
+		zv::Val byRefUseTypes = zv::Val(zv::Arr::empty());
 		if (contextFree) {
 			signatureReturnType = ptclosure::inferenceGetSignatureReturnType(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, expr, returnType);
 			if (UNEXPECTED(signatureReturnType.isUndef())) return zv::Val();
 			returnType = signatureReturnType.raw();
+			byRefUseTypes = pt_closure_signature_inference_get_by_ref_use_markers(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, expr);
+			if (UNEXPECTED(byRefUseTypes.isUndef())) return zv::Val();
 		}
-		return newClosureType(expr, parameters, returnType, isVariadic, throwPoints, impurePoints, invalidateExpressions, usedVariables, mustUseReturnValue);
+		return newClosureType(expr, parameters, returnType, isVariadic, throwPoints, impurePoints, invalidateExpressions, usedVariables, mustUseReturnValue, byRefUseTypes.raw());
 	}
 
 	/* new ClosureType($parameters, $returnType, $isVariadic,
@@ -1145,8 +1148,9 @@ private:
 	 * TemplateTypeVarianceMap::createEmpty(), throwPoints: ..., impurePoints:
 	 * ..., invalidateExpressions: ..., usedVariables: ...,
 	 * acceptsNamedArguments: TrinaryLogic::createYes(), mustUseReturnValue:
-	 * ..., isStatic: TrinaryLogic::createFromBoolean($expr->static)) */
-	static zv::Val newClosureType(zval *expr, zval *parameters, zval *returnType, bool isVariadic, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *usedVariables, zval *mustUseReturnValue)
+	 * ..., isStatic: TrinaryLogic::createFromBoolean($expr->static),
+	 * byRefUseTypes: ...) */
+	static zv::Val newClosureType(zval *expr, zval *parameters, zval *returnType, bool isVariadic, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *usedVariables, zval *mustUseReturnValue, zval *byRefUseTypes)
 	{
 		zval templateTypeMap, resolvedTemplateTypeMap, callSiteVarianceMap;
 		if (UNEXPECTED(!pt_template_type_map_empty(&templateTypeMap))) return zv::Val();
@@ -1158,7 +1162,7 @@ private:
 		zval *isStatic = ptclosure::prop(ptclosure::staticSite, expr, PT_LC("static"));
 		if (UNEXPECTED(isStatic == NULL)) return zv::Val();
 		zval out;
-		if (UNEXPECTED(!pt_closure_type_new(&out, parameters, returnType, isVariadic, templateTypeMapHold.raw(), resolvedTemplateTypeMapHold.raw(), callSiteVarianceMapHold.raw(), NULL, throwPoints, impurePoints, invalidateExpressions, usedVariables, pt_trinary_singleton(PT_TRI_YES), mustUseReturnValue, NULL, ptclosure::trinaryFromBool(zend_is_true(isStatic))))) return zv::Val();
+		if (UNEXPECTED(!pt_closure_type_new(&out, parameters, returnType, isVariadic, templateTypeMapHold.raw(), resolvedTemplateTypeMapHold.raw(), callSiteVarianceMapHold.raw(), NULL, throwPoints, impurePoints, invalidateExpressions, usedVariables, pt_trinary_singleton(PT_TRI_YES), mustUseReturnValue, NULL, ptclosure::trinaryFromBool(zend_is_true(isStatic)), byRefUseTypes))) return zv::Val();
 		return zv::Val::adopt(out);
 	}
 
@@ -1280,12 +1284,15 @@ private:
 		zval *mustUseReturnValue = mustUseReturnValueOf(expr);
 		if (UNEXPECTED(mustUseReturnValue == NULL)) return zv::Val();
 		zv::Val signatureReturnType;
+		zv::Val byRefUseTypes = zv::Val(zv::Arr::empty());
 		if (contextFree) {
 			signatureReturnType = ptclosure::inferenceGetSignatureReturnType(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, expr, returnType);
 			if (UNEXPECTED(signatureReturnType.isUndef())) return zv::Val();
 			returnType = signatureReturnType.raw();
+			byRefUseTypes = pt_closure_signature_inference_get_by_ref_use_markers(OBJ_PROP_NUM(self, slots::closureSignatureInference), scope, expr);
+			if (UNEXPECTED(byRefUseTypes.isUndef())) return zv::Val();
 		}
-		return newClosureType(expr, parameters, returnType, isVariadic, throwPointsForClosureType.raw(), impurePointsForClosureType.raw(), invalidateExpressions, usedVariables, mustUseReturnValue);
+		return newClosureType(expr, parameters, returnType, isVariadic, throwPointsForClosureType.raw(), impurePointsForClosureType.raw(), invalidateExpressions, usedVariables, mustUseReturnValue, byRefUseTypes.raw());
 	}
 
 	/* $cachedTypes = $this->findCachedTypes($expr); $cachedTypes[$cacheKey] =

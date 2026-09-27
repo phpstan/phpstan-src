@@ -29,7 +29,7 @@ function closureRemovesAccessoryOfReferenceParameter(): void
 	/** @var non-empty-array<string> */
 	$foo = [];
 	static function () use (&$foo) {
-		assertType('array<string>', $foo);
+		assertType('non-empty-array<string>', $foo);
 		array_pop($foo);
 	};
 }

@@ -110,6 +110,11 @@ class IfConstantConditionRuleTest extends RuleTestCase
 				127,
 			],
 			[
+				// $f is never invoked, so nothing assigns $var
+				'If condition is always false.',
+				204,
+			],
+			[
 				'If condition is always true.',
 				287,
 			],

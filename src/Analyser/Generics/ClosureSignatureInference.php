@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
+use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -18,7 +19,9 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use function array_keys;
 use function array_pop;
@@ -26,6 +29,10 @@ use function count;
 use function in_array;
 use function is_array;
 use function is_string;
+use function spl_object_id;
+use function str_starts_with;
+use function strlen;
+use function substr;
 
 /**
  * Infers the signature of a closure or an arrow function written where nothing
@@ -55,6 +62,26 @@ final class ClosureSignatureInference
 
 	public const RETURN_TEMPLATE_NAME = '@return';
 
+	/**
+	 * A by-ref use `&$x` of a closure whose effects apply where it is invoked:
+	 * its marker's lower bounds are the types of `$x` at the invocations.
+	 */
+	private const BY_REF_TEMPLATE_PREFIX = '&';
+
+	/**
+	 * The type a by-ref variable `$x` had at an invocation in the second pass -
+	 * kept apart from the observation's `&$x` facts, which a replayed statement's
+	 * recorded scope still carries.
+	 */
+	private const ENTRY_TEMPLATE_PREFIX = '~';
+
+	/** A call invoking such a closure - its statement is walked again in the second pass. */
+	private const INVOCATION_TEMPLATE_NAME = '@invokes';
+
+	private const BY_REF_USES_ATTRIBUTE = 'closureSignatureByRefUses';
+
+	private const ARROW_FUNCTION_OUTER_VARIABLES_ATTRIBUTE = 'closureSignatureArrowFunctionOuterVariables';
+
 	private const CLOSED_BODY_ATTRIBUTE = 'closureSignatureClosedBody';
 
 	private const ASSIGNED_CLOSURES_ATTRIBUTE = 'closureSignatureAssignedClosures';
@@ -76,6 +103,318 @@ final class ClosureSignatureInference
 	public static function isReturnMarker(UnresolvedTemplateArgumentType $marker): bool
 	{
 		return $marker->getTemplateName() === self::RETURN_TEMPLATE_NAME && self::isClosureSignatureMarker($marker);
+	}
+
+	public static function isByRefMarker(UnresolvedTemplateArgumentType $marker): bool
+	{
+		return str_starts_with($marker->getTemplateName(), self::BY_REF_TEMPLATE_PREFIX) && $marker->getSite() instanceof Closure;
+	}
+
+	/**
+	 * The markers of the by-ref uses of a closure written where nothing types it,
+	 * by variable name - while observing, and in the second pass for a site the
+	 * observation resolved. Empty for a closure whose invocations cannot be
+	 * followed: a generator (invoking it does not run the body), a closure
+	 * invoking its own by-ref variable.
+	 *
+	 * @return array<string, Type>
+	 */
+	public function getByRefUseMarkers(MutatingScope $scope, Closure|ArrowFunction $expr): array
+	{
+		if (!$expr instanceof Closure) {
+			return [];
+		}
+		$names = self::byRefUseNames($expr);
+		if ($names === []) {
+			return [];
+		}
+		$frame = $this->getFrame($scope);
+		if ($frame === null) {
+			return [];
+		}
+		if (!$frame->isObservingClosures() && $frame->getByRefSiteMode($expr) === null) {
+			return [];
+		}
+
+		$markers = [];
+		foreach ($names as $name) {
+			$markers[$name] = new UnresolvedTemplateArgumentType(
+				$expr,
+				TemplateTypeFactory::create(TemplateTypeScope::createWithAnonymousFunction(), self::BY_REF_TEMPLATE_PREFIX . $name, null, TemplateTypeVariance::createCovariant()),
+				$scope->hasVariableType($name)->yes() ? $scope->getVariableType($name) : new NullType(),
+			);
+		}
+
+		return $markers;
+	}
+
+	/**
+	 * How the second pass treats the by-ref uses of the closure: `local` when
+	 * every invocation was seen, `escaped` when its value went where it can be
+	 * invoked at any time, null when the by-ref uses keep the creation-time
+	 * fixpoint (no observation, or observing right now).
+	 *
+	 * @return 'local'|'escaped'|null
+	 */
+	public function getByRefSiteMode(MutatingScope $scope, Closure $expr): ?string
+	{
+		$frame = $this->getFrame($scope);
+		if ($frame === null || $frame->isObservingClosures()) {
+			return null;
+		}
+
+		return $frame->getByRefSiteMode($expr);
+	}
+
+	/**
+	 * Where the fixpoint of an escaped closure's by-ref variable starts: the
+	 * state it was created in joined with every state it was invoked from.
+	 */
+	public function getByRefSeed(MutatingScope $scope, Closure $expr, string $name): ?Type
+	{
+		$frame = $this->getFrame($scope);
+		if ($frame === null || $frame->isObservingClosures()) {
+			return null;
+		}
+
+		return $frame->resolve($expr, self::BY_REF_TEMPLATE_PREFIX . $name);
+	}
+
+	/**
+	 * The scope the closure was created in, when the invocation runs in the
+	 * same walk of the same function-like - the only place its by-ref
+	 * variables are the ones the scope tracks. Its by-value uses enter the
+	 * invoked body as they were there.
+	 */
+	public static function findCreationScope(MutatingScope $scope, ExpressionResultStorage $storage, Closure $expr): ?MutatingScope
+	{
+		$creationResult = $storage->findExpressionResult($expr);
+		if ($creationResult === null) {
+			return null;
+		}
+		$creationScope = $creationResult->getBeforeScope();
+		if (
+			$creationScope->getAnonymousFunctionReflection() !== $scope->getAnonymousFunctionReflection()
+			|| $creationScope->getFunction() !== $scope->getFunction()
+		) {
+			return null;
+		}
+
+		return $creationScope;
+	}
+
+	/**
+	 * A value captured by another function-like - a closure's use, an arrow
+	 * function's outer variable: the closures it carries can be invoked when
+	 * that one runs, so their by-ref uses keep the creation-time fixpoint.
+	 */
+	public static function collectCaptureEscapes(Type $type): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constraints): Type {
+			if ($type instanceof ClosureType) {
+				foreach ($type->getByRefUseTypes() as $marker) {
+					if (!$marker instanceof UnresolvedTemplateArgumentType) {
+						continue;
+					}
+					$constraints = $constraints->withUnconstrainingSend($marker);
+				}
+			}
+
+			return $traverse($type);
+		});
+
+		return $constraints;
+	}
+
+	/**
+	 * An invocation of the closure: the type of every by-ref variable at the
+	 * call joins the variable's entry, and while observing, the call becomes a
+	 * site so the second pass walks its statement again.
+	 */
+	public static function collectInvocation(MutatingScope $scope, Expr $call, ClosureType $closureType, bool $observing): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		if ($observing) {
+			$constraints = $constraints->withSite(new UnresolvedTemplateArgumentType(
+				$call,
+				TemplateTypeFactory::create(TemplateTypeScope::createWithAnonymousFunction(), self::INVOCATION_TEMPLATE_NAME, null, TemplateTypeVariance::createInvariant()),
+				null,
+			));
+		}
+		foreach ($closureType->getByRefUseTypes() as $name => $marker) {
+			if (!$marker instanceof UnresolvedTemplateArgumentType) {
+				continue;
+			}
+			$type = $scope->hasVariableType($name)->yes() ? $scope->getVariableType($name) : new NullType();
+			if ($observing) {
+				$constraints = $constraints->withLowerBound($marker, $type);
+				continue;
+			}
+			$constraints = $constraints->withLowerBound(
+				new UnresolvedTemplateArgumentType($marker->getSite(), TemplateTypeFactory::create(TemplateTypeScope::createWithAnonymousFunction(), self::ENTRY_TEMPLATE_PREFIX . $name, null, TemplateTypeVariance::createInvariant()), null),
+				$type,
+			);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * The types the by-ref variables of closures had at their second-pass
+	 * invocations reaching the scope, by spl_object_id() of the closure and
+	 * variable name.
+	 *
+	 * @return array<int, array<string, Type>>
+	 */
+	public static function collectByRefEntryTypes(MutatingScope $scope): array
+	{
+		$constraints = $scope->getTemplateArgumentConstraints();
+		if ($constraints === null) {
+			return [];
+		}
+
+		$types = [];
+		foreach ($constraints->getFacts() as [$marker, $type]) {
+			if ($type === null || !str_starts_with($marker->getTemplateName(), self::ENTRY_TEMPLATE_PREFIX)) {
+				continue;
+			}
+			$site = $marker->getSite();
+			if (!$site instanceof Closure) {
+				continue;
+			}
+			$id = spl_object_id($site);
+			$name = substr($marker->getTemplateName(), strlen(self::ENTRY_TEMPLATE_PREFIX));
+			$types[$id][$name] = isset($types[$id][$name]) ? TypeCombinator::union($types[$id][$name], $type) : $type;
+		}
+
+		return $types;
+	}
+
+	/**
+	 * The variables of the enclosing scope an arrow function captures - every
+	 * variable its body mentions that is not its own parameter.
+	 *
+	 * @return array<int, string>
+	 */
+	public static function getArrowFunctionOuterVariables(ArrowFunction $expr): array
+	{
+		$cached = $expr->getAttribute(self::ARROW_FUNCTION_OUTER_VARIABLES_ATTRIBUTE);
+		if (is_array($cached)) {
+			return $cached;
+		}
+
+		$parameters = [];
+		foreach ($expr->params as $param) {
+			if (!$param->var instanceof Expr\Variable || !is_string($param->var->name)) {
+				continue;
+			}
+			$parameters[$param->var->name] = true;
+		}
+		$names = [];
+		$stack = [$expr->expr];
+		while (count($stack) > 0) {
+			$node = array_pop($stack);
+			if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike) {
+				continue;
+			}
+			if ($node instanceof Closure) {
+				// a closure captures through its use clause only
+				foreach ($node->uses as $use) {
+					$stack[] = $use->var;
+				}
+				continue;
+			}
+			if ($node instanceof Expr\Variable && is_string($node->name) && !isset($parameters[$node->name]) && $node->name !== 'this') {
+				$names[$node->name] = true;
+			}
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$subNode = $node->$subNodeName;
+				if ($subNode instanceof Node) {
+					$stack[] = $subNode;
+				} elseif (is_array($subNode)) {
+					foreach ($subNode as $item) {
+						if (!$item instanceof Node) {
+							continue;
+						}
+						$stack[] = $item;
+					}
+				}
+			}
+		}
+		$names = array_keys($names);
+		$expr->setAttribute(self::ARROW_FUNCTION_OUTER_VARIABLES_ATTRIBUTE, $names);
+
+		return $names;
+	}
+
+	/**
+	 * The names of the closure's by-ref uses whose invocations can be followed;
+	 * empty for a generator or a closure invoking one of its own by-ref variables.
+	 *
+	 * @return array<int, string>
+	 */
+	private static function byRefUseNames(Closure $expr): array
+	{
+		$cached = $expr->getAttribute(self::BY_REF_USES_ATTRIBUTE);
+		if (is_array($cached)) {
+			return $cached;
+		}
+
+		$names = [];
+		foreach ($expr->uses as $use) {
+			if (!$use->byRef || !is_string($use->var->name)) {
+				continue;
+			}
+			$names[] = $use->var->name;
+		}
+		if ($names !== [] && self::bodyYieldsOrInvokes($expr->stmts, $names)) {
+			$names = [];
+		}
+		$expr->setAttribute(self::BY_REF_USES_ATTRIBUTE, $names);
+
+		return $names;
+	}
+
+	/**
+	 * @param Node\Stmt[] $stmts
+	 * @param array<int, string> $names
+	 */
+	private static function bodyYieldsOrInvokes(array $stmts, array $names): bool
+	{
+		$stack = $stmts;
+		while (count($stack) > 0) {
+			$node = array_pop($stack);
+			if ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike) {
+				continue;
+			}
+			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+				return true;
+			}
+			if (
+				$node instanceof Expr\FuncCall
+				&& $node->name instanceof Expr\Variable
+				&& is_string($node->name->name)
+				&& in_array($node->name->name, $names, true)
+			) {
+				return true;
+			}
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$subNode = $node->$subNodeName;
+				if ($subNode instanceof Node) {
+					$stack[] = $subNode;
+				} elseif (is_array($subNode)) {
+					foreach ($subNode as $item) {
+						if (!$item instanceof Node) {
+							continue;
+						}
+						$stack[] = $item;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/** @return non-empty-string */
@@ -285,6 +624,14 @@ final class ClosureSignatureInference
 			}
 
 			$constraints = $constraints->withSite($returnMarker);
+		}
+		if ($closureType instanceof ClosureType) {
+			foreach ($closureType->getByRefUseTypes() as $marker) {
+				if (!$marker instanceof UnresolvedTemplateArgumentType) {
+					continue;
+				}
+				$constraints = $constraints->withSite($marker);
+			}
 		}
 
 		return $constraints;

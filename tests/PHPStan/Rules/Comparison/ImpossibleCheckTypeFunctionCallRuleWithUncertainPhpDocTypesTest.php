@@ -64,7 +64,13 @@ class ImpossibleCheckTypeFunctionCallRuleWithUncertainPhpDocTypesTest extends Ru
 
 	public function testBug4657(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-4657.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-4657.php'], [
+			[
+				// the closure invoked just before always assigns the DateTime
+				'Call to function is_null() with DateTime will always evaluate to false.',
+				14,
+			],
+		]);
 	}
 
 	public function testBug4999(): void

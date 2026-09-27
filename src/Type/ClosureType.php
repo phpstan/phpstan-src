@@ -105,6 +105,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	 * @param ?SimpleImpurePoint[] $impurePoints
 	 * @param InvalidateExprNode[] $invalidateExpressions
 	 * @param string[] $usedVariables
+	 * @param array<string, Type> $byRefUseTypes per by-ref use of a closure whose effects apply where it is invoked, the marker of its site (see ClosureSignatureInference)
 	 */
 	public function __construct(
 		?array $parameters = null,
@@ -122,6 +123,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		?TrinaryLogic $mustUseReturnValue = null,
 		?Assertions $assertions = null,
 		?TrinaryLogic $isStatic = null,
+		private array $byRefUseTypes = [],
 	)
 	{
 		if ($acceptsNamedArguments === null) {
@@ -306,6 +308,14 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 				continue;
 			}
 			if (!$ours->equals($theirs)) {
+				return false;
+			}
+		}
+		if (count($this->byRefUseTypes) !== count($other->byRefUseTypes)) {
+			return false;
+		}
+		foreach ($this->byRefUseTypes as $name => $type) {
+			if (!isset($other->byRefUseTypes[$name]) || !$type->equals($other->byRefUseTypes[$name])) {
 				return false;
 			}
 		}
@@ -551,6 +561,12 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->usedVariables;
 	}
 
+	/** @return array<string, Type> */
+	public function getByRefUseTypes(): array
+	{
+		return $this->byRefUseTypes;
+	}
+
 	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->acceptsNamedArguments;
@@ -788,6 +804,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->mustUseReturnValue,
 			$this->assertions->mapTypes($cb),
 			$this->isStatic,
+			$this->byRefUseTypes,
 		);
 	}
 
@@ -841,6 +858,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->mustUseReturnValue,
 			$this->assertions,
 			$this->isStatic,
+			$this->byRefUseTypes,
 		);
 	}
 

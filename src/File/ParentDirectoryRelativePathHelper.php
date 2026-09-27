@@ -20,11 +20,18 @@ use function trim;
 final class ParentDirectoryRelativePathHelper implements RelativePathHelper
 {
 
+	/** @var string[] */
+	private array $parentParts;
+
+	private int $parentPartsCount;
+
 	public function __construct(
 		#[AutowiredParameter(ref: '%currentWorkingDirectory%')]
-		private string $parentDirectory,
+		string $parentDirectory,
 	)
 	{
+		$this->parentParts = explode('/', trim(str_replace('\\', '/', $parentDirectory), '/'));
+		$this->parentPartsCount = count($this->parentParts);
 	}
 
 	public function getRelativePath(string $filename): string
@@ -41,21 +48,16 @@ final class ParentDirectoryRelativePathHelper implements RelativePathHelper
 		if ($schemePosition !== false) {
 			$filename = substr($filename, $schemePosition + 3);
 		}
-		$parentParts = explode('/', trim(str_replace('\\', '/', $this->parentDirectory), '/'));
-		$parentPartsCount = count($parentParts);
 		$filenameParts = explode('/', trim(str_replace('\\', '/', $filename), '/'));
 		$filenamePartsCount = count($filenameParts);
 
 		$i = 0;
 		for (; $i < $filenamePartsCount; $i++) {
-			if ($parentPartsCount < $i + 1) {
+			if ($this->parentPartsCount < $i + 1) {
 				break;
 			}
 
-			$parentPath = implode('/', array_slice($parentParts, 0, $i + 1));
-			$filenamePath = implode('/', array_slice($filenameParts, 0, $i + 1));
-
-			if ($parentPath !== $filenamePath) {
+			if ($this->parentParts[$i] !== $filenameParts[$i]) {
 				break;
 			}
 		}
@@ -64,7 +66,7 @@ final class ParentDirectoryRelativePathHelper implements RelativePathHelper
 			return [$filename];
 		}
 
-		$dotsCount = $parentPartsCount - $i;
+		$dotsCount = $this->parentPartsCount - $i;
 
 		if ($dotsCount < 0) {
 			throw new ShouldNotHappenException();

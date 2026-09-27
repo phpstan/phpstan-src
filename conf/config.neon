@@ -62,6 +62,7 @@ parameters:
 		unresolvedTemplateArguments: false
 		closureSignaturesFromUsages: false
 		staticVariablesFromUsages: false
+		varTagsReflectUsages: false
 		unusedVariable: false
 		unusedParameters: false
 	fileExtensions:

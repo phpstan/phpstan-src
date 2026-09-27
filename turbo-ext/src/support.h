@@ -469,6 +469,7 @@ enum {
 	PT_CLASS_RELATIVE_NAME,
 	PT_CLASS_ITERABLE_HELPER,
 	PT_CLASS_CLOSURE_CALL_CONTEXT_MATCHER,
+	PT_CLASS_VAR_TAG_USAGES_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -2016,6 +2017,10 @@ zv::Val pt_template_argument_frame_get_static_variable_types(zval *frame, zval *
 zv::Val pt_template_argument_frame_with_static_variable_types(zval *frame, zval *staticVariableTypes, zval *statementIndexes, zval *conditionalExpressions = NULL);
 /* TemplateArgumentFrame::getStaticVariableConditionalExpressions() */
 zv::Val pt_template_argument_frame_get_static_variable_conditional_expressions(zval *frame, zval *stmt);
+/* TemplateArgumentFrame::isVarTagSuppressed() (false = pending exception) /
+ * withSuppressedVarTags() (UNDEF = pending exception) */
+[[nodiscard]] bool pt_template_argument_frame_is_var_tag_suppressed(zval *frame, zval *stmt, bool &out);
+zv::Val pt_template_argument_frame_with_suppressed_var_tags(zval *frame, zval *suppressedVarTagStatements, zval *statementIndexes);
 /* StaticVariableInference.cpp: getSites() / isInferred() (false = pending
  * exception) / getResolvedTypes() on the service; UNDEF = pending exception */
 extern zend_class_entry *pt_ce_static_variable_inference;
@@ -2025,6 +2030,15 @@ zv::Val pt_static_variable_inference_get_resolved_types(zval *inference, zval *s
 zv::Val pt_static_variable_inference_get_runs(zval *inference, zval *functionLike, zval *stmts);
 zv::Val pt_static_variable_inference_get_resolved_conditional_expressions(zval *inference, zval *scope, zval *stmt);
 [[nodiscard]] bool pt_static_variable_inference_can_run_user_code(zval *inference, zval *node, zval *scope, bool &out);
+/* preg_match('~@(?:phpstan-|psalm-)?var\s~', $text) === 1 - the twins'
+ * test for a doc comment declaring a @var tag (StaticVariableInference.cpp) */
+bool pt_doc_comment_declares_var(zend_string *text);
+/* VarTagUsagesInference.cpp: getDeclarations() / isSuppressed() (false =
+ * pending exception) on the service; UNDEF = pending exception */
+extern zend_class_entry *pt_ce_var_tag_usages_inference;
+zv::Val pt_var_tag_usages_inference_get_declarations(zval *inference, zval *functionLike, zval *stmts);
+zv::Val pt_var_tag_usages_inference_get_writes(zval *inference, zval *functionLike, zval *stmts);
+[[nodiscard]] bool pt_var_tag_usages_inference_is_suppressed(zval *inference, zval *scope, zval *stmt, bool &out);
 /* $frame->isSettledClosureSite($site); false = pending exception */
 [[nodiscard]] bool pt_template_argument_frame_is_settled_closure_site(zval *frame, zval *site, bool &out);
 /* $frame->getClosureSignatureBody() / getClosureSignatureStmts(); UNDEF =

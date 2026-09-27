@@ -1028,7 +1028,7 @@ public:
 	void construct(zval *argv)
 	{
 		zv::ObjRef object(self);
-		for (uint32_t i = 0; i < 20; i++) {
+		for (uint32_t i = 0; i < 21; i++) {
 			object.propAtWrite(i, zv::Val::copyOf(zv::Ref(&argv[i])));
 		}
 	}
@@ -1185,7 +1185,13 @@ public:
 		}
 
 		AH_VAL(vars, nsrGetAssignedVariables(nsr, exprVar));
+		// the walk that finds what the variable takes without its @var tag
+		// (see VarTagUsagesInference) leaves the tag out
+		bool varTagSuppressed = false;
 		if (Z_TYPE_P(vars.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(vars.raw())) > 0) {
+			if (UNEXPECTED(!pt_var_tag_usages_inference_is_suppressed(prop(slots::varTagUsagesInference), scope.raw(), stmt, varTagSuppressed))) return zv::Val();
+		}
+		if (Z_TYPE_P(vars.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(vars.raw())) > 0 && !varTagSuppressed) {
 			bool varChangedScope = false;
 			AH_SET(scope, vapProcessVarAnnotation(prop(slots::varAnnotationProcessor), scope.raw(), vars.raw(), stmt, varChangedScope));
 			if (!varChangedScope) {
@@ -4735,7 +4741,7 @@ PT_MINIT_REGISTRATION(pt_register_assign_handler)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *argv;
 		uint32_t argc;
-		ZEND_PARSE_PARAMETERS_START(20, 20)
+		ZEND_PARSE_PARAMETERS_START(21, 21)
 			Z_PARAM_VARIADIC('+', argv, argc)
 		ZEND_PARSE_PARAMETERS_END();
 		for (uint32_t i = 0; i < argc; i++) {

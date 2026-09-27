@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\Static_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\Generics\StaticVariableInference;
+use PHPStan\Analyser\Generics\VarTagUsagesInference;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -35,6 +36,7 @@ final class StaticVariableHandler implements StmtHandler
 	public function __construct(
 		private VarAnnotationProcessor $varAnnotationProcessor,
 		private StaticVariableInference $staticVariableInference,
+		private VarTagUsagesInference $varTagUsagesInference,
 	)
 	{
 	}
@@ -63,6 +65,10 @@ final class StaticVariableHandler implements StmtHandler
 			),
 		];
 
+		// the walk that finds what the variable takes without its @var tag
+		// (see VarTagUsagesInference) starts from the default and leaves the
+		// tag out
+		$varTagSuppressed = $this->varTagUsagesInference->isSuppressed($scope, $stmt);
 		$vars = [];
 		$variableFlows = [];
 		foreach ($stmt->vars as $var) {
@@ -85,7 +91,7 @@ final class StaticVariableHandler implements StmtHandler
 
 			// the type the previous calls may have left - see StaticVariableInference
 			$types = $this->staticVariableInference->getResolvedTypes($scope, $var->var);
-			if ($types === null && $this->staticVariableInference->isInferred($scope, $var->var)) {
+			if ($types === null && ($varTagSuppressed || $this->staticVariableInference->isInferred($scope, $var->var))) {
 				$types = $defaultExprResult !== null
 					? [$defaultExprResult->getType(), $defaultExprResult->getNativeType()]
 					: [new NullType(), new NullType()];
@@ -95,7 +101,9 @@ final class StaticVariableHandler implements StmtHandler
 			$vars[] = $var->var->name;
 		}
 
-		$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
+		if (!$varTagSuppressed) {
+			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
+		}
 
 		// how the types of a run of `static` variables depend on each other -
 		// see StaticVariableInference::getRuns()

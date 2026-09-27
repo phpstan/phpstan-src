@@ -68,6 +68,7 @@ final class TemplateArgumentFrame
 	 * @param array<int, array{Expr\Closure, int, bool}> $byRefSites spl_object_id() of the closure node => the node, its statement index, whether every invocation was seen
 	 * @param array<int, array{Expr\Variable, Type, Type}> $staticVariableTypes spl_object_id() of a `static` variable node => the node, its phpdoc and native type - see StaticVariableInference
 	 * @param array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}> $staticVariableConditionalExpressions spl_object_id() of the last statement of a run of `static` statements => the statement, the conditional expressions between the run's variables - see StaticVariableInference::getRuns()
+	 * @param array<int, Node\Stmt> $suppressedVarTagStatements spl_object_id() of a statement => the statement whose @var tags the walk does not apply - see VarTagUsagesInference
 	 */
 	public function __construct(
 		private readonly ?self $parent,
@@ -80,8 +81,38 @@ final class TemplateArgumentFrame
 		private readonly array $byRefSites = [],
 		private readonly array $staticVariableTypes = [],
 		private readonly array $staticVariableConditionalExpressions = [],
+		private readonly array $suppressedVarTagStatements = [],
 	)
 	{
+	}
+
+	public function isVarTagSuppressed(Node\Stmt $stmt): bool
+	{
+		return ($this->suppressedVarTagStatements[spl_object_id($stmt)] ?? null) === $stmt;
+	}
+
+	/**
+	 * The frame of a walk that does not apply the @var tags of the statements;
+	 * the statements are walked again.
+	 *
+	 * @param array<int, Node\Stmt> $suppressedVarTagStatements
+	 * @param array<int, true> $statementIndexes
+	 */
+	public function withSuppressedVarTags(array $suppressedVarTagStatements, array $statementIndexes): self
+	{
+		return new self(
+			$this->parent,
+			$this->resolutions,
+			$this->siteStatementIndexes + $statementIndexes,
+			$this->closureSignatureBody,
+			$this->closureSignatureStmts,
+			$this->settledClosureSites,
+			$this->observingClosures,
+			$this->byRefSites,
+			$this->staticVariableTypes,
+			$this->staticVariableConditionalExpressions,
+			$suppressedVarTagStatements,
+		);
 	}
 
 	/**
@@ -131,6 +162,7 @@ final class TemplateArgumentFrame
 			$this->byRefSites,
 			$staticVariableTypes,
 			$conditionalExpressions,
+			$this->suppressedVarTagStatements,
 		);
 	}
 

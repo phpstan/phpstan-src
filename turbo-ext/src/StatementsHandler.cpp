@@ -73,6 +73,9 @@ pt_property_site pt_sh_static_site;
 pt_property_site pt_sh_uses_site;
 pt_property_site pt_sh_use_var_site;
 pt_property_site pt_sh_func_call_name_site;
+pt_property_site pt_sh_assign_value_site;
+pt_property_site pt_sh_static_vars_site;
+pt_property_site pt_sh_static_var_default_site;
 
 /* $object->method() without arguments through a per-site cache; the Error
  * the engine raises for a non-object receiver */
@@ -476,7 +479,7 @@ public:
 	explicit StatementsHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties, then the twin's body */
-	void construct(zval *fileTypeMapper, zval *templateArgumentObserver, zval *templateArgumentResolver, zval *container, zval *staticVariableInference, bool unresolvedTemplateArguments)
+	void construct(zval *fileTypeMapper, zval *templateArgumentObserver, zval *templateArgumentResolver, zval *container, zval *staticVariableInference, zval *varTagUsagesInference, bool unresolvedTemplateArguments)
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::fileTypeMapper, zv::Val::copyOf(zv::Ref(fileTypeMapper)));
@@ -484,6 +487,7 @@ public:
 		object.propAtWrite(slots::templateArgumentResolver, zv::Val::copyOf(zv::Ref(templateArgumentResolver)));
 		object.propAtWrite(slots::container, zv::Val::copyOf(zv::Ref(container)));
 		object.propAtWrite(slots::staticVariableInference, zv::Val::copyOf(zv::Ref(staticVariableInference)));
+		object.propAtWrite(slots::varTagUsagesInference, zv::Val::copyOf(zv::Ref(varTagUsagesInference)));
 		object.propAtWrite(slots::unresolvedTemplateArguments, zv::Val::boolean(unresolvedTemplateArguments));
 		const char *debug = getenv("PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG");
 		object.propAtWrite(slots::debugTemplateArguments, zv::Val::boolean(debug != NULL && strcmp(debug, "1") == 0));
@@ -644,7 +648,8 @@ public:
 	{
 		zv::Arr names = zv::Arr::empty();
 		bool mentionsEverything = false;
-		if (UNEXPECTED(!collectMentionedVariables(stmt, names, mentionsEverything))) return zv::Val();
+		zv::Arr callees = zv::Arr::empty();
+		if (UNEXPECTED(!collectMentionedVariables(stmt, names, mentionsEverything, callees))) return zv::Val();
 		if (mentionsEverything) return pt_variable_flow_all_mention_all();
 
 		uint32_t count = zend_hash_num_elements(names.table());
@@ -1406,6 +1411,54 @@ private:
 			staticVariableConditionalExpressions = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 1)));
 			finalConstraints = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 2)));
 		}
+		zv::Val varTagDeclarations = pt_var_tag_usages_inference_get_declarations(OBJ_PROP_NUM(self, slots::varTagUsagesInference), parentNode, stmts);
+		if (UNEXPECTED(varTagDeclarations.isUndef())) return zv::Val();
+		zv::Arr varTagTypes = zv::Arr::create(0);
+		zv::Arr inferredVarTagDeclarations = zv::Arr::empty();
+		if (varTagDeclarations.ref().isArray()) {
+			for (auto entry : zv::ArrRef(varTagDeclarations.raw())) {
+				HashTable *declaration = Z_ARRVAL_P(entry.value().deref().raw());
+				zval *declarationStmt = zend_hash_index_find(declaration, 0);
+				zval *declarationIndex = zend_hash_index_find(declaration, 1);
+				zval *declaredName = zend_hash_index_find(declaration, 2);
+				if (UNEXPECTED(declarationStmt == NULL || declarationIndex == NULL || declaredName == NULL || Z_TYPE_P(declaredName) != IS_STRING)) continue;
+				zval *declaredEntry = entryAt(entries.raw(), zval_get_long(declarationIndex) + 1);
+				if (UNEXPECTED(declaredEntry == NULL)) return zv::Val();
+				zval *declaredScope = OBJ_PROP_NUM(Z_OBJ_P(entryState(declaredEntry)), stateSlots::scope);
+				zv::Val declaredHas = pt_mutating_scope_has_variable_type(Z_OBJ_P(declaredScope), Z_STR_P(declaredName));
+				if (UNEXPECTED(declaredHas.isUndef())) return zv::Val();
+				if (pt_type_trinary_value(declaredHas.raw()) == PT_TRI_NO) continue;
+				zv::Val varTagType = pt_mutating_scope_get_variable_type(Z_OBJ_P(declaredScope), Z_STR_P(declaredName));
+				if (UNEXPECTED(varTagType.isUndef())) return zv::Val();
+				varTagTypes.separate();
+				zval varTagTypeZv;
+				ZVAL_COPY(&varTagTypeZv, varTagType.raw());
+				zend_hash_index_update(varTagTypes.table(), (zend_ulong) entry.indexKey(), &varTagTypeZv);
+				// a generic `new` whose template arguments the body infers
+				zval *declaredValue;
+				if (UNEXPECTED(!varTagDeclaredValue(declarationStmt, declaredValue))) return zv::Val();
+				if (declaredValue == NULL) continue;
+				zv::Val declaredValueResult = pt_expression_result_storage_find(storage, declaredValue);
+				if (UNEXPECTED(declaredValueResult.isUndef())) return zv::Val();
+				if (declaredValueResult.isNull()) continue;
+				zv::Val declaredValueType = pt_expression_result_get_type(declaredValueResult.raw());
+				if (UNEXPECTED(declaredValueType.isUndef())) return zv::Val();
+				bool contains;
+				if (UNEXPECTED(!containsUnresolvedTemplateArgument(declaredValueType.raw(), contains))) return zv::Val();
+				if (!contains) continue;
+				zv::Arr inferred = zv::Arr::create(4);
+				inferred.push(zv::Ref(declarationStmt));
+				inferred.push(zv::Ref(declarationIndex));
+				inferred.push(zv::Ref(declaredName));
+				inferred.push(std::move(varTagType));
+				inferredVarTagDeclarations.push(std::move(inferred));
+			}
+		}
+		zv::Val varTagUsages = zv::Val(zv::Arr::empty());
+		if (zend_hash_num_elements(inferredVarTagDeclarations.table()) > 0) {
+			varTagUsages = inferVarTagUsages(nodeScopeResolver, parentNode, stmts, inferredVarTagDeclarations.raw(), parentFrame.raw(), staticVariableTypes.raw(), staticVariableConditionalExpressions.raw(), staticStatementIndexes.raw(), entries.raw(), storage, observationContext.raw(), statementStartTokenPositions.raw());
+			if (UNEXPECTED(varTagUsages.isUndef())) return zv::Val();
+		}
 		zv::Val frame = templateArgumentResolverResolve(OBJ_PROP_NUM(self, slots::templateArgumentResolver), finalConstraints.raw(), parentFrame.raw(), statementStartTokenPositions.raw(), parentNode, stmts);
 		if (UNEXPECTED(frame.isUndef())) return zv::Val();
 		if (zend_hash_num_elements(Z_ARRVAL_P(staticVariableTypes.raw())) > 0) {
@@ -1427,6 +1480,7 @@ private:
 			zend_long recorded;
 			if (UNEXPECTED(!recordingNodeCallbackCount(recording.raw(), recorded))) return zv::Val();
 			if (UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, recording.raw(), 0, recorded, nodeCallback, storage, scope.raw()))) return zv::Val();
+			if (UNEXPECTED(!emitVarTagUsages(nodeScopeResolver, parentNode, stmts, varTagTypes.raw(), varTagUsages.raw(), frame.raw(), storage, nodeCallback))) return zv::Val();
 			if (UNEXPECTED(!restoreParentFrame(state.raw(), parentFrame.raw(), parentConstraints.raw()))) return zv::Val();
 			return pt_statement_list_walk_state_to_result(state.raw());
 		}
@@ -1500,6 +1554,7 @@ private:
 						zv::Ref(stateScope).assign(std::move(endScope));
 					}
 					if (UNEXPECTED(!processDeferredByRefClosureBodies(nodeScopeResolver, frame.raw(), state.raw(), storage, nodeCallback))) return zv::Val();
+					if (UNEXPECTED(!emitVarTagUsages(nodeScopeResolver, parentNode, stmts, varTagTypes.raw(), varTagUsages.raw(), frame.raw(), storage, nodeCallback))) return zv::Val();
 					if (UNEXPECTED(!restoreParentFrame(state.raw(), parentFrame.raw(), parentConstraints.raw()))) return zv::Val();
 					return pt_statement_list_walk_state_to_result(state.raw());
 				}
@@ -1513,7 +1568,7 @@ private:
 			ZVAL_DEREF(stmt);
 			bool reWalk = differingRoots.isNull() || hasLabels;
 			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame.raw(), i, reWalk))) return zv::Val();
-			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), reWalk))) return zv::Val();
+			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope), reWalk))) return zv::Val();
 			if (Z_TYPE_P(OBJ_PROP_NUM(self, slots::debugTemplateArguments)) == IS_TRUE && UNEXPECTED(!printDebugDecision(scope.raw(), stmt, i, reWalk, differingRoots.raw()))) return zv::Val();
 			if (reWalk) {
 				if (statsEnabled && UNEXPECTED(!templateArgumentStatsIncrement(PT_LC("statementsReWalked"), 1))) return zv::Val();
@@ -1530,6 +1585,7 @@ private:
 			zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(std::move(delta));
 		}
 		if (UNEXPECTED(!processDeferredByRefClosureBodies(nodeScopeResolver, frame.raw(), state.raw(), storage, nodeCallback))) return zv::Val();
+		if (UNEXPECTED(!emitVarTagUsages(nodeScopeResolver, parentNode, stmts, varTagTypes.raw(), varTagUsages.raw(), frame.raw(), storage, nodeCallback))) return zv::Val();
 
 		if (UNEXPECTED(!restoreParentFrame(state.raw(), parentFrame.raw(), parentConstraints.raw()))) return zv::Val();
 		return pt_statement_list_walk_state_to_result(state.raw());
@@ -1751,6 +1807,425 @@ private:
 		return zv::Val(std::move(result));
 	}
 
+	/* the private inferVarTagUsages(): [$stmt, $name, $varTagType,
+	 * $assignedType, $preciseAssignedType, $scope] of every generic `new`
+	 * declaration; UNDEF = pending exception */
+	zv::Val inferVarTagUsages(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *declarations, zval *parentFrame, zval *staticVariableTypes, zval *staticVariableConditionalExpressions, zval *staticStatementIndexes, zval *entries, zval *storageArg, zval *context, zval *statementStartTokenPositions)
+	{
+		HashTable *stmtsTable = Z_ARRVAL_P(stmts);
+		zend_long stmtCount = zend_hash_num_elements(stmtsTable);
+		zv::Arr suppressed = zv::Arr::empty();
+		zv::Arr indexes = zv::Arr::empty();
+		zend_long start = stmtCount;
+		for (auto entry : zv::ArrRef(declarations)) {
+			HashTable *declaration = Z_ARRVAL_P(entry.value().deref().raw());
+			zval *stmt = zend_hash_index_find(declaration, 0);
+			zval *index = zend_hash_index_find(declaration, 1);
+			if (UNEXPECTED(stmt == NULL || index == NULL)) continue;
+			zval held;
+			ZVAL_COPY(&held, stmt);
+			suppressed.separate();
+			zend_hash_index_update(suppressed.table(), Z_OBJ_HANDLE_P(stmt), &held);
+			zval marked;
+			ZVAL_TRUE(&marked);
+			indexes.separate();
+			zend_hash_index_update(indexes.table(), (zend_ulong) zval_get_long(index), &marked);
+			if (zval_get_long(index) < start) start = zval_get_long(index);
+		}
+		zv::Val observingFrame = pt_template_argument_frame_new(parentFrame, NULL, NULL, parentNode, stmts);
+		if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+		zv::Val staticFrame = pt_template_argument_frame_with_static_variable_types(observingFrame.raw(), staticVariableTypes, staticStatementIndexes, staticVariableConditionalExpressions);
+		if (UNEXPECTED(staticFrame.isUndef())) return zv::Val();
+		zv::Val frame = pt_template_argument_frame_with_suppressed_var_tags(staticFrame.raw(), suppressed.raw(), indexes.raw());
+		if (UNEXPECTED(frame.isUndef())) return zv::Val();
+
+		zval *startEntry = entryAt(entries, start);
+		if (UNEXPECTED(startEntry == NULL)) return zv::Val();
+		zv::Val state = cloneObject(entryState(startEntry));
+		if (UNEXPECTED(state.isUndef())) return zv::Val();
+		{
+			zval *clonedScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
+			zv::Val reframed = pt_mutating_scope_with_template_argument_frame(Z_OBJ_P(clonedScope), frame.raw());
+			if (UNEXPECTED(reframed.isUndef())) return zv::Val();
+			zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(std::move(reframed));
+		}
+		zv::Val walkStorage = pt_expression_result_storage_duplicate(storageArg);
+		if (UNEXPECTED(walkStorage.isUndef())) return zv::Val();
+		zv::Val walkCallback = pt_type_new(PT_CLASS_NOOP_NODE_CALLBACK, 0, NULL);
+		if (UNEXPECTED(walkCallback.isUndef())) return zv::Val();
+		zv::Arr statementScopes = zv::Arr::empty();
+		bool hasLabels;
+		if (UNEXPECTED(!containsLabels(stmts, hasLabels))) return zv::Val();
+		zv::Val suspendedGatherers = pt_node_scope_resolver_suspend_node_gatherers(nodeScopeResolver);
+		if (UNEXPECTED(suspendedGatherers.isUndef())) return zv::Val();
+		zv::Val pushedScope = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)));
+		if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(pushedScope.raw()), walkStorage.raw()))) {
+			(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
+			return zv::Val();
+		}
+		(void) observeVarTagUsagesFrom(nodeScopeResolver, parentNode, stmts, stmtsTable, frame.raw(), entries, state.raw(), walkStorage.raw(), walkCallback.raw(), context, start, stmtCount, hasLabels, statementScopes);
+		pt_finally([&]() {
+			(void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(pushedScope.raw()));
+			(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
+		});
+		if (UNEXPECTED(EG(exception))) return zv::Val();
+
+		zend_object *stateObject = Z_OBJ_P(state.raw());
+		zval *stateScope = OBJ_PROP_NUM(stateObject, stateSlots::scope);
+		zv::Val constraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(stateScope));
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		if (constraints.isNull()) {
+			constraints = templateArgumentConstraintsCreateEmpty();
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+		zv::Val usagesFrame = templateArgumentResolverResolve(OBJ_PROP_NUM(self, slots::templateArgumentResolver), constraints.raw(), parentFrame, statementStartTokenPositions, parentNode, stmts);
+		if (UNEXPECTED(usagesFrame.isUndef())) return zv::Val();
+
+		zv::Arr usages = zv::Arr::empty();
+		for (auto entry : zv::ArrRef(declarations)) {
+			HashTable *declaration = Z_ARRVAL_P(entry.value().deref().raw());
+			zval *stmt = zend_hash_index_find(declaration, 0);
+			zval *indexZv = zend_hash_index_find(declaration, 1);
+			zval *nameZv = zend_hash_index_find(declaration, 2);
+			zval *varTagType = zend_hash_index_find(declaration, 3);
+			if (UNEXPECTED(stmt == NULL || indexZv == NULL || nameZv == NULL || varTagType == NULL || Z_TYPE_P(nameZv) != IS_STRING)) continue;
+			zend_long index = zval_get_long(indexZv);
+			zend_string *name = Z_STR_P(nameZv);
+
+			zval *declaredScope = stateScope;
+			for (auto scopeEntry : zv::ArrRef(statementScopes.raw())) {
+				HashTable *pair = Z_ARRVAL_P(scopeEntry.value().raw());
+				if (zval_get_long(zend_hash_index_find(pair, 0)) > index) {
+					declaredScope = zend_hash_index_find(pair, 1);
+					break;
+				}
+			}
+			zv::Val declaredHas = pt_mutating_scope_has_variable_type(Z_OBJ_P(declaredScope), name);
+			if (UNEXPECTED(declaredHas.isUndef())) return zv::Val();
+			if (pt_type_trinary_value(declaredHas.raw()) == PT_TRI_NO) continue;
+			zv::Val declaredValueType = pt_mutating_scope_get_variable_type(Z_OBJ_P(declaredScope), name);
+			if (UNEXPECTED(declaredValueType.isUndef())) return zv::Val();
+			zv::Val assignedType = resolveVarTagUsagesType(declaredValueType.raw(), usagesFrame.raw(), true);
+			if (UNEXPECTED(assignedType.isUndef())) return zv::Val();
+			zv::Val preciseAssignedType = resolveVarTagUsagesType(declaredValueType.raw(), usagesFrame.raw(), false);
+			if (UNEXPECTED(preciseAssignedType.isUndef())) return zv::Val();
+			zval *declarationEntry = entryAt(entries, index);
+			if (UNEXPECTED(declarationEntry == NULL)) return zv::Val();
+			zv::Arr usage = zv::Arr::create(6);
+			usage.push(zv::Ref(stmt));
+			usage.push(zv::Ref(nameZv));
+			usage.push(zv::Ref(varTagType));
+			usage.push(std::move(assignedType));
+			usage.push(std::move(preciseAssignedType));
+			usage.push(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(entryState(declarationEntry)), stateSlots::scope)));
+			usages.push(std::move(usage));
+		}
+		return zv::Val(std::move(usages));
+	}
+
+	/* inferVarTagUsages()'s try block: the statements from $start on, walked
+	 * or carried over, each statement's entry scope into $statementScopes as
+	 * [index, scope]; false = pending exception */
+	bool observeVarTagUsagesFrom(zval *nodeScopeResolver, zval *parentNode, zval *stmts, HashTable *stmtsTable, zval *frame, zval *entries, zval *state, zval *storage, zval *nodeCallback, zval *context, zend_long start, zend_long stmtCount, bool hasLabels, zv::Arr &statementScopes)
+	{
+		auto pushScope = [&](zend_long index, zval *scope) {
+			zv::Arr pair = zv::Arr::create(2);
+			pair.push(zv::Val::integer(index));
+			pair.push(zv::Ref(scope));
+			statementScopes.push(std::move(pair));
+		};
+		for (zend_long i = start; i < stmtCount; i++) {
+			zval *recordedEntryPair = entryAt(entries, i);
+			if (UNEXPECTED(recordedEntryPair == NULL)) return false;
+			zval *recordedEntry = entryState(recordedEntryPair);
+			zend_object *stateObject = Z_OBJ_P(state);
+			zend_object *recordedEntryObject = Z_OBJ_P(recordedEntry);
+			zv::Val differingRoots = zv::Val::null();
+			bool stateTerminated = Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE;
+			bool entryTerminated = Z_TYPE_P(OBJ_PROP_NUM(recordedEntryObject, stateSlots::alreadyTerminated)) == IS_TRUE;
+			if (stateTerminated == entryTerminated) {
+				differingRoots = pt_mutating_scope_get_differing_variable_roots(Z_OBJ_P(OBJ_PROP_NUM(stateObject, stateSlots::scope)), Z_OBJ_P(OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope)));
+				if (UNEXPECTED(differingRoots.isUndef())) return false;
+			}
+			if (differingRoots.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(differingRoots.raw())) == 0) {
+				bool hasSite;
+				if (UNEXPECTED(!frameHasSiteAtOrAfter(frame, i, hasSite))) return false;
+				if (!hasSite) {
+					// converged with the observation pass: the rest of it stands
+					zval *finalEntryPair = entryAt(entries, stmtCount);
+					if (UNEXPECTED(finalEntryPair == NULL)) return false;
+					zval *finalState = entryState(finalEntryPair);
+					zv::Val carried = withRecordedConstraints(OBJ_PROP_NUM(stateObject, stateSlots::scope), OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope), OBJ_PROP_NUM(Z_OBJ_P(finalState), stateSlots::scope));
+					if (UNEXPECTED(carried.isUndef())) return false;
+					zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)).assign(std::move(carried));
+					if (UNEXPECTED(!appendRecordedStatementResults(state, recordedEntry, finalState))) return false;
+					for (zend_long j = i; j < stmtCount; j++) {
+						zval *pair = entryAt(entries, j);
+						if (UNEXPECTED(pair == NULL)) return false;
+						pushScope(j, OBJ_PROP_NUM(Z_OBJ_P(entryState(pair)), stateSlots::scope));
+					}
+					return true;
+				}
+			}
+
+			zval *stmt = zend_hash_index_find(stmtsTable, (zend_ulong) i);
+			if (UNEXPECTED(stmt == NULL)) {
+				zend_throw_error(NULL, "phpstan_turbo: the function-like body's statements are not a list");
+				return false;
+			}
+			ZVAL_DEREF(stmt);
+			pushScope(i, OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope));
+			bool reWalk = differingRoots.isNull() || hasLabels;
+			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame, i, reWalk))) return false;
+			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope), reWalk))) return false;
+			if (reWalk) {
+				if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state, storage, nodeCallback, context, true))) return false;
+				continue;
+			}
+
+			zval *recordedExitPair = entryAt(entries, i + 1);
+			if (UNEXPECTED(recordedExitPair == NULL)) return false;
+			zval *recordedExit = entryState(recordedExitPair);
+			if (UNEXPECTED(!appendRecordedStatementResults(state, recordedEntry, recordedExit))) return false;
+			zval *currentScope = OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope);
+			zval *recordedEntryScope = OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope);
+			zval *recordedExitScope = OBJ_PROP_NUM(Z_OBJ_P(recordedExit), stateSlots::scope);
+			zv::Val delta = pt_mutating_scope_with_recorded_statement_delta(Z_OBJ_P(currentScope), Z_OBJ_P(recordedEntryScope), Z_OBJ_P(recordedExitScope));
+			if (UNEXPECTED(delta.isUndef())) return false;
+			zv::Val carried = withRecordedConstraints(delta.raw(), recordedEntryScope, recordedExitScope);
+			if (UNEXPECTED(carried.isUndef())) return false;
+			zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)).assign(std::move(carried));
+		}
+		return true;
+	}
+
+	/* the private static containsUnresolvedTemplateArgument(); false =
+	 * pending exception */
+	[[nodiscard]] static bool containsUnresolvedTemplateArgument(zval *type, bool &out)
+	{
+		zval contains;
+		ZVAL_FALSE(&contains);
+		zv::Val callback = pt_type_native_callback(containsUnresolvedTemplateArgumentBody, &contains, NULL);
+		if (UNEXPECTED(callback.isUndef())) return false;
+		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
+		if (UNEXPECTED(mapped.isUndef())) return false;
+		out = Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) == IS_TRUE;
+		return true;
+	}
+
+	static void containsUnresolvedTemplateArgumentBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+	{
+		(void) state1;
+		if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+			zend_type_error("StatementsHandler::containsUnresolvedTemplateArgument() traversal: expected (Type $type, callable $traverse)");
+			return;
+		}
+		zval *type = &argv[0];
+		if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
+			zval_ptr_dtor(contains);
+			ZVAL_TRUE(contains);
+		}
+		if (Z_TYPE_P(contains) == IS_TRUE) {
+			ZVAL_COPY(return_value, type);
+			return;
+		}
+		zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
+		if (UNEXPECTED(traversed.isUndef())) return;
+		traversed.intoReturnValue(return_value);
+	}
+
+	/* the private static getVarTagDeclaredValue(): borrowed from the
+	 * statement, NULL for none; false = pending exception */
+	[[nodiscard]] static bool varTagDeclaredValue(zval *stmt, zval *&value)
+	{
+		value = NULL;
+		bool is;
+		if (UNEXPECTED(!isInstance(stmt, PT_CLASS_EXPRESSION_STMT, is))) return false;
+		if (is) {
+			zval *expr = nodeProperty(pt_sh_expr_site, stmt, PT_LC("expr"));
+			if (UNEXPECTED(expr == NULL)) return false;
+			bool isAssign;
+			if (UNEXPECTED(!isInstance(expr, PT_CLASS_ASSIGN_EXPR, isAssign))) return false;
+			if (!isAssign) return true;
+			value = nodeProperty(pt_sh_assign_value_site, expr, PT_LC("expr"));
+			return value != NULL;
+		}
+		if (UNEXPECTED(!isInstance(stmt, PT_CLASS_STATIC_STMT, is))) return false;
+		if (!is) return true;
+		zval *vars = nodeProperty(pt_sh_static_vars_site, stmt, PT_LC("vars"));
+		if (UNEXPECTED(vars == NULL)) return false;
+		if (Z_TYPE_P(vars) != IS_ARRAY) return true;
+		zval *staticVar = zend_hash_index_find(Z_ARRVAL_P(vars), 0);
+		if (staticVar == NULL) return true;
+		zval *defaultValue = nodeProperty(pt_sh_static_var_default_site, staticVar, PT_LC("default"));
+		if (UNEXPECTED(defaultValue == NULL)) return false;
+		if (Z_TYPE_P(defaultValue) == IS_OBJECT) value = defaultValue;
+		return true;
+	}
+
+	/* the private resolveVarTagUsagesType(): the objects the body creates are
+	 * exactly of their class, but the tag declares what the variable holds,
+	 * subclasses included; a template argument nothing in the body constrains
+	 * is unknown. UNDEF = pending exception */
+	static zv::Val resolveVarTagUsagesType(zval *type, zval *frame, bool generalizeTemplateArguments)
+	{
+		zv::Val withoutOverrides = pt_type_call_static_ce(pt_ce_template_type_helper, PT_LC("removefinalbykeywordoverrides"), 1, type);
+		if (UNEXPECTED(withoutOverrides.isUndef())) return zv::Val();
+		zval generalize;
+		ZVAL_BOOL(&generalize, generalizeTemplateArguments);
+		zv::Val callback = pt_type_native_callback(resolveVarTagUsagesMarkerBody, frame, &generalize);
+		if (UNEXPECTED(callback.isUndef())) return zv::Val();
+		return pt_type_traverser_map_of(withoutOverrides.raw(), callback.raw());
+	}
+
+	static void resolveVarTagUsagesMarkerBody(zval *frame, zval *generalize, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+			zend_type_error("StatementsHandler::resolveVarTagUsagesType() traversal: expected (Type $type, callable $traverse)");
+			return;
+		}
+		zval *type = &argv[0];
+		if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
+			zv::Val templateName = pt_unresolved_template_argument_type_get_template_name(type);
+			if (UNEXPECTED(templateName.isUndef())) return;
+			zv::Val resolved = pt_template_argument_frame_resolve(frame, pt_unresolved_template_argument_type_site(type), Z_STR_P(templateName.raw()));
+			if (UNEXPECTED(resolved.isUndef())) return;
+			bool unknown = resolved.isNull();
+			if (!unknown) {
+				zv::Val delegate = pt_type_call(Z_OBJ_P(type), PT_LC("getdelegate"), 0, NULL);
+				if (UNEXPECTED(delegate.isUndef())) return;
+				if (UNEXPECTED(!pt_type_op_bool(Z_OBJ_P(resolved.raw()), PT_OP_EQUALS, 1, delegate.raw(), unknown))) return;
+			}
+			if (unknown) {
+				zv::Val mixed = pt_type_new_mixed_type();
+				if (UNEXPECTED(mixed.isUndef())) return;
+				mixed.intoReturnValue(return_value);
+				return;
+			}
+			if (Z_TYPE_P(generalize) != IS_TRUE) {
+				resolved.intoReturnValue(return_value);
+				return;
+			}
+			zv::Val precision = pt_type_call_static(PT_CLASS_GENERALIZE_PRECISION, PT_LC("templateargument"), 0, NULL);
+			if (UNEXPECTED(precision.isUndef())) return;
+			zv::Val generalized = pt_type_call(Z_OBJ_P(resolved.raw()), PT_LC("generalize"), 1, precision.raw());
+			if (UNEXPECTED(generalized.isUndef())) return;
+			generalized.intoReturnValue(return_value);
+			return;
+		}
+		zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
+		if (UNEXPECTED(traversed.isUndef())) return;
+		traversed.intoReturnValue(return_value);
+	}
+
+	/* the private emitVarTagUsages(); false = pending exception */
+	[[nodiscard]] bool emitVarTagUsages(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *varTagTypes, zval *varTagUsages, zval *frame, zval *storage, zval *nodeCallback)
+	{
+		for (auto entry : zv::ArrRef(varTagUsages)) {
+			HashTable *usage = Z_ARRVAL_P(entry.value().deref().raw());
+			zval argv[5];
+			for (zend_ulong k = 0; k < 5; k++) {
+				ZVAL_COPY_VALUE(&argv[k], zend_hash_index_find(usage, k));
+			}
+			zv::Val node = pt_type_new(PT_CLASS_VAR_TAG_USAGES_NODE, 5, argv);
+			if (UNEXPECTED(node.isUndef())) return false;
+			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, node.raw(), zend_hash_index_find(usage, 5), storage))) return false;
+		}
+		if (zend_hash_num_elements(Z_ARRVAL_P(varTagTypes)) == 0) return true;
+		zv::Val writes = pt_var_tag_usages_inference_get_writes(OBJ_PROP_NUM(self, slots::varTagUsagesInference), parentNode, stmts);
+		if (UNEXPECTED(writes.isUndef())) return false;
+		for (auto entry : zv::ArrRef(writes.raw())) {
+			HashTable *writeEntry = Z_ARRVAL_P(entry.value().deref().raw());
+			zval *write = zend_hash_index_find(writeEntry, 0);
+			zval *key = zend_hash_index_find(writeEntry, 1);
+			zval *nameZv = zend_hash_index_find(writeEntry, 2);
+			if (UNEXPECTED(write == NULL || key == NULL || nameZv == NULL || Z_TYPE_P(nameZv) != IS_STRING)) continue;
+			zval *varTagType = zend_hash_index_find(Z_ARRVAL_P(varTagTypes), (zend_ulong) zval_get_long(key));
+			if (varTagType == NULL) continue;
+			zend_string *name = Z_STR_P(nameZv);
+			zv::Val result = pt_expression_result_storage_find(storage, write);
+			if (UNEXPECTED(result.isUndef())) return false;
+			if (result.isNull()) continue;
+			zv::Val beforeHold;
+			zval *beforeScope = pt_expression_result_before_scope(result.raw(), beforeHold);
+			if (UNEXPECTED(beforeScope == NULL)) return false;
+			zv::Val beforeHas = pt_mutating_scope_has_variable_type(Z_OBJ_P(beforeScope), name);
+			if (UNEXPECTED(beforeHas.isUndef())) return false;
+			if (pt_type_trinary_value(beforeHas.raw()) == PT_TRI_NO) continue;
+			// the write again, from what the tag declares: a write after one
+			// the tag does not accept is judged on its own - narrowed to the
+			// tag, the variable keeps what the body knows about its offsets
+			zv::Val beforeType = pt_mutating_scope_get_variable_type(Z_OBJ_P(beforeScope), name);
+			if (UNEXPECTED(beforeType.isUndef())) return false;
+			zval intersectArgv[2];
+			ZVAL_COPY_VALUE(&intersectArgv[0], beforeType.raw());
+			ZVAL_COPY_VALUE(&intersectArgv[1], varTagType);
+			zv::Val declaredType = pt_type_combinator_intersect(2, intersectArgv);
+			if (UNEXPECTED(declaredType.isUndef())) return false;
+			zv::Val never = pt_type_new_never_type();
+			if (UNEXPECTED(never.isUndef())) return false;
+			zv::Val isNever = pt_type_op(Z_OBJ_P(never.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, declaredType.raw());
+			if (UNEXPECTED(isNever.isUndef())) return false;
+			if (pt_type_result_trinary(isNever.raw()) == PT_TRI_YES) {
+				// an earlier write left nothing the tag declares
+				declaredType = zv::Val::copyOf(zv::Ref(varTagType));
+			}
+			zv::Val nativeScope = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(beforeScope));
+			if (UNEXPECTED(nativeScope.isUndef())) return false;
+			zv::Val nativeType = pt_mutating_scope_get_variable_type(Z_OBJ_P(nativeScope.raw()), name);
+			if (UNEXPECTED(nativeType.isUndef())) return false;
+			zv::Val variable = pt_type_new(PT_CLASS_VARIABLE, 1, nameZv);
+			if (UNEXPECTED(variable.isUndef())) return false;
+			zv::Val declaredScope = pt_mutating_scope_specify_expression_type(Z_OBJ_P(beforeScope), Z_OBJ_P(variable.raw()), declaredType.raw(), nativeType.raw(), pt_trinary_singleton(PT_TRI_YES));
+			if (UNEXPECTED(declaredScope.isUndef())) return false;
+			zv::Val writeStorage = pt_expression_result_storage_duplicate(storage);
+			if (UNEXPECTED(writeStorage.isUndef())) return false;
+			zv::Val suspendedGatherers = pt_node_scope_resolver_suspend_node_gatherers(nodeScopeResolver);
+			if (UNEXPECTED(suspendedGatherers.isUndef())) return false;
+			if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(declaredScope.raw()), writeStorage.raw()))) {
+				(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
+				return false;
+			}
+			zv::Val writeResult;
+			zv::Val writeStmt = pt_type_new(PT_CLASS_EXPRESSION_STMT, 1, write);
+			if (EXPECTED(!writeStmt.isUndef())) {
+				zv::Val noop = pt_type_new(PT_CLASS_NOOP_NODE_CALLBACK, 0, NULL);
+				if (EXPECTED(!noop.isUndef())) {
+					zv::Val context = pt_expression_context_create_top_level(false);
+					if (EXPECTED(!context.isUndef())) {
+						writeResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, writeStmt.raw(), write, declaredScope.raw(), writeStorage.raw(), noop.raw(), context.raw());
+					}
+				}
+			}
+			pt_finally([&]() {
+				(void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(declaredScope.raw()));
+				(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
+			});
+			if (UNEXPECTED(EG(exception))) return false;
+			zv::Val writeScopeHold;
+			zval *writeScope = pt_expression_result_scope(writeResult.raw(), writeScopeHold);
+			if (UNEXPECTED(writeScope == NULL)) return false;
+			zv::Val writeHas = pt_mutating_scope_has_variable_type(Z_OBJ_P(writeScope), name);
+			if (UNEXPECTED(writeHas.isUndef())) return false;
+			if (pt_type_trinary_value(writeHas.raw()) == PT_TRI_NO) continue;
+			zv::Val writtenType = pt_mutating_scope_get_variable_type(Z_OBJ_P(writeScope), name);
+			if (UNEXPECTED(writtenType.isUndef())) return false;
+			// a statement replayed from the observation pass holds its template arguments unresolved
+			zv::Val assignedType = resolveVarTagUsagesType(writtenType.raw(), frame, false);
+			if (UNEXPECTED(assignedType.isUndef())) return false;
+			zval argv[5];
+			ZVAL_COPY_VALUE(&argv[0], write);
+			ZVAL_COPY_VALUE(&argv[1], nameZv);
+			ZVAL_COPY_VALUE(&argv[2], varTagType);
+			ZVAL_COPY_VALUE(&argv[3], assignedType.raw());
+			ZVAL_COPY_VALUE(&argv[4], assignedType.raw());
+			zv::Val node = pt_type_new(PT_CLASS_VAR_TAG_USAGES_NODE, 5, argv);
+			if (UNEXPECTED(node.isUndef())) return false;
+			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, node.raw(), beforeScope, storage))) return false;
+		}
+		return true;
+	}
+
 	/* inferStaticVariableTypes()'s try block: the statements from $start on,
 	 * walked or carried over, each walked exit scope and carried-over entry
 	 * scope into $replayedScopes, each carried-over entry scope into
@@ -1793,7 +2268,7 @@ private:
 			ZVAL_DEREF(stmt);
 			bool reWalk = differingRoots.isNull() || hasLabels;
 			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame, i, reWalk))) return false;
-			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), reWalk))) return false;
+			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope), reWalk))) return false;
 			if (reWalk) {
 				if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state, storage, nodeCallback, context, true))) return false;
 				replayedScopes.push(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)));
@@ -2562,7 +3037,7 @@ private:
 			ZVAL_DEREF(stmt);
 			bool reWalk = differingRoots.isNull() || hasLabels;
 			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame, i, reWalk))) return false;
-			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), reWalk))) return false;
+			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope), reWalk))) return false;
 			if (reWalk) {
 				if (statsEnabled && UNEXPECTED(!templateArgumentStatsIncrement(PT_LC("closureObservationStatements"), 1))) return false;
 				if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state, storage, nodeCallback, context, true))) return false;
@@ -2750,22 +3225,25 @@ private:
 	/* {{{ mentioned variables */
 
 	/* the private statementMentionsAnyVariable() */
-	[[nodiscard]] bool statementMentionsAnyVariable(zval *stmt, zval *variableNames, bool &out)
+	[[nodiscard]] bool statementMentionsAnyVariable(zval *stmt, zval *variableNames, zval *scope, bool &out)
 	{
 		zv::Val mentions = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("templateArgumentMentionedVariables"));
 		if (UNEXPECTED(mentions.isUndef())) return false;
 		if (mentions.isNull()) {
 			zv::Arr names = zv::Arr::empty();
 			bool mentionsEverything = false;
-			if (UNEXPECTED(!collectMentionedVariables(stmt, names, mentionsEverything))) return false;
-			zv::Arr pair = zv::Arr::create(2);
-			pair.push(std::move(names));
-			pair.push(zv::Val::boolean(mentionsEverything));
-			mentions = zv::Val(std::move(pair));
+			zv::Arr callees = zv::Arr::empty();
+			if (UNEXPECTED(!collectMentionedVariables(stmt, names, mentionsEverything, callees))) return false;
+			zv::Arr triple = zv::Arr::create(3);
+			triple.push(std::move(names));
+			triple.push(zv::Val::boolean(mentionsEverything));
+			triple.push(std::move(callees));
+			mentions = zv::Val(std::move(triple));
 			if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(stmt), PT_LC("templateArgumentMentionedVariables"), mentions.raw()))) return false;
 		}
 		zval *names = mentions.ref().isArray() ? zend_hash_index_find(Z_ARRVAL_P(mentions.raw()), 0) : NULL;
 		zval *mentionsEverything = mentions.ref().isArray() ? zend_hash_index_find(Z_ARRVAL_P(mentions.raw()), 1) : NULL;
+		zval *callees = mentions.ref().isArray() ? zend_hash_index_find(Z_ARRVAL_P(mentions.raw()), 2) : NULL;
 		if (mentionsEverything != NULL && zend_is_true(mentionsEverything)) {
 			out = true;
 			return true;
@@ -2787,18 +3265,64 @@ private:
 				return true;
 			}
 		}
+
+		// invoking a closure applies its by-ref uses where it runs - see
+		// ClosureSignatureInference - so the statement reads them too
+		if (callees == NULL || Z_TYPE_P(callees) != IS_ARRAY) return true;
+		for (auto entry : zv::ArrRef(callees)) {
+			zval *callee = entry.value().deref().raw();
+			bool isVariable;
+			if (UNEXPECTED(!isInstance(callee, PT_CLASS_VARIABLE, isVariable))) return false;
+			zval *calleeName = isVariable ? nodeProperty(pt_sh_variable_name_site, callee, PT_LC("name")) : NULL;
+			if (isVariable && UNEXPECTED(calleeName == NULL)) return false;
+			if (!isVariable || Z_TYPE_P(calleeName) != IS_STRING) {
+				out = true;
+				return true;
+			}
+			zv::Val has = pt_mutating_scope_has_variable_type(Z_OBJ_P(scope), Z_STR_P(calleeName));
+			if (UNEXPECTED(has.isUndef())) return false;
+			if (pt_type_trinary_value(has.raw()) == PT_TRI_NO) continue;
+			zv::Val calleeType = pt_mutating_scope_get_variable_type(Z_OBJ_P(scope), Z_STR_P(calleeName));
+			if (UNEXPECTED(calleeType.isUndef())) return false;
+			zv::Val members;
+			if (instanceof_function(Z_OBJCE_P(calleeType.raw()), pt_ce_union_type)) {
+				members = pt_type_op(Z_OBJ_P(calleeType.raw()), PT_OP_GET_TYPES, 0, NULL);
+				if (UNEXPECTED(members.isUndef())) return false;
+			} else {
+				zv::Arr single = zv::Arr::create(1);
+				single.push(zv::Ref(calleeType.raw()));
+				members = zv::Val(std::move(single));
+			}
+			for (auto memberEntry : zv::ArrRef(members.raw())) {
+				zval *member = memberEntry.value().deref().raw();
+				if (Z_TYPE_P(member) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(member), pt_ce_closure_type)) continue;
+				zv::Val byRefUseTypes = pt_closure_type_get_by_ref_use_types(member);
+				if (UNEXPECTED(byRefUseTypes.isUndef())) return false;
+				if (!byRefUseTypes.ref().isArray()) continue;
+				for (auto nameEntry : zv::ArrRef(variableNames)) {
+					zval *variableName = nameEntry.value().deref().raw();
+					bool exists = Z_TYPE_P(variableName) == IS_STRING
+						? zend_symtable_exists(Z_ARRVAL_P(byRefUseTypes.raw()), Z_STR_P(variableName))
+						: (Z_TYPE_P(variableName) == IS_LONG && zend_hash_index_exists(Z_ARRVAL_P(byRefUseTypes.raw()), (zend_ulong) Z_LVAL_P(variableName)));
+					if (exists) {
+						out = true;
+						return true;
+					}
+				}
+			}
+		}
 		return true;
 	}
 
 	/* the private collectMentionedVariables() */
-	[[nodiscard]] bool collectMentionedVariables(zval *node, zv::Arr &names, bool &mentionsEverything)
+	[[nodiscard]] bool collectMentionedVariables(zval *node, zv::Arr &names, bool &mentionsEverything, zv::Arr &callees)
 	{
 		bool ok = true;
-		pt_engine_with_stack([&]() { ok = collectMentionedVariablesBody(node, names, mentionsEverything); });
+		pt_engine_with_stack([&]() { ok = collectMentionedVariablesBody(node, names, mentionsEverything, callees); });
 		return ok;
 	}
 
-	[[nodiscard]] bool collectMentionedVariablesBody(zval *node, zv::Arr &names, bool &mentionsEverything)
+	[[nodiscard]] bool collectMentionedVariablesBody(zval *node, zv::Arr &names, bool &mentionsEverything, zv::Arr &callees)
 	{
 		bool is;
 		if (UNEXPECTED(!isInstance(node, PT_CLASS_VARIABLE, is))) return false;
@@ -2840,6 +3364,14 @@ private:
 			return true;
 		}
 
+		if (UNEXPECTED(!isInstance(node, PT_CLASS_FUNC_CALL, is))) return false;
+		if (is) {
+			zval *callee = nodeProperty(pt_sh_func_call_name_site, node, PT_LC("name"));
+			if (UNEXPECTED(callee == NULL)) return false;
+			bool calleeIsExpr;
+			if (UNEXPECTED(!isInstance(callee, PT_CLASS_EXPR, calleeIsExpr))) return false;
+			if (calleeIsExpr) callees.push(zv::Ref(callee));
+		}
 		bool dynamic;
 		if (UNEXPECTED(!isInstance(node, PT_CLASS_EVAL_EXPR, dynamic))) return false;
 		if (!dynamic && UNEXPECTED(!isInstance(node, PT_CLASS_INCLUDE_EXPR, dynamic))) return false;
@@ -2884,14 +3416,14 @@ private:
 			bool isNode;
 			if (UNEXPECTED(!isInstance(held.raw(), PT_CLASS_NODE, isNode))) return false;
 			if (isNode) {
-				if (UNEXPECTED(!collectMentionedVariables(held.raw(), names, mentionsEverything))) return false;
+				if (UNEXPECTED(!collectMentionedVariables(held.raw(), names, mentionsEverything, callees))) return false;
 			} else if (held.ref().isArray()) {
 				for (auto item : zv::ArrRef(held.raw())) {
 					zval *itemValue = item.value().deref().raw();
 					bool itemIsNode;
 					if (UNEXPECTED(!isInstance(itemValue, PT_CLASS_NODE, itemIsNode))) return false;
 					if (!itemIsNode) continue;
-					if (UNEXPECTED(!collectMentionedVariables(itemValue, names, mentionsEverything))) return false;
+					if (UNEXPECTED(!collectMentionedVariables(itemValue, names, mentionsEverything, callees))) return false;
 				}
 			}
 		}
@@ -3081,17 +3613,18 @@ PT_MINIT_REGISTRATION(pt_register_statements_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *fileTypeMapper, *templateArgumentObserver, *templateArgumentResolver, *container, *staticVariableInference;
+		zval *fileTypeMapper, *templateArgumentObserver, *templateArgumentResolver, *container, *staticVariableInference, *varTagUsagesInference;
 		bool unresolvedTemplateArguments;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(7, 7)
 			Z_PARAM_OBJECT(fileTypeMapper)
 			Z_PARAM_OBJECT(templateArgumentObserver)
 			Z_PARAM_OBJECT(templateArgumentResolver)
 			Z_PARAM_OBJECT(container)
 			Z_PARAM_OBJECT(staticVariableInference)
+			Z_PARAM_OBJECT(varTagUsagesInference)
 			Z_PARAM_BOOL(unresolvedTemplateArguments)
 		ZEND_PARSE_PARAMETERS_END();
-		StatementsHandler(Z_OBJ_P(ZEND_THIS)).construct(fileTypeMapper, templateArgumentObserver, templateArgumentResolver, container, staticVariableInference, unresolvedTemplateArguments);
+		StatementsHandler(Z_OBJ_P(ZEND_THIS)).construct(fileTypeMapper, templateArgumentObserver, templateArgumentResolver, container, staticVariableInference, varTagUsagesInference, unresolvedTemplateArguments);
 	});
 
 	cls.method(sigs::processNodesWithStorage, [](INTERNAL_FUNCTION_PARAMETERS) {

@@ -1339,10 +1339,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				48,
 			],
 			[
-				'Strict comparison using === between string and \'äöü\' will always evaluate to false.',
-				50,
-			],
-			[
 				'Strict comparison using === between string and \'abcd\' will always evaluate to false.',
 				53,
 			],

@@ -46,9 +46,9 @@ function doBar(string $s, string $literals, int $length, int $zeroOrThree, int $
 	if (mb_substr($s, 0, 2) === 'äöü') {} // always false
 	if (mb_substr($s, 0, 3) === 'äöü') {} // fine
 	if (mb_substr($s, -2) === 'äöü') {} // always false
-	if (mb_substr($s, 0, 3, 'UTF-8') === 'äöü') {} // fine
-	if (mb_substr($s, 0, 3, '8bit') === 'äöü') {} // always false
-	if (mb_substr($s, 0, 3, 'unknown') === 'äöü') {} // fine
+	if (mb_substr($s, 0, 3, 'UTF-8') === 'äöü') {} // not handled
+	if (mb_substr($s, 0, 3, '8bit') === 'äöü') {} // not handled
+	if (mb_substr($s, 0, 3, 'unknown') === 'äöü') {} // not handled
 
 	if (mb_strcut($s, 0, 3) === 'abcd') {} // always false
 	if (mb_strcut($s, 0, 4) === 'abcd') {} // fine

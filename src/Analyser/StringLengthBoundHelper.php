@@ -16,14 +16,13 @@ use function count;
 use function in_array;
 use function is_string;
 use function mb_check_encoding;
-use function mb_list_encodings;
 use function mb_strlen;
 use function strlen;
 use function strtolower;
 
 /**
  * Knows the maximum length of strings produced by expressions like
- * `substr($s, 0, 4)` whose type is just `string`.
+ * `substr($s, 0, 4)` or `chr($i)` whose type is just `string`.
  */
 #[AutowiredService]
 final class StringLengthBoundHelper
@@ -48,10 +47,6 @@ final class StringLengthBoundHelper
 			return false;
 		}
 
-		if (!$otherType->isConstantScalarValue()->yes()) {
-			return false;
-		}
-
 		$values = $otherType->getConstantScalarValues();
 		if (count($values) === 0) {
 			return false;
@@ -67,11 +62,15 @@ final class StringLengthBoundHelper
 			return false;
 		}
 
-		[$boundType, $fromNegativeOffset, $unit] = $maxLength;
+		[$boundType, $fromNegativeOffset, $inCharacters] = $maxLength;
 		foreach ($values as $value) {
-			$length = $unit === null ? strlen($value) : $this->getCharacterCount($value, $unit);
-			if ($length === null) {
-				return false;
+			if ($inCharacters) {
+				if (!mb_check_encoding($value)) {
+					return false;
+				}
+				$length = mb_strlen($value);
+			} else {
+				$length = strlen($value);
 			}
 
 			$shorterBoundType = $fromNegativeOffset
@@ -86,19 +85,11 @@ final class StringLengthBoundHelper
 	}
 
 	/**
-	 * @return array{Type, bool, string|true|null}|null the integer type bounding the length (a negative `$offset` when the bool is true, the maximum length otherwise) and how the length is measured: null for bytes, true for characters in the internal encoding, a string for characters in that encoding
+	 * @return array{Type, bool, bool}|null the integer type bounding the length (a negative `$offset` when the first bool is true, the maximum length otherwise) and whether the length is measured in characters of the internal encoding instead of bytes
 	 */
 	private function getMaxLength(Scope $scope, FuncCall $expr, ?NodeScopeResolver $nodeScopeResolver): ?array
 	{
 		if (!$expr->name instanceof Name) {
-			return null;
-		}
-
-		if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
-			return null;
-		}
-		$functionName = strtolower($this->reflectionProvider->getFunction($expr->name, $scope)->getName());
-		if (!in_array($functionName, ['substr', 'mb_substr', 'mb_strcut', 'chr'], true)) {
 			return null;
 		}
 
@@ -110,25 +101,27 @@ final class StringLengthBoundHelper
 			$args[] = $arg->value;
 		}
 
+		if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
+			return null;
+		}
+		$functionName = strtolower($this->reflectionProvider->getFunction($expr->name, $scope)->getName());
+		if (!in_array($functionName, ['substr', 'mb_substr', 'mb_strcut', 'chr'], true)) {
+			return null;
+		}
+
 		if ($functionName === 'chr') {
-			return count($args) === 1 ? [new ConstantIntegerType(1), false, null] : null;
+			return count($args) === 1 ? [new ConstantIntegerType(1), false, false] : null;
 		}
 
 		if (count($args) < 2) {
 			return null;
 		}
 
-		$unit = null;
-		if ($functionName === 'mb_substr') {
-			$unit = true;
-			if (isset($args[3])) {
-				$encodings = $this->getType($scope, $args[3], $nodeScopeResolver)->getConstantStrings();
-				if (count($encodings) !== 1 || !$this->isSupportedEncoding($encodings[0]->getValue())) {
-					return null;
-				}
-				$unit = $encodings[0]->getValue();
-			}
+		if (isset($args[3])) {
+			return null;
 		}
+
+		$inCharacters = $functionName === 'mb_substr';
 
 		if (isset($args[2])) {
 			$lengthType = $this->getType($scope, $args[2], $nodeScopeResolver);
@@ -137,7 +130,7 @@ final class StringLengthBoundHelper
 					return null;
 				}
 
-				return [$lengthType, false, $unit];
+				return [$lengthType, false, $inCharacters];
 			}
 		}
 
@@ -150,36 +143,7 @@ final class StringLengthBoundHelper
 			return null;
 		}
 
-		return [$offsetType, true, $unit];
-	}
-
-	private function getCharacterCount(string $value, string|true $encoding): ?int
-	{
-		if ($encoding === true) {
-			if (!mb_check_encoding($value)) {
-				return null;
-			}
-
-			return mb_strlen($value);
-		}
-
-		if (!mb_check_encoding($value, $encoding)) {
-			return null;
-		}
-
-		return mb_strlen($value, $encoding);
-	}
-
-	private function isSupportedEncoding(string $encoding): bool
-	{
-		$encoding = strtolower($encoding);
-		foreach (mb_list_encodings() as $supportedEncoding) {
-			if (strtolower($supportedEncoding) === $encoding) {
-				return true;
-			}
-		}
-
-		return false;
+		return [$offsetType, true, $inCharacters];
 	}
 
 	private function getType(Scope $scope, Expr $expr, ?NodeScopeResolver $nodeScopeResolver): Type

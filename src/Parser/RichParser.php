@@ -89,10 +89,14 @@ final class RichParser implements Parser
 			throw new ShouldNotHappenException();
 		}
 
-		$pipeTransformerVisitor = new PipeTransformerVisitor();
-		$pipeTransformer = new NodeTraverser($pipeTransformerVisitor);
-		/** @var array<Node\Stmt> */
-		$nodes = $pipeTransformer->traverse($nodes);
+		// a Pipe node needs the |> token, so without it neither pipe pass can change anything
+		$hasPipe = str_contains($sourceCode, '|>');
+		if ($hasPipe) {
+			$pipeTransformerVisitor = new PipeTransformerVisitor();
+			$pipeTransformer = new NodeTraverser($pipeTransformerVisitor);
+			/** @var array<Node\Stmt> */
+			$nodes = $pipeTransformer->traverse($nodes);
+		}
 
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->nameResolver);
@@ -111,7 +115,7 @@ final class RichParser implements Parser
 			throw new ParserErrorsException([$e], null);
 		}
 
-		if ($pipeTransformerVisitor->rewroteAnyPipe()) {
+		if ($hasPipe) {
 			$reversePipeTransformer = new NodeTraverser(new ReversePipeTransformerVisitor());
 			/** @var array<Node\Stmt> */
 			$nodes = $reversePipeTransformer->traverse($nodes);

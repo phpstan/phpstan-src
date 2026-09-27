@@ -59,6 +59,7 @@ parametersSchema:
 		unresolvedTemplateArguments: bool()
 		closureSignaturesFromUsages: bool()
 		staticVariablesFromUsages: bool()
+		varTagsReflectUsages: bool()
 		unusedVariable: bool()
 		unusedParameters: bool()
 	])

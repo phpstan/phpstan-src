@@ -25,6 +25,29 @@ namespace sigs = ptdecl::StaticVariableInference::sig;
 
 zend_class_entry *pt_ce_static_variable_inference = nullptr;
 
+/* preg_match('~@(?:phpstan-|psalm-)?var\s~', $text) === 1 */
+bool pt_doc_comment_declares_var(zend_string *text)
+{
+	const char *s = ZSTR_VAL(text);
+	size_t n = ZSTR_LEN(text);
+	auto startsWith = [&](size_t at, const char *prefix, size_t len) {
+		return at + len <= n && memcmp(s + at, prefix, len) == 0;
+	};
+	for (size_t i = 0; i < n; i++) {
+		if (s[i] != '@') continue;
+		// the regex backtracks from a prefix to the bare tag
+		size_t candidates[] = {i + 1, i + 9, i + 7};
+		bool variants[] = {true, startsWith(i + 1, "phpstan-", 8), startsWith(i + 1, "psalm-", 6)};
+		for (int k = 0; k < 3; k++) {
+			size_t at = candidates[k];
+			if (!variants[k] || !startsWith(at, "var", 3) || at + 3 >= n) continue;
+			char c = s[at + 3];
+			if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f') return true;
+		}
+	}
+	return false;
+}
+
 namespace {
 
 /* the twin's SITES_ATTRIBUTE, a permanent interned string (module startup) */
@@ -112,35 +135,12 @@ zv::Val popNode(zv::Arr &stack)
 	return value;
 }
 
-/* preg_match('~@(?:phpstan-|psalm-)?var\s~', $text) === 1 */
-bool declaresVar(zend_string *text)
-{
-	const char *s = ZSTR_VAL(text);
-	size_t n = ZSTR_LEN(text);
-	auto startsWith = [&](size_t at, const char *prefix, size_t len) {
-		return at + len <= n && memcmp(s + at, prefix, len) == 0;
-	};
-	for (size_t i = 0; i < n; i++) {
-		if (s[i] != '@') continue;
-		// the regex backtracks from a prefix to the bare tag
-		size_t candidates[] = {i + 1, i + 9, i + 7};
-		bool variants[] = {true, startsWith(i + 1, "phpstan-", 8), startsWith(i + 1, "psalm-", 6)};
-		for (int k = 0; k < 3; k++) {
-			size_t at = candidates[k];
-			if (!variants[k] || !startsWith(at, "var", 3) || at + 3 >= n) continue;
-			char c = s[at + 3];
-			if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f') return true;
-		}
-	}
-	return false;
-}
-
 /* Mirrors the private hasVarTag(); false = pending exception */
 [[nodiscard]] bool hasVarTag(zval *stmt, bool &out)
 {
 	zv::Val text = pt_node_doc_comment_text(stmt);
 	if (UNEXPECTED(text.isUndef())) return false;
-	out = text.ref().isString() && declaresVar(Z_STR_P(text.raw()));
+	out = text.ref().isString() && pt_doc_comment_declares_var(Z_STR_P(text.raw()));
 	return true;
 }
 

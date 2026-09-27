@@ -55,10 +55,11 @@ public:
 	explicit StaticVariableHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *varAnnotationProcessor, zval *staticVariableInference)
+	void construct(zval *varAnnotationProcessor, zval *staticVariableInference, zval *varTagUsagesInference)
 	{
 		zv::ObjRef(self).propAtWrite(slots::varAnnotationProcessor, zv::Val::copyOf(zv::Ref(varAnnotationProcessor)));
 		zv::ObjRef(self).propAtWrite(slots::staticVariableInference, zv::Val::copyOf(zv::Ref(staticVariableInference)));
+		zv::ObjRef(self).propAtWrite(slots::varTagUsagesInference, zv::Val::copyOf(zv::Ref(varTagUsagesInference)));
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -80,6 +81,11 @@ public:
 			impurePoints.push(std::move(impurePoint));
 		}
 
+		// the walk that finds what the variable takes without its @var tag
+		// (see VarTagUsagesInference) starts from the default and leaves the
+		// tag out
+		bool varTagSuppressed;
+		if (UNEXPECTED(!pt_var_tag_usages_inference_is_suppressed(OBJ_PROP_NUM(self, slots::varTagUsagesInference), scope, stmt, varTagSuppressed))) return zv::Val();
 		zv::Arr vars = zv::Arr::empty();
 		zv::Arr variableFlows = zv::Arr::empty();
 		zval *stmtVars = ptsh::readNodeProperty(pt_svh_vars_site, stmt, PT_LC("vars"));
@@ -91,12 +97,15 @@ public:
 			/* foreach iterates the array it started with */
 			zv::Val iterated = zv::Val::copyOf(zv::Ref(stmtVars));
 			for (auto entry : zv::ArrRef(iterated.raw())) {
-				if (UNEXPECTED(!processVar(nodeScopeResolver, stmt, entry.value().deref().raw(), scopeHold, storage, nodeCallback, context, impurePoints, vars, variableFlows))) return zv::Val();
+				if (UNEXPECTED(!processVar(nodeScopeResolver, stmt, entry.value().deref().raw(), scopeHold, storage, nodeCallback, context, varTagSuppressed, impurePoints, vars, variableFlows))) return zv::Val();
 			}
 		}
 
-		zv::Val annotatedScope = pt_var_annotation_processor_process_var_annotation(OBJ_PROP_NUM(self, slots::varAnnotationProcessor), scopeHold.raw(), vars.raw(), stmt, NULL);
-		if (UNEXPECTED(annotatedScope.isUndef())) return zv::Val();
+		zv::Val annotatedScope = std::move(scopeHold);
+		if (!varTagSuppressed) {
+			annotatedScope = pt_var_annotation_processor_process_var_annotation(OBJ_PROP_NUM(self, slots::varAnnotationProcessor), annotatedScope.raw(), vars.raw(), stmt, NULL);
+			if (UNEXPECTED(annotatedScope.isUndef())) return zv::Val();
+		}
 
 		// how the types of a run of `static` variables depend on each other -
 		// see StaticVariableInference::getRuns()
@@ -135,7 +144,7 @@ private:
 	}
 
 	/* the loop body over one static variable; false = pending exception */
-	[[nodiscard]] bool processVar(zval *nodeScopeResolver, zval *stmt, zval *staticVar, zv::Val &scope, zval *storage, zval *nodeCallback, zval *context, zv::Arr &impurePoints, zv::Arr &vars, zv::Arr &variableFlows) const
+	[[nodiscard]] bool processVar(zval *nodeScopeResolver, zval *stmt, zval *staticVar, zv::Val &scope, zval *storage, zval *nodeCallback, zval *context, bool varTagSuppressed, zv::Arr &impurePoints, zv::Arr &vars, zv::Arr &variableFlows) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(staticVar) != IS_OBJECT)) {
 			zend_error(E_WARNING, "Attempt to read property \"var\" on %s", zend_zval_value_name(staticVar));
@@ -224,8 +233,8 @@ private:
 			type = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(types.raw()), 0)));
 			nativeType = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(types.raw()), 1)));
 		} else {
-			bool inferred;
-			if (UNEXPECTED(!pt_static_variable_inference_is_inferred(inference, scope.raw(), varHold.raw(), inferred))) return false;
+			bool inferred = varTagSuppressed;
+			if (!inferred && UNEXPECTED(!pt_static_variable_inference_is_inferred(inference, scope.raw(), varHold.raw(), inferred))) return false;
 			if (inferred && !defaultExprResult.isNull()) {
 				type = pt_expression_result_get_type(defaultExprResult.raw());
 				if (UNEXPECTED(type.isUndef())) return false;
@@ -276,9 +285,9 @@ PT_MINIT_REGISTRATION(pt_register_static_variable_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *varAnnotationProcessor, *staticVariableInference;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, varAnnotationProcessor, staticVariableInference)) RETURN_THROWS();
-		StaticVariableHandler(Z_OBJ_P(ZEND_THIS)).construct(varAnnotationProcessor, staticVariableInference);
+		zval *varAnnotationProcessor, *staticVariableInference, *varTagUsagesInference;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, varAnnotationProcessor, staticVariableInference, varTagUsagesInference)) RETURN_THROWS();
+		StaticVariableHandler(Z_OBJ_P(ZEND_THIS)).construct(varAnnotationProcessor, staticVariableInference, varTagUsagesInference);
 	});
 
 	cls.method<&StaticVariableHandler::supports, zp::Obj>(sigs::supports);

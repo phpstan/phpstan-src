@@ -8,6 +8,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\StaticType;
+use PHPStan\Type\TypeCombinator;
 
 // autoTag: false - wired explicitly in ClassReflectionExtensionRegistry, must not be tagged
 #[AutowiredService(autoTag: false)]
@@ -16,12 +18,12 @@ final class RequireExtendsMethodsClassReflectionExtension implements MethodsClas
 
 	public function hasMethod(ClassReflection $classReflection, string $methodName): bool
 	{
-		return $this->findMethod($classReflection, $methodName) !== null;
+		return $this->findMethod($classReflection, $classReflection, $methodName) !== null;
 	}
 
 	public function getMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection
 	{
-		$method = $this->findMethod($classReflection, $methodName);
+		$method = $this->findMethod($classReflection, $classReflection, $methodName);
 		if ($method === null) {
 			throw new ShouldNotHappenException();
 		}
@@ -29,7 +31,7 @@ final class RequireExtendsMethodsClassReflectionExtension implements MethodsClas
 		return $method;
 	}
 
-	private function findMethod(ClassReflection $classReflection, string $methodName): ?ExtendedMethodReflection
+	private function findMethod(ClassReflection $originalClassReflection, ClassReflection $classReflection, string $methodName): ?ExtendedMethodReflection
 	{
 		if (!$classReflection->isInterface()) {
 			return null;
@@ -43,12 +45,15 @@ final class RequireExtendsMethodsClassReflectionExtension implements MethodsClas
 				continue;
 			}
 
-			return $type->getMethod($methodName, new OutOfClassScope());
+			// map static to static(interface)&Base so that it gets resolved against the type the method is called on
+			return $type->getUnresolvedMethodPrototype($methodName, new OutOfClassScope())
+				->withCalledOnType(TypeCombinator::intersect(new StaticType($originalClassReflection), $type))
+				->getTransformedMethod();
 		}
 
 		$interfaces = $classReflection->getInterfaces();
 		foreach ($interfaces as $interface) {
-			$method = $this->findMethod($interface, $methodName);
+			$method = $this->findMethod($originalClassReflection, $interface, $methodName);
 			if ($method !== null) {
 				return $method;
 			}

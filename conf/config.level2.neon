@@ -19,6 +19,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.checkDynamicConstantNameValues%
 	PHPStan\Rules\Constants\ValueAssignedToGlobalConstantRule:
 		phpstan.rules.rule: %featureToggles.checkDynamicConstantNameValues%
+	PHPStan\Rules\PhpDoc\VarTagReflectsUsagesRule:
+		phpstan.rules.rule: %featureToggles.varTagsReflectUsages%
 
 services:
 	-
@@ -32,3 +34,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Constants\ValueAssignedToGlobalConstantRule
+
+	-
+		class: PHPStan\Rules\PhpDoc\VarTagReflectsUsagesRule

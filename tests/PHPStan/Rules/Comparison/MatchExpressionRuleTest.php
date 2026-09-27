@@ -607,10 +607,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 				'Match arm comparison between string and \'abcd\' is always false.',
 				12,
 			],
-			[
-				'Match arm comparison between non-empty-string and \'ab\' is always false.',
-				20,
-			],
 		]);
 	}
 

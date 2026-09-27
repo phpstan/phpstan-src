@@ -54,8 +54,6 @@ function doBar(string $s, string $literals, int $length, int $zeroOrThree, int $
 	if (mb_strcut($s, 0, 4) === 'abcd') {} // fine
 	if (mb_strcut($s, -3) === 'abcd') {} // fine
 
-	if ($s[0] === 'ab') {} // always false
-	if ($s[0] === 'a') {} // fine
 	if (chr($int) === 'ab') {} // always false
 	if (chr($int) === 'a') {} // fine
 

@@ -439,12 +439,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function testBug7166(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-7166.php'], [
-			[
-				'Strict comparison using === between non-empty-string and \'\\\\t\' will always evaluate to false.',
-				14,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-7166.php'], []);
 	}
 
 	public function testBug7555(): void
@@ -1356,40 +1351,36 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				57,
 			],
 			[
-				'Strict comparison using === between non-empty-string and \'ab\' will always evaluate to false.',
-				59,
-			],
-			[
 				'Strict comparison using === between string and null will always evaluate to false.',
-				63,
+				61,
 			],
 			[
 				'Strict comparison using === between string and 12345 will always evaluate to false.',
-				64,
+				62,
 			],
 			[
 				'Strict comparison using === between string and \'abcd\' will always evaluate to false.',
-				80,
+				78,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Strict comparison using === between string and \'abcde\' will always evaluate to false.',
-				82,
+				80,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Strict comparison using === between string and \'äöüß\' will always evaluate to false.',
-				86,
+				84,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Strict comparison using === between string and \'abcd\' will always evaluate to false.',
+				85,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Strict comparison using === between string and \'abcd\' will always evaluate to false.',
 				87,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-			],
-			[
-				'Strict comparison using === between string and \'abcd\' will always evaluate to false.',
-				89,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);

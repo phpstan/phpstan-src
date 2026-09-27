@@ -216,16 +216,13 @@ private:
 
 	/* $this->stringLengthBoundHelper->exceedsMaxLength($scope, $operand,
 	 * $otherType, $nodeScopeResolver), skipped for the operands the helper
-	 * returns false for right away (anything but FuncCall, ArrayDimFetch and
+	 * returns false for right away (anything but FuncCall and
 	 * AlwaysRememberedExpr); false = pending exception */
 	[[nodiscard]] bool exceedsMaxLength(zval *scope, zval *operandExpr, zval *otherType, zval *nodeScopeResolver, bool &out) const
 	{
 		out = false;
 		bool candidate;
 		if (UNEXPECTED(!isA(operandExpr, PT_CLASS_FUNC_CALL, candidate))) return false;
-		if (!candidate) {
-			if (UNEXPECTED(!isA(operandExpr, PT_CLASS_ARRAY_DIM_FETCH, candidate))) return false;
-		}
 		if (!candidate) {
 			if (UNEXPECTED(!isA(operandExpr, PT_CLASS_ALWAYS_REMEMBERED_EXPR, candidate))) return false;
 		}

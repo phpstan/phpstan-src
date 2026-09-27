@@ -4,7 +4,6 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -24,7 +23,7 @@ use function strtolower;
 
 /**
  * Knows the maximum length of strings produced by expressions like
- * `substr($s, 0, 4)` or `$s[0]` whose type is just `string`.
+ * `substr($s, 0, 4)` whose type is just `string`.
  */
 #[AutowiredService]
 final class StringLengthBoundHelper
@@ -45,7 +44,7 @@ final class StringLengthBoundHelper
 			$expr = $expr->getExpr();
 		}
 
-		if (!$expr instanceof FuncCall && !$expr instanceof ArrayDimFetch) {
+		if (!$expr instanceof FuncCall) {
 			return false;
 		}
 
@@ -89,20 +88,9 @@ final class StringLengthBoundHelper
 	/**
 	 * @return array{Type, bool, string|true|null}|null the integer type bounding the length (a negative `$offset` when the bool is true, the maximum length otherwise) and how the length is measured: null for bytes, true for characters in the internal encoding, a string for characters in that encoding
 	 */
-	private function getMaxLength(Scope $scope, Expr $expr, ?NodeScopeResolver $nodeScopeResolver): ?array
+	private function getMaxLength(Scope $scope, FuncCall $expr, ?NodeScopeResolver $nodeScopeResolver): ?array
 	{
-		if ($expr instanceof ArrayDimFetch) {
-			if ($expr->dim === null) {
-				return null;
-			}
-			if (!$this->getType($scope, $expr->var, $nodeScopeResolver)->isString()->yes()) {
-				return null;
-			}
-
-			return [new ConstantIntegerType(1), false, null];
-		}
-
-		if (!$expr instanceof FuncCall || !$expr->name instanceof Name) {
+		if (!$expr->name instanceof Name) {
 			return null;
 		}
 

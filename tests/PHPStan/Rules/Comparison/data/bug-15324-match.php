@@ -13,12 +13,3 @@ function doFoo(string $s): int
 		default => 4,
 	};
 }
-
-function doBar(string $s): int
-{
-	return match ($s[0]) {
-		'ab' => 1,
-		'a' => 2,
-		default => 3,
-	};
-}

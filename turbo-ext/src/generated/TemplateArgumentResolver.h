@@ -27,27 +27,69 @@ inline constexpr char strings[] =
 	"parent\0" /* 66 */
 	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 73 */
 	"statementStartTokenPositions\0" /* 121 */
-	"\0" /* 150 */
-	"resolve\0" /* 151 */
-	"tokenPosition\0" /* 159 */
-	"positions\0" /* 173 */
-	"locateStatement"; /* 183 */
+	"closureSignatureBody\0" /* 150 */
+	"PhpParser\\Node\0" /* 171 */
+	"null\0" /* 186 */
+	"closureSignatureStmts\0" /* 191 */
+	"[]\0" /* 213 */
+	"\0" /* 216 */
+	"resolve\0" /* 217 */
+	"frame\0" /* 225 */
+	"resolveObservedClosures\0" /* 231 */
+	"closuresOnly\0" /* 255 */
+	"closureSiteIds\0" /* 268 */
+	"collectObservations\0" /* 283 */
+	"observations\0" /* 303 */
+	"resolutions\0" /* 316 */
+	"settleClosureSites\0" /* 328 */
+	"hasChangedTemplateArgument\0" /* 347 */
+	"siteIndexes\0" /* 374 */
+	"settledClosureSites\0" /* 386 */
+	"collectSiteStatementIndexes\0" /* 406 */
+	"tokenPosition\0" /* 434 */
+	"positions\0" /* 448 */
+	"locateStatement"; /* 458 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 12), /* resolve $constraints */
 	reg::packed(66, MAY_BE_NULL, 73), /* resolve $parent */
 	reg::packed(121, MAY_BE_ARRAY), /* resolve $statementStartTokenPositions */
-	reg::packed(150, 0, 73), /* resolve return */
-	reg::packed(159, MAY_BE_LONG), /* locateStatement $tokenPosition */
-	reg::packed(173, MAY_BE_ARRAY), /* locateStatement $positions */
-	reg::packed(150, MAY_BE_LONG), /* locateStatement return */
+	reg::packed(150, MAY_BE_NULL, 171, false, false, 186), /* resolve $closureSignatureBody */
+	reg::packed(191, MAY_BE_ARRAY, reg::NoString, false, false, 213), /* resolve $closureSignatureStmts */
+	reg::packed(216, 0, 73), /* resolve return */
+	reg::packed(0, 0, 12), /* resolveObservedClosures $constraints */
+	reg::packed(225, 0, 73), /* resolveObservedClosures $frame */
+	reg::packed(121, MAY_BE_ARRAY), /* resolveObservedClosures $statementStartTokenPositions */
+	reg::packed(216, 0, 73), /* resolveObservedClosures return */
+	reg::packed(0, 0, 12), /* collectObservations $constraints */
+	reg::packed(121, MAY_BE_ARRAY), /* collectObservations $statementStartTokenPositions */
+	reg::packed(255, MAY_BE_BOOL), /* collectObservations $closuresOnly */
+	reg::packed(268, MAY_BE_ARRAY, reg::NoString, true, false), /* collectObservations $closureSiteIds */
+	reg::packed(216, MAY_BE_ARRAY), /* collectObservations return */
+	reg::packed(303, MAY_BE_ARRAY), /* settleClosureSites $observations */
+	reg::packed(316, MAY_BE_ARRAY), /* settleClosureSites $resolutions */
+	reg::packed(216, MAY_BE_ARRAY), /* settleClosureSites return */
+	reg::packed(303, MAY_BE_ARRAY), /* hasChangedTemplateArgument $observations */
+	reg::packed(316, MAY_BE_ARRAY), /* hasChangedTemplateArgument $resolutions */
+	reg::packed(216, MAY_BE_BOOL), /* hasChangedTemplateArgument return */
+	reg::packed(374, MAY_BE_ARRAY), /* collectSiteStatementIndexes $siteIndexes */
+	reg::packed(386, MAY_BE_ARRAY), /* collectSiteStatementIndexes $settledClosureSites */
+	reg::packed(216, MAY_BE_ARRAY), /* collectSiteStatementIndexes return */
+	reg::packed(434, MAY_BE_LONG), /* locateStatement $tokenPosition */
+	reg::packed(448, MAY_BE_ARRAY), /* locateStatement $positions */
+	reg::packed(216, MAY_BE_LONG), /* locateStatement return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig resolve = { { 151 /* resolve */, 3, 0, 3, 3, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig locateStatement = { { 183 /* locateStatement */, 2, 4, 2, 6, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolve = { { 217 /* resolve */, 3, 0, 5, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveObservedClosures = { { 231 /* resolveObservedClosures */, 3, 6, 3, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectObservations = { { 283 /* collectObservations */, 4, 10, 4, 14, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig settleClosureSites = { { 328 /* settleClosureSites */, 2, 15, 2, 17, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig hasChangedTemplateArgument = { { 347 /* hasChangedTemplateArgument */, 2, 18, 2, 20, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectSiteStatementIndexes = { { 406 /* collectSiteStatementIndexes */, 2, 21, 2, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig locateStatement = { { 458 /* locateStatement */, 2, 24, 2, 26, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateArgumentResolver

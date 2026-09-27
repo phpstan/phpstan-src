@@ -544,7 +544,7 @@ final class StatementsHandler
 		}
 		$parentFrame = $scope->getCurrentTemplateArgumentFrame();
 		$parentConstraints = $scope->getTemplateArgumentConstraints();
-		$frame = new TemplateArgumentFrame($parentFrame);
+		$frame = new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts);
 		if (TemplateArgumentStats::$enabled) {
 			TemplateArgumentStats::increment('bodiesWalked');
 			TemplateArgumentStats::increment('statementsTotal', count($stmts));
@@ -564,9 +564,12 @@ final class StatementsHandler
 		} finally {
 			$nodeScopeResolver->restoreNodeGatherers($suspendedGatherers);
 		}
-		$frame = $this->templateArgumentResolver->resolve($state->scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty(), $parentFrame, $statementStartTokenPositions);
+		$frame = $this->templateArgumentResolver->resolve($state->scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty(), $parentFrame, $statementStartTokenPositions, $parentNode, $stmts);
 		$stmtCount = count($stmts);
 		$entries[$stmtCount] = [clone $state, $recording->count()];
+		if ($frame->isObservingClosures()) {
+			$frame = $this->observeClosureSignatures($nodeScopeResolver, $parentNode, $stmts, $frame, $entries, $storage, $observationContext, $statementStartTokenPositions);
+		}
 
 		$firstSiteStatementIndex = $frame->firstSiteStatementIndex();
 		if ($firstSiteStatementIndex === null) {
@@ -586,14 +589,7 @@ final class StatementsHandler
 		// resolutions changed - the rest replay their recording and carry
 		// their recorded effect onto the re-walked scope
 		$nodeScopeResolver->replayRecordingRange($recording, 0, $entries[$firstSiteStatementIndex][1], $nodeCallback, $storage, $scope);
-		$hasLabels = false;
-		foreach ($stmts as $stmt) {
-			if (!$stmt instanceof Node\Stmt\Label && $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE) === null) {
-				continue;
-			}
-			$hasLabels = true;
-			break;
-		}
+		$hasLabels = $this->containsLabels($stmts);
 		$state = clone $entries[$firstSiteStatementIndex][0];
 		$state->scope = $state->scope->withTemplateArgumentFrame($frame)->withTemplateArgumentConstraints(null);
 		for ($i = $firstSiteStatementIndex; $i < $stmtCount; $i++) {
@@ -649,6 +645,117 @@ final class StatementsHandler
 
 		$state->scope = $state->scope->withTemplateArgumentFrame($parentFrame)->withTemplateArgumentConstraints($parentConstraints);
 		return $state->toResult();
+	}
+
+	/**
+	 * The closure observation pass: a template argument resolved to something
+	 * else than it stood for while observing, so the values read out of its
+	 * object - and passed to the body's closures - change in the second pass.
+	 * From the first template argument site on, the body is walked again with
+	 * the template arguments resolved and without rules, observing only the
+	 * closure signatures - like the second pass, a statement is walked only
+	 * when it owns a site or mentions a variable the resolutions changed; the
+	 * others carry the closure facts of their recorded walk over.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param array<int, array{StatementListWalkState, int}> $entries
+	 * @param list<int> $statementStartTokenPositions
+	 */
+	private function observeClosureSignatures(
+		NodeScopeResolver $nodeScopeResolver,
+		Node $parentNode,
+		array $stmts,
+		TemplateArgumentFrame $frame,
+		array $entries,
+		ExpressionResultStorage $storage,
+		StatementContext $context,
+		array $statementStartTokenPositions,
+	): TemplateArgumentFrame
+	{
+		$start = $frame->firstSiteStatementIndex() ?? 0;
+		$state = clone $entries[$start][0];
+		$state->scope = $state->scope->withTemplateArgumentFrame($frame);
+		// the second pass replays the observation pass's recording against the storage
+		$storage = $storage->duplicate();
+		$nodeCallback = new NoopNodeCallback();
+		$stmtCount = count($stmts);
+		$hasLabels = $this->containsLabels($stmts);
+		$suspendedGatherers = $nodeScopeResolver->suspendNodeGatherers();
+		$scope = $state->scope;
+		$scope->pushExpressionResultStorage($storage);
+		try {
+			for ($i = $start; $i < $stmtCount; $i++) {
+				$recordedEntry = $entries[$i][0];
+				$differingRoots = $state->alreadyTerminated === $recordedEntry->alreadyTerminated
+					? $state->scope->getDifferingVariableRoots($recordedEntry->scope)
+					: null;
+				if ($differingRoots === [] && !$frame->hasSiteAtOrAfter($i)) {
+					// converged with the observation pass: the rest of its facts stand
+					if (TemplateArgumentStats::$enabled) {
+						TemplateArgumentStats::increment('closureObservationStatementsReplayed', $stmtCount - $i);
+					}
+					$state->scope = $this->withRecordedConstraints($state->scope, $recordedEntry->scope, $entries[$stmtCount][0]->scope);
+					break;
+				}
+
+				$stmt = $stmts[$i];
+				if (
+					$differingRoots === null
+					|| $hasLabels
+					|| $frame->ownsSiteInStatement($i)
+					|| $this->statementMentionsAnyVariable($stmt, $differingRoots)
+				) {
+					if (TemplateArgumentStats::$enabled) {
+						TemplateArgumentStats::increment('closureObservationStatements');
+					}
+					$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $storage, $nodeCallback, $context, true);
+					continue;
+				}
+
+				if (TemplateArgumentStats::$enabled) {
+					TemplateArgumentStats::increment('closureObservationStatementsReplayed');
+				}
+				$recordedExit = $entries[$i + 1][0];
+				$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
+				$state->scope = $this->withRecordedConstraints(
+					$state->scope->withRecordedStatementDelta($recordedEntry->scope, $recordedExit->scope),
+					$recordedEntry->scope,
+					$recordedExit->scope,
+				);
+			}
+		} finally {
+			$scope->popExpressionResultStorage();
+			$nodeScopeResolver->restoreNodeGatherers($suspendedGatherers);
+		}
+
+		return $this->templateArgumentResolver->resolveObservedClosures($state->scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty(), $frame, $statementStartTokenPositions);
+	}
+
+	/** The scope with the facts the observation pass collected from $recordedEntry to $recordedExit. */
+	private function withRecordedConstraints(MutatingScope $scope, MutatingScope $recordedEntry, MutatingScope $recordedExit): MutatingScope
+	{
+		$recorded = $recordedExit->getTemplateArgumentConstraints();
+		if ($recorded === null) {
+			return $scope;
+		}
+
+		return $scope->withTemplateArgumentConstraints(
+			($scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty())->withRecordedFacts($recordedEntry->getTemplateArgumentConstraints(), $recorded),
+		);
+	}
+
+	/** @param Node\Stmt[] $stmts */
+	private function containsLabels(array $stmts): bool
+	{
+		foreach ($stmts as $stmt) {
+			if (!$stmt instanceof Node\Stmt\Label && $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE) === null) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/** Carries what the recorded walk from $from to $to added onto $state. */

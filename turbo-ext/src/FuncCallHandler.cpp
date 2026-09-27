@@ -46,6 +46,7 @@ namespace sigs = ptdecl::FuncCallHandler::sig;
 #include "Engine.h"
 #include "AnalyserValues.h"
 #include "CallHandlerSupport.h"
+#include "ParameterValues.h"
 
 #include "zend_weakrefs.h"
 
@@ -245,6 +246,7 @@ pt_property_site pt_fch_name_site;
 pt_property_site pt_fch_name_string_site;
 pt_property_site pt_fch_arg_value_site;
 pt_property_site pt_fch_arg_unpack_site;
+pt_property_site pt_fch_arg_name_site;
 pt_property_site pt_fch_params_site;
 pt_property_site pt_fch_param_by_ref_site;
 pt_property_site pt_fch_param_var_site;
@@ -503,6 +505,7 @@ public:
 			slots::expressionResultFactory, slots::typeSpecifier, slots::defaultNarrowingHelper,
 			slots::earlyTerminatingHelper, slots::storagePrimer, slots::impossibleCheckTypeHelper,
 			slots::closureTypeResolver, slots::argumentsHandler, slots::closureProcessor, slots::assignHandler,
+			slots::closureSignatureInference,
 		};
 		zv::ObjRef object(self);
 		for (uint32_t i = 0; i < sizeof(order) / sizeof(order[0]); i++) {
@@ -741,6 +744,33 @@ public:
 		zval *resolvedParametersAcceptorSlot = pt_args_result_resolved_parameters_acceptor(argsResult.raw(), hold);
 		if (UNEXPECTED(resolvedParametersAcceptorSlot == NULL)) return zv::Val();
 		zv::Val resolvedParametersAcceptor = zv::Val::copyOf(zv::Ref(resolvedParametersAcceptorSlot));
+		if (!resolvedParametersAcceptor.isNull() && !nameResult.isNull() && isA(name, PT_CLASS_VARIABLE)) {
+			zval *variableName = nodeProp(pt_fch_variable_name_site, name, PT_LC("name"));
+			if (UNEXPECTED(variableName == NULL)) return zv::Val();
+			if (Z_TYPE_P(variableName) == IS_STRING) {
+				zv::Val variableNameHold = zv::Val::copyOf(zv::Ref(variableName));
+				zv::Val calleeType = pt_expression_result_get_type(nameResult.raw());
+				if (UNEXPECTED(calleeType.isUndef())) return zv::Val();
+				zv::Val argsScopeHold;
+				zval *argsScope = argsResultScope(argsResult.raw(), argsScopeHold);
+				if (UNEXPECTED(argsScope == NULL)) return zv::Val();
+				zv::Val argsScopeHeld = zv::Val::copyOf(zv::Ref(argsScope));
+				zv::Val invokedClosureType = resolveInvokedClosureType(nodeScopeResolver, normalizedExpr.raw(), Z_STR_P(variableNameHold.raw()), calleeType.raw(), argsScopeHeld.raw(), storage);
+				if (UNEXPECTED(invokedClosureType.isUndef())) return zv::Val();
+				if (!invokedClosureType.isNull()) {
+					zv::Val acceptors = pt_type_call(Z_OBJ_P(invokedClosureType.raw()), PT_LC("getcallableparametersacceptors"), 1, scope.raw());
+					if (UNEXPECTED(acceptors.isUndef())) return zv::Val();
+					zval *acceptor = acceptors.ref().isArray() ? zend_hash_index_find(Z_ARRVAL_P(acceptors.raw()), 0) : NULL;
+					if (UNEXPECTED(acceptor == NULL)) {
+						zend_error(E_WARNING, "Undefined array key 0");
+						if (UNEXPECTED(EG(exception))) return zv::Val();
+						resolvedParametersAcceptor = zv::Val::null();
+					} else {
+						resolvedParametersAcceptor = zv::Val::copyOf(zv::Ref(acceptor));
+					}
+				}
+			}
+		}
 		// arguments walked ahead of the callee: the scope already carries them
 		// and the callee walk's own effects (a closure's by-ref uses) on top
 		if (argumentsWalkedAhead.isNull()) {
@@ -923,6 +953,108 @@ private:
 	zend_object *self;
 
 	zval *slot(uint32_t index) const { return OBJ_PROP_NUM(self, index); }
+
+	/* Mirrors the private resolveInvokedClosureType(): the ClosureType or PHP
+	 * null; UNDEF = pending exception */
+	zv::Val resolveInvokedClosureType(zval *nodeScopeResolver, zval *call, zend_string *name, zval *calleeType, zval *scope, zval *storage) const
+	{
+		if (Z_TYPE_P(calleeType) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(calleeType), pt_ce_closure_type)) return zv::Val::null();
+		bool infers;
+		if (UNEXPECTED(!pt_closure_signature_inference_infers_invocation_return_type(slot(slots::closureSignatureInference), scope, calleeType, infers))) return zv::Val();
+		if (!infers) return zv::Val::null();
+		zv::Val parameters = pt_type_call(Z_OBJ_P(calleeType), PT_LC("getparameters"), 0, NULL);
+		if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+		zv::Val args = callArgs(call);
+		if (UNEXPECTED(args.isUndef())) return zv::Val();
+		uint32_t argCount = zend_hash_num_elements(Z_ARRVAL_P(args.raw()));
+		if (argCount == 0 || argCount > zend_hash_num_elements(Z_ARRVAL_P(parameters.raw()))) return zv::Val::null();
+
+		bool narrower = false;
+		zv::Arr callableParameters = zv::Arr::empty();
+		for (auto entry : zv::ArrRef(parameters.raw())) {
+			zval *parameter = entry.value().deref().raw();
+			zv::Val isVariadic = pt_parameter_reflection_call(parameter, PT_PR_IS_VARIADIC);
+			if (UNEXPECTED(isVariadic.isUndef())) return zv::Val();
+			if (zend_is_true(isVariadic.raw())) return zv::Val::null();
+			zv::Val passedByReference = pt_parameter_reflection_call(parameter, PT_PR_PASSED_BY_REFERENCE);
+			if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
+			zend_long mode = pt_passed_by_reference_mode(passedByReference.raw());
+			if (UNEXPECTED(mode < 0)) return zv::Val();
+			if (mode != PT_PASSED_BY_REFERENCE_NO) return zv::Val::null();
+			zv::Val type = pt_parameter_reflection_call(parameter, PT_PR_GET_TYPE);
+			if (UNEXPECTED(type.isUndef())) return zv::Val();
+			zval *arg = entry.stringKeyOrNull() == NULL ? zend_hash_index_find(Z_ARRVAL_P(args.raw()), entry.indexKey()) : zend_hash_find(Z_ARRVAL_P(args.raw()), entry.stringKeyOrNull());
+			if (arg != NULL && Z_TYPE_P(arg) != IS_NULL) {
+				zval *argName = nodeProp(pt_fch_arg_name_site, arg, PT_LC("name"));
+				if (UNEXPECTED(argName == NULL)) return zv::Val();
+				if (Z_TYPE_P(argName) != IS_NULL) return zv::Val::null();
+				zval *unpack = nodeProp(pt_fch_arg_unpack_site, arg, PT_LC("unpack"));
+				if (UNEXPECTED(unpack == NULL)) return zv::Val();
+				if (zend_is_true(unpack)) return zv::Val::null();
+				zval *value = nodeProp(pt_fch_arg_value_site, arg, PT_LC("value"));
+				if (UNEXPECTED(value == NULL)) return zv::Val();
+				zv::Val valueHold = zv::Val::copyOf(zv::Ref(value));
+				zv::Val argumentType = pt_node_scope_resolver_read_type_of_maybe_stored(nodeScopeResolver, valueHold.raw(), scope);
+				if (UNEXPECTED(argumentType.isUndef())) return zv::Val();
+				// an argument the signature rejects is reported against it
+				zv::Val accepts = pt_type_op(Z_OBJ_P(type.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, argumentType.raw());
+				if (UNEXPECTED(accepts.isUndef())) return zv::Val();
+				if (pt_type_result_trinary(accepts.raw()) != PT_TRI_YES) return zv::Val::null();
+				zv::Val covers = pt_type_op(Z_OBJ_P(argumentType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, type.raw());
+				if (UNEXPECTED(covers.isUndef())) return zv::Val();
+				if (pt_type_result_trinary(covers.raw()) != PT_TRI_YES) {
+					narrower = true;
+					type = std::move(argumentType);
+				}
+			}
+			zv::Val parameterName = pt_parameter_reflection_call(parameter, PT_PR_GET_NAME);
+			if (UNEXPECTED(parameterName.isUndef())) return zv::Val();
+			zv::Val isOptional = pt_parameter_reflection_call(parameter, PT_PR_IS_OPTIONAL);
+			if (UNEXPECTED(isOptional.isUndef())) return zv::Val();
+			zend_object *no = pt_passed_by_reference_create_no();
+			if (UNEXPECTED(no == NULL)) return zv::Val();
+			zval argv[6];
+			ZVAL_COPY_VALUE(&argv[0], parameterName.raw());
+			ZVAL_BOOL(&argv[1], zend_is_true(isOptional.raw()));
+			ZVAL_COPY_VALUE(&argv[2], type.raw());
+			ZVAL_OBJ(&argv[3], no);
+			ZVAL_FALSE(&argv[4]);
+			ZVAL_NULL(&argv[5]);
+			zv::Val callableParameter = pt_native_parameter_reflection_new(6, argv);
+			if (UNEXPECTED(callableParameter.isUndef())) return zv::Val();
+			callableParameters.push(std::move(callableParameter));
+		}
+		if (!narrower) return zv::Val::null();
+
+		zv::Val closures = pt_closure_signature_inference_find_assigned_closures(slot(slots::closureSignatureInference), scope, name);
+		if (UNEXPECTED(closures.isUndef())) return zv::Val();
+		for (auto entry : zv::ArrRef(closures.raw())) {
+			zval *closure = entry.value().deref().raw();
+			zv::Val creationResult = pt_expression_result_storage_find(storage, closure);
+			if (UNEXPECTED(creationResult.isUndef())) return zv::Val();
+			if (creationResult.isNull()) continue;
+			zv::Val creationType = pt_expression_result_get_type(creationResult.raw());
+			if (UNEXPECTED(creationType.isUndef())) return zv::Val();
+			bool equals;
+			if (UNEXPECTED(!pt_type_op_bool(Z_OBJ_P(creationType.raw()), PT_OP_EQUALS, 1, calleeType, equals))) return zv::Val();
+			if (!equals) continue;
+
+			zv::Val beforeScopeHold;
+			zval *beforeScope = pt_expression_result_before_scope(creationResult.raw(), beforeScopeHold);
+			if (UNEXPECTED(beforeScope == NULL)) return zv::Val();
+			zv::Val beforeScopeHeld = zv::Val::copyOf(zv::Ref(beforeScope));
+			zv::Val mixed = pt_type_new_mixed_type();
+			if (UNEXPECTED(mixed.isUndef())) return zv::Val();
+			zval passedToType;
+			if (UNEXPECTED(!pt_callable_type_new(&passedToType, callableParameters.raw(), mixed.raw(), false))) return zv::Val();
+			zv::Val passedToTypeHold = zv::Val::adopt(passedToType);
+			zval closureHold;
+			ZVAL_COPY(&closureHold, closure);
+			zv::Val closureHeld = zv::Val::adopt(closureHold);
+			return pt_closure_type_resolver_get_closure_type(slot(slots::closureTypeResolver), beforeScopeHeld.raw(), closureHeld.raw(), false, storage, passedToTypeHold.raw());
+		}
+		return zv::Val::null();
+	}
 
 	bool flag(uint32_t index) const { return Z_TYPE_P(slot(index)) == IS_TRUE; }
 
@@ -2343,9 +2475,9 @@ PT_MINIT_REGISTRATION(pt_register_func_call_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *reflectionProvider = NULL, *dynamicFunctionThrowTypeExtensions = NULL, *dynamicReturnTypeExtensionRegistry = NULL, *scopeEffectsHelper = NULL, *expressionResultFactory = NULL, *typeSpecifier = NULL, *defaultNarrowingHelper = NULL, *earlyTerminatingHelper = NULL, *storagePrimer = NULL, *impossibleCheckTypeHelper = NULL, *closureTypeResolver = NULL, *argumentsHandler = NULL, *closureProcessor = NULL, *assignHandler = NULL;
+		zval *reflectionProvider = NULL, *dynamicFunctionThrowTypeExtensions = NULL, *dynamicReturnTypeExtensionRegistry = NULL, *scopeEffectsHelper = NULL, *expressionResultFactory = NULL, *typeSpecifier = NULL, *defaultNarrowingHelper = NULL, *earlyTerminatingHelper = NULL, *storagePrimer = NULL, *impossibleCheckTypeHelper = NULL, *closureTypeResolver = NULL, *argumentsHandler = NULL, *closureProcessor = NULL, *assignHandler = NULL, *closureSignatureInference = NULL;
 		bool implicitThrows, rememberPossiblyImpureFunctionValues;
-		ZEND_PARSE_PARAMETERS_START(16, 16)
+		ZEND_PARSE_PARAMETERS_START(17, 17)
 			Z_PARAM_OBJECT(reflectionProvider)
 			Z_PARAM_OBJECT(dynamicFunctionThrowTypeExtensions)
 			Z_PARAM_OBJECT(dynamicReturnTypeExtensionRegistry)
@@ -2362,11 +2494,12 @@ PT_MINIT_REGISTRATION(pt_register_func_call_handler)
 			Z_PARAM_OBJECT(argumentsHandler)
 			Z_PARAM_OBJECT(closureProcessor)
 			Z_PARAM_OBJECT(assignHandler)
+			Z_PARAM_OBJECT(closureSignatureInference)
 		ZEND_PARSE_PARAMETERS_END();
 		zval implicitThrowsValue, rememberValue;
 		ZVAL_BOOL(&implicitThrowsValue, implicitThrows);
 		ZVAL_BOOL(&rememberValue, rememberPossiblyImpureFunctionValues);
-		zval *argv[] = { reflectionProvider, dynamicFunctionThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, &implicitThrowsValue, &rememberValue, scopeEffectsHelper, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, earlyTerminatingHelper, storagePrimer, impossibleCheckTypeHelper, closureTypeResolver, argumentsHandler, closureProcessor, assignHandler };
+		zval *argv[] = { reflectionProvider, dynamicFunctionThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, &implicitThrowsValue, &rememberValue, scopeEffectsHelper, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, earlyTerminatingHelper, storagePrimer, impossibleCheckTypeHelper, closureTypeResolver, argumentsHandler, closureProcessor, assignHandler, closureSignatureInference };
 		FuncCallHandler(Z_OBJ_P(ZEND_THIS)).construct(argv);
 	});
 

@@ -767,7 +767,9 @@ public:
 			}
 		}
 		if (!delegate) {
-			delegate = instanceof_function(Z_OBJCE_P(otherType), pt_ce_never_type) || instanceof_function(Z_OBJCE_P(otherType), pt_ce_integer_range_type);
+			delegate = instanceof_function(Z_OBJCE_P(otherType), pt_ce_never_type) || instanceof_function(Z_OBJCE_P(otherType), pt_ce_integer_range_type)
+				// stands for its delegate, which can itself be a union
+				|| instanceof_function(Z_OBJCE_P(otherType), pt_ce_unresolved_template_argument_type);
 		}
 		if (delegate) return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 

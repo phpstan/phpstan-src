@@ -369,6 +369,21 @@ inline bool pt_template_argument_frame_is_observing(zval *frame, bool &out)
 	return true;
 }
 
+/* $frame->isObservingClosures() */
+inline bool pt_template_argument_frame_is_observing_closures(zval *frame, bool &out)
+{
+	zval *resolutions = ptav::slotOf(frame, pt_ce_template_argument_frame, ptdecl::TemplateArgumentFrame::slot::resolutions);
+	if (EXPECTED(resolutions != NULL)) {
+		out = Z_TYPE_P(resolutions) == IS_NULL || Z_TYPE_P(OBJ_PROP_NUM(Z_OBJ_P(frame), ptdecl::TemplateArgumentFrame::slot::observingClosures)) == IS_TRUE;
+		return true;
+	}
+	zv::Val hold;
+	zval *value = ptav::callGetter(frame, PT_LC("isobservingclosures"), hold);
+	if (UNEXPECTED(value == NULL)) return false;
+	out = zend_is_true(value);
+	return true;
+}
+
 /* }}} */
 
 /* {{{ AssignTargetWalkMode: $mode->enterExpressionAssign() /

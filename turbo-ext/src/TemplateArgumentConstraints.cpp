@@ -54,7 +54,7 @@ public:
 
 	/* the private constructor's body (borrowed; NULL = null); false =
 	 * pending exception (a repeated construction modifies readonly slots) */
-	[[nodiscard]] bool construct(zval *left, zval *right, zval *fact) const
+	[[nodiscard]] bool construct(zval *left, zval *right, zval *fact, zval *until) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(OBJ_PROP_NUM(self, slots::left)) != IS_UNDEF)) {
 			zend_throw_error(NULL, "Cannot modify readonly property %s::$left", ZSTR_VAL(self->ce->name));
@@ -63,11 +63,12 @@ public:
 		write(slots::left, left);
 		write(slots::right, right);
 		write(slots::fact, fact);
+		write(slots::until, until);
 		return true;
 	}
 
-	/* new self($left, $right, $fact) of a fresh instance (borrowed; NULL = null) */
-	static zv::Val create(zend_object *left, zend_object *right, zval *fact)
+	/* new self($left, $right, $fact, $until) of a fresh instance (borrowed; NULL = null) */
+	static zv::Val create(zend_object *left, zend_object *right, zval *fact, zend_object *until = NULL)
 	{
 		zval object;
 		object_init_ex(&object, pt_ce_template_argument_constraints);
@@ -92,6 +93,13 @@ public:
 		} else {
 			ZVAL_NULL(&value);
 			pt_write_slot(created, slots::fact, &value);
+		}
+		if (until != NULL) {
+			ZVAL_OBJ(&value, until);
+			pt_write_slot(created, slots::until, &value);
+		} else {
+			ZVAL_NULL(&value);
+			pt_write_slot(created, slots::until, &value);
 		}
 		return zv::Val::adopt(object);
 	}
@@ -138,6 +146,17 @@ public:
 			return zv::Val::copyOf(zv::Ref(&otherZv));
 		}
 		return create(self, other, NULL);
+	}
+
+	/* Mirrors withRecordedFacts(); $entry NULL = null */
+	zv::Val withRecordedFacts(zend_object *entry, zend_object *exit) const
+	{
+		if (entry == NULL) return merge(exit);
+		if (exit == entry) return thisValue();
+		bool exitEmpty;
+		if (UNEXPECTED(!pt_template_argument_constraints_is_empty_of(exit, exitEmpty))) return zv::Val();
+		if (exitEmpty) return thisValue();
+		return create(self, exit, NULL, entry);
 	}
 
 	/* Mirrors withSite(). */
@@ -203,10 +222,11 @@ public:
 		return pt_type_call_static(PT_CLASS_ITERABLE_HELPER, PT_LC("yieldvalues"), 1, facts.raw());
 	}
 
-	/* The generator's walk: an explicit stack of [node, expanded] pairs, a
-	 * node's own fact after its left and right subtrees, a node reachable
-	 * twice visited once (by object handle). fn(zval *fact) returns false
-	 * for a pending exception; false = pending exception. The tree is
+	/* The generator's walk: an explicit stack of [node, expanded, until]
+	 * triples, a node's own fact after its left and right subtrees, a node
+	 * reachable twice visited once (by object handle), the right subtree of a
+	 * node with $until not walked past that node. fn(zval *fact) returns
+	 * false for a pending exception; false = pending exception. The tree is
 	 * immutable and held by the caller for the duration. */
 	template <typename F>
 	[[nodiscard]] bool forEachFact(F &&fn) const
@@ -215,9 +235,10 @@ public:
 		{
 			zend_object *node;
 			bool expanded;
+			zend_object *until;
 		};
 		std::vector<Frame> stack;
-		stack.push_back({self, false});
+		stack.push_back({self, false, NULL});
 		zv::ScratchTable visited(8);
 		while (!stack.empty()) {
 			Frame frame = stack.back();
@@ -231,19 +252,24 @@ public:
 				}
 				continue;
 			}
+			if (current == frame.until) continue;
 			zend_ulong id = (zend_ulong) current->handle;
 			if (zend_hash_index_exists(visited.table(), id)) continue;
 			zval marked;
 			ZVAL_TRUE(&marked);
 			zend_hash_index_add_new(visited.table(), id, &marked);
-			stack.push_back({current, true});
+			stack.push_back({current, true, NULL});
 			zval *right = pt_typed_slot(current, slots::right, current->ce, "right");
 			if (UNEXPECTED(right == NULL)) return false;
-			if (Z_TYPE_P(right) != IS_NULL) stack.push_back({Z_OBJ_P(right), false});
+			if (Z_TYPE_P(right) != IS_NULL) {
+				zval *until = pt_typed_slot(current, slots::until, current->ce, "until");
+				if (UNEXPECTED(until == NULL)) return false;
+				stack.push_back({Z_OBJ_P(right), false, Z_TYPE_P(until) != IS_NULL ? Z_OBJ_P(until) : frame.until});
+			}
 			zval *left = pt_typed_slot(current, slots::left, current->ce, "left");
 			if (UNEXPECTED(left == NULL)) return false;
 			if (Z_TYPE_P(left) == IS_NULL) continue;
-			stack.push_back({Z_OBJ_P(left), false});
+			stack.push_back({Z_OBJ_P(left), false, frame.until});
 		}
 		return true;
 	}
@@ -303,6 +329,19 @@ zv::Val pt_template_argument_constraints_merge(zval *constraints, zval *other)
 		return TemplateArgumentConstraints(Z_OBJ_P(constraints)).merge(Z_OBJ_P(other));
 	}
 	return pt_type_call(Z_OBJ_P(constraints), PT_LC("merge"), 1, other);
+}
+
+zv::Val pt_template_argument_constraints_with_recorded_facts(zval *constraints, zval *entry, zval *exit)
+{
+	if (UNEXPECTED(Z_TYPE_P(constraints) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function withRecordedFacts() on %s", zend_zval_value_name(constraints));
+		return zv::Val();
+	}
+	if (EXPECTED(Z_OBJCE_P(constraints) == pt_ce_template_argument_constraints && Z_TYPE_P(exit) == IS_OBJECT && Z_OBJCE_P(exit) == pt_ce_template_argument_constraints && (Z_TYPE_P(entry) == IS_NULL || (Z_TYPE_P(entry) == IS_OBJECT && Z_OBJCE_P(entry) == pt_ce_template_argument_constraints)))) {
+		return TemplateArgumentConstraints(Z_OBJ_P(constraints)).withRecordedFacts(Z_TYPE_P(entry) == IS_NULL ? NULL : Z_OBJ_P(entry), Z_OBJ_P(exit));
+	}
+	zv::Args argv{entry, exit};
+	return pt_type_call(Z_OBJ_P(constraints), PT_LC("withrecordedfacts"), 2, argv);
 }
 
 zv::Val pt_template_argument_constraints_with_site(zval *constraints, zval *marker)
@@ -384,14 +423,24 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_constraints)
 	ptdecl::TemplateArgumentConstraints::declareProperties(cls);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *left = NULL, *right = NULL, *fact = NULL;
-		ZEND_PARSE_PARAMETERS_START(0, 3)
+		zval *left = NULL, *right = NULL, *fact = NULL, *until = NULL;
+		ZEND_PARSE_PARAMETERS_START(0, 4)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(left, pt_ce_template_argument_constraints)
 			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(right, pt_ce_template_argument_constraints)
 			Z_PARAM_ARRAY_OR_NULL(fact)
+			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(until, pt_ce_template_argument_constraints)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!PT_TAC_THIS.construct(left, right, fact))) RETURN_THROWS();
+		if (UNEXPECTED(!PT_TAC_THIS.construct(left, right, fact, until))) RETURN_THROWS();
+	});
+
+	cls.method(sigs::withRecordedFacts, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *entry, *exit;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(entry, pt_ce_template_argument_constraints)
+			Z_PARAM_OBJECT_OF_CLASS(exit, pt_ce_template_argument_constraints)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_TAC_THIS.withRecordedFacts(entry != NULL ? Z_OBJ_P(entry) : NULL, Z_OBJ_P(exit)));
 	});
 
 	cls.method(sigs::createEmpty, [](INTERNAL_FUNCTION_PARAMETERS) {

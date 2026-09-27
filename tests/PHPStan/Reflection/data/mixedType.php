@@ -35,7 +35,7 @@ function (Foo $foo): void {
 
 function (): void {
 	$f = function (mixed $foo): mixed {
-		assertType('mixed', $foo);
+		assertType('1', $foo);
 	};
 
 	assertType('void', $f(1));

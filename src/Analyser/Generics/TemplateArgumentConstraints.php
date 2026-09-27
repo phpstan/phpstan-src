@@ -18,11 +18,15 @@ use function spl_object_id;
 final class TemplateArgumentConstraints
 {
 
-	/** @param array{UnresolvedTemplateArgumentType, Type|null, TemplateTypeVariance|null, bool}|null $fact */
+	/**
+	 * @param array{UnresolvedTemplateArgumentType, Type|null, TemplateTypeVariance|null, bool}|null $fact
+	 * @param self|null $until where the walk of $right stops - see withRecordedFacts()
+	 */
 	private function __construct(
 		private readonly ?self $left = null,
 		private readonly ?self $right = null,
 		private readonly ?array $fact = null,
+		private readonly ?self $until = null,
 	)
 	{
 	}
@@ -47,6 +51,23 @@ final class TemplateArgumentConstraints
 		}
 
 		return new self($this, $other);
+	}
+
+	/**
+	 * Joins the facts $exit holds beyond $entry: what a recorded walk added
+	 * between two scopes whose constraints were $entry and $exit - carried
+	 * over to another walk that replays that stretch instead of walking it.
+	 */
+	public function withRecordedFacts(?self $entry, self $exit): self
+	{
+		if ($entry === null) {
+			return $this->merge($exit);
+		}
+		if ($exit === $entry || $exit->isEmpty()) {
+			return $this;
+		}
+
+		return new self($this, $exit, until: $entry);
 	}
 
 	public function withSite(UnresolvedTemplateArgumentType $marker): self
@@ -76,14 +97,17 @@ final class TemplateArgumentConstraints
 	/** @return iterable<array{UnresolvedTemplateArgumentType, Type|null, TemplateTypeVariance|null, bool}> */
 	public function getFacts(): iterable
 	{
-		$stack = [[$this, false]];
+		$stack = [[$this, false, null]];
 		$visited = [];
 		while ($stack !== []) {
-			[$current, $expanded] = array_pop($stack);
+			[$current, $expanded, $until] = array_pop($stack);
 			if ($expanded) {
 				if ($current->fact !== null) {
 					yield $current->fact;
 				}
+				continue;
+			}
+			if ($current === $until) {
 				continue;
 			}
 			$id = spl_object_id($current);
@@ -91,15 +115,15 @@ final class TemplateArgumentConstraints
 				continue;
 			}
 			$visited[$id] = true;
-			$stack[] = [$current, true];
+			$stack[] = [$current, true, null];
 			if ($current->right !== null) {
-				$stack[] = [$current->right, false];
+				$stack[] = [$current->right, false, $current->until ?? $until];
 			}
 			if ($current->left === null) {
 				continue;
 			}
 
-			$stack[] = [$current->left, false];
+			$stack[] = [$current->left, false, $until];
 		}
 	}
 

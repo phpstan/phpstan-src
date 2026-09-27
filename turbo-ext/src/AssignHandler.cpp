@@ -3082,6 +3082,19 @@ private:
 			}
 		}
 
+		{
+			zend_string *rootName = ahIs(var, PT_CLASS_VARIABLE) ? ahStringVariableName(var) : NULL;
+			if (rootName == NULL || pt_is_superglobal_name(rootName)) {
+				AH_VALB(observingFrame, nsrObservingTemplateArgumentFrame(nsr, scope.raw()));
+				if (!observingFrame.isNull()) {
+					// an offset of a property or a superglobal: whoever reads it later
+					// can invoke the closures written into it with anything
+					AH_VALB(escaped, pt_template_argument_observer_collect_escape(prop(slots::templateArgumentObserver), writtenValueType.raw()));
+					AH_SETB(scope, pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope.raw()), escaped.raw()));
+				}
+			}
+		}
+
 		for (auto entry : zv::TableRef(Z_ARRVAL_P(additionalExpressions.raw()))) {
 			HashTable *pair = Z_ARRVAL_P(entry.value().raw());
 			zval *expr = zend_hash_index_find(pair, 0);
@@ -3179,7 +3192,9 @@ private:
 
 		AH_VAL(parameterType, ahCall(parameter1, PT_LC("gettype"), 0, NULL));
 		AH_VAL(collected, taoCollectArgument(prop(slots::templateArgumentObserver), parameterType.raw(), valueType));
-		return tacMerge(constraints.raw(), collected.raw());
+		AH_SET(constraints, tacMerge(constraints.raw(), collected.raw()));
+		AH_VAL(closureCollected, pt_template_argument_observer_collect_closure_argument(prop(slots::templateArgumentObserver), parameterType.raw(), valueType));
+		return tacMerge(constraints.raw(), closureCollected.raw());
 	}
 
 	/* (twin 1894) false = pending exception */

@@ -2786,6 +2786,33 @@ private:
 				zv::Val constrained = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(w.scope.raw()), constraints.raw());
 				if (UNEXPECTED(constrained.isUndef())) return zv::Val();
 				w.scope = std::move(constrained);
+				bool carriesClosures;
+				if (UNEXPECTED(!pt_template_argument_observer_carries_closure_signature_markers(slot(slots::templateArgumentObserver), w.gatheredTypes.raw(), carriesClosures))) return zv::Val();
+				if (carriesClosures) {
+					// the acceptor the closures are sent to: generic-resolved and with
+					// the intrinsic overrides (array_map's callback) applied
+					zv::Val closureAcceptorHold;
+					zval *closureAcceptor = resolvedAcceptor;
+					if (!w.typeDrivenAcceptorSelection) {
+						closureAcceptorHold = selectArgsMetadataAcceptor(nodeScopeResolver, w.args, w.gatheredTypes.raw(), parametersAcceptors, w.namedArgumentsVariants, w.gatheredHasName, w.gatheredUnpack, w.scope.raw());
+						if (UNEXPECTED(closureAcceptorHold.isUndef())) return zv::Val();
+						closureAcceptor = closureAcceptorHold.raw();
+					}
+					bool isPure = false;
+					bool isFunction = false, isExtendedMethod = false;
+					if (UNEXPECTED(!isA(w.calleeReflection, PT_CLASS_FUNCTION_REFLECTION, isFunction))) return zv::Val();
+					if (!isFunction && UNEXPECTED(!isA(w.calleeReflection, PT_CLASS_EXTENDED_METHOD_REFLECTION, isExtendedMethod))) return zv::Val();
+					if (isFunction || isExtendedMethod) {
+						zend_long pure = calleeIsPure(w.calleeReflection);
+						if (UNEXPECTED(pure < 0)) return zv::Val();
+						isPure = pure == PT_TRI_YES;
+					}
+					zv::Val closureConstraints = pt_template_argument_observer_collect_closure_arguments(slot(slots::templateArgumentObserver), closureAcceptor, w.gatheredTypes.raw(), isPure);
+					if (UNEXPECTED(closureConstraints.isUndef())) return zv::Val();
+					zv::Val closureConstrained = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(w.scope.raw()), closureConstraints.raw());
+					if (UNEXPECTED(closureConstrained.isUndef())) return zv::Val();
+					w.scope = std::move(closureConstrained);
+				}
 			}
 		}
 

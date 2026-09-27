@@ -14,6 +14,7 @@
  */
 
 #include "support.h"
+#include "Engine.h"
 #include "generated/YieldFromHandler.h"
 
 namespace slots = ptdecl::YieldFromHandler::slot;
@@ -77,6 +78,14 @@ public:
 		ptse::ChildResult child;
 		if (UNEXPECTED(!child.read(exprResult.raw()))) return zv::Val();
 		zv::Val resultScope = zv::Val::copyOf(zv::Ref(child.scope));
+		{
+			zv::Val delegatedType = pt_expression_result_get_type(exprResult.raw());
+			if (UNEXPECTED(delegatedType.isUndef())) return zv::Val();
+			zv::Val constraints = pt_node_scope_resolver_collect_yield_from_send(nodeScopeResolver, resultScope.raw(), delegatedType.raw());
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			resultScope = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(resultScope.raw()), constraints.raw());
+			if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
+		}
 
 		zv::Val throwPoint = pt_internal_throw_point_create_implicit(resultScope.raw(), expr);
 		if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();

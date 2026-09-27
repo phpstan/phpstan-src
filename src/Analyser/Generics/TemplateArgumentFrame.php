@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\Generics;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -60,18 +61,90 @@ final class TemplateArgumentFrame
 	/**
 	 * @param array<string, Type>|null $resolutions null during collection
 	 * @param array<int, true> $siteStatementIndexes
+	 * @param Node\Stmt[] $closureSignatureStmts the statements of $closureSignatureBody
+	 * @param array<int, true> $settledClosureSites spl_object_id() of the closure nodes
+	 * @param bool $observingClosures the template arguments are resolved, the closure signatures observed again
 	 */
 	public function __construct(
 		private readonly ?self $parent,
 		private readonly ?array $resolutions = null,
 		private readonly array $siteStatementIndexes = [],
+		private readonly ?Node $closureSignatureBody = null,
+		private readonly array $closureSignatureStmts = [],
+		private readonly array $settledClosureSites = [],
+		private readonly bool $observingClosures = false,
 	)
 	{
+	}
+
+	/**
+	 * The resolved frame with the closure signatures observed in the closure
+	 * observation pass (see TemplateArgumentResolver::resolveObservedClosures()).
+	 *
+	 * @param array<string, Type> $closureResolutions
+	 * @param array<int, true> $closureSiteStatementIndexes
+	 * @param array<int, true> $settledClosureSites
+	 */
+	public function withObservedClosures(array $closureResolutions, array $closureSiteStatementIndexes, array $settledClosureSites): self
+	{
+		return new self(
+			$this->parent,
+			($this->resolutions ?? []) + $closureResolutions,
+			$this->siteStatementIndexes + $closureSiteStatementIndexes,
+			$this->closureSignatureBody,
+			$this->closureSignatureStmts,
+			$settledClosureSites,
+		);
+	}
+
+	/**
+	 * Whether the closure's signature resolved to exactly what its markers stood
+	 * for while observing - its ClosureType keeps them, see
+	 * TemplateArgumentResolver::resolve().
+	 */
+	public function isSettledClosureSite(Expr $site): bool
+	{
+		if (isset($this->settledClosureSites[spl_object_id($site)])) {
+			return true;
+		}
+
+		return $this->parent !== null && $this->parent->isSettledClosureSite($site);
+	}
+
+	/** The frame of the body this frame's body is written in. */
+	public function getParent(): ?self
+	{
+		return $this->parent;
+	}
+
+	/**
+	 * The function-like body the frame observes, asked only when a closure in
+	 * it has its signature inferred (see ClosureSignatureInference::isClosedBody()).
+	 */
+	public function getClosureSignatureBody(): ?Node
+	{
+		return $this->closureSignatureBody;
+	}
+
+	/** @return Node\Stmt[] */
+	public function getClosureSignatureStmts(): array
+	{
+		return $this->closureSignatureStmts;
 	}
 
 	public function isObserving(): bool
 	{
 		return $this->resolutions === null;
+	}
+
+	/**
+	 * Whether closures get signature markers and their sends are collected:
+	 * in the observation pass, and in the closure observation pass that walks
+	 * with the template arguments already resolved.
+	 */
+	public function isObservingClosures(): bool
+	{
+		return $this->resolutions === null || $this->observingClosures;
 	}
 
 	public function firstSiteStatementIndex(): ?int

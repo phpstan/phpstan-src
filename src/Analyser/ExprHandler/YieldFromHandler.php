@@ -50,6 +50,7 @@ final class YieldFromHandler implements ExprHandler
 		$beforeScope = $scope;
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$scope = $exprResult->getScope();
+		$scope = $scope->addTemplateArgumentConstraints($nodeScopeResolver->collectYieldFromSend($scope, $exprResult->getType()));
 
 		$throwPoint = InternalThrowPoint::createImplicit($scope, $expr);
 

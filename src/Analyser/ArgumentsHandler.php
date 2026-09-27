@@ -736,6 +736,17 @@ final class ArgumentsHandler
 				$gatheredTypes,
 				$callLike instanceof New_ && $calleeReflection instanceof MethodReflection ? $calleeReflection->getDeclaringClass()->getTemplateTypeMap() : null,
 			));
+			if ($this->templateArgumentObserver->carriesClosureSignatureMarkers($gatheredTypes)) {
+				// the acceptor the closures are sent to: generic-resolved and with
+				// the intrinsic overrides (array_map's callback) applied
+				$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectClosureArguments(
+					$typeDrivenAcceptorSelection
+						? $resolvedAcceptor
+						: $this->selectArgsMetadataAcceptor($nodeScopeResolver, $args, $gatheredTypes, $parametersAcceptors, $namedArgumentsVariants, $gatheredHasName, $gatheredUnpack, $scope),
+					$gatheredTypes,
+					($calleeReflection instanceof FunctionReflection || $calleeReflection instanceof ExtendedMethodReflection) && $calleeReflection->isPure()->yes(),
+				));
+			}
 		}
 
 		// The by-ref OUT writeback reads the metadata acceptor: it is selected from

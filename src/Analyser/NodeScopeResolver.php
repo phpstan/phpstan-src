@@ -1098,13 +1098,14 @@ class NodeScopeResolver
 
 	/**
 	 * The template argument frame of the body being walked while it observes
-	 * a body that created unresolved template arguments - null otherwise, so
-	 * every observation hook costs a null check outside the observation pass.
+	 * a body that created unresolved template arguments (or, in the closure
+	 * observation pass, closure signatures) - null otherwise, so every
+	 * observation hook costs a null check outside the observation passes.
 	 */
 	public function observingTemplateArgumentFrame(MutatingScope $scope): ?TemplateArgumentFrame
 	{
 		$frame = $scope->getCurrentTemplateArgumentFrame();
-		if ($frame === null || !$frame->isObserving() || $scope->getTemplateArgumentConstraints() === null) {
+		if ($frame === null || !$frame->isObservingClosures() || $scope->getTemplateArgumentConstraints() === null) {
 			return null;
 		}
 
@@ -1121,17 +1122,71 @@ class NodeScopeResolver
 		if ($frame === null) {
 			return TemplateArgumentConstraints::createEmpty();
 		}
-		if ($scope->isInAnonymousFunction()) {
-			$declaredReturnType = $scope->getAnonymousFunctionReturnType();
-		} else {
-			$function = $scope->getFunction();
-			$declaredReturnType = $function !== null ? $function->getReturnType() : null;
-		}
+		$declaredReturnType = self::getDeclaredReturnType($scope);
 		if ($declaredReturnType === null) {
 			return TemplateArgumentConstraints::createEmpty();
 		}
 
 		return $this->templateArgumentObserver->collectSend($declaredReturnType, $returnedResult->getType());
+	}
+
+	/**
+	 * A generator hands out a key and a value: the key and value types of the
+	 * declared return type (Generator<TKey, TValue>, iterable<K, V>) are send
+	 * targets for the unresolved template arguments and the closures they carry.
+	 * A return type that describes no iterable lets the closures escape.
+	 */
+	public function collectYieldSend(MutatingScope $scope, ?Type $keyType, ?Type $valueType): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		if ($this->observingTemplateArgumentFrame($scope) === null) {
+			return $constraints;
+		}
+		$declaredReturnType = self::getDeclaredReturnType($scope);
+		if ($declaredReturnType === null || !$declaredReturnType->isIterable()->yes()) {
+			foreach ([$keyType, $valueType] as $yieldedType) {
+				if ($yieldedType === null) {
+					continue;
+				}
+				$constraints = $constraints->merge($this->templateArgumentObserver->collectEscape($yieldedType));
+			}
+
+			return $constraints;
+		}
+		if ($keyType !== null) {
+			$constraints = $constraints->merge($this->templateArgumentObserver->collectSend($declaredReturnType->getIterableKeyType(), $keyType));
+		}
+		if ($valueType !== null) {
+			$constraints = $constraints->merge($this->templateArgumentObserver->collectSend($declaredReturnType->getIterableValueType(), $valueType));
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * `yield from` hands out the keys and values of the iterable it delegates to.
+	 */
+	public function collectYieldFromSend(MutatingScope $scope, Type $delegatedType): TemplateArgumentConstraints
+	{
+		if ($this->observingTemplateArgumentFrame($scope) === null) {
+			return TemplateArgumentConstraints::createEmpty();
+		}
+		if (!$delegatedType->isIterable()->yes()) {
+			return $this->templateArgumentObserver->collectEscape($delegatedType);
+		}
+
+		return $this->collectYieldSend($scope, $delegatedType->getIterableKeyType(), $delegatedType->getIterableValueType());
+	}
+
+	private static function getDeclaredReturnType(MutatingScope $scope): ?Type
+	{
+		if ($scope->isInAnonymousFunction()) {
+			return $scope->getAnonymousFunctionReturnType();
+		}
+
+		$function = $scope->getFunction();
+
+		return $function !== null ? $function->getReturnType() : null;
 	}
 
 }

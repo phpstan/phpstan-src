@@ -1198,7 +1198,7 @@ public:
 		if (UNEXPECTED(frame.isUndef())) return zv::Val();
 		if (frame.isNull()) return zv::Val::null();
 		bool observing;
-		if (UNEXPECTED(!templateArgumentFrameIsObserving(frame.raw(), observing))) return zv::Val();
+		if (UNEXPECTED(!pt_template_argument_frame_is_observing_closures(frame.raw(), observing))) return zv::Val();
 		if (!observing) return zv::Val::null();
 		zv::Val constraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(scope));
 		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
@@ -1214,16 +1214,7 @@ public:
 		zv::Val frame = thisObservingTemplateArgumentFrame(returnedScope.raw());
 		if (UNEXPECTED(frame.isUndef())) return zv::Val();
 		if (frame.isNull()) return templateArgumentConstraintsCreateEmpty();
-		bool inAnonymousFunction;
-		if (UNEXPECTED(!pt_mutating_scope_is_in_anonymous_function(Z_OBJ_P(scope), inAnonymousFunction))) return zv::Val();
-		zv::Val declaredReturnType;
-		if (inAnonymousFunction) {
-			declaredReturnType = pt_mutating_scope_get_anonymous_function_return_type(Z_OBJ_P(scope));
-		} else {
-			zv::Val function = pt_mutating_scope_get_function(Z_OBJ_P(scope));
-			if (UNEXPECTED(function.isUndef())) return zv::Val();
-			declaredReturnType = function.isNull() ? zv::Val::null() : functionGetReturnType(function.raw());
-		}
+		zv::Val declaredReturnType = getDeclaredReturnType(scope);
 		if (UNEXPECTED(declaredReturnType.isUndef())) return zv::Val();
 		if (declaredReturnType.isNull()) return templateArgumentConstraintsCreateEmpty();
 		zv::Val returnedType = pt_expression_result_get_type(returnedResult);
@@ -1231,6 +1222,84 @@ public:
 		zv::Ref observer = slot(slots::templateArgumentObserver);
 		if (UNEXPECTED(!observer.isObject())) return uninitialized("templateArgumentObserver");
 		return templateArgumentObserverCollectSend(observer.raw(), declaredReturnType.raw(), returnedType.raw());
+	}
+
+	/* Mirrors collectYieldSend() ($keyType / $valueType NULL for null). */
+	zv::Val collectYieldSend(zval *scope, zval *keyType, zval *valueType)
+	{
+		zv::Val constraints = templateArgumentConstraintsCreateEmpty();
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		zv::Val frame = thisObservingTemplateArgumentFrame(scope);
+		if (UNEXPECTED(frame.isUndef())) return zv::Val();
+		if (frame.isNull()) return constraints;
+		zv::Val declaredReturnType = getDeclaredReturnType(scope);
+		if (UNEXPECTED(declaredReturnType.isUndef())) return zv::Val();
+		zv::Ref observer = slot(slots::templateArgumentObserver);
+		if (UNEXPECTED(!observer.isObject())) return uninitialized("templateArgumentObserver");
+		bool iterable = false;
+		if (!declaredReturnType.isNull()) {
+			zend_long isIterable = pt_type_call_trinary(Z_OBJ_P(declaredReturnType.raw()), PT_LC("isiterable"), 0, NULL);
+			if (UNEXPECTED(isIterable < 0)) return zv::Val();
+			iterable = isIterable == PT_TRI_YES;
+		}
+		if (!iterable) {
+			for (zval *yieldedType : {keyType, valueType}) {
+				if (yieldedType == NULL) continue;
+				zv::Val escaped = pt_template_argument_observer_collect_escape(observer.raw(), yieldedType);
+				if (UNEXPECTED(escaped.isUndef())) return zv::Val();
+				constraints = pt_template_argument_constraints_merge(constraints.raw(), escaped.raw());
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			}
+			return constraints;
+		}
+		if (keyType != NULL) {
+			zv::Val declaredKeyType = pt_type_op(Z_OBJ_P(declaredReturnType.raw()), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
+			if (UNEXPECTED(declaredKeyType.isUndef())) return zv::Val();
+			zv::Val sent = templateArgumentObserverCollectSend(observer.raw(), declaredKeyType.raw(), keyType);
+			if (UNEXPECTED(sent.isUndef())) return zv::Val();
+			constraints = pt_template_argument_constraints_merge(constraints.raw(), sent.raw());
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+		if (valueType != NULL) {
+			zv::Val declaredValueType = pt_type_op(Z_OBJ_P(declaredReturnType.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
+			if (UNEXPECTED(declaredValueType.isUndef())) return zv::Val();
+			zv::Val sent = templateArgumentObserverCollectSend(observer.raw(), declaredValueType.raw(), valueType);
+			if (UNEXPECTED(sent.isUndef())) return zv::Val();
+			constraints = pt_template_argument_constraints_merge(constraints.raw(), sent.raw());
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+		return constraints;
+	}
+
+	/* Mirrors collectYieldFromSend(). */
+	zv::Val collectYieldFromSend(zval *scope, zval *delegatedType)
+	{
+		zv::Val frame = thisObservingTemplateArgumentFrame(scope);
+		if (UNEXPECTED(frame.isUndef())) return zv::Val();
+		if (frame.isNull()) return templateArgumentConstraintsCreateEmpty();
+		zend_long isIterable = pt_type_call_trinary(Z_OBJ_P(delegatedType), PT_LC("isiterable"), 0, NULL);
+		if (UNEXPECTED(isIterable < 0)) return zv::Val();
+		if (isIterable != PT_TRI_YES) {
+			zv::Ref observer = slot(slots::templateArgumentObserver);
+			if (UNEXPECTED(!observer.isObject())) return uninitialized("templateArgumentObserver");
+			return pt_template_argument_observer_collect_escape(observer.raw(), delegatedType);
+		}
+		zv::Val keyType = pt_type_op(Z_OBJ_P(delegatedType), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
+		if (UNEXPECTED(keyType.isUndef())) return zv::Val();
+		zv::Val valueType = pt_type_op(Z_OBJ_P(delegatedType), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
+		if (UNEXPECTED(valueType.isUndef())) return zv::Val();
+		return collectYieldSend(scope, keyType.raw(), valueType.raw());
+	}
+
+	/* Mirrors the private getDeclaredReturnType(): the type or null */
+	zv::Val getDeclaredReturnType(zval *scope)
+	{
+		bool inAnonymousFunction;
+		if (UNEXPECTED(!pt_mutating_scope_is_in_anonymous_function(Z_OBJ_P(scope), inAnonymousFunction))) return zv::Val();
+		if (inAnonymousFunction) return pt_mutating_scope_get_anonymous_function_return_type(Z_OBJ_P(scope));
+		zv::Val function = pt_mutating_scope_get_function(Z_OBJ_P(scope));
+		if (UNEXPECTED(function.isUndef())) return zv::Val();
+		return function.isNull() ? zv::Val::null() : functionGetReturnType(function.raw());
 	}
 
 	/* {{{ $this-dispatch of the public methods the twin calls on itself: the
@@ -2138,6 +2207,22 @@ zv::Val pt_node_scope_resolver_collect_return_send(zval *nodeScopeResolver, zval
 	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("collectreturnsend"), 2, argv);
 }
 
+zv::Val pt_node_scope_resolver_collect_yield_send(zval *nodeScopeResolver, zval *scope, zval *keyType, zval *valueType)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).collectYieldSend(scope, keyType, valueType);
+	zval null;
+	ZVAL_NULL(&null);
+	zv::Args argv{scope, keyType != NULL ? keyType : &null, valueType != NULL ? valueType : &null};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("collectyieldsend"), 3, argv);
+}
+
+zv::Val pt_node_scope_resolver_collect_yield_from_send(zval *nodeScopeResolver, zval *scope, zval *delegatedType)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).collectYieldFromSend(scope, delegatedType);
+	zv::Args argv{scope, delegatedType};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("collectyieldfromsend"), 2, argv);
+}
+
 /* the argument walk's (ArgumentsHandler.cpp) */
 zv::Val pt_node_scope_resolver_look_for_unset_allowed_undefined_expressions(zval *nodeScopeResolver, zval *scope, zval *expr)
 {
@@ -2593,6 +2678,25 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 			Z_PARAM_OBJECT(returnedResult)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_NSR_THIS.collectReturnSend(scope, returnedResult));
+	});
+
+	cls.method(sigs::collectYieldSend, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *keyType, *valueType;
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT_OR_NULL(keyType)
+			Z_PARAM_OBJECT_OR_NULL(valueType)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_NSR_THIS.collectYieldSend(scope, keyType, valueType));
+	});
+
+	cls.method(sigs::collectYieldFromSend, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *delegatedType;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(delegatedType)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_NSR_THIS.collectYieldFromSend(scope, delegatedType));
 	});
 
 	cls.shadow(&pt_ce_node_scope_resolver);

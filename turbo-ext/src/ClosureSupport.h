@@ -260,6 +260,35 @@ inline void arrowFunctionGatherer(zval *captures, uint32_t argc, zval *argv, con
 
 /* }}} */
 
+/* {{{ the ClosureSignatureInference service (ClosureSignatureInference.cpp) */
+
+inline zv::Val inferenceCollectSites(zval *inference, zval *scope, zval *closureType)
+{
+	return pt_closure_signature_inference_collect_sites(inference, scope, closureType);
+}
+
+inline zv::Val inferenceGetSignatureParameters(zval *inference, zval *scope, zval *expr, zval *declaredParameters)
+{
+	return pt_closure_signature_inference_get_signature_parameters(inference, scope, expr, declaredParameters);
+}
+
+inline zv::Val inferenceGetSignatureReturnType(zval *inference, zval *scope, zval *expr, zval *returnType)
+{
+	return pt_closure_signature_inference_get_signature_return_type(inference, scope, expr, returnType);
+}
+
+inline zv::Val inferenceGetBodyParameters(zval *inference, zval *scope, zval *expr)
+{
+	return pt_closure_signature_inference_get_body_parameters(inference, scope, expr);
+}
+
+inline zv::Val inferenceGetExpectedReturnType(zval *inference, zval *scope, zval *expr)
+{
+	return pt_closure_signature_inference_get_expected_return_type(inference, scope, expr);
+}
+
+/* }}} */
+
 } // namespace ptclosure
 
 #endif

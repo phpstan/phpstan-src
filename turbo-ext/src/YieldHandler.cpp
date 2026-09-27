@@ -15,6 +15,7 @@
  */
 
 #include "support.h"
+#include "Engine.h"
 #include "generated/YieldHandler.h"
 
 namespace slots = ptdecl::YieldHandler::slot;
@@ -135,6 +136,27 @@ public:
 				if (UNEXPECTED(points == NULL || !ptse::mergeInto(impurePoints, points))) return zv::Val();
 			}
 			if (!isAlwaysTerminating && UNEXPECTED(!pt_expression_result_is_always_terminating(valueResult.raw(), isAlwaysTerminating))) return zv::Val();
+		}
+
+		{
+			zval *keyType = NULL, *valueType = NULL;
+			zv::Val keyTypeHold, valueTypeHold;
+			if (!keyResult.isNull()) {
+				keyTypeHold = pt_expression_result_get_type(keyResult.raw());
+				if (UNEXPECTED(keyTypeHold.isUndef())) return zv::Val();
+				keyType = keyTypeHold.raw();
+			}
+			if (!valueResult.isNull()) {
+				valueTypeHold = pt_expression_result_get_type(valueResult.raw());
+				if (UNEXPECTED(valueTypeHold.isUndef())) return zv::Val();
+				valueType = valueTypeHold.raw();
+			}
+			zv::Val constraints = pt_node_scope_resolver_collect_yield_send(nodeScopeResolver, scope, keyType, valueType);
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			zv::Val constrained = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope), constraints.raw());
+			if (UNEXPECTED(constrained.isUndef())) return zv::Val();
+			scopeHold = std::move(constrained);
+			scope = scopeHold.raw();
 		}
 
 		// the enclosing function is lexical - the generator TSend type does not

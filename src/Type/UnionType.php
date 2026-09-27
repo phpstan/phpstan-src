@@ -35,6 +35,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use Throwable;
 use function array_diff_assoc;
@@ -334,6 +335,8 @@ class UnionType implements CompoundType
 			|| ($otherType instanceof IterableType && !$otherType instanceof TemplateIterableType)
 			|| $otherType instanceof NeverType
 			|| $otherType instanceof IntegerRangeType
+			// stands for its delegate, which can itself be a union
+			|| $otherType instanceof UnresolvedTemplateArgumentType
 		) {
 			return $otherType->isSubTypeOf($this);
 		}

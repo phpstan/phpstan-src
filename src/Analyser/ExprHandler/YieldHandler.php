@@ -79,6 +79,12 @@ final class YieldHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 		}
 
+		$scope = $scope->addTemplateArgumentConstraints($nodeScopeResolver->collectYieldSend(
+			$scope,
+			$keyResult !== null ? $keyResult->getType() : null,
+			$valueResult !== null ? $valueResult->getType() : null,
+		));
+
 		// the enclosing function is lexical - the generator TSend type does not
 		// vary with the scope the callback is later invoked on - resolve it once here.
 		$functionReflection = $beforeScope->getFunction();

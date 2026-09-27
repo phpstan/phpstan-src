@@ -31,7 +31,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$this->assertTrue($scope->hasVariableType('val')->yes());
 			$this->assertSame('SomeNodeScopeResolverNamespace\InvalidArgumentException', $scope->getVariableType('exception')->describe(VerbosityLevel::precise()));
 			$this->assertTrue($scope->hasVariableType('staticVariable')->yes());
-			$this->assertSame($scope->getVariableType('staticVariable')->describe(VerbosityLevel::precise()), 'mixed');
+			$this->assertSame($scope->getVariableType('staticVariable')->describe(VerbosityLevel::precise()), 'array{}');
 			$this->assertTrue($scope->hasVariableType('staticVariableWithPhpDocType')->yes());
 			$this->assertSame($scope->getVariableType('staticVariableWithPhpDocType')->describe(VerbosityLevel::precise()), 'string');
 			$this->assertTrue($scope->hasVariableType('staticVariableWithPhpDocType2')->yes());

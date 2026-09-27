@@ -11,13 +11,13 @@ class Foo
 	{
 		static $i = 0;
 		$i++;
-		assertType('(float|int)', $i);
+		assertType('int<1, max>', $i);
 	}
 
 	public function doBar(): void
 	{
 		static $i = 0;
-		assertType('(float|int)', ++$i);
+		assertType('int<1, max>', ++$i);
 	}
 
 }

@@ -196,6 +196,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					466,
 				],
 				[
+					'Strict comparison using === between int<0, 1>|null and 5 will always evaluate to false.',
+					563,
+					$tipText,
+				],
+				[
 					'Strict comparison using === between int<0, 1> and 100 will always evaluate to false.',
 					622,
 					$tipText,

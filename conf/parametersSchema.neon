@@ -58,6 +58,7 @@ parametersSchema:
 		sortWithoutEffect: bool()
 		unresolvedTemplateArguments: bool()
 		closureSignaturesFromUsages: bool()
+		staticVariablesFromUsages: bool()
 		unusedVariable: bool()
 		unusedParameters: bool()
 	])

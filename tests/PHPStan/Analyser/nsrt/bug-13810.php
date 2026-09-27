@@ -9,13 +9,13 @@ use function PHPStan\Testing\assertType;
 function doFoo(): void
 {
 	static $isSupported;
-	assertType('mixed', $isSupported);
+	assertType('(Closure(mixed): bool)|null', $isSupported);
 	$isSupported ??= function (mixed $arg) use (&$isSupported): bool {
 		assertType('Closure(mixed): bool', $isSupported);
 		return $isSupported($arg);
 	};
 
-	assertType('mixed~null', $isSupported);
+	assertType('Closure(mixed): bool', $isSupported);
 	$isSupported('foo');
 }
 

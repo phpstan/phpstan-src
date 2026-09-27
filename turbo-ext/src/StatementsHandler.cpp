@@ -476,13 +476,14 @@ public:
 	explicit StatementsHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties, then the twin's body */
-	void construct(zval *fileTypeMapper, zval *templateArgumentObserver, zval *templateArgumentResolver, zval *container, bool unresolvedTemplateArguments)
+	void construct(zval *fileTypeMapper, zval *templateArgumentObserver, zval *templateArgumentResolver, zval *container, zval *staticVariableInference, bool unresolvedTemplateArguments)
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::fileTypeMapper, zv::Val::copyOf(zv::Ref(fileTypeMapper)));
 		object.propAtWrite(slots::templateArgumentObserver, zv::Val::copyOf(zv::Ref(templateArgumentObserver)));
 		object.propAtWrite(slots::templateArgumentResolver, zv::Val::copyOf(zv::Ref(templateArgumentResolver)));
 		object.propAtWrite(slots::container, zv::Val::copyOf(zv::Ref(container)));
+		object.propAtWrite(slots::staticVariableInference, zv::Val::copyOf(zv::Ref(staticVariableInference)));
 		object.propAtWrite(slots::unresolvedTemplateArguments, zv::Val::boolean(unresolvedTemplateArguments));
 		const char *debug = getenv("PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG");
 		object.propAtWrite(slots::debugTemplateArguments, zv::Val::boolean(debug != NULL && strcmp(debug, "1") == 0));
@@ -1371,6 +1372,13 @@ private:
 		pt_finally([&]() { (void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw()); });
 		if (UNEXPECTED(EG(exception))) return zv::Val();
 
+		{
+			zv::Val snapshot = snapshotEntry(state.raw(), recording.raw());
+			if (UNEXPECTED(snapshot.isUndef())) return zv::Val();
+			entries.separate();
+			zend_hash_index_update(entries.table(), (zend_ulong) stmtCount, snapshot.raw());
+			ZVAL_UNDEF(snapshot.raw());
+		}
 		zval *stateScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
 		zv::Val finalConstraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(stateScope));
 		if (UNEXPECTED(finalConstraints.isUndef())) return zv::Val();
@@ -1378,14 +1386,29 @@ private:
 			finalConstraints = templateArgumentConstraintsCreateEmpty();
 			if (UNEXPECTED(finalConstraints.isUndef())) return zv::Val();
 		}
+		zv::Val staticSites = pt_static_variable_inference_get_sites(OBJ_PROP_NUM(self, slots::staticVariableInference), parentNode, stmts);
+		if (UNEXPECTED(staticSites.isUndef())) return zv::Val();
+		zv::Val staticVariableTypes = zv::Val(zv::Arr::empty());
+		zv::Arr staticStatementIndexes = zv::Arr::empty();
+		if (staticSites.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(staticSites.raw())) > 0) {
+			for (auto entry : zv::ArrRef(staticSites.raw())) {
+				zval *index = zend_hash_index_find(Z_ARRVAL_P(entry.value().deref().raw()), 1);
+				if (UNEXPECTED(index == NULL)) continue;
+				staticStatementIndexes.separate();
+				zval marked;
+				ZVAL_TRUE(&marked);
+				zend_hash_index_update(staticStatementIndexes.table(), (zend_ulong) zval_get_long(index), &marked);
+			}
+			zv::Val inferred = inferStaticVariableTypes(nodeScopeResolver, parentNode, stmts, staticSites.raw(), staticStatementIndexes.raw(), parentFrame.raw(), entries.raw(), recording.raw(), storage, observationContext.raw());
+			if (UNEXPECTED(inferred.isUndef())) return zv::Val();
+			staticVariableTypes = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 0)));
+			finalConstraints = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 1)));
+		}
 		zv::Val frame = templateArgumentResolverResolve(OBJ_PROP_NUM(self, slots::templateArgumentResolver), finalConstraints.raw(), parentFrame.raw(), statementStartTokenPositions.raw(), parentNode, stmts);
 		if (UNEXPECTED(frame.isUndef())) return zv::Val();
-		{
-			zv::Val snapshot = snapshotEntry(state.raw(), recording.raw());
-			if (UNEXPECTED(snapshot.isUndef())) return zv::Val();
-			entries.separate();
-			zend_hash_index_update(entries.table(), (zend_ulong) stmtCount, snapshot.raw());
-			ZVAL_UNDEF(snapshot.raw());
+		if (zend_hash_num_elements(Z_ARRVAL_P(staticVariableTypes.raw())) > 0) {
+			frame = pt_template_argument_frame_with_static_variable_types(frame.raw(), staticVariableTypes.raw(), staticStatementIndexes.raw());
+			if (UNEXPECTED(frame.isUndef())) return zv::Val();
 		}
 		{
 			bool observingClosures;
@@ -1564,6 +1587,399 @@ private:
 			if (UNEXPECTED(!pt_closure_processor_process_deferred_by_ref_closure_body(processor.raw(), nodeScopeResolver, site, creationScope, storage, nodeCallback, siteEntryTypes != NULL ? siteEntryTypes : &empty))) return false;
 		}
 		return true;
+	}
+
+	/* the private inferStaticVariableTypes(): [the site types, the
+	 * constraints]; UNDEF = pending exception */
+	zv::Val inferStaticVariableTypes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *staticSites, zval *staticStatementIndexes, zval *parentFrame, zval *entries, zval *recording, zval *storageArg, zval *context)
+	{
+		HashTable *stmtsTable = Z_ARRVAL_P(stmts);
+		zend_long stmtCount = zend_hash_num_elements(stmtsTable);
+		zval *firstEntry = entryAt(entries, 0);
+		zval *finalEntry = entryAt(entries, stmtCount);
+		if (UNEXPECTED(firstEntry == NULL || finalEntry == NULL)) return zv::Val();
+		zv::Val bodyScope = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(entryState(firstEntry)), stateSlots::scope)));
+		zv::Arr names = zv::Arr::empty();
+		zv::ScratchTable seenNames(8);
+		zend_long start = stmtCount;
+		for (auto entry : zv::ArrRef(staticSites)) {
+			HashTable *site = Z_ARRVAL_P(entry.value().deref().raw());
+			zval *index = zend_hash_index_find(site, 1);
+			zval *name = zend_hash_index_find(site, 2);
+			if (UNEXPECTED(index == NULL || name == NULL || Z_TYPE_P(name) != IS_STRING)) continue;
+			if (zval_get_long(index) < start) start = zval_get_long(index);
+			if (zend_hash_exists(seenNames.table(), Z_STR_P(name))) continue;
+			zval marked;
+			ZVAL_TRUE(&marked);
+			zend_hash_add(seenNames.table(), Z_STR_P(name), &marked);
+			names.push(zv::Ref(name));
+		}
+		zval emptyArray;
+		ZVAL_EMPTY_ARRAY(&emptyArray);
+		zv::Val types = collectStaticVariableTypes(bodyScope.raw(), names.raw(), recording, entryState(finalEntry), &emptyArray);
+		if (UNEXPECTED(types.isUndef())) return zv::Val();
+		bool hasLabels;
+		if (UNEXPECTED(!containsLabels(stmts, hasLabels))) return zv::Val();
+		zend_long count = 0;
+		zv::Val constraints;
+		for (;;) {
+			zv::Val siteTypes = staticSiteTypes(staticSites, types.raw());
+			if (UNEXPECTED(siteTypes.isUndef())) return zv::Val();
+			zv::Val observingFrame = pt_template_argument_frame_new(parentFrame, NULL, NULL, parentNode, stmts);
+			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
+			zv::Val frame = pt_template_argument_frame_with_static_variable_types(observingFrame.raw(), siteTypes.raw(), staticStatementIndexes);
+			if (UNEXPECTED(frame.isUndef())) return zv::Val();
+
+			zval *startEntry = entryAt(entries, start);
+			if (UNEXPECTED(startEntry == NULL)) return zv::Val();
+			zv::Val state = cloneObject(entryState(startEntry));
+			if (UNEXPECTED(state.isUndef())) return zv::Val();
+			{
+				zval *clonedScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
+				zv::Val reframed = pt_mutating_scope_with_template_argument_frame(Z_OBJ_P(clonedScope), frame.raw());
+				if (UNEXPECTED(reframed.isUndef())) return zv::Val();
+				zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(std::move(reframed));
+			}
+			zv::Val walkStorage = pt_expression_result_storage_duplicate(storageArg);
+			if (UNEXPECTED(walkStorage.isUndef())) return zv::Val();
+			zv::Val walkRecording = newRecordingNodeCallback();
+			if (UNEXPECTED(walkRecording.isUndef())) return zv::Val();
+			zv::Arr replayedScopes = zv::Arr::empty();
+			zv::Val suspendedGatherers = pt_node_scope_resolver_suspend_node_gatherers(nodeScopeResolver);
+			if (UNEXPECTED(suspendedGatherers.isUndef())) return zv::Val();
+			zv::Val pushedScope = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)));
+			if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(pushedScope.raw()), walkStorage.raw()))) {
+				(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
+				return zv::Val();
+			}
+			(void) observeStaticVariablesFrom(nodeScopeResolver, parentNode, stmts, stmtsTable, frame.raw(), entries, state.raw(), walkStorage.raw(), walkRecording.raw(), context, start, stmtCount, hasLabels, replayedScopes);
+			pt_finally([&]() {
+				(void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(pushedScope.raw()));
+				(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
+			});
+			if (UNEXPECTED(EG(exception))) return zv::Val();
+
+			zval *stateScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
+			constraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(stateScope));
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			if (constraints.isNull()) {
+				constraints = templateArgumentConstraintsCreateEmpty();
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			}
+
+			zv::Val walkTypes = collectStaticVariableTypes(bodyScope.raw(), names.raw(), walkRecording.raw(), state.raw(), replayedScopes.raw());
+			if (UNEXPECTED(walkTypes.isUndef())) return zv::Val();
+			bool converged = true;
+			for (auto entry : zv::ArrRef(names.raw())) {
+				zend_string *name = Z_STR_P(entry.value().raw());
+				HashTable *known = Z_ARRVAL_P(zend_hash_find(Z_ARRVAL_P(types.raw()), name));
+				HashTable *walked = Z_ARRVAL_P(zend_hash_find(Z_ARRVAL_P(walkTypes.raw()), name));
+				bool holds = true;
+				for (zend_ulong k = 0; k < 2 && holds; k++) {
+					zval *knownType = zend_hash_index_find(known, k);
+					zv::Val isSuperType = pt_type_op(Z_OBJ_P(knownType), PT_OP_IS_SUPER_TYPE_OF, 1, zend_hash_index_find(walked, k));
+					if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
+					holds = pt_type_result_trinary(isSuperType.raw()) == PT_TRI_YES;
+				}
+				if (!holds) {
+					converged = false;
+					break;
+				}
+			}
+			count++;
+			if (converged || count >= PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT) break;
+
+			types = joinStaticVariableTypes(bodyScope.raw(), names.raw(), types.raw(), walkTypes.raw(), count > PT_SH_GENERALIZE_AFTER_ITERATION_LIMIT);
+			if (UNEXPECTED(types.isUndef())) return zv::Val();
+		}
+
+		zv::Val siteTypes = staticSiteTypes(staticSites, types.raw());
+		if (UNEXPECTED(siteTypes.isUndef())) return zv::Val();
+		zv::Arr result = zv::Arr::create(2);
+		result.push(std::move(siteTypes));
+		result.push(std::move(constraints));
+		return zv::Val(std::move(result));
+	}
+
+	/* inferStaticVariableTypes()'s try block: the statements from $start on,
+	 * walked or carried over, each carried-over entry scope into
+	 * $replayedScopes; false = pending exception */
+	bool observeStaticVariablesFrom(zval *nodeScopeResolver, zval *parentNode, zval *stmts, HashTable *stmtsTable, zval *frame, zval *entries, zval *state, zval *storage, zval *nodeCallback, zval *context, zend_long start, zend_long stmtCount, bool hasLabels, zv::Arr &replayedScopes)
+	{
+		for (zend_long i = start; i < stmtCount; i++) {
+			zval *recordedEntryPair = entryAt(entries, i);
+			if (UNEXPECTED(recordedEntryPair == NULL)) return false;
+			zval *recordedEntry = entryState(recordedEntryPair);
+			zend_object *stateObject = Z_OBJ_P(state);
+			zend_object *recordedEntryObject = Z_OBJ_P(recordedEntry);
+			zv::Val differingRoots = zv::Val::null();
+			bool stateTerminated = Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE;
+			bool entryTerminated = Z_TYPE_P(OBJ_PROP_NUM(recordedEntryObject, stateSlots::alreadyTerminated)) == IS_TRUE;
+			if (stateTerminated == entryTerminated) {
+				differingRoots = pt_mutating_scope_get_differing_variable_roots(Z_OBJ_P(OBJ_PROP_NUM(stateObject, stateSlots::scope)), Z_OBJ_P(OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope)));
+				if (UNEXPECTED(differingRoots.isUndef())) return false;
+			}
+			if (differingRoots.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(differingRoots.raw())) == 0) {
+				bool hasSite;
+				if (UNEXPECTED(!frameHasSiteAtOrAfter(frame, i, hasSite))) return false;
+				if (!hasSite) {
+					// converged with the observation pass: the rest of it stands
+					zval *finalEntryPair = entryAt(entries, stmtCount);
+					if (UNEXPECTED(finalEntryPair == NULL)) return false;
+					zval *finalState = entryState(finalEntryPair);
+					zv::Val carried = withRecordedConstraints(OBJ_PROP_NUM(stateObject, stateSlots::scope), OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope), OBJ_PROP_NUM(Z_OBJ_P(finalState), stateSlots::scope));
+					if (UNEXPECTED(carried.isUndef())) return false;
+					zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)).assign(std::move(carried));
+					return appendRecordedStatementResults(state, recordedEntry, finalState);
+				}
+			}
+
+			zval *stmt = zend_hash_index_find(stmtsTable, (zend_ulong) i);
+			if (UNEXPECTED(stmt == NULL)) {
+				zend_throw_error(NULL, "phpstan_turbo: the function-like body's statements are not a list");
+				return false;
+			}
+			ZVAL_DEREF(stmt);
+			bool reWalk = differingRoots.isNull() || hasLabels;
+			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame, i, reWalk))) return false;
+			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), reWalk))) return false;
+			if (reWalk) {
+				if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state, storage, nodeCallback, context, true))) return false;
+				replayedScopes.push(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)));
+				continue;
+			}
+
+			// the statement does not read what changed: the variables keep
+			// their types through it
+			replayedScopes.push(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)));
+			zval *recordedExitPair = entryAt(entries, i + 1);
+			if (UNEXPECTED(recordedExitPair == NULL)) return false;
+			zval *recordedExit = entryState(recordedExitPair);
+			if (UNEXPECTED(!appendRecordedStatementResults(state, recordedEntry, recordedExit))) return false;
+			zval *currentScope = OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope);
+			zval *recordedEntryScope = OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope);
+			zval *recordedExitScope = OBJ_PROP_NUM(Z_OBJ_P(recordedExit), stateSlots::scope);
+			zv::Val delta = pt_mutating_scope_with_recorded_statement_delta(Z_OBJ_P(currentScope), Z_OBJ_P(recordedEntryScope), Z_OBJ_P(recordedExitScope));
+			if (UNEXPECTED(delta.isUndef())) return false;
+			zv::Val carried = withRecordedConstraints(delta.raw(), recordedEntryScope, recordedExitScope);
+			if (UNEXPECTED(carried.isUndef())) return false;
+			zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)).assign(std::move(carried));
+		}
+		return true;
+	}
+
+	/* spl_object_id($var) => [$var, $type, $nativeType] of every site;
+	 * UNDEF = pending exception */
+	static zv::Val staticSiteTypes(zval *staticSites, zval *types)
+	{
+		zv::Arr siteTypes = zv::Arr::empty();
+		for (auto entry : zv::ArrRef(staticSites)) {
+			HashTable *site = Z_ARRVAL_P(entry.value().deref().raw());
+			zval *var = zend_hash_index_find(site, 0);
+			zval *name = zend_hash_index_find(site, 2);
+			if (UNEXPECTED(var == NULL || name == NULL || Z_TYPE_P(name) != IS_STRING)) continue;
+			zval *pair = zend_hash_find(Z_ARRVAL_P(types), Z_STR_P(name));
+			if (UNEXPECTED(pair == NULL)) {
+				zend_error(E_WARNING, "Undefined array key \"%s\"", Z_STRVAL_P(name));
+				if (UNEXPECTED(EG(exception))) return zv::Val();
+				continue;
+			}
+			zv::Arr siteType = zv::Arr::create(3);
+			siteType.push(zv::Ref(var));
+			siteType.push(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(pair), 0)));
+			siteType.push(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(pair), 1)));
+			siteTypes.separate();
+			zval value;
+			ZVAL_COPY_VALUE(&value, siteType.raw());
+			ZVAL_UNDEF(siteType.raw());
+			zend_hash_index_update(siteTypes.table(), Z_OBJ_HANDLE_P(var), &value);
+		}
+		return zv::Val(std::move(siteTypes));
+	}
+
+	/* one scope's contribution to collectStaticVariableTypes(); false =
+	 * pending exception */
+	[[nodiscard]] static bool collectStaticVariableScope(zval *scope, zval *bodyFunction, zval *bodyReflection, zval *names, zv::ScratchTable &seen, zv::Arr &phpDocTypes, zv::Arr &nativeTypes)
+	{
+		if (Z_TYPE_P(scope) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(scope), pt_ce_mutating_scope)) return true;
+		zend_ulong id = Z_OBJ_HANDLE_P(scope);
+		if (zend_hash_index_exists(seen.table(), id)) return true;
+		zval marked;
+		ZVAL_TRUE(&marked);
+		zend_hash_index_add(seen.table(), id, &marked);
+		zv::Val reflection = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(scope));
+		if (UNEXPECTED(reflection.isUndef())) return false;
+		if (!zend_is_identical(reflection.raw(), bodyReflection)) return true;
+		zv::Val function = pt_mutating_scope_get_function(Z_OBJ_P(scope));
+		if (UNEXPECTED(function.isUndef())) return false;
+		if (!zend_is_identical(function.raw(), bodyFunction)) return true;
+		for (auto entry : zv::ArrRef(names)) {
+			zend_string *name = Z_STR_P(entry.value().raw());
+			zv::Val has = pt_mutating_scope_has_variable_type(Z_OBJ_P(scope), name);
+			if (UNEXPECTED(has.isUndef())) return false;
+			if (pt_type_trinary_value(has.raw()) == PT_TRI_NO) continue;
+			zv::Val type = pt_mutating_scope_get_variable_type(Z_OBJ_P(scope), name);
+			if (UNEXPECTED(type.isUndef())) return false;
+			zv::Val nativeScope = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope));
+			if (UNEXPECTED(nativeScope.isUndef())) return false;
+			zv::Val nativeType = pt_mutating_scope_get_variable_type(Z_OBJ_P(nativeScope.raw()), name);
+			if (UNEXPECTED(nativeType.isUndef())) return false;
+			zval *phpDocList = zend_hash_find(phpDocTypes.table(), name);
+			zval *nativeList = zend_hash_find(nativeTypes.table(), name);
+			SEPARATE_ARRAY(phpDocList);
+			SEPARATE_ARRAY(nativeList);
+			zval typeZv = type.take();
+			zend_hash_next_index_insert(Z_ARRVAL_P(phpDocList), &typeZv);
+			zval nativeTypeZv = nativeType.take();
+			zend_hash_next_index_insert(Z_ARRVAL_P(nativeList), &nativeTypeZv);
+		}
+		return true;
+	}
+
+	/* the private collectStaticVariableTypes(): name => [phpdoc, native];
+	 * UNDEF = pending exception */
+	static zv::Val collectStaticVariableTypes(zval *bodyScope, zval *names, zval *recording, zval *endState, zval *moreScopes)
+	{
+		zv::Arr scopes = zv::Arr::empty();
+		for (auto entry : zv::ArrRef(moreScopes)) {
+			scopes.push(zv::Ref(entry.value().deref().raw()));
+		}
+		zend_object *endStateObject = Z_OBJ_P(endState);
+		scopes.push(zv::Ref(OBJ_PROP_NUM(endStateObject, stateSlots::scope)));
+		zval *exitPoints = OBJ_PROP_NUM(endStateObject, stateSlots::exitPoints);
+		if (Z_TYPE_P(exitPoints) == IS_ARRAY) {
+			for (auto entry : zv::ArrRef(exitPoints)) {
+				zv::Val hold;
+				zval *scope = pt_internal_statement_exit_point_scope(entry.value().deref().raw(), hold);
+				if (UNEXPECTED(scope == NULL)) return zv::Val();
+				scopes.push(zv::Ref(scope));
+			}
+		}
+		zval *throwPoints = OBJ_PROP_NUM(endStateObject, stateSlots::throwPoints);
+		if (Z_TYPE_P(throwPoints) == IS_ARRAY) {
+			for (auto entry : zv::ArrRef(throwPoints)) {
+				zv::Val hold;
+				zval *scope = pt_internal_throw_point_scope(entry.value().deref().raw(), hold);
+				if (UNEXPECTED(scope == NULL)) return zv::Val();
+				scopes.push(zv::Ref(scope));
+			}
+		}
+		zval *pairs = OBJ_PROP_NUM(Z_OBJ_P(recording), ptdecl::RecordingNodeCallback::slot::pairs);
+		if (Z_TYPE_P(pairs) == IS_ARRAY) {
+			for (auto entry : zv::ArrRef(pairs)) {
+				zval *scope = zend_hash_index_find(Z_ARRVAL_P(entry.value().deref().raw()), 1);
+				if (scope != NULL) scopes.push(zv::Ref(scope));
+			}
+		}
+
+		zv::Val bodyFunction = pt_mutating_scope_get_function(Z_OBJ_P(bodyScope));
+		if (UNEXPECTED(bodyFunction.isUndef())) return zv::Val();
+		zv::Val bodyReflection = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(bodyScope));
+		if (UNEXPECTED(bodyReflection.isUndef())) return zv::Val();
+		zv::Arr phpDocTypes = zv::Arr::create(0);
+		zv::Arr nativeTypes = zv::Arr::create(0);
+		for (auto entry : zv::ArrRef(names)) {
+			phpDocTypes.set(Z_STR_P(entry.value().raw()), zv::Val(zv::Arr::empty()));
+			nativeTypes.set(Z_STR_P(entry.value().raw()), zv::Val(zv::Arr::empty()));
+		}
+		zv::ScratchTable seen(64);
+		for (auto entry : zv::ArrRef(scopes.raw())) {
+			if (UNEXPECTED(!collectStaticVariableScope(entry.value().raw(), bodyFunction.raw(), bodyReflection.raw(), names, seen, phpDocTypes, nativeTypes))) return zv::Val();
+		}
+
+		zv::Arr types = zv::Arr::create(0);
+		for (auto entry : zv::ArrRef(names)) {
+			zend_string *name = Z_STR_P(entry.value().raw());
+			HashTable *phpDocList = Z_ARRVAL_P(zend_hash_find(phpDocTypes.table(), name));
+			HashTable *nativeList = Z_ARRVAL_P(zend_hash_find(nativeTypes.table(), name));
+			zv::Arr pair = zv::Arr::create(2);
+			if (zend_hash_num_elements(phpDocList) == 0) {
+				zv::Val never = pt_type_new_never_type();
+				if (UNEXPECTED(never.isUndef())) return zv::Val();
+				zv::Val nativeNever = pt_type_new_never_type();
+				if (UNEXPECTED(nativeNever.isUndef())) return zv::Val();
+				pair.push(std::move(never));
+				pair.push(std::move(nativeNever));
+			} else {
+				zv::Val phpDocUnion = unionOfList(phpDocList);
+				if (UNEXPECTED(phpDocUnion.isUndef())) return zv::Val();
+				zv::Val nativeUnion = unionOfList(nativeList);
+				if (UNEXPECTED(nativeUnion.isUndef())) return zv::Val();
+				pair.push(std::move(phpDocUnion));
+				pair.push(std::move(nativeUnion));
+			}
+			types.set(name, zv::Val(std::move(pair)));
+		}
+		return zv::Val(std::move(types));
+	}
+
+	/* TypeCombinator::union(...$list); UNDEF = pending exception */
+	static zv::Val unionOfList(HashTable *list)
+	{
+		uint32_t n = zend_hash_num_elements(list);
+		zval *argv = (zval *) safe_emalloc(n, sizeof(zval), 0);
+		uint32_t k = 0;
+		for (auto entry : zv::TableRef(list)) {
+			ZVAL_COPY_VALUE(&argv[k++], entry.value().raw());
+		}
+		zv::Val result = pt_type_combinator_union(n, argv);
+		efree(argv);
+		return result;
+	}
+
+	/* the private joinStaticVariableTypes(); UNDEF = pending exception */
+	static zv::Val joinStaticVariableTypes(zval *bodyScope, zval *names, zval *types, zval *walkTypes, bool generalize)
+	{
+		zv::Arr joined = zv::Arr::create(0);
+		for (auto entry : zv::ArrRef(names)) {
+			zend_string *name = Z_STR_P(entry.value().raw());
+			HashTable *known = Z_ARRVAL_P(zend_hash_find(Z_ARRVAL_P(types), name));
+			HashTable *walked = Z_ARRVAL_P(zend_hash_find(Z_ARRVAL_P(walkTypes), name));
+			zv::Arr pair = zv::Arr::create(2);
+			for (zend_ulong k = 0; k < 2; k++) {
+				zval argv[2];
+				ZVAL_COPY_VALUE(&argv[0], zend_hash_index_find(known, k));
+				ZVAL_COPY_VALUE(&argv[1], zend_hash_index_find(walked, k));
+				zv::Val unioned = pt_type_combinator_union(2, argv);
+				if (UNEXPECTED(unioned.isUndef())) return zv::Val();
+				pair.push(std::move(unioned));
+			}
+			joined.set(name, zv::Val(std::move(pair)));
+		}
+		if (!generalize) return zv::Val(std::move(joined));
+
+		zv::Val previousScope = zv::Val::copyOf(zv::Ref(bodyScope));
+		zv::Val joinedScope = zv::Val::copyOf(zv::Ref(bodyScope));
+		zv::Arr writableNames = zv::Arr::create(0);
+		for (auto entry : zv::ArrRef(names)) {
+			zend_string *name = Z_STR_P(entry.value().raw());
+			HashTable *known = Z_ARRVAL_P(zend_hash_find(Z_ARRVAL_P(types), name));
+			HashTable *joinedPair = Z_ARRVAL_P(zend_hash_find(joined.table(), name));
+			zv::Val assignedPrevious = pt_mutating_scope_assign_variable(Z_OBJ_P(previousScope.raw()), name, zend_hash_index_find(known, 0), zend_hash_index_find(known, 1), pt_trinary_singleton(PT_TRI_YES));
+			if (UNEXPECTED(assignedPrevious.isUndef())) return zv::Val();
+			previousScope = std::move(assignedPrevious);
+			zv::Val assignedJoined = pt_mutating_scope_assign_variable(Z_OBJ_P(joinedScope.raw()), name, zend_hash_index_find(joinedPair, 0), zend_hash_index_find(joinedPair, 1), pt_trinary_singleton(PT_TRI_YES));
+			if (UNEXPECTED(assignedJoined.isUndef())) return zv::Val();
+			joinedScope = std::move(assignedJoined);
+			writableNames.set(name, zv::Val::boolean(true));
+		}
+		zv::Val generalizedScope = pt_mutating_scope_generalize_with_names(Z_OBJ_P(previousScope.raw()), Z_OBJ_P(joinedScope.raw()), writableNames.raw());
+		if (UNEXPECTED(generalizedScope.isUndef())) return zv::Val();
+		zv::Val nativeScope = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(generalizedScope.raw()));
+		if (UNEXPECTED(nativeScope.isUndef())) return zv::Val();
+		zv::Arr generalized = zv::Arr::create(0);
+		for (auto entry : zv::ArrRef(names)) {
+			zend_string *name = Z_STR_P(entry.value().raw());
+			zv::Val type = pt_mutating_scope_get_variable_type(Z_OBJ_P(generalizedScope.raw()), name);
+			if (UNEXPECTED(type.isUndef())) return zv::Val();
+			zv::Val nativeType = pt_mutating_scope_get_variable_type(Z_OBJ_P(nativeScope.raw()), name);
+			if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
+			zv::Arr pair = zv::Arr::create(2);
+			pair.push(std::move(type));
+			pair.push(std::move(nativeType));
+			generalized.set(name, zv::Val(std::move(pair)));
+		}
+		return zv::Val(std::move(generalized));
 	}
 
 	/* the private observeClosureSignatures() */
@@ -2177,16 +2593,17 @@ PT_MINIT_REGISTRATION(pt_register_statements_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *fileTypeMapper, *templateArgumentObserver, *templateArgumentResolver, *container;
+		zval *fileTypeMapper, *templateArgumentObserver, *templateArgumentResolver, *container, *staticVariableInference;
 		bool unresolvedTemplateArguments;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(6, 6)
 			Z_PARAM_OBJECT(fileTypeMapper)
 			Z_PARAM_OBJECT(templateArgumentObserver)
 			Z_PARAM_OBJECT(templateArgumentResolver)
 			Z_PARAM_OBJECT(container)
+			Z_PARAM_OBJECT(staticVariableInference)
 			Z_PARAM_BOOL(unresolvedTemplateArguments)
 		ZEND_PARSE_PARAMETERS_END();
-		StatementsHandler(Z_OBJ_P(ZEND_THIS)).construct(fileTypeMapper, templateArgumentObserver, templateArgumentResolver, container, unresolvedTemplateArguments);
+		StatementsHandler(Z_OBJ_P(ZEND_THIS)).construct(fileTypeMapper, templateArgumentObserver, templateArgumentResolver, container, staticVariableInference, unresolvedTemplateArguments);
 	});
 
 	cls.method(sigs::processNodesWithStorage, [](INTERNAL_FUNCTION_PARAMETERS) {

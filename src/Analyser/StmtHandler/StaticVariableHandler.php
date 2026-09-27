@@ -6,6 +6,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Static_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\Generics\StaticVariableInference;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -19,6 +20,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use function array_merge;
 use function is_string;
 
@@ -32,6 +34,7 @@ final class StaticVariableHandler implements StmtHandler
 
 	public function __construct(
 		private VarAnnotationProcessor $varAnnotationProcessor,
+		private StaticVariableInference $staticVariableInference,
 	)
 	{
 	}
@@ -67,6 +70,7 @@ final class StaticVariableHandler implements StmtHandler
 				throw new ShouldNotHappenException();
 			}
 
+			$defaultExprResult = null;
 			if ($var->default !== null) {
 				$defaultExprResult = $nodeScopeResolver->processExprNode($stmt, $var->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 				$variableFlows[] = $defaultExprResult->getVariableFlow();
@@ -79,7 +83,15 @@ final class StaticVariableHandler implements StmtHandler
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 			$scope = $scope->exitExpressionAssign($var->var);
 
-			$scope = $scope->assignVariable($var->var->name, new MixedType(), new MixedType(), TrinaryLogic::createYes());
+			// the type the previous calls may have left - see StaticVariableInference
+			$types = $this->staticVariableInference->getResolvedTypes($scope, $var->var);
+			if ($types === null && $this->staticVariableInference->isInferred($scope, $var->var)) {
+				$types = $defaultExprResult !== null
+					? [$defaultExprResult->getType(), $defaultExprResult->getNativeType()]
+					: [new NullType(), new NullType()];
+			}
+			[$type, $nativeType] = $types ?? [new MixedType(), new MixedType()];
+			$scope = $scope->assignVariable($var->var->name, $type, $nativeType, TrinaryLogic::createYes());
 			$vars[] = $var->var->name;
 		}
 

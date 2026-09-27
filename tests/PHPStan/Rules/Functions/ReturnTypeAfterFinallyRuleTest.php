@@ -40,10 +40,8 @@ class ReturnTypeAfterFinallyRuleTest extends RuleTestCase
 				'Function ReturnTypeAfterFinally\\byRefIncrementedInFinally() should return int but returns string because the finally block modifies the value returned by reference.',
 				49,
 			],
-			[
-				'Function ReturnTypeAfterFinally\\byRefStaticVariable() should return int but returns string because the finally block modifies the value returned by reference.',
-				59,
-			],
+			// byRefStaticVariable(): a previous call leaves 'test' in the static
+			// variable, so ReturnTypeRule reports the return itself
 			[
 				'Function ReturnTypeAfterFinally\\byRefPhpDocReturnType() should return int<1, max> but returns -5 because the finally block modifies the value returned by reference.',
 				70,

@@ -12,6 +12,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Goto_;
 use PHPStan\Analyser\Generics\ClosureSignatureInference;
+use PHPStan\Analyser\Generics\StaticVariableInference;
 use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
@@ -31,6 +32,10 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use function array_fill_keys;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -42,6 +47,7 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function min;
 use function spl_object_id;
 use function sprintf;
 
@@ -66,6 +72,7 @@ final class StatementsHandler
 		private TemplateArgumentObserver $templateArgumentObserver,
 		private TemplateArgumentResolver $templateArgumentResolver,
 		private Container $container,
+		private StaticVariableInference $staticVariableInference,
 		#[AutowiredParameter(ref: '%featureToggles.unresolvedTemplateArguments%')]
 		private bool $unresolvedTemplateArguments,
 	)
@@ -568,9 +575,22 @@ final class StatementsHandler
 		} finally {
 			$nodeScopeResolver->restoreNodeGatherers($suspendedGatherers);
 		}
-		$frame = $this->templateArgumentResolver->resolve($state->scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty(), $parentFrame, $statementStartTokenPositions, $parentNode, $stmts);
 		$stmtCount = count($stmts);
 		$entries[$stmtCount] = [clone $state, $recording->count()];
+		$constraints = $state->scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty();
+		$staticSites = $this->staticVariableInference->getSites($parentNode, $stmts);
+		$staticVariableTypes = [];
+		$staticStatementIndexes = [];
+		if ($staticSites !== []) {
+			foreach ($staticSites as [, $index]) {
+				$staticStatementIndexes[$index] = true;
+			}
+			[$staticVariableTypes, $constraints] = $this->inferStaticVariableTypes($nodeScopeResolver, $parentNode, $stmts, $staticSites, $staticStatementIndexes, $parentFrame, $entries, $recording, $storage, $observationContext);
+		}
+		$frame = $this->templateArgumentResolver->resolve($constraints, $parentFrame, $statementStartTokenPositions, $parentNode, $stmts);
+		if ($staticVariableTypes !== []) {
+			$frame = $frame->withStaticVariableTypes($staticVariableTypes, $staticStatementIndexes);
+		}
 		if ($frame->isObservingClosures()) {
 			$frame = $this->observeClosureSignatures($nodeScopeResolver, $parentNode, $stmts, $frame, $entries, $storage, $observationContext, $statementStartTokenPositions);
 		}
@@ -652,6 +672,236 @@ final class StatementsHandler
 
 		$state->scope = $state->scope->withTemplateArgumentFrame($parentFrame)->withTemplateArgumentConstraints($parentConstraints);
 		return $state->toResult();
+	}
+
+	/**
+	 * The types the body's `static` variables take (see
+	 * StaticVariableInference): the observation pass walked the body with their
+	 * defaults; from the first `static` statement on, the body is observed again
+	 * with the types collected so far - walking, like the second pass, only the
+	 * statements that read a variable whose type changed - until the type at
+	 * each `static` statement holds every type the variable takes after it,
+	 * generalized like a loop's variables. The facts of the last walk are the
+	 * ones the template arguments and closure signatures are resolved from.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param non-empty-list<array{Expr\Variable, int, string}> $staticSites
+	 * @param array<int, true> $staticStatementIndexes
+	 * @param array<int, array{StatementListWalkState, int}> $entries
+	 * @return array{array<int, array{Expr\Variable, Type, Type}>, TemplateArgumentConstraints}
+	 */
+	private function inferStaticVariableTypes(
+		NodeScopeResolver $nodeScopeResolver,
+		Node $parentNode,
+		array $stmts,
+		array $staticSites,
+		array $staticStatementIndexes,
+		?TemplateArgumentFrame $parentFrame,
+		array $entries,
+		RecordingNodeCallback $recording,
+		ExpressionResultStorage $storage,
+		StatementContext $context,
+	): array
+	{
+		$stmtCount = count($stmts);
+		$bodyScope = $entries[0][0]->scope;
+		$names = [];
+		$start = $stmtCount;
+		foreach ($staticSites as [, $index, $name]) {
+			$names[$name] = true;
+			$start = min($start, $index);
+		}
+		$names = array_keys($names);
+		$types = $this->collectStaticVariableTypes($bodyScope, $names, $recording, $entries[$stmtCount][0], []);
+		$hasLabels = $this->containsLabels($stmts);
+		$count = 0;
+		while (true) {
+			$siteTypes = [];
+			foreach ($staticSites as [$var, , $name]) {
+				[$type, $nativeType] = $types[$name];
+				$siteTypes[spl_object_id($var)] = [$var, $type, $nativeType];
+			}
+			$frame = (new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts))->withStaticVariableTypes($siteTypes, $staticStatementIndexes);
+
+			$state = clone $entries[$start][0];
+			$state->scope = $state->scope->withTemplateArgumentFrame($frame);
+			$walkStorage = $storage->duplicate();
+			$walkRecording = new RecordingNodeCallback();
+			/** @var list<MutatingScope> $replayedScopes */
+			$replayedScopes = [];
+			$suspendedGatherers = $nodeScopeResolver->suspendNodeGatherers();
+			$pushedScope = $state->scope;
+			$pushedScope->pushExpressionResultStorage($walkStorage);
+			try {
+				for ($i = $start; $i < $stmtCount; $i++) {
+					$recordedEntry = $entries[$i][0];
+					$differingRoots = $state->alreadyTerminated === $recordedEntry->alreadyTerminated
+						? $state->scope->getDifferingVariableRoots($recordedEntry->scope)
+						: null;
+					if ($differingRoots === [] && !$frame->hasSiteAtOrAfter($i)) {
+						// converged with the observation pass: the rest of it stands
+						$state->scope = $this->withRecordedConstraints($state->scope, $recordedEntry->scope, $entries[$stmtCount][0]->scope);
+						$this->appendRecordedStatementResults($state, $recordedEntry, $entries[$stmtCount][0]);
+						break;
+					}
+
+					$stmt = $stmts[$i];
+					if (
+						$differingRoots === null
+						|| $hasLabels
+						|| $frame->ownsSiteInStatement($i)
+						|| $this->statementMentionsAnyVariable($stmt, $differingRoots)
+					) {
+						$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $walkStorage, $walkRecording, $context, true);
+						$replayedScopes[] = $state->scope;
+						continue;
+					}
+
+					// the statement does not read what changed: the variables keep
+					// their types through it
+					$replayedScopes[] = $state->scope;
+					$recordedExit = $entries[$i + 1][0];
+					$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
+					$state->scope = $this->withRecordedConstraints(
+						$state->scope->withRecordedStatementDelta($recordedEntry->scope, $recordedExit->scope),
+						$recordedEntry->scope,
+						$recordedExit->scope,
+					);
+				}
+			} finally {
+				$pushedScope->popExpressionResultStorage();
+				$nodeScopeResolver->restoreNodeGatherers($suspendedGatherers);
+			}
+			$constraints = $state->scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty();
+
+			$walkTypes = $this->collectStaticVariableTypes($bodyScope, $names, $walkRecording, $state, $replayedScopes);
+			$converged = true;
+			foreach ($names as $name) {
+				if (
+					$types[$name][0]->isSuperTypeOf($walkTypes[$name][0])->yes()
+					&& $types[$name][1]->isSuperTypeOf($walkTypes[$name][1])->yes()
+				) {
+					continue;
+				}
+				$converged = false;
+				break;
+			}
+			$count++;
+			if ($converged || $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
+				break;
+			}
+
+			$types = $this->joinStaticVariableTypes($bodyScope, $names, $types, $walkTypes, $count > NodeScopeResolver::GENERALIZE_AFTER_ITERATION);
+		}
+
+		$siteTypes = [];
+		foreach ($staticSites as [$var, , $name]) {
+			[$type, $nativeType] = $types[$name];
+			$siteTypes[spl_object_id($var)] = [$var, $type, $nativeType];
+		}
+
+		return [$siteTypes, $constraints];
+	}
+
+	/**
+	 * The [phpdoc, native] types the variables take in the scopes the walk
+	 * recorded in the body (not in the function-likes nested in it), at its
+	 * end, returns and throws, and in $moreScopes.
+	 *
+	 * @param list<string> $names
+	 * @param list<MutatingScope> $moreScopes
+	 * @return array<string, array{Type, Type}>
+	 */
+	private function collectStaticVariableTypes(MutatingScope $bodyScope, array $names, RecordingNodeCallback $recording, StatementListWalkState $endState, array $moreScopes): array
+	{
+		$scopes = $moreScopes;
+		$scopes[] = $endState->scope;
+		foreach ($endState->exitPoints as $exitPoint) {
+			$scopes[] = $exitPoint->getScope();
+		}
+		foreach ($endState->throwPoints as $throwPoint) {
+			$scopes[] = $throwPoint->getScope();
+		}
+		foreach ($recording->getPairs() as [, $scope]) {
+			$scopes[] = $scope;
+		}
+
+		$bodyFunction = $bodyScope->getFunction();
+		$bodyReflection = $bodyScope->getAnonymousFunctionReflection();
+		$typesByName = [];
+		foreach ($names as $name) {
+			$typesByName[$name] = [[], []];
+		}
+		$seen = [];
+		foreach ($scopes as $scope) {
+			if (!$scope instanceof MutatingScope) {
+				continue;
+			}
+			$id = spl_object_id($scope);
+			if (isset($seen[$id])) {
+				continue;
+			}
+			$seen[$id] = true;
+			if ($scope->getAnonymousFunctionReflection() !== $bodyReflection || $scope->getFunction() !== $bodyFunction) {
+				continue;
+			}
+			foreach ($names as $name) {
+				if ($scope->hasVariableType($name)->no()) {
+					continue;
+				}
+				$typesByName[$name][0][] = $scope->getVariableType($name);
+				$typesByName[$name][1][] = $scope->doNotTreatPhpDocTypesAsCertain()->getVariableType($name);
+			}
+		}
+
+		$types = [];
+		foreach ($typesByName as $name => [$phpDocTypes, $nativeTypes]) {
+			$types[$name] = $phpDocTypes === []
+				? [new NeverType(), new NeverType()]
+				: [TypeCombinator::union(...$phpDocTypes), TypeCombinator::union(...$nativeTypes)];
+		}
+
+		return $types;
+	}
+
+	/**
+	 * $types joined with $walkTypes - generalized like a loop's variables once
+	 * the join keeps growing.
+	 *
+	 * @param list<string> $names
+	 * @param array<string, array{Type, Type}> $types
+	 * @param array<string, array{Type, Type}> $walkTypes
+	 * @return array<string, array{Type, Type}>
+	 */
+	private function joinStaticVariableTypes(MutatingScope $bodyScope, array $names, array $types, array $walkTypes, bool $generalize): array
+	{
+		$joined = [];
+		foreach ($names as $name) {
+			$joined[$name] = [
+				TypeCombinator::union($types[$name][0], $walkTypes[$name][0]),
+				TypeCombinator::union($types[$name][1], $walkTypes[$name][1]),
+			];
+		}
+		if (!$generalize) {
+			return $joined;
+		}
+
+		$previousScope = $bodyScope;
+		$joinedScope = $bodyScope;
+		foreach ($names as $name) {
+			$previousScope = $previousScope->assignVariable($name, $types[$name][0], $types[$name][1], TrinaryLogic::createYes());
+			$joinedScope = $joinedScope->assignVariable($name, $joined[$name][0], $joined[$name][1], TrinaryLogic::createYes());
+		}
+		$generalizedScope = $previousScope->generalizeWith($joinedScope, array_fill_keys($names, true));
+		$generalized = [];
+		foreach ($names as $name) {
+			$generalized[$name] = [
+				$generalizedScope->getVariableType($name),
+				$generalizedScope->doNotTreatPhpDocTypesAsCertain()->getVariableType($name),
+			];
+		}
+
+		return $generalized;
 	}
 
 	/**

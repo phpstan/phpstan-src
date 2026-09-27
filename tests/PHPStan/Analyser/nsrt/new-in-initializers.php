@@ -40,7 +40,7 @@ class Bar extends Foo
 	public function doBaz()
 	{
 		static $o = new \stdClass();
-		assertType('mixed', $o);
+		assertType('stdClass', $o);
 	}
 
 }

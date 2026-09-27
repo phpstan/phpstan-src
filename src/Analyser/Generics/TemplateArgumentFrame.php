@@ -65,6 +65,7 @@ final class TemplateArgumentFrame
 	 * @param array<int, true> $settledClosureSites spl_object_id() of the closure nodes
 	 * @param bool $observingClosures the template arguments are resolved, the closure signatures observed again
 	 * @param array<int, array{Expr\Closure, int, bool}> $byRefSites spl_object_id() of the closure node => the node, its statement index, whether every invocation was seen
+	 * @param array<int, array{Expr\Variable, Type, Type}> $staticVariableTypes spl_object_id() of a `static` variable node => the node, its phpdoc and native type - see StaticVariableInference
 	 */
 	public function __construct(
 		private readonly ?self $parent,
@@ -75,8 +76,44 @@ final class TemplateArgumentFrame
 		private readonly array $settledClosureSites = [],
 		private readonly bool $observingClosures = false,
 		private readonly array $byRefSites = [],
+		private readonly array $staticVariableTypes = [],
 	)
 	{
+	}
+
+	/**
+	 * @return array{Type, Type}|null
+	 */
+	public function getStaticVariableTypes(Expr\Variable $var): ?array
+	{
+		$types = $this->staticVariableTypes[spl_object_id($var)] ?? null;
+		if ($types === null || $types[0] !== $var) {
+			return null;
+		}
+
+		return [$types[1], $types[2]];
+	}
+
+	/**
+	 * The frame with the inferred types of the body's `static` variables; the
+	 * statements holding them are walked again in the second pass.
+	 *
+	 * @param array<int, array{Expr\Variable, Type, Type}> $staticVariableTypes
+	 * @param array<int, true> $statementIndexes
+	 */
+	public function withStaticVariableTypes(array $staticVariableTypes, array $statementIndexes): self
+	{
+		return new self(
+			$this->parent,
+			$this->resolutions,
+			$this->siteStatementIndexes + $statementIndexes,
+			$this->closureSignatureBody,
+			$this->closureSignatureStmts,
+			$this->settledClosureSites,
+			$this->observingClosures,
+			$this->byRefSites,
+			$staticVariableTypes,
+		);
 	}
 
 	/**
@@ -133,6 +170,7 @@ final class TemplateArgumentFrame
 			$this->closureSignatureStmts,
 			$settledClosureSites,
 			byRefSites: $byRefSites,
+			staticVariableTypes: $this->staticVariableTypes,
 		);
 	}
 

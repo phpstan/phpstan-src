@@ -54,10 +54,11 @@ class StaticVariableHandler
 public:
 	explicit StaticVariableHandler(zend_object *self) : self(self) {}
 
-	/* the constructor body: the promoted property */
-	void construct(zval *varAnnotationProcessor)
+	/* the constructor body: the promoted properties */
+	void construct(zval *varAnnotationProcessor, zval *staticVariableInference)
 	{
 		zv::ObjRef(self).propAtWrite(slots::varAnnotationProcessor, zv::Val::copyOf(zv::Ref(varAnnotationProcessor)));
+		zv::ObjRef(self).propAtWrite(slots::staticVariableInference, zv::Val::copyOf(zv::Ref(staticVariableInference)));
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -122,7 +123,7 @@ private:
 	}
 
 	/* the loop body over one static variable; false = pending exception */
-	[[nodiscard]] static bool processVar(zval *nodeScopeResolver, zval *stmt, zval *staticVar, zv::Val &scope, zval *storage, zval *nodeCallback, zval *context, zv::Arr &impurePoints, zv::Arr &vars, zv::Arr &variableFlows)
+	[[nodiscard]] bool processVar(zval *nodeScopeResolver, zval *stmt, zval *staticVar, zv::Val &scope, zval *storage, zval *nodeCallback, zval *context, zv::Arr &impurePoints, zv::Arr &vars, zv::Arr &variableFlows) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(staticVar) != IS_OBJECT)) {
 			zend_error(E_WARNING, "Attempt to read property \"var\" on %s", zend_zval_value_name(staticVar));
@@ -150,11 +151,12 @@ private:
 
 		zval *defaultValue = ptsh::readNodeProperty(pt_svh_static_var_default_site, staticVar, PT_LC("default"));
 		if (UNEXPECTED(defaultValue == NULL)) return false;
+		zv::Val defaultExprResult = zv::Val::null();
 		if (Z_TYPE_P(defaultValue) != IS_NULL) {
 			zv::Val defaultHold = zv::Val::copyOf(zv::Ref(defaultValue));
 			zv::Val expressionContext = deepContext(context);
 			if (UNEXPECTED(expressionContext.isUndef())) return false;
-			zv::Val defaultExprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, defaultHold.raw(), scope.raw(), storage, nodeCallback, expressionContext.raw());
+			defaultExprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, defaultHold.raw(), scope.raw(), storage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(defaultExprResult.isUndef())) return false;
 			zv::Val variableFlow = pt_expression_result_variable_flow(defaultExprResult.raw());
 			if (UNEXPECTED(variableFlow.isUndef())) return false;
@@ -201,12 +203,36 @@ private:
 			return false;
 		}
 		zv::Val nameHold = zv::Val::copyOf(zv::Ref(varName));
-		zval mixed;
-		if (UNEXPECTED(!pt_mixed_type_new(&mixed))) return false;
-		zv::Val type = zv::Val::adopt(mixed);
-		zval nativeMixed;
-		if (UNEXPECTED(!pt_mixed_type_new(&nativeMixed))) return false;
-		zv::Val nativeType = zv::Val::adopt(nativeMixed);
+		// the type the previous calls may have left - see StaticVariableInference
+		zval *inference = OBJ_PROP_NUM(self, slots::staticVariableInference);
+		zv::Val type, nativeType;
+		zv::Val types = pt_static_variable_inference_get_resolved_types(inference, scope.raw(), varHold.raw());
+		if (UNEXPECTED(types.isUndef())) return false;
+		if (types.ref().isArray()) {
+			type = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(types.raw()), 0)));
+			nativeType = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(types.raw()), 1)));
+		} else {
+			bool inferred;
+			if (UNEXPECTED(!pt_static_variable_inference_is_inferred(inference, scope.raw(), varHold.raw(), inferred))) return false;
+			if (inferred && !defaultExprResult.isNull()) {
+				type = pt_expression_result_get_type(defaultExprResult.raw());
+				if (UNEXPECTED(type.isUndef())) return false;
+				nativeType = pt_expression_result_get_native_type(defaultExprResult.raw());
+				if (UNEXPECTED(nativeType.isUndef())) return false;
+			} else if (inferred) {
+				zval nullType, nativeNullType;
+				if (UNEXPECTED(!pt_null_type_new(&nullType))) return false;
+				type = zv::Val::adopt(nullType);
+				if (UNEXPECTED(!pt_null_type_new(&nativeNullType))) return false;
+				nativeType = zv::Val::adopt(nativeNullType);
+			} else {
+				zval mixed, nativeMixed;
+				if (UNEXPECTED(!pt_mixed_type_new(&mixed))) return false;
+				type = zv::Val::adopt(mixed);
+				if (UNEXPECTED(!pt_mixed_type_new(&nativeMixed))) return false;
+				nativeType = zv::Val::adopt(nativeMixed);
+			}
+		}
 		zv::Val assigned = pt_mutating_scope_assign_variable(Z_OBJ_P(scope.raw()), Z_STR_P(nameHold.raw()), type.raw(), nativeType.raw(), pt_trinary_singleton(PT_TRI_YES));
 		if (UNEXPECTED(assigned.isUndef())) return false;
 		scope = std::move(assigned);
@@ -238,9 +264,9 @@ PT_MINIT_REGISTRATION(pt_register_static_variable_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *varAnnotationProcessor;
-		if (!zp::parse<zp::Obj>(execute_data, varAnnotationProcessor)) RETURN_THROWS();
-		StaticVariableHandler(Z_OBJ_P(ZEND_THIS)).construct(varAnnotationProcessor);
+		zval *varAnnotationProcessor, *staticVariableInference;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, varAnnotationProcessor, staticVariableInference)) RETURN_THROWS();
+		StaticVariableHandler(Z_OBJ_P(ZEND_THIS)).construct(varAnnotationProcessor, staticVariableInference);
 	});
 
 	cls.method<&StaticVariableHandler::supports, zp::Obj>(sigs::supports);

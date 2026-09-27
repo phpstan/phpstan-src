@@ -29,5 +29,6 @@ parameters:
 		sortWithoutEffect: true
 		unresolvedTemplateArguments: true
 		closureSignaturesFromUsages: true
+		staticVariablesFromUsages: true
 		unusedVariable: true
 		unusedParameters: true

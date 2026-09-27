@@ -54,6 +54,7 @@ final class TrinaryLogic
 
 	private static self $NO;
 
+	/** @param self::YES|self::MAYBE|self::NO $value */
 	private function __construct(private int $value)
 	{
 	}
@@ -79,6 +80,7 @@ final class TrinaryLogic
 		return self::$registry[$yesNo] ??= new self($yesNo);
 	}
 
+	/** @param self::YES|self::MAYBE|self::NO $value */
 	private static function create(int $value): self
 	{
 		return self::$registry[$value] ??= new self($value);

@@ -7,8 +7,8 @@
  * rules): the same-variable shortcut, the operand types through the walk hub
  * or the scope's direct entries, the untyped-native-property guard and the
  * InitializerExprTypeResolver's comparison (its direct entry).
- * PropertyReflectionFinder and the found property reflections stay PHP behind
- * cached sites.
+ * PropertyReflectionFinder, the found property reflections and
+ * StringLengthBoundHelper stay PHP behind cached sites.
  * getNotIdenticalResult() prices the operands of the NotIdentical directly —
  * the twin's `new Identical($expr->left, $expr->right)` is read for nothing
  * else and never escapes. Native callers use the
@@ -36,6 +36,7 @@ namespace {
 pt_method_site pt_rsgth_find_property_reflections_site;
 pt_method_site pt_rsgth_is_native_site;
 pt_method_site pt_rsgth_has_native_type_site;
+pt_method_site pt_rsgth_exceeds_max_length_site;
 
 /* }}} */
 
@@ -95,10 +96,11 @@ class RicherScopeGetTypeHelper
 public:
 	explicit RicherScopeGetTypeHelper(zend_object *self) : self(self) {}
 
-	void construct(zval *initializerExprTypeResolver, zval *propertyReflectionFinder) const
+	void construct(zval *initializerExprTypeResolver, zval *propertyReflectionFinder, zval *stringLengthBoundHelper) const
 	{
 		pt_write_slot(self, slots::initializerExprTypeResolver, initializerExprTypeResolver);
 		pt_write_slot(self, slots::propertyReflectionFinder, propertyReflectionFinder);
+		pt_write_slot(self, slots::stringLengthBoundHelper, stringLengthBoundHelper);
 	}
 
 	/* Mirrors getIdenticalResult() ($nodeScopeResolver / $leftType /
@@ -188,7 +190,56 @@ private:
 
 		zval *resolver = pt_typed_slot(self, slots::initializerExprTypeResolver, self->ce, "initializerExprTypeResolver");
 		if (UNEXPECTED(resolver == NULL)) return zv::Val();
-		return pt_initializer_expr_type_resolver_resolve_identical_type(resolver, leftType.raw(), rightType.raw());
+		zv::Val result = pt_initializer_expr_type_resolver_resolve_identical_type(resolver, leftType.raw(), rightType.raw());
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		zval typeRv;
+		ZVAL_UNDEF(&typeRv);
+		zval *resultType = resultSlot(result.raw(), ptdecl::TypeResult::slot::type, "type", typeRv);
+		zv::Val typeRvHold = zv::Val::adopt(typeRv);
+		if (UNEXPECTED(resultType == NULL)) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(resultType) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function isConstantScalarValue() on %s", zend_zval_value_name(resultType));
+			return zv::Val();
+		}
+		zend_long isConstant = pt_type_op_trinary(Z_OBJ_P(resultType), PT_OP_IS_CONSTANT_SCALAR_VALUE, 0, NULL);
+		if (UNEXPECTED(isConstant < 0)) return zv::Val();
+		if (isConstant == PT_TRI_YES) return result;
+
+		bool exceeds;
+		if (UNEXPECTED(!exceedsMaxLength(scope, left, rightType.raw(), nodeScopeResolver, exceeds))) return zv::Val();
+		if (!exceeds) {
+			if (UNEXPECTED(!exceedsMaxLength(scope, right, leftType.raw(), nodeScopeResolver, exceeds))) return zv::Val();
+		}
+		if (exceeds) return booleanResult(0);
+		return result;
+	}
+
+	/* $this->stringLengthBoundHelper->exceedsMaxLength($scope, $operand,
+	 * $otherType, $nodeScopeResolver), skipped for the operands the helper
+	 * returns false for right away (anything but FuncCall, ArrayDimFetch and
+	 * AlwaysRememberedExpr); false = pending exception */
+	[[nodiscard]] bool exceedsMaxLength(zval *scope, zval *operandExpr, zval *otherType, zval *nodeScopeResolver, bool &out) const
+	{
+		out = false;
+		bool candidate;
+		if (UNEXPECTED(!isA(operandExpr, PT_CLASS_FUNC_CALL, candidate))) return false;
+		if (!candidate) {
+			if (UNEXPECTED(!isA(operandExpr, PT_CLASS_ARRAY_DIM_FETCH, candidate))) return false;
+		}
+		if (!candidate) {
+			if (UNEXPECTED(!isA(operandExpr, PT_CLASS_ALWAYS_REMEMBERED_EXPR, candidate))) return false;
+		}
+		if (!candidate) return true;
+
+		zval *helper = pt_typed_slot(self, slots::stringLengthBoundHelper, self->ce, "stringLengthBoundHelper");
+		if (UNEXPECTED(helper == NULL)) return false;
+		zval null;
+		ZVAL_NULL(&null);
+		zv::Args argv{scope, operandExpr, otherType, isNullOrAbsent(nodeScopeResolver) ? &null : nodeScopeResolver};
+		zv::Val exceeds = pt_call_method_cached(pt_rsgth_exceeds_max_length_site, Z_OBJ_P(helper), PT_LC("exceedsmaxlength"), 4, argv);
+		if (UNEXPECTED(exceeds.isUndef())) return false;
+		out = zend_is_true(exceeds.raw());
+		return true;
 	}
 
 	/* $type ??= $nodeScopeResolver !== null
@@ -371,9 +422,9 @@ PT_MINIT_REGISTRATION(pt_register_richer_scope_get_type_helper)
 	ptdecl::RicherScopeGetTypeHelper::declareProperties(cls);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *initializerExprTypeResolver, *propertyReflectionFinder;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, initializerExprTypeResolver, propertyReflectionFinder)) RETURN_THROWS();
-		PT_RSGTH_THIS.construct(initializerExprTypeResolver, propertyReflectionFinder);
+		zval *initializerExprTypeResolver, *propertyReflectionFinder, *stringLengthBoundHelper;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, initializerExprTypeResolver, propertyReflectionFinder, stringLengthBoundHelper)) RETURN_THROWS();
+		PT_RSGTH_THIS.construct(initializerExprTypeResolver, propertyReflectionFinder, stringLengthBoundHelper);
 	});
 
 	cls.method(sigs::getIdenticalResult, [](INTERNAL_FUNCTION_PARAMETERS) {

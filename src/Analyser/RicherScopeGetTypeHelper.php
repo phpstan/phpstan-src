@@ -23,6 +23,7 @@ final class RicherScopeGetTypeHelper
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private StringLengthBoundHelper $stringLengthBoundHelper,
 	)
 	{
 	}
@@ -83,7 +84,19 @@ final class RicherScopeGetTypeHelper
 			}
 		}
 
-		return $this->initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType);
+		$result = $this->initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType);
+		if ($result->type->isConstantScalarValue()->yes()) {
+			return $result;
+		}
+
+		if (
+			$this->stringLengthBoundHelper->exceedsMaxLength($scope, $expr->left, $rightType, $nodeScopeResolver)
+			|| $this->stringLengthBoundHelper->exceedsMaxLength($scope, $expr->right, $leftType, $nodeScopeResolver)
+		) {
+			return new TypeResult(new ConstantBooleanType(false), []);
+		}
+
+		return $result;
 	}
 
 	/**

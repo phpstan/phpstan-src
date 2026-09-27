@@ -594,4 +594,24 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15324(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15324-match.php'], [
+			[
+				'Match arm comparison between string and \'abc\' is always false.',
+				10,
+			],
+			[
+				'Match arm comparison between string and \'abcd\' is always false.',
+				12,
+			],
+			[
+				'Match arm comparison between non-empty-string and \'ab\' is always false.',
+				20,
+			],
+		]);
+	}
+
 }

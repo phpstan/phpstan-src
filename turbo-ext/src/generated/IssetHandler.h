@@ -63,7 +63,10 @@ inline constexpr char strings[] =
 	"context\0" /* 613 */
 	"PHPStan\\Analyser\\ExpressionContext\0" /* 621 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 656 */
-	"processExpr"; /* 690 */
+	"processExpr\0" /* 690 */
+	"types\0" /* 702 */
+	"Closure\0" /* 708 */
+	"memoizeSubjectTypes"; /* 716 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 21), /* __construct $nonNullabilityHelper */
 	reg::packed(78, 0, 102), /* __construct $expressionResultFactory */
@@ -80,6 +83,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(600, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
 	reg::packed(613, 0, 621), /* processExpr $context */
 	reg::packed(426, 0, 656), /* processExpr return */
+	reg::packed(702, 0, 708), /* memoizeSubjectTypes $types */
+	reg::packed(426, 0, 708), /* memoizeSubjectTypes return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -89,6 +94,7 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 389 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig supports = { { 427 /* supports */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 690 /* processExpr */, 7, 7, 7, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig memoizeSubjectTypes = { { 716 /* memoizeSubjectTypes */, 1, 15, 1, 16, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::IssetHandler

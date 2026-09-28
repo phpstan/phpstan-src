@@ -227,7 +227,7 @@ final class IssetHandler implements ExprHandler
 						$rightFalseyScope = $accTruthyScope->applySpecifiedTypes($rightTypes($accTruthyScope, TypeSpecifierContext::createFalsey()));
 
 						$leftExprNode = $accExpr;
-						$leftTypes = $accTypes;
+						$leftTypes = self::memoizeSubjectTypes($accTypes);
 						$leftTruthyScope = $accTruthyScope;
 						$leftFalseyScope = $accFalseyScope;
 						$accTypes = fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $this->booleanNarrowingHelper->specifyConjunction(
@@ -262,6 +262,33 @@ final class IssetHandler implements ExprHandler
 				return $this->defaultNarrowingHelper->createIssetTruthyChainTypes($evaluationScope, $issetExpr, $readType, $expr, $context);
 			},
 		);
+	}
+
+	/**
+	 * The narrowing of the conjunction folded so far: every later conjunction
+	 * asks it again as its left operand, with the scopes and contexts it was
+	 * already asked with - answered once per pair instead of re-folding every
+	 * subject before it on each ask.
+	 *
+	 * @param Closure(MutatingScope, TypeSpecifierContext): SpecifiedTypes $types
+	 * @return Closure(MutatingScope, TypeSpecifierContext): SpecifiedTypes
+	 */
+	private static function memoizeSubjectTypes(Closure $types): Closure
+	{
+		$answered = [];
+
+		return static function (MutatingScope $scope, TypeSpecifierContext $context) use ($types, &$answered): SpecifiedTypes {
+			foreach ($answered as [$answeredScope, $answeredContext, $answer]) {
+				if ($answeredScope === $scope && $answeredContext === $context) {
+					return $answer;
+				}
+			}
+
+			$answer = $types($scope, $context);
+			$answered[] = [$scope, $context, $answer];
+
+			return $answer;
+		};
 	}
 
 }

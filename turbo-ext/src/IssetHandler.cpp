@@ -575,7 +575,8 @@ private:
 				ZVAL_COPY_VALUE(&conjunctionCaptures[1], nodeScopeResolver);
 				ZVAL_COPY_VALUE(&conjunctionCaptures[2], expr);
 				ZVAL_COPY_VALUE(&conjunctionCaptures[3], leftExprNode.raw());
-				ZVAL_COPY_VALUE(&conjunctionCaptures[4], accTypes.raw());
+				zv::Val leftTypes = memoizeSubjectTypes(accTypes.raw());
+				ZVAL_COPY_VALUE(&conjunctionCaptures[4], leftTypes.raw());
 				ZVAL_COPY_VALUE(&conjunctionCaptures[5], accTruthyScope.raw());
 				ZVAL_COPY_VALUE(&conjunctionCaptures[6], accFalseyScope.raw());
 				ZVAL_COPY_VALUE(&conjunctionCaptures[7], rightExprNode.raw());
@@ -673,6 +674,58 @@ private:
 		(void) argc;
 		(void) argv;
 		ZVAL_COPY(return_value, &captures[0]);
+	}
+
+	/* Mirrors memoizeSubjectTypes(): the closure answering each (scope,
+	 * context) pair once; captures: $types, &$answered */
+	static zv::Val memoizeSubjectTypes(zval *types)
+	{
+		zval answered;
+		array_init(&answered);
+		zval reference;
+		ZVAL_NEW_REF(&reference, &answered);
+		zval captures[2];
+		ZVAL_COPY_VALUE(&captures[0], types);
+		ZVAL_COPY_VALUE(&captures[1], &reference);
+		zv::Val closure = pt_native_closure_new(&memoizedSubjectTypesBody, 2, captures, 1u << 1);
+		zval_ptr_dtor(&reference);
+		return closure;
+	}
+
+	static void memoizedSubjectTypesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(!requireArguments(argc, 2, pt_ish_closure_name))) return;
+		zval *answered = Z_REFVAL(captures[1]);
+		if (Z_TYPE_P(answered) == IS_ARRAY && Z_TYPE(argv[0]) == IS_OBJECT && Z_TYPE(argv[1]) == IS_OBJECT) {
+			zval *entry;
+			ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(answered), entry) {
+				zval *answeredScope = zend_hash_index_find(Z_ARRVAL_P(entry), 0);
+				zval *answeredContext = zend_hash_index_find(Z_ARRVAL_P(entry), 1);
+				zval *answer = zend_hash_index_find(Z_ARRVAL_P(entry), 2);
+				if (answeredScope == NULL || answeredContext == NULL || answer == NULL) continue;
+				if (Z_OBJ_P(answeredScope) == Z_OBJ(argv[0]) && Z_OBJ_P(answeredContext) == Z_OBJ(argv[1])) {
+					ZVAL_COPY(return_value, answer);
+					return;
+				}
+			} ZEND_HASH_FOREACH_END();
+		}
+		zv::Val answer = pt_type_call_callable(&captures[0], 2, argv);
+		if (UNEXPECTED(answer.isUndef())) return;
+		if (Z_TYPE_P(answered) != IS_ARRAY) {
+			zval_ptr_dtor(answered);
+			array_init(answered);
+		}
+		SEPARATE_ARRAY(answered);
+		zval triple;
+		array_init_size(&triple, 3);
+		Z_TRY_ADDREF(argv[0]);
+		zend_hash_next_index_insert(Z_ARRVAL(triple), &argv[0]);
+		Z_TRY_ADDREF(argv[1]);
+		zend_hash_next_index_insert(Z_ARRVAL(triple), &argv[1]);
+		Z_TRY_ADDREF_P(answer.raw());
+		zend_hash_next_index_insert(Z_ARRVAL(triple), answer.raw());
+		zend_hash_next_index_insert(Z_ARRVAL_P(answered), &triple);
+		answer.intoReturnValue(return_value);
 	}
 
 	/* fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes =>

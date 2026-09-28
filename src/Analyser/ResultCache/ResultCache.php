@@ -25,7 +25,7 @@ final class ResultCache
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<string>> $usedTraitDependencies
 	 * @param array<string, array<string>> $packageDependencies
-	 * @param array<string, array<RootExportedNode>> $exportedNodes
+	 * @param array<string, array<RootExportedNode>> $exportedNodes the decoded ones - see $cachedExportedNodes for the rest
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
 	 */
@@ -44,6 +44,7 @@ final class ResultCache
 		private array $usedTraitDependencies,
 		private array $packageDependencies,
 		private array $exportedNodes,
+		private CachedExportedNodes $cachedExportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
 	)
@@ -155,6 +156,14 @@ final class ResultCache
 	public function getExportedNodes(): array
 	{
 		return $this->exportedNodes;
+	}
+
+	/**
+	 * The exported nodes carried over from the cache file undecoded, for the files not in getExportedNodes().
+	 */
+	public function getCachedExportedNodes(): CachedExportedNodes
+	{
+		return $this->cachedExportedNodes;
 	}
 
 	/**

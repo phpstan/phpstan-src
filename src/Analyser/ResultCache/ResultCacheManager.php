@@ -62,8 +62,11 @@ use function in_array;
 use function is_array;
 use function is_dir;
 use function is_file;
+use function is_int;
+use function is_string;
 use function ksort;
 use function microtime;
+use function min;
 use function rename;
 use function rtrim;
 use function serialize;
@@ -100,7 +103,7 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v20-dependencyGraph';
+	private const CACHE_VERSION = 'v21-exportedNodesIndex';
 
 	/**
 	 * The recorded hash of a dependency that does not exist. A rule can depend on a path rather than on
@@ -274,6 +277,7 @@ final class ResultCacheManager
 			usedTraitDependencies: [],
 			packageDependencies: [],
 			exportedNodes: [],
+			cachedExportedNodes: CachedExportedNodes::createEmpty(),
 			projectExtensionFiles: [],
 			currentFileHashes: $currentFileHashes,
 		);
@@ -394,6 +398,15 @@ final class ResultCacheManager
 		$data['collectedDataCallback'] = static fn (): array => $transformer->absolutizeCollectedData($collectedDataCallback());
 		$exportedNodesCallback = $data['exportedNodesCallback'];
 		$data['exportedNodesCallback'] = static fn (): array => $transformer->absolutizeFileKeyed($exportedNodesCallback());
+
+		$cachedExportedNodes = CachedExportedNodes::createEmpty();
+		if (array_key_exists('exportedNodesLocations', $data) && is_array($data['exportedNodesLocations'])) {
+			$exportedNodesLocations = [];
+			foreach ($data['exportedNodesLocations'] as $exportedNodesFile => $exportedNodesLocation) {
+				$exportedNodesLocations[$transformer->absolutizePath($exportedNodesFile)] = $exportedNodesLocation;
+			}
+			$cachedExportedNodes = CachedExportedNodes::createFromFile($data['cacheFileHandle'], $exportedNodesLocations);
+		}
 
 		// The stub file hashes get into the meta only at save time, after the analysis - the
 		// only point where the StubFilesExtensions may run, because they can rely on
@@ -685,8 +698,20 @@ final class ResultCacheManager
 		$filteredUnmatchedLineIgnores = [];
 		$filteredCollectedData = [];
 		$filteredExportedNodes = [];
+		// the analysed and scanned files whose exported nodes stay in the old cache file until save()
+		$keptCachedExportedNodes = [];
 		$newFileAppeared = false;
 		$dependencyFilesChanged = false;
+		$cachedExportedNodesError = null;
+		$decodeCachedExportedNodes = static function (string $file) use ($cachedExportedNodes, &$cachedExportedNodesError): array {
+			try {
+				return $cachedExportedNodes->decode($file);
+			} catch (CachedExportedNodesUnreadableException $e) {
+				$cachedExportedNodesError ??= $e->getMessage();
+
+				return [];
+			}
+		};
 
 		foreach (array_keys($cachedStubFiles) as $stubFile) {
 			if (!array_key_exists($stubFile, $errors)) {
@@ -714,6 +739,8 @@ final class ResultCacheManager
 			}
 			if (array_key_exists($analysedFile, $exportedNodes)) {
 				$filteredExportedNodes[$analysedFile] = $exportedNodes[$analysedFile];
+			} elseif ($cachedExportedNodes->has($analysedFile)) {
+				$keptCachedExportedNodes[$analysedFile] = true;
 			}
 			if (!array_key_exists($analysedFile, $invertedDependencies)) {
 				// new file
@@ -744,7 +771,8 @@ final class ResultCacheManager
 			// the file may have gained its first symbol, which is exactly what the files with errors are
 			// waiting for. Comparing against an empty list says so, and says nothing changed when the
 			// file still declares nothing.
-			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile] ?? [];
+			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile]
+				?? ($cachedExportedNodes->has($analysedFile) ? $decodeCachedExportedNodes($analysedFile) : []);
 			$exportedNodesChanged = $this->exportedNodesChanged($analysedFile, $cachedFileExportedNodes);
 			if ($exportedNodesChanged === null) {
 				if (count($cachedFileExportedNodes) === 0) {
@@ -822,13 +850,17 @@ final class ResultCacheManager
 					$invertedUsedTraitDependenciesToReturn[$notAnalysedFile] = $usedTraitDependentFiles;
 				}
 
-				$cachedFileExportedNodes = $exportedNodes[$notAnalysedFile] ?? null;
 				if ($this->getFileHash($notAnalysedFile) === $notAnalysedFileData['fileHash']) {
-					if ($cachedFileExportedNodes !== null) {
-						$filteredExportedNodes[$notAnalysedFile] = $cachedFileExportedNodes;
+					if (array_key_exists($notAnalysedFile, $exportedNodes)) {
+						$filteredExportedNodes[$notAnalysedFile] = $exportedNodes[$notAnalysedFile];
+					} elseif ($cachedExportedNodes->has($notAnalysedFile)) {
+						$keptCachedExportedNodes[$notAnalysedFile] = true;
 					}
 					continue;
 				}
+
+				$cachedFileExportedNodes = $exportedNodes[$notAnalysedFile]
+					?? ($cachedExportedNodes->has($notAnalysedFile) ? $decodeCachedExportedNodes($notAnalysedFile) : null);
 
 				$dependencyFilesChanged = true;
 				// Edited: the same rule as for an analysed file. Nothing the files depending on it can
@@ -878,6 +910,18 @@ final class ResultCacheManager
 				}
 				$filesToAnalyse[] = $dependentFile;
 			}
+		}
+
+		if ($cachedExportedNodesError !== null) {
+			@unlink($cacheFilePath);
+
+			return $this->fullAnalysis(
+				sprintf('Result cache not used because the cached results could not be read back: %s', $cachedExportedNodesError),
+				$allAnalysedFiles,
+				$meta,
+				$currentFileHashes,
+				$output,
+			);
 		}
 
 		if ($newFileAppeared || $notAnalysedFileSymbolsChanged) {
@@ -935,6 +979,7 @@ final class ResultCacheManager
 			usedTraitDependencies: $invertedUsedTraitDependenciesToReturn,
 			packageDependencies: $packageDependencies,
 			exportedNodes: $filteredExportedNodes,
+			cachedExportedNodes: $cachedExportedNodes->only($keptCachedExportedNodes),
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
 		);
@@ -1068,7 +1113,7 @@ final class ResultCacheManager
 			$projectConfigArray = $this->getPathTransformer()->relativizeProjectConfig($projectConfigArray);
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
-		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $packageDependencies, array $exportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $packageDependencies, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -1134,6 +1179,7 @@ final class ResultCacheManager
 				&& $collectedDataByFile === $resultCache->getCollectedData()
 				&& $packageDependencies === $resultCache->getPackageDependencies()
 				&& $exportedNodes === $resultCache->getExportedNodes()
+				&& $cachedExportedNodes->getFiles() === $resultCache->getCachedExportedNodes()->getFiles()
 				&& $projectExtensionFiles === $resultCache->getProjectExtensionFiles()
 				&& $stubFiles === $this->restoredStubFiles
 				&& is_file($this->cacheFilePath)
@@ -1145,7 +1191,7 @@ final class ResultCacheManager
 				return true;
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta, $stubFiles);
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta, $stubFiles);
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -1161,7 +1207,7 @@ final class ResultCacheManager
 				if ($analyserResult->getDependencies() !== null) {
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
-				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies()), $projectExtensionFiles);
+				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles);
 			} else {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -1177,7 +1223,9 @@ final class ResultCacheManager
 		$dependencies = $this->mergeDependencies($resultCache->getDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getDependencies());
 		$usedTraitDependencies = $this->mergeDependencies($resultCache->getUsedTraitDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getUsedTraitDependencies());
 		$packageDependencies = $this->mergePackageDependencies($resultCache->getPackageDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getPackageDependencies());
-		$exportedNodes = $this->addNonAnalysedExportedNodes($this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes()), $dependencies, $usedTraitDependencies);
+		// the re-analysed files take their fresh nodes, what is left of the cached ones stays undecoded
+		$cachedExportedNodes = $resultCache->getCachedExportedNodes()->without(array_fill_keys($resultCache->getFilesToAnalyse(), true));
+		$exportedNodes = $this->addNonAnalysedExportedNodes($this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes()), $dependencies, $usedTraitDependencies, $cachedExportedNodes);
 		$linesToIgnore = $this->mergeLinesToIgnore($resultCache, $analyserResult->getLinesToIgnore());
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());
 
@@ -1203,7 +1251,7 @@ final class ResultCacheManager
 					$projectExtensionFiles[$file] = [$hash, true, $className];
 				}
 			}
-			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles);
+			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles);
 		}
 
 		$flatErrors = [];
@@ -1485,6 +1533,7 @@ final class ResultCacheManager
 		array $usedTraitDependencies,
 		array $packageDependencies,
 		array $exportedNodes,
+		CachedExportedNodes $cachedExportedNodes,
 		array $projectExtensionFiles,
 		array $currentFileHashes,
 		array $meta,
@@ -1571,7 +1620,6 @@ final class ResultCacheManager
 		$dependencyGraph = $this->encodeDependencyGraph($invertedDependencies, $transformer);
 		unset($invertedDependencies);
 		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
-		$exportedNodes = $transformer->relativizeFileKeyed($exportedNodes);
 		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
 
 		$file = $this->cacheFilePath;
@@ -1614,9 +1662,13 @@ final class ResultCacheManager
 			$this->writeArrayFrame($handle, $file, 'dependencies', []);
 			$this->writeValueFrame($handle, $file, 'dependencyGraph', $dependencyGraph);
 			$this->writeArrayFrame($handle, $file, 'packageDependencies', $packageDependencies);
-			$this->writeArrayFrame($handle, $file, 'exportedNodes', $exportedNodes);
+			$this->writeExportedNodes($handle, $file, $exportedNodes, $cachedExportedNodes, $transformer);
 			fclose($handle);
 			$closed = true;
+
+			// the old file is where the cached exported nodes were copied from, and Windows does not
+			// replace a file that is still open
+			$cachedExportedNodes->close();
 
 			if (!@rename($temporaryFile, $file)) {
 				$error = error_get_last();
@@ -1729,6 +1781,93 @@ final class ResultCacheManager
 	}
 
 	/**
+	 * The exported nodes, as an index of the files and the lengths of their serialized nodes, followed
+	 * by the serialized nodes back to back - so that the next run can find the few it needs without
+	 * decoding the rest, and pass the rest on by copying their bytes, as this does with the ones it
+	 * did not decode.
+	 *
+	 * @param resource $handle
+	 * @param array<string, array<RootExportedNode>> $exportedNodes
+	 */
+	private function writeExportedNodes($handle, string $file, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, ResultCachePathTransformer $transformer): void
+	{
+		$serializedNodes = [];
+		foreach ($exportedNodes as $exportedNodesFile => $fileExportedNodes) {
+			$serializedNodes[$exportedNodesFile] = serialize($fileExportedNodes);
+		}
+
+		$files = [];
+		foreach ($cachedExportedNodes->getFiles() as $cachedFile) {
+			$files[$cachedFile] = true;
+		}
+		foreach (array_keys($serializedNodes) as $exportedNodesFile) {
+			$files[$exportedNodesFile] = true;
+		}
+		ksort($files);
+
+		$index = [];
+		$size = 0;
+		foreach (array_keys($files) as $exportedNodesFile) {
+			$length = array_key_exists($exportedNodesFile, $serializedNodes)
+				? strlen($serializedNodes[$exportedNodesFile])
+				: $cachedExportedNodes->getLength($exportedNodesFile);
+			$index[] = [$transformer->relativizePath($exportedNodesFile), $length];
+			$size += $length;
+		}
+
+		$this->writeValueFrame($handle, $file, 'exportedNodesIndex', $index);
+		$this->writeToHandle($handle, $file, 'exportedNodes# ' . $size . "\n");
+
+		// The files keep their order from one cache file to the next, so the cached nodes come in
+		// long runs stored one after another in the old file - each run is copied in a few large
+		// reads instead of one per file.
+		$runOffset = null;
+		$runLength = 0;
+		foreach (array_keys($files) as $exportedNodesFile) {
+			if (array_key_exists($exportedNodesFile, $serializedNodes)) {
+				$this->copyCachedExportedNodesRun($handle, $file, $cachedExportedNodes, $runOffset, $runLength);
+				$runOffset = null;
+				$runLength = 0;
+				$this->writeToHandle($handle, $file, $serializedNodes[$exportedNodesFile]);
+				continue;
+			}
+
+			$offset = $cachedExportedNodes->getOffset($exportedNodesFile);
+			$length = $cachedExportedNodes->getLength($exportedNodesFile);
+			if ($runOffset !== null && $runOffset + $runLength === $offset) {
+				$runLength += $length;
+				continue;
+			}
+
+			$this->copyCachedExportedNodesRun($handle, $file, $cachedExportedNodes, $runOffset, $runLength);
+			$runOffset = $offset;
+			$runLength = $length;
+		}
+
+		$this->copyCachedExportedNodesRun($handle, $file, $cachedExportedNodes, $runOffset, $runLength);
+	}
+
+	/**
+	 * @param resource $handle
+	 */
+	private function copyCachedExportedNodesRun($handle, string $file, CachedExportedNodes $cachedExportedNodes, ?int $offset, int $length): void
+	{
+		if ($offset === null) {
+			return;
+		}
+
+		$chunkSize = 8 * 1024 * 1024;
+		for ($copied = 0; $copied < $length; $copied += $chunkSize) {
+			$chunkLength = min($chunkSize, $length - $copied);
+			if ($chunkLength <= 0) {
+				break;
+			}
+
+			$this->writeToHandle($handle, $file, $cachedExportedNodes->readRange($offset + $copied, $chunkLength));
+		}
+	}
+
+	/**
 	 * @param resource $handle
 	 */
 	private function writeToHandle($handle, string $file, string $contents): void
@@ -1809,6 +1948,39 @@ final class ResultCacheManager
 				}
 
 				[$name, $size] = $parts;
+				if (str_ends_with($name, '#')) {
+					// payloads stored back to back, their paths and lengths in the index frame before them
+					$name = substr($name, 0, -1);
+					$size = (int) $size;
+					$offset = ftell($handle);
+					$index = $data[$name . 'Index'] ?? null;
+					if ($offset === false || !is_array($index)) {
+						throw new RuntimeException(sprintf('Section "%s" has no index.', $name));
+					}
+
+					$locations = [];
+					$position = $offset;
+					$count = count($index);
+					foreach ($index as $i => [$indexedFile, $length]) {
+						if (!is_string($indexedFile) || !is_int($length) || $length <= 0) {
+							throw new RuntimeException(sprintf('Section "%s" has a malformed index.', $name));
+						}
+
+						$locations[$indexedFile] = [$position, $length];
+						$position += $length;
+						if ($position > $fileSize) {
+							throw new RuntimeException(sprintf('Section "%s" is truncated at entry %d of %d.', $name, $i, $count));
+						}
+					}
+					if ($position !== $offset + $size || fseek($handle, $size, SEEK_CUR) !== 0) {
+						throw new RuntimeException(sprintf('Section "%s" does not match its index.', $name));
+					}
+
+					unset($data[$name . 'Index']);
+					$data[$name . 'Locations'] = $locations;
+					continue;
+				}
+
 				if (!str_ends_with($name, '*')) {
 					$data[$name] = $this->readFrame($handle, (int) $size);
 
@@ -1844,6 +2016,7 @@ final class ResultCacheManager
 				$data[$name . 'Callback'] = static fn (): array => [];
 			}
 
+			$data['cacheFileHandle'] = $handle;
 			$closeHandle = false;
 
 			return $data;
@@ -2183,7 +2356,7 @@ final class ResultCacheManager
 	 * @param array<string, array<string>>|null $usedTraitDependencies
 	 * @return array<string, array<RootExportedNode>>
 	 */
-	private function addNonAnalysedExportedNodes(array $exportedNodes, ?array $dependencies, ?array $usedTraitDependencies): array
+	private function addNonAnalysedExportedNodes(array $exportedNodes, ?array $dependencies, ?array $usedTraitDependencies, CachedExportedNodes $cachedExportedNodes): array
 	{
 		if ($dependencies === null || $usedTraitDependencies === null) {
 			return $exportedNodes;
@@ -2196,6 +2369,7 @@ final class ResultCacheManager
 					if (
 						array_key_exists($dependencyFile, $dependencies)
 						|| array_key_exists($dependencyFile, $exportedNodes)
+						|| $cachedExportedNodes->has($dependencyFile)
 						|| !is_file($dependencyFile)
 					) {
 						continue;

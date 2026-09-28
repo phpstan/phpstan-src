@@ -412,13 +412,9 @@ public:
 			if (UNEXPECTED(arrayType.isUndef())) return zv::Val();
 		}
 		zv::Val itemTypesHold(std::move(itemTypes));
-		for (zv::ArrayEntry entry : zv::ArrRef(itemTypesHold.raw())) {
-			zv::Val absorbed = pt_closure_signature_inference_collect_absorbed(entry.value().deref().raw(), arrayType.raw());
-			if (UNEXPECTED(absorbed.isUndef())) return zv::Val();
-			scope = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope.raw()), absorbed.raw());
-			if (UNEXPECTED(scope.isUndef())) return zv::Val();
-		}
-		return scope;
+		zv::Val absorbed = pt_closure_signature_inference_collect_absorbed_into(itemTypesHold.raw(), arrayType.raw());
+		if (UNEXPECTED(absorbed.isUndef())) return zv::Val();
+		return pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope.raw()), absorbed.raw());
 	}
 
 	/* the handler entry (Engine.h) */

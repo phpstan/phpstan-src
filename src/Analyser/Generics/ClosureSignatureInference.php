@@ -290,20 +290,37 @@ final class ClosureSignatureInference
 	 */
 	public static function collectAbsorbed(Type $input, Type $result): TemplateArgumentConstraints
 	{
+		return self::collectAbsorbedInto([$input], $result);
+	}
+
+	/**
+	 * The values of $inputs merged into $result - the items of an array
+	 * literal, the members of a union. See collectAbsorbed(). The markers
+	 * $result kept are collected once for all of them: a large literal of
+	 * closure-carrying items would otherwise traverse the whole array type
+	 * once per item.
+	 *
+	 * @param list<Type> $inputs
+	 */
+	public static function collectAbsorbedInto(array $inputs, Type $result): TemplateArgumentConstraints
+	{
 		$constraints = TemplateArgumentConstraints::createEmpty();
-		if ($input === $result) {
-			return $constraints;
-		}
-		$markers = self::collectMarkers($input);
-		if ($markers === []) {
-			return $constraints;
-		}
-		$kept = self::collectMarkers($result);
-		foreach ($markers as $key => $marker) {
-			if (isset($kept[$key])) {
+		$kept = null;
+		foreach ($inputs as $input) {
+			if ($input === $result) {
 				continue;
 			}
-			$constraints = $constraints->withUnconstrainingSend($marker);
+			$markers = self::collectMarkers($input);
+			if ($markers === []) {
+				continue;
+			}
+			$kept ??= self::collectMarkers($result);
+			foreach ($markers as $key => $marker) {
+				if (isset($kept[$key])) {
+					continue;
+				}
+				$constraints = $constraints->withUnconstrainingSend($marker);
+			}
 		}
 
 		return $constraints;
@@ -330,12 +347,7 @@ final class ClosureSignatureInference
 			return $constraints;
 		}
 
-		$union = TypeCombinator::union(...$types);
-		foreach ($types as $type) {
-			$constraints = $constraints->merge(self::collectAbsorbed($type, $union));
-		}
-
-		return $constraints;
+		return self::collectAbsorbedInto($types, TypeCombinator::union(...$types));
 	}
 
 	/** Whether $type carries a closure written where nothing types it. */

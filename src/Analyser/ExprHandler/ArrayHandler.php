@@ -225,11 +225,8 @@ final class ArrayHandler implements ExprHandler
 		}
 
 		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => $itemResults[spl_object_id($inner)]->getType());
-		foreach ($itemTypes as $itemType) {
-			$scope = $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbed($itemType, $arrayType));
-		}
 
-		return $scope;
+		return $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInto($itemTypes, $arrayType));
 	}
 
 	private function getExpectedArrayType(?Type $type): ?Type

@@ -3128,6 +3128,7 @@ zv::Val pt_closure_signature_inference_get_arrow_function_outer_variables(zval *
 zv::Val pt_closure_signature_inference_collect_escapes(zval *type);
 zv::Val pt_closure_signature_inference_collect_invoked_callee(zval *calleeType);
 zv::Val pt_closure_signature_inference_collect_absorbed(zval *input, zval *result);
+zv::Val pt_closure_signature_inference_collect_absorbed_into(zval *inputs, zval *result);
 zv::Val pt_closure_signature_inference_collect_absorbed_in_union(zval *types);
 [[nodiscard]] bool pt_closure_signature_inference_has_markers(zval *type, bool &out);
 /* the handlers' `$scope->addTemplateArgumentConstraints(

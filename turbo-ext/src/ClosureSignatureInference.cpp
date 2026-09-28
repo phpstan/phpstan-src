@@ -1168,15 +1168,33 @@ public:
 	/* Mirrors collectAbsorbed() */
 	static zv::Val collectAbsorbed(zval *input, zval *result)
 	{
+		zv::Arr inputs = zv::Arr::create(1);
+		inputs.push(zv::Val::copyOf(zv::Ref(input)));
+		zv::Val inputsHold(std::move(inputs));
+		return collectAbsorbedInto(inputsHold.raw(), result);
+	}
+
+	/* Mirrors collectAbsorbedInto(): the markers $result kept are collected
+	 * once, on the first input carrying any */
+	static zv::Val collectAbsorbedInto(zval *inputs, zval *result)
+	{
 		zv::Val constraints = pt_template_argument_constraints_create_empty();
 		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
-		if (Z_TYPE_P(input) == IS_OBJECT && Z_TYPE_P(result) == IS_OBJECT && Z_OBJ_P(input) == Z_OBJ_P(result)) return constraints;
-		zv::Val markers = collectMarkers(input);
-		if (UNEXPECTED(markers.isUndef())) return zv::Val();
-		if (zend_hash_num_elements(Z_ARRVAL_P(markers.raw())) == 0) return constraints;
-		zv::Val kept = collectMarkers(result);
-		if (UNEXPECTED(kept.isUndef())) return zv::Val();
-		return unconstrainMarkers(std::move(constraints), markers.raw(), kept.raw());
+		zv::Val kept;
+		for (auto entry : zv::ArrRef(inputs)) {
+			zval *input = entry.value().deref().raw();
+			if (Z_TYPE_P(input) == IS_OBJECT && Z_TYPE_P(result) == IS_OBJECT && Z_OBJ_P(input) == Z_OBJ_P(result)) continue;
+			zv::Val markers = collectMarkers(input);
+			if (UNEXPECTED(markers.isUndef())) return zv::Val();
+			if (zend_hash_num_elements(Z_ARRVAL_P(markers.raw())) == 0) continue;
+			if (kept.isUndef()) {
+				kept = collectMarkers(result);
+				if (UNEXPECTED(kept.isUndef())) return zv::Val();
+			}
+			constraints = unconstrainMarkers(std::move(constraints), markers.raw(), kept.raw());
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+		return constraints;
 	}
 
 	/* Mirrors hasMarkers() */
@@ -1212,13 +1230,7 @@ public:
 		zv::Val unionType = pt_type_combinator_union(count, argv);
 		efree(argv);
 		if (UNEXPECTED(unionType.isUndef())) return zv::Val();
-		for (auto entry : zv::ArrRef(types)) {
-			zv::Val absorbed = collectAbsorbed(entry.value().deref().raw(), unionType.raw());
-			if (UNEXPECTED(absorbed.isUndef())) return zv::Val();
-			constraints = pt_template_argument_constraints_merge(constraints.raw(), absorbed.raw());
-			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
-		}
-		return constraints;
+		return collectAbsorbedInto(types, unionType.raw());
 	}
 
 	/* Mirrors collectInvocation() */
@@ -1847,6 +1859,11 @@ zv::Val pt_closure_signature_inference_collect_absorbed(zval *input, zval *resul
 	return ClosureSignatureInference::collectAbsorbed(input, result);
 }
 
+zv::Val pt_closure_signature_inference_collect_absorbed_into(zval *inputs, zval *result)
+{
+	return ClosureSignatureInference::collectAbsorbedInto(inputs, result);
+}
+
 zv::Val pt_closure_signature_inference_collect_absorbed_in_union(zval *types)
 {
 	return ClosureSignatureInference::collectAbsorbedInUnion(types);
@@ -2005,6 +2022,15 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 		zval *input, *result;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, input, result)) RETURN_THROWS();
 		PT_RETURN_VAL(ClosureSignatureInference::collectAbsorbed(input, result));
+	});
+
+	cls.method(sigs::collectAbsorbedInto, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *inputs, *result;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_ARRAY(inputs)
+			Z_PARAM_OBJECT(result)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(ClosureSignatureInference::collectAbsorbedInto(inputs, result));
 	});
 
 	cls.method(sigs::collectAbsorbedInUnion, [](INTERNAL_FUNCTION_PARAMETERS) {

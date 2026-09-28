@@ -11,6 +11,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\Property\PropertyRead;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
@@ -64,12 +65,30 @@ final class UnusedPrivatePropertyRule implements Rule
 		}
 		$classReflection = $node->getClassReflection();
 		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
+		// A property node declared in a trait only reaches us when NodeScopeResolver traversed
+		// that trait's body, which it does for analysed files only. Its presence therefore
+		// proves the trait's own usages are visible.
+		$propertyNamesDeclaredInTraitBody = [];
+		foreach ($node->getProperties() as $property) {
+			if (!$property->isDeclaredInTrait()) {
+				continue;
+			}
+
+			$propertyNamesDeclaredInTraitBody[$property->getName()] = true;
+		}
+
 		$properties = [];
 		foreach ($node->getProperties() as $property) {
 			if (!$property->isPrivate()) {
 				continue;
 			}
 			if ($property->isDeclaredInTrait()) {
+				continue;
+			}
+			if (
+				!array_key_exists($property->getName(), $propertyNamesDeclaredInTraitBody)
+				&& $this->isRedeclaringPrivateTraitProperty($classReflection, $property->getName())
+			) {
 				continue;
 			}
 
@@ -291,6 +310,28 @@ final class UnusedPrivatePropertyRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * A private property redeclared from a used trait is the very property the trait's
+	 * own methods read and write. Callers must only rely on this when the trait's body was
+	 * not traversed, otherwise those usages are visible and no guessing is needed.
+	 */
+	private function isRedeclaringPrivateTraitProperty(ClassReflection $classReflection, string $propertyName): bool
+	{
+		foreach ($classReflection->getTraits() as $trait) {
+			if (!$trait->hasNativeProperty($propertyName)) {
+				continue;
+			}
+
+			if (!$trait->getNativeProperty($propertyName)->isPrivate()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private function isPropertySelfWrite(

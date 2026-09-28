@@ -483,4 +483,28 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14880-property.php'], []);
 	}
 
+	public function testBug12201(): void
+	{
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+
+		$this->analyse([__DIR__ . '/data/bug-12201-property.php'], [
+			[
+				'Property Bug12201Property\\AnotherKernel::$unused is never read, only written.',
+				22,
+				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
+			],
+			[
+				'Property Bug12201Property\\ChildKernel::$allowedEnvs is never read, only written.',
+				48,
+				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
+			],
+			[
+				'Property Bug12201Property\\RedeclaresAnalysedTrait::$redeclared is never read, only written.',
+				82,
+				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
+			],
+		]);
+	}
+
 }

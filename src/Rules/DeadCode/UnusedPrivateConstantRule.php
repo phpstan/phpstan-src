@@ -8,10 +8,13 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassConstantsNode;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
+use function array_key_exists;
+use function in_array;
 use function sprintf;
 
 /**
@@ -45,6 +48,20 @@ final class UnusedPrivateConstantRule implements Rule
 		$classReflection = $node->getClassReflection();
 		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
 
+		// A gathered ClassConst that is not one of the class' own statements comes from an
+		// inlined trait body, which NodeScopeResolver only traverses for analysed files.
+		// Its presence therefore proves the trait's own fetches are visible.
+		$constantNamesDeclaredInTraitBody = [];
+		foreach ($node->getConstants() as $constant) {
+			if (in_array($constant, $node->getClass()->stmts, true)) {
+				continue;
+			}
+
+			foreach ($constant->consts as $const) {
+				$constantNamesDeclaredInTraitBody[$const->name->toString()] = true;
+			}
+		}
+
 		$constants = [];
 		foreach ($node->getConstants() as $constant) {
 			if (!$constant->isPrivate()) {
@@ -53,6 +70,13 @@ final class UnusedPrivateConstantRule implements Rule
 
 			foreach ($constant->consts as $const) {
 				$constantName = $const->name->toString();
+
+				if (
+					!array_key_exists($constantName, $constantNamesDeclaredInTraitBody)
+					&& $this->isRedeclaringPrivateTraitConstant($classReflection, $constantName)
+				) {
+					continue;
+				}
 
 				$constantReflection = $classReflection->getConstant($constantName);
 				foreach ($this->extensions->getAll() as $extension) {
@@ -111,6 +135,28 @@ final class UnusedPrivateConstantRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * A private constant redeclared from a used trait is the very constant the trait's
+	 * own methods fetch. Callers must only rely on this when the trait's body was not
+	 * traversed, otherwise those fetches are visible and no guessing is needed.
+	 */
+	private function isRedeclaringPrivateTraitConstant(ClassReflection $classReflection, string $constantName): bool
+	{
+		foreach ($classReflection->getTraits() as $trait) {
+			if (!$trait->hasConstant($constantName)) {
+				continue;
+			}
+
+			if (!$trait->getConstant($constantName)->isPrivate()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

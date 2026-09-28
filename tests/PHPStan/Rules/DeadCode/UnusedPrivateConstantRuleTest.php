@@ -105,4 +105,31 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14880-constant.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2.0')]
+	public function testBug12201(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12201-constant.php'], [
+			[
+				'Constant Bug12201Constant\\AnotherKernel::UNUSED is unused.',
+				23,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
+			],
+			[
+				'Constant Bug12201Constant\\UsesNeverFetchedTrait::NEVER_FETCHED is unused.',
+				30,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
+			],
+			[
+				'Constant Bug12201Constant\\ChildKernel::ALLOWED_ENVS is unused.',
+				52,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
+			],
+			[
+				'Constant Bug12201Constant\\RedeclaresAnalysedTrait::REDECLARED is unused.',
+				69,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
+			],
+		]);
+	}
+
 }

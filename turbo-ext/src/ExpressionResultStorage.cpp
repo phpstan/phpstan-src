@@ -25,6 +25,7 @@ namespace sigs = ptdecl::ExpressionResultStorage::sig;
 #include "zv.h"
 
 #define PT_ERS_PROP_FALLBACK 2
+#define PT_ERS_PROP_BY_REF_INVOCATION_WALKS 3
 
 zend_class_entry *pt_ce_expression_result_storage = nullptr;
 
@@ -82,6 +83,53 @@ public:
 		}
 	}
 
+	/* Mirrors storeByRefInvocationWalk(): the walks keyed by the closure's
+	 * handle as [closure, list of walks] - the closure is pinned like the
+	 * stored Exprs */
+	void storeByRefInvocationWalk(zval *closure, zval *walk)
+	{
+		zend_ulong id = Z_OBJ_HANDLE_P(closure);
+		zv::ObjRef obj(self);
+		zv::ArrRef table(obj.propAt(PT_ERS_PROP_BY_REF_INVOCATION_WALKS).raw());
+		zv::Ref entry = table.findIndex(id);
+		zv::Arr walks = zv::Arr::empty();
+		if (entry.raw() != NULL) {
+			zval *stored = zend_hash_index_find(Z_ARRVAL_P(entry.deref().raw()), 1);
+			if (stored != NULL) walks = zv::Arr::copyOfTable(Z_ARRVAL_P(stored));
+		}
+		walks.push(zv::Val::copyOf(zv::Ref(walk)));
+		zv::Arr pair = zv::Arr::create(2);
+		pair.push(zv::Val::copyOf(zv::Ref(closure)));
+		pair.push(std::move(walks));
+		zv::Val pairHold(std::move(pair));
+		table.setIndex(id, zv::Ref(pairHold.raw()));
+	}
+
+	/* Mirrors findByRefInvocationWalks(): this storage's walks, then the
+	 * fallback chain's */
+	zv::Val findByRefInvocationWalks(zval *closure) const
+	{
+		zend_ulong id = Z_OBJ_HANDLE_P(closure);
+		zv::Arr walks = zv::Arr::empty();
+		zval *cur = self;
+		for (;;) {
+			zv::ObjRef obj(cur);
+			zv::Ref entry = zv::ArrRef(obj.propAt(PT_ERS_PROP_BY_REF_INVOCATION_WALKS).raw()).findIndex(id);
+			if (entry.raw() != NULL) {
+				zval *stored = zend_hash_index_find(Z_ARRVAL_P(entry.deref().raw()), 1);
+				if (stored != NULL) {
+					for (zv::ArrayEntry walk : zv::ArrRef(stored)) {
+						walks.push(zv::Val::copyOf(walk.value()));
+					}
+				}
+			}
+			zval *fallback = obj.propAt(PT_ERS_PROP_FALLBACK).raw();
+			if (Z_TYPE_P(fallback) != IS_OBJECT) break;
+			cur = fallback;
+		}
+		return zv::Val(std::move(walks));
+	}
+
 private:
 	zval *self;
 };
@@ -115,6 +163,9 @@ PT_MINIT_REGISTRATION(pt_register_expression_result_storage)
 	cls.privateArrayProperty("exprsById");
 	cls.privateArrayProperty("resultsById");
 	cls.property("fallback", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "self");
+	/* the twin's ?SplObjectStorage $byRefInvocationWalks: [closure, walks]
+	 * keyed by the closure's handle */
+	cls.privateArrayProperty("byRefInvocationWalksById");
 
 	/* the twin's constructor only initialized its SplObjectStorage; the
 	 * native property defaults already cover that */
@@ -163,6 +214,27 @@ PT_MINIT_REGISTRATION(pt_register_expression_result_storage)
 		ExpressionResultStorage(ZEND_THIS).findExpressionResult(expr).intoReturnValue(return_value);
 	});
 
+	cls.method(sigs::storeByRefInvocationWalk, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *closure, *walk;
+		zend_class_entry *closureCe = pt_class(PT_CLASS_CLOSURE_EXPR);
+		if (UNEXPECTED(closureCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT_OF_CLASS(closure, closureCe)
+			Z_PARAM_ARRAY(walk)
+		ZEND_PARSE_PARAMETERS_END();
+		ExpressionResultStorage(ZEND_THIS).storeByRefInvocationWalk(closure, walk);
+	});
+
+	cls.method(sigs::findByRefInvocationWalks, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *closure;
+		zend_class_entry *closureCe = pt_class(PT_CLASS_CLOSURE_EXPR);
+		if (UNEXPECTED(closureCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(closure, closureCe)
+		ZEND_PARSE_PARAMETERS_END();
+		ExpressionResultStorage(ZEND_THIS).findByRefInvocationWalks(closure).intoReturnValue(return_value);
+	});
+
 	cls.shadow(&pt_ce_expression_result_storage);
 }
 
@@ -203,3 +275,19 @@ bool pt_expression_result_storage_merge_results(zval *storage, zval *other)
 }
 
 /* }}} */
+
+zv::Val pt_expression_result_storage_find_by_ref_invocation_walks(zval *storage, zval *closure)
+{
+	if (EXPECTED(Z_OBJCE_P(storage) == pt_ce_expression_result_storage)) return ExpressionResultStorage(storage).findByRefInvocationWalks(closure);
+	return pt_type_call(Z_OBJ_P(storage), "findbyrefinvocationwalks", sizeof("findbyrefinvocationwalks") - 1, 1, closure);
+}
+
+[[nodiscard]] bool pt_expression_result_storage_store_by_ref_invocation_walk(zval *storage, zval *closure, zval *walk)
+{
+	if (EXPECTED(Z_OBJCE_P(storage) == pt_ce_expression_result_storage)) {
+		ExpressionResultStorage(storage).storeByRefInvocationWalk(closure, walk);
+		return true;
+	}
+	zv::Args argv{closure, walk};
+	return !pt_type_call(Z_OBJ_P(storage), "storebyrefinvocationwalk", sizeof("storebyrefinvocationwalk") - 1, 2, argv).isUndef();
+}

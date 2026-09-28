@@ -39,6 +39,7 @@ $deliberateDrift = [
 	],
 	'PHPStan\\Analyser\\ExpressionResultStorage' => [
 		'~^property (exprResults is not declared natively|(exprsById|resultsById) is declared natively but not in PHP)$~' => 'the result table is two id-keyed arrays instead of the twin\'s SplObjectStorage',
+		'~^property (byRefInvocationWalks is not declared natively|byRefInvocationWalksById is declared natively but not in PHP)$~' => 'the by-ref invocation walks are an id-keyed array of [closure, walks] instead of the twin\'s SplObjectStorage',
 	],
 ];
 

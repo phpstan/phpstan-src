@@ -12,6 +12,7 @@ namespace ptdecl::ExpressionResultStorage {
 namespace slot {
 inline constexpr uint32_t exprResults = 0;
 inline constexpr uint32_t fallback = 1;
+inline constexpr uint32_t byRefInvocationWalks = 2;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -24,6 +25,7 @@ inline void declareProperties(reg::Class &cls)
 {
 	cls.property("exprResults", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "SplObjectStorage");
 	cls.property("fallback", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResultStorage");
+	cls.property("byRefInvocationWalks", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "SplObjectStorage");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -40,7 +42,12 @@ inline constexpr char strings[] =
 	"expressionResult\0" /* 108 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 125 */
 	"storeExpressionResult\0" /* 159 */
-	"findExpressionResult"; /* 181 */
+	"findExpressionResult\0" /* 181 */
+	"closure\0" /* 202 */
+	"PhpParser\\Node\\Expr\\Closure\0" /* 210 */
+	"walk\0" /* 238 */
+	"storeByRefInvocationWalk\0" /* 243 */
+	"findByRefInvocationWalks"; /* 268 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 13), /* duplicate return */
 	reg::packed(64, 0, 13), /* mergeResults $other */
@@ -50,6 +57,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, MAY_BE_VOID), /* storeExpressionResult return */
 	reg::packed(83, 0, 88), /* findExpressionResult $expr */
 	reg::packed(12, MAY_BE_NULL, 125), /* findExpressionResult return */
+	reg::packed(202, 0, 210), /* storeByRefInvocationWalk $closure */
+	reg::packed(238, MAY_BE_ARRAY), /* storeByRefInvocationWalk $walk */
+	reg::packed(12, MAY_BE_VOID), /* storeByRefInvocationWalk return */
+	reg::packed(202, 0, 210), /* findByRefInvocationWalks $closure */
+	reg::packed(12, MAY_BE_ARRAY), /* findByRefInvocationWalks return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -61,6 +73,8 @@ inline constexpr sigtab::Sig duplicate = { { 54 /* duplicate */, 0, 0, 0, 0, ZEN
 inline constexpr sigtab::Sig mergeResults = { { 70 /* mergeResults */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig storeExpressionResult = { { 159 /* storeExpressionResult */, 2, 3, 2, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig findExpressionResult = { { 181 /* findExpressionResult */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig storeByRefInvocationWalk = { { 243 /* storeByRefInvocationWalk */, 2, 8, 2, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findByRefInvocationWalks = { { 268 /* findByRefInvocationWalks */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ExpressionResultStorage

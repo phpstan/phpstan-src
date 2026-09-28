@@ -343,6 +343,89 @@ public:
 		zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
 		zv::Val entryScope = enter(scope);
 		if (UNEXPECTED(entryScope.isUndef())) return zv::Val();
+		zv::Val frame = pt_mutating_scope_get_current_template_argument_frame(Z_OBJ_P(scope));
+		if (UNEXPECTED(frame.isUndef())) return zv::Val();
+		bool nativeTypesPromoted;
+		if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), nativeTypesPromoted))) return zv::Val();
+		// the body entered in a state it was already walked from, in the same
+		// pass: a closure invoked many times mostly re-enters one of a few states
+		zv::Val walk;
+		{
+			zv::Val storedWalks = pt_expression_result_storage_find_by_ref_invocation_walks(storage, expr);
+			if (UNEXPECTED(storedWalks.isUndef())) return zv::Val();
+			for (zv::ArrayEntry entry : zv::ArrRef(storedWalks.raw())) {
+				zval *storedWalk = entry.value().deref().raw();
+				zval *walkFrame = zend_hash_index_find(Z_ARRVAL_P(storedWalk), 0);
+				zval *walkUntilFixpoint = zend_hash_index_find(Z_ARRVAL_P(storedWalk), 1);
+				zval *walkNativeTypesPromoted = zend_hash_index_find(Z_ARRVAL_P(storedWalk), 2);
+				zval *walkEntryScope = zend_hash_index_find(Z_ARRVAL_P(storedWalk), 3);
+				if (UNEXPECTED(walkFrame == NULL || walkUntilFixpoint == NULL || walkNativeTypesPromoted == NULL || walkEntryScope == NULL)) continue;
+				bool sameFrame = Z_TYPE_P(walkFrame) == IS_OBJECT
+					? Z_TYPE_P(frame.raw()) == IS_OBJECT && Z_OBJ_P(walkFrame) == Z_OBJ_P(frame.raw())
+					: Z_TYPE_P(frame.raw()) != IS_OBJECT;
+				if (!sameFrame || (Z_TYPE_P(walkUntilFixpoint) == IS_TRUE) != untilFixpoint || (Z_TYPE_P(walkNativeTypesPromoted) == IS_TRUE) != nativeTypesPromoted) continue;
+				bool equals = false;
+				if (UNEXPECTED(!pt_mutating_scope_equals(Z_OBJ_P(walkEntryScope), Z_OBJ_P(entryScope.raw()), equals))) return zv::Val();
+				if (!equals) continue;
+				walk = zv::Val::copyOf(zv::Ref(storedWalk));
+				break;
+			}
+		}
+		if (walk.isUndef()) {
+			zv::Val walked = walkByRefInvocation(nodeScopeResolver, expr, scope, storage, entryScope.raw(), enter, byRefUses.raw(), stmtsHold.raw(), untilFixpoint);
+			if (UNEXPECTED(walked.isUndef())) return zv::Val();
+			zv::Arr stored = zv::Arr::create(6);
+			stored.push(zv::Val::copyOf(zv::Ref(frame.raw())));
+			stored.push(zv::Val::boolean(untilFixpoint));
+			stored.push(zv::Val::boolean(nativeTypesPromoted));
+			stored.push(zv::Val::copyOf(zv::Ref(entryScope.raw())));
+			stored.push(zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(walked.raw()), 0))));
+			stored.push(zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(walked.raw()), 1))));
+			walk = zv::Val(std::move(stored));
+			if (UNEXPECTED(!pt_expression_result_storage_store_by_ref_invocation_walk(storage, expr, walk.raw()))) return zv::Val();
+		}
+		zval *exitScope = zend_hash_index_find(Z_ARRVAL_P(walk.raw()), 4);
+		zval *bodyThrowPoints = zend_hash_index_find(Z_ARRVAL_P(walk.raw()), 5);
+		if (UNEXPECTED(exitScope == NULL || bodyThrowPoints == NULL)) return zv::Val();
+
+		zv::Arr throwPoints = zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(bodyThrowPoints)) {
+			zval *throwPoint = entry.value().deref().raw();
+			zv::Val throwPointScopeHold;
+			zval *throwPointScope = pt_internal_throw_point_scope(throwPoint, throwPointScopeHold);
+			if (UNEXPECTED(throwPointScope == NULL)) return zv::Val();
+			zv::Val throwScope = assignByRefUses(scope, throwPointScope, byRefUses.raw());
+			if (UNEXPECTED(throwScope.isUndef())) return zv::Val();
+			bool isExplicit;
+			if (UNEXPECTED(!pt_internal_throw_point_is_explicit(throwPoint, isExplicit))) return zv::Val();
+			zv::Val created;
+			if (isExplicit) {
+				zv::Val typeHold;
+				zval *type = pt_internal_throw_point_type(throwPoint, typeHold);
+				if (UNEXPECTED(type == NULL)) return zv::Val();
+				bool canContainAnyThrowable;
+				if (UNEXPECTED(!pt_internal_throw_point_can_contain_any_throwable(throwPoint, canContainAnyThrowable))) return zv::Val();
+				created = pt_internal_throw_point_create_explicit(throwScope.raw(), type, call, canContainAnyThrowable);
+			} else {
+				created = pt_internal_throw_point_create_implicit(throwScope.raw(), call);
+			}
+			if (UNEXPECTED(created.isUndef())) return zv::Val();
+			throwPoints.push(std::move(created));
+		}
+
+		zv::Val resultScope = assignByRefUses(scope, exitScope, byRefUses.raw());
+		if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
+		zv::Arr pair = zv::Arr::create(2);
+		pair.push(std::move(resultScope));
+		pair.push(std::move(throwPoints));
+		return zv::Val(std::move(pair));
+	}
+
+	/* Mirrors walkByRefInvocation(): [the body's exit scope, its throw points] */
+	template<typename Enter>
+	zv::Val walkByRefInvocation(zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage, zval *firstEntryScope, Enter &enter, zval *byRefUses, zval *stmts, bool untilFixpoint) const
+	{
+		zv::Val entryScope = zv::Val::copyOf(zv::Ref(firstEntryScope));
 		zv::Val exitScope;
 		zv::Arr throwPoints = zv::Arr::empty();
 		zend_long count = 0;
@@ -353,7 +436,7 @@ public:
 			if (UNEXPECTED(noop.isUndef())) return zv::Val();
 			zv::Val context = pt_statement_context_create_top_level(false);
 			if (UNEXPECTED(context.isUndef())) return zv::Val();
-			zv::Val result = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, expr, stmtsHold.raw(), entryScope.raw(), passStorage.raw(), noop.raw(), context.raw());
+			zv::Val result = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, expr, stmts, entryScope.raw(), passStorage.raw(), noop.raw(), context.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zv::Val passExitScope;
 			{
@@ -386,35 +469,15 @@ public:
 				if (UNEXPECTED(resultThrowPoints == NULL)) return zv::Val();
 				zv::Val throwPointsIterated = zv::Val::copyOf(zv::Ref(resultThrowPoints));
 				for (zv::ArrayEntry entry : zv::ArrRef(throwPointsIterated.raw())) {
-					zval *throwPoint = entry.value().deref().raw();
-					zv::Val throwPointScopeHold;
-					zval *throwPointScope = pt_internal_throw_point_scope(throwPoint, throwPointScopeHold);
-					if (UNEXPECTED(throwPointScope == NULL)) return zv::Val();
-					zv::Val throwScope = assignByRefUses(scope, throwPointScope, byRefUses.raw());
-					if (UNEXPECTED(throwScope.isUndef())) return zv::Val();
-					bool isExplicit;
-					if (UNEXPECTED(!pt_internal_throw_point_is_explicit(throwPoint, isExplicit))) return zv::Val();
-					zv::Val created;
-					if (isExplicit) {
-						zv::Val typeHold;
-						zval *type = pt_internal_throw_point_type(throwPoint, typeHold);
-						if (UNEXPECTED(type == NULL)) return zv::Val();
-						bool canContainAnyThrowable;
-						if (UNEXPECTED(!pt_internal_throw_point_can_contain_any_throwable(throwPoint, canContainAnyThrowable))) return zv::Val();
-						created = pt_internal_throw_point_create_explicit(throwScope.raw(), type, call, canContainAnyThrowable);
-					} else {
-						created = pt_internal_throw_point_create_implicit(throwScope.raw(), call);
-					}
-					if (UNEXPECTED(created.isUndef())) return zv::Val();
-					throwPoints.push(std::move(created));
+					throwPoints.push(entry.value().deref());
 				}
 			}
 			if (!untilFixpoint) break;
 
 			// the next run starts from any state a run may have left
-			zv::Val entryAssigned = assignByRefUses(scope, entryScope.raw(), byRefUses.raw());
+			zv::Val entryAssigned = assignByRefUses(scope, entryScope.raw(), byRefUses);
 			if (UNEXPECTED(entryAssigned.isUndef())) return zv::Val();
-			zv::Val exitAssigned = assignByRefUses(scope, passExitScope.raw(), byRefUses.raw());
+			zv::Val exitAssigned = assignByRefUses(scope, passExitScope.raw(), byRefUses);
 			if (UNEXPECTED(exitAssigned.isUndef())) return zv::Val();
 			zv::Val joined = pt_mutating_scope_merge_with(Z_OBJ_P(entryAssigned.raw()), exitAssigned.raw());
 			if (UNEXPECTED(joined.isUndef())) return zv::Val();
@@ -439,10 +502,8 @@ public:
 			exitScope = std::move(merged);
 		}
 
-		zv::Val resultScope = assignByRefUses(scope, exitScope.raw(), byRefUses.raw());
-		if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
 		zv::Arr pair = zv::Arr::create(2);
-		pair.push(std::move(resultScope));
+		pair.push(std::move(exitScope));
 		pair.push(std::move(throwPoints));
 		return zv::Val(std::move(pair));
 	}

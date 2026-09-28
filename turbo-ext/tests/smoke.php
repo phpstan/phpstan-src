@@ -378,6 +378,21 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 	check($storage->findExpressionResult($exprC) === null, "ERS $label: mergeResults ignores the other's fallback chain");
 	check($storage->findExpressionResult($exprA) === $resultB, "ERS $label: mergeResults keeps existing entries");
 
+	$closureA = new \PhpParser\Node\Expr\Closure();
+	$closureB = new \PhpParser\Node\Expr\Closure();
+	$walkA = [null, true, false, 'entryA', 'exitA', []];
+	$walkB = [null, false, false, 'entryB', 'exitB', []];
+	$walkC = [null, false, true, 'entryC', 'exitC', []];
+	$walks = new $storageClass();
+	check($walks->findByRefInvocationWalks($closureA) === [], "ERS $label: no by-ref walks stored");
+	$walks->storeByRefInvocationWalk($closureA, $walkA);
+	$walks->storeByRefInvocationWalk($closureA, $walkB);
+	check($walks->findByRefInvocationWalks($closureA) === [$walkA, $walkB], "ERS $label: by-ref walks in the order stored");
+	check($walks->findByRefInvocationWalks($closureB) === [], "ERS $label: by-ref walks are per closure");
+	$walksChild = $walks->duplicate();
+	$walksChild->storeByRefInvocationWalk($closureA, $walkC);
+	check($walksChild->findByRefInvocationWalks($closureA) === [$walkC, $walkA, $walkB], "ERS $label: own by-ref walks before the fallback chain's");
+	check($walks->findByRefInvocationWalks($closureA) === [$walkA, $walkB], "ERS $label: by-ref walks stored on a duplicate do not leak back");
 }
 
 

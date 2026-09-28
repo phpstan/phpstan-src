@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use SplObjectStorage;
 
@@ -18,6 +19,17 @@ final class ExpressionResultStorage
 	 * instead of copying all stored results.
 	 */
 	private ?self $fallback = null;
+
+	/**
+	 * The walks of closure bodies run for invocations of closures whose by-ref
+	 * uses are followed (see ClosureProcessor::processByRefInvocation()),
+	 * keyed by the closure: [frame, until fixpoint, native types promoted,
+	 * entry scope, exit scope, throw points]. The walk is a function of these,
+	 * so an invocation entering the body in a state already walked reads it.
+	 *
+	 * @var SplObjectStorage<Expr\Closure, list<array{TemplateArgumentFrame|null, bool, bool, MutatingScope, MutatingScope, list<InternalThrowPoint>}>>|null
+	 */
+	private ?SplObjectStorage $byRefInvocationWalks = null;
 
 	public function __construct()
 	{
@@ -44,6 +56,32 @@ final class ExpressionResultStorage
 	public function findExpressionResult(Expr $expr): ?ExpressionResult
 	{
 		return $this->exprResults[$expr] ?? ($this->fallback !== null ? $this->fallback->findExpressionResult($expr) : null);
+	}
+
+	/**
+	 * @param array{TemplateArgumentFrame|null, bool, bool, MutatingScope, MutatingScope, list<InternalThrowPoint>} $walk
+	 */
+	public function storeByRefInvocationWalk(Expr\Closure $closure, array $walk): void
+	{
+		$this->byRefInvocationWalks ??= new SplObjectStorage();
+		$walks = $this->byRefInvocationWalks[$closure] ?? [];
+		$walks[] = $walk;
+		$this->byRefInvocationWalks[$closure] = $walks;
+	}
+
+	/**
+	 * The walks stored here and in the storages this one falls back to.
+	 *
+	 * @return list<array{TemplateArgumentFrame|null, bool, bool, MutatingScope, MutatingScope, list<InternalThrowPoint>}>
+	 */
+	public function findByRefInvocationWalks(Expr\Closure $closure): array
+	{
+		$walks = $this->byRefInvocationWalks[$closure] ?? [];
+		if ($this->fallback === null) {
+			return $walks;
+		}
+
+		return [...$walks, ...$this->fallback->findByRefInvocationWalks($closure)];
 	}
 
 }

@@ -434,6 +434,60 @@ final class ClosureProcessor
 		$enter = fn (MutatingScope $byRefSource): MutatingScope => $this->enterWithCapturedUses($scope, $expr, $callableParameters, $creationScope)->processClosureScope($byRefSource, null, $byRefUses);
 
 		$entryScope = $enter($scope);
+		$frame = $scope->getCurrentTemplateArgumentFrame();
+		$walk = null;
+		// the body entered in a state it was already walked from, in the same
+		// pass: a closure invoked many times mostly re-enters one of a few states
+		foreach ($storage->findByRefInvocationWalks($expr) as $storedWalk) {
+			[$walkFrame, $walkUntilFixpoint, $walkNativeTypesPromoted, $walkEntryScope] = $storedWalk;
+			if (
+				$walkFrame !== $frame
+				|| $walkUntilFixpoint !== $untilFixpoint
+				|| $walkNativeTypesPromoted !== $scope->nativeTypesPromoted
+				|| !$walkEntryScope->equals($entryScope)
+			) {
+				continue;
+			}
+			$walk = $storedWalk;
+			break;
+		}
+		if ($walk === null) {
+			[$exitScope, $bodyThrowPoints] = $this->walkByRefInvocation($nodeScopeResolver, $expr, $scope, $storage, $entryScope, $enter, $byRefUses, $untilFixpoint);
+			$walk = [$frame, $untilFixpoint, $scope->nativeTypesPromoted, $entryScope, $exitScope, $bodyThrowPoints];
+			$storage->storeByRefInvocationWalk($expr, $walk);
+		}
+		[, , , , $exitScope, $bodyThrowPoints] = $walk;
+
+		$throwPoints = [];
+		foreach ($bodyThrowPoints as $throwPoint) {
+			$throwScope = $this->assignByRefUses($scope, $throwPoint->getScope(), $byRefUses);
+			$throwPoints[] = $throwPoint->isExplicit()
+				? InternalThrowPoint::createExplicit($throwScope, $throwPoint->getType(), $call, $throwPoint->canContainAnyThrowable())
+				: InternalThrowPoint::createImplicit($throwScope, $call);
+		}
+
+		return [$this->assignByRefUses($scope, $exitScope, $byRefUses), $throwPoints];
+	}
+
+	/**
+	 * The walks of processByRefInvocation() from the entry scope: the body's
+	 * exit scope and throw points, in the closure's own scope.
+	 *
+	 * @param callable(MutatingScope): MutatingScope $enter
+	 * @param Node\ClosureUse[] $byRefUses
+	 * @return array{MutatingScope, list<InternalThrowPoint>}
+	 */
+	private function walkByRefInvocation(
+		NodeScopeResolver $nodeScopeResolver,
+		Expr\Closure $expr,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		MutatingScope $entryScope,
+		callable $enter,
+		array $byRefUses,
+		bool $untilFixpoint,
+	): array
+	{
 		$exitScope = null;
 		$throwPoints = [];
 		$count = 0;
@@ -445,10 +499,7 @@ final class ClosureProcessor
 			}
 			$exitScope = $exitScope === null ? $passExitScope : $exitScope->mergeWith($passExitScope);
 			foreach ($result->getThrowPoints() as $throwPoint) {
-				$throwScope = $this->assignByRefUses($scope, $throwPoint->getScope(), $byRefUses);
-				$throwPoints[] = $throwPoint->isExplicit()
-					? InternalThrowPoint::createExplicit($throwScope, $throwPoint->getType(), $call, $throwPoint->canContainAnyThrowable())
-					: InternalThrowPoint::createImplicit($throwScope, $call);
+				$throwPoints[] = $throwPoint;
 			}
 			if (!$untilFixpoint) {
 				break;
@@ -471,7 +522,7 @@ final class ClosureProcessor
 			$exitScope = $exitScope->mergeWith($entryScope);
 		}
 
-		return [$this->assignByRefUses($scope, $exitScope, $byRefUses), $throwPoints];
+		return [$exitScope, $throwPoints];
 	}
 
 	/**

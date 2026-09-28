@@ -1556,6 +1556,10 @@ extern zend_class_entry *pt_ce_volatile_expression_helper;
 zv::Val pt_expression_result_storage_new();
 zv::Val pt_expression_result_storage_find(zval *storage, zval *expr);
 zv::Val pt_expression_result_storage_duplicate(zval *storage);
+/* ExpressionResultStorage::findByRefInvocationWalks() / storeByRefInvocationWalk()
+ * (false = pending exception) */
+zv::Val pt_expression_result_storage_find_by_ref_invocation_walks(zval *storage, zval *closure);
+[[nodiscard]] bool pt_expression_result_storage_store_by_ref_invocation_walk(zval *storage, zval *closure, zval *walk);
 /* the shadowing ExpressionResultStorageStack (ExpressionResultStorageStack.cpp)
  * — $stack->getCurrent(): the native body for a native stack, the method for
  * anything else; UNDEF = pending exception */

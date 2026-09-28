@@ -28,7 +28,7 @@ function wakeupThrows(): void
 
 	try {
 		unserialize($data);
-	} catch (\RuntimeException) {
+	} catch (\RuntimeException $e) {
 	}
 }
 
@@ -38,6 +38,6 @@ function unserializeThrows(): void
 
 	try {
 		unserialize($data);
-	} catch (\LogicException) {
+	} catch (\LogicException $e) {
 	}
 }

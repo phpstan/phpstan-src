@@ -14,6 +14,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\File\FileHelper;
 use PHPStan\File\IncludedFilePathResolver;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Parser\IncludeResolutionChangedVisitor;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -61,6 +62,12 @@ final class RequireFileExistsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($this->isInFileExists($node, $scope)) {
+			return [];
+		}
+
+		if ($node->getAttribute(IncludeResolutionChangedVisitor::ATTRIBUTE_NAME) === true) {
+			// A call earlier in the file moved the working directory, changed the include path or
+			// registered a stream wrapper, so the path no longer names a place PHPStan can look at.
 			return [];
 		}
 

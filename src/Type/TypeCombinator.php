@@ -1386,6 +1386,69 @@ final class TypeCombinator
 	}
 
 	/**
+	 * The value at each key of the array that is a single constant scalar, null
+	 * when the array has real unsealed extras - its keys-supersets are then not
+	 * decided by the known keys alone.
+	 *
+	 * @return array<int|string, scalar|null>|null
+	 */
+	private static function getConstantScalarValuesByKey(ConstantArrayType $array): ?array
+	{
+		$unsealed = $array->getUnsealedTypes();
+		if ($unsealed !== null && !($unsealed[0] instanceof NeverType && $unsealed[0]->isExplicit())) {
+			return null;
+		}
+
+		$values = [];
+		$valueTypes = $array->getValueTypes();
+		foreach ($array->getKeyTypes() as $i => $keyType) {
+			if (!$valueTypes[$i]->isConstantScalarValue()->yes()) {
+				continue;
+			}
+			$constantScalarValues = $valueTypes[$i]->getConstantScalarValues();
+			if (count($constantScalarValues) !== 1) {
+				continue;
+			}
+			$values[$keyType->getValue()] = $constantScalarValues[0];
+		}
+
+		return $values;
+	}
+
+	/**
+	 * Whether two arrays differ in enough keys holding different single constant
+	 * scalars that neither can be a keys-superset of the other: each such key
+	 * pairs two disjoint values, and ConstantArrayType::isKeysSupersetOf() lets
+	 * at most one key's values be unrelated - only when both arrays have the
+	 * same number of keys, two or more.
+	 *
+	 * @param array<int|string, scalar|null>|null $a
+	 * @param array<int|string, scalar|null>|null $b
+	 */
+	private static function haveDisjointConstantScalarValues(?array $a, ?array $b, bool $oneUnrelatedKeyAllowed): bool
+	{
+		if ($a === null || $b === null) {
+			return false;
+		}
+		if (count($a) > count($b)) {
+			[$a, $b] = [$b, $a];
+		}
+
+		$differing = 0;
+		foreach ($a as $key => $value) {
+			if (!array_key_exists($key, $b) || $b[$key] === $value) {
+				continue;
+			}
+			$differing++;
+			if ($differing >= 2 || !$oneUnrelatedKeyAllowed) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param list<Type> $constantArrays
 	 * @return list<Type>
 	 */
@@ -1431,6 +1494,15 @@ final class TypeCombinator
 			}
 		}
 
+		// the single constant scalar value at each key of the arrays without
+		// real unsealed extras (whose supersets the key/value shape decides)
+		$constantScalarValues = [];
+		if ($preserveTaggedUnions) {
+			foreach ($arraysToProcess as $i => $arrayToProcess) {
+				$constantScalarValues[$i] = self::getConstantScalarValuesByKey($arrayToProcess);
+			}
+		}
+
 		$eligibleCombinations = [];
 
 		foreach ($arraysToProcessPerKey as $arrays) {
@@ -1468,9 +1540,23 @@ final class TypeCombinator
 					$unionValueType = self::union($iValueType, $jValueType);
 					if (!$unionValueType instanceof UnionType) {
 						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+						$constantScalarValues[$j] = null;
 						unset($arraysToProcess[$i]);
 						continue 2;
 					}
+				}
+
+				if (
+					$preserveTaggedUnions
+					&& self::haveDisjointConstantScalarValues(
+						$constantScalarValues[$i] ?? null,
+						$constantScalarValues[$j] ?? null,
+						count($arraysToProcess[$i]->getKeyTypes()) === count($arraysToProcess[$j]->getKeyTypes())
+							&& count($arraysToProcess[$i]->getKeyTypes()) >= 2,
+					)
+				) {
+					// neither array is a keys-superset of the other
+					continue;
 				}
 
 				if (
@@ -1479,6 +1565,7 @@ final class TypeCombinator
 					&& $arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])
 				) {
 					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+					$constantScalarValues[$j] = null;
 					unset($arraysToProcess[$i]);
 					continue 2;
 				}
@@ -1489,6 +1576,7 @@ final class TypeCombinator
 					&& $arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])
 				) {
 					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
+					$constantScalarValues[$i] = null;
 					unset($arraysToProcess[$j]);
 					continue 1;
 				}

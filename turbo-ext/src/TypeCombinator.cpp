@@ -2449,6 +2449,77 @@ public:
 		return callBool(a, PT_LC("iskeyssupersetof"), 1, b);
 	}
 
+	/* Mirrors getConstantScalarValuesByKey(): key => the single constant
+	 * scalar value there, IS_NULL when the array has real unsealed extras;
+	 * UNDEF = pending exception */
+	static zv::Val constantScalarValuesByKey(zval *array)
+	{
+		zv::Val unsealed = call(array, PT_LC("getunsealedtypes"));
+		PT_FAIL_IF_UNDEF(unsealed);
+		if (!isNull(unsealed)) {
+			zval *unsealedKey = indexOf(unsealed.raw(), 0);
+			if (UNEXPECTED(unsealedKey == NULL)) {
+				zend_throw_error(NULL, "Undefined array key 0");
+				return zv::Val();
+			}
+			int explicitNever = isExplicitNever(unsealedKey);
+			PT_FAIL_IF_NEG(explicitNever);
+			if (!explicitNever) return zv::Val::null();
+		}
+
+		zv::Arr values = zv::Arr::create(0);
+		zv::Val valueTypes = call(array, PT_LC("getvaluetypes"));
+		PT_FAIL_IF_UNDEF(valueTypes);
+		zv::Val keyTypes = call(array, PT_LC("getkeytypes"));
+		PT_FAIL_IF_UNDEF(keyTypes);
+		for (zv::ArrayEntry keyEntry : zv::ArrRef(keyTypes.raw())) {
+			zval *valueType = zend_hash_index_find(Z_ARRVAL_P(valueTypes.raw()), keyEntry.indexKey());
+			if (UNEXPECTED(valueType == NULL)) {
+				zend_throw_error(NULL, "Undefined array key " ZEND_ULONG_FMT, keyEntry.indexKey());
+				return zv::Val();
+			}
+			zend_long isConstantScalar = callTrinary(valueType, PT_LC("isconstantscalarvalue"));
+			PT_FAIL_IF_NEG(isConstantScalar);
+			if (isConstantScalar != PT_TRI_YES) continue;
+			zv::Val constantScalarValues = call(valueType, PT_LC("getconstantscalarvalues"));
+			PT_FAIL_IF_UNDEF(constantScalarValues);
+			if (countOf(constantScalarValues.raw()) != 1) continue;
+			zv::Val keyValue = call(keyEntry.value().raw(), PT_LC("getvalue"));
+			PT_FAIL_IF_UNDEF(keyValue);
+			zval value;
+			ZVAL_COPY(&value, indexOf(constantScalarValues.raw(), 0));
+			if (UNEXPECTED(!symtableSet(values.table(), keyValue.raw(), &value))) return zv::Val();
+		}
+		return zv::Val(std::move(values));
+	}
+
+	/* Mirrors haveDisjointConstantScalarValues() */
+	static bool haveDisjointConstantScalarValues(zval *a, zval *b, bool oneUnrelatedKeyAllowed)
+	{
+		if (a == NULL || b == NULL || Z_TYPE_P(a) != IS_ARRAY || Z_TYPE_P(b) != IS_ARRAY) return false;
+		if (zend_hash_num_elements(Z_ARRVAL_P(a)) > zend_hash_num_elements(Z_ARRVAL_P(b))) std::swap(a, b);
+		int differing = 0;
+		zend_ulong index;
+		zend_string *key;
+		zval *value;
+		ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(a), index, key, value) {
+			zval *other = key != NULL ? zend_hash_find(Z_ARRVAL_P(b), key) : zend_hash_index_find(Z_ARRVAL_P(b), index);
+			if (other == NULL || zend_is_identical(other, value)) continue;
+			differing++;
+			if (differing >= 2 || !oneUnrelatedKeyAllowed) return true;
+		} ZEND_HASH_FOREACH_END();
+		return false;
+	}
+
+	/* $constantScalarValues[$index] = null */
+	static void forgetConstantScalarValues(zv::Arr &constantScalarValues, zend_ulong index)
+	{
+		zval null;
+		ZVAL_NULL(&null);
+		constantScalarValues.separate();
+		zend_hash_index_update(constantScalarValues.table(), index, &null);
+	}
+
 	/* private static reduceArrays(list<Type> $constantArrays, bool $preserveTaggedUnions): list<Type> */
 	static zv::Val reduceArrays(zval *constantArrays, bool preserveTaggedUnions)
 	{
@@ -2512,6 +2583,19 @@ public:
 			}
 		}
 
+		/* the single constant scalar value at each key of the arrays without
+		 * real unsealed extras */
+		zv::Arr constantScalarValues = zv::Arr::create(0);
+		if (preserveTaggedUnions) {
+			for (zv::ArrayEntry entry : zv::ArrRef(arraysToProcess.raw())) {
+				zv::Val values = constantScalarValuesByKey(entry.value().raw());
+				PT_FAIL_IF_UNDEF(values);
+				zval v = values.take();
+				constantScalarValues.separate();
+				zend_hash_index_update(constantScalarValues.table(), entry.indexKey(), &v);
+			}
+		}
+
 		zv::Arr eligibleCombinations = zv::Arr::create(0);
 		for (zv::ArrayEntry entry : zv::ArrRef(arraysToProcessPerKey.raw())) {
 			HashTable *arrays = Z_ARRVAL_P(entry.value().raw());
@@ -2571,9 +2655,21 @@ public:
 						PT_FAIL_IF_UNDEF(unionValueType);
 						if (!isInstance(unionValueType.raw(), pt_ce_union_type)) {
 							if (UNEXPECTED(!mergeInto(arraysToProcess, j, i))) return zv::Val();
+							forgetConstantScalarValues(constantScalarValues, j);
 							break;
 						}
 					}
+				}
+
+				zend_long jKeysCount = keyTypesCount(arrayAt(arraysToProcess, j));
+				PT_FAIL_IF_NEG(jKeysCount);
+				if (preserveTaggedUnions
+					&& haveDisjointConstantScalarValues(
+						zend_hash_index_find(constantScalarValues.table(), i),
+						zend_hash_index_find(constantScalarValues.table(), j),
+						iKeysCount == jKeysCount && iKeysCount >= 2)) {
+					/* neither array is a keys-superset of the other */
+					continue;
 				}
 
 				if (preserveTaggedUnions && overlappingKeysCount == iKeysCount) {
@@ -2581,17 +2677,17 @@ public:
 					PT_FAIL_IF_NEG(superset);
 					if (superset) {
 						if (UNEXPECTED(!mergeInto(arraysToProcess, j, i))) return zv::Val();
+						forgetConstantScalarValues(constantScalarValues, j);
 						break;
 					}
 				}
 
-				zend_long jKeysCount = keyTypesCount(arrayAt(arraysToProcess, j));
-				PT_FAIL_IF_NEG(jKeysCount);
 				if (preserveTaggedUnions && overlappingKeysCount == jKeysCount) {
 					int superset = isKeysSupersetOf(arrayAt(arraysToProcess, i), arrayAt(arraysToProcess, j));
 					PT_FAIL_IF_NEG(superset);
 					if (superset) {
 						if (UNEXPECTED(!mergeInto(arraysToProcess, i, j))) return zv::Val();
+						forgetConstantScalarValues(constantScalarValues, i);
 						continue;
 					}
 				}

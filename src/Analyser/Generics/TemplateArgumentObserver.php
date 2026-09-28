@@ -192,8 +192,14 @@ final class TemplateArgumentObserver
 			&& $declared->isIterable()->yes()
 		) {
 			$constraints = $this->observeClosureSend($constraints, $declared->getIterableKeyType(), $actual->getIterableKeyType());
+			$declaredValueType = $declared->getIterableValueType();
+			if ($declaredValueType instanceof MixedType && !$declaredValueType instanceof TemplateType) {
+				// every value sent to plain mixed escapes - collected from the
+				// array itself, not from the union of a large constant array's values
+				return $this->escapeClosures($constraints, $actual);
+			}
 
-			return $this->observeClosureSend($constraints, $declared->getIterableValueType(), $actual->getIterableValueType());
+			return $this->observeClosureSend($constraints, $declaredValueType, $actual->getIterableValueType());
 		}
 
 		return $this->escapeClosures($constraints, $actual);
@@ -501,10 +507,28 @@ final class TemplateArgumentObserver
 			return $constraints;
 		}
 
-		$constraints = $this->observeSend($constraints, $declared->getIterableKeyType(), $actual->getIterableKeyType(), $isCallArgument);
-		$constraints = $this->observeSend($constraints, $declared->getIterableValueType(), $actual->getIterableValueType(), $isCallArgument);
+		// the key and value types of a large constant array are the unions of
+		// all its keys and values - not built for a target they cannot constrain
+		$declaredKeyType = $declared->getIterableKeyType();
+		if (!self::isInertSendTarget($declaredKeyType, $isCallArgument)) {
+			$constraints = $this->observeSend($constraints, $declaredKeyType, $actual->getIterableKeyType(), $isCallArgument);
+		}
+		$declaredValueType = $declared->getIterableValueType();
+		if (!self::isInertSendTarget($declaredValueType, $isCallArgument)) {
+			$constraints = $this->observeSend($constraints, $declaredValueType, $actual->getIterableValueType(), $isCallArgument);
+		}
 
 		return $constraints;
+	}
+
+	/**
+	 * observeSend() observes nothing sent to plain mixed outside a call
+	 * argument: a union recurses into its members, a bare marker never
+	 * constrains, mixed names no class and is not certainly iterable.
+	 */
+	private static function isInertSendTarget(Type $declared, bool $isCallArgument): bool
+	{
+		return !$isCallArgument && $declared instanceof MixedType && !$declared instanceof TemplateType;
 	}
 
 	/**

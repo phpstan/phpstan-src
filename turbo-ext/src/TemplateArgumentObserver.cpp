@@ -343,6 +343,11 @@ public:
 						if (UNEXPECTED(constraints.isUndef())) return zv::Val();
 						zv::Val declaredValue = pt_type_op(Z_OBJ_P(declared), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 						if (UNEXPECTED(declaredValue.isUndef())) return zv::Val();
+						bool plainMixed;
+						if (UNEXPECTED(!isPlainMixed(declaredValue.raw(), plainMixed))) return zv::Val();
+						if (plainMixed) {
+							return escapeClosures(std::move(constraints), actual);
+						}
 						zv::Val actualValue = pt_type_op(Z_OBJ_P(actual), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 						if (UNEXPECTED(actualValue.isUndef())) return zv::Val();
 						return observeClosureSend(std::move(constraints), declaredValue.raw(), actualValue.raw());
@@ -842,15 +847,31 @@ public:
 
 		zv::Val declaredKey = pt_type_op(Z_OBJ_P(declared), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
 		if (UNEXPECTED(declaredKey.isUndef())) return zv::Val();
-		zv::Val actualKey = pt_type_op(Z_OBJ_P(actual), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
-		if (UNEXPECTED(actualKey.isUndef())) return zv::Val();
-		constraints = observeSend(std::move(constraints), declaredKey.raw(), actualKey.raw(), isCallArgument);
-		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		bool inert;
+		if (UNEXPECTED(!isInertSendTarget(declaredKey.raw(), isCallArgument, inert))) return zv::Val();
+		if (!inert) {
+			zv::Val actualKey = pt_type_op(Z_OBJ_P(actual), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
+			if (UNEXPECTED(actualKey.isUndef())) return zv::Val();
+			constraints = observeSend(std::move(constraints), declaredKey.raw(), actualKey.raw(), isCallArgument);
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
 		zv::Val declaredValue = pt_type_op(Z_OBJ_P(declared), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 		if (UNEXPECTED(declaredValue.isUndef())) return zv::Val();
+		if (UNEXPECTED(!isInertSendTarget(declaredValue.raw(), isCallArgument, inert))) return zv::Val();
+		if (inert) return constraints;
 		zv::Val actualValue = pt_type_op(Z_OBJ_P(actual), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 		if (UNEXPECTED(actualValue.isUndef())) return zv::Val();
 		return observeSend(std::move(constraints), declaredValue.raw(), actualValue.raw(), isCallArgument);
+	}
+
+	/* Mirrors isInertSendTarget(); false = pending exception */
+	[[nodiscard]] static bool isInertSendTarget(zval *declared, bool isCallArgument, bool &out)
+	{
+		if (isCallArgument) {
+			out = false;
+			return true;
+		}
+		return isPlainMixed(declared, out);
 	}
 
 	/* Mirrors observeArgument(). */

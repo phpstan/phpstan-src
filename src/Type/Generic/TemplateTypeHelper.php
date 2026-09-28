@@ -52,6 +52,17 @@ final class TemplateTypeHelper
 					return $traverse($type);
 				}
 
+				// the template type standing in for itself, e.g. in the class that declares it,
+				// keeps the bound narrowed at this occurrence, like `int|string` of a `K of int|string|object`
+				// in the key of `array<K, V>`
+				if (
+					$newType instanceof TemplateType
+					&& $newType->getName() === $type->getName()
+					&& $newType->getScope()->equals($type->getScope())
+				) {
+					return $traverse($newType->isArgument() ? $type->toArgument() : $type);
+				}
+
 				if ($newType instanceof ErrorType && !$keepErrorTypes) {
 					return $traverse($type->getDefault() ?? $type->getBound());
 				}

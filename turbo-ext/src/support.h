@@ -2025,6 +2025,7 @@ zv::Val pt_template_argument_frame_get_static_variable_conditional_expressions(z
 extern zend_class_entry *pt_ce_static_variable_inference;
 zv::Val pt_static_variable_inference_get_sites(zval *inference, zval *functionLike, zval *stmts);
 [[nodiscard]] bool pt_static_variable_inference_is_inferred(zval *inference, zval *scope, zval *var, bool &out);
+[[nodiscard]] bool pt_static_variable_inference_has_function_like_from(zval *inference, zval *functionLike, zval *stmts, zend_long index, bool &out);
 zv::Val pt_static_variable_inference_get_resolved_types(zval *inference, zval *scope, zval *var);
 zv::Val pt_static_variable_inference_get_runs(zval *inference, zval *functionLike, zval *stmts);
 zv::Val pt_static_variable_inference_get_resolved_conditional_expressions(zval *inference, zval *scope, zval *stmt);

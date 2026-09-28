@@ -58,6 +58,7 @@ final class TemplateArgumentStats
 		'closureObservationPasses' => 0,
 		'closureObservationStatements' => 0,
 		'closureObservationStatementsReplayed' => 0,
+		'staticVariableWalksReplayed' => 0,
 	];
 
 	public static function enableFromEnvironment(): void

@@ -64,6 +64,15 @@ use function sprintf;
 final class StatementsHandler
 {
 
+	/** The last walk inferring the `static` variables walked a statement: [kind, recording from, recording to] */
+	private const STATIC_WALK_WALKED = 0;
+
+	/** It carried a statement's recorded effect over: [kind, statement index, 0] */
+	private const STATIC_WALK_CARRIED = 1;
+
+	/** It converged with the observation pass at a statement - the rest stands: [kind, statement index, 0] */
+	private const STATIC_WALK_REST = 2;
+
 	private const MENTIONED_VARIABLES_ATTRIBUTE = 'templateArgumentMentionedVariables';
 
 	/** PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG=1 prints every second-pass re-walk/replay decision. */
@@ -584,15 +593,23 @@ final class StatementsHandler
 		$staticVariableTypes = [];
 		$staticVariableConditionalExpressions = [];
 		$staticStatementIndexes = [];
+		$staticWalk = null;
 		if ($staticSites !== []) {
 			foreach ($staticSites as [, $index]) {
 				$staticStatementIndexes[$index] = true;
 			}
-			[$staticVariableTypes, $staticVariableConditionalExpressions, $constraints] = $this->inferStaticVariableTypes($nodeScopeResolver, $parentNode, $stmts, $staticSites, $staticStatementIndexes, $parentFrame, $entries, $recording, $storage, $observationContext);
+			[$staticVariableTypes, $staticVariableConditionalExpressions, $constraints, $staticWalk] = $this->inferStaticVariableTypes($nodeScopeResolver, $parentNode, $stmts, $staticSites, $staticStatementIndexes, $parentFrame, $entries, $recording, $storage, $observationContext);
 		}
 		$frame = $this->templateArgumentResolver->resolve($constraints, $parentFrame, $statementStartTokenPositions, $parentNode, $stmts);
 		if ($staticVariableTypes !== []) {
 			$frame = $frame->withStaticVariableTypes($staticVariableTypes, $staticStatementIndexes, $staticVariableConditionalExpressions);
+		}
+		if (
+			$staticWalk !== null
+			&& $constraints->isEmpty()
+			&& !$this->staticVariableInference->hasFunctionLikeFrom($parentNode, $stmts, $staticWalk[0])
+		) {
+			return $this->replayStaticVariableWalk($nodeScopeResolver, $stmts, $entries, $recording, $staticWalk, $frame, $parentFrame, $parentConstraints, $storage, $nodeCallback, $scope);
 		}
 		if ($frame->isObservingClosures()) {
 			$frame = $this->observeClosureSignatures($nodeScopeResolver, $parentNode, $stmts, $frame, $entries, $storage, $observationContext, $statementStartTokenPositions);
@@ -685,7 +702,8 @@ final class StatementsHandler
 	 * statements that read a variable whose type changed - until the type at
 	 * each `static` statement holds every type the variable takes after it,
 	 * generalized like a loop's variables. The facts of the last walk are the
-	 * ones the template arguments and closure signatures are resolved from.
+	 * ones the template arguments and closure signatures are resolved from; the
+	 * walk itself is returned too, see replayStaticVariableWalk().
 	 *
 	 * The variables of a run of `static` statements (see
 	 * StaticVariableInference::getRuns()) hold one of the states a call left
@@ -697,7 +715,7 @@ final class StatementsHandler
 	 * @param non-empty-list<array{Expr\Variable, int, string}> $staticSites
 	 * @param array<int, true> $staticStatementIndexes
 	 * @param array<int, array{StatementListWalkState, int}> $entries
-	 * @return array{array<int, array{Expr\Variable, Type, Type}>, array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}>, TemplateArgumentConstraints}
+	 * @return array{array<int, array{Expr\Variable, Type, Type}>, array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}>, TemplateArgumentConstraints, array{int, StatementListWalkState, RecordingNodeCallback, ExpressionResultStorage, list<array{int, int, int}>}}
 	 */
 	private function inferStaticVariableTypes(
 		NodeScopeResolver $nodeScopeResolver,
@@ -741,6 +759,8 @@ final class StatementsHandler
 			$state->scope = $state->scope->withTemplateArgumentFrame($frame);
 			$walkStorage = $storage->duplicate();
 			$walkRecording = new RecordingNodeCallback();
+			/** @var list<array{int, int, int}> $walkLog see replayStaticVariableWalk() */
+			$walkLog = [];
 			/** @var list<MutatingScope> $replayedScopes */
 			$replayedScopes = [];
 			/** @var list<MutatingScope> $carriedOverScopes the entry scopes of the statements not walked again */
@@ -758,6 +778,7 @@ final class StatementsHandler
 						// converged with the observation pass: the rest of it stands
 						$state->scope = $this->withRecordedConstraints($state->scope, $recordedEntry->scope, $entries[$stmtCount][0]->scope);
 						$this->appendRecordedStatementResults($state, $recordedEntry, $entries[$stmtCount][0]);
+						$walkLog[] = [self::STATIC_WALK_REST, $i, 0];
 						break;
 					}
 
@@ -768,13 +789,16 @@ final class StatementsHandler
 						|| $frame->ownsSiteInStatement($i)
 						|| $this->statementMentionsAnyVariable($stmt, $differingRoots)
 					) {
+						$from = $walkRecording->count();
 						$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $walkStorage, $walkRecording, $context, true);
+						$walkLog[] = [self::STATIC_WALK_WALKED, $from, $walkRecording->count()];
 						$replayedScopes[] = $state->scope;
 						continue;
 					}
 
 					// the statement does not read what changed: the variables keep
 					// their types through it
+					$walkLog[] = [self::STATIC_WALK_CARRIED, $i, 0];
 					$replayedScopes[] = $state->scope;
 					$carriedOverScopes[] = $state->scope;
 					$recordedExit = $entries[$i + 1][0];
@@ -847,7 +871,65 @@ final class StatementsHandler
 			$siteTypes[spl_object_id($var)] = [$var, $type, $nativeType];
 		}
 
-		return [$siteTypes, $conditionalExpressions, $constraints];
+		// every way out of the loop leaves the last walk made with the types
+		// and conditional expressions returned
+		return [$siteTypes, $conditionalExpressions, $constraints, [$start, $state, $walkRecording, $walkStorage, $walkLog]];
+	}
+
+	/**
+	 * The second pass of a body whose only sites are its `static` statements
+	 * and which observed no template argument or closure signature: it walks
+	 * the statements from the first `static` one with the resolved types, as
+	 * the last walk inferring them did - with no marker to resolve, a walk
+	 * that observes computes what one that does not observe computes. That
+	 * walk's recording and results stand for it. A closure or class in these
+	 * statements is walked differently by the second pass (resolving its own
+	 * template arguments), so the second pass walks those bodies itself.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param array<int, array{StatementListWalkState, int}> $entries
+	 * @param array{int, StatementListWalkState, RecordingNodeCallback, ExpressionResultStorage, list<array{int, int, int}>} $staticWalk
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function replayStaticVariableWalk(
+		NodeScopeResolver $nodeScopeResolver,
+		array $stmts,
+		array $entries,
+		RecordingNodeCallback $recording,
+		array $staticWalk,
+		TemplateArgumentFrame $frame,
+		?TemplateArgumentFrame $parentFrame,
+		?TemplateArgumentConstraints $parentConstraints,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		MutatingScope $scope,
+	): InternalStatementResult
+	{
+		[$start, $state, $walkRecording, $walkStorage, $walkLog] = $staticWalk;
+		$stmtCount = count($stmts);
+		if (TemplateArgumentStats::$enabled) {
+			TemplateArgumentStats::increment('bodiesWithSites');
+			TemplateArgumentStats::increment('staticVariableWalksReplayed');
+		}
+		$nodeScopeResolver->replayRecordingRange($recording, 0, $entries[$start][1], $nodeCallback, $storage, $scope);
+		$storage->mergeResults($walkStorage);
+		foreach ($walkLog as [$kind, $a, $b]) {
+			if ($kind === self::STATIC_WALK_WALKED) {
+				$nodeScopeResolver->replayRecordingRange($walkRecording, $a, $b, $nodeCallback, $storage, $scope);
+				continue;
+			}
+			if ($kind === self::STATIC_WALK_CARRIED) {
+				$nodeScopeResolver->replayRecordingRange($recording, $entries[$a][1], $entries[$a + 1][1], $nodeCallback, $storage, $scope);
+				continue;
+			}
+			$nodeScopeResolver->replayRecordingRange($recording, $entries[$a][1], $recording->count(), $nodeCallback, $storage, $scope);
+			// the recorded end scope, as the second pass takes it
+			$state->scope = $entries[$stmtCount][0]->scope;
+		}
+		$this->processDeferredByRefClosureBodies($nodeScopeResolver, $frame, $state, $storage, $nodeCallback);
+
+		$state->scope = $state->scope->withTemplateArgumentFrame($parentFrame)->withTemplateArgumentConstraints($parentConstraints);
+		return $state->toResult();
 	}
 
 	/**

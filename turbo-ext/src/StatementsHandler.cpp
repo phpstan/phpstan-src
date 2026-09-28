@@ -48,6 +48,10 @@ zend_class_entry *pt_ce_statements_handler = nullptr;
 /* NodeScopeResolver::LOOP_SCOPE_ITERATIONS / ::GENERALIZE_AFTER_ITERATION */
 #define PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT 3
 #define PT_SH_GENERALIZE_AFTER_ITERATION_LIMIT 1
+/* the twin's STATIC_WALK_* kinds of the last static-variable walk's log */
+#define PT_SH_STATIC_WALK_WALKED 0
+#define PT_SH_STATIC_WALK_CARRIED 1
+#define PT_SH_STATIC_WALK_REST 2
 
 namespace {
 
@@ -1391,6 +1395,7 @@ private:
 		zv::Val staticVariableTypes = zv::Val(zv::Arr::empty());
 		zv::Val staticVariableConditionalExpressions = zv::Val(zv::Arr::empty());
 		zv::Arr staticStatementIndexes = zv::Arr::empty();
+		zv::Val staticWalk = zv::Val::null();
 		if (staticSites.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(staticSites.raw())) > 0) {
 			for (auto entry : zv::ArrRef(staticSites.raw())) {
 				zval *index = zend_hash_index_find(Z_ARRVAL_P(entry.value().deref().raw()), 1);
@@ -1405,12 +1410,25 @@ private:
 			staticVariableTypes = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 0)));
 			staticVariableConditionalExpressions = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 1)));
 			finalConstraints = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 2)));
+			staticWalk = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(inferred.raw()), 3)));
 		}
 		zv::Val frame = templateArgumentResolverResolve(OBJ_PROP_NUM(self, slots::templateArgumentResolver), finalConstraints.raw(), parentFrame.raw(), statementStartTokenPositions.raw(), parentNode, stmts);
 		if (UNEXPECTED(frame.isUndef())) return zv::Val();
 		if (zend_hash_num_elements(Z_ARRVAL_P(staticVariableTypes.raw())) > 0) {
 			frame = pt_template_argument_frame_with_static_variable_types(frame.raw(), staticVariableTypes.raw(), staticStatementIndexes.raw(), staticVariableConditionalExpressions.raw());
 			if (UNEXPECTED(frame.isUndef())) return zv::Val();
+		}
+		if (staticWalk.ref().isArray()) {
+			bool constraintsEmpty;
+			if (UNEXPECTED(!pt_template_argument_constraints_is_empty(finalConstraints.raw(), constraintsEmpty))) return zv::Val();
+			if (constraintsEmpty) {
+				bool hasFunctionLike;
+				zend_long start = zval_get_long(zend_hash_index_find(Z_ARRVAL_P(staticWalk.raw()), 0));
+				if (UNEXPECTED(!pt_static_variable_inference_has_function_like_from(OBJ_PROP_NUM(self, slots::staticVariableInference), parentNode, stmts, start, hasFunctionLike))) return zv::Val();
+				if (!hasFunctionLike) {
+					return replayStaticVariableWalk(nodeScopeResolver, stmts, entries.raw(), recording.raw(), staticWalk.raw(), frame.raw(), parentFrame.raw(), parentConstraints.raw(), storage, nodeCallback, scope.raw(), statsEnabled);
+				}
+			}
 		}
 		{
 			bool observingClosures;
@@ -1635,6 +1653,7 @@ private:
 		zend_long count = 0;
 		zend_long conditionalExpressionsCount = 0;
 		zv::Val constraints;
+		zv::Val lastWalk;
 		for (;;) {
 			zv::Val siteTypes = staticSiteTypes(staticSites, types.raw());
 			if (UNEXPECTED(siteTypes.isUndef())) return zv::Val();
@@ -1659,6 +1678,7 @@ private:
 			if (UNEXPECTED(walkRecording.isUndef())) return zv::Val();
 			zv::Arr replayedScopes = zv::Arr::empty();
 			zv::Arr carriedOverScopes = zv::Arr::empty();
+			zv::Arr walkLog = zv::Arr::empty();
 			zv::Val suspendedGatherers = pt_node_scope_resolver_suspend_node_gatherers(nodeScopeResolver);
 			if (UNEXPECTED(suspendedGatherers.isUndef())) return zv::Val();
 			zv::Val pushedScope = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)));
@@ -1666,7 +1686,7 @@ private:
 				(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
 				return zv::Val();
 			}
-			(void) observeStaticVariablesFrom(nodeScopeResolver, parentNode, stmts, stmtsTable, frame.raw(), entries, state.raw(), walkStorage.raw(), walkRecording.raw(), context, start, stmtCount, hasLabels, replayedScopes, carriedOverScopes);
+			(void) observeStaticVariablesFrom(nodeScopeResolver, parentNode, stmts, stmtsTable, frame.raw(), entries, state.raw(), walkStorage.raw(), walkRecording.raw(), context, start, stmtCount, hasLabels, replayedScopes, carriedOverScopes, walkLog);
 			pt_finally([&]() {
 				(void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(pushedScope.raw()));
 				(void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw());
@@ -1679,6 +1699,15 @@ private:
 			if (constraints.isNull()) {
 				constraints = templateArgumentConstraintsCreateEmpty();
 				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			}
+			{
+				zv::Arr walk = zv::Arr::create(5);
+				walk.push(zv::Val::integer(start));
+				walk.push(zv::Val::copyOf(zv::Ref(state.raw())));
+				walk.push(zv::Val::copyOf(zv::Ref(walkRecording.raw())));
+				walk.push(zv::Val::copyOf(zv::Ref(walkStorage.raw())));
+				walk.push(std::move(walkLog));
+				lastWalk = zv::Val(std::move(walk));
 			}
 
 			zv::Val walkTypes = collectStaticVariableTypes(bodyScope.raw(), names.raw(), walkRecording.raw(), state.raw(), replayedScopes.raw());
@@ -1744,18 +1773,82 @@ private:
 
 		zv::Val siteTypes = staticSiteTypes(staticSites, types.raw());
 		if (UNEXPECTED(siteTypes.isUndef())) return zv::Val();
-		zv::Arr result = zv::Arr::create(3);
+		// every way out of the loop leaves the last walk made with the types
+		// and conditional expressions returned
+		zv::Arr result = zv::Arr::create(4);
 		result.push(std::move(siteTypes));
 		result.push(std::move(conditionalExpressions));
 		result.push(std::move(constraints));
+		result.push(std::move(lastWalk));
 		return zv::Val(std::move(result));
+	}
+
+	/* [kind, a, b] of the last static-variable walk's log */
+	static zv::Val staticWalkLogEntry(zend_long kind, zend_long a, zend_long b)
+	{
+		zv::Arr entry = zv::Arr::create(3);
+		entry.push(zv::Val::integer(kind));
+		entry.push(zv::Val::integer(a));
+		entry.push(zv::Val::integer(b));
+		return zv::Val(std::move(entry));
+	}
+
+	/* Mirrors the private replayStaticVariableWalk() */
+	zv::Val replayStaticVariableWalk(zval *nodeScopeResolver, zval *stmts, zval *entries, zval *recording, zval *staticWalk, zval *frame, zval *parentFrame, zval *parentConstraints, zval *storage, zval *nodeCallback, zval *scope, bool statsEnabled)
+	{
+		HashTable *walk = Z_ARRVAL_P(staticWalk);
+		zend_long start = zval_get_long(zend_hash_index_find(walk, 0));
+		zval *state = zend_hash_index_find(walk, 1);
+		zval *walkRecording = zend_hash_index_find(walk, 2);
+		zval *walkStorage = zend_hash_index_find(walk, 3);
+		zval *walkLog = zend_hash_index_find(walk, 4);
+		if (UNEXPECTED(state == NULL || walkRecording == NULL || walkStorage == NULL || walkLog == NULL)) return zv::Val();
+		zend_long stmtCount = zend_hash_num_elements(Z_ARRVAL_P(stmts));
+		if (statsEnabled) {
+			if (UNEXPECTED(!templateArgumentStatsIncrement(PT_LC("bodiesWithSites"), 1))) return zv::Val();
+			if (UNEXPECTED(!templateArgumentStatsIncrement(PT_LC("staticVariableWalksReplayed"), 1))) return zv::Val();
+		}
+		zval *startEntry = entryAt(entries, start);
+		if (UNEXPECTED(startEntry == NULL)) return zv::Val();
+		if (UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, recording, 0, zval_get_long(entryOffset(startEntry)), nodeCallback, storage, scope))) return zv::Val();
+		if (UNEXPECTED(!pt_expression_result_storage_merge_results(storage, walkStorage))) return zv::Val();
+		zv::Val stateHold = zv::Val::copyOf(zv::Ref(state));
+		zv::Val logHold = zv::Val::copyOf(zv::Ref(walkLog));
+		for (zv::ArrayEntry entry : zv::ArrRef(logHold.raw())) {
+			HashTable *op = Z_ARRVAL_P(entry.value().deref().raw());
+			zend_long kind = zval_get_long(zend_hash_index_find(op, 0));
+			zend_long a = zval_get_long(zend_hash_index_find(op, 1));
+			zend_long b = zval_get_long(zend_hash_index_find(op, 2));
+			if (kind == PT_SH_STATIC_WALK_WALKED) {
+				if (UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, walkRecording, a, b, nodeCallback, storage, scope))) return zv::Val();
+				continue;
+			}
+			zval *entryPair = entryAt(entries, a);
+			if (UNEXPECTED(entryPair == NULL)) return zv::Val();
+			if (kind == PT_SH_STATIC_WALK_CARRIED) {
+				zval *exitPair = entryAt(entries, a + 1);
+				if (UNEXPECTED(exitPair == NULL)) return zv::Val();
+				if (UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, recording, zval_get_long(entryOffset(entryPair)), zval_get_long(entryOffset(exitPair)), nodeCallback, storage, scope))) return zv::Val();
+				continue;
+			}
+			zend_long recorded;
+			if (UNEXPECTED(!recordingNodeCallbackCount(recording, recorded))) return zv::Val();
+			if (UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, recording, zval_get_long(entryOffset(entryPair)), recorded, nodeCallback, storage, scope))) return zv::Val();
+			// the recorded end scope, as the second pass takes it
+			zval *finalPair = entryAt(entries, stmtCount);
+			if (UNEXPECTED(finalPair == NULL)) return zv::Val();
+			zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(stateHold.raw()), stateSlots::scope)).assign(zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(entryState(finalPair)), stateSlots::scope))));
+		}
+		if (UNEXPECTED(!processDeferredByRefClosureBodies(nodeScopeResolver, frame, stateHold.raw(), storage, nodeCallback))) return zv::Val();
+		if (UNEXPECTED(!restoreParentFrame(stateHold.raw(), parentFrame, parentConstraints))) return zv::Val();
+		return pt_statement_list_walk_state_to_result(stateHold.raw());
 	}
 
 	/* inferStaticVariableTypes()'s try block: the statements from $start on,
 	 * walked or carried over, each walked exit scope and carried-over entry
 	 * scope into $replayedScopes, each carried-over entry scope into
 	 * $carriedOverScopes; false = pending exception */
-	bool observeStaticVariablesFrom(zval *nodeScopeResolver, zval *parentNode, zval *stmts, HashTable *stmtsTable, zval *frame, zval *entries, zval *state, zval *storage, zval *nodeCallback, zval *context, zend_long start, zend_long stmtCount, bool hasLabels, zv::Arr &replayedScopes, zv::Arr &carriedOverScopes)
+	bool observeStaticVariablesFrom(zval *nodeScopeResolver, zval *parentNode, zval *stmts, HashTable *stmtsTable, zval *frame, zval *entries, zval *state, zval *storage, zval *nodeCallback, zval *context, zend_long start, zend_long stmtCount, bool hasLabels, zv::Arr &replayedScopes, zv::Arr &carriedOverScopes, zv::Arr &walkLog)
 	{
 		for (zend_long i = start; i < stmtCount; i++) {
 			zval *recordedEntryPair = entryAt(entries, i);
@@ -1781,7 +1874,9 @@ private:
 					zv::Val carried = withRecordedConstraints(OBJ_PROP_NUM(stateObject, stateSlots::scope), OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope), OBJ_PROP_NUM(Z_OBJ_P(finalState), stateSlots::scope));
 					if (UNEXPECTED(carried.isUndef())) return false;
 					zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)).assign(std::move(carried));
-					return appendRecordedStatementResults(state, recordedEntry, finalState);
+					if (UNEXPECTED(!appendRecordedStatementResults(state, recordedEntry, finalState))) return false;
+					walkLog.push(staticWalkLogEntry(PT_SH_STATIC_WALK_REST, i, 0));
+					return true;
 				}
 			}
 
@@ -1795,13 +1890,19 @@ private:
 			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame, i, reWalk))) return false;
 			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), reWalk))) return false;
 			if (reWalk) {
+				zend_long from;
+				if (UNEXPECTED(!recordingNodeCallbackCount(nodeCallback, from))) return false;
 				if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state, storage, nodeCallback, context, true))) return false;
+				zend_long to;
+				if (UNEXPECTED(!recordingNodeCallbackCount(nodeCallback, to))) return false;
+				walkLog.push(staticWalkLogEntry(PT_SH_STATIC_WALK_WALKED, from, to));
 				replayedScopes.push(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)));
 				continue;
 			}
 
 			// the statement does not read what changed: the variables keep
 			// their types through it
+			walkLog.push(staticWalkLogEntry(PT_SH_STATIC_WALK_CARRIED, i, 0));
 			replayedScopes.push(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)));
 			carriedOverScopes.push(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state), stateSlots::scope)));
 			zval *recordedExitPair = entryAt(entries, i + 1);
@@ -3075,6 +3176,9 @@ PT_MINIT_REGISTRATION(pt_register_statements_handler)
 {
 	reg::Class cls("PHPStan\\Analyser\\StatementsHandler");
 	ptdecl::StatementsHandler::declareClass(cls);
+	cls.privateClassConstantLong("STATIC_WALK_WALKED", PT_SH_STATIC_WALK_WALKED);
+	cls.privateClassConstantLong("STATIC_WALK_CARRIED", PT_SH_STATIC_WALK_CARRIED);
+	cls.privateClassConstantLong("STATIC_WALK_REST", PT_SH_STATIC_WALK_REST);
 	cls.privateClassConstantString("MENTIONED_VARIABLES_ATTRIBUTE", "templateArgumentMentionedVariables");
 	ptdecl::StatementsHandler::declareProperties(cls);
 

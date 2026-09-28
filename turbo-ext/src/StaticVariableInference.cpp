@@ -29,6 +29,8 @@ namespace {
 
 /* the twin's SITES_ATTRIBUTE, a permanent interned string (module startup) */
 zend_string *pt_svi_sites_attribute = nullptr;
+/* the twin's LAST_FUNCTION_LIKE_ATTRIBUTE, a permanent interned string (module startup) */
+zend_string *pt_svi_last_function_like_attribute = nullptr;
 
 pt_method_site pt_svi_get_sub_node_names_site;
 pt_method_site pt_svi_to_lower_string_site;
@@ -325,6 +327,32 @@ zv::Val scanSites(zval *stmts)
 	return zv::Val(std::move(sites));
 }
 
+/* Mirrors the private static findLastFunctionLikeStatement(); false =
+ * pending exception */
+[[nodiscard]] bool findLastFunctionLikeStatement(zval *stmts, zend_long &last)
+{
+	last = -1;
+	if (Z_TYPE_P(stmts) != IS_ARRAY) return true;
+	for (auto stmtEntry : zv::ArrRef(stmts)) {
+		zend_long index = stmtEntry.stringKeyOrNull() == NULL ? (zend_long) stmtEntry.indexKey() : 0;
+		zv::Arr stack = zv::Arr::create(0);
+		stack.push(zv::Val::copyOf(stmtEntry.value().deref()));
+		for (;;) {
+			zv::Val node = popNode(stack);
+			if (node.isUndef()) break;
+			bool is;
+			if (UNEXPECTED(!isA(node.raw(), PT_CLASS_FUNCTION_LIKE, is))) return false;
+			if (!is && UNEXPECTED(!isA(node.raw(), PT_CLASS_CLASS_LIKE_STMT, is))) return false;
+			if (is) {
+				last = index;
+				break;
+			}
+			if (UNEXPECTED(!pushSubNodes(node.raw(), stack))) return false;
+		}
+	}
+	return true;
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -358,6 +386,24 @@ public:
 		if (UNEXPECTED(sites.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(functionLike), ZSTR_VAL(pt_svi_sites_attribute), ZSTR_LEN(pt_svi_sites_attribute), sites.raw()))) return zv::Val();
 		return sites;
+	}
+
+	/* Mirrors hasFunctionLikeFrom(); false = pending exception */
+	[[nodiscard]] bool hasFunctionLikeFrom(zval *functionLike, zval *stmts, zend_long index, bool &out) const
+	{
+		zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(functionLike), ZSTR_VAL(pt_svi_last_function_like_attribute), ZSTR_LEN(pt_svi_last_function_like_attribute));
+		if (UNEXPECTED(cached.isUndef())) return false;
+		zend_long last;
+		if (cached.isNull()) {
+			if (UNEXPECTED(!findLastFunctionLikeStatement(stmts, last))) return false;
+			zval lastZv;
+			ZVAL_LONG(&lastZv, last);
+			if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(functionLike), ZSTR_VAL(pt_svi_last_function_like_attribute), ZSTR_LEN(pt_svi_last_function_like_attribute), &lastZv))) return false;
+		} else {
+			last = zval_get_long(cached.raw());
+		}
+		out = last >= index;
+		return true;
 	}
 
 	/* Mirrors isInferred(); false = pending exception */
@@ -546,6 +592,18 @@ zv::Val pt_static_variable_inference_get_sites(zval *inference, zval *functionLi
 	return pt_type_call(Z_OBJ_P(inference), PT_LC("getsites"), 2, argv);
 }
 
+bool pt_static_variable_inference_has_function_like_from(zval *inference, zval *functionLike, zval *stmts, zend_long index, bool &out)
+{
+	if (isNative(inference)) return StaticVariableInference(Z_OBJ_P(inference)).hasFunctionLikeFrom(functionLike, stmts, index, out);
+	zval indexZv;
+	ZVAL_LONG(&indexZv, index);
+	zv::Args argv{functionLike, stmts, &indexZv};
+	zv::Val result = pt_type_call(Z_OBJ_P(inference), PT_LC("hasfunctionlikefrom"), 3, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 bool pt_static_variable_inference_is_inferred(zval *inference, zval *scope, zval *var, bool &out)
 {
 	if (isNative(inference)) return StaticVariableInference(Z_OBJ_P(inference)).isInferred(scope, var, out);
@@ -596,11 +654,13 @@ bool pt_static_variable_inference_can_run_user_code(zval *inference, zval *node,
 PT_MINIT_REGISTRATION(pt_register_static_variable_inference)
 {
 	pt_svi_sites_attribute = zend_string_init_interned(PT_LC("staticVariableInferenceSites"), 1);
+	pt_svi_last_function_like_attribute = zend_string_init_interned(PT_LC("staticVariableInferenceLastFunctionLike"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\Generics\\StaticVariableInference");
 	ptdecl::StaticVariableInference::declareClass(cls);
 	ptdecl::StaticVariableInference::declareProperties(cls);
 	cls.privateClassConstantString("SITES_ATTRIBUTE", "staticVariableInferenceSites");
+	cls.privateClassConstantString("LAST_FUNCTION_LIKE_ATTRIBUTE", "staticVariableInferenceLastFunctionLike");
 
 	/* the real parameter types: the DI container autowires the service by
 	 * reflecting the constructor */
@@ -644,6 +704,19 @@ PT_MINIT_REGISTRATION(pt_register_static_variable_inference)
 			Z_PARAM_ARRAY(stmts)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(StaticVariableInference(Z_OBJ_P(ZEND_THIS)).getSites(functionLike, stmts));
+	});
+
+	cls.method(sigs::hasFunctionLikeFrom, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *functionLike, *stmts;
+		zend_long index;
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_OBJECT(functionLike)
+			Z_PARAM_ARRAY(stmts)
+			Z_PARAM_LONG(index)
+		ZEND_PARSE_PARAMETERS_END();
+		bool out;
+		if (UNEXPECTED(!StaticVariableInference(Z_OBJ_P(ZEND_THIS)).hasFunctionLikeFrom(functionLike, stmts, index, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.method(sigs::isInferred, [](INTERNAL_FUNCTION_PARAMETERS) {

@@ -38,56 +38,65 @@ inline constexpr char strings[] =
 	"stmts\0" /* 105 */
 	"\0" /* 111 */
 	"getSites\0" /* 112 */
-	"scope\0" /* 121 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 127 */
-	"var\0" /* 158 */
-	"PhpParser\\Node\\Expr\\Variable\0" /* 162 */
-	"isInferred\0" /* 191 */
-	"getResolvedTypes\0" /* 202 */
-	"getRuns\0" /* 219 */
-	"stmt\0" /* 227 */
-	"PhpParser\\Node\\Stmt\\Static_\0" /* 232 */
-	"getResolvedConditionalExpressions\0" /* 260 */
-	"node\0" /* 294 */
-	"canRunUserCode\0" /* 299 */
-	"siteIds\0" /* 314 */
-	"declaresOnlySites\0" /* 322 */
-	"scanSites\0" /* 340 */
-	"expr\0" /* 350 */
-	"PhpParser\\Node\\Expr\0" /* 355 */
-	"names\0" /* 375 */
-	"collectRootNames\0" /* 381 */
-	"hasVarTag"; /* 398 */
+	"index\0" /* 121 */
+	"hasFunctionLikeFrom\0" /* 127 */
+	"scope\0" /* 147 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 153 */
+	"var\0" /* 184 */
+	"PhpParser\\Node\\Expr\\Variable\0" /* 188 */
+	"isInferred\0" /* 217 */
+	"getResolvedTypes\0" /* 228 */
+	"getRuns\0" /* 245 */
+	"stmt\0" /* 253 */
+	"PhpParser\\Node\\Stmt\\Static_\0" /* 258 */
+	"getResolvedConditionalExpressions\0" /* 286 */
+	"node\0" /* 320 */
+	"canRunUserCode\0" /* 325 */
+	"siteIds\0" /* 340 */
+	"declaresOnlySites\0" /* 348 */
+	"scanSites\0" /* 366 */
+	"findLastFunctionLikeStatement\0" /* 376 */
+	"expr\0" /* 406 */
+	"PhpParser\\Node\\Expr\0" /* 411 */
+	"names\0" /* 431 */
+	"collectRootNames\0" /* 437 */
+	"hasVarTag"; /* 454 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
 	reg::packed(57, MAY_BE_BOOL), /* __construct $enabled */
 	reg::packed(77, 0, 90), /* getSites $functionLike */
 	reg::packed(105, MAY_BE_ARRAY), /* getSites $stmts */
 	reg::packed(111, MAY_BE_ARRAY), /* getSites return */
-	reg::packed(121, 0, 127), /* isInferred $scope */
-	reg::packed(158, 0, 162), /* isInferred $var */
+	reg::packed(77, 0, 90), /* hasFunctionLikeFrom $functionLike */
+	reg::packed(105, MAY_BE_ARRAY), /* hasFunctionLikeFrom $stmts */
+	reg::packed(121, MAY_BE_LONG), /* hasFunctionLikeFrom $index */
+	reg::packed(111, MAY_BE_BOOL), /* hasFunctionLikeFrom return */
+	reg::packed(147, 0, 153), /* isInferred $scope */
+	reg::packed(184, 0, 188), /* isInferred $var */
 	reg::packed(111, MAY_BE_BOOL), /* isInferred return */
-	reg::packed(121, 0, 127), /* getResolvedTypes $scope */
-	reg::packed(158, 0, 162), /* getResolvedTypes $var */
+	reg::packed(147, 0, 153), /* getResolvedTypes $scope */
+	reg::packed(184, 0, 188), /* getResolvedTypes $var */
 	reg::packed(111, MAY_BE_NULL | MAY_BE_ARRAY), /* getResolvedTypes return */
 	reg::packed(77, 0, 90), /* getRuns $functionLike */
 	reg::packed(105, MAY_BE_ARRAY), /* getRuns $stmts */
 	reg::packed(111, MAY_BE_ARRAY), /* getRuns return */
-	reg::packed(121, 0, 127), /* getResolvedConditionalExpressions $scope */
-	reg::packed(227, 0, 232), /* getResolvedConditionalExpressions $stmt */
+	reg::packed(147, 0, 153), /* getResolvedConditionalExpressions $scope */
+	reg::packed(253, 0, 258), /* getResolvedConditionalExpressions $stmt */
 	reg::packed(111, MAY_BE_ARRAY), /* getResolvedConditionalExpressions return */
-	reg::packed(294, 0, 90), /* canRunUserCode $node */
-	reg::packed(121, 0, 127), /* canRunUserCode $scope */
+	reg::packed(320, 0, 90), /* canRunUserCode $node */
+	reg::packed(147, 0, 153), /* canRunUserCode $scope */
 	reg::packed(111, MAY_BE_BOOL), /* canRunUserCode return */
-	reg::packed(227, 0, 232), /* declaresOnlySites $stmt */
-	reg::packed(314, MAY_BE_ARRAY), /* declaresOnlySites $siteIds */
+	reg::packed(253, 0, 258), /* declaresOnlySites $stmt */
+	reg::packed(340, MAY_BE_ARRAY), /* declaresOnlySites $siteIds */
 	reg::packed(111, MAY_BE_BOOL), /* declaresOnlySites return */
 	reg::packed(105, MAY_BE_ARRAY), /* scanSites $stmts */
 	reg::packed(111, MAY_BE_ARRAY), /* scanSites return */
-	reg::packed(350, 0, 355), /* collectRootNames $expr */
-	reg::packed(375, MAY_BE_ARRAY, reg::NoString, true, false), /* collectRootNames $names */
+	reg::packed(105, MAY_BE_ARRAY), /* findLastFunctionLikeStatement $stmts */
+	reg::packed(111, MAY_BE_LONG), /* findLastFunctionLikeStatement return */
+	reg::packed(406, 0, 411), /* collectRootNames $expr */
+	reg::packed(431, MAY_BE_ARRAY, reg::NoString, true, false), /* collectRootNames $names */
 	reg::packed(111, MAY_BE_VOID), /* collectRootNames return */
-	reg::packed(227, 0, 232), /* hasVarTag $stmt */
+	reg::packed(253, 0, 258), /* hasVarTag $stmt */
 	reg::packed(111, MAY_BE_BOOL), /* hasVarTag return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -97,15 +106,17 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 65 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getSites = { { 112 /* getSites */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isInferred = { { 191 /* isInferred */, 2, 5, 2, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getResolvedTypes = { { 202 /* getResolvedTypes */, 2, 8, 2, 10, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getRuns = { { 219 /* getRuns */, 2, 11, 2, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getResolvedConditionalExpressions = { { 260 /* getResolvedConditionalExpressions */, 2, 14, 2, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig canRunUserCode = { { 299 /* canRunUserCode */, 2, 17, 2, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig declaresOnlySites = { { 322 /* declaresOnlySites */, 2, 20, 2, 22, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig scanSites = { { 340 /* scanSites */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig collectRootNames = { { 381 /* collectRootNames */, 2, 25, 2, 27, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig hasVarTag = { { 398 /* hasVarTag */, 1, 28, 1, 29, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasFunctionLikeFrom = { { 127 /* hasFunctionLikeFrom */, 3, 5, 3, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInferred = { { 217 /* isInferred */, 2, 9, 2, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedTypes = { { 228 /* getResolvedTypes */, 2, 12, 2, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getRuns = { { 245 /* getRuns */, 2, 15, 2, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedConditionalExpressions = { { 286 /* getResolvedConditionalExpressions */, 2, 18, 2, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canRunUserCode = { { 325 /* canRunUserCode */, 2, 21, 2, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig declaresOnlySites = { { 348 /* declaresOnlySites */, 2, 24, 2, 26, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig scanSites = { { 366 /* scanSites */, 1, 27, 1, 28, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig findLastFunctionLikeStatement = { { 376 /* findLastFunctionLikeStatement */, 1, 29, 1, 30, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig collectRootNames = { { 437 /* collectRootNames */, 2, 31, 2, 33, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasVarTag = { { 454 /* hasVarTag */, 1, 34, 1, 35, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::StaticVariableInference

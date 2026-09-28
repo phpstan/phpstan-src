@@ -46,6 +46,8 @@ final class StaticVariableInference
 
 	private const SITES_ATTRIBUTE = 'staticVariableInferenceSites';
 
+	private const LAST_FUNCTION_LIKE_ATTRIBUTE = 'staticVariableInferenceLastFunctionLike';
+
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		#[AutowiredParameter(ref: '%featureToggles.staticVariablesFromUsages%')]
@@ -77,6 +79,25 @@ final class StaticVariableInference
 		$functionLike->setAttribute(self::SITES_ATTRIBUTE, $sites);
 
 		return $sites;
+	}
+
+	/**
+	 * Whether a statement from $index on holds a closure, an arrow function or
+	 * a class: the walks inferring the `static` variables walk their bodies
+	 * without resolving template arguments, unlike the second pass.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 */
+	public function hasFunctionLikeFrom(Node $functionLike, array $stmts, int $index): bool
+	{
+		/** @var int|null $last */
+		$last = $functionLike->getAttribute(self::LAST_FUNCTION_LIKE_ATTRIBUTE);
+		if ($last === null) {
+			$last = self::findLastFunctionLikeStatement($stmts);
+			$functionLike->setAttribute(self::LAST_FUNCTION_LIKE_ATTRIBUTE, $last);
+		}
+
+		return $last >= $index;
 	}
 
 	/** Whether the current walk infers the type of the `static` variable. */
@@ -295,6 +316,42 @@ final class StaticVariableInference
 		}
 
 		return $sites;
+	}
+
+	/**
+	 * The index of the last statement holding a function-like or a class, -1
+	 * when none does.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 */
+	private static function findLastFunctionLikeStatement(array $stmts): int
+	{
+		$last = -1;
+		foreach ($stmts as $index => $stmt) {
+			$stack = [$stmt];
+			while (count($stack) > 0) {
+				$node = array_pop($stack);
+				if ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike) {
+					$last = $index;
+					break;
+				}
+				foreach ($node->getSubNodeNames() as $subNodeName) {
+					$subNode = $node->$subNodeName;
+					if ($subNode instanceof Node) {
+						$stack[] = $subNode;
+					} elseif (is_array($subNode)) {
+						foreach ($subNode as $item) {
+							if (!$item instanceof Node) {
+								continue;
+							}
+							$stack[] = $item;
+						}
+					}
+				}
+			}
+		}
+
+		return $last;
 	}
 
 	/**

@@ -63,16 +63,17 @@ inline constexpr char strings[] =
 	"constantArrays\0" /* 673 */
 	"preserveTaggedUnions\0" /* 688 */
 	"reduceArrays\0" /* 709 */
-	"PHPStan\\Type\\UnionType\0" /* 722 */
-	"intersectFiniteUnions\0" /* 745 */
-	"finiteUnionMembers\0" /* 767 */
-	"intersect\0" /* 786 */
-	"doIntersect\0" /* 796 */
-	"intersectDefiniteConstantArrays\0" /* 808 */
-	"PHPStan\\Type\\IntersectionType\0" /* 840 */
-	"mergeIntersectionsForUnion\0" /* 870 */
-	"removeFalsey\0" /* 897 */
-	"removeTruthy"; /* 910 */
+	"isPlainOrBenevolentUnion\0" /* 722 */
+	"PHPStan\\Type\\UnionType\0" /* 747 */
+	"intersectFiniteUnions\0" /* 770 */
+	"finiteUnionMembers\0" /* 792 */
+	"intersect\0" /* 811 */
+	"doIntersect\0" /* 821 */
+	"intersectDefiniteConstantArrays\0" /* 833 */
+	"PHPStan\\Type\\IntersectionType\0" /* 865 */
+	"mergeIntersectionsForUnion\0" /* 895 */
+	"removeFalsey\0" /* 922 */
+	"removeTruthy"; /* 935 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_VOID), /* clearCache return */
 	reg::packed(12, 0, 17), /* addNull $type */
@@ -131,10 +132,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(673, MAY_BE_ARRAY), /* reduceArrays $constantArrays */
 	reg::packed(688, MAY_BE_BOOL), /* reduceArrays $preserveTaggedUnions */
 	reg::packed(0, MAY_BE_ARRAY), /* reduceArrays return */
-	reg::packed(164, 0, 722), /* intersectFiniteUnions $a */
-	reg::packed(166, 0, 722), /* intersectFiniteUnions $b */
+	reg::packed(12, 0, 17), /* isPlainOrBenevolentUnion $type */
+	reg::packed(0, MAY_BE_BOOL), /* isPlainOrBenevolentUnion return */
+	reg::packed(164, 0, 747), /* intersectFiniteUnions $a */
+	reg::packed(166, 0, 747), /* intersectFiniteUnions $b */
 	reg::packed(0, MAY_BE_NULL, 17), /* intersectFiniteUnions return */
-	reg::packed(132, 0, 722), /* finiteUnionMembers $union */
+	reg::packed(132, 0, 747), /* finiteUnionMembers $union */
 	reg::packed(0, MAY_BE_NULL | MAY_BE_ARRAY), /* finiteUnionMembers return */
 	reg::packed(126, 0, 17, false, true), /* intersect $types */
 	reg::packed(0, 0, 17), /* intersect return */
@@ -143,8 +146,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(164, 0, 548), /* intersectDefiniteConstantArrays $a */
 	reg::packed(166, 0, 548), /* intersectDefiniteConstantArrays $b */
 	reg::packed(0, 0, 17), /* intersectDefiniteConstantArrays return */
-	reg::packed(164, 0, 840), /* mergeIntersectionsForUnion $a */
-	reg::packed(166, 0, 840), /* mergeIntersectionsForUnion $b */
+	reg::packed(164, 0, 865), /* mergeIntersectionsForUnion $a */
+	reg::packed(166, 0, 865), /* mergeIntersectionsForUnion $b */
 	reg::packed(0, MAY_BE_NULL, 17), /* mergeIntersectionsForUnion return */
 	reg::packed(12, 0, 17), /* removeFalsey $type */
 	reg::packed(0, 0, 17), /* removeFalsey return */
@@ -180,14 +183,15 @@ inline constexpr sigtab::Sig countConstantArrayValueTypes = { { 513 /* countCons
 inline constexpr sigtab::Sig getConstantScalarValuesByKey = { { 588 /* getConstantScalarValuesByKey */, 1, 48, 1, 49, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig haveDisjointConstantScalarValues = { { 640 /* haveDisjointConstantScalarValues */, 3, 50, 3, 53, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig reduceArrays = { { 709 /* reduceArrays */, 2, 54, 2, 56, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intersectFiniteUnions = { { 745 /* intersectFiniteUnions */, 2, 57, 2, 59, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig finiteUnionMembers = { { 767 /* finiteUnionMembers */, 1, 60, 1, 61, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intersect = { { 786 /* intersect */, 0, 62, 1, 63, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig doIntersect = { { 796 /* doIntersect */, 0, 64, 1, 65, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intersectDefiniteConstantArrays = { { 808 /* intersectDefiniteConstantArrays */, 2, 66, 2, 68, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig mergeIntersectionsForUnion = { { 870 /* mergeIntersectionsForUnion */, 2, 69, 2, 71, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig removeFalsey = { { 897 /* removeFalsey */, 1, 72, 1, 73, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig removeTruthy = { { 910 /* removeTruthy */, 1, 74, 1, 75, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isPlainOrBenevolentUnion = { { 722 /* isPlainOrBenevolentUnion */, 1, 57, 1, 58, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersectFiniteUnions = { { 770 /* intersectFiniteUnions */, 2, 59, 2, 61, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig finiteUnionMembers = { { 792 /* finiteUnionMembers */, 1, 62, 1, 63, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersect = { { 811 /* intersect */, 0, 64, 1, 65, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig doIntersect = { { 821 /* doIntersect */, 0, 66, 1, 67, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersectDefiniteConstantArrays = { { 833 /* intersectDefiniteConstantArrays */, 2, 68, 2, 70, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig mergeIntersectionsForUnion = { { 895 /* mergeIntersectionsForUnion */, 2, 71, 2, 73, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig removeFalsey = { { 922 /* removeFalsey */, 1, 74, 1, 75, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig removeTruthy = { { 935 /* removeTruthy */, 1, 76, 1, 77, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeCombinator

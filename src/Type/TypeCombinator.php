@@ -1744,6 +1744,14 @@ final class TypeCombinator
 	 * not such a value, in which case the caller falls back to the general A & (B|C)
 	 * distribution.
 	 */
+	/** @phpstan-assert-if-true UnionType $type */
+	private static function isPlainOrBenevolentUnion(Type $type): bool
+	{
+		$class = get_class($type);
+
+		return $class === UnionType::class || $class === BenevolentUnionType::class;
+	}
+
 	private static function intersectFiniteUnions(UnionType $a, UnionType $b): ?Type
 	{
 		$membersA = self::finiteUnionMembers($a);
@@ -1827,19 +1835,24 @@ final class TypeCombinator
 			$unionTypesCount++;
 		}
 
-		// Fast path: the intersection of two plain unions whose members are all finite,
+		// Fast path: the intersection of two unions whose members are all finite,
 		// mutually-disjoint values (constant scalars and/or enum cases) is their
 		// identity-keyed set intersection (O(n)), avoiding the O(n*m) `A & (B|C)`
-		// distribution + union rebuild below. Restricted to the exact UnionType class so
-		// BenevolentUnionType and the template union types keep their dedicated handling.
+		// distribution + union rebuild below. A benevolent union is the one the
+		// distribution walks first and the benevolence it gives the result is kept;
+		// the template union types keep their dedicated handling.
 		if (
 			$typesCount === 2
-			&& get_class($types[0]) === UnionType::class
-			&& get_class($types[1]) === UnionType::class
+			&& self::isPlainOrBenevolentUnion($types[0])
+			&& self::isPlainOrBenevolentUnion($types[1])
 		) {
-			$finiteIntersection = self::intersectFiniteUnions($types[0], $types[1]);
+			[$a, $b] = $types;
+			if ($b instanceof BenevolentUnionType && !$a instanceof BenevolentUnionType) {
+				[$a, $b] = [$b, $a];
+			}
+			$finiteIntersection = self::intersectFiniteUnions($a, $b);
 			if ($finiteIntersection !== null) {
-				return $finiteIntersection;
+				return $a instanceof BenevolentUnionType ? TypeUtils::toBenevolentUnion($finiteIntersection) : $finiteIntersection;
 			}
 		}
 

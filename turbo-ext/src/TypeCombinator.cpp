@@ -3166,6 +3166,12 @@ public:
 		return call(newArray.raw(), PT_LC("getarray"));
 	}
 
+	/* Mirrors isPlainOrBenevolentUnion() */
+	static bool isPlainOrBenevolentUnion(zval *type)
+	{
+		return Z_OBJCE_P(type) == pt_ce_union_type || Z_OBJCE_P(type) == pt_ce_benevolent_union_type;
+	}
+
 	static zv::Val doIntersect(uint32_t argc, zval *argv)
 	{
 		size_t typesCount = argc;
@@ -3189,13 +3195,20 @@ public:
 			unionTypesCount++;
 		}
 
-		/* Fast path: the intersection of two plain unions whose members are
-		 * all finite, mutually-disjoint values is their identity-keyed set
-		 * intersection; restricted to the exact UnionType class */
-		if (typesCount == 2 && Z_OBJCE_P(types[0].raw()) == pt_ce_union_type && Z_OBJCE_P(types[1].raw()) == pt_ce_union_type) {
-			zv::Val finiteIntersection = intersectFiniteUnions(types[0].raw(), types[1].raw());
+		/* Fast path: the intersection of two unions whose members are all
+		 * finite, mutually-disjoint values is their identity-keyed set
+		 * intersection; a benevolent union is the one the distribution walks
+		 * first and the benevolence it gives the result is kept */
+		if (typesCount == 2 && isPlainOrBenevolentUnion(types[0].raw()) && isPlainOrBenevolentUnion(types[1].raw())) {
+			zval *a = types[0].raw();
+			zval *b = types[1].raw();
+			if (Z_OBJCE_P(b) == pt_ce_benevolent_union_type && Z_OBJCE_P(a) != pt_ce_benevolent_union_type) std::swap(a, b);
+			zv::Val finiteIntersection = intersectFiniteUnions(a, b);
 			PT_FAIL_IF_UNDEF(finiteIntersection);
-			if (!isNull(finiteIntersection)) return finiteIntersection;
+			if (!isNull(finiteIntersection)) {
+				if (Z_OBJCE_P(a) == pt_ce_benevolent_union_type) return pt_union_to_benevolent(finiteIntersection.raw());
+				return finiteIntersection;
+			}
 		}
 
 		if (unionTypesCount >= 2) {

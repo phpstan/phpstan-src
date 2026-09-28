@@ -237,24 +237,6 @@ final class ResultCachePathTransformer
 	 * @param array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}> $dependencies
 	 * @return array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>
 	 */
-	public function relativizeDependencies(array $dependencies): array
-	{
-		$result = [];
-		foreach ($dependencies as $file => $data) {
-			$data['dependentFiles'] = $this->relativizeList($data['dependentFiles']);
-			if (array_key_exists('usedTraitDependentFiles', $data)) {
-				$data['usedTraitDependentFiles'] = $this->relativizeList($data['usedTraitDependentFiles']);
-			}
-			$result[$this->relativizePath($file)] = $data;
-		}
-
-		return $result;
-	}
-
-	/**
-	 * @param array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}> $dependencies
-	 * @return array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>
-	 */
 	public function absolutizeDependencies(array $dependencies): array
 	{
 		$result = [];

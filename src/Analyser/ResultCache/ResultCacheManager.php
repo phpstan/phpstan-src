@@ -100,7 +100,7 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v19-sharedNamespaceUses';
+	private const CACHE_VERSION = 'v20-dependencyGraph';
 
 	/**
 	 * The recorded hash of a dependency that does not exist. A rule can depend on a path rather than on
@@ -363,7 +363,25 @@ final class ResultCacheManager
 		$data['projectExtensionFiles'] = $transformer->absolutizeFileKeyed($data['projectExtensionFiles']);
 		$data['linesToIgnore'] = $transformer->absolutizeCompoundKeyed($data['linesToIgnore']);
 		$data['unmatchedLineIgnores'] = $transformer->absolutizeCompoundKeyed($data['unmatchedLineIgnores']);
-		$data['dependencies'] = $transformer->absolutizeDependencies($data['dependencies']);
+		if (array_key_exists('dependencyGraph', $data)) {
+			try {
+				$data['dependencies'] = $this->decodeDependencyGraph($data['dependencyGraph'], $transformer);
+			} catch (Throwable $e) {
+				@unlink($cacheFilePath);
+
+				return $this->fullAnalysis(
+					sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()),
+					$allAnalysedFiles,
+					$this->getMeta($allAnalysedFiles, $projectConfigArray),
+					$this->hashAnalysedFiles($analysedFileStats, null),
+					$output,
+				);
+			}
+			unset($data['dependencyGraph']);
+		} else {
+			// a cache written by an older version, which the cacheVersion check below discards
+			$data['dependencies'] = $transformer->absolutizeDependencies($data['dependencies'] ?? []);
+		}
 		$currentFileHashes = $this->hashAnalysedFiles($analysedFileStats, $data['dependencies']);
 		$fileStatSignaturesChanged = $this->fileStatSignaturesDiffer($data['dependencies']);
 		$data['packageDependencies'] = $transformer->absolutizeFileKeyed($data['packageDependencies'] ?? []);
@@ -1550,7 +1568,8 @@ final class ResultCacheManager
 		$linesToIgnore = $transformer->relativizeCompoundKeyed($linesToIgnore);
 		$unmatchedLineIgnores = $transformer->relativizeCompoundKeyed($unmatchedLineIgnores);
 		$collectedData = $transformer->relativizeCollectedData($collectedData);
-		$invertedDependencies = $transformer->relativizeDependencies($invertedDependencies);
+		$dependencyGraph = $this->encodeDependencyGraph($invertedDependencies, $transformer);
+		unset($invertedDependencies);
 		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
 		$exportedNodes = $transformer->relativizeFileKeyed($exportedNodes);
 		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
@@ -1590,7 +1609,10 @@ final class ResultCacheManager
 			$this->writeArrayFrame($handle, $file, 'linesToIgnore', $linesToIgnore);
 			$this->writeArrayFrame($handle, $file, 'unmatchedLineIgnores', $unmatchedLineIgnores);
 			$this->writeArrayFrame($handle, $file, 'collectedData', $collectedData);
-			$this->writeArrayFrame($handle, $file, 'dependencies', $invertedDependencies);
+			// An older PHPStan reading this file absolutizes the dependencies before it gets to the
+			// cacheVersion check that makes it discard the file, and fails on a missing section.
+			$this->writeArrayFrame($handle, $file, 'dependencies', []);
+			$this->writeValueFrame($handle, $file, 'dependencyGraph', $dependencyGraph);
 			$this->writeArrayFrame($handle, $file, 'packageDependencies', $packageDependencies);
 			$this->writeArrayFrame($handle, $file, 'exportedNodes', $exportedNodes);
 			fclose($handle);
@@ -1611,6 +1633,99 @@ final class ResultCacheManager
 				@unlink($temporaryFile);
 			}
 		}
+	}
+
+	/**
+	 * The dependency graph names every file once in a path table and refers to it by position.
+	 * Written out entry by entry with the paths spelled in full, as it used to be, the graph repeats
+	 * each file in the dependent lists of everything it depends on - on Drupal core half a million
+	 * paths, 42 MB, each of them rewritten between absolute and relative on every save and restore.
+	 * Now it is the 11k paths of the table, and the lists are integers.
+	 *
+	 * @param array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}> $invertedDependencies
+	 * @return array{paths: list<string>, entries: list<array{int, string, string|null, list<int>, list<int>|null}>}
+	 */
+	private function encodeDependencyGraph(array $invertedDependencies, ResultCachePathTransformer $transformer): array
+	{
+		$ids = [];
+		$paths = [];
+		$entries = [];
+		foreach ($invertedDependencies as $file => $fileData) {
+			if (!isset($ids[$file])) {
+				$ids[$file] = count($paths);
+				$paths[] = $file;
+			}
+
+			$dependentIds = [];
+			foreach ($fileData['dependentFiles'] as $dependentFile) {
+				if (!isset($ids[$dependentFile])) {
+					$ids[$dependentFile] = count($paths);
+					$paths[] = $dependentFile;
+				}
+				$dependentIds[] = $ids[$dependentFile];
+			}
+
+			$usedTraitDependentIds = null;
+			if (array_key_exists('usedTraitDependentFiles', $fileData)) {
+				$usedTraitDependentIds = [];
+				foreach ($fileData['usedTraitDependentFiles'] as $dependentFile) {
+					if (!isset($ids[$dependentFile])) {
+						$ids[$dependentFile] = count($paths);
+						$paths[] = $dependentFile;
+					}
+					$usedTraitDependentIds[] = $ids[$dependentFile];
+				}
+			}
+
+			$entries[] = [$ids[$file], $fileData['fileHash'], $fileData['fileStat'] ?? null, $dependentIds, $usedTraitDependentIds];
+		}
+
+		$relativePaths = [];
+		foreach ($paths as $path) {
+			$relativePaths[] = $transformer->relativizePath($path);
+		}
+
+		return ['paths' => $relativePaths, 'entries' => $entries];
+	}
+
+	/**
+	 * @param mixed $dependencyGraph
+	 * @return array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>
+	 */
+	private function decodeDependencyGraph($dependencyGraph, ResultCachePathTransformer $transformer): array
+	{
+		if (!is_array($dependencyGraph) || !is_array($dependencyGraph['paths'] ?? null) || !is_array($dependencyGraph['entries'] ?? null)) {
+			throw new RuntimeException('The dependency graph is malformed.');
+		}
+
+		$paths = [];
+		foreach ($dependencyGraph['paths'] as $path) {
+			$paths[] = $transformer->absolutizePath($path);
+		}
+
+		$dependencies = [];
+		foreach ($dependencyGraph['entries'] as [$fileId, $fileHash, $fileStat, $dependentIds, $usedTraitDependentIds]) {
+			$dependentFiles = [];
+			foreach ($dependentIds as $dependentId) {
+				$dependentFiles[] = $paths[$dependentId];
+			}
+
+			$entry = ['fileHash' => $fileHash, 'dependentFiles' => $dependentFiles];
+			if ($fileStat !== null) {
+				$entry['fileStat'] = $fileStat;
+			}
+			if ($usedTraitDependentIds !== null) {
+				$usedTraitDependentFiles = [];
+				foreach ($usedTraitDependentIds as $dependentId) {
+					$usedTraitDependentFiles[] = $paths[$dependentId];
+				}
+				$entry['usedTraitDependentFiles'] = $usedTraitDependentFiles;
+			}
+
+			$dependencies[$paths[$fileId]] = $entry;
+		}
+
+		return $dependencies;
 	}
 
 	/**

@@ -69,6 +69,7 @@ use function rtrim;
 use function serialize;
 use function sort;
 use function sprintf;
+use function stat;
 use function str_ends_with;
 use function str_starts_with;
 use function strlen;
@@ -77,6 +78,7 @@ use function time;
 use function uniqid;
 use function unlink;
 use function unserialize;
+use const DIRECTORY_SEPARATOR;
 use const PHP_VERSION_ID;
 use const SEEK_CUR;
 
@@ -146,6 +148,14 @@ final class ResultCacheManager
 
 	/** @var array<string, string> */
 	private array $fileHashes = [];
+
+	/**
+	 * The stat signatures of the analysed files whose hash in $fileHashes can be trusted to still
+	 * describe them next time the signature matches - see hashAnalysedFiles().
+	 *
+	 * @var array<string, string>
+	 */
+	private array $fileStatSignatures = [];
 
 	private ?ResultCachePathTransformer $pathTransformer = null;
 
@@ -277,21 +287,16 @@ final class ResultCacheManager
 	{
 		$this->restoredCacheUnchanged = false;
 		$this->restoredStubFiles = [];
+		$this->fileStatSignatures = [];
 
 		$startTime = microtime(true);
-		$currentFileHashes = [];
-		foreach ($allAnalysedFiles as $analysedFile) {
-			if (!is_file($analysedFile)) {
-				continue;
-			}
-			$currentFileHashes[$analysedFile] = $this->getFileHash($analysedFile);
-		}
+		$analysedFileStats = $this->statAnalysedFiles($allAnalysedFiles);
 		if ($debug) {
 			return $this->fullAnalysis(
 				'Result cache not used because of debug mode.',
 				$allAnalysedFiles,
 				$this->getMeta($allAnalysedFiles, $projectConfigArray),
-				$currentFileHashes,
+				$this->hashAnalysedFiles($analysedFileStats, null),
 				$output,
 			);
 		}
@@ -300,7 +305,7 @@ final class ResultCacheManager
 				'Result cache not used because only files were passed as analysed paths.',
 				$allAnalysedFiles,
 				$this->getMeta($allAnalysedFiles, $projectConfigArray),
-				$currentFileHashes,
+				$this->hashAnalysedFiles($analysedFileStats, null),
 				$output,
 			);
 		}
@@ -311,7 +316,7 @@ final class ResultCacheManager
 				'Result cache not used because the cache file does not exist.',
 				$allAnalysedFiles,
 				$this->getMeta($allAnalysedFiles, $projectConfigArray),
-				$currentFileHashes,
+				$this->hashAnalysedFiles($analysedFileStats, null),
 				$output,
 			);
 		}
@@ -330,7 +335,7 @@ final class ResultCacheManager
 				sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()),
 				$allAnalysedFiles,
 				$this->getMeta($allAnalysedFiles, $projectConfigArray),
-				$currentFileHashes,
+				$this->hashAnalysedFiles($analysedFileStats, null),
 				$output,
 			);
 		}
@@ -342,7 +347,7 @@ final class ResultCacheManager
 				'Result cache not used because the cache file is corrupted.',
 				$allAnalysedFiles,
 				$this->getMeta($allAnalysedFiles, $projectConfigArray),
-				$currentFileHashes,
+				$this->hashAnalysedFiles($analysedFileStats, null),
 				$output,
 			);
 		}
@@ -359,6 +364,8 @@ final class ResultCacheManager
 		$data['linesToIgnore'] = $transformer->absolutizeCompoundKeyed($data['linesToIgnore']);
 		$data['unmatchedLineIgnores'] = $transformer->absolutizeCompoundKeyed($data['unmatchedLineIgnores']);
 		$data['dependencies'] = $transformer->absolutizeDependencies($data['dependencies']);
+		$currentFileHashes = $this->hashAnalysedFiles($analysedFileStats, $data['dependencies']);
+		$fileStatSignaturesChanged = $this->fileStatSignaturesDiffer($data['dependencies']);
 		$data['packageDependencies'] = $transformer->absolutizeFileKeyed($data['packageDependencies'] ?? []);
 
 		$errorsCallback = $data['errorsCallback'];
@@ -892,7 +899,7 @@ final class ResultCacheManager
 			));
 		}
 
-		$this->restoredCacheUnchanged = !$metaDifferent && !$dependencyFilesChanged;
+		$this->restoredCacheUnchanged = !$metaDifferent && !$dependencyFilesChanged && !$fileStatSignaturesChanged;
 		$this->restoredStubFiles = $cachedStubFiles;
 
 		return new ResultCache(
@@ -1471,10 +1478,7 @@ final class ResultCacheManager
 		foreach ($dependencies as $file => $fileDependencies) {
 			foreach ($fileDependencies as $fileDep) {
 				if (!array_key_exists($fileDep, $invertedDependencies)) {
-					$invertedDependencies[$fileDep] = [
-						'fileHash' => $currentFileHashes[$fileDep] ?? $this->getDependencyFileHash($fileDep),
-						'dependentFiles' => [],
-					];
+					$invertedDependencies[$fileDep] = $this->createDependencyEntry($fileDep, $currentFileHashes);
 					unset($filesNoOneIsDependingOn[$fileDep]);
 				}
 				$invertedDependencies[$fileDep]['dependentFiles'][] = $file;
@@ -1484,11 +1488,7 @@ final class ResultCacheManager
 		foreach ($usedTraitDependencies as $file => $fileUsedTraitDependencies) {
 			foreach ($fileUsedTraitDependencies as $usedTraitFileDep) {
 				if (!array_key_exists($usedTraitFileDep, $invertedDependencies)) {
-					$invertedDependencies[$usedTraitFileDep] = [
-						'fileHash' => $currentFileHashes[$usedTraitFileDep] ?? $this->getDependencyFileHash($usedTraitFileDep),
-						'dependentFiles' => [],
-						'usedTraitDependentFiles' => [],
-					];
+					$invertedDependencies[$usedTraitFileDep] = $this->createDependencyEntry($usedTraitFileDep, $currentFileHashes) + ['usedTraitDependentFiles' => []];
 					unset($filesNoOneIsDependingOn[$usedTraitFileDep]);
 				}
 				$invertedDependencies[$usedTraitFileDep]['usedTraitDependentFiles'][] = $file;
@@ -1504,10 +1504,7 @@ final class ResultCacheManager
 				continue;
 			}
 
-			$invertedDependencies[$file] = [
-				'fileHash' => $currentFileHashes[$file] ?? $this->getFileHash($file),
-				'dependentFiles' => [],
-			];
+			$invertedDependencies[$file] = $this->createDependencyEntry($file, $currentFileHashes);
 		}
 
 		ksort($errors);
@@ -2162,6 +2159,112 @@ final class ResultCacheManager
 	/**
 	 * The hash of a file that is depended on, which is allowed not to exist - see MISSING_FILE_HASH.
 	 */
+	/**
+	 * @param array<string, string> $currentFileHashes
+	 * @return array{fileHash: string, fileStat?: string, dependentFiles: list<string>}
+	 */
+	private function createDependencyEntry(string $file, array $currentFileHashes): array
+	{
+		$entry = [
+			'fileHash' => $currentFileHashes[$file] ?? $this->getDependencyFileHash($file),
+			'dependentFiles' => [],
+		];
+		if (array_key_exists($file, $currentFileHashes) && array_key_exists($file, $this->fileStatSignatures)) {
+			$entry['fileStat'] = $this->fileStatSignatures[$file];
+		}
+
+		return $entry;
+	}
+
+	/**
+	 * @param string[] $allAnalysedFiles
+	 * @return array<string, array<int|string, int>> the analysed files that exist, with their stat
+	 */
+	private function statAnalysedFiles(array $allAnalysedFiles): array
+	{
+		$stats = [];
+		foreach ($allAnalysedFiles as $analysedFile) {
+			$stat = @stat($analysedFile);
+			// what is_file() tells: it exists and is a regular file, symlinks followed
+			if ($stat === false || ($stat['mode'] & 0170000) !== 0100000) {
+				continue;
+			}
+
+			$stats[$analysedFile] = $stat;
+		}
+
+		return $stats;
+	}
+
+	/**
+	 * Hashing every analysed file is the bulk of what a run with nothing to re-analyse costs - on
+	 * Drupal core almost a second for 11k files. A file whose size, mtime, ctime, inode and device
+	 * are what they were when it was last hashed has not been written to since, so the hash the
+	 * cache recorded then is reused - the check git makes against its index. ctime cannot be set
+	 * back the way mtime can (touch, an extracted archive), and a replaced file has a new inode.
+	 *
+	 * A signature is only recorded for a file last modified before the second its hash was taken:
+	 * the timestamps have a one-second granularity, so a file written again within that same second
+	 * would keep a matching signature over different contents. On Windows the ctime PHP reports is
+	 * the creation time, which a file rewritten in place keeps, so nothing is reused there.
+	 *
+	 * @param array<string, array<int|string, int>> $analysedFileStats
+	 * @param array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>|null $cachedDependencies
+	 * @return array<string, string>
+	 */
+	private function hashAnalysedFiles(array $analysedFileStats, ?array $cachedDependencies): array
+	{
+		$now = time();
+		$trustSignatures = DIRECTORY_SEPARATOR === '/';
+		$hashes = [];
+		foreach ($analysedFileStats as $file => $stat) {
+			$signature = sprintf('%d:%d:%d:%d:%d', $stat['size'], $stat['mtime'], $stat['ctime'], $stat['ino'], $stat['dev']);
+			$cachedEntry = $cachedDependencies[$file] ?? null;
+			if (
+				$trustSignatures
+				&& $cachedEntry !== null
+				&& ($cachedEntry['fileStat'] ?? null) === $signature
+				&& $cachedEntry['fileHash'] !== self::MISSING_FILE_HASH
+				&& !array_key_exists($file, $this->fileReplacements)
+			) {
+				$hash = $cachedEntry['fileHash'];
+				$this->fileHashes[$file] = $hash;
+			} else {
+				$hash = $this->getFileHash($file);
+			}
+
+			$hashes[$file] = $hash;
+			if (!$trustSignatures || $stat['mtime'] >= $now || $stat['ctime'] >= $now) {
+				continue;
+			}
+
+			$this->fileStatSignatures[$file] = $signature;
+		}
+
+		return $hashes;
+	}
+
+	/**
+	 * Whether a signature recorded by hashAnalysedFiles() differs from the one the restored cache
+	 * holds for the file, which makes the cache worth rewriting even when nothing else changed.
+	 *
+	 * @param array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}> $cachedDependencies
+	 */
+	private function fileStatSignaturesDiffer(array $cachedDependencies): bool
+	{
+		foreach ($this->fileStatSignatures as $file => $signature) {
+			if (!array_key_exists($file, $cachedDependencies)) {
+				continue;
+			}
+
+			if (($cachedDependencies[$file]['fileStat'] ?? null) !== $signature) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private function getDependencyFileHash(string $path): string
 	{
 		if (!is_file($path)) {

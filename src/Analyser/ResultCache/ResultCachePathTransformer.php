@@ -234,8 +234,8 @@ final class ResultCachePathTransformer
 	}
 
 	/**
-	 * @param array<string, array{fileHash: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}> $dependencies
-	 * @return array<string, array{fileHash: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>
+	 * @param array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}> $dependencies
+	 * @return array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>
 	 */
 	public function relativizeDependencies(array $dependencies): array
 	{
@@ -252,8 +252,8 @@ final class ResultCachePathTransformer
 	}
 
 	/**
-	 * @param array<string, array{fileHash: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}> $dependencies
-	 * @return array<string, array{fileHash: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>
+	 * @param array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}> $dependencies
+	 * @return array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>
 	 */
 	public function absolutizeDependencies(array $dependencies): array
 	{

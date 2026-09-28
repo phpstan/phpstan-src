@@ -24,6 +24,8 @@ interface ExtendedParameterReflection extends ParameterReflection
 
 	public function getClosureThisType(): ?Type;
 
+	public function getClosureScopeType(): ?Type;
+
 	/**
 	 * @return list<AttributeReflection>
 	 */

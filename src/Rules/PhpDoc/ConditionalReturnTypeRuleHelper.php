@@ -58,6 +58,16 @@ final class ConditionalReturnTypeRuleHelper
 				});
 			}
 
+			if ($parameter->getClosureScopeType() !== null) {
+				TypeTraverser::map($parameter->getClosureScopeType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+						$conditionalTypes[] = $type;
+					}
+
+					return $traverse($type);
+				});
+			}
+
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 

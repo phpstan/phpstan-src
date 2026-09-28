@@ -334,6 +334,7 @@ class StaticReturnClosureThis
 
 	/**
 	 * @param-closure-this FooChild $cb
+	 * @param-closure-scope FooChild $cb
 	 */
 	public function withFooChild(callable $cb): void
 	{
@@ -342,6 +343,7 @@ class StaticReturnClosureThis
 
 	/**
 	 * @param-closure-this Foo $cb
+	 * @param-closure-scope Foo $cb
 	 */
 	public function withFoo(callable $cb): void
 	{
@@ -384,6 +386,87 @@ class TestStaticResolutionInParamClosureThis
 		$o->withFoo(function (): ?static {
 			assertType('ParamClosureThis\Foo', $this);
 			return rand() ? $this : null;
+		});
+	}
+
+}
+
+class ClosureThisWithoutScope
+{
+
+	public const SERVICE_FOO = 'foo';
+
+	/**
+	 * @param-closure-this Some $cb
+	 */
+	public function paramClosureThisOnly(callable $cb): void
+	{
+
+	}
+
+	/**
+	 * @param-closure-scope Some $cb
+	 */
+	public function paramClosureScopeOnly(callable $cb): void
+	{
+
+	}
+
+	/**
+	 * @param-closure-this Some $cb
+	 * @param-closure-scope Some $cb
+	 */
+	public function paramClosureThisAndScope(callable $cb): void
+	{
+
+	}
+
+	public function testThisWithoutScope(): void
+	{
+		$this->paramClosureThisOnly(function () {
+			assertType(Some::class, $this);
+			assertType("'foo'", self::SERVICE_FOO);
+		});
+
+		$this->paramClosureThisOnly(fn () => assertType("'foo'", self::SERVICE_FOO));
+	}
+
+	public function testScopeWithoutThis(): void
+	{
+		$this->paramClosureScopeOnly(function () {
+			assertType(sprintf('$this(%s)', self::class), $this);
+		});
+	}
+
+	public function testThisAndScope(): void
+	{
+		$this->paramClosureThisAndScope(function () {
+			assertType(Some::class, $this);
+		});
+	}
+
+}
+
+class BoundScopeClass
+{
+	public const X = 'bound';
+}
+
+class ClosureScopeOnly
+{
+	public const X = 'enclosing';
+
+	/**
+	 * @param-closure-scope BoundScopeClass $cb
+	 */
+	public function withScope(callable $cb): void
+	{
+	}
+
+	public function test(): void
+	{
+		$this->withScope(function () {
+			assertType(sprintf('$this(%s)', ClosureScopeOnly::class), $this);
 		});
 	}
 

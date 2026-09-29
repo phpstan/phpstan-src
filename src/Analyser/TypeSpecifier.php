@@ -653,6 +653,22 @@ final class TypeSpecifier
 			}
 		}
 
+		return $this->findNonPureCallInSubNodes($node, $scope, $containsCall);
+	}
+
+	/**
+	 * Whether the arguments of the call, or what it is called on, contain a call
+	 * that isn't known to be pure. The purity of the call itself is not considered.
+	 */
+	public function callOperandsContainNonPureCall(Expr\CallLike $call, Scope $scope): bool
+	{
+		$containsCall = false;
+
+		return $this->findNonPureCallInSubNodes($call, $scope, $containsCall);
+	}
+
+	private function findNonPureCallInSubNodes(Node $node, Scope $scope, bool &$containsCall): bool
+	{
 		foreach ($node->getSubNodeNames() as $subNodeName) {
 			$subNode = $node->$subNodeName;
 			if ($subNode instanceof Node) {

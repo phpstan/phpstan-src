@@ -95,7 +95,11 @@ final class ExpressionHandler implements StmtHandler
 		);
 		$scope = $scope->applySpecifiedTypes($specifiedTypes);
 
-		if ($specifiedTypes->isEquality()) {
+		if (
+			$specifiedTypes->isEquality()
+			&& $stmt->expr instanceof Expr\CallLike
+			&& !$this->typeSpecifier->callOperandsContainNonPureCall($stmt->expr, $scope)
+		) {
 			// Statement counterpart of the equality handling in filterByTruthyValue():
 			// store the call's true result so a duplicate void assertion statement is
 			// reported as always-true. We assign directly because void calls have no

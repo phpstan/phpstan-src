@@ -325,6 +325,17 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15328(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15328.php'], [
+			[
+				'Call to method Bug15328\Assert::assertSameMethod() with int and int will always evaluate to true.',
+				111,
+			],
+		]);
+	}
+
 	public function testInTrait(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

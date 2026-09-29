@@ -174,6 +174,17 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13566.php'], []);
 	}
 
+	public function testBug15328(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15328.php'], [
+			[
+				'Call to static method Bug15328\Assert::assertSameStatic() with int and int will always evaluate to true.',
+				97,
+			],
+		]);
+	}
+
 	public function testInTrait(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

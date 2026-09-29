@@ -721,6 +721,36 @@ final class ResultCacheManager
 			$filteredErrors[$stubFile] = $errors[$stubFile];
 		}
 
+		// Whether a changed file's exported nodes changed decides what else has to be re-analysed with
+		// it: its dependents, the classes using a trait it declares, and - when a symbol appeared or
+		// disappeared - the files with errors. Finding out means parsing the file, serially here in
+		// the main process. When all of those files are re-analysed anyway, because they changed
+		// themselves, the answer cannot add anything and the file is not parsed. After a branch switch
+		// or a formatting run that touched most of the project, that is most of the changed files -
+		// on Drupal core with every file edited, 9 seconds of parsing, and workers forked from a main
+		// process bloated by the parsed files.
+		$changedAnalysedFiles = [];
+		foreach ($allAnalysedFiles as $analysedFile) {
+			if (
+				array_key_exists($analysedFile, $invertedDependencies)
+				&& $invertedDependencies[$analysedFile]['fileHash'] === $currentFileHashes[$analysedFile]
+			) {
+				continue;
+			}
+
+			$changedAnalysedFiles[$analysedFile] = true;
+		}
+		// only the stub files with errors so far, which are never analysed
+		$filesWithErrorsAllChanged = $filteredErrors === [];
+		foreach ($allAnalysedFiles as $analysedFile) {
+			if (!array_key_exists($analysedFile, $errors) || array_key_exists($analysedFile, $changedAnalysedFiles)) {
+				continue;
+			}
+
+			$filesWithErrorsAllChanged = false;
+			break;
+		}
+
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (array_key_exists($analysedFile, $errors)) {
 				$filteredErrors[$analysedFile] = $errors[$analysedFile];
@@ -766,6 +796,14 @@ final class ResultCacheManager
 			}
 
 			$filesToAnalyse[] = $analysedFile;
+			if (
+				($filesWithErrorsAllChanged || $newFileAppeared)
+				&& $this->areAllChanged($dependentFiles, $changedAnalysedFiles)
+				&& $this->areAllChanged($usedTraitDependentFiles, $changedAnalysedFiles)
+			) {
+				continue;
+			}
+
 			// A file that declared nothing has no entry at all - save() only writes one for a file with
 			// at least one exported node - and a missing entry is not the same as nothing to propagate:
 			// the file may have gained its first symbol, which is exactly what the files with errors are
@@ -1042,6 +1080,21 @@ final class ResultCacheManager
 		}
 
 		return $diffs;
+	}
+
+	/**
+	 * @param list<string> $files
+	 * @param array<string, true> $changedFiles
+	 */
+	private function areAllChanged(array $files, array $changedFiles): bool
+	{
+		foreach ($files as $file) {
+			if (!array_key_exists($file, $changedFiles)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

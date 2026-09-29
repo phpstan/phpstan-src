@@ -94,25 +94,27 @@ final class RegularExpressionQuotingRule implements Rule
 				return [];
 			}
 
-			$errors = [];
+			$patterns = [];
 			foreach ($patternArg->items as $item) {
 				if (!$item->value instanceof Concat) {
 					continue;
 				}
 
-				$itemDelimiters = $this->regexExpressionHelper->getPatternDelimiters($item->value, $scope);
-				$errors = array_merge($errors, $this->validateQuoteDelimiters($item->value, $scope, $itemDelimiters));
+				$patterns[] = $item->value;
 			}
-
-			return $errors;
-		}
-
-		if (!$patternArg instanceof Concat) {
+		} elseif ($patternArg instanceof Concat) {
+			$patterns = [$patternArg];
+		} else {
 			return [];
 		}
 
-		$patternDelimiters = $this->regexExpressionHelper->getPatternDelimiters($patternArg, $scope);
-		return $this->validateQuoteDelimiters($patternArg, $scope, $patternDelimiters);
+		$errors = [];
+		foreach ($patterns as $pattern) {
+			$patternDelimiters = $this->regexExpressionHelper->getPatternDelimiters($pattern, $scope);
+			$errors = array_merge($errors, $this->validateQuoteDelimiters($pattern, $scope, $patternDelimiters));
+		}
+
+		return $errors;
 	}
 
 	/**

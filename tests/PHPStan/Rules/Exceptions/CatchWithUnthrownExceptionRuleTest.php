@@ -1427,10 +1427,6 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unserialize-throw-type.php'], [
 			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				15,
-			],
-			[
 				'Dead catch - TypeError is never thrown in the try block.',
 				27,
 			],
@@ -1439,8 +1435,8 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				33,
 			],
 			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				39,
+				'Dead catch - Exception is never thrown in the try block.',
+				93,
 			],
 		]);
 	}
@@ -1450,14 +1446,6 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unserialize-throw-type.php'], [
 			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				15,
-			],
-			[
-				'Dead catch - TypeError is never thrown in the try block.',
-				21,
-			],
-			[
 				'Dead catch - TypeError is never thrown in the try block.',
 				27,
 			],
@@ -1467,37 +1455,18 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			],
 			[
 				'Dead catch - ValueError is never thrown in the try block.',
-				39,
+				87,
 			],
 			[
-				'Dead catch - TypeError is never thrown in the try block.',
-				45,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				51,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				57,
-			],
-			[
-				'Dead catch - TypeError is never thrown in the try block.',
-				63,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				69,
-			],
-			[
-				'Dead catch - TypeError is never thrown in the try block.',
-				75,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				81,
+				'Dead catch - Exception is never thrown in the try block.',
+				93,
 			],
 		]);
+	}
+
+	public function testBug15329(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15329.php'], []);
 	}
 
 }

@@ -46,7 +46,9 @@ public:
 		zend_long acc = value();
 		acc &= operand != NULL ? operand->value() : YES;
 		for (uint32_t i = 0; i < restCount; i++) {
-			acc &= TrinaryLogic(zv::Ref(&rest[i]).deref().asObject()).value();
+			zval *deref = &rest[i];
+			ZVAL_DEREF(deref);
+			acc &= TrinaryLogic(Z_OBJ_P(deref)).value();
 		}
 		return create(acc);
 	}
@@ -57,17 +59,23 @@ public:
 		zend_long acc = value();
 		acc |= operand != NULL ? operand->value() : NO;
 		for (uint32_t i = 0; i < restCount; i++) {
-			acc |= TrinaryLogic(zv::Ref(&rest[i]).deref().asObject()).value();
+			zval *deref = &rest[i];
+			ZVAL_DEREF(deref);
+			acc |= TrinaryLogic(Z_OBJ_P(deref)).value();
 		}
 		return create(acc);
 	}
 
 	static zv::Val extremeIdentity(zval *operands, uint32_t count)
 	{
+		zval *deref = &operands[0];
+		ZVAL_DEREF(deref);
 		zend_long min, max;
-		min = max = TrinaryLogic(zv::Ref(&operands[0]).deref().asObject()).value();
+		min = max = TrinaryLogic(Z_OBJ_P(deref)).value();
 		for (uint32_t i = 1; i < count; i++) {
-			zend_long v = TrinaryLogic(zv::Ref(&operands[i]).deref().asObject()).value();
+			deref = &operands[i];
+			ZVAL_DEREF(deref);
+			zend_long v = TrinaryLogic(Z_OBJ_P(deref)).value();
 			if (v < min) {
 				min = v;
 			}
@@ -178,7 +186,9 @@ public:
 		for (auto entry : objects) {
 			zv::Val result = callbackResult(entry.value());
 			if (result.isUndef()) return zv::Val();
-			zend_long resultValue = TrinaryLogic(zv::Ref(result.raw()).asObject()).value();
+			zval *deref = result.raw();
+			ZVAL_DEREF(deref);
+			zend_long resultValue = TrinaryLogic(Z_OBJ_P(deref)).value();
 
 			if (mode == AND && resultValue == TrinaryLogic::NO) return result;
 			if ((mode == OR || mode == MAX_MIN) && resultValue == TrinaryLogic::YES) return result;
@@ -210,7 +220,11 @@ public:
 				last = std::move(result);
 				continue;
 			}
-			if (zv::Ref(result.raw()).asObject() != zv::Ref(last.raw()).asObject()) return TrinaryLogic::create(TrinaryLogic::MAYBE);
+			zval *deref1 = result.raw();
+			zval *deref2 = last.raw();
+			ZVAL_DEREF(deref1);
+			ZVAL_DEREF(deref2);
+			if (Z_OBJ_P(deref1) != Z_OBJ_P(deref2)) return TrinaryLogic::create(TrinaryLogic::MAYBE);
 		}
 		return last;
 	}

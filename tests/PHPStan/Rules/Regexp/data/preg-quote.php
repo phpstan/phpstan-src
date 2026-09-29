@@ -94,3 +94,16 @@ function ok(string $s): void { // ok
 function notAnalyzable(string $s): void { // ok
 	preg_match($s. preg_quote('&oops') . 'pattern}', $s);
 }
+
+// preg_replace, preg_replace_callback and preg_filter accept an array of
+// patterns. RegularExpressionPatternRule already reads that form.
+function doFooArrayPatterns(string $s, callable $cb): void // errors
+{
+	preg_replace(['&' . preg_quote('&oops', '/') . 'pattern&'], 'x', $s);
+	preg_filter(['&' . preg_quote('&oops', '/') . 'pattern&'], 'x', $s);
+	preg_replace_callback(['&' . preg_quote('&oops', '/') . 'pattern&'], $cb, $s);
+	preg_replace(['key' => '&' . preg_quote('&oops', '/') . 'pattern&'], 'x', $s);
+
+	// no error: delimiter matches
+	preg_replace(['&' . preg_quote('&oops', '&') . 'pattern&'], 'x', $s);
+}

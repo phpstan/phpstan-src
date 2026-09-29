@@ -320,6 +320,18 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10337.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15328(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15328-method.php'], [
+			[
+				'Call to method Bug15328Method\\Assert::assertSame() with int and int will always evaluate to true.',
+				69,
+			],
+		]);
+	}
+
 	public function testBug14705(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

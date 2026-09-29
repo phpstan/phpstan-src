@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementExitPoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -17,6 +18,7 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
@@ -37,6 +39,8 @@ final class ExpressionHandler implements StmtHandler
 
 	public function __construct(
 		private StatementsHandler $statementsHandler,
+		#[AutowiredParameter]
+		private bool $rememberPossiblyImpureFunctionValues,
 	)
 	{
 	}
@@ -102,7 +106,7 @@ final class ExpressionHandler implements StmtHandler
 		$specifiedTypes = $result->getSpecifiedTypesForScope($scope, TypeSpecifierContext::createNull());
 		$scope = $scope->applySpecifiedTypes($specifiedTypes);
 
-		if ($specifiedTypes->isEquality()) {
+		if ($specifiedTypes->isEquality() && $this->isCallRememberedDespiteItsOwnImpurity($result->getImpurePoints(), $stmt->expr)) {
 			// Statement counterpart of ExpressionResult's equality handling:
 			// store the call's true result so a duplicate void assertion statement is
 			// reported as always-true. We assign directly because void calls have no
@@ -125,6 +129,40 @@ final class ExpressionHandler implements StmtHandler
 			], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $result->getVariableFlow());
 		}
 		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $result->getVariableFlow());
+	}
+
+	/**
+	 * A void assertion is impure by itself, but repeating it only repeats the
+	 * same check when nothing else in it has side effects - an impure call in
+	 * its arguments (`assertSame($a, $counter->next())`) yields a new value
+	 * every time.
+	 *
+	 * @param ImpurePoint[] $impurePoints
+	 */
+	private function isCallRememberedDespiteItsOwnImpurity(array $impurePoints, Expr $call): bool
+	{
+		foreach ($impurePoints as $impurePoint) {
+			$node = $impurePoint->getNode();
+			if ($node === $call) {
+				continue;
+			}
+			if (
+				!$node instanceof Expr\FuncCall
+				&& !$node instanceof Expr\MethodCall
+				&& !$node instanceof Expr\StaticCall
+				&& !$node instanceof Expr\NullsafeMethodCall
+			) {
+				continue;
+			}
+
+			if (!$impurePoint->isCertain() && $this->rememberPossiblyImpureFunctionValues) {
+				continue;
+			}
+
+			return false;
+		}
+
+		return true;
 	}
 
 }

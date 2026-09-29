@@ -125,11 +125,12 @@ public:
 	{
 		zv::Val number = isExact() ? toNumber() : pt_type_call(self, PT_LC("tonumber"), 0, NULL);
 		if (UNEXPECTED(number.isUndef())) return zv::Val();
-		if (UNEXPECTED(!zv::Ref(number.raw()).isObject())) {
+		zval *numRaw = number.raw();
+		if (UNEXPECTED(Z_TYPE_P(numRaw) != IS_OBJECT)) {
 			zend_type_error("phpstan_turbo: toNumber() must return %s", ZSTR_VAL(pt_ce_constant_boolean_type->parent->name));
 			return zv::Val();
 		}
-		return pt_type_call(zv::Ref(number.raw()).asObject(), PT_LC("toabsolutenumber"), 0, NULL);
+		return pt_type_call(Z_OBJ_P(numRaw), PT_LC("toabsolutenumber"), 0, NULL);
 	}
 
 	/* new ConstantStringType((string) $this->value): '1' or '' */

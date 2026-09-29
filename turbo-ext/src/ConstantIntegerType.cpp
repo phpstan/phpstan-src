@@ -238,11 +238,12 @@ bool pt_constant_integer_get_value(zend_object *object, zend_long &out)
 	/* a subclass may override getValue() */
 	zv::Val result = pt_type_call(object, PT_LC("getvalue"), 0, NULL);
 	if (UNEXPECTED(result.isUndef())) return false;
-	if (UNEXPECTED(!zv::Ref(result.raw()).isLong())) {
+	zval *resRaw = result.raw();
+	if (UNEXPECTED(Z_TYPE_P(resRaw) != IS_LONG)) {
 		zend_type_error("phpstan_turbo: %s::getValue() must return int", ZSTR_VAL(object->ce->name));
 		return false;
 	}
-	out = zv::Ref(result.raw()).asLong();
+	out = Z_LVAL_P(resRaw);
 	return true;
 }
 

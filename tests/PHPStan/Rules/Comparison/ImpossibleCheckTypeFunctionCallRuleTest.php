@@ -537,6 +537,17 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15328(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15328.php'], [
+			[
+				'Call to function assertSame() with int and int will always evaluate to true.',
+				59,
+			],
+		]);
+	}
+
 	public function testBug2755(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-2755.php'], []);

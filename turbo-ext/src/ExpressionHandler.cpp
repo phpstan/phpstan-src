@@ -68,10 +68,12 @@ class ExpressionHandler
 public:
 	explicit ExpressionHandler(zend_object *self) : self(self) {}
 
-	/* the constructor body: the promoted property */
-	void construct(zval *statementsHandler)
+	/* the constructor body: the promoted properties */
+	void construct(zval *statementsHandler, bool rememberPossiblyImpureFunctionValues)
 	{
-		zv::ObjRef(self).propAtWrite(slots::statementsHandler, zv::Val::copyOf(zv::Ref(statementsHandler)));
+		zv::ObjRef object(self);
+		object.propAtWrite(slots::statementsHandler, zv::Val::copyOf(zv::Ref(statementsHandler)));
+		object.propAtWrite(slots::rememberPossiblyImpureFunctionValues, zv::Val::boolean(rememberPossiblyImpureFunctionValues));
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -166,13 +168,20 @@ public:
 
 		bool isEquality;
 		if (UNEXPECTED(!pt_specified_types_is_equality(specifiedTypes.raw(), isEquality))) return zv::Val();
+		zval *statementExpression = NULL;
+		bool remembered = false;
 		if (isEquality) {
+			statementExpression = statementExpr(stmt);
+			if (UNEXPECTED(statementExpression == NULL)) return zv::Val();
+			impurePoints = pt_expression_result_impure_points(resultValue, impurePointsHold);
+			if (UNEXPECTED(impurePoints == NULL)) return zv::Val();
+			if (UNEXPECTED(!isCallRememberedDespiteItsOwnImpurity(impurePoints, statementExpression, remembered))) return zv::Val();
+		}
+		if (remembered) {
 			// Statement counterpart of ExpressionResult's equality handling:
 			// store the call's true result so a duplicate void assertion statement is
 			// reported as always-true. Assigned directly because void calls have no
 			// return value to protect, and intersecting true with void would produce never.
-			zval *statementExpression = statementExpr(stmt);
-			if (UNEXPECTED(statementExpression == NULL)) return zv::Val();
 			zval trueType, trueNativeType;
 			if (UNEXPECTED(!pt_constant_boolean_type_new(&trueType, true))) return zv::Val();
 			zv::Val trueTypeHold = zv::Val::adopt(trueType);
@@ -222,6 +231,51 @@ public:
 
 private:
 	zend_object *self;
+
+	/* Mirrors isCallRememberedDespiteItsOwnImpurity(); false = pending exception */
+	[[nodiscard]] bool isCallRememberedDespiteItsOwnImpurity(zval *impurePoints, zval *call, bool &out) const
+	{
+		if (UNEXPECTED(Z_TYPE_P(impurePoints) != IS_ARRAY)) {
+			zend_type_error("foreach() argument must be of type array|object, %s given", zend_zval_value_name(impurePoints));
+			return false;
+		}
+		/* the slot is borrowed: keep the array alive across the calls */
+		zv::Val impurePointsCopy = zv::Val::copyOf(zv::Ref(impurePoints));
+		for (zv::ArrayEntry entry : zv::ArrRef(impurePointsCopy.raw())) {
+			zval *impurePoint = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(impurePoint) != IS_OBJECT)) {
+				memberCallOnNonObject("getNode", impurePoint);
+				return false;
+			}
+			zv::Val nodeHold;
+			zval *node = pt_impure_point_node(impurePoint, nodeHold);
+			if (UNEXPECTED(node == NULL)) return false;
+			if (Z_TYPE_P(node) == IS_OBJECT && Z_TYPE_P(call) == IS_OBJECT && Z_OBJ_P(node) == Z_OBJ_P(call)) {
+				continue;
+			}
+			bool error = false;
+			bool isCall = ptsh::isInstanceOf(node, PT_CLASS_FUNC_CALL, error)
+				|| ptsh::isInstanceOf(node, PT_CLASS_METHOD_CALL, error)
+				|| ptsh::isInstanceOf(node, PT_CLASS_STATIC_CALL, error)
+				|| ptsh::isInstanceOf(node, PT_CLASS_NULLSAFE_METHOD_CALL, error);
+			if (UNEXPECTED(error)) return false;
+			if (!isCall) {
+				continue;
+			}
+
+			bool certain = false;
+			if (UNEXPECTED(!pt_impure_point_is_certain(impurePoint, certain))) return false;
+			if (!certain && Z_TYPE_P(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) == IS_TRUE) {
+				continue;
+			}
+
+			out = false;
+			return true;
+		}
+
+		out = true;
+		return true;
+	}
 
 	/* the twin's try block: the expression walked, a thrown expression's
 	 * @var-changed-type node emitted */
@@ -332,8 +386,9 @@ PT_MINIT_REGISTRATION(pt_register_expression_handler)
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *statementsHandler;
-		if (!zp::parse<zp::Obj>(execute_data, statementsHandler)) RETURN_THROWS();
-		ExpressionHandler(Z_OBJ_P(ZEND_THIS)).construct(statementsHandler);
+		bool rememberPossiblyImpureFunctionValues;
+		if (!zp::parse<zp::Obj, zp::Bool>(execute_data, statementsHandler, rememberPossiblyImpureFunctionValues)) RETURN_THROWS();
+		ExpressionHandler(Z_OBJ_P(ZEND_THIS)).construct(statementsHandler, rememberPossiblyImpureFunctionValues);
 	});
 
 	cls.method<&ExpressionHandler::supports, zp::Obj>(sigs::supports);

@@ -11,6 +11,7 @@ namespace ptdecl::ExpressionHandler {
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
 inline constexpr uint32_t statementsHandler = 0;
+inline constexpr uint32_t rememberPossiblyImpureFunctionValues = 1;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -23,6 +24,7 @@ inline void declareClass(reg::Class &cls)
 inline void declareProperties(reg::Class &cls)
 {
 	cls.property("statementsHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\StatementsHandler");
+	cls.property("rememberPossiblyImpureFunctionValues", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -30,42 +32,52 @@ namespace sigtab {
 inline constexpr char strings[] =
 	"statementsHandler\0" /* 0 */
 	"PHPStan\\Analyser\\StatementsHandler\0" /* 18 */
-	"__construct\0" /* 53 */
-	"stmt\0" /* 65 */
-	"PhpParser\\Node\\Stmt\0" /* 70 */
-	"\0" /* 90 */
-	"supports\0" /* 91 */
-	"nodeScopeResolver\0" /* 100 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 118 */
-	"scope\0" /* 153 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 159 */
-	"storage\0" /* 190 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 198 */
-	"nodeCallback\0" /* 239 */
-	"context\0" /* 252 */
-	"PHPStan\\Analyser\\StatementContext\0" /* 260 */
-	"PHPStan\\Analyser\\InternalStatementResult\0" /* 294 */
-	"processStmt"; /* 335 */
+	"rememberPossiblyImpureFunctionValues\0" /* 53 */
+	"__construct\0" /* 90 */
+	"stmt\0" /* 102 */
+	"PhpParser\\Node\\Stmt\0" /* 107 */
+	"\0" /* 127 */
+	"supports\0" /* 128 */
+	"nodeScopeResolver\0" /* 137 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 155 */
+	"scope\0" /* 190 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 196 */
+	"storage\0" /* 227 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 235 */
+	"nodeCallback\0" /* 276 */
+	"context\0" /* 289 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 297 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 331 */
+	"processStmt\0" /* 372 */
+	"impurePoints\0" /* 384 */
+	"call\0" /* 397 */
+	"PhpParser\\Node\\Expr\0" /* 402 */
+	"isCallRememberedDespiteItsOwnImpurity"; /* 422 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 18), /* __construct $statementsHandler */
-	reg::packed(65, 0, 70), /* supports $stmt */
-	reg::packed(90, MAY_BE_BOOL), /* supports return */
-	reg::packed(100, 0, 118), /* processStmt $nodeScopeResolver */
-	reg::packed(65, 0, 70), /* processStmt $stmt */
-	reg::packed(153, 0, 159), /* processStmt $scope */
-	reg::packed(190, 0, 198), /* processStmt $storage */
-	reg::packed(239, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
-	reg::packed(252, 0, 260), /* processStmt $context */
-	reg::packed(90, 0, 294), /* processStmt return */
+	reg::packed(53, MAY_BE_BOOL), /* __construct $rememberPossiblyImpureFunctionValues */
+	reg::packed(102, 0, 107), /* supports $stmt */
+	reg::packed(127, MAY_BE_BOOL), /* supports return */
+	reg::packed(137, 0, 155), /* processStmt $nodeScopeResolver */
+	reg::packed(102, 0, 107), /* processStmt $stmt */
+	reg::packed(190, 0, 196), /* processStmt $scope */
+	reg::packed(227, 0, 235), /* processStmt $storage */
+	reg::packed(276, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(289, 0, 297), /* processStmt $context */
+	reg::packed(127, 0, 331), /* processStmt return */
+	reg::packed(384, MAY_BE_ARRAY), /* isCallRememberedDespiteItsOwnImpurity $impurePoints */
+	reg::packed(397, 0, 402), /* isCallRememberedDespiteItsOwnImpurity $call */
+	reg::packed(127, MAY_BE_BOOL), /* isCallRememberedDespiteItsOwnImpurity return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 53 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 91 /* supports */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processStmt = { { 335 /* processStmt */, 6, 3, 6, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 90 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 128 /* supports */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 372 /* processStmt */, 6, 4, 6, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCallRememberedDespiteItsOwnImpurity = { { 422 /* isCallRememberedDespiteItsOwnImpurity */, 2, 11, 2, 13, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ExpressionHandler

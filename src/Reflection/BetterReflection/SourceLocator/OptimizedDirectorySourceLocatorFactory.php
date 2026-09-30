@@ -2,35 +2,37 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use PHPStan\Cache\ArenaCache;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileContentHasher;
 use PHPStan\File\FileFinder;
+use PHPStan\File\FileStatSignatures;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
-use PHPStan\Parallel\ForkParallelChecker;
 use PHPStan\Php\PhpVersion;
-use PHPStan\Turbo\TurboExtensionEnabler;
 use function array_key_exists;
 use function array_keys;
-use function array_values;
 use function fclose;
 use function flock;
 use function fopen;
 use function hrtime;
-use function is_array;
-use function ksort;
-use function serialize;
 use function sha1;
 use function sprintf;
 use function usleep;
 use const LOCK_EX;
 use const LOCK_NB;
 use const LOCK_UN;
-use const SORT_STRING;
 
+/**
+ * Builds the symbol maps of the optimized directory source locators: which file declares which
+ * class, function and constant.
+ *
+ * Finding the symbols means reading every file, so what was found is cached per directory, and a
+ * file is only scanned again once it changed. A file whose stat signature is what it was when it was
+ * scanned has not changed (see FileStatSignatures) - checking that costs a fraction of reading the
+ * file. When the signature cannot vouch for the file, its content hash decides.
+ */
 #[AutowiredService]
 final class OptimizedDirectorySourceLocatorFactory
 {
@@ -46,19 +48,20 @@ final class OptimizedDirectorySourceLocatorFactory
 	private const SCAN_LOCK_POLL_INTERVAL_MICROSECONDS = 50_000;
 
 	/**
-	 * The hash lock is polled much finer than the scan lock: every worker
-	 * reaches the same directories in near lockstep at startup, and most
-	 * directories hash in well under the scan lock's 50ms tick, so a coarse
-	 * poll would make lock losers sleep longer than the work they skip.
-	 */
-	private const HASH_LOCK_POLL_INTERVAL_MICROSECONDS = 5_000;
-
-	/**
 	 * Directories collected for a batched scan, null when not batching.
 	 *
-	 * @var list<array{string[], OptimizedDirectorySourceLocator}>|null
+	 * @var list<array{non-empty-string, string[], OptimizedDirectorySourceLocator}>|null
 	 */
 	private ?array $batchedScan = null;
+
+	/**
+	 * The files this process already checked or scanned, as the caches keep them: [content hash,
+	 * stat signature, classes, functions, constants]. The directories a process builds locators for
+	 * can overlap, and a file reachable from two of them is then looked at once.
+	 *
+	 * @var array<string, array{string, string|null, string[], string[], string[]}>
+	 */
+	private array $checkedFiles = [];
 
 	public function __construct(
 		private FileNodesFetcher $fileNodesFetcher,
@@ -68,7 +71,7 @@ final class OptimizedDirectorySourceLocatorFactory
 		private SymbolFinderInFiles $symbolFinderInFiles,
 		private Cache $cache,
 		private FileContentHasher $fileContentHasher,
-		private ForkParallelChecker $forkParallelChecker,
+		private FileStatSignatures $fileStatSignatures,
 		#[AutowiredParameter]
 		private string $tmpDir,
 	)
@@ -77,98 +80,16 @@ final class OptimizedDirectorySourceLocatorFactory
 
 	public function createByDirectory(string $directory): OptimizedDirectorySourceLocator
 	{
-		if ($this->scansFresh()) {
-			return $this->createFreshDirectorySourceLocator($directory);
-		}
-
-		$cacheKey = sprintf('odsl-%s', $directory);
-		$hashesRecordKey = 'odsl-filehashes-' . $directory;
-
-		// The walk + hash of a directory is identical in every process of a
-		// run, and running it once per worker in parallel multiplies both the
-		// CPU and — on hosts where concurrent open() is expensive — the wall
-		// cost of the analysis startup. When the run has a shared arena, the
-		// first process publishes the file-hash map and everyone else reuses
-		// it. hasRecord() on the analysed-files record (published by the
-		// master before workers spawn) doubles as the "is an arena active?"
-		// probe — the seam has no explicit method for that and only grows one
-		// together with the extension.
-		$arenaActive = ArenaCache::hasRecord('analysed-files');
-		$hashesLock = null;
-		if ($arenaActive) {
-			$shared = ArenaCache::lookup($hashesRecordKey);
-			if (is_array($shared)) {
-				/** @var array<string, string> $shared */
-				return $this->createCachedDirectorySourceLocator($shared, $cacheKey);
-			}
-
-			// Single-flight the walk + hash, same pattern as the cold-cache
-			// scan below: the winner computes and publishes, losers wait and
-			// re-read the record. A lost lock (timeout, unwritable tmp) just
-			// means this worker hashes the directory itself.
-			$hashesLock = $this->acquireDirectoryScanLock('hashes-' . $directory, self::HASH_LOCK_POLL_INTERVAL_MICROSECONDS);
-			if ($hashesLock !== null) {
-				$shared = ArenaCache::lookup($hashesRecordKey);
-				if (is_array($shared)) {
-					$this->releaseDirectoryScanLock($hashesLock);
-
-					/** @var array<string, string> $shared */
-					return $this->createCachedDirectorySourceLocator($shared, $cacheKey);
-				}
-			}
-		}
-
-		try {
-			$files = $this->fileFinder->findFiles([$directory])->getFiles();
-			$fileHashes = [];
-			foreach ($files as $file) {
-				$hash = $this->fileContentHasher->hash($file);
-				if ($hash === false) {
-					continue;
-				}
-				$fileHashes[$file] = $hash;
-			}
-
-			if ($arenaActive) {
-				ArenaCache::publish($hashesRecordKey, $fileHashes);
-			}
-		} finally {
-			if ($hashesLock !== null) {
-				$this->releaseDirectoryScanLock($hashesLock);
-			}
-		}
-
-		return $this->createCachedDirectorySourceLocator($fileHashes, $cacheKey);
+		return $this->createLocator(sprintf('odsl-%s', $directory), $this->fileFinder->findFiles([$directory])->getFiles());
 	}
 
 	/**
-	 * Whether the symbol index is built outright instead of being cached.
-	 *
-	 * Both halves are needed. The native scan is what makes the cache not
-	 * worth its keep, and forking is what keeps the scan from happening once
-	 * per worker: the parent scans before it forks and the children inherit
-	 * the result (see PreForkDirectorySymbolScanner). Where the extension is
-	 * active but workers are spawned rather than forked - Windows, or OPcache
-	 * left on - there is nothing to inherit, so the cache and its scan lock
-	 * stay in charge.
+	 * @param string[] $files
+	 * @param non-empty-string&literal-string $uniqueCacheIdentifier
 	 */
-	private function scansFresh(): bool
+	public function createByFiles(array $files, string $uniqueCacheIdentifier): OptimizedDirectorySourceLocator
 	{
-		return TurboExtensionEnabler::isActive() && $this->forkParallelChecker->isSupported();
-	}
-
-	/**
-	 * With the turbo extension the symbol scan is native and costs about what
-	 * hashing the directory to validate a cache costs, so a cache has nothing
-	 * left to save: the directory is walked and scanned outright, with no file
-	 * hashing, no persisted symbol table, no scan lock and no arena record —
-	 * and therefore no cache that can go stale. PreForkDirectoryScanner runs
-	 * this once in the main process before it forks its workers, so every
-	 * worker inherits the finished locators instead of racing to build them.
-	 */
-	private function createFreshDirectorySourceLocator(string $directory): OptimizedDirectorySourceLocator
-	{
-		return $this->createFreshFileListSourceLocator($this->fileFinder->findFiles([$directory])->getFiles());
+		return $this->createLocator($uniqueCacheIdentifier, $files);
 	}
 
 	/**
@@ -194,195 +115,133 @@ final class OptimizedDirectorySourceLocatorFactory
 			return;
 		}
 
-		$allFiles = [];
-		foreach ($batched as [$files]) {
-			foreach ($files as $file) {
-				// a file reachable from two directories is scanned once
-				$allFiles[$file] = $file;
-			}
-		}
-
-		$symbols = $this->symbolFinderInFiles->findSymbols(array_values($allFiles), $this->phpVersion->supportsEnums());
-
-		foreach ($batched as [$files, $locator]) {
-			$directorySymbols = [];
-			foreach ($files as $file) {
-				if (!array_key_exists($file, $symbols)) {
-					continue;
-				}
-
-				$directorySymbols[$file] = $symbols[$file];
-			}
-
-			[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($directorySymbols);
-			$locator->fillBatchedScan($classToFile, $functionToFiles, $constantToFile);
-		}
+		$this->scan($batched);
 	}
 
 	/**
+	 * @param non-empty-string $cacheKey
 	 * @param string[] $files
 	 */
-	private function createFreshFileListSourceLocator(array $files): OptimizedDirectorySourceLocator
+	private function createLocator(string $cacheKey, array $files): OptimizedDirectorySourceLocator
 	{
-		if ($this->batchedScan !== null) {
-			$locator = new OptimizedDirectorySourceLocator(
-				$this->fileNodesFetcher,
-				$this->cache,
-				$this->phpVersion,
-				$this->fileContentHasher,
-				[],
-				[],
-				[],
-				awaitingBatchedScan: true,
-			);
-			$this->batchedScan[] = [$files, $locator];
-
-			return $locator;
-		}
-
-		$symbols = $this->symbolFinderInFiles->findSymbols($files, $this->phpVersion->supportsEnums());
-		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($symbols);
-
-		return new OptimizedDirectorySourceLocator(
+		$locator = new OptimizedDirectorySourceLocator(
 			$this->fileNodesFetcher,
 			$this->cache,
 			$this->phpVersion,
 			$this->fileContentHasher,
-			$classToFile,
-			$functionToFiles,
-			$constantToFile,
+			[],
+			[],
+			[],
+			awaitingBatchedScan: true,
 		);
+
+		if ($this->batchedScan !== null) {
+			$this->batchedScan[] = [$cacheKey, $files, $locator];
+		} else {
+			$this->scan([[$cacheKey, $files, $locator]]);
+		}
+
+		return $locator;
 	}
 
 	/**
-	 * @param array<string, string> $fileHashes
-	 * @param non-empty-string $cacheKey
+	 * Fills in the symbol maps of the locators, each for its files, from their caches and by
+	 * scanning the files that changed since.
+	 *
+	 * @param list<array{non-empty-string, string[], OptimizedDirectorySourceLocator}> $requests
 	 */
-	private function createCachedDirectorySourceLocator(array $fileHashes, string $cacheKey): OptimizedDirectorySourceLocator
+	private function scan(array $requests): void
 	{
-		$variableCacheKey = sprintf('v1-%s', $this->phpVersion->supportsEnums() ? 'enums' : 'no-enums');
-
-		// The run's shared arena binds the symbol index to the exact content
-		// fingerprint of the directory: a worker seeing the same file hashes
-		// reuses the index another process already validated and published —
-		// no include() of the cache blob, no validation pass, and names are
-		// materialized lazily one by one. A worker whose view differs (a file
-		// changed mid-run) misses the fingerprint and builds locally.
-		$sortedFileHashes = $fileHashes;
-		ksort($sortedFileHashes, SORT_STRING);
-		$arenaKeyPrefix = sprintf('odsl-arena-%s', sha1($cacheKey . "\0" . $variableCacheKey . "\0" . serialize($sortedFileHashes)));
-		if (
-			ArenaCache::hasRecord($arenaKeyPrefix . '-classes')
-			&& ArenaCache::hasRecord($arenaKeyPrefix . '-functions')
-			&& ArenaCache::hasRecord($arenaKeyPrefix . '-constants')
-		) {
-			return new OptimizedDirectorySourceLocator(
-				$this->fileNodesFetcher,
-				$this->cache,
-				$this->phpVersion,
-				$this->fileContentHasher,
-				[],
-				[],
-				[],
-				$arenaKeyPrefix,
-			);
-		}
-
-		$originalFileHashes = $fileHashes;
-
-		$cached = $this->loadCachedSymbols($cacheKey, $variableCacheKey);
-
-		$scanLock = null;
-		if ($cached === null) {
-			// On a cold cache every parallel worker builds the same directory locator at once and would
-			// scan the same directory redundantly. A scan is not published until it finishes and the save
-			// is atomic, so these races are wasteful rather than unsafe. The first worker to take the lock
-			// scans and saves; the rest block until it releases, then re-read the cache it wrote. When the
-			// re-read hits, the lock has done its job, so release it right away and continue lock-free -
-			// the validation and any (re)scan below then run exactly as they did before this change.
-			$scanLock = $this->acquireDirectoryScanLock($cacheKey . $variableCacheKey);
-			if ($scanLock !== null) {
-				$cached = $this->loadCachedSymbols($cacheKey, $variableCacheKey);
-				if ($cached !== null) {
-					$this->releaseDirectoryScanLock($scanLock);
-					$scanLock = null;
-				}
-			}
-		}
+		$variableCacheKey = sprintf('v2-%s', $this->phpVersion->supportsEnums() ? 'enums' : 'no-enums');
+		$signatures = $this->fileStatSignatures->begin();
+		$scanLocks = [];
 
 		try {
-			$cacheModified = false;
-			$findInFiles = [];
-			if ($cached !== null) {
-				foreach ($cached as $file => [$hash]) {
-					if (!array_key_exists($file, $fileHashes)) {
-						unset($cached[$file]);
-						$cacheModified = true;
+			$cachedEntries = [];
+			foreach ($requests as $i => [$cacheKey]) {
+				$cached = $this->loadCachedSymbols($cacheKey, $variableCacheKey);
+				if ($cached === null) {
+					// On a cold cache every parallel worker that is not forked from a process that did
+					// the scan already builds the same locators at once, and would scan the same files.
+					// The first worker to take the lock scans and saves; the rest block until it
+					// releases, then read the cache it wrote.
+					$scanLock = $this->acquireDirectoryScanLock($cacheKey . $variableCacheKey);
+					if ($scanLock !== null) {
+						$cached = $this->loadCachedSymbols($cacheKey, $variableCacheKey);
+						if ($cached !== null) {
+							$this->releaseDirectoryScanLock($scanLock);
+						} else {
+							$scanLocks[] = $scanLock;
+						}
+					}
+				}
+
+				$cachedEntries[$i] = $cached;
+			}
+
+			$filesToScan = [];
+			foreach ($requests as $i => [, $files]) {
+				$cached = $cachedEntries[$i] ?? [];
+				foreach ($files as $file) {
+					if (array_key_exists($file, $this->checkedFiles) || array_key_exists($file, $filesToScan)) {
 						continue;
 					}
-					$newHash = $fileHashes[$file];
-					unset($fileHashes[$file]);
-					if ($hash === $newHash) {
+
+					$signature = $signatures->get($file);
+					$cachedFile = $cached[$file] ?? null;
+					if ($cachedFile !== null && $signature !== null && $cachedFile[1] === $signature) {
+						$this->checkedFiles[$file] = $cachedFile;
 						continue;
 					}
 
-					$findInFiles[] = $file;
-				}
-			} else {
-				// Cold miss: publish the result (even an empty one) so lock losers read it back instead
-				// of finding the cache still cold and re-scanning the directory themselves.
-				$cached = [];
-				$cacheModified = true;
-			}
+					$hash = $this->fileContentHasher->hash($file);
+					if ($hash === false) {
+						continue;
+					}
 
-			foreach (array_keys($fileHashes) as $file) {
-				$findInFiles[] = $file;
-			}
+					if ($cachedFile !== null && $cachedFile[0] === $hash) {
+						$this->checkedFiles[$file] = [$hash, $signature, $cachedFile[2], $cachedFile[3], $cachedFile[4]];
+						continue;
+					}
 
-			if ($findInFiles !== []) {
-				$cacheModified = true;
-				foreach ($this->symbolFinderInFiles->findSymbols($findInFiles, $this->phpVersion->supportsEnums()) as $file => [$newClasses, $newFunctions, $newConstants]) {
-					$newHash = $originalFileHashes[$file];
-					$cached[$file] = [$newHash, $newClasses, $newFunctions, $newConstants];
+					$filesToScan[$file] = [$hash, $signature];
 				}
 			}
 
-			// Only write when the cache actually changed. A lock loser re-reads exactly what the winner
-			// wrote, and a warm run finds every hash unchanged, so both would otherwise re-serialize and
-			// re-write the identical symbol table - the loser while still holding the lock.
-			if ($cacheModified) {
-				$this->cache->save($cacheKey, $variableCacheKey, $cached);
+			if ($filesToScan !== []) {
+				$foundSymbols = $this->symbolFinderInFiles->findSymbols(array_keys($filesToScan), $this->phpVersion->supportsEnums());
+				foreach ($filesToScan as $file => [$hash, $signature]) {
+					[$classes, $functions, $constants] = $foundSymbols[$file] ?? [[], [], []];
+					$this->checkedFiles[$file] = [$hash, $signature, $classes, $functions, $constants];
+				}
+			}
+
+			foreach ($requests as $i => [$cacheKey, $files, $locator]) {
+				$entry = [];
+				foreach ($files as $file) {
+					if (!array_key_exists($file, $this->checkedFiles)) {
+						continue;
+					}
+
+					$entry[$file] = $this->checkedFiles[$file];
+				}
+
+				// A warm run finds every file unchanged and does not write anything. A cold miss is
+				// written even when empty, so that the workers waiting for the lock read it back.
+				if ($entry !== $cachedEntries[$i]) {
+					$this->cache->save($cacheKey, $variableCacheKey, $entry);
+				}
+
+				[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($entry);
+				$locator->fillBatchedScan($classToFile, $functionToFiles, $constantToFile);
 			}
 		} finally {
 			// Release even if scanning or saving throws, so a failing worker cannot leave other
 			// workers blocked on the lock until it exits.
-			if ($scanLock !== null) {
+			foreach ($scanLocks as $scanLock) {
 				$this->releaseDirectoryScanLock($scanLock);
 			}
 		}
-
-		$symbols = [];
-		foreach ($cached as $file => [, $classes, $functions, $constants]) {
-			$symbols[$file] = [$classes, $functions, $constants];
-		}
-
-		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($symbols);
-
-		// Publication order matters: the reader above requires all three
-		// records, so a partially-published index is never consumed.
-		ArenaCache::publishHash($arenaKeyPrefix . '-classes', $classToFile);
-		ArenaCache::publishHash($arenaKeyPrefix . '-functions', $functionToFiles);
-		ArenaCache::publishHash($arenaKeyPrefix . '-constants', $constantToFile);
-
-		return new OptimizedDirectorySourceLocator(
-			$this->fileNodesFetcher,
-			$this->cache,
-			$this->phpVersion,
-			$this->fileContentHasher,
-			$classToFile,
-			$functionToFiles,
-			$constantToFile,
-		);
 	}
 
 	/**
@@ -393,7 +252,7 @@ final class OptimizedDirectorySourceLocatorFactory
 	 *
 	 * @return resource|null
 	 */
-	private function acquireDirectoryScanLock(string $lockKey, int $pollIntervalMicroseconds = self::SCAN_LOCK_POLL_INTERVAL_MICROSECONDS)
+	private function acquireDirectoryScanLock(string $lockKey)
 	{
 		$lockDirectory = sprintf('%s/cache/locks', $this->tmpDir);
 		try {
@@ -422,7 +281,7 @@ final class OptimizedDirectorySourceLocatorFactory
 				return null;
 			}
 
-			usleep($pollIntervalMicroseconds);
+			usleep(self::SCAN_LOCK_POLL_INTERVAL_MICROSECONDS);
 		}
 
 		return $lockHandle;
@@ -430,11 +289,11 @@ final class OptimizedDirectorySourceLocatorFactory
 
 	/**
 	 * @param non-empty-string $cacheKey
-	 * @return array<string, array{string, string[], string[], string[]}>|null
+	 * @return array<string, array{string, string|null, string[], string[], string[]}>|null
 	 */
 	private function loadCachedSymbols(string $cacheKey, string $variableCacheKey): ?array
 	{
-		/** @var array<string, array{string, string[], string[], string[]}>|null $cached */
+		/** @var array<string, array{string, string|null, string[], string[], string[]}>|null $cached */
 		$cached = $this->cache->load($cacheKey, $variableCacheKey);
 
 		return $cached;
@@ -450,37 +309,15 @@ final class OptimizedDirectorySourceLocatorFactory
 	}
 
 	/**
-	 * @param string[] $files
-	 * @param non-empty-string&literal-string $uniqueCacheIdentifier
-	 */
-	public function createByFiles(array $files, string $uniqueCacheIdentifier): OptimizedDirectorySourceLocator
-	{
-		if ($this->scansFresh()) {
-			return $this->createFreshFileListSourceLocator($files);
-		}
-
-		$fileHashes = [];
-		foreach ($files as $file) {
-			$hash = $this->fileContentHasher->hash($file);
-			if ($hash === false) {
-				continue;
-			}
-			$fileHashes[$file] = $hash;
-		}
-
-		return $this->createCachedDirectorySourceLocator($fileHashes, $uniqueCacheIdentifier);
-	}
-
-	/**
-	 * @param array<string, array{string[], string[], string[]}> $symbols
+	 * @param array<string, array{string, string|null, string[], string[], string[]}> $entry
 	 * @return array{array<string, string>, array<string, array<int, string>>, array<string, string>}
 	 */
-	private function changeStructure(array $symbols): array
+	private function changeStructure(array $entry): array
 	{
 		$classToFile = [];
 		$constantToFile = [];
 		$functionToFiles = [];
-		foreach ($symbols as $file => [$classes, $functions, $constants]) {
+		foreach ($entry as $file => [, , $classes, $functions, $constants]) {
 			foreach ($classes as $classInFile) {
 				$classToFile[$classInFile] = $file;
 			}

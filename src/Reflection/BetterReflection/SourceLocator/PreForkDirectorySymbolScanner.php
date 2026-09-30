@@ -4,22 +4,16 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\TurboExtensionEnabler;
 use function array_merge;
 use function array_unique;
 use function is_dir;
 
 /**
- * Scans the Composer classmap directories once in the main process, just
- * before it forks its workers, so that every worker inherits the finished
- * symbol indexes instead of building its own.
- *
- * With the turbo extension the scan is native and no longer worth caching
- * (see OptimizedDirectorySourceLocatorFactory), which removes the disk cache,
- * the scan lock and the arena records that used to keep parallel workers from
- * duplicating the work. Forking replaces all three: the memoized locators in
- * OptimizedDirectorySourceLocatorRepository are copy-on-write shared with
- * every child.
+ * Builds the directory locators once in the main process, just before it
+ * forks its workers, so that every worker inherits the finished symbol maps
+ * instead of checking the cache and scanning the changed files on its own:
+ * the memoized locators in OptimizedDirectorySourceLocatorRepository are
+ * copy-on-write shared with every child.
  *
  * This adds no work that was not already being done. Both sets of directory
  * locators - the analysed and scanned directories, and the Composer classmap
@@ -66,12 +60,6 @@ final class PreForkDirectorySymbolScanner
 
 	public function scanBeforeFork(): void
 	{
-		if (!TurboExtensionEnabler::isActive()) {
-			// without the extension the cache and the scan lock are still in
-			// place and already keep the workers from duplicating the scan
-			return;
-		}
-
 		$directories = [];
 		foreach (array_merge($this->analysedPaths, $this->analysedPathsFromConfig) as $analysedPath) {
 			if (!is_dir($analysedPath)) {

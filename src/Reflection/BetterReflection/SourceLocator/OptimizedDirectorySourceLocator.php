@@ -14,7 +14,6 @@ use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
-use PHPStan\Cache\ArenaCache;
 use PHPStan\Cache\Cache;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileContentHasher;
@@ -25,31 +24,13 @@ use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function array_values;
 use function current;
-use function is_array;
-use function is_string;
 use function sprintf;
 use function strtolower;
 
 final class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
-	/** @var array<string, string|false> */
-	private array $arenaClassLookups = [];
-
-	/** @var array<string, array<int, string>|false> */
-	private array $arenaFunctionLookups = [];
-
-	/** @var array<string, string|false> */
-	private array $arenaConstantLookups = [];
-
-	private bool $hydratedFromArena = false;
-
 	/**
-	 * With $arenaKeyPrefix set, the maps start empty and names resolve lazily
-	 * from the run's shared arena (published by whichever process built this
-	 * directory's index first), so the worker materializes only the names it
-	 * touches instead of the whole index.
-	 *
 	 * @param array<string, string> $classToFile
 	 * @param array<string, array<int, string>> $functionToFiles
 	 * @param array<string, string> $constantToFile
@@ -62,14 +43,13 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		private array $classToFile,
 		private array $functionToFiles,
 		private array $constantToFile,
-		private ?string $arenaKeyPrefix = null,
 		private bool $awaitingBatchedScan = false,
 	)
 	{
 	}
 
 	/**
-	 * Fills in the symbol maps of a locator created for a batched scan.
+	 * Fills in the symbol maps of a locator created ahead of the scan.
 	 *
 	 * The factory hands these out before the scan that produces their contents
 	 * has run, so that one scan can cover every directory at once
@@ -248,48 +228,12 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 	private function findFileByClass(string $className): ?string
 	{
-		if (array_key_exists($className, $this->classToFile)) {
-			return $this->classToFile[$className];
-		}
-
-		if ($this->arenaKeyPrefix === null) {
-			return null;
-		}
-
-		if (array_key_exists($className, $this->arenaClassLookups)) {
-			$file = $this->arenaClassLookups[$className];
-		} else {
-			$file = ArenaCache::lookupHash($this->arenaKeyPrefix . '-classes', $className);
-			if (!is_string($file)) {
-				$file = false;
-			}
-			$this->arenaClassLookups[$className] = $file;
-		}
-
-		return $file === false ? null : $file;
+		return $this->classToFile[$className] ?? null;
 	}
 
 	private function findFileByConstant(string $constantName): ?string
 	{
-		if (array_key_exists($constantName, $this->constantToFile)) {
-			return $this->constantToFile[$constantName];
-		}
-
-		if ($this->arenaKeyPrefix === null) {
-			return null;
-		}
-
-		if (array_key_exists($constantName, $this->arenaConstantLookups)) {
-			$file = $this->arenaConstantLookups[$constantName];
-		} else {
-			$file = ArenaCache::lookupHash($this->arenaKeyPrefix . '-constants', $constantName);
-			if (!is_string($file)) {
-				$file = false;
-			}
-			$this->arenaConstantLookups[$constantName] = $file;
-		}
-
-		return $file === false ? null : $file;
+		return $this->constantToFile[$constantName] ?? null;
 	}
 
 	/**
@@ -297,62 +241,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	 */
 	private function findFilesByFunction(string $functionName): array
 	{
-		if (array_key_exists($functionName, $this->functionToFiles)) {
-			return $this->functionToFiles[$functionName];
-		}
-
-		if ($this->arenaKeyPrefix === null) {
-			return [];
-		}
-
-		if (array_key_exists($functionName, $this->arenaFunctionLookups)) {
-			$files = $this->arenaFunctionLookups[$functionName];
-		} else {
-			/** @var array<int, string>|mixed $files */
-			$files = ArenaCache::lookupHash($this->arenaKeyPrefix . '-functions', $functionName);
-			if (!is_array($files)) {
-				$files = false;
-			}
-			$this->arenaFunctionLookups[$functionName] = $files;
-		}
-
-		return $files === false ? [] : $files;
-	}
-
-	/**
-	 * Enumeration needs the full maps: hydrates them from the arena records
-	 * in their publication order, which equals the insertion order a locally
-	 * built index would have. A null (a corrupt record — impossible with an
-	 * intact arena, the factory gated on all three records) leaves a map
-	 * empty rather than failing the run.
-	 */
-	private function hydrateSymbolsFromArena(): void
-	{
-		if ($this->arenaKeyPrefix === null || $this->hydratedFromArena) {
-			return;
-		}
-
-		$this->hydratedFromArena = true;
-
-		/** @var array<string, string>|null $classes */
-		$classes = ArenaCache::lookupHashAll($this->arenaKeyPrefix . '-classes');
-		if ($classes !== null) {
-			$this->classToFile = $classes;
-		}
-
-		/** @var array<string, array<int, string>>|null $functions */
-		$functions = ArenaCache::lookupHashAll($this->arenaKeyPrefix . '-functions');
-		if ($functions !== null) {
-			$this->functionToFiles = $functions;
-		}
-
-		/** @var array<string, string>|null $constants */
-		$constants = ArenaCache::lookupHashAll($this->arenaKeyPrefix . '-constants');
-		if ($constants === null) {
-			return;
-		}
-
-		$this->constantToFile = $constants;
+		return $this->functionToFiles[$functionName] ?? [];
 	}
 
 	/**
@@ -364,8 +253,6 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		if ($this->awaitingBatchedScan) {
 			throw new ShouldNotHappenException('Symbols were looked up in a directory whose batched scan has not been flushed yet.');
 		}
-
-		$this->hydrateSymbolsFromArena();
 
 		$reflections = [];
 		if ($identifierType->isClass()) {

@@ -61,17 +61,13 @@ final class NullCoalesceRule implements Rule
 
 				return 'is not nullable';
 			},
+			$this->getOperatorLine($node),
 		) ?? $this->checkUnnecessaryNullCoalesce($node, $scope);
 
 		if ($error === null) {
 			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $subjectResult->getExpr());
 			return [];
 		}
-
-		$error = RuleErrorBuilder::message($error->getMessage())
-			->identifier($error->getIdentifier())
-			->line($this->getOperatorLine($node))
-			->build();
 
 		if ($scope->isInTrait()) {
 			// The error messages already distinguish the possible outcomes,
@@ -146,7 +142,7 @@ final class NullCoalesceRule implements Rule
 
 		return RuleErrorBuilder::message(
 			sprintf('Coalesce operator %s is unnecessary because the left side is always set and the right side is null.', $operator),
-		)->identifier('nullCoalesce.unnecessary')->build();
+		)->identifier('nullCoalesce.unnecessary')->line($this->getOperatorLine($node))->build();
 	}
 
 	/**

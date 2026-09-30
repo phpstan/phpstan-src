@@ -49,3 +49,26 @@ function assignOperatorAfterMultiLineLeftSide(array $s): string
 
 	return $s['k'];
 }
+
+/**
+ * @param array{k: string|null} $s
+ */
+function unnecessaryCoalesceAfterMultiLineLeftSide(array $s): ?string
+{
+	return $s[
+		'k'
+	] ?? null;
+}
+
+class PropertyOnMultiLineLeftSide
+{
+
+	private string $p = '';
+
+	public function get(): string
+	{
+		return $this
+			->p ?? 'x';
+	}
+
+}

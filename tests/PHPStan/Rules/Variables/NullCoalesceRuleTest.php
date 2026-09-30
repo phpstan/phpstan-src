@@ -738,6 +738,14 @@ class NullCoalesceRuleTest extends RuleTestCase
 				'Offset \'k\' on array{k: string} on left side of ??= always exists and is not nullable.',
 				48,
 			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				60,
+			],
+			[
+				'Property Bug10714\\PropertyOnMultiLineLeftSide::$p (string) on left side of ?? is not nullable.',
+				71,
+			],
 		]);
 	}
 

@@ -1,0 +1,11 @@
+--- src/Outer.php
++++ src/Outer.php
+@@ -11,5 +11,7 @@
+ 		}
+ 	}
+ 
+-	return inner($s);
++	$lower = inner($s);
++
++	return $lower;
+ }

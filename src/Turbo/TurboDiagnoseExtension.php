@@ -6,6 +6,7 @@ use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\Php\PhpVersion;
+use function ini_get;
 use function php_uname;
 use function phpversion;
 use function sprintf;
@@ -78,6 +79,10 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 		}
 		if (!TurboExtensionEnabler::isActive()) {
 			return 'off (extension inactive)';
+		}
+		$fileCache = ini_get('opcache.file_cache');
+		if ($fileCache !== false && $fileCache !== '') {
+			return 'off (the extension skips it while opcache.file_cache is set)';
 		}
 
 		return 'off (--debug, or OPcache is not active)';

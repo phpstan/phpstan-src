@@ -196,6 +196,18 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 				'Array has 2 duplicate keys with value 0 (0, 0).',
 				59,
 			],
+			[
+				"Array has 2 duplicate keys with value 0 (0, '0').",
+				65,
+			],
+			[
+				"Array has 2 duplicate keys with value 0 (0, '0').",
+				71,
+			],
+			[
+				"Array has 2 duplicate keys with value 0 (0, '0').",
+				88,
+			],
 		]);
 	}
 

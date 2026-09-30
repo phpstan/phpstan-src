@@ -58,3 +58,32 @@ function intKeysOfVariable(): array
 	$list = [1, 2];
 	return [...$list, 0 => 'x'];
 }
+
+function numericStringKeyAfterSpreadOfList(): array
+{
+	$list = [1, 2];
+	return [...$list, '0' => 'x'];
+}
+
+/** @param array{'0': string, start: float} $section */
+function numericStringKeyAfterSpread(array $section): array
+{
+	return [...$section, '0' => 'x'];
+}
+
+/** @param array{'0': string, start: float} $section */
+function stringKeyAfterSpreadWithNumericStringKey(array $section): array
+{
+	return [...$section, 'start' => 0.0];
+}
+
+/** @param array{'0': string, start: float} $section */
+function numericStringKeyBeforeSpread(array $section): array
+{
+	return ['0' => 'x', ...$section];
+}
+
+function spreadOfLiteralWithNumericStringKey(): array
+{
+	return [...['0' => 'a'], '0' => 'x'];
+}

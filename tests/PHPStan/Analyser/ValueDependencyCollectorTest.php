@@ -3,7 +3,9 @@
 namespace PHPStan\Analyser;
 
 use Override;
+use PHPStan\Analyser\ResultCache\FileResultCacheValueExtension;
 use PHPStan\Analyser\ValueDependencyCollectorTest\TestValueExtension;
+use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use function array_merge;
@@ -44,6 +46,47 @@ final class ValueDependencyCollectorTest extends PHPStanTestCase
 			],
 		], $collector->finishFile());
 		$this->assertSame(2, $extension->calls);
+	}
+
+	public function testFile(): void
+	{
+		$collector = self::getContainer()->getByType(ValueDependencyCollector::class);
+		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
+		// the paths FileAnalyser passes along are normalized - with backslashes on Windows
+		$analysedFile = $fileHelper->normalizePath(__DIR__ . '/data/value-dependency-analysed.php');
+		$dataFile = $fileHelper->normalizePath(__DIR__ . '/data/value-dependency-missing.txt');
+		$otherFile = $fileHelper->normalizePath(__DIR__ . '/data/value-dependency-other.php');
+		$analysedFileScope = $scopeFactory->create(ScopeContext::create($analysedFile));
+		$otherFileScope = $scopeFactory->create(ScopeContext::create($otherFile));
+
+		$collector->startFile($analysedFile);
+		// the analysed file is re-analysed when it changes anyway
+		$collector->recordFile($analysedFile, $analysedFileScope, true);
+		// the same path, written differently, is the same dependency
+		$collector->recordFile(__DIR__ . '/data/../data/value-dependency-missing.txt', $analysedFileScope, true);
+		$collector->recordFile($dataFile, $analysedFileScope, true);
+		// outside the walk, what the other file declares depends on the analysed file
+		$collector->recordFile($analysedFile, $otherFileScope, false);
+
+		$dataFileId = ValueDependencyCollector::getId(FileResultCacheValueExtension::class, $dataFile);
+		$analysedFileId = ValueDependencyCollector::getId(FileResultCacheValueExtension::class, $analysedFile);
+		$this->assertSame([
+			'values' => [
+				$dataFileId => [FileResultCacheValueExtension::class, $dataFile, 'missing'],
+				$analysedFileId => [FileResultCacheValueExtension::class, $analysedFile, 'missing'],
+			],
+			'dependents' => [
+				$analysedFile => [
+					'analysis' => [$dataFileId, $analysedFileId],
+					'declarations' => [],
+				],
+				$otherFile => [
+					'analysis' => [],
+					'declarations' => [$analysedFileId],
+				],
+			],
+		], $collector->finishFile());
 	}
 
 	public function testNothingOutsideOfAnalysedFile(): void

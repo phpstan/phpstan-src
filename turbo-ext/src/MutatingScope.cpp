@@ -10586,6 +10586,24 @@ public:
 	 * $this, $this->nodeCallback !== null) */
 	bool valueDependency(zend_string *extensionClass, zend_string *key)
 	{
+		zval extensionClassZv, keyZv;
+		ZVAL_STR(&extensionClassZv, extensionClass);
+		ZVAL_STR(&keyZv, key);
+		return callValueDependencyCollector(PT_LC("record"), &extensionClassZv, &keyZv);
+	}
+
+	/* $this->container->getByType(ValueDependencyCollector::class)->recordFile($file, $this,
+	 * $this->nodeCallback !== null) */
+	bool fileDependency(zend_string *file)
+	{
+		zval fileZv;
+		ZVAL_STR(&fileZv, file);
+		return callValueDependencyCollector(PT_LC("recordfile"), &fileZv, NULL);
+	}
+
+	/* the collector's method (lowercase name) with the arguments, the scope and whether it is inside the walk */
+	bool callValueDependencyCollector(const char *method, size_t methodLength, zval *first, zval *second)
+	{
 		zv::Ref nodeCallback = slot(PT_MS_PROP_NODE_CALLBACK);
 		if (UNEXPECTED(nodeCallback.isUndef())) {
 			(void) uninitializedProperty("nodeCallback");
@@ -10595,13 +10613,15 @@ public:
 		ZVAL_BOOL(&insideWalk, !nodeCallback.isNull());
 		zv::Val collector = containerGetByType(PT_LC("PHPStan\\Analyser\\ValueDependencyCollector"));
 		if (UNEXPECTED(collector.isUndef())) return false;
-		zend_object *collectorObject = requireObject(collector, "record");
+		zend_object *collectorObject = requireObject(collector, method);
 		if (UNEXPECTED(collectorObject == NULL)) return false;
-		zval extensionClassZv, keyZv;
-		ZVAL_STR(&extensionClassZv, extensionClass);
-		ZVAL_STR(&keyZv, key);
-		zv::Args args{&extensionClassZv, &keyZv, self, &insideWalk};
-		zv::Val result = pt_type_call(collectorObject, PT_LC("record"), 4, args);
+		if (second == NULL) {
+			zv::Args args{first, self, &insideWalk};
+			zv::Val result = pt_type_call(collectorObject, method, methodLength, 3, args);
+			return !result.isUndef();
+		}
+		zv::Args args{first, second, self, &insideWalk};
+		zv::Val result = pt_type_call(collectorObject, method, methodLength, 4, args);
 		return !result.isUndef();
 	}
 
@@ -13376,6 +13396,12 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		zend_string *extensionClass, *key;
 		if (!zp::parse<zp::Str, zp::Str>(execute_data, extensionClass, key)) RETURN_THROWS();
 		if (UNEXPECTED(!PT_THIS.valueDependency(extensionClass, key))) RETURN_THROWS();
+	});
+
+	cls.method(sigs::fileDependency, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *file;
+		if (!zp::parse<zp::Str>(execute_data, file)) RETURN_THROWS();
+		if (UNEXPECTED(!PT_THIS.fileDependency(file))) RETURN_THROWS();
 	});
 
 	/* }}} */

@@ -182,10 +182,9 @@ final class FileAnalyserCallback
 
 			foreach ($ruleErrors as $ruleError) {
 				if ($ruleError instanceof FileDependenciesRuleError) {
-					// The rule says its verdict depends on files the dependency graph cannot know about,
-					// because they hold no symbol PHPStan reflects - a path named in the code, for one.
+					// the deprecated way of DependencyEmitter::fileDependency()
 					foreach ($ruleError->getFileDependencies() as $fileDependency) {
-						$this->fileDependencies[] = $fileDependency;
+						$scope->fileDependency($fileDependency);
 					}
 				}
 

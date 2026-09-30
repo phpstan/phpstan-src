@@ -34,4 +34,13 @@ interface DependencyEmitter
 	 */
 	public function valueDependency(string $extensionClass, string $key): void;
 
+	/**
+	 * The analysis of the current file depends on the contents of $file - a data file, a template,
+	 * a docblock in another PHP file - that is read on its own, without PHPStan knowing about it.
+	 * The current file is then re-analysed whenever $file is created, changed in any way, or deleted.
+	 *
+	 * The path should be absolute. The file does not have to exist.
+	 */
+	public function fileDependency(string $file): void;
+
 }

@@ -8,6 +8,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Name\FullyQualified;
+use PHPStan\Analyser\DependencyEmitter;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -58,7 +59,7 @@ final class RequireFileExistsRule implements Rule
 		return Include_::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&DependencyEmitter $scope): array
 	{
 		if ($this->isInFileExists($node, $scope)) {
 			return [];
@@ -81,7 +82,13 @@ final class RequireFileExistsRule implements Rule
 				$pathExpr = '"' . $path . '"';
 			}
 
-			$errors[] = $this->getErrorMessage($node, $pathExpr, $this->includedFilePathResolver->resolve($path, $scope));
+			// The error is about a path, and a path is nothing the dependency graph tracks. Declaring the
+			// paths makes the result cache re-analyse this file when one of them is created.
+			foreach ($this->includedFilePathResolver->resolve($path, $scope) as $candidatePath) {
+				$scope->fileDependency($candidatePath);
+			}
+
+			$errors[] = $this->getErrorMessage($node, $pathExpr);
 		}
 
 		return $errors;
@@ -124,10 +131,7 @@ final class RequireFileExistsRule implements Rule
 		return $scope->getFile();
 	}
 
-	/**
-	 * @param list<string> $candidatePaths
-	 */
-	private function getErrorMessage(Include_ $node, string $filePath, array $candidatePaths): IdentifierRuleError
+	private function getErrorMessage(Include_ $node, string $filePath): IdentifierRuleError
 	{
 		$message = 'Path in %s() %s is not a file or it does not exist.';
 
@@ -154,21 +158,13 @@ final class RequireFileExistsRule implements Rule
 
 		$identifier = sprintf('%s.fileNotFound', $identifierType);
 
-		$builder = RuleErrorBuilder::message(
+		return RuleErrorBuilder::message(
 			sprintf(
 				$message,
 				$type,
 				$filePath,
 			),
-		)->identifier($identifier);
-
-		// The error is about a path, and a path is nothing the dependency graph tracks. Declaring the
-		// paths makes the result cache re-analyse this file when one of them is created.
-		foreach ($candidatePaths as $candidatePath) {
-			$builder->fileDependency($candidatePath);
-		}
-
-		return $builder->build();
+		)->identifier($identifier)->build();
 	}
 
 	/**

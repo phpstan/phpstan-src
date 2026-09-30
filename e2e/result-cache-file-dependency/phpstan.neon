@@ -1,0 +1,28 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- src
+	inferPrivatePropertyTypeFromConstructor: true
+
+services:
+	-
+		class: ResultCacheE2EFileDependency\ConfigRule
+		tags:
+			- phpstan.rules.rule
+	-
+		class: ResultCacheE2EFileDependency\DeprecatedConfigRule
+		tags:
+			- phpstan.rules.rule
+	-
+		class: ResultCacheE2EFileDependency\DataFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+	-
+		class: ResultCacheE2EFileDependency\DataMethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+	-
+		class: ResultCacheE2EFileDependency\DataStaticMethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension

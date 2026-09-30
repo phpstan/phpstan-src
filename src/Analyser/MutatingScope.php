@@ -6077,4 +6077,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$this->container->getByType(ValueDependencyCollector::class)->record($extensionClass, $key, $this, $this->nodeCallback !== null);
 	}
 
+	public function fileDependency(string $file): void
+	{
+		$this->container->getByType(ValueDependencyCollector::class)->recordFile($file, $this, $this->nodeCallback !== null);
+	}
+
 }

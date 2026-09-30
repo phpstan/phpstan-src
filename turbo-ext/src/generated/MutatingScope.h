@@ -533,7 +533,9 @@ inline constexpr char strings[] =
 	"data\0" /* 9236 */
 	"emitCollectedData\0" /* 9241 */
 	"extensionClass\0" /* 9259 */
-	"valueDependency"; /* 9274 */
+	"valueDependency\0" /* 9274 */
+	"file\0" /* 9290 */
+	"fileDependency"; /* 9295 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 10), /* __construct $container */
 	reg::packed(48, 0, 61), /* __construct $scopeFactory */
@@ -1069,6 +1071,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(9259, MAY_BE_STRING), /* valueDependency $extensionClass */
 	reg::packed(3280, MAY_BE_STRING), /* valueDependency $key */
 	reg::packed(1476, MAY_BE_VOID), /* valueDependency return */
+	reg::packed(9290, MAY_BE_STRING), /* fileDependency $file */
+	reg::packed(1476, MAY_BE_VOID), /* fileDependency return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -1271,6 +1275,7 @@ inline constexpr sigtab::Sig isOverallPhpVersionRange = { { 9163 /* isOverallPhp
 inline constexpr sigtab::Sig invokeNodeCallback = { { 9203 /* invokeNodeCallback */, 1, 526, 1, 527, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig emitCollectedData = { { 9241 /* emitCollectedData */, 2, 528, 2, 530, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig valueDependency = { { 9274 /* valueDependency */, 2, 531, 2, 533, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig fileDependency = { { 9295 /* fileDependency */, 1, 534, 1, 535, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MutatingScope

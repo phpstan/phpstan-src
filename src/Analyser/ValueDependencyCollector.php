@@ -2,10 +2,12 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Analyser\ResultCache\FileResultCacheValueExtension;
 use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
+use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function array_keys;
@@ -58,6 +60,7 @@ final class ValueDependencyCollector
 	public function __construct(
 		#[AutowiredExtensions(of: ResultCacheValueExtension::class)]
 		private ExtensionsCollection $valueExtensions,
+		private FileHelper $fileHelper,
 	)
 	{
 	}
@@ -98,6 +101,21 @@ final class ValueDependencyCollector
 			$this->dependents[$scopeFile] = ['analysis' => [], 'declarations' => []];
 		}
 		$this->dependents[$scopeFile]['declarations'][$id] = true;
+	}
+
+	/**
+	 * DependencyEmitter::fileDependency() - a dependency on the contents of a file, through
+	 * FileResultCacheValueExtension.
+	 */
+	public function recordFile(string $file, Scope $scope, bool $insideWalk): void
+	{
+		$file = $this->fileHelper->normalizePath($file);
+		if ($insideWalk && $file === $this->analysedFile) {
+			// the analysed file is re-analysed when it changes anyway
+			return;
+		}
+
+		$this->record(FileResultCacheValueExtension::class, $file, $scope, $insideWalk);
 	}
 
 	/**

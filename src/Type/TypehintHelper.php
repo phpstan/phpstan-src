@@ -91,6 +91,11 @@ final class TypehintHelper
 			if ($phpDocType instanceof NeverType && $phpDocType->isExplicit()) {
 				return $phpDocType;
 			}
+			if ($phpDocType instanceof ClassConstantAccessType && !$phpDocType->isResolvable()) {
+				// static::FOO_* or T::* - which constants it stands for is known only for the class the
+				// method is called on, and cannot be compared with the native type before that
+				return $phpDocType->withNativeType($type);
+			}
 			if (
 				$type instanceof MixedType
 				&& !$type->isExplicitMixed()

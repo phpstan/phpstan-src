@@ -521,4 +521,31 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testClassConstantWildcardUnresolvable(): void
+	{
+		// static and a template can stand for a class declaring the constants - only a final class
+		// is known not to
+		$this->analyse([__DIR__ . '/data/class-constant-wildcard-unresolvable.php'], [
+			[
+				'PHPDoc tag @param for parameter $type contains unresolvable type.',
+				40,
+			],
+			[
+				'PHPDoc tag @param for parameter $type contains unresolvable type.',
+				65,
+			],
+		]);
+	}
+
+	public function testBug4548(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4548.php'], []);
+	}
+
+	public function testBug11510(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11510.php'], []);
+	}
+
 }

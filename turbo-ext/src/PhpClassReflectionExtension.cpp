@@ -2494,6 +2494,13 @@ public:
 		bool isExplicit = callBool(returnTag.raw(), PT_LC("isexplicit"), 0, NULL, ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
 		if (isExplicit) return phpDocReturnType;
+		/* $phpDocReturnType instanceof ClassConstantAccessType && !$phpDocReturnType->isResolvable() -
+		 * static::FOO_* or T::*, compared with the native type once the class is known */
+		if (pt_ce_class_constant_access_type != NULL && instanceof_function(Z_OBJCE_P(phpDocReturnType.raw()), pt_ce_class_constant_access_type)) {
+			bool resolvable = callBool(phpDocReturnType.raw(), PT_LC("isresolvable"), 0, NULL, ok);
+			if (UNEXPECTED(!ok)) return zv::Val();
+			if (!resolvable) return phpDocReturnType;
+		}
 		bool superType = isSuperTypeOfYes(nativeReturnType, phpDocReturnType.raw(), ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
 		if (superType) return phpDocReturnType;

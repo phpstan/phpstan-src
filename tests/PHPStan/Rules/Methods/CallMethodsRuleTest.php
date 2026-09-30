@@ -4560,4 +4560,30 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15251.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testClassConstantWildcardArguments(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/class-constant-wildcard-arguments.php'], [
+			[
+				'Parameter #2 $type of method ClassConstantWildcardArguments\\Emitter::valueDependency() expects \'file\', \'hasService\' given.',
+				54,
+			],
+			[
+				'Parameter #2 $type of method ClassConstantWildcardArguments\\Emitter::valueDependency() expects \'file\', \'nope\' given.',
+				55,
+			],
+			[
+				'Parameter #1 $type of method ClassConstantWildcardArguments\\FileExtension::doFoo() expects \'file\', \'hasService\' given.',
+				58,
+			],
+			[
+				'Parameter #1 $type of method ClassConstantWildcardArguments\\ContainerExtension::doFoo() expects \'hasService\', \'nope\' given.',
+				59,
+			],
+		]);
+	}
+
 }

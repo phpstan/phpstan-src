@@ -2,9 +2,9 @@
  * PHPStanTurbo\ClassConstantAccessType — native implementation of
  * PHPStan\Type\ClassConstantAccessType.
  *
- * State is the twin's two promoted `private Type $type` / `private string
- * $constantName` in slots 0 and 1; LateResolvableTypeTrait's `private ?Type
- * $result` follows them, declared by the shared registrar in TypeTraits.cpp
+ * State is the twin's three promoted `private Type $type` / `private string
+ * $constantName` / `private ?Type $nativeType` in slots 0 to 2;
+ * LateResolvableTypeTrait's `private ?Type $result` follows them, declared by the shared registrar in TypeTraits.cpp
  * that also supplies the trait's forwards; NonGeneralizableTypeTrait's
  * generalize() comes from its registrar.
  *
@@ -31,29 +31,43 @@ class ClassConstantAccessType
 public:
 	explicit ClassConstantAccessType(zend_object *self) : self(self) {}
 
-	/* __construct(private Type $type, private string $constantName); both
-	 * borrowed */
-	void construct(zval *type, zend_string *constantName)
+	/* __construct(private Type $type, private string $constantName, private
+	 * ?Type $nativeType = null); all borrowed, $nativeType NULL for the
+	 * default */
+	void construct(zval *type, zend_string *constantName, zval *nativeType)
 	{
 		writeSlot(slots::type, type);
 		zval name;
 		ZVAL_STR(&name, constantName);
 		writeSlot(slots::constantName, &name);
+		zval null;
+		ZVAL_NULL(&null);
+		writeSlot(slots::nativeType, nativeType != NULL ? nativeType : &null);
 	}
 
-	/* new self($type, $constantName); UNDEF = pending exception */
-	static zv::Val create(zval *type, zend_string *constantName)
+	/* new self($type, $constantName, $nativeType); UNDEF = pending exception */
+	static zv::Val create(zval *type, zend_string *constantName, zval *nativeType)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_class_constant_access_type) != SUCCESS)) return zv::Val();
-		ClassConstantAccessType(Z_OBJ(object)).construct(type, constantName);
+		ClassConstantAccessType(Z_OBJ(object)).construct(type, constantName, nativeType);
 		return zv::Val::adopt(object);
+	}
+
+	/* new self($this->type, $this->constantName, $nativeType) */
+	zv::Val withNativeType(zval *nativeType) const
+	{
+		zval *t = type();
+		zval *name = t != NULL ? constantName() : NULL;
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		return create(t, Z_STR_P(name), nativeType);
 	}
 
 	/* the slots (borrowed); NULL with an Error pending when the constructor
 	 * never ran */
 	[[nodiscard]] zval *type() const { return slot(self, slots::type, "type"); }
 	zval *constantName() const { return slot(self, slots::constantName, "constantName"); }
+	zval *nativeType() const { return slot(self, slots::nativeType, "nativeType"); }
 
 	static zval *slot(zend_object *object, uint32_t index, const char *name) { return pt_typed_slot(object, index, pt_ce_class_constant_access_type, name); }
 
@@ -83,7 +97,22 @@ public:
 		if (UNEXPECTED(theirType == NULL)) return false;
 		zv::Val equal = callType(PT_LC("equals"), 1, theirType);
 		if (UNEXPECTED(equal.isUndef())) return false;
-		out = zend_is_true(equal.raw());
+		if (!zend_is_true(equal.raw())) {
+			out = false;
+			return true;
+		}
+		/* the native types: identical when either is null, equals() otherwise */
+		zval *native = nativeType();
+		if (UNEXPECTED(native == NULL)) return false;
+		zval *theirNative = slot(Z_OBJ_P(type), slots::nativeType, "nativeType");
+		if (UNEXPECTED(theirNative == NULL)) return false;
+		if (Z_TYPE_P(native) == IS_NULL || Z_TYPE_P(theirNative) == IS_NULL) {
+			out = Z_TYPE_P(native) == Z_TYPE_P(theirNative);
+			return true;
+		}
+		zv::Val nativeEqual = pt_type_call(Z_OBJ_P(native), PT_LC("equals"), 1, theirNative);
+		if (UNEXPECTED(nativeEqual.isUndef())) return false;
+		out = zend_is_true(nativeEqual.raw());
 		return true;
 	}
 
@@ -99,41 +128,36 @@ public:
 		return pt_type_op(Z_OBJ_P(resolved.raw()), PT_OP_DESCRIBE, 1, level);
 	}
 
-	/* !TypeUtils::containsTemplateType($this->type); false = pending exception */
+	/* !TypeUtils::containsTemplateType($this->type) && !$this->type instanceof StaticType;
+	 * false = pending exception */
 	[[nodiscard]] bool isResolvable(bool &out) const
 	{
 		zval *t = type();
 		if (UNEXPECTED(t == NULL)) return false;
 		bool contains;
 		if (UNEXPECTED(!pt_type_utils_contains_template_type(t, contains))) return false;
-		out = !contains;
+		out = !contains && !(pt_ce_static_type != NULL && instanceof_function(Z_OBJCE_P(t), pt_ce_static_type));
 		return true;
 	}
 
-	/* $this->type->getConstant($this->constantName)->getValueType() when
-	 * $this->type->hasConstant($this->constantName)->yes(), new ErrorType()
-	 * otherwise; UNDEF = pending exception */
+	/* ClassConstantPatternResolver::resolve($this->type, $this->constantName,
+	 * $this->nativeType); UNDEF = pending exception */
 	zv::Val getResult() const
 	{
 		zval *t = type();
 		zval *name = t != NULL ? constantName() : NULL; /* one Error at a time, as the twin's first read raises */
-		if (UNEXPECTED(name == NULL)) return zv::Val();
-		zend_long has = pt_type_call_trinary(Z_OBJ_P(t), PT_LC("hasconstant"), 1, name);
-		if (UNEXPECTED(has < 0)) return zv::Val();
-		if (has == PT_TRI_YES) {
-			zv::Val constant = pt_type_call(Z_OBJ_P(t), PT_LC("getconstant"), 1, name);
-			if (UNEXPECTED(constant.isUndef())) return zv::Val();
-			if (UNEXPECTED(!zv::Ref(constant.raw()).isObject())) {
-				zend_type_error("phpstan_turbo: getConstant() must return an object");
-				return zv::Val();
-			}
-			return pt_type_call(Z_OBJ_P(constant.raw()), PT_LC("getvaluetype"), 0, NULL);
-		}
-		return pt_type_new_error_type();
+		zval *native = name != NULL ? nativeType() : NULL;
+		if (UNEXPECTED(native == NULL)) return zv::Val();
+		zval args[3];
+		ZVAL_COPY_VALUE(&args[0], t);
+		ZVAL_COPY_VALUE(&args[1], name);
+		ZVAL_COPY_VALUE(&args[2], native);
+		return pt_type_call_static(PT_CLASS_CLASS_CONSTANT_PATTERN_RESOLVER, PT_LC("resolve"), 3, args);
 	}
 
-	/* new self($cb($this->type), $this->constantName) when the callback
-	 * changed the type, $this otherwise; UNDEF = pending exception */
+	/* new self($cb($this->type), $this->constantName, $this->nativeType) when
+	 * the callback changed the type, $this otherwise; UNDEF = pending
+	 * exception */
 	zv::Val traverse(zend_fcall_info *fci, zend_fcall_info_cache *fcc) const
 	{
 		zval *t = type();
@@ -153,13 +177,23 @@ public:
 		return traversed(pt_type_traverse_call(fci, fcc, t, theirType));
 	}
 
-	/* new ConstTypeNode(new ConstFetchNode('static', $this->constantName)) */
+	/* new ConstTypeNode(new ConstFetchNode($this->type instanceof TemplateType
+	 * ? $this->type->getName() : 'static', $this->constantName)) */
 	zv::Val toPhpDocNode() const
 	{
-		zval *name = constantName();
+		zval *t = type();
+		zval *name = t != NULL ? constantName() : NULL;
 		if (UNEXPECTED(name == NULL)) return zv::Val();
+		zend_class_entry *templateType = pt_class(PT_CLASS_TEMPLATE_TYPE);
+		if (UNEXPECTED(templateType == NULL)) return zv::Val();
 		zval args[2];
-		ZVAL_STRINGL(&args[0], "static", sizeof("static") - 1);
+		if (instanceof_function(Z_OBJCE_P(t), templateType)) {
+			zv::Val templateName = pt_type_call(Z_OBJ_P(t), PT_LC("getname"), 0, NULL);
+			if (UNEXPECTED(templateName.isUndef())) return zv::Val();
+			ZVAL_COPY(&args[0], templateName.raw());
+		} else {
+			ZVAL_STRINGL(&args[0], "static", sizeof("static") - 1);
+		}
 		ZVAL_COPY_VALUE(&args[1], name);
 		zv::Val constFetch = pt_type_new(PT_CLASS_CONST_FETCH_NODE, 2, args);
 		zval_ptr_dtor(&args[0]);
@@ -183,7 +217,8 @@ private:
 	}
 
 	/* the tail of traverse()/traverseSimultaneously(): `$this->type === $type
-	 * ? $this : new self($type, $this->constantName)` (UNDEF in = UNDEF out) */
+	 * ? $this : new self($type, $this->constantName, $this->nativeType)`
+	 * (UNDEF in = UNDEF out) */
 	zv::Val traversed(zv::Val type) const
 	{
 		if (UNEXPECTED(type.isUndef())) return zv::Val();
@@ -191,8 +226,9 @@ private:
 		if (UNEXPECTED(t == NULL)) return zv::Val();
 		if (pt_type_same_object(t, type.raw())) return thisValue();
 		zval *name = constantName();
-		if (UNEXPECTED(name == NULL)) return zv::Val();
-		return create(type.raw(), Z_STR_P(name));
+		zval *native = name != NULL ? nativeType() : NULL;
+		if (UNEXPECTED(native == NULL)) return zv::Val();
+		return create(type.raw(), Z_STR_P(name), Z_TYPE_P(native) == IS_NULL ? NULL : native);
 	}
 };
 
@@ -202,7 +238,7 @@ using phpstanturbo::ClassConstantAccessType;
 
 bool pt_class_constant_access_type_new(zval *out, zval *type, zend_string *constantName)
 {
-	return pt_val_into(ClassConstantAccessType::create(type, constantName), out);
+	return pt_val_into(ClassConstantAccessType::create(type, constantName, NULL), out);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -217,7 +253,14 @@ PT_MINIT_REGISTRATION(pt_register_class_constant_access_type)
 	 * declares $result after them */
 	ptdecl::ClassConstantAccessType::declareProperties(cls);
 
-	cls.method<&ClassConstantAccessType::construct, zp::TypeObj, zp::Str>(sigs::__construct);
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type, *nativeType = NULL;
+		zend_string *constantName;
+		if (!zp::parse<zp::TypeObj, zp::Str, zp::Opt<zp::TypeObjOrNull>>(execute_data, type, constantName, nativeType)) RETURN_THROWS();
+		PT_THIS.construct(type, constantName, nativeType);
+	});
+
+	cls.method<&ClassConstantAccessType::withNativeType, zp::TypeObj>(sigs::withNativeType);
 
 	cls.method<&ClassConstantAccessType::getReferencedClasses>(sigs::getReferencedClasses);
 	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ClassConstantAccessType::getReferencedClasses>();

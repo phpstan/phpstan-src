@@ -170,6 +170,13 @@ public:
 				if (UNEXPECTED(!pt_never_type_is_explicit(Z_OBJ_P(phpDocType.raw()), isExplicit))) return zv::Val();
 				if (isExplicit) return phpDocType;
 			}
+			/* $phpDocType instanceof ClassConstantAccessType && !$phpDocType->isResolvable() - static::FOO_*
+			 * or T::*, known only for the class the method is called on: $phpDocType->withNativeType($type) */
+			if (pt_ce_class_constant_access_type != NULL && instanceof_function(Z_OBJCE_P(phpDocType.raw()), pt_ce_class_constant_access_type)) {
+				zv::Val resolvable = pt_type_call(Z_OBJ_P(phpDocType.raw()), PT_LC("isresolvable"), 0, NULL);
+				if (UNEXPECTED(resolvable.isUndef())) return zv::Val();
+				if (!zend_is_true(resolvable.raw())) return pt_type_call(Z_OBJ_P(phpDocType.raw()), PT_LC("withnativetype"), 1, type.raw());
+			}
 			/* $type instanceof MixedType && !$type->isExplicitMixed() && $phpDocType->isVoid()->yes() */
 			if (instanceof_function(Z_OBJCE_P(type.raw()), pt_ce_mixed_type)) {
 				bool explicitMixed;

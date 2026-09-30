@@ -12,6 +12,8 @@ use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\ClassConstantAccessType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
@@ -143,7 +145,9 @@ final class IncompatiblePhpDocTypeCheck
 					}
 
 					if (in_array($tagName, ['@param', '@param-out'], true)) {
-						$isParamSuperType = $nativeParamType->isSuperTypeOf($phpDocParamType);
+						$isParamSuperType = $this->isDeferredClassConstantAccess($phpDocParamType)
+							? TrinaryLogic::createYes()
+							: $nativeParamType->isSuperTypeOf($phpDocParamType);
 						if ($isParamSuperType->no()) {
 							$errors[] = RuleErrorBuilder::message(sprintf(
 								'PHPDoc tag %s for parameter $%s with type %s is incompatible with native type %s.',
@@ -196,7 +200,9 @@ final class IncompatiblePhpDocTypeCheck
 				$errors[] = $errorBuilder->build();
 
 			} else {
-				$isReturnSuperType = $nativeReturnType->isSuperTypeOf($phpDocReturnType);
+				$isReturnSuperType = $this->isDeferredClassConstantAccess($phpDocReturnType)
+					? TrinaryLogic::createYes()
+					: $nativeReturnType->isSuperTypeOf($phpDocReturnType);
 				$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
 					$phpDocReturnType,
 					'PHPDoc tag @return contains generic type %s but %s %s is not generic.',
@@ -239,6 +245,15 @@ final class IncompatiblePhpDocTypeCheck
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * static::FOO_* or T::* - which constants it stands for is known only for the class the method is
+	 * called on, so it cannot be compared with the native type here.
+	 */
+	private function isDeferredClassConstantAccess(Type $type): bool
+	{
+		return $type instanceof ClassConstantAccessType && !$type->isResolvable();
 	}
 
 }

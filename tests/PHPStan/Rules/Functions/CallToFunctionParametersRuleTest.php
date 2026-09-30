@@ -3315,4 +3315,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11510(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11510.php'], [
+			[
+				'Parameter #2 $classConfig of function Bug11510\\foo expects \'test\', \'hello\' given.',
+				20,
+			],
+		]);
+	}
+
 }

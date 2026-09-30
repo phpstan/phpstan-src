@@ -11,6 +11,7 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ClassConstantAccessType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
@@ -69,7 +70,10 @@ final class IncompatiblePropertyPhpDocTypeRule implements Rule
 		}
 
 		$nativeType = $node->getNativeType();
-		if ($nativeType !== null) {
+		// static::FOO_* or T::* - which constants it stands for is known only for the class of the
+		// object, so it cannot be compared with the native type here
+		$isDeferred = $phpDocType instanceof ClassConstantAccessType && !$phpDocType->isResolvable();
+		if ($nativeType !== null && !$isDeferred) {
 			$isSuperType = $nativeType->isSuperTypeOf($phpDocType);
 			if ($isSuperType->no()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(

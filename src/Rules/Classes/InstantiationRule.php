@@ -16,6 +16,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
@@ -29,6 +30,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -293,12 +295,24 @@ final class InstantiationRule implements Rule
 
 		$classDisplayName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());
 
+		$calledConstructorReflection = $constructorReflection;
+		if ($constructorReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
+			// static in the PHPDoc of an inherited constructor is the class being instantiated,
+			// as it is the class a method is called on
+			$calledConstructorReflection = (new CalledOnTypeUnresolvedMethodPrototypeReflection(
+				$constructorReflection,
+				$constructorReflection->getDeclaringClass(),
+				false,
+				new ObjectType($classReflection->getName(), classReflection: $classReflection),
+			))->getTransformedMethod();
+		}
+
 		return array_merge($messages, $this->check->check(
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),
-				$constructorReflection->getVariants(),
-				$constructorReflection->getNamedArgumentsVariants(),
+				$calledConstructorReflection->getVariants(),
+				$calledConstructorReflection->getNamedArgumentsVariants(),
 			),
 			$scope,
 			$constructorReflection->getDeclaringClass()->isBuiltin(),

@@ -800,4 +800,14 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12827.php'], $expectedErrors);
 	}
 
+	public function testBug4548(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4548.php'], [
+			[
+				'Parameter #1 $value of class Bug4548\\Suit constructor expects 1|2|3|4, 5 given.',
+				26,
+			],
+		]);
+	}
+
 }

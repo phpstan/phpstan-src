@@ -1324,6 +1324,24 @@ final class TypeNodeResolver
 			}
 
 			if (!isset($className)) {
+				$templateType = $nameScope->resolveTemplateTypeName($constExpr->className);
+				if ($templateType instanceof TemplateType) {
+					if (strtolower($constExpr->name) === 'class') {
+						return new GenericClassStringType($templateType);
+					}
+
+					// A template bound to a final class can only be that class. Any other can be a class
+					// declaring constants its bound does not - known once the template is resolved.
+					$boundClassReflections = $templateType->getBound()->getObjectClassReflections();
+					if (count($boundClassReflections) !== 1 || !$boundClassReflections[0]->isFinal()) {
+						return new ClassConstantAccessType($templateType, $constExpr->name);
+					}
+
+					$className = $boundClassReflections[0]->getName();
+				}
+			}
+
+			if (!isset($className)) {
 				$className = $nameScope->resolveStringName($constExpr->className);
 			}
 
@@ -1344,6 +1362,12 @@ final class TypeNodeResolver
 				}
 
 				return new ConstantStringType($classReflection->getName(), true);
+			}
+
+			// A class that is not final can have subclasses declaring constants it does not - what
+			// static:: stands for is known once static is resolved.
+			if ($isStatic) {
+				return new ClassConstantAccessType(new StaticType($classReflection), $constantName);
 			}
 
 			if (Strings::contains($constantName, '*')) {
@@ -1387,10 +1411,6 @@ final class TypeNodeResolver
 
 			if ($classReflection->isEnum() && $classReflection->hasEnumCase($constantName)) {
 				return new EnumCaseObjectType($classReflection->getName(), $constantName);
-			}
-
-			if ($isStatic) {
-				return new ClassConstantAccessType(new StaticType($classReflection), $constantName);
 			}
 
 			$reflectionConstant = $classReflection->getNativeReflection()->getReflectionConstant($constantName);

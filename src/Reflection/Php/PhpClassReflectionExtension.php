@@ -50,6 +50,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\ClassConstantAccessType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -1326,6 +1327,12 @@ final class PhpClassReflectionExtension
 		);
 
 		if ($returnTag->isExplicit()) {
+			return $phpDocReturnType;
+		}
+
+		if ($phpDocReturnType instanceof ClassConstantAccessType && !$phpDocReturnType->isResolvable()) {
+			// static::FOO_* or T::* - it can be compared with the native type only once the class is
+			// known, see TypehintHelper::decideType()
 			return $phpDocReturnType;
 		}
 

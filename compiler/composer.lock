@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7aa6a7377310ec2e6ee27d299b976e5b",
+    "content-hash": "09f6ef2c6b1386f0089ec2727990b60d",
     "packages": [
         {
             "name": "nette/neon",
@@ -222,16 +222,16 @@
         },
         {
             "name": "ondrejmirtes/simple-downgrader",
-            "version": "2.2.7",
+            "version": "2.2.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/simple-downgrader.git",
-                "reference": "140f86600b499e1c460761196a12fab9aeb7ec33"
+                "reference": "b12a15de3c3aaed7c15bbb6f26fd734557fee0e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/140f86600b499e1c460761196a12fab9aeb7ec33",
-                "reference": "140f86600b499e1c460761196a12fab9aeb7ec33",
+                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/b12a15de3c3aaed7c15bbb6f26fd734557fee0e7",
+                "reference": "b12a15de3c3aaed7c15bbb6f26fd734557fee0e7",
                 "shasum": ""
             },
             "require": {
@@ -265,9 +265,9 @@
             "description": "Simple Downgrader",
             "support": {
                 "issues": "https://github.com/ondrejmirtes/simple-downgrader/issues",
-                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.2.7"
+                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.2.9"
             },
-            "time": "2026-06-12T17:10:38+00:00"
+            "time": "2026-09-30T19:26:40+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",

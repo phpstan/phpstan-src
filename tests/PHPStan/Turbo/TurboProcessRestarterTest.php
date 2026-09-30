@@ -177,4 +177,47 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 		$this->assertSame($expected, TurboProcessRestarter::resolveOpcacheRestartNeeded(self::STOCK_ARGS, $currentIniValues));
 	}
 
+	public function testRestartArgsCarryThePhpConfigurationOfTheCurrentProcess(): void
+	{
+		// the restart replaces the process, so what the command line gave it -
+		// the ini files it reads and the Xdebug mode - has to be repeated
+		$inheritedArgs = ['-n', '-c', '/etc/php/php.ini', '-d', "sys_temp_dir='/tmp'", '-d', 'xdebug.mode='];
+		$args = TurboProcessRestarter::resolveRestartArgs($inheritedArgs, ['opcache.enable_cli=1'], null, '256M', ['bin/phpstan', 'analyse']);
+
+		$this->assertSame([
+			'-n',
+			'-c',
+			'/etc/php/php.ini',
+			'-d',
+			"sys_temp_dir='/tmp'",
+			'-d',
+			'xdebug.mode=',
+			'-d',
+			'memory_limit=256M',
+			'-d',
+			'opcache.enable_cli=1',
+			'-d',
+			'phpstan.restarted=1',
+			'bin/phpstan',
+			'analyse',
+		], $args);
+	}
+
+	public function testRestartArgsCarryTheTurboExtension(): void
+	{
+		$args = TurboProcessRestarter::resolveRestartArgs([], [], '/tmp/phpstan_turbo.so', '-1', ['bin/phpstan']);
+
+		$this->assertSame([
+			'-d',
+			'memory_limit=-1',
+			'-d',
+			'extension=/tmp/phpstan_turbo.so',
+			'-d',
+			'phpstan.turboExtensionPath=/tmp/phpstan_turbo.so',
+			'-d',
+			'phpstan.restarted=1',
+			'bin/phpstan',
+		], $args);
+	}
+
 }

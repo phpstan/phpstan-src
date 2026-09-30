@@ -881,4 +881,28 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14398(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-14398.php'], [
+			[
+				'Private method Bug14398\ChildClass::publicMethod() overriding public method Bug14398\ParentClass::publicMethod() should also be public.',
+				40,
+			],
+			[
+				'Protected method Bug14398\ChildClass::publicWithDocblock() overriding public method Bug14398\ParentClass::publicWithDocblock() should also be public.',
+				50,
+			],
+			[
+				'Private method Bug14398\ChildClass::protectedMethod() overriding protected method Bug14398\ParentClass::protectedMethod() should be protected or public.',
+				56,
+			],
+			[
+				'Private method Bug14398\ChildClass::withoutAttribute() overriding public method Bug14398\ParentClass::withoutAttribute() should also be public.',
+				60,
+			],
+		]);
+	}
+
 }

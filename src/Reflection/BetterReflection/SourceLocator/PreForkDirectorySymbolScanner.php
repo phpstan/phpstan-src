@@ -73,25 +73,23 @@ final class PreForkDirectorySymbolScanner
 		// two directories both reach is then read once instead of twice, and
 		// the scan pays its per-call costs once instead of per directory:
 		// measured over this repository's tree, 0.32s -> 0.16s.
-		$this->optimizedDirectorySourceLocatorFactory->beginBatchedScan();
+		$batch = $this->optimizedDirectorySourceLocatorFactory->createBatch();
 
 		try {
 			foreach (array_unique(array_merge($directories, $this->scanDirectories)) as $directory) {
-				$this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
+				$this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory, $batch);
 			}
 
 			foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
 				// the aggregate locator is thrown away - what matters is that the
 				// directory locators it builds land in the repository's memo,
 				// which the forked children inherit
-				$this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
+				$this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath, $batch);
 			}
-
-			$this->optimizedDirectorySourceLocatorFactory->flushBatchedScan();
 		} finally {
-			// a throw must not leave the factory collecting into a batch that
-			// nobody will flush
-			$this->optimizedDirectorySourceLocatorFactory->flushBatchedScan();
+			// the locators already in the repository's memo must not be left
+			// unscanned by a throw
+			$batch->scan();
 		}
 	}
 

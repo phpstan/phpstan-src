@@ -41,7 +41,11 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	{
 	}
 
-	public function create(string $projectInstallationPath): ?SourceLocator
+	/**
+	 * With a batch, the directory locators are added to it, and the returned locator cannot be used
+	 * before the batch is scanned.
+	 */
+	public function create(string $projectInstallationPath, ?OptimizedDirectorySourceLocatorBatch $batch = null): ?SourceLocator
 	{
 		$composer = ComposerHelper::getComposerConfig($projectInstallationPath);
 
@@ -115,7 +119,7 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$files = [];
 		foreach ($classMapPaths as $classMapPath) {
 			if (is_dir($classMapPath)) {
-				$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapPath);
+				$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapPath, $batch);
 				continue;
 			}
 			if (!is_file($classMapPath)) {
@@ -131,7 +135,9 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		}
 
 		if (count($files) > 0) {
-			$locators[] = $this->optimizedDirectorySourceLocatorFactory->createByFiles($files, 'odsl-installed-files');
+			$locators[] = $batch !== null
+				? $batch->createByFiles($files, 'odsl-installed-files')
+				: $this->optimizedDirectorySourceLocatorFactory->createByFiles($files, 'odsl-installed-files');
 		}
 
 		$binDir = ComposerHelper::getBinDirFromComposerConfig($projectInstallationPath, $composer);

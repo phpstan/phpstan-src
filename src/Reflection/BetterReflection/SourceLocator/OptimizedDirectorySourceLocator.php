@@ -43,7 +43,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		private array $classToFile,
 		private array $functionToFiles,
 		private array $constantToFile,
-		private bool $awaitingBatchedScan = false,
+		private bool $awaitingScan = false,
 	)
 	{
 	}
@@ -53,21 +53,21 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	 *
 	 * The factory hands these out before the scan that produces their contents
 	 * has run, so that one scan can cover every directory at once
-	 * (see OptimizedDirectorySourceLocatorFactory::flushBatchedScan()). Nothing
-	 * may look a symbol up in between - the maps are empty, so a lookup would
-	 * quietly answer "not found" - which is what the flag guards.
+	 * (see OptimizedDirectorySourceLocatorBatch). Nothing may look a symbol up
+	 * in between - the maps are empty, so a lookup would quietly answer "not
+	 * found" - which is what the flag guards.
 	 *
 	 * @param array<string, string> $classToFile
 	 * @param array<string, array<int, string>> $functionToFiles
 	 * @param array<string, string> $constantToFile
 	 * @internal
 	 */
-	public function fillBatchedScan(array $classToFile, array $functionToFiles, array $constantToFile): void
+	public function fillScanned(array $classToFile, array $functionToFiles, array $constantToFile): void
 	{
 		$this->classToFile = $classToFile;
 		$this->functionToFiles = $functionToFiles;
 		$this->constantToFile = $constantToFile;
-		$this->awaitingBatchedScan = false;
+		$this->awaitingScan = false;
 	}
 
 	/**
@@ -89,8 +89,8 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	#[Override]
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
-		if ($this->awaitingBatchedScan) {
-			throw new ShouldNotHappenException('Symbols were looked up in a directory whose batched scan has not been flushed yet.');
+		if ($this->awaitingScan) {
+			throw new ShouldNotHappenException('Symbols were looked up in a directory whose batch has not been scanned yet.');
 		}
 
 		if ($identifier->isClass()) {
@@ -250,8 +250,8 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
-		if ($this->awaitingBatchedScan) {
-			throw new ShouldNotHappenException('Symbols were looked up in a directory whose batched scan has not been flushed yet.');
+		if ($this->awaitingScan) {
+			throw new ShouldNotHappenException('Symbols were looked up in a directory whose batch has not been scanned yet.');
 		}
 
 		$reflections = [];

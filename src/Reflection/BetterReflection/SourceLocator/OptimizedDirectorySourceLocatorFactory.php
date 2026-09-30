@@ -48,13 +48,6 @@ final class OptimizedDirectorySourceLocatorFactory
 	private const SCAN_LOCK_POLL_INTERVAL_MICROSECONDS = 50_000;
 
 	/**
-	 * Directories collected for a batched scan, null when not batching.
-	 *
-	 * @var list<array{non-empty-string, string[], OptimizedDirectorySourceLocator}>|null
-	 */
-	private ?array $batchedScan = null;
-
-	/**
 	 * The files this process already checked or scanned, as the caches keep them: [content hash,
 	 * stat signature, classes, functions, constants]. The directories a process builds locators for
 	 * can overlap, and a file reachable from two of them is then looked at once.
@@ -80,7 +73,11 @@ final class OptimizedDirectorySourceLocatorFactory
 
 	public function createByDirectory(string $directory): OptimizedDirectorySourceLocator
 	{
-		return $this->createLocator(sprintf('odsl-%s', $directory), $this->fileFinder->findFiles([$directory])->getFiles());
+		$batch = $this->createBatch();
+		$locator = $batch->createByDirectory($directory);
+		$batch->scan();
+
+		return $locator;
 	}
 
 	/**
@@ -89,59 +86,34 @@ final class OptimizedDirectorySourceLocatorFactory
 	 */
 	public function createByFiles(array $files, string $uniqueCacheIdentifier): OptimizedDirectorySourceLocator
 	{
-		return $this->createLocator($uniqueCacheIdentifier, $files);
-	}
-
-	/**
-	 * Starts collecting the directories asked for instead of scanning each one
-	 * as it comes, so that flushBatchedScan() can cover all of them in a single
-	 * scan: a file reachable from two directories is read once rather than
-	 * twice, and the per-call costs are paid once instead of per directory.
-	 */
-	public function beginBatchedScan(): void
-	{
-		$this->batchedScan = [];
-	}
-
-	/**
-	 * Scans everything collected since beginBatchedScan() at once and fills in
-	 * the locators handed out in the meantime.
-	 */
-	public function flushBatchedScan(): void
-	{
-		$batched = $this->batchedScan;
-		$this->batchedScan = null;
-		if ($batched === null || $batched === []) {
-			return;
-		}
-
-		$this->scan($batched);
-	}
-
-	/**
-	 * @param non-empty-string $cacheKey
-	 * @param string[] $files
-	 */
-	private function createLocator(string $cacheKey, array $files): OptimizedDirectorySourceLocator
-	{
-		$locator = new OptimizedDirectorySourceLocator(
-			$this->fileNodesFetcher,
-			$this->cache,
-			$this->phpVersion,
-			$this->fileContentHasher,
-			[],
-			[],
-			[],
-			awaitingBatchedScan: true,
-		);
-
-		if ($this->batchedScan !== null) {
-			$this->batchedScan[] = [$cacheKey, $files, $locator];
-		} else {
-			$this->scan([[$cacheKey, $files, $locator]]);
-		}
+		$batch = $this->createBatch();
+		$locator = $batch->createByFiles($files, $uniqueCacheIdentifier);
+		$batch->scan();
 
 		return $locator;
+	}
+
+	/**
+	 * For creating several locators and scanning them in one go.
+	 */
+	public function createBatch(): OptimizedDirectorySourceLocatorBatch
+	{
+		return new OptimizedDirectorySourceLocatorBatch(
+			fn (string $directory): array => $this->fileFinder->findFiles([$directory])->getFiles(),
+			fn (): OptimizedDirectorySourceLocator => new OptimizedDirectorySourceLocator(
+				$this->fileNodesFetcher,
+				$this->cache,
+				$this->phpVersion,
+				$this->fileContentHasher,
+				[],
+				[],
+				[],
+				awaitingScan: true,
+			),
+			function (array $requests): void {
+				$this->scan($requests);
+			},
+		);
 	}
 
 	/**
@@ -160,18 +132,20 @@ final class OptimizedDirectorySourceLocatorFactory
 			$cachedEntries = [];
 			foreach ($requests as $i => [$cacheKey]) {
 				$cached = $this->loadCachedSymbols($cacheKey, $variableCacheKey);
-				if ($cached === null) {
-					// On a cold cache every parallel worker that is not forked from a process that did
-					// the scan already builds the same locators at once, and would scan the same files.
-					// The first worker to take the lock scans and saves; the rest block until it
-					// releases, then read the cache it wrote.
+				// On a cold cache every parallel worker that is not forked from a process that did
+				// the scan already builds the same locators at once, and would scan the same files.
+				// The first worker to take the lock scans and saves; the rest block until it
+				// releases, then read the cache it wrote. The locators of a batch can share a cache
+				// key (odsl-installed-files of two Composer projects), and a second lock of the same
+				// file would wait for this very process.
+				if ($cached === null && !array_key_exists($cacheKey, $scanLocks)) {
 					$scanLock = $this->acquireDirectoryScanLock($cacheKey . $variableCacheKey);
 					if ($scanLock !== null) {
 						$cached = $this->loadCachedSymbols($cacheKey, $variableCacheKey);
 						if ($cached !== null) {
 							$this->releaseDirectoryScanLock($scanLock);
 						} else {
-							$scanLocks[] = $scanLock;
+							$scanLocks[$cacheKey] = $scanLock;
 						}
 					}
 				}
@@ -233,7 +207,7 @@ final class OptimizedDirectorySourceLocatorFactory
 				}
 
 				[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($entry);
-				$locator->fillBatchedScan($classToFile, $functionToFiles, $constantToFile);
+				$locator->fillScanned($classToFile, $functionToFiles, $constantToFile);
 			}
 		} finally {
 			// Release even if scanning or saving throws, so a failing worker cannot leave other

@@ -23,6 +23,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\CachedPhpInternalSourceLoc
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\BetterReflection\SourceLocator\LazySourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
@@ -64,6 +65,7 @@ final class BetterReflectionSourceLocatorFactory
 		private ReflectionSourceStubber $reflectionSourceStubber,
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		private OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
+		private OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory,
 		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
 		private FileNodesFetcher $fileNodesFetcher,
@@ -131,22 +133,31 @@ final class BetterReflectionSourceLocatorFactory
 				$fileLocators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
 			}
 
-			$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));
-			foreach ($directories as $directory) {
-				$fileLocators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
+			// The directory locators - the analysed and scanned directories here, the Composer classmap
+			// paths below - are scanned together once they are all known, the way
+			// PreForkDirectorySymbolScanner does it before forking: a file two of them reach is looked
+			// at once.
+			$batch = $this->optimizedDirectorySourceLocatorFactory->createBatch();
+			try {
+				$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));
+				foreach ($directories as $directory) {
+					$fileLocators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory, $batch);
+				}
+
+				$composerLocators = [];
+
+				foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
+					$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath, $batch);
+					if ($locator === null) {
+						continue;
+					}
+					$composerLocators[] = $locator;
+				}
+			} finally {
+				$batch->scan();
 			}
 
 			$astPhp8Locator = new Locator($this->php8Parser);
-
-			$composerLocators = [];
-
-			foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
-				$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
-				if ($locator === null) {
-					continue;
-				}
-				$composerLocators[] = $locator;
-			}
 
 			if (count($composerLocators) > 0) {
 				$fileLocators[] = new SkipPolyfillSourceLocator(new AggregateSourceLocator($composerLocators), $this->phpVersion);

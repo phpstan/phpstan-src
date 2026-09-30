@@ -81,20 +81,21 @@ final class OptimizedDirectorySourceLocatorFactoryTest extends PHPStanTestCase
 		$this->assertTrue($this->hasClass('OdslFactoryTest\\SecondWithLongerName'));
 	}
 
-	public function testBatchedScanFillsEveryLocator(): void
+	public function testBatchFillsEveryLocator(): void
 	{
 		mkdir($this->directory . '/sub');
 		file_put_contents($this->directory . '/a.php', '<?php namespace OdslFactoryTest; class First {}');
 		file_put_contents($this->directory . '/sub/b.php', '<?php namespace OdslFactoryTest; class Second {}');
 
-		$factory = $this->createFactory();
-		$factory->beginBatchedScan();
-		$all = $factory->createByFiles([$this->directory . '/a.php', $this->directory . '/sub/b.php'], 'odsl-factory-test-all');
-		$sub = $factory->createByFiles([$this->directory . '/sub/b.php'], 'odsl-factory-test-sub');
-		$factory->flushBatchedScan();
+		$batch = $this->createFactory()->createBatch();
+		$all = $batch->createByFiles([$this->directory . '/a.php', $this->directory . '/sub/b.php'], 'odsl-factory-test-all');
+		$sub = $batch->createByFiles([$this->directory . '/sub/b.php'], 'odsl-factory-test-sub');
+		$sameKey = $batch->createByFiles([$this->directory . '/a.php'], 'odsl-factory-test-sub');
+		$batch->scan();
 
 		$this->assertCount(2, $all->locateIdentifiersByType(new DefaultReflector($all), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
 		$this->assertCount(1, $sub->locateIdentifiersByType(new DefaultReflector($sub), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
+		$this->assertCount(1, $sameKey->locateIdentifiersByType(new DefaultReflector($sameKey), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
 	}
 
 	private function hasClass(string $className): bool

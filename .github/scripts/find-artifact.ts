@@ -42,10 +42,13 @@ module.exports = async ({github, context, core}: Inputs) => {
 			continue;
 		}
 
+		// Filter by name on the server: a run of this workflow has more artifacts
+		// than one page holds, so an unfiltered first page can miss this one.
 		const artifactsResp = await github.rest.actions.listWorkflowRunArtifacts({
 			owner: context.repo.owner,
 			repo: context.repo.repo,
 			run_id: run.id,
+			name: artifactName,
 		});
 
 		const artifact = artifactsResp.data.artifacts.find(a => a.name === artifactName);

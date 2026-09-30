@@ -107,7 +107,7 @@ final class FileAnalyserCallback
 
 		$parserNodes = $this->parserNodes;
 
-		/** @var Scope&NodeCallbackInvoker&CollectedDataEmitter $scope */
+		/** @var Scope&NodeCallbackInvoker&CollectedDataEmitter&DependencyEmitter $scope */
 		if ($node instanceof Node\Stmt\Trait_) {
 			foreach (array_keys($this->linesToIgnore[$this->file] ?? []) as $lineToIgnore) {
 				if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {

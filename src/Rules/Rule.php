@@ -4,6 +4,7 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\DependencyEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\ExtensionInterface;
@@ -38,6 +39,6 @@ interface Rule
 	 * @param TNodeType $node
 	 * @return list<IdentifierRuleError>
 	 */
-	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array;
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter&DependencyEmitter $scope): array;
 
 }

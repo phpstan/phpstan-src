@@ -7,6 +7,7 @@ use Clue\React\NDJson\Encoder;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Command\BootstrapFilesRunner;
 use PHPStan\Command\ErrorsConsoleStyle;
@@ -207,6 +208,7 @@ final class WorkerRunner
 			$collectedData = [];
 			$dependencies = [];
 			$usedTraitDependencies = [];
+			$valueDependencies = ['values' => [], 'dependents' => []];
 			$packageDependencies = [];
 			$exportedNodes = [];
 			$processedFiles = [];
@@ -223,6 +225,7 @@ final class WorkerRunner
 					$unmatchedLineIgnores[$file] = $fileAnalyserResult->getUnmatchedLineIgnores();
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
 					$usedTraitDependencies[$file] = $fileAnalyserResult->getUsedTraitDependencies();
+					$valueDependencies = ValueDependencyCollector::merge($valueDependencies, $fileAnalyserResult->getValueDependencies());
 					$packageDependencies[$file] = $fileAnalyserResult->getPackageDependencies();
 					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
 					$processedFiles = array_merge($processedFiles, $fileAnalyserResult->getProcessedFiles());
@@ -265,6 +268,7 @@ final class WorkerRunner
 					'memoryUsage' => memory_get_peak_usage(true),
 					'dependencies' => $dependencies,
 					'usedTraitDependencies' => $usedTraitDependencies,
+					'valueDependencies' => $valueDependencies,
 					'packageDependencies' => $packageDependencies,
 					'exportedNodes' => $exportedNodes,
 					'files' => $files,

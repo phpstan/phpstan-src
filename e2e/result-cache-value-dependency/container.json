@@ -1,0 +1,11 @@
+{
+	"services": {
+		"mailer": "ResultCacheE2EValueDependency\\Mailer",
+		"logger": "ResultCacheE2EValueDependency\\Logger"
+	},
+	"parameters": {
+		"locale": "cs",
+		"timezone": "Europe/Prague",
+		"debug": "yes"
+	}
+}

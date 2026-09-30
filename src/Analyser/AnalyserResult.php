@@ -9,6 +9,7 @@ use function usort;
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  * @phpstan-import-type CollectorData from CollectedData
+ * @phpstan-import-type ValueDependencies from ValueDependencyCollector
  */
 final class AnalyserResult
 {
@@ -27,6 +28,7 @@ final class AnalyserResult
 	 * @param list<InternalError> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<string>>|null $usedTraitDependencies
+	 * @param ValueDependencies|null $valueDependencies see ValueDependencyCollector
 	 * @param array<string, array<string>>|null $packageDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param list<string> $processedFiles
@@ -42,6 +44,7 @@ final class AnalyserResult
 		private array $collectedData,
 		private ?array $dependencies,
 		private ?array $usedTraitDependencies,
+		private ?array $valueDependencies,
 		private ?array $packageDependencies,
 		private array $exportedNodes,
 		private bool $reachedInternalErrorsCountLimit,
@@ -163,6 +166,14 @@ final class AnalyserResult
 	public function getUsedTraitDependencies(): ?array
 	{
 		return $this->usedTraitDependencies;
+	}
+
+	/**
+	 * @return ValueDependencies|null
+	 */
+	public function getValueDependencies(): ?array
+	{
+		return $this->valueDependencies;
 	}
 
 	/**

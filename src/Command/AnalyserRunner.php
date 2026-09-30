@@ -68,6 +68,7 @@ final class AnalyserRunner
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				valueDependencies: ['values' => [], 'dependents' => []],
 				packageDependencies: [],
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,

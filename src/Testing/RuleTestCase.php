@@ -17,6 +17,7 @@ use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
@@ -117,6 +118,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
 				false,
+				self::getContainer()->getByType(ValueDependencyCollector::class),
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,

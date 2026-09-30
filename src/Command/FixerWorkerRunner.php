@@ -345,6 +345,7 @@ final class FixerWorkerRunner
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				valueDependencies: ['values' => [], 'dependents' => []],
 				packageDependencies: [],
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,

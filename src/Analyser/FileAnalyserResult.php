@@ -9,6 +9,7 @@ use PHPStan\Dependency\RootExportedNode;
  * @phpstan-type Identifier = array{name: string, comment: string|null}
  * @phpstan-type LinesToIgnore = array<string, array<int, non-empty-list<Identifier>|null>>
  * @phpstan-import-type CollectorData from CollectedData
+ * @phpstan-import-type ValueDependencies from ValueDependencyCollector
  */
 final class FileAnalyserResult
 {
@@ -21,6 +22,7 @@ final class FileAnalyserResult
 	 * @param CollectorData $collectedData
 	 * @param list<string> $dependencies
 	 * @param list<string> $usedTraitDependencies
+	 * @param ValueDependencies $valueDependencies see ValueDependencyCollector
 	 * @param list<string> $packageDependencies
 	 * @param list<RootExportedNode> $exportedNodes
 	 * @param LinesToIgnore $linesToIgnore
@@ -35,6 +37,7 @@ final class FileAnalyserResult
 		private array $collectedData,
 		private array $dependencies,
 		private array $usedTraitDependencies,
+		private array $valueDependencies,
 		private array $packageDependencies,
 		private array $exportedNodes,
 		private array $linesToIgnore,
@@ -98,6 +101,14 @@ final class FileAnalyserResult
 	public function getUsedTraitDependencies(): array
 	{
 		return $this->usedTraitDependencies;
+	}
+
+	/**
+	 * @return ValueDependencies
+	 */
+	public function getValueDependencies(): array
+	{
+		return $this->valueDependencies;
 	}
 
 	/**

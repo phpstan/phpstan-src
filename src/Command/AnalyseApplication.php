@@ -8,6 +8,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\BytesHelper;
@@ -29,6 +30,7 @@ use function sprintf;
 /**
  * @phpstan-import-type CollectorData from CollectedData
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ * @phpstan-import-type ValueDependencies from ValueDependencyCollector
  */
 #[AutowiredService]
 final class AnalyseApplication
@@ -120,6 +122,7 @@ final class AnalyseApplication
 					collectedData: $intermediateAnalyserResult->getCollectedData(),
 					dependencies: $intermediateAnalyserResult->getDependencies(),
 					usedTraitDependencies: $intermediateAnalyserResult->getUsedTraitDependencies(),
+					valueDependencies: $intermediateAnalyserResult->getValueDependencies(),
 					packageDependencies: $intermediateAnalyserResult->getPackageDependencies(),
 					exportedNodes: $intermediateAnalyserResult->getExportedNodes(),
 					reachedInternalErrorsCountLimit: $intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
@@ -226,6 +229,7 @@ final class AnalyseApplication
 				collectedData: [],
 				dependencies: [],
 				usedTraitDependencies: [],
+				valueDependencies: ['values' => [], 'dependents' => []],
 				packageDependencies: [],
 				exportedNodes: [],
 				reachedInternalErrorsCountLimit: false,
@@ -314,6 +318,10 @@ final class AnalyseApplication
 		if ($analyserResult->getUsedTraitDependencies() !== null) {
 			$usedTraitDependencies = $this->switchTmpFileInDependencies($analyserResult->getUsedTraitDependencies(), $insteadOfFile, $tmpFile);
 		}
+		$valueDependencies = null;
+		if ($analyserResult->getValueDependencies() !== null) {
+			$valueDependencies = $this->switchTmpFileInValueDependencies($analyserResult->getValueDependencies(), $insteadOfFile, $tmpFile);
+		}
 		$packageDependencies = null;
 		if ($analyserResult->getPackageDependencies() !== null) {
 			$packageDependencies = $this->switchTmpFileInDependencies($analyserResult->getPackageDependencies(), $insteadOfFile, $tmpFile);
@@ -339,6 +347,7 @@ final class AnalyseApplication
 			collectedData: $newCollectedData,
 			dependencies: $dependencies,
 			usedTraitDependencies: $usedTraitDependencies,
+			valueDependencies: $valueDependencies,
 			packageDependencies: $packageDependencies,
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
@@ -375,6 +384,20 @@ final class AnalyseApplication
 		}
 
 		return $newDependencies;
+	}
+
+	/**
+	 * @param ValueDependencies $dependencies
+	 * @return ValueDependencies
+	 */
+	private function switchTmpFileInValueDependencies(array $dependencies, string $insteadOfFile, string $tmpFile): array
+	{
+		$dependents = [];
+		foreach ($dependencies['dependents'] as $dependentFile => $ids) {
+			$dependents[$dependentFile === $tmpFile ? $insteadOfFile : $dependentFile] = $ids;
+		}
+
+		return ['values' => $dependencies['values'], 'dependents' => $dependents];
 	}
 
 	/**

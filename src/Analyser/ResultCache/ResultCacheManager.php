@@ -6,6 +6,7 @@ use Nette\Neon\Neon;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
@@ -87,6 +88,7 @@ use const SEEK_CUR;
 
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ * @phpstan-import-type ValueDependencies from ValueDependencyCollector
  * @phpstan-import-type CollectorData from CollectedData
  */
 #[GenerateFactory(interface: ResultCacheManagerFactory::class)]
@@ -103,7 +105,7 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v21-exportedNodesIndex';
+	private const CACHE_VERSION = 'v22-valueDependencies';
 
 	/**
 	 * The recorded hash of a dependency that does not exist. A rule can depend on a path rather than on
@@ -224,6 +226,7 @@ final class ResultCacheManager
 		private PhpVersion $phpVersion,
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
 		private FileStatSignatures $fileStatSignatures,
+		private ValueDependencyCollector $valueDependencyCollector,
 	)
 	{
 	}
@@ -276,6 +279,7 @@ final class ResultCacheManager
 			collectedData: [],
 			dependencies: [],
 			usedTraitDependencies: [],
+			valueDependencies: [],
 			packageDependencies: [],
 			exportedNodes: [],
 			cachedExportedNodes: CachedExportedNodes::createEmpty(),
@@ -390,6 +394,19 @@ final class ResultCacheManager
 		$currentFileHashes = $this->hashAnalysedFiles($analysedFileStats, $data['dependencies']);
 		$fileStatSignaturesChanged = $this->fileStatSignaturesDiffer($data['dependencies']);
 		$data['packageDependencies'] = $transformer->absolutizeFileKeyed($data['packageDependencies'] ?? []);
+		try {
+			$cachedValueDependencies = $this->decodeValueDependencies($data['valueDependencies'] ?? ['paths' => [], 'entries' => []], $transformer);
+		} catch (Throwable $e) {
+			@unlink($cacheFilePath);
+
+			return $this->fullAnalysis(
+				sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()),
+				$allAnalysedFiles,
+				$this->getMeta($allAnalysedFiles, $projectConfigArray),
+				$currentFileHashes,
+				$output,
+			);
+		}
 
 		$errorsCallback = $data['errorsCallback'];
 		$data['errorsCallback'] = static fn (): array => $transformer->absolutizeErrors($errorsCallback());
@@ -963,6 +980,35 @@ final class ResultCacheManager
 			);
 		}
 
+		// The values declared through DependencyEmitter::valueDependency() - see ValueDependencyCollector.
+		// The files depending on one that is different now are re-analysed, and so are the ones
+		// depending on one whose extension is no longer registered, which is then forgotten.
+		$allAnalysedFilesSet = array_fill_keys($allAnalysedFiles, true);
+		$valueDependenciesToReturn = [];
+		$valueDependenciesChanged = false;
+		foreach ($cachedValueDependencies as $cachedValueDependency) {
+			$extension = $this->valueDependencyCollector->getExtension($cachedValueDependency['extensionClass']);
+			$key = $extension !== null ? $extension->keyFromResultCache($cachedValueDependency['storedKey']) : null;
+			$currentValue = $extension !== null && $key !== null ? $extension->getValue($key) : null;
+			if ($currentValue !== $cachedValueDependency['value']) {
+				$valueDependenciesChanged = true;
+				foreach ($this->getValueDependentFilesToAnalyse($cachedValueDependency['analysis'], $cachedValueDependency['declarations'], $invertedDependencies, $allAnalysedFilesSet) as $valueDependentFile) {
+					$filesToAnalyse[] = $valueDependentFile;
+				}
+			}
+			if ($key === null || $currentValue === null) {
+				continue;
+			}
+
+			$valueDependenciesToReturn[ValueDependencyCollector::getId($cachedValueDependency['extensionClass'], $key)] = [
+				$cachedValueDependency['extensionClass'],
+				$key,
+				$currentValue,
+				$cachedValueDependency['analysis'],
+				$cachedValueDependency['declarations'],
+			];
+		}
+
 		if ($newFileAppeared || $notAnalysedFileSymbolsChanged) {
 			foreach (array_keys($filteredErrors) as $fileWithError) {
 				$filesToAnalyse[] = $fileWithError;
@@ -1000,7 +1046,7 @@ final class ResultCacheManager
 			));
 		}
 
-		$this->restoredCacheUnchanged = !$metaDifferent && !$dependencyFilesChanged && !$fileStatSignaturesChanged;
+		$this->restoredCacheUnchanged = !$metaDifferent && !$dependencyFilesChanged && !$fileStatSignaturesChanged && !$valueDependenciesChanged;
 		$this->restoredStubFiles = $cachedStubFiles;
 
 		return new ResultCache(
@@ -1016,6 +1062,7 @@ final class ResultCacheManager
 			collectedData: $filteredCollectedData,
 			dependencies: $invertedDependenciesToReturn,
 			usedTraitDependencies: $invertedUsedTraitDependenciesToReturn,
+			valueDependencies: $valueDependenciesToReturn,
 			packageDependencies: $packageDependencies,
 			exportedNodes: $filteredExportedNodes,
 			cachedExportedNodes: $cachedExportedNodes->only($keptCachedExportedNodes),
@@ -1167,7 +1214,7 @@ final class ResultCacheManager
 			$projectConfigArray = $this->getPathTransformer()->relativizeProjectConfig($projectConfigArray);
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
-		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $packageDependencies, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $valueDependencies, ?array $packageDependencies, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -1189,6 +1236,12 @@ final class ResultCacheManager
 			if ($packageDependencies === null) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because of error in package dependencies.');
+				}
+				return false;
+			}
+			if ($valueDependencies === null) {
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted('Result cache was not saved because of error in value dependencies.');
 				}
 				return false;
 			}
@@ -1245,7 +1298,7 @@ final class ResultCacheManager
 				return true;
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta, $stubFiles);
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta, $stubFiles);
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -1261,7 +1314,7 @@ final class ResultCacheManager
 				if ($analyserResult->getDependencies() !== null) {
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
-				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles);
+				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getValueDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles);
 			} else {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -1276,6 +1329,7 @@ final class ResultCacheManager
 		$collectedDataByFile = $this->mergeCollectedData($resultCache, $freshCollectedDataByFile);
 		$dependencies = $this->mergeDependencies($resultCache->getDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getDependencies());
 		$usedTraitDependencies = $this->mergeDependencies($resultCache->getUsedTraitDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getUsedTraitDependencies());
+		$valueDependencies = $this->mergeValueDependencies($resultCache->getValueDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getValueDependencies());
 		$packageDependencies = $this->mergePackageDependencies($resultCache->getPackageDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getPackageDependencies());
 		// the re-analysed files take their fresh nodes, what is left of the cached ones stays undecoded
 		$cachedExportedNodes = $resultCache->getCachedExportedNodes()->without(array_fill_keys($resultCache->getFilesToAnalyse(), true));
@@ -1305,7 +1359,7 @@ final class ResultCacheManager
 					$projectExtensionFiles[$file] = [$hash, true, $className];
 				}
 			}
-			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles);
+			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles);
 		}
 
 		$flatErrors = [];
@@ -1333,6 +1387,7 @@ final class ResultCacheManager
 			collectedData: $collectedDataByFile,
 			dependencies: $dependencies,
 			usedTraitDependencies: $usedTraitDependencies,
+			valueDependencies: $valueDependencies,
 			packageDependencies: $packageDependencies,
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
@@ -1455,6 +1510,193 @@ final class ResultCacheManager
 	}
 
 	/**
+	 * The fresh "analysis" dependents of a re-analysed file replace its cached ones, like in
+	 * mergeDependencies(). The "declarations" ones are kept: the file they are about may have been
+	 * inferred during the analysis of another file that was not re-analysed (see
+	 * ValueDependencyCollector), and one left over only means a file re-analysed needlessly. The
+	 * fresh values are the ones the analysis saw.
+	 *
+	 * @param array<string, array{string, string, string, list<string>, list<string>}> $resultCacheValueDependencies
+	 * @param string[] $filesToAnalyse
+	 * @param ValueDependencies|null $freshValueDependencies
+	 * @return ValueDependencies|null
+	 */
+	private function mergeValueDependencies(array $resultCacheValueDependencies, array $filesToAnalyse, ?array $freshValueDependencies): ?array
+	{
+		if ($freshValueDependencies === null) {
+			return null;
+		}
+
+		$values = [];
+		$dependents = [];
+		foreach ($resultCacheValueDependencies as $id => [$extensionClass, $key, $value, $analysis, $declarations]) {
+			$values[$id] = [$extensionClass, $key, $value];
+			foreach (['analysis' => $analysis, 'declarations' => $declarations] as $kind => $dependentFiles) {
+				foreach ($dependentFiles as $dependentFile) {
+					$dependents[$dependentFile] ??= ['analysis' => [], 'declarations' => []];
+					$dependents[$dependentFile][$kind][] = $id;
+				}
+			}
+		}
+
+		foreach ($filesToAnalyse as $file) {
+			$files = [$file];
+			if (array_key_exists($file, $this->fileReplacements)) {
+				$files[] = $this->fileReplacements[$file];
+			}
+			foreach ($files as $reanalysedFile) {
+				if (!array_key_exists($reanalysedFile, $dependents)) {
+					continue;
+				}
+
+				$dependents[$reanalysedFile]['analysis'] = [];
+			}
+		}
+
+		$merged = ValueDependencyCollector::merge(['values' => [], 'dependents' => $dependents], $freshValueDependencies);
+		$merged['values'] = $freshValueDependencies['values'] + $values;
+
+		return $merged;
+	}
+
+	/**
+	 * @param list<string> $analysisDependentFiles
+	 * @param list<string> $declarationDependentFiles
+	 * @param array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}> $invertedDependencies
+	 * @param array<string, true> $allAnalysedFiles
+	 * @return list<string>
+	 */
+	private function getValueDependentFilesToAnalyse(array $analysisDependentFiles, array $declarationDependentFiles, array $invertedDependencies, array $allAnalysedFiles): array
+	{
+		$files = [];
+		foreach ($analysisDependentFiles as $file) {
+			if (!array_key_exists($file, $allAnalysedFiles)) {
+				continue;
+			}
+			$files[] = $file;
+		}
+
+		// What these files declare was derived from the value, and the files depending on them see it
+		// without having asked for the value themselves.
+		foreach ($declarationDependentFiles as $declaringFile) {
+			if (array_key_exists($declaringFile, $allAnalysedFiles)) {
+				$files[] = $declaringFile;
+			}
+
+			$declaringFileData = $invertedDependencies[$declaringFile] ?? null;
+			if ($declaringFileData === null) {
+				continue;
+			}
+
+			foreach (array_merge($declaringFileData['dependentFiles'], $declaringFileData['usedTraitDependentFiles'] ?? []) as $file) {
+				if (!is_file($file)) {
+					continue;
+				}
+				$files[] = $file;
+			}
+		}
+
+		return $files;
+	}
+
+	/**
+	 * One entry for each value, with the files depending on it in a table of paths like the
+	 * dependency graph's, and the key as its extension stores it.
+	 *
+	 * @param ValueDependencies $valueDependencies
+	 * @return array{paths: list<string>, entries: list<array{string, string, string, list<int>, list<int>}>}
+	 */
+	private function encodeValueDependencies(array $valueDependencies, ResultCachePathTransformer $transformer): array
+	{
+		$dependentsById = [];
+		foreach ($valueDependencies['dependents'] as $dependentFile => ['analysis' => $analysis, 'declarations' => $declarations]) {
+			foreach ($analysis as $id) {
+				$dependentsById[$id]['analysis'][] = $dependentFile;
+			}
+			foreach ($declarations as $id) {
+				$dependentsById[$id]['declarations'][] = $dependentFile;
+			}
+		}
+		ksort($dependentsById);
+
+		$ids = [];
+		$paths = [];
+		$entries = [];
+		foreach ($dependentsById as $id => $dependents) {
+			if (!array_key_exists($id, $valueDependencies['values'])) {
+				continue;
+			}
+
+			[$extensionClass, $key, $value] = $valueDependencies['values'][$id];
+			$extension = $this->valueDependencyCollector->getExtension($extensionClass);
+			if ($extension === null) {
+				continue;
+			}
+
+			$dependentIds = [];
+			foreach (['analysis', 'declarations'] as $kind) {
+				$pathIds = [];
+				$dependentFiles = array_values(array_unique($dependents[$kind] ?? []));
+				sort($dependentFiles);
+				foreach ($dependentFiles as $dependentFile) {
+					if (!isset($ids[$dependentFile])) {
+						$ids[$dependentFile] = count($paths);
+						$paths[] = $dependentFile;
+					}
+					$pathIds[] = $ids[$dependentFile];
+				}
+				$dependentIds[$kind] = $pathIds;
+			}
+
+			$entries[] = [$extensionClass, $extension->keyToResultCache($key), $value, $dependentIds['analysis'], $dependentIds['declarations']];
+		}
+
+		$relativePaths = [];
+		foreach ($paths as $path) {
+			$relativePaths[] = $transformer->relativizePath($path);
+		}
+
+		return ['paths' => $relativePaths, 'entries' => $entries];
+	}
+
+	/**
+	 * @param mixed $encoded
+	 * @return list<array{extensionClass: string, storedKey: string, value: string, analysis: list<string>, declarations: list<string>}>
+	 */
+	private function decodeValueDependencies($encoded, ResultCachePathTransformer $transformer): array
+	{
+		if (!is_array($encoded) || !is_array($encoded['paths'] ?? null) || !is_array($encoded['entries'] ?? null)) {
+			throw new RuntimeException('The value dependencies are malformed.');
+		}
+
+		$paths = [];
+		foreach ($encoded['paths'] as $path) {
+			$paths[] = $transformer->absolutizePath($path);
+		}
+
+		$valueDependencies = [];
+		foreach ($encoded['entries'] as [$extensionClass, $storedKey, $value, $analysisIds, $declarationIds]) {
+			$analysis = [];
+			foreach ($analysisIds as $pathId) {
+				$analysis[] = $paths[$pathId];
+			}
+			$declarations = [];
+			foreach ($declarationIds as $pathId) {
+				$declarations[] = $paths[$pathId];
+			}
+			$valueDependencies[] = [
+				'extensionClass' => $extensionClass,
+				'storedKey' => $storedKey,
+				'value' => $value,
+				'analysis' => $analysis,
+				'declarations' => $declarations,
+			];
+		}
+
+		return $valueDependencies;
+	}
+
+	/**
 	 * @param array<string, array<RootExportedNode>> $freshExportedNodes
 	 * @return array<string, array<RootExportedNode>>
 	 */
@@ -1569,6 +1811,7 @@ final class ResultCacheManager
 	 * @param CollectorData $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<string>> $usedTraitDependencies
+	 * @param ValueDependencies $valueDependencies
 	 * @param array<string, array<string>> $packageDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
@@ -1585,6 +1828,7 @@ final class ResultCacheManager
 		array $collectedData,
 		array $dependencies,
 		array $usedTraitDependencies,
+		array $valueDependencies,
 		array $packageDependencies,
 		array $exportedNodes,
 		CachedExportedNodes $cachedExportedNodes,
@@ -1672,6 +1916,7 @@ final class ResultCacheManager
 		$unmatchedLineIgnores = $transformer->relativizeCompoundKeyed($unmatchedLineIgnores);
 		$collectedData = $transformer->relativizeCollectedData($collectedData);
 		$dependencyGraph = $this->encodeDependencyGraph($invertedDependencies, $transformer);
+		$encodedValueDependencies = $this->encodeValueDependencies($valueDependencies, $transformer);
 		unset($invertedDependencies);
 		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
 		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
@@ -1715,6 +1960,7 @@ final class ResultCacheManager
 			// cacheVersion check that makes it discard the file, and fails on a missing section.
 			$this->writeArrayFrame($handle, $file, 'dependencies', []);
 			$this->writeValueFrame($handle, $file, 'dependencyGraph', $dependencyGraph);
+			$this->writeValueFrame($handle, $file, 'valueDependencies', $encodedValueDependencies);
 			$this->writeArrayFrame($handle, $file, 'packageDependencies', $packageDependencies);
 			$this->writeExportedNodes($handle, $file, $exportedNodes, $cachedExportedNodes, $transformer);
 			fclose($handle);

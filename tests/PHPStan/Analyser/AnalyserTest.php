@@ -872,6 +872,7 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
 			false,
+			$container->getByType(ValueDependencyCollector::class),
 		);
 
 		return new Analyser(

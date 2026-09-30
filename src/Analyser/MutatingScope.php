@@ -150,7 +150,7 @@ use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MutatingScope.cpp')]
-class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
+class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter, DependencyEmitter
 {
 
 	private const COMPLEX_UNION_TYPE_MEMBER_LIMIT = 8;
@@ -6069,6 +6069,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$nodeCallback(new EmitCollectedDataNode($collectorType, $data), $this);
+	}
+
+	public function valueDependency(string $extensionClass, string $key): void
+	{
+		// a scope without a node callback is outside the walk of the analysed file - see ValueDependencyCollector
+		$this->container->getByType(ValueDependencyCollector::class)->record($extensionClass, $key, $this, $this->nodeCallback !== null);
 	}
 
 }

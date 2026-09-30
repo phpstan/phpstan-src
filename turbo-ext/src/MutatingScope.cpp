@@ -10582,6 +10582,29 @@ public:
 		return !result.isUndef();
 	}
 
+	/* $this->container->getByType(ValueDependencyCollector::class)->record($extensionClass, $key,
+	 * $this, $this->nodeCallback !== null) */
+	bool valueDependency(zend_string *extensionClass, zend_string *key)
+	{
+		zv::Ref nodeCallback = slot(PT_MS_PROP_NODE_CALLBACK);
+		if (UNEXPECTED(nodeCallback.isUndef())) {
+			(void) uninitializedProperty("nodeCallback");
+			return false;
+		}
+		zval insideWalk;
+		ZVAL_BOOL(&insideWalk, !nodeCallback.isNull());
+		zv::Val collector = containerGetByType(PT_LC("PHPStan\\Analyser\\ValueDependencyCollector"));
+		if (UNEXPECTED(collector.isUndef())) return false;
+		zend_object *collectorObject = requireObject(collector, "record");
+		if (UNEXPECTED(collectorObject == NULL)) return false;
+		zval extensionClassZv, keyZv;
+		ZVAL_STR(&extensionClassZv, extensionClass);
+		ZVAL_STR(&keyZv, key);
+		zv::Args args{&extensionClassZv, &keyZv, self, &insideWalk};
+		zv::Val result = pt_type_call(collectorObject, PT_LC("record"), 4, args);
+		return !result.isUndef();
+	}
+
 	static void throwNodeCallbackMissing()
 	{
 		zend_class_entry *ce = pt_class(PT_CLASS_SHOULD_NOT_HAPPEN);
@@ -13347,6 +13370,12 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		zval *data;
 		if (!zp::parse<zp::Str, zp::Zval>(execute_data, collectorType, data)) RETURN_THROWS();
 		if (UNEXPECTED(!PT_THIS.emitCollectedData(collectorType, data))) RETURN_THROWS();
+	});
+
+	cls.method(sigs::valueDependency, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *extensionClass, *key;
+		if (!zp::parse<zp::Str, zp::Str>(execute_data, extensionClass, key)) RETURN_THROWS();
+		if (UNEXPECTED(!PT_THIS.valueDependency(extensionClass, key))) RETURN_THROWS();
 	});
 
 	/* }}} */

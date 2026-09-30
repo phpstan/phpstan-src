@@ -1,0 +1,28 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- src
+	inferPrivatePropertyTypeFromConstructor: true
+
+services:
+	-
+		class: ResultCacheE2EValueDependency\HasServiceValueExtension
+		tags:
+			- phpstan.resultCacheValueExtension
+	-
+		class: ResultCacheE2EValueDependency\ParameterValueExtension
+		tags:
+			- phpstan.resultCacheValueExtension
+	-
+		class: ResultCacheE2EValueDependency\ServiceRule
+		tags:
+			- phpstan.rules.rule
+	-
+		class: ResultCacheE2EValueDependency\ServiceReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+	-
+		class: ResultCacheE2EValueDependency\ParameterReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension

@@ -4,6 +4,7 @@ namespace PHPStan\Testing;
 
 use PhpParser\Node;
 use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\DependencyEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\DirectRegistry;
@@ -38,7 +39,7 @@ final class CompositeRule implements Rule
 		return Node::class;
 	}
 
-	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter&DependencyEmitter $scope): array
 	{
 		$errors = [];
 

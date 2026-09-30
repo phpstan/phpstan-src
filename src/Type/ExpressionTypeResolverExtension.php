@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\DependencyEmitter;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\ExtensionInterface;
@@ -26,6 +27,6 @@ use PHPStan\DependencyInjection\ExtensionInterface;
 interface ExpressionTypeResolverExtension
 {
 
-	public function getType(Expr $expr, Scope $scope): ?Type;
+	public function getType(Expr $expr, Scope&DependencyEmitter $scope): ?Type;
 
 }

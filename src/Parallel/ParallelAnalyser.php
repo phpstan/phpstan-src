@@ -9,6 +9,7 @@ use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Cache\ArenaCache;
 use PHPStan\Command\CommandHelper;
 use PHPStan\Command\Output;
@@ -122,6 +123,7 @@ final class ParallelAnalyser
 		$collectedData = [];
 		$dependencies = [];
 		$usedTraitDependencies = [];
+		$valueDependencies = ['values' => [], 'dependents' => []];
 		$packageDependencies = [];
 		$reachedInternalErrorsCountLimit = false;
 		$exportedNodes = [];
@@ -134,7 +136,7 @@ final class ParallelAnalyser
 		$useFork = $this->forkParallelChecker->isSupported();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
 			if ($arenaName !== null) {
 				ArenaCache::destroy();
 			}
@@ -161,6 +163,7 @@ final class ParallelAnalyser
 				collectedData: $collectedData,
 				dependencies: $internalErrorsCount === 0 ? $dependencies : null,
 				usedTraitDependencies: $internalErrorsCount === 0 ? $usedTraitDependencies : null,
+				valueDependencies: $internalErrorsCount === 0 ? $valueDependencies : null,
 				packageDependencies: $internalErrorsCount === 0 ? $packageDependencies : null,
 				exportedNodes: $exportedNodes,
 				reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
@@ -284,7 +287,7 @@ final class ParallelAnalyser
 				$insteadOfFile,
 				$input,
 			);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
 					$fileErrors[] = Error::decode($jsonError);
@@ -341,6 +344,10 @@ final class ParallelAnalyser
 				foreach ($json['usedTraitDependencies'] as $file => $fileUsedTraitDependencies) {
 					$usedTraitDependencies[$file] = $fileUsedTraitDependencies;
 				}
+
+				/** @var array{values: array<string, array{string, string, string}>, dependents: array<string, array{analysis: list<string>, declarations: list<string>}>} $workerValueDependencies */
+				$workerValueDependencies = $json['valueDependencies'];
+				$valueDependencies = ValueDependencyCollector::merge($valueDependencies, $workerValueDependencies);
 
 				/**
 				 * @var string $file

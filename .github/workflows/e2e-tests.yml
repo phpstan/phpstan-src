@@ -443,6 +443,71 @@ jobs:
               ../bashunit -a equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
               ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
           - script: |
+              cd e2e/result-cache-value-dependency
+              composer install
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'UsesCache.php:7:Service cache does not exist.' "$OUTPUT"
+              ../bashunit -a contains "UsesLocale.php:10:Function ResultCacheE2EValueDependency\usesLocale() should return 'none' but returns 'cs'." "$OUTPUT"
+              ../bashunit -a contains "UsesLocaleToo.php:10:Function ResultCacheE2EValueDependency\usesLocaleToo() should return 'none' but returns 'cs'." "$OUTPUT"
+              ../bashunit -a contains 'Holder.php:17:Method ResultCacheE2EValueDependency\Holder::isDebug() should return int but returns string.' "$OUTPUT"
+              ../bashunit -a contains 'UsesHolder.php:9:Function ResultCacheE2EValueDependency\usesHolder() should return int but returns string.' "$OUTPUT"
+              ../bashunit -a not_contains 'UsesMailer.php' "$OUTPUT"
+              # The extensions read container.json, which the result cache knows nothing about. A rule and a
+              # dynamic return type extension both declare the service they ask about - it is recorded once.
+              # A change of its value re-analyses only the file asking about it.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["services"]["mailer"] = "ResultCacheE2EValueDependency\\Logger"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'UsesMailer.php:7:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
+              # Values nobody asked about do not re-analyse anything.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["timezone"] = "UTC"; $c["services"]["router"] = "ResultCacheE2EValueDependency\\Logger"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              # A value that was missing is watched too.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["services"]["cache"] = "ResultCacheE2EValueDependency\\Logger"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Service cache does not exist.' "$OUTPUT"
+              # Every file asking about the same value is re-analysed.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["locale"] = "en"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains "UsesLocale.php:10:Function ResultCacheE2EValueDependency\usesLocale() should return 'none' but returns 'en'." "$OUTPUT"
+              ../bashunit -a contains "UsesLocaleToo.php:10:Function ResultCacheE2EValueDependency\usesLocaleToo() should return 'none' but returns 'en'." "$OUTPUT"
+              # Scope::getFile() is not the file to re-analyse when the extension runs outside the walk of the
+              # analysed file: the type of Holder::$debug is inferred from the constructor on a scope of
+              # src/Holder.php, whenever the property is first needed, and it is cached. So it is what
+              # src/Holder.php declares that depends on the value: a change of it re-analyses src/Holder.php and
+              # the files depending on it.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["debug"] = "1"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Holder.php' "$OUTPUT"
+              # Inside a trait, the value is asked about in the analysis of the class using it - that's the
+              # file re-analysed, and the error is reported in the trait.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["services"]["logger"] = "ResultCacheE2EValueDependency\\Mailer"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'UsesLogger.php:7:Call to an undefined method ResultCacheE2EValueDependency\Mailer::log().' "$OUTPUT"
+              ../bashunit -a contains 'LoggerTrait.php (in context of class ResultCacheE2EValueDependency\UsesLoggerTrait):10:Call to an undefined method ResultCacheE2EValueDependency\Mailer::log().' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-scanned-trait
               ../../bin/phpstan analyse
               # A trait living in a scanned file is tracked the same way, including through the

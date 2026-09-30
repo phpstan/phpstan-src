@@ -70,6 +70,7 @@ final class FileAnalyser
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		#[AutowiredParameter]
 		private bool $reportIgnoresWithoutComments,
+		private ValueDependencyCollector $valueDependencyCollector,
 	)
 	{
 	}
@@ -104,6 +105,7 @@ final class FileAnalyser
 		$exportedNodes = [];
 		$linesToIgnore = [];
 		$unmatchedLineIgnores = [];
+		$this->valueDependencyCollector->startFile($file);
 		if (is_file($file)) {
 			try {
 				$this->collectErrors($analysedFiles);
@@ -255,6 +257,7 @@ final class FileAnalyser
 			$fileCollectedData,
 			array_values(array_unique($fileDependencies)),
 			array_values(array_unique($usedTraitFileDependencies)),
+			$this->valueDependencyCollector->finishFile(),
 			array_values(array_unique($filePackageDependencies)),
 			$exportedNodes,
 			$linesToIgnore,

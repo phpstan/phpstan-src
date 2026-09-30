@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\DependencyEmitter;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\ExtensionInterface;
@@ -31,6 +32,6 @@ interface DynamicFunctionReturnTypeExtension
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool;
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type;
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope&DependencyEmitter $scope): ?Type;
 
 }

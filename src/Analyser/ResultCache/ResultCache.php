@@ -24,6 +24,7 @@ final class ResultCache
 	 * @param CollectorData $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<string>> $usedTraitDependencies
+	 * @param array<string, array{string, string, string, list<string>, list<string>}> $valueDependencies id => [extension class, key, current value, analysis dependents, declarations dependents] - see ValueDependencyCollector
 	 * @param array<string, array<string>> $packageDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes the decoded ones - see $cachedExportedNodes for the rest
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
@@ -42,6 +43,7 @@ final class ResultCache
 		private array $collectedData,
 		private array $dependencies,
 		private array $usedTraitDependencies,
+		private array $valueDependencies,
 		private array $packageDependencies,
 		private array $exportedNodes,
 		private CachedExportedNodes $cachedExportedNodes,
@@ -140,6 +142,14 @@ final class ResultCache
 	public function getUsedTraitDependencies(): array
 	{
 		return $this->usedTraitDependencies;
+	}
+
+	/**
+	 * @return array<string, array{string, string, string, list<string>, list<string>}>
+	 */
+	public function getValueDependencies(): array
+	{
+		return $this->valueDependencies;
 	}
 
 	/**

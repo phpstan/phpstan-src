@@ -73,6 +73,7 @@ final class Analyser
 		$reachedInternalErrorsCountLimit = false;
 		$dependencies = [];
 		$usedTraitDependencies = [];
+		$valueDependencies = ['values' => [], 'dependents' => []];
 		$packageDependencies = [];
 		$exportedNodes = [];
 		$allProcessedFiles = [];
@@ -101,6 +102,7 @@ final class Analyser
 				$collectedData = array_merge($collectedData, $fileAnalyserResult->getCollectedData());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
 				$usedTraitDependencies[$file] = $fileAnalyserResult->getUsedTraitDependencies();
+				$valueDependencies = ValueDependencyCollector::merge($valueDependencies, $fileAnalyserResult->getValueDependencies());
 				$packageDependencies[$file] = $fileAnalyserResult->getPackageDependencies();
 
 				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
@@ -143,6 +145,7 @@ final class Analyser
 			collectedData: $collectedData,
 			dependencies: $internalErrorsCount === 0 ? $dependencies : null,
 			usedTraitDependencies: $internalErrorsCount === 0 ? $usedTraitDependencies : null,
+			valueDependencies: $internalErrorsCount === 0 ? $valueDependencies : null,
 			packageDependencies: $internalErrorsCount === 0 ? $packageDependencies : null,
 			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,

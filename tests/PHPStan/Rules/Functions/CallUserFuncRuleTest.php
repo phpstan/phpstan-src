@@ -197,6 +197,10 @@ class CallUserFuncRuleTest extends RuleTestCase
 				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of callable passed to call_user_func().',
 				9,
 			],
+			[
+				'Integer 4096 does not correspond to constants allowed for parameter #2 $flags of callable passed to call_user_func().',
+				12,
+			],
 		]);
 	}
 

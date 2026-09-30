@@ -4179,6 +4179,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Constants PDO::FETCH_ASSOC, PDO::FETCH_NUM cannot be combined for parameter $mode of method PDOStatement::setFetchMode().',
 				31,
 			],
+			[
+				'Integer 4 does not correspond to constants allowed for parameter #2 $flags of method finfo::file().',
+				34,
+			],
 		]);
 	}
 

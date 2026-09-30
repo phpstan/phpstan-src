@@ -180,4 +180,23 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15295(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15295.php'], [
+			[
+				"Array has 2 duplicate keys with value 'start' ('start', 'start').",
+				47,
+			],
+			[
+				"Array has 2 duplicate keys with value 'start' ('start', 'start').",
+				53,
+			],
+			[
+				'Array has 2 duplicate keys with value 0 (0, 0).',
+				59,
+			],
+		]);
+	}
+
 }

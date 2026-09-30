@@ -83,3 +83,14 @@ function repeatedPositiveZeroIsNotReportedEither(): void
 	$x = 0.0;
 	sink($x);
 }
+
+// https://3v4l.org/GiSbY
+function h(): void {
+	$f = -0.0;
+	var_dump($f === 0.0); // bool(true)
+	echo $f, "\n";        // -0
+	if ($f === 0.0) {
+		$f = 0.0;         // not redundant: turns -0.0 into 0.0
+	}
+	echo $f, "\n";        // 0
+}

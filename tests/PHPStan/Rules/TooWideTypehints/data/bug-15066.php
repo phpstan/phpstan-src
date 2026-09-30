@@ -63,3 +63,10 @@ function variadicRebindOnlyString(string|null &...$refs): void
 {
 	$refs = ['ok'];
 }
+
+// An iterable that is not an array still has an element type, but rebinding to it discards the
+// references just the same, so it stays silent too.
+function variadicRebindTraversable(string|null &...$refs): void
+{
+	$refs = new \ArrayIterator(['ok']);
+}

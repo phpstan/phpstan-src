@@ -164,7 +164,11 @@ final class DependencyResolver
 			$this->collectNodeDependencies($node, $scope, $dependenciesReflections, $dependenciesFilePaths);
 		}
 
+		// A function declared inside another function is not supported (function.inner), and the
+		// restore does not look inside function bodies for exported nodes (ExportedNodeVisitor):
+		// exporting it here would make every edit of its file look like a symbol disappeared.
 		$exportedNode = ($nodeProfile & self::PROFILE_EXPORT) !== 0
+			&& !($node instanceof Node\Stmt\Function_ && $scope->getFunction() !== null)
 			? $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNamespaceUses())
 			: null;
 

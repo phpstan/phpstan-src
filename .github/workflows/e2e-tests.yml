@@ -429,6 +429,20 @@ jobs:
               ../bashunit -a not_contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
               ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EScannedExportedNodes\Foo::doFoo() should return int but returns string.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-inner-function
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Outer.php:8:Inner named functions are not supported by PHPStan.' "$OUTPUT"
+              ../bashunit -a contains 'Other.php:10:Method ResultCacheE2EInnerFunction\Other::doOther() should return int but returns string.' "$OUTPUT"
+              # A function declared inside another function is not an exported node, so an edit of the
+              # file declaring it looks like no symbol appeared or disappeared: only the file itself is
+              # re-analysed, not every file with errors.
+              patch -b src/Outer.php < body.patch
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+          - script: |
               cd e2e/result-cache-scanned-trait
               ../../bin/phpstan analyse
               # A trait living in a scanned file is tracked the same way, including through the

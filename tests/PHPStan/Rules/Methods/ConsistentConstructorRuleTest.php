@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Classes\ConsistentConstructorHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function sprintf;
 
 /** @extends RuleTestCase<ConsistentConstructorRule> */
@@ -58,6 +59,17 @@ class ConsistentConstructorRuleTest extends RuleTestCase
 			[
 				'Private method Bug12137\ChildClass::__construct() overriding protected method Bug12137\ParentClass::__construct() should be protected or public.',
 				20,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14398(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14398-consistent-constructor.php'], [
+			[
+				'Protected method Bug14398ConsistentConstructor\ChildClass::__construct() overriding public method Bug14398ConsistentConstructor\ParentClass::__construct() should also be public.',
+				25,
 			],
 		]);
 	}

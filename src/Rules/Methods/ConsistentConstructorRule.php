@@ -50,7 +50,7 @@ final class ConsistentConstructorRule implements Rule
 
 		return array_merge(
 			$this->methodParameterComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method, $scope, true),
-			$this->methodVisibilityComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method),
+			$this->methodVisibilityComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method, $node->getOriginalNode()),
 		);
 	}
 

@@ -68,6 +68,11 @@ final class NullCoalesceRule implements Rule
 			return [];
 		}
 
+		$error = RuleErrorBuilder::message($error->getMessage())
+			->identifier($error->getIdentifier())
+			->line($this->getOperatorLine($node))
+			->build();
+
 		if ($scope->isInTrait()) {
 			// The error messages already distinguish the possible outcomes,
 			// so the contexts only need to be told apart by error/no error.
@@ -76,6 +81,24 @@ final class NullCoalesceRule implements Rule
 		}
 
 		return [$error];
+	}
+
+	/**
+	 * The AST does not keep the operator token. The left side ends on the operator's
+	 * line or above it, so its last line is the closest one that never overshoots.
+	 */
+	private function getOperatorLine(CoalesceExpressionNode $node): int
+	{
+		$originalExpr = $node->getOriginalExpr();
+		if ($originalExpr instanceof Node\Expr\BinaryOp\Coalesce) {
+			return $originalExpr->left->getEndLine();
+		}
+
+		if ($originalExpr instanceof Node\Expr\AssignOp\Coalesce) {
+			return $originalExpr->var->getEndLine();
+		}
+
+		return $node->getStartLine();
 	}
 
 	private function checkUnnecessaryNullCoalesce(CoalesceExpressionNode $node, Scope $scope): ?IdentifierRuleError

@@ -22,6 +22,7 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
+use PHPStan\File\FileStatSignatures;
 use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\ComposerPhpVersionFactory;
@@ -81,7 +82,6 @@ use function time;
 use function uniqid;
 use function unlink;
 use function unserialize;
-use const DIRECTORY_SEPARATOR;
 use const PHP_VERSION_ID;
 use const SEEK_CUR;
 
@@ -158,7 +158,7 @@ final class ResultCacheManager
 	 *
 	 * @var array<string, string>
 	 */
-	private array $fileStatSignatures = [];
+	private array $recordedFileStats = [];
 
 	private ?ResultCachePathTransformer $pathTransformer = null;
 
@@ -223,6 +223,7 @@ final class ResultCacheManager
 		private string $anchorDirectory,
 		private PhpVersion $phpVersion,
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
+		private FileStatSignatures $fileStatSignatures,
 	)
 	{
 	}
@@ -291,7 +292,7 @@ final class ResultCacheManager
 	{
 		$this->restoredCacheUnchanged = false;
 		$this->restoredStubFiles = [];
-		$this->fileStatSignatures = [];
+		$this->recordedFileStats = [];
 
 		$startTime = microtime(true);
 		$analysedFileStats = $this->statAnalysedFiles($allAnalysedFiles);
@@ -2511,8 +2512,8 @@ final class ResultCacheManager
 			'fileHash' => $currentFileHashes[$file] ?? $this->getDependencyFileHash($file),
 			'dependentFiles' => [],
 		];
-		if (array_key_exists($file, $currentFileHashes) && array_key_exists($file, $this->fileStatSignatures)) {
-			$entry['fileStat'] = $this->fileStatSignatures[$file];
+		if (array_key_exists($file, $currentFileHashes) && array_key_exists($file, $this->recordedFileStats)) {
+			$entry['fileStat'] = $this->recordedFileStats[$file];
 		}
 
 		return $entry;
@@ -2540,15 +2541,9 @@ final class ResultCacheManager
 
 	/**
 	 * Hashing every analysed file is the bulk of what a run with nothing to re-analyse costs - on
-	 * Drupal core almost a second for 11k files. A file whose size, mtime, ctime, inode and device
-	 * are what they were when it was last hashed has not been written to since, so the hash the
-	 * cache recorded then is reused - the check git makes against its index. ctime cannot be set
-	 * back the way mtime can (touch, an extracted archive), and a replaced file has a new inode.
-	 *
-	 * A signature is only recorded for a file last modified before the second its hash was taken:
-	 * the timestamps have a one-second granularity, so a file written again within that same second
-	 * would keep a matching signature over different contents. On Windows the ctime PHP reports is
-	 * the creation time, which a file rewritten in place keeps, so nothing is reused there.
+	 * Drupal core almost a second for 11k files. A file whose stat signature is what it was when it
+	 * was last hashed has not been written to since, so the hash the cache recorded then is reused
+	 * - see FileStatSignatures.
 	 *
 	 * @param array<string, array<int|string, int>> $analysedFileStats
 	 * @param array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>|null $cachedDependencies
@@ -2556,14 +2551,13 @@ final class ResultCacheManager
 	 */
 	private function hashAnalysedFiles(array $analysedFileStats, ?array $cachedDependencies): array
 	{
-		$now = time();
-		$trustSignatures = DIRECTORY_SEPARATOR === '/';
+		$signatures = $this->fileStatSignatures->begin();
 		$hashes = [];
 		foreach ($analysedFileStats as $file => $stat) {
-			$signature = sprintf('%d:%d:%d:%d:%d', $stat['size'], $stat['mtime'], $stat['ctime'], $stat['ino'], $stat['dev']);
+			$signature = $signatures->fromStat($stat);
 			$cachedEntry = $cachedDependencies[$file] ?? null;
 			if (
-				$trustSignatures
+				$signature !== null
 				&& $cachedEntry !== null
 				&& ($cachedEntry['fileStat'] ?? null) === $signature
 				&& $cachedEntry['fileHash'] !== self::MISSING_FILE_HASH
@@ -2576,11 +2570,11 @@ final class ResultCacheManager
 			}
 
 			$hashes[$file] = $hash;
-			if (!$trustSignatures || $stat['mtime'] >= $now || $stat['ctime'] >= $now) {
+			if ($signature === null) {
 				continue;
 			}
 
-			$this->fileStatSignatures[$file] = $signature;
+			$this->recordedFileStats[$file] = $signature;
 		}
 
 		return $hashes;
@@ -2594,7 +2588,7 @@ final class ResultCacheManager
 	 */
 	private function fileStatSignaturesDiffer(array $cachedDependencies): bool
 	{
-		foreach ($this->fileStatSignatures as $file => $signature) {
+		foreach ($this->recordedFileStats as $file => $signature) {
 			if (!array_key_exists($file, $cachedDependencies)) {
 				continue;
 			}

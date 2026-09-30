@@ -29,7 +29,6 @@ use function stat;
 use function str_contains;
 use function str_starts_with;
 use function substr;
-use function time;
 use function unlink;
 use function unserialize;
 use const DIRECTORY_SEPARATOR;
@@ -49,11 +48,8 @@ use const DIRECTORY_SEPARATOR;
  * Reading the directories is what a walk costs - on a tree the size of Drupal core (28k directories)
  * about a second, every run, in the main process and again in the worker that builds the symbol
  * index. What a directory contains changes only when an entry is added, removed or renamed in it,
- * and each of those updates the directory's mtime and ctime, so the listings are kept in tmpDir and
- * a directory whose stat still matches is not read again. ctime cannot be set back by touch or by
- * extracting an archive, and a directory modified in the very second its listing is read is not
- * kept: a second change within that same second would leave its stat unchanged. The same technique
- * is behind git's untracked cache.
+ * so the listings are kept in tmpDir and a directory whose stat signature still matches (see
+ * FileStatSignatures) is not read again. The same technique is behind git's untracked cache.
  *
  * The walk yields what Symfony Finder yields for files()->name()->followLinks() with its default
  * ignores - dot files and VCS directories left out, symlinks followed, files in readdir order - and
@@ -64,7 +60,7 @@ use const DIRECTORY_SEPARATOR;
 final class DirectoryWalker
 {
 
-	private const LISTINGS_FORMAT = 'directoryListings-v1';
+	private const LISTINGS_FORMAT = 'directoryListings-v2';
 
 	/** The directories Finder's ignoreVCS() leaves out; the ones starting with a dot are left out anyway. */
 	private const VCS_DIRECTORIES = ['_svn' => true, 'CVS' => true, '_darcs' => true];
@@ -73,12 +69,12 @@ final class DirectoryWalker
 	private array $cachedWalks = [];
 
 	/**
-	 * Directory path => [mtime, ctime, inode, entries]. The entries are the directory's names in
+	 * Directory path => [stat signature, entries]. The entries are the directory's names in
 	 * readdir order, each prefixed by d (directory), f (anything else - Finder's files() only leaves
 	 * out directories, so a broken symlink is a file too) or l (symlink - resolved on every walk,
 	 * because its target can change without this directory changing), joined by NUL.
 	 *
-	 * @var array<string, array{int, int, int, string}>|null
+	 * @var array<string, array{string, string}>|null
 	 */
 	private ?array $listings = null;
 
@@ -88,6 +84,7 @@ final class DirectoryWalker
 	 * @param string $tmpDir where the listings are kept between runs, nowhere when empty
 	 */
 	public function __construct(
+		private FileStatSignatures $fileStatSignatures,
 		#[AutowiredParameter]
 		private string $tmpDir = '',
 	)
@@ -155,7 +152,7 @@ final class DirectoryWalker
 
 		$files = [];
 		$visited = [];
-		if (!$this->walkDirectory($directory, Glob::toRegex('*.{' . implode(',', $fileExtensions) . '}'), time(), $files, $visited)) {
+		if (!$this->walkDirectory($directory, Glob::toRegex('*.{' . implode(',', $fileExtensions) . '}'), $this->fileStatSignatures->begin(), $files, $visited)) {
 			return null;
 		}
 
@@ -168,7 +165,7 @@ final class DirectoryWalker
 	 * @param list<string> $files
 	 * @param array<string, true> $visited
 	 */
-	private function walkDirectory(string $directory, string $pattern, int $now, array &$files, array &$visited): bool
+	private function walkDirectory(string $directory, string $pattern, FileStatSignatureReader $signatures, array &$files, array &$visited): bool
 	{
 		$stat = @stat($directory);
 		if ($stat === false) {
@@ -176,17 +173,18 @@ final class DirectoryWalker
 		}
 
 		$visited[$directory] = true;
+		$signature = $signatures->fromStat($stat);
 		$listing = $this->listings[$directory] ?? null;
-		if ($listing !== null && $listing[0] === $stat['mtime'] && $listing[1] === $stat['ctime'] && $listing[2] === $stat['ino']) {
-			$entries = $listing[3];
+		if ($signature !== null && $listing !== null && $listing[0] === $signature) {
+			$entries = $listing[1];
 		} else {
 			$entries = $this->readDirectory($directory);
 			if ($entries === null) {
 				return false;
 			}
 
-			if ($stat['mtime'] < $now && $stat['ctime'] < $now) {
-				$this->listings[$directory] = [$stat['mtime'], $stat['ctime'], $stat['ino'], $entries];
+			if ($signature !== null) {
+				$this->listings[$directory] = [$signature, $entries];
 			} else {
 				unset($this->listings[$directory]);
 			}
@@ -213,7 +211,7 @@ final class DirectoryWalker
 			}
 
 			if ($type === 'd') {
-				if (!$this->walkDirectory($path, $pattern, $now, $files, $visited)) {
+				if (!$this->walkDirectory($path, $pattern, $signatures, $files, $visited)) {
 					return false;
 				}
 
@@ -297,7 +295,7 @@ final class DirectoryWalker
 			return;
 		}
 
-		/** @var array<string, array{int, int, int, string}> $listings */
+		/** @var array<string, array{string, string}> $listings */
 		$listings = $data['listings'];
 		$this->listings = $listings;
 	}

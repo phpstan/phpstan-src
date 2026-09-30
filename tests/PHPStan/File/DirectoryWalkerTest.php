@@ -36,7 +36,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 
 	public function testWalkAlwaysSeesTheCurrentState(): void
 	{
-		$walker = new DirectoryWalker();
+		$walker = new DirectoryWalker(new FileStatSignatures());
 
 		$beforeAdding = $walker->walk($this->directory, ['php']);
 		file_put_contents($this->directory . '/second.php', '<?php');
@@ -48,7 +48,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 
 	public function testWalkCachedIsSharedBetweenCalls(): void
 	{
-		$walker = new DirectoryWalker();
+		$walker = new DirectoryWalker(new FileStatSignatures());
 
 		$firstWalk = $walker->walkCached($this->directory, ['php']);
 		file_put_contents($this->directory . '/second.php', '<?php');
@@ -65,7 +65,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 
 	public function testCachedWalksAreKeyedByExtensions(): void
 	{
-		$walker = new DirectoryWalker();
+		$walker = new DirectoryWalker(new FileStatSignatures());
 		file_put_contents($this->directory . '/notes.txt', 'x');
 
 		$phpFiles = $walker->walkCached($this->directory, ['php']);
@@ -80,11 +80,11 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 		$tmpDir = $this->createTree();
 
 		$expected = $this->walkWithFinder($this->directory, ['php', 'sh', '']);
-		$fresh = (new DirectoryWalker($tmpDir))->walk($this->directory, ['php', 'sh', '']);
+		$fresh = (new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php', 'sh', '']);
 		$this->waitUntilTheTreeIsInThePast();
 		// stores the listings, now that they are no longer racy
-		(new DirectoryWalker($tmpDir))->walk($this->directory, ['php', 'sh', '']);
-		$fromListings = (new DirectoryWalker($tmpDir))->walk($this->directory, ['php', 'sh', '']);
+		(new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php', 'sh', '']);
+		$fromListings = (new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php', 'sh', '']);
 
 		$this->assertNotSame([], $expected);
 		$this->assertSame($expected, $fresh);
@@ -96,7 +96,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 	{
 		$tmpDir = $this->createTree();
 		$this->waitUntilTheTreeIsInThePast();
-		(new DirectoryWalker($tmpDir))->walk($this->directory, ['php']);
+		(new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']);
 
 		file_put_contents($this->directory . '/src/Added.php', '<?php');
 		unlink($this->directory . '/src/Nested/Deep.php');
@@ -104,7 +104,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 
 		$this->assertSame(
 			$this->walkWithFinder($this->directory, ['php']),
-			(new DirectoryWalker($tmpDir))->walk($this->directory, ['php']),
+			(new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']),
 		);
 	}
 
@@ -112,7 +112,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 	{
 		$tmpDir = $this->createTree();
 		$this->waitUntilTheTreeIsInThePast();
-		(new DirectoryWalker($tmpDir))->walk($this->directory, ['php']);
+		(new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']);
 
 		unlink($this->directory . '/src/Nested/Deep.php');
 		rmdir($this->directory . '/src/Nested');
@@ -121,7 +121,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 
 		$this->assertContains(
 			$this->directory . '/src/Nested/Other.php',
-			(new DirectoryWalker($tmpDir))->walk($this->directory, ['php']),
+			(new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']),
 		);
 	}
 

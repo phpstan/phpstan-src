@@ -17,7 +17,7 @@
  * exactly as it does when the extension is absent; the PHP twin of this class
  * is a cache that never hits.
  *
- * Concurrency is lock-free and write-once:
+ * Concurrency is lock-free, and records are immutable once written:
  *
  *  - allocation is a compare-and-swap bump cursor in the arena header;
  *  - publication is a compare-and-swap of an index slot from 0 to the record
@@ -28,6 +28,10 @@
  *  - two processes computing the same key race benignly: one CAS wins, the
  *    loser's bytes become dead space. Wasteful, never unsafe — the same
  *    philosophy as the odsl directory-scan lock's cold-cache races.
+ *  - replace() swings an existing key's slot over to a new record with the
+ *    same CAS - for a value the caller has just recomputed because the one
+ *    published before was out of date. The old record stays intact for any
+ *    reader that already found it and becomes dead space, like a loser's.
  *
  * Records are self-contained flat blobs of PHP values: scalars, arrays, and
  * plain userland objects (no serialization hooks, no custom create handler
@@ -676,8 +680,9 @@ static bool findRecord(const char *key, size_t keyLen, RecordView *view)
 }
 
 /* Copies a fully-built record into the arena and CAS-publishes it; loses
- * gracefully to a concurrent publisher of the same key, as late as it can. */
-static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const WriteBuffer &payload)
+ * gracefully to a concurrent publisher of the same key, as late as it can.
+ * With replace, it takes over the key's slot instead - the last writer wins. */
+static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const WriteBuffer &payload, bool replace = false)
 {
 	if (pt_arena_base == NULL || keyLen > UINT32_MAX) return;
 
@@ -703,7 +708,7 @@ static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const W
 	 * here is a page the backing store commits for good - a loser that returns
 	 * now costs nothing but the bump it already took. */
 	RecordView published;
-	if (findRecord(key, keyLen, &published)) return;
+	if (!replace && findRecord(key, keyLen, &published)) return;
 
 	char *record = (char *) pt_arena_base + offset;
 	RecordHeader header;
@@ -726,7 +731,13 @@ static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const W
 		}
 		RecordView existing;
 		if (!recordAt(current, &existing)) return;
-		if (existing.header->keyLen == keyLen && memcmp(existing.key, key, keyLen) == 0) return; /* lost the race: someone published this key first */
+		if (existing.header->keyLen == keyLen && memcmp(existing.key, key, keyLen) == 0) {
+			if (!replace) return; /* lost the race: someone published this key first */
+			/* a slot only ever moves between records of the key it was claimed
+			 * for, so a failed CAS just means another replace got in first */
+			while (!atomicCasRelease(slot, current, offset)) current = atomicLoadAcquire(slot);
+			return;
+		}
 	}
 	/* index congested — give up on this record, it stays dead space */
 }
@@ -1131,6 +1142,15 @@ public:
 		publishRecord(ZSTR_VAL(key), ZSTR_LEN(key), RECORD_KIND_VALUE, payload);
 	}
 
+	static void replace(zend_string *key, zval *value)
+	{
+		if (pt_arena_base == NULL) return;
+		WriteBuffer payload;
+		SerializeCtx ctx;
+		if (!serializeValue(payload, value, 0, ctx)) return;
+		publishRecord(ZSTR_VAL(key), ZSTR_LEN(key), RECORD_KIND_VALUE, payload, true);
+	}
+
 	static void lookupHash(zend_string *recordKey, zend_string *entryKey, zval *return_value)
 	{
 		RETVAL_NULL();
@@ -1218,6 +1238,13 @@ PT_MINIT_REGISTRATION(pt_register_arena_cache)
 		zval *value;
 		if (!zp::parse<zp::Str, zp::Zval>(execute_data, key, value)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::publish(key, value);
+	});
+
+	cls.method(sigs::replace, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *key;
+		zval *value;
+		if (!zp::parse<zp::Str, zp::Zval>(execute_data, key, value)) RETURN_THROWS();
+		phpstanturbo::ArenaCache::replace(key, value);
 	});
 
 	cls.method(sigs::lookupHash, [](INTERNAL_FUNCTION_PARAMETERS) {

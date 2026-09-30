@@ -34,12 +34,13 @@ inline constexpr char strings[] =
 	"lookup\0" /* 59 */
 	"value\0" /* 66 */
 	"publish\0" /* 72 */
-	"recordKey\0" /* 80 */
-	"entryKey\0" /* 90 */
-	"lookupHash\0" /* 99 */
-	"lookupHashAll\0" /* 110 */
-	"entries\0" /* 124 */
-	"publishHash"; /* 132 */
+	"replace\0" /* 80 */
+	"recordKey\0" /* 88 */
+	"entryKey\0" /* 98 */
+	"lookupHash\0" /* 107 */
+	"lookupHashAll\0" /* 118 */
+	"entries\0" /* 132 */
+	"publishHash"; /* 140 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* create $runId */
 	reg::packed(6, MAY_BE_NULL | MAY_BE_STRING), /* create return */
@@ -54,13 +55,16 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(45, MAY_BE_STRING), /* publish $key */
 	reg::packed(66, 0), /* publish $value */
 	reg::packed(6, MAY_BE_VOID), /* publish return */
-	reg::packed(80, MAY_BE_STRING), /* lookupHash $recordKey */
-	reg::packed(90, MAY_BE_STRING), /* lookupHash $entryKey */
+	reg::packed(45, MAY_BE_STRING), /* replace $key */
+	reg::packed(66, 0), /* replace $value */
+	reg::packed(6, MAY_BE_VOID), /* replace return */
+	reg::packed(88, MAY_BE_STRING), /* lookupHash $recordKey */
+	reg::packed(98, MAY_BE_STRING), /* lookupHash $entryKey */
 	reg::packed(6, MAY_BE_ANY), /* lookupHash return */
-	reg::packed(80, MAY_BE_STRING), /* lookupHashAll $recordKey */
+	reg::packed(88, MAY_BE_STRING), /* lookupHashAll $recordKey */
 	reg::packed(6, MAY_BE_NULL | MAY_BE_ARRAY), /* lookupHashAll return */
-	reg::packed(80, MAY_BE_STRING), /* publishHash $recordKey */
-	reg::packed(124, MAY_BE_ARRAY), /* publishHash $entries */
+	reg::packed(88, MAY_BE_STRING), /* publishHash $recordKey */
+	reg::packed(132, MAY_BE_ARRAY), /* publishHash $entries */
 	reg::packed(6, MAY_BE_VOID), /* publishHash return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -75,9 +79,10 @@ inline constexpr sigtab::Sig destroy = { { 37 /* destroy */, 0, 5, 0, 5, ZEND_AC
 inline constexpr sigtab::Sig hasRecord = { { 49 /* hasRecord */, 1, 6, 1, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig lookup = { { 59 /* lookup */, 1, 8, 1, 9, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig publish = { { 72 /* publish */, 2, 10, 2, 12, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig lookupHash = { { 99 /* lookupHash */, 2, 13, 2, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig lookupHashAll = { { 110 /* lookupHashAll */, 1, 16, 1, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig publishHash = { { 132 /* publishHash */, 2, 18, 2, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig replace = { { 80 /* replace */, 2, 13, 2, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig lookupHash = { { 107 /* lookupHash */, 2, 16, 2, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig lookupHashAll = { { 118 /* lookupHashAll */, 1, 19, 1, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig publishHash = { { 140 /* publishHash */, 2, 21, 2, 23, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArenaCache

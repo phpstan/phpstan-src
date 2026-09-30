@@ -156,6 +156,7 @@ if ($mode === 'child-read') {
 	check(ArenaCache::lookupHashAll('sigmap') === $rows, 'child: lookupHashAll identical incl. order and int keys');
 	check(ArenaCache::lookupHashAll('fixtures') === null, 'child: lookupHashAll on value record is null');
 	check(ArenaCache::lookupHashAll('missing') === null, 'child: lookupHashAll on missing record is null');
+	check(ArenaCache::lookup('replaced') === ['v' => 2], 'child: sees the replaced record');
 
 	ArenaCache::publish('from-child', ['pid' => 'child-wrote-this']);
 	global $failures;
@@ -170,6 +171,11 @@ if ($mode === 'child-race') {
 	ArenaCache::publish('contested', $payload);
 	ArenaCache::publish('racer-' . getmypid(), [getmypid()]);
 	check(ArenaCache::lookup('contested') === $payload, 'racer: contested readback identical');
+	for ($i = 0; $i < 100; $i++) {
+		ArenaCache::replace('replaced-race', ['pid' => getmypid(), 'i' => $i, 'rows' => range(1, 20)]);
+		$replaced = ArenaCache::lookup('replaced-race');
+		check(is_array($replaced) && $replaced['rows'] === range(1, 20), 'racer: replaced record readable while others replace it');
+	}
 	global $failures;
 	exit($failures === 0 ? 0 : 1);
 }
@@ -261,6 +267,18 @@ check(ArenaCache::lookupHashAll('empty-hash') === [], 'parent: empty hash record
 ArenaCache::publish('fixtures', ['clobbered' => true]);
 check(ArenaCache::lookup('fixtures') === fixtures(), 'parent: republish does not clobber');
 
+// replace takes over an existing key - the last write wins - and publishes an absent one
+ArenaCache::publish('replaced', ['v' => 1]);
+ArenaCache::replace('replaced', ['v' => 2]);
+check(ArenaCache::lookup('replaced') === ['v' => 2], 'parent: replace overwrites');
+ArenaCache::publish('replaced', ['v' => 3]);
+check(ArenaCache::lookup('replaced') === ['v' => 2], 'parent: publish does not clobber a replaced record');
+ArenaCache::replace('replaced-absent', ['v' => 1]);
+check(ArenaCache::lookup('replaced-absent') === ['v' => 1], 'parent: replace publishes an absent key');
+ArenaCache::replace('replaced', ['fn' => static function (): void {
+}]);
+check(ArenaCache::lookup('replaced') === ['v' => 2], 'parent: a replace that cannot be published keeps the record');
+
 // ---- child reads everything, writes back ----
 [$exitCode, $stdout] = waitChild(spawnChild('child-read', $name));
 echo $stdout;
@@ -279,6 +297,8 @@ foreach ($racers as $racer) {
 }
 $contested = ArenaCache::lookup('contested');
 check($contested === ['winner-takes' => str_repeat('all', 100), 'rows' => range(1, 50)], 'parent: contested record consistent after race');
+$replacedRace = ArenaCache::lookup('replaced-race');
+check(is_array($replacedRace) && $replacedRace['i'] === 99 && $replacedRace['rows'] === range(1, 20), 'parent: racing replaces leave the last write of one of them');
 
 // ---- unlink: existing mappings keep working, new attaches fail ----
 ArenaCache::unlinkName();

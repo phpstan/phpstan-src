@@ -32,6 +32,13 @@ final class Cache
 		// cache file. The arena's codec covers scalars, arrays and plain
 		// value objects, and interns repeated strings on read like include()
 		// does; payloads it cannot represent just stay per-worker.
+		//
+		// What a load publishes is only a copy of the file and does not
+		// displace an entry already there. What save() publishes replaces it:
+		// a caller that finds an entry out of date by checking it after the
+		// load (FileTypeMapper checks the hashes of the files a name scope map
+		// was created from) creates the value again and saves it, and every
+		// process after that has to get the new value, not the one it rejected.
 		$arenaKey = null;
 		if ($this->isArenaUsable()) {
 			$arenaKey = 'fcs:' . $key . "\0" . $variableKey;
@@ -62,7 +69,7 @@ final class Cache
 			return;
 		}
 
-		ArenaCache::publish('fcs:' . $key . "\0" . $variableKey, $data);
+		ArenaCache::replace('fcs:' . $key . "\0" . $variableKey, $data);
 	}
 
 	/**

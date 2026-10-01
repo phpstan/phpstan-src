@@ -42,6 +42,7 @@ use function trim;
 use function unlink;
 use const PHP_BINARY;
 use const PHP_OS_FAMILY;
+use const PHP_VERSION_ID;
 
 /**
  * Restarts the main PHPStan process via pcntl_exec() when the process it
@@ -303,7 +304,9 @@ final class TurboProcessRestarter
 	 * and has no build to key the directory by. Not in CI (see
 	 * resolveContinuousIntegration()): an empty temp dir at the start of every
 	 * job would make the cache pure cost, and with a file cache the
-	 * extension's trusted-types pass is off. Not on Windows either: every
+	 * extension's trusted-types pass is off. Not on PHP older than the oldest
+	 * one the extension is built for (TurboExtensionSelector::MINIMUM_PHP_VERSION_ID):
+	 * the file cache was only measured on that range. Not on Windows either: every
 	 * spawned worker there gets its own opcache.cache_id (see ProcessHelper),
 	 * and OPcache then keeps a separate file cache per worker that no later
 	 * run reuses: 2 GB after one benchmark run on a GitHub runner, and cold
@@ -316,6 +319,9 @@ final class TurboProcessRestarter
 		}
 
 		self::$fileCacheDirectoryResolved = true;
+		if (PHP_VERSION_ID < TurboExtensionSelector::MINIMUM_PHP_VERSION_ID) {
+			return null;
+		}
 		if (PHP_OS_FAMILY === 'Windows' || !function_exists('posix_geteuid') || !class_exists('Phar', false)) {
 			return null;
 		}

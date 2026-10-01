@@ -70,3 +70,9 @@ function variadicRebindTraversable(string|null &...$refs): void
 {
 	$refs = new \ArrayIterator(['ok']);
 }
+
+// Maybe an array is not compared either, even when the other types also have an element type.
+function variadicRebindMaybeArray(string|null &...$refs): void
+{
+	$refs = rand(0, 1) === 1 ? ['ok'] : new \ArrayIterator(['ok']);
+}

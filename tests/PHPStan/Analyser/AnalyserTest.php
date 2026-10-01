@@ -121,7 +121,7 @@ class AnalyserTest extends PHPStanTestCase
 	public function testFileWithAnIgnoredErrorIdentifier(): void
 	{
 		$result = $this->runAnalyser([['identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertNotCount(0, $result);
+		$this->assertCount(0, $result);
 	}
 
 	public function testFileWithAnIgnoredErrorMessages(): void

@@ -244,8 +244,13 @@ class ObjectShapeType implements Type
 			}
 
 			$otherPropertyType = $otherProperty->getReadableType();
+			$acceptsValue = $propertyType->accepts($otherPropertyType, $strictTypes);
+			if ($acceptsValue->yes() && count($acceptsValue->reasons) === 0) {
+				continue;
+			}
+
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($propertyType, $otherPropertyType);
-			$acceptsValue = $propertyType->accepts($otherPropertyType, $strictTypes)->decorateReasons(
+			$acceptsValue = $acceptsValue->decorateReasons(
 				static fn (string $reason) => sprintf(
 					'Property ($%s) type %s does not accept type %s: %s',
 					$propertyName,

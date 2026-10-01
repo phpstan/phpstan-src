@@ -12,6 +12,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
+use function spl_object_id;
 
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeHelper.cpp')]
 final class TemplateTypeHelper
@@ -95,7 +96,7 @@ final class TemplateTypeHelper
 
 	public static function resolveToDefaults(Type $type): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+		return TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse): Type {
 			while ($type instanceof TemplateType) {
 				$type = $type->getDefault() ?? $type->getBound();
 			}
@@ -106,7 +107,7 @@ final class TemplateTypeHelper
 
 	public static function resolveToBounds(Type $type): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+		return TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse): Type {
 			while ($type instanceof TemplateType) {
 				$type = $type->getBound();
 			}
@@ -124,8 +125,12 @@ final class TemplateTypeHelper
 	{
 		$ownedTemplates = [];
 
-		/** @var T */
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$ownedTemplates): Type {
+		// A type occurring repeatedly is mapped once while no templates are owned yet.
+		// Owned templates change how the rest of the traversal maps template types.
+		/** @var array<int, array{Type, Type}> $cache */
+		$cache = [];
+
+		$cb = static function (Type $type, callable $traverse) use (&$ownedTemplates): Type {
 			if ($type instanceof ParametersAcceptor) {
 				$templateTypeMap = $type->getTemplateTypeMap();
 
@@ -162,6 +167,21 @@ final class TemplateTypeHelper
 			}
 
 			return $traverse($type);
+		};
+
+		/** @var T */
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$ownedTemplates, &$cache, $cb): Type {
+			$id = spl_object_id($type);
+			if ($ownedTemplates === [] && isset($cache[$id])) {
+				return $cache[$id][1];
+			}
+
+			$result = $cb($type, $traverse);
+			if ($ownedTemplates === []) {
+				$cache[$id] = [$type, $result];
+			}
+
+			return $result;
 		});
 	}
 

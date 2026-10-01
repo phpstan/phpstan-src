@@ -1271,6 +1271,25 @@ $ttErrors = static function (string $traverser) use ($ttSubject): array {
 	return $errors;
 };
 check($ttErrors(\PHPStan\Type\TypeTraverser::class) === $ttErrors(\PHPStanTurbo\TypeTraverser::class), 'TypeTraverser: a non-callable $cb and a non-Type result throw the same (' . implode(', ', $ttErrors(\PHPStanTurbo\TypeTraverser::class)) . ')');
+// mapMemoized() calls the callback once per Type instance: the shared
+// member of the shape is mapped once and its result reused
+$ttShared = new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\Constant\ConstantStringType('baz'));
+$ttSharedSubject = new \PHPStan\Type\Constant\ConstantArrayType(
+	[new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantStringType('b'), new \PHPStan\Type\Constant\ConstantStringType('c')],
+	[$ttShared, $ttSubject, $ttShared],
+);
+$ttPhpLog = [];
+$ttNativeLog = [];
+$ttPhpMapped = \PHPStan\Type\TypeTraverser::mapMemoized($ttSharedSubject, $ttMakeCallback($ttPhpLog));
+$ttNativeMapped = \PHPStanTurbo\TypeTraverser::mapMemoized($ttSharedSubject, $ttMakeCallback($ttNativeLog));
+check($ttPhpMapped->describe(\PHPStan\Type\VerbosityLevel::precise()) === $ttNativeMapped->describe(\PHPStan\Type\VerbosityLevel::precise()), 'TypeTraverser: mapMemoized() result');
+check($ttPhpLog === $ttNativeLog, 'TypeTraverser: mapMemoized() called the callback for the same types (' . json_encode($ttNativeLog) . ')');
+$ttMapLog = [];
+\PHPStan\Type\TypeTraverser::map($ttSharedSubject, $ttMakeCallback($ttMapLog));
+check(count($ttNativeLog) < count($ttMapLog), 'TypeTraverser: mapMemoized() did not traverse the shared member again');
+$ttNativeValueTypes = $ttNativeMapped->getConstantArrays()[0]->getValueTypes();
+check($ttNativeValueTypes[0] === $ttNativeValueTypes[2], 'TypeTraverser: mapMemoized() reused the result of the shared member');
+check($ttErrors(\PHPStan\Type\TypeTraverser::class) === $ttErrors(\PHPStanTurbo\TypeTraverser::class), 'TypeTraverser: mapMemoized() throws the same');
 
 // ---- VerbosityLevel ----
 // The singletons and their queries, handle() over every callback

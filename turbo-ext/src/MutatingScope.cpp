@@ -4191,7 +4191,7 @@ public:
 		zv::Val traverser = pt_type_new(PT_CLASS_TRANSFORM_STATIC_TYPE_TRAVERSER, 1, thisZval());
 		if (UNEXPECTED(traverser.isUndef())) return zv::Val();
 		zval mapped;
-		if (UNEXPECTED(!pt_type_traverser_map(&mapped, type, traverser.raw()))) return zv::Val();
+		if (UNEXPECTED(!pt_type_traverser_map_memoized(&mapped, type, traverser.raw()))) return zv::Val();
 		return zv::Val::adopt(mapped);
 	}
 

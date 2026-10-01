@@ -373,7 +373,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			return TrinaryLogic::createFromBoolean(!$this->isPure);
 		}
 
-		if ((new ThisType($this->declaringClass))->isSuperTypeOf($this->getReturnType())->yes()) {
+		if ((new ThisType($this->declaringClass->withoutFinalByKeywordOverride()))->isSuperTypeOf($this->getReturnType())->yes()) {
 			return TrinaryLogic::createYes();
 		}
 

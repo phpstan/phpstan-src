@@ -16,7 +16,10 @@ if (!is_file($file)) {
 // versions of the phar apart by mtime alone, so they must differ per build.
 $util = new Timestamps($file);
 $util->updateTimestamps(new DateTimeImmutable($argv[2] ?? '2017-10-11 08:58:00'));
-$util->save($file, Phar::SHA512);
+// PHP verifies this hash over the whole phar every time a process opens it. It only
+// guards against corruption (phpstan.phar.asc is the authenticity check), and SHA-1
+// is the fastest algorithm phar supports.
+$util->save($file, Phar::SHA1);
 
 $zeroMtimeMembers = 0;
 foreach (new RecursiveIteratorIterator(new Phar($file)) as $member) {

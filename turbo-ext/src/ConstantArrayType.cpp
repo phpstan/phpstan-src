@@ -1702,12 +1702,10 @@ public:
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zv::Val otherValueType = callType(Z_OBJ_P(type), PT_LC("getoffsetvaluetype"), 1, keyType);
 			if (UNEXPECTED(otherValueType.isUndef())) return zv::Val();
-			zv::Val verbosity = pt_type_verbosity_recommended(valueType, otherValueType.raw());
-			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
 			zv::Args args{otherValueType.raw(), strictTypes};
 			zv::Val acceptsValue = pt_type_op(Z_OBJ_P(valueType), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
-			zv::Val captured = quadOf(keyType, valueType, verbosity.raw(), otherValueType.raw());
+			zv::Val captured = tripleOf(keyType, valueType, otherValueType.raw());
 			acceptsValue = decorateReasons(acceptsValue.raw(), offsetReasonCallback, captured.raw(), NULL);
 			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
 			bool reasonless;
@@ -1716,7 +1714,7 @@ public:
 				zend_long typeIsConstantArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 				if (UNEXPECTED(typeIsConstantArray < 0)) return zv::Val();
 				if (typeIsConstantArray == PT_TRI_YES) {
-					acceptsValue = acceptsResultWithReason(acceptsValue.raw(), offsetReason(keyType, valueType, verbosity.raw(), otherValueType.raw(), NULL));
+					acceptsValue = acceptsResultWithReason(acceptsValue.raw(), offsetReason(keyType, valueType, otherValueType.raw(), NULL));
 					if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
 				}
 			}
@@ -6178,13 +6176,15 @@ private:
 	/* the reason of a rejected offset: 'Offset %s (%s) does not accept type
 	 * %s' with the key at the precise level and the value types at the
 	 * recommended one, a trailing reason after ': ' or a full stop */
-	static zv::Val offsetReason(zval *keyType, zval *valueType, zval *verbosity, zval *otherValueType, zend_string *reason)
+	static zv::Val offsetReason(zval *keyType, zval *valueType, zval *otherValueType, zend_string *reason)
 	{
 		zv::Val keyDescription = describePrecise(keyType);
 		if (UNEXPECTED(keyDescription.isUndef())) return zv::Val();
-		zv::Val valueDescription = describeOf(valueType, verbosity);
+		zv::Val verbosity = pt_type_verbosity_recommended(valueType, otherValueType);
+		if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
+		zv::Val valueDescription = describeOf(valueType, verbosity.raw());
 		if (UNEXPECTED(valueDescription.isUndef())) return zv::Val();
-		zv::Val otherDescription = describeOf(otherValueType, verbosity);
+		zv::Val otherDescription = describeOf(otherValueType, verbosity.raw());
 		if (UNEXPECTED(otherDescription.isUndef())) return zv::Val();
 		if (reason == NULL) {
 			return zv::Val::adoptString(zend_strpprintf(0, "Offset %s (%s) does not accept type %s.", ZSTR_VAL(zv::Ref(keyDescription.raw()).asString()), ZSTR_VAL(zv::Ref(valueDescription.raw()).asString()), ZSTR_VAL(zv::Ref(otherDescription.raw()).asString())));
@@ -6192,7 +6192,7 @@ private:
 		return zv::Val::adoptString(zend_strpprintf(0, "Offset %s (%s) does not accept type %s: %s", ZSTR_VAL(zv::Ref(keyDescription.raw()).asString()), ZSTR_VAL(zv::Ref(valueDescription.raw()).asString()), ZSTR_VAL(zv::Ref(otherDescription.raw()).asString()), ZSTR_VAL(reason)));
 	}
 
-	/* checkOurKeys()'s decorator: state0 = [keyType, valueType, verbosity, otherValueType] */
+	/* checkOurKeys()'s decorator: state0 = [keyType, valueType, otherValueType] */
 	static void offsetReasonCallback(zval *captured, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 	{
 		(void) state1;
@@ -6200,10 +6200,9 @@ private:
 		if (UNEXPECTED(reason == NULL || Z_TYPE_P(captured) != IS_ARRAY)) return;
 		zval *keyType = zend_hash_index_find(Z_ARRVAL_P(captured), 0);
 		zval *valueType = zend_hash_index_find(Z_ARRVAL_P(captured), 1);
-		zval *verbosity = zend_hash_index_find(Z_ARRVAL_P(captured), 2);
-		zval *otherValueType = zend_hash_index_find(Z_ARRVAL_P(captured), 3);
-		ZEND_ASSERT(keyType != NULL && valueType != NULL && verbosity != NULL && otherValueType != NULL);
-		zv::Val result = offsetReason(keyType, valueType, verbosity, otherValueType, reason);
+		zval *otherValueType = zend_hash_index_find(Z_ARRVAL_P(captured), 2);
+		ZEND_ASSERT(keyType != NULL && valueType != NULL && otherValueType != NULL);
+		zv::Val result = offsetReason(keyType, valueType, otherValueType, reason);
 		if (UNEXPECTED(result.isUndef())) return;
 		result.intoReturnValue(return_value);
 	}
@@ -6396,16 +6395,6 @@ private:
 		triple.push(zv::Ref(b));
 		triple.push(zv::Ref(c));
 		return zv::Val(std::move(triple));
-	}
-
-	static zv::Val quadOf(zval *a, zval *b, zval *c, zval *d)
-	{
-		zv::Arr quad = zv::Arr::create(4);
-		quad.push(zv::Ref(a));
-		quad.push(zv::Ref(b));
-		quad.push(zv::Ref(c));
-		quad.push(zv::Ref(d));
-		return zv::Val(std::move(quad));
 	}
 
 	/* !$result->yes() && count($result->reasons) === 0; false = pending

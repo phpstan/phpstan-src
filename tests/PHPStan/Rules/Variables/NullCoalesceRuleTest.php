@@ -711,6 +711,44 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12780.php'], []);
 	}
 
+	public function testBug10714(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10714.php'], [
+			[
+				'Expression on left side of ?? is not nullable.',
+				12,
+			],
+			[
+				'Variable $a on left side of ?? always exists and is not nullable.',
+				18,
+			],
+			[
+				'Variable $a on left side of ?? always exists and is not nullable.',
+				24,
+			],
+			[
+				'Variable $a on left side of ?? always exists and is not nullable.',
+				30,
+			],
+			[
+				'Variable $a on left side of ??= always exists and is not nullable.',
+				35,
+			],
+			[
+				'Offset \'k\' on array{k: string} on left side of ??= always exists and is not nullable.',
+				48,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				60,
+			],
+			[
+				'Property Bug10714\\PropertyOnMultiLineLeftSide::$p (string) on left side of ?? is not nullable.',
+				71,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.2.0')]
 	public function testReadonlyPropertyOnNullableReceiver(): void
 	{

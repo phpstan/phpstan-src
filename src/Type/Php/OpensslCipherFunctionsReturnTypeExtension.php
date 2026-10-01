@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
@@ -32,7 +33,7 @@ final class OpensslCipherFunctionsReturnTypeExtension implements DynamicFunction
 		return in_array($functionReflection->getName(), ['openssl_cipher_iv_length', 'openssl_cipher_key_length'], true);
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope&DependencyTracker $scope): ?Type
 	{
 		if (!$scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->yes()) {
 			return null;
@@ -43,7 +44,7 @@ final class OpensslCipherFunctionsReturnTypeExtension implements DynamicFunction
 		}
 
 		$strings = $scope->getType($functionCall->getArgs()[0]->value)->getConstantStrings();
-		$results = array_unique(array_map(fn (ConstantStringType $algorithm): bool => $this->cipherMethodsProvider->isSupportedCipherMethod($algorithm->getValue()), $strings));
+		$results = array_unique(array_map(fn (ConstantStringType $algorithm): bool => $this->cipherMethodsProvider->isSupportedCipherMethod($algorithm->getValue(), $scope), $strings));
 
 		if (count($results) !== 1) {
 			return null;

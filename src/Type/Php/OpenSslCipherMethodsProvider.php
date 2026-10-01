@@ -2,22 +2,26 @@
 
 namespace PHPStan\Type\Php;
 
-use PHPStan\Analyser\ResultCache\ResultCacheMetaExtension;
+use PHPStan\Analyser\DependencyTracker;
+use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
 use PHPStan\DependencyInjection\AutowiredService;
 use function array_filter;
 use function array_map;
 use function array_values;
 use function function_exists;
-use function hash;
-use function implode;
 use function in_array;
 use function openssl_cipher_iv_length;
 use function openssl_get_cipher_methods;
-use function sort;
 use function strtolower;
 
+/**
+ * The supported ciphers are read out of the runtime, and the inferred types of
+ * openssl_cipher_iv_length() and friends follow them. The set is a property of the PHP build rather
+ * than of the PHP version: PHP 8.4.25 reports 212 methods on ubuntu-latest and 208 on macos-latest.
+ * So whether a cipher is supported is tracked as a value, for the files asking about it.
+ */
 #[AutowiredService]
-final class OpenSslCipherMethodsProvider implements ResultCacheMetaExtension
+final class OpenSslCipherMethodsProvider implements ResultCacheValueExtension
 {
 
 	/**
@@ -61,28 +65,27 @@ final class OpenSslCipherMethodsProvider implements ResultCacheMetaExtension
 		return $this->supportedCipherMethods;
 	}
 
-	public function isSupportedCipherMethod(string $method): bool
+	public function isSupportedCipherMethod(string $method, DependencyTracker $dependencyTracker): bool
 	{
-		return in_array(strtolower($method), $this->getSupportedCipherMethods(), true);
+		$method = strtolower($method);
+		$dependencyTracker->trackValueDependency(self::class, $method);
+
+		return in_array($method, $this->getSupportedCipherMethods(), true);
 	}
 
-	public function getKey(): string
+	public function getValue(string $key): string
 	{
-		return 'openSslCipherMethods';
+		return in_array($key, $this->getSupportedCipherMethods(), true) ? 'supported' : 'unsupported';
 	}
 
-	/**
-	 * The supported ciphers are read out of the runtime, and the inferred type of
-	 * openssl_cipher_iv_length() and friends follows them, so a host offering a different set has to
-	 * invalidate the cache. The set is a property of the PHP build rather than of the PHP version:
-	 * PHP 8.4.25 reports 212 methods on ubuntu-latest and 208 on macos-latest.
-	 */
-	public function getHash(): string
+	public function keyToResultCache(string $key): string
 	{
-		$methods = $this->getSupportedCipherMethods();
-		sort($methods);
+		return $key;
+	}
 
-		return hash('sha256', implode(',', $methods));
+	public function keyFromResultCache(string $storedKey): string
+	{
+		return $storedKey;
 	}
 
 }

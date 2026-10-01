@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
@@ -32,7 +33,7 @@ final class OpenSslEncryptParameterOutTypeExtension implements FunctionParameter
 		return $functionReflection->getName() === 'openssl_encrypt' && $parameter->getName() === 'tag';
 	}
 
-	public function getParameterOutTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, ParameterReflection $parameter, Scope $scope): ?Type
+	public function getParameterOutTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, ParameterReflection $parameter, Scope&DependencyTracker $scope): ?Type
 	{
 		$args = $funcCall->getArgs();
 		$cipherArg = $args[1] ?? null;
@@ -47,7 +48,7 @@ final class OpenSslEncryptParameterOutTypeExtension implements FunctionParameter
 			$cipher = strtolower($cipherType->getValue());
 			$mode = substr($cipher, -3);
 
-			if (!$this->cipherMethodsProvider->isSupportedCipherMethod($cipher)) {
+			if (!$this->cipherMethodsProvider->isSupportedCipherMethod($cipher, $scope)) {
 				$tagTypes[] = new NullType();
 				continue;
 			}

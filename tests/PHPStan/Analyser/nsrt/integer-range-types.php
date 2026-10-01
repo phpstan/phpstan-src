@@ -364,8 +364,8 @@ class X {
 		assertType('*ERROR*', $f << 0);
 
 		assertType('int<-10, 10>', $a << 1);
-		assertType('int<10, max>', $b << 1);
-		assertType('int<min, -10>', $c << 1);
+		assertType('int', $b << 1);
+		assertType('int', $c << 1);
 		assertType('2|50|int<10, 20>|int<60, 80>', $d << 1);
 		assertType('2|6|10', $e << 1);
 		assertType('*ERROR*', $f << 1);

@@ -247,6 +247,16 @@ jobs:
               cd e2e/bug-15231
               ../../bin/phpstan analyze
           - script: |
+              cd e2e/bug-15337
+              ../../bin/phpstan analyse --generate-baseline=baseline.neon
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -c with-neon-baseline.neon")
+              echo "$OUTPUT"
+              ../bashunit -a contains '[OK] No errors' "$OUTPUT"
+              ../../bin/phpstan analyse --generate-baseline=baseline.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -c with-php-baseline.neon")
+              echo "$OUTPUT"
+              ../bashunit -a contains '[OK] No errors' "$OUTPUT"
+          - script: |
               cd e2e/bug-15102
               composer install
               ../../bin/phpstan analyze

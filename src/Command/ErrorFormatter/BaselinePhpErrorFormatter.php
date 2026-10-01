@@ -2,7 +2,6 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-use Nette\DI\Helpers;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
@@ -89,19 +88,19 @@ final class BaselinePhpErrorFormatter
 						$php .= sprintf(
 							"\$ignoreErrors[] = [\n\t%s => %s,\n\t'identifier' => %s,\n\t'count' => %s,\n\t'path' => __DIR__ . %s,\n];\n",
 							var_export($messageKey, true),
-							var_export(Helpers::escape($message), true),
-							var_export(Helpers::escape($identifier), true),
+							var_export(BaselineParameterEscaper::escape($message), true),
+							var_export($identifier, true),
 							var_export($identifierCount, true),
-							var_export(Helpers::escape($file), true),
+							var_export(BaselineParameterEscaper::escape($file), true),
 						);
 					}
 				} else {
 					$php .= sprintf(
 						"\$ignoreErrors[] = [\n\t%s => %s,\n\t'count' => %s,\n\t'path' => __DIR__ . %s,\n];\n",
 						var_export($messageKey, true),
-						var_export(Helpers::escape($message), true),
+						var_export(BaselineParameterEscaper::escape($message), true),
 						var_export($totalCount, true),
-						var_export(Helpers::escape($file), true),
+						var_export(BaselineParameterEscaper::escape($file), true),
 					);
 				}
 			}

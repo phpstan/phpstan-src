@@ -349,7 +349,7 @@ final class LocalTypeAliasesCheck
 	private function hasErrorType(Type $type, string $aliasName, array &$errors): bool
 	{
 		$foundError = false;
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): Type {
+		TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): Type {
 			if ($foundError) {
 				return $type;
 			}

@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use function in_array;
 
 #[AutowiredService]
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeTraverserInstanceofVisitor.cpp')]
@@ -37,7 +38,7 @@ final class TypeTraverserInstanceofVisitor extends NodeVisitorAbstract
 			&& $node->class instanceof Node\Name
 			&& $node->class->toLowerString() === 'phpstan\\type\\typetraverser'
 			&& $node->name instanceof Node\Identifier
-			&& $node->name->toLowerString() === 'map'
+			&& in_array($node->name->toLowerString(), ['map', 'mapmemoized'], true)
 		) {
 			$this->depth++;
 		}
@@ -53,7 +54,7 @@ final class TypeTraverserInstanceofVisitor extends NodeVisitorAbstract
 			&& $node->class instanceof Node\Name
 			&& $node->class->toLowerString() === 'phpstan\\type\\typetraverser'
 			&& $node->name instanceof Node\Identifier
-			&& $node->name->toLowerString() === 'map'
+			&& in_array($node->name->toLowerString(), ['map', 'mapmemoized'], true)
 		) {
 			$this->depth--;
 		}

@@ -132,15 +132,15 @@ private:
 		return value;
 	}
 
-	/* transformStaticType($type): TypeTraverser::map($type, the closure
-	 * below over $this); UNDEF = pending exception */
+	/* transformStaticType($type): TypeTraverser::mapMemoized($type, the
+	 * closure below over $this); UNDEF = pending exception */
 	static zv::Val transformStaticType(void *context, zval *type)
 	{
 		zval thisZv;
 		ZVAL_OBJ(&thisZv, (zend_object *) context);
 		zv::Val callback = pt_type_native_callback(traverse, &thisZv, NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		return pt_type_traverser_map_of(type, callback.raw());
+		return pt_type_traverser_map_memoized_of(type, callback.raw());
 	}
 
 	/* the closure of transformStaticType(): `function (Type $type, callable

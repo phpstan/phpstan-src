@@ -9,7 +9,7 @@
  * src/Rules/PhpDoc/UnresolvableTypeHelper.php; the registration lambda at
  * the bottom is only the engine ABI glue.
  *
- * getUnresolvableType() walks the type through TypeTraverser::map() with
+ * getUnresolvableType() walks the type through TypeTraverser::mapMemoized() with
  * the twin's `static function (Type $type, callable $traverse) use
  * (&$containsUnresolvable, &$reasons)` closure as a native callback
  * holder (pt_type_native_callback(): the two by-reference `use` variables
@@ -51,7 +51,7 @@ public:
 		ZVAL_EMPTY_ARRAY(&reasons);
 		zv::Val callback = pt_type_native_callback(visit, &containsUnresolvable, &reasons);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
+		zv::Val mapped = pt_type_traverser_map_memoized_of(type, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 		if (!zend_is_true(pt_type_native_callback_state(callback.raw(), 0))) return zv::Val::null();
 		/* new UnresolvableTypeResult(array_values(array_unique($reasons))) */

@@ -40,6 +40,18 @@ class Foo
 		if ($a instanceof GenericObjectType) {
 
 		}
+
+		$type = TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse): Type {
+			if ($type instanceof TypeWithClassName) {
+				return $type;
+			}
+
+			return $traverse($type);
+		});
+
+		if ($a instanceof GenericObjectType) {
+
+		}
 	}
 
 }

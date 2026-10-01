@@ -406,6 +406,20 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testGenericCallablesInOneType(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-callables-incompatible-multiple.php'], [
+			[
+				'PHPDoc tag @param for parameter $callables template T of callable<T of GenericCallablesIncompatibleMultiple\InvalidA>(T): void has invalid bound type GenericCallablesIncompatibleMultiple\InvalidA.',
+				8,
+			],
+			[
+				'PHPDoc tag @param for parameter $callables template U of callable<U of GenericCallablesIncompatibleMultiple\InvalidB>(U): void has invalid bound type GenericCallablesIncompatibleMultiple\InvalidB.',
+				8,
+			],
+		]);
+	}
+
 	public function testBug10622(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10622.php'], []);

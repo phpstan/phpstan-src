@@ -246,6 +246,24 @@ public:
 
 			zv::Val otherPropertyType = pt_type_call(Z_OBJ_P(otherProperty.raw()), PT_LC("getreadabletype"), 0, NULL);
 			if (UNEXPECTED(otherPropertyType.isUndef())) return zv::Val();
+			/* $acceptsValue = $propertyType->accepts($otherPropertyType, $strictTypes) */
+			zend_object *propertyTypeObj = propertyTypeObject(propertyType, "accepts");
+			if (UNEXPECTED(propertyTypeObj == NULL)) return zv::Val();
+			zv::Args acceptsArgs{otherPropertyType.raw(), strictTypes};
+			zv::Val acceptsValue = pt_type_op(propertyTypeObj, PT_OP_ACCEPTS, 2, acceptsArgs);
+			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
+			if (UNEXPECTED(!zv::Ref(acceptsValue.raw()).isObject())) {
+				zend_type_error("phpstan_turbo: accepts() must return %s", ZSTR_VAL(pt_ce_accepts_result->name));
+				return zv::Val();
+			}
+			/* $acceptsValue->yes() && count($acceptsValue->reasons) === 0: continue */
+			zend_long acceptsValueBefore = pt_type_result_trinary(acceptsValue.raw());
+			if (UNEXPECTED(acceptsValueBefore < 0)) return zv::Val();
+			if (acceptsValueBefore == PT_TRI_YES) {
+				bool noReasonsBefore;
+				if (UNEXPECTED(!hasNoReasons(acceptsValue.raw(), noReasonsBefore))) return zv::Val();
+				if (noReasonsBefore) continue;
+			}
 			/* $verbosity = VerbosityLevel::getRecommendedLevelByType($propertyType, $otherPropertyType),
 			 * whose `Type $acceptingType` parameter is the first to see the property type */
 			bool propertyIsType;
@@ -256,14 +274,7 @@ public:
 			}
 			zv::Val verbosity = pt_type_verbosity_recommended(propertyType, otherPropertyType.raw());
 			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
-			/* $propertyType->accepts($otherPropertyType, $strictTypes)->decorateReasons(...) */
-			zv::Args acceptsArgs{otherPropertyType.raw(), strictTypes};
-			zv::Val acceptsValue = pt_type_op(Z_OBJ_P(propertyType), PT_OP_ACCEPTS, 2, acceptsArgs);
-			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
-			if (UNEXPECTED(!zv::Ref(acceptsValue.raw()).isObject())) {
-				zend_type_error("phpstan_turbo: accepts() must return %s", ZSTR_VAL(pt_ce_accepts_result->name));
-				return zv::Val();
-			}
+			/* ->decorateReasons(...) */
 			zv::Val decorator = reasonDecorator(&propertyName, propertyType, otherPropertyType.raw(), verbosity.raw());
 			acceptsValue = pt_type_call(Z_OBJ_P(acceptsValue.raw()), PT_LC("decoratereasons"), 1, decorator.raw());
 			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();

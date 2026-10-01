@@ -30,7 +30,7 @@ final class ConditionalReturnTypeRuleHelper
 		$conditionalTypes = [];
 		$parametersByName = [];
 		foreach ($acceptor->getParameters() as $parameter) {
-			TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+			TypeTraverser::mapMemoized($parameter->getType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 				if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 					$conditionalTypes[] = $type;
 				}
@@ -39,7 +39,7 @@ final class ConditionalReturnTypeRuleHelper
 			});
 
 			if ($parameter->getOutType() !== null) {
-				TypeTraverser::map($parameter->getOutType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+				TypeTraverser::mapMemoized($parameter->getOutType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 						$conditionalTypes[] = $type;
 					}
@@ -49,7 +49,7 @@ final class ConditionalReturnTypeRuleHelper
 			}
 
 			if ($parameter->getClosureThisType() !== null) {
-				TypeTraverser::map($parameter->getClosureThisType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+				TypeTraverser::mapMemoized($parameter->getClosureThisType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 						$conditionalTypes[] = $type;
 					}
@@ -61,7 +61,7 @@ final class ConditionalReturnTypeRuleHelper
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 
-		TypeTraverser::map($acceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+		TypeTraverser::mapMemoized($acceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 				$conditionalTypes[] = $type;
 			}

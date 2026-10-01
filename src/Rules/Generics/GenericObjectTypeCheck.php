@@ -182,7 +182,7 @@ final class GenericObjectTypeCheck
 	private function getGenericTypes(Type $phpDocType): array
 	{
 		$genericObjectTypes = [];
-		TypeTraverser::map($phpDocType, static function (Type $type, callable $traverse) use (&$genericObjectTypes): Type {
+		TypeTraverser::mapMemoized($phpDocType, static function (Type $type, callable $traverse) use (&$genericObjectTypes): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
 				$resolvedType = TemplateTypeHelper::resolveToBounds($type);
 				if (!$resolvedType instanceof GenericObjectType && !$resolvedType instanceof GenericStaticType) {

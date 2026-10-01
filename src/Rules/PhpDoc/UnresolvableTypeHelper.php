@@ -20,7 +20,7 @@ final class UnresolvableTypeHelper
 	{
 		$containsUnresolvable = false;
 		$reasons = [];
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$containsUnresolvable, &$reasons): Type {
+		TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use (&$containsUnresolvable, &$reasons): Type {
 			$reason = null;
 			if ($type instanceof ErrorType) {
 				$containsUnresolvable = true;

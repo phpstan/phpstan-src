@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\MethodCall;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\MethodReflection;
@@ -29,6 +30,6 @@ interface MethodParameterOutTypeExtension
 
 	public function isMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool;
 
-	public function getParameterOutTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, ParameterReflection $parameter, Scope $scope): ?Type;
+	public function getParameterOutTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, ParameterReflection $parameter, Scope&DependencyTracker $scope): ?Type;
 
 }

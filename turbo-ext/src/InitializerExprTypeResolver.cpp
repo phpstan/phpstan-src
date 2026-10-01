@@ -3034,10 +3034,11 @@ public:
 				}
 				if (kind == IETR_SHIFT_LEFT) {
 					// an overflowing shift wraps around, which breaks the monotonicity the bounds rely on
+					// open bounds still include the platform's minimum or maximum integer
 					bool minOverflows = false;
 					bool maxOverflows = false;
-					if (Z_TYPE(rangeMin) != IS_NULL && UNEXPECTED(!shiftLeftOverflows(zval_get_long(&rangeMin), operandValue, minOverflows))) return zv::Val();
-					if (!minOverflows && Z_TYPE(rangeMax) != IS_NULL && UNEXPECTED(!shiftLeftOverflows(zval_get_long(&rangeMax), operandValue, maxOverflows))) return zv::Val();
+					if (UNEXPECTED(!shiftLeftOverflows(Z_TYPE(rangeMin) == IS_NULL ? ZEND_LONG_MIN : zval_get_long(&rangeMin), operandValue, minOverflows))) return zv::Val();
+					if (!minOverflows && UNEXPECTED(!shiftLeftOverflows(Z_TYPE(rangeMax) == IS_NULL ? ZEND_LONG_MAX : zval_get_long(&rangeMax), operandValue, maxOverflows))) return zv::Val();
 					if (minOverflows || maxOverflows) {
 						return newIntegerType();
 					}

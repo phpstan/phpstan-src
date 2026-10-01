@@ -7741,6 +7741,13 @@ $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new Re
 			}
 		}
 	}
+	foreach ([[0, null], [1, null], [null, 0], [null, -1], [null, 10], [-10, null]] as $i => [$min, $max]) {
+		foreach ([0, 1, 8, 12] as $shift) {
+			foreach (['getShiftLeftType', 'getShiftRightType'] as $method) {
+				$r["$method open range $i shift $shift"] = $catching(static fn () => $resolver->$method($te($range($min, $max)), $te($int($shift)), $getType));
+			}
+		}
+	}
 	foreach ($operands as $leftName => $left) {
 		foreach ($operands as $rightName => $right) {
 			$r["resolveIdenticalType $leftName $rightName"] = $catching(static fn () => $viewResult($resolver->resolveIdenticalType($left, $right)));

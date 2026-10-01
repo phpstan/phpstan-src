@@ -24,15 +24,16 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use Traversable;
 use function array_filter;
 use function array_keys;
 use function array_merge;
+use function array_slice;
 use function count;
 use function implode;
 use function in_array;
+use function spl_object_id;
 use function sprintf;
 use function strtolower;
 
@@ -73,7 +74,8 @@ final class MissingTypehintCheck
 	public function getIterableTypesWithMissingValueTypehint(Type $type): array
 	{
 		$descriptions = [];
-		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$descriptions): Type {
+		$sealed = [];
+		TypeTraverser::map($type, self::oncePerType($descriptions, function (Type $type, callable $traverse) use (&$descriptions, &$sealed): Type {
 			if ($type instanceof TemplateType) {
 				return $type;
 			}
@@ -108,19 +110,16 @@ final class MissingTypehintCheck
 			}
 			if ($type->isIterable()->yes()) {
 				if ($type->isConstantArray()->yes()) {
-					$type = TypeTraverser::map($type, static function (Type $type, callable $traverse) {
-						if ($type instanceof UnionType || $type instanceof IntersectionType) {
-							return $traverse($type);
+					$type = TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$sealed) {
+						$id = spl_object_id($type);
+						if (!isset($sealed[$id])) {
+							$sealedType = $type instanceof ConstantArrayType && $type->getUnsealedTypes() !== null
+								? $type->dropUnsealedTypes()
+								: $type;
+							$sealed[$id] = [$type, $traverse($sealedType)];
 						}
 
-						if ($type instanceof ConstantArrayType) {
-							$unsealed = $type->getUnsealedTypes();
-							if ($unsealed !== null) {
-								return $traverse($type->dropUnsealedTypes());
-							}
-						}
-
-						return $traverse($type);
+						return $sealed[$id][1];
 					});
 				}
 				$iterableValue = $type->getIterableValueType();
@@ -136,9 +135,39 @@ final class MissingTypehintCheck
 				}
 			}
 			return $traverse($type);
-		});
+		}));
 
 		return $descriptions;
+	}
+
+	/**
+	 * A type alias used in several places is one shared object: check it once, then replay the descriptions it added.
+	 *
+	 * @param string[] $descriptions
+	 * @param callable(Type, callable(Type): Type): Type $check
+	 * @return callable(Type, callable(Type): Type): Type
+	 */
+	private static function oncePerType(array &$descriptions, callable $check): callable
+	{
+		$checked = [];
+
+		return static function (Type $type, callable $traverse) use ($check, &$checked, &$descriptions): Type {
+			$id = spl_object_id($type);
+			if (isset($checked[$id])) {
+				[, $result, $added] = $checked[$id];
+				foreach ($added as $description) {
+					$descriptions[] = $description;
+				}
+
+				return $result;
+			}
+
+			$count = count($descriptions);
+			$result = $check($type, $traverse);
+			$checked[$id] = [$type, $result, array_slice($descriptions, $count)];
+
+			return $result;
+		};
 	}
 
 	/**

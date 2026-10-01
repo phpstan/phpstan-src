@@ -22,6 +22,9 @@ use PHPStan\DependencyInjection\ExtensionInterface;
  * ```
  *
  * @api
+ * @deprecated Use value tracking or file tracking instead. See:
+ *   https://phpstan.org/developing-extensions/result-cache-meta-extensions#tracking-dependencies-on-values
+ *   https://phpstan.org/developing-extensions/result-cache-meta-extensions#tracking-dependencies-on-files
  */
 #[ExtensionInterface(tag: self::EXTENSION_TAG)]
 interface ResultCacheMetaExtension

@@ -19,6 +19,7 @@ use function time;
 use function touch;
 use function uniqid;
 use function unlink;
+use const DIRECTORY_SEPARATOR;
 
 final class TurboProcessRestarterTest extends PHPStanTestCase
 {
@@ -173,6 +174,10 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 
 	public function testIsPrivateDirectory(): void
 	{
+		if (DIRECTORY_SEPARATOR !== '/') {
+			$this->markTestSkipped('There is no file cache on Windows, and its permissions do not map to these checks.');
+		}
+
 		$base = self::createTemporaryDirectory();
 		$userId = (int) fileowner($base);
 
@@ -183,6 +188,10 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 		mkdir($base . '/shared');
 		chmod($base . '/shared', 0777);
 		$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/shared', $userId));
+
+		mkdir($base . '/readonly', 0500);
+		$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/readonly', $userId));
+		chmod($base . '/readonly', 0700);
 
 		symlink($base . '/private', $base . '/link');
 		$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/link', $userId));
@@ -195,6 +204,10 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 
 	public function testPruneFileCacheDirectories(): void
 	{
+		if (DIRECTORY_SEPARATOR !== '/') {
+			$this->markTestSkipped('There is no file cache on Windows, and the test needs symlinks.');
+		}
+
 		$base = self::createTemporaryDirectory();
 		$now = time();
 		foreach (['current' => 30, 'stale' => 8, 'recent' => 2] as $name => $daysAgo) {

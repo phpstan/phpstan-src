@@ -8,9 +8,11 @@ use function array_fill_keys;
 use function array_keys;
 use function chmod;
 use function fileowner;
+use function function_exists;
 use function is_dir;
 use function is_link;
 use function mkdir;
+use function posix_geteuid;
 use function rmdir;
 use function scandir;
 use function symlink;
@@ -190,7 +192,10 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 		$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/shared', $userId));
 
 		mkdir($base . '/readonly', 0500);
-		$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/readonly', $userId));
+		// root can write to any directory, so is_writable() does not see the mode
+		if (function_exists('posix_geteuid') && posix_geteuid() !== 0) {
+			$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/readonly', $userId));
+		}
 		chmod($base . '/readonly', 0700);
 
 		symlink($base . '/private', $base . '/link');

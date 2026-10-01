@@ -5,7 +5,7 @@ namespace ResultCacheE2EFileDependency;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
-use PHPStan\Analyser\DependencyEmitter;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -25,7 +25,7 @@ final class ConfigRule implements Rule
 	}
 
 	/**
-	 * @param Scope&DependencyEmitter $scope
+	 * @param Scope&DependencyTracker $scope
 	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
@@ -34,7 +34,7 @@ final class ConfigRule implements Rule
 		}
 
 		$configFile = dirname(__DIR__) . '/src/Config.php';
-		$scope->fileDependency($configFile);
+		$scope->trackFileDependency($configFile);
 
 		if (!is_file($configFile)) {
 			return [];

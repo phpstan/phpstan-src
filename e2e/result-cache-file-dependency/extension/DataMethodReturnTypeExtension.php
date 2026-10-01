@@ -3,7 +3,7 @@
 namespace ResultCacheE2EFileDependency;
 
 use PhpParser\Node\Expr\MethodCall;
-use PHPStan\Analyser\DependencyEmitter;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -23,7 +23,7 @@ final class DataMethodReturnTypeExtension implements DynamicMethodReturnTypeExte
 	}
 
 	/**
-	 * @param Scope&DependencyEmitter $scope
+	 * @param Scope&DependencyTracker $scope
 	 */
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{

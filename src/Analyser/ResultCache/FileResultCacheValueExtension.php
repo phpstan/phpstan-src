@@ -7,7 +7,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileContentHasher;
 
 /**
- * The value behind DependencyEmitter::fileDependency(): the hash of the file's contents, or that
+ * The value behind DependencyTracker::trackFileDependency(): the hash of the file's contents, or that
  * the file does not exist. Any change of the file - also its creation or deletion - re-analyses the
  * files depending on it, whatever happened to what it declares.
  *

@@ -51,7 +51,7 @@ inline constexpr uint32_t templateArgumentConstraints = 36;
 
 inline void declareClass(reg::Class &cls)
 {
-	cls.implements({ "PHPStan\\Analyser\\Scope", "PHPStan\\Analyser\\NodeCallbackInvoker", "PHPStan\\Analyser\\CollectedDataEmitter", "PHPStan\\Analyser\\DependencyEmitter" });
+	cls.implements({ "PHPStan\\Analyser\\Scope", "PHPStan\\Analyser\\NodeCallbackInvoker", "PHPStan\\Analyser\\CollectedDataEmitter", "PHPStan\\Analyser\\DependencyTracker" });
 }
 
 /* the properties the class declares itself, in declaration order (a used trait's come from its registrar) */
@@ -533,9 +533,9 @@ inline constexpr char strings[] =
 	"data\0" /* 9236 */
 	"emitCollectedData\0" /* 9241 */
 	"extensionClass\0" /* 9259 */
-	"valueDependency\0" /* 9274 */
-	"file\0" /* 9290 */
-	"fileDependency"; /* 9295 */
+	"trackValueDependency\0" /* 9274 */
+	"file\0" /* 9295 */
+	"trackFileDependency"; /* 9300 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 10), /* __construct $container */
 	reg::packed(48, 0, 61), /* __construct $scopeFactory */
@@ -1068,11 +1068,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(9222, MAY_BE_STRING), /* emitCollectedData $collectorType */
 	reg::packed(9236, MAY_BE_ANY), /* emitCollectedData $data */
 	reg::packed(1476, MAY_BE_VOID), /* emitCollectedData return */
-	reg::packed(9259, MAY_BE_STRING), /* valueDependency $extensionClass */
-	reg::packed(3280, MAY_BE_STRING), /* valueDependency $key */
-	reg::packed(1476, MAY_BE_VOID), /* valueDependency return */
-	reg::packed(9290, MAY_BE_STRING), /* fileDependency $file */
-	reg::packed(1476, MAY_BE_VOID), /* fileDependency return */
+	reg::packed(9259, MAY_BE_STRING), /* trackValueDependency $extensionClass */
+	reg::packed(3280, MAY_BE_STRING), /* trackValueDependency $key */
+	reg::packed(1476, MAY_BE_VOID), /* trackValueDependency return */
+	reg::packed(9295, MAY_BE_STRING), /* trackFileDependency $file */
+	reg::packed(1476, MAY_BE_VOID), /* trackFileDependency return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -1274,8 +1274,8 @@ inline constexpr sigtab::Sig getPhpVersion = { { 9149 /* getPhpVersion */, 0, 52
 inline constexpr sigtab::Sig isOverallPhpVersionRange = { { 9163 /* isOverallPhpVersionRange */, 1, 524, 1, 525, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig invokeNodeCallback = { { 9203 /* invokeNodeCallback */, 1, 526, 1, 527, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig emitCollectedData = { { 9241 /* emitCollectedData */, 2, 528, 2, 530, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig valueDependency = { { 9274 /* valueDependency */, 2, 531, 2, 533, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig fileDependency = { { 9295 /* fileDependency */, 1, 534, 1, 535, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackValueDependency = { { 9274 /* trackValueDependency */, 2, 531, 2, 533, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackFileDependency = { { 9300 /* trackFileDependency */, 1, 534, 1, 535, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MutatingScope

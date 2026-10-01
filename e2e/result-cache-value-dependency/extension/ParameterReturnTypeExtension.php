@@ -4,7 +4,7 @@ namespace ResultCacheE2EValueDependency;
 
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Scalar\String_;
-use PHPStan\Analyser\DependencyEmitter;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -21,7 +21,7 @@ final class ParameterReturnTypeExtension implements DynamicFunctionReturnTypeExt
 	}
 
 	/**
-	 * @param Scope&DependencyEmitter $scope
+	 * @param Scope&DependencyTracker $scope
 	 */
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
@@ -30,7 +30,7 @@ final class ParameterReturnTypeExtension implements DynamicFunctionReturnTypeExt
 			return null;
 		}
 
-		$scope->valueDependency(ParameterValueExtension::class, $arg->value);
+		$scope->trackValueDependency(ParameterValueExtension::class, $arg->value);
 		$value = Container::getParameter($arg->value);
 		if ($value === null) {
 			return null;

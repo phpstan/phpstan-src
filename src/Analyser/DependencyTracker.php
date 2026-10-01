@@ -5,13 +5,13 @@ namespace PHPStan\Analyser;
 use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
 
 /**
- * The interface DependencyEmitter can be typehinted in 2nd parameter of Rule::processNode(),
+ * The interface DependencyTracker can be typehinted in 2nd parameter of Rule::processNode(),
  * and in the Scope parameter of dynamic return type extensions and expression type resolver
  * extensions:
  *
  * ```php
  * /**
- *  * @param Scope&DependencyEmitter $scope
+ *  * @param Scope&DependencyTracker $scope
  *  *\/
  * public function processNode(Node $node, Scope $scope): array
  * ```
@@ -19,12 +19,12 @@ use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
  * The intersection goes to the PHPDoc: the native parameter type stays Scope, which is what the
  * interfaces declare once PHPStan is downgraded for older PHP versions.
  *
- * It declares what the analysis of the current file depends on besides the analysed code, so
- * that the result cache re-analyses the file when that changes - see ResultCacheValueExtension.
+ * It tracks what the analysis of the current file depends on besides the analysed code, so that
+ * the result cache re-analyses the file when that changes - see ResultCacheValueExtension.
  *
  * @api
  */
-interface DependencyEmitter
+interface DependencyTracker
 {
 
 	/**
@@ -32,7 +32,7 @@ interface DependencyEmitter
 	 *
 	 * @param class-string<ResultCacheValueExtension> $extensionClass
 	 */
-	public function valueDependency(string $extensionClass, string $key): void;
+	public function trackValueDependency(string $extensionClass, string $key): void;
 
 	/**
 	 * The analysis of the current file depends on the contents of $file - a data file, a template,
@@ -41,6 +41,6 @@ interface DependencyEmitter
 	 *
 	 * The path should be absolute. The file does not have to exist.
 	 */
-	public function fileDependency(string $file): void;
+	public function trackFileDependency(string $file): void;
 
 }

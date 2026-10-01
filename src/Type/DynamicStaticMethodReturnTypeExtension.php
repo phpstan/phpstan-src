@@ -3,7 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\StaticCall;
-use PHPStan\Analyser\DependencyEmitter;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\ExtensionInterface;
@@ -35,6 +35,6 @@ interface DynamicStaticMethodReturnTypeExtension
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool;
 
-	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope&DependencyEmitter $scope): ?Type;
+	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope&DependencyTracker $scope): ?Type;
 
 }

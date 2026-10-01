@@ -107,7 +107,7 @@ final class FileAnalyserCallback
 
 		$parserNodes = $this->parserNodes;
 
-		/** @var Scope&NodeCallbackInvoker&CollectedDataEmitter&DependencyEmitter $scope */
+		/** @var Scope&NodeCallbackInvoker&CollectedDataEmitter&DependencyTracker $scope */
 		if ($node instanceof Node\Stmt\Trait_) {
 			foreach (array_keys($this->linesToIgnore[$this->file] ?? []) as $lineToIgnore) {
 				if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {
@@ -182,9 +182,9 @@ final class FileAnalyserCallback
 
 			foreach ($ruleErrors as $ruleError) {
 				if ($ruleError instanceof FileDependenciesRuleError) {
-					// the deprecated way of DependencyEmitter::fileDependency()
+					// the deprecated way of DependencyTracker::trackFileDependency()
 					foreach ($ruleError->getFileDependencies() as $fileDependency) {
-						$scope->fileDependency($fileDependency);
+						$scope->trackFileDependency($fileDependency);
 					}
 				}
 

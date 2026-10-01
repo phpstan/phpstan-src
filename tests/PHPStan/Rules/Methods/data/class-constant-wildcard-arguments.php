@@ -34,7 +34,7 @@ class ContainerExtension implements Extension
 
 }
 
-final class Emitter
+final class Tracker
 {
 
 	/**
@@ -42,17 +42,17 @@ final class Emitter
 	 * @param class-string<T> $extensionClass
 	 * @param T::* $type
 	 */
-	public function valueDependency(string $extensionClass, string $type): void
+	public function trackValueDependency(string $extensionClass, string $type): void
 	{
 	}
 
 }
 
-function (Emitter $emitter, Extension $extension, FileExtension $fileExtension, ContainerExtension $containerExtension): void {
-	$emitter->valueDependency(FileExtension::class, FileExtension::FILE);
-	$emitter->valueDependency(ContainerExtension::class, ContainerExtension::HAS_SERVICE);
-	$emitter->valueDependency(FileExtension::class, ContainerExtension::HAS_SERVICE);
-	$emitter->valueDependency(FileExtension::class, 'nope');
+function (Tracker $tracker, Extension $extension, FileExtension $fileExtension, ContainerExtension $containerExtension): void {
+	$tracker->trackValueDependency(FileExtension::class, FileExtension::FILE);
+	$tracker->trackValueDependency(ContainerExtension::class, ContainerExtension::HAS_SERVICE);
+	$tracker->trackValueDependency(FileExtension::class, ContainerExtension::HAS_SERVICE);
+	$tracker->trackValueDependency(FileExtension::class, 'nope');
 
 	$fileExtension->doFoo(FileExtension::FILE);
 	$fileExtension->doFoo(ContainerExtension::HAS_SERVICE);

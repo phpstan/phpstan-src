@@ -187,7 +187,7 @@ final class RuleErrorBuilder
 	 * re-analyses the file the error is reported in when that file appears, changes or is deleted.
 	 * The path must be absolute; it does not have to exist.
 	 *
-	 * @deprecated Call fileDependency() on the Scope instead (Scope&DependencyEmitter) - it declares
+	 * @deprecated Call trackFileDependency() on the Scope instead (Scope&DependencyTracker) - it declares
 	 *             the dependency whether the rule reports an error or not.
 	 * @api
 	 * @phpstan-this-out self<T&FileDependenciesRuleError>

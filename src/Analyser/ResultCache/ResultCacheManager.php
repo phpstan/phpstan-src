@@ -980,7 +980,7 @@ final class ResultCacheManager
 			);
 		}
 
-		// The values declared through DependencyEmitter::valueDependency() - see ValueDependencyCollector.
+		// The values declared through DependencyTracker::trackValueDependency() - see ValueDependencyCollector.
 		// The files depending on one that is different now are re-analysed, and so are the ones
 		// depending on one whose extension is no longer registered, which is then forgotten.
 		$allAnalysedFilesSet = array_fill_keys($allAnalysedFiles, true);

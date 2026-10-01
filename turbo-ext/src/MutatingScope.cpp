@@ -10584,7 +10584,7 @@ public:
 
 	/* $this->container->getByType(ValueDependencyCollector::class)->record($extensionClass, $key,
 	 * $this, $this->nodeCallback !== null) */
-	bool valueDependency(zend_string *extensionClass, zend_string *key)
+	bool trackValueDependency(zend_string *extensionClass, zend_string *key)
 	{
 		zval extensionClassZv, keyZv;
 		ZVAL_STR(&extensionClassZv, extensionClass);
@@ -10594,7 +10594,7 @@ public:
 
 	/* $this->container->getByType(ValueDependencyCollector::class)->recordFile($file, $this,
 	 * $this->nodeCallback !== null) */
-	bool fileDependency(zend_string *file)
+	bool trackFileDependency(zend_string *file)
 	{
 		zval fileZv;
 		ZVAL_STR(&fileZv, file);
@@ -13392,16 +13392,16 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		if (UNEXPECTED(!PT_THIS.emitCollectedData(collectorType, data))) RETURN_THROWS();
 	});
 
-	cls.method(sigs::valueDependency, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::trackValueDependency, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *extensionClass, *key;
 		if (!zp::parse<zp::Str, zp::Str>(execute_data, extensionClass, key)) RETURN_THROWS();
-		if (UNEXPECTED(!PT_THIS.valueDependency(extensionClass, key))) RETURN_THROWS();
+		if (UNEXPECTED(!PT_THIS.trackValueDependency(extensionClass, key))) RETURN_THROWS();
 	});
 
-	cls.method(sigs::fileDependency, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::trackFileDependency, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *file;
 		if (!zp::parse<zp::Str>(execute_data, file)) RETURN_THROWS();
-		if (UNEXPECTED(!PT_THIS.fileDependency(file))) RETURN_THROWS();
+		if (UNEXPECTED(!PT_THIS.trackFileDependency(file))) RETURN_THROWS();
 	});
 
 	/* }}} */

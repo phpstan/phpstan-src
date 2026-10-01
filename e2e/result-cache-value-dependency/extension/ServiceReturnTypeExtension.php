@@ -4,7 +4,7 @@ namespace ResultCacheE2EValueDependency;
 
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Scalar\String_;
-use PHPStan\Analyser\DependencyEmitter;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -20,7 +20,7 @@ final class ServiceReturnTypeExtension implements DynamicFunctionReturnTypeExten
 	}
 
 	/**
-	 * @param Scope&DependencyEmitter $scope
+	 * @param Scope&DependencyTracker $scope
 	 */
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
@@ -30,7 +30,7 @@ final class ServiceReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		}
 
 		// the same value ServiceRule declares - recorded once
-		$scope->valueDependency(HasServiceValueExtension::class, $arg->value);
+		$scope->trackValueDependency(HasServiceValueExtension::class, $arg->value);
 		$class = Container::getService($arg->value);
 
 		return $class !== null ? new ObjectType($class) : null;

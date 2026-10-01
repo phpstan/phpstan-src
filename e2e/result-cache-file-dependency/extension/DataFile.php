@@ -2,7 +2,7 @@
 
 namespace ResultCacheE2EFileDependency;
 
-use PHPStan\Analyser\DependencyEmitter;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerType;
@@ -15,12 +15,12 @@ final class DataFile
 	 * The return type comes from a data file the extension reads on its own: int when it says so,
 	 * otherwise the string it contains, 'missing' when there is no such file.
 	 *
-	 * @param Scope&DependencyEmitter $scope
+	 * @param Scope&DependencyTracker $scope
 	 */
 	public static function type(string $name, Scope $scope): Type
 	{
 		$file = dirname(__DIR__) . '/data/' . $name . '.txt';
-		$scope->fileDependency($file);
+		$scope->trackFileDependency($file);
 
 		if (!is_file($file)) {
 			return new ConstantStringType('missing');

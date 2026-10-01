@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
-use PHPStan\Analyser\DependencyEmitter;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -23,7 +23,7 @@ final class ServiceRule implements Rule
 	}
 
 	/**
-	 * @param Scope&DependencyEmitter $scope
+	 * @param Scope&DependencyTracker $scope
 	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
@@ -32,7 +32,7 @@ final class ServiceRule implements Rule
 		}
 
 		$id = $node->getArgs()[0]->value->value;
-		$scope->valueDependency(HasServiceValueExtension::class, $id);
+		$scope->trackValueDependency(HasServiceValueExtension::class, $id);
 		if (Container::getService($id) !== null) {
 			return [];
 		}

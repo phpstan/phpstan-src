@@ -4568,11 +4568,11 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/class-constant-wildcard-arguments.php'], [
 			[
-				'Parameter #2 $type of method ClassConstantWildcardArguments\\Emitter::valueDependency() expects \'file\', \'hasService\' given.',
+				'Parameter #2 $type of method ClassConstantWildcardArguments\\Tracker::trackValueDependency() expects \'file\', \'hasService\' given.',
 				54,
 			],
 			[
-				'Parameter #2 $type of method ClassConstantWildcardArguments\\Emitter::valueDependency() expects \'file\', \'nope\' given.',
+				'Parameter #2 $type of method ClassConstantWildcardArguments\\Tracker::trackValueDependency() expects \'file\', \'nope\' given.',
 				55,
 			],
 			[

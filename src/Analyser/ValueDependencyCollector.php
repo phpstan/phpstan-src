@@ -17,7 +17,7 @@ use function array_values;
 use function sprintf;
 
 /**
- * Collects the values declared through DependencyEmitter::valueDependency() while a file is being
+ * Collects the values declared through DependencyTracker::trackValueDependency() while a file is being
  * analysed, and what each value was at that moment - the value the analysis saw.
  *
  * A value is identified by its extension and key: the same one declared again, by the same rule
@@ -104,7 +104,7 @@ final class ValueDependencyCollector
 	}
 
 	/**
-	 * DependencyEmitter::fileDependency() - a dependency on the contents of a file, through
+	 * DependencyTracker::trackFileDependency() - a dependency on the contents of a file, through
 	 * FileResultCacheValueExtension.
 	 */
 	public function recordFile(string $file, Scope $scope, bool $insideWalk): void

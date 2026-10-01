@@ -11,7 +11,7 @@ use PHPStan\DependencyInjection\ExtensionInterface;
  * A rule or an extension reading such a value declares it:
  *
  * ```php
- * $scope->valueDependency(MyExtension::class, $key);
+ * $scope->trackValueDependency(MyExtension::class, $key);
  * ```
  *
  * The result cache then records the value, and re-analyses the files that declared it when it

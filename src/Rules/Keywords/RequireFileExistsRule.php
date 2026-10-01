@@ -8,7 +8,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Name\FullyQualified;
-use PHPStan\Analyser\DependencyEmitter;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -59,7 +59,7 @@ final class RequireFileExistsRule implements Rule
 		return Include_::class;
 	}
 
-	public function processNode(Node $node, Scope&DependencyEmitter $scope): array
+	public function processNode(Node $node, Scope&DependencyTracker $scope): array
 	{
 		if ($this->isInFileExists($node, $scope)) {
 			return [];
@@ -85,7 +85,7 @@ final class RequireFileExistsRule implements Rule
 			// The error is about a path, and a path is nothing the dependency graph tracks. Declaring the
 			// paths makes the result cache re-analyse this file when one of them is created.
 			foreach ($this->includedFilePathResolver->resolve($path, $scope) as $candidatePath) {
-				$scope->fileDependency($candidatePath);
+				$scope->trackFileDependency($candidatePath);
 			}
 
 			$errors[] = $this->getErrorMessage($node, $pathExpr);

@@ -5237,6 +5237,20 @@ $lateOthers = static fn (array $subjects): array => [
 		$r["$name traverseSimultaneously toRight"] = $attempt(static fn () => $marker->traverseSimultaneously($others['string'], static fn ($a, $b) => $b));
 	}
 	$r['marker nested initial type'] = $attempt(static fn () => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateT, $subjects['unresolvedInt']));
+	// a union keeps template-argument markers apart: no other type absorbs one,
+	// and the same site's markers merge into the wider inferred type
+	$r['marker unions'] = $lateView([
+		\PHPStan\Type\TypeCombinator::union($subjects['unresolvedInt'], $subjects['unresolvedIntSiteB']),
+		\PHPStan\Type\TypeCombinator::union($subjects['unresolvedInt'], new \PHPStan\Type\IntegerType()),
+		\PHPStan\Type\TypeCombinator::union($subjects['unresolvedInt'], new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateT, new \PHPStan\Type\StringType())),
+		\PHPStan\Type\TypeCombinator::union($subjects['unresolvedInt'], new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateT, null)),
+		\PHPStan\Type\TypeCombinator::union($subjects['unresolvedInt'], new \PHPStan\Type\MixedType()),
+		\PHPStan\Type\TypeCombinator::union($subjects['unresolvedInt'], new \PHPStan\Type\NeverType()),
+		\PHPStan\Type\TypeCombinator::union(new \PHPStan\Type\UnionType([$subjects['unresolvedInt'], new \PHPStan\Type\NullType()]), $subjects['unresolvedIntSiteB'], new \PHPStan\Type\StringType()),
+		\PHPStan\Type\TypeCombinator::union($subjects['unresolvedEnum'], new \PHPStan\Type\BenevolentUnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])),
+		\PHPStan\Type\TypeCombinator::union($subjects['unresolvedInt'], $subjects['unresolvedInt']->generalize(\PHPStan\Type\GeneralizePrecision::lessSpecific())),
+		$subjects['unresolvedInt']->isClosureSignature(),
+	]);
 	$r['marker equals'] = [$subjects['unresolvedInt']->equals($subjects['unresolvedIntSiteB']), $subjects['unresolvedInt']->equals(new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateT, new \PHPStan\Type\StringType())), $subjects['unresolvedInt']->equals(new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateTKey, new \PHPStan\Type\IntegerType())), $subjects['unresolvedInt']->equals($subjects['unresolvedNull'])];
 	// the shape factory resolving right away, and its private constructor
 	$r['shape create resolved'] = $lateView([

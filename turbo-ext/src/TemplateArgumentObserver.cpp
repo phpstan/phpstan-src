@@ -638,6 +638,31 @@ public:
 				if (UNEXPECTED(!containsMarker(member.raw(), contains))) return zv::Val();
 				if (contains) structural.push(zv::Ref(member.raw()));
 			}
+			if (zend_hash_num_elements(naked.table()) > 0 && zend_hash_num_elements(structural.table()) == 0) {
+				// a union keeps markers apart from everything else (see
+				// TypeCombinator::union()) - the absorption is this method's own
+				zv::Arr kept = zv::Arr::create(zend_hash_num_elements(members.table()));
+				for (auto entry : zv::ArrRef(members.raw())) {
+					zval *member = entry.value().raw();
+					bool keep = true;
+					if (!(Z_TYPE_P(member) == IS_OBJECT && instanceof_function(Z_OBJCE_P(member), pt_ce_unresolved_template_argument_type))) {
+						for (auto nakedEntry : zv::ArrRef(naked.raw())) {
+							zv::Val delegate = pt_type_call(Z_OBJ_P(nakedEntry.value().raw()), PT_LC("getdelegate"), 0, NULL);
+							if (UNEXPECTED(delegate.isUndef())) return zv::Val();
+							zv::Val result = pt_type_op(Z_OBJ_P(delegate.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, member);
+							if (UNEXPECTED(result.isUndef())) return zv::Val();
+							zend_long trinary = pt_type_result_trinary(result.raw());
+							if (UNEXPECTED(trinary < 0)) return zv::Val();
+							if (trinary == PT_TRI_YES) {
+								keep = false;
+								break;
+							}
+						}
+					}
+					if (keep) kept.push(zv::Ref(member));
+				}
+				members = std::move(kept);
+			}
 			if (zend_hash_num_elements(naked.table()) == 0 || zend_hash_num_elements(structural.table()) == 0) {
 				uint32_t argc = zend_hash_num_elements(members.table());
 				zval *argv = (zval *) emalloc(sizeof(zval) * (argc > 0 ? argc : 1));
@@ -768,47 +793,6 @@ public:
 					ZVAL_DEREF(declaredArgumentSlot);
 				}
 				if (!templateIsTemplate || declaredArgumentSlot == NULL || Z_TYPE_P(declaredArgumentSlot) == IS_NULL) continue;
-				zv::Val declaredArgument = zv::Val::copyOf(zv::Ref(declaredArgumentSlot));
-				if (!isMarker(argument)) {
-					constraints = observeSend(std::move(constraints), declaredArgument.raw(), argument, isCallArgument);
-					if (UNEXPECTED(constraints.isUndef())) return zv::Val();
-					continue;
-				}
-				if (isCallArgument) {
-					zv::Val initial = markerInitialType(argument);
-					if (UNEXPECTED(initial.isUndef())) return zv::Val();
-					bool emptyInitial = Z_TYPE_P(initial.raw()) == IS_NULL;
-					if (!emptyInitial) {
-						zv::Val again = markerInitialType(argument);
-						if (UNEXPECTED(again.isUndef())) return zv::Val();
-						emptyInitial = isInstance(again.raw(), pt_ce_never_type);
-					}
-					if (emptyInitial) {
-						bool onlyInferable;
-						if (UNEXPECTED(!hasOnlyInferableTemplates(declaredArgument.raw(), onlyInferable))) return zv::Val();
-						if (onlyInferable) {
-							declaredArgument = pt_type_call_static_ce(pt_ce_template_type_helper, PT_LC("resolvetodefaults"), 1, declaredArgument.raw());
-							if (UNEXPECTED(declaredArgument.isUndef())) return zv::Val();
-						}
-					}
-				}
-				bool uninformative;
-				if (UNEXPECTED(!isUninformativeSendTarget(declaredArgument.raw(), uninformative))) return zv::Val();
-				if (uninformative) {
-					bool unconstraining = false;
-					if (isCallArgument) {
-						if (UNEXPECTED(!hasOnlyInferableTemplates(declaredArgument.raw(), unconstraining))) return zv::Val();
-					}
-					if (!unconstraining) {
-						if (UNEXPECTED(!isPlainMixed(declaredArgument.raw(), unconstraining))) return zv::Val();
-					}
-					if (unconstraining) {
-						constraints = pt_template_argument_constraints_with_unconstraining_send(constraints.raw(), argument);
-						if (UNEXPECTED(constraints.isUndef())) return zv::Val();
-					}
-					continue;
-				}
-
 				/* $declaredVariances->getVariance($template->getName()) ?? TemplateTypeVariance::createInvariant() */
 				zv::Val templateName = call0(template_, PT_LC("getname"), "getName");
 				if (UNEXPECTED(templateName.isUndef())) return zv::Val();
@@ -823,13 +807,7 @@ public:
 				if (UNEXPECTED(!varianceIs(callSiteVariance.raw(), PT_TEMPLATE_TYPE_VARIANCE_INVARIANT, invariant))) return zv::Val();
 				zv::Val effectiveVariance = invariant ? call0(template_, PT_LC("getvariance"), "getVariance") : std::move(callSiteVariance);
 				if (UNEXPECTED(effectiveVariance.isUndef())) return zv::Val();
-				constraints = pt_template_argument_constraints_with_send(constraints.raw(), argument, declaredArgument.raw(), effectiveVariance.raw());
-				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
-
-				zv::Val initial = markerInitialType(argument);
-				if (UNEXPECTED(initial.isUndef())) return zv::Val();
-				if (Z_TYPE_P(initial.raw()) == IS_NULL) continue;
-				constraints = observeSend(std::move(constraints), declaredArgument.raw(), initial.raw(), isCallArgument);
+				constraints = observeArgumentSend(std::move(constraints), declaredArgumentSlot, argument, effectiveVariance.raw(), isCallArgument);
 				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
 			}
 
@@ -862,6 +840,92 @@ public:
 		zv::Val actualValue = pt_type_op(Z_OBJ_P(actual), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 		if (UNEXPECTED(actualValue.isUndef())) return zv::Val();
 		return observeSend(std::move(constraints), declaredValue.raw(), actualValue.raw(), isCallArgument);
+	}
+
+	/* Mirrors observeArgumentSend(). */
+	static zv::Val observeArgumentSend(zv::Val constraints, zval *declaredArgument, zval *argument, zval *variance, bool isCallArgument)
+	{
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		if (isMarker(argument)) {
+			bool closureSignature;
+			if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(argument, closureSignature))) return zv::Val();
+			if (!closureSignature) return observeMarkerSend(std::move(constraints), declaredArgument, argument, variance, isCallArgument);
+		}
+		bool argumentTemplate = false;
+		bool argumentUnion = isInstance(argument, pt_ce_union_type);
+		if (argumentUnion && UNEXPECTED(!isTemplateType(argument, argumentTemplate))) return zv::Val();
+		if (!argumentUnion || argumentTemplate) return observeSend(std::move(constraints), declaredArgument, argument, isCallArgument);
+
+		bool invariant, covariant = false;
+		if (UNEXPECTED(!varianceIs(variance, PT_TEMPLATE_TYPE_VARIANCE_INVARIANT, invariant))) return zv::Val();
+		if (!invariant && UNEXPECTED(!varianceIs(variance, PT_TEMPLATE_TYPE_VARIANCE_COVARIANT, covariant))) return zv::Val();
+		zval *upperBound = NULL;
+		if (invariant || covariant) {
+			upperBound = pt_template_type_variance_singleton(PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
+			if (UNEXPECTED(upperBound == NULL)) return zv::Val();
+		}
+		zv::Val types = pt_type_op(Z_OBJ_P(argument), PT_OP_GET_TYPES, 0, NULL);
+		if (UNEXPECTED(types.isUndef())) return zv::Val();
+		for (auto entry : zv::ArrRef(types.raw())) {
+			zval *member = entry.value().deref().raw();
+			bool closureSignature = false;
+			bool marker = isMarker(member);
+			if (marker && UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(member, closureSignature))) return zv::Val();
+			if (!marker || closureSignature) {
+				constraints = observeSend(std::move(constraints), declaredArgument, member, isCallArgument);
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+				continue;
+			}
+			if (upperBound == NULL) continue;
+			constraints = observeMarkerSend(std::move(constraints), declaredArgument, member, upperBound, isCallArgument);
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+
+		return constraints;
+	}
+
+	/* Mirrors observeMarkerSend(). */
+	static zv::Val observeMarkerSend(zv::Val constraints, zval *declaredArgumentIn, zval *marker, zval *variance, bool isCallArgument)
+	{
+		zv::Val initial = markerInitialType(marker);
+		if (UNEXPECTED(initial.isUndef())) return zv::Val();
+		zv::Val declaredArgument = zv::Val::copyOf(zv::Ref(declaredArgumentIn));
+		if (isCallArgument && (Z_TYPE_P(initial.raw()) == IS_NULL || isInstance(initial.raw(), pt_ce_never_type))) {
+			bool onlyInferable;
+			if (UNEXPECTED(!hasOnlyInferableTemplates(declaredArgument.raw(), onlyInferable))) return zv::Val();
+			if (onlyInferable) {
+				declaredArgument = pt_type_call_static_ce(pt_ce_template_type_helper, PT_LC("resolvetodefaults"), 1, declaredArgument.raw());
+				if (UNEXPECTED(declaredArgument.isUndef())) return zv::Val();
+			}
+		}
+		bool uninformative;
+		if (UNEXPECTED(!isUninformativeSendTarget(declaredArgument.raw(), uninformative))) return zv::Val();
+		if (uninformative) {
+			// An unresolved call parameter, like mixed, uses the object without
+			// constraining it. Return/property templates are fixed by their
+			// declaration and must keep an empty argument compatible with them.
+			bool unconstraining = false;
+			if (isCallArgument) {
+				if (UNEXPECTED(!hasOnlyInferableTemplates(declaredArgument.raw(), unconstraining))) return zv::Val();
+			}
+			if (!unconstraining) {
+				if (UNEXPECTED(!isPlainMixed(declaredArgument.raw(), unconstraining))) return zv::Val();
+			}
+			if (unconstraining) {
+				return pt_template_argument_constraints_with_unconstraining_send(constraints.raw(), marker);
+			}
+			return constraints;
+		}
+
+		constraints = pt_template_argument_constraints_with_send(constraints.raw(), marker, declaredArgument.raw(), variance);
+		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		if (Z_TYPE_P(initial.raw()) == IS_NULL) return constraints;
+
+		// a site whose inferred argument itself carries markers: nested in objects
+		// (wrap(new Foo(1))), or bare as the sites it was inferred from
+		// (collect(of(1), of(2)) returning Coll<U>) - an upper bound of the site
+		// bounds those from above too
+		return observeArgumentSend(std::move(constraints), declaredArgument.raw(), initial.raw(), variance, isCallArgument);
 	}
 
 	/* Mirrors isInertSendTarget(); false = pending exception */

@@ -137,7 +137,7 @@ zv::Val weakReferenceCreate(zval *object)
 /* PHP 8.3 names a closure by its namespace alone */
 #define PT_RFV_CLOSURE(method, line) PT_RFV_CLASS "::PHPStan\\Reflection\\{closure}"
 #endif
-#define PT_RFV_PARAMETERS_CLOSURE PT_RFV_CLOSURE("getParameters", "89")
+#define PT_RFV_PARAMETERS_CLOSURE PT_RFV_CLOSURE("getParameters", "90")
 
 /* }}} */
 
@@ -315,10 +315,38 @@ public:
 	{
 		zv::Val references = pt_type_op(Z_OBJ_P(type), PT_OP_GET_REFERENCED_TEMPLATE_TYPES, 1, positionVariance);
 		if (UNEXPECTED(references.isUndef())) return zv::Val();
+		zv::Arr onlyCovariant = zv::Arr::create(0);
+		if (site != NULL && Z_TYPE_P(references.raw()) == IS_ARRAY) {
+			for (zv::ArrayEntry entry : zv::ArrRef(references.raw())) {
+				zv::Ref reference = entry.value().deref();
+				if (UNEXPECTED(!reference.isObject())) {
+					zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(reference.raw()));
+					return zv::Val();
+				}
+				zv::Val referenceType, referenceVariance;
+				if (UNEXPECTED(!pt_template_type_reference_parts(reference.raw(), referenceType, referenceVariance))) return zv::Val();
+				zv::Val name = templateName(referenceType.raw());
+				if (UNEXPECTED(name.isUndef())) return zv::Val();
+				if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING)) {
+					zend_type_error("phpstan_turbo: getName() must return string");
+					return zv::Val();
+				}
+				zval *previous = zend_symtable_find(onlyCovariant.table(), Z_STR_P(name.raw()));
+				bool covariant = false;
+				if (previous == NULL || Z_TYPE_P(previous) == IS_TRUE) {
+					zend_long value;
+					if (UNEXPECTED(!pt_template_type_variance_value_of(referenceVariance.raw(), value))) return zv::Val();
+					covariant = value == PT_TEMPLATE_TYPE_VARIANCE_COVARIANT;
+				}
+				zval flag;
+				ZVAL_BOOL(&flag, covariant);
+				zend_symtable_update(onlyCovariant.table(), Z_STR_P(name.raw()), &flag);
+			}
+		}
 
 		zval null = {};
 		ZVAL_NULL(&null);
-		zv::Val objectCallback = pt_native_closure(&objectCallbackBody, self, references.raw(), site != NULL ? site : &null, frame != NULL ? frame : &null, allowUnresolved);
+		zv::Val objectCallback = pt_native_closure(&objectCallbackBody, self, references.raw(), onlyCovariant.raw(), site != NULL ? site : &null, frame != NULL ? frame : &null, allowUnresolved);
 		zv::Val callback = pt_native_closure(&typeCallbackBody, self, references.raw(), objectCallback.raw());
 		zval mapped;
 		if (UNEXPECTED(!pt_type_traverser_map(&mapped, type, callback.raw()))) return zv::Val();
@@ -326,13 +354,14 @@ public:
 	}
 
 	/* Mirrors unresolvedOrResolvedTemplateArgument() (private). */
-	static zv::Val unresolvedOrResolvedTemplateArgument(zval *templateType, zval *inferred, zval *site, zval *frame, bool allowUnresolved)
+	static zv::Val unresolvedOrResolvedTemplateArgument(zval *templateType, zval *inferred, zval *site, zval *frame, bool allowUnresolved, bool onlyCovariant)
 	{
 		if (allowUnresolved) {
 			bool observing;
 			if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame, observing))) return zv::Val();
 			if (observing) {
 				if (Z_TYPE_P(inferred) == IS_OBJECT && instanceof_function(Z_OBJCE_P(inferred), pt_ce_unresolved_template_argument_type)) return zv::Val::copyOf(zv::Ref(inferred));
+				if (onlyCovariant && !(Z_TYPE_P(inferred) == IS_OBJECT && instanceof_function(Z_OBJCE_P(inferred), pt_ce_never_type))) return zv::Val::copyOf(zv::Ref(inferred));
 				zv::Val unresolved;
 				if (UNEXPECTED(!pt_unresolved_template_argument_type_new(unresolved.raw(), site, templateType, inferred))) return zv::Val();
 				return unresolved;
@@ -656,7 +685,7 @@ private:
 	static void typeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("resolveResolvableTemplateTypes", "330") "(), %u passed and exactly 2 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("resolveResolvableTemplateTypes", "338") "(), %u passed and exactly 2 expected", argc);
 			return;
 		}
 		zend_object *self = Z_OBJ(captures[0]);
@@ -715,18 +744,19 @@ private:
 	}
 
 	/* the $objectCb of resolveResolvableTemplateTypes() — captures: $this,
-	 * $references, $site, $frame, $allowUnresolved */
+	 * $references, $onlyCovariant, $site, $frame, $allowUnresolved */
 	static void objectCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("resolveResolvableTemplateTypes", "284") "(), %u passed and exactly 2 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("resolveResolvableTemplateTypes", "292") "(), %u passed and exactly 2 expected", argc);
 			return;
 		}
 		zend_object *self = Z_OBJ(captures[0]);
 		zval *references = &captures[1];
-		zval *site = &captures[2];
-		zval *frame = &captures[3];
-		bool allowUnresolved = Z_TYPE(captures[4]) == IS_TRUE;
+		zval *onlyCovariant = &captures[2];
+		zval *site = &captures[3];
+		zval *frame = &captures[4];
+		bool allowUnresolved = Z_TYPE(captures[5]) == IS_TRUE;
 		zval *type = &argv[0];
 		zval *traverse = &argv[1];
 
@@ -753,7 +783,9 @@ private:
 				}
 
 				if (Z_TYPE_P(site) != IS_NULL && Z_TYPE_P(frame) != IS_NULL) {
-					newType = unresolvedOrResolvedTemplateArgument(type, newType.raw(), site, frame, allowUnresolved);
+					/* $onlyCovariant[$type->getName()] ?? false */
+					zval *covariantSlot = Z_TYPE_P(name.raw()) == IS_STRING ? zend_symtable_find(Z_ARRVAL_P(onlyCovariant), Z_STR_P(name.raw())) : NULL;
+					newType = unresolvedOrResolvedTemplateArgument(type, newType.raw(), site, frame, allowUnresolved, covariantSlot != NULL && Z_TYPE_P(covariantSlot) == IS_TRUE);
 				} else {
 					zv::Args generalizeArgs{type, newType.raw()};
 					newType = pt_type_call_static_ce(pt_ce_template_type_helper, PT_LC("generalizeinferredtemplatetype"), 2, generalizeArgs);
@@ -777,7 +809,7 @@ private:
 	static void narrowCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("narrowTemplateTypesInConditionalTypesForParameter", "409") "(), %u passed and exactly 2 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("narrowTemplateTypesInConditionalTypesForParameter", "427") "(), %u passed and exactly 2 expected", argc);
 			return;
 		}
 		zend_object *self = Z_OBJ(captures[0]);
@@ -834,7 +866,7 @@ private:
 	static void referencesCallbackBody(zval *references, zval *templateType, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("referencesTemplateType", "472") "(), %u passed and exactly 2 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("referencesTemplateType", "490") "(), %u passed and exactly 2 expected", argc);
 			return;
 		}
 		zval *type = &argv[0];
@@ -978,15 +1010,16 @@ PT_MINIT_REGISTRATION(pt_register_resolved_function_variant_with_original)
 
 	cls.method(sigs::unresolvedOrResolvedTemplateArgument, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *templateType, *inferred, *site, *frame;
-		bool allowUnresolved;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		bool allowUnresolved, onlyCovariant;
+		ZEND_PARSE_PARAMETERS_START(6, 6)
 			Z_PARAM_OBJECT_OF_CLASS(templateType, pt_class(PT_CLASS_TEMPLATE_TYPE))
 			Z_PARAM_OBJECT_OF_CLASS(inferred, pt_class(PT_CLASS_TYPE))
 			Z_PARAM_OBJECT_OF_CLASS(site, pt_class(PT_CLASS_EXPR))
 			Z_PARAM_OBJECT_OF_CLASS(frame, pt_ce_template_argument_frame)
 			Z_PARAM_BOOL(allowUnresolved)
+			Z_PARAM_BOOL(onlyCovariant)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(ResolvedFunctionVariantWithOriginal::unresolvedOrResolvedTemplateArgument(templateType, inferred, site, frame, allowUnresolved));
+		PT_RETURN_VAL(ResolvedFunctionVariantWithOriginal::unresolvedOrResolvedTemplateArgument(templateType, inferred, site, frame, allowUnresolved, onlyCovariant));
 	});
 
 	cls.method<&ResolvedFunctionVariantWithOriginal::hasBoundArgs>(sigs::hasBoundArgs);

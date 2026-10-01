@@ -93,6 +93,16 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 		return $this->initialType ?? $this->templateType->getDefault() ?? $this->templateType->getBound();
 	}
 
+	/**
+	 * A parameter or return type of a closure being inferred (see
+	 * ClosureSignatureInference), as opposed to a template argument of a call
+	 * or `new` site.
+	 */
+	public function isClosureSignature(): bool
+	{
+		return $this->site instanceof Expr\Closure || $this->site instanceof Expr\ArrowFunction;
+	}
+
 	public function withInitialType(?Type $initialType): self
 	{
 		return new self($this->site, $this->templateType, $initialType);
@@ -160,7 +170,7 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 			return sprintf('unresolved#%d(%s)', spl_object_id($this->site), $this->getDelegate()->describe($level));
 		}
 
-		if ($this->site instanceof Expr\Closure || $this->site instanceof Expr\ArrowFunction) {
+		if ($this->isClosureSignature()) {
 			// a closure signature marker outlives the observation pass when its
 			// site settled on the declared types it stands for
 			return $this->getDelegate()->describe($level);

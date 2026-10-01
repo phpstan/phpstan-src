@@ -222,18 +222,27 @@ final class TemplateArgumentSolver
 		// type is never clamped
 		if (!$templateVariance->covariant() || $acceptsAnything) {
 			$covariantFallback = null;
+			$markerFallback = null;
 			foreach ($observation['sends'] as [$sent, $variance]) {
+				if ($variance->covariant()) {
+					// an upper bound; with nothing inferred it is the best information there is
+					if (!$acceptsAnything) {
+						continue;
+					}
+					// another site's variable is an edge (passing the object to
+					// join(Box<U>, Box<U>) makes it a lower bound of the call's U),
+					// not information - it only counts when nothing else bounds this one
+					if ($sent instanceof UnresolvedTemplateArgumentType) {
+						$markerFallback ??= $sent;
+						continue;
+					}
+					$covariantFallback ??= $this->substituteResolutions($sent);
+					continue;
+				}
 				$sent = $this->substituteResolutions($sent);
 				if ($variance->contravariant()) {
 					// Foo<contravariant int> accepts Foo<X> for every X wider than int
 					$lowerBounds[] = $sent;
-					continue;
-				}
-				if ($variance->covariant()) {
-					// an upper bound; with nothing inferred it is the best information there is
-					if ($acceptsAnything) {
-						$covariantFallback ??= $sent;
-					}
 					continue;
 				}
 				if (!$variance->invariant()) {
@@ -251,6 +260,9 @@ final class TemplateArgumentSolver
 				return $sent;
 			}
 
+			if ($covariantFallback === null && $markerFallback !== null) {
+				$covariantFallback = $this->substituteResolutions($markerFallback);
+			}
 			if ($covariantFallback !== null) {
 				if (TemplateArgumentStats::$enabled) {
 					TemplateArgumentStats::increment('resolvedBySend');

@@ -184,9 +184,8 @@ public:
 		return true;
 	}
 
-	/* $this->site instanceof Expr\Closure || $this->site instanceof
-	 * Expr\ArrowFunction (ClosureSignatureInference::isClosureSignatureMarker());
-	 * false = pending exception */
+	/* isClosureSignature(): $this->site instanceof Expr\Closure ||
+	 * $this->site instanceof Expr\ArrowFunction; false = pending exception */
 	[[nodiscard]] bool hasClosureSite(bool &out) const
 	{
 		zval *s = site();
@@ -527,6 +526,7 @@ PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 	cls.method<&UnresolvedTemplateArgumentType::getTemplate>(sigs::getTemplate);
 	cls.method<&UnresolvedTemplateArgumentType::getInitialType>(sigs::getInitialType);
 	cls.method<&UnresolvedTemplateArgumentType::getDelegate>(sigs::getDelegate);
+	cls.method<&UnresolvedTemplateArgumentType::hasClosureSite>(sigs::isClosureSignature);
 
 	cls.method<&UnresolvedTemplateArgumentType::withInitialType, zp::ObjOrNull>(sigs::withInitialType);
 

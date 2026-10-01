@@ -747,6 +747,100 @@ public:
 		bool removed;
 	};
 
+	/* the markers of doUnion(): `$markers[spl_object_id($site) . '#' . $templateName]`
+	 * in first-insertion order */
+	struct MarkerEntry
+	{
+		zend_object *site;
+		zv::Val templateName;
+		zv::Val marker;
+	};
+
+	/* $marker instanceof UnresolvedTemplateArgumentType &&
+	 * !$marker->isClosureSignature(); -1 = pending exception */
+	static int isTemplateArgumentMarker(zval *type)
+	{
+		if (!isInstance(type, pt_ce_unresolved_template_argument_type)) return 0;
+		bool closureSignature;
+		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(type, closureSignature))) return -1;
+		return closureSignature ? 0 : 1;
+	}
+
+	/* addMarker(): the same variable merges into the wider of the two
+	 * inferred types; false = pending exception */
+	[[nodiscard]] static bool addMarker(std::vector<MarkerEntry> &markers, zval *marker)
+	{
+		zval *site = pt_unresolved_template_argument_type_site(marker);
+		if (UNEXPECTED(site == NULL)) return false;
+		zv::Val templateName = pt_unresolved_template_argument_type_get_template_name(marker);
+		if (UNEXPECTED(templateName.isUndef())) return false;
+		MarkerEntry *existing = NULL;
+		for (MarkerEntry &entry : markers) {
+			if (entry.site == Z_OBJ_P(site) && zend_is_identical(entry.templateName.raw(), templateName.raw())) {
+				existing = &entry;
+				break;
+			}
+		}
+		if (existing == NULL) {
+			markers.push_back(MarkerEntry{Z_OBJ_P(site), std::move(templateName), copy(marker)});
+			return true;
+		}
+		if (sameObject(existing->marker.raw(), marker)) return true;
+
+		zv::Val existingInitial = call(existing->marker.raw(), PT_LC("getinitialtype"));
+		if (UNEXPECTED(existingInitial.isUndef())) return false;
+		zv::Val initial = call(marker, PT_LC("getinitialtype"));
+		if (UNEXPECTED(initial.isUndef())) return false;
+		if (isNull(existingInitial) || isNull(initial)) {
+			// nothing inferred stands for the template's default or bound
+			if (!isNull(existingInitial)) existing->marker = copy(marker);
+			return true;
+		}
+
+		zv::Val merged = union2(existingInitial.raw(), initial.raw());
+		if (UNEXPECTED(merged.isUndef())) return false;
+		zv::Val withMerged = call(existing->marker.raw(), PT_LC("withinitialtype"), 1, merged.raw());
+		if (UNEXPECTED(withMerged.isUndef())) return false;
+		existing->marker = std::move(withMerged);
+		return true;
+	}
+
+	static zv::Val unionWithMarkers(zv::Val rest, std::vector<MarkerEntry> &markers)
+	{
+		if (UNEXPECTED(rest.isUndef())) return zv::Val();
+		if (isInstance(rest.raw(), pt_ce_mixed_type) && !isInstance(rest.raw(), pt_ce_template_mixed_type)) {
+			zv::Val subtracted = call(rest.raw(), PT_LC("getsubtractedtype"));
+			if (UNEXPECTED(subtracted.isUndef())) return zv::Val();
+			if (isNull(subtracted)) return rest;
+		}
+
+		TypeList members;
+		int restIsTemplate = 0;
+		if (isInstance(rest.raw(), pt_ce_never_type)) {
+			// nothing
+		} else if (isInstance(rest.raw(), pt_ce_union_type) && !(restIsTemplate = isInstanceMap(rest.raw(), PT_CLASS_TEMPLATE_TYPE))) {
+			zv::Val restTypes = getTypes(rest.raw());
+			PT_FAIL_IF_UNDEF(restTypes);
+			for (zv::ArrayEntry entry : zv::ArrRef(restTypes.raw())) {
+				members.push_back(copy(entry.value().raw()));
+			}
+		} else {
+			PT_FAIL_IF_NEG(restIsTemplate);
+			members.push_back(copy(rest.raw()));
+		}
+		for (MarkerEntry &entry : markers) {
+			members.push_back(copy(entry.marker.raw()));
+		}
+		if (members.size() == 1) return std::move(members[0]);
+		if (isInstance(rest.raw(), pt_ce_benevolent_union_type)) {
+			int isTemplate = isInstanceMap(rest.raw(), PT_CLASS_TEMPLATE_TYPE);
+			PT_FAIL_IF_NEG(isTemplate);
+			if (!isTemplate) return benevolentUnionType(listOf(members), true);
+		}
+
+		return unionType(listOf(members), true);
+	}
+
 	static zv::Val doUnion(uint32_t argc, zval *argv)
 	{
 		size_t typesCount = argc;
@@ -829,11 +923,18 @@ public:
 		 * are never unions, implicit never or implicit mixed themselves */
 		TypeList flattenedTypes;
 		flattenedTypes.reserve(types.size());
+		std::vector<MarkerEntry> markers;
 		for (size_t i = 0; i < types.size(); i++) {
 			zval *type = types[i].raw();
 			int plainMixed = isPlainMixed(type);
 			PT_FAIL_IF_NEG(plainMixed);
 			if (plainMixed) return copy(type);
+			int marker = isTemplateArgumentMarker(type);
+			PT_FAIL_IF_NEG(marker);
+			if (marker) {
+				if (UNEXPECTED(!addMarker(markers, type))) return zv::Val();
+				continue;
+			}
 			int implicitNever = isImplicitNever(type);
 			PT_FAIL_IF_NEG(implicitNever);
 			if (implicitNever) {
@@ -873,9 +974,18 @@ public:
 			zv::Val typesInner = getTypes(type);
 			PT_FAIL_IF_UNDEF(typesInner);
 			for (zv::ArrayEntry entry : zv::ArrRef(typesInner.raw())) {
+				int innerMarker = isTemplateArgumentMarker(entry.value().raw());
+				PT_FAIL_IF_NEG(innerMarker);
+				if (innerMarker) {
+					if (UNEXPECTED(!addMarker(markers, entry.value().raw()))) return zv::Val();
+					continue;
+				}
 				flattenedTypes.push_back(copy(entry.value().raw()));
 			}
 			alreadyNormalized.push_back(std::move(typesInner));
+		}
+		if (!markers.empty()) {
+			return unionWithMarkers(unionOf(flattenedTypes), markers);
 		}
 		types = std::move(flattenedTypes);
 		typesCount = types.size();

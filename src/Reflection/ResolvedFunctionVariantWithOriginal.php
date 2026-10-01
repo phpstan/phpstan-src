@@ -17,6 +17,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\NarrowedSubjectType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -280,8 +281,15 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	private function resolveResolvableTemplateTypes(Type $type, TemplateTypeVariance $positionVariance, ?Expr $site = null, ?TemplateArgumentFrame $frame = null, bool $allowUnresolved = true): Type
 	{
 		$references = $type->getReferencedTemplateTypes($positionVariance);
+		$onlyCovariant = [];
+		if ($site !== null) {
+			foreach ($references as $reference) {
+				$name = $reference->getType()->getName();
+				$onlyCovariant[$name] = ($onlyCovariant[$name] ?? true) && $reference->getPositionVariance()->covariant();
+			}
+		}
 
-		$objectCb = function (Type $type, callable $traverse) use ($references, $site, $frame, $allowUnresolved): Type {
+		$objectCb = function (Type $type, callable $traverse) use ($references, $onlyCovariant, $site, $frame, $allowUnresolved): Type {
 			if (
 				$type instanceof TemplateType
 				&& !$type instanceof NarrowedSubjectType
@@ -294,7 +302,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 				}
 
 				if ($site !== null && $frame !== null) {
-					$newType = $this->unresolvedOrResolvedTemplateArgument($type, $newType, $site, $frame, $allowUnresolved);
+					$newType = $this->unresolvedOrResolvedTemplateArgument($type, $newType, $site, $frame, $allowUnresolved, $onlyCovariant[$type->getName()] ?? false);
 				} else {
 					$newType = TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
 				}
@@ -380,11 +388,21 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	 * argument that already carries another site's marker passes through - the
 	 * outer result then resolves the inner site), under a resolved frame its
 	 * resolution, else the exact inferred type.
+	 *
+	 * A template occurring only covariantly in the return type gets no marker
+	 * when something was inferred for it: nothing sent to the result can narrow
+	 * a covariant argument, so it is the union of what it was inferred from right
+	 * away (Hack solves such a type variable the same way). The markers of other
+	 * sites in that union stay, each its own variable - a send of the result
+	 * reaches every one of them (zip(of(1), of(2)) sent to Box<int>).
 	 */
-	private function unresolvedOrResolvedTemplateArgument(TemplateType $template, Type $inferred, Expr $site, TemplateArgumentFrame $frame, bool $allowUnresolved): Type
+	private function unresolvedOrResolvedTemplateArgument(TemplateType $template, Type $inferred, Expr $site, TemplateArgumentFrame $frame, bool $allowUnresolved, bool $onlyCovariant): Type
 	{
 		if ($allowUnresolved && $frame->isObserving()) {
 			if ($inferred instanceof UnresolvedTemplateArgumentType) {
+				return $inferred;
+			}
+			if ($onlyCovariant && !$inferred instanceof NeverType) {
 				return $inferred;
 			}
 			return new UnresolvedTemplateArgumentType($site, $template, $inferred);

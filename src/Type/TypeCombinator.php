@@ -30,6 +30,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use function array_fill;
 use function array_filter;
 use function array_key_exists;
@@ -323,6 +324,7 @@ final class TypeCombinator
 
 		$benevolentTypes = [];
 		$neverCount = 0;
+		$markers = [];
 		// transform A | (B | C) to A | B | C - in one pass, a union's members are
 		// never unions, implicit never or implicit mixed themselves
 		$flattenedTypes = [];
@@ -334,6 +336,10 @@ final class TypeCombinator
 				&& $type->getSubtractedType() === null
 			) {
 				return $type;
+			}
+			if ($type instanceof UnresolvedTemplateArgumentType && !$type->isClosureSignature()) {
+				$markers = self::addMarker($markers, $type);
+				continue;
 			}
 			if ($type instanceof NeverType && !$type->isExplicit()) {
 				$neverCount++;
@@ -360,8 +366,15 @@ final class TypeCombinator
 			$alreadyNormalized[$alreadyNormalizedCounter] = $typesInner;
 			$alreadyNormalizedCounter++;
 			foreach ($typesInner as $innerType) {
+				if ($innerType instanceof UnresolvedTemplateArgumentType && !$innerType->isClosureSignature()) {
+					$markers = self::addMarker($markers, $innerType);
+					continue;
+				}
 				$flattenedTypes[] = $innerType;
 			}
+		}
+		if ($markers !== []) {
+			return self::unionWithMarkers(self::union(...$flattenedTypes), $markers);
 		}
 		$types = $flattenedTypes;
 		$typesCount = count($types);
@@ -600,6 +613,66 @@ final class TypeCombinator
 		}
 
 		return new UnionType(array_values($types), true);
+	}
+
+	/**
+	 * An unresolved template argument is a variable of its site, not the type it
+	 * currently stands for: unresolved(int) from two different sites are two
+	 * variables, and neither int nor the other variable absorbs it. Only the same
+	 * variable merges - into the wider of the two inferred types.
+	 *
+	 * @param array<string, UnresolvedTemplateArgumentType> $markers
+	 * @return array<string, UnresolvedTemplateArgumentType>
+	 */
+	private static function addMarker(array $markers, UnresolvedTemplateArgumentType $marker): array
+	{
+		$key = spl_object_id($marker->getSite()) . '#' . $marker->getTemplateName();
+		$existing = $markers[$key] ?? null;
+		if ($existing === null || $existing === $marker) {
+			$markers[$key] = $marker;
+			return $markers;
+		}
+
+		$existingInitial = $existing->getInitialType();
+		$initial = $marker->getInitialType();
+		if ($existingInitial === null || $initial === null) {
+			// nothing inferred stands for the template's default or bound
+			$markers[$key] = $existingInitial === null ? $existing : $marker;
+			return $markers;
+		}
+
+		$markers[$key] = $existing->withInitialType(self::union($existingInitial, $initial));
+
+		return $markers;
+	}
+
+	/**
+	 * @param array<string, UnresolvedTemplateArgumentType> $markers
+	 */
+	private static function unionWithMarkers(Type $rest, array $markers): Type
+	{
+		if ($rest instanceof MixedType && !$rest instanceof TemplateMixedType && $rest->getSubtractedType() === null) {
+			return $rest;
+		}
+
+		if ($rest instanceof NeverType) {
+			$members = [];
+		} elseif ($rest instanceof UnionType && !$rest instanceof TemplateType) {
+			$members = $rest->getTypes();
+		} else {
+			$members = [$rest];
+		}
+		foreach ($markers as $marker) {
+			$members[] = $marker;
+		}
+		if (count($members) === 1) {
+			return $members[0];
+		}
+		if ($rest instanceof BenevolentUnionType && !$rest instanceof TemplateType) {
+			return new BenevolentUnionType($members, true);
+		}
+
+		return new UnionType($members, true);
 	}
 
 	/**

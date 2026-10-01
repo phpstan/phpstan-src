@@ -11,6 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\NarrowedSubjectType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverserCallable;
 
@@ -25,7 +26,10 @@ use PHPStan\Type\TypeTraverserCallable;
  * UnresolvedTemplateArgumentType keyed by the site so the body's sends and
  * method calls can decide it; the second pass substitutes the frame's
  * resolution. An inferred argument that already carries another site's marker
- * passes through - the outer result then resolves the inner site.
+ * passes through - the outer result then resolves the inner site. So does any
+ * inferred argument of a covariant template: nothing the body does with the
+ * object can narrow it (see
+ * ResolvedFunctionVariantWithOriginal::unresolvedOrResolvedTemplateArgument()).
  */
 #[ReferencedByTurboExtension(key: 'genericTypeTemplateTraverser')]
 final class GenericTypeTemplateTraverser implements TypeTraverserCallable
@@ -61,6 +65,9 @@ final class GenericTypeTemplateTraverser implements TypeTraverserCallable
 			$synthetic = $this->site->getAttribute(TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE) === true;
 			if ($synthetic || ($this->allowUnresolved && $this->frame->isObserving())) {
 				if ($initialType instanceof UnresolvedTemplateArgumentType) {
+					return $initialType;
+				}
+				if (!$synthetic && $initialType !== null && !$initialType instanceof NeverType && $type->getVariance()->covariant()) {
 					return $initialType;
 				}
 

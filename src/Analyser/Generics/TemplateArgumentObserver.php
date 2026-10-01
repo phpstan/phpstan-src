@@ -352,8 +352,8 @@ final class TemplateArgumentObserver
 
 	/**
 	 * Replaces the call's own template types by markers of the call site. A
-	 * marker behaves as its delegate (mixed for a bare @template), so normalizing
-	 * a union lets a naked marker absorb its siblings: T|null becomes the marker,
+	 * marker behaves as its delegate (mixed for a bare @template), so a naked
+	 * marker absorbs the siblings its delegate covers: T|null becomes the marker,
 	 * which is what links Collection<T|null> to a Collection<unresolved> argument.
 	 * A sibling that itself carries a marker of the call is kept next to the
 	 * naked one instead - Foo<T>|T has to keep both members for the argument to
@@ -375,8 +375,23 @@ final class TemplateArgumentObserver
 					$structural[] = $member;
 				}
 			}
-			if ($naked === [] || $structural === []) {
+			if ($naked === []) {
 				return TypeCombinator::union(...$members);
+			}
+			if ($structural === []) {
+				// a union keeps markers apart from everything else (see
+				// TypeCombinator::union()) - the absorption is this method's own
+				return TypeCombinator::union(...array_filter($members, static function (Type $member) use ($naked): bool {
+					if ($member instanceof UnresolvedTemplateArgumentType) {
+						return true;
+					}
+					foreach ($naked as $marker) {
+						if ($marker->getDelegate()->isSuperTypeOf($member)->yes()) {
+							return false;
+						}
+					}
+					return true;
+				}));
 			}
 
 			return new UnionType([...$naked, ...$structural]);
@@ -461,39 +476,9 @@ final class TemplateArgumentObserver
 				if (!$template instanceof TemplateType || !isset($declaredArguments[$i])) {
 					continue;
 				}
-				$declaredArgument = $declaredArguments[$i];
-				if (!$argument instanceof UnresolvedTemplateArgumentType) {
-					$constraints = $this->observeSend($constraints, $declaredArgument, $argument, $isCallArgument);
-					continue;
-				}
-				if (
-					$isCallArgument
-					&& ($argument->getInitialType() === null || $argument->getInitialType() instanceof NeverType)
-					&& self::hasOnlyInferableTemplates($declaredArgument)
-				) {
-					$declaredArgument = TemplateTypeHelper::resolveToDefaults($declaredArgument);
-				}
-				if (self::isUninformativeSendTarget($declaredArgument)) {
-					// An unresolved call parameter, like mixed, uses the object without
-					// constraining it. Return/property templates are fixed by their
-					// declaration and must keep an empty argument compatible with them.
-					if (($isCallArgument && self::hasOnlyInferableTemplates($declaredArgument)) || ($declaredArgument instanceof MixedType && !$declaredArgument instanceof TemplateType)) {
-						$constraints = $constraints->withUnconstrainingSend($argument);
-					}
-
-					continue;
-				}
-
 				$callSiteVariance = $declaredVariances->getVariance($template->getName()) ?? TemplateTypeVariance::createInvariant();
 				$effectiveVariance = $callSiteVariance->invariant() ? $template->getVariance() : $callSiteVariance;
-				$constraints = $constraints->withSend($argument, $declaredArgument, $effectiveVariance);
-
-				// a site whose inferred argument itself carries markers (wrap(new Foo(1)))
-				$initial = $argument->getInitialType();
-				if ($initial === null) {
-					continue;
-				}
-				$constraints = $this->observeSend($constraints, $declaredArgument, $initial, $isCallArgument);
+				$constraints = $this->observeArgumentSend($constraints, $declaredArguments[$i], $argument, $effectiveVariance, $isCallArgument);
 			}
 
 			return $constraints;
@@ -519,6 +504,70 @@ final class TemplateArgumentObserver
 		}
 
 		return $constraints;
+	}
+
+	/**
+	 * A template argument of an object sent to the declared argument at the same
+	 * position. A union of several sites' markers (Box<T|U> of zip(of(1), of(2)))
+	 * is split like Hack splits (#1 | #2) <: int: every marker in it gets the
+	 * declared argument as an upper bound. Something flowing into the union does
+	 * not split, so a contravariant send reaches only a lone marker.
+	 */
+	private function observeArgumentSend(TemplateArgumentConstraints $constraints, Type $declaredArgument, Type $argument, TemplateTypeVariance $variance, bool $isCallArgument): TemplateArgumentConstraints
+	{
+		if ($argument instanceof UnresolvedTemplateArgumentType && !$argument->isClosureSignature()) {
+			return $this->observeMarkerSend($constraints, $declaredArgument, $argument, $variance, $isCallArgument);
+		}
+		if (!$argument instanceof UnionType || $argument instanceof TemplateType) {
+			return $this->observeSend($constraints, $declaredArgument, $argument, $isCallArgument);
+		}
+
+		$upperBound = $variance->invariant() || $variance->covariant() ? TemplateTypeVariance::createCovariant() : null;
+		foreach ($argument->getTypes() as $member) {
+			if (!$member instanceof UnresolvedTemplateArgumentType || $member->isClosureSignature()) {
+				$constraints = $this->observeSend($constraints, $declaredArgument, $member, $isCallArgument);
+				continue;
+			}
+			if ($upperBound === null) {
+				continue;
+			}
+			$constraints = $this->observeMarkerSend($constraints, $declaredArgument, $member, $upperBound, $isCallArgument);
+		}
+
+		return $constraints;
+	}
+
+	private function observeMarkerSend(TemplateArgumentConstraints $constraints, Type $declaredArgument, UnresolvedTemplateArgumentType $marker, TemplateTypeVariance $variance, bool $isCallArgument): TemplateArgumentConstraints
+	{
+		$initial = $marker->getInitialType();
+		if (
+			$isCallArgument
+			&& ($initial === null || $initial instanceof NeverType)
+			&& self::hasOnlyInferableTemplates($declaredArgument)
+		) {
+			$declaredArgument = TemplateTypeHelper::resolveToDefaults($declaredArgument);
+		}
+		if (self::isUninformativeSendTarget($declaredArgument)) {
+			// An unresolved call parameter, like mixed, uses the object without
+			// constraining it. Return/property templates are fixed by their
+			// declaration and must keep an empty argument compatible with them.
+			if (($isCallArgument && self::hasOnlyInferableTemplates($declaredArgument)) || ($declaredArgument instanceof MixedType && !$declaredArgument instanceof TemplateType)) {
+				$constraints = $constraints->withUnconstrainingSend($marker);
+			}
+
+			return $constraints;
+		}
+
+		$constraints = $constraints->withSend($marker, $declaredArgument, $variance);
+		if ($initial === null) {
+			return $constraints;
+		}
+
+		// a site whose inferred argument itself carries markers: nested in objects
+		// (wrap(new Foo(1))), or bare as the sites it was inferred from
+		// (collect(of(1), of(2)) returning Coll<U>) - an upper bound of the site
+		// bounds those from above too
+		return $this->observeArgumentSend($constraints, $declaredArgument, $initial, $variance, $isCallArgument);
 	}
 
 	/**

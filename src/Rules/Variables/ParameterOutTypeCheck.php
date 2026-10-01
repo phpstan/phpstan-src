@@ -22,6 +22,12 @@ use function sprintf;
  * The promise is either an explicit `@param-out` or, in its absence, the parameter's own type.
  * Which one it is only shows in the error message, so callers report it via $isParamOutType.
  *
+ * For a variadic parameter the promise describes a single argument, as NodeScopeResolver applies it at
+ * the call site, while the variable holds the packed array of them, so its element type is compared.
+ * Once the variable no longer holds an array, rebinding it has discarded the references and nothing
+ * reaches a caller. A write through an offset, `$refs[0] = ...`, does reach the caller and leaves an
+ * array, so an array is always compared.
+ *
  * @internal
  */
 #[AutowiredService]
@@ -47,6 +53,8 @@ final class ParameterOutTypeCheck
 		bool $isParamOutType,
 	): array
 	{
+		$isVariadic = $parameter->isVariadic();
+
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$checkedExpr,
@@ -58,6 +66,13 @@ final class ParameterOutTypeCheck
 		}
 
 		$assignedExprType = $scope->getType($checkedExpr);
+		if ($isVariadic) {
+			if (!$assignedExprType->isArray()->yes()) {
+				return [];
+			}
+			$assignedExprType = $assignedExprType->getIterableValueType();
+		}
+
 		if ($outType->isSuperTypeOf($assignedExprType)->yes()) {
 			return [];
 		}

@@ -94,6 +94,14 @@ final class TooWideParameterOutTypeCheck
 		$variableExpr = new Variable($parameter->getName());
 		$variableType = $scope->getType($variableExpr);
 
+		// a variadic out type describes one argument - see ParameterOutTypeCheck
+		if ($parameter->isVariadic()) {
+			if (!$variableType->isArray()->yes()) {
+				return [];
+			}
+			$variableType = $variableType->getIterableValueType();
+		}
+
 		return $this->tooWideTypeCheck->checkParameterOutType(
 			$outType,
 			$variableType,

@@ -26,7 +26,7 @@ final class SimpleRelativePathHelper implements RelativePathHelper
 			$length = strlen($this->currentWorkingDirectory);
 
 			if ($this->currentWorkingDirectory !== '/') {
-				$length += 1;
+				++$length;
 			}
 
 			return str_replace('\\', '/', substr($filename, $length));

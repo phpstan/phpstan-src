@@ -646,6 +646,23 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10942.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug13418(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-13418.php'], [
+			[
+				'Return type (Bug13418Implements\\Rel<Bug13418Implements\\Other>) of method Bug13418Implements\\WrongClass::rel() should be compatible with return type (Bug13418Implements\\Rel<$this(Bug13418Implements\\WrongClass)>) of method Bug13418Implements\\Billable<$this(Bug13418Implements\\WrongClass)>::rel()',
+				135,
+			],
+			[
+				'Parameter #1 $rel (Bug13418Implements\\Rel<Bug13418Implements\\Other>) of method Bug13418Implements\\WrongClass::accept() should be compatible with parameter $rel (Bug13418Implements\\Rel<$this(Bug13418Implements\\WrongClass)>) of method Bug13418Implements\\Billable<$this(Bug13418Implements\\WrongClass)>::accept()',
+				141,
+			],
+		]);
+	}
+
 	public function testPureUnlessCallableIsImpureOverride(): void
 	{
 		$this->reportMaybes = true;

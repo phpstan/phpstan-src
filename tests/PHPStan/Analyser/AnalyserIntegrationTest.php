@@ -1693,20 +1693,20 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14550.php');
-		$this->assertNotEmpty($errors);
+		$this->assertNotCount(0, $errors);
 	}
 
 	public function testBug14596(): void
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14596.php');
-		$this->assertNotEmpty($errors);
+		$this->assertNotCount(0, $errors);
 	}
 
 	public function testBug9172(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9172.php');
-		$this->assertNotEmpty($errors);
+		$this->assertNotCount(0, $errors);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

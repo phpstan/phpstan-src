@@ -32,7 +32,7 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 			__DIR__ . '/traits/Foo.php',
 			__DIR__ . '/traits/FooTrait.php',
 		]);
-		$this->assertEmpty($errors);
+		$this->assertCount(0, $errors);
 	}
 
 	public function testMethodDoesNotExist(): void
@@ -95,21 +95,21 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 	public function testTraitsAreNotAnalysedDirectly(): void
 	{
 		$errors = $this->runAnalyse([__DIR__ . '/traits/FooTrait.php']);
-		$this->assertEmpty($errors);
+		$this->assertCount(0, $errors);
 		$errors = $this->runAnalyse([__DIR__ . '/traits/NestedFooTrait.php']);
-		$this->assertEmpty($errors);
+		$this->assertCount(0, $errors);
 	}
 
 	public function testClassAndTraitInTheSameFile(): void
 	{
 		$errors = $this->runAnalyse([__DIR__ . '/traits/classAndTrait.php']);
-		$this->assertEmpty($errors);
+		$this->assertCount(0, $errors);
 	}
 
 	public function testTraitMethodAlias(): void
 	{
 		$errors = $this->runAnalyse([__DIR__ . '/traits/trait-aliases.php']);
-		$this->assertEmpty($errors);
+		$this->assertCount(0, $errors);
 	}
 
 	public function testFindErrorsInTrait(): void

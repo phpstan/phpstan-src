@@ -49,31 +49,31 @@ class AnalyserTest extends PHPStanTestCase
 	public function testDoNotReturnErrorIfIgnoredMessagesDoesNotOccurWithReportUnmatchedIgnoredErrorsOff(): void
 	{
 		$result = $this->runAnalyser(['#Unknown error#'], false, __DIR__ . '/data/empty/empty.php', false);
-		$this->assertEmpty($result);
+		$this->assertCount(0, $result);
 	}
 
 	public function testDoNotReturnErrorIfIgnoredMessagesDoNotOccurWhileAnalysingIndividualFiles(): void
 	{
 		$result = $this->runAnalyser(['#Unknown error#'], true, __DIR__ . '/data/empty/empty.php', true);
-		$this->assertEmpty($result);
+		$this->assertCount(0, $result);
 	}
 
 	public function testFileWithAnIgnoredError(): void
 	{
 		$result = $this->runAnalyser(['#Fail\.#'], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		$this->assertCount(0, $result);
 	}
 
 	public function testFileWithAnIgnoredErrorMessage(): void
 	{
 		$result = $this->runAnalyser([['message' => '#Fail\.#']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		$this->assertCount(0, $result);
 	}
 
 	public function testFileWithAnIgnoredErrorRawMessage(): void
 	{
 		$result = $this->runAnalyser([['rawMessage' => 'Fail.']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		$this->assertCount(0, $result);
 	}
 
 	public function testFileWithAnIgnoredErrorMessageAndWrongIdentifier(): void
@@ -109,19 +109,19 @@ class AnalyserTest extends PHPStanTestCase
 	public function testFileWithAnIgnoredErrorMessageAndCorrectIdentifier(): void
 	{
 		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		$this->assertCount(0, $result);
 	}
 
 	public function testFileWithAnIgnoredErrorRawMessageAndCorrectIdentifier(): void
 	{
 		$result = $this->runAnalyser([['rawMessage' => 'Fail.', 'identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		$this->assertCount(0, $result);
 	}
 
 	public function testFileWithAnIgnoredErrorIdentifier(): void
 	{
 		$result = $this->runAnalyser([['identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		$this->assertNotCount(0, $result);
 	}
 
 	public function testFileWithAnIgnoredErrorMessages(): void

@@ -45,7 +45,7 @@ class ConstantToFunctionParameterMapTest extends PHPStanTestCase
 
 				$methodReflection = $classReflection->getNativeMethod($methodName);
 				$variants = $methodReflection->getVariants();
-				$this->assertNotEmpty($variants, sprintf('Method %s has no variants.', $entry));
+				$this->assertNotCount(0, $variants, sprintf('Method %s has no variants.', $entry));
 
 				$reflectionParameters = $variants[0]->getParameters();
 			} else {
@@ -59,7 +59,7 @@ class ConstantToFunctionParameterMapTest extends PHPStanTestCase
 
 				$functionReflection = $reflectionProvider->getFunction($nameNode, null);
 				$variants = $functionReflection->getVariants();
-				$this->assertNotEmpty($variants, sprintf('Function %s() has no variants.', $entry));
+				$this->assertNotCount(0, $variants, sprintf('Function %s() has no variants.', $entry));
 
 				$reflectionParameters = $variants[0]->getParameters();
 			}
@@ -87,7 +87,7 @@ class ConstantToFunctionParameterMapTest extends PHPStanTestCase
 				$this->assertContains($config['type'], ['single', 'bitmask'], sprintf('Invalid type "%s" for %s($%s).', $config['type'], $entry, $parameterName));
 				$this->assertArrayHasKey('constants', $config, sprintf('Missing "constants" key for %s($%s).', $entry, $parameterName));
 				$this->assertIsArray($config['constants'], sprintf('Constants for %s($%s) must be an array.', $entry, $parameterName));
-				$this->assertNotEmpty($config['constants'], sprintf('Constants for %s($%s) must not be empty.', $entry, $parameterName));
+				$this->assertNotCount(0, $config['constants'], sprintf('Constants for %s($%s) must not be empty.', $entry, $parameterName));
 
 				foreach ($config['constants'] as $constantName) {
 					$this->assertIsString($constantName, sprintf('Constant name for %s($%s) must be a string.', $entry, $parameterName));

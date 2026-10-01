@@ -9024,7 +9024,7 @@ return [
 'SessionHandler::destroy' => ['bool', 'id'=>'string'],
 'SessionHandler::gc' => ['int|false', 'maxlifetime'=>'int'],
 'SessionHandler::open' => ['bool', 'save_path'=>'string', 'session_name'=>'string'],
-'SessionHandler::read' => ['string', 'id'=>'string'],
+'SessionHandler::read' => ['string|false', 'id'=>'string'],
 'SessionHandler::updateTimestamp' => ['bool', 'session_id'=>'string', 'session_data'=>'string'],
 'SessionHandler::validateId' => ['bool', 'session_id'=>'string'],
 'SessionHandler::write' => ['bool', 'id'=>'string', 'data'=>'string'],

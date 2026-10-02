@@ -71,6 +71,13 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 
 			$isStatic = $methodTags[$methodName]->isStatic();
 			$nativeCallMethodName = $isStatic ? '__callStatic' : '__call';
+			$classResolvedPhpDoc = $classReflection->getResolvedPhpDoc();
+			$isPure = null;
+			if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
+				$isPure = true;
+			} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
+				$isPure = false;
+			}
 
 			return new AnnotationMethodReflection(
 				$methodName,
@@ -88,6 +95,7 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 					? $classReflection->getNativeMethod($nativeCallMethodName)->getThrowType()
 					: null,
 				$templateTypeMap,
+				$isPure,
 			);
 		}
 

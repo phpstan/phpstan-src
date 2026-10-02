@@ -147,3 +147,19 @@ trait FooTrait
 {
 
 }
+
+/**
+ * @phpstan-all-methods-pure
+ * @method int magic()
+ */
+class PureMagicMethods
+{
+}
+
+/**
+ * @phpstan-all-methods-impure
+ * @method int magic()
+ */
+class ImpureMagicMethods
+{
+}

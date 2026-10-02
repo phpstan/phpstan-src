@@ -82,6 +82,10 @@ parameters:
 		- '#should be contravariant with parameter \$node \(PhpParser\\Node\) of method PHPStan\\Rules\\Rule<PhpParser\\Node>::processNode\(\)$#'
 		- '#Variable property access on PhpParser\\Node#'
 		-
+			identifier: phpstanApi.typeTraverserMap
+			path: ../tests/* # tests exercise TypeTraverser::map() itself
+			reportUnmatched: false
+		-
 			identifier: shipmonk.deadMethod
 			message: '#^Unused .*?::__construct#' # likely used in DIC
 			reportUnmatched: false
@@ -208,7 +212,6 @@ rules:
 	- PHPStan\Build\MemoizationPropertyRule
 	- PHPStan\Build\OrChainIdenticalComparisonToInArrayRule
 	- PHPStan\Build\NoPhpVersionInjectionInScopeAwareExtensionRule
-	- PHPStan\Build\TypeTraverserMapMemoizedRule
 
 services:
 	-

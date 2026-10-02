@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Build;
+namespace PHPStan\Rules\Api;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -28,7 +28,7 @@ use PhpParser\Node\Stmt\Static_;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
-use PHPStan\File\FileHelper;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -36,13 +36,11 @@ use PHPStan\Type\TypeTraverser;
 use function array_unique;
 use function array_values;
 use function count;
-use function dirname;
 use function implode;
 use function in_array;
 use function is_string;
 use function spl_object_id;
 use function sprintf;
-use function str_starts_with;
 
 /**
  * Keeps the choice between TypeTraverser::map() and TypeTraverser::mapMemoized()
@@ -64,12 +62,9 @@ use function str_starts_with;
  *
  * @implements Rule<StaticCall>
  */
+#[RegisteredRule(level: 0)]
 final class TypeTraverserMapMemoizedRule implements Rule
 {
-
-	public function __construct(private FileHelper $fileHelper, private bool $skipTests = true)
-	{
-	}
 
 	public function getNodeType(): string
 	{
@@ -84,10 +79,6 @@ final class TypeTraverserMapMemoizedRule implements Rule
 			|| !$node->name instanceof Identifier
 			|| !in_array($node->name->toLowerString(), ['map', 'mapmemoized'], true)
 		) {
-			return [];
-		}
-
-		if ($this->skipTests && str_starts_with($this->fileHelper->normalizePath($scope->getFile()), $this->fileHelper->normalizePath(dirname(__DIR__, 3) . '/tests'))) {
 			return [];
 		}
 
@@ -123,7 +114,7 @@ final class TypeTraverserMapMemoizedRule implements Rule
 				'Callback of TypeTraverser::mapMemoized() %s, so it might depend on where or how many times a Type instance occurs. Use TypeTraverser::map() instead.',
 				implode(', ', $reasons),
 			))
-				->identifier('phpstan.typeTraverserMapMemoized')
+				->identifier('phpstanApi.typeTraverserMapMemoized')
 				->line($call->getStartLine())
 				->build();
 		}
@@ -133,7 +124,7 @@ final class TypeTraverserMapMemoizedRule implements Rule
 		}
 
 		return RuleErrorBuilder::message('Callback of TypeTraverser::map() does not depend on where or how many times a Type instance occurs. Use TypeTraverser::mapMemoized() instead.')
-			->identifier('phpstan.typeTraverserMap')
+			->identifier('phpstanApi.typeTraverserMap')
 			->line($call->getStartLine())
 			->fixNode($call, static function (StaticCall $node): StaticCall {
 				$node->name = new Identifier('mapMemoized');

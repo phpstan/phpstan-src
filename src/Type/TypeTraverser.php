@@ -69,7 +69,9 @@ final class TypeTraverser
 		$self = new self($cb);
 		$self->memo = [];
 
-		return $self->mapInternal($type);
+		$traverser = $self->mapInternal($type);
+		$self->memo = null;
+		return $traverser;
 	}
 
 	/** @param TypeTraverserCallable|callable(Type $type, callable(Type): Type $traverse): Type $cb */

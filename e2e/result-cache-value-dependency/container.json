@@ -9,6 +9,7 @@
 		"debug": "yes",
 		"throwing": "no",
 		"region": "eu",
-		"closureThis": "ResultCacheE2EValueDependency\\Mailer"
+		"closureThis": "ResultCacheE2EValueDependency\\Mailer",
+		"allowedClass": "ResultCacheE2EValueDependency\\Mailer"
 	}
 }

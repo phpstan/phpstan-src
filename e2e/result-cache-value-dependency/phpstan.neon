@@ -42,3 +42,7 @@ services:
 		class: ResultCacheE2EValueDependency\WithThisClosureThisExtension
 		tags:
 			- phpstan.functionParameterClosureThisExtension
+	-
+		class: ResultCacheE2EValueDependency\IsAllowedTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension

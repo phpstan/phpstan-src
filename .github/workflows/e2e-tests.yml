@@ -534,6 +534,14 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a contains 'UsesWithThis.php:8:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
+              # So does a type-specifying extension: the narrowed type follows the parameter.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["allowedClass"] = "ResultCacheE2EValueDependency\\Logger"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'UsesIsAllowed.php:8:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
           - script: |
               cd e2e/result-cache-file-dependency
               composer install

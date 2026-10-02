@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\StaticCall;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -36,6 +37,6 @@ interface StaticMethodTypeSpecifyingExtension
 
 	public function isStaticMethodSupported(MethodReflection $staticMethodReflection, StaticCall $node, TypeSpecifierContext $context): bool;
 
-	public function specifyTypes(MethodReflection $staticMethodReflection, StaticCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes;
+	public function specifyTypes(MethodReflection $staticMethodReflection, StaticCall $node, Scope&DependencyTracker $scope, TypeSpecifierContext $context): SpecifiedTypes;
 
 }

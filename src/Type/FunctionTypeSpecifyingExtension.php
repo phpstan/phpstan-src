@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -33,6 +34,6 @@ interface FunctionTypeSpecifyingExtension
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool;
 
-	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes;
+	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope&DependencyTracker $scope, TypeSpecifierContext $context): SpecifiedTypes;
 
 }

@@ -30,3 +30,8 @@ function region(): string
 function withThis(\Closure $callback): void
 {
 }
+
+function isAllowed(object $object): bool
+{
+	return true;
+}

@@ -22,7 +22,6 @@ use function array_keys;
 use function array_values;
 use function count;
 use function implode;
-use function spl_object_id;
 use function sprintf;
 use function strtolower;
 
@@ -183,13 +182,13 @@ final class GenericObjectTypeCheck
 	private function getGenericTypes(Type $phpDocType): array
 	{
 		$genericObjectTypes = [];
-		TypeTraverser::mapMemoized($phpDocType, static function (Type $type, callable $traverse) use (&$genericObjectTypes): Type {
+		TypeTraverser::map($phpDocType, static function (Type $type, callable $traverse) use (&$genericObjectTypes): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
 				$resolvedType = TemplateTypeHelper::resolveToBounds($type);
 				if (!$resolvedType instanceof GenericObjectType && !$resolvedType instanceof GenericStaticType) {
 					throw new ShouldNotHappenException();
 				}
-				$genericObjectTypes[spl_object_id($type)] = $resolvedType;
+				$genericObjectTypes[] = $resolvedType;
 				$traverse($type);
 				return $type;
 			}
@@ -197,7 +196,7 @@ final class GenericObjectTypeCheck
 			return $type;
 		});
 
-		return array_values($genericObjectTypes);
+		return $genericObjectTypes;
 	}
 
 }

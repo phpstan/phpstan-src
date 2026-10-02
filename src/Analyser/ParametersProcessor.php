@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
@@ -28,10 +29,11 @@ final class ParametersProcessor
 		MutatingScope $scope,
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
-	): void
+	): ?Dependencies
 	{
+		$dependencies = [];
 		foreach ($params as $param) {
-			$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $param->attrGroups, $scope, $storage, $nodeCallback);
+			$dependencies[] = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $param->attrGroups, $scope, $storage, $nodeCallback);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $param, $scope, $storage);
 			if ($param->type !== null) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, $param->type, $scope, $storage);
@@ -40,8 +42,10 @@ final class ParametersProcessor
 				continue;
 			}
 
-			$nodeScopeResolver->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$dependencies[] = $nodeScopeResolver->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep())->getDependencies();
 		}
+
+		return Dependencies::merge(...$dependencies);
 	}
 
 }

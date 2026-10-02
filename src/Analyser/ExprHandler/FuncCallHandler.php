@@ -40,6 +40,8 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -584,7 +586,12 @@ final class FuncCallHandler implements ExprHandler
 			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
 		);
 
-		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
+		$dependencies = Dependencies::merge(
+			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$argsResult->getDependencies(),
+			$this->getDependencies($beforeScope, $functionReflection, $nameResult, $preliminaryResult),
+		);
+		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
 	}
 
 	/**
@@ -1003,6 +1010,31 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		return null;
+	}
+
+	/**
+	 * The function the call calls by name, or the variants of the callable it calls, and the classes
+	 * in what the call returns.
+	 */
+	private function getDependencies(MutatingScope $scope, ?FunctionReflection $functionReflection, ?ExpressionResult $nameResult, ExpressionResult $result): ?Dependencies
+	{
+		$types = [$result->getType()];
+		$reflections = [];
+		if ($functionReflection !== null) {
+			$reflections[] = $functionReflection;
+			$types = [...$types, ...DependencyTypes::ofCalledVariants($functionReflection->getVariants()), ...DependencyTypes::ofAsserts($functionReflection->getAsserts())];
+		}
+		if ($nameResult !== null) {
+			$calleeType = $nameResult->getType();
+			if ($calleeType->isCallable()->yes()) {
+				foreach ($calleeType->getCallableParametersAcceptors($scope) as $variant) {
+					$types[] = $variant->getReturnType();
+					$types = [...$types, ...DependencyTypes::ofCalledParameters($variant->getParameters())];
+				}
+			}
+		}
+
+		return Dependencies::create($scope->getFile(), $types, reflections: $reflections);
 	}
 
 	/**

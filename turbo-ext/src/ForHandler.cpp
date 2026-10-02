@@ -62,6 +62,26 @@ zval *readList(pt_property_site &site, zval *node, const char *name, size_t len)
 	return value;
 }
 
+/* $dependencies[] = $result->getDependencies() of an ExpressionResult /
+ * an InternalStatementResult; false = pending exception */
+[[nodiscard]] bool pushExpressionDependencies(zv::Arr &dependencies, zval *result)
+{
+	zv::Val hold;
+	zval *resultDependencies = pt_expression_result_dependencies(result, hold);
+	if (UNEXPECTED(resultDependencies == NULL)) return false;
+	dependencies.push(zv::Ref(resultDependencies));
+	return true;
+}
+
+[[nodiscard]] bool pushStatementDependencies(zv::Arr &dependencies, zval *result)
+{
+	zv::Val hold;
+	zval *resultDependencies = pt_internal_statement_result_dependencies(result, hold);
+	if (UNEXPECTED(resultDependencies == NULL)) return false;
+	dependencies.push(zv::Ref(resultDependencies));
+	return true;
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -102,6 +122,7 @@ public:
 		zv::Arr impurePoints = zv::Arr::empty();
 		zv::Arr initFlow = zv::Arr::empty();
 		zv::Arr conditionFlow = zv::Arr::empty();
+		zv::Arr dependencies = zv::Arr::empty();
 
 		zval *init = readList(pt_fh_init_site, stmt, PT_LC("init"));
 		if (UNEXPECTED(init == NULL)) return zv::Val();
@@ -112,6 +133,7 @@ public:
 			if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 			zv::Val initResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, initExpr, initScope.raw(), originalStorage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(initResult.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pushExpressionDependencies(dependencies, initResult.raw()))) return zv::Val();
 			if (UNEXPECTED(!absorbExpressionResult(initResult.raw(), &initScope, &initFlow, hasYield, throwPoints, impurePoints))) return zv::Val();
 		}
 		/* $initTargets[spl_object_id($variable)] = true */
@@ -301,6 +323,7 @@ public:
 			if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 			zv::Val condResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, lastCondExpr, bodyScope.raw(), storage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(condResult.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pushExpressionDependencies(dependencies, condResult.raw()))) return zv::Val();
 			{
 				ptlh::ConditionBoolean condBoolean;
 				if (UNEXPECTED(!ptlh::conditionBoolean(condResult.raw(), true, condBoolean))) return zv::Val();
@@ -331,6 +354,7 @@ public:
 			if (UNEXPECTED(finalScopeResult.isUndef())) return zv::Val();
 		}
 		zval *result = finalScopeResult.raw();
+		if (UNEXPECTED(!pushStatementDependencies(dependencies, result))) return zv::Val();
 		zv::Val backEdgeScope = pt_internal_statement_result_loop_back_edge_scope(result);
 		if (UNEXPECTED(backEdgeScope.isUndef())) return zv::Val();
 		bool backEdgeDead = backEdgeScope.isNull();
@@ -355,6 +379,7 @@ public:
 				if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 				zv::Val loopResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, loopExpr, loopScope.raw(), storage, nodeCallback, expressionContext.raw());
 				if (UNEXPECTED(loopResult.isUndef())) return zv::Val();
+				if (UNEXPECTED(!pushExpressionDependencies(dependencies, loopResult.raw()))) return zv::Val();
 				zv::Val hold;
 				zval *resultScope = pt_expression_result_scope(loopResult.raw(), hold);
 				if (UNEXPECTED(resultScope == NULL)) return zv::Val();
@@ -506,7 +531,9 @@ public:
 			zval *more = pt_internal_statement_result_impure_points(result, hold);
 			if (UNEXPECTED(more == NULL || !ptlh::mergeInto(impurePoints, more))) return zv::Val();
 		}
-		return pt_internal_statement_result_new(resultScope.raw(), resultHasYield || hasYield, isAlwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw());
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(resultScope.raw(), resultHasYield || hasYield, isAlwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw(), -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

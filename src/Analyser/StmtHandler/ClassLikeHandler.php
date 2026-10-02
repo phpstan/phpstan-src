@@ -22,6 +22,7 @@ use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
@@ -37,6 +38,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use function array_values;
 use function sprintf;
 use function usort;
 use const PHP_VERSION_ID;
@@ -80,6 +82,8 @@ final class ClassLikeHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$declarationDependencies = $this->getDeclarationDependencies($scope, $stmt);
+
 		// declaring a class/interface/enum defines it in global state,
 		// so a matching negative existence-check narrowing must be forgotten
 		if ($stmt instanceof Node\Stmt\Interface_) {
@@ -93,7 +97,7 @@ final class ClassLikeHandler implements StmtHandler
 		$scope = $scope->invalidateExistenceCheckExpressions($existenceCheckFunctionNames, $name instanceof Name ? $name->toString() : null);
 
 		if (!$context->isTopLevel()) {
-			return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
+			return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: $declarationDependencies);
 		}
 		if (isset($stmt->namespacedName)) {
 			$classReflection = $this->getCurrentClassReflection($stmt, $stmt->namespacedName->toString(), $scope);
@@ -116,7 +120,7 @@ final class ClassLikeHandler implements StmtHandler
 		// the class attributes are processed before the InClassNode emission, so
 		// rules firing on it (ClassAttributesRule) read the attribute arguments
 		// from the storage
-		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $classScope, $storage, $classStatementsGatherer);
+		$attributesDependencies = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $classScope, $storage, $classStatementsGatherer);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new InClassNode($stmt, $classReflection), $classScope, $storage);
 
 		$classLikeStatements = $stmt->stmts;
@@ -138,14 +142,49 @@ final class ClassLikeHandler implements StmtHandler
 
 		// Class members have their own inference context, including when the class
 		// declaration is visited during an enclosing body's observation pass.
-		$nodeScopeResolver->processStmtNodesInternal($stmt, $classLikeStatements, $classScope, $storage, $classStatementsGatherer, StatementContext::createTopLevel());
+		$bodyResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $classLikeStatements, $classScope, $storage, $classStatementsGatherer, StatementContext::createTopLevel());
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensions, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope, $storage);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope, $storage);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope, $storage);
 		$classReflection->evictPrivateSymbols();
 		$this->calledMethodProcessor->clearCalledMethodResults();
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: Dependencies::merge(
+			$declarationDependencies,
+			$attributesDependencies,
+			// the code of a trait is analysed as a part of every class using it
+			Dependencies::create($classScope->getFile(), usedTraits: array_values($classReflection->getTraits(true))),
+			$bodyResult->getDependencies(),
+		));
+	}
+
+	/**
+	 * The class itself and what it extends and implements.
+	 */
+	private function getDeclarationDependencies(MutatingScope $scope, ClassLike $stmt): ?Dependencies
+	{
+		$classNames = [];
+		if (isset($stmt->namespacedName)) {
+			$classNames[] = $stmt->namespacedName->toString();
+		}
+		if ($stmt instanceof Class_) {
+			if ($stmt->extends !== null) {
+				$classNames[] = $stmt->extends->toString();
+			}
+			foreach ($stmt->implements as $className) {
+				$classNames[] = $className->toString();
+			}
+		} elseif ($stmt instanceof Node\Stmt\Interface_) {
+			foreach ($stmt->extends as $className) {
+				$classNames[] = $className->toString();
+			}
+		} elseif ($stmt instanceof Node\Stmt\Enum_) {
+			foreach ($stmt->implements as $className) {
+				$classNames[] = $className->toString();
+			}
+		}
+
+		return Dependencies::create($scope->getFile(), classNames: $classNames);
 	}
 
 	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection

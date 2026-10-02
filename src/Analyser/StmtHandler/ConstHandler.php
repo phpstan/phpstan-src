@@ -13,6 +13,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
@@ -41,12 +42,14 @@ final class ConstHandler implements StmtHandler
 	{
 		$entryScope = $scope;
 		$impurePoints = [];
+		$dependencies = [];
 		foreach ($stmt->consts as $const) {
 			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			// the constant's callback fires after its value was processed, so
 			// rule-side asks about the value answer from the storage
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $const, $scope, $storage);
 			$impurePoints = array_merge($impurePoints, $constResult->getImpurePoints());
+			$dependencies[] = $constResult->getDependencies();
 			if ($const->namespacedName !== null) {
 				$constantName = new Name\FullyQualified($const->namespacedName->toString());
 			} else {
@@ -58,7 +61,7 @@ final class ConstHandler implements StmtHandler
 		// deferred from processStmtNode() - fires after the values were processed
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

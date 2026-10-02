@@ -96,9 +96,12 @@ public:
 		if (UNEXPECTED(impurePoints == NULL)) return zv::Val();
 		zval *endStatements = pt_internal_statement_result_end_statements(resultValue, endStatementsHold);
 		if (UNEXPECTED(endStatements == NULL)) return zv::Val();
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_internal_statement_result_dependencies(resultValue, dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 
 		// the twin passes no endReachable here
-		return pt_internal_statement_result_new(mergedScope.raw(), hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, Z_TYPE_P(variableFlow.raw()) == IS_NULL ? NULL : variableFlow.raw());
+		return pt_internal_statement_result_new(mergedScope.raw(), hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, Z_TYPE_P(variableFlow.raw()) == IS_NULL ? NULL : variableFlow.raw(), -1, dependencies);
 	}
 
 	/* the statement-handler entry (Engine.h) */

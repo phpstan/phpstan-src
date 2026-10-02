@@ -90,6 +90,7 @@ public:
 		/* foreach iterates the array it started with */
 		zv::Arr iterated = exprs != NULL ? zv::Arr::copyOfTable(Z_ARRVAL_P(exprs)) : zv::Arr::empty();
 		zv::Arr variableFlows = zv::Arr::create(zend_hash_num_elements(iterated.table()));
+		zv::Arr dependencies = zv::Arr::create(zend_hash_num_elements(iterated.table()));
 		for (auto entry : zv::TableRef(iterated.table())) {
 			zval *echoExpr = entry.value().deref().raw();
 			bool resolveTemplateArguments;
@@ -98,6 +99,12 @@ public:
 			if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 			zv::Val result = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, echoExpr, scope, storage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
+			{
+				zv::Val hold;
+				zval *resultDependencies = pt_expression_result_dependencies(result.raw(), hold);
+				if (UNEXPECTED(resultDependencies == NULL)) return zv::Val();
+				dependencies.push(zv::Ref(resultDependencies));
+			}
 			zv::Val variableFlow = pt_expression_result_variable_flow(result.raw());
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 			variableFlows.push(std::move(variableFlow));
@@ -140,7 +147,9 @@ public:
 		zv::Val variableFlow = pt_variable_flow_sequence_list(variableFlows.table());
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Arr exitPoints = zv::Arr::empty();
-		return pt_internal_statement_result_new(scope, hasYield, isAlwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw());
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(scope, hasYield, isAlwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw(), -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

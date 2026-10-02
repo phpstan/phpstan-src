@@ -97,6 +97,7 @@ final class PreDecHandler implements ExprHandler
 			impurePoints: $varResult->getImpurePoints(),
 			typeCallback: $typeCallback,
 			specifyTypesCallback: $specifyTypesCallback,
+			dependencies: $varResult->getDependencies(),
 		);
 	}
 

@@ -255,8 +255,15 @@ public:
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, nameResult != NULL ? nameResult : &null, nameArgResult.raw(), nodeScopeResolver, beforeScope);
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
 
+		zval *dependencies = NULL;
+		zv::Val dependenciesHold;
+		if (nameResult != NULL) {
+			dependencies = pt_expression_result_dependencies(nameResult, dependenciesHold);
+			if (UNEXPECTED(dependencies == NULL)) return zv::Val();
+		}
+
 		pt_expression_result_args args(scope, beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints, impurePoints, typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw()).withIssetabilityDescriptor(issetabilityDescriptor.raw());
+		args.withVariableFlow(variableFlow.raw()).withIssetabilityDescriptor(issetabilityDescriptor.raw()).withDependencies(dependencies);
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

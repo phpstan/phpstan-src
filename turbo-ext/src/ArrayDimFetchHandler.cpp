@@ -194,8 +194,12 @@ public:
 			zv::Val typeCallback = pt_native_closure(&appendTypeCallbackBody);
 			zv::Val specifyTypesCallback = pt_native_closure(&appendSpecifyTypesCallbackBody, self, expr);
 
+			zv::Val varDependenciesHold;
+			zval *varDependencies = pt_expression_result_dependencies(varResult, varDependenciesHold);
+			if (UNEXPECTED(varDependencies == NULL)) return zv::Val();
+
 			pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPointsValue.raw(), impurePointsValue.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-			args.withVariableFlow(variableFlow.raw()).withContainsNullsafe(containsNullsafe);
+			args.withVariableFlow(variableFlow.raw()).withContainsNullsafe(containsNullsafe).withDependencies(varDependencies);
 			return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 		}
 
@@ -292,7 +296,24 @@ public:
 
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw()).withContainsNullsafe(containsNullsafe).withIssetabilityDescriptor(issetabilityDescriptor.raw());
-		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		zv::Val result = pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+
+		// the classes in the type of the value at the offset
+		zv::Val varDependenciesHold, dimDependenciesHold;
+		zval *varDependencies = pt_expression_result_dependencies(varResult, varDependenciesHold);
+		if (UNEXPECTED(varDependencies == NULL)) return zv::Val();
+		zval *dimDependencies = pt_expression_result_dependencies(dimResult, dimDependenciesHold);
+		if (UNEXPECTED(dimDependencies == NULL)) return zv::Val();
+		zv::Val resultType = pt_expression_result_get_type(result.raw());
+		if (UNEXPECTED(resultType.isUndef())) return zv::Val();
+		zv::Arr types = zv::Arr::create(1);
+		types.push(std::move(resultType));
+		zv::Val typeDependencies = pt_dependencies_create_in(beforeScope, types.raw());
+		if (UNEXPECTED(typeDependencies.isUndef())) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({varDependencies, dimDependencies, typeDependencies.raw()});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		return pt_expression_result_with_dependencies(result.raw(), dependencies.raw());
 	}
 
 	/* the handler entry (Engine.h) */

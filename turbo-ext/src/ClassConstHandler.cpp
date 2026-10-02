@@ -65,12 +65,16 @@ public:
 	/* Mirrors processStmt(). */
 	zv::Val processStmt(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context) const
 	{
+		/* the non-null ones of the twin's $dependencies list */
+		zv::Arr dependencies = zv::Arr::empty();
 		zval *entryScope = scope;
 		zv::Val scopeHold;
 		zv::Arr impurePoints = zv::Arr::empty();
 		zval *attrGroups = ptsh::readNodeProperty(pt_cch_attr_groups_site, stmt, PT_LC("attrGroups"));
 		if (UNEXPECTED(attrGroups == NULL)) return zv::Val();
-		if (UNEXPECTED(!ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback))) return zv::Val();
+		zv::Val attributeDependencies = ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
+		if (UNEXPECTED(attributeDependencies.isUndef())) return zv::Val();
+		if (!attributeDependencies.isNull()) dependencies.push(std::move(attributeDependencies));
 
 		zval *consts = ptsh::readNodeProperty(pt_cch_consts_site, stmt, PT_LC("consts"));
 		if (UNEXPECTED(consts == NULL)) return zv::Val();
@@ -97,6 +101,12 @@ public:
 				if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 				zv::Val constResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, valueHold.raw(), scope, storage, nodeCallback, expressionContext.raw());
 				if (UNEXPECTED(constResult.isUndef())) return zv::Val();
+				{
+					zv::Val hold;
+					zval *constDependencies = pt_expression_result_dependencies(constResult.raw(), hold);
+					if (UNEXPECTED(constDependencies == NULL)) return zv::Val();
+					if (Z_TYPE_P(constDependencies) != IS_NULL) dependencies.push(zv::Ref(constDependencies));
+				}
 				// the constant's callback fires after its value was processed, so
 				// rule-side asks about the value answer from the storage
 				if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, constNode, scope, storage))) return zv::Val();
@@ -127,9 +137,11 @@ public:
 		// deferred from processStmtNode() - fires after the values were processed
 		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, stmt, entryScope, storage))) return zv::Val();
 
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, impurePoints.raw());
+		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, impurePoints.raw(), NULL, NULL, -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

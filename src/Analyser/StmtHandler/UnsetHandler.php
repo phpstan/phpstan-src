@@ -23,6 +23,7 @@ use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Analyser\VariableWriteOffset;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
@@ -67,6 +68,7 @@ final class UnsetHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$entryScope = $scope;
 		$hasYield = false;
 		$throwPoints = [];
@@ -75,6 +77,7 @@ final class UnsetHandler implements StmtHandler
 		foreach ($stmt->vars as $var) {
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($scope, $var);
 			$exprResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments())->enterUnsetTarget());
+			$dependencies[] = $exprResult->getDependencies();
 			$variableFlows[] = VariableFlowBuilder::targetRead($var, $storage, $this->hasDestructionSideEffects($exprResult->getType()));
 			$root = $var;
 			while ($root instanceof ArrayDimFetch) {
@@ -152,7 +155,7 @@ final class UnsetHandler implements StmtHandler
 		// asks about them answer from the storage
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
-		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: false, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows));
+		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: false, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows), dependencies: Dependencies::merge(...$dependencies));
 	}
 
 	private function hasDestructionSideEffects(Type $type): bool

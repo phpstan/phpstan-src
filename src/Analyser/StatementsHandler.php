@@ -18,6 +18,7 @@ use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\Generics\TemplateArgumentResolver;
 use PHPStan\Analyser\Generics\TemplateArgumentStats;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
@@ -25,6 +26,7 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
+use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\TrinaryLogic;
@@ -101,10 +103,11 @@ final class StatementsHandler
 		MutatingScope $scope,
 		ExpressionResultStorage $expressionResultStorage,
 		callable $nodeCallback,
-	): void
+	): ?Dependencies
 	{
 		$alreadyTerminated = false;
 		$exitPoints = [];
+		$dependencies = [];
 
 		$stmts = [];
 		$stmtToNodeIndex = [];
@@ -139,6 +142,10 @@ final class StatementsHandler
 
 			$statementResult = $nodeScopeResolver->processStmtNode($node, $scope, $expressionResultStorage, $nodeCallback, StatementContext::createTopLevel());
 			$scope = $statementResult->getScope();
+			$statementDependencies = $statementResult->getDependencies();
+			if ($statementDependencies !== null) {
+				$dependencies[] = $statementDependencies;
+			}
 
 			if ($node instanceof Node\Stmt\Label) {
 				$labelName = $node->name->toString();
@@ -178,6 +185,8 @@ final class StatementsHandler
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $stmtToNodeIndex[$si] + 1), true);
 			$this->processUnreachableStatement($nodeScopeResolver, $nextStmts, $scope, $expressionResultStorage, $nodeCallback);
 		}
+
+		return Dependencies::merge(...$dependencies);
 	}
 
 	/**
@@ -437,6 +446,10 @@ final class StatementsHandler
 		$state->variableFlows[$i] = $statementResult->getVariableFlow();
 		$state->scope = $statementResult->getScope();
 		$state->hasYield = $state->hasYield || $statementResult->hasYield();
+		$statementDependencies = $statementResult->getDependencies();
+		if ($statementDependencies !== null) {
+			$state->dependencies[] = $statementDependencies;
+		}
 
 		if ($stmt instanceof Node\Stmt\Label) {
 			$labelName = $stmt->name->toString();
@@ -1356,7 +1369,7 @@ final class StatementsHandler
 		$entryTypes = ClosureSignatureInference::collectByRefEntryTypes($endScope);
 		foreach ($sites as [$site]) {
 			$creationResult = $storage->findExpressionResult($site);
-			$this->getClosureProcessor()->processDeferredByRefClosureBody(
+			$closureBodyDependencies = $this->getClosureProcessor()->processDeferredByRefClosureBody(
 				$nodeScopeResolver,
 				$site,
 				$creationResult !== null ? $creationResult->getBeforeScope() : $endScope,
@@ -1364,6 +1377,11 @@ final class StatementsHandler
 				$nodeCallback,
 				$entryTypes[spl_object_id($site)] ?? [],
 			);
+			if ($closureBodyDependencies === null) {
+				continue;
+			}
+
+			$state->dependencies[] = $closureBodyDependencies;
 		}
 	}
 
@@ -1493,6 +1511,7 @@ final class StatementsHandler
 		$state->exitPoints = array_merge($state->exitPoints, array_slice($to->exitPoints, count($from->exitPoints)));
 		$state->throwPoints = array_merge($state->throwPoints, array_slice($to->throwPoints, count($from->throwPoints)));
 		$state->impurePoints = array_merge($state->impurePoints, array_slice($to->impurePoints, count($from->impurePoints)));
+		$state->dependencies = array_merge($state->dependencies, array_slice($to->dependencies, count($from->dependencies)));
 	}
 
 	public function getVariableMentionFlow(Node\Stmt $stmt): ?VariableFlow
@@ -1595,6 +1614,51 @@ final class StatementsHandler
 				}
 			}
 		}
+	}
+
+	/**
+	 * The classes the @var tags in the PHPDocs of a statement reference. The PHPDocs of declarations
+	 * describe what they declare, not variables.
+	 */
+	public function getVarTagDependencies(Node\Stmt $stmt, MutatingScope $scope): ?Dependencies
+	{
+		if (
+			$stmt instanceof VirtualNode
+			|| $stmt instanceof Node\Stmt\ClassLike
+			|| $stmt instanceof Node\Stmt\ClassMethod
+			|| $stmt instanceof Node\Stmt\Function_
+			|| $stmt instanceof Node\Stmt\Property
+			|| $stmt instanceof Node\Stmt\ClassConst
+			|| $stmt instanceof Node\Stmt\Const_
+		) {
+			return null;
+		}
+
+		$comments = $stmt->getComments();
+		if ($comments === []) {
+			return null;
+		}
+
+		$function = $scope->getFunction();
+		$types = [];
+		foreach ($comments as $comment) {
+			if (!$comment instanceof Doc) {
+				continue;
+			}
+
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				$function !== null ? $function->getName() : null,
+				$comment->getText(),
+			);
+			foreach ($resolvedPhpDoc->getVarTags() as $varTag) {
+				$types[] = $varTag->getType();
+			}
+		}
+
+		return Dependencies::create($scope->getFile(), $types);
 	}
 
 	/**

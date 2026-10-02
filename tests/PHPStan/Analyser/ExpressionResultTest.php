@@ -264,7 +264,7 @@ class ExpressionResultTest extends PHPStanTestCase
 		$finalScope = $scope->assignVariable('value', $type, $type, TrinaryLogic::createYes());
 		$throwPoints = [InternalThrowPoint::createImplicit($finalScope, $expr)];
 		$flow = VariableFlow::read('value');
-		$final = $result->finalize($finalScope, true, true, $throwPoints, [], $flow);
+		$final = $result->finalize($finalScope, true, true, $throwPoints, [], $flow, null);
 
 		$this->assertNotSame($result, $final);
 		$this->assertSame($scope, $result->getScope());
@@ -331,7 +331,7 @@ class ExpressionResultTest extends PHPStanTestCase
 		$newScope = $scope->assignVariable('other', $type, $type, TrinaryLogic::createYes());
 		switch ($method) {
 			case 'finalize':
-				$copy = $result->finalize($newScope, false, false, [], [], null);
+				$copy = $result->finalize($newScope, false, false, [], [], null, null);
 				break;
 			case 'withScope':
 				$copy = $result->withScope($newScope);

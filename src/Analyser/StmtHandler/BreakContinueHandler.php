@@ -15,6 +15,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
@@ -40,8 +41,10 @@ final class BreakContinueHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		if ($stmt->num !== null) {
 			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->num, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $result->getDependencies();
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
@@ -57,7 +60,7 @@ final class BreakContinueHandler implements StmtHandler
 		], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::exit(
 			$stmt instanceof Break_ ? VariableFlow::BREAK : VariableFlow::CONTINUE,
 			$stmt->num instanceof Int_ ? $stmt->num->value : 1,
-		));
+		), dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

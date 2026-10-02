@@ -11,17 +11,11 @@ use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
-use PHPStan\Dependency\ExportedNodeResolver;
-use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
-use PHPStan\File\IncludedFilePathResolver;
-use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Testing\PHPStanTestCase;
-use PHPStan\Type\FileTypeMapper;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_map;
 use function array_merge;
@@ -846,7 +840,6 @@ class AnalyserTest extends PHPStanTestCase
 
 		$container = self::getContainer();
 		$typeSpecifier = $container->getService('typeSpecifier');
-		$fileTypeMapper = $container->getByType(FileTypeMapper::class);
 
 		$nodeScopeResolver = new NodeScopeResolver(
 			$container,
@@ -866,13 +859,12 @@ class AnalyserTest extends PHPStanTestCase
 				$container->getExtensionsCollection(NodeVisitor::class),
 				new IgnoreLexer(),
 			),
-			new DependencyResolver($fileHelper, new IncludedFilePathResolver(__DIR__, $fileHelper), $reflectionProvider, new ExportedNodeResolver($reflectionProvider, new ExprPrinter(new Printer())), $fileTypeMapper),
-			new PackageDependencyResolver([], $fileHelper),
 			new DirectExtensionsCollection([]),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
 			false,
 			$container->getByType(ValueDependencyCollector::class),
+			$container->getByType(DependencyResolver::class),
 		);
 
 		return new Analyser(

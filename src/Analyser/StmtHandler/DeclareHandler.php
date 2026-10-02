@@ -12,6 +12,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
@@ -37,6 +38,7 @@ final class DeclareHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
@@ -46,7 +48,7 @@ final class DeclareHandler implements StmtHandler
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $declare, $scope, $storage);
 			// the value is a constant scalar - process it so its result is stored
 			// before the callback fires on it, like every other expression node
-			$nodeScopeResolver->processExprNode($stmt, $declare->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $nodeScopeResolver->processExprNode($stmt, $declare->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()))->getDependencies();
 			if (
 				$declare->key->name !== 'strict_types'
 				|| !($declare->value instanceof Int_)
@@ -60,6 +62,7 @@ final class DeclareHandler implements StmtHandler
 
 		if ($stmt->stmts !== null) {
 			$result = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
+			$dependencies[] = $result->getDependencies();
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
@@ -68,7 +71,7 @@ final class DeclareHandler implements StmtHandler
 			$exitPoints = $result->getExitPoints();
 		}
 
-		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints);
+		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

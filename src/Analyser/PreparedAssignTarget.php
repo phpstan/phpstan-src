@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -69,8 +70,17 @@ final class PreparedAssignTarget
 		private ?ExpressionResult $targetReadResult = null,
 		private array $targetChainResults = [],
 		private ?ExpressionResult $variableNameResult = null,
+		private ?Dependencies $dependencies = null,
 	)
 	{
+	}
+
+	/**
+	 * What walking the parts of the target depends on, and reading it.
+	 */
+	public function getDependencies(): ?Dependencies
+	{
+		return $this->dependencies;
 	}
 
 	/**

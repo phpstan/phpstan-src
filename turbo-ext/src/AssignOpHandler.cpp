@@ -583,8 +583,14 @@ public:
 		bool isAlwaysTerminating;
 		AOH_OK(pt_expression_result_has_yield(assignResult.raw(), hasYield));
 		AOH_OK(pt_expression_result_is_always_terminating(assignResult.raw(), isAlwaysTerminating));
+		zv::Val rhsDependenciesHold, assignDependenciesHold;
+		zval *rhsDependencies = pt_expression_result_dependencies(rhsResult.raw(), rhsDependenciesHold);
+		AOH_OK(rhsDependencies != NULL);
+		zval *assignDependencies = pt_expression_result_dependencies(assignResult.raw(), assignDependenciesHold);
+		AOH_OK(assignDependencies != NULL);
+		AOH_VAL(dependencies, pt_dependencies_merge({rhsDependencies, assignDependencies}));
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw()).withCreateTypesCallback(createTypesCallback.raw());
+		args.withVariableFlow(variableFlow.raw()).withCreateTypesCallback(createTypesCallback.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(factory(), args);
 	}
 

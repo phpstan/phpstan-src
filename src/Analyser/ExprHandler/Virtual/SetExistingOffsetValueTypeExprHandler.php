@@ -12,6 +12,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -59,6 +60,7 @@ final class SetExistingOffsetValueTypeExprHandler implements ExprHandler
 				($nativeTypesPromoted ? $valueResult->getNativeType() : $valueResult->getType()),
 			),
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			dependencies: Dependencies::merge($varResult->getDependencies(), $dimResult->getDependencies(), $valueResult->getDependencies()),
 		);
 	}
 

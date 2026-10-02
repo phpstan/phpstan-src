@@ -18,6 +18,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_string;
@@ -98,6 +100,7 @@ final class ArrowFunctionHandler implements ExprHandler
 			type: $type,
 			nativeType: $nativeType,
 			typeCallback: null,
+			dependencies: Dependencies::merge($result->getDependencies(), Dependencies::create($scope->getFile(), DependencyTypes::ofClosureType($type))),
 		);
 	}
 

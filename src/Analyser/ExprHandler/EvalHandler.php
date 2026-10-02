@@ -63,6 +63,7 @@ final class EvalHandler implements ExprHandler
 			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, 'eval', 'eval', true)]),
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => new MixedType(),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

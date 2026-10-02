@@ -14,6 +14,7 @@ use PHPStan\Analyser\PhpDocsResolver;
 use PHPStan\Analyser\PropertyHooksProcessor;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\ShouldNotHappenException;
@@ -51,7 +52,8 @@ final class PropertyHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
+		$dependencies = [];
+		$dependencies[] = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 
 		$nativePropertyType = $stmt->type !== null ? ParserNodeTypeToPHPStanType::resolve($stmt->type, $scope->getClassReflection()) : null;
 
@@ -64,7 +66,7 @@ final class PropertyHandler implements StmtHandler
 		foreach ($stmt->props as $prop) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $prop, $scope, $storage);
 			if ($prop->default !== null) {
-				$nodeScopeResolver->processExprNode($stmt, $prop->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+				$dependencies[] = $nodeScopeResolver->processExprNode($stmt, $prop->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()))->getDependencies();
 			}
 
 			if (!$scope->isInClass()) {
@@ -102,13 +104,14 @@ final class PropertyHandler implements StmtHandler
 				$scope,
 				$storage,
 			);
+			$dependencies[] = Dependencies::create($scope->getFile(), [$nativePropertyType, $phpDocType]);
 		}
 
 		if (count($stmt->hooks) > 0) {
 			if (!isset($propertyName)) {
 				throw new ShouldNotHappenException('Property name should be known when analysing hooks.');
 			}
-			$this->propertyHooksProcessor->processPropertyHooks(
+			$dependencies[] = $this->propertyHooksProcessor->processPropertyHooks(
 				$nodeScopeResolver,
 				$stmt,
 				$stmt->type,
@@ -125,7 +128,7 @@ final class PropertyHandler implements StmtHandler
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt->type, $scope, $storage);
 		}
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

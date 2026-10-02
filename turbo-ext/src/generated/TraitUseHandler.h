@@ -15,6 +15,7 @@ inline constexpr uint32_t reflectionProvider = 1;
 inline constexpr uint32_t fileHelper = 2;
 inline constexpr uint32_t parser = 3;
 inline constexpr uint32_t attributesHandler = 4;
+inline constexpr uint32_t fileTypeMapper = 5;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -31,6 +32,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("fileHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\File\\FileHelper");
 	cls.property("parser", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Parser\\Parser");
 	cls.property("attributesHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\AttributesHandler");
+	cls.property("fileTypeMapper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\FileTypeMapper");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -44,69 +46,80 @@ inline constexpr char strings[] =
 	"PHPStan\\Parser\\Parser\0" /* 99 */
 	"attributesHandler\0" /* 121 */
 	"PHPStan\\Analyser\\AttributesHandler\0" /* 139 */
-	"__construct\0" /* 174 */
-	"stmt\0" /* 186 */
-	"PhpParser\\Node\\Stmt\0" /* 191 */
-	"\0" /* 211 */
-	"supports\0" /* 212 */
-	"nodeScopeResolver\0" /* 221 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 239 */
-	"scope\0" /* 274 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 280 */
-	"storage\0" /* 311 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 319 */
-	"nodeCallback\0" /* 360 */
-	"context\0" /* 373 */
-	"PHPStan\\Analyser\\StatementContext\0" /* 381 */
-	"PHPStan\\Analyser\\InternalStatementResult\0" /* 415 */
-	"processStmt\0" /* 456 */
-	"node\0" /* 468 */
-	"PhpParser\\Node\\Stmt\\TraitUse\0" /* 473 */
-	"classScope\0" /* 502 */
-	"processTraitUse\0" /* 513 */
-	"traitReflection\0" /* 529 */
-	"PHPStan\\Reflection\\ClassReflection\0" /* 545 */
-	"adaptations\0" /* 580 */
-	"processNodesForTraitUse"; /* 592 */
+	"fileTypeMapper\0" /* 174 */
+	"PHPStan\\Type\\FileTypeMapper\0" /* 189 */
+	"__construct\0" /* 217 */
+	"stmt\0" /* 229 */
+	"PhpParser\\Node\\Stmt\0" /* 234 */
+	"\0" /* 254 */
+	"supports\0" /* 255 */
+	"nodeScopeResolver\0" /* 264 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 282 */
+	"scope\0" /* 317 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 323 */
+	"storage\0" /* 354 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 362 */
+	"nodeCallback\0" /* 403 */
+	"context\0" /* 416 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 424 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 458 */
+	"processStmt\0" /* 499 */
+	"PhpParser\\Node\\Stmt\\TraitUse\0" /* 511 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 540 */
+	"getDependencies\0" /* 572 */
+	"node\0" /* 588 */
+	"classScope\0" /* 593 */
+	"processTraitUse\0" /* 604 */
+	"traitReflection\0" /* 620 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 636 */
+	"adaptations\0" /* 671 */
+	"dependencies\0" /* 683 */
+	"processNodesForTraitUse"; /* 696 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
 	reg::packed(57, 0, 68), /* __construct $fileHelper */
 	reg::packed(92, 0, 99), /* __construct $parser */
 	reg::packed(121, 0, 139), /* __construct $attributesHandler */
-	reg::packed(186, 0, 191), /* supports $stmt */
-	reg::packed(211, MAY_BE_BOOL), /* supports return */
-	reg::packed(221, 0, 239), /* processStmt $nodeScopeResolver */
-	reg::packed(186, 0, 191), /* processStmt $stmt */
-	reg::packed(274, 0, 280), /* processStmt $scope */
-	reg::packed(311, 0, 319), /* processStmt $storage */
-	reg::packed(360, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
-	reg::packed(373, 0, 381), /* processStmt $context */
-	reg::packed(211, 0, 415), /* processStmt return */
-	reg::packed(221, 0, 239), /* processTraitUse $nodeScopeResolver */
-	reg::packed(468, 0, 473), /* processTraitUse $node */
-	reg::packed(502, 0, 280), /* processTraitUse $classScope */
-	reg::packed(311, 0, 319), /* processTraitUse $storage */
-	reg::packed(360, MAY_BE_CALLABLE), /* processTraitUse $nodeCallback */
-	reg::packed(211, MAY_BE_VOID), /* processTraitUse return */
-	reg::packed(221, 0, 239), /* processNodesForTraitUse $nodeScopeResolver */
-	reg::packed(468, 0), /* processNodesForTraitUse $node */
-	reg::packed(529, 0, 545), /* processNodesForTraitUse $traitReflection */
-	reg::packed(274, 0, 280), /* processNodesForTraitUse $scope */
-	reg::packed(311, 0, 319), /* processNodesForTraitUse $storage */
-	reg::packed(580, MAY_BE_ARRAY), /* processNodesForTraitUse $adaptations */
-	reg::packed(360, MAY_BE_CALLABLE), /* processNodesForTraitUse $nodeCallback */
-	reg::packed(211, MAY_BE_VOID), /* processNodesForTraitUse return */
+	reg::packed(174, 0, 189), /* __construct $fileTypeMapper */
+	reg::packed(229, 0, 234), /* supports $stmt */
+	reg::packed(254, MAY_BE_BOOL), /* supports return */
+	reg::packed(264, 0, 282), /* processStmt $nodeScopeResolver */
+	reg::packed(229, 0, 234), /* processStmt $stmt */
+	reg::packed(317, 0, 323), /* processStmt $scope */
+	reg::packed(354, 0, 362), /* processStmt $storage */
+	reg::packed(403, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(416, 0, 424), /* processStmt $context */
+	reg::packed(254, 0, 458), /* processStmt return */
+	reg::packed(317, 0, 323), /* getDependencies $scope */
+	reg::packed(229, 0, 511), /* getDependencies $stmt */
+	reg::packed(254, MAY_BE_NULL, 540), /* getDependencies return */
+	reg::packed(264, 0, 282), /* processTraitUse $nodeScopeResolver */
+	reg::packed(588, 0, 511), /* processTraitUse $node */
+	reg::packed(593, 0, 323), /* processTraitUse $classScope */
+	reg::packed(354, 0, 362), /* processTraitUse $storage */
+	reg::packed(403, MAY_BE_CALLABLE), /* processTraitUse $nodeCallback */
+	reg::packed(254, MAY_BE_NULL, 540), /* processTraitUse return */
+	reg::packed(264, 0, 282), /* processNodesForTraitUse $nodeScopeResolver */
+	reg::packed(588, 0), /* processNodesForTraitUse $node */
+	reg::packed(620, 0, 636), /* processNodesForTraitUse $traitReflection */
+	reg::packed(317, 0, 323), /* processNodesForTraitUse $scope */
+	reg::packed(354, 0, 362), /* processNodesForTraitUse $storage */
+	reg::packed(671, MAY_BE_ARRAY), /* processNodesForTraitUse $adaptations */
+	reg::packed(403, MAY_BE_CALLABLE), /* processNodesForTraitUse $nodeCallback */
+	reg::packed(683, MAY_BE_ARRAY, reg::NoString, true, false), /* processNodesForTraitUse $dependencies */
+	reg::packed(254, MAY_BE_VOID), /* processNodesForTraitUse return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 174 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 212 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processStmt = { { 456 /* processStmt */, 6, 6, 6, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processTraitUse = { { 513 /* processTraitUse */, 5, 13, 5, 18, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processNodesForTraitUse = { { 592 /* processNodesForTraitUse */, 7, 19, 7, 26, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 217 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 255 /* supports */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 499 /* processStmt */, 6, 7, 6, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDependencies = { { 572 /* getDependencies */, 2, 14, 2, 16, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processTraitUse = { { 604 /* processTraitUse */, 5, 17, 5, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processNodesForTraitUse = { { 696 /* processNodesForTraitUse */, 8, 23, 8, 31, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TraitUseHandler

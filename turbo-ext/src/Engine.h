@@ -132,6 +132,7 @@ enum : uint32_t
 	PT_ER_NAMED_NATIVE_TYPE = 1u << 6,
 	PT_ER_NAMED_ARGS_RESULT = 1u << 7,
 	PT_ER_NAMED_VARIABLE_FLOW = 1u << 8,
+	PT_ER_NAMED_DEPENDENCIES = 1u << 9,
 };
 
 /* create()'s parameters, borrowed: NULL (or an IS_NULL zval) is null, NULL
@@ -158,6 +159,7 @@ struct pt_expression_result_args
 	zval *nativeType = NULL;
 	zval *argsResult = NULL;
 	zval *variableFlow = NULL;
+	zval *dependencies = NULL;
 	uint32_t named = 0;
 
 	pt_expression_result_args(zval *scope, zval *beforeScope, zval *expr, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *typeCallback, zval *specifyTypesCallback)
@@ -174,6 +176,7 @@ struct pt_expression_result_args
 	pt_expression_result_args &withNativeType(zval *value) { nativeType = value; named |= PT_ER_NAMED_NATIVE_TYPE; return *this; }
 	pt_expression_result_args &withArgsResult(zval *value) { argsResult = value; named |= PT_ER_NAMED_ARGS_RESULT; return *this; }
 	pt_expression_result_args &withVariableFlow(zval *value) { variableFlow = value; named |= PT_ER_NAMED_VARIABLE_FLOW; return *this; }
+	pt_expression_result_args &withDependencies(zval *value) { dependencies = value; named |= PT_ER_NAMED_DEPENDENCIES; return *this; }
 };
 
 /* $factory->create(...$args); UNDEF = pending exception */

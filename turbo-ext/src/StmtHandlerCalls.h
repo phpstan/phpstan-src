@@ -25,9 +25,9 @@ namespace ptsh {
  * DeprecatedAttributeResolver */
 
 /* $attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt,
- * $attrGroups, $scope, $storage, $nodeCallback) (AttributesHandler.cpp);
- * false = pending exception */
-[[nodiscard]] inline bool processAttributeGroups(zval *attributesHandler, zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback)
+ * $attrGroups, $scope, $storage, $nodeCallback) (AttributesHandler.cpp): what
+ * the attributes depend on, UNDEF = pending exception */
+inline zv::Val processAttributeGroups(zval *attributesHandler, zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback)
 {
 	return pt_attributes_handler_process_attribute_groups(attributesHandler, nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
 }
@@ -41,9 +41,9 @@ namespace ptsh {
 }
 
 /* $parametersProcessor->processParams($nodeScopeResolver, $stmt, $params,
- * $scope, $storage, $nodeCallback) (ParametersProcessor.cpp); false = pending
- * exception */
-[[nodiscard]] inline bool processParams(zval *parametersProcessor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback)
+ * $scope, $storage, $nodeCallback) (ParametersProcessor.cpp): what the
+ * parameters depend on, UNDEF = pending exception */
+inline zv::Val processParams(zval *parametersProcessor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback)
 {
 	return pt_parameters_processor_process_params(parametersProcessor, nodeScopeResolver, stmt, params, scope, storage, nodeCallback);
 }

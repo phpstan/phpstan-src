@@ -30,7 +30,7 @@ pt_property_site pt_pp_default_site;
 
 namespace phpstanturbo {
 
-/* Mirrors PHPStan\Analyser\ParametersProcessor; false = pending exception. */
+/* Mirrors PHPStan\Analyser\ParametersProcessor; UNDEF = pending exception. */
 class ParametersProcessor
 {
 public:
@@ -43,44 +43,53 @@ public:
 		Z_PROP_FLAG_P(OBJ_PROP_NUM(self, slots::attributesHandler)) = 0;
 	}
 
-	/* Mirrors processParams() */
-	[[nodiscard]] bool processParams(zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback) const
+	/* Mirrors processParams(): what the attributes and the default values of
+	 * the parameters depend on */
+	zv::Val processParams(zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback) const
 	{
-		if (zend_hash_num_elements(Z_ARRVAL_P(params)) == 0) return true;
+		if (zend_hash_num_elements(Z_ARRVAL_P(params)) == 0) return zv::Val::null();
 
+		zv::Arr dependencies = zv::Arr::empty();
 		/* foreach iterates the array as it was when the loop started */
 		zv::Val paramsHold = zv::Val::copyOf(zv::Ref(params));
 		for (zv::ArrayEntry entry : zv::ArrRef(paramsHold.raw())) {
 			zval *param = entry.value().deref().raw();
 			if (UNEXPECTED(Z_TYPE_P(param) != IS_OBJECT)) {
 				zend_type_error("PHPStan\\Analyser\\AttributesHandler::processAttributeGroups(): Argument #3 ($attrGroups) must be of type array, null given");
-				return false;
+				return zv::Val();
 			}
 			zval *attrGroups = ptcall::nodeProperty(pt_pp_attr_groups_site, param, PT_LC("attrGroups"));
-			if (UNEXPECTED(attrGroups == NULL)) return false;
+			if (UNEXPECTED(attrGroups == NULL)) return zv::Val();
 			if (UNEXPECTED(Z_TYPE_P(attrGroups) != IS_ARRAY)) {
 				zend_type_error("PHPStan\\Analyser\\AttributesHandler::processAttributeGroups(): Argument #3 ($attrGroups) must be of type array, %s given", zend_zval_value_name(attrGroups));
-				return false;
+				return zv::Val();
 			}
-			if (UNEXPECTED(!pt_attributes_handler_process_attribute_groups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback))) return false;
-			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, param, scope, storage))) return false;
+			zv::Val attributeDependencies = pt_attributes_handler_process_attribute_groups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
+			if (UNEXPECTED(attributeDependencies.isUndef())) return zv::Val();
+			if (!attributeDependencies.isNull()) dependencies.push(std::move(attributeDependencies));
+			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, param, scope, storage))) return zv::Val();
 			zval *type = ptcall::nodeProperty(pt_pp_type_site, param, PT_LC("type"));
-			if (UNEXPECTED(type == NULL)) return false;
+			if (UNEXPECTED(type == NULL)) return zv::Val();
 			if (Z_TYPE_P(type) != IS_NULL) {
 				zv::Val typeHold = zv::Val::copyOf(zv::Ref(type));
-				if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, typeHold.raw(), scope, storage))) return false;
+				if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, typeHold.raw(), scope, storage))) return zv::Val();
 			}
 			zval *defaultValue = ptcall::nodeProperty(pt_pp_default_site, param, PT_LC("default"));
-			if (UNEXPECTED(defaultValue == NULL)) return false;
+			if (UNEXPECTED(defaultValue == NULL)) return zv::Val();
 			if (Z_TYPE_P(defaultValue) == IS_NULL) continue;
 
 			zv::Val defaultHold = zv::Val::copyOf(zv::Ref(defaultValue));
 			zv::Val context = pt_expression_context_create_deep();
-			if (UNEXPECTED(context.isUndef())) return false;
+			if (UNEXPECTED(context.isUndef())) return zv::Val();
 			zv::Val result = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, defaultHold.raw(), scope, storage, nodeCallback, context.raw());
-			if (UNEXPECTED(result.isUndef())) return false;
+			if (UNEXPECTED(result.isUndef())) return zv::Val();
+			zv::Val dependencyHold;
+			zval *dependency = pt_expression_result_dependencies(result.raw(), dependencyHold);
+			if (UNEXPECTED(dependency == NULL)) return zv::Val();
+			if (Z_TYPE_P(dependency) != IS_NULL) dependencies.push(zv::Ref(dependency));
 		}
-		return true;
+
+		return pt_dependencies_merge_list(dependencies.table());
 	}
 
 private:
@@ -91,11 +100,11 @@ private:
 
 using phpstanturbo::ParametersProcessor;
 
-bool pt_parameters_processor_process_params(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback)
+zv::Val pt_parameters_processor_process_params(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback)
 {
 	if (EXPECTED(Z_OBJCE_P(processor) == pt_ce_parameters_processor && Z_TYPE_P(params) == IS_ARRAY)) return ParametersProcessor(Z_OBJ_P(processor)).processParams(nodeScopeResolver, stmt, params, scope, storage, nodeCallback);
 	zv::Args argv{nodeScopeResolver, stmt, params, scope, storage, nodeCallback};
-	return !pt_type_call(Z_OBJ_P(processor), PT_LC("processparams"), 6, argv).isUndef();
+	return pt_type_call(Z_OBJ_P(processor), PT_LC("processparams"), 6, argv);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -126,7 +135,9 @@ PT_MINIT_REGISTRATION(pt_register_parameters_processor)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_ZVAL(nodeCallback)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!ParametersProcessor(Z_OBJ_P(ZEND_THIS)).processParams(nodeScopeResolver, stmt, params, scope, storage, nodeCallback))) RETURN_THROWS();
+		zv::Val dependencies = ParametersProcessor(Z_OBJ_P(ZEND_THIS)).processParams(nodeScopeResolver, stmt, params, scope, storage, nodeCallback);
+		if (UNEXPECTED(dependencies.isUndef())) RETURN_THROWS();
+		dependencies.intoReturnValue(return_value);
 	});
 
 	cls.shadow(&pt_ce_parameters_processor);

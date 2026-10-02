@@ -43,6 +43,7 @@ pt_method_site pt_clh_node_to_reflection_invoke_site;
 pt_method_site pt_clh_file_reader_read_site;
 pt_method_site pt_clh_better_reflection_get_name_site;
 pt_method_site pt_clh_class_reflection_factory_create_site;
+pt_method_site pt_clh_get_traits_site;
 
 /* $name->toString() */
 zv::Val nameToString(zval *name)
@@ -111,9 +112,19 @@ zv::Val classReflectionFactoryCreate(zval *classReflectionFactory, zval *argv)
 	return pt_call_method_cached(pt_clh_class_reflection_factory_create_site, Z_OBJ_P(classReflectionFactory), PT_LC("create"), 6, argv);
 }
 
+/* $classReflection->getTraits(true) */
+zv::Val getTraitsRecursive(zval *classReflection)
+{
+	zval recursive;
+	ZVAL_TRUE(&recursive);
+	return pt_call_method_cached(pt_clh_get_traits_site, Z_OBJ_P(classReflection), PT_LC("gettraits"), 1, &recursive);
+}
+
 /* }}} */
 
 pt_property_site pt_clh_namespaced_name_site;
+pt_property_site pt_clh_extends_site;
+pt_property_site pt_clh_implements_site;
 pt_property_site pt_clh_name_site;
 pt_property_site pt_clh_attr_groups_site;
 pt_property_site pt_clh_stmts_site;
@@ -225,6 +236,9 @@ public:
 	/* Mirrors processStmt(). */
 	zv::Val processStmt(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context) const
 	{
+		zv::Val declarationDependencies = getDeclarationDependencies(scope, stmt);
+		if (UNEXPECTED(declarationDependencies.isUndef())) return zv::Val();
+
 		// declaring a class/interface/enum defines it in global state,
 		// so a matching negative existence-check narrowing must be forgotten
 		bool error = false;
@@ -262,7 +276,7 @@ public:
 		bool isTopLevel;
 		if (UNEXPECTED(!pt_statement_context_is_top_level(context, isTopLevel))) return zv::Val();
 		if (!isTopLevel) {
-			return pt_internal_statement_result_new(resultScope, false, false, &emptyArray, &emptyArray, &emptyArray);
+			return pt_internal_statement_result_new(resultScope, false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, declarationDependencies.raw());
 		}
 
 		zv::Val classReflection;
@@ -314,7 +328,8 @@ public:
 		// from the storage
 		zval *attrGroups = ptsh::readNodeProperty(pt_clh_attr_groups_site, stmt, PT_LC("attrGroups"));
 		if (UNEXPECTED(attrGroups == NULL)) return zv::Val();
-		if (UNEXPECTED(!ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, classScope.raw(), storage, classStatementsGatherer.raw()))) return zv::Val();
+		zv::Val attributesDependencies = ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, classScope.raw(), storage, classStatementsGatherer.raw());
+		if (UNEXPECTED(attributesDependencies.isUndef())) return zv::Val();
 		{
 			zv::Args nodeArgv{stmt, classReflection.raw()};
 			zv::Val inClassNode = pt_type_new(PT_CLASS_IN_CLASS_NODE, 2, nodeArgv);
@@ -330,11 +345,12 @@ public:
 
 		// Class members have their own inference context, including when the class
 		// declaration is visited during an enclosing body's observation pass.
+		zv::Val bodyResult;
 		{
 			zv::Val statementContext = pt_statement_context_create_top_level();
 			if (UNEXPECTED(statementContext.isUndef())) return zv::Val();
-			zv::Val walked = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, classLikeStatements.raw(), classScope.raw(), storage, classStatementsGatherer.raw(), statementContext.raw());
-			if (UNEXPECTED(walked.isUndef())) return zv::Val();
+			bodyResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, classLikeStatements.raw(), classScope.raw(), storage, classStatementsGatherer.raw(), statementContext.raw());
+			if (UNEXPECTED(bodyResult.isUndef())) return zv::Val();
 		}
 		{
 			zval nodeArgv[8];
@@ -378,7 +394,30 @@ public:
 		if (UNEXPECTED(!pt_class_reflection_evict_private_symbols(Z_OBJ_P(classReflection.raw())))) return zv::Val();
 		if (UNEXPECTED(!pt_called_method_processor_clear_called_method_results(OBJ_PROP_NUM(self, slots::calledMethodProcessor)))) return zv::Val();
 
-		return pt_internal_statement_result_new(resultScope, false, false, &emptyArray, &emptyArray, &emptyArray);
+		// the code of a trait is analysed as a part of every class using it
+		zv::Val traits = getTraitsRecursive(classReflection.raw());
+		if (UNEXPECTED(traits.isUndef())) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(traits.raw()) != IS_ARRAY)) {
+			zend_type_error("array_values(): Argument #1 ($array) must be of type array, %s given", zend_zval_value_name(traits.raw()));
+			return zv::Val();
+		}
+		zv::Arr usedTraits = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(traits.raw())));
+		for (auto entry : zv::ArrRef(traits.raw())) {
+			usedTraits.push(zv::Ref(entry.value().deref().raw()));
+		}
+		zv::Val usedTraitsDependencies = pt_dependencies_create_in(classScope.raw(), NULL, NULL, NULL, NULL, usedTraits.raw());
+		if (UNEXPECTED(usedTraitsDependencies.isUndef())) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(bodyResult.raw()) != IS_OBJECT)) {
+			memberCallOnNonObject("getDependencies", bodyResult.raw());
+			return zv::Val();
+		}
+		zv::Val bodyHold;
+		zval *bodyDependencies = pt_internal_statement_result_dependencies(bodyResult.raw(), bodyHold);
+		if (UNEXPECTED(bodyDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({declarationDependencies.raw(), attributesDependencies.raw(), usedTraitsDependencies.raw(), bodyDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+
+		return pt_internal_statement_result_new(resultScope, false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, dependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */
@@ -389,6 +428,68 @@ public:
 
 private:
 	zend_object *self;
+
+	/* Mirrors getDeclarationDependencies(): the class itself and what it
+	 * extends and implements */
+	static zv::Val getDeclarationDependencies(zval *scope, zval *stmt)
+	{
+		zv::Arr classNames = zv::Arr::empty();
+		zval *namespacedName = rawNodeProperty(pt_clh_namespaced_name_site, stmt, PT_LC("namespacedName"));
+		if (namespacedName != NULL) ZVAL_DEREF(namespacedName);
+		if (namespacedName != NULL && Z_TYPE_P(namespacedName) != IS_UNDEF && Z_TYPE_P(namespacedName) != IS_NULL) {
+			if (UNEXPECTED(!pushNameString(classNames, namespacedName))) return zv::Val();
+		}
+		bool error = false;
+		if (ptsh::isInstanceOf(stmt, PT_CLASS_CLASS_STMT, error)) {
+			zval *extends = ptsh::readNodeProperty(pt_clh_extends_site, stmt, PT_LC("extends"));
+			if (UNEXPECTED(extends == NULL)) return zv::Val();
+			if (Z_TYPE_P(extends) != IS_NULL && UNEXPECTED(!pushNameString(classNames, extends))) return zv::Val();
+			if (UNEXPECTED(!pushNameStrings(classNames, stmt, pt_clh_implements_site, PT_LC("implements")))) return zv::Val();
+		} else if (UNEXPECTED(error)) {
+			return zv::Val();
+		} else if (ptsh::isInstanceOf(stmt, PT_CLASS_INTERFACE_STMT, error)) {
+			if (UNEXPECTED(!pushNameStrings(classNames, stmt, pt_clh_extends_site, PT_LC("extends")))) return zv::Val();
+		} else if (UNEXPECTED(error)) {
+			return zv::Val();
+		} else if (ptsh::isInstanceOf(stmt, PT_CLASS_ENUM_STMT, error)) {
+			if (UNEXPECTED(!pushNameStrings(classNames, stmt, pt_clh_implements_site, PT_LC("implements")))) return zv::Val();
+		} else if (UNEXPECTED(error)) {
+			return zv::Val();
+		}
+
+		return pt_dependencies_create_in(scope, NULL, classNames.raw());
+	}
+
+	/* $classNames[] = $name->toString(); false = pending exception */
+	[[nodiscard]] static bool pushNameString(zv::Arr &classNames, zval *name)
+	{
+		if (UNEXPECTED(Z_TYPE_P(name) != IS_OBJECT)) {
+			memberCallOnNonObject("toString", name);
+			return false;
+		}
+		zv::Val nameHold = zv::Val::copyOf(zv::Ref(name));
+		zv::Val className = nameToString(nameHold.raw());
+		if (UNEXPECTED(className.isUndef())) return false;
+		classNames.push(std::move(className));
+		return true;
+	}
+
+	/* foreach ($stmt->{property} as $className) $classNames[] = $className->toString();
+	 * false = pending exception */
+	[[nodiscard]] static bool pushNameStrings(zv::Arr &classNames, zval *stmt, pt_property_site &site, const char *property, size_t len)
+	{
+		zval *names = ptsh::readNodeProperty(site, stmt, property, len);
+		if (UNEXPECTED(names == NULL)) return false;
+		if (UNEXPECTED(Z_TYPE_P(names) != IS_ARRAY)) {
+			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(names));
+			return !EG(exception);
+		}
+		zv::Val iterated = zv::Val::copyOf(zv::Ref(names));
+		for (auto entry : zv::ArrRef(iterated.raw())) {
+			if (UNEXPECTED(!pushNameString(classNames, entry.value().deref().raw()))) return false;
+		}
+		return true;
+	}
 
 	/* usort($classLikeStatements, ...) — the array separated and sorted in
 	 * place like usort() does; false = pending exception */

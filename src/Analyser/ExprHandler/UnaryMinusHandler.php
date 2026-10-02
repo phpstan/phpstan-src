@@ -63,6 +63,7 @@ final class UnaryMinusHandler implements ExprHandler
 				return $nodeScopeResolver->processSyntheticOnDemand($e, $scope)->getTypeOnScope($scope, $nativeTypesPromoted);
 			}),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

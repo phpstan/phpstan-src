@@ -24,6 +24,23 @@ namespace sigs = ptdecl::MethodCallableNodeHandler::sig;
 
 zend_class_entry *pt_ce_method_callable_node_handler = nullptr;
 
+namespace {
+
+/* {{{ DependencyTypes (PHP) */
+
+pt_method_site pt_mcnh_of_called_method_site;
+
+/* DependencyTypes::ofCalledMethod($methodReflection, $withAssertsAndSelfOut) */
+zv::Val ofCalledMethod(zval *methodReflection, bool withAssertsAndSelfOut)
+{
+	zv::Args argv{methodReflection, withAssertsAndSelfOut};
+	return pt_call_static_cached(pt_mcnh_of_called_method_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofcalledmethod"), 2, argv);
+}
+
+/* }}} */
+
+} // namespace
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Analyser\ExprHandler\Virtual\MethodCallableNodeHandler;
@@ -118,7 +135,74 @@ public:
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
 		pt_expression_result_args args(currentScope, beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw());
-		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		zv::Val result = pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+
+		zv::Val varDependenciesHold;
+		zval *varDependencies = pt_expression_result_dependencies(varResult.raw(), varDependenciesHold);
+		if (UNEXPECTED(varDependencies == NULL)) return zv::Val();
+		zval *nameDependencies = NULL;
+		zv::Val nameDependenciesHold;
+		if (!nameResult.isNull()) {
+			nameDependencies = pt_expression_result_dependencies(nameResult.raw(), nameDependenciesHold);
+			if (UNEXPECTED(nameDependencies == NULL)) return zv::Val();
+		}
+		zv::Val ownDependencies = getDependencies(beforeScope, expr, varResult.raw(), result.raw());
+		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({varDependencies, nameDependencies, ownDependencies.raw()});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		return pt_expression_result_with_dependencies(result.raw(), dependencies.raw());
+	}
+
+	/* Mirrors getDependencies(): the classes of the object, of the class
+	 * declaring the method and of what calling it returns */
+	static zv::Val getDependencies(zval *scope, zval *expr, zval *varResult, zval *result)
+	{
+		zv::Arr types = zv::Arr::empty();
+		zv::Val callableType = pt_expression_result_get_type(result);
+		if (UNEXPECTED(callableType.isUndef())) return zv::Val();
+		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(callableType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
+		if (UNEXPECTED(isCallable < 0)) return zv::Val();
+		if (isCallable == PT_TRI_YES) {
+			zv::Val variants = pt_type_call(Z_OBJ_P(callableType.raw()), PT_LC("getcallableparametersacceptors"), 1, scope);
+			if (UNEXPECTED(variants.isUndef())) return zv::Val();
+			for (auto entry : zv::ArrRef(variants.raw())) {
+				zv::Val returnTypeHold;
+				zval *returnType = pt_parameters_acceptor_return_type(entry.value().deref().raw(), returnTypeHold);
+				if (UNEXPECTED(returnType == NULL)) return zv::Val();
+				types.push(zv::Ref(returnType));
+			}
+		}
+		zv::Val calledOnType = pt_expression_result_get_type(varResult);
+		if (UNEXPECTED(calledOnType.isUndef())) return zv::Val();
+		types.push(calledOnType.ref());
+		zv::Arr classNames = zv::Arr::empty();
+		zv::Val nameHold;
+		zval *name = ptveh::getterRead(ptveh::methodCallableNodeName, expr, PT_LC("getname"), nameHold);
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		int nameIsIdentifier = ptveh::isInstance(name, PT_CLASS_IDENTIFIER);
+		if (UNEXPECTED(nameIsIdentifier < 0)) return zv::Val();
+		if (nameIsIdentifier) {
+			zend_string *methodName = pt_name_node_cast_string(name);
+			if (UNEXPECTED(methodName == NULL)) return zv::Val();
+			zv::Val methodReflection = pt_mutating_scope_get_method_reflection(Z_OBJ_P(scope), calledOnType.raw(), methodName);
+			zend_string_release(methodName);
+			if (UNEXPECTED(methodReflection.isUndef())) return zv::Val();
+			if (!methodReflection.isNull()) {
+				zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_DECLARING_CLASS);
+				if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+				zv::Val declaringClassName = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
+				if (UNEXPECTED(declaringClassName.isUndef())) return zv::Val();
+				classNames.push(std::move(declaringClassName));
+				zv::Val methodTypes = ofCalledMethod(methodReflection.raw(), true);
+				if (UNEXPECTED(methodTypes.isUndef())) return zv::Val();
+				for (auto entry : zv::ArrRef(methodTypes.raw())) {
+					types.push(entry.value().deref());
+				}
+			}
+		}
+
+		return pt_dependencies_create_in(scope, types.raw(), classNames.raw());
 	}
 
 	/* Mirrors resolveType(). */
@@ -247,6 +331,12 @@ PT_MINIT_REGISTRATION(pt_register_method_callable_node_handler)
 		zval *scope, *expr, *varResult;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, scope, expr, varResult)) RETURN_THROWS();
 		PT_RETURN_VAL(MethodCallableNodeHandler(Z_OBJ_P(ZEND_THIS)).resolveType(scope, expr, varResult));
+	});
+
+	cls.method(sigs::getDependencies, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *expr, *varResult, *result;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, scope, expr, varResult, result)) RETURN_THROWS();
+		PT_RETURN_VAL(MethodCallableNodeHandler::getDependencies(scope, expr, varResult, result));
 	});
 
 	cls.shadow(&pt_ce_method_callable_node_handler);

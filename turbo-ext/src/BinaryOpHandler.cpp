@@ -601,8 +601,15 @@ public:
 		if (!isAlwaysTerminating && UNEXPECTED(!pt_expression_result_is_always_terminating(rightResult.raw(), isAlwaysTerminating))) return zv::Val();
 
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr, leftResult.raw(), rightResult.raw(), nodeScopeResolver, beforeScope, specifySubResults.raw(), leftArgResult.raw(), rightArgResult.raw(), typeCallback.raw());
+		zv::Val leftDependenciesHold, rightDependenciesHold;
+		zval *leftDependencies = pt_expression_result_dependencies(leftResult.raw(), leftDependenciesHold);
+		if (UNEXPECTED(leftDependencies == NULL)) return zv::Val();
+		zval *rightDependencies = pt_expression_result_dependencies(rightResult.raw(), rightDependenciesHold);
+		if (UNEXPECTED(rightDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({leftDependencies, rightDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(resultScope, beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw());
+		args.withVariableFlow(variableFlow.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

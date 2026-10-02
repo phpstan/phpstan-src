@@ -62,6 +62,7 @@ final class BitwiseNotHandler implements ExprHandler
 				throw new ShouldNotHappenException();
 			}),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

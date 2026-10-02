@@ -63,6 +63,7 @@ final class CloneHandler implements ExprHandler
 			impurePoints: $exprResult->getImpurePoints(),
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => self::resolveCloneType($nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType()),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

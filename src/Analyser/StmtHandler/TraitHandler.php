@@ -11,7 +11,9 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
@@ -21,6 +23,12 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TraitHandler.cpp')]
 final class TraitHandler implements StmtHandler
 {
+
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -41,7 +49,17 @@ final class TraitHandler implements StmtHandler
 		$name = $stmt->namespacedName ?? $stmt->name;
 		$scope = $scope->invalidateExistenceCheckExpressions(['trait_exists'], $name instanceof Name ? $name->toString() : null);
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
+		// the interfaces a class using the trait has to implement
+		$dependencies = null;
+		if ($stmt->namespacedName !== null && $this->reflectionProvider->hasClass($stmt->namespacedName->toString())) {
+			$requiredTypes = [];
+			foreach ($this->reflectionProvider->getClass($stmt->namespacedName->toString())->getRequireImplementsTags() as $implementsTag) {
+				$requiredTypes[] = $implementsTag->getType();
+			}
+			$dependencies = Dependencies::create($scope->getFile(), $requiredTypes);
+		}
+
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: $dependencies);
 	}
 
 }

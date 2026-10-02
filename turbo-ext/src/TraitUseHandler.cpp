@@ -11,8 +11,8 @@
  * function-likes like the twin. MutatingScope, ClassReflection, the
  * reflection provider, ExpressionResultStorage, AttributesHandler, the
  * statement results and NodeScopeResolver are called through their direct
- * entries; FileHelper, Parser, BetterReflection and the php-parser nodes
- * through the sites below.
+ * entries; FileHelper, Parser, FileTypeMapper, BetterReflection and the
+ * php-parser nodes through the sites below.
  */
 
 #include "support.h"
@@ -41,6 +41,10 @@ pt_method_site pt_tuh_stmt_name_to_lower_string_site;
 pt_method_site pt_tuh_ast_name_to_lower_string_site;
 pt_method_site pt_tuh_node_start_line_site;
 pt_method_site pt_tuh_get_sub_node_names_site;
+pt_method_site pt_tuh_get_doc_comment_site;
+pt_method_site pt_tuh_doc_comment_get_text_site;
+pt_method_site pt_tuh_get_resolved_php_doc_site;
+pt_method_site pt_tuh_uses_tag_get_type_site;
 
 /* }}} */
 
@@ -122,13 +126,14 @@ public:
 	explicit TraitUseHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *reflectionProvider, zval *fileHelper, zval *parser, zval *attributesHandler)
+	void construct(zval *reflectionProvider, zval *fileHelper, zval *parser, zval *attributesHandler, zval *fileTypeMapper)
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::reflectionProvider, zv::Val::copyOf(zv::Ref(reflectionProvider)));
 		object.propAtWrite(slots::fileHelper, zv::Val::copyOf(zv::Ref(fileHelper)));
 		object.propAtWrite(slots::parser, zv::Val::copyOf(zv::Ref(parser)));
 		object.propAtWrite(slots::attributesHandler, zv::Val::copyOf(zv::Ref(attributesHandler)));
+		object.propAtWrite(slots::fileTypeMapper, zv::Val::copyOf(zv::Ref(fileTypeMapper)));
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -148,17 +153,22 @@ public:
 		zv::Val traitStorage = pt_expression_result_storage_new();
 		if (UNEXPECTED(traitStorage.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope), traitStorage.raw()))) return zv::Val();
-		bool processed = processTraitUse(nodeScopeResolver, stmt, scope, traitStorage.raw(), nodeCallback);
+		zv::Val traitDependencies = processTraitUse(nodeScopeResolver, stmt, scope, traitStorage.raw(), nodeCallback);
 		pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope)); });
-		if (UNEXPECTED(!processed || EG(exception) != NULL)) return zv::Val();
+		if (UNEXPECTED(traitDependencies.isUndef() || EG(exception) != NULL)) return zv::Val();
 
 		// class-level node callbacks (like ClassMethodsNode) are invoked with
 		// the outer storage but ask about expressions inside the used trait
 		if (UNEXPECTED(!pt_expression_result_storage_merge_results(storage, traitStorage.raw()))) return zv::Val();
 
+		zv::Val ownDependencies = getDependencies(scope, stmt);
+		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({ownDependencies.raw(), traitDependencies.raw()});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, &emptyArray);
+		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, dependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */
@@ -170,24 +180,113 @@ public:
 private:
 	zend_object *self;
 
-	/* Mirrors processTraitUse(). */
-	[[nodiscard]] bool processTraitUse(zval *nodeScopeResolver, zval *node, zval *classScope, zval *storage, zval *nodeCallback) const
+	/* Mirrors getDependencies(): the used traits and the classes the @use
+	 * tags reference */
+	zv::Val getDependencies(zval *scope, zval *stmt) const
 	{
-		zval *traits = ptsh::readNodeProperty(pt_tuh_traits_site, node, PT_LC("traits"));
-		if (UNEXPECTED(traits == NULL)) return false;
+		zv::Arr classNames = zv::Arr::empty();
+		zval *traits = ptsh::readNodeProperty(pt_tuh_traits_site, stmt, PT_LC("traits"));
+		if (UNEXPECTED(traits == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(traits) != IS_ARRAY)) {
 			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(traits));
-			return !EG(exception);
+			if (UNEXPECTED(EG(exception))) return zv::Val();
+		} else {
+			zv::Val iterated = zv::Val::copyOf(zv::Ref(traits));
+			for (auto entry : zv::ArrRef(iterated.raw())) {
+				zval *traitName = entry.value().deref().raw();
+				if (UNEXPECTED(Z_TYPE_P(traitName) != IS_OBJECT)) {
+					memberCallOnNonObject("toString", traitName);
+					return zv::Val();
+				}
+				zv::Val className = pt_name_node_to_string(traitName);
+				if (UNEXPECTED(className.isUndef())) return zv::Val();
+				classNames.push(std::move(className));
+			}
 		}
-		zv::Val iterated = zv::Val::copyOf(zv::Ref(traits));
-		for (auto entry : zv::ArrRef(iterated.raw())) {
-			if (UNEXPECTED(!processTrait(nodeScopeResolver, node, entry.value().deref().raw(), classScope, storage, nodeCallback))) return false;
+
+		zv::Arr types = zv::Arr::empty();
+		zv::Val docComment = pt_call_method_cached(pt_tuh_get_doc_comment_site, Z_OBJ_P(stmt), PT_LC("getdoccomment"), 0, NULL);
+		if (UNEXPECTED(docComment.isUndef())) return zv::Val();
+		if (!docComment.isNull()) {
+			zv::Val file = pt_mutating_scope_get_file(Z_OBJ_P(scope));
+			if (UNEXPECTED(file.isUndef())) return zv::Val();
+			zv::Val className = zv::Val::null();
+			bool inClass;
+			if (UNEXPECTED(!pt_scope_is_in_class(Z_OBJ_P(scope), inClass))) return zv::Val();
+			if (inClass) {
+				zv::Val classReflection = pt_scope_get_class_reflection(Z_OBJ_P(scope));
+				if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
+				if (UNEXPECTED(Z_TYPE_P(classReflection.raw()) != IS_OBJECT)) {
+					memberCallOnNonObject("getName", classReflection.raw());
+					return zv::Val();
+				}
+				className = pt_class_reflection_get_name(Z_OBJ_P(classReflection.raw()));
+				if (UNEXPECTED(className.isUndef())) return zv::Val();
+			}
+			zv::Val traitName = zv::Val::null();
+			bool inTrait;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(scope), inTrait))) return zv::Val();
+			if (inTrait) {
+				zv::Val traitReflection = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(scope));
+				if (UNEXPECTED(traitReflection.isUndef())) return zv::Val();
+				if (UNEXPECTED(Z_TYPE_P(traitReflection.raw()) != IS_OBJECT)) {
+					memberCallOnNonObject("getName", traitReflection.raw());
+					return zv::Val();
+				}
+				traitName = pt_class_reflection_get_name(Z_OBJ_P(traitReflection.raw()));
+				if (UNEXPECTED(traitName.isUndef())) return zv::Val();
+			}
+			if (UNEXPECTED(Z_TYPE_P(docComment.raw()) != IS_OBJECT)) {
+				memberCallOnNonObject("getText", docComment.raw());
+				return zv::Val();
+			}
+			zv::Val text = pt_call_method_cached(pt_tuh_doc_comment_get_text_site, Z_OBJ_P(docComment.raw()), PT_LC("gettext"), 0, NULL);
+			if (UNEXPECTED(text.isUndef())) return zv::Val();
+			zval null;
+			ZVAL_NULL(&null);
+			zv::Args argv{file.raw(), className.raw(), traitName.raw(), &null, text.raw()};
+			zv::Val resolvedPhpDoc = pt_call_method_cached(pt_tuh_get_resolved_php_doc_site, Z_OBJ_P(OBJ_PROP_NUM(self, slots::fileTypeMapper)), PT_LC("getresolvedphpdoc"), 5, argv);
+			if (UNEXPECTED(resolvedPhpDoc.isUndef())) return zv::Val();
+			zv::Val usesTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_USES_TAGS);
+			if (UNEXPECTED(usesTags.isUndef())) return zv::Val();
+			if (Z_TYPE_P(usesTags.raw()) == IS_ARRAY) {
+				for (auto entry : zv::ArrRef(usesTags.raw())) {
+					zval *usesTag = entry.value().deref().raw();
+					if (UNEXPECTED(Z_TYPE_P(usesTag) != IS_OBJECT)) {
+						memberCallOnNonObject("getType", usesTag);
+						return zv::Val();
+					}
+					zv::Val type = pt_call_method_cached(pt_tuh_uses_tag_get_type_site, Z_OBJ_P(usesTag), PT_LC("gettype"), 0, NULL);
+					if (UNEXPECTED(type.isUndef())) return zv::Val();
+					types.push(std::move(type));
+				}
+			}
 		}
-		return true;
+
+		return pt_dependencies_create_in(scope, types.raw(), classNames.raw());
 	}
 
-	/* the traits loop body over one used trait name */
-	[[nodiscard]] bool processTrait(zval *nodeScopeResolver, zval *node, zval *trait, zval *classScope, zval *storage, zval *nodeCallback) const
+	/* Mirrors processTraitUse(): what the walked trait statements depend on */
+	zv::Val processTraitUse(zval *nodeScopeResolver, zval *node, zval *classScope, zval *storage, zval *nodeCallback) const
+	{
+		zval *traits = ptsh::readNodeProperty(pt_tuh_traits_site, node, PT_LC("traits"));
+		if (UNEXPECTED(traits == NULL)) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(traits) != IS_ARRAY)) {
+			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(traits));
+			return EG(exception) ? zv::Val() : zv::Val::null();
+		}
+		zv::Arr dependencies = zv::Arr::empty();
+		zv::Val iterated = zv::Val::copyOf(zv::Ref(traits));
+		for (auto entry : zv::ArrRef(iterated.raw())) {
+			if (UNEXPECTED(!processTrait(nodeScopeResolver, node, entry.value().deref().raw(), classScope, storage, nodeCallback, dependencies))) return zv::Val();
+		}
+
+		return pt_dependencies_merge_list(dependencies.table());
+	}
+
+	/* the traits loop body over one used trait name; `dependencies` is the
+	 * twin's $dependencies list (its non-null entries) */
+	[[nodiscard]] bool processTrait(zval *nodeScopeResolver, zval *node, zval *trait, zval *classScope, zval *storage, zval *nodeCallback, zv::Arr &dependencies) const
 	{
 		zend_string *traitNameString = zval_try_get_string(trait);
 		if (UNEXPECTED(traitNameString == NULL)) return false;
@@ -270,7 +369,7 @@ private:
 				zend_symtable_update(Z_ARRVAL_P(currentlyProcessedTraits), lowercasedTraitName.get(), &processing);
 			}
 		}
-		bool processed = processNodesForTraitUse(nodeScopeResolver, parserNodes.raw(), traitReflection.raw(), classScope, storage, adaptations.raw(), nodeCallback);
+		bool processed = processNodesForTraitUse(nodeScopeResolver, parserNodes.raw(), traitReflection.raw(), classScope, storage, adaptations.raw(), nodeCallback, dependencies);
 		{
 			zval *currentlyProcessedTraits = OBJ_PROP_NUM(self, slots::currentlyProcessedTraits);
 			ZVAL_DEREF(currentlyProcessedTraits);
@@ -283,20 +382,20 @@ private:
 	}
 
 	/* Mirrors processNodesForTraitUse(). */
-	[[nodiscard]] bool processNodesForTraitUse(zval *nodeScopeResolver, zval *node, zval *traitReflection, zval *scope, zval *storage, zval *adaptations, zval *nodeCallback) const
+	[[nodiscard]] bool processNodesForTraitUse(zval *nodeScopeResolver, zval *node, zval *traitReflection, zval *scope, zval *storage, zval *adaptations, zval *nodeCallback, zv::Arr &dependencies) const
 	{
 		bool result = false;
-		pt_engine_with_stack([&]() { result = processNodesForTraitUseStep(nodeScopeResolver, node, traitReflection, scope, storage, adaptations, nodeCallback); });
+		pt_engine_with_stack([&]() { result = processNodesForTraitUseStep(nodeScopeResolver, node, traitReflection, scope, storage, adaptations, nodeCallback, dependencies); });
 		return result;
 	}
 
-	[[nodiscard]] bool processNodesForTraitUseStep(zval *nodeScopeResolver, zval *node, zval *traitReflection, zval *scope, zval *storage, zval *adaptations, zval *nodeCallback) const
+	[[nodiscard]] bool processNodesForTraitUseStep(zval *nodeScopeResolver, zval *node, zval *traitReflection, zval *scope, zval *storage, zval *adaptations, zval *nodeCallback, zv::Arr &dependencies) const
 	{
 		bool error = false;
 		if (ptsh::isInstanceOf(node, PT_CLASS_NODE, error)) {
 			bool isUsedTrait;
 			if (UNEXPECTED(!isUsedTraitStatement(node, traitReflection, isUsedTrait))) return false;
-			if (isUsedTrait) return processUsedTrait(nodeScopeResolver, node, traitReflection, scope, storage, adaptations, nodeCallback);
+			if (isUsedTrait) return processUsedTrait(nodeScopeResolver, node, traitReflection, scope, storage, adaptations, nodeCallback, dependencies);
 			if (ptsh::isInstanceOf(node, PT_CLASS_CLASS_LIKE_STMT, error)) return true;
 			if (UNEXPECTED(error)) return false;
 			if (ptsh::isInstanceOf(node, PT_CLASS_FUNCTION_LIKE, error)) return true;
@@ -313,7 +412,7 @@ private:
 				zv::Val subNode = readProperty(node, subNodeName);
 				zend_string_release(subNodeName);
 				if (UNEXPECTED(subNode.isUndef())) return false;
-				if (UNEXPECTED(!processNodesForTraitUse(nodeScopeResolver, subNode.raw(), traitReflection, scope, storage, adaptations, nodeCallback))) return false;
+				if (UNEXPECTED(!processNodesForTraitUse(nodeScopeResolver, subNode.raw(), traitReflection, scope, storage, adaptations, nodeCallback, dependencies))) return false;
 			}
 			return true;
 		}
@@ -321,7 +420,7 @@ private:
 		if (Z_TYPE_P(node) == IS_ARRAY) {
 			zv::Val iterated = zv::Val::copyOf(zv::Ref(node));
 			for (auto entry : zv::ArrRef(iterated.raw())) {
-				if (UNEXPECTED(!processNodesForTraitUse(nodeScopeResolver, entry.value().deref().raw(), traitReflection, scope, storage, adaptations, nodeCallback))) return false;
+				if (UNEXPECTED(!processNodesForTraitUse(nodeScopeResolver, entry.value().deref().raw(), traitReflection, scope, storage, adaptations, nodeCallback, dependencies))) return false;
 			}
 		}
 		return true;
@@ -364,8 +463,9 @@ private:
 	}
 
 	/* the used trait's statements, the adaptations applied to clones of its
-	 * methods, walked in the trait scope */
-	[[nodiscard]] bool processUsedTrait(zval *nodeScopeResolver, zval *node, zval *traitReflection, zval *scope, zval *storage, zval *adaptations, zval *nodeCallback) const
+	 * methods, walked in the trait scope; what they depend on goes to
+	 * `dependencies` */
+	[[nodiscard]] bool processUsedTrait(zval *nodeScopeResolver, zval *node, zval *traitReflection, zval *scope, zval *storage, zval *adaptations, zval *nodeCallback, zv::Arr &dependencies) const
 	{
 		zend_class_entry *aliasCe = pt_class(PT_CLASS_TRAIT_USE_ADAPTATION_ALIAS);
 		if (UNEXPECTED(aliasCe == NULL)) return false;
@@ -427,7 +527,7 @@ private:
 			zv::Val attrGroupsHold = zv::Val::copyOf(zv::Ref(attrGroups));
 			zv::Val noopNodeCallback = pt_type_new(PT_CLASS_NOOP_NODE_CALLBACK, 0, NULL);
 			if (UNEXPECTED(noopNodeCallback.isUndef())) return false;
-			if (UNEXPECTED(!ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, node, attrGroupsHold.raw(), traitScope.raw(), storage, noopNodeCallback.raw()))) return false;
+			if (UNEXPECTED(ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, node, attrGroupsHold.raw(), traitScope.raw(), storage, noopNodeCallback.raw()).isUndef())) return false;
 		}
 
 		{
@@ -441,7 +541,17 @@ private:
 
 		zv::Val statementContext = pt_statement_context_create_top_level();
 		if (UNEXPECTED(statementContext.isUndef())) return false;
-		return !pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, node, stmts.raw(), traitScope.raw(), storage, nodeCallback, statementContext.raw()).isUndef();
+		zv::Val result = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, node, stmts.raw(), traitScope.raw(), storage, nodeCallback, statementContext.raw());
+		if (UNEXPECTED(result.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(result.raw()) != IS_OBJECT)) {
+			memberCallOnNonObject("getDependencies", result.raw());
+			return false;
+		}
+		zv::Val hold;
+		zval *statementDependencies = pt_internal_statement_result_dependencies(result.raw(), hold);
+		if (UNEXPECTED(statementDependencies == NULL)) return false;
+		if (Z_TYPE_P(statementDependencies) != IS_NULL) dependencies.push(zv::Ref(statementDependencies));
+		return true;
 	}
 
 	/* the stmts loop body: a ClassMethod replaced in $stmts by a clone with
@@ -519,9 +629,9 @@ PT_MINIT_REGISTRATION(pt_register_trait_use_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *reflectionProvider, *fileHelper, *parser, *attributesHandler;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, reflectionProvider, fileHelper, parser, attributesHandler)) RETURN_THROWS();
-		TraitUseHandler(Z_OBJ_P(ZEND_THIS)).construct(reflectionProvider, fileHelper, parser, attributesHandler);
+		zval *reflectionProvider, *fileHelper, *parser, *attributesHandler, *fileTypeMapper;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, reflectionProvider, fileHelper, parser, attributesHandler, fileTypeMapper)) RETURN_THROWS();
+		TraitUseHandler(Z_OBJ_P(ZEND_THIS)).construct(reflectionProvider, fileHelper, parser, attributesHandler, fileTypeMapper);
 	});
 
 	cls.method<&TraitUseHandler::supports, zp::Obj>(sigs::supports);

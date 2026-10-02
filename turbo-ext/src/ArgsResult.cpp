@@ -143,6 +143,14 @@ public:
 		return ptav::own(pt_expression_result_impure_points(expressionResult, hold));
 	}
 
+	zv::Val getDependencies() const
+	{
+		zval *expressionResult = pt_typed_slot(self, slots::expressionResult, self->ce, "expressionResult");
+		if (UNEXPECTED(expressionResult == NULL)) return zv::Val();
+		zv::Val hold;
+		return ptav::own(pt_expression_result_dependencies(expressionResult, hold));
+	}
+
 	/* Mirrors withResolvedParametersAcceptor(): clone, then the slot;
 	 * $resolvedParametersAcceptor NULL for null */
 	zv::Val withResolvedParametersAcceptor(zval *resolvedParametersAcceptor) const
@@ -241,6 +249,8 @@ PT_MINIT_REGISTRATION(pt_register_args_result)
 	cls.method<&ArgsResult::getThrowPoints>(sigs::getThrowPoints);
 
 	cls.method<&ArgsResult::getImpurePoints>(sigs::getImpurePoints);
+
+	cls.method<&ArgsResult::getDependencies>(sigs::getDependencies);
 
 	cls.method<&ArgsResult::withResolvedParametersAcceptor, zp::ObjOrNull>(sigs::withResolvedParametersAcceptor);
 

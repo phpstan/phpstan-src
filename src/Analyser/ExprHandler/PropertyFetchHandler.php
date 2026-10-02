@@ -21,6 +21,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
@@ -119,7 +120,7 @@ final class PropertyFetchHandler implements ExprHandler
 			}
 		}
 
-		return $this->expressionResultFactory->create(
+		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
@@ -194,6 +195,29 @@ final class PropertyFetchHandler implements ExprHandler
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypesWithNullsafeFan($expr, $context, $beforeScope, $nativeTypesPromoted),
 		);
+		return $result->withDependencies(Dependencies::merge(
+			$varResult->getDependencies(),
+			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$this->getDependencies($scopeBeforeVar, $expr, $varResult, $result),
+		));
+	}
+
+	/**
+	 * The classes of the object the property is fetched from, the class declaring it, and the classes
+	 * in its type.
+	 */
+	private function getDependencies(MutatingScope $scope, PropertyFetch $expr, ExpressionResult $varResult, ExpressionResult $result): ?Dependencies
+	{
+		$fetchedOnType = $varResult->getType();
+		$classNames = [];
+		if ($expr->name instanceof Identifier) {
+			$propertyReflection = $scope->getInstancePropertyReflection($fetchedOnType, $expr->name->toString());
+			if ($propertyReflection !== null) {
+				$classNames[] = $propertyReflection->getDeclaringClass()->getName();
+			}
+		}
+
+		return Dependencies::create($scope->getFile(), [$fetchedOnType, $result->getType()], $classNames);
 	}
 
 	private function propertyFetchType(MutatingScope $scope, Type $fetchedOnType, string $propertyName, PropertyFetch $propertyFetch): ?Type

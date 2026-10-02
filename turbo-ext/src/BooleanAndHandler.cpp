@@ -116,8 +116,15 @@ public:
 
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, leftResult.raw(), rightResult.raw());
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, nodeScopeResolver, scope, expr, leftResult.raw(), rightResult.raw());
+		zv::Val leftDependenciesHold, rightDependenciesHold;
+		zval *leftDependencies = pt_expression_result_dependencies(leftResult.raw(), leftDependenciesHold);
+		if (UNEXPECTED(leftDependencies == NULL)) return zv::Val();
+		zval *rightDependencies = pt_expression_result_dependencies(rightResult.raw(), rightDependenciesHold);
+		if (UNEXPECTED(rightDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({leftDependencies, rightDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(leftMergedWithRightScope.raw(), scope, expr, leftHasYield || rightHasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw()).withTruthyScopeOverrideResult(rightResult.raw());
+		args.withVariableFlow(variableFlow.raw()).withTruthyScopeOverrideResult(rightResult.raw()).withDependencies(dependencies.raw());
 		zv::Val result = pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		// store before emitting the virtual node: its rules ask about the raw

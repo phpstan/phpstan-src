@@ -54,6 +54,7 @@ use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Analyser\VirtualAssignNodeCallback;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
@@ -306,6 +307,7 @@ final class AssignHandler implements ExprHandler
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => $nativeTypesPromoted ? $assignedExprResult->getNativeType() : $assignedExprResult->getType(),
 			specifyTypesCallback: $expr instanceof Assign ? $this->createSpecifyTypesCallback($expr, $assignedExprResult, $beforeScope, $storage) : fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			createTypesCallback: $expr instanceof Assign ? $this->createCreateTypesCallback($expr, $assignedExprResult, $beforeScope) : null,
+			dependencies: Dependencies::merge($assignedExprResult->getDependencies(), $result->getDependencies()),
 		);
 	}
 
@@ -709,6 +711,7 @@ final class AssignHandler implements ExprHandler
 				targetReadResult: $targetReadResult,
 				targetChainResults: $targetChainResults,
 				variableNameResult: $variableNameResult,
+				dependencies: $variableNameResult !== null ? $variableNameResult->getDependencies() : null,
 			);
 		}
 
@@ -881,6 +884,25 @@ final class AssignHandler implements ExprHandler
 			foreach ($deferredDimFetchResults as [$deferredDimFetch, $deferredResult]) {
 				$nodeScopeResolver->storeExpressionResult($storage, $deferredDimFetch, $deferredResult);
 			}
+			// the root and the dimensions, and the classes in the types at the offsets
+			$targetDependencies = [$varResult->getDependencies()];
+			foreach ($dimResults as $dimResult) {
+				if ($dimResult === null) {
+					continue;
+				}
+
+				$targetDependencies[] = $dimResult->getDependencies();
+			}
+			$linkTypes = [];
+			foreach ($deferredDimFetchResults as [$deferredDimFetch, $deferredResult]) {
+				if ($deferredDimFetch->dim === null) {
+					continue;
+				}
+
+				$linkTypes[] = $deferredResult->getType();
+			}
+			$targetDependencies[] = Dependencies::create($beforeScope->getFile(), $linkTypes);
+			$targetDependencies = Dependencies::merge(...$targetDependencies);
 			// the chain link the write's ArrayAccess::offsetSet would be invoked on:
 			// the second-outermost link, or the root for a single-dimension target
 			$offsetSetTargetResult = count($deferredDimFetchResults) >= 2
@@ -908,6 +930,7 @@ final class AssignHandler implements ExprHandler
 				offsetSetTargetResult: $offsetSetTargetResult,
 				targetReadResult: $targetReadResult,
 				targetChainResults: $targetChainResults,
+				dependencies: $targetDependencies,
 			);
 		}
 
@@ -949,8 +972,9 @@ final class AssignHandler implements ExprHandler
 			// The raw target fetch was emitted to node callbacks at the top of
 			// prepareTarget() but the assign flow never processes it as a
 			// read. Compose and store it once here from the receiver's and
-			// name's results, so askers parked on it (DependencyResolver,
-			// property rules) resume with its pre-assign type.
+			// name's results, so askers parked on it (property rules) resume
+			// with its pre-assign type. What the target depends on is read from
+			// it too.
 			$parkedReadResult = $this->propertyFetchHandler->composeResult($nodeScopeResolver, $var, $objectResult, $propertyNameResult, $scopeBeforeVar, $scopeBeforeAssignEval);
 			$nodeScopeResolver->storeExpressionResult($storage, $var, $parkedReadResult);
 			if ($mode->producesTargetReadResult() && !$mode->issetSemanticsForRead()) {
@@ -973,6 +997,7 @@ final class AssignHandler implements ExprHandler
 				propertyName: $propertyName,
 				targetReadResult: $targetReadResult,
 				targetChainResults: $targetChainResults,
+				dependencies: $parkedReadResult->getDependencies(),
 			);
 		}
 
@@ -1033,6 +1058,7 @@ final class AssignHandler implements ExprHandler
 				propertyHolderType: $propertyHolderType,
 				targetReadResult: $targetReadResult,
 				targetChainResults: $targetChainResults,
+				dependencies: $parkedReadResult->getDependencies(),
 			);
 		}
 
@@ -1133,6 +1159,7 @@ final class AssignHandler implements ExprHandler
 			$isAlwaysTerminating,
 			targetReadResult: $targetReadResult,
 			targetChainResults: $targetChainResults,
+			dependencies: $varResult->getDependencies(),
 		);
 	}
 
@@ -1169,6 +1196,7 @@ final class AssignHandler implements ExprHandler
 		$throwPoints = $target->getThrowPoints();
 		$impurePoints = $target->getImpurePoints();
 		$isAlwaysTerminating = $target->isAlwaysTerminating();
+		$writeDependencies = [$target->getDependencies()];
 		if ($kind === PreparedAssignTarget::KIND_VARIABLE) {
 			if (!$var instanceof Variable) {
 				throw new ShouldNotHappenException();
@@ -1768,6 +1796,8 @@ final class AssignHandler implements ExprHandler
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+				$writeDependencies[] = $keyResult !== null ? $keyResult->getDependencies() : null;
+				$writeDependencies[] = $result->getDependencies();
 			}
 		} elseif ($kind === PreparedAssignTarget::KIND_EXISTING_ARRAY_DIM_FETCH) {
 			$var = $target->getRootVar();
@@ -1836,6 +1866,7 @@ final class AssignHandler implements ExprHandler
 			$impurePoints,
 			typeCallback: static fn () => new MixedType(),
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			dependencies: Dependencies::merge(...$writeDependencies),
 		);
 	}
 

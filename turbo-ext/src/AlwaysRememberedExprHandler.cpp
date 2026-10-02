@@ -79,8 +79,11 @@ public:
 		// out into wrapper + inner. The inner composes through its own child result;
 		// raw-Expr callers still go through create()->createForExpr.
 		zv::Val createTypesCallback = pt_native_closure(&createTypesCallbackBody, self, expr, innerExpr, innerResult.raw(), beforeScope);
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_expression_result_dependencies(innerResult.raw(), dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 		pt_expression_result_args args(resultScope, beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints, impurePoints, typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw()).withCreateTypesCallback(createTypesCallback.raw());
+		args.withVariableFlow(variableFlow.raw()).withCreateTypesCallback(createTypesCallback.raw()).withDependencies(dependencies);
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

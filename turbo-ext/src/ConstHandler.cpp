@@ -70,6 +70,7 @@ public:
 		zval *entryScope = scope;
 		zv::Val scopeHold;
 		zv::Arr impurePoints = zv::Arr::empty();
+		zv::Arr dependencies = zv::Arr::empty();
 		zval *consts = ptsh::readNodeProperty(pt_ch_consts_site, stmt, PT_LC("consts"));
 		if (UNEXPECTED(consts == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(consts) != IS_ARRAY)) {
@@ -103,6 +104,12 @@ public:
 					zval *resultImpurePoints = pt_expression_result_impure_points(constResult.raw(), hold);
 					if (UNEXPECTED(resultImpurePoints == NULL || !pt_callable_array_merge_into(impurePoints, resultImpurePoints))) return zv::Val();
 				}
+				{
+					zv::Val hold;
+					zval *constDependencies = pt_expression_result_dependencies(constResult.raw(), hold);
+					if (UNEXPECTED(constDependencies == NULL)) return zv::Val();
+					dependencies.push(zv::Ref(constDependencies));
+				}
 				zv::Val constantName = fullyQualifiedConstantName(constNode);
 				if (UNEXPECTED(constantName.isUndef())) return zv::Val();
 				zv::Val fetch = pt_type_new(PT_CLASS_CONST_FETCH, 1, constantName.raw());
@@ -123,7 +130,9 @@ public:
 
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, impurePoints.raw());
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, impurePoints.raw(), NULL, NULL, -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

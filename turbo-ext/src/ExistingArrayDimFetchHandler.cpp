@@ -66,7 +66,11 @@ public:
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, arrayDimFetchResult.raw());
 		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		if (UNEXPECTED(specifyTypesCallback.isUndef())) return zv::Val();
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_expression_result_dependencies(arrayDimFetchResult.raw(), dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 		pt_expression_result_args args(scope, scope, expr, false, false, NULL, NULL, typeCallback.raw(), specifyTypesCallback.raw());
+		args.withDependencies(dependencies);
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

@@ -53,6 +53,7 @@ final class ErrorSuppressHandler implements ExprHandler
 			impurePoints: $exprResult->getImpurePoints(),
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType()),
 			specifyTypesCallback: static fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $exprResult->getSpecifiedTypes($context, $nativeTypesPromoted)->setRootExpr($expr),
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

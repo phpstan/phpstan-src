@@ -4,7 +4,7 @@
  *
  * The pre-value half of an assignment AssignHandler::prepareTarget()
  * captures and applyWrite() reads back (~590K getter calls per
- * self-analysis). State lives in the twin's 26 promoted property slots, in
+ * self-analysis). State lives in the twin's 27 promoted property slots, in
  * its order; the getters of the kind-specific parts throw the twin's
  * ShouldNotHappenException when the slot is null. Native creators use
  * pt_prepared_assign_target_new() with the constructor's positional
@@ -22,7 +22,7 @@ namespace sigs = ptdecl::PreparedAssignTarget::sig;
 zend_class_entry *pt_ce_prepared_assign_target = nullptr;
 
 /* the constructor's positional parameter count and the required ones */
-#define PT_PAT_ARG_COUNT 26
+#define PT_PAT_ARG_COUNT 27
 #define PT_PAT_REQUIRED_ARG_COUNT 11
 
 namespace phpstanturbo {
@@ -33,7 +33,7 @@ class PreparedAssignTarget
 public:
 	explicit PreparedAssignTarget(zend_object *self) : self(self) {}
 
-	/* the constructor: argv holds the 26 positional arguments in the twin's
+	/* the constructor: argv holds the 27 positional arguments in the twin's
 	 * order, an UNDEF slot for an omitted optional one (its default: null,
 	 * [] for $targetChainResults) */
 	void construct(zval *argv) const
@@ -62,6 +62,7 @@ public:
 		return zv::Val::adopt(object);
 	}
 
+	zv::Val getDependencies() const { return read(slots::dependencies, "dependencies"); }
 	zv::Val getKind() const { return read(slots::kind, "kind"); }
 	zv::Val getVar() const { return read(slots::var, "var"); }
 	zv::Val getAssignedExpr() const { return read(slots::assignedExpr, "assignedExpr"); }
@@ -185,6 +186,7 @@ PT_MINIT_REGISTRATION(pt_register_prepared_assign_target)
 			Z_PARAM_OBJECT_OR_NULL(objects[23])
 			Z_PARAM_ARRAY(objects[24])
 			Z_PARAM_OBJECT_OR_NULL(objects[25])
+			Z_PARAM_OBJECT_OR_NULL(objects[26])
 		ZEND_PARSE_PARAMETERS_END();
 		zval scalar;
 		ZVAL_STR(&scalar, kindStr);
@@ -209,6 +211,8 @@ PT_MINIT_REGISTRATION(pt_register_prepared_assign_target)
 		}
 		PreparedAssignTarget(Z_OBJ_P(ZEND_THIS)).construct(argv);
 	});
+
+	cls.method<&PreparedAssignTarget::getDependencies>(sigs::getDependencies);
 
 	cls.method<&PreparedAssignTarget::getKind>(sigs::getKind);
 

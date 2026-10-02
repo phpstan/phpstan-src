@@ -45,7 +45,8 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 254 */
 	"nodeCallback\0" /* 295 */
 	"\0" /* 308 */
-	"processAttributeGroups"; /* 309 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 309 */
+	"processAttributeGroups"; /* 341 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
 	reg::packed(57, 0, 74), /* __construct $argumentsHandler */
@@ -55,7 +56,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(209, 0, 215), /* processAttributeGroups $scope */
 	reg::packed(246, 0, 254), /* processAttributeGroups $storage */
 	reg::packed(295, MAY_BE_CALLABLE), /* processAttributeGroups $nodeCallback */
-	reg::packed(308, MAY_BE_VOID), /* processAttributeGroups return */
+	reg::packed(308, MAY_BE_NULL, 309), /* processAttributeGroups return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -63,7 +64,7 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 108 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processAttributeGroups = { { 309 /* processAttributeGroups */, 6, 2, 6, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processAttributeGroups = { { 341 /* processAttributeGroups */, 6, 2, 6, 8, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::AttributesHandler

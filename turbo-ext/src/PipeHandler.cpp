@@ -238,8 +238,11 @@ public:
 		// the pipe evaluates to its rewritten call - read that child's result
 		zv::Val typeCallback = pt_native_closure(&ptse::childTypeBody<PipeHandler>, callResult.raw());
 		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<PipeHandler>, self, expr);
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_expression_result_dependencies(callResult.raw(), dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 		pt_expression_result_args args(child.scope, scope, expr, child.hasYield, child.isAlwaysTerminating, child.throwPoints, child.impurePoints, typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw());
+		args.withVariableFlow(variableFlow.raw()).withDependencies(dependencies);
 		return pt_expression_result_create(factory, args);
 	}
 

@@ -508,8 +508,9 @@ public:
 		return zv::Val(std::move(pair));
 	}
 
-	/* Mirrors processDeferredByRefClosureBody(); false = pending exception */
-	[[nodiscard]] bool processDeferredByRefClosureBody(zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *byRefEntryTypes) const
+	/* Mirrors processDeferredByRefClosureBody(): what the body depends on;
+	 * UNDEF = pending exception */
+	zv::Val processDeferredByRefClosureBody(zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *byRefEntryTypes) const
 	{
 		ClosureWalk w;
 		w.nodeScopeResolver = nodeScopeResolver;
@@ -521,54 +522,54 @@ public:
 		w.scope = zv::Val::copyOf(zv::Ref(scope));
 		zval *closureCallArgs = ptclosure::attribute(expr, pt_cp_closure_call_args);
 		zv::Val closureCallArgsHold = closureCallArgs != NULL ? zv::Val::copyOf(zv::Ref(closureCallArgs)) : zv::Val::null();
-		if (UNEXPECTED(!pt_closure_parameter_resolver_resolve(slot(slots::closureParameterResolver), scope, expr, storage, closureCallArgsHold.raw(), NULL, NULL, w.callableParameters, w.nativeCallableParameters))) return false;
-		if (UNEXPECTED(!pt_contextual_closure_parameter_resolver_resolve_expected_return_types(slot(slots::contextualClosureParameterResolver), scope, expr, NULL, NULL, w.expectedReturnType, w.nativeExpectedReturnType))) return false;
+		if (UNEXPECTED(!pt_closure_parameter_resolver_resolve(slot(slots::closureParameterResolver), scope, expr, storage, closureCallArgsHold.raw(), NULL, NULL, w.callableParameters, w.nativeCallableParameters))) return zv::Val();
+		if (UNEXPECTED(!pt_contextual_closure_parameter_resolver_resolve_expected_return_types(slot(slots::contextualClosureParameterResolver), scope, expr, NULL, NULL, w.expectedReturnType, w.nativeExpectedReturnType))) return zv::Val();
 
 		zv::Val byRefSource = zv::Val::copyOf(zv::Ref(scope));
 		zval *uses = ptclosure::prop(ptclosure::usesSite, expr, PT_LC("uses"));
-		if (UNEXPECTED(uses == NULL)) return false;
+		if (UNEXPECTED(uses == NULL)) return zv::Val();
 		zv::Val usesHold = zv::Val::copyOf(zv::Ref(uses));
 		if (EXPECTED(Z_TYPE_P(usesHold.raw()) == IS_ARRAY)) {
 			for (zv::ArrayEntry entry : zv::ArrRef(usesHold.raw())) {
 				zval *use = entry.value().deref().raw();
 				zval *byRef = ptclosure::prop(ptclosure::useByRefSite, use, PT_LC("byRef"));
-				if (UNEXPECTED(byRef == NULL)) return false;
+				if (UNEXPECTED(byRef == NULL)) return zv::Val();
 				if (!zend_is_true(byRef)) continue;
 				zval *var = ptclosure::prop(ptclosure::useVarSite, use, PT_LC("var"));
-				if (UNEXPECTED(var == NULL)) return false;
+				if (UNEXPECTED(var == NULL)) return zv::Val();
 				zval *name = ptclosure::prop(ptclosure::variableNameSite, var, PT_LC("name"));
-				if (UNEXPECTED(name == NULL)) return false;
+				if (UNEXPECTED(name == NULL)) return zv::Val();
 				if (Z_TYPE_P(name) != IS_STRING) continue;
 				w.byRefUses.push(zv::Ref(use));
 				zval *type = zend_symtable_find(Z_ARRVAL_P(byRefEntryTypes), Z_STR_P(name));
 				if (type == NULL || Z_TYPE_P(type) == IS_NULL) continue;
 				zv::Val assigned = pt_mutating_scope_assign_variable(Z_OBJ_P(byRefSource.raw()), Z_STR_P(name), type, type, pt_trinary_singleton(PT_TRI_YES));
-				if (UNEXPECTED(assigned.isUndef())) return false;
+				if (UNEXPECTED(assigned.isUndef())) return zv::Val();
 				byRefSource = std::move(assigned);
 			}
 		}
 		zv::Val closureScope = pt_mutating_scope_enter_anonymous_function(Z_OBJ_P(scope), expr, w.callableParameters.raw(), w.nativeCallableParameters.raw());
-		if (UNEXPECTED(closureScope.isUndef())) return false;
+		if (UNEXPECTED(closureScope.isUndef())) return zv::Val();
 		zval null;
 		ZVAL_NULL(&null);
 		closureScope = pt_mutating_scope_process_closure_scope(Z_OBJ_P(closureScope.raw()), byRefSource.raw(), &null, w.byRefUses.raw());
-		if (UNEXPECTED(closureScope.isUndef())) return false;
+		if (UNEXPECTED(closureScope.isUndef())) return zv::Val();
 		zv::Val closureType = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(closureScope.raw()));
-		if (UNEXPECTED(closureType.isUndef())) return false;
+		if (UNEXPECTED(closureType.isUndef())) return zv::Val();
 		if (UNEXPECTED(!closureType.ref().isObject() || !instanceof_function(Z_OBJCE_P(closureType.raw()), pt_ce_closure_type))) {
 			pt_throw_should_not_happen();
-			return false;
+			return zv::Val();
 		}
 		zv::Args inClosureArgv{closureType.raw(), expr};
 		zv::Val inClosureNode = pt_type_new(PT_CLASS_IN_CLOSURE_NODE, 2, inClosureArgv);
-		if (UNEXPECTED(inClosureNode.isUndef())) return false;
-		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, inClosureNode.raw(), closureScope.raw(), storage))) return false;
+		if (UNEXPECTED(inClosureNode.isUndef())) return zv::Val();
+		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, inClosureNode.raw(), closureScope.raw(), storage))) return zv::Val();
 		createGatherer(w, std::move(closureScope));
 
 		zval *stmts = ptclosure::prop(ptclosure::stmtsSite, expr, PT_LC("stmts"));
-		if (UNEXPECTED(stmts == NULL)) return false;
+		if (UNEXPECTED(stmts == NULL)) return zv::Val();
 		zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
-		if (UNEXPECTED(!pt_node_scope_resolver_push_node_gatherer(nodeScopeResolver, w.gatherer.raw()))) return false;
+		if (UNEXPECTED(!pt_node_scope_resolver_push_node_gatherer(nodeScopeResolver, w.gatherer.raw()))) return zv::Val();
 		{
 			zv::Val topLevelContext = pt_statement_context_create_top_level(true);
 			zv::Val statementContext = topLevelContext.isUndef() ? zv::Val() : w.withExpectedReturnType(topLevelContext.raw());
@@ -577,8 +578,13 @@ public:
 			}
 		}
 		pt_finally([&]() { (void) pt_node_scope_resolver_pop_node_gatherer(nodeScopeResolver); });
-		if (UNEXPECTED(w.statementResult.isUndef() || EG(exception) != NULL)) return false;
-		return !finishClosure(w, true).isUndef();
+		if (UNEXPECTED(w.statementResult.isUndef() || EG(exception) != NULL)) return zv::Val();
+		if (UNEXPECTED(finishClosure(w, true).isUndef())) return zv::Val();
+
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_internal_statement_result_dependencies(w.statementResult.raw(), dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(dependencies));
 	}
 
 	/* Mirrors processImmediatelyCalledCallable() */
@@ -630,7 +636,8 @@ public:
 			if (UNEXPECTED(contextHold.isUndef())) return zv::Val();
 			context = contextHold.raw();
 		}
-		if (UNEXPECTED(!processParams(nodeScopeResolver, stmt, expr, scopeArg, storage, nodeCallback))) return zv::Val();
+		zv::Val parametersDependencies = processParams(nodeScopeResolver, stmt, expr, scopeArg, storage, nodeCallback);
+		if (UNEXPECTED(parametersDependencies.isUndef())) return zv::Val();
 		zv::Val scopeHold = zv::Val::copyOf(zv::Ref(scopeArg));
 		bool observing;
 		if (UNEXPECTED(!pt_closure_signature_inference_is_observing(slot(slots::closureSignatureInference), scopeArg, observing))) return zv::Val();
@@ -755,8 +762,13 @@ public:
 		zv::Val typeCallback = pt_native_closure(&mixedTypeCallbackBody);
 		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		if (UNEXPECTED(specifyTypesCallback.isUndef())) return zv::Val();
+		zv::Val exprDependenciesHold;
+		zval *exprDependencies = pt_expression_result_dependencies(exprResult.raw(), exprDependenciesHold);
+		if (UNEXPECTED(exprDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({parametersDependencies.raw(), exprDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(scope.raw(), scope.raw(), expr, false, isAlwaysTerminating, resultThrowPoints, resultImpurePoints, typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw());
+		args.withVariableFlow(variableFlow.raw()).withDependencies(dependencies.raw());
 		zv::Val expressionResult = pt_expression_result_create(slot(slots::expressionResultFactory), args);
 		if (UNEXPECTED(expressionResult.isUndef())) return zv::Val();
 
@@ -836,17 +848,18 @@ private:
 	}
 
 	/* $this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt,
-	 * $expr->params, $scope, $storage, $nodeCallback) */
-	[[nodiscard]] bool processParams(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback) const
+	 * $expr->params, $scope, $storage, $nodeCallback): what the parameters
+	 * depend on; UNDEF = pending exception */
+	zv::Val processParams(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback) const
 	{
 		zv::Val parametersProcessor = getParametersProcessor(slot(slots::container));
-		if (UNEXPECTED(parametersProcessor.isUndef())) return false;
+		if (UNEXPECTED(parametersProcessor.isUndef())) return zv::Val();
 		if (UNEXPECTED(!parametersProcessor.ref().isObject())) {
 			zend_throw_error(NULL, "Call to a member function processParams() on %s", zend_zval_value_name(parametersProcessor.raw()));
-			return false;
+			return zv::Val();
 		}
 		zval *params = ptclosure::prop(ptclosure::paramsSite, expr, PT_LC("params"));
-		if (UNEXPECTED(params == NULL)) return false;
+		if (UNEXPECTED(params == NULL)) return zv::Val();
 		zv::Val paramsHold = zv::Val::copyOf(zv::Ref(params));
 		return pt_parameters_processor_process_params(parametersProcessor.raw(), nodeScopeResolver, stmt, paramsHold.raw(), scope, storage, nodeCallback);
 	}
@@ -871,6 +884,8 @@ private:
 		zv::Val gatherer;
 		zv::Val statementResult; /* InternalStatementResult */
 		zv::Val closureResultScope; /* UNDEF = the non-by-ref path */
+		/* what the parameters depend on */
+		zv::Val parametersDependencies = zv::Val::null();
 		/* getByRefSiteMode(): true for 'local' */
 		bool byRefLocal = false;
 		/* the NoopNodeCallback of a local by-ref site's body; UNDEF = $nodeCallback */
@@ -925,7 +940,8 @@ private:
 	 * gatherer; false = pending exception */
 	[[nodiscard]] zend_never_inline bool enterClosure(ClosureWalk &w, zval *passedToType, zval *nativePassedToType) const
 	{
-		if (UNEXPECTED(!processParams(w.nodeScopeResolver, w.stmt, w.expr, w.scope.raw(), w.storage, w.nodeCallback))) return false;
+		w.parametersDependencies = processParams(w.nodeScopeResolver, w.stmt, w.expr, w.scope.raw(), w.storage, w.nodeCallback);
+		if (UNEXPECTED(w.parametersDependencies.isUndef())) return false;
 
 		zval *closureCallArgs = ptclosure::attribute(w.expr, pt_cp_closure_call_args);
 		zv::Val closureCallArgsHold = closureCallArgs != NULL ? zv::Val::copyOf(zv::Ref(closureCallArgs)) : zv::Val::null();
@@ -1397,11 +1413,19 @@ private:
 		if (UNEXPECTED(resultImpurePoints == NULL)) return zv::Val();
 		zv::Val resultClosureTypeImpurePoints = mergeLists(w.list(PT_CP_CLOSURE_IMPURE_POINTS), resultImpurePoints);
 		if (UNEXPECTED(resultClosureTypeImpurePoints.isUndef())) return zv::Val();
+		zv::Val bodyDependenciesHold;
+		zval *bodyDependencies = pt_internal_statement_result_dependencies(statementResult, bodyDependenciesHold);
+		if (UNEXPECTED(bodyDependencies == NULL)) return zv::Val();
 		if (w.closureResultScope.isUndef()) {
-			return pt_process_closure_result_new(resultScope.raw(), resultThrowPoints, resultImpurePoints, w.list(PT_CP_INVALIDATE_EXPRESSIONS), w.list(PT_CP_RETURN_STATEMENTS_WITH_SCOPE), w.list(PT_CP_YIELD_STATEMENTS_WITH_SCOPE), w.list(PT_CP_EXECUTION_ENDS), resultClosureTypeImpurePoints.raw());
+			zv::Val dependencies = pt_dependencies_merge({w.parametersDependencies.raw(), bodyDependencies});
+			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+			return pt_process_closure_result_new(resultScope.raw(), resultThrowPoints, resultImpurePoints, w.list(PT_CP_INVALIDATE_EXPRESSIONS), w.list(PT_CP_RETURN_STATEMENTS_WITH_SCOPE), w.list(PT_CP_YIELD_STATEMENTS_WITH_SCOPE), w.list(PT_CP_EXECUTION_ENDS), resultClosureTypeImpurePoints.raw(), NULL, NULL, dependencies.raw());
 		}
+		// a local site's body is walked for its rules in the deferred walk, see processDeferredByRefClosureBody()
+		zv::Val dependencies = pt_dependencies_merge({w.parametersDependencies.raw(), w.byRefLocal ? NULL : bodyDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		// nothing runs at creation - an undefined by-ref variable is defined as null
-		return pt_process_closure_result_new(resultScope.raw(), resultThrowPoints, resultImpurePoints, w.list(PT_CP_INVALIDATE_EXPRESSIONS), w.list(PT_CP_RETURN_STATEMENTS_WITH_SCOPE), w.list(PT_CP_YIELD_STATEMENTS_WITH_SCOPE), w.list(PT_CP_EXECUTION_ENDS), resultClosureTypeImpurePoints.raw(), w.byRefLocal ? w.scope.raw() : w.closureResultScope.raw(), w.byRefUses.raw());
+		return pt_process_closure_result_new(resultScope.raw(), resultThrowPoints, resultImpurePoints, w.list(PT_CP_INVALIDATE_EXPRESSIONS), w.list(PT_CP_RETURN_STATEMENTS_WITH_SCOPE), w.list(PT_CP_YIELD_STATEMENTS_WITH_SCOPE), w.list(PT_CP_EXECUTION_ENDS), resultClosureTypeImpurePoints.raw(), w.byRefLocal ? w.scope.raw() : w.closureResultScope.raw(), w.byRefUses.raw(), dependencies.raw());
 	}
 };
 
@@ -1462,11 +1486,11 @@ zv::Val pt_closure_processor_process_by_ref_invocation(zval *processor, zval *no
 	return pt_type_call(Z_OBJ_P(processor), PT_LC("processbyrefinvocation"), 8, argv);
 }
 
-bool pt_closure_processor_process_deferred_by_ref_closure_body(zval *processor, zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *byRefEntryTypes)
+zv::Val pt_closure_processor_process_deferred_by_ref_closure_body(zval *processor, zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *byRefEntryTypes)
 {
 	if (EXPECTED(Z_TYPE_P(processor) == IS_OBJECT && Z_OBJCE_P(processor) == pt_ce_closure_processor)) return ClosureProcessor(Z_OBJ_P(processor)).processDeferredByRefClosureBody(nodeScopeResolver, expr, scope, storage, nodeCallback, byRefEntryTypes);
 	zv::Args argv{nodeScopeResolver, expr, scope, storage, nodeCallback, byRefEntryTypes};
-	return !pt_type_call(Z_OBJ_P(processor), PT_LC("processdeferredbyrefclosurebody"), 6, argv).isUndef();
+	return pt_type_call(Z_OBJ_P(processor), PT_LC("processdeferredbyrefclosurebody"), 6, argv);
 }
 
 /* }}} */
@@ -1565,7 +1589,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_processor)
 			Z_PARAM_ZVAL(nodeCallback)
 			Z_PARAM_ARRAY(byRefEntryTypes)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!ClosureProcessor(Z_OBJ_P(ZEND_THIS)).processDeferredByRefClosureBody(nodeScopeResolver, expr, scope, storage, nodeCallback, byRefEntryTypes))) RETURN_THROWS();
+		PT_RETURN_VAL(ClosureProcessor(Z_OBJ_P(ZEND_THIS)).processDeferredByRefClosureBody(nodeScopeResolver, expr, scope, storage, nodeCallback, byRefEntryTypes));
 	});
 
 	cls.shadow(&pt_ce_closure_processor);

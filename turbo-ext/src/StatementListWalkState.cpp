@@ -2,7 +2,7 @@
  * PHPStanTurbo\StatementListWalkState — native implementation of
  * PHPStan\Analyser\StatementListWalkState.
  *
- * The state StatementsHandler threads through a statement list: seven
+ * The state StatementsHandler threads through a statement list: eight
  * public properties in the twin's declaration slots (generated
  * declarations), cloned with the standard object handlers like the twin.
  * The native StatementsHandler creates it and builds its result through
@@ -47,7 +47,10 @@ public:
 		zval *variableFlows = slot(slots::variableFlows);
 		zv::Val variableFlow = Z_TYPE_P(variableFlows) == IS_ARRAY ? pt_variable_flow_sequence_list(Z_ARRVAL_P(variableFlows)) : pt_variable_flow_sequence(0, NULL);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
-		return pt_internal_statement_result_new(scope, Z_TYPE_P(slot(slots::hasYield)) == IS_TRUE, Z_TYPE_P(slot(slots::alreadyTerminated)) == IS_TRUE, slot(slots::exitPoints), slot(slots::throwPoints), slot(slots::impurePoints), NULL, variableFlow.raw());
+		zval *dependencyList = slot(slots::dependencies);
+		zv::Val dependencies = Z_TYPE_P(dependencyList) == IS_ARRAY ? pt_dependencies_merge_list(Z_ARRVAL_P(dependencyList)) : zv::Val::null();
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(scope, Z_TYPE_P(slot(slots::hasYield)) == IS_TRUE, Z_TYPE_P(slot(slots::alreadyTerminated)) == IS_TRUE, slot(slots::exitPoints), slot(slots::throwPoints), slot(slots::impurePoints), NULL, variableFlow.raw(), -1, dependencies.raw());
 	}
 
 private:

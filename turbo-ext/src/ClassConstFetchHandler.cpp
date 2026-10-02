@@ -67,11 +67,12 @@ public:
 	explicit ClassConstFetchHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *initializerExprTypeResolver, zval *expressionResultFactory, zval *defaultNarrowingHelper) const
+	void construct(zval *initializerExprTypeResolver, zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *reflectionProvider) const
 	{
 		pt_write_slot(self, slots::initializerExprTypeResolver, initializerExprTypeResolver);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
+		pt_write_slot(self, slots::reflectionProvider, reflectionProvider);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -175,7 +176,26 @@ public:
 
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw());
-		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		zv::Val result = pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+
+		zval *classDependencies = NULL;
+		zv::Val classDependenciesHold;
+		if (!classResult.isNull()) {
+			classDependencies = pt_expression_result_dependencies(classResult.raw(), classDependenciesHold);
+			if (UNEXPECTED(classDependencies == NULL)) return zv::Val();
+		}
+		zval *nameDependencies = NULL;
+		zv::Val nameDependenciesHold;
+		if (!nameResult.isNull()) {
+			nameDependencies = pt_expression_result_dependencies(nameResult.raw(), nameDependenciesHold);
+			if (UNEXPECTED(nameDependencies == NULL)) return zv::Val();
+		}
+		zv::Val ownDependencies = getDependencies(beforeScope, expr, classResult.raw(), result.raw());
+		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({classDependencies, nameDependencies, ownDependencies.raw()});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		return pt_expression_result_with_dependencies(result.raw(), dependencies.raw());
 	}
 
 	/* the handler entry (Engine.h) */
@@ -186,6 +206,88 @@ public:
 
 private:
 	zend_object *self;
+
+	/* Mirrors getDependencies(): the class the constant is fetched from, the
+	 * class declaring it, and the classes in its type ($classResult IS_NULL
+	 * for null) */
+	zv::Val getDependencies(zval *scope, zval *expr, zval *classResult, zval *result) const
+	{
+		zv::Arr types = zv::Arr::create(2);
+		zv::Arr classNames = zv::Arr::empty();
+		zv::Val resultType = pt_expression_result_get_type(result);
+		if (UNEXPECTED(resultType.isUndef())) return zv::Val();
+		types.push(std::move(resultType));
+		zval *class_ = exprClass(expr);
+		if (UNEXPECTED(class_ == NULL)) return zv::Val();
+		int classIsName = 0;
+		if (Z_TYPE_P(classResult) != IS_NULL) {
+			zv::Val classType = pt_expression_result_get_type(classResult);
+			if (UNEXPECTED(classType.isUndef())) return zv::Val();
+			types.push(std::move(classType));
+		} else {
+			classIsName = isInstanceOf(class_, PT_CLASS_NAME);
+			if (UNEXPECTED(classIsName < 0)) return zv::Val();
+			if (classIsName) {
+				zv::Val className = pt_mutating_scope_resolve_name(Z_OBJ_P(scope), Z_OBJ_P(class_));
+				if (UNEXPECTED(className.isUndef())) return zv::Val();
+				classNames.push(std::move(className));
+			}
+		}
+
+		zval *name = exprName(expr);
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		int nameIsIdentifier = isIdentifier(name);
+		if (UNEXPECTED(nameIsIdentifier < 0)) return zv::Val();
+		zval *constantName = NULL;
+		if (nameIsIdentifier) {
+			constantName = identifierName(name);
+			if (UNEXPECTED(constantName == NULL)) return zv::Val();
+		}
+		if (constantName != NULL && Z_TYPE_P(constantName) == IS_STRING && !zend_string_equals_literal_ci(Z_STR_P(constantName), "class")) {
+			if (Z_TYPE_P(classResult) != IS_NULL) {
+				zv::Val classType = pt_expression_result_get_type(classResult);
+				if (UNEXPECTED(classType.isUndef())) return zv::Val();
+				zv::Args argv{classType.raw(), constantName};
+				zv::Val constantReflection = pt_type_call(Z_OBJ_P(scope), PT_LC("getconstantreflection"), 2, argv);
+				if (UNEXPECTED(constantReflection.isUndef())) return zv::Val();
+				if (!constantReflection.isNull()) {
+					zv::Val declaringClassName = declaringClassNameOf(constantReflection.raw());
+					if (UNEXPECTED(declaringClassName.isUndef())) return zv::Val();
+					classNames.push(std::move(declaringClassName));
+				}
+			} else if (classIsName) {
+				zv::Val className = pt_mutating_scope_resolve_name(Z_OBJ_P(scope), Z_OBJ_P(class_));
+				if (UNEXPECTED(className.isUndef())) return zv::Val();
+				zend_object *reflectionProvider = Z_OBJ_P(OBJ_PROP_NUM(self, slots::reflectionProvider));
+				bool hasClass;
+				if (UNEXPECTED(!pt_reflection_provider_has_class(reflectionProvider, className.raw(), hasClass))) return zv::Val();
+				if (hasClass) {
+					zv::Val constantClassReflection = pt_reflection_provider_get_class(reflectionProvider, className.raw());
+					if (UNEXPECTED(constantClassReflection.isUndef())) return zv::Val();
+					bool hasConstant;
+					if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(constantClassReflection.raw()), PT_LC("hasconstant"), 1, constantName, hasConstant))) return zv::Val();
+					if (hasConstant) {
+						zv::Val constant = pt_type_call(Z_OBJ_P(constantClassReflection.raw()), PT_LC("getconstant"), 1, constantName);
+						if (UNEXPECTED(constant.isUndef())) return zv::Val();
+						zv::Val declaringClassName = declaringClassNameOf(constant.raw());
+						if (UNEXPECTED(declaringClassName.isUndef())) return zv::Val();
+						classNames.push(std::move(declaringClassName));
+					}
+				}
+			}
+		}
+
+		return pt_dependencies_create_in(scope, types.raw(), classNames.raw());
+	}
+
+	/* $constantReflection->getDeclaringClass()->getName(); UNDEF = pending
+	 * exception */
+	static zv::Val declaringClassNameOf(zval *constantReflection)
+	{
+		zv::Val declaringClass = pt_type_call(Z_OBJ_P(constantReflection), PT_LC("getdeclaringclass"), 0, NULL);
+		if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+		return pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
+	}
 
 	/* function (bool $nativeTypesPromoted) use ($expr, $classResult,
 	 * $classReflection): Type — captures: $this, $expr, $classResult,
@@ -280,9 +382,9 @@ PT_MINIT_REGISTRATION(pt_register_class_const_fetch_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *initializerExprTypeResolver, *expressionResultFactory, *defaultNarrowingHelper;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, initializerExprTypeResolver, expressionResultFactory, defaultNarrowingHelper)) RETURN_THROWS();
-		ClassConstFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(initializerExprTypeResolver, expressionResultFactory, defaultNarrowingHelper);
+		zval *initializerExprTypeResolver, *expressionResultFactory, *defaultNarrowingHelper, *reflectionProvider;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, initializerExprTypeResolver, expressionResultFactory, defaultNarrowingHelper, reflectionProvider)) RETURN_THROWS();
+		ClassConstFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(initializerExprTypeResolver, expressionResultFactory, defaultNarrowingHelper, reflectionProvider);
 	});
 
 	cls.method<&ClassConstFetchHandler::supports, zp::Obj>(sigs::supports);

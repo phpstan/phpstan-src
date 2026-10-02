@@ -24,6 +24,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpressionNode;
@@ -261,6 +262,7 @@ final class IssetHandler implements ExprHandler
 
 				return $this->defaultNarrowingHelper->createIssetTruthyChainTypes($evaluationScope, $issetExpr, $readType, $expr, $context);
 			},
+			dependencies: Dependencies::merge(...array_map(static fn (ExpressionResult $result) => $result->getDependencies(), $varResults)),
 		);
 	}
 

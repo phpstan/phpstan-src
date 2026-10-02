@@ -289,6 +289,14 @@ zv::Val syntheticSiteAttributes()
 
 /* }}} */
 
+pt_method_site pt_nh_class_names_of_class_string_site;
+
+/* DependencyTypes::classNamesOfClassString($type); UNDEF = pending exception */
+zv::Val dependencyTypesClassNamesOfClassString(zval *type)
+{
+	return pt_call_static_cached(pt_nh_class_names_of_class_string_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("classnamesofclassstring"), 1, type);
+}
+
 /* the constructor reflection, class reflection and structural acceptor of
  * processConstructorReflection() */
 struct ConstructorReflectionParts
@@ -359,6 +367,7 @@ public:
 		zv::Val classResult = zv::Val::null();
 		/* -1 = null */
 		int deferredConstructorImpureIsDynamic = -1;
+		zv::Val anonymousClassDependencies = zv::Val::null();
 		zv::Val currentScope = zv::Val::copyOf(zv::Ref(scope));
 		zv::Val hold;
 		zval *borrowed;
@@ -422,7 +431,7 @@ public:
 					}
 					if (UNEXPECTED(!pt_node_scope_resolver_push_node_gatherer(nodeScopeResolver, gatherer.raw()))) return zv::Val();
 					gatherer.release();
-					(void) processAnonymousClassStatement(nodeScopeResolver, class_, scope, storage, nodeCallback, context);
+					anonymousClassDependencies = processAnonymousClassStatement(nodeScopeResolver, class_, scope, storage, nodeCallback, context);
 					pt_finally([&]() { (void) pt_node_scope_resolver_pop_node_gatherer(nodeScopeResolver); });
 					if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
 
@@ -455,7 +464,8 @@ public:
 						if (UNEXPECTED(impurePoints.isUndef())) return zv::Val();
 					}
 				} else {
-					if (UNEXPECTED(!processAnonymousClassStatement(nodeScopeResolver, class_, scope, storage, nodeCallback, context))) return zv::Val();
+					anonymousClassDependencies = processAnonymousClassStatement(nodeScopeResolver, class_, scope, storage, nodeCallback, context);
+					if (UNEXPECTED(anonymousClassDependencies.isUndef())) return zv::Val();
 					zend_long hasSideEffects = pt_extended_method_reflection_trinary(parts.constructorReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
 					if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
 					if (hasSideEffects != PT_TRI_NO) {
@@ -468,7 +478,8 @@ public:
 					}
 				}
 			} else {
-				if (UNEXPECTED(!processAnonymousClassStatement(nodeScopeResolver, class_, scope, storage, nodeCallback, context))) return zv::Val();
+				anonymousClassDependencies = processAnonymousClassStatement(nodeScopeResolver, class_, scope, storage, nodeCallback, context);
+				if (UNEXPECTED(anonymousClassDependencies.isUndef())) return zv::Val();
 			}
 
 			if (!parts.parametersAcceptor.isNull()) {
@@ -706,7 +717,41 @@ public:
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		}
 
-		return pt_expression_result_finalize(preliminaryResult.raw(), currentScope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw());
+		// the instantiated class - named, or named by a string the type system resolved
+		zv::Val ownDependencies = zv::Val::null();
+		if (classIsName) {
+			zv::Val instantiatedClassName = pt_mutating_scope_resolve_name(Z_OBJ_P(beforeScope), Z_OBJ_P(class_));
+			if (UNEXPECTED(instantiatedClassName.isUndef())) return zv::Val();
+			zv::Arr classNames = zv::Arr::create(1);
+			classNames.push(std::move(instantiatedClassName));
+			ownDependencies = pt_dependencies_create_in(beforeScope, NULL, classNames.raw());
+		} else if (!classResult.isNull()) {
+			zv::Val resultType = pt_expression_result_get_type(preliminaryResult.raw());
+			if (UNEXPECTED(resultType.isUndef())) return zv::Val();
+			zv::Arr types = zv::Arr::create(1);
+			types.push(resultType.ref());
+			zv::Val classType = pt_expression_result_get_type(classResult.raw());
+			if (UNEXPECTED(classType.isUndef())) return zv::Val();
+			zv::Val classNames = dependencyTypesClassNamesOfClassString(classType.raw());
+			if (UNEXPECTED(classNames.isUndef())) return zv::Val();
+			ownDependencies = pt_dependencies_create_in(beforeScope, types.raw(), classNames.raw());
+		}
+		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+		zv::Val dependencies;
+		{
+			zv::Val classDependenciesHold, argsDependenciesHold;
+			zval *classDependencies = NULL;
+			if (!classResult.isNull()) {
+				classDependencies = pt_expression_result_dependencies(classResult.raw(), classDependenciesHold);
+				if (UNEXPECTED(classDependencies == NULL)) return zv::Val();
+			}
+			zval *argsDependencies = pt_args_result_dependencies(argsResult.raw(), argsDependenciesHold);
+			if (UNEXPECTED(argsDependencies == NULL)) return zv::Val();
+			dependencies = pt_dependencies_merge({classDependencies, anonymousClassDependencies.raw(), argsDependencies, ownDependencies.raw()});
+			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		}
+
+		return pt_expression_result_finalize(preliminaryResult.raw(), currentScope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw(), dependencies.raw());
 	}
 
 	/* the handler entry (Engine.h) */
@@ -1263,15 +1308,24 @@ private:
 	}
 
 	/* $nodeScopeResolver->processStmtNode($expr->class, $scope, $storage,
-	 * $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
-	 * false = pending exception */
-	[[nodiscard]] static bool processAnonymousClassStatement(zval *nodeScopeResolver, zval *classStmt, zval *scope, zval *storage, zval *nodeCallback, zval *context)
+	 * $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()))->getDependencies();
+	 * UNDEF = pending exception */
+	static zv::Val processAnonymousClassStatement(zval *nodeScopeResolver, zval *classStmt, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
 		bool resolveTemplateArguments;
-		if (UNEXPECTED(!pt_expression_context_should_resolve_template_arguments(context, resolveTemplateArguments))) return false;
+		if (UNEXPECTED(!pt_expression_context_should_resolve_template_arguments(context, resolveTemplateArguments))) return zv::Val();
 		zv::Val statementContext = pt_statement_context_create_top_level(resolveTemplateArguments);
-		if (UNEXPECTED(statementContext.isUndef())) return false;
-		return !pt_node_scope_resolver_process_stmt_node(nodeScopeResolver, classStmt, scope, storage, nodeCallback, statementContext.raw()).isUndef();
+		if (UNEXPECTED(statementContext.isUndef())) return zv::Val();
+		zv::Val statementResult = pt_node_scope_resolver_process_stmt_node(nodeScopeResolver, classStmt, scope, storage, nodeCallback, statementContext.raw());
+		if (UNEXPECTED(statementResult.isUndef())) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(statementResult.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getDependencies() on %s", zend_zval_value_name(statementResult.raw()));
+			return zv::Val();
+		}
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_internal_statement_result_dependencies(statementResult.raw(), dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(dependencies));
 	}
 
 	/* new ImpurePoint($scope, $expr, 'new', sprintf('instantiation of class

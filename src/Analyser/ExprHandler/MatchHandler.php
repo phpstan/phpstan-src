@@ -30,6 +30,7 @@ use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
@@ -126,6 +127,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 		$beforeScope = $scope;
 		$deepContext = $context->enterDeep();
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext);
+		$dependencies = [$condResult->getDependencies()];
 		// the subject was just processed on this scope; read its result instead of
 		// re-walking via Scope::getType().
 		$condType = $condResult->getType();
@@ -252,6 +254,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 
 						$conditionResult = $nodeScopeResolver->processExprNode($stmt, $cond, $armConditionScope, $storage, $nodeCallback, $deepContext);
 						$conditionFlows[$i][$j] = $conditionResult->getVariableFlow();
+						$dependencies[] = $conditionResult->getDependencies();
 
 						$condNodes[] = new MatchExpressionArmCondition(
 							$cond,
@@ -293,6 +296,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 						$context->enterMatchArm(),
 					);
 					$armFlows[$i] = $armResult->getVariableFlow();
+					$dependencies[] = $armResult->getDependencies();
 					$armScope = $armResult->getScope();
 					$scope = $scope->addTemplateArgumentConstraints($armScope->getTemplateArgumentConstraints());
 					if (!$armResult->isAlwaysTerminating()) {
@@ -333,6 +337,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
 				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, $context->enterMatchArm());
 				$armFlows[$i] = $armResult->getVariableFlow();
+				$dependencies[] = $armResult->getDependencies();
 				$matchScope = $armResult->getScope();
 				$scope = $scope->addTemplateArgumentConstraints($matchScope->getTemplateArgumentConstraints());
 				$hasYield = $hasYield || $armResult->hasYield();
@@ -362,6 +367,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$condNodes[] = new MatchExpressionArmCondition($armCond, $armCondScope, $armCond->getStartLine());
 				$armCondResult = $nodeScopeResolver->processExprNode($stmt, $armCond, $armCondScope, $storage, $nodeCallback, $deepContext);
 				$conditionFlows[$i][$j] = $armCondResult->getVariableFlow();
+				$dependencies[] = $armCondResult->getDependencies();
 				$hasYield = $hasYield || $armCondResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armCondResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $armCondResult->getImpurePoints());
@@ -443,6 +449,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$context->enterMatchArm(),
 			);
 			$armFlows[$i] = $armResult->getVariableFlow();
+			$dependencies[] = $armResult->getDependencies();
 			$armScope = $armResult->getScope();
 			$scope = $scope->addTemplateArgumentConstraints($armScope->getTemplateArgumentConstraints());
 			if (!$armResult->isAlwaysTerminating()) {
@@ -562,6 +569,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				return TypeCombinator::union(...$types);
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: Dependencies::merge(...$dependencies),
 		);
 	}
 

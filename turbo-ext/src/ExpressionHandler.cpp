@@ -198,6 +198,10 @@ public:
 		if (UNEXPECTED(impurePoints == NULL)) return zv::Val();
 		bool isAlwaysTerminating;
 		if (UNEXPECTED(!pt_expression_result_is_always_terminating(resultValue, isAlwaysTerminating))) return zv::Val();
+		// what the walked expression depends on (withScope() keeps it)
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_expression_result_dependencies(resultValue, dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 
 		// The expression statement is an exit point when its value type is an
 		// explicit never: exit/die/throw, a never-returning call, or a call
@@ -215,12 +219,12 @@ public:
 			exitPoints.push(std::move(exitPoint));
 			zv::Val variableFlow = pt_expression_result_variable_flow(resultValue);
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
-			return pt_internal_statement_result_new(finalScope.raw(), hasYield, true, exitPoints.raw(), throwPoints, impurePoints, NULL, variableFlow.raw());
+			return pt_internal_statement_result_new(finalScope.raw(), hasYield, true, exitPoints.raw(), throwPoints, impurePoints, NULL, variableFlow.raw(), -1, dependencies);
 		}
 		zv::Arr exitPoints = zv::Arr::empty();
 		zv::Val variableFlow = pt_expression_result_variable_flow(resultValue);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
-		return pt_internal_statement_result_new(finalScope.raw(), hasYield, isAlwaysTerminating, exitPoints.raw(), throwPoints, impurePoints, NULL, variableFlow.raw());
+		return pt_internal_statement_result_new(finalScope.raw(), hasYield, isAlwaysTerminating, exitPoints.raw(), throwPoints, impurePoints, NULL, variableFlow.raw(), -1, dependencies);
 	}
 
 	/* the statement-handler entry (Engine.h) */

@@ -17,6 +17,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -53,6 +54,7 @@ final class InterpolatedStringHandler implements ExprHandler
 		$hasYield = false;
 		$throwPoints = [];
 		$variableFlows = [];
+		$dependencies = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		/** @var array<int, ExpressionResult> $partResults */
@@ -63,6 +65,7 @@ final class InterpolatedStringHandler implements ExprHandler
 			}
 			$partResult = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow());
 			$variableFlows[] = $partResult->getVariableFlow();
+			$dependencies[] = $partResult->getDependencies();
 			$partResults[spl_object_id($part)] = $partResult;
 			$hasYield = $hasYield || $partResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());
@@ -105,6 +108,7 @@ final class InterpolatedStringHandler implements ExprHandler
 				return $resultType ?? new ConstantStringType('');
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: Dependencies::merge(...$dependencies),
 		);
 	}
 

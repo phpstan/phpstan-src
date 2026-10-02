@@ -25,6 +25,7 @@ use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
@@ -143,8 +144,10 @@ final class ForHandler implements StmtHandler
 		$impurePoints = [];
 		$initFlow = [];
 		$conditionFlow = [];
+		$dependencies = [];
 		foreach ($stmt->init as $initExpr) {
 			$initResult = $nodeScopeResolver->processExprNode($stmt, $initExpr, $initScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $initResult->getDependencies();
 			$initScope = $initResult->getScope();
 			$initFlow[] = $initResult->getVariableFlow();
 			$hasYield = $hasYield || $initResult->hasYield();
@@ -256,6 +259,7 @@ final class ForHandler implements StmtHandler
 			// storage miss (the condition was only stored into discarded
 			// convergence duplicates) that re-priced it on demand
 			$condResult = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $condResult->getDependencies();
 			$alwaysIterates = $alwaysIterates->and($condResult->getType()->toBoolean()->isTrue());
 			$conditionFlow[count($stmt->cond) - 1] = $condResult->getVariableFlow();
 			$bodyScope = $condResult->getTruthyScope();
@@ -263,13 +267,16 @@ final class ForHandler implements StmtHandler
 		}
 
 		$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+		$dependencies[] = $finalScopeResult->getDependencies();
 		$backEdgeScope = $finalScopeResult->getLoopBackEdgeScope();
 		$backEdgeDead = $backEdgeScope === null;
 		$finalScope = $backEdgeScope ?? $finalScopeResult->getScope();
 
 		$loopScope = $finalScope;
 		foreach ($stmt->loop as $loopExpr) {
-			$loopScope = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $loopScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()))->getScope();
+			$loopResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $loopScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $loopResult->getDependencies();
+			$loopScope = $loopResult->getScope();
 		}
 		$finalScope = $finalScope->generalizeWith($loopScope);
 
@@ -349,6 +356,7 @@ final class ForHandler implements StmtHandler
 			throwPoints: array_merge($throwPoints, $finalScopeResult->getThrowPoints()),
 			impurePoints: array_merge($impurePoints, $finalScopeResult->getImpurePoints()),
 			variableFlow: $variableFlow,
+			dependencies: Dependencies::merge(...$dependencies),
 		);
 	}
 

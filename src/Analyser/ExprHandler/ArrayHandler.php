@@ -22,6 +22,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Analyser\VariableWriteOffset;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
@@ -37,7 +38,9 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
+use function array_map;
 use function array_merge;
+use function array_values;
 use function count;
 use function is_int;
 use function max;
@@ -151,7 +154,7 @@ final class ArrayHandler implements ExprHandler
 			$scope = $this->collectAbsorbedItems($expr, $itemResults, $scope);
 		}
 
-		return $this->expressionResultFactory->create(
+		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
@@ -202,6 +205,51 @@ final class ArrayHandler implements ExprHandler
 			},
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 		);
+
+		return $result->withDependencies(Dependencies::merge(
+			$this->getCallableDependencies($beforeScope, $expr, $itemResults, $result),
+			...array_map(static fn (ExpressionResult $itemResult): ?Dependencies => $itemResult->getDependencies(), array_values($itemResults)),
+		));
+	}
+
+	/**
+	 * An array that may be a callable - `[Foo::class, 'method']` - depends on what calling it returns.
+	 *
+	 * @param array<int, ExpressionResult> $itemResults
+	 */
+	private function getCallableDependencies(MutatingScope $scope, Array_ $expr, array $itemResults, ExpressionResult $result): ?Dependencies
+	{
+		if (count($expr->items) !== 2 || !isset($expr->items[0])) {
+			return null;
+		}
+
+		// a class constant, property default or enum case value is not called where it is
+		// declared - testing it would reflect whatever class its first item happens to name
+		if (
+			$scope->isInClass()
+			&& $scope->getFunction() === null
+			&& !$scope->isInAnonymousFunction()
+			&& $scope->getFunctionCallStack() === []
+		) {
+			return null;
+		}
+
+		$firstItemResult = $itemResults[spl_object_id($expr->items[0]->value)] ?? null;
+		if ($firstItemResult === null || !$firstItemResult->getType()->isClassString()->yes()) {
+			return null;
+		}
+
+		$arrayType = $result->getType();
+		if ($arrayType->isCallable()->no()) {
+			return null;
+		}
+
+		$returnTypes = [];
+		foreach ($arrayType->getCallableParametersAcceptors($scope) as $variant) {
+			$returnTypes[] = $variant->getReturnType();
+		}
+
+		return Dependencies::create($scope->getFile(), $returnTypes);
 	}
 
 	/**

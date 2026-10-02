@@ -15,6 +15,7 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_string;
@@ -47,10 +48,12 @@ final class ReturnHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$stmtScope = $this->statementsHandler->processStmtVarAnnotation($nodeScopeResolver, $scope, $storage, $stmt, $stmt->expr, $nodeCallback);
 
 		if ($stmt->expr !== null) {
 			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $stmtScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments())->enterPassedToType($context->getExpectedReturnType(), $context->getNativeExpectedReturnType()));
+			$dependencies[] = $result->getDependencies();
 			// the @var-changed-type node fires now that the expression is stored
 			// on the scope BEFORE the @var tag re-typed the expression, so the rule
 			// compares the tag against the expression's walked type
@@ -74,7 +77,7 @@ final class ReturnHandler implements StmtHandler
 		], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(
 			$variableFlow,
 			VariableFlow::exit(VariableFlow::RETURN, name: $stmt->expr instanceof Variable && is_string($stmt->expr->name) ? $stmt->expr->name : null),
-		));
+		), dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

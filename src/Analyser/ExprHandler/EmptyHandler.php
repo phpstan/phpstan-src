@@ -172,6 +172,7 @@ final class EmptyHandler implements ExprHandler
 					static fn (): MutatingScope => $rightTruthyScope,
 				)->setRootExpr($expr);
 			},
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

@@ -58,8 +58,11 @@ inline constexpr char strings[] =
 	"processExpr\0" /* 523 */
 	"PHPStan\\Node\\MethodCallableNode\0" /* 535 */
 	"varResult\0" /* 567 */
-	"PHPStan\\Type\\Type\0" /* 577 */
-	"resolveType"; /* 595 */
+	"result\0" /* 577 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 584 */
+	"getDependencies\0" /* 616 */
+	"PHPStan\\Type\\Type\0" /* 632 */
+	"resolveType"; /* 650 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 24), /* __construct $expressionResultFactory */
 	reg::packed(65, 0, 88), /* __construct $defaultNarrowingHelper */
@@ -74,10 +77,15 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(433, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
 	reg::packed(446, 0, 454), /* processExpr $context */
 	reg::packed(259, 0, 489), /* processExpr return */
+	reg::packed(347, 0, 353), /* getDependencies $scope */
+	reg::packed(234, 0, 535), /* getDependencies $expr */
+	reg::packed(567, 0, 489), /* getDependencies $varResult */
+	reg::packed(577, 0, 489), /* getDependencies $result */
+	reg::packed(259, MAY_BE_NULL, 584), /* getDependencies return */
 	reg::packed(347, 0, 353), /* resolveType $scope */
 	reg::packed(234, 0, 535), /* resolveType $expr */
 	reg::packed(567, 0, 489), /* resolveType $varResult */
-	reg::packed(259, 0, 577), /* resolveType return */
+	reg::packed(259, 0, 632), /* resolveType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -87,7 +95,8 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 222 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig supports = { { 260 /* supports */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 523 /* processExpr */, 7, 5, 7, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveType = { { 595 /* resolveType */, 3, 13, 3, 16, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getDependencies = { { 616 /* getDependencies */, 4, 13, 4, 17, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveType = { { 650 /* resolveType */, 3, 18, 3, 21, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::MethodCallableNodeHandler

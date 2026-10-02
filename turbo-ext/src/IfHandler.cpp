@@ -78,6 +78,26 @@ struct ConditionType
 	return true;
 }
 
+/* $dependencies[] = $result->getDependencies() of an ExpressionResult /
+ * an InternalStatementResult; false = pending exception */
+[[nodiscard]] bool pushExpressionDependencies(zv::Arr &dependencies, zval *result)
+{
+	zv::Val hold;
+	zval *resultDependencies = pt_expression_result_dependencies(result, hold);
+	if (UNEXPECTED(resultDependencies == NULL)) return false;
+	dependencies.push(zv::Ref(resultDependencies));
+	return true;
+}
+
+[[nodiscard]] bool pushStatementDependencies(zv::Arr &dependencies, zval *result)
+{
+	zv::Val hold;
+	zval *resultDependencies = pt_internal_statement_result_dependencies(result, hold);
+	if (UNEXPECTED(resultDependencies == NULL)) return false;
+	dependencies.push(zv::Ref(resultDependencies));
+	return true;
+}
+
 /* $flowBranches[] = [$conditionFlow, $branchFlow] */
 void pushFlowBranch(zv::Arr &flowBranches, zv::Val conditionFlow, zval *branchFlow)
 {
@@ -114,6 +134,7 @@ public:
 	zv::Val processStmt(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context) const
 	{
 		bool treatPhpDocTypesAsCertain = Z_TYPE_P(OBJ_PROP_NUM(self, slots::treatPhpDocTypesAsCertain)) == IS_TRUE;
+		zv::Arr dependencies = zv::Arr::empty();
 		zval *entryScope = scope;
 		zv::Arr flowBranches = zv::Arr::empty();
 		zv::Val elseFlow = zv::Val::null();
@@ -122,6 +143,7 @@ public:
 		if (UNEXPECTED(cond == NULL)) return zv::Val();
 		zv::Val condResult = processCondition(nodeScopeResolver, stmt, cond, scope, storage, nodeCallback, context);
 		if (UNEXPECTED(condResult.isUndef())) return zv::Val();
+		if (UNEXPECTED(!pushExpressionDependencies(dependencies, condResult.raw()))) return zv::Val();
 		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, stmt, entryScope, storage))) return zv::Val();
 		ConditionType conditionType;
 		if (UNEXPECTED(!conditionTypeOf(condResult.raw(), treatPhpDocTypesAsCertain, conditionType))) return zv::Val();
@@ -154,6 +176,7 @@ public:
 			if (UNEXPECTED(truthyScope.isUndef())) return zv::Val();
 			zv::Val branchResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, stmts, truthyScope.raw(), storage, nodeCallback, context);
 			if (UNEXPECTED(branchResult.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pushStatementDependencies(dependencies, branchResult.raw()))) return zv::Val();
 			zv::Val conditionFlow = pt_expression_result_variable_flow(condResult.raw());
 			if (UNEXPECTED(conditionFlow.isUndef())) return zv::Val();
 			zv::Val branchFlowHold;
@@ -206,6 +229,7 @@ public:
 				if (UNEXPECTED(elseifCond == NULL)) return zv::Val();
 				zv::Val elseifResult = processCondition(nodeScopeResolver, stmt, elseifCond, condScope.raw(), storage, nodeCallback, context);
 				if (UNEXPECTED(elseifResult.isUndef())) return zv::Val();
+				if (UNEXPECTED(!pushExpressionDependencies(dependencies, elseifResult.raw()))) return zv::Val();
 				if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, elseif, scopeValue.raw(), storage))) return zv::Val();
 				ConditionType elseIfConditionType;
 				if (UNEXPECTED(!conditionTypeOf(elseifResult.raw(), treatPhpDocTypesAsCertain, elseIfConditionType))) return zv::Val();
@@ -225,6 +249,7 @@ public:
 				if (UNEXPECTED(truthyScope.isUndef())) return zv::Val();
 				zv::Val branchResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, elseif, elseifStmts, truthyScope.raw(), storage, nodeCallback, context);
 				if (UNEXPECTED(branchResult.isUndef())) return zv::Val();
+				if (UNEXPECTED(!pushStatementDependencies(dependencies, branchResult.raw()))) return zv::Val();
 				zv::Val conditionFlow = pt_expression_result_variable_flow(elseifResult.raw());
 				if (UNEXPECTED(conditionFlow.isUndef())) return zv::Val();
 				zv::Val branchFlowHold;
@@ -272,6 +297,7 @@ public:
 			if (UNEXPECTED(elseStmts == NULL)) return zv::Val();
 			zv::Val branchResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, elseHold.raw(), elseStmts, scopeValue.raw(), storage, nodeCallback, context);
 			if (UNEXPECTED(branchResult.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pushStatementDependencies(dependencies, branchResult.raw()))) return zv::Val();
 			{
 				zv::Val elseFlowHold;
 				zval *branchFlow = pt_internal_statement_result_variable_flow(branchResult.raw(), elseFlowHold);
@@ -312,7 +338,9 @@ public:
 			if (UNEXPECTED(conditional.isUndef())) return zv::Val();
 			elseFlow = std::move(conditional);
 		}
-		return pt_internal_statement_result_new(finalScope.raw(), hasYield, alwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), endStatements.raw(), elseFlow.raw());
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(finalScope.raw(), hasYield, alwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), endStatements.raw(), elseFlow.raw(), -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

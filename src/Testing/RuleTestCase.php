@@ -21,7 +21,6 @@ use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
-use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Fixable\Patcher;
@@ -112,13 +111,12 @@ abstract class RuleTestCase extends PHPStanTestCase
 				),
 				$nodeScopeResolver,
 				$this->getParser(),
-				self::getContainer()->getByType(DependencyResolver::class),
-				self::getContainer()->getByType(PackageDependencyResolver::class),
 				self::getContainer()->getExtensionsCollection(IgnoreErrorExtension::class),
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
 				false,
 				self::getContainer()->getByType(ValueDependencyCollector::class),
+				self::getContainer()->getByType(DependencyResolver::class),
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,

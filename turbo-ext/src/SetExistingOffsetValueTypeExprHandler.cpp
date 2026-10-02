@@ -70,7 +70,17 @@ public:
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, varResult.raw(), dimResult.raw(), valueResult.raw());
 		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		if (UNEXPECTED(specifyTypesCallback.isUndef())) return zv::Val();
+		zv::Val varDependenciesHold, dimDependenciesHold, valueDependenciesHold;
+		zval *varDependencies = pt_expression_result_dependencies(varResult.raw(), varDependenciesHold);
+		if (UNEXPECTED(varDependencies == NULL)) return zv::Val();
+		zval *dimDependencies = pt_expression_result_dependencies(dimResult.raw(), dimDependenciesHold);
+		if (UNEXPECTED(dimDependencies == NULL)) return zv::Val();
+		zval *valueDependencies = pt_expression_result_dependencies(valueResult.raw(), valueDependenciesHold);
+		if (UNEXPECTED(valueDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({varDependencies, dimDependencies, valueDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(scope, scope, expr, false, false, NULL, NULL, typeCallback.raw(), specifyTypesCallback.raw());
+		args.withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

@@ -488,6 +488,39 @@ zend_long objectTypeIsSuperTypeOf(zend_string *className, zval *type)
 
 /* }}} */
 
+/* {{{ the dependencies of the call: DependencyTypes::ofCalledVariants($variants)
+ * / ::ofCalledParameters($parameters) / ::ofAsserts($asserts); UNDEF = pending
+ * exception */
+
+pt_method_site pt_fch_of_called_variants_site;
+pt_method_site pt_fch_of_called_parameters_site;
+pt_method_site pt_fch_of_asserts_site;
+
+zv::Val dependencyTypesOfCalledVariants(zval *variants)
+{
+	return pt_call_static_cached(pt_fch_of_called_variants_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofcalledvariants"), 1, variants);
+}
+
+zv::Val dependencyTypesOfCalledParameters(zval *parameters)
+{
+	return pt_call_static_cached(pt_fch_of_called_parameters_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofcalledparameters"), 1, parameters);
+}
+
+zv::Val dependencyTypesOfAsserts(zval *asserts)
+{
+	return pt_call_static_cached(pt_fch_of_asserts_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofasserts"), 1, asserts);
+}
+
+/* $types = [...$types, ...$more] ($more a list) */
+void appendTypes(zv::Arr &types, zval *more)
+{
+	for (auto entry : zv::ArrRef(more)) {
+		types.push(entry.value().deref());
+	}
+}
+
+/* }}} */
+
 } // namespace
 
 namespace phpstanturbo {
@@ -1234,7 +1267,22 @@ public:
 		zv::Val variableFlow = pt_variable_flow_sequence(6, flows);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 
-		return pt_expression_result_finalize(preliminaryResult.raw(), scope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw());
+		zv::Val dependencies;
+		{
+			zv::Val nameDependenciesHold, argsDependenciesHold;
+			zval *nameDependencies = NULL;
+			if (!nameResult.isNull()) {
+				nameDependencies = pt_expression_result_dependencies(nameResult.raw(), nameDependenciesHold);
+				if (UNEXPECTED(nameDependencies == NULL)) return zv::Val();
+			}
+			zval *argsDependencies = pt_args_result_dependencies(argsResult.raw(), argsDependenciesHold);
+			if (UNEXPECTED(argsDependencies == NULL)) return zv::Val();
+			zv::Val ownDependencies = getDependencies(beforeScope, functionReflection.isNull() ? NULL : functionReflection.raw(), nameResult.isNull() ? NULL : nameResult.raw(), preliminaryResult.raw());
+			if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+			dependencies = pt_dependencies_merge({nameDependencies, argsDependencies, ownDependencies.raw()});
+			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		}
+		return pt_expression_result_finalize(preliminaryResult.raw(), scope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw(), dependencies.raw());
 	}
 
 	/* the handler entry (Engine.h) */
@@ -2214,6 +2262,57 @@ private:
 		}
 
 		return cloneType;
+	}
+
+	/* Mirrors getDependencies(): the function the call calls by name, or the
+	 * variants of the callable it calls, and the classes in what the call
+	 * returns; $functionReflection and $nameResult NULL for null */
+	zv::Val getDependencies(zval *scope, zval *functionReflection, zval *nameResult, zval *result) const
+	{
+		zv::Val resultType = pt_expression_result_get_type(result);
+		if (UNEXPECTED(resultType.isUndef())) return zv::Val();
+		zv::Arr types = zv::Arr::create(1);
+		types.push(resultType.ref());
+		zv::Arr reflections = zv::Arr::empty();
+		if (functionReflection != NULL) {
+			reflections.push(zv::Ref(functionReflection));
+			zv::Val variantsHold;
+			zval *variants = pt_function_reflection_variants(functionReflection, variantsHold);
+			if (UNEXPECTED(variants == NULL)) return zv::Val();
+			zv::Val variantTypes = dependencyTypesOfCalledVariants(variants);
+			if (UNEXPECTED(variantTypes.isUndef())) return zv::Val();
+			appendTypes(types, variantTypes.raw());
+			zv::Val assertsHold;
+			zval *asserts = pt_function_reflection_asserts(functionReflection, assertsHold);
+			if (UNEXPECTED(asserts == NULL)) return zv::Val();
+			zv::Val assertTypes = dependencyTypesOfAsserts(asserts);
+			if (UNEXPECTED(assertTypes.isUndef())) return zv::Val();
+			appendTypes(types, assertTypes.raw());
+		}
+		if (nameResult != NULL) {
+			zv::Val calleeType = pt_expression_result_get_type(nameResult);
+			if (UNEXPECTED(calleeType.isUndef())) return zv::Val();
+			zend_long isCallable = typeOpTrinary(calleeType.raw(), PT_OP_IS_CALLABLE, "isCallable");
+			if (UNEXPECTED(isCallable < 0)) return zv::Val();
+			if (isCallable == PT_TRI_YES) {
+				zv::Val variants = typeCall(calleeType.raw(), PT_LC("getcallableparametersacceptors"), "getCallableParametersAcceptors", 1, scope);
+				if (UNEXPECTED(variants.isUndef())) return zv::Val();
+				for (auto entry : zv::ArrRef(variants.raw())) {
+					zval *variant = entry.value().deref().raw();
+					zv::Val returnTypeHold, parametersHold;
+					zval *returnType = pt_parameters_acceptor_return_type(variant, returnTypeHold);
+					if (UNEXPECTED(returnType == NULL)) return zv::Val();
+					types.push(zv::Ref(returnType));
+					zval *parameters = pt_parameters_acceptor_parameters(variant, parametersHold);
+					if (UNEXPECTED(parameters == NULL)) return zv::Val();
+					zv::Val parameterTypes = dependencyTypesOfCalledParameters(parameters);
+					if (UNEXPECTED(parameterTypes.isUndef())) return zv::Val();
+					appendTypes(types, parameterTypes.raw());
+				}
+			}
+		}
+
+		return pt_dependencies_create_in(scope, types.raw(), NULL, reflections.raw());
 	}
 
 	/* Mirrors specifyTypes(); $argsResult NULL for null. */

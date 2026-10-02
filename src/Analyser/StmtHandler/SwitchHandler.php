@@ -19,6 +19,7 @@ use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\SwitchConditionArm;
@@ -53,9 +54,11 @@ final class SwitchHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$entryScope = $scope;
 		$caseFlows = [];
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+		$dependencies[] = $condResult->getDependencies();
 		$scope = $condResult->getScope();
 		$scopeForBranches = $scope;
 		$finalScope = null;
@@ -81,6 +84,7 @@ final class SwitchHandler implements StmtHandler
 				$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
 				$fullCondExpr = $fullCondExpr === null ? $condExpr : new BooleanOr($fullCondExpr, $condExpr);
 				$caseResult = $nodeScopeResolver->processExprNode($stmt, $caseNode->cond, $scopeForBranches, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+				$dependencies[] = $caseResult->getDependencies();
 				$scopeForBranches = $caseResult->getScope();
 				$hasYield = $hasYield || $caseResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $caseResult->getThrowPoints());
@@ -116,6 +120,7 @@ final class SwitchHandler implements StmtHandler
 
 			$branchScope = $branchScope->mergeWith($prevScope);
 			$branchScopeResult = $nodeScopeResolver->processStmtNodesInternal($caseNode, $caseNode->stmts, $branchScope, $storage, $nodeCallback, $context);
+			$dependencies[] = $branchScopeResult->getDependencies();
 			$caseFlows[] = [VariableFlowBuilder::child($caseNode->cond, $storage), $branchScopeResult->getVariableFlow(), $caseNode->cond === null];
 			$branchScope = $branchScopeResult->getScope();
 			$branchFinalScopeResult = $branchScopeResult->filterOutLoopExitPoints();
@@ -175,7 +180,7 @@ final class SwitchHandler implements StmtHandler
 			$finalScope = $scopeForBranches->mergeWith($finalScope);
 		}
 
-		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPointsForOuterLoop, throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::switch($condResult->getVariableFlow(), $caseFlows, $hasDefaultCase));
+		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPointsForOuterLoop, throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::switch($condResult->getVariableFlow(), $caseFlows, $hasDefaultCase), dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

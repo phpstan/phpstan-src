@@ -326,6 +326,8 @@ public:
 		zval *cond = exprCond(expr);
 		if (UNEXPECTED(cond == NULL)) return zv::Val();
 		MH_VAL(condResult, pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, cond, scopeArg, storage, nodeCallback, deepContext.raw()));
+		zv::Arr dependencies = zv::Arr::create(1);
+		if (UNEXPECTED(!pushDependencies(dependencies, condResult.raw()))) return zv::Val();
 		// the subject was just processed on this scope; read its result
 		MH_VAL(condType, pt_expression_result_get_type(condResult.raw()));
 		MH_VAL(condNativeType, pt_expression_result_get_native_type(condResult.raw()));
@@ -378,7 +380,7 @@ public:
 				return zv::Val();
 			}
 			if (zend_hash_num_elements(Z_ARRVAL_P(enumCases.raw())) > 0) {
-				if (UNEXPECTED(!processEnumArms(nodeScopeResolver, stmt, expr, scope, storage, nodeCallback, context, deepContext.raw(), enumCases.raw(), matchScope, arms, armNodes, armFlows, conditionFlows, hasAlwaysTrueCond, armCondsToSkip, armBodyScopes, hasYield, throwPoints, impurePoints, armTypeResults))) return zv::Val();
+				if (UNEXPECTED(!processEnumArms(nodeScopeResolver, stmt, expr, scope, storage, nodeCallback, context, deepContext.raw(), enumCases.raw(), matchScope, arms, armNodes, armFlows, conditionFlows, dependencies, hasAlwaysTrueCond, armCondsToSkip, armBodyScopes, hasYield, throwPoints, impurePoints, armTypeResults))) return zv::Val();
 			}
 		}
 
@@ -413,6 +415,7 @@ public:
 					zval flowZv = flow.take();
 					zend_hash_index_update(armFlows.table(), i, &flowZv);
 				}
+				if (UNEXPECTED(!pushDependencies(dependencies, armResult.raw()))) return zv::Val();
 				borrowed = pt_expression_result_scope(armResult.raw(), hold);
 				if (UNEXPECTED(borrowed == NULL)) return zv::Val();
 				matchScope = zv::Val::copyOf(zv::Ref(borrowed));
@@ -463,6 +466,7 @@ public:
 					MH_VAL(flow, pt_expression_result_variable_flow(armCondResult.raw()));
 					store2(conditionFlows.table(), i, j, std::move(flow));
 				}
+				if (UNEXPECTED(!pushDependencies(dependencies, armCondResult.raw()))) return zv::Val();
 				if (UNEXPECTED(!foldArmResult(armCondResult.raw(), hasYield, throwPoints, impurePoints, hold))) return zv::Val();
 				cond = exprCond(expr);
 				if (UNEXPECTED(cond == NULL)) return zv::Val();
@@ -591,6 +595,7 @@ public:
 				zval flowZv = flow.take();
 				zend_hash_index_update(armFlows.table(), i, &flowZv);
 			}
+			if (UNEXPECTED(!pushDependencies(dependencies, armResult.raw()))) return zv::Val();
 			borrowed = pt_expression_result_scope(armResult.raw(), hold);
 			if (UNEXPECTED(borrowed == NULL)) return zv::Val();
 			zv::Val armScope = zv::Val::copyOf(zv::Ref(borrowed));
@@ -823,8 +828,9 @@ public:
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, capturedTypeResults);
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
 
+		MH_VAL(mergedDependencies, pt_dependencies_merge_list(dependencies.table()));
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(resultFlow.raw());
+		args.withVariableFlow(resultFlow.raw()).withDependencies(mergedDependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 
@@ -847,6 +853,16 @@ private:
 		return zv::Val(std::move(entry));
 	}
 
+	/* $dependencies[] = $result->getDependencies(); false = pending exception */
+	[[nodiscard]] static bool pushDependencies(zv::Arr &dependencies, zval *result)
+	{
+		zv::Val hold;
+		zval *resultDependencies = pt_expression_result_dependencies(result, hold);
+		if (UNEXPECTED(resultDependencies == NULL)) return false;
+		dependencies.push(zv::Ref(resultDependencies));
+		return true;
+	}
+
 	/* $hasYield = $hasYield || $result->hasYield(); $throwPoints =
 	 * array_merge($throwPoints, $result->getThrowPoints()); $impurePoints =
 	 * array_merge($impurePoints, $result->getImpurePoints()); false = pending
@@ -865,7 +881,7 @@ private:
 
 	/* The enum fast path of processExpr() (the `if (count($enumCases) > 0)`
 	 * block); false = pending exception */
-	[[nodiscard]] bool processEnumArms(zval *nodeScopeResolver, zval *stmt, zval *expr, zv::Val &scope, zval *storage, zval *nodeCallback, zval *context, zval *deepContext, zval *enumCases, zv::Val &matchScope, zv::Val &arms, zv::Arr &armNodes, zv::Arr &armFlows, zv::Arr &conditionFlows, bool &hasAlwaysTrueCond, zv::Arr &armCondsToSkip, zv::Arr &armBodyScopes, bool &hasYield, zv::Val &throwPoints, zv::Val &impurePoints, zv::Arr &armTypeResults) const
+	[[nodiscard]] bool processEnumArms(zval *nodeScopeResolver, zval *stmt, zval *expr, zv::Val &scope, zval *storage, zval *nodeCallback, zval *context, zval *deepContext, zval *enumCases, zv::Val &matchScope, zv::Val &arms, zv::Arr &armNodes, zv::Arr &armFlows, zv::Arr &conditionFlows, zv::Arr &dependencies, bool &hasAlwaysTrueCond, zv::Arr &armCondsToSkip, zv::Arr &armBodyScopes, bool &hasYield, zv::Val &throwPoints, zv::Val &impurePoints, zv::Arr &armTypeResults) const
 	{
 		zend_class_entry *classConstFetchCe = pt_class(PT_CLASS_CLASS_CONST_FETCH);
 		zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
@@ -998,6 +1014,7 @@ private:
 				zv::Val conditionFlow = pt_expression_result_variable_flow(conditionResult.raw());
 				if (UNEXPECTED(conditionFlow.isUndef())) return false;
 				store2(conditionFlows.table(), i, j, std::move(conditionFlow));
+				if (UNEXPECTED(!pushDependencies(dependencies, conditionResult.raw()))) return false;
 
 				zv::Val startLine = nodeGetStartLine(cond);
 				if (UNEXPECTED(startLine.isUndef())) return false;
@@ -1062,6 +1079,7 @@ private:
 				zval flowZv = flow.take();
 				zend_hash_index_update(armFlows.table(), i, &flowZv);
 			}
+			if (UNEXPECTED(!pushDependencies(dependencies, armResult.raw()))) return false;
 			zval *borrowed = pt_expression_result_scope(armResult.raw(), hold);
 			if (UNEXPECTED(borrowed == NULL)) return false;
 			zv::Val armScope = zv::Val::copyOf(zv::Ref(borrowed));

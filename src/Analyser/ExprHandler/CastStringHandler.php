@@ -79,6 +79,7 @@ final class CastStringHandler implements ExprHandler
 			specifyTypesCallback: static fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => ($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope)->obtainResultForNode(
 				new NotEqual($expr->expr, new String_('')),
 			)->getSpecifiedTypes($context, $nativeTypesPromoted)->setRootExpr($expr),
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

@@ -16,6 +16,7 @@ use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\DoWhileLoopConditionNode;
@@ -191,6 +192,7 @@ final class DoWhileHandler implements StmtHandler
 			impurePoints: array_merge($impurePoints, $bodyScopeResult->getImpurePoints()),
 			// the body runs once, then may repeat or not whatever the condition says
 			variableFlow: VariableFlow::loop(null, $bodyScopeResult->getVariableFlow(), $condResult->getVariableFlow(), true, true),
+			dependencies: Dependencies::merge($bodyScopeResult->getDependencies(), $condResult->getDependencies()),
 		);
 	}
 

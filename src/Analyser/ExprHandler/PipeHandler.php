@@ -113,6 +113,7 @@ final class PipeHandler implements ExprHandler
 			// the pipe evaluates to its rewritten call - read that child's result
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $callResult->getNativeType() : $callResult->getType()),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $callResult->getDependencies(),
 		);
 	}
 

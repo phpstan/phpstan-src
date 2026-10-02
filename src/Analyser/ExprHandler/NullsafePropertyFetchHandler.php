@@ -22,6 +22,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NullsafePropertyFetchExpressionNode;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -202,6 +203,7 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 					->unionWith($this->defaultNarrowingHelper->createSubjectTypes($s, $expr->var, $receiverResult, new NullType(), TypeSpecifierContext::createFalse()))
 					->setRootExpr($expr);
 			},
+			dependencies: Dependencies::merge($exprResult->getDependencies(), $processedReceiverResult->getDependencies()),
 		);
 	}
 

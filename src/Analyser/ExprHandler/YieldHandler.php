@@ -19,6 +19,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
@@ -112,6 +113,7 @@ final class YieldHandler implements ExprHandler
 				return $generatorSendType;
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: Dependencies::merge($keyResult !== null ? $keyResult->getDependencies() : null, $valueResult !== null ? $valueResult->getDependencies() : null),
 		);
 	}
 

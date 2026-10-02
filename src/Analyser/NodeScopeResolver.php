@@ -28,6 +28,7 @@ use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\Generics\TemplateArgumentStats;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
@@ -188,6 +189,21 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
+		$this->processFileNodes($nodes, $scope, $nodeCallback);
+	}
+
+	/**
+	 * processNodes() for the analysis of a file: returns what the file depends on besides itself.
+	 *
+	 * @param Node[] $nodes
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function processFileNodes(
+		array $nodes,
+		MutatingScope $scope,
+		callable $nodeCallback,
+	): ?Dependencies
+	{
 		$scope = $scope->toWalkScope();
 		if (self::$guardNewWorld) {
 			self::$guardRealExprIds = [];
@@ -203,7 +219,7 @@ class NodeScopeResolver
 		// interrupted walk's gatherer frames (see processStmtNodes())
 		$gatherers = $this->suspendNodeGatherers();
 		try {
-			$this->statementsHandler->processNodesWithStorage($this, $nodes, $scope, $expressionResultStorage, $nodeCallback);
+			return $this->statementsHandler->processNodesWithStorage($this, $nodes, $scope, $expressionResultStorage, $nodeCallback);
 		} finally {
 			$this->restoreNodeGatherers($gatherers);
 			$scope->popExpressionResultStorage();
@@ -329,6 +345,7 @@ class NodeScopeResolver
 			}
 			$overridingThrowPoints = $this->statementsHandler->getOverridingThrowPoints($stmt, $scope);
 		}
+		$varTagDependencies = $this->statementsHandler->getVarTagDependencies($stmt, $scope);
 
 		if ($stmt instanceof Node\Stmt\ClassMethod) {
 			// a trait method the using class overrides is not analysed here at all -
@@ -370,6 +387,9 @@ class NodeScopeResolver
 		$stmtHandler = StmtHandlerRegistry::resolve($stmt, $this->container);
 		if ($stmtHandler !== null) {
 			$stmtResult = $stmtHandler->processStmt($this, $stmt, $scope, $storage, $nodeCallback, $context);
+			if ($varTagDependencies !== null) {
+				$stmtResult = $stmtResult->withDependencies(Dependencies::merge($stmtResult->getDependencies(), $varTagDependencies));
+			}
 			if ($overridingThrowPoints !== null) {
 				// the overriding throw points use the scope before the statement,
 				// so the variable flow throws before the statement does its work
@@ -387,6 +407,7 @@ class NodeScopeResolver
 					impurePoints: $stmtResult->getImpurePoints(),
 					endStatements: $stmtResult->getEndStatements(),
 					variableFlow: VariableFlow::sequence(...$overridingThrowFlows, ...[$stmtResult->getVariableFlow()]),
+					dependencies: $stmtResult->getDependencies(),
 				);
 			}
 
@@ -394,7 +415,7 @@ class NodeScopeResolver
 		}
 
 		// statements with no analysis of their own (e.g. HaltCompiler)
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: $overridingThrowPoints ?? [], impurePoints: []);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: $overridingThrowPoints ?? [], impurePoints: [], dependencies: $varTagDependencies);
 	}
 
 	public function isAnalysedFile(string $fileName): bool
@@ -763,6 +784,7 @@ class NodeScopeResolver
 				// result; delegate so getType() of the original CallLike answers from it
 				typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $newExprResult->getNativeType() : $newExprResult->getType()),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+				dependencies: $newExprResult->getDependencies(),
 			);
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
 			return $expressionResult;

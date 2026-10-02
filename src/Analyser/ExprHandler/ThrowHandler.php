@@ -57,6 +57,7 @@ final class ThrowHandler implements ExprHandler
 			impurePoints: $exprResult->getImpurePoints(),
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => new NonAcceptingNeverType(),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

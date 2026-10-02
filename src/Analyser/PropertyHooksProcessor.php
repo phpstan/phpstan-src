@@ -9,6 +9,8 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeTraverser;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\InPropertyHookNode;
@@ -52,21 +54,23 @@ final class PropertyHooksProcessor
 		MutatingScope $scope,
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
-	): void
+	): ?Dependencies
 	{
 		if (!$scope->isInClass()) {
 			throw new ShouldNotHappenException();
 		}
 
+		$dependencies = [];
+
 		$classReflection = $scope->getClassReflection();
 
 		foreach ($hooks as $hook) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $hook, $scope, $storage);
-			$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $hook->attrGroups, $scope, $storage, $nodeCallback);
+			$dependencies[] = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $hook->attrGroups, $scope, $storage, $nodeCallback);
 
 			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,, $isPure,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->phpDocsResolver->getPhpDocs($scope, $hook);
 
-			$this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $hook->params, $scope, $storage, $nodeCallback);
+			$dependencies[] = $this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $hook->params, $scope, $storage, $nodeCallback);
 
 			[$isDeprecated, $deprecatedDescription] = $this->deprecatedAttributeResolver->getDeprecatedAttribute($scope, $hook);
 
@@ -94,6 +98,7 @@ final class PropertyHooksProcessor
 
 			$propertyReflection = $classReflection->getNativeProperty($propertyName);
 
+			$dependencies[] = Dependencies::create($hookScope->getFile(), DependencyTypes::ofDeclaration($hookReflection, false));
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new InPropertyHookNode(
 				$classReflection,
 				$hookReflection,
@@ -153,6 +158,7 @@ final class PropertyHooksProcessor
 			});
 			try {
 				$internalStatementResult = $nodeScopeResolver->processStmtNodesInternal(new PropertyHookStatementNode($hook), $stmts, $hookScope, $storage, $nodeCallback, StatementContext::createTopLevel());
+				$dependencies[] = $internalStatementResult->getDependencies();
 				$statementResult = $internalStatementResult->toPublic();
 			} finally {
 				$nodeScopeResolver->popNodeGatherer();
@@ -171,6 +177,8 @@ final class PropertyHooksProcessor
 			), $hookScope, $storage);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, VariableLivenessResolver::resolve($hook, $internalStatementResult->getVariableFlow()), $hookScope, $storage);
 		}
+
+		return Dependencies::merge(...$dependencies);
 	}
 
 }

@@ -81,6 +81,7 @@ public:
 		}
 		zv::Arr vars = zv::Arr::empty();
 		zv::Arr variableFlows = zv::Arr::empty();
+		zv::Arr dependencies = zv::Arr::empty();
 		zval *stmtVars = ptsh::readNodeProperty(pt_gh_vars_site, stmt, PT_LC("vars"));
 		if (UNEXPECTED(stmtVars == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(stmtVars) != IS_ARRAY)) {
@@ -105,6 +106,12 @@ public:
 				if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 				zv::Val varResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, var, scopeHold.raw(), storage, nodeCallback, expressionContext.raw());
 				if (UNEXPECTED(varResult.isUndef())) return zv::Val();
+				{
+					zv::Val hold;
+					zval *varDependencies = pt_expression_result_dependencies(varResult.raw(), hold);
+					if (UNEXPECTED(varDependencies == NULL)) return zv::Val();
+					dependencies.push(zv::Ref(varDependencies));
+				}
 				{
 					zv::Val escapeRoot = pt_variable_flow_builder_escape_root(var);
 					if (UNEXPECTED(escapeRoot.isUndef())) return zv::Val();
@@ -143,9 +150,11 @@ public:
 
 		zv::Val variableFlow = pt_variable_flow_sequence_list(variableFlows.table());
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return pt_internal_statement_result_new(annotatedScope.raw(), false, false, &emptyArray, &emptyArray, impurePoints.raw(), NULL, variableFlow.raw());
+		return pt_internal_statement_result_new(annotatedScope.raw(), false, false, &emptyArray, &emptyArray, impurePoints.raw(), NULL, variableFlow.raw(), -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

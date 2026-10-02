@@ -866,7 +866,32 @@ public:
 			variableFlow = pt_variable_flow_sequence(2, flows);
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		}
-		return pt_internal_statement_result_new(resultScope.raw(), hasYield, isIterableAtLeastOnce == PT_TRI_YES && resultAlwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw());
+		zv::Val dependencies;
+		{
+			zv::Val condHold, bodyHold;
+			zval *condDependencies = pt_expression_result_dependencies(condResult.raw(), condHold);
+			if (UNEXPECTED(condDependencies == NULL)) return zv::Val();
+			zval *bodyDependencies = pt_internal_statement_result_dependencies(result, bodyHold);
+			if (UNEXPECTED(bodyDependencies == NULL)) return zv::Val();
+			// the classes in the types of the keys and the values iterated over
+			zval *keyVar = ptsh::readNodeProperty(pt_feh_key_var_site, stmt, PT_LC("keyVar"));
+			if (UNEXPECTED(keyVar == NULL)) return zv::Val();
+			zv::Val keyType = zv::Val::null();
+			if (Z_TYPE_P(keyVar) != IS_NULL) {
+				keyType = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(entryScope), foreachIterateeType.raw());
+				if (UNEXPECTED(keyType.isUndef())) return zv::Val();
+			}
+			zv::Val valueType = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(entryScope), foreachIterateeType.raw());
+			if (UNEXPECTED(valueType.isUndef())) return zv::Val();
+			zv::Arr iteratedTypes = zv::Arr::create(2);
+			iteratedTypes.push(std::move(keyType));
+			iteratedTypes.push(std::move(valueType));
+			zv::Val iterated = pt_dependencies_create_in(entryScope, iteratedTypes.raw());
+			if (UNEXPECTED(iterated.isUndef())) return zv::Val();
+			dependencies = pt_dependencies_merge({condDependencies, bodyDependencies, iterated.raw()});
+			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		}
+		return pt_internal_statement_result_new(resultScope.raw(), hasYield, isIterableAtLeastOnce == PT_TRI_YES && resultAlwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw(), -1, dependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

@@ -104,8 +104,11 @@ public:
 
 		zv::Val variableFlow = ptse::incDecFlow(child.variableFlow.raw(), valueFlowWrite.raw(), context, var, pt_pdh_kind, assignedScope.raw(), storage);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_expression_result_dependencies(varResult.raw(), dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 		pt_expression_result_args args(assignedScope.raw(), scope, expr, child.hasYield, child.isAlwaysTerminating, child.throwPoints, child.impurePoints, typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw());
+		args.withVariableFlow(variableFlow.raw()).withDependencies(dependencies);
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

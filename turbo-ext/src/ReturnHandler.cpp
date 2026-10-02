@@ -73,11 +73,12 @@ public:
 		zv::Val resultScope;
 		zval *finalScope = scope;
 		bool hasYield = false;
-		zv::Val throwPointsHold, impurePointsHold;
+		zv::Val throwPointsHold, impurePointsHold, dependenciesHold;
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
 		zval *throwPoints = &emptyArray;
 		zval *impurePoints = &emptyArray;
+		zval *dependencies = NULL;
 		zv::Val variableFlow;
 		expr = returnedExpr(stmt);
 		if (UNEXPECTED(expr == NULL)) return zv::Val();
@@ -97,6 +98,8 @@ public:
 			if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 			zv::Val result = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, expr, stmtScope.raw(), storage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
+			dependencies = pt_expression_result_dependencies(result.raw(), dependenciesHold);
+			if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 			// the @var-changed-type node fires now that the expression is stored
 			// on the scope BEFORE the @var tag re-typed the expression, so the rule
 			// compares the tag against the expression's walked type
@@ -150,7 +153,9 @@ public:
 		zv::Val sequence = pt_variable_flow_sequence(2, flows);
 		if (UNEXPECTED(sequence.isUndef())) return zv::Val();
 
-		return pt_internal_statement_result_new(finalScope, hasYield, true, exitPoints.raw(), throwPoints, impurePoints, NULL, sequence.raw());
+		zv::Val mergedDependencies = pt_dependencies_merge({dependencies});
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(finalScope, hasYield, true, exitPoints.raw(), throwPoints, impurePoints, NULL, sequence.raw(), -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

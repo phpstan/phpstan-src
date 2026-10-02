@@ -78,6 +78,7 @@ struct ConstructorArgs
 	zval *projectedType = NULL;
 	zval *projectedNativeType = NULL;
 	zval *readVariableNames = NULL;
+	zval *dependencies = NULL;
 };
 
 /* a nullable slot value as a constructor argument: NULL for PHP null */
@@ -238,6 +239,7 @@ public:
 		writeSlot(object, slots::projectedType, a.projectedType);
 		writeSlot(object, slots::projectedNativeType, a.projectedNativeType);
 		writeSlot(object, slots::readVariableNames, a.readVariableNames);
+		writeSlot(object, slots::dependencies, a.dependencies);
 
 		writeSlot(object, slots::typeCallback, a.typeCallback);
 		writeSlot(object, slots::specifyTypesCallback, a.specifyTypesCallback);
@@ -246,8 +248,8 @@ public:
 		return true;
 	}
 
-	/* Mirrors finalize(); $variableFlow NULL for null. */
-	zv::Val finalize(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *variableFlow) const
+	/* Mirrors finalize(); $variableFlow and $dependencies NULL for null. */
+	zv::Val finalize(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *variableFlow, zval *dependencies) const
 	{
 		ConstructorArgs a;
 		a.expressionTypeResolverExtensions = slot(slots::expressionTypeResolverExtensions);
@@ -279,6 +281,7 @@ public:
 		a.projectedType = argOf(slot(slots::projectedType));
 		a.projectedNativeType = argOf(slot(slots::projectedNativeType));
 		a.readVariableNames = argOf(slot(slots::readVariableNames));
+		a.dependencies = dependencies;
 		return newSelf(a);
 	}
 
@@ -294,7 +297,39 @@ public:
 			return zv::Val::copyOf(zv::Ref(&selfValue));
 		}
 
-		return finalize(scope, boolSlot(slots::hasYield), boolSlot(slots::isAlwaysTerminating), slot(slots::throwPoints), slot(slots::impurePoints), argOf(slot(slots::variableFlow)));
+		return finalize(scope, boolSlot(slots::hasYield), boolSlot(slots::isAlwaysTerminating), slot(slots::throwPoints), slot(slots::impurePoints), argOf(slot(slots::variableFlow)), argOf(slot(slots::dependencies)));
+	}
+
+	zv::Val getDependencies() const { return copySlot(slots::dependencies); }
+
+	/* Mirrors withDependencies(): a clone with the slot replaced */
+	zv::Val withDependencies(zval *dependencies) const
+	{
+		zval *current = slot(slots::dependencies);
+		bool same = dependencies == NULL ? Z_TYPE_P(current) == IS_NULL : (Z_TYPE_P(current) == IS_OBJECT && Z_OBJ_P(current) == Z_OBJ_P(dependencies));
+		if (same) {
+			zval selfValue;
+			ZVAL_OBJ(&selfValue, self);
+			return zv::Val::copyOf(zv::Ref(&selfValue));
+		}
+
+		zend_object *clone = self->handlers->clone_obj(self);
+		if (UNEXPECTED(clone == NULL || EG(exception))) {
+			if (clone != NULL) OBJ_RELEASE(clone);
+			return zv::Val();
+		}
+		zval *target = OBJ_PROP_NUM(clone, slots::dependencies);
+		zval previous;
+		ZVAL_COPY_VALUE(&previous, target);
+		if (dependencies != NULL) {
+			ZVAL_COPY(target, dependencies);
+		} else {
+			ZVAL_NULL(target);
+		}
+		zval_ptr_dtor(&previous);
+		zval cloneValue;
+		ZVAL_OBJ(&cloneValue, clone);
+		return zv::Val::adopt(cloneValue);
 	}
 
 	zv::Val getBeforeScope() const { return copySlot(slots::beforeScope); }
@@ -698,6 +733,7 @@ public:
 		a.projectedType = fromScope ? NULL : argOf(slot(slots::projectedType));
 		a.projectedNativeType = fromScope ? NULL : argOf(slot(slots::projectedNativeType));
 		a.readVariableNames = argOf(slot(slots::readVariableNames));
+		a.dependencies = argOf(slot(slots::dependencies));
 		return newSelf(a);
 	}
 
@@ -732,6 +768,7 @@ public:
 		a.projectedType = argOf(slot(slots::projectedType));
 		a.projectedNativeType = argOf(slot(slots::projectedNativeType));
 		a.readVariableNames = argOf(slot(slots::readVariableNames));
+		a.dependencies = argOf(slot(slots::dependencies));
 		return newSelf(a);
 	}
 
@@ -1208,14 +1245,24 @@ zv::Val pt_expression_result_with_scope(zval *result, zval *scope)
 }
 
 /* the method call handler's (MethodCallHandler.cpp) */
-zv::Val pt_expression_result_finalize(zval *result, zval *scope, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *variableFlow)
+zv::Val pt_expression_result_finalize(zval *result, zval *scope, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *variableFlow, zval *dependencies)
 {
 	if (variableFlow != NULL && Z_TYPE_P(variableFlow) == IS_NULL) variableFlow = NULL;
-	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).finalize(scope, hasYield, isAlwaysTerminating, throwPoints, impurePoints, variableFlow);
+	if (dependencies != NULL && Z_TYPE_P(dependencies) == IS_NULL) dependencies = NULL;
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).finalize(scope, hasYield, isAlwaysTerminating, throwPoints, impurePoints, variableFlow, dependencies);
 	zval null;
 	ZVAL_NULL(&null);
-	zv::Args argv{scope, hasYield, isAlwaysTerminating, throwPoints, impurePoints, variableFlow != NULL ? variableFlow : &null};
-	return pt_type_call(Z_OBJ_P(result), PT_LC("finalize"), 6, argv);
+	zv::Args argv{scope, hasYield, isAlwaysTerminating, throwPoints, impurePoints, variableFlow != NULL ? variableFlow : &null, dependencies != NULL ? dependencies : &null};
+	return pt_type_call(Z_OBJ_P(result), PT_LC("finalize"), 7, argv);
+}
+
+zv::Val pt_expression_result_with_dependencies(zval *result, zval *dependencies)
+{
+	if (dependencies != NULL && Z_TYPE_P(dependencies) == IS_NULL) dependencies = NULL;
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).withDependencies(dependencies);
+	zval null;
+	ZVAL_NULL(&null);
+	return pt_type_call(Z_OBJ_P(result), PT_LC("withdependencies"), 1, dependencies != NULL ? dependencies : &null);
 }
 
 zv::Val pt_expression_result_get_keep_void_type(zval *result, bool nativeTypesPromoted)
@@ -1374,6 +1421,7 @@ zv::Val constructDirect(zval *collection, zval *defaultNarrowingHelper, const pt
 	a.nativeType = nullable(args.nativeType);
 	a.argsResult = nullable(args.argsResult);
 	a.variableFlow = nullable(args.variableFlow);
+	a.dependencies = nullable(args.dependencies);
 	if (UNEXPECTED(Z_TYPE_P(a.throwPoints) != IS_ARRAY || Z_TYPE_P(a.impurePoints) != IS_ARRAY)) {
 		zend_type_error("PHPStan\\Analyser\\ExpressionResult::__construct(): Argument #%u must be of type array, %s given", Z_TYPE_P(a.throwPoints) != IS_ARRAY ? 8 : 9, zend_zval_value_name(Z_TYPE_P(a.throwPoints) != IS_ARRAY ? a.throwPoints : a.impurePoints));
 		return zv::Val();
@@ -1432,6 +1480,7 @@ zv::Val createThroughFactory(zend_object *factory, const pt_expression_result_ar
 		{ PT_ER_NAMED_NATIVE_TYPE, PT_LC("nativeType"), orNull(args.nativeType) },
 		{ PT_ER_NAMED_ARGS_RESULT, PT_LC("argsResult"), orNull(args.argsResult) },
 		{ PT_ER_NAMED_VARIABLE_FLOW, PT_LC("variableFlow"), orNull(args.variableFlow) },
+		{ PT_ER_NAMED_DEPENDENCIES, PT_LC("dependencies"), orNull(args.dependencies) },
 	};
 	for (const auto &optional : optionals) {
 		if ((args.named & optional.bit) != 0) {
@@ -1567,6 +1616,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 		reg::withDefault(reg::obj("projectedType", pt_er_type, true), "null"),
 		reg::withDefault(reg::obj("projectedNativeType", pt_er_type, true), "null"),
 		reg::withDefault(reg::arrayArg("readVariableNames", true), "null"),
+		reg::withDefault(reg::obj("dependencies", "PHPStan\\Dependency\\Dependencies", true), "null"),
 	}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ConstructorArgs a;
 		zval *typeCallback, *specifyTypesCallback, *createTypesCallback = NULL;
@@ -1575,8 +1625,8 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 		bool extensionsDeclined = false;
 		zval *issetabilityDescriptor = NULL, *truthyScopeOverrideResult = NULL, *falseyScopeOverrideResult = NULL;
 		zval *type = NULL, *nativeType = NULL, *argsResult = NULL, *variableFlow = NULL;
-		zval *specifiedTypes = NULL, *cachedType = NULL, *cachedNativeType = NULL, *resolvedType = NULL, *resolvedNativeType = NULL, *projectedType = NULL, *projectedNativeType = NULL, *readVariableNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(11, 29)
+		zval *specifiedTypes = NULL, *cachedType = NULL, *cachedNativeType = NULL, *resolvedType = NULL, *resolvedNativeType = NULL, *projectedType = NULL, *projectedNativeType = NULL, *readVariableNames = NULL, *dependencies = NULL;
+		ZEND_PARSE_PARAMETERS_START(11, 30)
 			Z_PARAM_OBJECT(a.expressionTypeResolverExtensions)
 			Z_PARAM_OBJECT(a.defaultNarrowingHelper)
 			Z_PARAM_OBJECT(a.scope)
@@ -1607,6 +1657,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 			Z_PARAM_OBJECT_OR_NULL(projectedType)
 			Z_PARAM_OBJECT_OR_NULL(projectedNativeType)
 			Z_PARAM_ARRAY_OR_NULL(readVariableNames)
+			Z_PARAM_OBJECT_OR_NULL(dependencies)
 		ZEND_PARSE_PARAMETERS_END();
 		if (!pt_er_callable_arg(typeCallback, 10, true, a.typeCallback)
 			|| !pt_er_callable_arg(specifyTypesCallback, 11, false, a.specifyTypesCallback)
@@ -1632,14 +1683,23 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 		a.projectedType = projectedType;
 		a.projectedNativeType = projectedNativeType;
 		a.readVariableNames = readVariableNames;
+		a.dependencies = dependencies;
 		if (UNEXPECTED(!ExpressionResult::construct(Z_OBJ_P(ZEND_THIS), a))) RETURN_THROWS();
 	});
 
 	cls.method(sigs::finalize, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *throwPoints, *impurePoints, *variableFlow;
+		zval *scope, *throwPoints, *impurePoints, *variableFlow, *dependencies;
 		bool hasYield, isAlwaysTerminating;
-		if (!zp::parse<zp::Obj, zp::Bool, zp::Bool, zp::Arr, zp::Arr, zp::ObjOrNull>(execute_data, scope, hasYield, isAlwaysTerminating, throwPoints, impurePoints, variableFlow)) RETURN_THROWS();
-		PT_ER_RETURN(ExpressionResult(Z_OBJ_P(ZEND_THIS)).finalize(scope, hasYield, isAlwaysTerminating, throwPoints, impurePoints, variableFlow));
+		ZEND_PARSE_PARAMETERS_START(7, 7)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_BOOL(hasYield)
+			Z_PARAM_BOOL(isAlwaysTerminating)
+			Z_PARAM_ARRAY(throwPoints)
+			Z_PARAM_ARRAY(impurePoints)
+			Z_PARAM_OBJECT_OR_NULL(variableFlow)
+			Z_PARAM_OBJECT_OR_NULL(dependencies)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_ER_RETURN(ExpressionResult(Z_OBJ_P(ZEND_THIS)).finalize(scope, hasYield, isAlwaysTerminating, throwPoints, impurePoints, variableFlow, dependencies));
 	});
 
 	cls.method(sigs::getScope, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -1656,6 +1716,19 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 		zval *scope;
 		if (!zp::parse<zp::Obj>(execute_data, scope)) RETURN_THROWS();
 		PT_ER_RETURN(ExpressionResult(Z_OBJ_P(ZEND_THIS)).withScope(scope));
+	});
+
+	cls.method(sigs::getDependencies, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_ER_RETURN(ExpressionResult(Z_OBJ_P(ZEND_THIS)).getDependencies());
+	});
+
+	cls.method(sigs::withDependencies, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *dependencies;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OR_NULL(dependencies)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_ER_RETURN(ExpressionResult(Z_OBJ_P(ZEND_THIS)).withDependencies(dependencies));
 	});
 
 	cls.method(sigs::getBeforeScope, [](INTERNAL_FUNCTION_PARAMETERS) {

@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\ExprHandler;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -16,8 +17,10 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
@@ -36,6 +39,7 @@ final class ClassConstFetchHandler implements ExprHandler
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -82,7 +86,7 @@ final class ClassConstFetchHandler implements ExprHandler
 		// resolve it once here instead of reading it off the callback's scope.
 		$classReflection = $beforeScope->isInClass() ? $beforeScope->getClassReflection() : null;
 
-		return $this->expressionResultFactory->create(
+		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
@@ -113,6 +117,46 @@ final class ClassConstFetchHandler implements ExprHandler
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
+
+		return $result->withDependencies(Dependencies::merge(
+			$classResult !== null ? $classResult->getDependencies() : null,
+			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$this->getDependencies($beforeScope, $expr, $classResult, $result),
+		));
+	}
+
+	/**
+	 * The class the constant is fetched from, the class declaring it, and the classes in its type.
+	 */
+	private function getDependencies(MutatingScope $scope, ClassConstFetch $expr, ?ExpressionResult $classResult, ExpressionResult $result): ?Dependencies
+	{
+		$types = [$result->getType()];
+		$classNames = [];
+		if ($classResult !== null) {
+			$types[] = $classResult->getType();
+		} elseif ($expr->class instanceof Name) {
+			$classNames[] = $scope->resolveName($expr->class);
+		}
+
+		if ($expr->name instanceof Identifier && $expr->name->toLowerString() !== 'class') {
+			$constantName = $expr->name->toString();
+			if ($classResult !== null) {
+				$constantReflection = $scope->getConstantReflection($classResult->getType(), $constantName);
+				if ($constantReflection !== null) {
+					$classNames[] = $constantReflection->getDeclaringClass()->getName();
+				}
+			} elseif ($expr->class instanceof Name) {
+				$className = $scope->resolveName($expr->class);
+				if ($this->reflectionProvider->hasClass($className)) {
+					$constantClassReflection = $this->reflectionProvider->getClass($className);
+					if ($constantClassReflection->hasConstant($constantName)) {
+						$classNames[] = $constantClassReflection->getConstant($constantName)->getDeclaringClass()->getName();
+					}
+				}
+			}
+		}
+
+		return Dependencies::create($scope->getFile(), $types, $classNames);
 	}
 
 }

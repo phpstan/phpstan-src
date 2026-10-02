@@ -759,6 +759,7 @@ struct PreparedTarget
 	zval *targetReadResult = NULL;
 	zval *targetChainResults = NULL;
 	zval *variableNameResult = NULL;
+	zval *dependencies = NULL;
 };
 
 /* new PreparedAssignTarget(...) */
@@ -773,8 +774,9 @@ zv::Val preparedAssignTargetNew(const PreparedTarget &t)
 	zv::Args argv{
 		kind.raw(), t.var, t.assignedExpr, t.beforeScope, t.scope, t.enterExpressionAssign, t.isAssignOp, t.hasYield, t.throwPoints, t.impurePoints, t.isAlwaysTerminating,
 		orNull(t.rootVar), orNull(t.varResult), orNull(t.dimFetchStack), orNull(t.assignedPropertyExpr), orNull(t.offsetTypes), orNull(t.offsetNativeTypes), orNull(t.existingOffsetTypes), orNull(t.existingOffsetNativeTypes), orNull(t.offsetSetTargetResult), orNull(t.objectResult), orNull(t.propertyName), orNull(t.propertyHolderType), orNull(t.targetReadResult), t.targetChainResults != NULL ? t.targetChainResults : &emptyArray, orNull(t.variableNameResult),
+		orNull(t.dependencies),
 	};
-	return pt_prepared_assign_target_new(26, argv);
+	return pt_prepared_assign_target_new(27, argv);
 }
 
 /* the getters: the borrowed slots of the native class (its private
@@ -786,6 +788,15 @@ inline zval *ahTargetSlot(zval *target, uint32_t slot, pt_property_site &site, c
 }
 
 #define AH_TARGET(target, name) ([](zval *ah_target_) -> zval * { static pt_property_site ah_site_; return ahTargetSlot(ah_target_, ptdecl::PreparedAssignTarget::slot::name, ah_site_, PT_LC(#name)); }(target))
+
+/* $result->getDependencies(), owned (PHP null for null); UNDEF = pending exception */
+zv::Val ahResultDependencies(zval *result)
+{
+	zv::Val hold;
+	zval *dependencies = pt_expression_result_dependencies(result, hold);
+	if (UNEXPECTED(dependencies == NULL)) return zv::Val();
+	return zv::Val::copyOf(zv::Ref(dependencies));
+}
 
 /* a getter that throws ShouldNotHappenException on null; NULL = pending exception */
 inline zval *ahRequire(zval *value)
@@ -1271,8 +1282,11 @@ public:
 		if (isAssign) {
 			createTypesCallback = pt_native_closure(&createTypesCallbackBody, self, expr, assignedExprResult.raw(), beforeScope);
 		}
+		AH_VAL(assignedExprDependencies, ahResultDependencies(assignedExprResult.raw()));
+		AH_VAL(resultDependencies, ahResultDependencies(result.raw()));
+		AH_VAL(dependencies, pt_dependencies_merge({assignedExprDependencies.raw(), resultDependencies.raw()}));
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw()).withCreateTypesCallback(createTypesCallback.raw());
+		args.withVariableFlow(variableFlow.raw()).withCreateTypesCallback(createTypesCallback.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(factory(), args);
 	}
 
@@ -1376,10 +1390,16 @@ public:
 				}
 			}
 
+			zv::Val targetDependencies = zv::Val::null();
+			if (!variableNameResult.isNull()) {
+				AH_SET(targetDependencies, ahResultDependencies(variableNameResult.raw()));
+			}
+
 			PreparedTarget t{PT_LC("variable"), var, assignedExpr, beforeScope, scope.raw(), enterExpressionAssign, isAssignOp, hasYield, throwPoints.raw(), impurePoints.raw(), isAlwaysTerminating};
 			t.targetReadResult = targetReadResult.raw();
 			t.targetChainResults = targetChainResults.raw();
 			t.variableNameResult = variableNameResult.raw();
+			t.dependencies = targetDependencies.raw();
 			return preparedAssignTargetNew(t);
 		}
 
@@ -1561,6 +1581,31 @@ public:
 				HashTable *pair = Z_ARRVAL_P(entry.value().raw());
 				AH_OK(nsrStoreExpressionResult(nsr, storage, zend_hash_index_find(pair, 0), zend_hash_index_find(pair, 1)));
 			}
+			// the root and the dimensions, and the classes in the types at the offsets
+			zv::Val targetDependencies;
+			{
+				zv::Arr dependencyList = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(dimResults.raw())) + 2);
+				AH_VAL(rootDependencies, ahResultDependencies(varResult.raw()));
+				dependencyList.push(std::move(rootDependencies));
+				for (auto entry : zv::TableRef(Z_ARRVAL_P(dimResults.raw()))) {
+					zval *dimResult = entry.value().raw();
+					if (Z_TYPE_P(dimResult) == IS_NULL) continue;
+
+					AH_VAL(dimDependencies, ahResultDependencies(dimResult));
+					dependencyList.push(std::move(dimDependencies));
+				}
+				zv::Arr linkTypes = zv::Arr::empty();
+				for (auto entry : zv::TableRef(deferred)) {
+					HashTable *pair = Z_ARRVAL_P(entry.value().raw());
+					if (Z_TYPE_P(AH_PROP(zend_hash_index_find(pair, 0), dim)) == IS_NULL) continue;
+
+					AH_VAL(linkType, pt_expression_result_get_type(zend_hash_index_find(pair, 1)));
+					linkTypes.push(std::move(linkType));
+				}
+				AH_VAL(linkDependencies, pt_dependencies_create_in(beforeScope, linkTypes.raw()));
+				dependencyList.push(std::move(linkDependencies));
+				AH_SET(targetDependencies, pt_dependencies_merge_list(dependencyList.table()));
+			}
 			// the chain link the write's ArrayAccess::offsetSet would be invoked on:
 			// the second-outermost link, or the root for a single-dimension target
 			zval *offsetSetTargetResult = deferredCount >= 2
@@ -1577,6 +1622,7 @@ public:
 			t.offsetSetTargetResult = offsetSetTargetResult;
 			t.targetReadResult = targetReadResult.raw();
 			t.targetChainResults = targetChainResults.raw();
+			t.dependencies = targetDependencies.raw();
 			return preparedAssignTargetNew(t);
 		}
 
@@ -1631,10 +1677,12 @@ public:
 			// The raw target fetch was emitted to node callbacks at the top of
 			// prepareTarget() but the assign flow never processes it as a
 			// read. Compose and store it once here from the receiver's and
-			// name's results, so askers parked on it (DependencyResolver,
-			// property rules) resume with its pre-assign type.
+			// name's results, so askers parked on it (property rules) resume
+			// with its pre-assign type. What the target depends on is read from
+			// it too.
 			AH_VAL(parkedReadResult, pfhComposeResult(prop(slots::propertyFetchHandler), nsr, var, objectResult.raw(), propertyNameResult.raw(), scopeBeforeVar.raw(), scopeBeforeAssignEval.raw()));
 			AH_OK(nsrStoreExpressionResult(nsr, storage, var, parkedReadResult.raw()));
+			AH_VAL(targetDependencies, ahResultDependencies(parkedReadResult.raw()));
 			if (walkModeProducesTargetReadResult(mode) && !walkModeIssetSemanticsForRead(mode)) {
 				targetReadResult = std::move(parkedReadResult);
 			}
@@ -1644,6 +1692,7 @@ public:
 			t.propertyName = propertyName.raw();
 			t.targetReadResult = targetReadResult.raw();
 			t.targetChainResults = targetChainResults.raw();
+			t.dependencies = targetDependencies.raw();
 			return preparedAssignTargetNew(t);
 		}
 
@@ -1689,6 +1738,7 @@ public:
 			// needs a stored result for parked askers.
 			AH_VAL(parkedReadResult, spfhComposeResult(prop(slots::staticPropertyFetchHandler), var, classResult.raw(), propertyNameResult.raw(), scopeBeforeAssignEval.raw()));
 			AH_OK(nsrStoreExpressionResult(nsr, storage, var, parkedReadResult.raw()));
+			AH_VAL(targetDependencies, ahResultDependencies(parkedReadResult.raw()));
 			if (walkModeProducesTargetReadResult(mode) && !walkModeIssetSemanticsForRead(mode)) {
 				targetReadResult = std::move(parkedReadResult);
 			}
@@ -1698,6 +1748,7 @@ public:
 			t.propertyHolderType = propertyHolderType.raw();
 			t.targetReadResult = targetReadResult.raw();
 			t.targetChainResults = targetChainResults.raw();
+			t.dependencies = targetDependencies.raw();
 			return preparedAssignTargetNew(t);
 		}
 
@@ -1776,9 +1827,11 @@ public:
 			}
 		}
 
+		AH_VAL(targetDependencies, ahResultDependencies(varResult.raw()));
 		PreparedTarget t{PT_LC("fallback"), var, assignedExpr, beforeScope, scope.raw(), enterExpressionAssign, isAssignOp, hasYield, throwPoints.raw(), impurePoints.raw(), isAlwaysTerminating};
 		t.targetReadResult = targetReadResult.raw();
 		t.targetChainResults = targetChainResults.raw();
+		t.dependencies = targetDependencies.raw();
 		return preparedAssignTargetNew(t);
 	}
 
@@ -1800,6 +1853,9 @@ public:
 		bool isAlwaysTerminating = Z_TYPE_P(AH_TARGET(target, isAlwaysTerminating)) == IS_TRUE;
 		zv::Val assignedExpr = zv::Val::copyOf(zv::Ref(assignedExprSlot));
 		zv::Val resultVar = zv::Val::copyOf(zv::Ref(var));
+		/* $writeDependencies = [$target->getDependencies()], merged at the end;
+		 * only a list() target adds to it */
+		zv::Val writeDependencies = zv::Val::copyOf(zv::Ref(AH_TARGET(target, dependencies)));
 
 		if (UNEXPECTED(Z_TYPE_P(kind) != IS_STRING)) {
 			zend_throw_error(NULL, "phpstan_turbo: PreparedAssignTarget::$kind is not a string");
@@ -1816,7 +1872,10 @@ public:
 		} else if (zend_string_equals_literal(kindString, "staticPropertyFetch")) {
 			AH_OK(applyWriteStaticPropertyFetch(nsr, target, valueResult, assignedValueResult, storage, nodeCallback, var, assignedExpr.raw(), scope, isAssignOp, hasYield, throwPoints, impurePoints, isAlwaysTerminating));
 		} else if (zend_string_equals_literal(kindString, "list")) {
-			AH_OK(applyWriteList(nsr, valueResult, assignedValueResult, stmt, storage, nodeCallback, context, var, assignedExpr.raw(), scope, enterExpressionAssign, hasYield, throwPoints, impurePoints, isAlwaysTerminating));
+			zv::Arr listDependencies = zv::Arr::create(8);
+			listDependencies.push(writeDependencies.ref());
+			AH_OK(applyWriteList(nsr, valueResult, assignedValueResult, stmt, storage, nodeCallback, context, var, assignedExpr.raw(), scope, enterExpressionAssign, hasYield, throwPoints, impurePoints, isAlwaysTerminating, listDependencies));
+			AH_SET(writeDependencies, pt_dependencies_merge_list(listDependencies.table()));
 		} else if (zend_string_equals_literal(kindString, "existingArrayDimFetch")) {
 			AH_OK(applyWriteExistingArrayDimFetch(nsr, target, assignedValueResult, storage, nodeCallback, assignedExpr.raw(), scope, isAssignOp, resultVar));
 		} else {
@@ -1837,6 +1896,7 @@ public:
 		zv::Val typeCallback = pt_native_closure(&mixedTypeCallbackBody);
 		AH_VAL(specifyTypesCallback, pt_specified_types_empty_specify_callback());
 		pt_expression_result_args args(scope.raw(), beforeScope, resultVar.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
+		args.withDependencies(writeDependencies.raw());
 		return pt_expression_result_create(factory(), args);
 	}
 
@@ -3956,7 +4016,7 @@ private:
 
 	/* {{{ applyWrite() — the KIND_LIST branch (twin 1667) */
 
-	[[nodiscard]] bool applyWriteList(zval *nsr, zval *valueResult, zval *assignedValueResult, zval *stmt, zval *storage, zval *nodeCallback, zval *context, zval *var, zval *assignedExpr, zv::Val &scope, bool enterExpressionAssign, bool &hasYield, zv::Val &throwPoints, zv::Val &impurePoints, bool &isAlwaysTerminating)
+	[[nodiscard]] bool applyWriteList(zval *nsr, zval *valueResult, zval *assignedValueResult, zval *stmt, zval *storage, zval *nodeCallback, zval *context, zval *var, zval *assignedExpr, zv::Val &scope, bool enterExpressionAssign, bool &hasYield, zv::Val &throwPoints, zv::Val &impurePoints, bool &isAlwaysTerminating, zv::Arr &writeDependencies)
 	{
 		if (UNEXPECTED(!ahIs(var, PT_CLASS_LIST_EXPR))) {
 			pt_throw_should_not_happen();
@@ -4053,6 +4113,14 @@ private:
 				AH_OKB(ahMerge(impurePoints, points.raw()));
 			}
 			AH_OKB(pt_expression_result_is_always_terminating_or(itemResult.raw(), isAlwaysTerminating));
+			if (!keyResult.isNull()) {
+				AH_VALB(keyDependencies, ahResultDependencies(keyResult.raw()));
+				writeDependencies.push(std::move(keyDependencies));
+			} else {
+				writeDependencies.push(zv::Val::null());
+			}
+			AH_VALB(itemDependencies, ahResultDependencies(itemResult.raw()));
+			writeDependencies.push(std::move(itemDependencies));
 		}
 
 		return true;

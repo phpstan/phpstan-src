@@ -43,6 +43,16 @@ zend_string *pt_svh_static_variable = nullptr;
 	return resultImpurePoints != NULL && pt_callable_array_merge_into(impurePoints, resultImpurePoints);
 }
 
+/* $dependencies[] = $result->getDependencies(); false = pending exception */
+[[nodiscard]] bool collectDependencies(zv::Arr &dependencies, zval *result)
+{
+	zv::Val hold;
+	zval *resultDependencies = pt_expression_result_dependencies(result, hold);
+	if (UNEXPECTED(resultDependencies == NULL)) return false;
+	dependencies.push(zv::Ref(resultDependencies));
+	return true;
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -82,6 +92,7 @@ public:
 
 		zv::Arr vars = zv::Arr::empty();
 		zv::Arr variableFlows = zv::Arr::empty();
+		zv::Arr dependencies = zv::Arr::empty();
 		zval *stmtVars = ptsh::readNodeProperty(pt_svh_vars_site, stmt, PT_LC("vars"));
 		if (UNEXPECTED(stmtVars == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(stmtVars) != IS_ARRAY)) {
@@ -91,7 +102,7 @@ public:
 			/* foreach iterates the array it started with */
 			zv::Val iterated = zv::Val::copyOf(zv::Ref(stmtVars));
 			for (auto entry : zv::ArrRef(iterated.raw())) {
-				if (UNEXPECTED(!processVar(nodeScopeResolver, stmt, entry.value().deref().raw(), scopeHold, storage, nodeCallback, context, impurePoints, vars, variableFlows))) return zv::Val();
+				if (UNEXPECTED(!processVar(nodeScopeResolver, stmt, entry.value().deref().raw(), scopeHold, storage, nodeCallback, context, impurePoints, vars, variableFlows, dependencies))) return zv::Val();
 			}
 		}
 
@@ -112,9 +123,11 @@ public:
 
 		zv::Val variableFlow = pt_variable_flow_sequence_list(variableFlows.table());
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return pt_internal_statement_result_new(annotatedScope.raw(), false, false, &emptyArray, &emptyArray, impurePoints.raw(), NULL, variableFlow.raw());
+		return pt_internal_statement_result_new(annotatedScope.raw(), false, false, &emptyArray, &emptyArray, impurePoints.raw(), NULL, variableFlow.raw(), -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */
@@ -135,7 +148,7 @@ private:
 	}
 
 	/* the loop body over one static variable; false = pending exception */
-	[[nodiscard]] bool processVar(zval *nodeScopeResolver, zval *stmt, zval *staticVar, zv::Val &scope, zval *storage, zval *nodeCallback, zval *context, zv::Arr &impurePoints, zv::Arr &vars, zv::Arr &variableFlows) const
+	[[nodiscard]] bool processVar(zval *nodeScopeResolver, zval *stmt, zval *staticVar, zv::Val &scope, zval *storage, zval *nodeCallback, zval *context, zv::Arr &impurePoints, zv::Arr &vars, zv::Arr &variableFlows, zv::Arr &dependencies) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(staticVar) != IS_OBJECT)) {
 			zend_error(E_WARNING, "Attempt to read property \"var\" on %s", zend_zval_value_name(staticVar));
@@ -170,6 +183,7 @@ private:
 			if (UNEXPECTED(expressionContext.isUndef())) return false;
 			defaultExprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, defaultHold.raw(), scope.raw(), storage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(defaultExprResult.isUndef())) return false;
+			if (UNEXPECTED(!collectDependencies(dependencies, defaultExprResult.raw()))) return false;
 			zv::Val variableFlow = pt_expression_result_variable_flow(defaultExprResult.raw());
 			if (UNEXPECTED(variableFlow.isUndef())) return false;
 			variableFlows.push(std::move(variableFlow));
@@ -202,6 +216,7 @@ private:
 			if (UNEXPECTED(expressionContext.isUndef())) return false;
 			zv::Val varResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, varHold.raw(), scope.raw(), storage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(varResult.isUndef())) return false;
+			if (UNEXPECTED(!collectDependencies(dependencies, varResult.raw()))) return false;
 			if (UNEXPECTED(!mergeImpurePoints(impurePoints, varResult.raw()))) return false;
 		}
 		zv::Val exitScope = pt_mutating_scope_exit_expression_assign(Z_OBJ_P(scope.raw()), Z_OBJ_P(varHold.raw()));

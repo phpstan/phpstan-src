@@ -33,6 +33,8 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
@@ -390,7 +392,19 @@ final class MethodCallHandler implements ExprHandler
 			$scope = $scope->mergeWith($scopeBeforeArgs);
 		}
 
-		$result = $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
+		// the classes of the object, of what the call returns, of the class declaring the method and
+		// of what it can make of its arguments and the object
+		$dependencies = Dependencies::merge(
+			$varResult->getDependencies(),
+			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$argsResult->getDependencies(),
+			Dependencies::create(
+				$beforeScope->getFile(),
+				[$varResult->getType(), $preliminaryResult->getType(), ...($walkMethodReflection !== null ? DependencyTypes::ofCalledMethod($walkMethodReflection, true) : [])],
+				$walkMethodReflection !== null ? [$walkMethodReflection->getDeclaringClass()->getName()] : [],
+			),
+		);
+		$result = $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
 
 		// the var was processed above as the receiver; read its already-computed
 		// result on the original scope instead of re-walking via Scope::getType().

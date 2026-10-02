@@ -8,7 +8,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
-use function array_unique;
 use function array_values;
 
 #[AutowiredService]
@@ -32,7 +31,7 @@ final class UnresolvableTypeHelper
 			}
 
 			if ($reason !== null) {
-				$reasons[] = $reason;
+				$reasons[$reason] = $reason;
 			}
 
 			return $containsUnresolvable ? $type : $traverse($type);
@@ -42,7 +41,7 @@ final class UnresolvableTypeHelper
 			return null;
 		}
 
-		return new UnresolvableTypeResult(array_values(array_unique($reasons)));
+		return new UnresolvableTypeResult(array_values($reasons));
 	}
 
 }

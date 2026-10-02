@@ -15,6 +15,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
+use function spl_object_id;
 use function sprintf;
 use function substr;
 
@@ -32,7 +33,7 @@ final class ConditionalReturnTypeRuleHelper
 		foreach ($acceptor->getParameters() as $parameter) {
 			TypeTraverser::mapMemoized($parameter->getType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 				if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-					$conditionalTypes[] = $type;
+					$conditionalTypes[spl_object_id($type)] = $type;
 				}
 
 				return $traverse($type);
@@ -41,7 +42,7 @@ final class ConditionalReturnTypeRuleHelper
 			if ($parameter->getOutType() !== null) {
 				TypeTraverser::mapMemoized($parameter->getOutType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-						$conditionalTypes[] = $type;
+						$conditionalTypes[spl_object_id($type)] = $type;
 					}
 
 					return $traverse($type);
@@ -51,7 +52,7 @@ final class ConditionalReturnTypeRuleHelper
 			if ($parameter->getClosureThisType() !== null) {
 				TypeTraverser::mapMemoized($parameter->getClosureThisType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-						$conditionalTypes[] = $type;
+						$conditionalTypes[spl_object_id($type)] = $type;
 					}
 
 					return $traverse($type);
@@ -63,7 +64,7 @@ final class ConditionalReturnTypeRuleHelper
 
 		TypeTraverser::mapMemoized($acceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-				$conditionalTypes[] = $type;
+				$conditionalTypes[spl_object_id($type)] = $type;
 			}
 
 			return $traverse($type);

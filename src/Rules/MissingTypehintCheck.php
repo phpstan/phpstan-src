@@ -30,7 +30,6 @@ use Traversable;
 use function array_filter;
 use function array_keys;
 use function array_merge;
-use function array_unique;
 use function array_values;
 use function count;
 use function implode;
@@ -100,11 +99,13 @@ final class MissingTypehintCheck
 				return $traverse(new IntersectionType($nonArrayInner));
 			}
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-				$descriptions = array_merge(
-					$descriptions,
+				$branchDescriptions = array_merge(
 					$this->getIterableTypesWithMissingValueTypehint($type->getIf()),
 					$this->getIterableTypesWithMissingValueTypehint($type->getElse()),
 				);
+				foreach ($branchDescriptions as $description) {
+					$descriptions[$description] = $description;
+				}
 
 				return $type;
 			}
@@ -127,7 +128,8 @@ final class MissingTypehintCheck
 				}
 				$iterableValue = $type->getIterableValueType();
 				if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
-					$descriptions[] = sprintf('iterable type %s', $type->describe(VerbosityLevel::typeOnly()));
+					$description = sprintf('iterable type %s', $type->describe(VerbosityLevel::typeOnly()));
+					$descriptions[$description] = $description;
 				}
 				if ($type instanceof IntersectionType) {
 					if ($type->isList()->yes()) {
@@ -140,7 +142,7 @@ final class MissingTypehintCheck
 			return $traverse($type);
 		});
 
-		return array_values(array_unique($descriptions));
+		return array_values($descriptions);
 	}
 
 	/**

@@ -97,7 +97,7 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 				$parameters,
 				$isStatic,
 				$this->detectMethodVariadic($parameters),
-				$nativeCallMethod?->getThrowType(),
+				$nativeCallMethod !== null ? $nativeCallMethod->getThrowType() : null,
 				$templateTypeMap,
 				$isPure,
 			);

@@ -134,7 +134,7 @@ public:
 
 	/* unwrapBare(): a marker's delegate unwrapped again; an object type, or
 	 * one without template or late-resolvable types and no bare marker
-	 * in it, as is; else TypeTraverser::map() replacing the bare markers
+	 * in it, as is; else TypeTraverser::mapMemoized() replacing the bare markers
 	 * by their unwrapped delegates and keeping objects; UNDEF = pending
 	 * exception */
 	static zv::Val unwrapBare(zval *type)
@@ -156,7 +156,7 @@ public:
 		}
 		zv::Val callback = pt_type_native_callback(unwrapBareCallback, NULL, NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		return pt_type_traverser_map_of(type, callback.raw());
+		return pt_type_traverser_map_memoized_of(type, callback.raw());
 	}
 
 	/* $type instanceof self && $type->site === $this->site &&

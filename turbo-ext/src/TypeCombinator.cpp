@@ -2130,7 +2130,7 @@ public:
 		return true;
 	}
 
-	/* the body of optimizeConstantArrays()'s TypeTraverser::map() callback:
+	/* the body of optimizeConstantArrays()'s TypeTraverser::mapMemoized() callback:
 	 * a non-empty ConstantArrayType generalized to an oversized array over
 	 * the union of its (generalized) keys and values, `use (&$isOversized)`
 	 * in the holder's first state slot */
@@ -2209,7 +2209,7 @@ public:
 			zv::Val callback = pt_type_native_callback(generalizeValueCallback, NULL, NULL);
 			PT_FAIL_IF_UNDEF(callback);
 			zv::Val generalizedValueType;
-			if (UNEXPECTED(!pt_type_traverser_map(generalizedValueType.raw(), innerValueType, callback.raw()))) return zv::Val();
+			if (UNEXPECTED(!pt_type_traverser_map_memoized(generalizedValueType.raw(), innerValueType, callback.raw()))) return zv::Val();
 			zv::Val valueDescription = describe(generalizedValueType.raw(), preciseLevel);
 			zend_string *valueKey = describedKey(valueDescription);
 			if (UNEXPECTED(valueKey == NULL)) return zv::Val();
@@ -2247,7 +2247,7 @@ public:
 		return intersectWith(array.raw(), accessories);
 	}
 
-	/* the inner TypeTraverser::map() callback of the value position: an
+	/* the inner TypeTraverser::mapMemoized() callback of the value position: an
 	 * empty constant array stays, any array becomes oversized, a constant
 	 * scalar is generalized, everything else traversed */
 	static void generalizeValueCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
@@ -2373,7 +2373,7 @@ public:
 			zv::Val callback = pt_type_native_callback(generalizeOversizedCallback, &isOversized, NULL);
 			PT_FAIL_IF_UNDEF(callback);
 			zv::Val result;
-			if (UNEXPECTED(!pt_type_traverser_map(result.raw(), entry.value().raw(), callback.raw()))) return zv::Val();
+			if (UNEXPECTED(!pt_type_traverser_map_memoized(result.raw(), entry.value().raw(), callback.raw()))) return zv::Val();
 
 			if (Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) != IS_TRUE) {
 				eachIsOversized = false;

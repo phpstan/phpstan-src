@@ -112,7 +112,7 @@ final class UnusedParametersCheck
 			$typesToScan[] = $parameterReflection->getType();
 		}
 		foreach ($typesToScan as $typeToScan) {
-			TypeTraverser::map($typeToScan, static function (Type $type, callable $traverse) use (&$names): Type {
+			TypeTraverser::mapMemoized($typeToScan, static function (Type $type, callable $traverse) use (&$names): Type {
 				if ($type instanceof ConditionalTypeForParameter) {
 					$names[ltrim($type->getParameterName(), '$')] = true;
 				}

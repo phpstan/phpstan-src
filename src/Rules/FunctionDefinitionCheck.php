@@ -592,7 +592,7 @@ final class FunctionDefinitionCheck
 		$templateTypes = $templateTypeMap->getTypes();
 		if (count($templateTypes) > 0) {
 			foreach ($parametersAcceptor->getParameters() as $parameter) {
-				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+				TypeTraverser::mapMemoized($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
 					if ($type instanceof TemplateType) {
 						unset($templateTypes[$type->getName()]);
 						return $traverse($type);
@@ -604,7 +604,7 @@ final class FunctionDefinitionCheck
 
 			$returnType = $parametersAcceptor->getReturnType();
 			if ($returnType instanceof ConditionalTypeForParameter && !$returnType->isNegated()) {
-				TypeTraverser::map($returnType, static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+				TypeTraverser::mapMemoized($returnType, static function (Type $type, callable $traverse) use (&$templateTypes): Type {
 					if ($type instanceof TemplateType) {
 						unset($templateTypes[$type->getName()]);
 						return $traverse($type);

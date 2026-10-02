@@ -262,7 +262,7 @@ final class TypeUtils
 	public static function containsTemplateType(Type $type): bool
 	{
 		$containsTemplateType = false;
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$containsTemplateType): Type {
+		TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use (&$containsTemplateType): Type {
 			if ($type instanceof TemplateType) {
 				$containsTemplateType = true;
 			}

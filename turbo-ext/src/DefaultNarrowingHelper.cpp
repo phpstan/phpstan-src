@@ -13,7 +13,7 @@
  * The twin's closures are native closures: buildChainTypeReader()'s reader
  * (handed out as a real \Closure — its return type demands one), the two
  * `static fn (): bool => true` issetability callbacks, and the two
- * TypeTraverser::map() callbacks of specifyTypesFromAsserts() — the asserted
+ * TypeTraverser::map()/mapMemoized() callbacks of specifyTypesFromAsserts() — the asserted
  * type's callback captures the scope instead of the twin's $getArgType
  * closure over it (the closure is only ever called from that callback, so
  * its body runs directly and one allocation per call is saved); the template
@@ -1204,7 +1204,7 @@ public:
 					ZVAL_COPY_VALUE(&captures[1], containsUnresolvedTemplateRef.raw());
 					zv::Val templateCallback = pt_native_closure_new(&unresolvedTemplateTraverseBody, 2, captures, 1u << 1);
 					zval ignored;
-					if (UNEXPECTED(!pt_type_traverser_map(&ignored, originalType.raw(), templateCallback.raw()))) return zv::Val();
+					if (UNEXPECTED(!pt_type_traverser_map_memoized(&ignored, originalType.raw(), templateCallback.raw()))) return zv::Val();
 					zval_ptr_dtor(&ignored);
 				}
 

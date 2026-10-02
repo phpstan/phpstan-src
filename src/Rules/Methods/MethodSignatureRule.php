@@ -244,7 +244,7 @@ final class MethodSignatureRule implements Rule
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($declaringClass): Type {
+		return TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use ($declaringClass): Type {
 			if ($type instanceof GenericStaticType) {
 				if ($declaringClass->isFinal()) {
 					$changedType = $type->changeBaseClass($declaringClass)->getStaticObjectType();

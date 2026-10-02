@@ -90,7 +90,7 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 				return $callerType;
 			}
 
-			return TypeTraverser::map(
+			return TypeTraverser::mapMemoized(
 				$callerType,
 				static function (Type $type, callable $traverse) use ($dateTimeInterfaceType): Type {
 					if ($type instanceof UnionType) {

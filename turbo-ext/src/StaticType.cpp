@@ -444,15 +444,15 @@ public:
 		return method;
 	}
 
-	/* TypeTraverser::map($type, <the map callback over $this and $scope>);
+	/* TypeTraverser::mapMemoized($type, <the map callback over $this and $scope>);
 	 * UNDEF = pending exception */
 	zv::Val transformStaticType(zval *type, zval *scope) const
 	{
 		zv::Val callback = callbackHolder(pt_static_type_callbacks_map, self, scope, NULL, NULL);
-		return pt_type_traverser_map_of(type, callback.raw());
+		return pt_type_traverser_map_memoized_of(type, callback.raw());
 	}
 
-	/* the TypeTraverser::map() callback: a StaticType is rebased onto the
+	/* the TypeTraverser::mapMemoized() callback: a StaticType is rebased onto the
 	 * scope's class (the own reflection outside a class), a ThisType
 	 * downgraded to static when $this is none, the own subtracted type
 	 * subtracted, and traversed on under the recursion guard — or, in a
@@ -814,7 +814,7 @@ static void ZEND_FASTCALL callbackTransform(INTERNAL_FUNCTION_PARAMETERS)
 }
 
 /* StaticTypeCallbacks::map(Type $type, callable $traverse): Type — the
- * TypeTraverser::map() callback of transformStaticType() */
+ * TypeTraverser::mapMemoized() callback of transformStaticType() */
 static void ZEND_FASTCALL callbackMap(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *type, *traverse;

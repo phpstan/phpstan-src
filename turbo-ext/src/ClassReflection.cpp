@@ -81,7 +81,7 @@
  * ErrorTypes, and the ancestor-resolution closure becomes the loop in
  * getActiveTemplateTypeMapForAncestorResolution(); getActiveTemplateTypeMap()
  * expands its own. The one closure that must stay a callable is
- * typeMapFromList()'s TypeTraverser::map() callback, a
+ * typeMapFromList()'s TypeTraverser::mapMemoized() callback, a
  * pt_type_native_callback() holder over the `use ($map, $className)`
  * snapshot.
  */
@@ -3671,13 +3671,13 @@ public:
 				zv::Val type = tagTypeAt(types, i, entry.value());
 				if (UNEXPECTED(type.isUndef())) return zv::Val();
 
-				/* TypeTraverser::map($type, static function (Type $type, callable
+				/* TypeTraverser::mapMemoized($type, static function (Type $type, callable
 				 * $traverse) use ($map, $className): Type { ... }) */
 				zval mapState;
 				ZVAL_COPY_VALUE(&mapState, map.raw());
 				zv::Val callback = pt_type_native_callback(typeMapFromListVisitor, &mapState, className.raw());
 				if (UNEXPECTED(callback.isUndef())) return zv::Val();
-				zv::Val mapped = pt_type_traverser_map_of(type.raw(), callback.raw());
+				zv::Val mapped = pt_type_traverser_map_memoized_of(type.raw(), callback.raw());
 				if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 
 				zv::Val tagName = callOn(entry.value(), PT_LC("getname"), 0, NULL);

@@ -35,7 +35,7 @@ final class TemplateTypeHelper
 
 		$references = $type->getReferencedTemplateTypes($positionVariance);
 
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $references, $callSiteVariances, $keepErrorTypes): Type {
+		return TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use ($standins, $references, $callSiteVariances, $keepErrorTypes): Type {
 			if ($type instanceof TemplateType && !$type instanceof NarrowedSubjectType && !$type->isArgument()) {
 				$newType = $standins->getType($type->getName());
 
@@ -194,7 +194,7 @@ final class TemplateTypeHelper
 	 */
 	public static function removeFinalByKeywordOverrides(Type $type): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+		return TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof ObjectType) {
 				$type = $type->withoutFinalByKeywordOverride();
 			}

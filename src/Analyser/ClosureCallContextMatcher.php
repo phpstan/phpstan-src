@@ -57,7 +57,7 @@ final class ClosureCallContextMatcher
 		$calleeName = strtolower($callee->getName());
 		$calleeIsMethod = $callee instanceof MethodReflection;
 		$referencesCalleeTemplate = false;
-		TypeTraverser::map($askType, static function (Type $type, callable $traverse) use ($calleeName, $calleeIsMethod, &$referencesCalleeTemplate): Type {
+		TypeTraverser::mapMemoized($askType, static function (Type $type, callable $traverse) use ($calleeName, $calleeIsMethod, &$referencesCalleeTemplate): Type {
 			if ($type instanceof TemplateType) {
 				$templateScope = $type->getScope();
 				$templateFunctionName = $templateScope->getFunctionName();

@@ -4,7 +4,7 @@
  *
  * When the extension is active, PHPStan\Type\Generic\TemplateTypeHelper is
  * this class, declared under that name at activation (final, like the
- * twin). Every method is a TypeTraverser::map() over a closure of the
+ * twin). Every method is a TypeTraverser::map() or mapMemoized() over a closure of the
  * twin's — here a native body behind a PHPStanTurbo\NativeCallback holder
  * (the closure's `use` variables in the holder's state slots), run through
  * the native TypeTraverser — except generalizeInferredTemplateType(),
@@ -106,7 +106,7 @@ public:
 	}
 
 	/* removeFinalByKeywordOverrides(); UNDEF = pending exception */
-	static zv::Val removeFinalByKeywordOverrides(zval *type) { return mapWith(type, removeFinalByKeywordOverridesCallback); }
+	static zv::Val removeFinalByKeywordOverrides(zval *type) { return mapMemoizedWith(type, removeFinalByKeywordOverridesCallback); }
 
 	/* generalizeInferredTemplateType(); UNDEF = pending exception */
 	static zv::Val generalizeInferredTemplateType(zval *templateType, zval *type)
@@ -211,7 +211,7 @@ zv::Val TemplateTypeHelper::resolveTemplateTypes(zval *type, zval *standins, zva
 	uses.push(zv::Val::boolean(keepErrorTypes));
 	zv::Val callback = pt_type_native_callback(resolveTemplateTypesCallback, uses.raw(), NULL);
 	if (UNEXPECTED(callback.isUndef())) return zv::Val();
-	return map(type, callback.raw());
+	return pt_type_traverser_map_memoized_of(type, callback.raw());
 }
 
 void TemplateTypeHelper::resolveTemplateTypesCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)

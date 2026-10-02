@@ -670,7 +670,7 @@ class ArrayType implements Type
 		}
 
 		$existingArrayKeyType = $this->getIterableKeyType();
-		$keyType = TypeTraverser::map($existingArrayKeyType, static function (Type $type, callable $traverse): Type {
+		$keyType = TypeTraverser::mapMemoized($existingArrayKeyType, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof UnionType) {
 				return $traverse($type);
 			}
@@ -796,7 +796,7 @@ class ArrayType implements Type
 
 	public function changeKeyCaseArray(?int $case): Type
 	{
-		$newKeyType = TypeTraverser::map($this->keyType, static function (Type $type, callable $traverse) use ($case): Type {
+		$newKeyType = TypeTraverser::mapMemoized($this->keyType, static function (Type $type, callable $traverse) use ($case): Type {
 			if ($type instanceof UnionType) {
 				return $traverse($type);
 			}

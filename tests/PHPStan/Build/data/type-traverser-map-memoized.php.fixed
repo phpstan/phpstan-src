@@ -7,6 +7,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_merge;
+use function spl_object_id;
 
 class Foo
 {
@@ -184,6 +185,36 @@ class Foo
 
 			return $found ? $type : $traverse($type);
 		});
+	}
+
+	/**
+	 * @return array<int, Type>
+	 */
+	public function memoizedKeyedByObjectId(Type $type): array
+	{
+		$types = [];
+		TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use (&$types): Type {
+			$types[spl_object_id($type)] = $type;
+
+			return $traverse($type);
+		});
+
+		return $types;
+	}
+
+	/**
+	 * @return array<int, Type>
+	 */
+	public function keyedByObjectId(Type $type): array
+	{
+		$types = [];
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$types): Type {
+			$types[spl_object_id($type)] = $type;
+
+			return $traverse($type);
+		});
+
+		return $types;
 	}
 
 	public function notAClosure(Type $type, callable $cb): Type

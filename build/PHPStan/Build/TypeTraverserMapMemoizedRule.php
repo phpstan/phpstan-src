@@ -12,6 +12,7 @@ use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\PostDec;
 use PhpParser\Node\Expr\PostInc;
 use PhpParser\Node\Expr\PreDec;
@@ -52,6 +53,7 @@ use function str_starts_with;
  * the occurrences when it:
  * - writes to a property or declares a static variable,
  * - appends to, increments or otherwise accumulates into a variable captured by reference,
+ * - writes to a variable captured by reference keyed by spl_object_id(), which collects every instance,
  * - assigns a non-constant value to a variable captured by reference,
  * - passes a variable captured by reference to a call,
  * - reads a variable captured by reference that it also writes, because the state
@@ -249,9 +251,12 @@ final class TypeTraverserMapMemoizedRule implements Rule
 	{
 		$root = $target;
 		$appends = false;
+		$keysByObjectId = false;
 		while ($root instanceof ArrayDimFetch) {
 			if ($root->dim === null) {
 				$appends = true;
+			} elseif ($this->isObjectIdCall($root->dim)) {
+				$keysByObjectId = true;
 			}
 			$root = $root->var;
 		}
@@ -270,6 +275,9 @@ final class TypeTraverserMapMemoizedRule implements Rule
 
 		if ($appends) {
 			$reasons[] = sprintf('appends to $%s captured by reference', $name);
+		} elseif ($keysByObjectId) {
+			// collecting every instance by its id is collecting every occurrence, leave that to map()
+			$reasons[] = sprintf('writes to $%s captured by reference by spl_object_id()', $name);
 		} elseif ($target !== $root) {
 			// writing or unsetting by key
 			if ($node instanceof Assign || $node instanceof Unset_) {
@@ -296,6 +304,13 @@ final class TypeTraverserMapMemoizedRule implements Rule
 		}
 
 		return $expr->name;
+	}
+
+	private function isObjectIdCall(Expr $expr): bool
+	{
+		return $expr instanceof FuncCall
+			&& $expr->name instanceof Name
+			&& $expr->name->toLowerString() === 'spl_object_id';
 	}
 
 	private function isConstant(Expr $expr): bool

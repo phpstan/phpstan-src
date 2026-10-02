@@ -22,27 +22,31 @@ final class TypeTraverserMapMemoizedRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/type-traverser-map-memoized.php'], [
 			[
 				'Callback of TypeTraverser::map() does not depend on where or how many times a Type instance occurs. Use TypeTraverser::mapMemoized() instead.',
-				19,
+				20,
 			],
 			[
 				'Callback of TypeTraverser::map() does not depend on where or how many times a Type instance occurs. Use TypeTraverser::mapMemoized() instead.',
-				30,
+				31,
 			],
 			[
 				'Callback of TypeTraverser::map() does not depend on where or how many times a Type instance occurs. Use TypeTraverser::mapMemoized() instead.',
-				37,
+				38,
 			],
 			[
 				'Callback of TypeTraverser::map() does not depend on where or how many times a Type instance occurs. Use TypeTraverser::mapMemoized() instead.',
-				53,
+				54,
 			],
 			[
 				'Callback of TypeTraverser::mapMemoized() appends to $types captured by reference, so it might depend on where or how many times a Type instance occurs. Use TypeTraverser::map() instead.',
-				168,
+				169,
 			],
 			[
 				'Callback of TypeTraverser::mapMemoized() reads $found captured by reference that it also writes, so it might depend on where or how many times a Type instance occurs. Use TypeTraverser::map() instead.',
-				180,
+				181,
+			],
+			[
+				'Callback of TypeTraverser::mapMemoized() writes to $types captured by reference by spl_object_id(), so it might depend on where or how many times a Type instance occurs. Use TypeTraverser::map() instead.',
+				196,
 			],
 		]);
 	}

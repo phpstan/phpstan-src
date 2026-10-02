@@ -2,7 +2,6 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-use Nette\DI\Helpers;
 use Nette\Neon\Neon;
 use Nette\Utils\Strings;
 use PHPStan\Command\AnalysisResult;
@@ -81,17 +80,17 @@ final class BaselineNeonErrorFormatter
 				if (count($identifiers) > 0) {
 					foreach ($identifiers as $identifier => $identifierCount) {
 						$errorsToOutput[] = [
-							$messageKey => Helpers::escape($message),
+							$messageKey => BaselineParameterEscaper::escape($message),
 							'identifier' => $identifier,
 							'count' => $identifierCount,
-							'path' => Helpers::escape($file),
+							'path' => BaselineParameterEscaper::escape($file),
 						];
 					}
 				} else {
 					$errorsToOutput[] = [
-						$messageKey => Helpers::escape($message),
+						$messageKey => BaselineParameterEscaper::escape($message),
 						'count' => $totalCount,
-						'path' => Helpers::escape($file),
+						'path' => BaselineParameterEscaper::escape($file),
 					];
 				}
 			}

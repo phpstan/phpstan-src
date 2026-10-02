@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
 use function file_put_contents;
 use function mkdir;
@@ -53,7 +54,9 @@ final class DirectoryResultCacheValueExtensionTest extends PHPStanTestCase
 	public function testKeyIsStoredRelative(): void
 	{
 		$extension = self::getContainer()->getByType(DirectoryResultCacheValueExtension::class);
-		$key = DirectoryResultCacheValueExtension::createKey(__DIR__ . '/data', '*.php');
+		// the directory normalized like ValueDependencyCollector does it - with backslashes on Windows
+		$directory = self::getContainer()->getByType(FileHelper::class)->normalizePath(__DIR__ . '/data');
+		$key = DirectoryResultCacheValueExtension::createKey($directory, '*.php');
 
 		$this->assertSame($key, $extension->keyFromResultCache($extension->keyToResultCache($key)));
 	}

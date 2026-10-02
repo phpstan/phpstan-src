@@ -26,3 +26,7 @@ function region(): string
 {
 	return '';
 }
+
+function withThis(\Closure $callback): void
+{
+}

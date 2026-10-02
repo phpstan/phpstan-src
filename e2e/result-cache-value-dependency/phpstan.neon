@@ -38,3 +38,7 @@ services:
 		class: ResultCacheE2EValueDependency\RegionRule
 		tags:
 			- phpstan.rules.rule
+	-
+		class: ResultCacheE2EValueDependency\WithThisClosureThisExtension
+		tags:
+			- phpstan.functionParameterClosureThisExtension

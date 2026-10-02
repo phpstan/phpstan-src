@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\FunctionReflection;
@@ -29,6 +30,6 @@ interface FunctionParameterClosureTypeExtension
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool;
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, ParameterReflection $parameter, Scope $scope): ?Type;
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, ParameterReflection $parameter, Scope&DependencyTracker $scope): ?Type;
 
 }

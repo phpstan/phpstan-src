@@ -7,7 +7,8 @@ use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
 /**
  * The interface DependencyTracker can be typehinted in 2nd parameter of Rule::processNode() and
  * Collector::processNode(), and in the Scope parameter of dynamic return type extensions, dynamic
- * throw type extensions, expression type resolver extensions and parameter out type extensions:
+ * throw type extensions, expression type resolver extensions, parameter out type extensions,
+ * parameter closure type extensions and parameter closure this extensions:
  *
  * ```php
  * /**

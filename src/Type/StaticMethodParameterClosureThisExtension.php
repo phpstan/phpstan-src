@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\StaticCall;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\MethodReflection;
@@ -30,6 +31,6 @@ interface StaticMethodParameterClosureThisExtension
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool;
 
-	public function getClosureThisTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, ParameterReflection $parameter, Scope $scope): ?Type;
+	public function getClosureThisTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, ParameterReflection $parameter, Scope&DependencyTracker $scope): ?Type;
 
 }

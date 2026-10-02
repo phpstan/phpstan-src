@@ -104,7 +104,7 @@ inline zv::Val own(zval *value)
 
 /* {{{ ExpressionResult: $result->getScope() / ->getBeforeScope() /
  * ->getExpr() / ->hasYield() / ->isAlwaysTerminating() / ->getThrowPoints()
- * / ->getImpurePoints() / ->containsNullsafe() */
+ * / ->getImpurePoints() / ->containsNullsafe() / ->getDependencies() */
 
 inline zval *pt_expression_result_scope(zval *result, zv::Val &hold)
 {
@@ -144,6 +144,12 @@ inline zval *pt_expression_result_impure_points(zval *result, zv::Val &hold)
 inline bool pt_expression_result_contains_nullsafe(zval *result, bool &out)
 {
 	return ptav::readBool(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::containsNullsafe, PT_LC("containsnullsafe"), out);
+}
+
+/* $result->getDependencies(): the Dependencies or a borrowed null */
+inline zval *pt_expression_result_dependencies(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::dependencies, PT_LC("getdependencies"), hold);
 }
 
 /* }}} */
@@ -213,8 +219,8 @@ inline zval *pt_args_result_resolved_parameters_acceptor(zval *argsResult, zv::V
 }
 
 /* $argsResult->getArgResults() and the wrapped result's getScope() /
- * hasYield() / isAlwaysTerminating() / getThrowPoints() / getImpurePoints()
- * the args result forwards */
+ * hasYield() / isAlwaysTerminating() / getThrowPoints() / getImpurePoints() /
+ * getDependencies() the args result forwards */
 inline zval *pt_args_result_arg_results(zval *argsResult, zv::Val &hold)
 {
 	return ptav::read(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::argResults, PT_LC("getargresults"), hold);
@@ -263,12 +269,19 @@ inline zval *pt_args_result_impure_points(zval *argsResult, zv::Val &hold)
 	return ptav::callGetter(argsResult, PT_LC("getimpurepoints"), hold);
 }
 
+inline zval *pt_args_result_dependencies(zval *argsResult, zv::Val &hold)
+{
+	zval *expressionResult = ptav::slotOf(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::expressionResult);
+	if (EXPECTED(expressionResult != NULL)) return pt_expression_result_dependencies(expressionResult, hold);
+	return ptav::callGetter(argsResult, PT_LC("getdependencies"), hold);
+}
+
 /* }}} */
 
 /* {{{ InternalStatementResult: $result->getScope() / ->hasYield() /
  * ->isAlwaysTerminating() / ->isEndReachable() / ->getExitPoints() /
  * ->getThrowPoints() / ->getImpurePoints() / ->getEndStatements() /
- * ->getVariableFlow() */
+ * ->getVariableFlow() / ->getDependencies() */
 
 inline zval *pt_internal_statement_result_scope(zval *result, zv::Val &hold)
 {
@@ -313,6 +326,11 @@ inline zval *pt_internal_statement_result_end_statements(zval *result, zv::Val &
 inline zval *pt_internal_statement_result_variable_flow(zval *result, zv::Val &hold)
 {
 	return ptav::read(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::variableFlow, PT_LC("getvariableflow"), hold);
+}
+
+inline zval *pt_internal_statement_result_dependencies(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::dependencies, PT_LC("getdependencies"), hold);
 }
 
 /* }}} */
@@ -452,6 +470,7 @@ PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(property_holder_type, propertyHolderType, 
 PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(target_read_result, targetReadResult, "gettargetreadresult")
 PT_AV_PREPARED_ASSIGN_TARGET(target_chain_results, targetChainResults, "gettargetchainresults")
 PT_AV_PREPARED_ASSIGN_TARGET(variable_name_result, variableNameResult, "getvariablenameresult")
+PT_AV_PREPARED_ASSIGN_TARGET(dependencies, dependencies, "getdependencies")
 
 #undef PT_AV_PREPARED_ASSIGN_TARGET
 #undef PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED
@@ -611,6 +630,7 @@ PT_AV_PROCESS_CLOSURE_RESULT(gathered_return_statements, gatheredReturnStatement
 PT_AV_PROCESS_CLOSURE_RESULT(gathered_yield_statements, gatheredYieldStatements, "getgatheredyieldstatements")
 PT_AV_PROCESS_CLOSURE_RESULT(execution_ends, executionEnds, "getexecutionends")
 PT_AV_PROCESS_CLOSURE_RESULT(closure_type_impure_points, closureTypeImpurePoints, "getclosuretypeimpurepoints")
+PT_AV_PROCESS_CLOSURE_RESULT(dependencies, dependencies, "getdependencies")
 PT_AV_PROCESS_ARROW_FUNCTION_RESULT(expression_result, expressionResult, "getexpressionresult")
 PT_AV_PROCESS_ARROW_FUNCTION_RESULT(arrow_function_scope, arrowFunctionScope, "getarrowfunctionscope")
 PT_AV_PROCESS_ARROW_FUNCTION_RESULT(closure_type_throw_points, closureTypeThrowPoints, "getclosuretypethrowpoints")

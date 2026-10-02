@@ -58,14 +58,15 @@ public:
 	{
 		zval *attrGroups = ptsh::readNodeProperty(pt_ech_attr_groups_site, stmt, PT_LC("attrGroups"));
 		if (UNEXPECTED(attrGroups == NULL)) return zv::Val();
-		if (UNEXPECTED(!ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback))) return zv::Val();
+		zv::Val attributeDependencies = ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
+		if (UNEXPECTED(attributeDependencies.isUndef())) return zv::Val();
 
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
 		zval *expr = ptsh::readNodeProperty(pt_ech_expr_site, stmt, PT_LC("expr"));
 		if (UNEXPECTED(expr == NULL)) return zv::Val();
 		if (Z_TYPE_P(expr) == IS_NULL) {
-			return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, &emptyArray);
+			return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, attributeDependencies.raw());
 		}
 		zv::Val exprHold = zv::Val::copyOf(zv::Ref(expr));
 		bool resolveTemplateArguments;
@@ -74,10 +75,15 @@ public:
 		if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 		zv::Val exprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, exprHold.raw(), scope, storage, nodeCallback, expressionContext.raw());
 		if (UNEXPECTED(exprResult.isUndef())) return zv::Val();
+		zv::Val dependenciesHold;
+		zval *exprDependencies = pt_expression_result_dependencies(exprResult.raw(), dependenciesHold);
+		if (UNEXPECTED(exprDependencies == NULL)) return zv::Val();
 		zv::Val hold;
 		zval *impurePoints = pt_expression_result_impure_points(exprResult.raw(), hold);
 		if (UNEXPECTED(impurePoints == NULL)) return zv::Val();
-		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, impurePoints);
+		zv::Val dependencies = pt_dependencies_merge({attributeDependencies.raw(), exprDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, impurePoints, NULL, NULL, -1, dependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

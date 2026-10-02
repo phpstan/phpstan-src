@@ -16,6 +16,7 @@ use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -66,6 +67,7 @@ final class GlobalHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$impurePoints = [
 			new ImpurePoint(
 				$scope,
@@ -83,6 +85,7 @@ final class GlobalHandler implements StmtHandler
 			}
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($scope, $var);
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $varResult->getDependencies();
 			$variableFlows[] = VariableFlow::sequence(VariableFlowBuilder::escapeRoot($var), VariableFlowBuilder::targetRead($var, $storage, false));
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);
@@ -97,7 +100,7 @@ final class GlobalHandler implements StmtHandler
 		}
 		$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows));
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows), dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

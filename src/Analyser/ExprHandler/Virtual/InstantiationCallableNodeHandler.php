@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ExprHandler\Virtual;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -14,6 +15,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Reflection\InitializerExprContext;
@@ -59,7 +62,7 @@ final class InstantiationCallableNodeHandler implements ExprHandler
 			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 		}
 
-		return $this->expressionResultFactory->create(
+		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
@@ -71,6 +74,34 @@ final class InstantiationCallableNodeHandler implements ExprHandler
 			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->initializerExprTypeResolver->getFirstClassCallableType($expr->getOriginalNode(), InitializerExprContext::fromScope($beforeScope), $nativeTypesPromoted),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
+
+		return $result->withDependencies(Dependencies::merge(
+			$classResult !== null ? $classResult->getDependencies() : null,
+			$this->getDependencies($beforeScope, $expr, $classResult, $result),
+		));
+	}
+
+	/**
+	 * The instantiated class - named, or named by a string the type system resolved.
+	 */
+	private function getDependencies(MutatingScope $scope, InstantiationCallableNode $expr, ?ExpressionResult $classResult, ExpressionResult $result): ?Dependencies
+	{
+		$types = [];
+		$callableType = $result->getType();
+		if ($callableType->isCallable()->yes()) {
+			foreach ($callableType->getCallableParametersAcceptors($scope) as $variant) {
+				$types[] = $variant->getReturnType();
+			}
+		}
+		$class = $expr->getClass();
+		if ($class instanceof Name) {
+			return Dependencies::create($scope->getFile(), $types, [$scope->resolveName($class)]);
+		}
+		if ($classResult === null) {
+			return Dependencies::create($scope->getFile(), $types);
+		}
+
+		return Dependencies::create($scope->getFile(), $types, DependencyTypes::classNamesOfClassString($classResult->getType()));
 	}
 
 }

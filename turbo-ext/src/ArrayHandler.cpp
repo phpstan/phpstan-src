@@ -374,7 +374,31 @@ public:
 
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw());
-		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		zv::Val result = pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+
+		// Dependencies::merge($callableDependencies, ...$itemResults' dependencies):
+		// the non-null ones gathered first, so that an array whose items depend on
+		// nothing allocates nothing
+		zv::Val callableDependencies = getCallableDependencies(beforeScope, expr, itemResultsValue.raw(), result.raw());
+		if (UNEXPECTED(callableDependencies.isUndef())) return zv::Val();
+		zv::Arr dependencyList;
+		if (!callableDependencies.isNull()) {
+			dependencyList = zv::Arr::create(1);
+			dependencyList.push(std::move(callableDependencies));
+		}
+		for (auto entry : zv::ArrRef(itemResultsValue.raw())) {
+			zv::Val dependenciesHold;
+			zval *itemDependencies = pt_expression_result_dependencies(entry.value().deref().raw(), dependenciesHold);
+			if (UNEXPECTED(itemDependencies == NULL)) return zv::Val();
+			if (Z_TYPE_P(itemDependencies) == IS_NULL) continue;
+			if (dependencyList.isUndef()) dependencyList = zv::Arr::create(1);
+			dependencyList.push(zv::Ref(itemDependencies));
+		}
+		if (dependencyList.isUndef()) return result;
+		zv::Val dependencies = pt_dependencies_merge_list(dependencyList.table());
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		return pt_expression_result_with_dependencies(result.raw(), dependencies.raw());
 	}
 
 	/* Mirrors collectAbsorbedItems() */
@@ -425,6 +449,78 @@ public:
 
 private:
 	zend_object *self;
+
+	/* Mirrors getCallableDependencies(): an array that may be a callable -
+	 * `[Foo::class, 'method']` - depends on what calling it returns; PHP null
+	 * for nothing, UNDEF = pending exception */
+	static zv::Val getCallableDependencies(zval *scope, zval *expr, zval *itemResults, zval *result)
+	{
+		zval *items = exprItems(expr);
+		if (UNEXPECTED(items == NULL)) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(items) != IS_ARRAY)) {
+			zend_type_error("count(): Argument #1 ($value) must be of type Countable|array, %s given", zend_zval_value_name(items));
+			return zv::Val();
+		}
+		if (zend_hash_num_elements(Z_ARRVAL_P(items)) != 2) return zv::Val::null();
+		zval *first = zend_hash_index_find(Z_ARRVAL_P(items), 0);
+		if (first == NULL) return zv::Val::null();
+		ZVAL_DEREF(first);
+		if (Z_TYPE_P(first) == IS_NULL) return zv::Val::null();
+
+		// a class constant, property default or enum case value is not called where it is
+		// declared - testing it would reflect whatever class its first item happens to name
+		bool inClass;
+		if (UNEXPECTED(!pt_mutating_scope_is_in_class(Z_OBJ_P(scope), inClass))) return zv::Val();
+		if (inClass) {
+			zv::Val function = pt_mutating_scope_get_function(Z_OBJ_P(scope));
+			if (UNEXPECTED(function.isUndef())) return zv::Val();
+			if (function.isNull()) {
+				bool inAnonymousFunction;
+				if (UNEXPECTED(!pt_mutating_scope_is_in_anonymous_function(Z_OBJ_P(scope), inAnonymousFunction))) return zv::Val();
+				if (!inAnonymousFunction) {
+					zv::Val functionCallStack = pt_type_call(Z_OBJ_P(scope), PT_LC("getfunctioncallstack"), 0, NULL);
+					if (UNEXPECTED(functionCallStack.isUndef())) return zv::Val();
+					if (Z_TYPE_P(functionCallStack.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(functionCallStack.raw())) == 0) return zv::Val::null();
+				}
+			}
+		}
+
+		if (UNEXPECTED(Z_TYPE_P(first) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Attempt to read property \"value\" on %s", zend_zval_value_name(first));
+			return zv::Val();
+		}
+		zval *value = itemValue(first);
+		if (UNEXPECTED(value == NULL)) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(value) != IS_OBJECT)) {
+			zend_type_error("spl_object_id(): Argument #1 ($object) must be of type object, %s given", zend_zval_value_name(value));
+			return zv::Val();
+		}
+		zval *firstItemResult = zend_hash_index_find(Z_ARRVAL_P(itemResults), Z_OBJ_HANDLE_P(value));
+		if (firstItemResult == NULL || Z_TYPE_P(firstItemResult) == IS_NULL) return zv::Val::null();
+		zv::Val firstItemType = pt_expression_result_get_type(firstItemResult);
+		if (UNEXPECTED(firstItemType.isUndef())) return zv::Val();
+		zend_long isClassString = pt_type_call_trinary(Z_OBJ_P(firstItemType.raw()), PT_LC("isclassstring"), 0, NULL);
+		if (UNEXPECTED(isClassString < 0)) return zv::Val();
+		if (isClassString != PT_TRI_YES) return zv::Val::null();
+
+		zv::Val arrayType = pt_expression_result_get_type(result);
+		if (UNEXPECTED(arrayType.isUndef())) return zv::Val();
+		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(arrayType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
+		if (UNEXPECTED(isCallable < 0)) return zv::Val();
+		if (isCallable == PT_TRI_NO) return zv::Val::null();
+
+		zv::Val variants = pt_type_call(Z_OBJ_P(arrayType.raw()), PT_LC("getcallableparametersacceptors"), 1, scope);
+		if (UNEXPECTED(variants.isUndef())) return zv::Val();
+		zv::Arr returnTypes = zv::Arr::empty();
+		for (auto entry : zv::ArrRef(variants.raw())) {
+			zv::Val returnTypeHold;
+			zval *returnType = pt_parameters_acceptor_return_type(entry.value().deref().raw(), returnTypeHold);
+			if (UNEXPECTED(returnType == NULL)) return zv::Val();
+			returnTypes.push(zv::Ref(returnType));
+		}
+
+		return pt_dependencies_create_in(scope, returnTypes.raw());
+	}
 
 	/* $itemResults[spl_object_id($node)] = $result; $variableFlows[] =
 	 * $result->getVariableFlow(); (for a value: the escape of a by-reference

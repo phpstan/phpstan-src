@@ -17,6 +17,8 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -66,11 +68,18 @@ final class InstanceofHandler implements ExprHandler
 		$classResult = null;
 		if (!$expr->class instanceof Name) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$dependencies = Dependencies::merge(
+				$exprResult->getDependencies(),
+				$classResult->getDependencies(),
+				Dependencies::create($beforeScope->getFile(), classNames: DependencyTypes::classNamesOfClassString($classResult->getType())),
+			);
 			$scope = $classResult->getScope();
 			$hasYield = $hasYield || $classResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $classResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $classResult->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $classResult->isAlwaysTerminating();
+		} else {
+			$dependencies = Dependencies::merge($exprResult->getDependencies(), Dependencies::create($beforeScope->getFile(), classNames: [$beforeScope->resolveName($expr->class)]));
 		}
 
 		// When the class side is written as a Name (self / static / parent / a
@@ -201,6 +210,7 @@ final class InstanceofHandler implements ExprHandler
 
 				return (new SpecifiedTypes([], []))->setRootExpr($expr);
 			},
+			dependencies: $dependencies,
 		);
 	}
 

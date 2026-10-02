@@ -20,6 +20,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableLivenessResolver;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -63,10 +65,11 @@ final class FunctionHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
+		$dependencies = [];
+		$dependencies[] = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, , $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
 
-		$this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $stmt->params, $scope, $storage, $nodeCallback);
+		$dependencies[] = $this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $stmt->params, $scope, $storage, $nodeCallback);
 
 		if ($stmt->returnType !== null) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt->returnType, $scope, $storage);
@@ -99,6 +102,7 @@ final class FunctionHandler implements StmtHandler
 			throw new ShouldNotHappenException();
 		}
 
+		$dependencies[] = Dependencies::create($scope->getFile(), DependencyTypes::ofDeclaration($functionReflection, true));
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new InFunctionNode($functionReflection, $stmt), $functionScope, $storage);
 
 		$gatheredReturnStatements = [];
@@ -148,6 +152,7 @@ final class FunctionHandler implements StmtHandler
 			});
 			try {
 				$internalStatementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
+				$dependencies[] = $internalStatementResult->getDependencies();
 				$statementResult = $internalStatementResult->toPublic();
 			} finally {
 				$nodeScopeResolver->popNodeGatherer();
@@ -172,7 +177,7 @@ final class FunctionHandler implements StmtHandler
 		// function_exists() narrowing that may refer to that function must be forgotten
 		$scope = $scope->invalidateExistenceCheckExpressions(['function_exists'], $functionReflection->getName());
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

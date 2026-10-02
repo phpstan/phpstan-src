@@ -47,6 +47,26 @@ zv::Val getStartLine(zval *node)
 	return pt_call_method_cached(pt_swh_get_start_line_site, Z_OBJ_P(node), PT_LC("getstartline"), 0, NULL);
 }
 
+/* $dependencies[] = $result->getDependencies() of an ExpressionResult /
+ * an InternalStatementResult; false = pending exception */
+[[nodiscard]] bool pushExpressionDependencies(zv::Arr &dependencies, zval *result)
+{
+	zv::Val hold;
+	zval *resultDependencies = pt_expression_result_dependencies(result, hold);
+	if (UNEXPECTED(resultDependencies == NULL)) return false;
+	dependencies.push(zv::Ref(resultDependencies));
+	return true;
+}
+
+[[nodiscard]] bool pushStatementDependencies(zv::Arr &dependencies, zval *result)
+{
+	zv::Val hold;
+	zval *resultDependencies = pt_internal_statement_result_dependencies(result, hold);
+	if (UNEXPECTED(resultDependencies == NULL)) return false;
+	dependencies.push(zv::Ref(resultDependencies));
+	return true;
+}
+
 /* $caseNode->name of a case list element: a node's property, or — for an
  * element a hand-built Switch_ holds that is no object — the engine's
  * warning and null (NULL = the warning turned into an exception) */
@@ -86,6 +106,7 @@ public:
 	/* Mirrors processStmt(). */
 	zv::Val processStmt(zval *nodeScopeResolver, zval *stmt, zval *entryScope, zval *storage, zval *nodeCallback, zval *context) const
 	{
+		zv::Arr dependencies = zv::Arr::empty();
 		zv::Arr caseFlows = zv::Arr::empty();
 		bool resolveTemplateArguments;
 		if (UNEXPECTED(!pt_statement_context_should_resolve_template_arguments(context, resolveTemplateArguments))) return zv::Val();
@@ -99,6 +120,7 @@ public:
 			if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 			condResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, subject, entryScope, storage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(condResult.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pushExpressionDependencies(dependencies, condResult.raw()))) return zv::Val();
 		}
 		zv::Val scope;
 		{
@@ -179,6 +201,7 @@ public:
 				if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 				zv::Val caseResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, caseCond.raw(), scopeForBranches.raw(), storage, nodeCallback, expressionContext.raw());
 				if (UNEXPECTED(caseResult.isUndef())) return zv::Val();
+				if (UNEXPECTED(!pushExpressionDependencies(dependencies, caseResult.raw()))) return zv::Val();
 				zval *caseScope;
 				zv::Val caseScopeHold;
 				caseScope = pt_expression_result_scope(caseResult.raw(), caseScopeHold);
@@ -261,6 +284,7 @@ public:
 			}
 			zv::Val branchScopeResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, caseNode, caseStmtsHold.raw(), branchScope.raw(), storage, nodeCallback, context);
 			if (UNEXPECTED(branchScopeResult.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pushStatementDependencies(dependencies, branchScopeResult.raw()))) return zv::Val();
 			{
 				zval *caseCondNow = ptsh::readNodeProperty(pt_swh_case_cond_site, caseNode, PT_LC("cond"));
 				if (UNEXPECTED(caseCondNow == NULL)) return zv::Val();
@@ -409,7 +433,9 @@ public:
 		if (UNEXPECTED(condFlow.isUndef())) return zv::Val();
 		zv::Val variableFlow = pt_variable_flow_switch(condFlow.raw(), caseFlows.raw(), hasDefaultCase);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
-		return pt_internal_statement_result_new(finalScope.raw(), hasYield, alwaysTerminating, exitPointsForOuterLoop.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw());
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(finalScope.raw(), hasYield, alwaysTerminating, exitPointsForOuterLoop.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw(), -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

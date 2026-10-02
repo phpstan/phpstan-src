@@ -11,6 +11,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -44,7 +45,9 @@ final class BlockHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$result = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
+		$dependencies[] = $result->getDependencies();
 		// like a loop body, the variable flow keeps the block optional whatever
 		// polluteScopeWithBlock says: a write inside it does not make an
 		// earlier write of the variable dead
@@ -62,6 +65,7 @@ final class BlockHandler implements StmtHandler
 			impurePoints: $result->getImpurePoints(),
 			endStatements: $result->getEndStatements(),
 			variableFlow: $variableFlow,
+			dependencies: Dependencies::merge(...$dependencies),
 		);
 	}
 

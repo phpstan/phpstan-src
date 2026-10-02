@@ -18,6 +18,7 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NoopExpressionNode;
@@ -59,6 +60,7 @@ final class ExpressionHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$preAnnotationScope = $scope;
 		$stmtScope = $scope;
 		if ($stmt->expr instanceof Expr\Throw_) {
@@ -80,6 +82,7 @@ final class ExpressionHandler implements StmtHandler
 		});
 		try {
 			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $result->getDependencies();
 			if ($stmt->expr instanceof Expr\Throw_) {
 				// the @var-changed-type node fires now that the thrown expression is stored
 				$result = $result->withScope($result->getScope()->addTemplateArgumentConstraints($this->statementsHandler->emitVarTagChangedNode($nodeScopeResolver, $preAnnotationScope, $storage, $stmt, $stmt->expr->expr, $nodeCallback)));
@@ -126,9 +129,9 @@ final class ExpressionHandler implements StmtHandler
 		if ($statementType instanceof NeverType && $statementType->isExplicit()) {
 			return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: true, exitPoints: [
 				new InternalStatementExitPoint($stmt, $scope),
-			], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $result->getVariableFlow());
+			], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $result->getVariableFlow(), dependencies: Dependencies::merge(...$dependencies));
 		}
-		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $result->getVariableFlow());
+		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $result->getVariableFlow(), dependencies: Dependencies::merge(...$dependencies));
 	}
 
 	/**

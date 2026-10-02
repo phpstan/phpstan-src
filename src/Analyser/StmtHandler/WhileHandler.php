@@ -17,6 +17,7 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BreaklessWhileLoopNode;
@@ -236,6 +237,7 @@ final class WhileHandler implements StmtHandler
 			// the body may run or not whatever the condition says: a write in
 			// it does not make an earlier write dead, and a usage in it counts
 			variableFlow: VariableFlow::loop($bodyCondResult->getVariableFlow(), $finalScopeResult->getVariableFlow(), null, false, true),
+			dependencies: Dependencies::merge($bodyCondResult->getDependencies(), $finalScopeResult->getDependencies()),
 		);
 	}
 

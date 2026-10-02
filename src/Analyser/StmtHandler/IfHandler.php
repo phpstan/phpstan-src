@@ -13,6 +13,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -49,10 +50,12 @@ final class IfHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$entryScope = $scope;
 		$flowBranches = [];
 		$elseFlow = null;
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+		$dependencies[] = $condResult->getDependencies();
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$conditionType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 		$ifAlwaysTrue = $conditionType->isTrue()->yes();
@@ -64,6 +67,7 @@ final class IfHandler implements StmtHandler
 		$alwaysTerminating = true;
 		$hasYield = $condResult->hasYield();
 		$branchScopeStatementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $condResult->getTruthyScope(), $storage, $nodeCallback, $context);
+		$dependencies[] = $branchScopeStatementResult->getDependencies();
 		$flowBranches[] = [$condResult->getVariableFlow(), $branchScopeStatementResult->getVariableFlow()];
 		if (!$conditionType->isTrue()->no()) {
 			$exitPoints = $branchScopeStatementResult->getExitPoints();
@@ -88,11 +92,13 @@ final class IfHandler implements StmtHandler
 		$condScope = $scope;
 		foreach ($stmt->elseifs as $elseif) {
 			$condResult = $nodeScopeResolver->processExprNode($stmt, $elseif->cond, $condScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $condResult->getDependencies();
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $elseif, $scope, $storage);
 			$elseIfConditionType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 			$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
 			$branchScopeStatementResult = $nodeScopeResolver->processStmtNodesInternal($elseif, $elseif->stmts, $condResult->getTruthyScope(), $storage, $nodeCallback, $context);
+			$dependencies[] = $branchScopeStatementResult->getDependencies();
 			$flowBranches[] = [$condResult->getVariableFlow(), $branchScopeStatementResult->getVariableFlow()];
 			if (
 				!$ifAlwaysTrue
@@ -133,6 +139,7 @@ final class IfHandler implements StmtHandler
 		} else {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt->else, $scope, $storage);
 			$branchScopeStatementResult = $nodeScopeResolver->processStmtNodesInternal($stmt->else, $stmt->else->stmts, $scope, $storage, $nodeCallback, $context);
+			$dependencies[] = $branchScopeStatementResult->getDependencies();
 			$elseFlow = $branchScopeStatementResult->getVariableFlow();
 			if (!$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
 				$exitPoints = array_merge($exitPoints, $branchScopeStatementResult->getExitPoints());
@@ -165,7 +172,7 @@ final class IfHandler implements StmtHandler
 		foreach (array_reverse($flowBranches) as [$conditionFlow, $branchFlow]) {
 			$elseFlow = VariableFlow::conditional($conditionFlow, $branchFlow, $elseFlow);
 		}
-		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, endStatements: $endStatements, variableFlow: $elseFlow);
+		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, endStatements: $endStatements, variableFlow: $elseFlow, dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

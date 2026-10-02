@@ -17,6 +17,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -70,7 +72,7 @@ final class MethodCallableNodeHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
 		}
 
-		return $this->expressionResultFactory->create(
+		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
@@ -82,6 +84,39 @@ final class MethodCallableNodeHandler implements ExprHandler
 			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->resolveType($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope, $expr, $varResult),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
+
+		return $result->withDependencies(Dependencies::merge(
+			$varResult->getDependencies(),
+			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$this->getDependencies($beforeScope, $expr, $varResult, $result),
+		));
+	}
+
+	/**
+	 * The classes of the object, of the class declaring the method and of what calling it returns.
+	 */
+	private function getDependencies(MutatingScope $scope, MethodCallableNode $expr, ExpressionResult $varResult, ExpressionResult $result): ?Dependencies
+	{
+		$types = [];
+		$callableType = $result->getType();
+		if ($callableType->isCallable()->yes()) {
+			foreach ($callableType->getCallableParametersAcceptors($scope) as $variant) {
+				$types[] = $variant->getReturnType();
+			}
+		}
+		$calledOnType = $varResult->getType();
+		$types[] = $calledOnType;
+		$classNames = [];
+		$name = $expr->getName();
+		if ($name instanceof Identifier) {
+			$methodReflection = $scope->getMethodReflection($calledOnType, $name->toString());
+			if ($methodReflection !== null) {
+				$classNames[] = $methodReflection->getDeclaringClass()->getName();
+				$types = [...$types, ...DependencyTypes::ofCalledMethod($methodReflection, true)];
+			}
+		}
+
+		return Dependencies::create($scope->getFile(), $types, $classNames);
 	}
 
 	private function resolveType(MutatingScope $scope, MethodCallableNode $expr, ExpressionResult $varResult): Type

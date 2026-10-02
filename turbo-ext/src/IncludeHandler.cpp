@@ -10,7 +10,8 @@
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, MutatingScope,
  * InternalThrowPoint, ImpurePoint, VariableFlow, DefaultNarrowingHelper and
- * the Type kernel are called through their direct entries.
+ * the Type kernel are called through their direct entries;
+ * IncludedFilePathResolver stays PHP (the cached method site below).
  */
 
 #include "support.h"
@@ -19,6 +20,7 @@
 namespace slots = ptdecl::IncludeHandler::slot;
 namespace sigs = ptdecl::IncludeHandler::sig;
 #include "SimpleExprHandlers.h"
+#include "TypeOps.h"
 
 zend_class_entry *pt_ce_include_handler = nullptr;
 
@@ -38,6 +40,38 @@ zend_string *pt_inh_require = nullptr;
 constexpr zend_long pt_inh_type_include = 1;
 constexpr zend_long pt_inh_type_include_once = 2;
 
+pt_method_site pt_inh_resolve_site;
+
+/* $includedFilePathResolver->resolve($path, $scope) */
+zv::Val resolveIncludedFilePath(zval *includedFilePathResolver, zval *path, zval *scope)
+{
+	zv::Args argv{path, scope};
+	return pt_call_method_cached(pt_inh_resolve_site, Z_OBJ_P(includedFilePathResolver), PT_LC("resolve"), 2, argv);
+}
+
+/* is_file($path) — the internal function through its zend_function
+ * (persistent: resolved once); false = pending exception */
+[[nodiscard]] bool isFile(zval *path, bool &out)
+{
+	static zend_function *fn = nullptr;
+	if (UNEXPECTED(fn == nullptr)) {
+		fn = (zend_function *) zend_hash_str_find_ptr(EG(function_table), PT_LC("is_file"));
+		if (UNEXPECTED(fn == nullptr)) {
+			zend_throw_error(NULL, "phpstan_turbo: is_file() is not available");
+			return false;
+		}
+	}
+	zval result;
+	zend_call_known_function(fn, NULL, NULL, &result, 1, path, NULL);
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(&result);
+		return false;
+	}
+	out = zend_is_true(&result);
+	zval_ptr_dtor(&result);
+	return true;
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -53,10 +87,11 @@ public:
 	explicit IncludeHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper) const
+	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *includedFilePathResolver) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
+		pt_write_slot(self, slots::includedFilePathResolver, includedFilePathResolver);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -92,6 +127,11 @@ public:
 		zv::Val throwPoint = pt_internal_throw_point_create_implicit(resultScope.raw(), expr);
 		if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
 
+		// an included file is a dependency with no symbol to reflect: nothing in it has to be
+		// declared for the analysis to change when it is deleted
+		zv::Val includedFiles = getIncludedFiles(exprResult.raw(), beforeScope);
+		if (UNEXPECTED(includedFiles.isUndef())) return zv::Val();
+
 		zv::Val variableFlow;
 		{
 			zv::Val readAll = pt_variable_flow_all_read_all();
@@ -114,8 +154,16 @@ public:
 
 		zv::Val typeCallback = pt_native_closure(&ptse::mixedTypeBody<IncludeHandler>);
 		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<IncludeHandler>, self, expr);
+		zv::Val includeDependencies = pt_dependencies_create_in(beforeScope, NULL, NULL, NULL, includedFiles.raw());
+		if (UNEXPECTED(includeDependencies.isUndef())) return zv::Val();
+		zv::Val dependenciesHold;
+		zval *exprDependencies = pt_expression_result_dependencies(exprResult.raw(), dependenciesHold);
+		if (UNEXPECTED(exprDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({exprDependencies, includeDependencies.raw()});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(resultScope.raw(), beforeScope, expr, child.hasYield, child.isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw());
+		args.withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 
@@ -127,6 +175,33 @@ public:
 
 private:
 	zend_object *self;
+
+	/* the existing files the include can include: every candidate path of
+	 * every constant string the included expression can be; UNDEF = pending
+	 * exception */
+	zv::Val getIncludedFiles(zval *exprResult, zval *beforeScope) const
+	{
+		zv::Arr includedFiles = zv::Arr::empty();
+		zv::Val type = pt_expression_result_get_type(exprResult);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		zv::Val constantStrings = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("getconstantstrings"), 0, NULL);
+		if (UNEXPECTED(constantStrings.isUndef())) return zv::Val();
+		for (auto entry : zv::ArrRef(constantStrings.raw())) {
+			zval *constantString = entry.value().deref().raw();
+			zv::Val value = pt_type_op(Z_OBJ_P(constantString), PT_OP_GET_VALUE, 0, NULL);
+			if (UNEXPECTED(value.isUndef())) return zv::Val();
+			zv::Val candidatePaths = resolveIncludedFilePath(OBJ_PROP_NUM(self, slots::includedFilePathResolver), value.raw(), beforeScope);
+			if (UNEXPECTED(candidatePaths.isUndef())) return zv::Val();
+			for (auto candidate : zv::ArrRef(candidatePaths.raw())) {
+				zval *candidatePath = candidate.value().deref().raw();
+				bool exists;
+				if (UNEXPECTED(!isFile(candidatePath, exists))) return zv::Val();
+				if (!exists) continue;
+				includedFiles.push(zv::Ref(candidatePath));
+			}
+		}
+		return zv::Val(std::move(includedFiles));
+	}
 };
 
 } // namespace phpstanturbo
@@ -149,9 +224,9 @@ PT_MINIT_REGISTRATION(pt_register_include_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expressionResultFactory, *defaultNarrowingHelper;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper)) RETURN_THROWS();
-		IncludeHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper);
+		zval *expressionResultFactory, *defaultNarrowingHelper, *includedFilePathResolver;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper, includedFilePathResolver)) RETURN_THROWS();
+		IncludeHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper, includedFilePathResolver);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

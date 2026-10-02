@@ -23,6 +23,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CoalesceExpressionNode;
 use PHPStan\Node\Variable\VariableWrite;
@@ -314,6 +315,7 @@ final class AssignOpHandler implements ExprHandler
 			typeCallback: $typeCallback,
 			specifyTypesCallback: $specifyTypesCallback,
 			createTypesCallback: $createTypesCallback,
+			dependencies: Dependencies::merge($rhsResult->getDependencies(), $assignResult->getDependencies()),
 		);
 	}
 

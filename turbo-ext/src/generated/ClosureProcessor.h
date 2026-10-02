@@ -84,25 +84,26 @@ inline constexpr char strings[] =
 	"byRefUses\0" /* 1031 */
 	"walkByRefInvocation\0" /* 1041 */
 	"byRefEntryTypes\0" /* 1061 */
-	"processDeferredByRefClosureBody\0" /* 1077 */
-	"callableParameters\0" /* 1109 */
-	"enterWithCapturedUses\0" /* 1128 */
-	"source\0" /* 1150 */
-	"assignByRefUses\0" /* 1157 */
-	"closureScope\0" /* 1173 */
-	"gatheredReturnStatementsWithScope\0" /* 1186 */
-	"gatheredYieldStatementsWithScope\0" /* 1220 */
-	"executionEnds\0" /* 1253 */
-	"throwPoints\0" /* 1267 */
-	"impurePoints\0" /* 1279 */
-	"invalidateExpressions\0" /* 1292 */
-	"refineClosureNodeScope\0" /* 1314 */
-	"invalidatedExpressions\0" /* 1337 */
-	"uses\0" /* 1360 */
-	"processImmediatelyCalledCallable\0" /* 1365 */
-	"PhpParser\\Node\\Expr\\ArrowFunction\0" /* 1398 */
-	"PHPStan\\Analyser\\ProcessArrowFunctionResult\0" /* 1432 */
-	"processArrowFunctionNode"; /* 1476 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 1077 */
+	"processDeferredByRefClosureBody\0" /* 1109 */
+	"callableParameters\0" /* 1141 */
+	"enterWithCapturedUses\0" /* 1160 */
+	"source\0" /* 1182 */
+	"assignByRefUses\0" /* 1189 */
+	"closureScope\0" /* 1205 */
+	"gatheredReturnStatementsWithScope\0" /* 1218 */
+	"gatheredYieldStatementsWithScope\0" /* 1252 */
+	"executionEnds\0" /* 1285 */
+	"throwPoints\0" /* 1299 */
+	"impurePoints\0" /* 1311 */
+	"invalidateExpressions\0" /* 1324 */
+	"refineClosureNodeScope\0" /* 1346 */
+	"invalidatedExpressions\0" /* 1369 */
+	"uses\0" /* 1392 */
+	"processImmediatelyCalledCallable\0" /* 1397 */
+	"PhpParser\\Node\\Expr\\ArrowFunction\0" /* 1430 */
+	"PHPStan\\Analyser\\ProcessArrowFunctionResult\0" /* 1464 */
+	"processArrowFunctionNode"; /* 1508 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 10), /* __construct $container */
 	reg::packed(48, 0, 72), /* __construct $expressionResultFactory */
@@ -155,41 +156,41 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(680, 0, 688), /* processDeferredByRefClosureBody $storage */
 	reg::packed(729, MAY_BE_CALLABLE), /* processDeferredByRefClosureBody $nodeCallback */
 	reg::packed(1061, MAY_BE_ARRAY), /* processDeferredByRefClosureBody $byRefEntryTypes */
-	reg::packed(471, MAY_BE_VOID), /* processDeferredByRefClosureBody return */
+	reg::packed(471, MAY_BE_NULL, 1077), /* processDeferredByRefClosureBody return */
 	reg::packed(643, 0, 649), /* enterWithCapturedUses $scope */
 	reg::packed(610, 0, 615), /* enterWithCapturedUses $expr */
-	reg::packed(1109, MAY_BE_ARRAY), /* enterWithCapturedUses $callableParameters */
+	reg::packed(1141, MAY_BE_ARRAY), /* enterWithCapturedUses $callableParameters */
 	reg::packed(963, 0, 649), /* enterWithCapturedUses $creationScope */
 	reg::packed(471, 0, 649), /* enterWithCapturedUses return */
 	reg::packed(643, 0, 649), /* assignByRefUses $scope */
-	reg::packed(1150, 0, 649), /* assignByRefUses $source */
+	reg::packed(1182, 0, 649), /* assignByRefUses $source */
 	reg::packed(1031, MAY_BE_ARRAY), /* assignByRefUses $byRefUses */
 	reg::packed(471, 0, 649), /* assignByRefUses return */
-	reg::packed(1173, 0, 649), /* refineClosureNodeScope $closureScope */
+	reg::packed(1205, 0, 649), /* refineClosureNodeScope $closureScope */
 	reg::packed(643, 0, 649), /* refineClosureNodeScope $scope */
 	reg::packed(610, 0, 615), /* refineClosureNodeScope $expr */
-	reg::packed(1186, MAY_BE_ARRAY), /* refineClosureNodeScope $gatheredReturnStatementsWithScope */
-	reg::packed(1220, MAY_BE_ARRAY), /* refineClosureNodeScope $gatheredYieldStatementsWithScope */
-	reg::packed(1253, MAY_BE_ARRAY), /* refineClosureNodeScope $executionEnds */
-	reg::packed(1267, MAY_BE_ARRAY), /* refineClosureNodeScope $throwPoints */
-	reg::packed(1279, MAY_BE_ARRAY), /* refineClosureNodeScope $impurePoints */
-	reg::packed(1292, MAY_BE_ARRAY), /* refineClosureNodeScope $invalidateExpressions */
+	reg::packed(1218, MAY_BE_ARRAY), /* refineClosureNodeScope $gatheredReturnStatementsWithScope */
+	reg::packed(1252, MAY_BE_ARRAY), /* refineClosureNodeScope $gatheredYieldStatementsWithScope */
+	reg::packed(1285, MAY_BE_ARRAY), /* refineClosureNodeScope $executionEnds */
+	reg::packed(1299, MAY_BE_ARRAY), /* refineClosureNodeScope $throwPoints */
+	reg::packed(1311, MAY_BE_ARRAY), /* refineClosureNodeScope $impurePoints */
+	reg::packed(1324, MAY_BE_ARRAY), /* refineClosureNodeScope $invalidateExpressions */
 	reg::packed(680, 0, 688), /* refineClosureNodeScope $storage */
 	reg::packed(471, 0, 649), /* refineClosureNodeScope return */
 	reg::packed(643, 0, 649), /* processImmediatelyCalledCallable $scope */
-	reg::packed(1337, MAY_BE_ARRAY), /* processImmediatelyCalledCallable $invalidatedExpressions */
-	reg::packed(1360, MAY_BE_ARRAY), /* processImmediatelyCalledCallable $uses */
+	reg::packed(1369, MAY_BE_ARRAY), /* processImmediatelyCalledCallable $invalidatedExpressions */
+	reg::packed(1392, MAY_BE_ARRAY), /* processImmediatelyCalledCallable $uses */
 	reg::packed(471, 0, 649), /* processImmediatelyCalledCallable return */
 	reg::packed(532, 0, 550), /* processArrowFunctionNode $nodeScopeResolver */
 	reg::packed(585, 0, 590), /* processArrowFunctionNode $stmt */
-	reg::packed(610, 0, 1398), /* processArrowFunctionNode $expr */
+	reg::packed(610, 0, 1430), /* processArrowFunctionNode $expr */
 	reg::packed(643, 0, 649), /* processArrowFunctionNode $scope */
 	reg::packed(680, 0, 688), /* processArrowFunctionNode $storage */
 	reg::packed(729, MAY_BE_CALLABLE), /* processArrowFunctionNode $nodeCallback */
 	reg::packed(785, MAY_BE_NULL, 798), /* processArrowFunctionNode $passedToType */
 	reg::packed(816, MAY_BE_NULL, 798, false, false, 835), /* processArrowFunctionNode $nativePassedToType */
 	reg::packed(742, MAY_BE_NULL, 750, false, false, 835), /* processArrowFunctionNode $context */
-	reg::packed(471, 0, 1432), /* processArrowFunctionNode return */
+	reg::packed(471, 0, 1464), /* processArrowFunctionNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -202,12 +203,12 @@ inline constexpr sigtab::Sig processClosureNode = { { 878 /* processClosureNode 
 inline constexpr sigtab::Sig processClosureNodeInternal = { { 897 /* processClosureNodeInternal */, 8, 17, 9, 26, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig processByRefInvocation = { { 991 /* processByRefInvocation */, 8, 27, 8, 35, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig walkByRefInvocation = { { 1041 /* walkByRefInvocation */, 8, 36, 8, 44, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processDeferredByRefClosureBody = { { 1077 /* processDeferredByRefClosureBody */, 6, 45, 6, 51, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterWithCapturedUses = { { 1128 /* enterWithCapturedUses */, 4, 52, 4, 56, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig assignByRefUses = { { 1157 /* assignByRefUses */, 3, 57, 3, 60, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig refineClosureNodeScope = { { 1314 /* refineClosureNodeScope */, 10, 61, 10, 71, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processImmediatelyCalledCallable = { { 1365 /* processImmediatelyCalledCallable */, 3, 72, 3, 75, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processArrowFunctionNode = { { 1476 /* processArrowFunctionNode */, 7, 76, 9, 85, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processDeferredByRefClosureBody = { { 1109 /* processDeferredByRefClosureBody */, 6, 45, 6, 51, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterWithCapturedUses = { { 1160 /* enterWithCapturedUses */, 4, 52, 4, 56, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig assignByRefUses = { { 1189 /* assignByRefUses */, 3, 57, 3, 60, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig refineClosureNodeScope = { { 1346 /* refineClosureNodeScope */, 10, 61, 10, 71, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processImmediatelyCalledCallable = { { 1397 /* processImmediatelyCalledCallable */, 3, 72, 3, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processArrowFunctionNode = { { 1508 /* processArrowFunctionNode */, 7, 76, 9, 85, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ClosureProcessor

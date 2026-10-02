@@ -96,6 +96,7 @@ final class PostIncHandler implements ExprHandler
 			// post-increment evaluates to the variable's pre-mutation value
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $varResult->getNativeType() : $varResult->getType()),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $varResult->getDependencies(),
 		);
 	}
 

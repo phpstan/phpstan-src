@@ -99,6 +99,31 @@ zend_long reflectionTrinary(zval *methodReflection, pt_method_reflection_member 
 
 /* }}} */
 
+/* {{{ the dependencies of the call */
+
+pt_method_site pt_mch_of_called_method_site;
+
+/* DependencyTypes::ofCalledMethod($methodReflection, $withAssertsAndSelfOut); UNDEF = pending exception */
+zv::Val dependencyTypesOfCalledMethod(zval *methodReflection, bool withAssertsAndSelfOut)
+{
+	zv::Args argv{methodReflection, withAssertsAndSelfOut};
+	return pt_call_static_cached(pt_mch_of_called_method_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofcalledmethod"), 2, argv);
+}
+
+/* $methodReflection->getDeclaringClass()->getName(); UNDEF = pending exception */
+zv::Val methodDeclaringClassName(zval *methodReflection)
+{
+	zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_DECLARING_CLASS);
+	if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+	if (UNEXPECTED(Z_TYPE_P(declaringClass.raw()) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(declaringClass.raw()));
+		return zv::Val();
+	}
+	return pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
+}
+
+/* }}} */
+
 } // namespace
 
 namespace phpstanturbo {
@@ -578,7 +603,44 @@ public:
 			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 		}
 
-		zv::Val result = pt_expression_result_finalize(preliminaryResult.raw(), currentScope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw());
+		// the classes of the object, of what the call returns, of the class declaring the method and
+		// of what it can make of its arguments and the object
+		zv::Val dependencies;
+		{
+			zv::Val varType = pt_expression_result_get_type(varResult.raw());
+			if (UNEXPECTED(varType.isUndef())) return zv::Val();
+			zv::Val resultType = pt_expression_result_get_type(preliminaryResult.raw());
+			if (UNEXPECTED(resultType.isUndef())) return zv::Val();
+			zv::Arr types = zv::Arr::create(2);
+			types.push(varType.ref());
+			types.push(resultType.ref());
+			zv::Arr classNames = zv::Arr::empty();
+			if (!methodReflection.isNull()) {
+				zv::Val calledMethodTypes = dependencyTypesOfCalledMethod(methodReflection.raw(), true);
+				if (UNEXPECTED(calledMethodTypes.isUndef())) return zv::Val();
+				for (auto entry : zv::ArrRef(calledMethodTypes.raw())) {
+					types.push(entry.value().deref());
+				}
+				zv::Val className = methodDeclaringClassName(methodReflection.raw());
+				if (UNEXPECTED(className.isUndef())) return zv::Val();
+				classNames.push(std::move(className));
+			}
+			zv::Val varDependenciesHold, nameDependenciesHold, argsDependenciesHold;
+			zval *varDependencies = pt_expression_result_dependencies(varResult.raw(), varDependenciesHold);
+			if (UNEXPECTED(varDependencies == NULL)) return zv::Val();
+			zval *nameDependencies = NULL;
+			if (!nameResult.isNull()) {
+				nameDependencies = pt_expression_result_dependencies(nameResult.raw(), nameDependenciesHold);
+				if (UNEXPECTED(nameDependencies == NULL)) return zv::Val();
+			}
+			zval *argsDependencies = pt_args_result_dependencies(argsResult.raw(), argsDependenciesHold);
+			if (UNEXPECTED(argsDependencies == NULL)) return zv::Val();
+			zv::Val ownDependencies = pt_dependencies_create_in(beforeScope, types.raw(), classNames.raw());
+			if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+			dependencies = pt_dependencies_merge({varDependencies, nameDependencies, argsDependencies, ownDependencies.raw()});
+			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		}
+		zv::Val result = pt_expression_result_finalize(preliminaryResult.raw(), currentScope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw(), dependencies.raw());
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 
 		// the var was processed above as the receiver; read its already-computed

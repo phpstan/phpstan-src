@@ -22,6 +22,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableLivenessResolver;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\ExecutionEndNode;
@@ -72,10 +74,11 @@ final class ClassMethodHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
+		$dependencies = [];
+		$dependencies[] = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
 
-		$this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $stmt->params, $scope, $storage, $nodeCallback);
+		$dependencies[] = $this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $stmt->params, $scope, $storage, $nodeCallback);
 
 		if ($stmt->returnType !== null) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt->returnType, $scope, $storage);
@@ -130,10 +133,12 @@ final class ClassMethodHandler implements StmtHandler
 				if ($param->getDocComment() !== null) {
 					$phpDoc = $param->getDocComment()->getText();
 				}
+				$promotedNativeType = $param->type !== null ? ParserNodeTypeToPHPStanType::resolve($param->type, $classReflection) : null;
+				$dependencies[] = Dependencies::create($methodScope->getFile(), [$promotedNativeType, $phpDocParameterTypes[$param->var->name] ?? null]);
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassPropertyNode(
 					$param->var->name,
 					$param->flags,
-					$param->type !== null ? ParserNodeTypeToPHPStanType::resolve($param->type, $classReflection) : null,
+					$promotedNativeType,
 					null,
 					$phpDoc,
 					$phpDocParameterTypes[$param->var->name] ?? null,
@@ -146,7 +151,7 @@ final class ClassMethodHandler implements StmtHandler
 					false,
 					$classReflection,
 				), $methodScope, $storage);
-				$this->propertyHooksProcessor->processPropertyHooks(
+				$dependencies[] = $this->propertyHooksProcessor->processPropertyHooks(
 					$nodeScopeResolver,
 					$stmt,
 					$param->type,
@@ -166,6 +171,7 @@ final class ClassMethodHandler implements StmtHandler
 			if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
 				throw new ShouldNotHappenException();
 			}
+			$dependencies[] = Dependencies::create($methodScope->getFile(), [...DependencyTypes::ofDeclaration($methodReflection, true), $methodReflection->getSelfOutType()]);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new InClassMethodNode($classReflection, $methodReflection, $stmt), $methodScope, $storage);
 		}
 
@@ -229,6 +235,7 @@ final class ClassMethodHandler implements StmtHandler
 				});
 				try {
 					$internalStatementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
+					$dependencies[] = $internalStatementResult->getDependencies();
 					$statementResult = $internalStatementResult->toPublic();
 				} finally {
 					$nodeScopeResolver->popNodeGatherer();
@@ -288,7 +295,7 @@ final class ClassMethodHandler implements StmtHandler
 			}
 		}
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

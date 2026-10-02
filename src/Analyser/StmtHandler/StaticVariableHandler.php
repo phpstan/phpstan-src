@@ -15,6 +15,7 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -53,6 +54,7 @@ final class StaticVariableHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$impurePoints = [
 			new ImpurePoint(
 				$scope,
@@ -73,6 +75,7 @@ final class StaticVariableHandler implements StmtHandler
 			$defaultExprResult = null;
 			if ($var->default !== null) {
 				$defaultExprResult = $nodeScopeResolver->processExprNode($stmt, $var->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+				$dependencies[] = $defaultExprResult->getDependencies();
 				$variableFlows[] = $defaultExprResult->getVariableFlow();
 				$impurePoints = array_merge($impurePoints, $defaultExprResult->getImpurePoints());
 			}
@@ -80,6 +83,7 @@ final class StaticVariableHandler implements StmtHandler
 			$scope = $scope->enterExpressionAssign($var->var);
 			$variableFlows[] = VariableFlow::escape($var->var->name);
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $varResult->getDependencies();
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 			$scope = $scope->exitExpressionAssign($var->var);
 
@@ -103,7 +107,7 @@ final class StaticVariableHandler implements StmtHandler
 			$scope = $scope->addConditionalExpressions($exprString, $holders);
 		}
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows));
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows), dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

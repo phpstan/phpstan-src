@@ -2,90 +2,30 @@
 
 namespace PHPStan\Dependency;
 
-use PhpParser\Comment\Doc;
 use PhpParser\Node;
-use PhpParser\Node\Expr\Array_;
-use PhpParser\Node\Expr\ArrayDimFetch;
-use PhpParser\Node\Expr\Closure;
-use PhpParser\Node\Name;
-use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Analyser\NamespaceUsesTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\ClassNotFoundException;
-use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
-use PHPStan\File\IncludedFilePathResolver;
-use PHPStan\Node\ClassPropertyNode;
-use PHPStan\Node\FunctionCallableNode;
-use PHPStan\Node\InClassMethodNode;
-use PHPStan\Node\InClassNode;
-use PHPStan\Node\InFunctionNode;
-use PHPStan\Node\InPropertyHookNode;
-use PHPStan\Node\InstantiationCallableNode;
-use PHPStan\Node\MethodCallableNode;
-use PHPStan\Node\StaticMethodCallableNode;
-use PHPStan\Node\VirtualNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\ExtendedParameterReflection;
-use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Type\ClosureType;
-use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\Type;
 use function array_key_exists;
-use function count;
+use function array_values;
 use function get_class;
-use function in_array;
-use function is_file;
+use function is_string;
 use function spl_object_id;
+use function str_starts_with;
 
 #[AutowiredService]
 final class DependencyResolver
 {
 
-	private const PROFILE_VAR_TAGS = 1;
+	private const PROFILE_EXPORT = 1;
 
-	private const PROFILE_CHAIN = 2;
-
-	private const PROFILE_EXPORT = 4;
-
-	private const PROFILE_NAME_SCOPE = 8;
-
-	/** Node classes the branch chain in collectNodeDependencies() reacts to */
-	private const CHAIN_NODE_TYPES = [
-		Node\Stmt\Class_::class,
-		Node\Stmt\Interface_::class,
-		Node\Stmt\Enum_::class,
-		InClassMethodNode::class,
-		InPropertyHookNode::class,
-		ClassPropertyNode::class,
-		InFunctionNode::class,
-		Closure::class,
-		Node\Expr\ArrowFunction::class,
-		Node\Expr\FuncCall::class,
-		Node\Expr\MethodCall::class,
-		Node\Expr\PropertyFetch::class,
-		Node\Expr\StaticCall::class,
-		Node\Expr\ClassConstFetch::class,
-		Node\Expr\ConstFetch::class,
-		Node\Expr\StaticPropertyFetch::class,
-		Node\Expr\New_::class,
-		Node\Stmt\Trait_::class,
-		Node\Stmt\TraitUse::class,
-		Node\Expr\Instanceof_::class,
-		Node\Expr\Include_::class,
-		Node\Stmt\Catch_::class,
-		ArrayDimFetch::class,
-		Foreach_::class,
-		Array_::class,
-		StaticMethodCallableNode::class,
-		MethodCallableNode::class,
-		FunctionCallableNode::class,
-		InstantiationCallableNode::class,
-	];
+	private const PROFILE_NAME_SCOPE = 2;
 
 	/**
 	 * Node classes ExportedNodeResolver::resolve() reacts to. A class member is not among them: it is
@@ -108,7 +48,7 @@ final class DependencyResolver
 		Node\Stmt\GroupUse::class,
 	];
 
-	/** @var array<string, array<int, ClassReflection|FunctionReflection|ConstantReflection>> reflections keyed by spl_object_id() */
+	/** @var array<string, array<int, ClassReflection>> for the whole process */
 	private array $classDependencies = [];
 
 	/** @var array<class-string, int> */
@@ -120,20 +60,26 @@ final class DependencyResolver
 
 	public function __construct(
 		private FileHelper $fileHelper,
-		private IncludedFilePathResolver $includedFilePathResolver,
 		private ReflectionProvider $reflectionProvider,
 		private ExportedNodeResolver $exportedNodeResolver,
-		private FileTypeMapper $fileTypeMapper,
+		private PackageDependencyResolver $packageDependencyResolver,
 	)
 	{
 		$this->nameScopeTracker = new NamespaceUsesTracker();
 	}
 
 	/**
-	 * Null when the node depends on nothing and exports nothing, which is most nodes - the caller
-	 * then has nothing to record and skips asking an empty NodeDependencies about it.
+	 * Whether resolveExportedNode() can do anything with a node of this class.
 	 */
-	public function resolveDependencies(Node $node, Scope $scope): ?NodeDependencies
+	public function canExportNode(Node $node): bool
+	{
+		return ($this->nodeProfiles[get_class($node)] ??= $this->resolveNodeProfile($node)) !== 0;
+	}
+
+	/**
+	 * What the node declares, so that the result cache notices when what a file declares changes.
+	 */
+	public function resolveExportedNode(Node $node, Scope $scope): ?RootExportedNode
 	{
 		// The exported nodes written to the result cache have to record the same PHPDoc scope the
 		// restore computes when it re-reads the file, so both go through the tracker. The nodes
@@ -150,587 +96,125 @@ final class DependencyResolver
 			$this->nameScopeTracker->enterNode($node);
 		}
 
-		// Keyed by spl_object_id(), so that a reflection collected again - every level of a class hierarchy
-		// repeats the interfaces it inherits, and the classes a node references share most of their
-		// ancestors - is kept only once instead of being resolved to its file and package once more.
-		$dependenciesReflections = [];
-		$dependenciesFilePaths = [];
-
-		if (($nodeProfile & self::PROFILE_VAR_TAGS) !== 0 && $node instanceof Node\Stmt) {
-			$this->extractStmtVarTags($node, $scope, $dependenciesReflections);
-		}
-
-		if (($nodeProfile & self::PROFILE_CHAIN) !== 0) {
-			$this->collectNodeDependencies($node, $scope, $dependenciesReflections, $dependenciesFilePaths);
-		}
-
 		// A function declared inside another function is not supported (function.inner), and the
 		// restore does not look inside function bodies for exported nodes (ExportedNodeVisitor):
 		// exporting it here would make every edit of its file look like a symbol disappeared.
-		$exportedNode = ($nodeProfile & self::PROFILE_EXPORT) !== 0
-			&& !($node instanceof Node\Stmt\Function_ && $scope->getFunction() !== null)
-			? $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNamespaceUses())
-			: null;
-
-		if ($dependenciesReflections === [] && $dependenciesFilePaths === [] && $exportedNode === null) {
+		if (($nodeProfile & self::PROFILE_EXPORT) === 0 || ($node instanceof Node\Stmt\Function_ && $scope->getFunction() !== null)) {
 			return null;
 		}
 
-		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $exportedNode, $dependenciesFilePaths);
+		return $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNamespaceUses());
 	}
 
 	/**
-	 * The node-kind branches. Only entered when resolveNodeProfile() says a branch can match.
+	 * The files and the Composer packages declaring what the analysed file depends on - what the
+	 * InternalStatementResult of its statements depends on.
 	 *
-	 * @param array<ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
-	 * @param list<string> $dependenciesFilePaths
+	 * @param array<string, true> $analysedFiles
 	 */
-	private function collectNodeDependencies(Node $node, Scope $scope, array &$dependenciesReflections, array &$dependenciesFilePaths): void
+	public function resolveFileDependencies(?Dependencies $dependencies, array $analysedFiles): ResolvedDependencies
 	{
-		if ($node instanceof Node\Stmt\Class_) {
-			if (isset($node->namespacedName)) {
-				$this->addClassToDependencies($node->namespacedName->toString(), $dependenciesReflections);
-			}
-			if ($node->extends !== null) {
-				$this->addClassToDependencies($node->extends->toString(), $dependenciesReflections);
-			}
-			foreach ($node->implements as $className) {
-				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
-			}
-		} elseif ($node instanceof Node\Stmt\Interface_) {
-			if ($node->namespacedName !== null) {
-				$this->addClassToDependencies($node->namespacedName->toString(), $dependenciesReflections);
-			}
-			foreach ($node->extends as $className) {
-				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
-			}
-		} elseif ($node instanceof Node\Stmt\Enum_) {
-			if ($node->namespacedName !== null) {
-				$this->addClassToDependencies($node->namespacedName->toString(), $dependenciesReflections);
-			}
-			foreach ($node->implements as $className) {
-				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
-			}
-		} elseif ($node instanceof InClassMethodNode) {
-			$nativeMethod = $node->getMethodReflection();
-			$this->extractThrowType($nativeMethod->getThrowType(), $dependenciesReflections);
-			$this->extractFromParametersAcceptor($nativeMethod, $dependenciesReflections);
-			foreach ($nativeMethod->getAsserts()->getAll() as $assertTag) {
-				foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-				foreach ($assertTag->getOriginalType()->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-			if ($nativeMethod->getSelfOutType() !== null) {
-				foreach ($nativeMethod->getSelfOutType()->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-		} elseif ($node instanceof InPropertyHookNode) {
-			$nativeMethod = $node->getHookReflection();
-			$this->extractThrowType($nativeMethod->getThrowType(), $dependenciesReflections);
-			$this->extractFromParametersAcceptor($nativeMethod, $dependenciesReflections);
-		} elseif ($node instanceof ClassPropertyNode) {
-			$nativeType = $node->getNativeType();
-			if ($nativeType !== null) {
-				foreach ($nativeType->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-			$phpDocType = $node->getPhpDocType();
-			if ($phpDocType !== null) {
-				foreach ($phpDocType->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-		} elseif ($node instanceof InFunctionNode) {
-			$functionReflection = $node->getFunctionReflection();
-			$this->extractThrowType($functionReflection->getThrowType(), $dependenciesReflections);
+		if ($dependencies === null) {
+			return new ResolvedDependencies([], [], [], []);
+		}
 
-			$this->extractFromParametersAcceptor($functionReflection, $dependenciesReflections);
-			foreach ($functionReflection->getAsserts()->getAll() as $assertTag) {
-				foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-				foreach ($assertTag->getOriginalType()->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-		} elseif ($node instanceof Closure || $node instanceof Node\Expr\ArrowFunction) {
-			$closureType = $scope->getType($node);
-			if ($closureType instanceof ClosureType) {
-				foreach ($closureType->getParameters() as $parameter) {
-					$referencedClasses = $parameter->getType()->getReferencedClasses();
-					foreach ($referencedClasses as $referencedClass) {
-						$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-					}
+		// what each file depends on, in the order it was found: a class by its name, expanded to it and
+		// its ancestors once below, however many times it was found, and a function or a constant
+		/** @var array<string, array<string, string|FunctionReflection|ConstantReflection>> $foundByFile */
+		$foundByFile = [];
+		/** @var array<string, array<int, true>> $typesByFile */
+		$typesByFile = [];
+		/** @var array<string, array<int, ClassReflection>> $usedTraitsByFile */
+		$usedTraitsByFile = [];
+		/** @var array<string, string> $fileDependencies */
+		$fileDependencies = [];
+		$dependencies->walk(static function (string $file, array $types, array $classNames, array $reflections, array $filePaths, array $usedTraits) use (&$foundByFile, &$typesByFile, &$usedTraitsByFile, &$fileDependencies): void {
+			foreach ($types as $type) {
+				$typeId = spl_object_id($type);
+				if (isset($typesByFile[$file][$typeId])) {
+					continue;
 				}
 
-				$returnTypeReferencedClasses = $closureType->getReturnType()->getReferencedClasses();
-				foreach ($returnTypeReferencedClasses as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				$typesByFile[$file][$typeId] = true;
+				foreach ($type->getReferencedClasses() as $className) {
+					$foundByFile[$file]['c' . $className] ??= $className;
 				}
 			}
-		} elseif ($node instanceof Node\Expr\FuncCall) {
-			$functionName = $node->name;
-			if ($functionName instanceof Node\Name) {
-				try {
-					$functionReflection = $this->getFunctionReflection($functionName, $scope);
-					$dependenciesReflections[spl_object_id($functionReflection)] = $functionReflection;
-
-					foreach ($functionReflection->getVariants() as $functionVariant) {
-						foreach ($functionVariant->getParameters() as $parameter) {
-							if ($parameter->getOutType() !== null) {
-								foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
-									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-								}
-							}
-							if ($parameter->getClosureThisType() === null) {
-								continue;
-							}
-							foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-							}
-						}
-					}
-
-					foreach ($functionReflection->getAsserts()->getAll() as $assertTag) {
-						foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
-							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-						}
-						foreach ($assertTag->getOriginalType()->getReferencedClasses() as $referencedClass) {
-							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-						}
-					}
-				} catch (FunctionNotFoundException) {
-					// pass
-				}
-			} else {
-				$calledType = $scope->getType($functionName);
-				if ($calledType->isCallable()->yes()) {
-					$variants = $calledType->getCallableParametersAcceptors($scope);
-					foreach ($variants as $variant) {
-						$referencedClasses = $variant->getReturnType()->getReferencedClasses();
-						foreach ($referencedClasses as $referencedClass) {
-							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-						}
-
-						foreach ($variant->getParameters() as $parameter) {
-							if (!$parameter instanceof ExtendedParameterReflection) {
-								continue;
-							}
-							if ($parameter->getOutType() !== null) {
-								foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
-									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-								}
-							}
-							if ($parameter->getClosureThisType() === null) {
-								continue;
-							}
-							foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-							}
-						}
-					}
-				}
-			}
-
-			$returnType = $scope->getType($node);
-			foreach ($returnType->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-			}
-		} elseif ($node instanceof Node\Expr\MethodCall) {
-			$calledOnType = $scope->getType($node->var);
-			$classNames = $calledOnType->getReferencedClasses();
 			foreach ($classNames as $className) {
-				$this->addClassToDependencies($className, $dependenciesReflections);
+				$foundByFile[$file]['c' . $className] ??= $className;
 			}
+			foreach ($reflections as $reflection) {
+				$foundByFile[$file]['r' . spl_object_id($reflection)] = $reflection;
+			}
+			foreach ($filePaths as $filePath) {
+				$fileDependencies[$filePath] = $filePath;
+			}
+			foreach ($usedTraits as $usedTrait) {
+				$usedTraitsByFile[$file][spl_object_id($usedTrait)] = $usedTrait;
+			}
+		});
 
-			$returnType = $scope->getType($node);
-			foreach ($returnType->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-			}
-
-			if ($node->name instanceof Node\Identifier) {
-				$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->toString());
-				if ($methodReflection !== null) {
-					$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
-					foreach ($methodReflection->getVariants() as $methodVariant) {
-						foreach ($methodVariant->getParameters() as $parameter) {
-							if ($parameter->getOutType() !== null) {
-								foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
-									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-								}
-							}
-							if ($parameter->getClosureThisType() === null) {
-								continue;
-							}
-							foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-							}
-						}
-					}
-
-					foreach ($methodReflection->getAsserts()->getAll() as $assertTag) {
-						foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
-							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-						}
-						foreach ($assertTag->getOriginalType()->getReferencedClasses() as $referencedClass) {
-							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-						}
-					}
-
-					if ($methodReflection->getSelfOutType() !== null) {
-						foreach ($methodReflection->getSelfOutType()->getReferencedClasses() as $referencedClass) {
-							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-						}
-					}
-				}
-			}
-		} elseif ($node instanceof Node\Expr\PropertyFetch) {
-			$fetchedOnType = $scope->getType($node->var);
-			$classNames = $fetchedOnType->getReferencedClasses();
-			foreach ($classNames as $className) {
-				$this->addClassToDependencies($className, $dependenciesReflections);
-			}
-
-			$propertyType = $scope->getType($node);
-			foreach ($propertyType->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-			}
-
-			if ($node->name instanceof Node\Identifier) {
-				$propertyReflection = $scope->getInstancePropertyReflection($fetchedOnType, $node->name->toString());
-				if ($propertyReflection !== null) {
-					$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
-				}
-			}
-		} elseif ($node instanceof Node\Expr\StaticCall) {
-			if ($node->class instanceof Node\Name) {
-				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
-			} else {
-				foreach ($scope->getType($node->class)->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-
-			$returnType = $scope->getType($node);
-			foreach ($returnType->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-			}
-
-			if ($node->name instanceof Node\Identifier) {
-				if ($node->class instanceof Node\Name) {
-					$className = $scope->resolveName($node->class);
-					if ($this->reflectionProvider->hasClass($className)) {
-						$methodClassReflection = $this->reflectionProvider->getClass($className);
-						if ($methodClassReflection->hasMethod($node->name->toString())) {
-							$methodReflection = $methodClassReflection->getMethod($node->name->toString(), $scope);
-							$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
-							foreach ($methodReflection->getVariants() as $methodVariant) {
-								foreach ($methodVariant->getParameters() as $parameter) {
-									if ($parameter->getOutType() !== null) {
-										foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
-											$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-										}
-									}
-									if ($parameter->getClosureThisType() === null) {
-										continue;
-									}
-									foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-									}
-								}
-							}
-						}
-					}
-				} else {
-					$methodReflection = $scope->getMethodReflection($scope->getType($node->class), $node->name->toString());
-					if ($methodReflection !== null) {
-						$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
-						foreach ($methodReflection->getVariants() as $methodVariant) {
-							foreach ($methodVariant->getParameters() as $parameter) {
-								if ($parameter->getOutType() !== null) {
-									foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
-										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-									}
-								}
-								if ($parameter->getClosureThisType() === null) {
-									continue;
-								}
-								foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-								}
-							}
-						}
-					}
-				}
-			}
-		} elseif ($node instanceof Node\Expr\ClassConstFetch) {
-			if ($node->class instanceof Node\Name) {
-				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
-			} else {
-				foreach ($scope->getType($node->class)->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-
-			$returnType = $scope->getType($node);
-			foreach ($returnType->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-			}
-
-			if ($node->name instanceof Node\Identifier && $node->name->toLowerString() !== 'class') {
-				if ($node->class instanceof Node\Name) {
-					$className = $scope->resolveName($node->class);
-					if ($this->reflectionProvider->hasClass($className)) {
-						$constantClassReflection = $this->reflectionProvider->getClass($className);
-						if ($constantClassReflection->hasConstant($node->name->toString())) {
-							$constantReflection = $constantClassReflection->getConstant($node->name->toString());
-							$this->addClassToDependencies($constantReflection->getDeclaringClass()->getName(), $dependenciesReflections);
-						}
-					}
-				} else {
-					$constantReflection = $scope->getConstantReflection($scope->getType($node->class), $node->name->toString());
-					if ($constantReflection !== null) {
-						$this->addClassToDependencies($constantReflection->getDeclaringClass()->getName(), $dependenciesReflections);
-					}
-				}
-			}
-		} elseif ($node instanceof Node\Expr\ConstFetch) {
-			$constantName = $node->name;
-			if (
-				!in_array($constantName->toLowerString(), ['true', 'false', 'null'], true)
-				&& $this->reflectionProvider->hasConstant($constantName, $scope)
-			) {
-				$constantReflection = $this->reflectionProvider->getConstant($constantName, $scope);
-				$dependenciesReflections[spl_object_id($constantReflection)] = $constantReflection;
-			}
-		} elseif ($node instanceof Node\Expr\StaticPropertyFetch) {
-			if ($node->class instanceof Node\Name) {
-				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
-			} else {
-				foreach ($scope->getType($node->class)->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-
-			$returnType = $scope->getType($node);
-			foreach ($returnType->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-			}
-
-			if ($node->name instanceof Node\Identifier) {
-				if ($node->class instanceof Node\Name) {
-					$className = $scope->resolveName($node->class);
-					if ($this->reflectionProvider->hasClass($className)) {
-						$propertyClassReflection = $this->reflectionProvider->getClass($className);
-						if ($propertyClassReflection->hasStaticProperty($node->name->toString())) {
-							$propertyReflection = $propertyClassReflection->getStaticProperty($node->name->toString());
-							$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
-						}
-					}
-				} else {
-					$propertyReflection = $scope->getStaticPropertyReflection($scope->getType($node->class), $node->name->toString());
-					if ($propertyReflection !== null) {
-						$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
-					}
-				}
-			}
-		} elseif ($node instanceof Node\Expr\New_) {
-			if ($node->class instanceof Node\Name) {
-				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
-			} elseif ($node->class instanceof Node\Expr) {
-				// new $class(), where the class is named by a string the type system resolved and no name
-				// node exists to read it from - the same shape StaticCall and ClassConstFetch already
-				// handle. The type of the whole expression is the instantiated class.
-				foreach ($scope->getType($node)->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+		/** @var array<string, array<int, ClassReflection|FunctionReflection|ConstantReflection>> $reflectionsByFile */
+		$reflectionsByFile = [];
+		foreach ($foundByFile as $file => $found) {
+			$fileReflections = [];
+			foreach ($found as $item) {
+				if (is_string($item)) {
+					$fileReflections += $this->getClassDependencies($item);
+					continue;
 				}
 
-				foreach ($this->getClassNamesFromClassString($scope->getType($node->class)) as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
+				$fileReflections[spl_object_id($item)] = $item;
 			}
-		} elseif ($node instanceof Node\Stmt\Trait_ && $node->namespacedName !== null) {
-			try {
-				$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
-
-				foreach ($classReflection->getRequireImplementsTags() as $implementsTag) {
-					foreach ($implementsTag->getType()->getReferencedClasses() as $referencedClass) {
-						if (!$this->reflectionProvider->hasClass($referencedClass)) {
-							continue;
-						}
-
-						$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-					}
-				}
-			} catch (ClassNotFoundException) {
-				// pass
-			}
-		} elseif ($node instanceof Node\Stmt\TraitUse) {
-			foreach ($node->traits as $traitName) {
-				$this->addClassToDependencies($traitName->toString(), $dependenciesReflections);
-			}
-
-			$docComment = $node->getDocComment();
-			if ($docComment !== null) {
-				$usesTags = $this->fileTypeMapper->getResolvedPhpDoc(
-					$scope->getFile(),
-					$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-					$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-					null,
-					$docComment->getText(),
-				)->getUsesTags();
-				foreach ($usesTags as $usesTag) {
-					foreach ($usesTag->getType()->getReferencedClasses() as $referencedClass) {
-						$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-					}
-				}
-			}
-		} elseif ($node instanceof Node\Expr\Instanceof_) {
-			if ($node->class instanceof Name) {
-				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
-			} else {
-				// $x instanceof $class - the same string-named class as in the New_ arm above
-				foreach ($this->getClassNamesFromClassString($scope->getType($node->class)) as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-		} elseif ($node instanceof Node\Expr\Include_) {
-			// An included file is a dependency with no symbol to reflect: nothing in it has to be
-			// declared for the including file's analysis to change when it is deleted.
-			foreach ($scope->getType($node->expr)->getConstantStrings() as $constantString) {
-				foreach ($this->includedFilePathResolver->resolve($constantString->getValue(), $scope) as $candidatePath) {
-					if (!is_file($candidatePath)) {
-						continue;
-					}
-
-					$dependenciesFilePaths[] = $candidatePath;
-				}
-			}
-		} elseif ($node instanceof Node\Stmt\Catch_) {
-			foreach ($node->types as $type) {
-				$this->addClassToDependencies($scope->resolveName($type), $dependenciesReflections);
-			}
-		} elseif ($node instanceof ArrayDimFetch && $node->dim !== null) {
-			$varType = $scope->getType($node->var);
-			$dimType = $scope->getType($node->dim);
-
-			foreach ($varType->getOffsetValueType($dimType)->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-			}
-		} elseif ($node instanceof Foreach_) {
-			$exprType = $scope->getType($node->expr);
-			if ($node->keyVar !== null) {
-
-				foreach ($scope->getIterableKeyType($exprType)->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-
-			foreach ($scope->getIterableValueType($exprType)->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-			}
-		} elseif (
-			$node instanceof Array_
-			&& $this->considerArrayForCallableTest($scope, $node)
-		) {
-			$arrayType = $scope->getType($node);
-			if (!$arrayType->isCallable()->no()) {
-				foreach ($arrayType->getCallableParametersAcceptors($scope) as $variant) {
-					$referencedClasses = $variant->getReturnType()->getReferencedClasses();
-					foreach ($referencedClasses as $referencedClass) {
-						$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-					}
-				}
-			}
-		} elseif ($node instanceof StaticMethodCallableNode) {
-			$this->addCallableDependencies(new Node\Expr\StaticCall($node->getClass(), $node->getName()), $scope, $dependenciesReflections);
-		} elseif ($node instanceof MethodCallableNode) {
-			$this->addCallableDependencies(new Node\Expr\MethodCall($node->getVar(), $node->getName()), $scope, $dependenciesReflections);
-		} elseif ($node instanceof FunctionCallableNode) {
-			$this->addCallableDependencies(new Node\Expr\FuncCall($node->getName()), $scope, $dependenciesReflections);
-		} elseif ($node instanceof InstantiationCallableNode) {
-			$this->addCallableDependencies(new Node\Expr\New_($node->getClass()), $scope, $dependenciesReflections);
-		}
-	}
-
-	public function resolveUsedTraitDependencies(InClassNode $inClassNode): NodeDependencies
-	{
-		$dependenciesReflections = [];
-		foreach ($inClassNode->getClassReflection()->getTraits(true) as $trait) {
-			$dependenciesReflections[] = $trait;
+			$reflectionsByFile[$file] = $fileReflections;
 		}
 
-		return new NodeDependencies($this->fileHelper, $dependenciesReflections, null);
-	}
+		$packages = [];
+		$classReflections = [];
+		foreach ($reflectionsByFile as $file => $reflections) {
+			foreach ($reflections as $id => $reflection) {
+				if (!$reflection instanceof ClassReflection) {
+					continue;
+				}
 
-	private function considerArrayForCallableTest(Scope $scope, Array_ $arrayNode): bool
-	{
-		$items = $arrayNode->items;
-		if (count($items) !== 2) {
-			return false;
+				$classReflections[$id] = $reflection;
+			}
+			$this->resolveFiles($file, $reflections, $analysedFiles, $fileDependencies, $packages);
 		}
 
-		// a class constant, property default or enum case value is not called where it is
-		// declared - testing it would reflect whatever class its first item happens to name
-		if (
-			$scope->isInClass()
-			&& $scope->getFunction() === null
-			&& !$scope->isInAnonymousFunction()
-			&& $scope->getFunctionCallStack() === []
-		) {
-			return false;
+		$usedTraitFileDependencies = [];
+		foreach ($usedTraitsByFile as $file => $usedTraits) {
+			$this->resolveFiles($file, $usedTraits, $analysedFiles, $usedTraitFileDependencies, $packages);
 		}
 
-		$itemType = $scope->getType($items[0]->value);
-		return $itemType->isClassString()->yes();
+		return new ResolvedDependencies(
+			array_values($fileDependencies),
+			array_values($usedTraitFileDependencies),
+			array_values($packages),
+			array_values($classReflections),
+		);
 	}
 
 	/**
-	 * The classes a string naming a class points at, so that `new $class()` and `$x instanceof $class`
-	 * record an edge to the file declaring it, the way a written-out class name does.
-	 *
-	 * @return list<string>
+	 * @return array<int, ClassReflection>
 	 */
-	private function getClassNamesFromClassString(Type $type): array
+	private function getClassDependencies(string $className): array
 	{
-		$classNames = [];
-		foreach ($type->getConstantStrings() as $constantString) {
-			$objectType = $constantString->getClassStringObjectType();
-			foreach ($objectType->getObjectClassNames() as $className) {
-				$classNames[] = $className;
-			}
+		if (!array_key_exists($className, $this->classDependencies)) {
+			$this->classDependencies[$className] = $this->buildClassDependencies($className);
 		}
 
-		return $classNames;
+		return $this->classDependencies[$className];
 	}
 
 	/**
-	 * Which parts of resolveDependencies() a node of this class can reach. Depends only on the class,
+	 * Which parts of resolveExportedNode() a node of this class can reach. Depends only on the class,
 	 * so it is computed once per class and reused for every node of it.
 	 */
 	private function resolveNodeProfile(Node $node): int
 	{
 		$profile = 0;
-		if (
-			$node instanceof Node\Stmt
-			&& !$node instanceof VirtualNode
-			&& !$node instanceof Node\Stmt\ClassLike
-			&& !$node instanceof Node\Stmt\ClassMethod
-			&& !$node instanceof Node\Stmt\Function_
-			&& !$node instanceof Node\Stmt\Property
-			&& !$node instanceof Node\Stmt\ClassConst
-			&& !$node instanceof Node\Stmt\Const_
-		) {
-			$profile |= self::PROFILE_VAR_TAGS;
-		}
-
 		$lists = [
-			self::PROFILE_CHAIN => self::CHAIN_NODE_TYPES,
 			self::PROFILE_EXPORT => self::EXPORT_NODE_TYPES,
 			self::PROFILE_NAME_SCOPE => self::NAME_SCOPE_NODE_TYPES,
 		];
@@ -749,68 +233,9 @@ final class DependencyResolver
 	}
 
 	/**
-	 * The callable node stands for the call it would make, and depends on what that call depends on.
+	 * The class with the classes what it declares refers to, and the same for its parents.
 	 *
-	 * @param array<int, ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
-	 */
-	private function addCallableDependencies(Node\Expr $call, Scope $scope, array &$dependenciesReflections): void
-	{
-		$dependencies = $this->resolveDependencies($call, $scope);
-		if ($dependencies === null) {
-			return;
-		}
-
-		$dependenciesReflections += $dependencies->getReflections();
-	}
-
-	/**
-	 * Extracts the classes referenced from a variable-level var-tag PHPDoc attached to a statement.
-	 *
-	 * @param array<int, ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
-	 */
-	private function extractStmtVarTags(Node\Stmt $stmt, Scope $scope, array &$dependenciesReflections): void
-	{
-		$comments = $stmt->getComments();
-		if (count($comments) === 0) {
-			return;
-		}
-
-		$function = $scope->getFunction();
-		foreach ($comments as $comment) {
-			if (!$comment instanceof Doc) {
-				continue;
-			}
-
-			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-				$scope->getFile(),
-				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-				$function !== null ? $function->getName() : null,
-				$comment->getText(),
-			);
-
-			foreach ($resolvedPhpDoc->getVarTags() as $varTag) {
-				foreach ($varTag->getType()->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-		}
-	}
-
-	/**
-	 * @param array<int, ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
-	 */
-	private function addClassToDependencies(string $className, array &$dependenciesReflections): void
-	{
-		if (!array_key_exists($className, $this->classDependencies)) {
-			$this->classDependencies[$className] = $this->buildClassDependencies($className);
-		}
-
-		$dependenciesReflections += $this->classDependencies[$className];
-	}
-
-	/**
-	 * @return array<int, ClassReflection|FunctionReflection|ConstantReflection>
+	 * @return array<int, ClassReflection>
 	 */
 	private function buildClassDependencies(string $className): array
 	{
@@ -832,112 +257,49 @@ final class DependencyResolver
 				$dependencies[] = $trait;
 			}
 
+			$referencedTypes = [];
 			foreach ($classReflection->getResolvedMixinTypes() as $mixinType) {
-				foreach ($mixinType->getReferencedClasses() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-					$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-				}
+				$referencedTypes[] = $mixinType;
 			}
-
 			foreach ($classReflection->getRequireExtendsTags() as $extendsTag) {
-				foreach ($extendsTag->getType()->getReferencedClasses() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-					$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-				}
+				$referencedTypes[] = $extendsTag->getType();
 			}
-
 			foreach ($classReflection->getSealedTags() as $sealedTag) {
-				foreach ($sealedTag->getType()->getReferencedClasses() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-					$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-				}
+				$referencedTypes[] = $sealedTag->getType();
 			}
-
 			foreach ($classReflection->getTemplateTags() as $templateTag) {
-				foreach ($templateTag->getBound()->getReferencedClasses() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-					$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-				}
-
-				$default = $templateTag->getDefault();
-				if ($default === null) {
-					continue;
-				}
-				foreach ($default->getReferencedClasses() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-					$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-				}
+				$referencedTypes[] = $templateTag->getBound();
+				$referencedTypes[] = $templateTag->getDefault();
 			}
-
 			foreach ($classReflection->getPropertyTags() as $propertyTag) {
 				if ($propertyTag->isReadable()) {
-					foreach ($propertyTag->getReadableType()->getReferencedClasses() as $referencedClass) {
-						if (!$this->reflectionProvider->hasClass($referencedClass)) {
-							continue;
-						}
-						$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-					}
+					$referencedTypes[] = $propertyTag->getReadableType();
 				}
-
 				if (!$propertyTag->isWritable()) {
 					continue;
 				}
 
-				foreach ($propertyTag->getWritableType()->getReferencedClasses() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-					$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-				}
+				$referencedTypes[] = $propertyTag->getWritableType();
 			}
-
 			foreach ($classReflection->getMethodTags() as $methodTag) {
-				foreach ($methodTag->getReturnType()->getReferencedClasses() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-					$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-				}
+				$referencedTypes[] = $methodTag->getReturnType();
 				foreach ($methodTag->getParameters() as $parameter) {
-					foreach ($parameter->getType()->getReferencedClasses() as $referencedClass) {
-						if (!$this->reflectionProvider->hasClass($referencedClass)) {
-							continue;
-						}
-						$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-					}
-					if ($parameter->getDefaultValue() === null) {
-						continue;
-					}
-					foreach ($parameter->getDefaultValue()->getReferencedClasses() as $referencedClass) {
-						if (!$this->reflectionProvider->hasClass($referencedClass)) {
-							continue;
-						}
-						$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-					}
+					$referencedTypes[] = $parameter->getType();
+					$referencedTypes[] = $parameter->getDefaultValue();
 				}
 			}
-
 			foreach ($classReflection->getExtendsTags() as $extendsTag) {
-				foreach ($extendsTag->getType()->getReferencedClasses() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-					$dependencies[] = $this->reflectionProvider->getClass($referencedClass);
-				}
+				$referencedTypes[] = $extendsTag->getType();
+			}
+			foreach ($classReflection->getImplementsTags() as $implementsTag) {
+				$referencedTypes[] = $implementsTag->getType();
 			}
 
-			foreach ($classReflection->getImplementsTags() as $implementsTag) {
-				foreach ($implementsTag->getType()->getReferencedClasses() as $referencedClass) {
+			foreach ($referencedTypes as $referencedType) {
+				if ($referencedType === null) {
+					continue;
+				}
+				foreach ($referencedType->getReferencedClasses() as $referencedClass) {
 					if (!$this->reflectionProvider->hasClass($referencedClass)) {
 						continue;
 					}
@@ -970,62 +332,68 @@ final class DependencyResolver
 		return $uniqueDependencies;
 	}
 
-	private function getFunctionReflection(Node\Name $nameNode, ?Scope $scope): FunctionReflection
-	{
-		return $this->reflectionProvider->getFunction($nameNode, $scope);
-	}
-
 	/**
-	 * @param array<ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
+	 * The files and packages the reflections found on a scope of $scopeFile are declared in:
+	 *
+	 * - a file that is analysed itself, or another project file - listed in scanFiles or
+	 *   scanDirectories, excluded from the analysis but living in an analysed directory, or simply
+	 *   reached through the autoloader - is a file dependency, so that editing it re-analyses only
+	 *   the files depending on it instead of invalidating the whole result cache.
+	 * - a file of an installed Composer package is resolved to the package name, so that a
+	 *   composer.lock change re-analyses only the files depending on a package whose version
+	 *   changed. A package installed from a path repository is both: it is the project's own code,
+	 *   edited without Composer noticing.
+	 *
+	 * Files inside a PHAR belong to the running PHPStan itself and cannot change without its
+	 * version changing, so they are left out.
+	 *
+	 * Built-in symbols of an extension whose stubs differ between its major versions are recorded
+	 * as a package too, under the extension's platform package name (ext-<name>), so that selecting
+	 * a different version re-analyses only the files using the extension. Their file is the PhpStorm
+	 * stub they were read from - inside the PHAR, or in PHPStan's own vendor directory - which does
+	 * not change with the selected version.
+	 *
+	 * @param array<int, ClassReflection|FunctionReflection|ConstantReflection> $reflections
+	 * @param array<string, true> $analysedFiles
+	 * @param array<string, string> $files
+	 * @param array<string, string> $packages
 	 */
-	private function extractFromParametersAcceptor(
-		ExtendedParametersAcceptor $parametersAcceptor,
-		array &$dependenciesReflections,
-	): void
+	private function resolveFiles(string $scopeFile, array $reflections, array $analysedFiles, array &$files, array &$packages): void
 	{
-		foreach ($parametersAcceptor->getParameters() as $parameter) {
-			foreach ($parameter->getNativeType()->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-			}
-			foreach ($parameter->getPhpDocType()->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+		foreach ($reflections as $reflection) {
+			$extensionPackage = $this->packageDependencyResolver->resolveVersionedExtensionPackage($reflection);
+			if ($extensionPackage !== null) {
+				$packages[$extensionPackage] = $extensionPackage;
 			}
 
-			if ($parameter->getOutType() !== null) {
-				foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
-					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-				}
-			}
-			if ($parameter->getClosureThisType() === null) {
+			$dependencyFile = $reflection->getFileName();
+			if ($dependencyFile === null || $dependencyFile === $scopeFile) {
 				continue;
 			}
-			foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+
+			$normalizedDependencyFile = $this->fileHelper->normalizePath($dependencyFile);
+			if ($normalizedDependencyFile === $scopeFile) {
+				continue;
 			}
-		}
 
-		foreach ($parametersAcceptor->getNativeReturnType()->getReferencedClasses() as $referencedClass) {
-			$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-		}
-		foreach ($parametersAcceptor->getPhpDocReturnType()->getReferencedClasses() as $referencedClass) {
-			$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-		}
-	}
+			if (isset($analysedFiles[$normalizedDependencyFile])) {
+				$files[$normalizedDependencyFile] = $normalizedDependencyFile;
+				continue;
+			}
 
-	/**
-	 * @param array<ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
-	 */
-	private function extractThrowType(
-		?Type $throwType,
-		array &$dependenciesReflections,
-	): void
-	{
-		if ($throwType === null) {
-			return;
-		}
+			if (str_starts_with($dependencyFile, 'phar://')) {
+				continue;
+			}
 
-		foreach ($throwType->getReferencedClasses() as $referencedClass) {
-			$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+			$package = $this->packageDependencyResolver->resolvePackage($normalizedDependencyFile);
+			if ($package !== null) {
+				$packages[$package] = $package;
+				if (!$this->packageDependencyResolver->isPathPackage($package)) {
+					continue;
+				}
+			}
+
+			$files[$normalizedDependencyFile] = $normalizedDependencyFile;
 		}
 	}
 

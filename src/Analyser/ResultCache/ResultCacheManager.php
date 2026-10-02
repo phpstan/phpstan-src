@@ -471,7 +471,7 @@ final class ResultCacheManager
 
 			if (in_array('scannedFiles', $diffs, true)) {
 				// Files that are scanned but not analysed are recorded as regular file dependencies
-				// (NodeDependencies::getFileAndPackageDependencies()) along with their exported nodes, so the
+				// (DependencyResolver::resolveFileDependencies()) along with their exported nodes, so the
 				// loop over the not-analysed files below treats an edited one the way the loop above
 				// treats an analysed file: the files depending on it are re-analysed only when its
 				// exported nodes changed, and it is that loop which counts it as changed. What is left

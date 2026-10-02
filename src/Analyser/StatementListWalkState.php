@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Dependency\Dependencies;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
@@ -29,6 +30,9 @@ final class StatementListWalkState
 	/** @var ImpurePoint[] */
 	public array $impurePoints = [];
 
+	/** @var list<Dependencies> */
+	public array $dependencies = [];
+
 	public function __construct(public MutatingScope $scope)
 	{
 	}
@@ -43,6 +47,7 @@ final class StatementListWalkState
 			$this->throwPoints,
 			$this->impurePoints,
 			variableFlow: VariableFlow::sequence(...$this->variableFlows),
+			dependencies: Dependencies::merge(...$this->dependencies),
 		);
 	}
 

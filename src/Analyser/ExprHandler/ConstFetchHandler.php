@@ -16,12 +16,15 @@ use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use function in_array;
 use function strtolower;
 
 /**
@@ -36,6 +39,7 @@ final class ConstFetchHandler implements ExprHandler
 		private ConstantResolver $constantResolver,
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -48,6 +52,14 @@ final class ConstFetchHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
+
+		$dependencies = null;
+		if (
+			!in_array($expr->name->toLowerString(), ['true', 'false', 'null'], true)
+			&& $this->reflectionProvider->hasConstant($expr->name, $scope)
+		) {
+			$dependencies = Dependencies::create($scope->getFile(), reflections: [$this->reflectionProvider->getConstant($expr->name, $scope)]);
+		}
 
 		return $this->expressionResultFactory->create(
 			$scope,
@@ -95,6 +107,7 @@ final class ConstFetchHandler implements ExprHandler
 				return new ErrorType();
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $dependencies,
 		);
 	}
 

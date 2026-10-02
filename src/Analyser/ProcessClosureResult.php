@@ -6,6 +6,7 @@ use PhpParser\Node\ClosureUse;
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\Stmt\Return_;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -35,8 +36,17 @@ final class ProcessClosureResult
 		private array $closureTypeImpurePoints,
 		private ?MutatingScope $byRefClosureResultScope = null,
 		private array $byRefUses = [],
+		private ?Dependencies $dependencies = null,
 	)
 	{
+	}
+
+	/**
+	 * What the parameters and the body of the closure depend on.
+	 */
+	public function getDependencies(): ?Dependencies
+	{
+		return $this->dependencies;
 	}
 
 	public function getScope(): MutatingScope

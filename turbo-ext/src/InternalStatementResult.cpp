@@ -70,9 +70,10 @@ public:
 	explicit InternalStatementResult(zend_object *self) : self(self) {}
 
 	/* Mirrors __construct(): the promoted properties, $endReachable, then the
-	 * constraint joins; $endStatements NULL for [], $variableFlow NULL for
-	 * null, $endReachable -1 for null. false = pending exception */
-	[[nodiscard]] bool construct(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements, zval *variableFlow, int endReachable) const
+	 * constraint joins; $endStatements NULL for [], $variableFlow and
+	 * $dependencies NULL for null, $endReachable -1 for null. false = pending
+	 * exception */
+	[[nodiscard]] bool construct(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements, zval *variableFlow, int endReachable, zval *dependencies) const
 	{
 		zval value = {};
 		pt_write_slot(self, slots::scope, scope);
@@ -94,6 +95,12 @@ public:
 		} else {
 			ZVAL_NULL(&value);
 			pt_write_slot(self, slots::variableFlow, &value);
+		}
+		if (dependencies != NULL) {
+			pt_write_slot(self, slots::dependencies, dependencies);
+		} else {
+			ZVAL_NULL(&value);
+			pt_write_slot(self, slots::dependencies, &value);
 		}
 
 		ZVAL_BOOL(&value, endReachable >= 0 ? endReachable != 0 : !isAlwaysTerminating);
@@ -128,12 +135,43 @@ public:
 	}
 
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val create(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements, zval *variableFlow, int endReachable)
+	static zv::Val create(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements, zval *variableFlow, int endReachable, zval *dependencies)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_internal_statement_result) != SUCCESS)) return zv::Val();
 		zv::Val result = zv::Val::adopt(object);
-		if (UNEXPECTED(!InternalStatementResult(Z_OBJ_P(result.raw())).construct(scope, hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, variableFlow, endReachable))) return zv::Val();
+		if (UNEXPECTED(!InternalStatementResult(Z_OBJ_P(result.raw())).construct(scope, hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, variableFlow, endReachable, dependencies))) return zv::Val();
+		return result;
+	}
+
+	zv::Val getDependencies() const { return read(slots::dependencies, "dependencies"); }
+
+	/* Mirrors withDependencies(): a clone with the slot replaced;
+	 * $dependencies NULL for null */
+	zv::Val withDependencies(zval *dependencies) const
+	{
+		zval *current = pt_typed_slot(self, slots::dependencies, self->ce, "dependencies");
+		if (UNEXPECTED(current == NULL)) return zv::Val();
+		if (dependencies == NULL ? Z_TYPE_P(current) == IS_NULL : (Z_TYPE_P(current) == IS_OBJECT && Z_OBJ_P(current) == Z_OBJ_P(dependencies))) return pt_this_value(self);
+
+		zend_object *clone = self->handlers->clone_obj(self);
+		if (UNEXPECTED(EG(exception))) {
+			if (clone != NULL) {
+				OBJ_RELEASE(clone);
+			}
+			return zv::Val();
+		}
+		zval cloneZv;
+		ZVAL_OBJ(&cloneZv, clone);
+		zv::Val result = zv::Val::adopt(cloneZv);
+		zval value = {};
+		if (dependencies != NULL) {
+			ZVAL_COPY_VALUE(&value, dependencies);
+		} else {
+			ZVAL_NULL(&value);
+		}
+		pt_write_slot(clone, slots::dependencies, &value);
+
 		return result;
 	}
 
@@ -221,14 +259,16 @@ public:
 
 		/* new self($this->scope, $this->hasYield, false, $this->exitPoints,
 		 * $this->throwPoints, $this->impurePoints, variableFlow:
-		 * $this->variableFlow, endReachable: false) */
+		 * $this->variableFlow, endReachable: false, dependencies:
+		 * $this->dependencies) */
 		zval *scope = pt_typed_slot(self, slots::scope, self->ce, "scope");
 		zval *hasYield = scope != NULL ? pt_typed_slot(self, slots::hasYield, self->ce, "hasYield") : NULL;
 		zval *throwPoints = hasYield != NULL ? pt_typed_slot(self, slots::throwPoints, self->ce, "throwPoints") : NULL;
 		zval *impurePoints = throwPoints != NULL ? pt_typed_slot(self, slots::impurePoints, self->ce, "impurePoints") : NULL;
 		zval *variableFlow = impurePoints != NULL ? pt_typed_slot(self, slots::variableFlow, self->ce, "variableFlow") : NULL;
-		if (UNEXPECTED(variableFlow == NULL)) return zv::Val();
-		return create(scope, Z_TYPE_P(hasYield) == IS_TRUE, false, exitPoints, throwPoints, impurePoints, NULL, Z_TYPE_P(variableFlow) == IS_NULL ? NULL : variableFlow, 0);
+		zval *dependencies = variableFlow != NULL ? pt_typed_slot(self, slots::dependencies, self->ce, "dependencies") : NULL;
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
+		return create(scope, Z_TYPE_P(hasYield) == IS_TRUE, false, exitPoints, throwPoints, impurePoints, NULL, Z_TYPE_P(variableFlow) == IS_NULL ? NULL : variableFlow, 0, Z_TYPE_P(dependencies) == IS_NULL ? NULL : dependencies);
 	}
 
 	zv::Val getExitPoints() const { return read(slots::exitPoints, "exitPoints"); }
@@ -321,9 +361,18 @@ using phpstanturbo::InternalStatementResult;
 
 /* {{{ exported helpers: the shadowing class for native callers */
 
-zv::Val pt_internal_statement_result_new(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements, zval *variableFlow, int endReachable)
+zv::Val pt_internal_statement_result_new(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements, zval *variableFlow, int endReachable, zval *dependencies)
 {
-	return InternalStatementResult::create(scope, hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, variableFlow != NULL && Z_TYPE_P(variableFlow) == IS_NULL ? NULL : variableFlow, endReachable);
+	return InternalStatementResult::create(scope, hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, variableFlow != NULL && Z_TYPE_P(variableFlow) == IS_NULL ? NULL : variableFlow, endReachable, dependencies != NULL && Z_TYPE_P(dependencies) == IS_NULL ? NULL : dependencies);
+}
+
+zv::Val pt_internal_statement_result_with_dependencies(zval *result, zval *dependencies)
+{
+	if (dependencies != NULL && Z_TYPE_P(dependencies) == IS_NULL) dependencies = NULL;
+	if (EXPECTED(Z_OBJCE_P(result) == pt_ce_internal_statement_result)) return InternalStatementResult(Z_OBJ_P(result)).withDependencies(dependencies);
+	zval null;
+	ZVAL_NULL(&null);
+	return pt_type_call(Z_OBJ_P(result), PT_LC("withdependencies"), 1, dependencies != NULL ? dependencies : &null);
 }
 
 /* the twin is final: the native class entry answers natively, anything
@@ -383,9 +432,9 @@ PT_MINIT_REGISTRATION(pt_register_internal_statement_result)
 	ptdecl::InternalStatementResult::declareProperties(cls);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *exitPoints, *throwPoints, *impurePoints, *endStatements = NULL, *variableFlow = NULL;
+		zval *scope, *exitPoints, *throwPoints, *impurePoints, *endStatements = NULL, *variableFlow = NULL, *dependencies = NULL;
 		bool hasYield, isAlwaysTerminating, endReachable = false, endReachableIsNull = true;
-		ZEND_PARSE_PARAMETERS_START(6, 9)
+		ZEND_PARSE_PARAMETERS_START(6, 10)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_BOOL(hasYield)
 			Z_PARAM_BOOL(isAlwaysTerminating)
@@ -396,9 +445,14 @@ PT_MINIT_REGISTRATION(pt_register_internal_statement_result)
 			Z_PARAM_ARRAY(endStatements)
 			Z_PARAM_OBJECT_OR_NULL(variableFlow)
 			Z_PARAM_BOOL_OR_NULL(endReachable, endReachableIsNull)
+			Z_PARAM_OBJECT_OR_NULL(dependencies)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!InternalStatementResult(Z_OBJ_P(ZEND_THIS)).construct(scope, hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, variableFlow, endReachableIsNull ? -1 : (endReachable ? 1 : 0)))) RETURN_THROWS();
+		if (UNEXPECTED(!InternalStatementResult(Z_OBJ_P(ZEND_THIS)).construct(scope, hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, variableFlow, endReachableIsNull ? -1 : (endReachable ? 1 : 0), dependencies))) RETURN_THROWS();
 	});
+
+	cls.method<&InternalStatementResult::getDependencies>(sigs::getDependencies);
+
+	cls.method<&InternalStatementResult::withDependencies, zp::ObjOrNull>(sigs::withDependencies);
 
 	cls.method<&InternalStatementResult::getVariableFlow>(sigs::getVariableFlow);
 

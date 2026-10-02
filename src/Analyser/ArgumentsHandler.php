@@ -19,6 +19,8 @@ use PHPStan\Analyser\ExprHandler\ClosureHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureParameterResolver;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -473,6 +475,10 @@ final class ArgumentsHandler
 						typeCallback: null,
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 					);
+					$storedClosureResult = $storedClosureResult->withDependencies(Dependencies::merge(
+						$closureResult->getDependencies(),
+						Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($storedClosureResult->getType())),
+					));
 					$nodeScopeResolver->storeExpressionResult($storage, $arg->value, $storedClosureResult);
 					// the closure node's own callback fires after its result is
 					// stored, mirroring processExprNodeInternal() - callback-side
@@ -618,6 +624,10 @@ final class ArgumentsHandler
 						),
 						typeCallback: null,
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+						dependencies: Dependencies::merge(
+							$arrowFunctionExprResult->getDependencies(),
+							Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($arrowFunctionType)),
+						),
 					);
 					$nodeScopeResolver->storeExpressionResult($storage, $arg->value, $storedArrowResult);
 					// the arrow function node's own callback fires after its result
@@ -874,6 +884,7 @@ final class ArgumentsHandler
 				$impurePoints,
 				typeCallback: static fn () => new MixedType(),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+				dependencies: Dependencies::merge(...array_map(static fn (ExpressionResult $argResult): ?Dependencies => $argResult->getDependencies(), array_values($argResults))),
 			),
 			$resolvedAcceptor,
 			$argResults,

@@ -8,6 +8,11 @@
 
 namespace ptdecl::TraitHandler {
 
+/* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
+namespace slot {
+inline constexpr uint32_t reflectionProvider = 0;
+} // namespace slot
+
 inline void declareClass(reg::Class &cls)
 {
 	cls.final();
@@ -17,45 +22,50 @@ inline void declareClass(reg::Class &cls)
 /* the properties the class declares itself, in declaration order (a used trait's come from its registrar) */
 inline void declareProperties(reg::Class &cls)
 {
-	(void) cls;
+	cls.property("reflectionProvider", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\ReflectionProvider");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {
 inline constexpr char strings[] =
-	"stmt\0" /* 0 */
-	"PhpParser\\Node\\Stmt\0" /* 5 */
-	"\0" /* 25 */
-	"supports\0" /* 26 */
-	"nodeScopeResolver\0" /* 35 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 53 */
-	"scope\0" /* 88 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 94 */
-	"storage\0" /* 125 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 133 */
-	"nodeCallback\0" /* 174 */
-	"context\0" /* 187 */
-	"PHPStan\\Analyser\\StatementContext\0" /* 195 */
-	"PHPStan\\Analyser\\InternalStatementResult\0" /* 229 */
-	"processStmt"; /* 270 */
+	"reflectionProvider\0" /* 0 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 19 */
+	"__construct\0" /* 57 */
+	"stmt\0" /* 69 */
+	"PhpParser\\Node\\Stmt\0" /* 74 */
+	"\0" /* 94 */
+	"supports\0" /* 95 */
+	"nodeScopeResolver\0" /* 104 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 122 */
+	"scope\0" /* 157 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 163 */
+	"storage\0" /* 194 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 202 */
+	"nodeCallback\0" /* 243 */
+	"context\0" /* 256 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 264 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 298 */
+	"processStmt"; /* 339 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, 0, 5), /* supports $stmt */
-	reg::packed(25, MAY_BE_BOOL), /* supports return */
-	reg::packed(35, 0, 53), /* processStmt $nodeScopeResolver */
-	reg::packed(0, 0, 5), /* processStmt $stmt */
-	reg::packed(88, 0, 94), /* processStmt $scope */
-	reg::packed(125, 0, 133), /* processStmt $storage */
-	reg::packed(174, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
-	reg::packed(187, 0, 195), /* processStmt $context */
-	reg::packed(25, 0, 229), /* processStmt return */
+	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
+	reg::packed(69, 0, 74), /* supports $stmt */
+	reg::packed(94, MAY_BE_BOOL), /* supports return */
+	reg::packed(104, 0, 122), /* processStmt $nodeScopeResolver */
+	reg::packed(69, 0, 74), /* processStmt $stmt */
+	reg::packed(157, 0, 163), /* processStmt $scope */
+	reg::packed(194, 0, 202), /* processStmt $storage */
+	reg::packed(243, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(256, 0, 264), /* processStmt $context */
+	reg::packed(94, 0, 298), /* processStmt return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig supports = { { 26 /* supports */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processStmt = { { 270 /* processStmt */, 6, 2, 6, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 57 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 95 /* supports */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 339 /* processStmt */, 6, 3, 6, 9, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TraitHandler

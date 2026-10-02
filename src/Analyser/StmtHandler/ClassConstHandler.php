@@ -14,6 +14,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -47,11 +48,13 @@ final class ClassConstHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$entryScope = $scope;
 		$impurePoints = [];
-		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
+		$dependencies[] = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		foreach ($stmt->consts as $const) {
 			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $constResult->getDependencies();
 			// the constant's callback fires after its value was processed, so
 			// rule-side asks about the value answer from the storage
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $const, $scope, $storage);
@@ -69,7 +72,7 @@ final class ClassConstHandler implements StmtHandler
 		// deferred from processStmtNode() - fires after the values were processed
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

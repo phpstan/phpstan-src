@@ -26,6 +26,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Analyser\VariableWriteOffset;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -99,6 +100,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 				// `$arr[]` only appears as an assignment target; reading it is a NeverType
 				typeCallback: static fn (): Type => new NeverType(),
 				specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+				dependencies: $varResult->getDependencies(),
 			);
 		}
 
@@ -128,7 +130,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			$offsetGetCall = new MethodCall($expr->var, new Identifier('offsetGet'), [new Arg($expr->dim)], [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]);
 		}
 
-		return $this->expressionResultFactory->create(
+		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
@@ -174,6 +176,13 @@ final class ArrayDimFetchHandler implements ExprHandler
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypesWithNullsafeFan($expr, $context, $beforeScope, $nativeTypesPromoted),
 		);
+
+		// the classes in the type of the value at the offset
+		return $result->withDependencies(Dependencies::merge(
+			$varResult->getDependencies(),
+			$dimResult->getDependencies(),
+			Dependencies::create($beforeScope->getFile(), [$result->getType()]),
+		));
 	}
 
 	private static function offsetRead(ArrayDimFetch $expr, ?ExpressionResult $dimResult, ExpressionContext $context): ?VariableFlow

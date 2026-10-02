@@ -261,8 +261,15 @@ public:
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, nodeScopeResolver, expr, condResult.raw(), rightResult.raw(), beforeScope, chainResultsArray);
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr, condResult.raw(), rightResult.raw(), beforeScope);
 		zv::Val createTypesCallback = pt_native_closure(&createTypesCallbackBody, self, expr, condResult.raw(), rightResult.raw(), beforeScope);
+		zv::Val condDependenciesHold, rightDependenciesHold;
+		zval *condDependencies = pt_expression_result_dependencies(condResult.raw(), condDependenciesHold);
+		if (UNEXPECTED(condDependencies == NULL)) return zv::Val();
+		zval *rightDependencies = pt_expression_result_dependencies(rightResult.raw(), rightDependenciesHold);
+		if (UNEXPECTED(rightDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({condDependencies, rightDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw()).withCreateTypesCallback(createTypesCallback.raw());
+		args.withVariableFlow(variableFlow.raw()).withCreateTypesCallback(createTypesCallback.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

@@ -17,12 +17,15 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\File\IncludedFilePathResolver;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_merge;
 use function in_array;
+use function is_file;
 
 /**
  * @implements ExprHandler<Include_>
@@ -35,6 +38,7 @@ final class IncludeHandler implements ExprHandler
 	public function __construct(
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private IncludedFilePathResolver $includedFilePathResolver,
 	)
 	{
 	}
@@ -54,6 +58,19 @@ final class IncludeHandler implements ExprHandler
 
 		$throwPoint = InternalThrowPoint::createImplicit($scope, $expr);
 
+		// an included file is a dependency with no symbol to reflect: nothing in it has to be
+		// declared for the analysis to change when it is deleted
+		$includedFiles = [];
+		foreach ($exprResult->getType()->getConstantStrings() as $constantString) {
+			foreach ($this->includedFilePathResolver->resolve($constantString->getValue(), $beforeScope) as $candidatePath) {
+				if (!is_file($candidatePath)) {
+					continue;
+				}
+
+				$includedFiles[] = $candidatePath;
+			}
+		}
+
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
@@ -65,6 +82,7 @@ final class IncludeHandler implements ExprHandler
 			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, $identifier, $identifier, true)]),
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => new MixedType(),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: Dependencies::merge($exprResult->getDependencies(), Dependencies::create($beforeScope->getFile(), filePaths: $includedFiles)),
 		);
 	}
 

@@ -10,7 +10,6 @@ use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
-use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -62,8 +61,6 @@ final class FileAnalyser
 		private NodeScopeResolver $nodeScopeResolver,
 		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private Parser $parser,
-		private DependencyResolver $dependencyResolver,
-		private PackageDependencyResolver $packageDependencyResolver,
 		#[AutowiredExtensions(of: IgnoreErrorExtension::class)]
 		private ExtensionsCollection $ignoreErrorExtensions,
 		private RuleErrorTransformer $ruleErrorTransformer,
@@ -71,6 +68,7 @@ final class FileAnalyser
 		#[AutowiredParameter]
 		private bool $reportIgnoresWithoutComments,
 		private ValueDependencyCollector $valueDependencyCollector,
+		private DependencyResolver $dependencyResolver,
 	)
 	{
 	}
@@ -114,32 +112,34 @@ final class FileAnalyser
 
 				$nodeCallback = new FileAnalyserCallback(
 					$file,
-					$analysedFiles,
 					$ruleRegistry,
 					$collectorRegistry,
 					$outerNodeCallback,
 					$parserNodes,
 					$this->ignoreErrorExtensions->getAll(),
 					$this->parser,
-					$this->dependencyResolver,
-					$this->packageDependencyResolver,
 					$this->ruleErrorTransformer,
 					$processedFiles,
-					$this->valueDependencyCollector,
+					$this->dependencyResolver,
 				);
 				$scope = $this->scopeFactory->create(ScopeContext::create($file), $nodeCallback);
 				$nodeCallback(new FileNode($parserNodes), $scope);
 				$this->nodeScopeResolver->resetPerFileAnalysisState();
-				$this->nodeScopeResolver->processNodes(
+				$dependencies = $this->nodeScopeResolver->processFileNodes(
 					$parserNodes,
 					$scope,
 					$nodeCallback,
 				);
 				$fileErrors = $nodeCallback->getFileErrors();
 				$fileCollectedData = $nodeCallback->getFileCollectedData();
-				$fileDependencies = $nodeCallback->getFileDependencies();
-				$usedTraitFileDependencies = $nodeCallback->getUsedTraitFileDependencies();
-				$filePackageDependencies = $nodeCallback->getPackageDependencies();
+				$resolvedDependencies = $this->dependencyResolver->resolveFileDependencies($dependencies, $analysedFiles);
+				$fileDependencies = $resolvedDependencies->getFileDependencies();
+				$usedTraitFileDependencies = $resolvedDependencies->getUsedTraitFileDependencies();
+				$filePackageDependencies = $resolvedDependencies->getPackageDependencies();
+				foreach ($resolvedDependencies->getClassReflections() as $classReflection) {
+					// what an extension described the class with may depend on something - see DeclarationDependencyTracker
+					$this->valueDependencyCollector->noteClassDependency($classReflection);
+				}
 				$exportedNodes = $nodeCallback->getExportedNodes();
 				$linesToIgnore = $nodeCallback->getLinesToIgnore();
 				$unmatchedLineIgnores = $nodeCallback->getUnmatchedLineIgnores();

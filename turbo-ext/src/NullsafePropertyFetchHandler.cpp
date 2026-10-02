@@ -284,8 +284,15 @@ public:
 		}
 		zv::Val createTypesCallback = pt_native_closure(&createTypesCallbackBody, self, expr, propertyFetch.raw(), exprResult.raw(), receiverResult, nullsafeTypeCallback.raw(), beforeScope);
 
+		zv::Val exprDependenciesHold, receiverDependenciesHold;
+		zval *exprDependencies = pt_expression_result_dependencies(exprResult.raw(), exprDependenciesHold);
+		if (UNEXPECTED(exprDependencies == NULL)) return zv::Val();
+		zval *receiverDependencies = pt_expression_result_dependencies(processedReceiverResult.raw(), receiverDependenciesHold);
+		if (UNEXPECTED(receiverDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({exprDependencies, receiverDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, false, throwPoints.raw(), impurePoints.raw(), nullsafeTypeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw()).withContainsNullsafe(true).withCreateTypesCallback(createTypesCallback.raw());
+		args.withVariableFlow(variableFlow.raw()).withContainsNullsafe(true).withCreateTypesCallback(createTypesCallback.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

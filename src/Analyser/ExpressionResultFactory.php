@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\Type\Type;
 
 interface ExpressionResultFactory
@@ -34,6 +35,7 @@ interface ExpressionResultFactory
 		?Type $nativeType = null,
 		?ArgsResult $argsResult = null,
 		?VariableFlow $variableFlow = null,
+		?Dependencies $dependencies = null,
 	): ExpressionResult;
 
 }

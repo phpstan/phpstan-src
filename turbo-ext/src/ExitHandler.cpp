@@ -82,6 +82,7 @@ public:
 		bool hasYield = false;
 		zv::Val throwPoints = zv::Arr::empty();
 		zv::Val variableFlow = zv::Val::null();
+		zv::Val dependencies = zv::Val::null();
 		zv::Val scopeHold;
 		zval *inner = ptoh::operand(pt_exh_expr, expr);
 		if (UNEXPECTED(inner == NULL)) return zv::Val();
@@ -93,6 +94,12 @@ public:
 			ptse::ChildResult child;
 			if (UNEXPECTED(!child.read(exprResult.raw()))) return zv::Val();
 			variableFlow = std::move(child.variableFlow);
+			{
+				zv::Val hold;
+				zval *exprDependencies = pt_expression_result_dependencies(exprResult.raw(), hold);
+				if (UNEXPECTED(exprDependencies == NULL)) return zv::Val();
+				dependencies = zv::Val::copyOf(zv::Ref(exprDependencies));
+			}
 			hasYield = child.hasYield;
 			throwPoints = zv::Val::copyOf(zv::Ref(child.throwPoints));
 			if (UNEXPECTED(!ptse::mergeInto(impurePoints, child.impurePoints))) return zv::Val();
@@ -109,7 +116,7 @@ public:
 		zv::Val typeCallback = pt_native_closure(&ptse::nonAcceptingNeverTypeBody<ExitHandler>);
 		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<ExitHandler>, self, expr);
 		pt_expression_result_args args(scope, beforeScope, expr, hasYield, true, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(sequence.raw());
+		args.withVariableFlow(sequence.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

@@ -12,6 +12,7 @@ use PHPStan\Analyser\ExprHandler\Helper\ClosureParameterResolver;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\ContextualClosureParameterResolver;
 use PHPStan\Analyser\Generics\ClosureSignatureInference;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\ClosureReturnStatementsNode;
@@ -106,7 +107,7 @@ final class ClosureProcessor
 		?Type $nativePassedToType = null,
 	): ProcessClosureResult
 	{
-		$this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
+		$parametersDependencies = $this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
 
 		$byRefUses = [];
 
@@ -283,6 +284,7 @@ final class ClosureProcessor
 				$gatheredYieldStatementsWithScope,
 				$executionEnds,
 				array_merge($closureImpurePoints, $statementResult->getImpurePoints()),
+				dependencies: Dependencies::merge($parametersDependencies, $statementResult->getDependencies()),
 			);
 		}
 
@@ -391,6 +393,8 @@ final class ClosureProcessor
 			// nothing runs at creation - an undefined by-ref variable is defined as null
 			$byRefMode === 'local' ? $scope : $closureResultScope,
 			$byRefUses,
+			// a local site's body is walked for its rules in the deferred walk, see processDeferredByRefClosureBody()
+			Dependencies::merge($parametersDependencies, $byRefMode === 'local' ? null : $statementResult->getDependencies()),
 		);
 	}
 
@@ -530,7 +534,7 @@ final class ClosureProcessor
 	 * after the enclosing body's second pass, entered from the scope it was
 	 * created in: the by-ref variables as the union of their types at the
 	 * invocations (as at the creation when there was none). The rules inside
-	 * the body are reported here.
+	 * the body are reported here. Returns what the body depends on.
 	 *
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 * @param array<string, Type> $byRefEntryTypes
@@ -542,7 +546,7 @@ final class ClosureProcessor
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		array $byRefEntryTypes,
-	): void
+	): ?Dependencies
 	{
 		$parameterTypes = $this->closureParameterResolver->resolve($scope, $expr, $storage, $expr->getAttribute(ClosureArgVisitor::ATTRIBUTE_NAME), null, null);
 		[$expectedReturnType, $nativeExpectedReturnType] = $this->contextualClosureParameterResolver->resolveExpectedReturnTypes($scope, $expr, null, null);
@@ -625,6 +629,8 @@ final class ClosureProcessor
 			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureReturnStatementsNodeScope, $storage);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, VariableLivenessResolver::resolve($expr, $statementResult->getVariableFlow()), $closureReturnStatementsNodeScope, $storage);
+
+		return $statementResult->getDependencies();
 	}
 
 	/**
@@ -750,7 +756,7 @@ final class ClosureProcessor
 	): ProcessArrowFunctionResult
 	{
 		$context ??= ExpressionContext::createTopLevel();
-		$this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
+		$parametersDependencies = $this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
 		if ($this->closureSignatureInference->isObserving($scope)) {
 			foreach (ClosureSignatureInference::getArrowFunctionOuterVariables($expr) as $name) {
 				if (!$scope->hasVariableType($name)->yes()) {
@@ -845,6 +851,7 @@ final class ClosureProcessor
 				impurePoints: $exprResult->getImpurePoints(),
 				typeCallback: static fn () => new MixedType(),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+				dependencies: Dependencies::merge($parametersDependencies, $exprResult->getDependencies()),
 			),
 			$arrowFunctionScope,
 			$closureTypeThrowPoints,

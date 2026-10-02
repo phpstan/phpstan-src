@@ -33,6 +33,8 @@ use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -126,6 +128,7 @@ final class NewHandler implements ExprHandler
 		$className = null;
 		$classResult = null;
 		$deferredConstructorImpureIsDynamic = null;
+		$anonymousClassDependencies = null;
 		if ($expr->class instanceof Name) {
 			$className = $scope->resolveName($expr->class);
 
@@ -167,7 +170,7 @@ final class NewHandler implements ExprHandler
 						$constructorResult = $node;
 					});
 					try {
-						$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
+						$anonymousClassDependencies = $nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()))->getDependencies();
 					} finally {
 						$nodeScopeResolver->popNodeGatherer();
 					}
@@ -177,7 +180,7 @@ final class NewHandler implements ExprHandler
 						$impurePoints = $constructorResult->getImpurePoints();
 					}
 				} else {
-					$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
+					$anonymousClassDependencies = $nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()))->getDependencies();
 					if (!$constructorReflection->hasSideEffects()->no()) {
 						$certain = $constructorReflection->isPure()->no();
 						$impurePoints[] = new ImpurePoint(
@@ -190,7 +193,7 @@ final class NewHandler implements ExprHandler
 					}
 				}
 			} else {
-				$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
+				$anonymousClassDependencies = $nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()))->getDependencies();
 			}
 
 			if ($parametersAcceptor !== null) {
@@ -323,7 +326,22 @@ final class NewHandler implements ExprHandler
 			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
 		);
 
-		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
+		// the instantiated class - named, or named by a string the type system resolved
+		if ($expr->class instanceof Name) {
+			$ownDependencies = Dependencies::create($beforeScope->getFile(), classNames: [$beforeScope->resolveName($expr->class)]);
+		} elseif ($classResult !== null) {
+			$ownDependencies = Dependencies::create($beforeScope->getFile(), [$preliminaryResult->getType()], DependencyTypes::classNamesOfClassString($classResult->getType()));
+		} else {
+			$ownDependencies = null;
+		}
+		$dependencies = Dependencies::merge(
+			$classResult !== null ? $classResult->getDependencies() : null,
+			$anonymousClassDependencies,
+			$argsResult->getDependencies(),
+			$ownDependencies,
+		);
+
+		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
 	}
 
 	/**

@@ -41,9 +41,9 @@ final class NamespaceHandler implements StmtHandler
 			$scope = $scope->enterNamespace('');
 		}
 
-		$scope = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context)->getScope();
+		$result = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
+		return new InternalStatementResult($result->getScope(), hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: $result->getDependencies());
 	}
 
 }

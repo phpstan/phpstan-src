@@ -54,7 +54,8 @@ public:
 		bool hasYield = false;
 		zval *throwPoints = &emptyArray;
 		zval *impurePoints = &emptyArray;
-		zv::Val result, scopeHold, throwPointsHold, impurePointsHold;
+		zv::Val result, scopeHold, throwPointsHold, impurePointsHold, dependenciesHold;
+		zval *dependencies = NULL;
 
 		zval *num = ptsh::readNodeProperty(pt_bch_num_site, stmt, PT_LC("num"));
 		if (UNEXPECTED(num == NULL)) return zv::Val();
@@ -73,6 +74,8 @@ public:
 			if (UNEXPECTED(throwPoints == NULL)) return zv::Val();
 			impurePoints = pt_expression_result_impure_points(result.raw(), impurePointsHold);
 			if (UNEXPECTED(impurePoints == NULL)) return zv::Val();
+			dependencies = pt_expression_result_dependencies(result.raw(), dependenciesHold);
+			if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 		}
 
 		zv::Val exitPoint = pt_internal_statement_exit_point_new(stmt, resultScope);
@@ -99,7 +102,9 @@ public:
 		zv::Val variableFlow = pt_variable_flow_exit(isBreak ? PT_VARIABLE_FLOW_EXIT_BREAK : PT_VARIABLE_FLOW_EXIT_CONTINUE, level);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 
-		return pt_internal_statement_result_new(resultScope, hasYield, true, exitPoints.raw(), throwPoints, impurePoints, NULL, variableFlow.raw());
+		zv::Val mergedDependencies = pt_dependencies_merge({dependencies});
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(resultScope, hasYield, true, exitPoints.raw(), throwPoints, impurePoints, NULL, variableFlow.raw(), -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

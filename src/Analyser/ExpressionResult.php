@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\Traverser\VoidToNullTraverser;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\GenerateFactory;
@@ -90,6 +91,7 @@ final class ExpressionResult
 		private ?Type $projectedType = null,
 		private ?Type $projectedNativeType = null,
 		private ?array $readVariableNames = null,
+		private ?Dependencies $dependencies = null,
 	)
 	{
 		// A precomputed type and a lazy typeCallback are mutually exclusive, but
@@ -118,7 +120,7 @@ final class ExpressionResult
 	 * @param InternalThrowPoint[] $throwPoints
 	 * @param ImpurePoint[] $impurePoints
 	 */
-	public function finalize(MutatingScope $scope, bool $hasYield, bool $isAlwaysTerminating, array $throwPoints, array $impurePoints, ?VariableFlow $variableFlow): self
+	public function finalize(MutatingScope $scope, bool $hasYield, bool $isAlwaysTerminating, array $throwPoints, array $impurePoints, ?VariableFlow $variableFlow, ?Dependencies $dependencies): self
 	{
 		return new self(
 			expressionTypeResolverExtensions: $this->expressionTypeResolverExtensions,
@@ -150,6 +152,7 @@ final class ExpressionResult
 			projectedType: $this->projectedType,
 			projectedNativeType: $this->projectedNativeType,
 			readVariableNames: $this->readVariableNames,
+			dependencies: $dependencies,
 		);
 	}
 
@@ -169,7 +172,31 @@ final class ExpressionResult
 			return $this;
 		}
 
-		return $this->finalize($scope, $this->hasYield, $this->isAlwaysTerminating, $this->throwPoints, $this->impurePoints, $this->variableFlow);
+		return $this->finalize($scope, $this->hasYield, $this->isAlwaysTerminating, $this->throwPoints, $this->impurePoints, $this->variableFlow, $this->dependencies);
+	}
+
+	/**
+	 * What the expression and its parts depend on - see Dependencies.
+	 */
+	public function getDependencies(): ?Dependencies
+	{
+		return $this->dependencies;
+	}
+
+	/**
+	 * The same result with what the expression depends on - for a handler that reads what it depends
+	 * on from the result itself, like the type of the expression.
+	 */
+	public function withDependencies(?Dependencies $dependencies): self
+	{
+		if ($dependencies === $this->dependencies) {
+			return $this;
+		}
+
+		$clone = clone $this;
+		$clone->dependencies = $dependencies;
+
+		return $clone;
 	}
 
 	public function getBeforeScope(): MutatingScope
@@ -809,6 +836,7 @@ final class ExpressionResult
 			projectedType: $fromScope ? null : $this->projectedType,
 			projectedNativeType: $fromScope ? null : $this->projectedNativeType,
 			readVariableNames: $this->readVariableNames,
+			dependencies: $this->dependencies,
 		);
 	}
 
@@ -851,6 +879,7 @@ final class ExpressionResult
 			projectedType: $this->projectedType,
 			projectedNativeType: $this->projectedNativeType,
 			readVariableNames: $this->readVariableNames,
+			dependencies: $this->dependencies,
 		);
 	}
 

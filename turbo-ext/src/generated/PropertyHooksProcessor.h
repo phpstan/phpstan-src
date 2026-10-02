@@ -58,7 +58,8 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 503 */
 	"nodeCallback\0" /* 544 */
 	"\0" /* 557 */
-	"processPropertyHooks"; /* 558 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 558 */
+	"processPropertyHooks"; /* 590 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 28), /* __construct $deprecatedAttributeResolver */
 	reg::packed(73, 0, 89), /* __construct $phpDocsResolver */
@@ -73,7 +74,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(458, 0, 464), /* processPropertyHooks $scope */
 	reg::packed(495, 0, 503), /* processPropertyHooks $storage */
 	reg::packed(544, MAY_BE_CALLABLE), /* processPropertyHooks $nodeCallback */
-	reg::packed(557, MAY_BE_VOID), /* processPropertyHooks return */
+	reg::packed(557, MAY_BE_NULL, 558), /* processPropertyHooks return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -81,7 +82,7 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 232 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processPropertyHooks = { { 558 /* processPropertyHooks */, 9, 4, 9, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processPropertyHooks = { { 590 /* processPropertyHooks */, 9, 4, 9, 13, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::PropertyHooksProcessor

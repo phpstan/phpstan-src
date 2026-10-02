@@ -32,6 +32,8 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
@@ -458,7 +460,26 @@ final class StaticCallHandler implements ExprHandler
 			$scope = $scope->mergeWith($scopeBeforeArgs);
 		}
 
-		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
+		// the class, what the call returns, the class declaring the method and what it can make of
+		// its arguments
+		$calledOnTypes = [$preliminaryResult->getType()];
+		$calledOnClassNames = [];
+		if ($classResult !== null) {
+			$calledOnTypes[] = $classResult->getType();
+		} elseif ($expr->class instanceof Name) {
+			$calledOnClassNames[] = $beforeScope->resolveName($expr->class);
+		}
+		if ($walkMethodReflection !== null) {
+			$calledOnClassNames[] = $walkMethodReflection->getDeclaringClass()->getName();
+			$calledOnTypes = [...$calledOnTypes, ...DependencyTypes::ofCalledMethod($walkMethodReflection, false)];
+		}
+		$dependencies = Dependencies::merge(
+			$classResult !== null ? $classResult->getDependencies() : null,
+			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$argsResult->getDependencies(),
+			Dependencies::create($beforeScope->getFile(), $calledOnTypes, $calledOnClassNames),
+		);
+		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
 	}
 
 	/**

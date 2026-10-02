@@ -82,6 +82,7 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 					$this->defaultNarrowingHelper->createSubjectTypes($s, $innerExpr, $innerResult, $type, $context),
 				);
 			},
+			dependencies: $innerResult->getDependencies(),
 		);
 	}
 

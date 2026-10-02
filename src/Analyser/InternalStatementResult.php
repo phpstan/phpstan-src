@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_map;
 
@@ -29,6 +30,7 @@ final class InternalStatementResult
 		private array $endStatements = [],
 		private ?VariableFlow $variableFlow = null,
 		?bool $endReachable = null,
+		private ?Dependencies $dependencies = null,
 	)
 	{
 		$this->endReachable = $endReachable ?? !$isAlwaysTerminating;
@@ -38,6 +40,26 @@ final class InternalStatementResult
 		foreach ($endStatements as $endStatement) {
 			$this->scope = $this->scope->addTemplateArgumentConstraints($endStatement->getResult()->getScope()->getTemplateArgumentConstraints());
 		}
+	}
+
+	/**
+	 * What the statements depend on - see Dependencies.
+	 */
+	public function getDependencies(): ?Dependencies
+	{
+		return $this->dependencies;
+	}
+
+	public function withDependencies(?Dependencies $dependencies): self
+	{
+		if ($dependencies === $this->dependencies) {
+			return $this;
+		}
+
+		$clone = clone $this;
+		$clone->dependencies = $dependencies;
+
+		return $clone;
 	}
 
 	public function getVariableFlow(): ?VariableFlow
@@ -119,14 +141,14 @@ final class InternalStatementResult
 
 			$num = $statement->num;
 			if (!$num instanceof Int_) {
-				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow, endReachable: false);
+				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow, endReachable: false, dependencies: $this->dependencies);
 			}
 
 			if ($num->value !== 1) {
 				continue;
 			}
 
-			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow, endReachable: false);
+			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow, endReachable: false, dependencies: $this->dependencies);
 		}
 
 		return $this;

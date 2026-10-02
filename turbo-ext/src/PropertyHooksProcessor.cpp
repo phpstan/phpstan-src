@@ -42,6 +42,7 @@ pt_method_site pt_php_body_start_line_site;
 pt_method_site pt_php_body_end_line_site;
 pt_method_site pt_php_traverse_site;
 pt_method_site pt_php_get_return_node_site;
+pt_method_site pt_php_of_declaration_site;
 
 /* }}} */
 
@@ -52,6 +53,14 @@ pt_property_site pt_php_body_site;
 /* the impure point's literals, permanent interned strings (module startup) */
 zend_string *pt_php_property_assign = nullptr;
 zend_string *pt_php_property_assignment = nullptr;
+
+/* DependencyTypes::ofDeclaration($reflection, $withAsserts); UNDEF = pending
+ * exception */
+zv::Val ofDeclaration(zval *reflection, bool withAsserts)
+{
+	zv::Args argv{reflection, withAsserts};
+	return pt_call_static_cached(pt_php_of_declaration_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofdeclaration"), 2, argv);
+}
 
 zend_never_inline ZEND_COLD void memberCallOnNonObject(const char *method, zval *value)
 {
@@ -66,8 +75,9 @@ constexpr uint32_t PT_PHP_DESTRUCTURED_PHP_DOCS = (1u << PT_PHP_DOCS_PARAMETER_T
 
 namespace phpstanturbo {
 
-/* Mirrors PHPStan\Analyser\PropertyHooksProcessor; false = pending
- * exception. */
+/* Mirrors PHPStan\Analyser\PropertyHooksProcessor; false / UNDEF = pending
+ * exception. What the hooks depend on is collected into a list processHook()
+ * pushes the non-null dependencies to. */
 class PropertyHooksProcessor
 {
 public:
@@ -83,33 +93,42 @@ public:
 		object.propAtWrite(slots::parametersProcessor, zv::Val::copyOf(zv::Ref(parametersProcessor)));
 	}
 
-	/* Mirrors processPropertyHooks(). */
-	[[nodiscard]] bool processPropertyHooks(zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hooks, zval *scope, zval *storage, zval *nodeCallback) const
+	/* Mirrors processPropertyHooks(): what the hooks depend on */
+	zv::Val processPropertyHooks(zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hooks, zval *scope, zval *storage, zval *nodeCallback) const
 	{
 		bool inClass;
-		if (UNEXPECTED(!pt_scope_is_in_class(Z_OBJ_P(scope), inClass))) return false;
+		if (UNEXPECTED(!pt_scope_is_in_class(Z_OBJ_P(scope), inClass))) return zv::Val();
 		if (!inClass) {
 			pt_throw_should_not_happen();
-			return false;
+			return zv::Val();
 		}
-		if (EXPECTED(zend_hash_num_elements(Z_ARRVAL_P(hooks)) == 0)) return true;
+		if (EXPECTED(zend_hash_num_elements(Z_ARRVAL_P(hooks)) == 0)) return zv::Val::null();
+
+		zv::Arr dependencies = zv::Arr::empty();
 
 		zv::Val classReflection = pt_scope_get_class_reflection(Z_OBJ_P(scope));
-		if (UNEXPECTED(classReflection.isUndef())) return false;
+		if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 
 		/* foreach iterates the array it started with */
 		zv::Val iterated = zv::Val::copyOf(zv::Ref(hooks));
 		for (auto entry : zv::ArrRef(iterated.raw())) {
-			if (UNEXPECTED(!processHook(nodeScopeResolver, stmt, nativeTypeNode, phpDocType, propertyName, entry.value().deref().raw(), scope, storage, nodeCallback, classReflection.raw()))) return false;
+			if (UNEXPECTED(!processHook(nodeScopeResolver, stmt, nativeTypeNode, phpDocType, propertyName, entry.value().deref().raw(), scope, storage, nodeCallback, classReflection.raw(), dependencies))) return zv::Val();
 		}
-		return true;
+
+		return pt_dependencies_merge_list(dependencies.table());
 	}
 
 private:
 	zend_object *self;
 
+	/* $dependencies[] = $dependency, a null one left out (the merge skips it) */
+	static void collect(zv::Arr &dependencies, zval *dependency)
+	{
+		if (Z_TYPE_P(dependency) != IS_NULL) dependencies.push(zv::Ref(dependency));
+	}
+
 	/* the loop body over one hook */
-	[[nodiscard]] bool processHook(zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hook, zval *scope, zval *storage, zval *nodeCallback, zval *classReflection) const
+	[[nodiscard]] bool processHook(zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hook, zval *scope, zval *storage, zval *nodeCallback, zval *classReflection, zv::Arr &dependencies) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(hook) != IS_OBJECT)) {
 			zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::callNodeCallback(): Argument #2 ($node) must be of type PhpParser\\Node, %s given", zend_zval_value_name(hook));
@@ -118,14 +137,18 @@ private:
 		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, hook, scope, storage))) return false;
 		zval *attrGroups = ptsh::readNodeProperty(pt_php_attr_groups_site, hook, PT_LC("attrGroups"));
 		if (UNEXPECTED(attrGroups == NULL)) return false;
-		if (UNEXPECTED(!ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback))) return false;
+		zv::Val attributeDependencies = ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
+		if (UNEXPECTED(attributeDependencies.isUndef())) return false;
+		collect(dependencies, attributeDependencies.raw());
 
 		pt_php_docs docs;
 		if (UNEXPECTED(!pt_php_docs_resolver_get_php_docs(OBJ_PROP_NUM(self, slots::phpDocsResolver), scope, hook, PT_PHP_DESTRUCTURED_PHP_DOCS, docs))) return false;
 
 		zval *params = ptsh::readNodeProperty(pt_php_params_site, hook, PT_LC("params"));
 		if (UNEXPECTED(params == NULL)) return false;
-		if (UNEXPECTED(!ptsh::processParams(OBJ_PROP_NUM(self, slots::parametersProcessor), nodeScopeResolver, stmt, params, scope, storage, nodeCallback))) return false;
+		zv::Val parameterDependencies = ptsh::processParams(OBJ_PROP_NUM(self, slots::parametersProcessor), nodeScopeResolver, stmt, params, scope, storage, nodeCallback);
+		if (UNEXPECTED(parameterDependencies.isUndef())) return false;
+		collect(dependencies, parameterDependencies.raw());
 
 		zv::Val isDeprecated;
 		zv::Val deprecatedDescription;
@@ -153,6 +176,14 @@ private:
 		}
 		zv::Val propertyReflection = pt_class_reflection_get_native_property(Z_OBJ_P(classReflection), Z_STR_P(propertyName));
 		if (UNEXPECTED(propertyReflection.isUndef())) return false;
+
+		{
+			zv::Val declarationTypes = ofDeclaration(hookReflection.raw(), false);
+			if (UNEXPECTED(declarationTypes.isUndef())) return false;
+			zv::Val declarationDependencies = pt_dependencies_create_in(hookScope.raw(), declarationTypes.raw());
+			if (UNEXPECTED(declarationDependencies.isUndef())) return false;
+			collect(dependencies, declarationDependencies.raw());
+		}
 
 		{
 			zv::Args nodeArgv{classReflection, hookReflection.raw(), propertyReflection.raw(), hook};
@@ -198,7 +229,12 @@ private:
 				if (EXPECTED(!statementContext.isUndef())) {
 					internalStatementResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, statementNode.raw(), stmts.raw(), hookScope.raw(), storage, nodeCallback, statementContext.raw());
 					if (EXPECTED(!internalStatementResult.isUndef())) {
-						statementResult = pt_internal_statement_result_to_public(internalStatementResult.raw());
+						zv::Val dependencyHold;
+						zval *bodyDependencies = pt_internal_statement_result_dependencies(internalStatementResult.raw(), dependencyHold);
+						if (EXPECTED(bodyDependencies != NULL)) {
+							collect(dependencies, bodyDependencies);
+							statementResult = pt_internal_statement_result_to_public(internalStatementResult.raw());
+						}
 					}
 				}
 			}
@@ -324,7 +360,7 @@ private:
 
 using phpstanturbo::PropertyHooksProcessor;
 
-bool pt_property_hooks_processor_process_property_hooks(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hooks, zval *scope, zval *storage, zval *nodeCallback)
+zv::Val pt_property_hooks_processor_process_property_hooks(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hooks, zval *scope, zval *storage, zval *nodeCallback)
 {
 	/* the method's parameter checks the direct path relies on */
 	if (EXPECTED(Z_OBJCE_P(processor) == pt_ce_property_hooks_processor && Z_TYPE_P(propertyName) == IS_STRING && Z_TYPE_P(hooks) == IS_ARRAY)) {
@@ -340,7 +376,7 @@ bool pt_property_hooks_processor_process_property_hooks(zval *processor, zval *n
 	ZVAL_COPY_VALUE(&argv[6], scope);
 	ZVAL_COPY_VALUE(&argv[7], storage);
 	ZVAL_COPY_VALUE(&argv[8], nodeCallback);
-	return !pt_type_call(Z_OBJ_P(processor), PT_LC("processpropertyhooks"), 9, argv).isUndef();
+	return pt_type_call(Z_OBJ_P(processor), PT_LC("processpropertyhooks"), 9, argv);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -418,7 +454,9 @@ PT_MINIT_REGISTRATION(pt_register_property_hooks_processor)
 		ZVAL_NULL(&null);
 		zval propertyNameZv;
 		ZVAL_STR(&propertyNameZv, propertyName);
-		if (UNEXPECTED(!PropertyHooksProcessor(Z_OBJ_P(ZEND_THIS)).processPropertyHooks(nodeScopeResolver, stmt, nativeTypeNode != NULL ? nativeTypeNode : &null, phpDocType != NULL ? phpDocType : &null, &propertyNameZv, hooks, scope, storage, nodeCallback))) RETURN_THROWS();
+		zv::Val dependencies = PropertyHooksProcessor(Z_OBJ_P(ZEND_THIS)).processPropertyHooks(nodeScopeResolver, stmt, nativeTypeNode != NULL ? nativeTypeNode : &null, phpDocType != NULL ? phpDocType : &null, &propertyNameZv, hooks, scope, storage, nodeCallback);
+		if (UNEXPECTED(dependencies.isUndef())) RETURN_THROWS();
+		dependencies.intoReturnValue(return_value);
 	});
 
 	cls.shadow(&pt_ce_property_hooks_processor);

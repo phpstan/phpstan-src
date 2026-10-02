@@ -276,8 +276,20 @@ public:
 		ZVAL_COPY_VALUE(&specifyCaptures[9], aFalseyScopeHold.raw());
 		zv::Val specifyTypesCallback = pt_native_closure_new(&specifyTypesCallbackBody, 10, specifyCaptures, 1u << 9);
 
+		zv::Val condDependenciesHold, ifDependenciesHold, elseDependenciesHold;
+		zval *condDependencies = pt_expression_result_dependencies(ternaryCondResult.raw(), condDependenciesHold);
+		if (UNEXPECTED(condDependencies == NULL)) return zv::Val();
+		zval *ifDependencies = NULL;
+		if (!ifResult.isNull()) {
+			ifDependencies = pt_expression_result_dependencies(ifResult.raw(), ifDependenciesHold);
+			if (UNEXPECTED(ifDependencies == NULL)) return zv::Val();
+		}
+		zval *elseDependencies = pt_expression_result_dependencies(elseResult.raw(), elseDependenciesHold);
+		if (UNEXPECTED(elseDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({condDependencies, ifDependencies, elseDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(resultScope.raw(), scope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw());
+		args.withVariableFlow(variableFlow.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

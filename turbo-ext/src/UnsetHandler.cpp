@@ -184,9 +184,11 @@ public:
 
 		zv::Val variableFlow = pt_variable_flow_sequence_list(state.variableFlows.table());
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge_list(state.dependencies.table());
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return pt_internal_statement_result_new(state.scope.raw(), state.hasYield, false, &emptyArray, state.throwPoints.raw(), state.impurePoints.raw(), NULL, variableFlow.raw());
+		return pt_internal_statement_result_new(state.scope.raw(), state.hasYield, false, &emptyArray, state.throwPoints.raw(), state.impurePoints.raw(), NULL, variableFlow.raw(), -1, dependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */
@@ -206,6 +208,7 @@ private:
 		zv::Arr throwPoints = zv::Arr::empty();
 		zv::Arr impurePoints = zv::Arr::empty();
 		zv::Arr variableFlows = zv::Arr::empty();
+		zv::Arr dependencies = zv::Arr::empty();
 	};
 
 	/* ExpressionContext::createDeep($context->shouldResolveTemplateArguments()) */
@@ -232,6 +235,12 @@ private:
 			if (UNEXPECTED(unsetTargetContext.isUndef())) return false;
 			exprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, var, state.scope.raw(), storage, nodeCallback, unsetTargetContext.raw());
 			if (UNEXPECTED(exprResult.isUndef())) return false;
+		}
+		{
+			zv::Val hold;
+			zval *dependencies = pt_expression_result_dependencies(exprResult.raw(), hold);
+			if (UNEXPECTED(dependencies == NULL)) return false;
+			state.dependencies.push(zv::Ref(dependencies));
 		}
 		{
 			zv::Val type = pt_expression_result_get_type(exprResult.raw());

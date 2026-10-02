@@ -379,8 +379,17 @@ public:
 			specifyTypesCallback = pt_native_closure_new(&specifyTypesCallbackBody, 7, captures, 1u << 6);
 		}
 
+		zv::Arr dependencyList = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(varResultsValue.raw())));
+		for (zv::ArrayEntry entry : zv::TableRef(Z_ARRVAL_P(varResultsValue.raw()))) {
+			zv::Val hold;
+			zval *resultDependencies = pt_expression_result_dependencies(entry.value().deref().raw(), hold);
+			if (UNEXPECTED(resultDependencies == NULL)) return zv::Val();
+			dependencyList.push(zv::Ref(resultDependencies));
+		}
+		zv::Val dependencies = pt_dependencies_merge_list(dependencyList.table());
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw());
+		args.withVariableFlow(variableFlow.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

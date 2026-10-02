@@ -20,6 +20,7 @@ inline constexpr uint32_t executionEnds = 6;
 inline constexpr uint32_t closureTypeImpurePoints = 7;
 inline constexpr uint32_t byRefClosureResultScope = 8;
 inline constexpr uint32_t byRefUses = 9;
+inline constexpr uint32_t dependencies = 10;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -40,6 +41,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("closureTypeImpurePoints", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 	cls.property("byRefClosureResultScope", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Analyser\\MutatingScope");
 	cls.property("byRefUses", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
+	cls.property("dependencies", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Dependency\\Dependencies");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -58,17 +60,20 @@ inline constexpr char strings[] =
 	"null\0" /* 195 */
 	"byRefUses\0" /* 200 */
 	"[]\0" /* 210 */
-	"__construct\0" /* 213 */
-	"\0" /* 225 */
-	"getScope\0" /* 226 */
-	"applyByRefUseScope\0" /* 235 */
-	"getThrowPoints\0" /* 254 */
-	"getImpurePoints\0" /* 269 */
-	"getInvalidateExpressions\0" /* 285 */
-	"getGatheredReturnStatements\0" /* 310 */
-	"getGatheredYieldStatements\0" /* 338 */
-	"getExecutionEnds\0" /* 365 */
-	"getClosureTypeImpurePoints"; /* 382 */
+	"dependencies\0" /* 213 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 226 */
+	"__construct\0" /* 258 */
+	"\0" /* 270 */
+	"getDependencies\0" /* 271 */
+	"getScope\0" /* 287 */
+	"applyByRefUseScope\0" /* 296 */
+	"getThrowPoints\0" /* 315 */
+	"getImpurePoints\0" /* 330 */
+	"getInvalidateExpressions\0" /* 346 */
+	"getGatheredReturnStatements\0" /* 371 */
+	"getGatheredYieldStatements\0" /* 399 */
+	"getExecutionEnds\0" /* 426 */
+	"getClosureTypeImpurePoints"; /* 443 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 6), /* __construct $scope */
 	reg::packed(37, MAY_BE_ARRAY), /* __construct $throwPoints */
@@ -80,32 +85,35 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(147, MAY_BE_ARRAY), /* __construct $closureTypeImpurePoints */
 	reg::packed(171, MAY_BE_NULL, 6, false, false, 195), /* __construct $byRefClosureResultScope */
 	reg::packed(200, MAY_BE_ARRAY, reg::NoString, false, false, 210), /* __construct $byRefUses */
-	reg::packed(225, 0, 6), /* getScope return */
+	reg::packed(213, MAY_BE_NULL, 226, false, false, 195), /* __construct $dependencies */
+	reg::packed(270, MAY_BE_NULL, 226), /* getDependencies return */
+	reg::packed(270, 0, 6), /* getScope return */
 	reg::packed(0, 0, 6), /* applyByRefUseScope $scope */
-	reg::packed(225, 0, 6), /* applyByRefUseScope return */
-	reg::packed(225, MAY_BE_ARRAY), /* getThrowPoints return */
-	reg::packed(225, MAY_BE_ARRAY), /* getImpurePoints return */
-	reg::packed(225, MAY_BE_ARRAY), /* getInvalidateExpressions return */
-	reg::packed(225, MAY_BE_ARRAY), /* getGatheredReturnStatements return */
-	reg::packed(225, MAY_BE_ARRAY), /* getGatheredYieldStatements return */
-	reg::packed(225, MAY_BE_ARRAY), /* getExecutionEnds return */
-	reg::packed(225, MAY_BE_ARRAY), /* getClosureTypeImpurePoints return */
+	reg::packed(270, 0, 6), /* applyByRefUseScope return */
+	reg::packed(270, MAY_BE_ARRAY), /* getThrowPoints return */
+	reg::packed(270, MAY_BE_ARRAY), /* getImpurePoints return */
+	reg::packed(270, MAY_BE_ARRAY), /* getInvalidateExpressions return */
+	reg::packed(270, MAY_BE_ARRAY), /* getGatheredReturnStatements return */
+	reg::packed(270, MAY_BE_ARRAY), /* getGatheredYieldStatements return */
+	reg::packed(270, MAY_BE_ARRAY), /* getExecutionEnds return */
+	reg::packed(270, MAY_BE_ARRAY), /* getClosureTypeImpurePoints return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 213 /* __construct */, 8, 0, 10, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getScope = { { 226 /* getScope */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig applyByRefUseScope = { { 235 /* applyByRefUseScope */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getThrowPoints = { { 254 /* getThrowPoints */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getImpurePoints = { { 269 /* getImpurePoints */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getInvalidateExpressions = { { 285 /* getInvalidateExpressions */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getGatheredReturnStatements = { { 310 /* getGatheredReturnStatements */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getGatheredYieldStatements = { { 338 /* getGatheredYieldStatements */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getExecutionEnds = { { 365 /* getExecutionEnds */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClosureTypeImpurePoints = { { 382 /* getClosureTypeImpurePoints */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 258 /* __construct */, 8, 0, 11, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDependencies = { { 271 /* getDependencies */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 287 /* getScope */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig applyByRefUseScope = { { 296 /* applyByRefUseScope */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowPoints = { { 315 /* getThrowPoints */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getImpurePoints = { { 330 /* getImpurePoints */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInvalidateExpressions = { { 346 /* getInvalidateExpressions */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGatheredReturnStatements = { { 371 /* getGatheredReturnStatements */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGatheredYieldStatements = { { 399 /* getGatheredYieldStatements */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExecutionEnds = { { 426 /* getExecutionEnds */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClosureTypeImpurePoints = { { 443 /* getClosureTypeImpurePoints */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ProcessClosureResult

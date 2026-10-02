@@ -13,6 +13,7 @@ namespace slot {
 inline constexpr uint32_t expressionResultFactory = 0;
 inline constexpr uint32_t defaultNarrowingHelper = 1;
 inline constexpr uint32_t initializerExprTypeResolver = 2;
+inline constexpr uint32_t reflectionProvider = 3;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -27,6 +28,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("expressionResultFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionResultFactory");
 	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\InitializerExprTypeResolver");
+	cls.property("reflectionProvider", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\ReflectionProvider");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -38,61 +40,73 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 88 */
 	"initializerExprTypeResolver\0" /* 147 */
 	"PHPStan\\Reflection\\InitializerExprTypeResolver\0" /* 175 */
-	"__construct\0" /* 222 */
-	"expr\0" /* 234 */
-	"PhpParser\\Node\\Expr\0" /* 239 */
-	"\0" /* 259 */
-	"supports\0" /* 260 */
-	"nodeScopeResolver\0" /* 269 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 287 */
-	"stmt\0" /* 322 */
-	"PhpParser\\Node\\Stmt\0" /* 327 */
-	"scope\0" /* 347 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 353 */
-	"storage\0" /* 384 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 392 */
-	"nodeCallback\0" /* 433 */
-	"context\0" /* 446 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 454 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 489 */
-	"processExpr\0" /* 523 */
-	"PHPStan\\Node\\FunctionCallableNode\0" /* 535 */
-	"nameResult\0" /* 569 */
-	"PHPStan\\Type\\Type\0" /* 580 */
-	"resolveType\0" /* 598 */
-	"type\0" /* 610 */
-	"isClosureObject"; /* 615 */
+	"reflectionProvider\0" /* 222 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 241 */
+	"__construct\0" /* 279 */
+	"expr\0" /* 291 */
+	"PhpParser\\Node\\Expr\0" /* 296 */
+	"\0" /* 316 */
+	"supports\0" /* 317 */
+	"nodeScopeResolver\0" /* 326 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 344 */
+	"stmt\0" /* 379 */
+	"PhpParser\\Node\\Stmt\0" /* 384 */
+	"scope\0" /* 404 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 410 */
+	"storage\0" /* 441 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 449 */
+	"nodeCallback\0" /* 490 */
+	"context\0" /* 503 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 511 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 546 */
+	"processExpr\0" /* 580 */
+	"PHPStan\\Node\\FunctionCallableNode\0" /* 592 */
+	"nameResult\0" /* 626 */
+	"result\0" /* 637 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 644 */
+	"getDependencies\0" /* 676 */
+	"PHPStan\\Type\\Type\0" /* 692 */
+	"resolveType\0" /* 710 */
+	"type\0" /* 722 */
+	"isClosureObject"; /* 727 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 24), /* __construct $expressionResultFactory */
 	reg::packed(65, 0, 88), /* __construct $defaultNarrowingHelper */
 	reg::packed(147, 0, 175), /* __construct $initializerExprTypeResolver */
-	reg::packed(234, 0, 239), /* supports $expr */
-	reg::packed(259, MAY_BE_BOOL), /* supports return */
-	reg::packed(269, 0, 287), /* processExpr $nodeScopeResolver */
-	reg::packed(322, 0, 327), /* processExpr $stmt */
-	reg::packed(234, 0, 239), /* processExpr $expr */
-	reg::packed(347, 0, 353), /* processExpr $scope */
-	reg::packed(384, 0, 392), /* processExpr $storage */
-	reg::packed(433, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(446, 0, 454), /* processExpr $context */
-	reg::packed(259, 0, 489), /* processExpr return */
-	reg::packed(347, 0, 353), /* resolveType $scope */
-	reg::packed(234, 0, 535), /* resolveType $expr */
-	reg::packed(569, MAY_BE_NULL, 489), /* resolveType $nameResult */
-	reg::packed(259, 0, 580), /* resolveType return */
-	reg::packed(610, 0, 580), /* isClosureObject $type */
-	reg::packed(259, MAY_BE_BOOL), /* isClosureObject return */
+	reg::packed(222, 0, 241), /* __construct $reflectionProvider */
+	reg::packed(291, 0, 296), /* supports $expr */
+	reg::packed(316, MAY_BE_BOOL), /* supports return */
+	reg::packed(326, 0, 344), /* processExpr $nodeScopeResolver */
+	reg::packed(379, 0, 384), /* processExpr $stmt */
+	reg::packed(291, 0, 296), /* processExpr $expr */
+	reg::packed(404, 0, 410), /* processExpr $scope */
+	reg::packed(441, 0, 449), /* processExpr $storage */
+	reg::packed(490, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(503, 0, 511), /* processExpr $context */
+	reg::packed(316, 0, 546), /* processExpr return */
+	reg::packed(404, 0, 410), /* getDependencies $scope */
+	reg::packed(291, 0, 592), /* getDependencies $expr */
+	reg::packed(626, MAY_BE_NULL, 546), /* getDependencies $nameResult */
+	reg::packed(637, 0, 546), /* getDependencies $result */
+	reg::packed(316, MAY_BE_NULL, 644), /* getDependencies return */
+	reg::packed(404, 0, 410), /* resolveType $scope */
+	reg::packed(291, 0, 592), /* resolveType $expr */
+	reg::packed(626, MAY_BE_NULL, 546), /* resolveType $nameResult */
+	reg::packed(316, 0, 692), /* resolveType return */
+	reg::packed(722, 0, 692), /* isClosureObject $type */
+	reg::packed(316, MAY_BE_BOOL), /* isClosureObject return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 222 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 260 /* supports */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processExpr = { { 523 /* processExpr */, 7, 5, 7, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveType = { { 598 /* resolveType */, 3, 13, 3, 16, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isClosureObject = { { 615 /* isClosureObject */, 1, 17, 1, 18, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 279 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 317 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 580 /* processExpr */, 7, 6, 7, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDependencies = { { 676 /* getDependencies */, 4, 14, 4, 18, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveType = { { 710 /* resolveType */, 3, 19, 3, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isClosureObject = { { 727 /* isClosureObject */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::FunctionCallableNodeHandler

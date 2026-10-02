@@ -10,8 +10,9 @@
  *
  * NodeScopeResolver, MutatingScope, ExpressionResult, DefaultNarrowingHelper
  * and the Type kernel are called through their direct entries; ConstantResolver
- * stays PHP for now (the cached method sites in the block below) — the true /
- * false / null literals, the bulk of the constant fetches, never reach it.
+ * and ReflectionProvider's constant lookups stay PHP for now (the cached
+ * method sites in the block below) — the true / false / null literals, the
+ * bulk of the constant fetches, never reach them.
  */
 
 #include "support.h"
@@ -34,6 +35,8 @@ constexpr const char *pt_cfh_closure_name = "PHPStan\\Analyser\\ExprHandler\\Con
 
 pt_method_site pt_cfh_resolve_constant_type_site;
 pt_method_site pt_cfh_resolve_constant_site;
+pt_method_site pt_cfh_has_constant_site;
+pt_method_site pt_cfh_get_constant_site;
 
 /* $constantResolver->resolveConstantType($constantName, $constantType) */
 zv::Val resolveConstantType(zval *constantResolver, zval *constantName, zval *constantType)
@@ -47,6 +50,20 @@ zv::Val resolveConstant(zval *constantResolver, zval *name, zval *scope)
 {
 	zv::Args argv{name, scope};
 	return pt_call_method_cached(pt_cfh_resolve_constant_site, Z_OBJ_P(constantResolver), PT_LC("resolveconstant"), 2, argv);
+}
+
+/* $reflectionProvider->hasConstant($name, $scope) */
+zv::Val hasConstant(zval *reflectionProvider, zval *name, zval *scope)
+{
+	zv::Args argv{name, scope};
+	return pt_call_method_cached(pt_cfh_has_constant_site, Z_OBJ_P(reflectionProvider), PT_LC("hasconstant"), 2, argv);
+}
+
+/* $reflectionProvider->getConstant($name, $scope) */
+zv::Val getConstant(zval *reflectionProvider, zval *name, zval *scope)
+{
+	zv::Args argv{name, scope};
+	return pt_call_method_cached(pt_cfh_get_constant_site, Z_OBJ_P(reflectionProvider), PT_LC("getconstant"), 2, argv);
 }
 
 /* }}} */
@@ -77,11 +94,12 @@ public:
 	explicit ConstFetchHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *constantResolver, zval *expressionResultFactory, zval *defaultNarrowingHelper) const
+	void construct(zval *constantResolver, zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *reflectionProvider) const
 	{
 		pt_write_slot(self, slots::constantResolver, constantResolver);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
+		pt_write_slot(self, slots::reflectionProvider, reflectionProvider);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -102,9 +120,30 @@ public:
 		if (UNEXPECTED(name == NULL)) return zv::Val();
 		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, name, scope, storage))) return zv::Val();
 
+		zv::Val dependencies = zv::Val::null();
+		name = exprName(expr);
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		zval *constName = nameString(name);
+		if (UNEXPECTED(constName == NULL)) return zv::Val();
+		zend_string *lowered = Z_TYPE_P(constName) == IS_STRING ? Z_STR_P(constName) : NULL;
+		if (lowered == NULL || (!zend_string_equals_literal_ci(lowered, "true") && !zend_string_equals_literal_ci(lowered, "false") && !zend_string_equals_literal_ci(lowered, "null"))) {
+			zval *reflectionProvider = OBJ_PROP_NUM(self, slots::reflectionProvider);
+			zv::Val has = hasConstant(reflectionProvider, name, scope);
+			if (UNEXPECTED(has.isUndef())) return zv::Val();
+			if (zend_is_true(has.raw())) {
+				zv::Val constant = getConstant(reflectionProvider, name, scope);
+				if (UNEXPECTED(constant.isUndef())) return zv::Val();
+				zv::Arr reflections = zv::Arr::create(1);
+				reflections.push(std::move(constant));
+				dependencies = pt_dependencies_create_in(scope, NULL, NULL, reflections.raw());
+				if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+			}
+		}
+
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, scope);
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
 		pt_expression_result_args args(scope, scope, expr, false, false, NULL, NULL, typeCallback.raw(), specifyTypesCallback.raw());
+		args.withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 
@@ -241,9 +280,9 @@ PT_MINIT_REGISTRATION(pt_register_const_fetch_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *constantResolver, *expressionResultFactory, *defaultNarrowingHelper;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, constantResolver, expressionResultFactory, defaultNarrowingHelper)) RETURN_THROWS();
-		ConstFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(constantResolver, expressionResultFactory, defaultNarrowingHelper);
+		zval *constantResolver, *expressionResultFactory, *defaultNarrowingHelper, *reflectionProvider;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, constantResolver, expressionResultFactory, defaultNarrowingHelper, reflectionProvider)) RETURN_THROWS();
+		ConstFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(constantResolver, expressionResultFactory, defaultNarrowingHelper, reflectionProvider);
 	});
 
 	cls.method<&ConstFetchHandler::supports, zp::Obj>(sigs::supports);

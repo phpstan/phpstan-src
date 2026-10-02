@@ -67,8 +67,11 @@ public:
 
 		zv::Val typeCallback = pt_native_closure(&ptse::childTypeBody<ErrorSuppressHandler>, exprResult.raw());
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, exprResult.raw(), expr);
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_expression_result_dependencies(exprResult.raw(), dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 		pt_expression_result_args args(child.scope, scope, expr, child.hasYield, child.isAlwaysTerminating, child.throwPoints, child.impurePoints, typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(child.variableFlow.raw());
+		args.withVariableFlow(child.variableFlow.raw()).withDependencies(dependencies);
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

@@ -19,6 +19,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CoalesceExpressionNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -182,6 +183,7 @@ final class CoalesceHandler implements ExprHandler
 
 				return $this->defaultNarrowingHelper->createSubjectTypes($s, $expr, null, $type, $context);
 			},
+			dependencies: Dependencies::merge($condResult->getDependencies(), $rightResult->getDependencies()),
 		);
 	}
 

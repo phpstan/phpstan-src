@@ -787,6 +787,56 @@ bool thisVariableMatcher(zend_object *node, void *ctx)
 	return Z_TYPE_P(name) == IS_STRING && zend_string_equals(Z_STR_P(name), pt_ah_this);
 }
 
+/* {{{ the dependencies of the arguments */
+
+pt_method_site pt_ah_of_closure_type_site;
+
+/* DependencyTypes::ofClosureType($type); UNDEF = pending exception */
+zv::Val dependencyTypesOfClosureType(zval *type)
+{
+	return pt_call_static_cached(pt_ah_of_closure_type_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofclosuretype"), 1, type);
+}
+
+/* Dependencies::merge($bodyDependencies, Dependencies::create($scope->getFile(),
+ * DependencyTypes::ofClosureType($closureType))): what a closure or arrow
+ * function argument depends on; UNDEF = pending exception */
+zv::Val closureArgDependencies(zval *bodyDependencies, zval *scope, zval *closureType)
+{
+	zv::Val closureTypes = dependencyTypesOfClosureType(closureType);
+	if (UNEXPECTED(closureTypes.isUndef())) return zv::Val();
+	zv::Val ownDependencies = pt_dependencies_create_in(scope, closureTypes.raw());
+	if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+	return pt_dependencies_merge({bodyDependencies, ownDependencies.raw()});
+}
+
+/* Dependencies::merge(...array_map(static fn (ExpressionResult $argResult):
+ * ?Dependencies => $argResult->getDependencies(), array_values($argResults)));
+ * no array is built for fewer than two; UNDEF = pending exception */
+zv::Val argResultsDependencies(HashTable *argResults)
+{
+	uint32_t count = 0;
+	zv::Val single = zv::Val::null();
+	for (auto entry : zv::TableRef(argResults)) {
+		zv::Val hold;
+		zval *dependencies = pt_expression_result_dependencies(entry.value().deref().raw(), hold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
+		if (Z_TYPE_P(dependencies) == IS_NULL) continue;
+		if (++count == 1) single = zv::Val::copyOf(zv::Ref(dependencies));
+	}
+	if (count < 2) return single;
+
+	zv::Arr list = zv::Arr::create(count);
+	for (auto entry : zv::TableRef(argResults)) {
+		zv::Val hold;
+		zval *dependencies = pt_expression_result_dependencies(entry.value().deref().raw(), hold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
+		list.push(zv::Ref(dependencies));
+	}
+	return pt_dependencies_merge_list(list.table());
+}
+
+/* }}} */
+
 } // namespace
 
 namespace phpstanturbo {
@@ -1876,6 +1926,17 @@ private:
 		storedArgs.withVariableFlow(variableFlow.raw()).withType(types[0].raw()).withNativeType(types[1].raw());
 		zv::Val storedClosureResult = pt_expression_result_create(slot(slots::expressionResultFactory), storedArgs);
 		if (UNEXPECTED(storedClosureResult.isUndef())) return false;
+		{
+			zv::Val storedType = pt_expression_result_get_type(storedClosureResult.raw());
+			if (UNEXPECTED(storedType.isUndef())) return false;
+			zv::Val bodyDependenciesHold;
+			zval *bodyDependencies = pt_process_closure_result_dependencies(closureResult.raw(), bodyDependenciesHold);
+			if (UNEXPECTED(bodyDependencies == NULL)) return false;
+			zv::Val dependencies = closureArgDependencies(bodyDependencies, a.scopeToPass.raw(), storedType.raw());
+			if (UNEXPECTED(dependencies.isUndef())) return false;
+			storedClosureResult = pt_expression_result_with_dependencies(storedClosureResult.raw(), dependencies.raw());
+			if (UNEXPECTED(storedClosureResult.isUndef())) return false;
+		}
 		if (UNEXPECTED(!nsrStoreExpressionResult(w.nodeScopeResolver, w.storage, value, storedClosureResult.raw()))) return false;
 		// the closure node's own callback fires after its result is
 		// stored, mirroring processExprNodeInternal()
@@ -1989,7 +2050,12 @@ private:
 			zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 			if (UNEXPECTED(specifyTypesCallback.isUndef())) return false;
 			pt_expression_result_args storedArgs(resultScope, a.scopeToPass.raw(), value, hasYield, isAlwaysTerminating, throwPoints, impurePoints, NULL, specifyTypesCallback.raw());
-			storedArgs.withVariableFlow(variableFlow.raw()).withType(types[0].raw()).withNativeType(types[1].raw());
+			zv::Val bodyDependenciesHold;
+			zval *bodyDependencies = pt_expression_result_dependencies(exprResult, bodyDependenciesHold);
+			if (UNEXPECTED(bodyDependencies == NULL)) return false;
+			zv::Val dependencies = closureArgDependencies(bodyDependencies, a.scopeToPass.raw(), types[0].raw());
+			if (UNEXPECTED(dependencies.isUndef())) return false;
+			storedArgs.withVariableFlow(variableFlow.raw()).withType(types[0].raw()).withNativeType(types[1].raw()).withDependencies(dependencies.raw());
 			zv::Val storedArrowResult = pt_expression_result_create(slot(slots::expressionResultFactory), storedArgs);
 			if (UNEXPECTED(storedArrowResult.isUndef())) return false;
 			if (UNEXPECTED(!nsrStoreExpressionResult(w.nodeScopeResolver, w.storage, value, storedArrowResult.raw()))) return false;
@@ -2925,7 +2991,10 @@ private:
 		zv::Val typeCallback = pt_native_closure(&mixedTypeCallbackBody);
 		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		if (UNEXPECTED(specifyTypesCallback.isUndef())) return zv::Val();
+		zv::Val dependencies = argResultsDependencies(w.argResults.table());
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args resultArgs(w.scope.raw(), w.scope.raw(), callLike, w.hasYield, w.isAlwaysTerminating, w.throwPoints.raw(), w.impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
+		resultArgs.withDependencies(dependencies.raw());
 		zv::Val expressionResult = pt_expression_result_create(slot(slots::expressionResultFactory), resultArgs);
 		if (UNEXPECTED(expressionResult.isUndef())) return zv::Val();
 

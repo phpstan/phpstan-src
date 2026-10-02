@@ -51,13 +51,15 @@ inline constexpr char strings[] =
 	"isPassedByReference\0" /* 236 */
 	"PHPStan\\Analyser\\MutatingScope\0" /* 256 */
 	"getScope\0" /* 287 */
-	"hasYield\0" /* 296 */
-	"isAlwaysTerminating\0" /* 305 */
-	"getThrowPoints\0" /* 325 */
-	"getImpurePoints\0" /* 340 */
-	"PHPStan\\Analyser\\ArgsResult\0" /* 356 */
-	"withResolvedParametersAcceptor\0" /* 384 */
-	"getResolvedParametersAcceptor"; /* 415 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 296 */
+	"getDependencies\0" /* 328 */
+	"hasYield\0" /* 344 */
+	"isAlwaysTerminating\0" /* 353 */
+	"getThrowPoints\0" /* 373 */
+	"getImpurePoints\0" /* 388 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 404 */
+	"withResolvedParametersAcceptor\0" /* 432 */
+	"getResolvedParametersAcceptor"; /* 463 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 17), /* __construct $expressionResult */
 	reg::packed(51, MAY_BE_NULL, 78), /* __construct $resolvedParametersAcceptor */
@@ -71,12 +73,13 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(232, 0, 166), /* isPassedByReference $arg */
 	reg::packed(186, MAY_BE_BOOL), /* isPassedByReference return */
 	reg::packed(186, 0, 256), /* getScope return */
+	reg::packed(186, MAY_BE_NULL, 296), /* getDependencies return */
 	reg::packed(186, MAY_BE_BOOL), /* hasYield return */
 	reg::packed(186, MAY_BE_BOOL), /* isAlwaysTerminating return */
 	reg::packed(186, MAY_BE_ARRAY), /* getThrowPoints return */
 	reg::packed(186, MAY_BE_ARRAY), /* getImpurePoints return */
 	reg::packed(51, MAY_BE_NULL, 78), /* withResolvedParametersAcceptor $resolvedParametersAcceptor */
-	reg::packed(186, 0, 356), /* withResolvedParametersAcceptor return */
+	reg::packed(186, 0, 404), /* withResolvedParametersAcceptor return */
 	reg::packed(186, MAY_BE_NULL, 78), /* getResolvedParametersAcceptor return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -90,12 +93,13 @@ inline constexpr sigtab::Sig getArgResults = { { 201 /* getArgResults */, 0, 6, 
 inline constexpr sigtab::Sig requireArgResult = { { 215 /* requireArgResult */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isPassedByReference = { { 236 /* isPassedByReference */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getScope = { { 287 /* getScope */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasYield = { { 296 /* hasYield */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isAlwaysTerminating = { { 305 /* isAlwaysTerminating */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getThrowPoints = { { 325 /* getThrowPoints */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getImpurePoints = { { 340 /* getImpurePoints */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withResolvedParametersAcceptor = { { 384 /* withResolvedParametersAcceptor */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getResolvedParametersAcceptor = { { 415 /* getResolvedParametersAcceptor */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDependencies = { { 328 /* getDependencies */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasYield = { { 344 /* hasYield */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAlwaysTerminating = { { 353 /* isAlwaysTerminating */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowPoints = { { 373 /* getThrowPoints */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getImpurePoints = { { 388 /* getImpurePoints */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withResolvedParametersAcceptor = { { 432 /* withResolvedParametersAcceptor */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedParametersAcceptor = { { 463 /* getResolvedParametersAcceptor */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArgsResult

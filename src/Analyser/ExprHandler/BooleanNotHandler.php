@@ -76,6 +76,7 @@ final class BooleanNotHandler implements ExprHandler
 				// directly from its result rather than re-resolving the node.
 				return $exprResult->getSpecifiedTypes($context->negate(), $nativeTypesPromoted)->setRootExpr($expr);
 			},
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

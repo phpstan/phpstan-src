@@ -232,11 +232,11 @@ inline zv::Val expressionResultImpurePoints(zval *result)
 }
 
 /* new InternalStatementResult($scope, false, false, [], $throwPoints, []) */
-zv::Val emptyInternalStatementResult(zval *scope, zval *throwPoints)
+zv::Val emptyInternalStatementResult(zval *scope, zval *throwPoints, zval *dependencies = NULL)
 {
 	zval empty;
 	ZVAL_EMPTY_ARRAY(&empty);
-	return pt_internal_statement_result_new(scope, false, false, &empty, throwPoints != NULL ? throwPoints : &empty, &empty);
+	return pt_internal_statement_result_new(scope, false, false, &empty, throwPoints != NULL ? throwPoints : &empty, &empty, NULL, NULL, -1, dependencies);
 }
 
 /* $frame->isObserving(); false = pending exception */
@@ -538,18 +538,28 @@ public:
 		return true;
 	}
 
-	/* Mirrors processNodes(). */
+	/* Mirrors processNodes(): $this->processFileNodes(...), through the
+	 * object's class (a subclass may override it); false = pending exception */
 	[[nodiscard]] bool processNodes(zval *nodes, zval *scopeArg, zval *nodeCallback)
 	{
+		if (exact()) return !processFileNodes(nodes, scopeArg, nodeCallback).isUndef();
+		zv::Args argv{nodes, scopeArg, nodeCallback};
+		return !pt_type_call(self, PT_LC("processfilenodes"), 3, argv).isUndef();
+	}
+
+	/* Mirrors processFileNodes(): what the file depends on, UNDEF = pending
+	 * exception */
+	zv::Val processFileNodes(zval *nodes, zval *scopeArg, zval *nodeCallback)
+	{
 		zv::Val scope = pt_mutating_scope_to_walk_scope(Z_OBJ_P(scopeArg));
-		if (UNEXPECTED(scope.isUndef())) return false;
-		if (UNEXPECTED(!requireObject(scope, "pushExpressionResultStorage"))) return false;
+		if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		if (UNEXPECTED(!requireObject(scope, "pushExpressionResultStorage"))) return zv::Val();
 		if (guardNewWorld()) {
 			const NsrStatics &s = statics();
 			resetStaticArray(s.guardRealExprIds);
 			resetStaticArray(s.guardProcessedExprIds);
 			zv::Val realExprs = nodeFinderFindExprs(nodes);
-			if (UNEXPECTED(realExprs.isUndef())) return false;
+			if (UNEXPECTED(realExprs.isUndef())) return zv::Val();
 			if (realExprs.ref().isArray()) {
 				for (auto entry : zv::ArrRef(realExprs.raw())) {
 					zv::Ref realExpr = entry.value().deref();
@@ -561,22 +571,24 @@ public:
 		}
 
 		zv::Val storage = pt_expression_result_storage_new();
-		if (UNEXPECTED(storage.isUndef())) return false;
-		if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope.raw()), storage.raw()))) return false;
+		if (UNEXPECTED(storage.isUndef())) return zv::Val();
+		if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope.raw()), storage.raw()))) return zv::Val();
 		zv::Val gatherers = thisSuspendNodeGatherers();
-		if (UNEXPECTED(gatherers.isUndef())) return false;
+		if (UNEXPECTED(gatherers.isUndef())) return zv::Val();
 		zval thisZv;
 		ZVAL_OBJ(&thisZv, self);
+		zv::Val dependencies;
 		zval *statementsHandler = requireStatementsHandler();
 		if (EXPECTED(statementsHandler != NULL)) {
-			(void) pt_statements_handler_process_nodes_with_storage(statementsHandler, &thisZv, nodes, scope.raw(), storage.raw(), nodeCallback);
+			dependencies = pt_statements_handler_process_nodes_with_storage(statementsHandler, &thisZv, nodes, scope.raw(), storage.raw(), nodeCallback);
 		}
 		pt_finally([&]() {
 			if (thisRestoreNodeGatherers(gatherers.raw())) {
 				(void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope.raw()));
 			}
 		});
-		return EG(exception) == NULL;
+		if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+		return dependencies;
 	}
 
 	/* Mirrors storeExpressionResult(). */
@@ -1700,6 +1712,13 @@ private:
 			overridingThrowPoints = pt_statements_handler_get_overriding_throw_points(statementsHandler, stmt, scope.raw());
 			if (UNEXPECTED(overridingThrowPoints.isUndef())) return zv::Val();
 		}
+		zv::Val varTagDependencies;
+		{
+			zval *statementsHandler = requireStatementsHandler();
+			if (UNEXPECTED(statementsHandler == NULL)) return zv::Val();
+			varTagDependencies = pt_statements_handler_get_var_tag_dependencies(statementsHandler, stmt, scope.raw());
+			if (UNEXPECTED(varTagDependencies.isUndef())) return zv::Val();
+		}
 
 		if ((shape & PT_NSR_STMT_CLASS_METHOD) != 0) {
 			zv::Val skipped = classMethodOfUsingClass(stmtObject, scope.raw());
@@ -1715,12 +1734,25 @@ private:
 		if (!stmtHandler.isNull()) {
 			zv::Val stmtResult = pt_stmt_handler_process(stmtHandler.raw(), &thisZv, stmt, scope.raw(), storage, nodeCallback, context);
 			if (UNEXPECTED(stmtResult.isUndef())) return zv::Val();
+			if (!varTagDependencies.isNull()) {
+				if (UNEXPECTED(Z_TYPE_P(stmtResult.raw()) != IS_OBJECT)) {
+					zend_throw_error(NULL, "Call to a member function getDependencies() on %s", zend_zval_value_name(stmtResult.raw()));
+					return zv::Val();
+				}
+				zv::Val hold;
+				zval *resultDependencies = pt_internal_statement_result_dependencies(stmtResult.raw(), hold);
+				if (UNEXPECTED(resultDependencies == NULL)) return zv::Val();
+				zv::Val merged = pt_dependencies_merge({resultDependencies, varTagDependencies.raw()});
+				if (UNEXPECTED(merged.isUndef())) return zv::Val();
+				stmtResult = pt_internal_statement_result_with_dependencies(stmtResult.raw(), merged.raw());
+				if (UNEXPECTED(stmtResult.isUndef())) return zv::Val();
+			}
 			if (overridingThrowPoints.isNull()) return stmtResult;
 			return withOverridingThrowPoints(stmtResult.raw(), overridingThrowPoints.raw());
 		}
 
 		// statements with no analysis of their own (e.g. HaltCompiler)
-		return emptyInternalStatementResult(scope.raw(), overridingThrowPoints.isNull() ? NULL : overridingThrowPoints.raw());
+		return emptyInternalStatementResult(scope.raw(), overridingThrowPoints.isNull() ? NULL : overridingThrowPoints.raw(), varTagDependencies.isNull() ? NULL : varTagDependencies.raw());
 	}
 
 	/* the ClassMethod prelude of processStmtNode(): the empty result of a
@@ -1820,7 +1852,7 @@ private:
 
 		zv::Val result;
 		if (!failed) {
-			zv::Val scopeHold, exitPointsHold, impurePointsHold, endStatementsHold, variableFlowHold;
+			zv::Val scopeHold, exitPointsHold, impurePointsHold, endStatementsHold, variableFlowHold, dependenciesHold;
 			zval *scope = pt_internal_statement_result_scope(stmtResult, scopeHold);
 			bool hasYield = false;
 			bool terminating = false;
@@ -1834,8 +1866,9 @@ private:
 			if (variableFlow != NULL) {
 				ZVAL_COPY_VALUE(&flows[built], variableFlow);
 				zv::Val sequence = pt_variable_flow_sequence(built + 1, flows);
-				if (!sequence.isUndef()) {
-					result = pt_internal_statement_result_new(scope, hasYield, terminating, exitPoints, overridingThrowPoints, impurePoints, endStatements, sequence.raw());
+				zval *dependencies = !sequence.isUndef() ? pt_internal_statement_result_dependencies(stmtResult, dependenciesHold) : NULL;
+				if (dependencies != NULL) {
+					result = pt_internal_statement_result_new(scope, hasYield, terminating, exitPoints, overridingThrowPoints, impurePoints, endStatements, sequence.raw(), -1, dependencies);
 				}
 			}
 		}
@@ -2031,8 +2064,12 @@ private:
 		if (UNEXPECTED(specifyTypesCallback.isUndef())) return zv::Val();
 		zv::Ref factory = slot(slots::expressionResultFactory);
 		if (UNEXPECTED(!factory.isObject())) return uninitialized("expressionResultFactory");
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_expression_result_dependencies(newExprResult.raw(), dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 		pt_expression_result_args args(resultScope.raw(), scope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw());
+		args.withDependencies(dependencies);
 		zv::Val expressionResult = pt_expression_result_create(factory.raw(), args);
 		if (UNEXPECTED(expressionResult.isUndef())) return zv::Val();
 		if (UNEXPECTED(!thisStoreExpressionResult(storage, expr, expressionResult.raw()))) return zv::Val();
@@ -2371,6 +2408,16 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 			Z_PARAM_ZVAL(nodeCallback)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_NSR_RETURN_VOID(PT_NSR_THIS.processNodes(nodes, scope, nodeCallback));
+	});
+
+	cls.method(sigs::processFileNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *nodes, *scope, *nodeCallback;
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_ARRAY(nodes)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_ZVAL(nodeCallback)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_NSR_THIS.processFileNodes(nodes, scope, nodeCallback));
 	});
 
 	cls.method(sigs::storeExpressionResult, [](INTERNAL_FUNCTION_PARAMETERS) {

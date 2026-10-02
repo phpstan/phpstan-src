@@ -40,7 +40,9 @@ pt_property_site pt_ath_arg_value_site;
 
 namespace phpstanturbo {
 
-/* Mirrors PHPStan\Analyser\AttributesHandler; false = pending exception. */
+/* Mirrors PHPStan\Analyser\AttributesHandler; false / UNDEF = pending
+ * exception. What the attributes depend on is collected into a list the
+ * private methods push the non-null dependencies to. */
 class AttributesHandler
 {
 public:
@@ -53,11 +55,13 @@ public:
 		writeSlot(slots::argumentsHandler, argumentsHandler);
 	}
 
-	/* Mirrors processAttributeGroups() */
-	[[nodiscard]] bool processAttributeGroups(zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback) const
+	/* Mirrors processAttributeGroups(): what the arguments of the attributes
+	 * depend on */
+	zv::Val processAttributeGroups(zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback) const
 	{
-		if (EXPECTED(zend_hash_num_elements(Z_ARRVAL_P(attrGroups)) == 0)) return true;
+		if (EXPECTED(zend_hash_num_elements(Z_ARRVAL_P(attrGroups)) == 0)) return zv::Val::null();
 
+		zv::Arr dependencies = zv::Arr::empty();
 		/* foreach iterates the array as it was when the loop started */
 		zv::Val groups = zv::Val::copyOf(zv::Ref(attrGroups));
 		for (zv::ArrayEntry groupEntry : zv::ArrRef(groups.raw())) {
@@ -66,19 +70,20 @@ public:
 				/* AttributeGroup[] by the parser's typed property; anything
 				 * else fails at the twin's callNodeCallback($attrGroup) */
 				zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::callNodeCallback(): Argument #2 ($node) must be of type PhpParser\\Node, %s given", zend_zval_value_name(attrGroup));
-				return false;
+				return zv::Val();
 			}
 			zval *attrs = ptcall::nodeProperty(pt_ath_attrs_site, attrGroup, PT_LC("attrs"));
-			if (UNEXPECTED(attrs == NULL)) return false;
+			if (UNEXPECTED(attrs == NULL)) return zv::Val();
 			zv::Val attrsHold = zv::Val::copyOf(zv::Ref(attrs));
 			if (EXPECTED(Z_TYPE_P(attrsHold.raw()) == IS_ARRAY)) {
 				for (zv::ArrayEntry attrEntry : zv::ArrRef(attrsHold.raw())) {
-					if (UNEXPECTED(!processAttribute(nodeScopeResolver, stmt, attrEntry.value().deref().raw(), scope, storage, nodeCallback))) return false;
+					if (UNEXPECTED(!processAttribute(nodeScopeResolver, stmt, attrEntry.value().deref().raw(), scope, storage, nodeCallback, dependencies))) return zv::Val();
 				}
 			}
-			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, attrGroup, scope, storage))) return false;
+			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, attrGroup, scope, storage))) return zv::Val();
 		}
-		return true;
+
+		return pt_dependencies_merge_list(dependencies.table());
 	}
 
 private:
@@ -90,8 +95,14 @@ private:
 		Z_PROP_FLAG_P(OBJ_PROP_NUM(self, index)) = 0;
 	}
 
+	/* $dependencies[] = $dependency, a null one left out (the merge skips it) */
+	static void collect(zv::Arr &dependencies, zval *dependency)
+	{
+		if (Z_TYPE_P(dependency) != IS_NULL) dependencies.push(zv::Ref(dependency));
+	}
+
 	/* the body of the inner foreach over $attrGroup->attrs */
-	[[nodiscard]] bool processAttribute(zval *nodeScopeResolver, zval *stmt, zval *attr, zval *scope, zval *storage, zval *nodeCallback) const
+	[[nodiscard]] bool processAttribute(zval *nodeScopeResolver, zval *stmt, zval *attr, zval *scope, zval *storage, zval *nodeCallback, zv::Arr &dependencies) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(attr) != IS_OBJECT)) {
 			zend_throw_error(NULL, "Attempt to read property \"name\" on %s", zend_zval_value_name(attr));
@@ -118,7 +129,7 @@ private:
 			bool hasConstructor = false;
 			if (UNEXPECTED(!pt_class_reflection_has_constructor(Z_OBJ_P(classReflection.raw()), hasConstructor))) return false;
 			if (hasConstructor) {
-				return processConstructorAttribute(nodeScopeResolver, stmt, attr, name, classReflection.raw(), scope, storage, nodeCallback);
+				return processConstructorAttribute(nodeScopeResolver, stmt, attr, name, classReflection.raw(), scope, storage, nodeCallback, dependencies);
 			}
 		}
 
@@ -138,6 +149,10 @@ private:
 				if (UNEXPECTED(context.isUndef())) return false;
 				zv::Val result = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, value, scope, storage, nodeCallback, context.raw());
 				if (UNEXPECTED(result.isUndef())) return false;
+				zv::Val dependencyHold;
+				zval *dependency = pt_expression_result_dependencies(result.raw(), dependencyHold);
+				if (UNEXPECTED(dependency == NULL)) return false;
+				collect(dependencies, dependency);
 				if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, arg, scope, storage))) return false;
 			}
 		}
@@ -146,7 +161,7 @@ private:
 
 	/* the branch of an attribute whose class has a constructor: its
 	 * arguments walked as the constructor call's */
-	[[nodiscard]] bool processConstructorAttribute(zval *nodeScopeResolver, zval *stmt, zval *attr, zval *name, zval *classReflection, zval *scope, zval *storage, zval *nodeCallback) const
+	[[nodiscard]] bool processConstructorAttribute(zval *nodeScopeResolver, zval *stmt, zval *attr, zval *name, zval *classReflection, zval *scope, zval *storage, zval *nodeCallback, zv::Arr &dependencies) const
 	{
 		zv::Val constructorReflection = pt_class_reflection_get_constructor(Z_OBJ_P(classReflection));
 		if (UNEXPECTED(constructorReflection.isUndef())) return false;
@@ -181,6 +196,14 @@ private:
 		ZVAL_NULL(&null);
 		zv::Val argsResult = pt_arguments_handler_process_args(OBJ_PROP_NUM(self, slots::argumentsHandler), nodeScopeResolver, stmt, constructorReflection.raw(), &null, processVariants.raw(), processNamedArgumentsVariants.raw(), expr.raw(), scope, storage, nodeCallback, context.raw());
 		if (UNEXPECTED(argsResult.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(argsResult.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getDependencies() on %s", zend_zval_value_name(argsResult.raw()));
+			return false;
+		}
+		zv::Val dependencyHold;
+		zval *dependency = pt_args_result_dependencies(argsResult.raw(), dependencyHold);
+		if (UNEXPECTED(dependency == NULL)) return false;
+		collect(dependencies, dependency);
 		return pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, attr, scope, storage);
 	}
 };
@@ -189,11 +212,11 @@ private:
 
 using phpstanturbo::AttributesHandler;
 
-bool pt_attributes_handler_process_attribute_groups(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback)
+zv::Val pt_attributes_handler_process_attribute_groups(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback)
 {
 	if (EXPECTED(Z_OBJCE_P(handler) == pt_ce_attributes_handler && Z_TYPE_P(attrGroups) == IS_ARRAY)) return AttributesHandler(Z_OBJ_P(handler)).processAttributeGroups(nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
 	zv::Args argv{nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback};
-	return !pt_type_call(Z_OBJ_P(handler), PT_LC("processattributegroups"), 6, argv).isUndef();
+	return pt_type_call(Z_OBJ_P(handler), PT_LC("processattributegroups"), 6, argv);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -224,7 +247,9 @@ PT_MINIT_REGISTRATION(pt_register_attributes_handler)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_ZVAL(nodeCallback)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!AttributesHandler(Z_OBJ_P(ZEND_THIS)).processAttributeGroups(nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback))) RETURN_THROWS();
+		zv::Val dependencies = AttributesHandler(Z_OBJ_P(ZEND_THIS)).processAttributeGroups(nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
+		if (UNEXPECTED(dependencies.isUndef())) RETURN_THROWS();
+		dependencies.intoReturnValue(return_value);
 	});
 
 	cls.shadow(&pt_ce_attributes_handler);

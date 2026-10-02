@@ -16,6 +16,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -56,6 +57,7 @@ final class ShellExecHandler implements ExprHandler
 		$hasYield = false;
 		$throwPoints = [];
 		$variableFlows = [];
+		$dependencies = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		foreach ($expr->parts as $part) {
@@ -64,6 +66,7 @@ final class ShellExecHandler implements ExprHandler
 			}
 			$partResult = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$variableFlows[] = $partResult->getVariableFlow();
+			$dependencies[] = $partResult->getDependencies();
 			$hasYield = $hasYield || $partResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $partResult->getImpurePoints());
@@ -87,6 +90,7 @@ final class ShellExecHandler implements ExprHandler
 			impurePoints: $impurePoints,
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => TypeCombinator::union(new StringType(), new ConstantBooleanType(false), new NullType()),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: Dependencies::merge(...$dependencies),
 		);
 	}
 

@@ -38,6 +38,8 @@ extern "C" {
 
 #pragma GCC diagnostic pop
 
+#include <initializer_list>
+
 #ifdef _WIN32
 /* the engine headers pull in windows.h, whose min() / max() macros would
  * rewrite every member and call of those names */
@@ -470,6 +472,8 @@ enum {
 	PT_CLASS_ITERABLE_HELPER,
 	PT_CLASS_CLOSURE_CALL_CONTEXT_MATCHER,
 	PT_CLASS_CLASS_CONSTANT_PATTERN_RESOLVER,
+	/* the dependencies of the handlers' results */
+	PT_CLASS_DEPENDENCY_TYPES,
 	PT_CLASS_COUNT
 };
 
@@ -1690,6 +1694,25 @@ zv::Val pt_variable_flow_throwing(zval *type, bool canContinue, bool canContainA
 
 /* }}} */
 
+/* {{{ what the analysed code depends on (Dependencies.cpp)
+ *
+ * The Dependencies every ExpressionResult and InternalStatementResult
+ * carries. pt_dependencies_merge() is the twin's Dependencies::merge(...)
+ * over borrowed values, NULL or IS_NULL for null - no call and no
+ * allocation for fewer than two non-null ones; pt_dependencies_create() is
+ * create() (the arrays borrowed, NULL for []), _create_in() reads the file
+ * from $scope->getFile(). A Dependencies, PHP null when there is nothing to
+ * depend on, UNDEF = pending exception. */
+extern zend_class_entry *pt_ce_dependencies;
+zv::Val pt_dependencies_create(zval *file, zval *types, zval *classNames = NULL, zval *reflections = NULL, zval *filePaths = NULL, zval *usedTraits = NULL);
+zv::Val pt_dependencies_create_in(zval *scope, zval *types, zval *classNames = NULL, zval *reflections = NULL, zval *filePaths = NULL, zval *usedTraits = NULL);
+zv::Val pt_dependencies_merge(uint32_t argc, zval *const *argv);
+zv::Val pt_dependencies_merge(std::initializer_list<zval *> dependencies);
+/* Dependencies::merge(...$list) */
+zv::Val pt_dependencies_merge_list(HashTable *list);
+
+/* }}} */
+
 
 /* PhpClassReflectionExtension.cpp — the shadowing member factory behind
  * ClassReflection's has*()/get*() methods */
@@ -1975,13 +1998,15 @@ zv::Val pt_internal_end_statement_result_to_public(zval *endStatement);
  * $exitPoints, $throwPoints, $impurePoints, $endStatements, $variableFlow,
  * $endReachable) ($endStatements NULL for [], $variableFlow NULL for null,
  * $endReachable -1 for null, else 0/1) */
-zv::Val pt_internal_statement_result_new(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements = NULL, zval *variableFlow = NULL, int endReachable = -1);
+zv::Val pt_internal_statement_result_new(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements = NULL, zval *variableFlow = NULL, int endReachable = -1, zval *dependencies = NULL);
 /* $result->filterOutLoopExitPoints() / ->getExitPointsByType($stmtClass)
  * (the class entry) / ->getExitPointsForOuterLoop() /
  * ->getLoopBackEdgeScope() (the scope or null) / ->toPublic() */
 zv::Val pt_internal_statement_result_filter_out_loop_exit_points(zval *result);
 /* $result->withVariableFlow($variableFlow); $variableFlow NULL for null */
 zv::Val pt_internal_statement_result_with_variable_flow(zval *result, zval *variableFlow);
+/* $result->withDependencies($dependencies) ($dependencies NULL or IS_NULL for null) */
+zv::Val pt_internal_statement_result_with_dependencies(zval *result, zval *dependencies);
 zv::Val pt_internal_statement_result_exit_points_by_type(zval *result, zend_class_entry *stmtClass);
 zv::Val pt_internal_statement_result_exit_points_for_outer_loop(zval *result);
 zv::Val pt_internal_statement_result_loop_back_edge_scope(zval *result);
@@ -2059,7 +2084,8 @@ zv::Val pt_assign_target_walk_mode_new(bool enterExpressionAssign, bool produces
 extern zend_class_entry *pt_ce_prepared_assign_target;
 /* new PreparedAssignTarget(...$argv): the constructor's positional
  * arguments in the twin's order (at least the 11 required ones), an
- * omitted or UNDEF optional one taking its default */
+ * omitted or UNDEF optional one taking its default (the last one,
+ * $dependencies, is ptdecl::PreparedAssignTarget::slot::dependencies) */
 zv::Val pt_prepared_assign_target_new(uint32_t argc, zval *argv);
 
 /* }}} */
@@ -2252,13 +2278,17 @@ zv::Val pt_node_scope_resolver_suspend_node_gatherers(zval *nodeScopeResolver);
 zv::Val pt_node_scope_resolver_observing_template_argument_frame(zval *nodeScopeResolver, zval *scope);
 [[nodiscard]] bool pt_node_scope_resolver_replay_recording_range(zval *nodeScopeResolver, zval *recording, zend_long from, zend_long to, zval *nodeCallback, zval *storage, zval *scope);
 
-/* StatementsHandler.cpp — $statementsHandler->processNodesWithStorage(...) /
+/* StatementsHandler.cpp — $statementsHandler->processNodesWithStorage(...)
+ * (what the statements depend on: a Dependencies or null) /
  * doProcessStmtNodes(...) / processStmtVarAnnotation(...) ($defaultExpr
  * NULL for null) / getOverridingThrowPoints($statement, $scope) (a list or
  * null) / emitVarTagChangedNode(...) / getVariableMentionFlow($stmt): the
  * native body for the native class, the method otherwise; UNDEF / false =
  * pending exception */
-[[nodiscard]] bool pt_statements_handler_process_nodes_with_storage(zval *handler, zval *nodeScopeResolver, zval *nodes, zval *scope, zval *storage, zval *nodeCallback);
+zv::Val pt_statements_handler_process_nodes_with_storage(zval *handler, zval *nodeScopeResolver, zval *nodes, zval *scope, zval *storage, zval *nodeCallback);
+/* $statementsHandler->getVarTagDependencies($stmt, $scope): a Dependencies or
+ * null, UNDEF = pending exception */
+zv::Val pt_statements_handler_get_var_tag_dependencies(zval *handler, zval *stmt, zval *scope);
 zv::Val pt_statements_handler_do_process_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context);
 zv::Val pt_statements_handler_process_stmt_var_annotation(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback);
 zv::Val pt_statements_handler_get_overriding_throw_points(zval *handler, zval *statement, zval *scope);
@@ -2449,7 +2479,9 @@ zv::Val pt_mutating_scope_get_function_name(zend_object *scope);
 /* ExpressionResult.cpp — $result->finalize(...) /
  * ->getKeepVoidType($nativeTypesPromoted) ($variableFlow NULL or IS_NULL
  * for null); UNDEF = pending exception */
-zv::Val pt_expression_result_finalize(zval *result, zval *scope, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *variableFlow);
+zv::Val pt_expression_result_finalize(zval *result, zval *scope, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *variableFlow, zval *dependencies);
+/* $result->withDependencies($dependencies) ($dependencies NULL or IS_NULL for null) */
+zv::Val pt_expression_result_with_dependencies(zval *result, zval *dependencies);
 zv::Val pt_expression_result_get_keep_void_type(zval *result, bool nativeTypesPromoted);
 
 /* VariableFlow.cpp — VariableFlow::exit(VariableFlow::STOP);
@@ -3068,10 +3100,11 @@ extern zend_class_entry *pt_ce_parameters_processor;
  * $attrGroups, $scope, $storage, $nodeCallback) /
  * $parametersProcessor->processParams($nodeScopeResolver, $stmt, $params,
  * $scope, $storage, $nodeCallback) — the native body for the shadowing class
- * and an array, the method otherwise (everything borrowed); false = pending
- * exception */
-[[nodiscard]] bool pt_attributes_handler_process_attribute_groups(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback);
-[[nodiscard]] bool pt_parameters_processor_process_params(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback);
+ * and an array, the method otherwise (everything borrowed): what the
+ * attributes / the parameters depend on (a Dependencies or null), UNDEF =
+ * pending exception */
+zv::Val pt_attributes_handler_process_attribute_groups(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback);
+zv::Val pt_parameters_processor_process_params(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback);
 
 /* }}} */
 
@@ -3200,7 +3233,7 @@ extern zend_class_entry *pt_ce_arrow_function_handler;
  * NULL or IS_NULL for null, $byRefUses NULL for []); the slot readers are in
  * AnalyserValues.h. $result->applyByRefUseScope($scope): the native body for
  * the shadowing class, the method otherwise. UNDEF = pending exception */
-zv::Val pt_process_closure_result_new(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope = NULL, zval *byRefUses = NULL);
+zv::Val pt_process_closure_result_new(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope = NULL, zval *byRefUses = NULL, zval *dependencies = NULL);
 zv::Val pt_process_closure_result_apply_by_ref_use_scope(zval *result, zval *scope);
 zv::Val pt_process_arrow_function_result_new(zval *expressionResult, zval *arrowFunctionScope, zval *closureTypeThrowPoints, zval *closureTypeImpurePoints, zval *invalidateExpressions);
 /* $closureProcessor->processClosureNode(...) / ->processArrowFunctionNode(...) /
@@ -3212,10 +3245,10 @@ zv::Val pt_closure_processor_process_closure_node(zval *processor, zval *nodeSco
 zv::Val pt_closure_processor_process_arrow_function_node(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *passedToType, zval *nativePassedToType = NULL, zval *context = NULL);
 zv::Val pt_closure_processor_process_immediately_called_callable(zval *processor, zval *scope, zval *invalidatedExpressions, zval *uses);
 /* ClosureProcessor::processByRefInvocation() ([the scope, the throw
- * points]) / processDeferredByRefClosureBody(); UNDEF / false = pending
- * exception */
+ * points]) / processDeferredByRefClosureBody() (what the body depends on: a
+ * Dependencies or null); UNDEF = pending exception */
 zv::Val pt_closure_processor_process_by_ref_invocation(zval *processor, zval *nodeScopeResolver, zval *expr, zval *call, zval *scope, zval *storage, zval *argumentTypes, zval *creationScope, bool untilFixpoint);
-[[nodiscard]] bool pt_closure_processor_process_deferred_by_ref_closure_body(zval *processor, zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *byRefEntryTypes);
+zv::Val pt_closure_processor_process_deferred_by_ref_closure_body(zval *processor, zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *byRefEntryTypes);
 /* ClosureHandler::getVariableFlow($closure) / ArrowFunctionHandler::getVariableFlow($arrowFunction,
  * $bodyResult) (the flow or null); UNDEF = pending exception */
 zv::Val pt_closure_handler_get_variable_flow(zval *expr);
@@ -3421,12 +3454,13 @@ zv::Val pt_node_doc_comment_text(zval *node);
 
 /* $propertyHooksProcessor->processPropertyHooks($nodeScopeResolver, $stmt,
  * $nativeTypeNode, $phpDocType, $propertyName, $hooks, $scope, $storage,
- * $nodeCallback) / $calledMethodProcessor->processCalledMethod($nodeScopeResolver,
+ * $nodeCallback) (what the hooks depend on: a Dependencies or null) /
+ * $calledMethodProcessor->processCalledMethod($nodeScopeResolver,
  * $methodReflection) (the end scope or null) / ->clearCalledMethodResults():
  * the native body for the shadowing class, the method otherwise (everything
  * borrowed, the nullable ones IS_NULL for null); false / UNDEF = pending
  * exception */
-[[nodiscard]] bool pt_property_hooks_processor_process_property_hooks(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hooks, zval *scope, zval *storage, zval *nodeCallback);
+zv::Val pt_property_hooks_processor_process_property_hooks(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hooks, zval *scope, zval *storage, zval *nodeCallback);
 zv::Val pt_called_method_processor_process_called_method(zval *processor, zval *nodeScopeResolver, zval *methodReflection);
 [[nodiscard]] bool pt_called_method_processor_clear_called_method_results(zval *processor);
 

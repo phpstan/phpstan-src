@@ -83,6 +83,7 @@ public:
 		bool hasYield = false;
 		zv::Val throwPoints = zv::Arr::empty();
 		zv::Arr variableFlows = zv::Arr::empty();
+		zv::Arr dependencies = zv::Arr::empty();
 		zv::Val impurePoints = zv::Arr::empty();
 		bool isAlwaysTerminating = false;
 		zv::Val scopeHold;
@@ -104,6 +105,12 @@ public:
 			zv::Val variableFlow = pt_expression_result_variable_flow(partResult.raw());
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 			variableFlows.push(std::move(variableFlow));
+			{
+				zv::Val hold;
+				zval *partDependencies = pt_expression_result_dependencies(partResult.raw(), hold);
+				if (UNEXPECTED(partDependencies == NULL)) return zv::Val();
+				dependencies.push(zv::Ref(partDependencies));
+			}
 			if (!hasYield && UNEXPECTED(!pt_expression_result_has_yield(partResult.raw(), hasYield))) return zv::Val();
 			{
 				zv::Val hold;
@@ -141,8 +148,10 @@ public:
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody);
 		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<ShellExecHandler>, self, expr);
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(scope, beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw());
+		args.withVariableFlow(variableFlow.raw()).withDependencies(mergedDependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

@@ -21,7 +21,9 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
@@ -46,6 +48,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -120,7 +123,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			}
 		}
 
-		return $this->expressionResultFactory->create(
+		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
@@ -204,6 +207,45 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
+		return $result->withDependencies(Dependencies::merge(
+			$classResult !== null ? $classResult->getDependencies() : null,
+			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$this->getDependencies($beforeScope, $expr, $classResult, $result),
+		));
+	}
+
+	/**
+	 * The class the property is fetched from, the class declaring it, and the classes in its type.
+	 */
+	private function getDependencies(MutatingScope $scope, StaticPropertyFetch $expr, ?ExpressionResult $classResult, ExpressionResult $result): ?Dependencies
+	{
+		$types = [$result->getType()];
+		$classNames = [];
+		if ($classResult !== null) {
+			$types[] = $classResult->getType();
+		} elseif ($expr->class instanceof Name) {
+			$classNames[] = $scope->resolveName($expr->class);
+		}
+
+		if ($expr->name instanceof VarLikeIdentifier) {
+			$propertyName = $expr->name->toString();
+			if ($classResult !== null) {
+				$propertyReflection = $scope->getStaticPropertyReflection($classResult->getType(), $propertyName);
+				if ($propertyReflection !== null) {
+					$classNames[] = $propertyReflection->getDeclaringClass()->getName();
+				}
+			} elseif ($expr->class instanceof Name) {
+				$className = $scope->resolveName($expr->class);
+				if ($this->reflectionProvider->hasClass($className)) {
+					$propertyClassReflection = $this->reflectionProvider->getClass($className);
+					if ($propertyClassReflection->hasStaticProperty($propertyName)) {
+						$classNames[] = $propertyClassReflection->getStaticProperty($propertyName)->getDeclaringClass()->getName();
+					}
+				}
+			}
+		}
+
+		return Dependencies::create($scope->getFile(), $types, $classNames);
 	}
 
 	private function propertyFetchType(MutatingScope $scope, Type $fetchedOnType, string $propertyName, StaticPropertyFetch $propertyFetch): ?Type

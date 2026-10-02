@@ -73,6 +73,7 @@ final class YieldFromHandler implements ExprHandler
 				return $generatorReturnType;
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

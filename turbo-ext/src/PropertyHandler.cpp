@@ -165,9 +165,13 @@ public:
 	/* Mirrors processStmt(). */
 	zv::Val processStmt(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context) const
 	{
+		/* the non-null ones of the twin's $dependencies list */
+		zv::Arr dependencies = zv::Arr::empty();
 		zval *attrGroups = ptsh::readNodeProperty(pt_ph_attr_groups_site, stmt, PT_LC("attrGroups"));
 		if (UNEXPECTED(attrGroups == NULL)) return zv::Val();
-		if (UNEXPECTED(!ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback))) return zv::Val();
+		zv::Val attributeDependencies = ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
+		if (UNEXPECTED(attributeDependencies.isUndef())) return zv::Val();
+		collect(dependencies, attributeDependencies.raw());
 
 		zv::Val nativePropertyType = zv::Val::null();
 		{
@@ -209,7 +213,7 @@ public:
 			/* foreach iterates the array it started with */
 			zv::Val iterated = zv::Val::copyOf(zv::Ref(props));
 			for (auto entry : zv::ArrRef(iterated.raw())) {
-				if (UNEXPECTED(!processProp(nodeScopeResolver, stmt, entry.value().deref().raw(), scope, storage, nodeCallback, context, nativePropertyType.raw(), isReadOnly, docComment, varTags, isAllowedPrivateMutation, phpDocType, propertyName))) return zv::Val();
+				if (UNEXPECTED(!processProp(nodeScopeResolver, stmt, entry.value().deref().raw(), scope, storage, nodeCallback, context, nativePropertyType.raw(), isReadOnly, docComment, varTags, isAllowedPrivateMutation, phpDocType, propertyName, dependencies))) return zv::Val();
 			}
 		}
 
@@ -233,7 +237,9 @@ public:
 			zval *type = ptsh::readNodeProperty(pt_ph_type_site, stmt, PT_LC("type"));
 			if (UNEXPECTED(type == NULL)) return zv::Val();
 			zv::Val typeHold = zv::Val::copyOf(zv::Ref(type));
-			if (UNEXPECTED(!pt_property_hooks_processor_process_property_hooks(OBJ_PROP_NUM(self, slots::propertyHooksProcessor), nodeScopeResolver, stmt, typeHold.raw(), phpDocType.raw(), propertyName.raw(), hooksHold.raw(), scope, storage, nodeCallback))) return zv::Val();
+			zv::Val hookDependencies = pt_property_hooks_processor_process_property_hooks(OBJ_PROP_NUM(self, slots::propertyHooksProcessor), nodeScopeResolver, stmt, typeHold.raw(), phpDocType.raw(), propertyName.raw(), hooksHold.raw(), scope, storage, nodeCallback);
+			if (UNEXPECTED(hookDependencies.isUndef())) return zv::Val();
+			collect(dependencies, hookDependencies.raw());
 		}
 
 		zval *type = ptsh::readNodeProperty(pt_ph_type_site, stmt, PT_LC("type"));
@@ -243,9 +249,11 @@ public:
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, typeHold.raw(), scope, storage))) return zv::Val();
 		}
 
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, &emptyArray);
+		return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */
@@ -256,6 +264,12 @@ public:
 
 private:
 	zend_object *self;
+
+	/* $dependencies[] = $dependency, a null one left out (the merge skips it) */
+	static void collect(zv::Arr &dependencies, zval *dependency)
+	{
+		if (Z_TYPE_P(dependency) != IS_NULL) dependencies.push(zv::Ref(dependency));
+	}
 
 	/* $varTag->getType() */
 	static zv::Val varTagType(zval *varTag)
@@ -268,8 +282,9 @@ private:
 	}
 
 	/* the loop body over one property item; `propertyName` is the twin's
-	 * $propertyName, `phpDocType` its $phpDocType; false = pending exception */
-	[[nodiscard]] static bool processProp(zval *nodeScopeResolver, zval *stmt, zval *prop, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *nativePropertyType, zval *isReadOnly, zval *docComment, zval *varTags, zval *isAllowedPrivateMutation, zv::Val &phpDocType, zv::Val &propertyName)
+	 * $propertyName, `phpDocType` its $phpDocType, `dependencies` its
+	 * $dependencies; false = pending exception */
+	[[nodiscard]] static bool processProp(zval *nodeScopeResolver, zval *stmt, zval *prop, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *nativePropertyType, zval *isReadOnly, zval *docComment, zval *varTags, zval *isAllowedPrivateMutation, zv::Val &phpDocType, zv::Val &propertyName, zv::Arr &dependencies)
 	{
 		if (UNEXPECTED(Z_TYPE_P(prop) != IS_OBJECT)) {
 			zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::callNodeCallback(): Argument #2 ($node) must be of type PhpParser\\Node, %s given", zend_zval_value_name(prop));
@@ -287,6 +302,10 @@ private:
 				if (UNEXPECTED(expressionContext.isUndef())) return false;
 				zv::Val result = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, defaultHold.raw(), scope, storage, nodeCallback, expressionContext.raw());
 				if (UNEXPECTED(result.isUndef())) return false;
+				zv::Val hold;
+				zval *defaultDependencies = pt_expression_result_dependencies(result.raw(), hold);
+				if (UNEXPECTED(defaultDependencies == NULL)) return false;
+				collect(dependencies, defaultDependencies);
 			}
 		}
 
@@ -358,7 +377,15 @@ private:
 		ZVAL_COPY_VALUE(&nodeArgv[13], classReflection.raw());
 		zv::Val classPropertyNode = pt_type_new(PT_CLASS_CLASS_PROPERTY_NODE, 14, nodeArgv);
 		if (UNEXPECTED(classPropertyNode.isUndef())) return false;
-		return pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, classPropertyNode.raw(), scope, storage);
+		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, classPropertyNode.raw(), scope, storage))) return false;
+
+		zv::Arr types = zv::Arr::create(2);
+		types.push(zv::Ref(nativePropertyType));
+		types.push(zv::Ref(phpDocType.raw()));
+		zv::Val propertyDependencies = pt_dependencies_create_in(scope, types.raw());
+		if (UNEXPECTED(propertyDependencies.isUndef())) return false;
+		collect(dependencies, propertyDependencies.raw());
+		return true;
 	}
 };
 

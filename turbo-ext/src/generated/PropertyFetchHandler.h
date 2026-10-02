@@ -70,11 +70,14 @@ inline constexpr char strings[] =
 	"scopeBeforeVar\0" /* 705 */
 	"beforeScope\0" /* 720 */
 	"composeResult\0" /* 732 */
-	"fetchedOnType\0" /* 746 */
-	"PHPStan\\Type\\Type\0" /* 760 */
-	"propertyName\0" /* 778 */
-	"propertyFetch\0" /* 791 */
-	"propertyFetchType"; /* 805 */
+	"result\0" /* 746 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 753 */
+	"getDependencies\0" /* 785 */
+	"fetchedOnType\0" /* 801 */
+	"PHPStan\\Type\\Type\0" /* 815 */
+	"propertyName\0" /* 833 */
+	"propertyFetch\0" /* 846 */
+	"propertyFetchType"; /* 860 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 11), /* __construct $phpVersion */
 	reg::packed(34, 0, 59), /* __construct $propertyReflectionFinder */
@@ -98,11 +101,16 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(705, 0, 468), /* composeResult $scopeBeforeVar */
 	reg::packed(720, 0, 468), /* composeResult $beforeScope */
 	reg::packed(374, 0, 604), /* composeResult return */
+	reg::packed(462, 0, 468), /* getDependencies $scope */
+	reg::packed(349, 0, 650), /* getDependencies $expr */
+	reg::packed(684, 0, 604), /* getDependencies $varResult */
+	reg::packed(746, 0, 604), /* getDependencies $result */
+	reg::packed(374, MAY_BE_NULL, 753), /* getDependencies return */
 	reg::packed(462, 0, 468), /* propertyFetchType $scope */
-	reg::packed(746, 0, 760), /* propertyFetchType $fetchedOnType */
-	reg::packed(778, MAY_BE_STRING), /* propertyFetchType $propertyName */
-	reg::packed(791, 0, 650), /* propertyFetchType $propertyFetch */
-	reg::packed(374, MAY_BE_NULL, 760), /* propertyFetchType return */
+	reg::packed(801, 0, 815), /* propertyFetchType $fetchedOnType */
+	reg::packed(833, MAY_BE_STRING), /* propertyFetchType $propertyName */
+	reg::packed(846, 0, 650), /* propertyFetchType $propertyFetch */
+	reg::packed(374, MAY_BE_NULL, 815), /* propertyFetchType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -113,7 +121,8 @@ inline constexpr sigtab::Sig __construct = { { 337 /* __construct */, 5, 0, 5, r
 inline constexpr sigtab::Sig supports = { { 375 /* supports */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 638 /* processExpr */, 7, 7, 7, 14, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig composeResult = { { 732 /* composeResult */, 6, 15, 6, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig propertyFetchType = { { 805 /* propertyFetchType */, 4, 22, 4, 26, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getDependencies = { { 785 /* getDependencies */, 4, 22, 4, 26, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig propertyFetchType = { { 860 /* propertyFetchType */, 4, 27, 4, 31, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::PropertyFetchHandler

@@ -12,6 +12,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
@@ -43,14 +44,16 @@ final class EnumCaseHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
+		$dependencies = [];
+		$dependencies[] = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		$impurePoints = [];
 		if ($stmt->expr !== null) {
 			$exprResult = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$dependencies[] = $exprResult->getDependencies();
 			$impurePoints = $exprResult->getImpurePoints();
 		}
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

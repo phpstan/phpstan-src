@@ -16,7 +16,8 @@ inline constexpr uint32_t hasYield = 2;
 inline constexpr uint32_t exitPoints = 3;
 inline constexpr uint32_t throwPoints = 4;
 inline constexpr uint32_t impurePoints = 5;
-inline constexpr uint32_t scope = 6;
+inline constexpr uint32_t dependencies = 6;
+inline constexpr uint32_t scope = 7;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -33,6 +34,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("exitPoints", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("throwPoints", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("impurePoints", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("dependencies", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("scope", ZEND_ACC_PUBLIC, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\MutatingScope");
 }
 

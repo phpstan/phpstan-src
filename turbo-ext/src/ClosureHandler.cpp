@@ -21,6 +21,18 @@ namespace sigs = ptdecl::ClosureHandler::sig;
 
 zend_class_entry *pt_ce_closure_handler = nullptr;
 
+namespace {
+
+pt_method_site pt_clh_of_closure_type_site;
+
+/* DependencyTypes::ofClosureType($type); UNDEF = pending exception */
+zv::Val dependencyTypesOfClosureType(zval *type)
+{
+	return pt_call_static_cached(pt_clh_of_closure_type_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofclosuretype"), 1, type);
+}
+
+} // namespace
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Analyser\ExprHandler\ClosureHandler; UNDEF = pending
@@ -99,10 +111,19 @@ public:
 		zv::Val variableFlow = pt_closure_handler_get_variable_flow(expr);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
+		zv::Val closureTypes = dependencyTypesOfClosureType(type.raw());
+		if (UNEXPECTED(closureTypes.isUndef())) return zv::Val();
+		zv::Val ownDependencies = pt_dependencies_create_in(scope, closureTypes.raw());
+		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+		zv::Val bodyDependenciesHold;
+		zval *bodyDependencies = pt_process_closure_result_dependencies(processClosureResult.raw(), bodyDependenciesHold);
+		if (UNEXPECTED(bodyDependencies == NULL)) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({bodyDependencies, ownDependencies.raw()});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
 		pt_expression_result_args args(resultScope.raw(), scope, expr, false, false, &emptyArray, &emptyArray, NULL, specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw()).withType(type.raw()).withNativeType(type.raw());
+		args.withVariableFlow(variableFlow.raw()).withType(type.raw()).withNativeType(type.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

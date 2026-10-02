@@ -17,6 +17,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanOrNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -130,6 +131,7 @@ final class BooleanOrHandler implements ExprHandler
 				static fn (bool $nativeTypesPromoted): Type => $nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType(),
 				static fn (): MutatingScope => $rightResult->getTruthyScope(),
 			),
+			dependencies: Dependencies::merge($leftResult->getDependencies(), $rightResult->getDependencies()),
 		);
 		// store before emitting the virtual node: its rules ask about the raw
 		// expression, and a synchronously invoked rule (the plain resolver,

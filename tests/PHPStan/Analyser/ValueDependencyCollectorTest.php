@@ -18,6 +18,8 @@ final class ValueDependencyCollectorTest extends PHPStanTestCase
 	{
 		$collector = self::getContainer()->getByType(ValueDependencyCollector::class);
 		$extension = self::getContainer()->getByType(TestValueExtension::class);
+		// the container is shared with the other tests, which ask the extension too
+		$callsBefore = $extension->calls;
 		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
 		$analysedFileScope = $scopeFactory->create(ScopeContext::create('/project/src/Analysed.php'));
 		$otherFileScope = $scopeFactory->create(ScopeContext::create('/project/src/Other.php'));
@@ -46,7 +48,7 @@ final class ValueDependencyCollectorTest extends PHPStanTestCase
 				],
 			],
 		], $collector->finishFile());
-		$this->assertSame(2, $extension->calls);
+		$this->assertSame($callsBefore + 2, $extension->calls);
 	}
 
 	public function testFile(): void

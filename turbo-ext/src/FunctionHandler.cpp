@@ -35,6 +35,7 @@ namespace {
 
 pt_method_site pt_fh_get_name_site;
 pt_method_site pt_fh_get_return_node_site;
+pt_method_site pt_fh_of_declaration_site;
 
 /* $functionReflection->getName() */
 zv::Val getFunctionName(zval *functionReflection)
@@ -48,7 +49,20 @@ zv::Val getReturnNode(zval *node)
 	return pt_call_method_cached(pt_fh_get_return_node_site, Z_OBJ_P(node), PT_LC("getreturnnode"), 0, NULL);
 }
 
+/* DependencyTypes::ofDeclaration($reflection, $withAsserts) */
+zv::Val ofDeclaration(zval *reflection, bool withAsserts)
+{
+	zv::Args argv{reflection, withAsserts};
+	return pt_call_static_cached(pt_fh_of_declaration_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofdeclaration"), 2, argv);
+}
+
 /* }}} */
+
+/* $dependencies[] = $dependency, a null one left out (the merge skips it) */
+void collect(zv::Arr &dependencies, zval *dependency)
+{
+	if (Z_TYPE_P(dependency) != IS_NULL) dependencies.push(zv::Ref(dependency));
+}
 
 pt_property_site pt_fh_attr_groups_site;
 pt_property_site pt_fh_params_site;
@@ -97,9 +111,13 @@ public:
 	/* Mirrors processStmt(). */
 	zv::Val processStmt(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context) const
 	{
+		/* the non-null ones of the twin's $dependencies list */
+		zv::Arr dependencies = zv::Arr::empty();
 		zval *attrGroups = ptsh::readNodeProperty(pt_fh_attr_groups_site, stmt, PT_LC("attrGroups"));
 		if (UNEXPECTED(attrGroups == NULL)) return zv::Val();
-		if (UNEXPECTED(!ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback))) return zv::Val();
+		zv::Val attributeDependencies = ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
+		if (UNEXPECTED(attributeDependencies.isUndef())) return zv::Val();
+		collect(dependencies, attributeDependencies.raw());
 		/* [$templateTypeMap, ..., $isInternal, , $isPure, $acceptsNamedArguments, ,
 		 * $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] */
 		static constexpr uint32_t listIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 16, 20 };
@@ -114,7 +132,9 @@ public:
 
 		zval *params = ptsh::readNodeProperty(pt_fh_params_site, stmt, PT_LC("params"));
 		if (UNEXPECTED(params == NULL)) return zv::Val();
-		if (UNEXPECTED(!ptsh::processParams(OBJ_PROP_NUM(self, slots::parametersProcessor), nodeScopeResolver, stmt, params, scope, storage, nodeCallback))) return zv::Val();
+		zv::Val parameterDependencies = ptsh::processParams(OBJ_PROP_NUM(self, slots::parametersProcessor), nodeScopeResolver, stmt, params, scope, storage, nodeCallback);
+		if (UNEXPECTED(parameterDependencies.isUndef())) return zv::Val();
+		collect(dependencies, parameterDependencies.raw());
 
 		zval *returnType = ptsh::readNodeProperty(pt_fh_return_type_site, stmt, PT_LC("returnType"));
 		if (UNEXPECTED(returnType == NULL)) return zv::Val();
@@ -157,6 +177,13 @@ public:
 			return zv::Val();
 		}
 
+		{
+			zv::Val declarationTypes = ofDeclaration(functionReflection.raw(), true);
+			if (UNEXPECTED(declarationTypes.isUndef())) return zv::Val();
+			zv::Val declarationDependencies = pt_dependencies_create_in(scope, declarationTypes.raw());
+			if (UNEXPECTED(declarationDependencies.isUndef())) return zv::Val();
+			collect(dependencies, declarationDependencies.raw());
+		}
 		zv::Args inFunctionArgv{functionReflection.raw(), stmt};
 		zv::Val inFunctionNode = pt_type_new(PT_CLASS_IN_FUNCTION_NODE, 2, inFunctionArgv);
 		if (UNEXPECTED(inFunctionNode.isUndef())) return zv::Val();
@@ -173,7 +200,7 @@ public:
 		zv::Val bodyStorage = pt_expression_result_storage_duplicate(storage);
 		if (UNEXPECTED(bodyStorage.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope), bodyStorage.raw()))) return zv::Val();
-		bool walked = walkBody(nodeScopeResolver, stmt, functionScope.raw(), bodyStorage.raw(), nodeCallback, context, functionReflection.raw(), gatheredReturnStatements.raw(), gatheredReturnStatementsAfterFinally.raw(), gatheredYieldStatements.raw(), executionEnds.raw(), functionImpurePoints.raw());
+		bool walked = walkBody(nodeScopeResolver, stmt, functionScope.raw(), bodyStorage.raw(), nodeCallback, context, functionReflection.raw(), gatheredReturnStatements.raw(), gatheredReturnStatementsAfterFinally.raw(), gatheredYieldStatements.raw(), executionEnds.raw(), functionImpurePoints.raw(), dependencies);
 		pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope)); });
 		if (UNEXPECTED(!walked || EG(exception) != NULL)) return zv::Val();
 
@@ -186,9 +213,11 @@ public:
 		zv::Val finalScope = pt_mutating_scope_invalidate_existence_check_expressions(Z_OBJ_P(scope), functionNames.raw(), functionName.raw());
 		if (UNEXPECTED(finalScope.isUndef())) return zv::Val();
 
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return pt_internal_statement_result_new(finalScope.raw(), false, false, &emptyArray, &emptyArray, &emptyArray);
+		return pt_internal_statement_result_new(finalScope.raw(), false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */
@@ -202,8 +231,9 @@ private:
 
 	/* the outer try block: the gatherer frame pushed around the body walk,
 	 * then the FunctionReturnStatementsNode and the liveness node emitted;
-	 * false = pending exception */
-	[[nodiscard]] static bool walkBody(zval *nodeScopeResolver, zval *stmt, zval *functionScope, zval *bodyStorage, zval *nodeCallback, zval *context, zval *functionReflection, zval *gatheredReturnStatements, zval *gatheredReturnStatementsAfterFinally, zval *gatheredYieldStatements, zval *executionEnds, zval *functionImpurePoints)
+	 * what the body depends on goes to `dependencies`; false = pending
+	 * exception */
+	[[nodiscard]] static bool walkBody(zval *nodeScopeResolver, zval *stmt, zval *functionScope, zval *bodyStorage, zval *nodeCallback, zval *context, zval *functionReflection, zval *gatheredReturnStatements, zval *gatheredReturnStatementsAfterFinally, zval *gatheredYieldStatements, zval *executionEnds, zval *functionImpurePoints, zv::Arr &dependencies)
 	{
 		zval captures[6];
 		ZVAL_COPY_VALUE(&captures[0], functionScope);
@@ -225,7 +255,12 @@ private:
 				if (EXPECTED(!statementContext.isUndef())) {
 					internalStatementResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, stmts, functionScope, bodyStorage, nodeCallback, statementContext.raw());
 					if (EXPECTED(!internalStatementResult.isUndef())) {
-						statementResult = pt_internal_statement_result_to_public(internalStatementResult.raw());
+						zv::Val dependencyHold;
+						zval *bodyDependencies = pt_internal_statement_result_dependencies(internalStatementResult.raw(), dependencyHold);
+						if (EXPECTED(bodyDependencies != NULL)) {
+							collect(dependencies, bodyDependencies);
+							statementResult = pt_internal_statement_result_to_public(internalStatementResult.raw());
+						}
 					}
 				}
 			}

@@ -70,10 +70,13 @@ public:
 		zv::Val scopeHold;
 		zval *resultScope = pt_internal_statement_result_scope(result.raw(), scopeHold);
 		if (UNEXPECTED(resultScope == NULL)) return zv::Val();
+		zv::Val dependenciesHold;
+		zval *dependencies = pt_internal_statement_result_dependencies(result.raw(), dependenciesHold);
+		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
 
 		zval emptyArray;
 		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return pt_internal_statement_result_new(resultScope, false, false, &emptyArray, &emptyArray, &emptyArray);
+		return pt_internal_statement_result_new(resultScope, false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, dependencies);
 	}
 
 	/* the statement-handler entry (Engine.h) */

@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node;
 use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr\New_;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -28,6 +29,8 @@ final class AttributesHandler
 	}
 
 	/**
+	 * Returns what the arguments of the attributes depend on.
+	 *
 	 * @param AttributeGroup[] $attrGroups
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
@@ -38,8 +41,9 @@ final class AttributesHandler
 		MutatingScope $scope,
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
-	): void
+	): ?Dependencies
 	{
+		$dependencies = [];
 		foreach ($attrGroups as $attrGroup) {
 			foreach ($attrGroup->attrs as $attr) {
 				$className = $scope->resolveName($attr->name);
@@ -54,20 +58,22 @@ final class AttributesHandler
 						);
 						$expr = new New_($attr->name, $attr->args);
 						$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
-						$this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $constructorReflection, null, $constructorReflection->getVariants(), $constructorReflection->getNamedArgumentsVariants(), $expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+						$dependencies[] = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $constructorReflection, null, $constructorReflection->getVariants(), $constructorReflection->getNamedArgumentsVariants(), $expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep())->getDependencies();
 						$nodeScopeResolver->callNodeCallback($nodeCallback, $attr, $scope, $storage);
 						continue;
 					}
 				}
 
 				foreach ($attr->args as $arg) {
-					$nodeScopeResolver->processExprNode($stmt, $arg->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+					$dependencies[] = $nodeScopeResolver->processExprNode($stmt, $arg->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep())->getDependencies();
 					$nodeScopeResolver->callNodeCallback($nodeCallback, $arg, $scope, $storage);
 				}
 				$nodeScopeResolver->callNodeCallback($nodeCallback, $attr, $scope, $storage);
 			}
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $attrGroup, $scope, $storage);
 		}
+
+		return Dependencies::merge(...$dependencies);
 	}
 
 }

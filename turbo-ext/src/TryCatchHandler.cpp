@@ -101,6 +101,47 @@ inline bool isNeverType(zval *type)
 	return Z_TYPE_P(type) == IS_OBJECT && instanceof_function(Z_OBJCE_P(type), pt_ce_never_type);
 }
 
+/* $dependencies[] = $result->getDependencies() of an InternalStatementResult;
+ * false = pending exception */
+[[nodiscard]] bool pushStatementDependencies(zv::Arr &dependencies, zval *result)
+{
+	zv::Val hold;
+	zval *resultDependencies = pt_internal_statement_result_dependencies(result, hold);
+	if (UNEXPECTED(resultDependencies == NULL)) return false;
+	dependencies.push(zv::Ref(resultDependencies));
+	return true;
+}
+
+/* $caughtClassNames[] = $scope->resolveName($catchNodeType) for every type
+ * of the catch, then $dependencies[] = Dependencies::create($scope->getFile(),
+ * classNames: $caughtClassNames); false = pending exception */
+[[nodiscard]] bool pushCaughtClassDependencies(zv::Arr &dependencies, zval *catchNode, zval *scope)
+{
+	zval *types = ptsh::readNodeProperty(pt_tch_catch_types_site, catchNode, PT_LC("types"));
+	if (UNEXPECTED(types == NULL)) return false;
+	zv::Arr caughtClassNames = zv::Arr::empty();
+	if (UNEXPECTED(Z_TYPE_P(types) != IS_ARRAY)) {
+		zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(types));
+		if (UNEXPECTED(EG(exception))) return false;
+	} else {
+		zv::Val typesHold = zv::Val::copyOf(zv::Ref(types));
+		for (auto typeEntry : zv::ArrRef(typesHold.raw())) {
+			zval *catchNodeType = typeEntry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(catchNodeType) != IS_OBJECT)) {
+				zend_type_error("PHPStan\\Analyser\\MutatingScope::resolveName(): Argument #1 ($name) must be of type PhpParser\\Node\\Name, %s given", zend_zval_value_name(catchNodeType));
+				return false;
+			}
+			zv::Val className = pt_mutating_scope_resolve_name(Z_OBJ_P(scope), Z_OBJ_P(catchNodeType));
+			if (UNEXPECTED(className.isUndef())) return false;
+			caughtClassNames.push(std::move(className));
+		}
+	}
+	zv::Val caught = pt_dependencies_create_in(scope, NULL, caughtClassNames.raw());
+	if (UNEXPECTED(caught.isUndef())) return false;
+	dependencies.push(std::move(caught));
+	return true;
+}
+
 /* $exitPoint->getStatement() instanceof Stmt\Expression &&
  * $exitPoint->getStatement()->expr instanceof Expr\Throw_; false = pending
  * exception */
@@ -143,6 +184,7 @@ public:
 	/* Mirrors processStmt(). */
 	zv::Val processStmt(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context) const
 	{
+		zv::Arr dependencies = zv::Arr::empty();
 		zv::Arr catchFlows = zv::Arr::empty();
 		zv::Val finallyFlow = zv::Val::null();
 		zv::Val branchScopeResult;
@@ -152,6 +194,7 @@ public:
 			zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
 			branchScopeResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, stmtsHold.raw(), scope, storage, nodeCallback, context);
 			if (UNEXPECTED(branchScopeResult.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pushStatementDependencies(dependencies, branchScopeResult.raw()))) return zv::Val();
 		}
 		zval *branch = branchScopeResult.raw();
 		zv::Val branchScope;
@@ -221,6 +264,7 @@ public:
 				}
 			}
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, catchNode, scope, storage))) return zv::Val();
+			if (UNEXPECTED(!pushCaughtClassDependencies(dependencies, catchNode, scope))) return zv::Val();
 
 			zv::Arr originalCatchTypes = zv::Arr::empty();
 			zv::Arr catchTypes = zv::Arr::empty();
@@ -484,6 +528,7 @@ public:
 				if (UNEXPECTED(enteredScope.isUndef())) return zv::Val();
 				catchScopeResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, catchNode, catchStmtsHold.raw(), enteredScope.raw(), storage, nodeCallback, context);
 				if (UNEXPECTED(catchScopeResult.isUndef())) return zv::Val();
+				if (UNEXPECTED(!pushStatementDependencies(dependencies, catchScopeResult.raw()))) return zv::Val();
 			}
 			zval *catchResult = catchScopeResult.raw();
 			zv::Val catchScopeForFinally;
@@ -601,6 +646,7 @@ public:
 				zv::Val finallyStmtsHold = zv::Val::copyOf(zv::Ref(finallyStmts));
 				finallyResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, finallyHold.raw(), finallyStmtsHold.raw(), finallyScope.raw(), storage, nodeCallback, context);
 				if (UNEXPECTED(finallyResult.isUndef())) return zv::Val();
+				if (UNEXPECTED(!pushStatementDependencies(dependencies, finallyResult.raw()))) return zv::Val();
 			}
 			zval *finallyRes = finallyResult.raw();
 			{
@@ -708,7 +754,9 @@ public:
 			if (UNEXPECTED(joined.isUndef())) return zv::Val();
 			finalScope = std::move(joined);
 		}
-		return pt_internal_statement_result_new(finalScope.raw(), hasYield, alwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw());
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(finalScope.raw(), hasYield, alwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw(), -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

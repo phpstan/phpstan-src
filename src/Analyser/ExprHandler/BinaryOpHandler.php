@@ -29,6 +29,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
@@ -704,6 +705,7 @@ final class BinaryOpHandler implements ExprHandler
 
 				return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 			},
+			dependencies: Dependencies::merge($leftResult->getDependencies(), $rightResult->getDependencies()),
 		);
 	}
 

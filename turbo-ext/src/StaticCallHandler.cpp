@@ -137,6 +137,31 @@ zv::Val propertyGetName(zval *property)
 
 /* }}} */
 
+/* {{{ the dependencies of the call */
+
+pt_method_site pt_sch_of_called_method_site;
+
+/* DependencyTypes::ofCalledMethod($methodReflection, $withAssertsAndSelfOut); UNDEF = pending exception */
+zv::Val dependencyTypesOfCalledMethod(zval *methodReflection, bool withAssertsAndSelfOut)
+{
+	zv::Args argv{methodReflection, withAssertsAndSelfOut};
+	return pt_call_static_cached(pt_sch_of_called_method_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofcalledmethod"), 2, argv);
+}
+
+/* $methodReflection->getDeclaringClass()->getName(); UNDEF = pending exception */
+zv::Val methodDeclaringClassName(zval *methodReflection)
+{
+	zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_DECLARING_CLASS);
+	if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+	if (UNEXPECTED(Z_TYPE_P(declaringClass.raw()) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(declaringClass.raw()));
+		return zv::Val();
+	}
+	return pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
+}
+
+/* }}} */
+
 /* {{{ the PhpParser nodes' properties */
 
 pt_property_site pt_sch_class_site;
@@ -804,7 +829,53 @@ public:
 			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 		}
 
-		return pt_expression_result_finalize(preliminaryResult.raw(), currentScope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw());
+		// the class, what the call returns, the class declaring the method and what it can make of
+		// its arguments
+		zv::Val dependencies;
+		{
+			zv::Val resultType = pt_expression_result_get_type(preliminaryResult.raw());
+			if (UNEXPECTED(resultType.isUndef())) return zv::Val();
+			zv::Arr calledOnTypes = zv::Arr::create(2);
+			calledOnTypes.push(resultType.ref());
+			zv::Arr calledOnClassNames = zv::Arr::empty();
+			if (!classResult.isNull()) {
+				zv::Val classType = pt_expression_result_get_type(classResult.raw());
+				if (UNEXPECTED(classType.isUndef())) return zv::Val();
+				calledOnTypes.push(classType.ref());
+			} else if (classIsName) {
+				zv::Val resolvedClassName = pt_mutating_scope_resolve_name(Z_OBJ_P(beforeScope), Z_OBJ_P(class_));
+				if (UNEXPECTED(resolvedClassName.isUndef())) return zv::Val();
+				calledOnClassNames.push(std::move(resolvedClassName));
+			}
+			if (!methodReflection.isNull()) {
+				zv::Val className = methodDeclaringClassName(methodReflection.raw());
+				if (UNEXPECTED(className.isUndef())) return zv::Val();
+				calledOnClassNames.push(std::move(className));
+				zv::Val calledMethodTypes = dependencyTypesOfCalledMethod(methodReflection.raw(), false);
+				if (UNEXPECTED(calledMethodTypes.isUndef())) return zv::Val();
+				for (auto entry : zv::ArrRef(calledMethodTypes.raw())) {
+					calledOnTypes.push(entry.value().deref());
+				}
+			}
+			zv::Val classDependenciesHold, nameDependenciesHold, argsDependenciesHold;
+			zval *classDependencies = NULL;
+			if (!classResult.isNull()) {
+				classDependencies = pt_expression_result_dependencies(classResult.raw(), classDependenciesHold);
+				if (UNEXPECTED(classDependencies == NULL)) return zv::Val();
+			}
+			zval *nameDependencies = NULL;
+			if (!nameResult.isNull()) {
+				nameDependencies = pt_expression_result_dependencies(nameResult.raw(), nameDependenciesHold);
+				if (UNEXPECTED(nameDependencies == NULL)) return zv::Val();
+			}
+			zval *argsDependencies = pt_args_result_dependencies(argsResult.raw(), argsDependenciesHold);
+			if (UNEXPECTED(argsDependencies == NULL)) return zv::Val();
+			zv::Val ownDependencies = pt_dependencies_create_in(beforeScope, calledOnTypes.raw(), calledOnClassNames.raw());
+			if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+			dependencies = pt_dependencies_merge({classDependencies, nameDependencies, argsDependencies, ownDependencies.raw()});
+			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		}
+		return pt_expression_result_finalize(preliminaryResult.raw(), currentScope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw(), dependencies.raw());
 	}
 
 	/* the handler entry (Engine.h) */

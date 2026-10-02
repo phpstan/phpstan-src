@@ -20,6 +20,7 @@ use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
@@ -358,6 +359,7 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 					$elseTruthyScope,
 				)->setRootExpr($expr);
 			},
+			dependencies: Dependencies::merge($ternaryCondResult->getDependencies(), $ifResult !== null ? $ifResult->getDependencies() : null, $elseResult->getDependencies()),
 		);
 	}
 

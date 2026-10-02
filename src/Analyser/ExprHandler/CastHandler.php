@@ -119,6 +119,7 @@ final class CastHandler implements ExprHandler
 
 				return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 			},
+			dependencies: $exprResult->getDependencies(),
 		);
 	}
 

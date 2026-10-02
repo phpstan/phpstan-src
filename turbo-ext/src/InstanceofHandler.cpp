@@ -48,6 +48,18 @@ zval *nameString(zval *name) { return nodeProperty(pt_ioh_name_name_site, name, 
 
 /* }}} */
 
+/* {{{ DependencyTypes (PHP) */
+
+pt_method_site pt_ioh_class_names_of_class_string_site;
+
+/* DependencyTypes::classNamesOfClassString($type) */
+zv::Val classNamesOfClassString(zval *type)
+{
+	return pt_call_static_cached(pt_ioh_class_names_of_class_string_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("classnamesofclassstring"), 1, type);
+}
+
+/* }}} */
+
 /* {{{ small value helpers */
 
 /* new BooleanType() / new ConstantBooleanType($value) */
@@ -214,11 +226,28 @@ public:
 		int classIsName = isInstanceOf(classNode, PT_CLASS_NAME);
 		if (UNEXPECTED(classIsName < 0)) return zv::Val();
 		zv::Val classResult;
+		zv::Val dependencies;
+		zv::Val exprDependenciesHold;
+		zval *exprDependencies = pt_expression_result_dependencies(exprResult.raw(), exprDependenciesHold);
+		if (UNEXPECTED(exprDependencies == NULL)) return zv::Val();
 		if (!classIsName) {
 			zv::Val deepContext = pt_expression_context_enter_deep(context);
 			if (UNEXPECTED(deepContext.isUndef())) return zv::Val();
 			classResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, classNode, scope.raw(), storage, nodeCallback, deepContext.raw());
 			if (UNEXPECTED(classResult.isUndef())) return zv::Val();
+			{
+				zv::Val classDependenciesHold;
+				zval *classDependencies = pt_expression_result_dependencies(classResult.raw(), classDependenciesHold);
+				if (UNEXPECTED(classDependencies == NULL)) return zv::Val();
+				zv::Val classType = pt_expression_result_get_type(classResult.raw());
+				if (UNEXPECTED(classType.isUndef())) return zv::Val();
+				zv::Val classNames = classNamesOfClassString(classType.raw());
+				if (UNEXPECTED(classNames.isUndef())) return zv::Val();
+				zv::Val classStringDependencies = pt_dependencies_create_in(beforeScope, NULL, classNames.raw());
+				if (UNEXPECTED(classStringDependencies.isUndef())) return zv::Val();
+				dependencies = pt_dependencies_merge({exprDependencies, classDependencies, classStringDependencies.raw()});
+				if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+			}
 			borrowed = pt_expression_result_scope(classResult.raw(), hold);
 			if (UNEXPECTED(borrowed == NULL)) return zv::Val();
 			scope = zv::Val::copyOf(zv::Ref(borrowed));
@@ -230,6 +259,15 @@ public:
 			if (UNEXPECTED(borrowed == NULL)) return zv::Val();
 			impurePoints = arrayMerge(impurePoints.raw(), borrowed);
 			if (!isAlwaysTerminating && UNEXPECTED(!pt_expression_result_is_always_terminating(classResult.raw(), isAlwaysTerminating))) return zv::Val();
+		} else {
+			zv::Val resolvedName = pt_mutating_scope_resolve_name(Z_OBJ_P(beforeScope), Z_OBJ_P(classNode));
+			if (UNEXPECTED(resolvedName.isUndef())) return zv::Val();
+			zv::Arr classNames = zv::Arr::create(1);
+			classNames.push(std::move(resolvedName));
+			zv::Val nameDependencies = pt_dependencies_create_in(beforeScope, NULL, classNames.raw());
+			if (UNEXPECTED(nameDependencies.isUndef())) return zv::Val();
+			dependencies = pt_dependencies_merge({exprDependencies, nameDependencies.raw()});
+			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		}
 
 		// a class side written as a Name is lexical: resolve the boolean-result
@@ -268,6 +306,7 @@ public:
 
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw());
+		args.withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

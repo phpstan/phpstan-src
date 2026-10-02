@@ -71,8 +71,10 @@ final class Printer extends Standard
 			return parent::p($node, $precedence, $lhsPrecedence, $parentFormatPreserved);
 		}
 
+		// ExprPrinter::printExpr() caches a multi-line form too, printed at the top level - nested
+		// here, it would need the current indentation
 		$printed = $node->getAttribute(ExprPrinter::ATTRIBUTE_CACHE_KEY);
-		if ($printed !== null) {
+		if ($printed !== null && !str_contains($printed, "\n")) {
 			return $printed;
 		}
 

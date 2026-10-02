@@ -222,7 +222,23 @@ public:
 
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw()).withContainsNullsafe(containsNullsafe).withIssetabilityDescriptor(issetabilityDescriptor.raw());
-		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		zv::Val result = pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+
+		zv::Val varDependenciesHold;
+		zval *varDependencies = pt_expression_result_dependencies(varResult, varDependenciesHold);
+		if (UNEXPECTED(varDependencies == NULL)) return zv::Val();
+		zval *nameDependencies = NULL;
+		zv::Val nameDependenciesHold;
+		if (nameResult != NULL) {
+			nameDependencies = pt_expression_result_dependencies(nameResult, nameDependenciesHold);
+			if (UNEXPECTED(nameDependencies == NULL)) return zv::Val();
+		}
+		zv::Val ownDependencies = getDependencies(scopeBeforeVar, expr, varResult, result.raw());
+		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
+		zv::Val dependencies = pt_dependencies_merge({varDependencies, nameDependencies, ownDependencies.raw()});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		return pt_expression_result_with_dependencies(result.raw(), dependencies.raw());
 	}
 
 	/* the handler entry (Engine.h) */
@@ -233,6 +249,43 @@ public:
 
 private:
 	zend_object *self;
+
+	/* Mirrors getDependencies(): the classes of the object the property is
+	 * fetched from, the class declaring it, and the classes in its type */
+	zv::Val getDependencies(zval *scope, zval *expr, zval *varResult, zval *result) const
+	{
+		zv::Val fetchedOnType = pt_expression_result_get_type(varResult);
+		if (UNEXPECTED(fetchedOnType.isUndef())) return zv::Val();
+		zv::Arr classNames = zv::Arr::empty();
+		zval *name = exprName(expr);
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		int nameIsIdentifier = isIdentifier(name);
+		if (UNEXPECTED(nameIsIdentifier < 0)) return zv::Val();
+		if (nameIsIdentifier) {
+			zval *propertyName = identifierName(name);
+			if (UNEXPECTED(propertyName == NULL)) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(propertyName) != IS_STRING)) {
+				zend_type_error("PhpParser\\Node\\Identifier::toString(): Return value must be of type string, %s returned", zend_zval_value_name(propertyName));
+				return zv::Val();
+			}
+			zv::Val propertyReflection = pt_mutating_scope_get_instance_property_reflection(Z_OBJ_P(scope), fetchedOnType.raw(), Z_STR_P(propertyName));
+			if (UNEXPECTED(propertyReflection.isUndef())) return zv::Val();
+			if (!propertyReflection.isNull()) {
+				zv::Val declaringClass = pt_property_reflection_get_declaring_class(propertyReflection.raw());
+				if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+				zv::Val declaringClassName = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
+				if (UNEXPECTED(declaringClassName.isUndef())) return zv::Val();
+				classNames.push(std::move(declaringClassName));
+			}
+		}
+
+		zv::Val resultType = pt_expression_result_get_type(result);
+		if (UNEXPECTED(resultType.isUndef())) return zv::Val();
+		zv::Arr types = zv::Arr::create(2);
+		types.push(std::move(fetchedOnType));
+		types.push(std::move(resultType));
+		return pt_dependencies_create_in(scope, types.raw(), classNames.raw());
+	}
 
 	/* the Identifier branch of composeResult() while property hooks are
 	 * supported: the get hook's throw points merged into $throwPoints and

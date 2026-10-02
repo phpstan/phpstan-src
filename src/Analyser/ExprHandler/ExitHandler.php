@@ -54,9 +54,11 @@ final class ExitHandler implements ExprHandler
 		$hasYield = false;
 		$throwPoints = [];
 		$variableFlow = null;
+		$dependencies = null;
 		if ($expr->expr !== null) {
 			$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$variableFlow = $exprResult->getVariableFlow();
+			$dependencies = $exprResult->getDependencies();
 			$hasYield = $exprResult->hasYield();
 			$throwPoints = $exprResult->getThrowPoints();
 			$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
@@ -74,6 +76,7 @@ final class ExitHandler implements ExprHandler
 			impurePoints: $impurePoints,
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => new NonAcceptingNeverType(),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			dependencies: $dependencies,
 		);
 	}
 

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ExprHandler\Virtual;
 
 use Closure;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -15,10 +16,13 @@ use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Dependency\Dependencies;
+use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
@@ -36,6 +40,7 @@ final class FunctionCallableNodeHandler implements ExprHandler
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -67,7 +72,7 @@ final class FunctionCallableNodeHandler implements ExprHandler
 			$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
 		}
 
-		return $this->expressionResultFactory->create(
+		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
@@ -79,6 +84,45 @@ final class FunctionCallableNodeHandler implements ExprHandler
 			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->resolveType($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope, $expr, $nameResult),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
+
+		return $result->withDependencies(Dependencies::merge(
+			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$this->getDependencies($beforeScope, $expr, $nameResult, $result),
+		));
+	}
+
+	/**
+	 * The function the callable stands for, or the variants of the callable it is made of, and the
+	 * classes in what calling it returns.
+	 */
+	private function getDependencies(MutatingScope $scope, FunctionCallableNode $expr, ?ExpressionResult $nameResult, ExpressionResult $result): ?Dependencies
+	{
+		$types = [];
+		$callableType = $result->getType();
+		if ($callableType->isCallable()->yes()) {
+			foreach ($callableType->getCallableParametersAcceptors($scope) as $variant) {
+				$types[] = $variant->getReturnType();
+			}
+		}
+		$reflections = [];
+		$name = $expr->getName();
+		if ($name instanceof Name) {
+			if ($this->reflectionProvider->hasFunction($name, $scope)) {
+				$functionReflection = $this->reflectionProvider->getFunction($name, $scope);
+				$reflections[] = $functionReflection;
+				$types = [...$types, ...DependencyTypes::ofCalledVariants($functionReflection->getVariants()), ...DependencyTypes::ofAsserts($functionReflection->getAsserts())];
+			}
+		} elseif ($nameResult !== null) {
+			$nameType = $nameResult->getType();
+			if ($nameType->isCallable()->yes()) {
+				foreach ($nameType->getCallableParametersAcceptors($scope) as $variant) {
+					$types[] = $variant->getReturnType();
+					$types = [...$types, ...DependencyTypes::ofCalledParameters($variant->getParameters())];
+				}
+			}
+		}
+
+		return Dependencies::create($scope->getFile(), $types, reflections: $reflections);
 	}
 
 	private function resolveType(MutatingScope $scope, FunctionCallableNode $expr, ?ExpressionResult $nameResult): Type

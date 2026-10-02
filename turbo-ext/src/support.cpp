@@ -412,6 +412,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ITERABLE_HELPER */ {"iterableHelper", "PHPStan\\Internal\\IterableHelper"},
 	/* PT_CLASS_CLOSURE_CALL_CONTEXT_MATCHER */ {"closureCallContextMatcher", "PHPStan\\Analyser\\ClosureCallContextMatcher"},
 	/* PT_CLASS_CLASS_CONSTANT_PATTERN_RESOLVER */ {"classConstantPatternResolver", "PHPStan\\Type\\ClassConstantPatternResolver"},
+	/* PT_CLASS_DEPENDENCY_TYPES */ {"dependencyTypes", "PHPStan\\Dependency\\DependencyTypes"},
 };
 
 zend_class_entry *pt_class(int idx)

@@ -55,7 +55,12 @@ inline constexpr char strings[] =
 	"context\0" /* 446 */
 	"PHPStan\\Analyser\\ExpressionContext\0" /* 454 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 489 */
-	"processExpr"; /* 523 */
+	"processExpr\0" /* 523 */
+	"PHPStan\\Node\\InstantiationCallableNode\0" /* 535 */
+	"classResult\0" /* 574 */
+	"result\0" /* 586 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 593 */
+	"getDependencies"; /* 625 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 24), /* __construct $expressionResultFactory */
 	reg::packed(65, 0, 88), /* __construct $defaultNarrowingHelper */
@@ -70,6 +75,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(433, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
 	reg::packed(446, 0, 454), /* processExpr $context */
 	reg::packed(259, 0, 489), /* processExpr return */
+	reg::packed(347, 0, 353), /* getDependencies $scope */
+	reg::packed(234, 0, 535), /* getDependencies $expr */
+	reg::packed(574, MAY_BE_NULL, 489), /* getDependencies $classResult */
+	reg::packed(586, 0, 489), /* getDependencies $result */
+	reg::packed(259, MAY_BE_NULL, 593), /* getDependencies return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -79,6 +89,7 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 222 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig supports = { { 260 /* supports */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 523 /* processExpr */, 7, 5, 7, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDependencies = { { 625 /* getDependencies */, 4, 13, 4, 17, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::InstantiationCallableNodeHandler

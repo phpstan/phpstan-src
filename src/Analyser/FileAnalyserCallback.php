@@ -11,13 +11,10 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
-use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\Node\EmitCollectedDataNode;
-use PHPStan\Node\InClassNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
-use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Rules\Rule;
@@ -38,15 +35,6 @@ final class FileAnalyserCallback
 
 	/** @var CollectorData */
 	private array $fileCollectedData = [];
-
-	/** @var array<string> */
-	private array $fileDependencies = [];
-
-	/** @var array<string> */
-	private array $usedTraitFileDependencies = [];
-
-	/** @var array<string> */
-	private array $filePackageDependencies = [];
 
 	/** @var list<RootExportedNode> */
 	private array $exportedNodes = [];
@@ -72,7 +60,14 @@ final class FileAnalyserCallback
 	private array $collectorsByNodeType = [];
 
 	/**
-	 * @param array<string, true> $analysedFiles
+	 * Whether a node of the class can be exported or change the PHPDoc name scope - most cannot, and
+	 * the walk does not ask DependencyResolver about them at all.
+	 *
+	 * @var array<string, bool>
+	 */
+	private array $exportableByNodeType = [];
+
+	/**
 	 * @param callable(Node $node, Scope $scope): void|null $outerNodeCallback
 	 * @param Node\Stmt[] $parserNodes
 	 * @param IgnoreErrorExtension[] $ignoreErrorExtensions
@@ -80,18 +75,15 @@ final class FileAnalyserCallback
 	 */
 	public function __construct(
 		private string $file,
-		private array $analysedFiles,
 		private RuleRegistry $ruleRegistry,
 		private CollectorRegistry $collectorRegistry,
 		private $outerNodeCallback,
 		private array $parserNodes,
 		private array $ignoreErrorExtensions,
 		private Parser $parser,
-		private DependencyResolver $dependencyResolver,
-		private PackageDependencyResolver $packageDependencyResolver,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private array $processedFiles,
-		private ValueDependencyCollector $valueDependencyCollector,
+		private DependencyResolver $dependencyResolver,
 	)
 	{
 		$this->linesToIgnore = $this->unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
@@ -250,34 +242,14 @@ final class FileAnalyserCallback
 			$this->fileCollectedData[$scope->getFile()][get_class($collector)][] = $collectedData;
 		}
 
-		try {
-			$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
-			if ($dependencies !== null) {
-				foreach ($dependencies->getReflections() as $dependencyReflection) {
-					if (!$dependencyReflection instanceof ClassReflection) {
-						continue;
-					}
+		if (!($this->exportableByNodeType[$nodeType] ??= $this->dependencyResolver->canExportNode($node))) {
+			return;
+		}
 
-					// what an extension described the class with may depend on something - see DeclarationDependencyTracker
-					$this->valueDependencyCollector->noteClassDependency($dependencyReflection);
-				}
-				$fileAndPackageDependencies = $dependencies->getFileAndPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
-				foreach ($fileAndPackageDependencies['analysedFiles'] as $dependentFile) {
-					$this->fileDependencies[] = $dependentFile;
-				}
-				foreach ($dependencies->getFilePaths() as $dependentFile) {
-					$this->fileDependencies[] = $dependentFile;
-				}
-				foreach ($fileAndPackageDependencies['nonAnalysedFiles'] as $dependentFile) {
-					$this->fileDependencies[] = $dependentFile;
-				}
-				foreach ($fileAndPackageDependencies['packages'] as $package) {
-					$this->filePackageDependencies[] = $package;
-				}
-				$exportedNode = $dependencies->getExportedNode();
-				if ($exportedNode !== null) {
-					$this->exportedNodes[] = $exportedNode;
-				}
+		try {
+			$exportedNode = $this->dependencyResolver->resolveExportedNode($node, $scope);
+			if ($exportedNode !== null) {
+				$this->exportedNodes[] = $exportedNode;
 			}
 		} catch (AnalysedCodeException) {
 			// pass
@@ -285,22 +257,6 @@ final class FileAnalyserCallback
 			// pass
 		} catch (UnableToCompileNode) {
 			// pass
-		}
-
-		if (!$node instanceof InClassNode) {
-			return;
-		}
-
-		$usedTraitDependencies = $this->dependencyResolver->resolveUsedTraitDependencies($node)
-			->getFileAndPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
-		foreach ($usedTraitDependencies['analysedFiles'] as $dependentFile) {
-			$this->usedTraitFileDependencies[] = $dependentFile;
-		}
-		foreach ($usedTraitDependencies['nonAnalysedFiles'] as $dependentFile) {
-			$this->usedTraitFileDependencies[] = $dependentFile;
-		}
-		foreach ($usedTraitDependencies['packages'] as $package) {
-			$this->filePackageDependencies[] = $package;
 		}
 	}
 
@@ -332,30 +288,6 @@ final class FileAnalyserCallback
 	public function getFileCollectedData(): array
 	{
 		return $this->fileCollectedData;
-	}
-
-	/**
-	 * @return array<string>
-	 */
-	public function getFileDependencies(): array
-	{
-		return $this->fileDependencies;
-	}
-
-	/**
-	 * @return array<string>
-	 */
-	public function getPackageDependencies(): array
-	{
-		return $this->filePackageDependencies;
-	}
-
-	/**
-	 * @return array<string>
-	 */
-	public function getUsedTraitFileDependencies(): array
-	{
-		return $this->usedTraitFileDependencies;
 	}
 
 	/**

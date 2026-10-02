@@ -19,6 +19,7 @@ use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Node\Expr\TypeExpr;
@@ -66,9 +67,11 @@ final class TryCatchHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$dependencies = [];
 		$catchFlows = [];
 		$finallyFlow = null;
 		$branchScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
+		$dependencies[] = $branchScopeResult->getDependencies();
 		$branchScope = $branchScopeResult->getScope();
 		$finalScope = $branchScopeResult->isAlwaysTerminating() ? null : $branchScope;
 		// what the template argument observation collected in every block,
@@ -103,6 +106,11 @@ final class TryCatchHandler implements StmtHandler
 
 		foreach ($stmt->catches as $catchNode) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $catchNode, $scope, $storage);
+			$caughtClassNames = [];
+			foreach ($catchNode->types as $catchNodeType) {
+				$caughtClassNames[] = $scope->resolveName($catchNodeType);
+			}
+			$dependencies[] = Dependencies::create($scope->getFile(), classNames: $caughtClassNames);
 
 			$originalCatchTypes = [];
 			$catchTypes = [];
@@ -248,6 +256,7 @@ final class TryCatchHandler implements StmtHandler
 			}
 
 			$catchScopeResult = $nodeScopeResolver->processStmtNodesInternal($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $storage, $nodeCallback, $context);
+			$dependencies[] = $catchScopeResult->getDependencies();
 			$catchScopeForFinally = $catchScopeResult->getScope();
 			$blockScopes[] = $catchScopeForFinally;
 			$catchFlows[] = [$originalCatchType, VariableFlow::sequence($catchNode->var !== null ? VariableFlowBuilder::targetWrite($catchNode->var, VariableWrite::KIND_CATCH, $catchScopeForFinally, $storage) : null, $catchScopeResult->getVariableFlow())];
@@ -295,6 +304,7 @@ final class TryCatchHandler implements StmtHandler
 		if ($finallyScope !== null) {
 			$originalFinallyScope = $finallyScope;
 			$finallyResult = $nodeScopeResolver->processStmtNodesInternal($stmt->finally, $stmt->finally->stmts, $finallyScope, $storage, $nodeCallback, $context);
+			$dependencies[] = $finallyResult->getDependencies();
 			$finallyFlow = $finallyResult->getVariableFlow();
 			$alwaysTerminating = $alwaysTerminating || $finallyResult->isAlwaysTerminating();
 			$hasYield = $hasYield || $finallyResult->hasYield();
@@ -338,7 +348,7 @@ final class TryCatchHandler implements StmtHandler
 			$finalScope = $finalScope->addTemplateArgumentConstraints($blockScope->getTemplateArgumentConstraints());
 		}
 
-		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: array_merge($throwPoints, $throwPointsForLater), impurePoints: $impurePoints, variableFlow: VariableFlow::tryCatch($branchScopeResult->getVariableFlow(), $catchFlows, $finallyFlow));
+		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: array_merge($throwPoints, $throwPointsForLater), impurePoints: $impurePoints, variableFlow: VariableFlow::tryCatch($branchScopeResult->getVariableFlow(), $catchFlows, $finallyFlow), dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

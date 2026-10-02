@@ -185,8 +185,21 @@ public:
 
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, functionReflection.raw());
 		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<YieldHandler>, self, expr);
+		zv::Val keyDependenciesHold, valueDependenciesHold;
+		zval *keyDependencies = NULL;
+		if (!keyResult.isNull()) {
+			keyDependencies = pt_expression_result_dependencies(keyResult.raw(), keyDependenciesHold);
+			if (UNEXPECTED(keyDependencies == NULL)) return zv::Val();
+		}
+		zval *valueDependencies = NULL;
+		if (!valueResult.isNull()) {
+			valueDependencies = pt_expression_result_dependencies(valueResult.raw(), valueDependenciesHold);
+			if (UNEXPECTED(valueDependencies == NULL)) return zv::Val();
+		}
+		zv::Val dependencies = pt_dependencies_merge({keyDependencies, valueDependencies});
+		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(scope, beforeScope, expr, true, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
-		args.withVariableFlow(variableFlow.raw());
+		args.withVariableFlow(variableFlow.raw()).withDependencies(dependencies.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 

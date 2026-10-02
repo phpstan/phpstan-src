@@ -402,7 +402,18 @@ public:
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		}
 
-		return pt_internal_statement_result_new(finalScope.raw(), hasYield, isAlwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw());
+		zv::Val dependencies;
+		{
+			zv::Val condHold, bodyHold;
+			zval *condDependencies = pt_expression_result_dependencies(bodyCondResult.raw(), condHold);
+			if (UNEXPECTED(condDependencies == NULL)) return zv::Val();
+			zval *bodyDependencies = pt_internal_statement_result_dependencies(result, bodyHold);
+			if (UNEXPECTED(bodyDependencies == NULL)) return zv::Val();
+			dependencies = pt_dependencies_merge({condDependencies, bodyDependencies});
+			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
+		}
+
+		return pt_internal_statement_result_new(finalScope.raw(), hasYield, isAlwaysTerminating, exitPoints.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw(), -1, dependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

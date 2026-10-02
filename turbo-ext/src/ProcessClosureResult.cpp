@@ -3,7 +3,7 @@
  * PHPStan\Analyser\ProcessClosureResult.
  *
  * What ClosureProcessor::processClosureNode() hands the closure handler and
- * the argument walk: a final value class over the twin's ten promoted slots,
+ * the argument walk: a final value class over the twin's eleven promoted slots,
  * in its order. Native callers create it with pt_process_closure_result_new(),
  * read the slots through the inline readers of AnalyserValues.h and apply the
  * by-ref use scope through pt_process_closure_result_apply_by_ref_use_scope().
@@ -29,8 +29,8 @@ public:
 	explicit ProcessClosureResult(zend_object *self) : self(self) {}
 
 	/* __construct(...) — the slots in the twin's order ($byRefClosureResultScope
-	 * NULL for null, $byRefUses NULL for []) */
-	void construct(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope, zval *byRefUses) const
+	 * and $dependencies NULL for null, $byRefUses NULL for []) */
+	void construct(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope, zval *byRefUses, zval *dependencies) const
 	{
 		pt_write_slot(self, slots::scope, scope);
 		pt_write_slot(self, slots::throwPoints, throwPoints);
@@ -53,16 +53,24 @@ public:
 			ZVAL_EMPTY_ARRAY(&value);
 			pt_write_slot(self, slots::byRefUses, &value);
 		}
+		if (dependencies != NULL) {
+			pt_write_slot(self, slots::dependencies, dependencies);
+		} else {
+			ZVAL_NULL(&value);
+			pt_write_slot(self, slots::dependencies, &value);
+		}
 	}
 
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val create(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope, zval *byRefUses)
+	static zv::Val create(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope, zval *byRefUses, zval *dependencies)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_process_closure_result) != SUCCESS)) return zv::Val();
-		ProcessClosureResult(Z_OBJ(object)).construct(scope, throwPoints, impurePoints, invalidateExpressions, gatheredReturnStatements, gatheredYieldStatements, executionEnds, closureTypeImpurePoints, byRefClosureResultScope, byRefUses);
+		ProcessClosureResult(Z_OBJ(object)).construct(scope, throwPoints, impurePoints, invalidateExpressions, gatheredReturnStatements, gatheredYieldStatements, executionEnds, closureTypeImpurePoints, byRefClosureResultScope, byRefUses, dependencies);
 		return zv::Val::adopt(object);
 	}
+
+	zv::Val getDependencies() const { return read(slots::dependencies, "dependencies"); }
 
 	zv::Val getScope() const { return read(slots::scope, "scope"); }
 
@@ -103,9 +111,9 @@ using phpstanturbo::ProcessClosureResult;
 
 /* {{{ direct entries (support.h) */
 
-zv::Val pt_process_closure_result_new(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope, zval *byRefUses)
+zv::Val pt_process_closure_result_new(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope, zval *byRefUses, zval *dependencies)
 {
-	return ProcessClosureResult::create(scope, throwPoints, impurePoints, invalidateExpressions, gatheredReturnStatements, gatheredYieldStatements, executionEnds, closureTypeImpurePoints, byRefClosureResultScope != NULL && Z_TYPE_P(byRefClosureResultScope) == IS_NULL ? NULL : byRefClosureResultScope, byRefUses);
+	return ProcessClosureResult::create(scope, throwPoints, impurePoints, invalidateExpressions, gatheredReturnStatements, gatheredYieldStatements, executionEnds, closureTypeImpurePoints, byRefClosureResultScope != NULL && Z_TYPE_P(byRefClosureResultScope) == IS_NULL ? NULL : byRefClosureResultScope, byRefUses, dependencies != NULL && Z_TYPE_P(dependencies) == IS_NULL ? NULL : dependencies);
 }
 
 zv::Val pt_process_closure_result_apply_by_ref_use_scope(zval *result, zval *scope)
@@ -131,8 +139,8 @@ PT_MINIT_REGISTRATION(pt_register_process_closure_result)
 	ptdecl::ProcessClosureResult::declareProperties(cls);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *throwPoints, *impurePoints, *invalidateExpressions, *gatheredReturnStatements, *gatheredYieldStatements, *executionEnds, *closureTypeImpurePoints, *byRefClosureResultScope = NULL, *byRefUses = NULL;
-		ZEND_PARSE_PARAMETERS_START(8, 10)
+		zval *scope, *throwPoints, *impurePoints, *invalidateExpressions, *gatheredReturnStatements, *gatheredYieldStatements, *executionEnds, *closureTypeImpurePoints, *byRefClosureResultScope = NULL, *byRefUses = NULL, *dependencies = NULL;
+		ZEND_PARSE_PARAMETERS_START(8, 11)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_ARRAY(throwPoints)
 			Z_PARAM_ARRAY(impurePoints)
@@ -144,9 +152,12 @@ PT_MINIT_REGISTRATION(pt_register_process_closure_result)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(byRefClosureResultScope)
 			Z_PARAM_ARRAY(byRefUses)
+			Z_PARAM_OBJECT_OR_NULL(dependencies)
 		ZEND_PARSE_PARAMETERS_END();
-		ProcessClosureResult(Z_OBJ_P(ZEND_THIS)).construct(scope, throwPoints, impurePoints, invalidateExpressions, gatheredReturnStatements, gatheredYieldStatements, executionEnds, closureTypeImpurePoints, byRefClosureResultScope, byRefUses);
+		ProcessClosureResult(Z_OBJ_P(ZEND_THIS)).construct(scope, throwPoints, impurePoints, invalidateExpressions, gatheredReturnStatements, gatheredYieldStatements, executionEnds, closureTypeImpurePoints, byRefClosureResultScope, byRefUses, dependencies);
 	});
+
+	cls.method<&ProcessClosureResult::getDependencies>(sigs::getDependencies);
 
 	cls.method<&ProcessClosureResult::getScope>(sigs::getScope);
 

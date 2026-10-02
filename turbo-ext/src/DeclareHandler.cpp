@@ -49,6 +49,7 @@ public:
 	/* Mirrors processStmt(). */
 	static zv::Val processStmt(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
+		zv::Arr dependencies = zv::Arr::empty();
 		zv::Val scopeHold;
 		zval *declares = ptsh::readNodeProperty(pt_dh_declares_site, stmt, PT_LC("declares"));
 		if (UNEXPECTED(declares == NULL)) return zv::Val();
@@ -76,6 +77,12 @@ public:
 				if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
 				zv::Val valueResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, valueHold.raw(), scope, storage, nodeCallback, expressionContext.raw());
 				if (UNEXPECTED(valueResult.isUndef())) return zv::Val();
+				{
+					zv::Val hold;
+					zval *valueDependencies = pt_expression_result_dependencies(valueResult.raw(), hold);
+					if (UNEXPECTED(valueDependencies == NULL)) return zv::Val();
+					dependencies.push(zv::Ref(valueDependencies));
+				}
 
 				bool strictTypes;
 				if (UNEXPECTED(!isStrictTypesOne(declare, strictTypes))) return zv::Val();
@@ -92,7 +99,9 @@ public:
 		zval *stmts = ptsh::readNodeProperty(pt_dh_stmts_site, stmt, PT_LC("stmts"));
 		if (UNEXPECTED(stmts == NULL)) return zv::Val();
 		if (Z_TYPE_P(stmts) == IS_NULL) {
-			return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, &emptyArray);
+			zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+			if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+			return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, mergedDependencies.raw());
 		}
 		zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
 		zv::Val result = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, stmtsHold.raw(), scope, storage, nodeCallback, context);
@@ -113,7 +122,15 @@ public:
 		zv::Val exitPointsHold;
 		zval *exitPoints = pt_internal_statement_result_exit_points(result.raw(), exitPointsHold);
 		if (UNEXPECTED(exitPoints == NULL)) return zv::Val();
-		return pt_internal_statement_result_new(resultScope, hasYield, alwaysTerminating, exitPoints, throwPoints, impurePoints);
+		{
+			zv::Val hold;
+			zval *resultDependencies = pt_internal_statement_result_dependencies(result.raw(), hold);
+			if (UNEXPECTED(resultDependencies == NULL)) return zv::Val();
+			dependencies.push(zv::Ref(resultDependencies));
+		}
+		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
+		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
+		return pt_internal_statement_result_new(resultScope, hasYield, alwaysTerminating, exitPoints, throwPoints, impurePoints, NULL, NULL, -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

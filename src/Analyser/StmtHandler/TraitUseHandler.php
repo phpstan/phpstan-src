@@ -15,6 +15,7 @@ use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
@@ -24,6 +25,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\FileTypeMapper;
 use function array_key_exists;
 use function is_array;
 use function strtolower;
@@ -49,6 +51,7 @@ final class TraitUseHandler implements StmtHandler
 		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private Parser $parser,
 		private AttributesHandler $attributesHandler,
+		private FileTypeMapper $fileTypeMapper,
 	)
 	{
 	}
@@ -72,7 +75,7 @@ final class TraitUseHandler implements StmtHandler
 		$traitStorage = new ExpressionResultStorage();
 		$scope->pushExpressionResultStorage($traitStorage);
 		try {
-			$this->processTraitUse($nodeScopeResolver, $stmt, $scope, $traitStorage, $nodeCallback);
+			$traitDependencies = $this->processTraitUse($nodeScopeResolver, $stmt, $scope, $traitStorage, $nodeCallback);
 		} finally {
 			$scope->popExpressionResultStorage();
 		}
@@ -81,14 +84,43 @@ final class TraitUseHandler implements StmtHandler
 		// the outer storage but ask about expressions inside the used trait
 		$storage->mergeResults($traitStorage);
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: Dependencies::merge($this->getDependencies($scope, $stmt), $traitDependencies));
+	}
+
+	/**
+	 * The used traits and the classes the @use tags reference.
+	 */
+	private function getDependencies(MutatingScope $scope, Node\Stmt\TraitUse $stmt): ?Dependencies
+	{
+		$classNames = [];
+		foreach ($stmt->traits as $traitName) {
+			$classNames[] = $traitName->toString();
+		}
+
+		$types = [];
+		$docComment = $stmt->getDocComment();
+		if ($docComment !== null) {
+			$usesTags = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				null,
+				$docComment->getText(),
+			)->getUsesTags();
+			foreach ($usesTags as $usesTag) {
+				$types[] = $usesTag->getType();
+			}
+		}
+
+		return Dependencies::create($scope->getFile(), $types, $classNames);
 	}
 
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processTraitUse(NodeScopeResolver $nodeScopeResolver, Node\Stmt\TraitUse $node, MutatingScope $classScope, ExpressionResultStorage $storage, callable $nodeCallback): void
+	private function processTraitUse(NodeScopeResolver $nodeScopeResolver, Node\Stmt\TraitUse $node, MutatingScope $classScope, ExpressionResultStorage $storage, callable $nodeCallback): ?Dependencies
 	{
+		$dependencies = [];
 		foreach ($node->traits as $trait) {
 			$traitName = (string) $trait;
 			// traits can use each other in a cycle (even use themselves) which is a runtime
@@ -123,19 +155,22 @@ final class TraitUseHandler implements StmtHandler
 			$parserNodes = $this->parser->parseFile($fileName);
 			$this->currentlyProcessedTraits[strtolower($traitName)] = true;
 			try {
-				$this->processNodesForTraitUse($nodeScopeResolver, $parserNodes, $traitReflection, $classScope, $storage, $adaptations, $nodeCallback);
+				$this->processNodesForTraitUse($nodeScopeResolver, $parserNodes, $traitReflection, $classScope, $storage, $adaptations, $nodeCallback, $dependencies);
 			} finally {
 				unset($this->currentlyProcessedTraits[strtolower($traitName)]);
 			}
 		}
+
+		return Dependencies::merge(...$dependencies);
 	}
 
 	/**
 	 * @param Node[]|Node|scalar|null $node
 	 * @param Node\Stmt\TraitUseAdaptation[] $adaptations
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param list<Dependencies|null> $dependencies what the walked trait statements depend on
 	 */
-	private function processNodesForTraitUse(NodeScopeResolver $nodeScopeResolver, $node, ClassReflection $traitReflection, MutatingScope $scope, ExpressionResultStorage $storage, array $adaptations, callable $nodeCallback): void
+	private function processNodesForTraitUse(NodeScopeResolver $nodeScopeResolver, $node, ClassReflection $traitReflection, MutatingScope $scope, ExpressionResultStorage $storage, array $adaptations, callable $nodeCallback, array &$dependencies): void
 	{
 		if ($node instanceof Node) {
 			if ($node instanceof Node\Stmt\Trait_ && $traitReflection->getName() === (string) $node->namespacedName && $traitReflection->getNativeReflection()->getStartLine() === $node->getStartLine()) {
@@ -188,7 +223,7 @@ final class TraitUseHandler implements StmtHandler
 				$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $node, $node->attrGroups, $traitScope, $storage, new NoopNodeCallback());
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InTraitNode($node, $traitReflection, $scope->getClassReflection()), $traitScope, $storage);
-				$nodeScopeResolver->processStmtNodesInternal($node, $stmts, $traitScope, $storage, $nodeCallback, StatementContext::createTopLevel());
+				$dependencies[] = $nodeScopeResolver->processStmtNodesInternal($node, $stmts, $traitScope, $storage, $nodeCallback, StatementContext::createTopLevel())->getDependencies();
 				return;
 			}
 			if ($node instanceof Node\Stmt\ClassLike) {
@@ -199,11 +234,11 @@ final class TraitUseHandler implements StmtHandler
 			}
 			foreach ($node->getSubNodeNames() as $subNodeName) {
 				$subNode = $node->{$subNodeName};
-				$this->processNodesForTraitUse($nodeScopeResolver, $subNode, $traitReflection, $scope, $storage, $adaptations, $nodeCallback);
+				$this->processNodesForTraitUse($nodeScopeResolver, $subNode, $traitReflection, $scope, $storage, $adaptations, $nodeCallback, $dependencies);
 			}
 		} elseif (is_array($node)) {
 			foreach ($node as $subNode) {
-				$this->processNodesForTraitUse($nodeScopeResolver, $subNode, $traitReflection, $scope, $storage, $adaptations, $nodeCallback);
+				$this->processNodesForTraitUse($nodeScopeResolver, $subNode, $traitReflection, $scope, $storage, $adaptations, $nodeCallback, $dependencies);
 			}
 		}
 	}

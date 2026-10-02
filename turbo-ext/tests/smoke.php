@@ -2895,6 +2895,46 @@ foreach (['php' => 'PHPStan\\Analyser\\', 'native' => 'PHPStanTurbo\\'] as $side
 }
 check($vfCtorResults['php'] === $vfCtorResults['native'], 'VariableFlow subclasses: constructors: ' . json_encode($vfCtorResults['php']) . ' vs ' . json_encode($vfCtorResults['native']));
 
+// ---- Dependencies ----
+// create() drops the null types and answers null for nothing to depend on,
+// merge() skips the nulls, answers a single one itself and links two or more;
+// walk() calls the callback once per value, in the twin's order
+$depsInt = new \PHPStanTurbo\IntegerType();
+$depsString = new \PHPStanTurbo\StringType();
+$depsResults = [];
+foreach (['php' => \PHPStan\Dependency\Dependencies::class, 'native' => \PHPStanTurbo\Dependencies::class] as $side => $deps) {
+	$walk = static function ($dependencies): array {
+		$values = [];
+		$dependencies->walk(static function (string $file, array $types, array $classNames, array $reflections, array $filePaths, array $usedTraits) use (&$values): void {
+			$values[] = [$file, array_map(static fn ($type) => $type->describe(\PHPStan\Type\VerbosityLevel::precise()), $types), array_is_list($types), $classNames, count($reflections), $filePaths, count($usedTraits)];
+		});
+		return $values;
+	};
+	$r = [];
+	$a = $deps::create('a.php', [$depsInt, null], ['Foo']);
+	$b = $deps::create('b.php', [], [], [], ['inc.php']);
+	$r[] = [$deps::create('x.php'), $deps::create('x.php', [null, null]), $deps::create('x.php', [], [], [], [], [])];
+	$r[] = [$deps::merge(), $deps::merge(null, null), $deps::merge(null, $a) === $a, $deps::merge($a) === $a, $deps::merge(...[$a, null]) === $a];
+	$ab = $deps::merge($a, null, $b);
+	$r[] = [$walk($a), $walk($ab), $walk($deps::merge($ab, $a, $deps::merge($b, $ab)))];
+	$r[] = $walk($deps::create('c.php', [1 => $depsString, 3 => null, 4 => $depsInt]));
+	try {
+		$deps::merge($a, 'x');
+		$r[] = 'merge() of a string';
+	} catch (\TypeError $e) {
+		$r[] = get_class($e);
+	}
+	try {
+		new $deps('a.php', [], [], [], [], [], []);
+		$r[] = 'new of the private constructor';
+	} catch (\Error $e) {
+		$r[] = get_class($e);
+	}
+	$depsResults[$side] = $r;
+}
+check($depsResults['php'] === $depsResults['native'], 'Dependencies parity: ' . json_encode($depsResults['php']) . ' vs ' . json_encode($depsResults['native']));
+$covered[\PHPStan\Dependency\Dependencies::class] = true;
+
 // ---- VariableFlowBuilder ----
 // Shared nodes and a scope; per side a storage of the side's class holding
 // ExpressionResults that carry a flow and a type (set through reflection —
@@ -3487,7 +3527,7 @@ foreach ($erSides as $side => $erClass) {
 					'issetability native' => $erDescribeResult($result->getIssetabilityResolution($erScope, true, true)->getLink()),
 					'withScope same' => $result->withScope($erScope) === $result,
 					'withScope other' => $erDescribeResult($result->withScope($erOtherScope)),
-					'finalize' => $erDescribeResult($result->finalize($erOtherScope, true, true, ['t'], ['i'], null)),
+					'finalize' => $erDescribeResult($result->finalize($erOtherScope, true, true, ['t'], ['i'], null, null)),
 					'atAskPosition' => $erDescribeResult($result->atAskPosition($erOtherScope)),
 					'atAskPosition same' => $erDescribeResult($result->atAskPosition($erScope)),
 					'deviced' => $erDescribeResult($result->onNonNullabilityDevicedScopes($erOtherScope, $erScope)),
@@ -3527,7 +3567,7 @@ foreach ($erSides as $side => $erClass) {
 	// the override results derive the branch scopes lazily
 	$override = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt, nativeType: $vfInt);
 	$overridden = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erOtherScope, $erOtherScope, $erN['func call'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), truthyScopeOverrideResult: $override, falseyScopeOverrideResult: $override, type: $vfInt, nativeType: $vfInt, createTypesCallback: static fn (\PHPStan\Type\Type $type, \PHPStan\Analyser\TypeSpecifierContext $context, bool $native) => new \PHPStan\Analyser\SpecifiedTypes([spl_object_id($type) => $native]));
-	$r['override'] = [$overridden->getTruthyScope() === $override->getTruthyScope(), $overridden->getFalseyScope() === $override->getFalseyScope(), $erDescribeResult($overridden->getCreatedTypes($vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy(), true)), $erDescribeResult($overridden->getCreatedTypesForScope($erScope, $vfString, \PHPStan\Analyser\TypeSpecifierContext::createTruthy())), $erDescribeResult($overridden->finalize($erScope, false, false, [], [], null))];
+	$r['override'] = [$overridden->getTruthyScope() === $override->getTruthyScope(), $overridden->getFalseyScope() === $override->getFalseyScope(), $erDescribeResult($overridden->getCreatedTypes($vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy(), true)), $erDescribeResult($overridden->getCreatedTypesForScope($erScope, $vfString, \PHPStan\Analyser\TypeSpecifierContext::createTruthy())), $erDescribeResult($overridden->finalize($erScope, false, false, [], [], null, null))];
 	$erResults[$side] = $r;
 }
 foreach ($erResults['php'] as $label => $described) {
@@ -4087,6 +4127,21 @@ $hhContexts = [
 	'value flow' => \PHPStan\Analyser\ExpressionContext::createDeep()->enterValueFlow(new \PHPStan\Node\Variable\VariableWrite('t', $hhName, 42, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN), true),
 ];
 // The native VariableHandler creates the native IssetabilityDescriptor, which
+// a native Dependencies as its PHP twin, for the PHP side of a differential
+$GLOBALS['depsToPhp'] = static function (?object $dependencies): ?\PHPStan\Dependency\Dependencies {
+	if ($dependencies === null || $dependencies instanceof \PHPStan\Dependency\Dependencies) {
+		return $dependencies;
+	}
+	$twin = (new \ReflectionClass(\PHPStan\Dependency\Dependencies::class))->newInstanceWithoutConstructor();
+	foreach ((new \ReflectionClass($dependencies))->getProperties() as $property) {
+		$value = $property->getValue($dependencies);
+		if ($property->getName() === 'merged') {
+			$value = array_map(static fn (object $merged) => ($GLOBALS['depsToPhp'])($merged), $value);
+		}
+		(new \ReflectionProperty(\PHPStan\Dependency\Dependencies::class, $property->getName()))->setValue($twin, $value);
+	}
+	return $twin;
+};
 // the container's PHP factory type-hints away under the prefix: the native
 // side's factory hands it a PHP twin carrying the same state.
 $hhNativeFactory = new class ($hhFactory) implements \PHPStan\Analyser\ExpressionResultFactory {
@@ -4114,9 +4169,11 @@ $hhNativeFactory = new class ($hhFactory) implements \PHPStan\Analyser\Expressio
 		?\PHPStan\Type\Type $nativeType = null,
 		?\PHPStan\Analyser\ArgsResult $argsResult = null,
 		?object $variableFlow = null,
+		?object $dependencies = null,
 	): \PHPStan\Analyser\ExpressionResult
 	{
 		$variableFlow = ($GLOBALS['vfToPhp'])($variableFlow);
+		$dependencies = ($GLOBALS['depsToPhp'])($dependencies);
 		if ($issetabilityDescriptor instanceof \PHPStanTurbo\IssetabilityDescriptor) {
 			$twin = (new \ReflectionClass(\PHPStan\Analyser\IssetabilityDescriptor::class))->newInstanceWithoutConstructor();
 			foreach ((new \ReflectionClass($issetabilityDescriptor))->getProperties() as $property) {
@@ -4125,7 +4182,7 @@ $hhNativeFactory = new class ($hhFactory) implements \PHPStan\Analyser\Expressio
 			$issetabilityDescriptor = $twin;
 		}
 
-		return $this->factory->create($scope, $beforeScope, $expr, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $typeCallback, $specifyTypesCallback, $containsNullsafe, $issetabilityDescriptor, $truthyScopeOverrideResult, $falseyScopeOverrideResult, $createTypesCallback, $type, $nativeType, $argsResult, $variableFlow);
+		return $this->factory->create($scope, $beforeScope, $expr, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $typeCallback, $specifyTypesCallback, $containsNullsafe, $issetabilityDescriptor, $truthyScopeOverrideResult, $falseyScopeOverrideResult, $createTypesCallback, $type, $nativeType, $argsResult, $variableFlow, $dependencies);
 	}
 
 };

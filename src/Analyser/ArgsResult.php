@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -84,6 +85,14 @@ final class ArgsResult
 	public function getScope(): MutatingScope
 	{
 		return $this->expressionResult->getScope();
+	}
+
+	/**
+	 * What the arguments depend on.
+	 */
+	public function getDependencies(): ?Dependencies
+	{
+		return $this->expressionResult->getDependencies();
 	}
 
 	public function hasYield(): bool

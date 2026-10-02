@@ -39,6 +39,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
@@ -512,6 +513,12 @@ final class ForeachHandler implements StmtHandler
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
 			variableFlow: VariableFlow::sequence($condResult->getVariableFlow(), $loopFlow),
+			dependencies: Dependencies::merge(
+				$condResult->getDependencies(),
+				$finalScopeResult->getDependencies(),
+				// the classes in the types of the keys and the values iterated over
+				Dependencies::create($entryScope->getFile(), [$stmt->keyVar !== null ? $entryScope->getIterableKeyType($foreachIterateeType) : null, $entryScope->getIterableValueType($foreachIterateeType)]),
+			),
 		);
 	}
 

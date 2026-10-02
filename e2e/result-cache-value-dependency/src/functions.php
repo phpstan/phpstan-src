@@ -14,3 +14,15 @@ function parameter(string $name)
 {
 	return $name === '' ? 0 : '';
 }
+
+/**
+ * @throws void
+ */
+function mayThrow(): void
+{
+}
+
+function region(): string
+{
+	return '';
+}

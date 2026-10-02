@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Expr\StaticCall;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\ExtensionInterface;
 use PHPStan\Reflection\MethodReflection;
@@ -30,6 +31,6 @@ interface DynamicStaticMethodThrowTypeExtension
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool;
 
-	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type;
+	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope&DependencyTracker $scope): ?Type;
 
 }

@@ -26,3 +26,15 @@ services:
 		class: ResultCacheE2EValueDependency\ParameterReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
+	-
+		class: ResultCacheE2EValueDependency\MayThrowThrowTypeExtension
+		tags:
+			- phpstan.dynamicFunctionThrowTypeExtension
+	-
+		class: ResultCacheE2EValueDependency\RegionCollector
+		tags:
+			- phpstan.collector
+	-
+		class: ResultCacheE2EValueDependency\RegionRule
+		tags:
+			- phpstan.rules.rule

@@ -33,4 +33,4 @@ parameters:
 			'''
 			identifier: classConstant.deprecatedInterface
 			count: 1
-			path: src/Analyser/ResultCache/ResultCacheManager.php
+			path: ../src/Analyser/ResultCache/ResultCacheManager.php

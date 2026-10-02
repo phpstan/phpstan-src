@@ -76,12 +76,12 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 				: null;
 			$classResolvedPhpDoc = $classReflection->getResolvedPhpDoc();
 			$isPure = null;
-			if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
+			if ($nativeCallMethod !== null) {
+				$nativePurity = $nativeCallMethod->isPure();
+				$isPure = $nativePurity->yes() ? true : ($nativePurity->no() ? false : null);
+			} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
 				$isPure = true;
 			} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
-				$isPure = false;
-			}
-			if ($isPure === true && $nativeCallMethod !== null && $nativeCallMethod->isPure()->no()) {
 				$isPure = false;
 			}
 

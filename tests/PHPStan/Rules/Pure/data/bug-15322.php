@@ -36,6 +36,19 @@ class ImpureStaticDispatcher
 	}
 }
 
+/**
+ * @phpstan-all-methods-impure
+ * @method int magic()
+ */
+class PureDispatcher
+{
+	/** @phpstan-pure */
+	public function __call(string $name, array $arguments): int
+	{
+		return 1;
+	}
+}
+
 class Test
 {
 	/** @phpstan-pure */
@@ -54,5 +67,11 @@ class Test
 	public function runImpureStaticDispatcher(): int
 	{
 		return ImpureStaticDispatcher::magic();
+	}
+
+	/** @phpstan-pure */
+	public function runPureDispatcher(PureDispatcher $object): int
+	{
+		return $object->magic();
 	}
 }

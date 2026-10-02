@@ -25,6 +25,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
+use function ltrim;
 use function sprintf;
 
 /** @api */
@@ -95,7 +96,7 @@ class GenericClassStringType extends ClassStringType
 				return AcceptsResult::createNo();
 			}
 
-			$objectType = new ObjectType($type->getValue());
+			$objectType = new ObjectType(ltrim($type->getValue(), '\\'));
 		} elseif ($type instanceof self) {
 			$objectType = $type->type;
 		} elseif ($type instanceof ClassStringType) {
@@ -127,7 +128,7 @@ class GenericClassStringType extends ClassStringType
 
 			// We are transforming constant class-string to ObjectType. But we need to filter out
 			// an uncertainty originating in possible ObjectType's class subtypes.
-			$objectType = new ObjectType($type->getValue());
+			$objectType = new ObjectType(ltrim($type->getValue(), '\\'));
 
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.
@@ -180,7 +181,7 @@ class GenericClassStringType extends ClassStringType
 		}
 
 		if ($receivedType instanceof ConstantStringType) {
-			$typeToInfer = new ObjectType($receivedType->getValue());
+			$typeToInfer = new ObjectType(ltrim($receivedType->getValue(), '\\'));
 		} elseif ($receivedType instanceof self) {
 			$typeToInfer = $receivedType->type;
 		} elseif ($receivedType->isClassString()->yes()) {
@@ -242,12 +243,12 @@ class GenericClassStringType extends ClassStringType
 			if (count($genericObjectClassNames) === 1) {
 				if ($reflectionProvider->hasClass($genericObjectClassNames[0])) {
 					$classReflection = $reflectionProvider->getClass($genericObjectClassNames[0]);
-					if ($classReflection->isFinal() && $genericObjectClassNames[0] === $typeToRemove->getValue()) {
+					if ($classReflection->isFinal() && $genericObjectClassNames[0] === ltrim($typeToRemove->getValue(), '\\')) {
 						return new NeverType();
 					}
 
 					if ($classReflection->getAllowedSubTypes() !== null) {
-						$objectTypeToRemove = new ObjectType($typeToRemove->getValue());
+						$objectTypeToRemove = new ObjectType(ltrim($typeToRemove->getValue(), '\\'));
 						$remainingType = TypeCombinator::remove($generic, $objectTypeToRemove);
 						if ($remainingType instanceof NeverType) {
 							return new NeverType();
@@ -259,7 +260,7 @@ class GenericClassStringType extends ClassStringType
 					}
 				}
 			} elseif (count($genericObjectClassNames) > 1) {
-				$objectTypeToRemove = new ObjectType($typeToRemove->getValue());
+				$objectTypeToRemove = new ObjectType(ltrim($typeToRemove->getValue(), '\\'));
 				if ($reflectionProvider->hasClass($typeToRemove->getValue())) {
 					$classReflection = $reflectionProvider->getClass($typeToRemove->getValue());
 					if ($classReflection->isFinal()) {

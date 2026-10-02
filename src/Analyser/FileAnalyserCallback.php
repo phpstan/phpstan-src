@@ -60,6 +60,14 @@ final class FileAnalyserCallback
 	private array $collectorsByNodeType = [];
 
 	/**
+	 * Whether a node of the class can be exported or change the PHPDoc name scope - most cannot, and
+	 * the walk does not ask DependencyResolver about them at all.
+	 *
+	 * @var array<string, bool>
+	 */
+	private array $exportableByNodeType = [];
+
+	/**
 	 * @param callable(Node $node, Scope $scope): void|null $outerNodeCallback
 	 * @param Node\Stmt[] $parserNodes
 	 * @param IgnoreErrorExtension[] $ignoreErrorExtensions
@@ -232,6 +240,10 @@ final class FileAnalyserCallback
 			}
 
 			$this->fileCollectedData[$scope->getFile()][get_class($collector)][] = $collectedData;
+		}
+
+		if (!($this->exportableByNodeType[$nodeType] ??= $this->dependencyResolver->canExportNode($node))) {
+			return;
 		}
 
 		try {

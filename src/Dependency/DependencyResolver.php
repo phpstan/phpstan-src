@@ -15,6 +15,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use function array_key_exists;
 use function array_values;
 use function get_class;
+use function is_string;
 use function spl_object_id;
 use function str_starts_with;
 
@@ -68,6 +69,14 @@ final class DependencyResolver
 	}
 
 	/**
+	 * Whether resolveExportedNode() can do anything with a node of this class.
+	 */
+	public function canExportNode(Node $node): bool
+	{
+		return ($this->nodeProfiles[get_class($node)] ??= $this->resolveNodeProfile($node)) !== 0;
+	}
+
+	/**
 	 * What the node declares, so that the result cache notices when what a file declares changes.
 	 */
 	public function resolveExportedNode(Node $node, Scope $scope): ?RootExportedNode
@@ -109,26 +118,34 @@ final class DependencyResolver
 			return new ResolvedDependencies([], [], [], []);
 		}
 
-		/** @var array<string, array<int, ClassReflection|FunctionReflection|ConstantReflection>> $reflectionsByFile */
-		$reflectionsByFile = [];
+		// what each file depends on, in the order it was found: a class by its name, expanded to it and
+		// its ancestors once below, however many times it was found, and a function or a constant
+		/** @var array<string, array<string, string|FunctionReflection|ConstantReflection>> $foundByFile */
+		$foundByFile = [];
+		/** @var array<string, array<int, true>> $typesByFile */
+		$typesByFile = [];
 		/** @var array<string, array<int, ClassReflection>> $usedTraitsByFile */
 		$usedTraitsByFile = [];
 		/** @var array<string, string> $fileDependencies */
 		$fileDependencies = [];
-		$dependencies->walk(function (string $file, array $types, array $classNames, array $reflections, array $filePaths, array $usedTraits) use (&$reflectionsByFile, &$usedTraitsByFile, &$fileDependencies): void {
-			$fileReflections = $reflectionsByFile[$file] ?? [];
+		$dependencies->walk(static function (string $file, array $types, array $classNames, array $reflections, array $filePaths, array $usedTraits) use (&$foundByFile, &$typesByFile, &$usedTraitsByFile, &$fileDependencies): void {
 			foreach ($types as $type) {
+				$typeId = spl_object_id($type);
+				if (isset($typesByFile[$file][$typeId])) {
+					continue;
+				}
+
+				$typesByFile[$file][$typeId] = true;
 				foreach ($type->getReferencedClasses() as $className) {
-					$fileReflections += $this->getClassDependencies($className);
+					$foundByFile[$file]['c' . $className] ??= $className;
 				}
 			}
 			foreach ($classNames as $className) {
-				$fileReflections += $this->getClassDependencies($className);
+				$foundByFile[$file]['c' . $className] ??= $className;
 			}
 			foreach ($reflections as $reflection) {
-				$fileReflections[spl_object_id($reflection)] = $reflection;
+				$foundByFile[$file]['r' . spl_object_id($reflection)] = $reflection;
 			}
-			$reflectionsByFile[$file] = $fileReflections;
 			foreach ($filePaths as $filePath) {
 				$fileDependencies[$filePath] = $filePath;
 			}
@@ -136,6 +153,21 @@ final class DependencyResolver
 				$usedTraitsByFile[$file][spl_object_id($usedTrait)] = $usedTrait;
 			}
 		});
+
+		/** @var array<string, array<int, ClassReflection|FunctionReflection|ConstantReflection>> $reflectionsByFile */
+		$reflectionsByFile = [];
+		foreach ($foundByFile as $file => $found) {
+			$fileReflections = [];
+			foreach ($found as $item) {
+				if (is_string($item)) {
+					$fileReflections += $this->getClassDependencies($item);
+					continue;
+				}
+
+				$fileReflections[spl_object_id($item)] = $item;
+			}
+			$reflectionsByFile[$file] = $fileReflections;
+		}
 
 		$packages = [];
 		$classReflections = [];

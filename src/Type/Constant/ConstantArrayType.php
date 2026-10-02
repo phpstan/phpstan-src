@@ -718,17 +718,23 @@ class ConstantArrayType implements Type
 
 			$result = $result->and($hasOffset);
 			$otherValueType = $type->getOffsetValueType($keyType);
-			$verbosity = VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
+			$verbosity = null;
 			$acceptsValue = $valueType->accepts($otherValueType, $strictTypes)->decorateReasons(
-				static fn (string $reason) => sprintf(
-					'Offset %s (%s) does not accept type %s: %s',
-					$keyType->describe(VerbosityLevel::precise()),
-					$valueType->describe($verbosity),
-					$otherValueType->describe($verbosity),
-					$reason,
-				),
+				static function (string $reason) use ($keyType, $valueType, &$verbosity, $otherValueType) {
+					$verbosity ??= VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
+
+					return sprintf(
+						'Offset %s (%s) does not accept type %s: %s',
+						$keyType->describe(VerbosityLevel::precise()),
+						$valueType->describe($verbosity),
+						$otherValueType->describe($verbosity),
+						$reason,
+					);
+				},
 			);
 			if (!$acceptsValue->yes() && count($acceptsValue->reasons) === 0 && $type->isConstantArray()->yes()) {
+				$verbosity ??= VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
+
 				$acceptsValue = new AcceptsResult($acceptsValue->result, [
 					sprintf(
 						'Offset %s (%s) does not accept type %s.',

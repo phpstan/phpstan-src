@@ -4,9 +4,10 @@ name: "Build Turbo compile images"
 
 # Builds .github/turbo-build/Dockerfile natively on x86_64 and arm64
 # runners and publishes ghcr.io/phpstan/turbo-build:gnu-php{8.3,8.4,8.5,8.6}
-# as multi-arch manifests. The turbo-compile gnu legs in phar.yml run in
-# these images, so their only network dependency is a GHCR pull — no apt,
-# no ports.ubuntu.com, no PPA at compile time.
+# and the thread-safe gnu-php8.6-zts as multi-arch manifests. The
+# turbo-compile gnu legs in phar.yml run in these images, so their only
+# network dependency is a GHCR pull — no apt, no ports.ubuntu.com, no PPA at
+# compile time.
 
 on:
   workflow_dispatch:
@@ -34,7 +35,7 @@ concurrency:
 
 jobs:
   build:
-    name: "Build image (php${{ matrix.php-version }}, ${{ matrix.platform.arch }})"
+    name: "Build image (php${{ matrix.tag }}, ${{ matrix.platform.arch }})"
     if: github.repository == 'phpstan/phpstan-src'
     runs-on: ${{ matrix.platform.runs-on }}
     timeout-minutes: 30
@@ -45,7 +46,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        # <minor>[-zts]; a -zts tag builds a thread-safe PHP of that minor
+        tag: ["8.3", "8.4", "8.5", "8.6", "8.6-zts"]
         platform:
           - arch: "amd64"
             runs-on: "ubuntu-latest"
@@ -53,7 +55,8 @@ jobs:
             runs-on: "ubuntu-24.04-arm"
 
     env:
-      IMAGE: "ghcr.io/phpstan/turbo-build:gnu-php${{ matrix.php-version }}-${{ matrix.platform.arch }}"
+      IMAGE: "ghcr.io/phpstan/turbo-build:gnu-php${{ matrix.tag }}-${{ matrix.platform.arch }}"
+      TAG: ${{ matrix.tag }}
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -67,13 +70,19 @@ jobs:
           persist-credentials: false
 
       - name: "Build"
-        run: docker build --build-arg "PHP_MINOR=${{ matrix.php-version }}" -t "$IMAGE" .github/turbo-build
+        run: |
+          MINOR="${TAG%-zts}"
+          ZTS=$([ "$MINOR" != "$TAG" ] && echo 1 || echo 0)
+          docker build --build-arg "PHP_MINOR=$MINOR" --build-arg "PHP_ZTS=$ZTS" -t "$IMAGE" .github/turbo-build
 
       - name: "Smoke test (interpreter matches the matrix, toolchain present)"
         run: |
-          VERSION="$(docker run --rm "$IMAGE" php -r 'echo PHP_VERSION;')"
-          echo "image reports PHP $VERSION, expected ${{ matrix.php-version }}.*"
-          [ "${VERSION%.*}" = "${{ matrix.php-version }}" ]
+          MINOR="${TAG%-zts}"
+          ZTS=$([ "$MINOR" != "$TAG" ] && echo 1 || echo 0)
+          VERSION="$(docker run --rm "$IMAGE" php -r 'echo PHP_VERSION, " ", (int) PHP_ZTS;')"
+          echo "image reports PHP $VERSION (version, ZTS), expected $MINOR.* $ZTS"
+          [ "${VERSION%.* *}" = "$MINOR" ]
+          [ "${VERSION##* }" = "$ZTS" ]
           docker run --rm "$IMAGE" sh -c 'php-config --version && git --version && g++ --version && make --version && curl --version'
 
       # PR runs stop here: build + smoke validate the Dockerfile change,
@@ -87,7 +96,7 @@ jobs:
         run: docker push "$IMAGE"
 
   manifest:
-    name: "Publish multi-arch manifest (php${{ matrix.php-version }})"
+    name: "Publish multi-arch manifest (php${{ matrix.tag }})"
     if: github.repository == 'phpstan/phpstan-src' && github.event_name != 'pull_request'
     needs: build
     runs-on: "ubuntu-latest"
@@ -97,10 +106,10 @@ jobs:
 
     strategy:
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        tag: ["8.3", "8.4", "8.5", "8.6", "8.6-zts"]
 
     env:
-      TAG: "ghcr.io/phpstan/turbo-build:gnu-php${{ matrix.php-version }}"
+      TAG: "ghcr.io/phpstan/turbo-build:gnu-php${{ matrix.tag }}"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

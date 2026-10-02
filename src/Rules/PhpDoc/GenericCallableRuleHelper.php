@@ -17,9 +17,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
-use function array_merge;
-use function array_values;
-use function spl_object_id;
 use function sprintf;
 
 #[AutowiredService]
@@ -47,10 +44,9 @@ final class GenericCallableRuleHelper
 		?ClassReflection $classReflection,
 	): array
 	{
-		/** @var array<int, list<IdentifierRuleError>> $errorsByCallable */
-		$errorsByCallable = [];
+		$allErrors = [];
 
-		TypeTraverser::mapMemoized($callableType, function (Type $type, callable $traverse) use (&$errorsByCallable, $node, $scope, $location, $functionName, $functionTemplateTags, $classReflection) {
+		TypeTraverser::map($callableType, function (Type $type, callable $traverse) use (&$allErrors, $node, $scope, $location, $functionName, $functionTemplateTags, $classReflection) {
 			if (!($type instanceof CallableType || $type instanceof ClosureType)) {
 				return $traverse($type);
 			}
@@ -117,12 +113,14 @@ final class GenericCallableRuleHelper
 				}
 			}
 
-			$errorsByCallable[spl_object_id($type)] = $errors;
+			foreach ($errors as $error) {
+				$allErrors[] = $error;
+			}
 
 			return $traverse($type);
 		});
 
-		return array_merge(...array_values($errorsByCallable));
+		return $allErrors;
 	}
 
 }

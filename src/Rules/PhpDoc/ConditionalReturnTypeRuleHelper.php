@@ -15,7 +15,6 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
-use function spl_object_id;
 use function sprintf;
 use function substr;
 
@@ -31,18 +30,18 @@ final class ConditionalReturnTypeRuleHelper
 		$conditionalTypes = [];
 		$parametersByName = [];
 		foreach ($acceptor->getParameters() as $parameter) {
-			TypeTraverser::mapMemoized($parameter->getType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+			TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 				if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-					$conditionalTypes[spl_object_id($type)] = $type;
+					$conditionalTypes[] = $type;
 				}
 
 				return $traverse($type);
 			});
 
 			if ($parameter->getOutType() !== null) {
-				TypeTraverser::mapMemoized($parameter->getOutType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+				TypeTraverser::map($parameter->getOutType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-						$conditionalTypes[spl_object_id($type)] = $type;
+						$conditionalTypes[] = $type;
 					}
 
 					return $traverse($type);
@@ -50,9 +49,9 @@ final class ConditionalReturnTypeRuleHelper
 			}
 
 			if ($parameter->getClosureThisType() !== null) {
-				TypeTraverser::mapMemoized($parameter->getClosureThisType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+				TypeTraverser::map($parameter->getClosureThisType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-						$conditionalTypes[spl_object_id($type)] = $type;
+						$conditionalTypes[] = $type;
 					}
 
 					return $traverse($type);
@@ -62,9 +61,9 @@ final class ConditionalReturnTypeRuleHelper
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 
-		TypeTraverser::mapMemoized($acceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+		TypeTraverser::map($acceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-				$conditionalTypes[spl_object_id($type)] = $type;
+				$conditionalTypes[] = $type;
 			}
 
 			return $traverse($type);

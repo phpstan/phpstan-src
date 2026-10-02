@@ -23,13 +23,11 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar;
-use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Static_;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Scope;
 use PHPStan\File\FileHelper;
-use PHPStan\Node\FileNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -62,7 +60,7 @@ use function str_starts_with;
  *   count, and setting a flag or writing an array by key has the same effect
  *   no matter how many times it runs.
  *
- * @implements Rule<FileNode>
+ * @implements Rule<StaticCall>
  */
 final class TypeTraverserMapMemoizedRule implements Rule
 {
@@ -73,52 +71,32 @@ final class TypeTraverserMapMemoizedRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return FileNode::class;
+		return StaticCall::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (
+			!$node->class instanceof Name
+			|| $node->class->toString() !== TypeTraverser::class
+			|| !$node->name instanceof Identifier
+			|| !in_array($node->name->toLowerString(), ['map', 'mapmemoized'], true)
+		) {
+			return [];
+		}
+
 		if ($this->skipTests && str_starts_with($this->fileHelper->normalizePath($scope->getFile()), $this->fileHelper->normalizePath(dirname(__DIR__, 3) . '/tests'))) {
 			return [];
 		}
 
-		$nodeFinder = new NodeFinder();
-
-		/** @var list<StaticCall> $calls */
-		$calls = $nodeFinder->find($node->getNodes(), fn (Node $node): bool => $this->isTraverserCall($node));
-		if (count($calls) === 0) {
+		// the result is not used when the call is a statement of its own;
+		// the body of an arrow function also counts as one, which errs towards allowing mapMemoized()
+		$error = $this->checkCall($node, $scope->isInFirstLevelStatement());
+		if ($error === null) {
 			return [];
 		}
 
-		/** @var array<int, true> $callsWithUnusedResult */
-		$callsWithUnusedResult = [];
-		foreach ($nodeFinder->findInstanceOf($node->getNodes(), Expression::class) as $expression) {
-			$callsWithUnusedResult[spl_object_id($expression->expr)] = true;
-		}
-
-		$errors = [];
-		foreach ($calls as $call) {
-			$error = $this->checkCall($call, isset($callsWithUnusedResult[spl_object_id($call)]));
-			if ($error === null) {
-				continue;
-			}
-
-			$errors[] = $error;
-		}
-
-		return $errors;
-	}
-
-	/**
-	 * @phpstan-assert-if-true StaticCall $node
-	 */
-	private function isTraverserCall(Node $node): bool
-	{
-		return $node instanceof StaticCall
-			&& $node->class instanceof Name
-			&& $node->class->toString() === TypeTraverser::class
-			&& $node->name instanceof Identifier
-			&& in_array($node->name->toLowerString(), ['map', 'mapmemoized'], true);
+		return [$error];
 	}
 
 	private function checkCall(StaticCall $call, bool $isResultUnused): ?IdentifierRuleError

@@ -208,6 +208,7 @@ rules:
 	- PHPStan\Build\MemoizationPropertyRule
 	- PHPStan\Build\OrChainIdenticalComparisonToInArrayRule
 	- PHPStan\Build\NoPhpVersionInjectionInScopeAwareExtensionRule
+	- PHPStan\Build\TypeTraverserMapMemoizedRule
 
 services:
 	-

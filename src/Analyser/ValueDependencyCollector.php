@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Analyser\ResultCache\ClassResultCacheValueExtension;
 use PHPStan\Analyser\ResultCache\DirectoryResultCacheValueExtension;
 use PHPStan\Analyser\ResultCache\FileResultCacheValueExtension;
 use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
@@ -128,6 +129,15 @@ final class ValueDependencyCollector
 	{
 		$directory = rtrim($this->fileHelper->normalizePath($directory), '/\\');
 		$this->record(DirectoryResultCacheValueExtension::class, DirectoryResultCacheValueExtension::createKey($directory, $pattern), $scope, $insideWalk);
+	}
+
+	/**
+	 * DependencyTracker::trackClassDependency() - a dependency on what a class declares, through
+	 * ClassResultCacheValueExtension.
+	 */
+	public function recordClass(string $className, Scope $scope, bool $insideWalk): void
+	{
+		$this->record(ClassResultCacheValueExtension::class, ClassResultCacheValueExtension::createKey($className), $scope, $insideWalk);
 	}
 
 	/**

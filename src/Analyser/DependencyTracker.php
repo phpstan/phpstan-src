@@ -54,4 +54,13 @@ interface DependencyTracker
 	 */
 	public function trackDirectoryDependency(string $directory, string $pattern = '*'): void;
 
+	/**
+	 * The analysis of the current file depends on the class $className as if the code referenced it -
+	 * a class named in a string, in a PHPDoc tag PHPStan does not resolve, or in a configuration file.
+	 * The current file is then re-analysed when the class or one of its parents, interfaces or traits
+	 * changes what it declares (signatures and PHPDocs, not method bodies), and when the class is
+	 * created, deleted or moved to another file.
+	 */
+	public function trackClassDependency(string $className): void;
+
 }

@@ -50,3 +50,7 @@ services:
 		class: ResultCacheE2EValueDependency\ViewRule
 		tags:
 			- phpstan.rules.rule
+	-
+		class: ResultCacheE2EValueDependency\MakeReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension

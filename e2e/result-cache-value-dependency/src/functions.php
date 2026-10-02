@@ -40,3 +40,8 @@ function view(string $name): string
 {
 	return $name;
 }
+
+function make(string $class): object
+{
+	return new \stdClass();
+}

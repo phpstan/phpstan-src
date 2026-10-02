@@ -455,6 +455,7 @@ jobs:
               ../bashunit -a contains 'UsesMayThrow.php:9:Dead catch - RuntimeException is never thrown in the try block.' "$OUTPUT"
               ../bashunit -a contains 'UsesRegion.php:7:Region eu is used.' "$OUTPUT"
               ../bashunit -a contains 'UsesView.php:7:View dashboard does not exist.' "$OUTPUT"
+              ../bashunit -a contains 'UsesMake.php:7:Call to an undefined method object::run().' "$OUTPUT"
               ../bashunit -a not_contains 'UsesMailer.php' "$OUTPUT"
               # The extensions read container.json, which the result cache knows nothing about. A rule and a
               # dynamic return type extension both declare the service they ask about - it is recorded once.
@@ -562,6 +563,28 @@ jobs:
               echo "$INFO"
               ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
               ../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw"
+              # A dynamic return type extension tracking a class named in a string: the class appearing - outside
+              # the analysed paths, so no fallback for new files kicks in - re-analyses the file naming it...
+              printf '<?php declare(strict_types = 1);\n\nnamespace ResultCacheE2EValueDependency\\Lib;\n\nclass Gadget extends Base\n{\n}\n' > lib/Gadget.php
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'UsesMake.php' "$OUTPUT"
+              # ...a method body edited in its parent class does not...
+              sed -i.bak 's/return 1;/return 2;/' lib/Base.php && rm lib/Base.php.bak
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              # ...and a signature changed there does.
+              printf '<?php declare(strict_types = 1);\n\nnamespace ResultCacheE2EValueDependency\\Lib;\n\nclass Base\n{\n\n\tpublic function run(): string\n\t{\n\t\treturn \x27x\x27;\n\t}\n\n}\n' > lib/Base.php
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'UsesMake.php:7:Function ResultCacheE2EValueDependency\usesMake() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-file-dependency
               composer install

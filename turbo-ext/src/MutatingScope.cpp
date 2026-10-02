@@ -10611,6 +10611,15 @@ public:
 		return callValueDependencyCollector(PT_LC("recorddirectory"), &directoryZv, &patternZv);
 	}
 
+	/* $this->container->getByType(ValueDependencyCollector::class)->recordClass($className, $this,
+	 * $this->nodeCallback !== null) */
+	bool trackClassDependency(zend_string *className)
+	{
+		zval classNameZv;
+		ZVAL_STR(&classNameZv, className);
+		return callValueDependencyCollector(PT_LC("recordclass"), &classNameZv, NULL);
+	}
+
 	/* the collector's method (lowercase name) with the arguments, the scope and whether it is inside the walk */
 	bool callValueDependencyCollector(const char *method, size_t methodLength, zval *first, zval *second)
 	{
@@ -13421,6 +13430,12 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		bool ok = PT_THIS.trackDirectoryDependency(directory, pattern != NULL ? pattern : defaultPattern);
 		if (defaultPattern != NULL) zend_string_release(defaultPattern);
 		if (UNEXPECTED(!ok)) RETURN_THROWS();
+	});
+
+	cls.method(sigs::trackClassDependency, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *className;
+		if (!zp::parse<zp::Str>(execute_data, className)) RETURN_THROWS();
+		if (UNEXPECTED(!PT_THIS.trackClassDependency(className))) RETURN_THROWS();
 	});
 
 	/* }}} */

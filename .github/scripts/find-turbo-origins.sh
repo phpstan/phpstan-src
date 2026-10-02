@@ -43,6 +43,7 @@ BUILD_INPUT_PATHS=(
 	turbo-ext/config.w32
 	turbo-ext/bin/pgo-train.sh
 	.github/turbo-build
+	.github/scripts/install-alpine-php.sh
 	.github/scripts/install-php86-windows.sh
 )
 WORKFLOW_PATH=".github/workflows/phar.yml"

@@ -24,7 +24,9 @@ env:
   # more (paths under turbo-ext/, shell globs). The commit job deletes them
   # from the dist; without this, the torn-set guard there would refuse every
   # version bump, since a retired binary has no freshly built replacement.
-  TURBO_RETIRED_BINARIES: "linux-gnu-x86_64/phpstan_turbo-*-zts.so linux-gnu-arm64/phpstan_turbo-*-zts.so"
+  # Linux ZTS binaries are built from PHP 8.6 on again (see turbo-compile),
+  # so only the older minors' are retired.
+  TURBO_RETIRED_BINARIES: "linux-gnu-x86_64/phpstan_turbo-8.[345]-zts.so linux-gnu-arm64/phpstan_turbo-8.[345]-zts.so"
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
   SUPPORTED_PHP_PARSER_VERSION: "v5.9.0"
@@ -397,7 +399,7 @@ jobs:
     # of ORIGIN_RUN_ID repeated in both). The tests of every binary, reused
     # or compiled, run in the turbo-differential jobs, so the commit job,
     # which needs the binaries, does not wait for them.
-    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)] && 'ubuntu-latest' || matrix.target.runs-on }}
+    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}{3}', matrix.target.artifact, matrix.target.name, matrix.php-version, matrix.target.suffix || '')] && 'ubuntu-latest' || matrix.target.runs-on }}
     # Container legs pin the built binaries' userland floor independently of
     # the runner image. The gnu legs run in a prebuilt ubuntu:22.04-based
     # image (.github/turbo-build/Dockerfile, published to GHCR by
@@ -411,16 +413,20 @@ jobs:
     # separate turbo-compile-musl-arm64 job below: JavaScript-based actions
     # cannot run in Alpine containers on arm64 runners (the runner only
     # ships an x64 musl Node), so that job drives the Alpine container
-    # through docker exec instead of a `container:` leg. There are no Linux
-    # ZTS legs: every distro, ppa:ondrej/php, sury, Remi's default `php`, the
-    # official Docker image and setup-php ship an NTS CLI, and thread-safe
-    # PHP on Linux (FrankenPHP, php:*-zts images) is a few percent of hosts —
-    # not worth two binaries per PHP minor. Their binaries are deleted from
-    # phpstan/phpstan by the commit job (TURBO_RETIRED_BINARIES). Windows
-    # keeps its ZTS leg: XAMPP, WampServer and Scoop default to TS PHP.
-    # The gnu-php8.6 image builds the official 8.6 prerelease tarball (see the
-    # Dockerfile). Alpine's php86 packages are currently only in edge/testing.
-    container: ${{ !(fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)]) && (matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || matrix.target.family == 'musl' && matrix.php-version == '8.6' && 'alpine:edge' || matrix.target.container) || '' }}
+    # through docker exec instead of a `container:` leg.
+    # Linux ZTS legs (suffix -zts) exist from PHP 8.6 on: the official Docker
+    # images build every 8.6+ variant thread-safe, cli and alpine included
+    # (docker-library/php#1686), while distros, ppa:ondrej/php, sury, Remi
+    # and setup-php keep shipping an NTS CLI — so 8.6+ needs both. Up to 8.5
+    # thread-safe PHP on Linux (FrankenPHP, php:*-zts images) is a few
+    # percent of hosts and gets no binary; the commit job deletes those from
+    # phpstan/phpstan (TURBO_RETIRED_BINARIES). Windows has ZTS legs for
+    # every minor: XAMPP, WampServer and Scoop default to TS PHP.
+    # The gnu-php8.6 and gnu-php8.6-zts images build the official 8.6
+    # prerelease tarball (see the Dockerfile); the musl ZTS legs build the
+    # same tarball in alpine:3.24, since Alpine packages no thread-safe PHP.
+    # Alpine's NTS php86 packages are currently only in edge/testing.
+    container: ${{ !(fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}{3}', matrix.target.artifact, matrix.target.name, matrix.php-version, matrix.target.suffix || '')]) && (matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}{1}', matrix.php-version, matrix.target.suffix || '') || matrix.target.family == 'musl' && matrix.php-version == '8.6' && matrix.target.suffix != '-zts' && 'alpine:edge' || matrix.target.container) || '' }}
     needs: turbo-origins
     timeout-minutes: 30
 
@@ -430,8 +436,9 @@ jobs:
 
     env:
       PHP_MINOR: ${{ matrix.php-version }}
-      TURBO_ARTIFACT: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}"
-      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)] }}
+      PHP_ZTS: ${{ matrix.target.suffix == '-zts' && '1' || '0' }}
+      TURBO_ARTIFACT: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}${{ matrix.target.suffix }}"
+      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}{3}', matrix.target.artifact, matrix.target.name, matrix.php-version, matrix.target.suffix || '')] }}
 
     strategy:
       fail-fast: false
@@ -459,6 +466,31 @@ jobs:
             runs-on: "macos-latest"
             family: "macos"
             artifact: "phpstan_turbo"
+        # thread-safe builds, 8.6+ only (see above); the musl arm64 one is in
+        # turbo-compile-musl-arm64
+        include:
+          - php-version: "8.6"
+            target:
+              name: "linux-gnu-x86_64"
+              runs-on: "ubuntu-latest"
+              family: "gnu"
+              artifact: "phpstan_turbo"
+              suffix: "-zts"
+          - php-version: "8.6"
+            target:
+              name: "linux-gnu-arm64"
+              runs-on: "ubuntu-24.04-arm"
+              family: "gnu"
+              artifact: "phpstan_turbo"
+              suffix: "-zts"
+          - php-version: "8.6"
+            target:
+              name: "linux-musl-x86_64"
+              runs-on: "ubuntu-latest"
+              container: "alpine:3.24"
+              family: "musl"
+              artifact: "phpstan_turbo"
+              suffix: "-zts"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -481,23 +513,12 @@ jobs:
         if: env.ORIGIN_RUN_ID != ''
         run: echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" | tee turbo-reused.txt
 
-      # The Alpine leg installs PHP and tooling before checkout:
-      # actions/checkout needs git inside the container, and the build needs
-      # php/php-config symlinks pointing at the matrix PHP version. The GNU
+      # actions/checkout needs git inside the Alpine container; PHP itself is
+      # installed after checkout, by a script from the repository. The GNU
       # container legs have the toolchain baked in.
-      - name: "Install PHP and build tools (Alpine container)"
+      - name: "Install git (Alpine container)"
         if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'musl'
-        run: |
-          V="$(echo "$PHP_MINOR" | tr -d .)"
-          if [ "$PHP_MINOR" = "8.6" ]; then
-            echo 'https://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
-          fi
-          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
-            "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
-            "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
-            "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"
-          ln -sf "/usr/bin/php$V" /usr/local/bin/php
-          ln -sf "/usr/bin/php-config$V" /usr/local/bin/php-config
+        run: apk add --no-cache git
 
       - name: "Checkout"
         if: env.ORIGIN_RUN_ID == ''
@@ -517,6 +538,11 @@ jobs:
       - name: "Trust the checkout despite the container/host uid mismatch"
         if: env.ORIGIN_RUN_ID == ''
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      # The build needs php/php-config on PATH for the matrix PHP version.
+      - name: "Install PHP and build tools (Alpine container)"
+        if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'musl'
+        run: sh .github/scripts/install-alpine-php.sh
 
       - name: "Install PHP (macOS)"
         if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'macos'
@@ -594,6 +620,10 @@ jobs:
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
+          # the loader rejects a ts-mismatched binary, so php loading it above
+          # proves the binary matches the interpreter; assert the interpreter
+          # itself so a -zts artifact cannot silently carry an NTS build
+          [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$PHP_ZTS" ]
 
       # A reused binary is uploaded again under the same name, so the jobs
       # downstream find every binary in this run.
@@ -622,9 +652,9 @@ jobs:
     # ships an x64 musl Node). Instead the workflow steps run on the arm64
     # host and only the build commands run inside a long-lived Alpine
     # container via docker exec — native arm64, no QEMU. The steps mirror
-    # the musl leg of turbo-compile one for one, including the reuse of a
+    # the musl legs of turbo-compile one for one, including the reuse of a
     # binary compiled in an earlier run, whose leg runs on ubuntu-latest.
-    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo-linux-musl-arm64-php{0}', matrix.php-version)] && 'ubuntu-latest' || 'ubuntu-24.04-arm' }}
+    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo-linux-musl-arm64-php{0}{1}', matrix.php-version, matrix.ts == 'zts' && '-zts' || '')] && 'ubuntu-latest' || 'ubuntu-24.04-arm' }}
     needs: turbo-origins
     timeout-minutes: 30
 
@@ -634,13 +664,19 @@ jobs:
 
     env:
       PHP_MINOR: ${{ matrix.php-version }}
-      TURBO_ARTIFACT: "phpstan_turbo-linux-musl-arm64-php${{ matrix.php-version }}"
-      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo-linux-musl-arm64-php{0}', matrix.php-version)] }}
+      PHP_ZTS: ${{ matrix.ts == 'zts' && '1' || '0' }}
+      TURBO_ARTIFACT: "phpstan_turbo-linux-musl-arm64-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
+      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo-linux-musl-arm64-php{0}{1}', matrix.php-version, matrix.ts == 'zts' && '-zts' || '')] }}
 
     strategy:
       fail-fast: false
       matrix:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
+        ts: ["nts"]
+        # thread-safe from 8.6 on, see turbo-compile
+        include:
+          - php-version: "8.6"
+            ts: "zts"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -676,28 +712,16 @@ jobs:
       - name: "Start the Alpine build container"
         if: env.ORIGIN_RUN_ID == ''
         env:
-          ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && 'alpine:edge' || 'alpine:3.24' }}
+          ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && matrix.ts == 'nts' && 'alpine:edge' || 'alpine:3.24' }}
         run: |
           docker run -d --name alpine-build \
             -v "$PWD:/work" -w /work \
-            -e PHP_MINOR -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
+            -e PHP_MINOR -e PHP_ZTS -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
             "$ALPINE_IMAGE" sleep 7200
 
       - name: "Install PHP and build tools"
         if: env.ORIGIN_RUN_ID == ''
-        run: |
-          docker exec -i alpine-build sh -e <<'EOF'
-          V="$(echo "$PHP_MINOR" | tr -d .)"
-          if [ "$PHP_MINOR" = "8.6" ]; then
-            echo 'https://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
-          fi
-          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
-            "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
-            "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
-            "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"
-          ln -sf "/usr/bin/php$V" /usr/local/bin/php
-          ln -sf "/usr/bin/php-config$V" /usr/local/bin/php-config
-          EOF
+        run: docker exec alpine-build sh .github/scripts/install-alpine-php.sh
 
       # The workspace volume is owned by the host runner user while the
       # container runs as root, so git refuses the repo ("dubious
@@ -745,6 +769,7 @@ jobs:
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
+          [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$PHP_ZTS" ]
           EOF
 
       - name: "Upload extension artifact"
@@ -785,17 +810,20 @@ jobs:
     # The 8.3 images are pinned to one release of each known numbering;
     # 8.4/8.5 float on the minor tag and 8.6 on the prerelease tag so a future
     # release with a surprising build is picked up on the next run without
-    # a workflow change. Legs run on linux-gnu-x86_64 only: the token
-    # numbering comes from the bison that generated the tarball's parser,
-    # not from arch or libc, and per-arch coverage stays with turbo-run
-    # and turbo-differential. No macOS/Windows legs: those runners cannot
-    # run Linux containers, and no alternative-numbered official build is
-    # distributed for either platform today.
+    # a workflow change. Legs run on x86_64 only: the token numbering comes
+    # from the bison that generated the tarball's parser, not from arch or
+    # libc, and per-arch coverage stays with turbo-run and
+    # turbo-differential. The 8.6+ images are thread-safe
+    # (docker-library/php#1686), so those legs load the -zts binaries, and
+    # an Alpine leg covers the musl one — php:*-alpine is the other image
+    # family people run PHPStan in. No macOS/Windows legs: those runners
+    # cannot run Linux containers, and no alternative-numbered official
+    # build is distributed for either platform today.
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
 
     env:
-      IMAGE: ${{ matrix.php-version == '8.6' && 'phpstan-turbo-test:8.6' || matrix.image }}
+      IMAGE: ${{ matrix.php-version == '8.6' && format('phpstan-turbo-test:{0}', matrix.binary) || matrix.image }}
 
     permissions:
       contents: read
@@ -809,18 +837,27 @@ jobs:
           - "php:8.4-cli-bookworm"
           - "php:8.5-cli-bookworm"
           - "php:8.6-rc-cli-bookworm"
+          - "php:8.6-rc-cli-alpine"
         check: ["tests", "phpstan"]
         include:
           - image: "php:8.3.21-cli-bookworm"
             php-version: "8.3"
+            binary: "linux-gnu-x86_64-php8.3"
           - image: "php:8.3.22-cli-bookworm"
             php-version: "8.3"
+            binary: "linux-gnu-x86_64-php8.3"
           - image: "php:8.4-cli-bookworm"
             php-version: "8.4"
+            binary: "linux-gnu-x86_64-php8.4"
           - image: "php:8.5-cli-bookworm"
             php-version: "8.5"
+            binary: "linux-gnu-x86_64-php8.5"
           - image: "php:8.6-rc-cli-bookworm"
             php-version: "8.6"
+            binary: "linux-gnu-x86_64-php8.6-zts"
+          - image: "php:8.6-rc-cli-alpine"
+            php-version: "8.6"
+            binary: "linux-musl-x86_64-php8.6-zts"
           # The tests legs invoke paratest directly instead of a literal
           # `make tests`: its install-paratest step needs a composer, which
           # the images do not carry — tests/vendor is installed on the
@@ -861,7 +898,7 @@ jobs:
       - name: "Download extension artifact"
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: "phpstan_turbo-linux-gnu-x86_64-php${{ matrix.php-version }}"
+          name: "phpstan_turbo-${{ matrix.binary }}"
           path: "turbo-ext"
 
       - name: "Add mbstring to the PHP 8.6 prerelease image"
@@ -869,15 +906,37 @@ jobs:
         env:
           PHP_IMAGE: ${{ matrix.image }}
         # Unlike the stable images, the 8.6 prerelease omits mbstring,
-        # which PHPUnit and PHPStan's test fixtures require.
+        # which PHPUnit and PHPStan's test fixtures require. The Alpine
+        # images also drop the build tools after building PHP, and carry no
+        # bash, which the run step below needs, and no make, which
+        # `make phpstan` needs.
         run: |
           docker build --build-arg "PHP_IMAGE=$PHP_IMAGE" -t "$IMAGE" - <<'DOCKERFILE'
           ARG PHP_IMAGE
           FROM ${PHP_IMAGE}
-          RUN apt-get update && apt-get install -y --no-install-recommends libonig-dev \
-            && docker-php-ext-install mbstring \
-            && rm -rf /var/lib/apt/lists/*
+          RUN if command -v apk > /dev/null; then \
+              apk add --no-cache bash make oniguruma \
+              && apk add --no-cache --virtual .mbstring-build-deps $PHPIZE_DEPS oniguruma-dev \
+              && docker-php-ext-install mbstring \
+              && apk del .mbstring-build-deps; \
+            else \
+              apt-get update && apt-get install -y --no-install-recommends libonig-dev \
+              && docker-php-ext-install mbstring \
+              && rm -rf /var/lib/apt/lists/*; \
+            fi
           DOCKERFILE
+
+      # Guards the matrix above: a binary of the wrong thread-safety would
+      # fail the probe below anyway, but with an undefined-symbol error
+      # instead of this message.
+      - name: "Verify the binary matches the image's thread-safety"
+        env:
+          BINARY: ${{ matrix.binary }}
+        run: |
+          IMAGE_ZTS="$(docker run --rm "$IMAGE" php -r 'echo (int) PHP_ZTS;')"
+          BINARY_ZTS=$([ "${BINARY%-zts}" != "$BINARY" ] && echo 1 || echo 0)
+          echo "image PHP_ZTS=$IMAGE_ZTS, binary $BINARY"
+          [ "$IMAGE_ZTS" = "$BINARY_ZTS" ]
 
       # Fast fail with a one-line diagnosis: a token-numbering mismatch
       # would otherwise surface as thousands of unrelated-looking failures
@@ -1154,7 +1213,8 @@ jobs:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
         target: ["linux-gnu-x86_64", "linux-gnu-arm64", "macos-arm64", "windows-x86_64"]
         ts: ["nts", "zts"]
-        # only Windows ships ZTS binaries (see turbo-compile)
+        # Windows ships ZTS binaries for every minor, Linux from 8.6 on —
+        # added by the include entries below (see turbo-compile)
         exclude:
           - target: "linux-gnu-x86_64"
             ts: "zts"
@@ -1178,6 +1238,16 @@ jobs:
           - target: "linux-gnu-arm64"
             php-version: "8.6"
             container: "ghcr.io/phpstan/turbo-build:gnu-php8.6"
+          - target: "linux-gnu-x86_64"
+            php-version: "8.6"
+            ts: "zts"
+            runs-on: "ubuntu-latest"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.6-zts"
+          - target: "linux-gnu-arm64"
+            php-version: "8.6"
+            ts: "zts"
+            runs-on: "ubuntu-24.04-arm"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.6-zts"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -1296,13 +1366,23 @@ jobs:
 
     env:
       PHP_MINOR: ${{ matrix.php-version }}
-      TURBO_ARTIFACT: "phpstan_turbo-linux-musl-${{ matrix.arch }}-php${{ matrix.php-version }}"
+      PHP_ZTS: ${{ matrix.ts == 'zts' && '1' || '0' }}
+      TURBO_ARTIFACT: "phpstan_turbo-linux-musl-${{ matrix.arch }}-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
 
     strategy:
       fail-fast: false
       matrix:
         arch: ["x86_64", "arm64"]
         php-version: ["8.3", "8.4", "8.5", "8.6"]
+        ts: ["nts"]
+        # thread-safe from 8.6 on, see turbo-compile
+        include:
+          - arch: "x86_64"
+            php-version: "8.6"
+            ts: "zts"
+          - arch: "arm64"
+            php-version: "8.6"
+            ts: "zts"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -1318,27 +1398,15 @@ jobs:
       # The same container, packages and composer as turbo-compile-musl-arm64.
       - name: "Start the Alpine container"
         env:
-          ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && 'alpine:edge' || 'alpine:3.24' }}
+          ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && matrix.ts == 'nts' && 'alpine:edge' || 'alpine:3.24' }}
         run: |
           docker run -d --name alpine-test \
             -v "$PWD:/work" -w /work \
-            -e PHP_MINOR -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
+            -e PHP_MINOR -e PHP_ZTS -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
             "$ALPINE_IMAGE" sleep 7200
 
       - name: "Install PHP and tools"
-        run: |
-          docker exec -i alpine-test sh -e <<'EOF'
-          V="$(echo "$PHP_MINOR" | tr -d .)"
-          if [ "$PHP_MINOR" = "8.6" ]; then
-            echo 'https://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
-          fi
-          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
-            "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
-            "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
-            "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"
-          ln -sf "/usr/bin/php$V" /usr/local/bin/php
-          ln -sf "/usr/bin/php-config$V" /usr/local/bin/php-config
-          EOF
+        run: docker exec alpine-test sh .github/scripts/install-alpine-php.sh
 
       - name: "Trust the checkout despite the container/host uid mismatch"
         run: docker exec alpine-test git config --global --add safe.directory /work
@@ -1365,6 +1433,7 @@ jobs:
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
+          [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$PHP_ZTS" ]
           EOF
 
       - name: "Smoke test (differential: native vs PHP implementations)"
@@ -1412,7 +1481,9 @@ jobs:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
-        # Linux ships no ZTS binary (see turbo-compile); Windows does
+        # Linux ships ZTS binaries only from 8.6 on (see turbo-compile), and
+        # the ubuntu 8.6 legs are excluded below — turbo-docker-run runs the
+        # 8.6 ZTS binaries in the official, thread-safe 8.6 images instead.
         exclude:
           - operating-system: "ubuntu-latest"
             ts: "zts"

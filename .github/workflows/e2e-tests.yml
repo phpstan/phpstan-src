@@ -454,6 +454,7 @@ jobs:
               ../bashunit -a contains 'UsesHolder.php:9:Function ResultCacheE2EValueDependency\usesHolder() should return int but returns string.' "$OUTPUT"
               ../bashunit -a contains 'UsesMayThrow.php:9:Dead catch - RuntimeException is never thrown in the try block.' "$OUTPUT"
               ../bashunit -a contains 'UsesRegion.php:7:Region eu is used.' "$OUTPUT"
+              ../bashunit -a contains 'UsesView.php:7:View dashboard does not exist.' "$OUTPUT"
               ../bashunit -a not_contains 'UsesMailer.php' "$OUTPUT"
               # The extensions read container.json, which the result cache knows nothing about. A rule and a
               # dynamic return type extension both declare the service they ask about - it is recorded once.
@@ -542,6 +543,25 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a contains 'UsesIsAllowed.php:8:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
+              # A rule tracking a directory: a file the pattern doesn't match changes nothing...
+              echo 'notes' > views/notes.txt
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              # ...a matching file appearing re-analyses the file that looked for it.
+              echo '<p>dashboard</p>' > views/dashboard.html
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'View dashboard does not exist.' "$OUTPUT"
+              # ...and so does a matching file whose contents change.
+              echo '<p>dashboard, changed</p>' > views/dashboard.html
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              ../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw"
           - script: |
               cd e2e/result-cache-file-dependency
               composer install

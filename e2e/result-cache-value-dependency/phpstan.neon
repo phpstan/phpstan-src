@@ -46,3 +46,7 @@ services:
 		class: ResultCacheE2EValueDependency\IsAllowedTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+	-
+		class: ResultCacheE2EValueDependency\ViewRule
+		tags:
+			- phpstan.rules.rule

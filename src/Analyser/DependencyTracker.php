@@ -45,4 +45,13 @@ interface DependencyTracker
 	 */
 	public function trackFileDependency(string $file): void;
 
+	/**
+	 * The analysis of the current file depends on the files in $directory, recursively, whose names
+	 * match $pattern (fnmatch() syntax, like "*.php" or "Pest.php") - a directory scanned for
+	 * configuration files, templates or migrations. The current file is then re-analysed whenever such
+	 * a file is created, changed in any way, deleted or renamed, or the directory itself is created or
+	 * deleted.
+	 */
+	public function trackDirectoryDependency(string $directory, string $pattern = '*'): void;
+
 }

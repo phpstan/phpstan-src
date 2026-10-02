@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Analyser\ResultCache\DirectoryResultCacheValueExtension;
 use PHPStan\Analyser\ResultCache\FileResultCacheValueExtension;
 use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
 use PHPStan\DependencyInjection\AutowiredExtensions;
@@ -14,6 +15,7 @@ use function array_keys;
 use function array_merge;
 use function array_unique;
 use function array_values;
+use function rtrim;
 use function sprintf;
 
 /**
@@ -116,6 +118,16 @@ final class ValueDependencyCollector
 		}
 
 		$this->record(FileResultCacheValueExtension::class, $file, $scope, $insideWalk);
+	}
+
+	/**
+	 * DependencyTracker::trackDirectoryDependency() - a dependency on the files in a directory, through
+	 * DirectoryResultCacheValueExtension.
+	 */
+	public function recordDirectory(string $directory, string $pattern, Scope $scope, bool $insideWalk): void
+	{
+		$directory = rtrim($this->fileHelper->normalizePath($directory), '/\\');
+		$this->record(DirectoryResultCacheValueExtension::class, DirectoryResultCacheValueExtension::createKey($directory, $pattern), $scope, $insideWalk);
 	}
 
 	/**

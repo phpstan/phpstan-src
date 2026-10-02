@@ -35,3 +35,8 @@ function isAllowed(object $object): bool
 {
 	return true;
 }
+
+function view(string $name): string
+{
+	return $name;
+}

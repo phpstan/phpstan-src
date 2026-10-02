@@ -535,7 +535,11 @@ inline constexpr char strings[] =
 	"extensionClass\0" /* 9259 */
 	"trackValueDependency\0" /* 9274 */
 	"file\0" /* 9295 */
-	"trackFileDependency"; /* 9300 */
+	"trackFileDependency\0" /* 9300 */
+	"directory\0" /* 9320 */
+	"pattern\0" /* 9330 */
+	"'*'\0" /* 9338 */
+	"trackDirectoryDependency"; /* 9342 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 10), /* __construct $container */
 	reg::packed(48, 0, 61), /* __construct $scopeFactory */
@@ -1073,6 +1077,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1476, MAY_BE_VOID), /* trackValueDependency return */
 	reg::packed(9295, MAY_BE_STRING), /* trackFileDependency $file */
 	reg::packed(1476, MAY_BE_VOID), /* trackFileDependency return */
+	reg::packed(9320, MAY_BE_STRING), /* trackDirectoryDependency $directory */
+	reg::packed(9330, MAY_BE_STRING, reg::NoString, false, false, 9338), /* trackDirectoryDependency $pattern */
+	reg::packed(1476, MAY_BE_VOID), /* trackDirectoryDependency return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -1276,6 +1283,7 @@ inline constexpr sigtab::Sig invokeNodeCallback = { { 9203 /* invokeNodeCallback
 inline constexpr sigtab::Sig emitCollectedData = { { 9241 /* emitCollectedData */, 2, 528, 2, 530, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig trackValueDependency = { { 9274 /* trackValueDependency */, 2, 531, 2, 533, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig trackFileDependency = { { 9300 /* trackFileDependency */, 1, 534, 1, 535, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackDirectoryDependency = { { 9342 /* trackDirectoryDependency */, 1, 536, 2, 538, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MutatingScope

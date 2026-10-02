@@ -19,6 +19,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StrictMixedType;
+use PHPStan\Type\Traverser\MemoizingTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -86,7 +87,7 @@ final class RuleLevelHelper
 			return $type;
 		}
 
-		return TypeTraverser::map($type, function (Type $type, callable $traverse) {
+		return TypeTraverser::map($type, new MemoizingTraverser(function (Type $type, callable $traverse) {
 			if ($type instanceof TemplateMixedType) {
 				if ($this->checkExplicitMixed) {
 					return $type->toStrictMixedType();
@@ -103,7 +104,7 @@ final class RuleLevelHelper
 			}
 
 			return $traverse($type);
-		});
+		}));
 	}
 
 	/**
@@ -112,7 +113,7 @@ final class RuleLevelHelper
 	private function transformAcceptedType(Type $acceptingType, Type $acceptedType): array
 	{
 		$checkForUnion = $this->checkUnionTypes;
-		$acceptedType = TypeTraverser::map($acceptedType, function (Type $acceptedType, callable $traverse) use ($acceptingType, &$checkForUnion): Type {
+		$acceptedType = TypeTraverser::map($acceptedType, new MemoizingTraverser(function (Type $acceptedType, callable $traverse) use ($acceptingType, &$checkForUnion): Type {
 			if ($acceptedType instanceof CallableType) {
 				if ($acceptedType->isCommonCallable()) {
 					return $acceptedType;
@@ -175,7 +176,7 @@ final class RuleLevelHelper
 			}
 
 			return $traverse($acceptedType);
-		});
+		}));
 
 		return [$this->transformCommonType($acceptedType), $checkForUnion];
 	}

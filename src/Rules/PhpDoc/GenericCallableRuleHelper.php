@@ -13,6 +13,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Traverser\MemoizingTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
@@ -46,7 +47,7 @@ final class GenericCallableRuleHelper
 	{
 		$errors = [];
 
-		TypeTraverser::map($callableType, function (Type $type, callable $traverse) use (&$errors, $node, $scope, $location, $functionName, $functionTemplateTags, $classReflection) {
+		TypeTraverser::map($callableType, new MemoizingTraverser(function (Type $type, callable $traverse) use (&$errors, $node, $scope, $location, $functionName, $functionTemplateTags, $classReflection) {
 			if (!($type instanceof CallableType || $type instanceof ClosureType)) {
 				return $traverse($type);
 			}
@@ -114,7 +115,7 @@ final class GenericCallableRuleHelper
 			}
 
 			return $traverse($type);
-		});
+		}));
 
 		return $errors;
 	}

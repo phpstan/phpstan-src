@@ -10,6 +10,7 @@ use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\Traverser\MemoizingTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
@@ -30,44 +31,44 @@ final class ConditionalReturnTypeRuleHelper
 		$conditionalTypes = [];
 		$parametersByName = [];
 		foreach ($acceptor->getParameters() as $parameter) {
-			TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+			TypeTraverser::map($parameter->getType(), new MemoizingTraverser(static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 				if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 					$conditionalTypes[] = $type;
 				}
 
 				return $traverse($type);
-			});
+			}));
 
 			if ($parameter->getOutType() !== null) {
-				TypeTraverser::map($parameter->getOutType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+				TypeTraverser::map($parameter->getOutType(), new MemoizingTraverser(static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 						$conditionalTypes[] = $type;
 					}
 
 					return $traverse($type);
-				});
+				}));
 			}
 
 			if ($parameter->getClosureThisType() !== null) {
-				TypeTraverser::map($parameter->getClosureThisType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+				TypeTraverser::map($parameter->getClosureThisType(), new MemoizingTraverser(static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 						$conditionalTypes[] = $type;
 					}
 
 					return $traverse($type);
-				});
+				}));
 			}
 
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 
-		TypeTraverser::map($acceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+		TypeTraverser::map($acceptor->getReturnType(), new MemoizingTraverser(static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 				$conditionalTypes[] = $type;
 			}
 
 			return $traverse($type);
-		});
+		}));
 
 		$errors = [];
 		foreach ($conditionalTypes as $conditionalType) {
@@ -77,14 +78,14 @@ final class ConditionalReturnTypeRuleHelper
 					continue;
 				}
 				$templateTypes = [];
-				TypeTraverser::map($subjectType, static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+				TypeTraverser::map($subjectType, new MemoizingTraverser(static function (Type $type, callable $traverse) use (&$templateTypes): Type {
 					if ($type instanceof TemplateType) {
 						$templateTypes[] = $type;
 						return $type;
 					}
 
 					return $traverse($type);
-				});
+				}));
 
 				if (count($templateTypes) === 0) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type uses subject type %s which is not part of PHPDoc @template tags.', $subjectType->describe(VerbosityLevel::typeOnly())))

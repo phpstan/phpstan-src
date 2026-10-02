@@ -22,6 +22,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Traverser\MemoizingTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
@@ -73,7 +74,7 @@ final class MissingTypehintCheck
 	public function getIterableTypesWithMissingValueTypehint(Type $type): array
 	{
 		$descriptions = [];
-		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$descriptions): Type {
+		TypeTraverser::map($type, new MemoizingTraverser(function (Type $type, callable $traverse) use (&$descriptions): Type {
 			if ($type instanceof TemplateType) {
 				return $type;
 			}
@@ -108,7 +109,7 @@ final class MissingTypehintCheck
 			}
 			if ($type->isIterable()->yes()) {
 				if ($type->isConstantArray()->yes()) {
-					$type = TypeTraverser::map($type, static function (Type $type, callable $traverse) {
+					$type = TypeTraverser::map($type, new MemoizingTraverser(static function (Type $type, callable $traverse): Type {
 						if ($type instanceof UnionType || $type instanceof IntersectionType) {
 							return $traverse($type);
 						}
@@ -121,7 +122,7 @@ final class MissingTypehintCheck
 						}
 
 						return $traverse($type);
-					});
+					}));
 				}
 				$iterableValue = $type->getIterableValueType();
 				if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
@@ -136,7 +137,7 @@ final class MissingTypehintCheck
 				}
 			}
 			return $traverse($type);
-		});
+		}));
 
 		return $descriptions;
 	}
@@ -147,7 +148,7 @@ final class MissingTypehintCheck
 	public function getNonGenericObjectTypesWithGenericClass(Type $type): array
 	{
 		$objectTypes = [];
-		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$objectTypes): Type {
+		TypeTraverser::map($type, new MemoizingTraverser(function (Type $type, callable $traverse) use (&$objectTypes): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
 				$traverse($type);
 				return $type;
@@ -205,7 +206,7 @@ final class MissingTypehintCheck
 			}
 
 			return $traverse($type);
-		});
+		}));
 
 		return $objectTypes;
 	}
@@ -220,7 +221,7 @@ final class MissingTypehintCheck
 		}
 
 		$result = [];
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$result): Type {
+		TypeTraverser::map($type, new MemoizingTraverser(static function (Type $type, callable $traverse) use (&$result): Type {
 			if (
 				($type instanceof CallableType && $type->isCommonCallable())
 				|| ($type instanceof ClosureType && $type->isCommonCallable())
@@ -229,7 +230,7 @@ final class MissingTypehintCheck
 				$result[] = $type;
 			}
 			return $traverse($type);
-		});
+		}));
 
 		return $result;
 	}

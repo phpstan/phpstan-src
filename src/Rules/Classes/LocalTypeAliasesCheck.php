@@ -23,6 +23,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\CircularTypeAliasErrorType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Traverser\MemoizingTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
@@ -349,7 +350,7 @@ final class LocalTypeAliasesCheck
 	private function hasErrorType(Type $type, string $aliasName, array &$errors): bool
 	{
 		$foundError = false;
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): Type {
+		TypeTraverser::map($type, new MemoizingTraverser(static function (Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): Type {
 			if ($foundError) {
 				return $type;
 			}
@@ -371,7 +372,7 @@ final class LocalTypeAliasesCheck
 			}
 
 			return $traverse($type);
-		});
+		}));
 
 		return $foundError;
 	}

@@ -13,6 +13,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Generic\TypeProjectionHelper;
+use PHPStan\Type\Traverser\MemoizingTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
@@ -182,7 +183,7 @@ final class GenericObjectTypeCheck
 	private function getGenericTypes(Type $phpDocType): array
 	{
 		$genericObjectTypes = [];
-		TypeTraverser::map($phpDocType, static function (Type $type, callable $traverse) use (&$genericObjectTypes): Type {
+		TypeTraverser::map($phpDocType, new MemoizingTraverser(static function (Type $type, callable $traverse) use (&$genericObjectTypes): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
 				$resolvedType = TemplateTypeHelper::resolveToBounds($type);
 				if (!$resolvedType instanceof GenericObjectType && !$resolvedType instanceof GenericStaticType) {
@@ -194,7 +195,7 @@ final class GenericObjectTypeCheck
 			}
 			$traverse($type);
 			return $type;
-		});
+		}));
 
 		return $genericObjectTypes;
 	}

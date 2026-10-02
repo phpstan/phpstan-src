@@ -199,17 +199,15 @@ final class MissingTypehintCheck
 					$templateTypesList .= sprintf(' (%d-%d required)', $requiredTemplateTypesCount, $templateTypesCount);
 				}
 
-				$objectTypes[] = [
-					sprintf('%s %s', strtolower($classReflection->getClassTypeDescription()), $classReflection->getDisplayName(false)),
-					$templateTypesList,
-				];
+				$name = sprintf('%s %s', strtolower($classReflection->getClassTypeDescription()), $classReflection->getDisplayName(false));
+				$objectTypes[$name . "\0" . $templateTypesList] = [$name, $templateTypesList];
 				return $type;
 			}
 
 			return $traverse($type);
 		});
 
-		return $objectTypes;
+		return array_values($objectTypes);
 	}
 
 	/**

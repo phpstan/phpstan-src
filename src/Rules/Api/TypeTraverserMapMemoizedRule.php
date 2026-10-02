@@ -126,10 +126,6 @@ final class TypeTraverserMapMemoizedRule implements Rule
 		return RuleErrorBuilder::message('Callback of TypeTraverser::map() does not depend on where or how many times a Type instance occurs. Use TypeTraverser::mapMemoized() instead.')
 			->identifier('phpstanApi.typeTraverserMap')
 			->line($call->getStartLine())
-			->fixNode($call, static function (StaticCall $node): StaticCall {
-				$node->name = new Identifier('mapMemoized');
-				return $node;
-			})
 			->build();
 	}
 

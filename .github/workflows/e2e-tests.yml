@@ -585,6 +585,16 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a contains 'UsesMake.php:7:Function ResultCacheE2EValueDependency\usesMake() should return int but returns string.' "$OUTPUT"
+              # A class reflection extension tracking on the class: every file using the class is analysed again,
+              # also one that got the magic method from the reflection cache without asking the extension.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["greeting"] = "1"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '3' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'UsesMagic.php:7:Function ResultCacheE2EValueDependency\usesMagic() should return string but returns int.' "$OUTPUT"
+              ../bashunit -a contains 'UsesMagicToo.php:7:Function ResultCacheE2EValueDependency\usesMagicToo() should return string but returns int.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-file-dependency
               composer install

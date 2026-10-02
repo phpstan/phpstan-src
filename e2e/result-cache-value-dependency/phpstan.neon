@@ -54,3 +54,7 @@ services:
 		class: ResultCacheE2EValueDependency\MakeReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
+	-
+		class: ResultCacheE2EValueDependency\MagicMethodsExtension
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension

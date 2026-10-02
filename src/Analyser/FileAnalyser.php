@@ -125,6 +125,7 @@ final class FileAnalyser
 					$this->packageDependencyResolver,
 					$this->ruleErrorTransformer,
 					$processedFiles,
+					$this->valueDependencyCollector,
 				);
 				$scope = $this->scopeFactory->create(ScopeContext::create($file), $nodeCallback);
 				$nodeCallback(new FileNode($parserNodes), $scope);

@@ -24,6 +24,9 @@ use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
  * It tracks what the analysis of the current file depends on besides the analysed code, so that
  * the result cache re-analyses the file when that changes - see ResultCacheValueExtension.
  *
+ * Extensions that get no Scope because they describe a class - class reflection extensions - use
+ * DeclarationDependencyTracker instead.
+ *
  * @api
  */
 interface DependencyTracker

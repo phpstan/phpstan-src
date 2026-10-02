@@ -1,8 +1,7 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Build;
+namespace PHPStan\Rules\Api;
 
-use PHPStan\File\FileHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -14,7 +13,7 @@ final class TypeTraverserMapMemoizedRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new TypeTraverserMapMemoizedRule(self::getContainer()->getByType(FileHelper::class), false);
+		return new TypeTraverserMapMemoizedRule();
 	}
 
 	public function testRule(): void

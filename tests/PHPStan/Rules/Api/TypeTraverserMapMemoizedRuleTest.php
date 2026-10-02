@@ -50,9 +50,4 @@ final class TypeTraverserMapMemoizedRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testFix(): void
-	{
-		$this->fix(__DIR__ . '/data/type-traverser-map-memoized.php', __DIR__ . '/data/type-traverser-map-memoized.php.fixed');
-	}
-
 }

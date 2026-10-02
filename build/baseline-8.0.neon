@@ -23,3 +23,14 @@ parameters:
 			identifier: identical.alwaysFalse
 			count: 1
 			path: ../src/Type/Php/MbFunctionsReturnTypeExtensionTrait.php
+
+		-
+			rawMessage: '''
+				Access to constant on deprecated interface PHPStan\Analyser\ResultCache\ResultCacheMetaExtension:
+				Use value tracking or file tracking instead. See:
+				  https://phpstan.org/developing-extensions/result-cache-meta-extensions#tracking-dependencies-on-values
+				  https://phpstan.org/developing-extensions/result-cache-meta-extensions#tracking-dependencies-on-files
+			'''
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Analyser/ResultCache/ResultCacheManager.php

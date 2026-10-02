@@ -6,6 +6,8 @@
 	"parameters": {
 		"locale": "cs",
 		"timezone": "Europe/Prague",
-		"debug": "yes"
+		"debug": "yes",
+		"throwing": "no",
+		"region": "eu"
 	}
 }

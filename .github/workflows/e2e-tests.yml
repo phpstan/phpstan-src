@@ -452,6 +452,8 @@ jobs:
               ../bashunit -a contains "UsesLocaleToo.php:10:Function ResultCacheE2EValueDependency\usesLocaleToo() should return 'none' but returns 'cs'." "$OUTPUT"
               ../bashunit -a contains 'Holder.php:17:Method ResultCacheE2EValueDependency\Holder::isDebug() should return int but returns string.' "$OUTPUT"
               ../bashunit -a contains 'UsesHolder.php:9:Function ResultCacheE2EValueDependency\usesHolder() should return int but returns string.' "$OUTPUT"
+              ../bashunit -a contains 'UsesMayThrow.php:9:Dead catch - RuntimeException is never thrown in the try block.' "$OUTPUT"
+              ../bashunit -a contains 'UsesRegion.php:7:Region eu is used.' "$OUTPUT"
               ../bashunit -a not_contains 'UsesMailer.php' "$OUTPUT"
               # The extensions read container.json, which the result cache knows nothing about. A rule and a
               # dynamic return type extension both declare the service they ask about - it is recorded once.
@@ -507,6 +509,23 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'UsesLogger.php:7:Call to an undefined method ResultCacheE2EValueDependency\Mailer::log().' "$OUTPUT"
               ../bashunit -a contains 'LoggerTrait.php (in context of class ResultCacheE2EValueDependency\UsesLoggerTrait):10:Call to an undefined method ResultCacheE2EValueDependency\Mailer::log().' "$OUTPUT"
+              # A dynamic throw type extension tracks the values it reads too.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["throwing"] = "yes"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Dead catch' "$OUTPUT"
+              # So does a collector: the data it collected is collected again in the analysis of the file.
+              php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["region"] = "us"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'UsesRegion.php:7:Region us is used.' "$OUTPUT"
+              ../bashunit -a not_contains 'Region eu is used.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-file-dependency
               composer install

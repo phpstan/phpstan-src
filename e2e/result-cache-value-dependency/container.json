@@ -8,6 +8,9 @@
 		"timezone": "Europe/Prague",
 		"debug": "yes",
 		"throwing": "no",
-		"region": "eu"
+		"region": "eu",
+		"closureThis": "ResultCacheE2EValueDependency\\Mailer",
+		"allowedClass": "ResultCacheE2EValueDependency\\Mailer",
+		"greeting": "hello"
 	}
 }

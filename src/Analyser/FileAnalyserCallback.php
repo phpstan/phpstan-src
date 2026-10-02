@@ -17,6 +17,7 @@ use PHPStan\Node\EmitCollectedDataNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Rules\Rule;
@@ -90,6 +91,7 @@ final class FileAnalyserCallback
 		private PackageDependencyResolver $packageDependencyResolver,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private array $processedFiles,
+		private ValueDependencyCollector $valueDependencyCollector,
 	)
 	{
 		$this->linesToIgnore = $this->unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
@@ -251,6 +253,14 @@ final class FileAnalyserCallback
 		try {
 			$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
 			if ($dependencies !== null) {
+				foreach ($dependencies->getReflections() as $dependencyReflection) {
+					if (!$dependencyReflection instanceof ClassReflection) {
+						continue;
+					}
+
+					// what an extension described the class with may depend on something - see DeclarationDependencyTracker
+					$this->valueDependencyCollector->noteClassDependency($dependencyReflection);
+				}
 				$fileAndPackageDependencies = $dependencies->getFileAndPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
 				foreach ($fileAndPackageDependencies['analysedFiles'] as $dependentFile) {
 					$this->fileDependencies[] = $dependentFile;

@@ -26,3 +26,22 @@ function region(): string
 {
 	return '';
 }
+
+function withThis(\Closure $callback): void
+{
+}
+
+function isAllowed(object $object): bool
+{
+	return true;
+}
+
+function view(string $name): string
+{
+	return $name;
+}
+
+function make(string $class): object
+{
+	return new \stdClass();
+}

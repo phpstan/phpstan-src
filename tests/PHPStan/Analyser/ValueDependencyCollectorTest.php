@@ -6,6 +6,7 @@ use Override;
 use PHPStan\Analyser\ResultCache\FileResultCacheValueExtension;
 use PHPStan\Analyser\ValueDependencyCollectorTest\TestValueExtension;
 use PHPStan\File\FileHelper;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use function array_merge;
@@ -87,6 +88,31 @@ final class ValueDependencyCollectorTest extends PHPStanTestCase
 				],
 			],
 		], $collector->finishFile());
+	}
+
+	public function testClassDeclarations(): void
+	{
+		$collector = self::getContainer()->getByType(ValueDependencyCollector::class);
+		$reflectionProvider = self::getContainer()->getByType(ReflectionProvider::class);
+		$id = ValueDependencyCollector::getId(TestValueExtension::class, 'declared');
+
+		// recorded while some file is analysed, kept for the rest of the process
+		$collector->startFile('/project/src/First.php');
+		$collector->recordForClass(PHPStanTestCase::class, TestValueExtension::class, 'declared');
+		$this->assertSame([], $collector->finishFile()['dependents']['/project/src/First.php']['analysis']);
+
+		// a later file depending on a subclass gets it, through the ancestors
+		$collector->startFile('/project/src/Second.php');
+		$collector->noteClassDependency($reflectionProvider->getClass(self::class));
+		$this->assertSame([
+			'values' => [$id => [TestValueExtension::class, 'declared', 'value of declared']],
+			'dependents' => ['/project/src/Second.php' => ['analysis' => [$id], 'declarations' => []]],
+		], $collector->finishFile());
+
+		// one not depending on the class does not
+		$collector->startFile('/project/src/Third.php');
+		$collector->noteClassDependency($reflectionProvider->getClass(ValueDependencyCollector::class));
+		$this->assertSame([], $collector->finishFile()['dependents']['/project/src/Third.php']['analysis']);
 	}
 
 	public function testNothingOutsideOfAnalysedFile(): void

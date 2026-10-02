@@ -1,5 +1,12 @@
 {
 	"autoload-dev": {
-		"classmap": ["extension/"]
+		"classmap": [
+			"extension/"
+		]
+	},
+	"autoload": {
+		"psr-4": {
+			"ResultCacheE2EValueDependency\\Lib\\": "lib/"
+		}
 	}
 }

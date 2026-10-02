@@ -38,3 +38,23 @@ services:
 		class: ResultCacheE2EValueDependency\RegionRule
 		tags:
 			- phpstan.rules.rule
+	-
+		class: ResultCacheE2EValueDependency\WithThisClosureThisExtension
+		tags:
+			- phpstan.functionParameterClosureThisExtension
+	-
+		class: ResultCacheE2EValueDependency\IsAllowedTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+	-
+		class: ResultCacheE2EValueDependency\ViewRule
+		tags:
+			- phpstan.rules.rule
+	-
+		class: ResultCacheE2EValueDependency\MakeReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+	-
+		class: ResultCacheE2EValueDependency\MagicMethodsExtension
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension

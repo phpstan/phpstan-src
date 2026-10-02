@@ -10601,6 +10601,25 @@ public:
 		return callValueDependencyCollector(PT_LC("recordfile"), &fileZv, NULL);
 	}
 
+	/* $this->container->getByType(ValueDependencyCollector::class)->recordDirectory($directory,
+	 * $pattern, $this, $this->nodeCallback !== null) */
+	bool trackDirectoryDependency(zend_string *directory, zend_string *pattern)
+	{
+		zval directoryZv, patternZv;
+		ZVAL_STR(&directoryZv, directory);
+		ZVAL_STR(&patternZv, pattern);
+		return callValueDependencyCollector(PT_LC("recorddirectory"), &directoryZv, &patternZv);
+	}
+
+	/* $this->container->getByType(ValueDependencyCollector::class)->recordClass($className, $this,
+	 * $this->nodeCallback !== null) */
+	bool trackClassDependency(zend_string *className)
+	{
+		zval classNameZv;
+		ZVAL_STR(&classNameZv, className);
+		return callValueDependencyCollector(PT_LC("recordclass"), &classNameZv, NULL);
+	}
+
 	/* the collector's method (lowercase name) with the arguments, the scope and whether it is inside the walk */
 	bool callValueDependencyCollector(const char *method, size_t methodLength, zval *first, zval *second)
 	{
@@ -13402,6 +13421,21 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		zend_string *file;
 		if (!zp::parse<zp::Str>(execute_data, file)) RETURN_THROWS();
 		if (UNEXPECTED(!PT_THIS.trackFileDependency(file))) RETURN_THROWS();
+	});
+
+	cls.method(sigs::trackDirectoryDependency, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *directory, *pattern = NULL;
+		if (!zp::parse<zp::Str, zp::Opt<zp::Str>>(execute_data, directory, pattern)) RETURN_THROWS();
+		zend_string *defaultPattern = pattern == NULL ? zend_string_init("*", 1, 0) : NULL;
+		bool ok = PT_THIS.trackDirectoryDependency(directory, pattern != NULL ? pattern : defaultPattern);
+		if (defaultPattern != NULL) zend_string_release(defaultPattern);
+		if (UNEXPECTED(!ok)) RETURN_THROWS();
+	});
+
+	cls.method(sigs::trackClassDependency, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *className;
+		if (!zp::parse<zp::Str>(execute_data, className)) RETURN_THROWS();
+		if (UNEXPECTED(!PT_THIS.trackClassDependency(className))) RETURN_THROWS();
 	});
 
 	/* }}} */

@@ -167,14 +167,14 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 	{
 		// the same missing value type is reported once per parameter,
 		// regardless of whether the occurrences share a Type instance (type alias) or not
-		$this->analyse([__DIR__ . '/data/missing-iterable-value-type-repeated.php'], [
+		$this->analyse([__DIR__ . '/data/bug-15350.php'], [
 			[
-				'Method MissingIterableValueTypeRepeated\\Foo::inline() has parameter $a with no value type specified in iterable type array.',
+				'Method Bug15350\\Foo::inline() has parameter $a with no value type specified in iterable type array.',
 				14,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
-				'Method MissingIterableValueTypeRepeated\\Foo::alias() has parameter $a with no value type specified in iterable type array.',
+				'Method Bug15350\\Foo::alias() has parameter $a with no value type specified in iterable type array.',
 				21,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],

@@ -1,6 +1,6 @@
 <?php
 
-namespace MissingIterableValueTypeRepeated;
+namespace Bug15350;
 
 /**
  * @phpstan-type BareArr array

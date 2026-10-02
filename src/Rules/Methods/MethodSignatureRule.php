@@ -199,7 +199,7 @@ final class MethodSignatureRule implements Rule
 			return [TrinaryLogic::createYes(), $returnType, $parentReturnType];
 		}
 
-		return [$parentReturnType->isSuperTypeOf($returnType)->result, TypehintHelper::decideType(
+		return [$parentReturnType->isSuperTypeOf($this->transformStaticType($declaringClass, $returnType))->result, TypehintHelper::decideType(
 			$currentVariant->getNativeReturnType(),
 			$currentVariant->getPhpDocReturnType(),
 		), $originalParentReturnType];
@@ -233,7 +233,7 @@ final class MethodSignatureRule implements Rule
 			);
 			$parentParameterType = $this->transformStaticType($declaringClass, $originalParameterType);
 
-			$parameterResults[] = [$parameterType->isSuperTypeOf($parentParameterType)->result, TypehintHelper::decideType(
+			$parameterResults[] = [$this->transformStaticType($declaringClass, $parameterType)->isSuperTypeOf($parentParameterType)->result, TypehintHelper::decideType(
 				$parameter->getNativeType(),
 				$parameter->getPhpDocType(),
 			), $originalParameterType];

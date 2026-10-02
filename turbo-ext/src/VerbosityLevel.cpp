@@ -317,12 +317,13 @@ static void invariantTemplateCallback(zval *state0, zval *state1, uint32_t argc,
 	(void) pt_type_traverser_traverse(return_value, traverse, type);
 }
 
-/* the TypeTraverser::map() of one callback holder over $type, its result
- * discarded (the closures only set their flags); false = pending exception */
-[[nodiscard]] static bool traverseFor(zval *type, zval *callback)
+/* the TypeTraverser::map() (or mapMemoized()) of one callback holder over
+ * $type, its result discarded (the closures only set their flags); false =
+ * pending exception */
+[[nodiscard]] static bool traverseFor(zval *type, zval *callback, bool memoized = false)
 {
 	zval mapped;
-	if (UNEXPECTED(!pt_type_traverser_map(&mapped, type, callback))) return false;
+	if (UNEXPECTED(!(memoized ? pt_type_traverser_map_memoized(&mapped, type, callback) : pt_type_traverser_map(&mapped, type, callback)))) return false;
 	zval_ptr_dtor(&mapped);
 	return true;
 }
@@ -355,7 +356,7 @@ zv::Val VerbosityLevel::getRecommendedLevelByType(zval *acceptingType, zval *acc
 
 	zv::Val invariantCallback = pt_type_native_callback(phpstanturbo::invariantTemplateCallback, &falseZv, NULL);
 	if (UNEXPECTED(invariantCallback.isUndef())) return zv::Val();
-	if (UNEXPECTED(!traverseFor(acceptingType, invariantCallback.raw()))) return zv::Val();
+	if (UNEXPECTED(!traverseFor(acceptingType, invariantCallback.raw(), true))) return zv::Val();
 	if (!flagIsTrue(invariantCallback.raw(), 0)) {
 		zval *level = hasVerbosity ? value_() : typeOnly();
 		return level == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(level));

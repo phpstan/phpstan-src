@@ -980,7 +980,7 @@ final class ResolvedPhpDocBlock
 		}
 
 		$parentType = $parentReturnTag->getType();
-		$parentType = TypeTraverser::map(
+		$parentType = TypeTraverser::mapMemoized(
 			$parentType,
 			static function (Type $type, callable $traverse) use ($classReflection): Type {
 				if ($type instanceof StaticType) {

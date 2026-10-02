@@ -349,7 +349,7 @@ public:
 		zv::Val objectCallback = pt_native_closure(&objectCallbackBody, self, references.raw(), onlyCovariant.raw(), site != NULL ? site : &null, frame != NULL ? frame : &null, allowUnresolved);
 		zv::Val callback = pt_native_closure(&typeCallbackBody, self, references.raw(), objectCallback.raw());
 		zval mapped;
-		if (UNEXPECTED(!pt_type_traverser_map(&mapped, type, callback.raw()))) return zv::Val();
+		if (UNEXPECTED(!pt_type_traverser_map_memoized(&mapped, type, callback.raw()))) return zv::Val();
 		return zv::Val::adopt(mapped);
 	}
 
@@ -423,7 +423,7 @@ public:
 		if (!zend_is_true(has.raw())) return zv::Val::copyOf(zv::Ref(type));
 		zv::Val callback = pt_native_closure(&narrowCallbackBody, self);
 		zval mapped;
-		if (UNEXPECTED(!pt_type_traverser_map(&mapped, type, callback.raw()))) return zv::Val();
+		if (UNEXPECTED(!pt_type_traverser_map_memoized(&mapped, type, callback.raw()))) return zv::Val();
 		return zv::Val::adopt(mapped);
 	}
 
@@ -857,7 +857,7 @@ private:
 		ZVAL_FALSE(&references);
 		zv::Val callback = pt_type_native_callback(referencesCallbackBody, &references, templateType);
 		if (UNEXPECTED(callback.isUndef())) return false;
-		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
+		zv::Val mapped = pt_type_traverser_map_memoized_of(type, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return false;
 		out = Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) == IS_TRUE;
 		return true;

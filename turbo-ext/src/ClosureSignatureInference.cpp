@@ -1100,7 +1100,7 @@ public:
 		zv::Val markers(zv::Arr::create(0));
 		zv::Val callback = pt_type_native_callback(collectMarkersBody, markers.raw(), NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
+		zv::Val mapped = pt_type_traverser_map_memoized_of(type, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 		return zv::Val::copyOf(zv::Ref(pt_type_native_callback_state(callback.raw(), 0)));
 	}
@@ -1631,7 +1631,7 @@ public:
 		ZVAL_FALSE(&contains);
 		zv::Val callback = pt_type_native_callback(containsMarkerBody, &contains, NULL);
 		if (UNEXPECTED(callback.isUndef())) return false;
-		zv::Val mapped = pt_type_traverser_map_of(closureType, callback.raw());
+		zv::Val mapped = pt_type_traverser_map_memoized_of(closureType, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return false;
 		out = Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) != IS_TRUE;
 		return true;

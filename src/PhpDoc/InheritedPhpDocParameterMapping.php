@@ -42,7 +42,7 @@ final class InheritedPhpDocParameterMapping
 	public function transformConditionalReturnTypeWithParameterNameMapping(Type $type): Type
 	{
 		$nameMapping = $this->parameterNameMapping;
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($nameMapping): Type {
+		return TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use ($nameMapping): Type {
 			if ($type instanceof ConditionalTypeForParameter) {
 				$parameterName = substr($type->getParameterName(), 1);
 				if (array_key_exists($parameterName, $nameMapping)) {

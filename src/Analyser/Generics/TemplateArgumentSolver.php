@@ -168,7 +168,7 @@ final class TemplateArgumentSolver
 			return $this->substituteMarker($type);
 		}
 
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+		return TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse): Type {
 			if ($type instanceof UnresolvedTemplateArgumentType) {
 				return $this->substituteMarker($type);
 			}

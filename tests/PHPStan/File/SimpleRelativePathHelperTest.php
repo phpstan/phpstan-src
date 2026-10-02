@@ -26,6 +26,16 @@ class SimpleRelativePathHelperTest extends TestCase
 				'/project/src/HelloWorld.php',
 				'project/src/HelloWorld.php',
 			],
+			[
+				'C:\\project',
+				'C:\\project\\src\\HelloWorld.php',
+				'src/HelloWorld.php',
+			],
+			[
+				'/project/src',
+				'/project/src/HelloWorld.php',
+				'HelloWorld.php',
+			]
 		];
 	}
 

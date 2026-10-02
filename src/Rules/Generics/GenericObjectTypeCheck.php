@@ -22,6 +22,7 @@ use function array_keys;
 use function array_values;
 use function count;
 use function implode;
+use function spl_object_id;
 use function sprintf;
 use function strtolower;
 
@@ -188,7 +189,7 @@ final class GenericObjectTypeCheck
 				if (!$resolvedType instanceof GenericObjectType && !$resolvedType instanceof GenericStaticType) {
 					throw new ShouldNotHappenException();
 				}
-				$genericObjectTypes[] = $resolvedType;
+				$genericObjectTypes[spl_object_id($type)] = $resolvedType;
 				$traverse($type);
 				return $type;
 			}
@@ -196,7 +197,7 @@ final class GenericObjectTypeCheck
 			return $type;
 		});
 
-		return $genericObjectTypes;
+		return array_values($genericObjectTypes);
 	}
 
 }

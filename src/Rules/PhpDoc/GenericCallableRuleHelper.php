@@ -18,6 +18,8 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
 use function array_merge;
+use function array_values;
+use function spl_object_id;
 use function sprintf;
 
 #[AutowiredService]
@@ -45,16 +47,17 @@ final class GenericCallableRuleHelper
 		?ClassReflection $classReflection,
 	): array
 	{
-		$errors = [];
+		/** @var array<int, list<IdentifierRuleError>> $errorsByCallable */
+		$errorsByCallable = [];
 
-		TypeTraverser::mapMemoized($callableType, function (Type $type, callable $traverse) use (&$errors, $node, $scope, $location, $functionName, $functionTemplateTags, $classReflection) {
+		TypeTraverser::mapMemoized($callableType, function (Type $type, callable $traverse) use (&$errorsByCallable, $node, $scope, $location, $functionName, $functionTemplateTags, $classReflection) {
 			if (!($type instanceof CallableType || $type instanceof ClosureType)) {
 				return $traverse($type);
 			}
 
 			$typeDescription = $type->describe(VerbosityLevel::precise());
 
-			$errors = array_merge($errors, $this->templateTypeCheck->check(
+			$errors = $this->templateTypeCheck->check(
 				$scope,
 				$node,
 				TemplateTypeScope::createWithAnonymousFunction(),
@@ -66,7 +69,7 @@ final class GenericCallableRuleHelper
 				sprintf('PHPDoc tag %s template %%s of %s has invalid default type %%s.', $location, $typeDescription),
 				sprintf('Default type %%s in PHPDoc tag %s template %%s of %s is not subtype of bound type %%s.', $location, $typeDescription),
 				sprintf('PHPDoc tag %s template %%s of %s does not have a default type but follows an optional template %%s.', $location, $typeDescription),
-			));
+			);
 
 			$templateTags = $type->getTemplateTags();
 
@@ -114,10 +117,12 @@ final class GenericCallableRuleHelper
 				}
 			}
 
+			$errorsByCallable[spl_object_id($type)] = $errors;
+
 			return $traverse($type);
 		});
 
-		return $errors;
+		return array_merge(...array_values($errorsByCallable));
 	}
 
 }

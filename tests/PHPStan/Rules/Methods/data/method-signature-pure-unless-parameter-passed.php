@@ -53,3 +53,32 @@ class PureChild implements PureUnlessParent
 	}
 
 }
+
+/**
+ * @phpstan-all-methods-pure
+ */
+class AllMethodsPureChild implements PureUnlessParent
+{
+
+	public function replace(string $subject, int &$count = 0): string
+	{
+		return $subject;
+	}
+
+}
+
+/**
+ * @phpstan-all-methods-impure
+ */
+class AllMethodsImpureChild implements PureUnlessParent
+{
+
+	public function replace(string $subject, int &$count = 0): string
+	{
+		echo 'side effect';
+		$count = 1;
+
+		return $subject;
+	}
+
+}

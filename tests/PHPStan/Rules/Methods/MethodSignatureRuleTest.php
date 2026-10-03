@@ -669,6 +669,10 @@ class MethodSignatureRuleTest extends RuleTestCase
 				'Impure method MethodSignaturePureUnlessParameterPassed\ImpureChild::replace() overrides method MethodSignaturePureUnlessParameterPassed\PureUnlessParent::replace() marked @pure-unless-parameter-passed.',
 				22,
 			],
+			[
+				'Impure method MethodSignaturePureUnlessParameterPassed\AllMethodsImpureChild::replace() overrides method MethodSignaturePureUnlessParameterPassed\PureUnlessParent::replace() marked @pure-unless-parameter-passed.',
+				76,
+			],
 		]);
 	}
 

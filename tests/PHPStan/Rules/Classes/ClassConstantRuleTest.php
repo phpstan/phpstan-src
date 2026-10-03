@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Analyser\ClosureBindScopeResolver;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -51,6 +52,7 @@ class ClassConstantRuleTest extends RuleTestCase
 			),
 			new PhpVersion($this->phpVersion),
 			new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
+			new ClosureBindScopeResolver($reflectionProvider),
 		);
 	}
 
@@ -188,6 +190,13 @@ class ClassConstantRuleTest extends RuleTestCase
 				135,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureBindNamedArguments(): void
+	{
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/closure-bind-named-arguments.php'], []);
 	}
 
 	public function testClassExists(): void

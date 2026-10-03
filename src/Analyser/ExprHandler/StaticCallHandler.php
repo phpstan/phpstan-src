@@ -126,7 +126,10 @@ final class StaticCallHandler implements ExprHandler
 						// deferred until the closure argument is processed: with
 						// closures processed last, the bound $this/scope arguments
 						// are already evaluated on the scope the factory receives
-						$closureBindScopeFactory = static function (MutatingScope $boundScope) use ($expr): MutatingScope {
+						$closureBindScopeFactory = static function (MutatingScope $boundScope) use ($expr, $parametersAcceptor): MutatingScope {
+							// normalized so that $newThis and $newScope are found at their
+							// parameter positions even when the call names its arguments
+							$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 							$thisType = null;
 							$nativeThisType = null;
 							if (isset($expr->getArgs()[1])) {

@@ -16,6 +16,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use function array_filter;
 use function array_key_exists;
@@ -51,108 +52,12 @@ final class FunctionPurityCheck
 		bool $isConstructor,
 	): array
 	{
-		$errors = [];
+		$errors = $this->checkSignature($scope, $functionDescription, $identifier, $functionReflection, $parameters, $returnType, $isConstructor);
 		$isPure = $functionReflection->isPure();
-
-		$pureUnlessCallableParameters = $functionReflection->getPureUnlessCallableIsImpureParameters();
-		$pureUnlessCallableParamNames = [];
-		foreach ($parameters as $parameter) {
-			if (!array_key_exists($parameter->getName(), $pureUnlessCallableParameters)) {
-				continue;
-			}
-
-			$pureUnlessCallableParamNames[$parameter->getName()] = true;
-
-			$acceptors = $parameter->getType()->getCallableParametersAcceptors($scope);
-			if (count($acceptors) === 0) {
-				continue;
-			}
-
-			$allPure = true;
-			foreach ($acceptors as $acceptor) {
-				if ($acceptor->isPure()->yes()) {
-					continue;
-				}
-
-				$allPure = false;
-				break;
-			}
-
-			if (!$allPure) {
-				continue;
-			}
-
-			$errors[] = RuleErrorBuilder::message(sprintf(
-				'%s is marked @pure-unless-callable-is-impure for parameter $%s, but $%s is already a pure callable, so %s can be marked @phpstan-pure instead.',
-				$functionDescription,
-				$parameter->getName(),
-				$parameter->getName(),
-				lcfirst($functionDescription),
-			))->identifier(sprintf('pure%s.redundantUnlessCallable', $identifier))->build();
-		}
-
-		$pureUnlessParameterPassedParameters = $functionReflection->getPureUnlessParameterPassedParameters();
-		$pureUnlessParameterPassedParamNames = [];
-		foreach ($parameters as $parameter) {
-			if (!array_key_exists($parameter->getName(), $pureUnlessParameterPassedParameters)) {
-				continue;
-			}
-
-			$pureUnlessParameterPassedParamNames[$parameter->getName()] = true;
-
-			if (!$parameter->isOptional()) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s is marked @pure-unless-parameter-passed for parameter $%s, but $%s is not optional, so %s is never pure.',
-					$functionDescription,
-					$parameter->getName(),
-					$parameter->getName(),
-					lcfirst($functionDescription),
-				))->identifier(sprintf('pure%s.nonOptionalParameterPassed', $identifier))->build();
-			}
-
-			// Passing a by-value parameter cannot introduce a side effect on its own,
-			// so the body would have to be impure for the tag to mean anything - and
-			// that impurity is not conditional on the argument being passed. Only a
-			// by-ref out parameter is written through without producing an impure
-			// point, which is what makes the conditional verdict checkable.
-			if (!$parameter->passedByReference()->no()) {
-				continue;
-			}
-
-			$errors[] = RuleErrorBuilder::message(sprintf(
-				'%s is marked @pure-unless-parameter-passed for parameter $%s, but $%s is not passed by reference.',
-				$functionDescription,
-				$parameter->getName(),
-				$parameter->getName(),
-			))->identifier(sprintf('pure%s.parameterPassedNotByRef', $identifier))->build();
-		}
+		$pureUnlessCallableParamNames = $this->collectFlaggedParameterNames($parameters, $functionReflection->getPureUnlessCallableIsImpureParameters());
+		$pureUnlessParameterPassedParamNames = $this->collectFlaggedParameterNames($parameters, $functionReflection->getPureUnlessParameterPassedParameters());
 
 		if ($isPure->yes()) {
-			foreach ($parameters as $parameter) {
-				if (!$parameter->passedByReference()->createsNewVariable()) {
-					continue;
-				}
-
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s is marked as pure but parameter $%s is passed by reference.',
-					$functionDescription,
-					$parameter->getName(),
-				))->identifier(sprintf('pure%s.parameterByRef', $identifier))->build();
-			}
-
-			$throwType = $functionReflection->getThrowType();
-			if (
-				$returnType->isVoid()->yes()
-				&& !$isConstructor
-				&& ($throwType === null || $throwType->isVoid()->yes())
-				&& $functionReflection->getAsserts()->getAll() === []
-			) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s is marked as pure but returns void.',
-					$functionDescription,
-				))->identifier(sprintf('pure%s.void', $identifier))->build();
-			}
-
 			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
 		} elseif ($pureUnlessCallableParamNames !== [] || $pureUnlessParameterPassedParamNames !== []) {
 			// A function declared @pure-unless-callable-is-impure is pure except
@@ -224,6 +129,142 @@ final class FunctionPurityCheck
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * The checks of a purity declaration that need only the signature, so they
+	 * also apply to methods without a body.
+	 *
+	 * @param 'Function'|'Method'|'PropertyHook' $identifier
+	 * @param ExtendedParameterReflection[] $parameters
+	 * @return list<IdentifierRuleError>
+	 */
+	public function checkSignature(
+		Scope $scope,
+		string $functionDescription,
+		string $identifier,
+		FunctionReflection|ExtendedMethodReflection $functionReflection,
+		array $parameters,
+		Type $returnType,
+		bool $isConstructor,
+	): array
+	{
+		$errors = [];
+
+		$pureUnlessCallableParameters = $functionReflection->getPureUnlessCallableIsImpureParameters();
+		foreach ($parameters as $parameter) {
+			if (!array_key_exists($parameter->getName(), $pureUnlessCallableParameters)) {
+				continue;
+			}
+
+			$acceptors = $parameter->getType()->getCallableParametersAcceptors($scope);
+			if (count($acceptors) === 0) {
+				continue;
+			}
+
+			$allPure = true;
+			foreach ($acceptors as $acceptor) {
+				if ($acceptor->isPure()->yes()) {
+					continue;
+				}
+
+				$allPure = false;
+				break;
+			}
+
+			if (!$allPure) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'%s is marked @pure-unless-callable-is-impure for parameter $%s, but $%s is already a pure callable, so %s can be marked @phpstan-pure instead.',
+				$functionDescription,
+				$parameter->getName(),
+				$parameter->getName(),
+				lcfirst($functionDescription),
+			))->identifier(sprintf('pure%s.redundantUnlessCallable', $identifier))->build();
+		}
+
+		$pureUnlessParameterPassedParameters = $functionReflection->getPureUnlessParameterPassedParameters();
+		foreach ($parameters as $parameter) {
+			if (!array_key_exists($parameter->getName(), $pureUnlessParameterPassedParameters)) {
+				continue;
+			}
+
+			if (!$parameter->isOptional()) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s is marked @pure-unless-parameter-passed for parameter $%s, but $%s is not optional, so %s is never pure.',
+					$functionDescription,
+					$parameter->getName(),
+					$parameter->getName(),
+					lcfirst($functionDescription),
+				))->identifier(sprintf('pure%s.nonOptionalParameterPassed', $identifier))->build();
+			}
+
+			// Passing a by-value parameter cannot introduce a side effect on its own,
+			// so the body would have to be impure for the tag to mean anything - and
+			// that impurity is not conditional on the argument being passed. Only a
+			// by-ref out parameter is written through without producing an impure
+			// point, which is what makes the conditional verdict checkable.
+			if (!$parameter->passedByReference()->no()) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'%s is marked @pure-unless-parameter-passed for parameter $%s, but $%s is not passed by reference.',
+				$functionDescription,
+				$parameter->getName(),
+				$parameter->getName(),
+			))->identifier(sprintf('pure%s.parameterPassedNotByRef', $identifier))->build();
+		}
+
+		if ($functionReflection->isPure()->yes()) {
+			foreach ($parameters as $parameter) {
+				if (!$parameter->passedByReference()->createsNewVariable()) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s is marked as pure but parameter $%s is passed by reference.',
+					$functionDescription,
+					$parameter->getName(),
+				))->identifier(sprintf('pure%s.parameterByRef', $identifier))->build();
+			}
+
+			$throwType = $functionReflection->getThrowType();
+			if (
+				$returnType->isVoid()->yes()
+				&& !$isConstructor
+				&& ($throwType === null || $throwType->isVoid()->yes())
+				&& $functionReflection->getAsserts()->getAll() === []
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s is marked as pure but returns void.',
+					$functionDescription,
+				))->identifier(sprintf('pure%s.void', $identifier))->build();
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @param ExtendedParameterReflection[] $parameters
+	 * @param array<string, TrinaryLogic> $flaggedParameters
+	 * @return array<string, true>
+	 */
+	private function collectFlaggedParameterNames(array $parameters, array $flaggedParameters): array
+	{
+		$names = [];
+		foreach ($parameters as $parameter) {
+			if (!array_key_exists($parameter->getName(), $flaggedParameters)) {
+				continue;
+			}
+
+			$names[$parameter->getName()] = true;
+		}
+
+		return $names;
 	}
 
 	/**

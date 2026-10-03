@@ -277,10 +277,12 @@ inline constexpr char strings[] =
 	"intersectResults\0" /* 3555 */
 	"getType\0" /* 3572 */
 	"intersectTypes\0" /* 3580 */
-	"intersectTypesPreserveTemplateType\0" /* 3595 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3630 */
-	"toPhpDocNode\0" /* 3669 */
-	"hasTemplateOrLateResolvableType"; /* 3682 */
+	"operands\0" /* 3595 */
+	"intersectOperands\0" /* 3604 */
+	"intersectTypesPreserveTemplateType\0" /* 3622 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3657 */
+	"toPhpDocNode\0" /* 3696 */
+	"hasTemplateOrLateResolvableType"; /* 3709 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(18, MAY_BE_ARRAY), /* getTypes return */
@@ -528,9 +530,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(18, 0, 542), /* intersectResults return */
 	reg::packed(3572, MAY_BE_CALLABLE), /* intersectTypes $getType */
 	reg::packed(18, 0, 56), /* intersectTypes return */
+	reg::packed(3595, MAY_BE_ARRAY), /* intersectOperands $operands */
+	reg::packed(18, 0, 56), /* intersectOperands return */
 	reg::packed(3572, MAY_BE_CALLABLE), /* intersectTypesPreserveTemplateType $getType */
 	reg::packed(18, 0, 56), /* intersectTypesPreserveTemplateType return */
-	reg::packed(18, 0, 3630), /* toPhpDocNode return */
+	reg::packed(18, 0, 3657), /* toPhpDocNode return */
 	reg::packed(18, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -683,9 +687,10 @@ inline constexpr sigtab::Sig indexFiniteTypes = { { 3484 /* indexFiniteTypes */,
 inline constexpr sigtab::Sig hasFiniteType = { { 3524 /* hasFiniteType */, 3, 237, 3, 240, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig intersectResults = { { 3555 /* intersectResults */, 1, 241, 2, 243, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig intersectTypes = { { 3580 /* intersectTypes */, 1, 244, 1, 245, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig intersectTypesPreserveTemplateType = { { 3595 /* intersectTypesPreserveTemplateType */, 1, 246, 1, 247, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 3669 /* toPhpDocNode */, 0, 248, 0, 248, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3682 /* hasTemplateOrLateResolvableType */, 0, 249, 0, 249, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig intersectOperands = { { 3604 /* intersectOperands */, 1, 246, 1, 247, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersectTypesPreserveTemplateType = { { 3622 /* intersectTypesPreserveTemplateType */, 1, 248, 1, 249, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 3696 /* toPhpDocNode */, 0, 250, 0, 250, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3709 /* hasTemplateOrLateResolvableType */, 0, 251, 0, 251, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IntersectionType

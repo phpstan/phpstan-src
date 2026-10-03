@@ -2008,8 +2008,8 @@ public:
 
 	zv::Val getReferencedTemplateTypes(zval *positionVariance) const { return concatOf(PT_LC("getreferencedtemplatetypes"), 1, positionVariance); }
 
-	/* TypeCombinator::intersect() folded over $cb of every member when any
-	 * changed, $this otherwise; UNDEF = pending exception */
+	/* intersectOperands() over $cb of every member when any changed, $this
+	 * otherwise; UNDEF = pending exception */
 	zv::Val traverse(zend_fcall_info *fci, zend_fcall_info_cache *fcc) const
 	{
 		zval *types = this->types();
@@ -2028,7 +2028,7 @@ public:
 			}
 			newTypes.push(zv::Val::adopt(newType));
 		}
-		if (changed) return foldIntersect(newTypes.arrRef());
+		if (changed) return intersectOperands(newTypes.arrRef());
 		return thisValue();
 	}
 
@@ -2093,7 +2093,7 @@ public:
 			newTypes.push(std::move(mapped));
 		}
 		if (!changed) return thisValue();
-		return foldIntersect(newTypes.arrRef());
+		return intersectOperands(newTypes.arrRef());
 	}
 
 	/* the TypeTraverser::map() callback of traverseSimultaneously(): the
@@ -2656,8 +2656,8 @@ private:
 	}
 
 	/* intersectTypes(): $getType over every member (all of them first, as
-	 * array_map does), folded with TypeCombinator::intersect(); UNDEF =
-	 * pending exception */
+	 * array_map does), intersected by intersectOperands(); UNDEF = pending
+	 * exception */
 	template <typename F>
 	zv::Val intersectTypes(F getType) const
 	{
@@ -2674,12 +2674,20 @@ private:
 			}
 			operands.push(std::move(operand));
 		}
-		return foldIntersect(operands.arrRef());
+		return intersectOperands(operands.arrRef());
 	}
 
-	/* $result = $operands[0]; TypeCombinator::intersect($result, $operands[$i]) for the rest */
-	static zv::Val foldIntersect(zv::ArrRef operands)
+	/* intersectOperands(): TypeCombinator::intersect(...$operands) unless two
+	 * or more of them are unions, then $result = $operands[0];
+	 * TypeCombinator::intersect($result, $operands[$i]) for the rest */
+	static zv::Val intersectOperands(zv::ArrRef operands)
 	{
+		uint32_t unionCount = 0;
+		for (zv::ArrayEntry entry : operands) {
+			if (entry.value().deref().instanceOf(pt_ce_union_type)) unionCount++;
+		}
+		if (unionCount < 2) return combinatorIntersect(operands.table());
+
 		zv::Val result;
 		for (zv::ArrayEntry entry : operands) {
 			if (result.isUndef()) {

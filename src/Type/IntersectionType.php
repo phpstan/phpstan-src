@@ -1724,11 +1724,7 @@ class IntersectionType implements CompoundType
 		}
 
 		if ($changed) {
-			$result = $types[0];
-			for ($i = 1, $count = count($types); $i < $count; $i++) {
-				$result = TypeCombinator::intersect($result, $types[$i]);
-			}
-			return $result;
+			return self::intersectOperands($types);
 		}
 
 		return $this;
@@ -1765,11 +1761,7 @@ class IntersectionType implements CompoundType
 				return $this;
 			}
 
-			$result = $newTypes[0];
-			for ($i = 1, $count = count($newTypes); $i < $count; $i++) {
-				$result = TypeCombinator::intersect($result, $newTypes[$i]);
-			}
-			return $result;
+			return self::intersectOperands($newTypes);
 		}
 
 		return $this;
@@ -1897,7 +1889,31 @@ class IntersectionType implements CompoundType
 	 */
 	private function intersectTypes(callable $getType): Type
 	{
-		$operands = array_map($getType, $this->types);
+		return self::intersectOperands(array_map($getType, $this->types));
+	}
+
+	/**
+	 * The intersection of the members after they were mapped. All of them at once
+	 * costs one pairwise reduction; folding them two at a time re-reduces the
+	 * growing intersection at every step, which is cubic in the member count.
+	 * Only two or more unions need the fold - distributing each over the others
+	 * at once multiplies their sizes.
+	 *
+	 * @param list<Type> $operands
+	 */
+	private static function intersectOperands(array $operands): Type
+	{
+		$unionCount = 0;
+		foreach ($operands as $operand) {
+			if (!$operand instanceof UnionType) {
+				continue;
+			}
+			$unionCount++;
+		}
+		if ($unionCount < 2) {
+			return TypeCombinator::intersect(...$operands);
+		}
+
 		$result = $operands[0];
 		for ($i = 1, $count = count($operands); $i < $count; $i++) {
 			$result = TypeCombinator::intersect($result, $operands[$i]);

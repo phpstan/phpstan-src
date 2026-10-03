@@ -971,7 +971,9 @@ final class PhpClassReflectionExtension
 			}
 		}
 
-		if ($isPure === null) {
+		// A @pure-unless-* tag on the method, written or inherited, states its purity
+		// just like @phpstan-pure does, so the class-level tags do not override it.
+		if ($isPure === null && $pureUnlessCallableIsImpureParameters === [] && $pureUnlessParameterPassedParameters === []) {
 			$classResolvedPhpDoc = $phpDocBlockClassReflection->getResolvedPhpDoc();
 			if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
 				if (

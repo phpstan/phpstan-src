@@ -815,17 +815,21 @@ public:
 		}
 
 		TypeList members;
+		bool restIsUnion = isInstance(rest.raw(), pt_ce_union_type);
 		int restIsTemplate = 0;
+		if (restIsUnion) {
+			restIsTemplate = isInstanceMap(rest.raw(), PT_CLASS_TEMPLATE_TYPE);
+			PT_FAIL_IF_NEG(restIsTemplate);
+		}
 		if (isInstance(rest.raw(), pt_ce_never_type)) {
 			// nothing
-		} else if (isInstance(rest.raw(), pt_ce_union_type) && !(restIsTemplate = isInstanceMap(rest.raw(), PT_CLASS_TEMPLATE_TYPE))) {
+		} else if (restIsUnion && !restIsTemplate) {
 			zv::Val restTypes = getTypes(rest.raw());
 			PT_FAIL_IF_UNDEF(restTypes);
 			for (zv::ArrayEntry entry : zv::ArrRef(restTypes.raw())) {
 				members.push_back(copy(entry.value().raw()));
 			}
 		} else {
-			PT_FAIL_IF_NEG(restIsTemplate);
 			members.push_back(copy(rest.raw()));
 		}
 		for (MarkerEntry &entry : markers) {

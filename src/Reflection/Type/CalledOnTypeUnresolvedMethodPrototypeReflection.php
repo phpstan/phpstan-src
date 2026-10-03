@@ -142,7 +142,7 @@ final class CalledOnTypeUnresolvedMethodPrototypeReflection implements Unresolve
 
 	private function transformStaticType(Type $type): Type
 	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+		return TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse): Type {
 			if ($type instanceof GenericStaticType) {
 				$calledOnTypeReflections = $this->calledOnType->getObjectClassReflections();
 				if (count($calledOnTypeReflections) === 1) {

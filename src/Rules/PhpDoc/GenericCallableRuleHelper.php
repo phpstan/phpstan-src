@@ -44,9 +44,9 @@ final class GenericCallableRuleHelper
 		?ClassReflection $classReflection,
 	): array
 	{
-		$errors = [];
+		$allErrors = [];
 
-		TypeTraverser::map($callableType, function (Type $type, callable $traverse) use (&$errors, $node, $scope, $location, $functionName, $functionTemplateTags, $classReflection) {
+		TypeTraverser::map($callableType, function (Type $type, callable $traverse) use (&$allErrors, $node, $scope, $location, $functionName, $functionTemplateTags, $classReflection) {
 			if (!($type instanceof CallableType || $type instanceof ClosureType)) {
 				return $traverse($type);
 			}
@@ -113,10 +113,14 @@ final class GenericCallableRuleHelper
 				}
 			}
 
+			foreach ($errors as $error) {
+				$allErrors[] = $error;
+			}
+
 			return $traverse($type);
 		});
 
-		return $errors;
+		return $allErrors;
 	}
 
 }

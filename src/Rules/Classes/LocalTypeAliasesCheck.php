@@ -348,32 +348,41 @@ final class LocalTypeAliasesCheck
 	 */
 	private function hasErrorType(Type $type, string $aliasName, array &$errors): bool
 	{
-		$foundError = false;
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): Type {
-			if ($foundError) {
+		$foundCircular = false;
+		$foundInvalid = false;
+		TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use (&$foundCircular, &$foundInvalid): Type {
+			if ($foundCircular || $foundInvalid) {
 				return $type;
 			}
 
 			if ($type instanceof CircularTypeAliasErrorType) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Circular definition detected in type alias %s.', $aliasName))
-					->identifier('typeAlias.circular')
-					->build();
-				$foundError = true;
+				$foundCircular = true;
 				return $type;
 			}
 
 			if ($type instanceof ErrorType) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Invalid type definition detected in type alias %s.', $aliasName))
-					->identifier('typeAlias.invalidType')
-					->build();
-				$foundError = true;
+				$foundInvalid = true;
 				return $type;
 			}
 
 			return $traverse($type);
 		});
 
-		return $foundError;
+		if ($foundCircular) {
+			$errors[] = RuleErrorBuilder::message(sprintf('Circular definition detected in type alias %s.', $aliasName))
+				->identifier('typeAlias.circular')
+				->build();
+			return true;
+		}
+
+		if ($foundInvalid) {
+			$errors[] = RuleErrorBuilder::message(sprintf('Invalid type definition detected in type alias %s.', $aliasName))
+				->identifier('typeAlias.invalidType')
+				->build();
+			return true;
+		}
+
+		return false;
 	}
 
 }

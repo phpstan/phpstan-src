@@ -113,7 +113,7 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 			return $type;
 		}
 
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($getSubjectType): Type {
+		return TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use ($getSubjectType): Type {
 			if ($type instanceof self) {
 				$subjectType = $getSubjectType($type->getParameterName());
 				if ($subjectType !== null) {

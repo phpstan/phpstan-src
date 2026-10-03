@@ -198,7 +198,7 @@ final class VarTagTypeRuleHelper
 			return $this->isSuperTypeOfVarType($scope, $type, $varTagType);
 		}
 
-		$type = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+		$type = TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof GenericObjectType) {
 				$type = $type->changeVariances(array_map(
 					static fn (TemplateTypeVariance $variance) => $variance->invariant() ? TemplateTypeVariance::createCovariant() : $variance,

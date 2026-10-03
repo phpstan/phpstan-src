@@ -876,7 +876,7 @@ final class DefaultNarrowingHelper
 
 				$templateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
 				$containsUnresolvedTemplate = false;
-				TypeTraverser::map(
+				TypeTraverser::mapMemoized(
 					$assert->getOriginalType(),
 					static function (Type $type, callable $traverse) use ($templateTypeMap, &$containsUnresolvedTemplate) {
 						if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {

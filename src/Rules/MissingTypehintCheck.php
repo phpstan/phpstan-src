@@ -30,6 +30,7 @@ use Traversable;
 use function array_filter;
 use function array_keys;
 use function array_merge;
+use function array_values;
 use function count;
 use function implode;
 use function in_array;
@@ -73,7 +74,7 @@ final class MissingTypehintCheck
 	public function getIterableTypesWithMissingValueTypehint(Type $type): array
 	{
 		$descriptions = [];
-		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$descriptions): Type {
+		TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse) use (&$descriptions): Type {
 			if ($type instanceof TemplateType) {
 				return $type;
 			}
@@ -98,17 +99,19 @@ final class MissingTypehintCheck
 				return $traverse(new IntersectionType($nonArrayInner));
 			}
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-				$descriptions = array_merge(
-					$descriptions,
+				$branchDescriptions = array_merge(
 					$this->getIterableTypesWithMissingValueTypehint($type->getIf()),
 					$this->getIterableTypesWithMissingValueTypehint($type->getElse()),
 				);
+				foreach ($branchDescriptions as $description) {
+					$descriptions[$description] = $description;
+				}
 
 				return $type;
 			}
 			if ($type->isIterable()->yes()) {
 				if ($type->isConstantArray()->yes()) {
-					$type = TypeTraverser::map($type, static function (Type $type, callable $traverse) {
+					$type = TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) {
 						if ($type instanceof UnionType || $type instanceof IntersectionType) {
 							return $traverse($type);
 						}
@@ -125,7 +128,8 @@ final class MissingTypehintCheck
 				}
 				$iterableValue = $type->getIterableValueType();
 				if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
-					$descriptions[] = sprintf('iterable type %s', $type->describe(VerbosityLevel::typeOnly()));
+					$description = sprintf('iterable type %s', $type->describe(VerbosityLevel::typeOnly()));
+					$descriptions[$description] = $description;
 				}
 				if ($type instanceof IntersectionType) {
 					if ($type->isList()->yes()) {
@@ -138,7 +142,7 @@ final class MissingTypehintCheck
 			return $traverse($type);
 		});
 
-		return $descriptions;
+		return array_values($descriptions);
 	}
 
 	/**
@@ -147,7 +151,7 @@ final class MissingTypehintCheck
 	public function getNonGenericObjectTypesWithGenericClass(Type $type): array
 	{
 		$objectTypes = [];
-		TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$objectTypes): Type {
+		TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse) use (&$objectTypes): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
 				$traverse($type);
 				return $type;
@@ -197,17 +201,15 @@ final class MissingTypehintCheck
 					$templateTypesList .= sprintf(' (%d-%d required)', $requiredTemplateTypesCount, $templateTypesCount);
 				}
 
-				$objectTypes[] = [
-					sprintf('%s %s', strtolower($classReflection->getClassTypeDescription()), $classReflection->getDisplayName(false)),
-					$templateTypesList,
-				];
+				$name = sprintf('%s %s', strtolower($classReflection->getClassTypeDescription()), $classReflection->getDisplayName(false));
+				$objectTypes[$name . "\0" . $templateTypesList] = [$name, $templateTypesList];
 				return $type;
 			}
 
 			return $traverse($type);
 		});
 
-		return $objectTypes;
+		return array_values($objectTypes);
 	}
 
 	/**

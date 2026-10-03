@@ -198,7 +198,7 @@ public:
 		if (!zend_is_true(has.raw())) return zv::Val::copyOf(zv::Ref(type));
 		zv::Val callback = pt_type_native_callback(resolveInTypeCallback, getSubjectType, passedArgs);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		return pt_type_traverser_map_of(type, callback.raw());
+		return pt_type_traverser_map_memoized_of(type, callback.raw());
 	}
 
 	/* for another conditional-for-parameter the if branches' answer

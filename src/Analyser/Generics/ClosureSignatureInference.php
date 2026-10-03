@@ -365,7 +365,7 @@ final class ClosureSignatureInference
 	private static function collectMarkers(Type $type): array
 	{
 		$markers = [];
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$markers): Type {
+		TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use (&$markers): Type {
 			if ($type instanceof ClosureType) {
 				foreach ($type->getByRefUseTypes() as $marker) {
 					if (!$marker instanceof UnresolvedTemplateArgumentType) {
@@ -1081,7 +1081,7 @@ final class ClosureSignatureInference
 		}
 
 		$containsMarker = false;
-		TypeTraverser::map($closureType, static function (Type $type, callable $traverse) use (&$containsMarker): Type {
+		TypeTraverser::mapMemoized($closureType, static function (Type $type, callable $traverse) use (&$containsMarker): Type {
 			if ($type instanceof UnresolvedTemplateArgumentType) {
 				$containsMarker = true;
 			}

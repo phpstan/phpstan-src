@@ -1067,6 +1067,8 @@ extern zend_class_entry *pt_ce_finite_type_set;
 /* TypeTraverser::map($type, $cb) — $cb a TypeTraverserCallable or any
  * callable (borrowed); false = pending exception */
 [[nodiscard]] bool pt_type_traverser_map(zval *out, zval *type, zval *cb);
+/* TypeTraverser::mapMemoized($type, $cb); false = pending exception */
+[[nodiscard]] bool pt_type_traverser_map_memoized(zval *out, zval *type, zval *cb);
 /* $traverse($type) for the `callable $traverse` a TypeTraverser callback
  * receives: the native traverser's traverseInternal() directly when it is
  * its own [$traverser, 'traverseInternal'] array, any other callable

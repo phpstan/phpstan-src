@@ -32,7 +32,7 @@ final class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 		$valueType = $scope->getType($functionCall->getArgs()[0]->value);
 
-		return TypeTraverser::map($valueType, static function (Type $valueType, callable $traverse): Type {
+		return TypeTraverser::mapMemoized($valueType, static function (Type $valueType, callable $traverse): Type {
 			if ($valueType instanceof UnionType || $valueType instanceof IntersectionType) {
 				return $traverse($valueType);
 			}

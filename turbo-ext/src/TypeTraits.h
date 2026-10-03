@@ -847,6 +847,13 @@ inline zv::Val pt_type_traverser_map_of(zval *type, zval *cb)
 	return pt_type_traverser_map(&result, type, cb) ? zv::Val::adopt(result) : zv::Val();
 }
 
+/* TypeTraverser::mapMemoized($type, $cb) */
+inline zv::Val pt_type_traverser_map_memoized_of(zval *type, zval *cb)
+{
+	zval result;
+	return pt_type_traverser_map_memoized(&result, type, cb) ? zv::Val::adopt(result) : zv::Val();
+}
+
 /* RecursionGuard::run($type, $callback) / runOnObjectIdentity($type, $callback) */
 inline zv::Val pt_type_recursion_guard_run(zval *type, zval *callback)
 {

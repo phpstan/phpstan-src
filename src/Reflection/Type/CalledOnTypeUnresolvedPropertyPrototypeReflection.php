@@ -84,7 +84,7 @@ final class CalledOnTypeUnresolvedPropertyPrototypeReflection implements Unresol
 
 	private function transformStaticType(Type $type): Type
 	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+		return TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse): Type {
 			if ($type instanceof StaticType) {
 				return $this->fetchedOnType;
 			}

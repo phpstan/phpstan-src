@@ -40,6 +40,11 @@ class ApiInstanceofTypeRuleTest extends RuleTestCase
 				40,
 				$tipText,
 			],
+			[
+				'Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.',
+				52,
+				$tipText,
+			],
 		]);
 	}
 

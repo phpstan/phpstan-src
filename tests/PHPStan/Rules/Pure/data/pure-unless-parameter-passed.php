@@ -472,3 +472,69 @@ function sideEffectUnlessParameterPassed(string $subject, int &$count = 0): stri
 
 	return $subject;
 }
+
+/**
+ * @param callable(string): string $f
+ * @param-out int $count
+ * @pure-unless-callable-is-impure $f
+ * @pure-unless-parameter-passed $count
+ */
+function myReplaceCallback(callable $f, string $subject, int &$count = 0): string
+{
+	$count = 1;
+
+	return $f($subject);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureBothConditionsMet(string $s): string
+{
+	// The callback is pure and $count is omitted, so the call stays pure.
+	return myReplaceCallback(static fn (string $x): string => $x, $s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureBothPureCallbackPassingCount(string $s): string
+{
+	$count = 0;
+	// The callback is pure but $count is passed, so the call is impure.
+	return myReplaceCallback(static fn (string $x): string => $x, $s, $count);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureBothImpureCallbackOmittingCount(string $s): string
+{
+	// $count is omitted but the callback is impure, so the call is impure.
+	return myReplaceCallback(static function (string $x): string {
+		echo $x;
+
+		return $x;
+	}, $s);
+}
+
+/**
+ * @param callable(string): string $f
+ * @phpstan-pure
+ */
+function pureBothOpaqueCallbackOmittingCount(callable $f, string $s): string
+{
+	// $count is omitted but the callback's purity is unknown, so the call stays possibly impure.
+	return myReplaceCallback($f, $s);
+}
+
+/**
+ * @param callable(string): string $f
+ * @phpstan-pure
+ */
+function pureBothOpaqueCallbackPassingCount(callable $f, string $s): string
+{
+	$count = 0;
+	// $count is passed, so the call is impure whatever the callback does.
+	return myReplaceCallback($f, $s, $count);
+}

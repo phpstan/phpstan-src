@@ -488,6 +488,34 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure echo in pure function PureUnlessParameterPassedFunction\sideEffectUnlessParameterPassed().',
 				470,
 			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplaceCallback() in pure function PureUnlessParameterPassedFunction\pureBothPureCallbackPassingCount().',
+				505,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplaceCallback() in pure function PureUnlessParameterPassedFunction\pureBothImpureCallbackOmittingCount().',
+				514,
+			],
+			[
+				'Impure echo in pure function PureUnlessParameterPassedFunction\pureBothImpureCallbackOmittingCount().',
+				515,
+			],
+			[
+				'Possibly impure call to a callable in pure function PureUnlessParameterPassedFunction\pureBothOpaqueCallbackOmittingCount().',
+				528,
+			],
+			[
+				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplaceCallback() in pure function PureUnlessParameterPassedFunction\pureBothOpaqueCallbackOmittingCount().',
+				528,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplaceCallback() in pure function PureUnlessParameterPassedFunction\pureBothOpaqueCallbackPassingCount().',
+				539,
+			],
+			[
+				'Possibly impure call to a callable in pure function PureUnlessParameterPassedFunction\pureBothOpaqueCallbackPassingCount().',
+				539,
+			],
 		]);
 	}
 
@@ -499,40 +527,16 @@ class PureFunctionRuleTest extends RuleTestCase
 				22,
 			],
 			[
-				'Impure call to function preg_match() in pure function PureUnlessParameterPassedBuiltin\purePregMatchWithMatches().',
-				40,
-			],
-			[
-				'Impure call to function preg_filter() in pure function PureUnlessParameterPassedBuiltin\purePregFilterWithCount().',
-				60,
-			],
-			[
-				'Impure call to function preg_replace_callback() in pure function PureUnlessParameterPassedBuiltin\purePregReplaceCallbackWithCount().',
-				80,
-			],
-			[
-				'Impure call to function preg_replace_callback() in pure function PureUnlessParameterPassedBuiltin\purePregReplaceCallbackImpureCallback().',
-				89,
-			],
-			[
-				'Impure echo in pure function PureUnlessParameterPassedBuiltin\purePregReplaceCallbackImpureCallback().',
-				90,
+				'Possibly impure call to function preg_match() in pure function PureUnlessParameterPassedBuiltin\purePregMatchWithoutMatches().',
+				32,
 			],
 			[
 				'Impure call to function str_ireplace() in pure function PureUnlessParameterPassedBuiltin\pureStrIreplaceWithCount().',
-				113,
-			],
-			[
-				'Impure call to function preg_replace() in pure function PureUnlessParameterPassedBuiltin\purePregReplaceWithCount().',
-				133,
-			],
-			[
-				'Impure call to function preg_match_all() in pure function PureUnlessParameterPassedBuiltin\purePregMatchAllWithMatches().',
-				151,
+				52,
 			],
 			[
 				'Impure call to function similar_text() in pure function PureUnlessParameterPassedBuiltin\pureSimilarTextWithPercent().',
-				169,
+				70,
 			],
 		]);
 	}

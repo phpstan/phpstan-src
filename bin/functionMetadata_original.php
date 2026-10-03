@@ -18,8 +18,7 @@
  *         (keyed by parameter name) receives an argument, e.g. str_replace()
  *         whose only side effect is writing to its optional 'count' argument.
  *
- * The last two can be combined for a call that is pure unless either happens,
- * e.g. preg_replace_callback() (impure callback or a passed 'count').
+ * The last two can be combined for a call that is pure unless either happens.
  */
 
 /** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
@@ -271,13 +270,7 @@ return [
 	'output_reset_rewrite_vars' => ['hasSideEffects' => true],
 	'pclose' => ['hasSideEffects' => true],
 	'popen' => ['hasSideEffects' => true],
-	'preg_filter' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
-	// 'matches'/'subpatterns': PHP 8+ uses the php-8-stubs parameter name, PHP <8 falls
-	// back to the legacy functionMap.php name.
-	'preg_match' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],
-	'preg_match_all' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],
-	'preg_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
-	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true], 'pureUnlessParameterPassedParameters' => ['count' => true]],
+	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
 	'similar_text' => ['pureUnlessParameterPassedParameters' => ['percent' => true]],
 	'readfile' => ['hasSideEffects' => true],
 	'rename' => ['hasSideEffects' => true],

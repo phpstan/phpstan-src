@@ -6890,7 +6890,7 @@ foreach ([\PHPStan\Reflection\Php\PhpPropertyReflection::class, \PHPStan\Reflect
 // arguments), the pure-unless-callable-is-impure parameters of array_filter()
 // and array_reduce() fed pure, impure, maybe-pure, null, non-callable and
 // omitted callbacks (positional and named), the pure-unless-parameter-passed
-// out parameters of str_replace() and preg_match() passed and omitted
+// out parameters of str_replace() and similar_text() passed and omitted
 // (positional, named and unpacked), both verdicts combined and applied to a
 // keyed list of certain and uncertain points, the transformed and plain
 // fixture methods, a missing scope or variant, and unconstructed instances
@@ -6931,10 +6931,11 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 		'named count' => [$arg('string'), $arg('string'), $arg('string'), $arg('true', 'count')],
 		'named matches' => [$arg('string', 'pattern'), $arg('string', 'subject'), $arg('true', 'matches')],
 		'named subject only' => [$arg('string', 'pattern'), $arg('string', 'subject')],
+		'named percent' => [$arg('string', 'string1'), $arg('string', 'string2'), $arg('true', 'percent')],
 		'unpacked' => [new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('array'), unpack: true)],
 	];
 	$functions = [];
-	foreach (['strlen', 'usleep', 'print_r', 'var_export', 'highlight_string', 'array_filter', 'array_reduce', 'array_map', 'rand', 'str_replace', 'preg_match'] as $functionName) {
+	foreach (['strlen', 'usleep', 'print_r', 'var_export', 'highlight_string', 'array_filter', 'array_reduce', 'array_map', 'rand', 'str_replace', 'similar_text'] as $functionName) {
 		$functions[$functionName] = $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null);
 	}
 	foreach ($functions as $functionName => $function) {

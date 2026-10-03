@@ -137,9 +137,9 @@ final class SimpleImpurePoint
 	}
 
 	/**
-	 * A function can carry both flags at once (e.g. preg_replace_callback, which is
-	 * pure unless its callback is impure or its $count is passed), so the two
-	 * verdicts are combined. Returns null when the variant declares neither flag.
+	 * A function can carry both flags at once (pure unless a callback is impure
+	 * or an out parameter is passed), so the two verdicts are combined. Returns
+	 * null when the variant declares neither flag.
 	 *
 	 * @param Arg[] $args
 	 */

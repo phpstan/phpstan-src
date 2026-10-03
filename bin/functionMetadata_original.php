@@ -5,7 +5,7 @@
  * keyed by lowercase function name or "Class::method". resources/functionMetadata.php
  * is generated from this file by bin/generate-function-metadata.php.
  *
- * Each entry is exactly one of these shapes:
+ * Each entry has one of these shapes:
  *
  *   - ['hasSideEffects' => bool]
  *         false: the call is pure. true: the call has side effects.
@@ -13,9 +13,15 @@
  *         the call is pure unless one of the listed callable parameters
  *         (keyed by parameter name) receives an impure callable, e.g. array_map()
  *         whose only side effects come from its 'callback' argument.
+ *   - ['pureUnlessParameterPassedParameters' => array<string, true>]
+ *         the call is pure unless one of the listed (by-ref out) optional parameters
+ *         (keyed by parameter name) receives an argument, e.g. str_replace()
+ *         whose only side effect is writing to its optional 'count' argument.
+ *
+ * The last two can be combined for a call that is pure unless either happens.
  */
 
-/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 	'abs' => ['hasSideEffects' => false],
 	'acos' => ['hasSideEffects' => false],
@@ -265,6 +271,7 @@ return [
 	'pclose' => ['hasSideEffects' => true],
 	'popen' => ['hasSideEffects' => true],
 	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'similar_text' => ['pureUnlessParameterPassedParameters' => ['percent' => true]],
 	'readfile' => ['hasSideEffects' => true],
 	'rename' => ['hasSideEffects' => true],
 	'rewind' => ['hasSideEffects' => true],
@@ -272,6 +279,10 @@ return [
 	'sprintf' => ['hasSideEffects' => false],
 	'str_decrement' => ['hasSideEffects' => false],
 	'str_increment' => ['hasSideEffects' => false],
+	// 'count'/'replace_count': PHP 8+ uses the php-8-stubs parameter name, PHP <8 falls
+	// back to the legacy functionMap.php name.
+	'str_ireplace' => ['pureUnlessParameterPassedParameters' => ['count' => true, 'replace_count' => true]],
+	'str_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true, 'replace_count' => true]],
 	'symlink' => ['hasSideEffects' => true],
 	'time' => ['hasSideEffects' => true],
 	'tempnam' => ['hasSideEffects' => true],

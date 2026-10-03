@@ -2396,6 +2396,7 @@ enum pt_method_reflection_member
 	PT_MR_HAS_SIDE_EFFECTS,
 	PT_MR_IS_PURE,
 	PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS,
+	PT_MR_GET_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS,
 	PT_MR_GET_ASSERTS,
 	PT_MR_ACCEPTS_NAMED_ARGUMENTS,
 	PT_MR_GET_SELF_OUT_TYPE,
@@ -2745,6 +2746,12 @@ zv::Val pt_template_type_map_map(zval *map, zval *cb);
  * $scope, $args): hasVerdict false for the twin's null, verdict the PT_TRI_*
  * value otherwise; false = pending exception */
 [[nodiscard]] bool pt_simple_impure_point_resolve_verdict(zval *variant, zval *scope, zval *args, bool &hasVerdict, zend_long &verdict);
+/* SimpleImpurePoint::resolvePureUnlessParameterPassedVerdict($variant,
+ * $args): the same answers */
+[[nodiscard]] bool pt_simple_impure_point_resolve_passed_verdict(zval *variant, zval *args, bool &hasVerdict, zend_long &verdict);
+/* SimpleImpurePoint::narrowByConditionalPurity($impurePoints, $variant,
+ * $scope, $args) (everything borrowed); UNDEF = pending exception */
+zv::Val pt_simple_impure_point_narrow_by_conditional_purity(zval *impurePoints, zval *variant, zval *scope, zval *args);
 
 /* }}} */
 
@@ -3393,7 +3400,7 @@ extern zend_class_entry *pt_ce_deprecated_attribute_resolver;
 extern zend_class_entry *pt_ce_property_hooks_processor;
 extern zend_class_entry *pt_ce_called_method_processor;
 
-/* $phpDocsResolver->getPhpDocs($scope, $node) without the array: the 21
+/* $phpDocsResolver->getPhpDocs($scope, $node) without the array: the 22
  * values of the twin's list, owned. For the shadowing class every item is
  * set; any other resolver's method runs and its array is unpacked like the
  * caller's list() — an item it lacks stays UNDEF, unless its bit (1 << index)
@@ -3401,7 +3408,7 @@ extern zend_class_entry *pt_ce_called_method_processor;
  * false = pending exception */
 enum : uint32_t
 {
-	PT_PHP_DOCS_COUNT = 21,
+	PT_PHP_DOCS_COUNT = 22,
 	PT_PHP_DOCS_TEMPLATE_TYPE_MAP = 0,
 	PT_PHP_DOCS_PARAMETER_TYPES,
 	PT_PHP_DOCS_IMMEDIATELY_INVOKED_CALLABLE_PARAMETERS,
@@ -3423,6 +3430,7 @@ enum : uint32_t
 	PT_PHP_DOCS_IS_ALLOWED_PRIVATE_MUTATION,
 	PT_PHP_DOCS_RESOLVED_PHP_DOC,
 	PT_PHP_DOCS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS,
+	PT_PHP_DOCS_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS,
 };
 struct pt_php_docs
 {
@@ -3735,6 +3743,7 @@ enum pt_parameter_reflection_member
 	PT_PR_GET_ATTRIBUTES,
 	PT_PR_GET_ALLOWED_CONSTANTS,
 	PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER,
+	PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER,
 	PT_PR_MEMBER_COUNT
 };
 /* $parameter-><member>() of any parameter reflection (borrowed): callers
@@ -4310,6 +4319,7 @@ enum pt_resolved_php_doc_member
 	PT_RPD_GET_PARAM_OUT_TAGS,
 	PT_RPD_GET_PARAMS_IMMEDIATELY_INVOKED_CALLABLE,
 	PT_RPD_GET_PARAMS_PURE_UNLESS_CALLABLE_IS_IMPURE,
+	PT_RPD_GET_PARAMS_PURE_UNLESS_PARAMETER_PASSED,
 	PT_RPD_GET_PARAM_CLOSURE_THIS_TAGS,
 	PT_RPD_GET_RETURN_TAG,
 	PT_RPD_GET_THROWS_TAG,

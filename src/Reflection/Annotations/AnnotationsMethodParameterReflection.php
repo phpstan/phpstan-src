@@ -97,4 +97,9 @@ final class AnnotationsMethodParameterReflection implements ExtendedParameterRef
 		return TrinaryLogic::createNo();
 	}
 
+	public function isPureUnlessParameterPassedParameter(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

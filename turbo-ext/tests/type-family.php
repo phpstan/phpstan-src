@@ -6439,7 +6439,7 @@ $viewParameter = static function (\PHPStan\Reflection\ParameterReflection $p) us
 	$byRef = $p->passedByReference();
 	$r = [get_class($p), $p->getName(), $p->isOptional(), $view($p->getType()), [$byRef->no(), $byRef->yes(), $byRef->createsNewVariable()], $p->isVariadic(), $view($p->getDefaultValue())];
 	if ($p instanceof \PHPStan\Reflection\ExtendedParameterReflection) {
-		$r[] = [$view($p->getNativeType()), $view($p->getPhpDocType()), $view($p->getOutType()), $view($p->isImmediatelyInvokedCallable()), $view($p->getClosureThisType()), count($p->getAttributes()), $p->getAllowedConstants() === null ? null : get_class($p->getAllowedConstants()), $view($p->isPureUnlessCallableIsImpureParameter()), $p->hasNativeType()];
+		$r[] = [$view($p->getNativeType()), $view($p->getPhpDocType()), $view($p->getOutType()), $view($p->isImmediatelyInvokedCallable()), $view($p->getClosureThisType()), count($p->getAttributes()), $p->getAllowedConstants() === null ? null : get_class($p->getAllowedConstants()), $view($p->isPureUnlessCallableIsImpureParameter()), $view($p->isPureUnlessParameterPassedParameter()), $p->hasNativeType()];
 	}
 	return $r;
 };
@@ -6668,7 +6668,7 @@ foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflecti
 			'onlyVariant' => $catching(static fn () => $viewVariant($m->getOnlyVariant())),
 			'prototype' => $catching(static fn () => [get_class($m->getPrototype()), $m->getPrototype()->getDeclaringClass()->getName()]),
 			'flags' => $catching(static fn () => [$m->isStatic(), $m->isPrivate(), $m->isPublic(), $m->getDocComment(), $view($m->isDeprecated()), $m->getDeprecatedDescription(), $view($m->isFinal()), $view($m->isFinalByKeyword()), $view($m->isInternal()), $view($m->isBuiltin())]),
-			'purity' => $catching(static fn () => [$view($m->hasSideEffects()), $view($m->isPure()), $m->getPureUnlessCallableIsImpureParameters(), $view($m->acceptsNamedArguments()), $view($m->returnsByReference()), $view($m->isAbstract()), $view($m->mustUseReturnValue())]),
+			'purity' => $catching(static fn () => [$view($m->hasSideEffects()), $view($m->isPure()), $m->getPureUnlessCallableIsImpureParameters(), $m->getPureUnlessParameterPassedParameters(), $view($m->acceptsNamedArguments()), $view($m->returnsByReference()), $view($m->isAbstract()), $view($m->mustUseReturnValue())]),
 			'attributes' => $catching(static fn () => $viewAttributes($m->getAttributes())),
 			'phpDoc' => $catching(static fn () => $view($m->getResolvedPhpDoc())),
 			'memo' => $catching(static fn () => [$m->getVariants() === $m->getVariants(), $m->getNamedArgumentsVariants() === $m->getNamedArgumentsVariants(), $m->getAsserts() === $m->getAsserts(), $m->getSelfOutType() === $m->getSelfOutType(), $m->hasSideEffects() === $m->hasSideEffects(), $m->getDeclaringClass() === $m->getDeclaringClass()]),
@@ -6725,6 +6725,7 @@ foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflecti
 		public function hasSideEffects(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createFromBoolean(!$this->answer); }
 		public function isPure(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createMaybe(); }
 		public function getPureUnlessCallableIsImpureParameters(): array { return $this->answer ? ['callback' => true] : []; }
+		public function getPureUnlessParameterPassedParameters(): array { return $this->answer ? ['count' => \PHPStan\TrinaryLogic::createYes()] : []; }
 		public function getAsserts(): \PHPStan\Reflection\Assertions { return $this->inner->getAsserts(); }
 		public function acceptsNamedArguments(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createFromBoolean($this->answer); }
 		public function getSelfOutType(): ?\PHPStan\Type\Type { return $this->answer ? new \PHPStan\Type\Generic\GenericObjectType(\PHPStanTurboTests\PrototypeFixture::class, [(new \PHPStan\Type\Generic\TemplateTypeReference(\PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithClass(\PHPStanTurboTests\PrototypeFixture::class), 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()))->getType()]) : null; }
@@ -6888,7 +6889,10 @@ foreach ([\PHPStan\Reflection\Php\PhpPropertyReflection::class, \PHPStan\Reflect
 // print_r() and var_export() (positional and named, truthy, maybe and falsy
 // arguments), the pure-unless-callable-is-impure parameters of array_filter()
 // and array_reduce() fed pure, impure, maybe-pure, null, non-callable and
-// omitted callbacks (positional and named), the transformed and plain
+// omitted callbacks (positional and named), the pure-unless-parameter-passed
+// out parameters of str_replace() and similar_text() passed and omitted
+// (positional, named and unpacked), both verdicts combined and applied to a
+// keyed list of certain and uncertain points, the transformed and plain
 // fixture methods, a missing scope or variant, and unconstructed instances
 $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class] = (new ReflectionMethod(\PHPStan\Reflection\Callables\SimpleImpurePoint::class, 'createFromVariant'))->isInternal();
 {
@@ -6922,9 +6926,16 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 		'named callback pure' => [$arg('array', 'array'), $arg('pure', 'callback')],
 		'named two maybe' => [$arg('array', 'one'), $arg('maybe', 'two')],
 		'keyed' => [1 => $arg('impure'), 0 => $arg('array')],
+		'three' => [$arg('string'), $arg('string'), $arg('string')],
+		'four' => [$arg('string'), $arg('string'), $arg('string'), $arg('true')],
+		'named count' => [$arg('string'), $arg('string'), $arg('string'), $arg('true', 'count')],
+		'named matches' => [$arg('string', 'pattern'), $arg('string', 'subject'), $arg('true', 'matches')],
+		'named subject only' => [$arg('string', 'pattern'), $arg('string', 'subject')],
+		'named percent' => [$arg('string', 'string1'), $arg('string', 'string2'), $arg('true', 'percent')],
+		'unpacked' => [new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('array'), unpack: true)],
 	];
 	$functions = [];
-	foreach (['strlen', 'usleep', 'print_r', 'var_export', 'highlight_string', 'array_filter', 'array_reduce', 'array_map', 'rand'] as $functionName) {
+	foreach (['strlen', 'usleep', 'print_r', 'var_export', 'highlight_string', 'array_filter', 'array_reduce', 'array_map', 'rand', 'str_replace', 'similar_text'] as $functionName) {
 		$functions[$functionName] = $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null);
 	}
 	foreach ($functions as $functionName => $function) {
@@ -6934,6 +6945,9 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 		foreach ($argLists as $argListName => $args) {
 			$r["function $functionName $argListName"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($function, $variant, $sipScope, $args)));
 			$r["function $functionName $argListName verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($variant, $sipScope, $args)));
+			$r["function $functionName $argListName passed verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolvePureUnlessParameterPassedVerdict($variant, $args)));
+			$r["function $functionName $argListName conditional verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolveConditionalPurityVerdict($variant, $sipScope, $args)));
+			$r["function $functionName $argListName narrowed"] = $catching(static fn () => array_map($viewImpurePoint, \PHPStan\Reflection\Callables\SimpleImpurePoint::narrowByConditionalPurity(['certain' => new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'certain call', true), 3 => new \PHPStan\Reflection\Callables\SimpleImpurePoint('methodCall', 'possible call', false)], $variant, $sipScope, $args)));
 		}
 	}
 	foreach (['returnsStatic', 'withValue', 'each', 'fails'] as $methodName) {
@@ -7009,9 +7023,9 @@ if (!class_exists('PHPStanTurboTests\DummyParameterSubclass', false)) {
 		'plain' => new \PHPStan\Reflection\Php\DummyParameter('a', $int, false, null, false, null),
 		'byRef' => new \PHPStan\Reflection\Php\DummyParameter('b', $string, true, $modes['creates'], true, new \PHPStan\Type\Constant\ConstantStringType('x')),
 		'named' => new \PHPStan\Reflection\Php\DummyParameter(defaultValue: null, variadic: false, passedByReference: null, optional: true, type: new \PHPStan\Type\MixedType(), name: 'n'),
-		'extended' => new \PHPStan\Reflection\Php\ExtendedDummyParameter('e', $int, false, $modes['reads'], false, null, new \PHPStan\Type\MixedType(), $int, $string, \PHPStan\TrinaryLogic::createYes(), new \PHPStan\Type\ObjectType(\stdClass::class), [], null, \PHPStan\TrinaryLogic::createMaybe()),
-		'extendedExplicitMixed' => new \PHPStan\Reflection\Php\ExtendedDummyParameter('x', $int, true, null, true, $int, new \PHPStan\Type\MixedType(true), $int, null, \PHPStan\TrinaryLogic::createNo(), null, [], $allowed, \PHPStan\TrinaryLogic::createNo()),
-		'extendedNative' => new \PHPStan\Reflection\Php\ExtendedDummyParameter(pureUnlessCallableIsImpureParameter: \PHPStan\TrinaryLogic::createYes(), allowedConstants: null, attributes: [], closureThisType: null, immediatelyInvokedCallable: \PHPStan\TrinaryLogic::createMaybe(), outType: null, phpDocType: $string, nativeType: $string, defaultValue: null, variadic: false, passedByReference: $modes['no'], optional: false, type: $string, name: 's'),
+		'extended' => new \PHPStan\Reflection\Php\ExtendedDummyParameter('e', $int, false, $modes['reads'], false, null, new \PHPStan\Type\MixedType(), $int, $string, \PHPStan\TrinaryLogic::createYes(), new \PHPStan\Type\ObjectType(\stdClass::class), [], null, \PHPStan\TrinaryLogic::createMaybe(), \PHPStan\TrinaryLogic::createYes()),
+		'extendedExplicitMixed' => new \PHPStan\Reflection\Php\ExtendedDummyParameter('x', $int, true, null, true, $int, new \PHPStan\Type\MixedType(true), $int, null, \PHPStan\TrinaryLogic::createNo(), null, [], $allowed, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createMaybe()),
+		'extendedNative' => new \PHPStan\Reflection\Php\ExtendedDummyParameter(pureUnlessParameterPassedParameter: \PHPStan\TrinaryLogic::createNo(), pureUnlessCallableIsImpureParameter: \PHPStan\TrinaryLogic::createYes(), allowedConstants: null, attributes: [], closureThisType: null, immediatelyInvokedCallable: \PHPStan\TrinaryLogic::createMaybe(), outType: null, phpDocType: $string, nativeType: $string, defaultValue: null, variadic: false, passedByReference: $modes['no'], optional: false, type: $string, name: 's'),
 		'subclass' => new \PHPStanTurboTests\DummyParameterSubclass('sub', $int, false, null, false, null),
 	];
 	foreach ($dummies as $name => $dummy) {
@@ -7022,14 +7036,14 @@ if (!class_exists('PHPStanTurboTests\DummyParameterSubclass', false)) {
 		$result = $dummies[$name]->checkAllowedConstants([]);
 		$r["dummy $name checkAllowedConstants"] = [get_class($result), $result->isOk(), $result->isBitmaskNotAllowed(), $result->getDisallowedConstants(), $result->getViolatedExclusiveGroups()];
 	}
-	foreach ([\PHPStan\Reflection\Php\DummyParameter::class => ['getName', 'isOptional', 'getType', 'passedByReference', 'isVariadic', 'getDefaultValue'], \PHPStan\Reflection\Php\ExtendedDummyParameter::class => ['getName', 'getPhpDocType', 'hasNativeType', 'getNativeType', 'getOutType', 'isImmediatelyInvokedCallable', 'getClosureThisType', 'getAttributes', 'getAllowedConstants', 'isPureUnlessCallableIsImpureParameter']] as $class => $methods) {
+	foreach ([\PHPStan\Reflection\Php\DummyParameter::class => ['getName', 'isOptional', 'getType', 'passedByReference', 'isVariadic', 'getDefaultValue'], \PHPStan\Reflection\Php\ExtendedDummyParameter::class => ['getName', 'getPhpDocType', 'hasNativeType', 'getNativeType', 'getOutType', 'isImmediatelyInvokedCallable', 'getClosureThisType', 'getAttributes', 'getAllowedConstants', 'isPureUnlessCallableIsImpureParameter', 'isPureUnlessParameterPassedParameter']] as $class => $methods) {
 		$raw = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
 		foreach ($methods as $method) {
 			$r["unconstructed $class $method"] = $error(static fn () => $raw->$method());
 		}
 	}
 	$r['dummy wrong name'] = $error(static fn () => new \PHPStan\Reflection\Php\DummyParameter([], $int, false, null, false, null));
-	$r['extended wrong attributes'] = $error(static fn () => new \PHPStan\Reflection\Php\ExtendedDummyParameter('e', $int, false, null, false, null, $int, $int, null, \PHPStan\TrinaryLogic::createYes(), null, 'x', null, \PHPStan\TrinaryLogic::createNo()));
+	$r['extended wrong attributes'] = $error(static fn () => new \PHPStan\Reflection\Php\ExtendedDummyParameter('e', $int, false, null, false, null, $int, $int, null, \PHPStan\TrinaryLogic::createYes(), null, 'x', null, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createNo()));
 	foreach ($r as $key => $value) {
 		$observations["parameter values $key"] = $value;
 	}
@@ -7155,7 +7169,7 @@ $observations['native ' . \PHPStan\Reflection\ParametersAcceptorSelector::class]
 	$template = \PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'), 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
 	$emptyMap = \PHPStan\Type\Generic\TemplateTypeMap::createEmpty();
 	$param = static fn (string $name, \PHPStan\Type\Type $type, bool $optional = false, bool $variadic = false, ?\PHPStan\Type\Type $default = null, ?\PHPStan\Reflection\PassedByReference $byRef = null): \PHPStan\Reflection\Php\DummyParameter => new \PHPStan\Reflection\Php\DummyParameter($name, $type, $optional, $byRef, $variadic, $default);
-	$extParam = static fn (string $name, \PHPStan\Type\Type $type, bool $optional = false, bool $variadic = false, ?\PHPStan\Type\Type $out = null, ?\PHPStan\Type\Type $closureThis = null, ?\PHPStan\Reflection\ParameterAllowedConstants $allowed = null, ?\PHPStan\TrinaryLogic $immediately = null, ?\PHPStan\TrinaryLogic $pure = null): \PHPStan\Reflection\Php\ExtendedDummyParameter => new \PHPStan\Reflection\Php\ExtendedDummyParameter($name, $type, $optional, \PHPStan\Reflection\PassedByReference::createReadsArgument(), $variadic, $optional ? $type : null, $type, $type, $out, $immediately ?? \PHPStan\TrinaryLogic::createMaybe(), $closureThis, [], $allowed, $pure ?? \PHPStan\TrinaryLogic::createNo());
+	$extParam = static fn (string $name, \PHPStan\Type\Type $type, bool $optional = false, bool $variadic = false, ?\PHPStan\Type\Type $out = null, ?\PHPStan\Type\Type $closureThis = null, ?\PHPStan\Reflection\ParameterAllowedConstants $allowed = null, ?\PHPStan\TrinaryLogic $immediately = null, ?\PHPStan\TrinaryLogic $pure = null, ?\PHPStan\TrinaryLogic $passed = null): \PHPStan\Reflection\Php\ExtendedDummyParameter => new \PHPStan\Reflection\Php\ExtendedDummyParameter($name, $type, $optional, \PHPStan\Reflection\PassedByReference::createReadsArgument(), $variadic, $optional ? $type : null, $type, $type, $out, $immediately ?? \PHPStan\TrinaryLogic::createMaybe(), $closureThis, [], $allowed, $pure ?? \PHPStan\TrinaryLogic::createNo(), $passed ?? \PHPStan\TrinaryLogic::createNo());
 	$variant = static fn (array $parameters, bool $variadic = false, ?\PHPStan\Type\Type $return = null): \PHPStan\Reflection\FunctionVariant => new \PHPStan\Reflection\FunctionVariant($emptyMap, null, $parameters, $variadic, $return ?? $int);
 	$extVariant = static fn (array $parameters, bool $variadic = false, ?\PHPStan\Type\Type $return = null): \PHPStan\Reflection\ExtendedFunctionVariant => new \PHPStan\Reflection\ExtendedFunctionVariant($emptyMap, null, $parameters, $variadic, $return ?? $int, $return ?? $int, $mixed);
 	$allowedA = new \PHPStan\Reflection\ParameterAllowedConstants('list', [], []);
@@ -7167,6 +7181,7 @@ $observations['native ' . \PHPStan\Reflection\ParametersAcceptorSelector::class]
 		'mixedParams' => [$variant([$param('a', $mixed)]), $variant([$param('b', $mixed)])],
 		'extended' => [$extVariant([$extParam('a', $int, false, false, $int, $int, $allowedA, \PHPStan\TrinaryLogic::createYes())]), $extVariant([$extParam('b', $string, true, false, $string, null, $allowedA), $extParam('c', $int, true, true)], true)],
 		'extendedAllowed' => [$extVariant([$extParam('a', $int, false, false, null, null, $allowedA)]), $extVariant([$extParam('a', $int, false, false, null, null, $allowedB, null, \PHPStan\TrinaryLogic::createYes())])],
+		'extendedPassed' => [$extVariant([$extParam('a', $int, true, false, null, null, null, null, null, \PHPStan\TrinaryLogic::createYes())]), $extVariant([$extParam('a', $int, true)])],
 		'mixedKinds' => [$variant([$param('x', $int, false, false, $int, \PHPStan\Reflection\PassedByReference::createCreatesNewVariable())]), $extVariant([$extParam('y', $string, true)])],
 		'template' => [$variant([$param('a', $template)], false, $template)],
 		'closure' => [new \PHPStan\Type\ClosureType([$param('a', $int)], $int, false), new \PHPStan\Type\ClosureType([$param('a', $string), $param('b', $int)], $string, false)],
@@ -7284,17 +7299,17 @@ require_once __DIR__ . '/type-family-signature-fixture.php';
 	foreach ($adapterParameters as $k => $adapterParameter) {
 		foreach (['none' => null, 'string' => $string, 'nullable' => new \PHPStan\Type\UnionType([$string, new \PHPStan\Type\NullType()])] as $phpDocName => $phpDocType) {
 			foreach (['noClass' => null, 'class' => $signatureFixture] as $className => $declaringClass) {
-				$constructed = new \PHPStan\Reflection\Php\PhpParameterReflection($initializerExprTypeResolver, $adapterParameter, $phpDocType, $declaringClass, $phpDocName === 'string' ? $int : null, \PHPStan\TrinaryLogic::createMaybe(), $phpDocName === 'nullable' ? new \PHPStan\Type\ObjectType(\stdClass::class) : null, [], $phpDocName === 'string' ? new \PHPStan\Reflection\ParameterAllowedConstants('list', [], []) : null, \PHPStan\TrinaryLogic::createNo());
+				$constructed = new \PHPStan\Reflection\Php\PhpParameterReflection($initializerExprTypeResolver, $adapterParameter, $phpDocType, $declaringClass, $phpDocName === 'string' ? $int : null, \PHPStan\TrinaryLogic::createMaybe(), $phpDocName === 'nullable' ? new \PHPStan\Type\ObjectType(\stdClass::class) : null, [], $phpDocName === 'string' ? new \PHPStan\Reflection\ParameterAllowedConstants('list', [], []) : null, \PHPStan\TrinaryLogic::createNo(), $phpDocName === 'string' ? \PHPStan\TrinaryLogic::createYes() : \PHPStan\TrinaryLogic::createNo());
 				$r["constructed $k $phpDocName $className"] = $catching(static fn () => $viewFullParameter($constructed));
 			}
 		}
 	}
-	$named = new \PHPStan\Reflection\Php\PhpParameterReflection(pureUnlessCallableIsImpureParameter: \PHPStan\TrinaryLogic::createYes(), allowedConstants: null, attributes: [], closureThisType: null, immediatelyInvokedCallable: \PHPStan\TrinaryLogic::createYes(), outType: null, declaringClass: null, phpDocType: $int, reflection: $adapterParameters[2], initializerExprTypeResolver: $initializerExprTypeResolver);
+	$named = new \PHPStan\Reflection\Php\PhpParameterReflection(pureUnlessParameterPassedParameter: \PHPStan\TrinaryLogic::createMaybe(), pureUnlessCallableIsImpureParameter: \PHPStan\TrinaryLogic::createYes(), allowedConstants: null, attributes: [], closureThisType: null, immediatelyInvokedCallable: \PHPStan\TrinaryLogic::createYes(), outType: null, declaringClass: null, phpDocType: $int, reflection: $adapterParameters[2], initializerExprTypeResolver: $initializerExprTypeResolver);
 	$r['constructed named'] = $catching(static fn () => $viewFullParameter($named));
 	// the order of the memoized reads: getNativeType() before getType()
-	$nativeFirst = new \PHPStan\Reflection\Php\PhpParameterReflection($initializerExprTypeResolver, $adapterParameters[1], $string, $signatureFixture, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo());
+	$nativeFirst = new \PHPStan\Reflection\Php\PhpParameterReflection($initializerExprTypeResolver, $adapterParameters[1], $string, $signatureFixture, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createYes());
 	$r['native first'] = [$view($nativeFirst->getNativeType()), $view($nativeFirst->getType()), $nativeFirst->getNativeType() === $nativeFirst->getNativeType()];
-	$r['constructor wrong attributes'] = $catching(static fn () => new \PHPStan\Reflection\Php\PhpParameterReflection($initializerExprTypeResolver, $adapterParameters[0], null, null, null, \PHPStan\TrinaryLogic::createNo(), null, 'x', null, \PHPStan\TrinaryLogic::createNo()));
+	$r['constructor wrong attributes'] = $catching(static fn () => new \PHPStan\Reflection\Php\PhpParameterReflection($initializerExprTypeResolver, $adapterParameters[0], null, null, null, \PHPStan\TrinaryLogic::createNo(), null, 'x', null, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createNo()));
 
 	// the built-in functions' parameters
 	foreach (['array_map', 'str_replace', 'preg_match', 'sprintf', 'json_decode', 'array_filter', 'usort', 'strlen', 'htmlspecialchars', 'array_walk'] as $functionName) {
@@ -7307,16 +7322,16 @@ require_once __DIR__ . '/type-family-signature-fixture.php';
 	}
 	$allowed = new \PHPStan\Reflection\ParameterAllowedConstants('bitmask', [], []);
 	$nativeParameters = [
-		'plain' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('a', false, $int, $int, $int, $modes['no'], false, null, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo()),
-		'implicitMixed' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('b', true, new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType(), $modes['creates'], true, new \PHPStan\Type\Constant\ConstantIntegerType(1), $string, \PHPStan\TrinaryLogic::createYes(), new \PHPStan\Type\ObjectType(\stdClass::class), [], $allowed, \PHPStan\TrinaryLogic::createMaybe()),
-		'explicitMixed' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('c', false, $string, $string, new \PHPStan\Type\MixedType(true), $modes['reads'], false, null, null, \PHPStan\TrinaryLogic::createMaybe(), null, [], null, \PHPStan\TrinaryLogic::createYes()),
-		'named' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection(pureUnlessCallableIsImpureParameter: \PHPStan\TrinaryLogic::createNo(), allowedConstants: $allowed, attributes: [], closureThisType: null, immediatelyInvokedCallable: \PHPStan\TrinaryLogic::createNo(), outType: $int, defaultValue: null, variadic: false, passedByReference: $modes['no'], nativeType: $string, phpDocType: $int, type: $int, optional: true, name: 'n'),
+		'plain' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('a', false, $int, $int, $int, $modes['no'], false, null, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createYes()),
+		'implicitMixed' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('b', true, new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType(), $modes['creates'], true, new \PHPStan\Type\Constant\ConstantIntegerType(1), $string, \PHPStan\TrinaryLogic::createYes(), new \PHPStan\Type\ObjectType(\stdClass::class), [], $allowed, \PHPStan\TrinaryLogic::createMaybe(), \PHPStan\TrinaryLogic::createNo()),
+		'explicitMixed' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('c', false, $string, $string, new \PHPStan\Type\MixedType(true), $modes['reads'], false, null, null, \PHPStan\TrinaryLogic::createMaybe(), null, [], null, \PHPStan\TrinaryLogic::createYes(), \PHPStan\TrinaryLogic::createMaybe()),
+		'named' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection(pureUnlessParameterPassedParameter: \PHPStan\TrinaryLogic::createYes(), pureUnlessCallableIsImpureParameter: \PHPStan\TrinaryLogic::createNo(), allowedConstants: $allowed, attributes: [], closureThisType: null, immediatelyInvokedCallable: \PHPStan\TrinaryLogic::createNo(), outType: $int, defaultValue: null, variadic: false, passedByReference: $modes['no'], nativeType: $string, phpDocType: $int, type: $int, optional: true, name: 'n'),
 	];
 	foreach ($nativeParameters as $name => $parameter) {
 		$r["native constructed $name"] = $catching(static fn () => $viewFullParameter($parameter));
 	}
-	$r['native wrong attributes'] = $catching(static fn () => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('a', false, $int, $int, $int, $modes['no'], false, null, null, \PHPStan\TrinaryLogic::createNo(), null, 'x', null, \PHPStan\TrinaryLogic::createNo()));
-	$r['native wrong name'] = $catching(static fn () => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection([], false, $int, $int, $int, $modes['no'], false, null, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo()));
+	$r['native wrong attributes'] = $catching(static fn () => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('a', false, $int, $int, $int, $modes['no'], false, null, null, \PHPStan\TrinaryLogic::createNo(), null, 'x', null, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createNo()));
+	$r['native wrong name'] = $catching(static fn () => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection([], false, $int, $int, $int, $modes['no'], false, null, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createNo()));
 
 	// the native dispatch: ParametersAcceptorSelector over variants whose
 	// parameters are these reflections
@@ -7327,7 +7342,7 @@ require_once __DIR__ . '/type-family-signature-fixture.php';
 
 	foreach ([\PHPStan\Reflection\Php\PhpParameterReflection::class, \PHPStan\Reflection\Native\ExtendedNativeParameterReflection::class] as $class) {
 		$raw = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
-		foreach (['getName', 'isOptional', 'getType', 'passedByReference', 'isVariadic', 'getDefaultValue', 'getPhpDocType', 'hasNativeType', 'getNativeType', 'getOutType', 'isImmediatelyInvokedCallable', 'getClosureThisType', 'getAttributes', 'getAllowedConstants', 'isPureUnlessCallableIsImpureParameter'] as $method) {
+		foreach (['getName', 'isOptional', 'getType', 'passedByReference', 'isVariadic', 'getDefaultValue', 'getPhpDocType', 'hasNativeType', 'getNativeType', 'getOutType', 'isImmediatelyInvokedCallable', 'getClosureThisType', 'getAttributes', 'getAllowedConstants', 'isPureUnlessCallableIsImpureParameter', 'isPureUnlessParameterPassedParameter'] as $method) {
 			$r["unconstructed $class $method"] = $catching(static fn () => $view($raw->$method()));
 		}
 		$r["unconstructed $class checkAllowedConstants"] = $catching(static fn () => get_class($raw->checkAllowedConstants([])));
@@ -7381,7 +7396,7 @@ if (!class_exists('PHPStanTurboTests\FunctionVariantSubclass', false)) {
 	$int = new \PHPStan\Type\IntegerType();
 	$string = new \PHPStan\Type\StringType();
 	$dummy = new \PHPStan\Reflection\Php\DummyParameter('d', $int, false, null, false, null);
-	$extendedDummy = new \PHPStan\Reflection\Php\ExtendedDummyParameter('e', $string, true, null, true, null, $string, $string, $int, \PHPStan\TrinaryLogic::createYes(), null, [], null, \PHPStan\TrinaryLogic::createNo());
+	$extendedDummy = new \PHPStan\Reflection\Php\ExtendedDummyParameter('e', $string, true, null, true, null, $string, $string, $int, \PHPStan\TrinaryLogic::createYes(), null, [], null, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createMaybe());
 	$variances = new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]);
 	$assertions = $stringReflectionProvider->getClass(\PHPStanTurboTests\SignatureFixture::class)->getNativeMethod('asserting')->getAsserts();
 	$acceptors = [
@@ -7396,7 +7411,7 @@ if (!class_exists('PHPStanTurboTests\FunctionVariantSubclass', false)) {
 		'trivial' => new \PHPStan\Reflection\TrivialParametersAcceptor(),
 		'trivial named' => new \PHPStan\Reflection\TrivialParametersAcceptor(callableName: 'Closure'),
 		'fv subclass' => new \PHPStanTurboTests\FunctionVariantSubclass($int),
-		'efv subclass' => new \PHPStanTurboTests\ExtendedFunctionVariantSubclass($emptyMap, null, [$extendedDummy, new \PHPStan\Reflection\Php\ExtendedDummyParameter('f', $int, false, null, false, null, $int, $int, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo())], false, $int, $int, $int),
+		'efv subclass' => new \PHPStanTurboTests\ExtendedFunctionVariantSubclass($emptyMap, null, [$extendedDummy, new \PHPStan\Reflection\Php\ExtendedDummyParameter('f', $int, false, null, false, null, $int, $int, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createNo())], false, $int, $int, $int),
 	];
 	foreach ($acceptors as $name => $acceptor) {
 		$r["acceptor $name"] = $viewAcceptorFull($acceptor);

@@ -381,7 +381,15 @@ final class NewHandler implements ExprHandler
 			}
 
 			$certain = $constructorReflection->isPure()->no();
+			// A constructor can carry both flags at once, so combine the verdicts
+			// the same way SimpleImpurePoint::createFromVariant() does for calls:
+			// Yes = pure, No = impure, Maybe = possibly impure.
 			$verdict = SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($parametersAcceptor, $scope, $expr->getArgs());
+			$passedVerdict = SimpleImpurePoint::resolvePureUnlessParameterPassedVerdict($parametersAcceptor, $expr->getArgs());
+			if ($passedVerdict !== null) {
+				$verdict = $verdict === null ? $passedVerdict : $verdict->and($passedVerdict);
+			}
+
 			if ($verdict !== null && $verdict->yes()) {
 				return [];
 			}

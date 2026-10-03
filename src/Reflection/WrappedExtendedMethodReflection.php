@@ -81,6 +81,7 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 					[],
 					null,
 					TrinaryLogic::createNo(),
+					TrinaryLogic::createNo(),
 				), $variant->getParameters()),
 				$variant->isVariadic(),
 				$variant->getReturnType(),
@@ -149,6 +150,11 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 	}
 
 	public function getPureUnlessCallableIsImpureParameters(): array
+	{
+		return [];
+	}
+
+	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return [];
 	}

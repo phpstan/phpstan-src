@@ -48,10 +48,21 @@ inline constexpr char strings[] =
 	"PHPStan\\Reflection\\Callables\\SimpleImpurePoint\0" /* 223 */
 	"createFromVariant\0" /* 270 */
 	"PHPStan\\TrinaryLogic\0" /* 288 */
-	"resolvePureUnlessCallableIsImpureVerdict\0" /* 309 */
-	"getIdentifier\0" /* 350 */
-	"getDescription\0" /* 364 */
-	"isCertain"; /* 379 */
+	"resolveConditionalPurityVerdict\0" /* 309 */
+	"impurePoints\0" /* 341 */
+	"narrowByConditionalPurity\0" /* 354 */
+	"resolvePureUnlessCallableIsImpureVerdict\0" /* 380 */
+	"resolvePureUnlessParameterPassedVerdict\0" /* 421 */
+	"parameters\0" /* 461 */
+	"collectParameterNames\0" /* 472 */
+	"parameter\0" /* 494 */
+	"PHPStan\\Reflection\\ExtendedParameterReflection\0" /* 504 */
+	"parameterIndex\0" /* 551 */
+	"declaredParameterNames\0" /* 566 */
+	"matchArgForParameter\0" /* 589 */
+	"getIdentifier\0" /* 610 */
+	"getDescription\0" /* 624 */
+	"isCertain"; /* 639 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $identifier */
 	reg::packed(11, MAY_BE_STRING), /* __construct $description */
@@ -61,10 +72,29 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(180, MAY_BE_NULL, 186, false, false, 209), /* createFromVariant $scope */
 	reg::packed(214, MAY_BE_ARRAY, reg::NoString, false, false, 219), /* createFromVariant $args */
 	reg::packed(222, MAY_BE_NULL, 223), /* createFromVariant return */
+	reg::packed(134, 0, 142), /* resolveConditionalPurityVerdict $variant */
+	reg::packed(180, 0, 186), /* resolveConditionalPurityVerdict $scope */
+	reg::packed(214, MAY_BE_ARRAY), /* resolveConditionalPurityVerdict $args */
+	reg::packed(222, MAY_BE_NULL, 288), /* resolveConditionalPurityVerdict return */
+	reg::packed(341, MAY_BE_ARRAY), /* narrowByConditionalPurity $impurePoints */
+	reg::packed(134, 0, 142), /* narrowByConditionalPurity $variant */
+	reg::packed(180, 0, 186), /* narrowByConditionalPurity $scope */
+	reg::packed(214, MAY_BE_ARRAY), /* narrowByConditionalPurity $args */
+	reg::packed(222, MAY_BE_ARRAY), /* narrowByConditionalPurity return */
 	reg::packed(134, 0, 142), /* resolvePureUnlessCallableIsImpureVerdict $variant */
 	reg::packed(180, 0, 186), /* resolvePureUnlessCallableIsImpureVerdict $scope */
 	reg::packed(214, MAY_BE_ARRAY), /* resolvePureUnlessCallableIsImpureVerdict $args */
 	reg::packed(222, MAY_BE_NULL, 288), /* resolvePureUnlessCallableIsImpureVerdict return */
+	reg::packed(134, 0, 142), /* resolvePureUnlessParameterPassedVerdict $variant */
+	reg::packed(214, MAY_BE_ARRAY), /* resolvePureUnlessParameterPassedVerdict $args */
+	reg::packed(222, MAY_BE_NULL, 288), /* resolvePureUnlessParameterPassedVerdict return */
+	reg::packed(461, MAY_BE_ARRAY), /* collectParameterNames $parameters */
+	reg::packed(222, MAY_BE_ARRAY), /* collectParameterNames return */
+	reg::packed(214, MAY_BE_ARRAY), /* matchArgForParameter $args */
+	reg::packed(494, 0, 504), /* matchArgForParameter $parameter */
+	reg::packed(551, MAY_BE_LONG), /* matchArgForParameter $parameterIndex */
+	reg::packed(566, MAY_BE_ARRAY), /* matchArgForParameter $declaredParameterNames */
+	reg::packed(222, MAY_BE_ARRAY), /* matchArgForParameter return */
 	reg::packed(222, MAY_BE_STRING), /* getIdentifier return */
 	reg::packed(222, MAY_BE_STRING), /* getDescription return */
 	reg::packed(222, MAY_BE_BOOL), /* isCertain return */
@@ -76,10 +106,15 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 31 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig createFromVariant = { { 270 /* createFromVariant */, 2, 3, 4, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig resolvePureUnlessCallableIsImpureVerdict = { { 309 /* resolvePureUnlessCallableIsImpureVerdict */, 3, 8, 3, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getIdentifier = { { 350 /* getIdentifier */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getDescription = { { 364 /* getDescription */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isCertain = { { 379 /* isCertain */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveConditionalPurityVerdict = { { 309 /* resolveConditionalPurityVerdict */, 3, 8, 3, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig narrowByConditionalPurity = { { 354 /* narrowByConditionalPurity */, 4, 12, 4, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolvePureUnlessCallableIsImpureVerdict = { { 380 /* resolvePureUnlessCallableIsImpureVerdict */, 3, 17, 3, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolvePureUnlessParameterPassedVerdict = { { 421 /* resolvePureUnlessParameterPassedVerdict */, 2, 21, 2, 23, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig collectParameterNames = { { 472 /* collectParameterNames */, 1, 24, 1, 25, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig matchArgForParameter = { { 589 /* matchArgForParameter */, 4, 26, 4, 30, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getIdentifier = { { 610 /* getIdentifier */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDescription = { { 624 /* getDescription */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCertain = { { 639 /* isCertain */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::SimpleImpurePoint

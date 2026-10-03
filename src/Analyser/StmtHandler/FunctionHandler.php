@@ -67,7 +67,7 @@ final class FunctionHandler implements StmtHandler
 	{
 		$dependencies = [];
 		$dependencies[] = $this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, , $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, , $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters, $pureUnlessParameterPassedParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
 
 		$dependencies[] = $this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $stmt->params, $scope, $storage, $nodeCallback);
 
@@ -96,6 +96,7 @@ final class FunctionHandler implements StmtHandler
 			$phpDocImmediatelyInvokedCallableParameters,
 			$phpDocClosureThisTypeParameters,
 			$pureUnlessCallableIsImpureParameters,
+			$pureUnlessParameterPassedParameters,
 		);
 		$functionReflection = $functionScope->getFunction();
 		if (!$functionReflection instanceof PhpFunctionFromParserNodeReflection) {

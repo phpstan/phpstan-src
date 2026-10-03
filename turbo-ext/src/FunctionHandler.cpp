@@ -119,8 +119,9 @@ public:
 		if (UNEXPECTED(attributeDependencies.isUndef())) return zv::Val();
 		collect(dependencies, attributeDependencies.raw());
 		/* [$templateTypeMap, ..., $isInternal, , $isPure, $acceptsNamedArguments, ,
-		 * $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] */
-		static constexpr uint32_t listIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 16, 20 };
+		 * $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters,
+		 * $pureUnlessParameterPassedParameters] */
+		static constexpr uint32_t listIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 16, 20, 21 };
 		uint32_t destructured = 0;
 		for (uint32_t index : listIndexes) destructured |= 1u << index;
 		pt_php_docs phpDocs;
@@ -150,7 +151,7 @@ public:
 			deprecatedDescription = attributeDeprecatedDescription.raw();
 		}
 
-		zval enterArgv[16];
+		zval enterArgv[17];
 		ZVAL_COPY_VALUE(&enterArgv[0], stmt);
 		ZVAL_COPY_VALUE(&enterArgv[1], docs[0]);
 		ZVAL_COPY_VALUE(&enterArgv[2], docs[1]);
@@ -167,6 +168,7 @@ public:
 		ZVAL_COPY_VALUE(&enterArgv[13], docs[2]);
 		ZVAL_COPY_VALUE(&enterArgv[14], docs[3]);
 		ZVAL_COPY_VALUE(&enterArgv[15], docs[20]);
+		ZVAL_COPY_VALUE(&enterArgv[16], docs[21]);
 		zv::Val functionScope = pt_mutating_scope_enter_function(Z_OBJ_P(scope), enterArgv);
 		if (UNEXPECTED(functionScope.isUndef())) return zv::Val();
 		zv::Val functionReflection = pt_mutating_scope_get_function(Z_OBJ_P(functionScope.raw()));

@@ -111,10 +111,14 @@ final class NativeFunctionReflectionProvider
 
 		$allowedConstantsMapProvider = $this->allowedConstantsMapProvider;
 		$pureUnlessCallableIsImpureParameters = [];
+		$pureUnlessParameterPassedParameters = [];
 		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
 			$functionMetadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
 			if (isset($functionMetadata['pureUnlessCallableIsImpureParameters'])) {
 				$pureUnlessCallableIsImpureParameters = $functionMetadata['pureUnlessCallableIsImpureParameters'];
+			}
+			if (isset($functionMetadata['pureUnlessParameterPassedParameters'])) {
+				$pureUnlessParameterPassedParameters = $functionMetadata['pureUnlessParameterPassedParameters'];
 			}
 		} else {
 			$functionMetadata = null;
@@ -126,7 +130,7 @@ final class NativeFunctionReflectionProvider
 				$variantsByType[$signatureType][] = new ExtendedFunctionVariant(
 					TemplateTypeMap::createEmpty(),
 					null,
-					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc, $lowerCasedFunctionName, $allowedConstantsMapProvider, $pureUnlessCallableIsImpureParameters): ExtendedNativeParameterReflection {
+					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc, $lowerCasedFunctionName, $allowedConstantsMapProvider, $pureUnlessCallableIsImpureParameters, $pureUnlessParameterPassedParameters): ExtendedNativeParameterReflection {
 						$name = $parameterSignature->getName();
 						$type = $parameterSignature->getType();
 
@@ -134,6 +138,7 @@ final class NativeFunctionReflectionProvider
 						$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
 						$closureThisType = null;
 						$pureUnlessCallableIsImpureParameter = TrinaryLogic::createFromBoolean($pureUnlessCallableIsImpureParameters[$name] ?? false);
+						$pureUnlessParameterPassedParameter = TrinaryLogic::createFromBoolean($pureUnlessParameterPassedParameters[$name] ?? false);
 						if ($phpDoc !== null) {
 							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamTags())) {
 								$phpDocType = $phpDoc->getParamTags()[$parameterSignature->getName()]->getType();
@@ -146,6 +151,9 @@ final class NativeFunctionReflectionProvider
 							}
 							if (($phpDoc->getParamsPureUnlessCallableIsImpure()[$parameterSignature->getName()] ?? false) === true) {
 								$pureUnlessCallableIsImpureParameter = TrinaryLogic::createYes();
+							}
+							if (($phpDoc->getParamsPureUnlessParameterPassed()[$parameterSignature->getName()] ?? false) === true) {
+								$pureUnlessParameterPassedParameter = TrinaryLogic::createYes();
 							}
 						}
 
@@ -164,6 +172,7 @@ final class NativeFunctionReflectionProvider
 							[],
 							$allowedConstantsMapProvider->getForFunctionParameter($lowerCasedFunctionName, $parameterSignature->getName()),
 							$pureUnlessCallableIsImpureParameter,
+							$pureUnlessParameterPassedParameter,
 						);
 					}, $functionSignature->getParameters()),
 					$functionSignature->isVariadic(),

@@ -1658,6 +1658,12 @@ public:
 		zval *k = keyTypes();
 		zval *v = k != NULL ? valueTypes() : NULL;
 		if (UNEXPECTED(result.isUndef() || v == NULL)) return zv::Val();
+		/* $acceptsValueCache = [] — keyed by both object handles in one
+		 * integer instead of the twin's 'id-id' string */
+		zval acceptsValueCacheZv;
+		array_init(&acceptsValueCacheZv);
+		zv::Val acceptsValueCacheHolder = zv::Val::adopt(acceptsValueCacheZv);
+		HashTable *acceptsValueCache = Z_ARRVAL(acceptsValueCacheZv);
 		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
 			zend_long i = (zend_long) entry.indexKey();
 			zval *keyType = entry.value().deref().raw();
@@ -1702,11 +1708,34 @@ public:
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zv::Val otherValueType = callType(Z_OBJ_P(type), PT_LC("getoffsetvaluetype"), 1, keyType);
 			if (UNEXPECTED(otherValueType.isUndef())) return zv::Val();
+			zend_ulong acceptsValueCacheKey = ((zend_ulong) Z_OBJ_HANDLE_P(valueType) << 32) | (zend_ulong) Z_OBJ_HANDLE_P(otherValueType.raw());
+			zv::Val acceptsValue;
+			zval *acceptsValueCached = zend_hash_index_find(acceptsValueCache, acceptsValueCacheKey);
+			if (acceptsValueCached != NULL) {
+				acceptsValue = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(acceptsValueCached), 1)));
+			} else {
+				zv::Args args{otherValueType.raw(), strictTypes};
+				acceptsValue = pt_type_op(Z_OBJ_P(valueType), PT_OP_ACCEPTS, 2, args);
+				if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
+				/* $otherValueType is kept alive so that its id is not reused */
+				zval pair;
+				array_init_size(&pair, 2);
+				Z_TRY_ADDREF_P(otherValueType.raw());
+				add_next_index_zval(&pair, otherValueType.raw());
+				Z_TRY_ADDREF_P(acceptsValue.raw());
+				add_next_index_zval(&pair, acceptsValue.raw());
+				zend_hash_index_update(acceptsValueCache, acceptsValueCacheKey, &pair);
+			}
+			/* $acceptsValue->yes() && count($acceptsValue->reasons) === 0: continue */
+			zend_long acceptsValueBefore = pt_type_result_trinary(acceptsValue.raw());
+			if (UNEXPECTED(acceptsValueBefore < 0)) return zv::Val();
+			if (acceptsValueBefore == PT_TRI_YES) {
+				zv::Val acceptsValueReasons = resultReasons(acceptsValue.raw());
+				if (UNEXPECTED(acceptsValueReasons.isUndef())) return zv::Val();
+				if (arrayCount(acceptsValueReasons.raw()) == 0) continue;
+			}
 			zv::Val verbosity = pt_type_verbosity_recommended(valueType, otherValueType.raw());
 			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
-			zv::Args args{otherValueType.raw(), strictTypes};
-			zv::Val acceptsValue = pt_type_op(Z_OBJ_P(valueType), PT_OP_ACCEPTS, 2, args);
-			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
 			zv::Val captured = quadOf(keyType, valueType, verbosity.raw(), otherValueType.raw());
 			acceptsValue = decorateReasons(acceptsValue.raw(), offsetReasonCallback, captured.raw(), NULL);
 			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();

@@ -221,3 +221,83 @@ class FixtureAnnotatedStrict extends FixtureBase
 	}
 
 }
+
+/**
+ * The class-level tag applies to plain(); the methods carrying a
+ * @pure-unless-* tag keep their conditional purity.
+ *
+ * @phpstan-all-methods-pure
+ */
+class FixtureAllMethodsPure
+{
+
+	/**
+	 * @param-out int $count
+	 * @pure-unless-parameter-passed $count
+	 */
+	public function replaceWithCount(string $subject, int &$count = 0): string
+	{
+		$count = 1;
+
+		return $subject;
+	}
+
+	/**
+	 * @param callable(string): string $cb
+	 * @pure-unless-callable-is-impure $cb
+	 */
+	public function mapWithCallback(callable $cb, string $subject): string
+	{
+		return $cb($subject);
+	}
+
+	public function plain(): int
+	{
+		return 1;
+	}
+
+}
+
+interface FixturePureUnlessInterface
+{
+
+	/**
+	 * @param-out int $count
+	 * @pure-unless-parameter-passed $count
+	 */
+	public function replaceWithCount(string $subject, int &$count = 0): string;
+
+	/**
+	 * @param callable(string): string $cb
+	 * @pure-unless-callable-is-impure $cb
+	 */
+	public function mapWithCallback(callable $cb, string $subject): string;
+
+}
+
+/**
+ * The inherited @pure-unless-* tags take precedence over the class-level tag.
+ *
+ * @phpstan-all-methods-impure
+ */
+class FixtureAllMethodsImpureInheriting implements FixturePureUnlessInterface
+{
+
+	public function replaceWithCount(string $subject, int &$count = 0): string
+	{
+		$count = 1;
+
+		return $subject;
+	}
+
+	public function mapWithCallback(callable $cb, string $subject): string
+	{
+		return $cb($subject);
+	}
+
+	public function plain(): int
+	{
+		return 1;
+	}
+
+}

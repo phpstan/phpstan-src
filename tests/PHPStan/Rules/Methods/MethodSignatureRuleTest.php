@@ -659,4 +659,21 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPureUnlessParameterPassedOverride(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->reportMethodPurityOverride = true;
+		$this->analyse([__DIR__ . '/data/method-signature-pure-unless-parameter-passed.php'], [
+			[
+				'Impure method MethodSignaturePureUnlessParameterPassed\ImpureChild::replace() overrides method MethodSignaturePureUnlessParameterPassed\PureUnlessParent::replace() marked @pure-unless-parameter-passed.',
+				22,
+			],
+			[
+				'Impure method MethodSignaturePureUnlessParameterPassed\AllMethodsImpureChild::replace() overrides method MethodSignaturePureUnlessParameterPassed\PureUnlessParent::replace() marked @pure-unless-parameter-passed.',
+				76,
+			],
+		]);
+	}
+
 }

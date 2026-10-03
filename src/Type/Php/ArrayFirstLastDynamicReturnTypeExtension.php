@@ -9,6 +9,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
+use PHPStan\Type\Traverser\UnsafeArrayStringKeyCastingTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -46,8 +47,12 @@ final class ArrayFirstLastDynamicReturnTypeExtension implements DynamicFunctionR
 		switch ($functionReflection->getName()) {
 			case 'array_key_first':
 			case 'array_key_last':
-				$resultType = $argType->getIterableKeyType();
-				break;
+				$keyType = $argType->getIterableKeyType();
+				if ($iterableAtLeastOnce->yes()) {
+					return UnsafeArrayStringKeyCastingTraverser::castReadKeyType($keyType);
+				}
+
+				return UnsafeArrayStringKeyCastingTraverser::unionWithReadKeyType($keyType, new NullType());
 			case 'array_first':
 			case 'array_last':
 				$resultType = $argType->getIterableValueType();

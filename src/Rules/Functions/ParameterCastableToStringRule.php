@@ -12,7 +12,10 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
+use function array_slice;
+use function count;
 use function in_array;
 
 /**
@@ -90,6 +93,43 @@ final class ParameterCastableToStringRule implements Rule
 
 		$errors = [];
 		$functionParameters = $parametersAcceptor->getParameters();
+		$typesToCheck = [];
+		if (
+			in_array($functionName, ['array_intersect_assoc', 'array_diff_assoc'], true)
+			&& count($argsToCheck) >= 2
+		) {
+			$arrayTypes = [];
+			$allArgsAreArrays = true;
+			foreach ($argsToCheck as $argIdx => $arg) {
+				if ($arg->unpack) {
+					$allArgsAreArrays = false;
+					break;
+				}
+
+				$arrayType = $scope->getType($arg->value);
+				if (!$arrayType->isArray()->yes()) {
+					$allArgsAreArrays = false;
+					break;
+				}
+
+				$arrayTypes[$argIdx] = $arrayType;
+			}
+
+			if ($allArgsAreArrays) {
+				$firstArrayType = $arrayTypes[0];
+				$typesToCheck[0] = $firstArrayType->intersectKeyArray(
+					TypeCombinator::union(...array_slice($arrayTypes, 1)),
+				);
+				foreach ($arrayTypes as $argIdx => $arrayType) {
+					if ($argIdx === 0) {
+						continue;
+					}
+
+					$typesToCheck[$argIdx] = $arrayType->intersectKeyArray($firstArrayType);
+				}
+			}
+		}
+
 		foreach ($argsToCheck as $argIdx => $arg) {
 			$error = $this->parameterCastableToStringCheck->checkParameter(
 				$arg,
@@ -102,6 +142,7 @@ final class ParameterCastableToStringRule implements Rule
 					$argIdx,
 					$functionParameters[$argIdx] ?? null,
 				),
+				$typesToCheck[$argIdx] ?? null,
 			);
 
 			if ($error === null) {

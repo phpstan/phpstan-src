@@ -29,6 +29,7 @@ final class ParameterCastableToStringCheck
 		callable $castFn,
 		string $functionName,
 		string $parameterName,
+		?Type $arrayTypeToCheck = null,
 	): ?IdentifierRuleError
 	{
 		if ($parameter->unpack) {
@@ -46,10 +47,11 @@ final class ParameterCastableToStringCheck
 		if (!$arrayType->isArray()->yes()) {
 			return null;
 		}
+		$arrayTypeToCheck ??= $arrayType;
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			new TypeExpr($arrayType->getIterableValueType()),
+			new TypeExpr($arrayTypeToCheck->getIterableValueType()),
 			'',
 			static fn (Type $type): bool => !$castFn($type) instanceof ErrorType,
 		);

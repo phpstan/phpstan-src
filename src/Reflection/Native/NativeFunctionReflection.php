@@ -9,6 +9,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use function array_map;
 use function count;
 use function strtolower;
 
@@ -22,6 +23,7 @@ final class NativeFunctionReflection implements FunctionReflection
 	/**
 	 * @param list<ExtendedParametersAcceptor> $variants
 	 * @param list<ExtendedParametersAcceptor>|null $namedArgumentsVariants
+	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 * @param list<AttributeReflection> $attributes
 	 */
 	public function __construct(
@@ -35,6 +37,7 @@ final class NativeFunctionReflection implements FunctionReflection
 		private ?string $phpDocComment,
 		?TrinaryLogic $returnsByReference,
 		private bool $acceptsNamedArguments,
+		private array $pureUnlessCallableIsImpureParameters,
 		private array $attributes,
 	)
 	{
@@ -112,7 +115,7 @@ final class NativeFunctionReflection implements FunctionReflection
 
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return [];
+		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessCallableIsImpureParameters);
 	}
 
 	private function isVoid(): bool

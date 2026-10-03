@@ -14,7 +14,7 @@ class PurePropertyHookRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new PurePropertyHookRule(new FunctionPurityCheck());
+		return new PurePropertyHookRule(new FunctionPurityCheck($this->createReflectionProvider()));
 	}
 
 	#[RequiresPhp('>= 8.4.0')]

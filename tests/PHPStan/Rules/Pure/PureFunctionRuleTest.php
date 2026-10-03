@@ -14,7 +14,7 @@ class PureFunctionRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new PureFunctionRule(new FunctionPurityCheck());
+		return new PureFunctionRule(new FunctionPurityCheck($this->createReflectionProvider()));
 	}
 
 	public function testRule(): void
@@ -292,6 +292,26 @@ class PureFunctionRuleTest extends RuleTestCase
 			[
 				'Possibly impure call to method PureUnlessCallableIsImpureFunction\InheritedMapperRenamedChild::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingRenamedInheritedMethodWithOpaqueCallback().',
 				399,
+			],
+			[
+				'Impure call to function PureUnlessCallableIsImpureFunction\haveFun() in pure function PureUnlessCallableIsImpureFunction\indirectFunWithDifferentCallback().',
+				426,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunction\indirectFunWithDifferentCallback().',
+				427,
+			],
+			[
+				'Impure call to function PureUnlessCallableIsImpureFunction\haveTwoFuns() in pure function PureUnlessCallableIsImpureFunction\indirectFunPartialForward().',
+				450,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunction\indirectFunPartialForward().',
+				451,
+			],
+			[
+				'Impure call to function PureUnlessCallableIsImpureFunction\\haveFun() in pure function PureUnlessCallableIsImpureFunction\\indirectFunUnpacked().',
+				472,
 			],
 		]);
 	}

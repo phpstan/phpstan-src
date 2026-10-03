@@ -89,7 +89,6 @@ use function min;
 use function pow;
 use function range;
 use function sort;
-use function spl_object_id;
 use function sprintf;
 use function str_contains;
 use function strtolower;
@@ -700,10 +699,6 @@ class ConstantArrayType implements Type
 	private function checkOurKeys(Type $type, bool $strictTypes): AcceptsResult
 	{
 		$result = AcceptsResult::createYes();
-
-		// offsets sharing the same value types (e.g. a type alias used for many keys) are compared once
-		/** @var array<string, array{Type, AcceptsResult}> $acceptsValueCache */
-		$acceptsValueCache = [];
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];
 			$hasOffsetValueType = $type->hasOffsetValueType($keyType);
@@ -723,29 +718,23 @@ class ConstantArrayType implements Type
 
 			$result = $result->and($hasOffset);
 			$otherValueType = $type->getOffsetValueType($keyType);
-			$acceptsValueCacheKey = spl_object_id($valueType) . '-' . spl_object_id($otherValueType);
-			if (isset($acceptsValueCache[$acceptsValueCacheKey])) {
-				$acceptsValue = $acceptsValueCache[$acceptsValueCacheKey][1];
-			} else {
-				$acceptsValue = $valueType->accepts($otherValueType, $strictTypes);
-				// $otherValueType is kept alive so that its id is not reused
-				$acceptsValueCache[$acceptsValueCacheKey] = [$otherValueType, $acceptsValue];
-			}
-			if ($acceptsValue->yes() && count($acceptsValue->reasons) === 0) {
-				continue;
-			}
+			$verbosity = null;
+			$acceptsValue = $valueType->accepts($otherValueType, $strictTypes)->decorateReasons(
+				static function (string $reason) use ($keyType, $valueType, &$verbosity, $otherValueType) {
+					$verbosity ??= VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
 
-			$verbosity = VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
-			$acceptsValue = $acceptsValue->decorateReasons(
-				static fn (string $reason) => sprintf(
-					'Offset %s (%s) does not accept type %s: %s',
-					$keyType->describe(VerbosityLevel::precise()),
-					$valueType->describe($verbosity),
-					$otherValueType->describe($verbosity),
-					$reason,
-				),
+					return sprintf(
+						'Offset %s (%s) does not accept type %s: %s',
+						$keyType->describe(VerbosityLevel::precise()),
+						$valueType->describe($verbosity),
+						$otherValueType->describe($verbosity),
+						$reason,
+					);
+				},
 			);
 			if (!$acceptsValue->yes() && count($acceptsValue->reasons) === 0 && $type->isConstantArray()->yes()) {
+				$verbosity ??= VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
+
 				$acceptsValue = new AcceptsResult($acceptsValue->result, [
 					sprintf(
 						'Offset %s (%s) does not accept type %s.',

@@ -130,7 +130,7 @@ final class VerbosityLevel
 	{
 		$moreVerbose = false;
 		$veryVerbose = false;
-		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose, &$veryVerbose): Type {
+		$flagsCallback = static function (Type $type, callable $traverse) use (&$moreVerbose, &$veryVerbose): Type {
 			// stop deep traversal to not waste resources.
 			if ($veryVerbose) {
 				return $type;
@@ -187,6 +187,29 @@ final class VerbosityLevel
 				return $type;
 			}
 			return $traverse($type);
+		};
+		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$veryVerbose, $flagsCallback): Type {
+			// stop deep traversal to not waste resources.
+			if ($veryVerbose) {
+				return $type;
+			}
+
+			// A subtracted mixed only makes sense in an error message when the subtraction
+			// is spelled out. Template subtrees switch to the plain flags callback -
+			// the subtraction there belongs to the bound, not to the type being described.
+			if ($type instanceof TemplateType) {
+				TypeTraverser::map($type, $flagsCallback);
+				return $type;
+			}
+			if (
+				($type instanceof MixedType || $type instanceof StrictMixedType)
+				&& $type->getSubtractedType() !== null
+			) {
+				$veryVerbose = true;
+				return $type;
+			}
+
+			return $flagsCallback($type, $traverse);
 		};
 
 		TypeTraverser::map($acceptingType, $moreVerboseCallback);

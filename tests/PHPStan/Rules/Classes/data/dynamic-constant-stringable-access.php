@@ -40,3 +40,30 @@ final class Bar extends Foo
 	}
 
 }
+
+final class Baz
+{
+
+	public function testSubtractedMixed(mixed $mixed): void
+	{
+		if ($mixed === null) {
+			return;
+		}
+
+		echo self::{$mixed};
+	}
+
+	/**
+	 * @template T
+	 * @param T $name
+	 */
+	public function testSubtractedTemplate($name): void
+	{
+		if ($name === null) {
+			return;
+		}
+
+		echo self::{$name};
+	}
+
+}

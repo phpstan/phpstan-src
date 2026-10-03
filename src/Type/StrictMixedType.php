@@ -23,7 +23,9 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\SubstractableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use function sprintf;
 
 class StrictMixedType implements CompoundType
 {
@@ -33,6 +35,16 @@ class StrictMixedType implements CompoundType
 	use NonIterableTypeTrait;
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use SubstractableTypeTrait;
+
+	public function __construct(private ?Type $subtractedType = null)
+	{
+	}
+
+	public function getSubtractedType(): ?Type
+	{
+		return $this->subtractedType;
+	}
 
 	public function getReferencedClasses(): array
 	{
@@ -56,6 +68,20 @@ class StrictMixedType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		if (
+			$this->subtractedType !== null
+			&& !$type instanceof NeverType
+			&& $this->subtractedType->isSuperTypeOf($type)->yes()
+		) {
+			return AcceptsResult::createNo([
+				sprintf(
+					'Type %s has already been eliminated from %s.',
+					$this->subtractedType->describe(VerbosityLevel::precise()),
+					$this->describe(VerbosityLevel::typeOnly()),
+				),
+			]);
+		}
+
 		return AcceptsResult::createYes();
 	}
 
@@ -90,7 +116,19 @@ class StrictMixedType implements CompoundType
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self;
+		if (!$type instanceof self) {
+			return false;
+		}
+
+		if ($this->subtractedType === null) {
+			return $type->subtractedType === null;
+		}
+
+		if ($type->subtractedType === null) {
+			return false;
+		}
+
+		return $this->subtractedType->equals($type->subtractedType);
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -98,8 +136,8 @@ class StrictMixedType implements CompoundType
 		return $level->handle(
 			static fn () => 'mixed',
 			static fn () => 'mixed',
-			static fn () => 'mixed',
-			static fn () => 'strict-mixed',
+			fn () => 'mixed' . $this->describeSubtractedType($this->subtractedType, $level),
+			fn () => 'strict-mixed' . $this->describeSubtractedType($this->subtractedType, $level),
 		);
 	}
 

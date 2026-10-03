@@ -656,6 +656,10 @@ class MethodSignatureRuleTest extends RuleTestCase
 				'Impure method MethodSignaturePureUnlessCallable\ImpureChild::run() overrides method MethodSignaturePureUnlessCallable\PureUnlessParent::run() marked @pure-unless-callable-is-impure.',
 				21,
 			],
+			[
+				'Impure method MethodSignaturePureUnlessCallable\ImpureChildOfAllMethodsPureParent::run() overrides method MethodSignaturePureUnlessCallable\AllMethodsPureParent::run() marked @pure-unless-callable-is-impure.',
+				62,
+			],
 		]);
 	}
 
@@ -670,8 +674,8 @@ class MethodSignatureRuleTest extends RuleTestCase
 				22,
 			],
 			[
-				'Impure method MethodSignaturePureUnlessParameterPassed\AllMethodsImpureChild::replace() overrides method MethodSignaturePureUnlessParameterPassed\PureUnlessParent::replace() marked @pure-unless-parameter-passed.',
-				76,
+				'Impure method MethodSignaturePureUnlessParameterPassed\ImpureChildOfAllMethodsPureParent::replace() overrides method MethodSignaturePureUnlessParameterPassed\AllMethodsPureParent::replace() marked @pure-unless-parameter-passed.',
+				114,
 			],
 		]);
 	}

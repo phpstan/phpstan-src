@@ -360,6 +360,9 @@ $pcreClasses = [
 	'PhpClassReflectionFamilyFixture\FixtureAnnotated',
 	'PhpClassReflectionFamilyFixture\FixtureAnnotatedStrict',
 	'PhpClassReflectionFamilyFixture\FixtureTrait',
+	'PhpClassReflectionFamilyFixture\FixtureAllMethodsPure',
+	'PhpClassReflectionFamilyFixture\FixturePureUnlessInterface',
+	'PhpClassReflectionFamilyFixture\FixtureAllMethodsImpureInheriting',
 	'Exception',
 	'ArrayObject',
 	'DateTimeImmutable',
@@ -376,6 +379,7 @@ $pcreMembers = [
 	'__construct', '__get', '__call', 'name', 'value', 'cases', 'from', 'tryFrom',
 	'label', 'getMessage', 'getCode', 'getPrevious', 'count', 'offsetGet', 'offsetSet',
 	'format', 'modify', 'attach', 'fromCallable', 'bindTo', 'nonExistentMember',
+	'replaceWithCount', 'mapWithCallback', 'plain',
 	// the adapter's `$name === ''` early return, and a spelling the
 	// lowercased-name memo has to normalize
 	'', 'GETMESSAGE', 'TraitMethod',
@@ -424,7 +428,7 @@ foreach (['php', 'native'] as $pcreSide) {
 		}
 
 		// createUserlandMethodReflection on the class's own native methods
-		foreach (['traitMethod', 'rich', 'fromInterface', '__construct'] as $pcreMethodName) {
+		foreach (['traitMethod', 'rich', 'fromInterface', '__construct', 'replaceWithCount', 'mapWithCallback', 'plain'] as $pcreMethodName) {
 			try {
 				$pcreNative = $pcreClassReflection->getNativeReflection();
 				if (!$pcreNative->hasMethod($pcreMethodName)) {

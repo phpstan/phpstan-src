@@ -873,6 +873,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property Bug13438d\Test::$queue (array{}) does not accept array{1}.',
 				18,
+				'Sealed array shape does not accept array with extra key 0.',
 			],
 		]);
 	}
@@ -884,6 +885,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property Bug13438e\Test::$queue (array{}) does not accept array{1}.',
 				18,
+				'Sealed array shape does not accept array with extra key 0.',
 			],
 		]);
 	}

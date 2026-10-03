@@ -9,6 +9,7 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
@@ -460,7 +461,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new ConstantArrayType([], []),
 				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
 				TrinaryLogic::createNo(),
-				[],
+				['Sealed array shape does not accept array with extra key \'a\'.'],
 			],
 
 			// non-empty array (sealed) does not accept extra keys
@@ -485,12 +486,40 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				['Sealed array shape can only accept a constant array. Extra keys are not allowed.'],
 			],
 
+			// sealed array does not accept general array even when an offset already mismatches
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new ArrayType(new StringType(), new IntegerType()),
+				TrinaryLogic::createNo(),
+				['Sealed array shape can only accept a constant array. Extra keys are not allowed.'],
+			],
+
+			// sealed array does not accept general array with a known offset
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new IntersectionType([
+					new ArrayType(new StringType(), new IntegerType()),
+					new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+					new NonEmptyArrayType(),
+				]),
+				TrinaryLogic::createNo(),
+				['Sealed array shape can only accept a constant array. Extra keys are not allowed.'],
+			],
+
 			// sealed array does not accept unsealed array
 			[
 				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
 				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new StringType(), new ObjectType(stdClass::class)]),
 				TrinaryLogic::createNo(),
 				['Sealed array shape does not accept unsealed array shape.'],
+			],
+
+			// unsealed array does not accept general array with an incompatible key type
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new IntegerType(), new StringType()]),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createNo(),
+				['Unsealed array key type int does not accept key type string.'],
 			],
 
 			// unsealed array accepts compatible general array
@@ -523,7 +552,9 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 					new HasOffsetValueType(new ConstantStringType('a'), new StringType()),
 				]),
 				TrinaryLogic::createNo(),
-				[],
+				[
+					'Unsealed array value type int does not accept value type string.',
+				],
 			],
 
 			// unsealed array must check extra keys against its own unsealed types

@@ -1372,4 +1372,25 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12984.php'], []);
 	}
 
+	public function testBug15234(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15234.php'], [
+			[
+				'Method Bug15234\\SwitchApi::queryDeviceSignalStrength() should return array{eventTime: 0}|array{eventTime: int, indicatorType: string, signalLevel: string, signal: int} but returns array<string, mixed>.',
+				30,
+				"\u{2022} Type #1 from the union: Sealed array shape can only accept a constant array. Extra keys are not allowed.\n\u{2022} Type #2 from the union: Sealed array shape can only accept a constant array. Extra keys are not allowed.",
+			],
+			[
+				'Method Bug15234\\SwitchApi::queryDeviceProperties() should return array<string, array{custom_name: string, dp_id: int, time: int, type: string, value: bool|float|int|string}> but returns array<mixed, array<mixed, mixed>>.',
+				40,
+				'Sealed array shape can only accept a constant array. Extra keys are not allowed.',
+			],
+			[
+				'Method Bug15234\\SwitchApi::queryDeviceFunctions() should return array{category: string, functions: array{type: string, values: array<string, bool|float|int|list<string>|string>}} but returns non-empty-array<string, mixed>.',
+				62,
+				"\u{2022} Offset 'functions' (array{type: string, values: array<string, bool|float|int|list<string>|string>}) does not accept type array<mixed, array<mixed, mixed>>: Sealed array shape can only accept a constant array. Extra keys are not allowed.\n\u{2022} Sealed array shape can only accept a constant array. Extra keys are not allowed.",
+			],
+		]);
+	}
+
 }

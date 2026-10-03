@@ -36,3 +36,34 @@ class InheritingChild implements PureUnlessParent
 	}
 
 }
+
+/**
+ * @phpstan-all-methods-pure
+ */
+class AllMethodsPureParent
+{
+
+	/**
+	 * @pure-unless-callable-is-impure $cb
+	 */
+	public function run(callable $cb): int
+	{
+		return $cb(1);
+	}
+
+}
+
+class ImpureChildOfAllMethodsPureParent extends AllMethodsPureParent
+{
+
+	/**
+	 * @phpstan-impure
+	 */
+	public function run(callable $cb): int
+	{
+		echo 'side effect';
+
+		return $cb(1);
+	}
+
+}

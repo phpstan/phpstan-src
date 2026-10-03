@@ -438,4 +438,27 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPureUnlessImpureOverride(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/pure-unless-impure-override.php'], [
+			[
+				'Method PureUnlessImpureOverride\ImpureReplacerWithoutSideEffects::replace() is marked as impure but does not have any side effects.',
+				57,
+			],
+			[
+				'Method PureUnlessImpureOverride\ImpureReplacerWithoutSideEffects::map() is marked as impure but does not have any side effects.',
+				65,
+			],
+			[
+				'Impure echo in pure method PureUnlessImpureOverride\InheritingReplacer::replace().',
+				77,
+			],
+			[
+				'Impure echo in pure method PureUnlessImpureOverride\InheritingReplacer::map().',
+				85,
+			],
+		]);
+	}
+
 }

@@ -154,13 +154,14 @@ final class FunctionPurityCheck
 			}
 
 			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
-		} elseif ($pureUnlessCallableParamNames !== [] || $pureUnlessParameterPassedParamNames !== []) {
+		} elseif (!$isPure->no() && ($pureUnlessCallableParamNames !== [] || $pureUnlessParameterPassedParamNames !== [])) {
 			// A function declared @pure-unless-callable-is-impure is pure except
 			// for the flagged callables, so its body is checked for purity while
 			// the flagged callables' own invocations are exempt. The same holds for
 			// @pure-unless-parameter-passed: writing through the flagged by-ref
 			// parameter is not an impure point, so the rest of the body still has
-			// to be pure for the conditional verdict to hold.
+			// to be pure for the conditional verdict to hold. A method marked
+			// @phpstan-impure that inherits either tag makes no such promise.
 			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
 		} elseif ($isPure->no()) {
 			if (

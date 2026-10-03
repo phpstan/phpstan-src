@@ -61,6 +61,7 @@ parametersSchema:
 		staticVariablesFromUsages: bool()
 		unusedVariable: bool()
 		unusedParameters: bool()
+		reportAbstractMethodPurity: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

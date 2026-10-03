@@ -6,6 +6,22 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_fill_keys;
 use function array_keys;
+use function chmod;
+use function fileowner;
+use function function_exists;
+use function is_dir;
+use function is_link;
+use function mkdir;
+use function posix_geteuid;
+use function rmdir;
+use function scandir;
+use function symlink;
+use function sys_get_temp_dir;
+use function time;
+use function touch;
+use function uniqid;
+use function unlink;
+use const DIRECTORY_SEPARATOR;
 
 final class TurboProcessRestarterTest extends PHPStanTestCase
 {
@@ -94,6 +110,156 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 	public function testResolveOpcacheArgs(array $ini, array $expected): void
 	{
 		$this->assertSame($expected, TurboProcessRestarter::resolveOpcacheArgs($ini));
+	}
+
+	public function testResolveOpcacheArgsWithFileCache(): void
+	{
+		$ini = [
+			'opcache.file_cache_only' => '0',
+			'opcache.preload' => '',
+			'opcache.memory_consumption' => '128',
+			'opcache.interned_strings_buffer' => '8',
+			'opcache.max_accelerated_files' => '10000',
+		];
+
+		// a cache that outlives the process validates timestamps, at PHP's
+		// defaults, so neither a PHPStan update nor an edited bootstrap file
+		// is served from it
+		$expected = self::STOCK_ARGS;
+		$expected[4] = 'opcache.validate_timestamps=1';
+		$expected[5] = 'opcache.file_update_protection=2';
+		$expected[7] = 'opcache.file_cache=/tmp/phpstan-opcache-501/0123456789abcdef';
+
+		$this->assertSame($expected, TurboProcessRestarter::resolveOpcacheArgs($ini, '/tmp/phpstan-opcache-501/0123456789abcdef'));
+
+		// the configurations left alone stay alone
+		$this->assertSame([], TurboProcessRestarter::resolveOpcacheArgs(['opcache.file_cache_only' => '1'] + $ini, '/tmp/phpstan-opcache-501/0123456789abcdef'));
+	}
+
+	public function testResolveFileCacheKey(): void
+	{
+		$key = TurboProcessRestarter::resolveFileCacheKey('ABC123', 'binary:/vendor/phpstan/phpstan/turbo-ext/linux-gnu-x86_64/phpstan_turbo-8.5.so:1:2', false);
+
+		$this->assertMatchesRegularExpression('~^[0-9a-f]{16}$~', $key);
+		$this->assertSame($key, TurboProcessRestarter::resolveFileCacheKey('ABC123', 'binary:/vendor/phpstan/phpstan/turbo-ext/linux-gnu-x86_64/phpstan_turbo-8.5.so:1:2', false));
+
+		// another PHPStan build, another extension binary, and --debug (which
+		// keeps the type checks the extension's pass drops) each compile other
+		// opcodes, so each gets its own directory
+		$this->assertNotSame($key, TurboProcessRestarter::resolveFileCacheKey('DEF456', 'binary:/vendor/phpstan/phpstan/turbo-ext/linux-gnu-x86_64/phpstan_turbo-8.5.so:1:2', false));
+		$this->assertNotSame($key, TurboProcessRestarter::resolveFileCacheKey('ABC123', 'none', false));
+		$this->assertNotSame($key, TurboProcessRestarter::resolveFileCacheKey('ABC123', 'binary:/vendor/phpstan/phpstan/turbo-ext/linux-gnu-x86_64/phpstan_turbo-8.5.so:1:2', true));
+	}
+
+	/**
+	 * @return iterable<string, array{array<string, string>, bool}>
+	 */
+	public static function dataResolveContinuousIntegration(): iterable
+	{
+		yield 'no CI variables' => [['HOME' => '/home/user', 'PATH' => '/usr/bin'], false];
+		yield 'GitHub Actions' => [['CI' => 'true', 'GITHUB_ACTIONS' => 'true'], true];
+		yield 'GitLab' => [['CI' => 'true', 'GITLAB_CI' => 'true'], true];
+		yield 'Jenkins sets no CI variable' => [['JENKINS_URL' => 'https://jenkins.example.com/'], true];
+		yield 'Azure Pipelines' => [['TF_BUILD' => 'True'], true];
+		yield 'CI switched off' => [['CI' => 'false'], false];
+		yield 'CI empty' => [['CI' => ''], false];
+	}
+
+	/**
+	 * @param array<string, string> $environment
+	 */
+	#[DataProvider('dataResolveContinuousIntegration')]
+	public function testResolveContinuousIntegration(array $environment, bool $expected): void
+	{
+		$this->assertSame($expected, TurboProcessRestarter::resolveContinuousIntegration($environment));
+	}
+
+	public function testIsPrivateDirectory(): void
+	{
+		if (DIRECTORY_SEPARATOR !== '/') {
+			$this->markTestSkipped('There is no file cache on Windows, and its permissions do not map to these checks.');
+		}
+
+		$base = self::createTemporaryDirectory();
+		$userId = (int) fileowner($base);
+
+		mkdir($base . '/private', 0700);
+		$this->assertTrue(TurboProcessRestarter::isPrivateDirectory($base . '/private', $userId));
+
+		// opcodes in a directory someone else can write to could be planted
+		mkdir($base . '/shared');
+		chmod($base . '/shared', 0777);
+		$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/shared', $userId));
+
+		mkdir($base . '/readonly', 0500);
+		// root can write to any directory, so is_writable() does not see the mode
+		if (function_exists('posix_geteuid') && posix_geteuid() !== 0) {
+			$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/readonly', $userId));
+		}
+		chmod($base . '/readonly', 0700);
+
+		symlink($base . '/private', $base . '/link');
+		$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/link', $userId));
+
+		$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/private', $userId + 1));
+		$this->assertFalse(TurboProcessRestarter::isPrivateDirectory($base . '/missing', $userId));
+
+		self::removeDirectory($base);
+	}
+
+	public function testPruneFileCacheDirectories(): void
+	{
+		if (DIRECTORY_SEPARATOR !== '/') {
+			$this->markTestSkipped('There is no file cache on Windows, and the test needs symlinks.');
+		}
+
+		$base = self::createTemporaryDirectory();
+		$now = time();
+		foreach (['current' => 30, 'stale' => 8, 'recent' => 2] as $name => $daysAgo) {
+			mkdir($base . '/' . $name . '/nested', 0700, true);
+			touch($base . '/' . $name . '/nested/script.php.bin');
+			touch($base . '/' . $name, $now - $daysAgo * 24 * 60 * 60);
+		}
+		$outside = self::createTemporaryDirectory();
+		touch($outside . '/keep.bin');
+		symlink($outside, $base . '/link');
+
+		TurboProcessRestarter::pruneFileCacheDirectories($base, 'current', $now);
+
+		// the key in use survives however old, a stale sibling goes, and a
+		// symlink is neither followed nor removed
+		$this->assertDirectoryExists($base . '/current/nested');
+		$this->assertDirectoryDoesNotExist($base . '/stale');
+		$this->assertDirectoryExists($base . '/recent');
+		$this->assertFileExists($outside . '/keep.bin');
+		$this->assertTrue(is_link($base . '/link'));
+
+		self::removeDirectory($base);
+		self::removeDirectory($outside);
+	}
+
+	private static function createTemporaryDirectory(): string
+	{
+		$directory = sys_get_temp_dir() . '/' . uniqid('phpstan-file-cache-test-', true);
+		mkdir($directory, 0700);
+
+		return $directory;
+	}
+
+	private static function removeDirectory(string $directory): void
+	{
+		foreach (scandir($directory) as $entry) {
+			if ($entry === '.' || $entry === '..') {
+				continue;
+			}
+			$path = $directory . '/' . $entry;
+			if (is_link($path) || !is_dir($path)) {
+				unlink($path);
+			} else {
+				self::removeDirectory($path);
+			}
+		}
+		rmdir($directory);
 	}
 
 	/**

@@ -6,9 +6,13 @@ use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\Php\PhpVersion;
+use function ini_get;
 use function php_uname;
 use function phpversion;
 use function sprintf;
+use function strlen;
+use function strpos;
+use function substr;
 use const PHP_DEBUG;
 use const PHP_MAJOR_VERSION;
 use const PHP_MINOR_VERSION;
@@ -68,7 +72,35 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 			'<info>Turbo trusted types:</info> %s',
 			$this->describeTrustedTypes(),
 		));
+		$output->writeLineFormatted(sprintf(
+			'<info>OPcache file cache:</info> %s',
+			$this->describeFileCache(),
+		));
 		$output->writeLineFormatted('');
+	}
+
+	/**
+	 * Where TurboProcessRestarter keeps the persistent OPcache file cache, so it
+	 * can be found and deleted.
+	 */
+	private function describeFileCache(): string
+	{
+		$fileCache = ini_get('opcache.file_cache');
+		if ($fileCache !== false && $fileCache !== '') {
+			return $fileCache;
+		}
+
+		// without the restart (no pcntl), only the spawned workers get one
+		foreach (TurboProcessRestarter::getOpcacheArgs() as $opcacheArg) {
+			$prefix = 'opcache.file_cache=';
+			if (strpos($opcacheArg, $prefix) !== 0 || $opcacheArg === $prefix) {
+				continue;
+			}
+
+			return sprintf('%s (spawned workers)', substr($opcacheArg, strlen($prefix)));
+		}
+
+		return 'off';
 	}
 
 	private function describeTrustedTypes(): string
@@ -78,6 +110,10 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 		}
 		if (!TurboExtensionEnabler::isActive()) {
 			return 'off (extension inactive)';
+		}
+		$fileCache = ini_get('opcache.file_cache');
+		if ($fileCache !== false && $fileCache !== '') {
+			return 'off (the extension skips it while opcache.file_cache is set)';
 		}
 
 		return 'off (--debug, or OPcache is not active)';

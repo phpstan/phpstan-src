@@ -942,7 +942,28 @@ class IntersectionType implements CompoundType
 			return TrinaryLogic::createYes();
 		}
 
-		return $this->isList ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isList());
+		return $this->isList ??= $this->computeIsList();
+	}
+
+	private function computeIsList(): TrinaryLogic
+	{
+		$isList = $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isList());
+		if (!$isList->maybe()) {
+			return $isList;
+		}
+
+		// Every list but the empty one has the key 0 - which one member may know
+		// about while another knows the array is non-empty. (The members are
+		// asked directly: hasOffsetValueType() of the intersection asks isList().)
+		$zero = new ConstantIntegerType(0);
+		if (
+			$this->isIterableAtLeastOnce()->yes()
+			&& $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasOffsetValueType($zero))->no()
+		) {
+			return TrinaryLogic::createNo();
+		}
+
+		return $isList;
 	}
 
 	public function isString(): TrinaryLogic

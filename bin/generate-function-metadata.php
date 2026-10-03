@@ -206,7 +206,7 @@ use Symfony\Component\Finder\Finder;
  *     impure callable, e.g. array_map()'s 'callback'.
  *   - ['pureUnlessParameterPassedParameters' => array<string, true>] - pure unless
  *     one of the listed (by-ref out) parameters (keyed by parameter name) receives
- *     an argument, e.g. str_replace()'s 'replace_count'.
+ *     an argument, e.g. str_replace()'s 'count'.
  */
 
 /** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */

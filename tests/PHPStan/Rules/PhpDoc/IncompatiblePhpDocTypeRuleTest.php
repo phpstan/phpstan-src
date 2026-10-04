@@ -548,4 +548,22 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11510.php'], []);
 	}
 
+	public function testGenericObjectTypeInTemplateDefault(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-object-type-template-default.php'], [
+			[
+				'Generic type GenericObjectTypeTemplateDefault\Box<int, string, bool> in PHPDoc tag @param for parameter $value specifies 3 template types, but class GenericObjectTypeTemplateDefault\Box supports only 2: TKey, TValue',
+				23,
+			],
+			[
+				'Generic type GenericObjectTypeTemplateDefault\Box<int, string, bool> in PHPDoc tag @return specifies 3 template types, but class GenericObjectTypeTemplateDefault\Box supports only 2: TKey, TValue',
+				23,
+			],
+			[
+				'Generic type GenericObjectTypeTemplateDefault\Box<int, string, bool> in PHPDoc tag @param for parameter $value specifies 3 template types, but class GenericObjectTypeTemplateDefault\Box supports only 2: TKey, TValue',
+				31,
+			],
+		]);
+	}
+
 }

@@ -123,6 +123,7 @@ use function sprintf;
 use function str_starts_with;
 use function strtolower;
 use const INF;
+use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
 #[AutowiredService]
@@ -2615,9 +2616,10 @@ final class InitializerExprTypeResolver
 				return new ErrorType();
 			}
 			// an overflowing shift wraps around, which breaks the monotonicity the bounds rely on
+			// open bounds still include the platform's minimum or maximum integer
 			if (
-				($rangeMin !== null && self::shiftLeftOverflows(intval($rangeMin), $operand->getValue()))
-				|| ($rangeMax !== null && self::shiftLeftOverflows(intval($rangeMax), $operand->getValue()))
+				self::shiftLeftOverflows($rangeMin ?? PHP_INT_MIN, $operand->getValue())
+				|| self::shiftLeftOverflows($rangeMax ?? PHP_INT_MAX, $operand->getValue())
 			) {
 				return new IntegerType();
 			}

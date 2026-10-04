@@ -23,8 +23,8 @@ final class ImpureReplacer implements Replacer
 {
 
 	/**
-	 * @phpstan-impure on the method replaces the inherited
-	 * @pure-unless-parameter-passed, so the body is not checked for purity.
+	 * The method's own impurity tag replaces the inherited conditional
+	 * purity, so the body is not checked for purity.
 	 * MethodSignatureRule reports the override instead.
 	 *
 	 * @phpstan-impure
@@ -94,8 +94,8 @@ final class PureReplacer implements Replacer
 {
 
 	/**
-	 * @phpstan-pure on the method replaces the inherited
-	 * @pure-unless-parameter-passed, so writing to $count is not exempt.
+	 * The method's own purity tag replaces the inherited conditional
+	 * purity, so writing to $count is not exempt.
 	 *
 	 * @phpstan-pure
 	 */
@@ -105,8 +105,8 @@ final class PureReplacer implements Replacer
 	}
 
 	/**
-	 * @phpstan-pure on the method replaces the inherited
-	 * @pure-unless-callable-is-impure, so invoking $cb is not exempt.
+	 * The method's own purity tag replaces the inherited conditional
+	 * purity, so invoking $cb is not exempt.
 	 *
 	 * @phpstan-pure
 	 */

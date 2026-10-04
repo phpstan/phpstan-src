@@ -60,7 +60,7 @@ class Foo
 		assertType('Bug5372\Collection<int, string>', $col);
 
 		$newCol = $col->map(static fn(string $var): string => $var . 'bar');
-		assertType('Bug5372\Collection<int, non-falsy-string>', $newCol);
+		assertType('Bug5372\Collection<int, non-decimal-int-string&non-falsy-string>', $newCol);
 		$this->takesStrings($newCol);
 
 		$newCol = $col->map(static fn(string $var): string => $classString);

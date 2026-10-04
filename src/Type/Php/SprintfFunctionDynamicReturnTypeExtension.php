@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -16,9 +17,9 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\DecimalIntegerStringHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -33,13 +34,18 @@ use function intval;
 use function is_array;
 use function is_string;
 use function preg_match;
+use function preg_split;
 use function sprintf;
+use function str_contains;
 use function substr;
 use function vsprintf;
 
 #[AutowiredService]
 final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	/** The printf format is %[argnum$][flags][width][.precision]specifier, plus %% for a literal %. */
+	private const CONVERSION_SPECIFICATION_REGEX = '/%(?:[0-9]+\\$)?(?:[-+ 0]|\'.)*(?:[0-9]+)?(?:\\.[0-9]*)?[bcdeEfFgGhHosuxX]|%%/';
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -71,6 +77,16 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 			$args,
 			static fn (Type $type): bool => $type->toString()->isLowercaseString()->yes(),
 		);
+
+		$isNonDecimalIntString = count($formatStrings) !== 0;
+		foreach ($formatStrings as $constantString) {
+			if ($this->isNonDecimalIntegerStringFormat($constantString->getValue())) {
+				continue;
+			}
+
+			$isNonDecimalIntString = false;
+			break;
+		}
 
 		$singlePlaceholderEarlyReturn = [];
 		$allPatternsNonEmpty = count($formatStrings) !== 0;
@@ -146,6 +162,7 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 					$singlePlaceholderEarlyReturn[] = $this->getStringReturnType(
 						new AccessoryNumericStringType(),
 						$isLowercase,
+						false,
 					);
 				}
 
@@ -160,7 +177,7 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		if ($allPatternsNonFalsy) {
-			return $this->getStringReturnType(new AccessoryNonFalsyStringType(), $isLowercase);
+			return $this->getStringReturnType(new AccessoryNonFalsyStringType(), $isLowercase, $isNonDecimalIntString);
 		}
 
 		$isNonEmpty = $allPatternsNonEmpty;
@@ -174,10 +191,10 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		if ($isNonEmpty) {
-			return $this->getStringReturnType(new AccessoryNonEmptyStringType(), $isLowercase);
+			return $this->getStringReturnType(new AccessoryNonEmptyStringType(), $isLowercase, $isNonDecimalIntString);
 		}
 
-		return $this->getStringReturnType(null, $isLowercase);
+		return $this->getStringReturnType(null, $isLowercase, $isNonDecimalIntString);
 	}
 
 	/**
@@ -353,7 +370,7 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		return TypeCombinator::union(...$returnTypes);
 	}
 
-	private function getStringReturnType(?AccessoryType $accessoryType, bool $isLowercase): Type
+	private function getStringReturnType(?AccessoryType $accessoryType, bool $isLowercase, bool $isNonDecimalIntString): Type
 	{
 		$accessoryTypes = [];
 		if ($accessoryType !== null) {
@@ -362,6 +379,9 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 		if ($isLowercase) {
 			$accessoryTypes[] = new AccessoryLowercaseStringType();
 		}
+		if ($isNonDecimalIntString) {
+			$accessoryTypes[] = new AccessoryDecimalIntegerStringType(inverse: true);
+		}
 
 		if (count($accessoryTypes) === 0) {
 			return new StringType();
@@ -369,7 +389,42 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 		$accessoryTypes[] = new StringType();
 
-		return new IntersectionType($accessoryTypes);
+		return TypeCombinator::intersect(...$accessoryTypes);
+	}
+
+	/**
+	 * Whether the literal parts of the format - the ones that end up in the result no matter
+	 * what the values are - make the result a non-decimal-int-string.
+	 */
+	private function isNonDecimalIntegerStringFormat(string $format): bool
+	{
+		$literalParts = preg_split(self::CONVERSION_SPECIFICATION_REGEX, $format);
+		if ($literalParts === false) {
+			return false;
+		}
+
+		foreach ($literalParts as $literalPart) {
+			// a conversion specification we failed to recognize would be mistaken for literal text
+			if (str_contains($literalPart, '%')) {
+				return false;
+			}
+		}
+
+		foreach ($literalParts as $i => $literalPart) {
+			// every conversion specification can produce an empty string, so anything but the
+			// first literal part can still end up at the very beginning of the result
+			$canBePartOfDecimalIntegerString = $i === 0
+				? DecimalIntegerStringHelper::canStart($literalPart, true)
+				: DecimalIntegerStringHelper::canBeInside($literalPart, true);
+
+			if ($canBePartOfDecimalIntegerString) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

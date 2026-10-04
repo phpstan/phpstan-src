@@ -75,7 +75,7 @@ class Foo
 		// the exact constant fold `'a,b'` is unsound. The result keeps only
 		// what's guaranteed: with a non-falsy separator and at least two
 		// explicit elements, the output always contains a comma.
-		assertType('non-falsy-string', implode(',', $unsealed));
+		assertType('non-decimal-int-string&non-falsy-string', implode(',', $unsealed));
 	}
 
 	/** @param array{'a', 'b', ...<int, string>} $unsealed */

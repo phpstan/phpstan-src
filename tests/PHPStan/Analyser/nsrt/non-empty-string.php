@@ -213,8 +213,8 @@ class ImplodingStrings
 		// coming from issue #5291
 		$s = array(1, $i);
 
-		assertType('lowercase-string&non-falsy-string', implode("a", $s));
-		assertType('non-falsy-string&uppercase-string', implode("A", $s));
+		assertType('lowercase-string&non-decimal-int-string&non-falsy-string', implode("a", $s));
+		assertType('non-decimal-int-string&non-falsy-string&uppercase-string', implode("A", $s));
 	}
 
 	/**
@@ -235,7 +235,7 @@ class ImplodingStrings
 		// coming from issue #5291
 		$s = array(1, $i);
 
-		assertType('lowercase-string&non-falsy-string', join("a", $s));
+		assertType('lowercase-string&non-decimal-int-string&non-falsy-string', join("a", $s));
 	}
 
 	/**
@@ -258,7 +258,7 @@ class LiteralString
 
 	function x(string $tableName, string $original): void
 	{
-		assertType('non-falsy-string', "from `$tableName`");
+		assertType('non-decimal-int-string&non-falsy-string', "from `$tableName`");
 	}
 
 	/**
@@ -423,7 +423,7 @@ class MoreNonEmptyStringFunctions
 		assertType('string', sprintf($maybeNonEmpty, $s));
 		assertType('string', sprintf($maybeNonFalsy, $s));
 		assertType('non-empty-string', sprintf($nonEmpty, $s));
-		assertType('non-falsy-string', sprintf($nonFalsy, $s));
+		assertType('non-decimal-int-string&non-falsy-string', sprintf($nonFalsy, $s));
 	}
 
 	function subtract($m) {

@@ -8,7 +8,7 @@ class HelloWorld
 {
 	public function sayHello(): void
 	{
-		assertType('lowercase-string&non-falsy-string', 'a' . $this->get());
+		assertType('lowercase-string&non-decimal-int-string&non-falsy-string', 'a' . $this->get());
 	}
 
 	public function get(): ?int
@@ -20,7 +20,7 @@ class HelloWorld
 	 * @param numeric-string $numericS
 	 */
 	public function intersections($numericS): void {
-		assertType('non-falsy-string', 'a'. $numericS);
+		assertType('non-decimal-int-string&non-falsy-string', 'a'. $numericS);
 		assertType('numeric-string', (string) $numericS);
 	}
 }

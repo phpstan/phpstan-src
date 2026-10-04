@@ -444,19 +444,27 @@ class PureMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/pure-unless-impure-override.php'], [
 			[
 				'Method PureUnlessImpureOverride\ImpureReplacerWithoutSideEffects::replace() is marked as impure but does not have any side effects.',
-				57,
+				58,
 			],
 			[
 				'Method PureUnlessImpureOverride\ImpureReplacerWithoutSideEffects::map() is marked as impure but does not have any side effects.',
-				65,
+				66,
 			],
 			[
 				'Impure echo in pure method PureUnlessImpureOverride\InheritingReplacer::replace().',
-				77,
+				78,
 			],
 			[
 				'Impure echo in pure method PureUnlessImpureOverride\InheritingReplacer::map().',
-				85,
+				86,
+			],
+			[
+				'Method PureUnlessImpureOverride\PureReplacer::replace() is marked as pure but parameter $count is passed by reference.',
+				102,
+			],
+			[
+				'Possibly impure call to a callable in pure method PureUnlessImpureOverride\PureReplacer::map().',
+				115,
 			],
 		]);
 	}

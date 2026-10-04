@@ -18,10 +18,13 @@ inline constexpr uint32_t iterableValueType = 4;
 inline constexpr uint32_t keyTypesUnion = 5;
 inline constexpr uint32_t keyIndexMap = 6;
 inline constexpr uint32_t optionalKeySet = 7;
-inline constexpr uint32_t keyTypes = 8;
-inline constexpr uint32_t valueTypes = 9;
-inline constexpr uint32_t nextAutoIndexes = 10;
-inline constexpr uint32_t optionalKeys = 11;
+inline constexpr uint32_t hasTemplateOrLateResolvableType = 8;
+inline constexpr uint32_t referencedClasses = 9;
+inline constexpr uint32_t referencedTemplateTypes = 10;
+inline constexpr uint32_t keyTypes = 11;
+inline constexpr uint32_t valueTypes = 12;
+inline constexpr uint32_t nextAutoIndexes = 13;
+inline constexpr uint32_t optionalKeys = 14;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -40,6 +43,9 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("keyTypesUnion", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Type\\Type");
 	cls.property("keyIndexMap", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_ARRAY);
 	cls.property("optionalKeySet", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_ARRAY);
+	cls.property("hasTemplateOrLateResolvableType", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_BOOL);
+	cls.property("referencedClasses", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_ARRAY);
+	cls.property("referencedTemplateTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_ARRAY);
 	cls.property("keyTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 	cls.property("valueTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 	cls.property("nextAutoIndexes", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);

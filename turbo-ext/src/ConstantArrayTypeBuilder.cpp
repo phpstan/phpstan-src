@@ -22,6 +22,7 @@
 
 #include "TypeTraits.h"
 #include "generated/ConstantArrayTypeBuilder.h"
+#include "generated/ConstantArrayType.h"
 
 namespace slots = ptdecl::ConstantArrayTypeBuilder::slot;
 namespace sigs = ptdecl::ConstantArrayTypeBuilder::sig;
@@ -33,14 +34,8 @@ zend_class_entry *pt_ce_constant_array_type_builder = nullptr;
 #define PT_CATB_CLOSURES_COUNT_LIMIT 32
 
 /* the shadowed ConstantArrayType's slots createFromConstantArray() reads
- * for an instance of exactly that class, in its twin's declaration order
- * (ConstantArrayType.cpp's PT_CAT_PROP_*: the getters return the slots) */
-#define PT_CATB_CAT_PROP_IS_LIST 0
-#define PT_CATB_CAT_PROP_UNSEALED 1
-#define PT_CATB_CAT_PROP_KEY_TYPES 8
-#define PT_CATB_CAT_PROP_VALUE_TYPES 9
-#define PT_CATB_CAT_PROP_NEXT_AUTO_INDEXES 10
-#define PT_CATB_CAT_PROP_OPTIONAL_KEYS 11
+ * for an instance of exactly that class (the getters return the slots) */
+namespace catSlots = ptdecl::ConstantArrayType::slot;
 
 namespace phpstanturbo {
 
@@ -97,17 +92,17 @@ public:
 	static zv::Val createFromConstantArray(zval *startArrayType)
 	{
 		zend_object *array = Z_OBJ_P(startArrayType);
-		zv::Val keyTypes = arrayPart(array, PT_CATB_CAT_PROP_KEY_TYPES, PT_LC("getkeytypes"), IS_ARRAY);
+		zv::Val keyTypes = arrayPart(array, catSlots::keyTypes, PT_LC("getkeytypes"), IS_ARRAY);
 		if (UNEXPECTED(keyTypes.isUndef())) return zv::Val();
-		zv::Val valueTypes = arrayPart(array, PT_CATB_CAT_PROP_VALUE_TYPES, PT_LC("getvaluetypes"), IS_ARRAY);
+		zv::Val valueTypes = arrayPart(array, catSlots::valueTypes, PT_LC("getvaluetypes"), IS_ARRAY);
 		if (UNEXPECTED(valueTypes.isUndef())) return zv::Val();
-		zv::Val nextAutoIndexes = arrayPart(array, PT_CATB_CAT_PROP_NEXT_AUTO_INDEXES, PT_LC("getnextautoindexes"), IS_ARRAY);
+		zv::Val nextAutoIndexes = arrayPart(array, catSlots::nextAutoIndexes, PT_LC("getnextautoindexes"), IS_ARRAY);
 		if (UNEXPECTED(nextAutoIndexes.isUndef())) return zv::Val();
-		zv::Val optionalKeys = arrayPart(array, PT_CATB_CAT_PROP_OPTIONAL_KEYS, PT_LC("getoptionalkeys"), IS_ARRAY);
+		zv::Val optionalKeys = arrayPart(array, catSlots::optionalKeys, PT_LC("getoptionalkeys"), IS_ARRAY);
 		if (UNEXPECTED(optionalKeys.isUndef())) return zv::Val();
-		zv::Val isList = arrayPart(array, PT_CATB_CAT_PROP_IS_LIST, PT_LC("islist"), IS_OBJECT);
+		zv::Val isList = arrayPart(array, catSlots::isList, PT_LC("islist"), IS_OBJECT);
 		if (UNEXPECTED(isList.isUndef())) return zv::Val();
-		zv::Val unsealed = arrayPart(array, PT_CATB_CAT_PROP_UNSEALED, PT_LC("getunsealedtypes"), IS_NULL);
+		zv::Val unsealed = arrayPart(array, catSlots::unsealed, PT_LC("getunsealedtypes"), IS_NULL);
 		if (UNEXPECTED(unsealed.isUndef())) return zv::Val();
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_constant_array_type_builder) != SUCCESS)) return zv::Val();

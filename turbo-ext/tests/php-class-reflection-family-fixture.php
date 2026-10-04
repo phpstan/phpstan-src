@@ -223,8 +223,8 @@ class FixtureAnnotatedStrict extends FixtureBase
 }
 
 /**
- * The class-level tag applies to plain(); the methods carrying a
- * @pure-unless-* tag keep their conditional purity.
+ * The class-level tag applies to plain(); the methods with a
+ * conditional purity tag keep it.
  *
  * @phpstan-all-methods-pure
  */

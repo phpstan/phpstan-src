@@ -67,3 +67,16 @@ class ImpureChildOfAllMethodsPureParent extends AllMethodsPureParent
 	}
 
 }
+
+class PureChild implements PureUnlessParent
+{
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function run(callable $cb): int
+	{
+		return 1;
+	}
+
+}

@@ -5,10 +5,11 @@
  * Declared as PHPStan\Type\Constant\ConstantArrayType itself at activation:
  * not final (the PHP TemplateConstantArrayType extends it, overriding
  * recreate() and the TemplateTypeTrait methods), implementing
- * PHPStan\Type\Type. State is the twin's twelve private properties, declared
- * typed property slots in the twin's order — $isList, $unsealed, the six
+ * PHPStan\Type\Type. State is the twin's fifteen private properties, declared
+ * typed property slots in the twin's order — $isList, $unsealed, the nine
  * memos ($allArrays, $iterableKeyType, $iterableValueType, $keyTypesUnion,
- * $keyIndexMap, $optionalKeySet) and the four promoted constructor properties ($keyTypes,
+ * $keyIndexMap, $optionalKeySet, $hasTemplateOrLateResolvableType,
+ * $referencedClasses, $referencedTemplateTypes) and the four promoted constructor properties ($keyTypes,
  * $valueTypes, $nextAutoIndexes, $optionalKeys) — so the std object
  * handlers do GC/clone. The three traits the twin is composed of come from
  * the shared registrars in TypeTraits.cpp, run after the class's own
@@ -1040,10 +1041,13 @@ public:
 		return zv::Val(std::move(arrays));
 	}
 
-	/* the referenced classes of every key type, every value type and the
-	 * unsealed pair, collected in that order; UNDEF = pending exception */
+	/* memoized in $referencedClasses: the referenced classes of every key
+	 * type, every value type and the unsealed pair, collected in that order;
+	 * UNDEF = pending exception */
 	zv::Val getReferencedClasses() const
 	{
+		zval *memo = OBJ_PROP_NUM(self, slots::referencedClasses);
+		if (Z_TYPE_P(memo) == IS_ARRAY) return zv::Val::copyOf(zv::Ref(memo));
 		zv::Arr referencedClasses = zv::Arr::create(8);
 		zv::Val keyTypes = thisGetKeyTypes();
 		if (UNEXPECTED(keyTypes.isUndef())) return zv::Val();
@@ -1057,6 +1061,7 @@ public:
 			zv::Val pair = zv::Val::copyOf(zv::Ref(unsealed));
 			if (UNEXPECTED(!collectReferencedClasses(referencedClasses, pair.raw()))) return zv::Val();
 		}
+		zv::ObjRef(self).propAtWrite(slots::referencedClasses, zv::Val::copyOf(zv::Ref(referencedClasses.raw())));
 		return zv::Val(std::move(referencedClasses));
 	}
 
@@ -4462,6 +4467,7 @@ public:
 
 	/* the referenced template types of the keys, the values and the
 	 * unsealed pair under the covariant composition of the position's
+	 * variance, memoized in $referencedTemplateTypes for the last composed
 	 * variance; UNDEF = pending exception */
 	zv::Val getReferencedTemplateTypes(zval *positionVariance) const
 	{
@@ -4471,6 +4477,16 @@ public:
 		zval composedVariance;
 		if (UNEXPECTED(!pt_template_type_variance_compose(&composedVariance, positionVariance, covariant.raw()))) return zv::Val();
 		zv::Val variance = zv::Val::adopt(composedVariance);
+		zval *memo = OBJ_PROP_NUM(self, slots::referencedTemplateTypes);
+		if (Z_TYPE_P(memo) == IS_ARRAY) {
+			zval *memoVariance = zend_hash_index_find(Z_ARRVAL_P(memo), 0);
+			zval *memoReferences = zend_hash_index_find(Z_ARRVAL_P(memo), 1);
+			if (EXPECTED(memoVariance != NULL && memoReferences != NULL)) {
+				zend_long memoValue, value;
+				if (UNEXPECTED(!pt_template_type_variance_value_of(memoVariance, memoValue) || !pt_template_type_variance_value_of(variance.raw(), value))) return zv::Val();
+				if (memoValue == value) return zv::Val::copyOf(zv::Ref(memoReferences));
+			}
+		}
 		zv::Arr references = zv::Arr::create(8);
 		zval *k = keyTypes();
 		zval *v = k != NULL ? valueTypes() : NULL;
@@ -4483,6 +4499,10 @@ public:
 			zv::Val pair = zv::Val::copyOf(zv::Ref(u));
 			if (UNEXPECTED(!collectReferencedTemplateTypes(references, pair.raw(), variance.raw()))) return zv::Val();
 		}
+		zv::Arr memoPair = zv::Arr::create(2);
+		memoPair.push(zv::Ref(variance.raw()));
+		memoPair.push(zv::Ref(references.raw()));
+		zv::ObjRef(self).propAtWrite(slots::referencedTemplateTypes, std::move(memoPair));
 		return zv::Val(std::move(references));
 	}
 
@@ -5862,9 +5882,22 @@ public:
 		return zv::Val(std::move(finiteTypes));
 	}
 
+	/* memoized in $hasTemplateOrLateResolvableType; false = pending exception */
+	[[nodiscard]] bool hasTemplateOrLateResolvableType(bool &out) const
+	{
+		zval *memo = OBJ_PROP_NUM(self, slots::hasTemplateOrLateResolvableType);
+		if (Z_TYPE_P(memo) == IS_TRUE || Z_TYPE_P(memo) == IS_FALSE) {
+			out = Z_TYPE_P(memo) == IS_TRUE;
+			return true;
+		}
+		if (UNEXPECTED(!computeHasTemplateOrLateResolvableType(out))) return false;
+		zv::ObjRef(self).propAtWrite(slots::hasTemplateOrLateResolvableType, zv::Val::boolean(out));
+		return true;
+	}
+
 	/* a value with a template or late-resolvable type, a TemplateType key,
 	 * or such an unsealed pair; false = pending exception */
-	[[nodiscard]] bool hasTemplateOrLateResolvableType(bool &out) const
+	[[nodiscard]] bool computeHasTemplateOrLateResolvableType(bool &out) const
 	{
 		zval *v = valueTypes();
 		if (UNEXPECTED(v == NULL)) return false;
@@ -7234,7 +7267,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantArrayType");
 	ptdecl::ConstantArrayType::declareClass(cls);
-	/* the slots PT_CAT_PROP_*: the eight class-body properties first, the
+	/* the slots PT_CAT_PROP_*: the eleven class-body properties first, the
 	 * four promoted constructor properties after them */
 	cls.privateTypedClassProperty("isList", ptcls::trinaryLogic, false);
 	cls.privateTypedProperty("unsealed", MAY_BE_ARRAY | MAY_BE_NULL);
@@ -7244,6 +7277,9 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 	cls.privateTypedClassPropertyDefaultNull("keyTypesUnion", ptcls::type);
 	cls.privateTypedPropertyDefaultNull("keyIndexMap", MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.privateTypedPropertyDefaultNull("optionalKeySet", MAY_BE_ARRAY | MAY_BE_NULL);
+	cls.privateTypedPropertyDefaultNull("hasTemplateOrLateResolvableType", MAY_BE_BOOL | MAY_BE_NULL);
+	cls.privateTypedPropertyDefaultNull("referencedClasses", MAY_BE_ARRAY | MAY_BE_NULL);
+	cls.privateTypedPropertyDefaultNull("referencedTemplateTypes", MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.privateTypedProperty("keyTypes", MAY_BE_ARRAY);
 	cls.privateTypedProperty("valueTypes", MAY_BE_ARRAY);
 	cls.privateTypedProperty("nextAutoIndexes", MAY_BE_ARRAY);

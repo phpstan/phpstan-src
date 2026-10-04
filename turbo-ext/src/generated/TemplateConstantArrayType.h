@@ -10,12 +10,12 @@ namespace ptdecl::TemplateConstantArrayType {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t name = 12;
-inline constexpr uint32_t scope = 13;
-inline constexpr uint32_t strategy = 14;
-inline constexpr uint32_t variance = 15;
-inline constexpr uint32_t bound = 16;
-inline constexpr uint32_t default_ = 17;
+inline constexpr uint32_t name = 15;
+inline constexpr uint32_t scope = 16;
+inline constexpr uint32_t strategy = 17;
+inline constexpr uint32_t variance = 18;
+inline constexpr uint32_t bound = 19;
+inline constexpr uint32_t default_ = 20;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)

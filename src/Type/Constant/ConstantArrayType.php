@@ -1223,7 +1223,14 @@ class ConstantArrayType implements Type
 		}
 
 		$result = TrinaryLogic::createNo();
+		$missesIndex = ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType)
+			&& !isset($this->getKeyIndexMap()[$offsetType->getValue()]);
 		foreach ($this->keyTypes as $i => $keyType) {
+			// a constant offset missing from the index can only match a template key
+			if ($missesIndex && !$keyType instanceof TemplateType) {
+				continue;
+			}
+
 			// PHP coerces decimal-integer strings to int when used as array
 			// keys ("123" → 123), so a non-constant string offset *could* hit
 			// a constant-integer slot. Skip the upgrade when the offset is

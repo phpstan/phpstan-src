@@ -2465,11 +2465,25 @@ public:
 		}
 
 		zend_long result = PT_TRI_NO;
+		bool missesIndex = false;
+		if (instanceof_function(Z_OBJCE_P(offsetType), pt_ce_constant_string_type) || instanceof_function(Z_OBJCE_P(offsetType), pt_ce_constant_integer_type)) {
+			zv::Val offsetValue = keyValue(offsetType);
+			if (UNEXPECTED(offsetValue.isUndef())) return -1;
+			zv::Val map = getKeyIndexMap();
+			if (UNEXPECTED(map.isUndef())) return -1;
+			missesIndex = mapFind(Z_ARRVAL_P(map.raw()), offsetValue.raw()) == NULL;
+		}
 		zval *k = keyTypes();
 		if (UNEXPECTED(k == NULL)) return -1;
 		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
 			zend_long i = (zend_long) entry.indexKey();
 			zval *keyType = entry.value().deref().raw();
+			/* a constant offset missing from the index can only match a template key */
+			if (missesIndex) {
+				bool isTemplate;
+				if (UNEXPECTED(!isInstance(keyType, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return -1;
+				if (!isTemplate) continue;
+			}
 			/* PHP coerces decimal-integer strings to int when used as array
 			 * keys ("123" → 123), so a non-constant string offset *could* hit
 			 * a constant-integer slot. Skip the upgrade when the offset is

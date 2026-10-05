@@ -810,4 +810,52 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClosureBindScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope.php'], [
+			[
+				'Using new parent but ClosureBindScopeClasses\\NoParent does not extend any class.',
+				50,
+			],
+			[
+				'Using self outside of class scope.',
+				57,
+			],
+			[
+				'Using parent outside of class scope.',
+				57,
+			],
+			[
+				'Using static outside of class scope.',
+				57,
+			],
+			[
+				'Using self outside of class scope.',
+				58,
+			],
+			[
+				'Using new parent but ClosureBindScopeClasses\\NoParent does not extend any class.',
+				75,
+			],
+		]);
+	}
+
+	public function testClosureBindScopeAmbiguous(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-ambiguous.php'], [
+			[
+				'Using self outside of class scope.',
+				49,
+			],
+			[
+				'Using self outside of class scope.',
+				50,
+			],
+			[
+				'Using self outside of class scope.',
+				95,
+			],
+		]);
+	}
+
 }

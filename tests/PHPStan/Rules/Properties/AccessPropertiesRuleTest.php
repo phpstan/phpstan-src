@@ -1335,4 +1335,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15002.php'], []);
 	}
 
+	public function testClosureBindScopeAmbiguous(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-ambiguous.php'], []);
+	}
+
 }

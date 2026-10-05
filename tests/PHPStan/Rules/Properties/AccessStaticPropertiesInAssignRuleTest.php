@@ -109,4 +109,27 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClosureBindScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope.php'], [
+			[
+				'Access to private static property $pp of parent class ClosureBindScopeProperties\\Foo.',
+				50,
+			],
+			[
+				'Accessing parent::$y but ClosureBindScopeProperties\\NoParent does not extend any class.',
+				56,
+			],
+			[
+				'Accessing self::$sp outside of class scope.',
+				65,
+			],
+		]);
+	}
+
+	public function testClosureBindScopeAmbiguous(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-ambiguous.php'], []);
+	}
+
 }

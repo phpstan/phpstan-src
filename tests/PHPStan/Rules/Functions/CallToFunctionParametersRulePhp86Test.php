@@ -49,7 +49,7 @@ class CallToFunctionParametersRulePhp86Test extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15372.php'], [
 			[
 				'Constant SORT_REGULAR is not allowed for parameter #3 $mode of function array_filter.',
-				10,
+				12,
 			],
 		]);
 	}

@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
  * (featureToggles.unresolvedTemplateArguments is off), which is where a conditional
  * branch's subject has to keep what the branch knows about it.
  */
-#[RequiresPhp('>= 8.1')]
+#[RequiresPhp('>= 8.1.0')]
 class NarrowedSubjectInferredLiteralTest extends TypeInferenceTestCase
 {
 

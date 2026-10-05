@@ -22,6 +22,7 @@ use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Rules\SelfClassResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ErrorType;
@@ -75,8 +76,12 @@ final class StaticMethodCallCheck
 
 			$className = (string) $class;
 			$lowercasedClassName = strtolower($className);
+			if (in_array($lowercasedClassName, ['self', 'static', 'parent'], true) && SelfClassResolver::isAmbiguous($scope)) {
+				return [[], null];
+			}
+			$selfClassReflection = SelfClassResolver::resolve($scope, $this->reflectionProvider);
 			if (in_array($lowercasedClassName, ['self', 'static'], true)) {
-				if (!$scope->isInClass()) {
+				if ($selfClassReflection === null) {
 					return [
 						[
 							RuleErrorBuilder::message(sprintf(
@@ -92,7 +97,7 @@ final class StaticMethodCallCheck
 				}
 				$classType = $scope->resolveTypeByName($class);
 			} elseif ($lowercasedClassName === 'parent') {
-				if (!$scope->isInClass()) {
+				if ($selfClassReflection === null) {
 					return [
 						[
 							RuleErrorBuilder::message(sprintf(
@@ -107,16 +112,21 @@ final class StaticMethodCallCheck
 						null,
 					];
 				}
-				$currentClassReflection = $scope->getClassReflection();
-				if ($currentClassReflection->getParentClass() === null) {
+				// a closure bound to another class has no method of that class to name
+				$isEnclosingClass = $scope->isInClass() && $scope->getClassReflection()->getName() === $selfClassReflection->getName();
+				if ($selfClassReflection->getParentClass() === null) {
 					return [
 						[
-							RuleErrorBuilder::message(sprintf(
+							RuleErrorBuilder::message($isEnclosingClass ? sprintf(
 								'%s::%s() calls parent::%s() but %s does not extend any class.',
-								$scope->getClassReflection()->getDisplayName(),
+								$selfClassReflection->getDisplayName(),
 								$scope->getFunctionName(),
 								$methodName,
-								$scope->getClassReflection()->getDisplayName(),
+								$selfClassReflection->getDisplayName(),
+							) : sprintf(
+								'Calling parent::%s() but %s does not extend any class.',
+								$methodName,
+								$selfClassReflection->getDisplayName(),
 							))
 								->line($astName->getStartLine())
 								->identifier('class.noParent')
@@ -126,7 +136,7 @@ final class StaticMethodCallCheck
 					];
 				}
 
-				if ($scope->getFunctionName() === null) {
+				if ($isEnclosingClass && $scope->getFunctionName() === null) {
 					throw new ShouldNotHappenException();
 				}
 

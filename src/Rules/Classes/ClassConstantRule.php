@@ -19,6 +19,7 @@ use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Rules\SelfClassResolver;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
@@ -94,8 +95,12 @@ final class ClassConstantRule implements Rule
 		if ($class instanceof Node\Name) {
 			$className = (string) $class;
 			$lowercasedClassName = strtolower($className);
+			if (in_array($lowercasedClassName, ['self', 'static', 'parent'], true) && SelfClassResolver::isAmbiguous($scope)) {
+				return [];
+			}
+			$selfClassReflection = SelfClassResolver::resolve($scope, $this->reflectionProvider);
 			if (in_array($lowercasedClassName, ['self', 'static'], true)) {
-				if (!$scope->isInClass()) {
+				if ($selfClassReflection === null) {
 					return [
 						RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $className))
 							->identifier(sprintf('outOfClass.%s', $lowercasedClassName))
@@ -105,20 +110,19 @@ final class ClassConstantRule implements Rule
 
 				$classType = $scope->resolveTypeByName($class);
 			} elseif ($lowercasedClassName === 'parent') {
-				if (!$scope->isInClass()) {
+				if ($selfClassReflection === null) {
 					return [
 						RuleErrorBuilder::message(sprintf('Using %s outside of class scope.', $className))
 							->identifier(sprintf('outOfClass.%s', $lowercasedClassName))
 							->build(),
 					];
 				}
-				$currentClassReflection = $scope->getClassReflection();
-				if ($currentClassReflection->getParentClass() === null) {
+				if ($selfClassReflection->getParentClass() === null) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Access to parent::%s but %s does not extend any class.',
 							$constantName,
-							$currentClassReflection->getDisplayName(),
+							$selfClassReflection->getDisplayName(),
 						))->identifier('class.noParent')->build(),
 					];
 				}

@@ -32,6 +32,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerRangeType;
@@ -171,6 +172,13 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			// We are transforming constant class-string to ObjectType. But we need to filter out
 			// an uncertainty originating in possible ObjectType's class subtypes.
 			$objectType = $this->getObjectType();
+
+			// A class name carries no type arguments, so it is compared in the
+			// parameterization the generic type implies for its class.
+			$objectType = GenericObjectType::specializeSubclass(
+				$genericType instanceof TemplateType ? $genericType->getBound() : $genericType,
+				$objectType,
+			);
 
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.

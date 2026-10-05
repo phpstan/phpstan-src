@@ -25,8 +25,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
 use function array_map;
 use function count;
+use function get_class;
 use function implode;
 use function sprintf;
 
@@ -443,11 +445,79 @@ class GenericObjectType extends ObjectType
 
 		// Parent handles sealed type exhaustiveness (returning NeverType when all
 		// allowed subtypes are subtracted, or a single remaining subtype).
-		if (!$result instanceof ObjectType || $result->getClassName() !== $this->getClassName()) {
+		if (!$result instanceof ObjectType) {
 			return $result;
 		}
 
+		// The remaining subtype comes back as the sealed tag names it, without
+		// type arguments, and takes the ones this type implies for it.
+		if ($result->getClassName() !== $this->getClassName()) {
+			return self::specializeSubclass($this, $result);
+		}
+
 		return new self($this->getClassName(), $this->types, $subtractedType, null, $this->variances);
+	}
+
+	/**
+	 * Gives $subclass, a class written without type arguments, the ones
+	 * $supertype implies for it through the class's `@extends` and
+	 * `@implements` tags: Some with Option<int> is Some<int>, Err with
+	 * Result<int, string> is Err<string>. The class of $supertype itself
+	 * takes its arguments and call-site variance as written: X with X<*> is
+	 * X<*>.
+	 *
+	 * Returns $subclass unchanged unless $supertype is a generic object type
+	 * and $subclass is its class or a generic subtype of it. A subtype also
+	 * stays unchanged when $supertype has call-site variance or does not
+	 * determine every type argument of the subtype - an explicit argument
+	 * would claim more than is known.
+	 */
+	public static function specializeSubclass(Type $supertype, Type $subclass): Type
+	{
+		if (!$supertype instanceof self || get_class($subclass) !== ObjectType::class) {
+			return $subclass;
+		}
+
+		if ($subclass->getClassName() === $supertype->getClassName()) {
+			return new self(
+				$supertype->getClassName(),
+				$supertype->types,
+				$subclass->getSubtractedType(),
+				null,
+				$supertype->variances,
+			);
+		}
+
+		foreach ($supertype->variances as $variance) {
+			if (!$variance->invariant()) {
+				return $subclass;
+			}
+		}
+
+		$classReflection = $subclass->getClassReflection();
+		if ($classReflection === null || !$classReflection->isGeneric()) {
+			return $subclass;
+		}
+
+		$templateTypeMap = $classReflection->getTemplateTypeMap();
+		$ancestor = (new self($classReflection->getName(), $classReflection->typeMapToList($templateTypeMap)))
+			->getAncestorWithClassName($supertype->getClassName());
+		if ($ancestor === null) {
+			return $subclass;
+		}
+
+		$inferredTypeMap = $ancestor->inferTemplateTypes($supertype);
+		foreach (array_keys($templateTypeMap->getTypes()) as $templateName) {
+			if (!$inferredTypeMap->hasType($templateName)) {
+				return $subclass;
+			}
+		}
+
+		return new self(
+			$classReflection->getName(),
+			$classReflection->typeMapToList($inferredTypeMap),
+			$subclass->getSubtractedType(),
+		);
 	}
 
 	public function toPhpDocNode(): TypeNode

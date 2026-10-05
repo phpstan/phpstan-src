@@ -201,6 +201,20 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureBindNamedArguments(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/closure-bind-named-arguments.php'], [
+			[
+				'Access to private property ClosureBindNamedArgumentsProperty\\Target::$priv.',
+				54,
+			],
+		]);
+	}
+
 	public function testAccessPropertiesWithoutUnionTypes(): void
 	{
 		$this->checkThisOnly = false;

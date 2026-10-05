@@ -2197,6 +2197,62 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 	}
 }
 
+// ---- ParametersAcceptorSelector::selectFromArgs() over the fixture's
+// Closure::bind() calls: the @param-closure-this override of $newThis, with
+// the closure argument found by position or by the visitor's attribute.
+// The walk above parses the fixture as a non-analysed file (function bodies
+// cleaned away), so these calls come from a walk of the rich parser's AST,
+// which also carries the visitors' attributes. Both sides get the walk scope
+// and the walk's own (PHP) variants, so only the selector differs
+/** @var list<array{\PhpParser\Node\Expr\StaticCall, \PHPStan\Analyser\MutatingScope, \PHPStan\Analyser\ExpressionResultStorage|null}> $sfClosureBindCalls */
+$sfClosureBindCalls = [];
+$sfClosureBindCallback = static function (\PhpParser\Node $node, \PHPStan\Analyser\Scope $scope) use (&$sfClosureBindCalls): void {
+	if (
+		!$node instanceof \PhpParser\Node\Expr\StaticCall
+		|| !$node->class instanceof \PhpParser\Node\Name
+		|| $node->class->toLowerString() !== 'closure'
+		|| !$node->name instanceof \PhpParser\Node\Identifier
+		|| $node->name->toLowerString() !== 'bind'
+	) {
+		return;
+	}
+	$walkScope = $scope->toWalkScope();
+	$sfClosureBindCalls[] = [$node, $walkScope, $walkScope->getCurrentExpressionResultStorage()];
+};
+$sfResolver->processNodes(
+	$scContainer->getService('cachedRichParser')->parseFile($sfFile),
+	$sfScopeFactory->create(\PHPStan\Analyser\ScopeContext::create($sfFile), $sfClosureBindCallback),
+	$sfClosureBindCallback,
+);
+$sfClosureBindVariants = $sfReflectionProvider->getClass(\Closure::class)->getNativeMethod('bind')->getVariants();
+$sfClosureBindNarrowed = 0;
+foreach ($sfClosureBindCalls as $sfCallIndex => [$sfCall, $sfCallScope, $sfCallStorage]) {
+	$sfCallStack = $sfHarness->constructorArgs($sfCallScope)['expressionResultStorageStack'];
+	$sfCallStack->push($sfCallStorage ?? new \PHPStan\Analyser\ExpressionResultStorage());
+	try {
+		$sfSelected = [];
+		foreach (['php' => \PHPStan\Reflection\ParametersAcceptorSelector::class, 'native' => \PHPStanTurbo\ParametersAcceptorSelector::class] as $side => $sfSelector) {
+			try {
+				$sfAcceptor = $sfSelector::selectFromArgs($sfCallScope, $sfCall->getArgs(), $sfClosureBindVariants);
+				$sfSelected[$side] = array_map(
+					static fn ($parameter): string => $parameter->getName() . ': ' . $parameter->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()),
+					$sfAcceptor->getParameters(),
+				);
+			} catch (\Throwable $e) {
+				$sfSelected[$side] = get_class($e) . ': ' . $e->getMessage();
+			}
+		}
+	} finally {
+		$sfCallStack->pop();
+	}
+	if (is_array($sfSelected['php']) && in_array('newThis: stdClass', $sfSelected['php'], true)) {
+		$sfClosureBindNarrowed++;
+	}
+	check($sfSelected['php'] === $sfSelected['native'], sprintf('ParametersAcceptorSelector parity: selectFromArgs() over the Closure::bind() call on line %d: %s vs %s', $sfCall->getStartLine(), json_encode($sfSelected['php']), json_encode($sfSelected['native'])));
+}
+check(count($sfClosureBindCalls) >= 5, 'scope-family: the fixture walk saw the Closure::bind() calls (' . count($sfClosureBindCalls) . ')');
+check($sfClosureBindNarrowed === 4, "scope-family: the closure-this override narrowed \$newThis in 4 Closure::bind() calls ($sfClosureBindNarrowed)");
+
 if (getenv('SF_DUMP_LABEL') !== false) {
 	$sfDumpLabel = getenv('SF_DUMP_LABEL');
 	foreach ($sfObservations['php'] as $sfId => $sfPhpObservations) {

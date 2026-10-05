@@ -7,8 +7,12 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\ParserFactory;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflector\DefaultReflector;
+use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
+use PHPStan\BetterReflection\SourceLocator\Type\StringSourceLocator;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
@@ -28,9 +32,14 @@ class InitializerExprTypeResolverTest extends PHPStanTestCase
 	public function testUnitEnumDefaultWithClassAdapter(): void
 	{
 		$container = self::getContainer();
+		// Do not resolve the runtime's RoundingMode polyfill on older PHP versions.
+		$reflector = new DefaultReflector(new StringSourceLocator(
+			'<?php enum RoundingMode { case HalfAwayFromZero; }',
+			new Locator((new ParserFactory())->createForNewestSupportedVersion()),
+		));
 		$classReflection = $container->getByType(ClassReflectionFactory::class)->create(
 			'RoundingMode',
-			new ReflectionClass(self::getReflector()->reflectClass('RoundingMode')),
+			new ReflectionClass($reflector->reflectClass('RoundingMode')),
 			null,
 			null,
 			null,

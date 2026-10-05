@@ -854,6 +854,11 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClosureBindScopeNestedClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-nested-class.php'], []);
+	}
+
 	public function testClosureBindScopeAmbiguous(): void
 	{
 		$this->analyse([__DIR__ . '/data/closure-bind-scope-ambiguous.php'], [

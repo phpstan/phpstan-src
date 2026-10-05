@@ -135,6 +135,26 @@ $parserVisitorSnippets = [
 		$y instanceof Qux;
 		TypeTraverser::map($t, $cb);
 		\PHPStan\Type\TypeTraverser::other($t, $cb);',
+
+	// the closure argument of Closure::bind() calls around self/parent/static
+	// names, which the visitor leaves alone (the bound class comes from the scope)
+	'<?php
+		self::A; Closure::bind(function () { return [self::A, static::b(), new parent(), Other::C]; }, null, Foo::class);
+		Closure::bind(fn () => SELF::$p, $obj); \Closure::bind(static function () { return parent::X; }, null, self::class);
+		Closure::bind(function () { return Closure::bind(fn () => static::B, null, Inner::class)() + self::C; }, null, Outer::class);
+		Closure::bind($callable, null, Foo::class); Closure::bind(...); static::D;',
+	// ... with the arguments found by name as well as by position
+	'<?php
+		Closure::bind(closure: fn () => self::A, newScope: Foo::class, newThis: null);
+		Closure::bind(newScope: Bar::class, closure: function () { return static::B; });
+		Closure::bind(function () { return parent::C; }, newScope: Baz::class); Closure::bind(fn () => self::D, $obj, newScope: Qux::class);
+		Closure::bind(closure: fn () => self::E); Closure::bind(Closure: fn () => self::F, newscope: X::class, other: 1);',
+	// ... duplicated, unpacked and nested arguments
+	'<?php
+		Closure::bind(fn () => 1, $o, Foo::class, newScope: Bar::class); Closure::bind($c, $o, closure: $d, newThis: $p);
+		Closure::bind(...$a, $o); Closure::bind(...$a); Closure::bind($c, ...$rest); Closure::bind(newThis: $o, closure: $c);
+		Closure::bind(fn () => 1, $o, Closure::bind(fn () => self::class, $p, X::class)());
+		Closure::bind(Closure::bind(fn () => 1, $o, X::class), $p, Y::class);',
 ];
 
 // plus real source files, so the ports meet whatever the repository contains

@@ -323,7 +323,10 @@ final class ArrayFilterFunctionReturnTypeHelper
 			return null;
 		}
 
-		if ($flagValues[0] === $this->getConstant('ARRAY_FILTER_USE_KEY')) {
+		// ARRAY_FILTER_USE_VALUE (PHP 8.6+) is 0, the default mode
+		if ($flagValues[0] === 0) {
+			return self::USE_ITEM;
+		} elseif ($flagValues[0] === $this->getConstant('ARRAY_FILTER_USE_KEY')) {
 			return self::USE_KEY;
 		} elseif ($flagValues[0] === $this->getConstant('ARRAY_FILTER_USE_BOTH')) {
 			return self::USE_BOTH;

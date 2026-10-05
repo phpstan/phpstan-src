@@ -190,4 +190,23 @@ class EnumSanityRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testDebugInfoPhpVersions(): void
+	{
+		$errors = [
+			[
+				'Enum EnumDebugInfoPhpVersions\\UnsupportedInBranch contains magic method __debugInfo().',
+				18,
+			],
+		];
+		if (PHP_VERSION_ID < 80600) {
+			$errors[] = [
+				'Enum EnumDebugInfoPhpVersions\\DependsOnPhpVersion contains magic method __debugInfo().',
+				27,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/enum-debug-info-php-versions.php'], $errors);
+	}
+
 }

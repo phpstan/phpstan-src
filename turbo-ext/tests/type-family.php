@@ -8423,7 +8423,7 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 		] as $method => $call) {
 			$r["objectShape $valueName $method"] = $misuse($call, $withMessage);
 		}
-		// the accepts() call on the property type sees it first
+		// VerbosityLevel::getRecommendedLevelByType()'s typed parameter sees it first
 		$r["objectShape $valueName accepts"] = $misuse(static fn () => $badShape->accepts($misuseGoodShape, true));
 		$r["objectShape traverse returning $valueName describe"] = $misuse(static fn () => $misuseGoodShape->traverse(static fn () => $value)->describe(\PHPStan\Type\VerbosityLevel::precise()), $withMessage);
 	}

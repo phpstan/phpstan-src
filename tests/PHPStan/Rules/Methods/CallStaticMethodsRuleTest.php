@@ -847,6 +847,15 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureBindParamClosureThisNamedArguments(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/closure-bind-param-closure-this-named.php'], []);
+	}
+
 	public function testClosureBind(): void
 	{
 		$this->checkThisOnly = false;

@@ -5,7 +5,8 @@
  * original).
  *
  * Marks the instanceof expressions written inside a TypeTraverser::map()
- * callback, tracked with a nesting depth over the traversal.
+ * or mapMemoized() callback, tracked with a nesting depth over the
+ * traversal.
  *
  * enterNode()/leaveNode() always return null and beforeTraverse() only
  * resets the depth, so the visitor is also registered with
@@ -65,7 +66,8 @@ public:
 	}
 
 private:
-	/* TypeTraverser::map(...) — a static call to that exact class and method */
+	/* TypeTraverser::map(...) / TypeTraverser::mapMemoized(...) — a static
+	 * call to that exact class and one of these methods */
 	static bool isTypeTraverserMapCall(zend_object *node)
 	{
 		static NodeProp classProp = PT_NODE_PROP(PT_CLASS_STATIC_CALL, "class");
@@ -81,7 +83,7 @@ private:
 		zend_object *method = methodProp.objectOf(node, PT_CLASS_IDENTIFIER);
 		if (method == NULL) return false;
 		zend_string *methodName = visitors::nameString(method, identifierProp);
-		return methodName != NULL && visitors::lowerEquals(methodName, "map");
+		return methodName != NULL && (visitors::lowerEquals(methodName, "map") || visitors::lowerEquals(methodName, "mapmemoized"));
 	}
 
 	/* the depth slot; `private int $depth` always holds an IS_LONG */

@@ -112,7 +112,7 @@ final class RuleLevelHelper
 	private function transformAcceptedType(Type $acceptingType, Type $acceptedType): array
 	{
 		$checkForUnion = $this->checkUnionTypes;
-		$acceptedType = TypeTraverser::map($acceptedType, function (Type $acceptedType, callable $traverse) use ($acceptingType, &$checkForUnion): Type {
+		$acceptedType = TypeTraverser::mapMemoized($acceptedType, function (Type $acceptedType, callable $traverse) use ($acceptingType, &$checkForUnion): Type {
 			if ($acceptedType instanceof CallableType) {
 				if ($acceptedType->isCommonCallable()) {
 					return $acceptedType;

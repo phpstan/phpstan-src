@@ -160,10 +160,31 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 				46,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
+		]);
+	}
+
+	public function testRepeatedIterableTypeReportedOnce(): void
+	{
+		// the same missing value type or generic class is reported once per parameter,
+		// regardless of whether the occurrences share a Type instance (type alias) or not
+		$this->analyse([__DIR__ . '/data/bug-15350.php'], [
 			[
-				'Method Bug14549\Foo::doIntersection() has parameter $array with no value type specified in iterable type array.',
-				46,
+				'Method Bug15350\\Foo::inline() has parameter $a with no value type specified in iterable type array.',
+				23,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method Bug15350\\Foo::alias() has parameter $a with no value type specified in iterable type array.',
+				30,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method Bug15350\\Foo::inlineGeneric() has parameter $a with generic class Bug15350\\Box but does not specify its types: T',
+				37,
+			],
+			[
+				'Method Bug15350\\Foo::aliasGeneric() has parameter $a with generic class Bug15350\\Box but does not specify its types: T',
+				44,
 			],
 		]);
 	}

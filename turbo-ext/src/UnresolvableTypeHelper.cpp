@@ -9,7 +9,7 @@
  * src/Rules/PhpDoc/UnresolvableTypeHelper.php; the registration lambda at
  * the bottom is only the engine ABI glue.
  *
- * getUnresolvableType() walks the type through TypeTraverser::map() with
+ * getUnresolvableType() walks the type through TypeTraverser::mapMemoized() with
  * the twin's `static function (Type $type, callable $traverse) use
  * (&$containsUnresolvable, &$reasons)` closure as a native callback
  * holder (pt_type_native_callback(): the two by-reference `use` variables
@@ -51,10 +51,10 @@ public:
 		ZVAL_EMPTY_ARRAY(&reasons);
 		zv::Val callback = pt_type_native_callback(visit, &containsUnresolvable, &reasons);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
+		zv::Val mapped = pt_type_traverser_map_memoized_of(type, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 		if (!zend_is_true(pt_type_native_callback_state(callback.raw(), 0))) return zv::Val::null();
-		/* new UnresolvableTypeResult(array_values(array_unique($reasons))) */
+		/* new UnresolvableTypeResult(array_values($reasons)) */
 		zv::Val unique = uniqueValues(pt_type_native_callback_state(callback.raw(), 1));
 		zval arg;
 		ZVAL_COPY_VALUE(&arg, unique.raw());
@@ -104,7 +104,8 @@ private:
 			}
 		}
 
-		/* if ($reason !== null) $reasons[] = $reason; */
+		/* if ($reason !== null) $reasons[$reason] = $reason; — pushed as a
+		 * list here, uniqueValues() keeps the first occurrence of each */
 		if (!zv::Ref(reason.raw()).isNull()) {
 			if (Z_TYPE_P(reasons) != IS_ARRAY) {
 				ZVAL_EMPTY_ARRAY(reasons);
@@ -122,9 +123,9 @@ private:
 		traversed.intoReturnValue(return_value);
 	}
 
-	/* array_values(array_unique($reasons)) over the collected strings: the
-	 * first occurrence of each value, as a list (array_unique() compares
-	 * the values as strings — they are strings here, so byte equality) */
+	/* array_values($reasons) of the twin's reason-keyed array over the
+	 * collected strings: the first occurrence of each value, as a list
+	 * (the keys are the strings themselves, so byte equality) */
 	static zv::Val uniqueValues(zval *reasons)
 	{
 		zv::Arr result = zv::Arr::empty();

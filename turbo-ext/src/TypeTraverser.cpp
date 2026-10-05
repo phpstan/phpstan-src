@@ -45,6 +45,20 @@ public:
 		return traverser.mapInternal(type);
 	}
 
+	/* mapMemoized(): map() with `$self->memo = [];` */
+	static zv::Val mapMemoized(zval *type, zval *cb)
+	{
+		zval object;
+		if (UNEXPECTED(object_init_ex(&object, pt_ce_type_traverser) != SUCCESS)) return zv::Val();
+		zv::Val holder = zv::Val::adopt(object);
+		TypeTraverser traverser(Z_OBJ(object));
+		traverser.construct(cb);
+		zval *memo = OBJ_PROP_NUM(Z_OBJ(object), slots::memo);
+		zval_ptr_dtor(memo);
+		ZVAL_EMPTY_ARRAY(memo);
+		return traverser.mapInternal(type);
+	}
+
 	/* __construct(): the callback as given. A TypeTraverserCallable is kept
 	 * as the object itself and its traverse() called from mapInternal() —
 	 * the twin wraps it in `static fn (Type $type, callable $traverse): Type
@@ -55,9 +69,45 @@ public:
 		zv::ObjRef(self).propAtWrite(slots::cb, zv::Val::copyOf(zv::Ref(cb)));
 	}
 
-	/* ($this->cb)($type, [$this, 'traverseInternal']); UNDEF = pending
+	/* the memoized result of $type when $this->memo is an array, else
+	 * ($this->cb)($type, [$this, 'traverseInternal']); UNDEF = pending
 	 * exception */
 	zv::Val mapInternal(zval *type) const
+	{
+		/* spl_object_id($type) is the object handle */
+		zend_ulong id = (zend_ulong) Z_OBJ_HANDLE_P(type);
+		zval *memo = OBJ_PROP_NUM(self, slots::memo);
+		if (Z_TYPE_P(memo) != IS_ARRAY) return callCallback(type);
+
+		zval *hit = zend_hash_index_find(Z_ARRVAL_P(memo), id);
+		if (hit != NULL) {
+			zval *memoized = zend_hash_index_find(Z_ARRVAL_P(hit), 1);
+			ZEND_ASSERT(memoized != NULL);
+			return zv::Val::copyOf(zv::Ref(memoized));
+		}
+
+		zv::Val result = callCallback(type);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+
+		/* $this->memo[$id] = [$type, $result] — re-read, the callback's
+		 * nested mapInternal() calls have written to it meanwhile */
+		memo = OBJ_PROP_NUM(self, slots::memo);
+		ZEND_ASSERT(Z_TYPE_P(memo) == IS_ARRAY);
+		SEPARATE_ARRAY(memo);
+		zval pair;
+		array_init_size(&pair, 2);
+		Z_ADDREF_P(type);
+		add_next_index_zval(&pair, type);
+		Z_TRY_ADDREF_P(result.raw());
+		add_next_index_zval(&pair, result.raw());
+		zend_hash_index_update(Z_ARRVAL_P(memo), id, &pair);
+
+		return result;
+	}
+
+	/* ($this->cb)($type, [$this, 'traverseInternal']); UNDEF = pending
+	 * exception */
+	zv::Val callCallback(zval *type) const
 	{
 		zval *cb = OBJ_PROP_NUM(self, slots::cb);
 		zv::Val traverse = boundCallable(pt_tt_str_traverse_internal);
@@ -112,6 +162,14 @@ using phpstanturbo::TypeTraverser;
 bool pt_type_traverser_map(zval *out, zval *type, zval *cb)
 {
 	zv::Val result = TypeTraverser::map(type, cb);
+	if (UNEXPECTED(result.isUndef())) return false;
+	result.intoReturnValue(out);
+	return true;
+}
+
+bool pt_type_traverser_map_memoized(zval *out, zval *type, zval *cb)
+{
+	zv::Val result = TypeTraverser::mapMemoized(type, cb);
 	if (UNEXPECTED(result.isUndef())) return false;
 	result.intoReturnValue(out);
 	return true;
@@ -198,6 +256,13 @@ PT_MINIT_REGISTRATION(pt_register_type_traverser)
 		if (!zp::parse<zp::Obj, zp::Zval>(execute_data, type, cb)) RETURN_THROWS();
 		if (UNEXPECTED(!pt_tt_check_cb(cb, 2))) RETURN_THROWS();
 		PT_RETURN_VAL(TypeTraverser::map(type, cb));
+	});
+
+	cls.method(sigs::mapMemoized, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type, *cb;
+		if (!zp::parse<zp::Obj, zp::Zval>(execute_data, type, cb)) RETURN_THROWS();
+		if (UNEXPECTED(!pt_tt_check_cb(cb, 2))) RETURN_THROWS();
+		PT_RETURN_VAL(TypeTraverser::mapMemoized(type, cb));
 	});
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {

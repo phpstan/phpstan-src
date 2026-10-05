@@ -2199,7 +2199,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	private function transformStaticType(Type $type): Type
 	{
-		return TypeTraverser::map($type, new TransformStaticTypeTraverser($this));
+		return TypeTraverser::mapMemoized($type, new TransformStaticTypeTraverser($this));
 	}
 
 	/**

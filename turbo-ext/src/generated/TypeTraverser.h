@@ -11,6 +11,7 @@ namespace ptdecl::TypeTraverser {
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
 inline constexpr uint32_t cb = 0;
+inline constexpr uint32_t memo = 1;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -22,6 +23,7 @@ inline void declareClass(reg::Class &cls)
 inline void declareProperties(reg::Class &cls)
 {
 	cls.property("cb", ZEND_ACC_PRIVATE, reg::PropertyKind::Null, 0);
+	cls.property("memo", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_ARRAY);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -33,13 +35,17 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\TypeTraverserCallable\0" /* 26 */
 	"\0" /* 61 */
 	"map\0" /* 62 */
-	"__construct\0" /* 66 */
-	"mapInternal\0" /* 78 */
-	"traverseInternal"; /* 90 */
+	"mapMemoized\0" /* 66 */
+	"__construct\0" /* 78 */
+	"mapInternal\0" /* 90 */
+	"traverseInternal"; /* 102 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* map $type */
 	reg::packed(23, MAY_BE_CALLABLE, 26), /* map $cb */
 	reg::packed(61, 0, 5), /* map return */
+	reg::packed(0, 0, 5), /* mapMemoized $type */
+	reg::packed(23, MAY_BE_CALLABLE, 26), /* mapMemoized $cb */
+	reg::packed(61, 0, 5), /* mapMemoized return */
 	reg::packed(23, MAY_BE_CALLABLE, 26), /* __construct $cb */
 	reg::packed(0, 0, 5), /* mapInternal $type */
 	reg::packed(61, 0, 5), /* mapInternal return */
@@ -52,9 +58,10 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig map = { { 62 /* map */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig __construct = { { 66 /* __construct */, 1, 3, 1, reg::NoArg, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig mapInternal = { { 78 /* mapInternal */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseInternal = { { 90 /* traverseInternal */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mapMemoized = { { 66 /* mapMemoized */, 2, 3, 2, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 78 /* __construct */, 1, 6, 1, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig mapInternal = { { 90 /* mapInternal */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseInternal = { { 102 /* traverseInternal */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeTraverser

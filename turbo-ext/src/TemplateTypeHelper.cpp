@@ -4,7 +4,7 @@
  *
  * When the extension is active, PHPStan\Type\Generic\TemplateTypeHelper is
  * this class, declared under that name at activation (final, like the
- * twin). Every method is a TypeTraverser::map() over a closure of the
+ * twin). Every method is a TypeTraverser::map() or mapMemoized() over a closure of the
  * twin's — here a native body behind a PHPStanTurbo\NativeCallback holder
  * (the closure's `use` variables in the holder's state slots), run through
  * the native TypeTraverser — except generalizeInferredTemplateType(),
@@ -90,7 +90,7 @@ public:
 	 * by its default-or-bound / its bound, repeatedly; UNDEF = pending
 	 * exception */
 	static zv::Val resolveToDefaults(zval *type) { return mapWith(type, resolveToDefaultsCallback); }
-	static zv::Val resolveToBounds(zval *type) { return mapWith(type, resolveToBoundsCallback); }
+	static zv::Val resolveToBounds(zval *type) { return mapMemoizedWith(type, resolveToBoundsCallback); }
 
 	/* toArgument(): every template type not owned by a callable inside
 	 * $type turned into its argument; UNDEF = pending exception */
@@ -169,6 +169,14 @@ private:
 		zv::Val callback = pt_type_native_callback(fn, NULL, NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
 		return map(type, callback.raw());
+	}
+
+	/* TypeTraverser::mapMemoized() over a stateless native body */
+	static zv::Val mapMemoizedWith(zval *type, pt_native_callback fn)
+	{
+		zv::Val callback = pt_type_native_callback(fn, NULL, NULL);
+		if (UNEXPECTED(callback.isUndef())) return zv::Val();
+		return pt_type_traverser_map_memoized_of(type, callback.raw());
 	}
 
 	static void resolveTemplateTypesCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value);

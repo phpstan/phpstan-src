@@ -843,7 +843,7 @@ private:
 	{
 		if (UNEXPECTED(!classReflectionOf(scope, classReflection, "isFinal"))) return zv::Val();
 		zv::Val callback = pt_native_closure(&transformStaticTypeBody, classReflection.raw());
-		return pt_type_traverser_map_of(type, callback.raw());
+		return pt_type_traverser_map_memoized_of(type, callback.raw());
 	}
 
 	/* static function (Type $type, callable $traverse) use ($declaringClass): Type */

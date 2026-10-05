@@ -106,7 +106,7 @@ final class TemplateTypeHelper
 
 	public static function resolveToBounds(Type $type): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+		return TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse): Type {
 			while ($type instanceof TemplateType) {
 				$type = $type->getBound();
 			}

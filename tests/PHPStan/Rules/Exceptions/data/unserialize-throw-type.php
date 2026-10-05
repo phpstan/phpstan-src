@@ -81,6 +81,24 @@ class Foo
 		} catch (\ValueError $e) {
 
 		}
+
+		try {
+			$a = unserialize($s, ['allowed_classes' => false, 'max_depth' => -1]);
+		} catch (\ValueError $e) {
+
+		}
+
+		try {
+			$a = unserialize($s, ['allowed_classes' => [], 'max_depth' => 10]);
+		} catch (\Exception $e) {
+
+		}
+
+		try {
+			$a = unserialize($s, ['allowed_classes' => true]);
+		} catch (\Exception $e) {
+
+		}
 	}
 
 }

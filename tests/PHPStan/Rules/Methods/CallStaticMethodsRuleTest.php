@@ -853,7 +853,28 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
-		$this->analyse([__DIR__ . '/data/closure-bind-param-closure-this-named.php'], []);
+		$this->analyse([__DIR__ . '/data/closure-bind-param-closure-this-named.php'], [
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				19,
+			],
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				20,
+			],
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				21,
+			],
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				22,
+			],
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				23,
+			],
+		]);
 	}
 
 	public function testClosureBind(): void

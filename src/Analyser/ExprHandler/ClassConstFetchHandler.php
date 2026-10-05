@@ -23,7 +23,11 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use function array_merge;
 
@@ -84,7 +88,28 @@ final class ClassConstFetchHandler implements ExprHandler
 		// the enclosing class is lexical - fixed at this node, identical on every
 		// (possibly narrowed) scope the callback may later be invoked with - so
 		// resolve it once here instead of reading it off the callback's scope.
-		$classReflection = $beforeScope->isInClass() ? $beforeScope->getClassReflection() : null;
+		// Inside a closure scoped by Closure::bind(), self/parent/static name the bound class;
+		// bound to a class that is not exactly one known class, they name none.
+		$classReflection = $beforeScope->getClosureBindScopeClassReflection();
+		if ($classReflection === null && $beforeScope->isInClass() && !$beforeScope->isClosureBindScopeClassAmbiguous()) {
+			$classReflection = $beforeScope->getClassReflection();
+		}
+		// ...and their ::class is a class-string of the closest class all candidates extend
+		$ambiguousClassStringType = null;
+		if (
+			$expr->class instanceof Name
+			&& $expr->class->isSpecialClassName()
+			&& $expr->name instanceof Identifier
+			&& $expr->name->toLowerString() === 'class'
+			&& $beforeScope->isClosureBindScopeClassAmbiguous()
+		) {
+			$commonAncestor = $beforeScope->getClosureBindScopeCommonAncestor($expr->class);
+			if ($commonAncestor === null) {
+				$ambiguousClassStringType = new ClassStringType();
+			} else {
+				$ambiguousClassStringType = new GenericClassStringType($expr->class->toLowerString() === 'static' ? new StaticType($commonAncestor) : new ObjectType($commonAncestor->getName()));
+			}
+		}
 
 		$result = $this->expressionResultFactory->create(
 			$scope,
@@ -95,9 +120,12 @@ final class ClassConstFetchHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			typeCallback: function (bool $nativeTypesPromoted) use ($expr, $classResult, $classReflection): Type {
+			typeCallback: function (bool $nativeTypesPromoted) use ($expr, $classResult, $classReflection, $ambiguousClassStringType): Type {
 				if (!$expr->name instanceof Identifier) {
 					return new MixedType();
+				}
+				if ($ambiguousClassStringType !== null) {
+					return $ambiguousClassStringType;
 				}
 
 				return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(

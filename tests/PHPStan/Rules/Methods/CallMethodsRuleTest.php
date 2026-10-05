@@ -1097,6 +1097,23 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4865.php'], []);
 	}
 
+	public function testClosureBindThisFromNewThis(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/closure-bind-this-from-new-this.php'], [
+			[
+				'Call to an undefined method ClosureBindThisFromNewThis\\NoParent::im().',
+				26,
+			],
+			[
+				'Call to an undefined method ClosureBindThisFromNewThis\\NoParent::im().',
+				28,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14715(): void
 	{

@@ -788,6 +788,22 @@ class DefinedVariableRuleWithoutLoopPollutionTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-393.php'], []);
 	}
 
+	public function testClosureBindThisFromNewThis(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->analyse([__DIR__ . '/data/closure-bind-this-from-new-this.php'], [
+			[
+				'Undefined variable: $this',
+				17,
+			],
+			[
+				'Undefined variable: $this',
+				19,
+			],
+		]);
+	}
+
 	public function testBug9023(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

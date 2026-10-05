@@ -8,7 +8,6 @@ use PhpParser\Node\Identifier;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
-use function count;
 
 #[AutowiredService]
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClosureBindArgVisitor.cpp')]
@@ -28,11 +27,32 @@ final class ClosureBindArgVisitor extends NodeVisitorAbstract
 			&& $node->name->toLowerString() === 'bind'
 			&& !$node->isFirstClassCallable()
 		) {
-			$args = $node->getArgs();
-			if (count($args) > 1) {
-				$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
+			$closureArg = null;
+			$newThisArg = null;
+			foreach ($node->getArgs() as $i => $arg) {
+				if ($arg->name === null) {
+					if ($i === 0) {
+						$closureArg = $arg;
+					} elseif ($i === 1) {
+						$newThisArg = $arg;
+					}
+					continue;
+				}
+
+				// a duplicate named argument does not replace the one already
+				// found, like in ArgumentsNormalizer::reorderArgs()
+				if ($arg->name->toString() === 'closure') {
+					$closureArg ??= $arg;
+				} elseif ($arg->name->toString() === 'newThis') {
+					$newThisArg ??= $arg;
+				}
+			}
+
+			if ($closureArg !== null && $newThisArg !== null) {
+				$closureArg->setAttribute(self::ATTRIBUTE_NAME, true);
 			}
 		}
+
 		return null;
 	}
 

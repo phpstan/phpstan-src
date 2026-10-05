@@ -73,6 +73,21 @@ $parserVisitorSnippets = [
 	'<?php $c->bindTo($obj); $c->bindTo(); $c->bindTo(...); $c->BINDTO($obj); $c->other($obj);',
 	'<?php Closure::bind($c, $obj); Closure::bind($c); \Closure::bind($c, $obj, "X"); Closure::bind(...);
 		Closure::fromCallable($c); Other::bind($c, $obj);',
+	// Closure::bind() arguments found by name as well as by position, in every order
+	'<?php Closure::bind(closure: $c, newThis: $o); Closure::bind(newThis: $o, closure: $c);
+		Closure::bind(closure: $c, newThis: $o, newScope: X::class); Closure::bind(closure: $c, newScope: X::class, newThis: $o);
+		Closure::bind(newThis: $o, closure: $c, newScope: X::class); Closure::bind(newThis: $o, newScope: X::class, closure: $c);
+		Closure::bind(newScope: X::class, closure: $c, newThis: $o); Closure::bind(newScope: X::class, newThis: $o, closure: $c);
+		Closure::bind($c, newThis: $o); Closure::bind($c, newScope: X::class, newThis: $o); Closure::bind($c, $o, newScope: X::class);
+		Closure::bind(closure: $c); Closure::bind(newThis: $o); Closure::bind($c, newScope: X::class);
+		Closure::bind(Closure: $c, NewThis: $o); Closure::bind(closure: $c, other: $o);',
+	// ... duplicated (the first one is kept), unpacked and nested arguments
+	'<?php Closure::bind($c, $o, closure: $d); Closure::bind($c, $o, newThis: $p); Closure::bind($c, $o, closure: $d, newThis: $p);
+		Closure::bind(closure: $c, newThis: $o, closure: $d); Closure::bind(newThis: $o, closure: $c, newThis: $p, closure: $d);
+		Closure::bind(closure: $c, $o); Closure::bind(newThis: $o, $c); Closure::bind(...$args); Closure::bind(...$args, newThis: $o);
+		Closure::bind(...$args, closure: $c); Closure::bind($c, ...$rest); Closure::bind(newThis: $o, closure: $c, ...$rest);
+		Closure::bind(newThis: Closure::bind(closure: $d, newThis: $p), closure: Closure::bind(newThis: $q, closure: $e));
+		Closure::bind(Closure::bind($d, newThis: $p), closure: $c, newThis: $o);',
 
 	// array offsets: every literal spelling the normalizer canonicalises
 	'<?php echo $a[\'k\'], $a["k"], $a["a\nb"], $a["$x"], $a["pre{$x}post"], $a[1], $a[0x1F], $a[0b11], $a[$i], $a[C], $a[];',

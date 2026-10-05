@@ -581,7 +581,7 @@ final class FunctionCallParametersCheck
 			$resolvedTypes = $parametersAcceptor->getResolvedTemplateTypeMap()->getTypes();
 			if (count($resolvedTypes) > 0) {
 				$returnTemplateTypes = [];
-				TypeTraverser::mapMemoized(
+				TypeTraverser::map(
 					$parametersAcceptor->getReturnTypeWithUnresolvableTemplateTypes(),
 					static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
 						while ($type instanceof ConditionalType && $type->isResolvable()) {
@@ -599,7 +599,7 @@ final class FunctionCallParametersCheck
 
 				$parameterTemplateTypes = [];
 				foreach ($originalParametersAcceptor->getParameters() as $parameter) {
-					TypeTraverser::mapMemoized($parameter->getType(), static function (Type $type, callable $traverse) use (&$parameterTemplateTypes): Type {
+					TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$parameterTemplateTypes): Type {
 						if ($type instanceof TemplateType && $type->getDefault() === null) {
 							$parameterTemplateTypes[$type->getName()] = true;
 							return $type;

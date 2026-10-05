@@ -56,7 +56,7 @@ final class TemplateArgumentObserver
 	private function containsMarker(Type $type, bool $templateArgumentsOnly = false): bool
 	{
 		$contains = false;
-		TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use (&$contains, $templateArgumentsOnly): Type {
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains, $templateArgumentsOnly): Type {
 			if ($type instanceof UnresolvedTemplateArgumentType && (!$templateArgumentsOnly || !ClosureSignatureInference::isClosureSignatureMarker($type))) {
 				$contains = true;
 			}
@@ -151,7 +151,7 @@ final class TemplateArgumentObserver
 	private function containsClosureSignatureMarker(Type $type): bool
 	{
 		$contains = false;
-		TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use (&$contains): Type {
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains): Type {
 			if (
 				($type instanceof UnresolvedTemplateArgumentType && ClosureSignatureInference::isClosureSignatureMarker($type))
 				|| ($type instanceof ClosureType && $type->getByRefUseTypes() !== [])

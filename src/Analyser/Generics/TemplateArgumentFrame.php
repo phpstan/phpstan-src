@@ -304,7 +304,7 @@ final class TemplateArgumentFrame
 
 		$scope = $template->getScope();
 
-		return TypeTraverser::mapMemoized($bound, static function (Type $type, callable $traverse) use ($site, $scope, $resolve): Type {
+		return TypeTraverser::map($bound, static function (Type $type, callable $traverse) use ($site, $scope, $resolve): Type {
 			if ($type instanceof TemplateType && $type->getScope()->equals($scope)) {
 				return $resolve($site, $type->getName()) ?? $type->getDefault() ?? $traverse($type->getBound());
 			}

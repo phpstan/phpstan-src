@@ -89,24 +89,22 @@ public:
 	/* resolveToDefaults() / resolveToBounds(): every template type replaced
 	 * by its default-or-bound / its bound, repeatedly; UNDEF = pending
 	 * exception */
-	static zv::Val resolveToDefaults(zval *type) { return mapMemoizedWith(type, resolveToDefaultsCallback); }
+	static zv::Val resolveToDefaults(zval *type) { return mapWith(type, resolveToDefaultsCallback); }
 	static zv::Val resolveToBounds(zval *type) { return mapMemoizedWith(type, resolveToBoundsCallback); }
 
 	/* toArgument(): every template type not owned by a callable inside
 	 * $type turned into its argument; UNDEF = pending exception */
 	static zv::Val toArgument(zval *type)
 	{
-		/* $ownedTemplates = []; $cache = []; */
-		zval ownedTemplates, cache;
+		zval ownedTemplates;
 		ZVAL_EMPTY_ARRAY(&ownedTemplates);
-		ZVAL_EMPTY_ARRAY(&cache);
-		zv::Val callback = pt_type_native_callback(toArgumentCallback, &ownedTemplates, &cache);
+		zv::Val callback = pt_type_native_callback(toArgumentCallback, &ownedTemplates, NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
 		return map(type, callback.raw());
 	}
 
 	/* removeFinalByKeywordOverrides(); UNDEF = pending exception */
-	static zv::Val removeFinalByKeywordOverrides(zval *type) { return mapMemoizedWith(type, removeFinalByKeywordOverridesCallback); }
+	static zv::Val removeFinalByKeywordOverrides(zval *type) { return mapWith(type, removeFinalByKeywordOverridesCallback); }
 
 	/* generalizeInferredTemplateType(); UNDEF = pending exception */
 	static zv::Val generalizeInferredTemplateType(zval *templateType, zval *type)
@@ -185,7 +183,6 @@ private:
 	static void resolveToDefaultsCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 	static void resolveToBoundsCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 	static void toArgumentCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value);
-	static void toArgumentBody(zval *ownedTemplates, zval *type, zval *traverse, zval *return_value);
 	static void removeFinalByKeywordOverridesCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 };
 
@@ -211,7 +208,7 @@ zv::Val TemplateTypeHelper::resolveTemplateTypes(zval *type, zval *standins, zva
 	uses.push(zv::Val::boolean(keepErrorTypes));
 	zv::Val callback = pt_type_native_callback(resolveTemplateTypesCallback, uses.raw(), NULL);
 	if (UNEXPECTED(callback.isUndef())) return zv::Val();
-	return pt_type_traverser_map_memoized_of(type, callback.raw());
+	return map(type, callback.raw());
 }
 
 void TemplateTypeHelper::resolveTemplateTypesCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
@@ -413,44 +410,11 @@ void TemplateTypeHelper::resolveToBoundsCallback(zval *state0, zval *state1, uin
 }
 
 /* the `use (&$ownedTemplates)` slot: state0 by reference */
-/* the outer closure of toArgument(): `use (&$ownedTemplates, &$cache, $cb)`
- * — state0 is $ownedTemplates, state1 is $cache; a type seen again is
- * answered from $cache while no templates are owned */
 void TemplateTypeHelper::toArgumentCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 {
+	(void) state1;
 	zval *type, *traverse;
 	if (UNEXPECTED(!pt_tth_callback_args(argc, argv, type, traverse))) return;
-
-	/* spl_object_id($type) is the object handle */
-	zend_ulong id = (zend_ulong) Z_OBJ_HANDLE_P(type);
-	if (zend_hash_num_elements(Z_ARRVAL_P(state0)) == 0) {
-		zval *hit = zend_hash_index_find(Z_ARRVAL_P(state1), id);
-		if (hit != NULL) {
-			zval *cached = zend_hash_index_find(Z_ARRVAL_P(hit), 1);
-			ZEND_ASSERT(cached != NULL);
-			ZVAL_COPY(return_value, cached);
-			return;
-		}
-	}
-
-	toArgumentBody(state0, type, traverse, return_value);
-	if (UNEXPECTED(EG(exception) != NULL)) return;
-	if (zend_hash_num_elements(Z_ARRVAL_P(state0)) != 0) return;
-
-	/* $cache[$id] = [$type, $result] */
-	SEPARATE_ARRAY(state1);
-	zval pair;
-	array_init_size(&pair, 2);
-	Z_ADDREF_P(type);
-	add_next_index_zval(&pair, type);
-	Z_TRY_ADDREF_P(return_value);
-	add_next_index_zval(&pair, return_value);
-	zend_hash_index_update(Z_ARRVAL_P(state1), id, &pair);
-}
-
-/* the inner closure of toArgument(): `use (&$ownedTemplates)` */
-void TemplateTypeHelper::toArgumentBody(zval *state0, zval *type, zval *traverse, zval *return_value)
-{
 	zend_object *object = Z_OBJ_P(type);
 
 	bool isAcceptor;

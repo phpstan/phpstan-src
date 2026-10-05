@@ -204,7 +204,7 @@ final class VerbosityLevel
 		}
 
 		$containsInvariantTemplateType = false;
-		TypeTraverser::mapMemoized($acceptingType, static function (Type $type, callable $traverse) use (&$containsInvariantTemplateType): Type {
+		TypeTraverser::map($acceptingType, static function (Type $type, callable $traverse) use (&$containsInvariantTemplateType): Type {
 			// stop deep traversal to not waste resources.
 			if ($containsInvariantTemplateType) {
 				return $type;

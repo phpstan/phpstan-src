@@ -1745,7 +1745,7 @@ class IntersectionType implements CompoundType
 				}
 
 				$changed = true;
-				$newTypes[] = TypeTraverser::mapMemoized($innerType, static function (Type $type, callable $traverse) use ($innerType, $newKeyType, $newValueType): Type {
+				$newTypes[] = TypeTraverser::map($innerType, static function (Type $type, callable $traverse) use ($innerType, $newKeyType, $newValueType): Type {
 					if ($type === $innerType->getIterableKeyType()) {
 						return $newKeyType;
 					}

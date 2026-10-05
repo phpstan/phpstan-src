@@ -457,7 +457,7 @@ public:
 		captured.push(zv::Ref(resolver));
 		zv::Val callback = pt_type_native_callback(resolveUnconstrainedCallback, site, captured.raw());
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		return pt_type_traverser_map_memoized_of(bound.raw(), callback.raw());
+		return pt_type_traverser_map_of(bound.raw(), callback.raw());
 	}
 
 	/* Mirrors resolve(): the resolution of the key on this frame, then on the

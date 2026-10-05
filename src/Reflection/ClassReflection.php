@@ -1934,7 +1934,7 @@ final class ClassReflection
 			// class, possibly nested inside a composite type like `TValue|null`.
 			// Never descend into a TemplateType's bound - bounds may be
 			// self-referential (`@template T of Foo<T>`).
-			$type = TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use ($map, $className): Type {
+			$type = TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($map, $className): Type {
 				if (!$type instanceof TemplateType) {
 					return $traverse($type);
 				}

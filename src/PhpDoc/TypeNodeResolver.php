@@ -998,7 +998,7 @@ final class TypeNodeResolver
 	{
 		if ($this->reportUnsafeArrayStringKeyCasting === ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
 			if (!$keyType->isSuperTypeOf(new IntegerType())->yes()) {
-				$keyType = TypeTraverser::mapMemoized($keyType, static function (Type $type, callable $traverse) {
+				$keyType = TypeTraverser::map($keyType, static function (Type $type, callable $traverse) {
 					if ($type instanceof UnionType || $type instanceof IntersectionType) {
 						return $traverse($type);
 					}

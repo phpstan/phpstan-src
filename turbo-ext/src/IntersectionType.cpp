@@ -2034,7 +2034,7 @@ public:
 
 	/* for two arrays: every member's key and value types mapped through
 	 * $cb against the right's, the changed members rebuilt through
-	 * TypeTraverser::mapMemoized() and intersected; $this otherwise; UNDEF =
+	 * TypeTraverser::map() and intersected; $this otherwise; UNDEF =
 	 * pending exception */
 	zv::Val traverseSimultaneously(zval *right, zend_fcall_info *fci, zend_fcall_info_cache *fcc) const
 	{
@@ -2088,7 +2088,7 @@ public:
 			state.push(std::move(newValueType));
 			zv::Val callback = pt_type_native_callback(replaceKeyValueCallback, state.raw(), NULL);
 			if (UNEXPECTED(callback.isUndef())) return zv::Val();
-			zv::Val mapped = pt_type_traverser_map_memoized_of(innerType, callback.raw());
+			zv::Val mapped = pt_type_traverser_map_of(innerType, callback.raw());
 			if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 			newTypes.push(std::move(mapped));
 		}
@@ -2096,7 +2096,7 @@ public:
 		return intersectOperands(newTypes.arrRef());
 	}
 
-	/* the TypeTraverser::mapMemoized() callback of traverseSimultaneously(): the
+	/* the TypeTraverser::map() callback of traverseSimultaneously(): the
 	 * member's key/value types replaced, everything else traversed; state0
 	 * = [$innerType, $newKeyType, $newValueType] */
 	static void replaceKeyValueCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)

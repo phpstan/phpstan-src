@@ -336,7 +336,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 			return $traverse($type);
 		};
 
-		return TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse) use ($references, $objectCb): Type {
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references, $objectCb): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
 				return TypeTraverser::map($type, $objectCb);
 			}
@@ -425,7 +425,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 			return $type;
 		}
 
-		return TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse): Type {
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
 			if ($type instanceof ConditionalTypeForParameter) {
 				$templateType = $this->getTemplateTypeBoundOnlyByParameter($type->getParameterName());
 				if ($templateType !== null) {
@@ -488,7 +488,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	private static function referencesTemplateType(Type $type, TemplateType $templateType): bool
 	{
 		$references = false;
-		TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use ($templateType, &$references): Type {
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($templateType, &$references): Type {
 			if (
 				$type instanceof TemplateType
 				&& $type->getName() === $templateType->getName()

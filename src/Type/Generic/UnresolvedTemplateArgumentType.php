@@ -131,7 +131,7 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 			return $type;
 		}
 
-		return TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse): Type {
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof self) {
 				return self::unwrapBare($type->getDelegate());
 			}

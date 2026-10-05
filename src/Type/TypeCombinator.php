@@ -1327,7 +1327,7 @@ final class TypeCombinator
 			}
 
 			$isOversized = false;
-			$result = TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use (&$isOversized): Type {
+			$result = TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$isOversized): Type {
 				if (!$type instanceof ConstantArrayType) {
 					return $traverse($type);
 				}
@@ -1369,7 +1369,7 @@ final class TypeCombinator
 					//   reached via `array{}|array{a: 1}` differently from one
 					//   reached directly, leaving `processArrayTypes` with a
 					//   mix of shapes it cannot unify cleanly.
-					$generalizedValueType = TypeTraverser::mapMemoized($innerValueTypes[$i], static function (Type $type, callable $innerTraverse): Type {
+					$generalizedValueType = TypeTraverser::map($innerValueTypes[$i], static function (Type $type, callable $innerTraverse): Type {
 						if ($type instanceof ConstantArrayType && $type->isIterableAtLeastOnce()->no()) {
 							return $type;
 						}

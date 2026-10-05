@@ -322,7 +322,7 @@ final class ImpossibleCheckTypeHelper
 							}
 						}
 
-						$genericType = TypeTraverser::mapMemoized($objectType, static function (Type $type, callable $traverse): Type {
+						$genericType = TypeTraverser::map($objectType, static function (Type $type, callable $traverse): Type {
 							if ($type instanceof UnionType || $type instanceof IntersectionType) {
 								return $traverse($type);
 							}

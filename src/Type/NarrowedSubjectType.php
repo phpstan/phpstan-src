@@ -61,7 +61,7 @@ final class NarrowedSubjectType implements TemplateType, LateResolvableType
 	{
 		$narrowedSubject = self::create($subject, $target, $conditionHolds);
 
-		return TypeTraverser::mapMemoized(
+		return TypeTraverser::map(
 			$branch,
 			static fn (Type $type, callable $traverse): Type => $subject->equals($type)
 				? $narrowedSubject

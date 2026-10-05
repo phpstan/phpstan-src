@@ -86,7 +86,7 @@ final class RuleLevelHelper
 			return $type;
 		}
 
-		return TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse) {
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) {
 			if ($type instanceof TemplateMixedType) {
 				if ($this->checkExplicitMixed) {
 					return $type->toStrictMixedType();

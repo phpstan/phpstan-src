@@ -357,7 +357,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	private function transformStaticType(Type $type, ClassMemberAccessAnswerer $scope): Type
 	{
-		return TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse) use ($scope): Type {
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($scope): Type {
 			if ($type instanceof StaticType) {
 				$classReflection = $this->classReflection;
 				$isFinal = false;

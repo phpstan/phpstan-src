@@ -12,7 +12,7 @@
  * Every `$this->method()` the twin makes goes through the object's class
  * entry — a subclass may have overridden it — with a direct C++ call when
  * the object is exactly an ArrayType; `new self(...)` is always this class.
- * The twin's `static fn` closures handed to TypeTraverser::map()/mapMemoized() are native
+ * The twin's `static fn` closures handed to TypeTraverser::map() are native
  * bodies behind pt_type_native_callback() (TypeTraits.cpp).
  */
 
@@ -1266,7 +1266,7 @@ public:
 		zv::Val caseZv = caseArg.toVal();
 		zv::Val callback = pt_type_native_callback(changeKeyCaseCallback, caseZv.raw(), NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		zv::Val newKeyType = pt_type_traverser_map_memoized_of(k, callback.raw());
+		zv::Val newKeyType = pt_type_traverser_map_of(k, callback.raw());
 		return thisWithTypes(std::move(newKeyType), thisGetItemType());
 	}
 
@@ -1852,7 +1852,7 @@ private:
 	{
 		zv::Val callback = pt_type_native_callback(renumberIntegerKeysCallback, NULL, NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		return pt_type_traverser_map_memoized_of(keyType, callback.raw());
+		return pt_type_traverser_map_of(keyType, callback.raw());
 	}
 
 	/* private static foldConstantStringKeyCase(ConstantStringType $type, ?int $case):

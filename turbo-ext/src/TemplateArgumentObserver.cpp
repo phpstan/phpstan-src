@@ -190,7 +190,7 @@ public:
 		ZVAL_FALSE(&contains);
 		zv::Val callback = pt_type_native_callback(templateArgumentsOnly ? containsTemplateArgumentMarkerBody : containsMarkerBody, &contains, NULL);
 		if (UNEXPECTED(callback.isUndef())) return false;
-		zv::Val mapped = pt_type_traverser_map_memoized_of(type, callback.raw());
+		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return false;
 		out = Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) == IS_TRUE;
 		return true;
@@ -299,7 +299,7 @@ public:
 		ZVAL_FALSE(&contains);
 		zv::Val callback = pt_type_native_callback(containsClosureSignatureMarkerBody, &contains, NULL);
 		if (UNEXPECTED(callback.isUndef())) return false;
-		zv::Val mapped = pt_type_traverser_map_memoized_of(type, callback.raw());
+		zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return false;
 		out = Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) == IS_TRUE;
 		return true;

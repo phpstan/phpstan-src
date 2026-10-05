@@ -345,7 +345,7 @@ public:
 		return map(accessoryType, type, true, false);
 	}
 
-	/* whether TypeTraverser::mapMemoized() meets a TemplateType anywhere in the
+	/* whether TypeTraverser::map() meets a TemplateType anywhere in the
 	 * type (the traversal stops descending once one is found); false =
 	 * pending exception */
 	static bool containsTemplateType(zval *type, bool &out)
@@ -355,7 +355,7 @@ public:
 		zv::Val callback = pt_type_native_callback(containsTemplateTypeCallback, &containsTemplateType, NULL);
 		if (UNEXPECTED(callback.isUndef())) return false;
 		zv::Val mapped;
-		if (UNEXPECTED(!pt_type_traverser_map_memoized(mapped.raw(), type, callback.raw()))) return false;
+		if (UNEXPECTED(!pt_type_traverser_map(mapped.raw(), type, callback.raw()))) return false;
 		zval *state = pt_type_native_callback_state(callback.raw(), 0);
 		out = Z_TYPE_P(state) == IS_TRUE;
 		return true;

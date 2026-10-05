@@ -667,6 +667,16 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClosureBindScopeNestedClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-nested-class.php'], [
+			[
+				'Using self outside of class scope.',
+				48,
+			],
+		]);
+	}
+
 	public function testClosureBindScopeAmbiguous(): void
 	{
 		$this->analyse([__DIR__ . '/data/closure-bind-scope-ambiguous.php'], [

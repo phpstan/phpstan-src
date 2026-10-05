@@ -1210,6 +1210,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6319(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-6319.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testClosureBindScopeAmbiguous(): void
 	{

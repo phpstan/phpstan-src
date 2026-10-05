@@ -13,6 +13,7 @@ use Symfony\Component\Console\Output\StreamOutput;
 use Throwable;
 use function fclose;
 use function function_exists;
+use function gc_mem_caches;
 use function ini_set;
 use function pcntl_fork;
 use function pcntl_waitpid;
@@ -85,6 +86,12 @@ final class ForkedProcess extends ProcessBase
 		}
 		$this->stdOut = $tmpStdOut;
 		$this->stdErr = $tmpStdErr;
+
+		// Memory the parent freed but the allocator still holds (e.g. what loading the result
+		// cache left behind) is shared copy-on-write with the child. The child then allocates
+		// into it and turns it into a private copy, once per worker. Returning it to the OS first
+		// keeps it from being multiplied by the number of workers.
+		gc_mem_caches();
 
 		$pid = pcntl_fork();
 

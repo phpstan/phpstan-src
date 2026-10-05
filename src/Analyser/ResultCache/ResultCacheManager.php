@@ -1049,6 +1049,19 @@ final class ResultCacheManager
 		$this->restoredCacheUnchanged = !$metaDifferent && !$dependencyFilesChanged && !$fileStatSignaturesChanged && !$valueDependenciesChanged;
 		$this->restoredStubFiles = $cachedStubFiles;
 
+		// The merge in process() replaces the entries of re-analysed files without reading them, so
+		// they need not stay in memory alongside the fresh results while the analysis runs.
+		foreach ($filesToAnalyse as $fileToAnalyse) {
+			unset(
+				$filteredErrors[$fileToAnalyse],
+				$filteredLocallyIgnoredErrors[$fileToAnalyse],
+				$filteredLinesToIgnore[$fileToAnalyse],
+				$filteredUnmatchedLineIgnores[$fileToAnalyse],
+				$filteredCollectedData[$fileToAnalyse],
+				$filteredExportedNodes[$fileToAnalyse],
+			);
+		}
+
 		return new ResultCache(
 			filesToAnalyse: $filesToAnalyse,
 			fullAnalysis: false,

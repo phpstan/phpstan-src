@@ -6,7 +6,8 @@
  * arginfo so Nette autowires it. processExpr() is registered as the class's
  * handler entry (Engine.h). The twin's closures are native closures capturing
  * what the PHP closures capture: the typeCallback ($this, $expr, $classResult,
- * $classReflection) and the specifyTypesCallback ($this, $expr); the
+ * $classReflection, $ambiguousClassStringType) and the specifyTypesCallback
+ * ($this, $expr); the
  * class-type callback it hands to InitializerExprTypeResolver ($classResult,
  * $nativeTypesPromoted) is a pt_ietr_get_type over a stack capture array (the
  * resolver calls it synchronously).
@@ -146,14 +147,25 @@ public:
 		}
 
 		// the enclosing class is lexical - fixed at this node - so resolve it
-		// once here instead of reading it off the callback's scope
-		zv::Val classReflection = zv::Val::null();
-		bool inClass;
-		if (UNEXPECTED(!pt_mutating_scope_is_in_class(Z_OBJ_P(beforeScope), inClass))) return zv::Val();
-		if (inClass) {
-			classReflection = pt_mutating_scope_get_class_reflection(Z_OBJ_P(beforeScope));
-			if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
+		// once here instead of reading it off the callback's scope; inside a
+		// closure scoped by Closure::bind(), self/parent/static name the bound class
+		zv::Val classReflection = pt_mutating_scope_get_closure_bind_scope_class_reflection(Z_OBJ_P(beforeScope));
+		if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
+		if (classReflection.isNull()) {
+			bool inClass;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_class(Z_OBJ_P(beforeScope), inClass))) return zv::Val();
+			if (inClass) {
+				bool ambiguous;
+				if (UNEXPECTED(!pt_mutating_scope_is_closure_bind_scope_class_ambiguous(Z_OBJ_P(beforeScope), ambiguous))) return zv::Val();
+				if (!ambiguous) {
+					classReflection = pt_mutating_scope_get_class_reflection(Z_OBJ_P(beforeScope));
+					if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
+				}
+			}
 		}
+		// ...and their ::class is a class-string of the closest class all candidates extend
+		zv::Val ambiguousClassStringType = ambiguousClassString(beforeScope, expr);
+		if (UNEXPECTED(ambiguousClassStringType.isUndef())) return zv::Val();
 
 		zv::Val variableFlow;
 		{
@@ -171,7 +183,7 @@ public:
 			variableFlow = pt_variable_flow_sequence(2, flows);
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		}
-		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, classResult.raw(), classReflection.raw());
+		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, classResult.raw(), classReflection.raw(), ambiguousClassStringType.raw());
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
 
 		pt_expression_result_args args(scope.raw(), beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
@@ -280,6 +292,56 @@ private:
 		return pt_dependencies_create_in(scope, types.raw(), classNames.raw());
 	}
 
+	/* the twin's $ambiguousClassStringType: for self/static/parent::class in
+	 * a scope bound to a class that is not exactly one known class, a
+	 * class-string of the closest class all candidates extend (or any
+	 * class-string); IS_NULL otherwise, UNDEF = pending exception */
+	static zv::Val ambiguousClassString(zval *scope, zval *expr)
+	{
+		zval *class_ = exprClass(expr);
+		if (UNEXPECTED(class_ == NULL)) return zv::Val();
+		int classIsName = isInstanceOf(class_, PT_CLASS_NAME);
+		if (UNEXPECTED(classIsName < 0)) return zv::Val();
+		if (!classIsName) return zv::Val::null();
+		zv::Val lower = pt_name_node_to_lower_string(class_);
+		if (UNEXPECTED(lower.isUndef())) return zv::Val();
+		if (!lower.ref().isString()) return zv::Val::null();
+		zend_string *lowerClass = lower.ref().asString();
+		bool isStatic = zend_string_equals_literal(lowerClass, "static");
+		if (!isStatic && !zend_string_equals_literal(lowerClass, "self") && !zend_string_equals_literal(lowerClass, "parent")) return zv::Val::null();
+		zval *name = exprName(expr);
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		int nameIsIdentifier = isIdentifier(name);
+		if (UNEXPECTED(nameIsIdentifier < 0)) return zv::Val();
+		if (!nameIsIdentifier) return zv::Val::null();
+		zval *constantName = identifierName(name);
+		if (UNEXPECTED(constantName == NULL)) return zv::Val();
+		if (Z_TYPE_P(constantName) != IS_STRING || !zend_string_equals_literal_ci(Z_STR_P(constantName), "class")) return zv::Val::null();
+		bool ambiguous;
+		if (UNEXPECTED(!pt_mutating_scope_is_closure_bind_scope_class_ambiguous(Z_OBJ_P(scope), ambiguous))) return zv::Val();
+		if (!ambiguous) return zv::Val::null();
+
+		zv::Val commonAncestor = pt_mutating_scope_get_closure_bind_scope_common_ancestor(Z_OBJ_P(scope), Z_OBJ_P(class_));
+		if (UNEXPECTED(commonAncestor.isUndef())) return zv::Val();
+		if (commonAncestor.isNull()) {
+			zval classString;
+			if (UNEXPECTED(!pt_class_string_type_new(&classString))) return zv::Val();
+			return zv::Val::adopt(classString);
+		}
+		zv::Val objectType;
+		if (isStatic) {
+			zval staticType;
+			if (UNEXPECTED(!pt_static_type_new(&staticType, commonAncestor.raw()))) return zv::Val();
+			objectType = zv::Val::adopt(staticType);
+		} else {
+			zv::Val ancestorName = pt_class_reflection_get_name(Z_OBJ_P(commonAncestor.raw()));
+			if (UNEXPECTED(ancestorName.isUndef())) return zv::Val();
+			objectType = pt_type_new_object_type(ancestorName.raw());
+			if (UNEXPECTED(objectType.isUndef())) return zv::Val();
+		}
+		return pt_type_new_generic_class_string(objectType.raw());
+	}
+
 	/* $constantReflection->getDeclaringClass()->getName(); UNDEF = pending
 	 * exception */
 	static zv::Val declaringClassNameOf(zval *constantReflection)
@@ -290,8 +352,8 @@ private:
 	}
 
 	/* function (bool $nativeTypesPromoted) use ($expr, $classResult,
-	 * $classReflection): Type — captures: $this, $expr, $classResult,
-	 * $classReflection */
+	 * $classReflection, $ambiguousClassStringType): Type — captures: $this,
+	 * $expr, $classResult, $classReflection, $ambiguousClassStringType */
 	static void typeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(!requireArguments(argc, 1, pt_ccfh_closure_name))) return;
@@ -304,6 +366,10 @@ private:
 			zv::Val mixed = pt_type_new_mixed_type();
 			if (UNEXPECTED(mixed.isUndef())) return;
 			mixed.intoReturnValue(return_value);
+			return;
+		}
+		if (Z_TYPE(captures[4]) != IS_NULL) {
+			ZVAL_COPY(return_value, &captures[4]);
 			return;
 		}
 

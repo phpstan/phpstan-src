@@ -68,6 +68,7 @@ use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -504,6 +505,17 @@ final class NewHandler implements ExprHandler
 	 */
 	private function exactInstantiation(MutatingScope $scope, New_ $node, Name $className, ?ParametersAcceptor $preResolvedAcceptor, ?ArgsResult $argsResult = null, bool $allowUnresolved = true): Type
 	{
+		if ($className->isSpecialClassName() && $scope->isClosureBindScopeClassAmbiguous()) {
+			// bound to a class that is not exactly one known class: an instance of the
+			// closest class all candidates extend, or of some class
+			$commonAncestor = $scope->getClosureBindScopeCommonAncestor($className);
+			if ($commonAncestor === null) {
+				return new ObjectWithoutClassType();
+			}
+
+			return $className->toLowerString() === 'static' ? new StaticType($commonAncestor) : new ObjectType($commonAncestor->getName());
+		}
+
 		$resolvedClassName = $scope->resolveName($className);
 		$isStatic = false;
 		$lowercasedClassName = $className->toLowerString();

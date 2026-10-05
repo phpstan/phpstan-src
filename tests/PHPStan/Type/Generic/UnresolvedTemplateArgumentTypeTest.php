@@ -140,7 +140,7 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 		$marker = self::marker($site, $outer);
 
 		$this->assertTrue($marker->hasTemplateOrLateResolvableType());
-		$resolved = TypeTraverser::mapMemoized($marker, static function (Type $type, callable $traverse) use ($outer): Type {
+		$resolved = TypeTraverser::map($marker, static function (Type $type, callable $traverse) use ($outer): Type {
 			if ($type === $outer) {
 				return new IntegerType();
 			}

@@ -221,7 +221,7 @@ class LateResolvableArrayShapeTypeTest extends PHPStanTestCase
 	#[DataProvider('dataResolve')]
 	public function testResolve(Type $type, Type $resolvedTemplateType, string $expectedDescription): void
 	{
-		$resolved = TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse) use ($resolvedTemplateType): Type {
+		$resolved = TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($resolvedTemplateType): Type {
 			if ($type instanceof Generic\TemplateType) {
 				return $resolvedTemplateType;
 			}

@@ -62,7 +62,6 @@ final class TypeTraverser
 	 * Only for callbacks whose result and side effects do not depend on
 	 * where in the traversed type, or how many times, the type occurs.
 	 *
-	 * @api
 	 * @param TypeTraverserCallable|callable(Type $type, callable(Type): Type $traverse): Type $cb
 	 */
 	public static function mapMemoized(Type $type, TypeTraverserCallable|callable $cb): Type

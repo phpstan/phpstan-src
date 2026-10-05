@@ -5899,7 +5899,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 
 	private static function describeForIntersectTest(Type $type): string
 	{
-		$type = TypeTraverser::mapMemoized($type, static function (Type $type, callable $traverse): Type {
+		$type = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof ConstantArrayType) {
 				return $traverse($type->sortKeys());
 			}

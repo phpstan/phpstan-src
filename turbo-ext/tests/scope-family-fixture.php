@@ -188,3 +188,20 @@ final class Sibling extends Base
 	}
 
 }
+
+/**
+ * Closure::bind() calls for ParametersAcceptorSelector::selectFromArgs():
+ * the bound closure's @param-closure-this type narrows the $newThis parameter
+ * wherever the closure argument is written
+ *
+ * @param-closure-this \stdClass $c
+ */
+function bindNamed(\Closure $c): void
+{
+	\Closure::bind($c, new Holder('a'));
+	\Closure::bind(closure: $c, newThis: new Holder('b'));
+	\Closure::bind(newThis: new Holder('c'), closure: $c);
+	\Closure::bind(newScope: Holder::class, newThis: new Holder('d'), closure: $c);
+	\Closure::bind(newThis: $c, closure: function (): void {
+	});
+}

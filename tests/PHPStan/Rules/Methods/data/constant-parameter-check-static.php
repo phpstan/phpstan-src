@@ -13,3 +13,6 @@ namespace ConstantParameterCheckStatic;
 
 // NumberFormatter::create - wrong constant for $style
 \NumberFormatter::create('en_US', \NumberFormatter::TYPE_INT32);
+
+// integer literal instead of constant
+\NumberFormatter::create('en_US', 100);

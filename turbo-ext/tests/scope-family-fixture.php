@@ -6,6 +6,33 @@ use Serializable;
 
 const ANSWER = 42;
 
+// closures bound by Closure::bind() to a newScope that is not exactly one
+// known class (top level: the walk keeps it), so the walk scopes inside them
+// are bound to an unknown class, to several classes, or to none
+/** @var class-string $plainScope */
+$plainScope = Holder::class;
+/** @var class-string<Child>|class-string<Sibling> $siblingScope */
+$siblingScope = Child::class;
+/** @var class-string<Holder>|class-string<Child> $unrelatedScope */
+$unrelatedScope = Holder::class;
+/** @var 'static'|null $noScope */
+$noScope = null;
+\Closure::bind(static function (): void {
+	$inPlain = 1;
+}, null, $plainScope);
+\Closure::bind(static function (): void {
+	$inSibling = 1;
+}, null, $siblingScope);
+\Closure::bind(static function (): void {
+	$inUnrelated = 1;
+}, null, $unrelatedScope);
+\Closure::bind(static function (): void {
+	$inNoScope = 1;
+}, null, $noScope);
+\Closure::bind(static function (): void {
+	$inStatic = 1;
+}, null, 'static');
+
 trait HelperTrait
 {
 

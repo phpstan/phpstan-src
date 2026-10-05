@@ -1392,12 +1392,15 @@ private:
 			list.push(zv::Ref(&staticName));
 			scopeClasses = zv::Val(std::move(list));
 		}
+		bool bindsUnknownScopeClass = false;
 		zval *thirdArg = argAt(args, 2);
 		if (thirdArg != NULL) {
 			zval *value = argValue(thirdArg);
 			if (UNEXPECTED(value == NULL)) return;
 			zv::Val argValueType = readArgType(boundScope, storage, value, false);
 			if (UNEXPECTED(argValueType.isUndef())) return;
+			// a newScope that may name a class binds to one even when it is unknown
+			if (UNEXPECTED(!bindsUnknownScopeClassOf(argValueType.raw(), bindsUnknownScopeClass))) return;
 
 			zv::Val directClassNames = pt_type_op(Z_OBJ_P(argValueType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 			if (UNEXPECTED(directClassNames.isUndef())) return;
@@ -1427,9 +1430,42 @@ private:
 				scopeClasses = std::move(classNames);
 			}
 		}
+		if (bindsUnknownScopeClass && zend_hash_num_elements(Z_ARRVAL_P(scopeClasses.raw())) == 0) {
+			zv::Arr unknown = zv::Arr::create(1);
+			unknown.push(zv::Val::string(pt_unknown_closure_bind_scope_class));
+			scopeClasses = zv::Val(std::move(unknown));
+		}
 		zv::Val bound = pt_mutating_scope_enter_closure_bind(Z_OBJ_P(boundScope), thisType.raw(), nativeThisType.raw(), scopeClasses.raw());
 		if (UNEXPECTED(bound.isUndef())) return;
 		bound.intoReturnValue(return_value);
+	}
+
+	/* !TypeCombinator::union(new ConstantStringType('static'), new NullType())
+	 * ->isSuperTypeOf($argValueType)->yes(): 'static' and null name no class;
+	 * false = pending exception */
+	[[nodiscard]] static bool bindsUnknownScopeClassOf(zval *argValueType, bool &out)
+	{
+		out = false;
+		zval staticType;
+		if (UNEXPECTED(!pt_constant_string_type_new(&staticType, pt_sch_static))) return false;
+		zval nullType;
+		if (UNEXPECTED(!pt_null_type_new(&nullType))) {
+			zval_ptr_dtor(&staticType);
+			return false;
+		}
+		zval noClassMembers[2];
+		ZVAL_COPY_VALUE(&noClassMembers[0], &staticType);
+		ZVAL_COPY_VALUE(&noClassMembers[1], &nullType);
+		zv::Val noClassType = pt_type_combinator_union(2, noClassMembers);
+		zval_ptr_dtor(&staticType);
+		zval_ptr_dtor(&nullType);
+		if (UNEXPECTED(noClassType.isUndef())) return false;
+		zv::Val isNoClass = pt_type_op(Z_OBJ_P(noClassType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, argValueType);
+		if (UNEXPECTED(isNoClass.isUndef())) return false;
+		zend_long isNoClassValue = pt_type_result_trinary(isNoClass.raw());
+		if (UNEXPECTED(isNoClassValue < 0)) return false;
+		out = isNoClassValue != PT_TRI_YES;
+		return true;
 	}
 
 	/* $readArgType($argValue, $useNativeTypes) of the scope factory: the

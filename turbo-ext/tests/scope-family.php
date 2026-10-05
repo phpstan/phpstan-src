@@ -1311,6 +1311,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 			'getAnonymousFunctionReflection', 'getAnonymousFunctionReturnType', 'isInFirstLevelStatement', 'getDefinedVariables',
 			'getMaybeDefinedVariables', 'getExprPrinter', 'getCurrentTemplateArgumentFrame', 'getTemplateArgumentConstraints',
 			'getCurrentExpressionResultStorage', 'getFunctionCallStack', 'getFunctionCallStackWithParameters', 'isInClosureBind',
+			'isClosureBindScopeClassAmbiguous', 'getClosureBindScopeClassReflection',
 		] as $method) {
 			$observe($method, static fn () => $scope->$method());
 		}
@@ -1426,6 +1427,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 			foreach ($sfProbeNames as $i => $name) {
 				$observe("resolveName#$i " . $name->toString(), static fn () => $scope->resolveName($name));
 				$observe("resolveTypeByName#$i " . $name->toString(), static fn () => $scope->resolveTypeByName($name));
+				$observe("getClosureBindScopeCommonAncestor#$i " . $name->toString(), static fn () => $scope->getClosureBindScopeCommonAncestor($name));
 			}
 			foreach ($sfProbeValues as $i => $value) {
 				$observe("getTypeFromValue#$i", static fn () => $scope->getTypeFromValue($value));
@@ -1603,6 +1605,9 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				'enterClosureBind(null)' => static fn () => $scope->enterClosureBind(null, null, []),
 				'enterClosureBind(static)' => static fn () => $scope->enterClosureBind(new \PHPStan\Type\ObjectType(\ScopeFamilyFixture\Holder::class), new \PHPStan\Type\ObjectWithoutClassType(), ['static']),
 				'enterClosureBind(Holder)' => static fn () => $scope->enterClosureBind(new \PHPStan\Type\ObjectType(\ScopeFamilyFixture\Holder::class), null, ['ScopeFamilyFixture\\Holder', 'Other']),
+				'enterClosureBind(unknown)' => static fn () => $scope->enterClosureBind(null, null, [\PHPStan\Analyser\MutatingScope::UNKNOWN_CLOSURE_BIND_SCOPE_CLASS]),
+				'enterClosureBind(siblings)' => static fn () => $scope->enterClosureBind(null, null, ['ScopeFamilyFixture\\Child', 'ScopeFamilyFixture\\Sibling']),
+				'enterClosureCall(object)' => static fn () => $scope->enterClosureCall(new \PHPStan\Type\ObjectWithoutClassType(), new \PHPStan\Type\ObjectWithoutClassType()),
 				'restoreOriginalScopeAfterClosureBind(other)' => static fn () => $scope->restoreOriginalScopeAfterClosureBind($other),
 				'restoreOriginalScopeAfterClosureBind(this)' => static fn () => $scope->restoreOriginalScopeAfterClosureBind($scope),
 				'restoreThis(other)' => static fn () => $scope->restoreThis($other),

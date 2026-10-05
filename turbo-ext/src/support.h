@@ -2117,6 +2117,14 @@ zv::Val pt_mutating_scope_get_state_type(zend_object *scope, zend_object *expr);
 zv::Val pt_mutating_scope_get_conditional_expressions(zend_object *scope);
 zv::Val pt_mutating_scope_get_current_expression_result_storage(zend_object *scope);
 zv::Val pt_mutating_scope_resolve_type_by_name(zend_object *scope, zend_object *name);
+zv::Val pt_mutating_scope_get_closure_bind_scope_class_reflection(zend_object *scope);
+[[nodiscard]] bool pt_mutating_scope_is_closure_bind_scope_class_ambiguous(zend_object *scope, bool &out);
+zv::Val pt_mutating_scope_get_closure_bind_scope_common_ancestor(zend_object *scope, zend_object *name);
+/* MutatingScope::UNKNOWN_CLOSURE_BIND_SCOPE_CLASS — the class of a
+ * Closure::bind()/call() scope whose class is not known; the literal and its
+ * interned string (MutatingScope.cpp) are the only C++ copies */
+#define PT_UNKNOWN_CLOSURE_BIND_SCOPE_CLASS "*"
+extern zend_string *pt_unknown_closure_bind_scope_class;
 zv::Val pt_mutating_scope_specify_types_of_new_world_handler_node(zend_object *scope, zend_object *node, zval *context);
 
 /* ReflectionAccess.cpp — $collection->getAll(): the memoized list out of a

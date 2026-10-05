@@ -19,6 +19,11 @@ class Foo
 		return 'Foo';
 	}
 
+	public function im(): int
+	{
+		return 1;
+	}
+
 }
 
 final class Bar extends Foo
@@ -76,3 +81,12 @@ class Container
 	}
 
 }
+
+function (): void {
+	// a closure bound with a $this of the method's class calls its instance methods through self::
+	Closure::bind(fn () => [self::im(), static::im(), self::im(...)], new Foo(), Foo::class);
+	Closure::bind(fn () => self::im(), new Bar(), Foo::class);
+	Closure::bind(static fn () => [self::im(), self::im(...)], null, Foo::class);
+	// ...but not one of a class the bound $this only may be an instance of
+	Closure::bind(fn () => [Bar::im(), Bar::im(...)], new Foo(), Foo::class);
+};

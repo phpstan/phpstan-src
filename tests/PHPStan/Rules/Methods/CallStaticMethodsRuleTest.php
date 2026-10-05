@@ -1169,35 +1169,43 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/closure-bind-scope.php'], [
 			[
 				'Call to private static method psm() of class ClosureBindScopeMethods\\Foo.',
-				48,
+				53,
 			],
 			[
 				'Calling parent::s() but ClosureBindScopeMethods\\NoParent does not extend any class.',
-				51,
+				56,
 			],
 			[
 				'Call to an undefined static method ClosureBindScopeMethods\\Foo::nope().',
-				54,
+				59,
 			],
 			[
 				'Calling self::sm() outside of class scope.',
-				57,
+				62,
 			],
 			[
 				'Calling parent::sm() outside of class scope.',
-				57,
+				62,
 			],
 			[
 				'Calling static::sm() outside of class scope.',
-				57,
+				62,
 			],
 			[
 				'Call to an undefined static method ClosureBindScopeMethods\\Foo::own().',
-				71,
+				76,
 			],
 			[
 				'Calling parent::s() but ClosureBindScopeMethods\\NoParent does not extend any class.',
-				75,
+				80,
+			],
+			[
+				'Static call to instance method ClosureBindScopeMethods\\Foo::im().',
+				89,
+			],
+			[
+				'Static call to instance method ClosureBindScopeMethods\\Foo::im().',
+				91,
 			],
 		]);
 	}

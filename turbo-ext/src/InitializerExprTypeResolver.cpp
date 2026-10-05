@@ -159,6 +159,7 @@ constexpr Method mGetReflectionConstant{"getReflectionConstant"};
 constexpr Method mGetDeclaringClass{"getDeclaringClass"};
 constexpr Method mGetFileName{"getFileName", PT_OP_GET_FILE_NAME};
 constexpr Method mGetValueExpression{"getValueExpression"};
+constexpr Method mIsEnumCase{"isEnumCase"};
 constexpr Method mGetType{"getType", PT_OP_GET_TYPE};
 constexpr Method mGetConstantPhpDocType{"getConstantPhpDocType"};
 constexpr Method mGetConstant{"getConstant"};
@@ -4756,6 +4757,20 @@ public:
 				if (Z_TYPE_P(reflectionConstant.raw()) == IS_FALSE) {
 					unsetArrayProperty(slots::currentlyResolvingClassConstant, resolvingName);
 					continue;
+				}
+				{
+					IETR_VAL(isEnumCase, callOn(reflectionConstant.raw(), mIsEnumCase));
+					if (zend_is_true(isEnumCase.raw())) {
+						if (UNEXPECTED(Z_TYPE_P(reflectionName.raw()) != IS_STRING)) {
+							pt_throw_should_not_happen();
+							return zv::Val();
+						}
+						zval enumCase;
+						if (UNEXPECTED(!pt_enum_case_object_type_new(&enumCase, Z_STR_P(reflectionName.raw()), constantNameString))) return zv::Val();
+						types.push(zv::Val::adopt(enumCase));
+						unsetArrayProperty(slots::currentlyResolvingClassConstant, resolvingName);
+						continue;
+					}
 				}
 				IETR_VAL(reflectionConstantDeclaringClass, callOn(reflectionConstant.raw(), mGetDeclaringClass));
 				IETR_VAL(valueExpression, callOn(reflectionConstant.raw(), mGetValueExpression));

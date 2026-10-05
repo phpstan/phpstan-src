@@ -159,7 +159,10 @@ final class StaticCallHandler implements ExprHandler
 						$declaringClass->getName() === 'Closure'
 						&& strtolower($methodName) === 'bind'
 					) {
-						$closureBindScopeFactory = static function (MutatingScope $boundScope) use ($expr, $storage): MutatingScope {
+						$closureBindScopeFactory = static function (MutatingScope $boundScope) use ($expr, $storage, $parametersAcceptor): MutatingScope {
+							// normalized so that $newThis and $newScope are found at their
+							// parameter positions even when the call names its arguments
+							$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 							// invoked while the closure argument is walked; the other
 							// arguments were processed before it (processArgs orders
 							// closures last), so their results are already stored. A

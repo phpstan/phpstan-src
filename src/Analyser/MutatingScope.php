@@ -3584,6 +3584,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			return $scope->hasVariableType($expr->name)->no() ? new ErrorType() : $scope->getVariableType($expr->name);
 		}
 
+		// an untracked expression is priced the way resolveType() prices it -
+		// an ExpressionTypeResolverExtension answers before the reflection-derived
+		// reads below, which know nothing of what the extension resolves (a virtual
+		// property would otherwise be narrowed starting from ErrorType)
+		$askScope = $native ? $this->promoteNativeTypes() : $this;
+		foreach ($this->expressionTypeResolverExtensions->getAll() as $extension) {
+			$type = $extension->getType($expr, $askScope);
+			if ($type !== null) {
+				return TypeUtils::resolveLateResolvableTypes($type);
+			}
+		}
+
 		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$varStateType = $this->resolveScopeStateType($expr->var, $native);
 			if ($varStateType instanceof NeverType) {

@@ -1394,13 +1394,14 @@ private:
 			zv::Val argValueType = readArgType(boundScope, storage, value, false);
 			if (UNEXPECTED(argValueType.isUndef())) return;
 
+			zv::Val scopeType;
 			zv::Val directClassNames = pt_type_op(Z_OBJ_P(argValueType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 			if (UNEXPECTED(directClassNames.isUndef())) return;
 			zend_long directClassCount = countOf(directClassNames.raw());
 			if (UNEXPECTED(directClassCount < 0)) return;
 			if (directClassCount > 0) {
 				scopeClasses = zv::Val::copyOf(zv::Ref(directClassNames.raw()));
-				zv::Arr thisTypes = zv::Arr::create((uint32_t) directClassCount);
+				zv::Arr scopeTypes = zv::Arr::create((uint32_t) directClassCount);
 				for (zv::ArrayEntry entry : zv::ArrRef(directClassNames.raw())) {
 					zval *directClassName = entry.value().deref().raw();
 					if (UNEXPECTED(Z_TYPE_P(directClassName) != IS_STRING)) {
@@ -1409,17 +1410,57 @@ private:
 					}
 					zval objectType;
 					if (UNEXPECTED(!pt_object_type_new(&objectType, Z_STR_P(directClassName)))) return;
-					thisTypes.push(zv::Val::adopt(objectType));
+					scopeTypes.push(zv::Val::adopt(objectType));
 				}
-				HashTable *thisTypesTable = thisTypes.table();
-				thisType = pt_type_combinator_union(zend_hash_num_elements(thisTypesTable), thisTypesTable->arPacked);
-				if (UNEXPECTED(thisType.isUndef())) return;
+				HashTable *scopeTypesTable = scopeTypes.table();
+				scopeType = pt_type_combinator_union(zend_hash_num_elements(scopeTypesTable), scopeTypesTable->arPacked);
+				if (UNEXPECTED(scopeType.isUndef())) return;
 			} else {
-				thisType = getClassStringObjectType(argValueType.raw());
-				if (UNEXPECTED(thisType.isUndef())) return;
-				zv::Val classNames = pt_type_op(Z_OBJ_P(thisType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
+				scopeType = getClassStringObjectType(argValueType.raw());
+				if (UNEXPECTED(scopeType.isUndef())) return;
+				zv::Val classNames = pt_type_op(Z_OBJ_P(scopeType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 				if (UNEXPECTED(classNames.isUndef())) return;
 				scopeClasses = std::move(classNames);
+			}
+
+			// $this is the bound object, not an instance of the scope
+			// class: the scope only refines the members of the bound
+			// object's type that may be an instance of it (the
+			// hydrator idiom binding an `object` into the class whose
+			// members it reads), a member that cannot be one stays
+			zend_long scopeClassCount = countOf(scopeClasses.raw());
+			if (UNEXPECTED(scopeClassCount < 0)) return;
+			if (!thisType.isNull() && scopeClassCount > 0) {
+				zv::Val thisMembers;
+				if (instanceof_function(Z_OBJCE_P(thisType.raw()), pt_ce_union_type)) {
+					thisMembers = pt_union_type_get_types(Z_OBJ_P(thisType.raw()));
+					if (UNEXPECTED(thisMembers.isUndef())) return;
+				} else {
+					zv::Arr single = zv::Arr::create(1);
+					single.push(zv::Ref(thisType.raw()));
+					thisMembers = zv::Val(std::move(single));
+				}
+				zend_long thisMemberCount = countOf(thisMembers.raw());
+				if (UNEXPECTED(thisMemberCount < 0)) return;
+				zv::Arr refinedThisMembers = zv::Arr::create((uint32_t) thisMemberCount);
+				for (zv::ArrayEntry entry : zv::ArrRef(thisMembers.raw())) {
+					zval *thisMember = entry.value().deref().raw();
+					zv::Val isSuperType = pt_type_op(Z_OBJ_P(scopeType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, thisMember);
+					if (UNEXPECTED(isSuperType.isUndef())) return;
+					zend_long isSuperTypeValue = pt_type_result_trinary(isSuperType.raw());
+					if (UNEXPECTED(isSuperTypeValue < 0)) return;
+					if (isSuperTypeValue == PT_TRI_NO) {
+						refinedThisMembers.push(zv::Ref(thisMember));
+						continue;
+					}
+					zv::Args intersectArgv{thisMember, scopeType.raw()};
+					zv::Val refinedThisMember = pt_type_combinator_intersect(2, intersectArgv);
+					if (UNEXPECTED(refinedThisMember.isUndef())) return;
+					refinedThisMembers.push(std::move(refinedThisMember));
+				}
+				HashTable *refinedThisMembersTable = refinedThisMembers.table();
+				thisType = pt_type_combinator_union(zend_hash_num_elements(refinedThisMembersTable), refinedThisMembersTable->arPacked);
+				if (UNEXPECTED(thisType.isUndef())) return;
 			}
 		}
 		zv::Val bound = pt_mutating_scope_enter_closure_bind(Z_OBJ_P(boundScope), thisType.raw(), nativeThisType.raw(), scopeClasses.raw());

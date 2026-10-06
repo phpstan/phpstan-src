@@ -57,6 +57,7 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeWithClassName;
+use PHPStan\Type\UnionType;
 use ReflectionProperty;
 use function array_map;
 use function array_merge;
@@ -193,14 +194,32 @@ final class StaticCallHandler implements ExprHandler
 								$directClassNames = $argValueType->getObjectClassNames();
 								if (count($directClassNames) > 0) {
 									$scopeClasses = $directClassNames;
-									$thisTypes = [];
+									$scopeTypes = [];
 									foreach ($directClassNames as $directClassName) {
-										$thisTypes[] = new ObjectType($directClassName);
+										$scopeTypes[] = new ObjectType($directClassName);
 									}
-									$thisType = TypeCombinator::union(...$thisTypes);
+									$scopeType = TypeCombinator::union(...$scopeTypes);
 								} else {
-									$thisType = $argValueType->getClassStringObjectType();
-									$scopeClasses = $thisType->getObjectClassNames();
+									$scopeType = $argValueType->getClassStringObjectType();
+									$scopeClasses = $scopeType->getObjectClassNames();
+								}
+
+								// $this is the bound object, not an instance of the scope
+								// class: the scope only refines the members of the bound
+								// object's type that may be an instance of it (the
+								// hydrator idiom binding an `object` into the class whose
+								// members it reads), a member that cannot be one stays
+								if ($thisType !== null && count($scopeClasses) > 0) {
+									$thisMembers = $thisType instanceof UnionType ? $thisType->getTypes() : [$thisType];
+									$refinedThisMembers = [];
+									foreach ($thisMembers as $thisMember) {
+										if ($scopeType->isSuperTypeOf($thisMember)->no()) {
+											$refinedThisMembers[] = $thisMember;
+											continue;
+										}
+										$refinedThisMembers[] = TypeCombinator::intersect($thisMember, $scopeType);
+									}
+									$thisType = TypeCombinator::union(...$refinedThisMembers);
 								}
 							}
 							return $boundScope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);

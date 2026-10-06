@@ -3177,7 +3177,8 @@ public:
 	/* the constant array & array arm of doIntersect(): $constArray merged
 	 * with $otherArray (a definite constant array pair through
 	 * intersectDefiniteConstantArrays(), otherwise rebuilt through the
-	 * builder); the never reason falls back on $isSuperTypeA/$isSuperTypeB;
+	 * builder, a list shape staying a list); the never reason falls back on
+	 * $isSuperTypeA/$isSuperTypeB;
 	 * UNDEF = pending exception */
 	static zv::Val intersectConstantArrayWith(zval *constArray, zval *otherArray, zval *isSuperTypeA, zval *isSuperTypeB)
 	{
@@ -3277,7 +3278,16 @@ public:
 			zv::Val set = call(newArray.raw(), PT_LC("setoffsetvaluetype"), 3, args);
 			PT_FAIL_IF_UNDEF(set);
 		}
-		return call(newArray.raw(), PT_LC("getarray"));
+		zv::Val newArrayType = call(newArray.raw(), PT_LC("getarray"));
+		PT_FAIL_IF_UNDEF(newArrayType);
+		zend_long isList = callTrinary(constArray, PT_LC("islist"));
+		PT_FAIL_IF_NEG(isList);
+		if (isList == PT_TRI_YES) {
+			zv::Val list = accessoryArrayListType();
+			PT_FAIL_IF_UNDEF(list);
+			return intersect2(newArrayType.raw(), list.raw());
+		}
+		return newArrayType;
 	}
 
 	/* Mirrors isPlainOrBenevolentUnion() */

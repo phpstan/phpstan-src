@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace ForeachEnumExhaustNever;
+namespace Bug15390;
 
 use function PHPStan\Testing\assertType;
 
@@ -32,7 +32,7 @@ function someCases(Status $status): void
 		}
 	}
 
-	assertType('ForeachEnumExhaustNever\Status::C', $status);
+	assertType('Bug15390\Status::C', $status);
 }
 
 function keyed(Status $status): int
@@ -86,5 +86,5 @@ function withBreak(Status $status): void
 		}
 	}
 
-	assertType('ForeachEnumExhaustNever\Status::B', $status);
+	assertType('Bug15390\Status::B', $status);
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace InArrayOptionalKeysList;
+namespace Bug15391;
 
 use function PHPStan\Testing\assertType;
 

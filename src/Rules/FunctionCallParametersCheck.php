@@ -418,9 +418,9 @@ final class FunctionCallParametersCheck
 
 				$unresolvableParameterType = $this->unresolvableTypeHelper->getUnresolvableType($parameterType);
 				if (
-					$originalParameter !== null
+					$unresolvableParameterType !== null
+					&& $originalParameter !== null
 					&& $this->unresolvableTypeHelper->getUnresolvableType($originalParameter->getType()) === null
-					&& $unresolvableParameterType !== null
 				) {
 					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						$unresolvableParameterTypeMessage,
@@ -644,8 +644,8 @@ final class FunctionCallParametersCheck
 
 			$unresolvableReturnType = $this->unresolvableTypeHelper->getUnresolvableType($parametersAcceptor->getReturnType());
 			if (
-				$this->unresolvableTypeHelper->getUnresolvableType($originalParametersAcceptor->getReturnType()) === null
-				&& $unresolvableReturnType !== null
+				$unresolvableReturnType !== null
+				&& $this->unresolvableTypeHelper->getUnresolvableType($originalParametersAcceptor->getReturnType()) === null
 			) {
 				$errorBuilder = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
 					->identifier(sprintf('%s.unresolvableReturnType', $nodeType))

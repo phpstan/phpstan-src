@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Php\ComposerPhpVersionFactory;
+use PHPStan\Php\ConfiguredPhpIntSizeHelper;
 use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 
@@ -30,6 +31,7 @@ final class ConstantResolverFactory
 				$this->container->getParameter('phpVersion'),
 				$composerFactory,
 			),
+			$this->container->getByType(ConfiguredPhpIntSizeHelper::class),
 			$this->container,
 		);
 	}

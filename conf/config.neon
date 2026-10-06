@@ -64,6 +64,7 @@ parameters:
 		staticVariablesFromUsages: false
 		unusedVariable: false
 		unusedParameters: false
+		reportAbstractMethodPurity: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

@@ -122,6 +122,7 @@ class OverridingConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2.0')]
 	public function testOverrideAttribute(): void
 	{
 		$this->checkMissingOverrideConstantAttribute = true;
@@ -153,6 +154,7 @@ class OverridingConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2.0')]
 	public function testMissingOverrideAttributeNotCheckedByDefaultBeforePhp86(): void
 	{
 		$this->checkMissingOverrideConstantAttribute = null;

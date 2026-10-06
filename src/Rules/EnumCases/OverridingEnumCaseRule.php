@@ -28,7 +28,7 @@ final class OverridingEnumCaseRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
+		if (!$scope->isInClass() || !$this->overrideAttributeCheck->isNeeded($scope, $node->attrGroups)) {
 			return [];
 		}
 

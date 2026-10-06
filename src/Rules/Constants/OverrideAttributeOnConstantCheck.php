@@ -31,6 +31,20 @@ final class OverrideAttributeOnConstantCheck
 	}
 
 	/**
+	 * Whether check() can report anything, so that callers can skip looking up the prototype.
+	 *
+	 * @param Node\AttributeGroup[] $attrGroups
+	 */
+	public function isNeeded(Scope $scope, array $attrGroups): bool
+	{
+		if ($this->hasOverrideAttribute($attrGroups)) {
+			return true;
+		}
+
+		return !$scope->isInTrait() && $this->isMissingOverrideChecked($scope);
+	}
+
+	/**
 	 * @param Node\AttributeGroup[] $attrGroups
 	 * @param Node\Stmt\ClassConst|Node\Stmt\EnumCase|null $fixableNode
 	 * @return list<IdentifierRuleError>

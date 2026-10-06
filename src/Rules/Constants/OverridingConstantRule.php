@@ -51,16 +51,21 @@ final class OverridingConstantRule implements Rule
 		$errors = [];
 		foreach ($node->consts as $const) {
 			$constantName = $const->name->toString();
+			$prototype = $this->findPrototype($classReflection, $constantName);
 			$errors = array_merge($errors, $this->overrideAttributeCheck->check(
 				$scope,
 				$classReflection,
 				$constantName,
-				$this->findPrototype($classReflection, $constantName),
+				$prototype,
 				$node->attrGroups,
 				$fixableNode,
 				false,
 			));
-			$errors = array_merge($errors, $this->processSingleConstant($classReflection, $constantName));
+			if ($prototype === null) {
+				continue;
+			}
+
+			$errors = array_merge($errors, $this->processSingleConstant($classReflection, $constantName, $prototype));
 		}
 
 		return $errors;
@@ -69,13 +74,8 @@ final class OverridingConstantRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
+	private function processSingleConstant(ClassReflection $classReflection, string $constantName, ClassConstantReflection $prototype): array
 	{
-		$prototype = $this->findPrototype($classReflection, $constantName);
-		if ($prototype === null) {
-			return [];
-		}
-
 		$constantReflection = $classReflection->getConstant($constantName);
 		$errors = [];
 		if ($prototype->isFinal()) {

@@ -2403,7 +2403,13 @@ public:
 			}
 		}
 
-		if (isPure < 0) {
+		// A @pure-unless-* tag on the method, written or inherited, states its purity
+		// just like @phpstan-pure does, so the class-level tags do not override it.
+		if (
+			isPure < 0
+			&& zend_hash_num_elements(pureUnlessCallableIsImpureParameters.table()) == 0
+			&& zend_hash_num_elements(pureUnlessParameterPassedParameters.table()) == 0
+		) {
 			zv::Val classResolvedPhpDoc = call(phpDocBlockClassReflection.raw(), PT_LC("getresolvedphpdoc"));
 			if (UNEXPECTED(classResolvedPhpDoc.isUndef())) return zv::Val();
 			if (Z_TYPE_P(classResolvedPhpDoc.raw()) != IS_NULL) {

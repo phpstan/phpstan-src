@@ -18,6 +18,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.finiteTypesInHaystack%
 	PHPStan\Rules\Comparison\SwitchConditionRule:
 		phpstan.rules.rule: %featureToggles.switchConditionAlwaysFalse%
+	PHPStan\Rules\Functions\StringReplaceWithoutEffectRule:
+		phpstan.rules.rule: %featureToggles.stringReplaceWithoutEffect%
 
 parameters:
 	checkAdvancedIsset: true
@@ -49,3 +51,9 @@ services:
 		class: PHPStan\Rules\Comparison\SwitchConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+
+	-
+		class: PHPStan\Rules\Functions\StringReplaceWithoutEffectRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%

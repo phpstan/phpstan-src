@@ -1,6 +1,6 @@
 <?php
 
-namespace MissingExceptionFunctionThrowsSealedMultiCatch;
+namespace Bug15392;
 
 /** @phpstan-sealed SubA|SubB */
 abstract class SealedException extends \RuntimeException

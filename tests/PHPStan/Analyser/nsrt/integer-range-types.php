@@ -364,8 +364,8 @@ class X {
 		assertType('*ERROR*', $f << 0);
 
 		assertType('int<-10, 10>', $a << 1);
-		assertType('int<10, max>', $b << 1);
-		assertType('int<min, -10>', $c << 1);
+		assertType('int', $b << 1);
+		assertType('int', $c << 1);
 		assertType('2|50|int<10, 20>|int<60, 80>', $d << 1);
 		assertType('2|6|10', $e << 1);
 		assertType('*ERROR*', $f << 1);
@@ -415,7 +415,7 @@ class X {
 
 		assertType('*ERROR*', $a >> -1);
 
-		assertType('int', $a >> $b);
+		assertType('int<-1, 0>', $a >> $b);
 
 		assertType('0', null >> 1);
 		assertType('0', false >> 1);
@@ -430,6 +430,33 @@ class X {
 		/** @var float */
 		$float = 4.1;
 		assertType('int', $float >> 1.9);
+	}
+
+	/**
+	 * @param int<-5, 5> $a
+	 * @param int<8, 16> $b
+	 * @param int<-16, -8> $c
+	 * @param int<1, 2> $shift
+	 * @param int<0, max> $anyShift
+	 * @param int<min, 2> $maybeNegativeShift
+	 */
+	public function shiftByRange($a, $b, $c, $shift, $anyShift, $maybeNegativeShift): void
+	{
+		assertType('int<-20, 20>', $a << $shift);
+		assertType('int<16, 64>', $b << $shift);
+		assertType('int<-64, -16>', $c << $shift);
+
+		assertType('int<-3, 2>', $a >> $shift);
+		assertType('int<2, 8>', $b >> $shift);
+		assertType('int<-8, -2>', $c >> $shift);
+
+		assertType('int', $b << $anyShift);
+		assertType('int<-5, 5>', $a >> $anyShift);
+		assertType('int<0, 16>', $b >> $anyShift);
+		assertType('int<-16, -1>', $c >> $anyShift);
+
+		assertType('int', $b << $maybeNegativeShift);
+		assertType('int', $b >> $maybeNegativeShift);
 	}
 
 	/**

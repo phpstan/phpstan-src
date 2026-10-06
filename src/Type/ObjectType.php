@@ -2094,6 +2094,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			// time, without rebuilding the subtracted union once per member.
 			$membersToRemove = [];
 			foreach ($typeToRemove->getTypes() as $member) {
+				if ($member->isSuperTypeOf($this)->yes()) {
+					return new NeverType();
+				}
+
 				$isSuperTypeOfMember = $this->isSuperTypeOf($member);
 				if ($isSuperTypeOfMember->yes()) {
 					$membersToRemove[] = $member;

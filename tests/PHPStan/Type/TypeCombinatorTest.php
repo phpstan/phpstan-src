@@ -6530,6 +6530,33 @@ class TypeCombinatorTest extends PHPStanTestCase
 				IntersectionType::class,
 				'non-empty-array&hasOffsetValue(\'a\', string)',
 			],
+			[
+				new ObjectType('SealedHierarchyRemove\\SealedBase'),
+				new UnionType([
+					new ObjectType('SealedHierarchyRemove\\SealedBase'),
+					new ObjectType('SealedHierarchyRemove\\Other'),
+				]),
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
+			[
+				new ObjectType('SealedHierarchyRemove\\SealedBase'),
+				new UnionType([
+					new ObjectType('SealedHierarchyRemove\\SubA'),
+					new ObjectType('SealedHierarchyRemove\\Other'),
+				]),
+				ObjectType::class,
+				'SealedHierarchyRemove\\SubB',
+			],
+			[
+				new ObjectType('PHPStan\\Fixture\\TestEnum'),
+				new UnionType([
+					new ObjectType('PHPStan\\Fixture\\TestEnum'),
+					new ObjectType('stdClass'),
+				]),
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
 		];
 	}
 

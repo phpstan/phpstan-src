@@ -83,4 +83,15 @@ class MissingCheckedExceptionInFunctionThrowsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testSealedExceptionInMultiCatch(): void
+	{
+		require_once __DIR__ . '/data/missing-exception-function-throws-sealed-multi-catch.php';
+		$this->analyse([__DIR__ . '/data/missing-exception-function-throws-sealed-multi-catch.php'], [
+			[
+				'Function MissingExceptionFunctionThrowsSealedMultiCatch\\multiCatchLeaksOtherSubtype() throws checked exception MissingExceptionFunctionThrowsSealedMultiCatch\\SubB but it\'s missing from the PHPDoc @throws tag.',
+				84,
+			],
+		]);
+	}
+
 }

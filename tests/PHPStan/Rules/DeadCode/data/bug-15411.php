@@ -28,11 +28,13 @@ function previousAssignedValue(int $count): int
 	return $value;
 }
 
+/** @param array{count: int} $counts */
 function nextOffsetValue(array $counts): int
 {
 	return ++$counts['count'];
 }
 
+/** @param array{count: int} $counts */
 function previousOffsetValue(array $counts): int
 {
 	return --$counts['count'];

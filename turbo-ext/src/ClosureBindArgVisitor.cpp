@@ -5,7 +5,7 @@
  * original).
  *
  * Marks the closure argument of a Closure::bind() call that also passes a
- * new $this.
+ * new $this, each argument found by position or by name.
  *
  * enterNode() always returns null, so the visitor is also registered with
  * pt_native_visitor_register(): the native NodeTraverser then runs it
@@ -33,29 +33,90 @@ public:
 	/* enterNode(); the twin always returns null, false = pending exception */
 	[[nodiscard]] static bool enterNode(zend_object *visitor, zend_object *node)
 	{
+		zval *args = NULL;
+		if (!isClosureBindCall(node, &args)) return !EG(exception);
+
+		BindArgs bindArgs;
+		findBindArgs(args, bindArgs);
+		if (bindArgs.closure != NULL && bindArgs.newThis != NULL) {
+			visitors::setAttributeTrue(bindArgs.closure, pt_closure_bind_arg_attribute_str);
+		}
+		return !EG(exception);
+	}
+
+private:
+	/* the $closureArg / $newThisArg the twin picks out of the call's
+	 * arguments; NULL for null */
+	struct BindArgs
+	{
+		zend_object *closure = NULL;
+		zend_object *newThis = NULL;
+	};
+
+	/*
+	 * foreach ($node->getArgs() as $i => $arg): an unnamed argument by its
+	 * position (0, 1), a named one by its name (closure, newThis); a named
+	 * argument does not replace one already found (`??=`)
+	 */
+	static void findBindArgs(zval *args, BindArgs &out)
+	{
+		static NodeProp argNameProp = PT_NODE_PROP(PT_CLASS_ARG, "name");
+		static NodeProp identifierProp = PT_IDENTIFIER_PROP;
+
+		if (args == NULL || Z_TYPE_P(args) != IS_ARRAY) return;
+		for (auto entry : zv::ArrRef(args)) {
+			zv::Ref value = entry.value().deref();
+			if (!value.isObject()) continue;
+			zend_object *arg = value.asObject();
+			zend_object *name = visitors::isInstanceOf(arg, PT_CLASS_ARG) ? argNameProp.objectOf(arg, PT_CLASS_IDENTIFIER) : NULL;
+			if (name == NULL) {
+				if (entry.hasStringKey()) continue;
+				zend_ulong i = entry.indexKey();
+				if (i == 0) {
+					out.closure = arg;
+				} else if (i == 1) {
+					out.newThis = arg;
+				}
+				continue;
+			}
+
+			/* $arg->name->toString() */
+			zend_string *argName = visitors::nameString(name, identifierProp);
+			if (argName == NULL) continue;
+			if (zend_string_equals_literal(argName, "closure")) {
+				if (out.closure == NULL) out.closure = arg;
+			} else if (zend_string_equals_literal(argName, "newThis")) {
+				if (out.newThis == NULL) out.newThis = arg;
+			}
+		}
+	}
+
+	/*
+	 * `$node instanceof StaticCall && $node->class instanceof Name &&
+	 * $node->class->toLowerString() === 'closure' && $node->name instanceof
+	 * Identifier && $node->name->toLowerString() === 'bind' &&
+	 * !$node->isFirstClassCallable()`, plus the call's $args slot
+	 */
+	static bool isClosureBindCall(zend_object *node, zval **argsOut)
+	{
 		static NodeProp classProp = PT_NODE_PROP(PT_CLASS_STATIC_CALL, "class");
 		static NodeProp methodProp = PT_NODE_PROP(PT_CLASS_STATIC_CALL, "name");
 		static NodeProp argsProp = PT_NODE_PROP(PT_CLASS_STATIC_CALL, "args");
 		static NodeProp nameProp = PT_NAME_PROP;
 		static NodeProp identifierProp = PT_IDENTIFIER_PROP;
 
-		if (!visitors::isInstanceOf(node, PT_CLASS_STATIC_CALL)) return !EG(exception);
+		if (!visitors::isInstanceOf(node, PT_CLASS_STATIC_CALL)) return false;
 		zend_object *className = classProp.objectOf(node, PT_CLASS_NAME);
-		if (className == NULL) return !EG(exception);
+		if (className == NULL) return false;
 		zend_string *classString = visitors::nameString(className, nameProp);
-		if (classString == NULL || !visitors::lowerEquals(classString, "closure")) return true;
+		if (classString == NULL || !visitors::lowerEquals(classString, "closure")) return false;
 		zend_object *method = methodProp.objectOf(node, PT_CLASS_IDENTIFIER);
-		if (method == NULL) return !EG(exception);
+		if (method == NULL) return false;
 		zend_string *methodName = visitors::nameString(method, identifierProp);
-		if (methodName == NULL || !visitors::lowerEquals(methodName, "bind")) return true;
+		if (methodName == NULL || !visitors::lowerEquals(methodName, "bind")) return false;
 		zval *args = argsProp.of(node);
-		if (visitors::isFirstClassCallable(args)) return true;
-
-		if (args == NULL || Z_TYPE_P(args) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(args)) <= 1) return true;
-		zend_object *arg = visitors::argAt(args, 0);
-		if (arg != NULL) {
-			visitors::setAttributeTrue(arg, pt_closure_bind_arg_attribute_str);
-		}
+		if (visitors::isFirstClassCallable(args)) return false;
+		*argsOut = args;
 		return true;
 	}
 };

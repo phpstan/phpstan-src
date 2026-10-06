@@ -1959,9 +1959,25 @@ public:
 		}
 
 		{
+			// the closure is the 1st argument unless the call names its arguments
+			zval *closureBindArgNode = firstArg;
+			zv::Val nameHold;
+			zval *name = readProperty(pt_pas_arg_name_site, firstArg, PT_LC("name"), nameHold);
+			if (UNEXPECTED(name == NULL)) return zv::Val();
+			if (Z_TYPE_P(name) != IS_NULL) {
+				for (auto entry : zv::ArrRef(argsZv)) {
+					zval *arg = entry.value().deref().raw();
+					zval *attribute = NULL;
+					if (UNEXPECTED(!getAttribute(arg, pt_pas_closure_bind_arg, attribute))) return zv::Val();
+					if (attribute != NULL) {
+						closureBindArgNode = arg;
+						break;
+					}
+				}
+			}
 			zval *closureBindArg = NULL;
-			if (UNEXPECTED(!getAttribute(firstArg, pt_pas_closure_bind_arg, closureBindArg))) return zv::Val();
-			if (closureBindArg != NULL && UNEXPECTED(!applyClosureBindArg(parametersAcceptors, firstArg, scope))) return zv::Val();
+			if (UNEXPECTED(!getAttribute(closureBindArgNode, pt_pas_closure_bind_arg, closureBindArg))) return zv::Val();
+			if (closureBindArg != NULL && UNEXPECTED(!applyClosureBindArg(parametersAcceptors, closureBindArgNode, scope))) return zv::Val();
 		}
 
 		return parametersAcceptors;
@@ -2417,10 +2433,10 @@ private:
 	}
 
 	/* the ClosureBindArgVisitor override; false = pending exception */
-	static bool applyClosureBindArg(zv::Val &parametersAcceptors, zval *firstArg, zval *scope)
+	static bool applyClosureBindArg(zv::Val &parametersAcceptors, zval *closureBindArg, zval *scope)
 	{
 		zv::Val valueHold;
-		zval *value = argValueOf(firstArg, valueHold);
+		zval *value = argValueOf(closureBindArg, valueHold);
 		if (UNEXPECTED(value == NULL)) return false;
 		bool isVariable = false;
 		if (UNEXPECTED(!isA(value, PT_CLASS_VARIABLE, isVariable))) return false;

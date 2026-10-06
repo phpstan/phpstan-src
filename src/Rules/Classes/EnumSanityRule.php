@@ -82,7 +82,7 @@ final class EnumSanityRule implements Rule
 						->build();
 				} elseif (
 					!array_key_exists($lowercasedMethodName, self::ALLOWED_MAGIC_METHODS)
-					&& !($lowercasedMethodName === '__debuginfo' && $scope->getPhpVersion()->supportsDebugInfoOnEnums()->yes())
+					&& ($lowercasedMethodName !== '__debuginfo' || !$scope->getPhpVersion()->supportsDebugInfoOnEnums()->yes())
 				) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains magic method %s().',

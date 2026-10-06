@@ -42,6 +42,32 @@ final class Coll implements \IteratorAggregate
 	{
 		return $this;
 	}
+
+	/**
+	 * @param Box<TValue>|TValue $value
+	 * @return Coll<TValue>
+	 */
+	public function push($value): Coll
+	{
+		return $this;
+	}
+}
+
+/**
+ * @template T
+ */
+class Box
+{
+
+	/** @param T $value */
+	public function __construct(public mixed $value)
+	{
+	}
+
+}
+
+final class Other
+{
 }
 
 final class Field
@@ -58,9 +84,11 @@ function isExcluded(Field $field): bool
  * @param Coll<Field> $a
  * @param Coll<Field> $b
  */
-function test(Coll $a, Coll $b): void
+function test(Coll $a, Coll $b, \Closure $closure): void
 {
 	assertType('Bug15414\\Coll<Bug15414\\Field>', $a->merge($b)->reject(isExcluded(...)));
 	assertType('Bug15414\\Coll<Bug15414\\Field>', $a->merge($b)->reject(static fn (Field $f): bool => isExcluded($f)));
 	assertType('Bug15414\\Coll<Bug15414\\Field>', $a->reject(isExcluded(...)));
+	assertType('Bug15414\\Coll<Bug15414\\Field|Closure>', $a->merge($b)->reject($closure));
+	assertType('Bug15414\\Coll<Bug15414\\Field|Bug15414\\Other>', $a->merge($b)->push(new Box(new Other())));
 }

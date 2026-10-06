@@ -90,7 +90,11 @@ final class PreIncHandler implements ExprHandler
 			$assignedScope,
 			beforeScope: $scope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null, VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_PRE_INC, $assignedScope, $storage)),
+			variableFlow: VariableFlow::sequence(
+				$varResult->getVariableFlow(),
+				VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_PRE_INC, $assignedScope, $storage),
+				$valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlowBuilder::targetRead($expr->var, $storage, true, $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null,
+			),
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),

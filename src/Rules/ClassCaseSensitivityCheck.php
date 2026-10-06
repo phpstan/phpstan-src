@@ -8,9 +8,10 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Parser\UseAliasVisitor;
 use PHPStan\Reflection\ReflectionProvider;
 use function count;
-use function implode;
 use function sprintf;
+use function strrpos;
 use function strtolower;
+use function substr;
 
 #[AutowiredService]
 final class ClassCaseSensitivityCheck
@@ -105,15 +106,18 @@ final class ClassCaseSensitivityCheck
 			return $resolvedName;
 		}
 
-		$originalParts = $originalName->getParts();
-		if (count($originalParts) !== 1) {
+		if (count($originalName->getParts()) !== 1) {
 			return $resolvedName;
 		}
 
-		$resolvedParts = $node->getParts();
-		$resolvedParts[count($resolvedParts) - 1] = $originalParts[0];
+		// the original name takes over the last part of the resolved name,
+		// everything up to the last separator stays as resolved
+		$lastSeparatorPos = strrpos($resolvedName, '\\');
+		if ($lastSeparatorPos === false) {
+			return $originalName->toString();
+		}
 
-		return implode('\\', $resolvedParts);
+		return substr($resolvedName, 0, $lastSeparatorPos + 1) . $originalName->toString();
 	}
 
 }

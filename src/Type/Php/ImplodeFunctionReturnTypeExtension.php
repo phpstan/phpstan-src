@@ -15,6 +15,7 @@ use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -85,9 +86,14 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		$accessoryTypes = [];
 		$valueTypeAsString = $arrayType->getIterableValueType()->toString();
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {
-			if ($valueTypeAsString->isNonFalsyString()->yes() || $separatorType->isNonFalsyString()->yes()) {
+			// The separator only appears between elements, so it can only
+			// guarantee a non-empty/non-falsy result when the array has at
+			// least two elements. A single-element array drops the separator
+			// entirely (e.g. implode(',', ['']) === '').
+			$separatorAppears = IntegerRangeType::createAllGreaterThanOrEqualTo(2)->isSuperTypeOf($arrayType->getArraySize())->yes();
+			if ($valueTypeAsString->isNonFalsyString()->yes() || ($separatorAppears && $separatorType->isNonFalsyString()->yes())) {
 				$accessoryTypes[] = new AccessoryNonFalsyStringType();
-			} elseif ($valueTypeAsString->isNonEmptyString()->yes() || $separatorType->isNonEmptyString()->yes()) {
+			} elseif ($valueTypeAsString->isNonEmptyString()->yes() || ($separatorAppears && $separatorType->isNonEmptyString()->yes())) {
 				$accessoryTypes[] = new AccessoryNonEmptyStringType();
 			}
 		}

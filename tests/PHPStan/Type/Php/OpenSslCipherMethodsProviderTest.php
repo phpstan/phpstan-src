@@ -6,6 +6,8 @@ use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Testing\PHPStanTestCase;
+use function restore_error_handler;
+use function set_error_handler;
 
 class OpenSslCipherMethodsProviderTest extends PHPStanTestCase
 {
@@ -42,6 +44,36 @@ class OpenSslCipherMethodsProviderTest extends PHPStanTestCase
 			ValueDependencyCollector::getId(OpenSslCipherMethodsProvider::class, 'aes-128-cbc'),
 			ValueDependencyCollector::getId(OpenSslCipherMethodsProvider::class, 'aes-256-cbc'),
 		], $dependencies['dependents']['/project/src/Analysed.php']['analysis']);
+	}
+
+	/**
+	 * Reading the ciphers out of the runtime means probing each one, and on PHP 8.0-8.4
+	 * openssl_get_cipher_methods() reports algorithms openssl_cipher_iv_length() rejects with a
+	 * warning (php/php-src#19994) - 40 of 248 on PHP 8.4.23. `@` does not settle that: a user error
+	 * handler that does not consult error_reporting() is still called for a suppressed diagnostic.
+	 * See phpstan/phpstan#15176.
+	 *
+	 * Vacuous on a PHP where nothing is rejected, which is why the count is not asserted - only that
+	 * whatever the probe does stays inside it.
+	 */
+	public function testProbingTheRuntimeLeaksNoWarningThroughAnUnsuppressedHandler(): void
+	{
+		$leaked = [];
+		set_error_handler(static function (int $errno, string $errstr) use (&$leaked): bool {
+			// deliberately does not check error_reporting(), so the @ operator does not hide anything
+			$leaked[] = $errstr;
+
+			return true;
+		});
+
+		try {
+			$value = (new OpenSslCipherMethodsProvider())->getValue('aes-128-cbc');
+		} finally {
+			restore_error_handler();
+		}
+
+		$this->assertSame([], $leaked, 'Probing the runtime for supported ciphers must not emit warnings.');
+		$this->assertContains($value, ['supported', 'unsupported']);
 	}
 
 	/**

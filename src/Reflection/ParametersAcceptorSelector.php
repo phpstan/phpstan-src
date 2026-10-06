@@ -532,12 +532,22 @@ final class ParametersAcceptorSelector
 				}
 			}
 
+			// the closure is the 1st argument unless the call names its arguments
+			$closureBindArg = $args[0];
+			if ($closureBindArg->name !== null) {
+				foreach ($args as $arg) {
+					if ($arg->getAttribute(ClosureBindArgVisitor::ATTRIBUTE_NAME) !== null) {
+						$closureBindArg = $arg;
+						break;
+					}
+				}
+			}
 			if (
-				$args[0]->getAttribute(ClosureBindArgVisitor::ATTRIBUTE_NAME) !== null
-				&& $args[0]->value instanceof Node\Expr\Variable
-				&& is_string($args[0]->value->name)
+				$closureBindArg->getAttribute(ClosureBindArgVisitor::ATTRIBUTE_NAME) !== null
+				&& $closureBindArg->value instanceof Node\Expr\Variable
+				&& is_string($closureBindArg->value->name)
 			) {
-				$closureVarName = $args[0]->value->name;
+				$closureVarName = $closureBindArg->value->name;
 				$inFunction = $scope->getFunction();
 				if ($inFunction !== null) {
 					$closureThisParameters = [];

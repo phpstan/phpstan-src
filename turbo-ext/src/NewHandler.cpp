@@ -977,6 +977,36 @@ public:
 		if (preResolvedAcceptor != NULL && Z_TYPE_P(preResolvedAcceptor) == IS_NULL) preResolvedAcceptor = NULL;
 		if (argsResult != NULL && Z_TYPE_P(argsResult) == IS_NULL) argsResult = NULL;
 
+		{
+			int isSpecial = nameLowerEquals(className, PT_LC("self"));
+			if (isSpecial == 0) isSpecial = nameLowerEquals(className, PT_LC("static"));
+			if (isSpecial == 0) isSpecial = nameLowerEquals(className, PT_LC("parent"));
+			if (UNEXPECTED(isSpecial < 0)) return zv::Val();
+			bool ambiguous = false;
+			if (isSpecial == 1 && UNEXPECTED(!pt_mutating_scope_is_closure_bind_scope_class_ambiguous(Z_OBJ_P(scope), ambiguous))) return zv::Val();
+			if (ambiguous) {
+				// bound to a class that is not exactly one known class: an instance of the
+				// closest class all candidates extend, or of some class
+				zv::Val commonAncestor = pt_mutating_scope_get_closure_bind_scope_common_ancestor(Z_OBJ_P(scope), Z_OBJ_P(className));
+				if (UNEXPECTED(commonAncestor.isUndef())) return zv::Val();
+				if (commonAncestor.isNull()) {
+					zval objectType;
+					if (UNEXPECTED(!pt_object_without_class_type_new(&objectType))) return zv::Val();
+					return zv::Val::adopt(objectType);
+				}
+				int isStaticAncestor = nameLowerEquals(className, PT_LC("static"));
+				if (UNEXPECTED(isStaticAncestor < 0)) return zv::Val();
+				if (isStaticAncestor == 1) {
+					zval staticType;
+					if (UNEXPECTED(!pt_static_type_new(&staticType, commonAncestor.raw()))) return zv::Val();
+					return zv::Val::adopt(staticType);
+				}
+				zv::Val ancestorName = pt_class_reflection_get_name(Z_OBJ_P(commonAncestor.raw()));
+				if (UNEXPECTED(ancestorName.isUndef())) return zv::Val();
+				return pt_type_new_object_type(ancestorName.raw());
+			}
+		}
+
 		zv::Val resolvedClassName = pt_mutating_scope_resolve_name(Z_OBJ_P(scope), Z_OBJ_P(className));
 		if (UNEXPECTED(resolvedClassName.isUndef())) return zv::Val();
 		if (UNEXPECTED(!requireString(resolvedClassName.raw(), "PHPStan\\Analyser\\MutatingScope::resolveName", "name"))) return zv::Val();

@@ -1111,6 +1111,20 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureBindNamedArguments(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/closure-bind-named-arguments.php'], [
+			[
+				'Call to protected method prot() of class ClosureBindNamedArgumentsMethod\\Target.',
+				57,
+			],
+		]);
+	}
+
 	public function testArrowFunctionClosureBind(): void
 	{
 		$this->checkThisOnly = false;
@@ -4584,6 +4598,15 @@ class CallMethodsRuleTest extends RuleTestCase
 				59,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testClosureBindScopeAmbiguous(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-ambiguous.php'], []);
 	}
 
 }

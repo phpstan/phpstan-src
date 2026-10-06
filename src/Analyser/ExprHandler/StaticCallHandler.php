@@ -46,12 +46,14 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
@@ -159,7 +161,10 @@ final class StaticCallHandler implements ExprHandler
 						$declaringClass->getName() === 'Closure'
 						&& strtolower($methodName) === 'bind'
 					) {
-						$closureBindScopeFactory = static function (MutatingScope $boundScope) use ($expr, $storage): MutatingScope {
+						$closureBindScopeFactory = static function (MutatingScope $boundScope) use ($expr, $storage, $parametersAcceptor): MutatingScope {
+							// normalized so that $newThis and $newScope are found at their
+							// parameter positions even when the call names its arguments
+							$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 							// invoked while the closure argument is walked; the other
 							// arguments were processed before it (processArgs orders
 							// closures last), so their results are already stored. A
@@ -186,9 +191,13 @@ final class StaticCallHandler implements ExprHandler
 								}
 							}
 							$scopeClasses = ['static'];
+							$bindsUnknownScopeClass = false;
 							if (isset($expr->getArgs()[2])) {
 								$argValue = $expr->getArgs()[2]->value;
 								$argValueType = $readArgType($argValue, false);
+								// a newScope that may name a class binds to one even when it is unknown;
+								// 'static' and null name none
+								$bindsUnknownScopeClass = !TypeCombinator::union(new ConstantStringType('static'), new NullType())->isSuperTypeOf($argValueType)->yes();
 
 								$directClassNames = $argValueType->getObjectClassNames();
 								if (count($directClassNames) > 0) {
@@ -202,6 +211,9 @@ final class StaticCallHandler implements ExprHandler
 									$thisType = $argValueType->getClassStringObjectType();
 									$scopeClasses = $thisType->getObjectClassNames();
 								}
+							}
+							if ($scopeClasses === [] && $bindsUnknownScopeClass) {
+								$scopeClasses = [MutatingScope::UNKNOWN_CLOSURE_BIND_SCOPE_CLASS];
 							}
 							return $boundScope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
 						};

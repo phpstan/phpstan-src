@@ -6,9 +6,10 @@
  * arginfo so Nette autowires it. processExpr() is registered as the class's
  * handler entry (Engine.h). The twin's closures are native closures capturing
  * what the PHP closures capture: the Closure::bind() scope factory handed to
- * processArgs() ($expr, $storage; its inner $readArgType closure, created and
- * called only inside it, is inlined), the typeCallback ($this, $beforeScope,
- * $expr, $classResult, $nameResult, $resolvedParametersAcceptor, $argsResult;
+ * processArgs() ($expr, $storage, $parametersAcceptor; its inner $readArgType
+ * closure, created and called only inside it, is inlined), the typeCallback
+ * ($this, $beforeScope, $expr, $classResult, $nameResult,
+ * $resolvedParametersAcceptor, $argsResult;
  * none for the early-terminating `new NeverType(true)` one), the
  * specifyTypesCallback ($this, $beforeScope, $expr, $normalizedExpr,
  * $classResult, $resolvedParametersAcceptor, $argsResult), the
@@ -438,7 +439,7 @@ public:
 							return zv::Val();
 						}
 						if (zend_string_equals_literal_ci(Z_STR_P(methodNameHold.raw()), "bind")) {
-							closureBindScopeFactory = pt_native_closure(&closureBindScopeFactoryBody, expr, storage);
+							closureBindScopeFactory = pt_native_closure(&closureBindScopeFactoryBody, expr, storage, parametersAcceptor.raw());
 						}
 					}
 				} else {
@@ -1341,9 +1342,9 @@ private:
 		return currentScope;
 	}
 
-	/* static function (MutatingScope $boundScope) use ($expr, $storage):
-	 * MutatingScope — the Closure::bind() scope factory; captures: $expr,
-	 * $storage */
+	/* static function (MutatingScope $boundScope) use ($expr, $storage,
+	 * $parametersAcceptor): MutatingScope — the Closure::bind() scope factory;
+	 * captures: $expr, $storage, $parametersAcceptor */
 	static void closureBindScopeFactoryBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(!requireArguments(argc, 1, "PHPStan\\Analyser\\ExprHandler\\StaticCallHandler::{closure}"))) return;
@@ -1352,8 +1353,12 @@ private:
 			zend_type_error("PHPStan\\Analyser\\ExprHandler\\StaticCallHandler::{closure}(): Argument #1 ($boundScope) must be of type PHPStan\\Analyser\\MutatingScope, %s given", zend_zval_value_name(boundScope));
 			return;
 		}
-		zval *expr = &captures[0];
 		zval *storage = &captures[1];
+		// normalized so that $newThis and $newScope are found at their
+		// parameter positions even when the call names its arguments
+		zv::Val normalizedExpr = reorderStaticCallArguments(&captures[2], &captures[0]);
+		if (UNEXPECTED(normalizedExpr.isUndef())) return;
+		zval *expr = normalizedExpr.isNull() ? &captures[0] : normalizedExpr.raw();
 
 		zv::Val thisType = zv::Val::null();
 		zv::Val nativeThisType = zv::Val::null();
@@ -1387,12 +1392,15 @@ private:
 			list.push(zv::Ref(&staticName));
 			scopeClasses = zv::Val(std::move(list));
 		}
+		bool bindsUnknownScopeClass = false;
 		zval *thirdArg = argAt(args, 2);
 		if (thirdArg != NULL) {
 			zval *value = argValue(thirdArg);
 			if (UNEXPECTED(value == NULL)) return;
 			zv::Val argValueType = readArgType(boundScope, storage, value, false);
 			if (UNEXPECTED(argValueType.isUndef())) return;
+			// a newScope that may name a class binds to one even when it is unknown
+			if (UNEXPECTED(!bindsUnknownScopeClassOf(argValueType.raw(), bindsUnknownScopeClass))) return;
 
 			zv::Val directClassNames = pt_type_op(Z_OBJ_P(argValueType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 			if (UNEXPECTED(directClassNames.isUndef())) return;
@@ -1422,9 +1430,42 @@ private:
 				scopeClasses = std::move(classNames);
 			}
 		}
+		if (bindsUnknownScopeClass && zend_hash_num_elements(Z_ARRVAL_P(scopeClasses.raw())) == 0) {
+			zv::Arr unknown = zv::Arr::create(1);
+			unknown.push(zv::Val::string(pt_unknown_closure_bind_scope_class));
+			scopeClasses = zv::Val(std::move(unknown));
+		}
 		zv::Val bound = pt_mutating_scope_enter_closure_bind(Z_OBJ_P(boundScope), thisType.raw(), nativeThisType.raw(), scopeClasses.raw());
 		if (UNEXPECTED(bound.isUndef())) return;
 		bound.intoReturnValue(return_value);
+	}
+
+	/* !TypeCombinator::union(new ConstantStringType('static'), new NullType())
+	 * ->isSuperTypeOf($argValueType)->yes(): 'static' and null name no class;
+	 * false = pending exception */
+	[[nodiscard]] static bool bindsUnknownScopeClassOf(zval *argValueType, bool &out)
+	{
+		out = false;
+		zval staticType;
+		if (UNEXPECTED(!pt_constant_string_type_new(&staticType, pt_sch_static))) return false;
+		zval nullType;
+		if (UNEXPECTED(!pt_null_type_new(&nullType))) {
+			zval_ptr_dtor(&staticType);
+			return false;
+		}
+		zval noClassMembers[2];
+		ZVAL_COPY_VALUE(&noClassMembers[0], &staticType);
+		ZVAL_COPY_VALUE(&noClassMembers[1], &nullType);
+		zv::Val noClassType = pt_type_combinator_union(2, noClassMembers);
+		zval_ptr_dtor(&staticType);
+		zval_ptr_dtor(&nullType);
+		if (UNEXPECTED(noClassType.isUndef())) return false;
+		zv::Val isNoClass = pt_type_op(Z_OBJ_P(noClassType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, argValueType);
+		if (UNEXPECTED(isNoClass.isUndef())) return false;
+		zend_long isNoClassValue = pt_type_result_trinary(isNoClass.raw());
+		if (UNEXPECTED(isNoClassValue < 0)) return false;
+		out = isNoClassValue != PT_TRI_YES;
+		return true;
 	}
 
 	/* $readArgType($argValue, $useNativeTypes) of the scope factory: the

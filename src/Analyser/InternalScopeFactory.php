@@ -17,7 +17,7 @@ interface InternalScopeFactory
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param list<non-empty-string> $inClosureBindScopeClasses
+	 * @param list<non-empty-string> $inClosureBindScopeClasses 'static' and MutatingScope::UNKNOWN_CLOSURE_BIND_SCOPE_CLASS included
 	 * @param array<string, bool> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param list<array{FunctionReflection|MethodReflection|null, ParameterReflection|null}> $inFunctionCallsStack

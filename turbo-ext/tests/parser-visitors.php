@@ -73,6 +73,21 @@ $parserVisitorSnippets = [
 	'<?php $c->bindTo($obj); $c->bindTo(); $c->bindTo(...); $c->BINDTO($obj); $c->other($obj);',
 	'<?php Closure::bind($c, $obj); Closure::bind($c); \Closure::bind($c, $obj, "X"); Closure::bind(...);
 		Closure::fromCallable($c); Other::bind($c, $obj);',
+	// Closure::bind() arguments found by name as well as by position, in every order
+	'<?php Closure::bind(closure: $c, newThis: $o); Closure::bind(newThis: $o, closure: $c);
+		Closure::bind(closure: $c, newThis: $o, newScope: X::class); Closure::bind(closure: $c, newScope: X::class, newThis: $o);
+		Closure::bind(newThis: $o, closure: $c, newScope: X::class); Closure::bind(newThis: $o, newScope: X::class, closure: $c);
+		Closure::bind(newScope: X::class, closure: $c, newThis: $o); Closure::bind(newScope: X::class, newThis: $o, closure: $c);
+		Closure::bind($c, newThis: $o); Closure::bind($c, newScope: X::class, newThis: $o); Closure::bind($c, $o, newScope: X::class);
+		Closure::bind(closure: $c); Closure::bind(newThis: $o); Closure::bind($c, newScope: X::class);
+		Closure::bind(Closure: $c, NewThis: $o); Closure::bind(closure: $c, other: $o);',
+	// ... duplicated (the first one is kept), unpacked and nested arguments
+	'<?php Closure::bind($c, $o, closure: $d); Closure::bind($c, $o, newThis: $p); Closure::bind($c, $o, closure: $d, newThis: $p);
+		Closure::bind(closure: $c, newThis: $o, closure: $d); Closure::bind(newThis: $o, closure: $c, newThis: $p, closure: $d);
+		Closure::bind(closure: $c, $o); Closure::bind(newThis: $o, $c); Closure::bind(...$args); Closure::bind(...$args, newThis: $o);
+		Closure::bind(...$args, closure: $c); Closure::bind($c, ...$rest); Closure::bind(newThis: $o, closure: $c, ...$rest);
+		Closure::bind(newThis: Closure::bind(closure: $d, newThis: $p), closure: Closure::bind(newThis: $q, closure: $e));
+		Closure::bind(Closure::bind($d, newThis: $p), closure: $c, newThis: $o);',
 
 	// array offsets: every literal spelling the normalizer canonicalises
 	'<?php echo $a[\'k\'], $a["k"], $a["a\nb"], $a["$x"], $a["pre{$x}post"], $a[1], $a[0x1F], $a[0b11], $a[$i], $a[C], $a[];',
@@ -120,6 +135,26 @@ $parserVisitorSnippets = [
 		$y instanceof Qux;
 		TypeTraverser::map($t, $cb);
 		\PHPStan\Type\TypeTraverser::other($t, $cb);',
+
+	// the closure argument of Closure::bind() calls around self/parent/static
+	// names, which the visitor leaves alone (the bound class comes from the scope)
+	'<?php
+		self::A; Closure::bind(function () { return [self::A, static::b(), new parent(), Other::C]; }, null, Foo::class);
+		Closure::bind(fn () => SELF::$p, $obj); \Closure::bind(static function () { return parent::X; }, null, self::class);
+		Closure::bind(function () { return Closure::bind(fn () => static::B, null, Inner::class)() + self::C; }, null, Outer::class);
+		Closure::bind($callable, null, Foo::class); Closure::bind(...); static::D;',
+	// ... with the arguments found by name as well as by position
+	'<?php
+		Closure::bind(closure: fn () => self::A, newScope: Foo::class, newThis: null);
+		Closure::bind(newScope: Bar::class, closure: function () { return static::B; });
+		Closure::bind(function () { return parent::C; }, newScope: Baz::class); Closure::bind(fn () => self::D, $obj, newScope: Qux::class);
+		Closure::bind(closure: fn () => self::E); Closure::bind(Closure: fn () => self::F, newscope: X::class, other: 1);',
+	// ... duplicated, unpacked and nested arguments
+	'<?php
+		Closure::bind(fn () => 1, $o, Foo::class, newScope: Bar::class); Closure::bind($c, $o, closure: $d, newThis: $p);
+		Closure::bind(...$a, $o); Closure::bind(...$a); Closure::bind($c, ...$rest); Closure::bind(newThis: $o, closure: $c);
+		Closure::bind(fn () => 1, $o, Closure::bind(fn () => self::class, $p, X::class)());
+		Closure::bind(Closure::bind(fn () => 1, $o, X::class), $p, Y::class);',
 ];
 
 // plus real source files, so the ports meet whatever the repository contains

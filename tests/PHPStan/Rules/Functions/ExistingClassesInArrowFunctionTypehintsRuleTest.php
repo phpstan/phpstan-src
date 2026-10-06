@@ -350,4 +350,18 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClosureBindScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-typehints.php'], [
+			[
+				'Parameter $x of anonymous function has invalid type self.',
+				49,
+			],
+			[
+				'Anonymous function has invalid return type self.',
+				49,
+			],
+		]);
+	}
+
 }

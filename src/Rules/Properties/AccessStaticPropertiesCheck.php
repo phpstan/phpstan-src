@@ -25,6 +25,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Rules\SelfClassResolver;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\StringType;
@@ -94,8 +95,12 @@ final class AccessStaticPropertiesCheck
 		if ($node->class instanceof Name) {
 			$class = (string) $node->class;
 			$lowercasedClass = strtolower($class);
+			if (in_array($lowercasedClass, ['self', 'static', 'parent'], true) && SelfClassResolver::isAmbiguous($scope)) {
+				return [];
+			}
+			$selfClassReflection = SelfClassResolver::resolve($scope, $this->reflectionProvider);
 			if (in_array($lowercasedClass, ['self', 'static'], true)) {
-				if (!$scope->isInClass()) {
+				if ($selfClassReflection === null) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Accessing %s::$%s outside of class scope.',
@@ -109,7 +114,7 @@ final class AccessStaticPropertiesCheck
 				}
 				$classType = $scope->resolveTypeByName($node->class);
 			} elseif ($lowercasedClass === 'parent') {
-				if (!$scope->isInClass()) {
+				if ($selfClassReflection === null) {
 					return [
 						RuleErrorBuilder::message(sprintf(
 							'Accessing %s::$%s outside of class scope.',
@@ -121,14 +126,20 @@ final class AccessStaticPropertiesCheck
 							->build(),
 					];
 				}
-				if ($scope->getClassReflection()->getParentClass() === null) {
+				if ($selfClassReflection->getParentClass() === null) {
+					// a closure bound to another class has no method of that class to name
+					$isEnclosingClass = $scope->isInClass() && $scope->getClassReflection()->getName() === $selfClassReflection->getName();
 					return [
-						RuleErrorBuilder::message(sprintf(
+						RuleErrorBuilder::message($isEnclosingClass ? sprintf(
 							'%s::%s() accesses parent::$%s but %s does not extend any class.',
-							$scope->getClassReflection()->getDisplayName(),
+							$selfClassReflection->getDisplayName(),
 							$scope->getFunctionName(),
 							$name,
-							$scope->getClassReflection()->getDisplayName(),
+							$selfClassReflection->getDisplayName(),
+						) : sprintf(
+							'Accessing parent::$%s but %s does not extend any class.',
+							$name,
+							$selfClassReflection->getDisplayName(),
 						))
 							->line($node->name->getStartLine())
 							->identifier('class.noParent')

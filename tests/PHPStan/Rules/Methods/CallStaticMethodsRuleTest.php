@@ -847,6 +847,36 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureBindParamClosureThisNamedArguments(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/closure-bind-param-closure-this-named.php'], [
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				19,
+			],
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				20,
+			],
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				21,
+			],
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				22,
+			],
+			[
+				'Parameter $newThis of static method Closure::bind() expects stdClass, ClosureBindParamClosureThisNamed\\Foo given.',
+				23,
+			],
+		]);
+	}
+
 	public function testClosureBind(): void
 	{
 		$this->checkThisOnly = false;
@@ -1128,6 +1158,72 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			[
 				'Static method Bug15251\\A::sfoo() invoked with 0 parameters, at least 1 required.',
 				42,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testClosureBindScope(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/closure-bind-scope.php'], [
+			[
+				'Call to private static method psm() of class ClosureBindScopeMethods\\Foo.',
+				53,
+			],
+			[
+				'Calling parent::s() but ClosureBindScopeMethods\\NoParent does not extend any class.',
+				56,
+			],
+			[
+				'Call to an undefined static method ClosureBindScopeMethods\\Foo::nope().',
+				59,
+			],
+			[
+				'Calling self::sm() outside of class scope.',
+				62,
+			],
+			[
+				'Calling parent::sm() outside of class scope.',
+				62,
+			],
+			[
+				'Calling static::sm() outside of class scope.',
+				62,
+			],
+			[
+				'Call to an undefined static method ClosureBindScopeMethods\\Foo::own().',
+				76,
+			],
+			[
+				'Calling parent::s() but ClosureBindScopeMethods\\NoParent does not extend any class.',
+				80,
+			],
+			[
+				'Static call to instance method ClosureBindScopeMethods\\Foo::im().',
+				89,
+			],
+			[
+				'Static call to instance method ClosureBindScopeMethods\\Foo::im().',
+				91,
+			],
+		]);
+	}
+
+	public function testBug6319(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-6319.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testClosureBindScopeAmbiguous(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-ambiguous.php'], [
+			[
+				'Calling self::sm() outside of class scope.',
+				39,
 			],
 		]);
 	}

@@ -135,4 +135,46 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/static-method-callable-php-versions.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testClosureBindScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope.php'], [
+			[
+				'Call to private static method psm() of class ClosureBindScopeMethods\\Foo.',
+				53,
+			],
+			[
+				'Calling parent::s() but ClosureBindScopeMethods\\NoParent does not extend any class.',
+				56,
+			],
+			[
+				'Call to an undefined static method ClosureBindScopeMethods\\Foo::nope().',
+				59,
+			],
+			[
+				'Calling self::sm() outside of class scope.',
+				62,
+			],
+			[
+				'Static call to instance method ClosureBindScopeMethods\\Foo::im().',
+				89,
+			],
+			[
+				'Static call to instance method ClosureBindScopeMethods\\Foo::im().',
+				91,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testClosureBindScopeAmbiguous(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-ambiguous.php'], [
+			[
+				'Calling self::sm() outside of class scope.',
+				39,
+			],
+		]);
+	}
+
 }

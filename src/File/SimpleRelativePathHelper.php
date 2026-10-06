@@ -23,7 +23,13 @@ final class SimpleRelativePathHelper implements RelativePathHelper
 	public function getRelativePath(string $filename): string
 	{
 		if ($this->currentWorkingDirectory !== '' && str_starts_with($filename, $this->currentWorkingDirectory)) {
-			return str_replace('\\', '/', substr($filename, strlen($this->currentWorkingDirectory) + 1));
+			$length = strlen($this->currentWorkingDirectory);
+
+			if ($this->currentWorkingDirectory !== '/') {
+				++$length;
+			}
+
+			return str_replace('\\', '/', substr($filename, $length));
 		}
 
 		return str_replace('\\', '/', $filename);

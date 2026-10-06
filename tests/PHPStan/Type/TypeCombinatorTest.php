@@ -6531,22 +6531,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'non-empty-array&hasOffsetValue(\'a\', string)',
 			],
 			[
-				new ObjectType('SealedHierarchyRemove\\SealedBase'),
+				new ObjectType('Bug15392Types\\SealedBase'),
 				new UnionType([
-					new ObjectType('SealedHierarchyRemove\\SealedBase'),
-					new ObjectType('SealedHierarchyRemove\\Other'),
+					new ObjectType('Bug15392Types\\SealedBase'),
+					new ObjectType('Bug15392Types\\Other'),
 				]),
 				NeverType::class,
 				'*NEVER*=implicit',
 			],
 			[
-				new ObjectType('SealedHierarchyRemove\\SealedBase'),
+				new ObjectType('Bug15392Types\\SealedBase'),
 				new UnionType([
-					new ObjectType('SealedHierarchyRemove\\SubA'),
-					new ObjectType('SealedHierarchyRemove\\Other'),
+					new ObjectType('Bug15392Types\\SubA'),
+					new ObjectType('Bug15392Types\\Other'),
 				]),
 				ObjectType::class,
-				'SealedHierarchyRemove\\SubB',
+				'Bug15392Types\\SubB',
 			],
 			[
 				new ObjectType('PHPStan\\Fixture\\TestEnum'),

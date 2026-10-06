@@ -1,6 +1,6 @@
 <?php
 
-namespace SealedHierarchyRemove;
+namespace Bug15392Types;
 
 /** @phpstan-sealed SubA|SubB */
 abstract class SealedBase

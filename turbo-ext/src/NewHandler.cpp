@@ -923,7 +923,7 @@ public:
 				implicit = !isThrowable;
 			}
 			if (implicit) {
-				return pt_internal_throw_point_create_implicit(scope, methodCall.raw());
+				return pt_internal_throw_point_create_implicit(scope, new_);
 			}
 		}
 

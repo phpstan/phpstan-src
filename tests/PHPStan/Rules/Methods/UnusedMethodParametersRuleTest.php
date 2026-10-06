@@ -44,6 +44,11 @@ class UnusedMethodParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-method-parameters-overriding-throws.php'], []);
 	}
 
+	public function testParameterReadOnlyInCatchOfImplicitConstructorThrows(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-method-parameters-implicit-constructor-throws.php'], []);
+	}
+
 	public function testParameterCapturedByReference(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-method-parameters-by-ref-use.php'], [

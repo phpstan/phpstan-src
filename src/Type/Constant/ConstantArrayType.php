@@ -46,6 +46,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateStrictMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerRangeType;
@@ -135,6 +136,14 @@ class ConstantArrayType implements Type
 
 	/** @var array<int, int>|null */
 	private ?array $optionalKeySet = null;
+
+	private ?bool $hasTemplateOrLateResolvableType = null;
+
+	/** @var list<non-empty-string>|null */
+	private ?array $referencedClasses = null;
+
+	/** @var array{TemplateTypeVariance, list<TemplateTypeReference>}|null */
+	private ?array $referencedTemplateTypes = null;
 
 	/**
 	 * @api
@@ -267,6 +276,10 @@ class ConstantArrayType implements Type
 
 	public function getReferencedClasses(): array
 	{
+		if ($this->referencedClasses !== null) {
+			return $this->referencedClasses;
+		}
+
 		$referencedClasses = [];
 		foreach ($this->getKeyTypes() as $keyType) {
 			foreach ($keyType->getReferencedClasses() as $referencedClass) {
@@ -290,7 +303,7 @@ class ConstantArrayType implements Type
 			}
 		}
 
-		return $referencedClasses;
+		return $this->referencedClasses = $referencedClasses;
 	}
 
 	public function getIterableKeyType(): Type
@@ -2739,6 +2752,10 @@ class ConstantArrayType implements Type
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		$variance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
+		if ($this->referencedTemplateTypes !== null && $this->referencedTemplateTypes[0]->equals($variance)) {
+			return $this->referencedTemplateTypes[1];
+		}
+
 		$references = [];
 
 		foreach ($this->keyTypes as $type) {
@@ -2762,6 +2779,8 @@ class ConstantArrayType implements Type
 				$references[] = $reference;
 			}
 		}
+
+		$this->referencedTemplateTypes = [$variance, $references];
 
 		return $references;
 	}
@@ -3675,12 +3694,16 @@ class ConstantArrayType implements Type
 
 	public function hasTemplateOrLateResolvableType(): bool
 	{
+		if ($this->hasTemplateOrLateResolvableType !== null) {
+			return $this->hasTemplateOrLateResolvableType;
+		}
+
 		foreach ($this->valueTypes as $valueType) {
 			if (!$valueType->hasTemplateOrLateResolvableType()) {
 				continue;
 			}
 
-			return true;
+			return $this->hasTemplateOrLateResolvableType = true;
 		}
 
 		foreach ($this->keyTypes as $keyType) {
@@ -3688,19 +3711,19 @@ class ConstantArrayType implements Type
 				continue;
 			}
 
-			return true;
+			return $this->hasTemplateOrLateResolvableType = true;
 		}
 
 		if ($this->unsealed !== null) {
 			if ($this->unsealed[0]->hasTemplateOrLateResolvableType()) {
-				return true;
+				return $this->hasTemplateOrLateResolvableType = true;
 			}
 			if ($this->unsealed[1]->hasTemplateOrLateResolvableType()) {
-				return true;
+				return $this->hasTemplateOrLateResolvableType = true;
 			}
 		}
 
-		return false;
+		return $this->hasTemplateOrLateResolvableType = false;
 	}
 
 }

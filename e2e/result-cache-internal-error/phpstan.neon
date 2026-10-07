@@ -1,0 +1,8 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- src
+
+rules:
+	- ResultCacheE2EInternalError\ThrowingRule

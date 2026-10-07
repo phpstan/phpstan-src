@@ -1331,6 +1331,43 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a not_contains 'Instantiated class ResultCacheE2EEmptyFileGainsSymbol\Thing not found.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-parse-error
+              # src/Thing.php has a parse error, and src/User.php uses the class it would declare. The parse
+              # error carries an exception, so src/Thing.php is left out of the result cache, but the rest
+              # of it is saved.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Thing.php:12:Syntax error, unexpected EOF on line 12' "$OUTPUT"
+              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              test -f tmp/resultCache.php
+              # Only src/Thing.php is analysed again, and the result cache is not rewritten.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Thing.php:12:Syntax error, unexpected EOF on line 12' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
+              # Fixing the parse error declares Thing, so the error that src/User.php had in the result
+              # cache goes away.
+              cp fixed/Thing.php src/Thing.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vvv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'not found' "$OUTPUT"
+              # A reflection error, here a class that extends itself, still keeps the result cache from
+              # being saved.
+              cp loop/Loop.php src/Loop.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache was not saved because of non-ignorable exception: Reflection error: Circular reference' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-internal-error
+              composer dump-autoload
+              # A rule that throws is an internal error. The result cache is not saved.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Internal error: The rule crashed.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache was not saved' "$OUTPUT"
+              test ! -f tmp/resultCache.php
+          - script: |
               cd e2e/result-cache-string-class
               ../../bin/phpstan analyse
               # The instantiated class is named by a constant string, so it is resolved through the type

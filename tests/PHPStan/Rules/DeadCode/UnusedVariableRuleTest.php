@@ -23,6 +23,14 @@ class UnusedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15411.php'], []);
 	}
 
+	public function testBug15394(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15394.php'], [
+			['Variable $unused is never read.', 34],
+			['Value assigned to variable $value is never read before being overwritten.', 40],
+		]);
+	}
+
 	public function testThrowableCatchAfterDocumentedException(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-throwable-catch.php'], []);

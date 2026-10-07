@@ -120,9 +120,22 @@ final class TraitUseHandler implements StmtHandler
 	 */
 	private function processTraitUse(NodeScopeResolver $nodeScopeResolver, Node\Stmt\TraitUse $node, MutatingScope $classScope, ExpressionResultStorage $storage, callable $nodeCallback): ?Dependencies
 	{
+		// inside a trait, only the traits reflection says it uses are processed: a trait on a
+		// trait cycle uses none, so its members stay those reflection knows about
+		$usedTraitNames = null;
+		if ($classScope->isInTrait()) {
+			$usedTraitNames = [];
+			foreach ($classScope->getTraitReflection()->getTraits() as $usedTrait) {
+				$usedTraitNames[strtolower($usedTrait->getName())] = true;
+			}
+		}
+
 		$dependencies = [];
 		foreach ($node->traits as $trait) {
 			$traitName = (string) $trait;
+			if ($usedTraitNames !== null && !array_key_exists(strtolower($traitName), $usedTraitNames)) {
+				continue;
+			}
 			// traits can use each other in a cycle (even use themselves) which is a runtime
 			// fatal error in PHP, but must not send the analyser into an endless recursion
 			if (array_key_exists(strtolower($traitName), $this->currentlyProcessedTraits)) {

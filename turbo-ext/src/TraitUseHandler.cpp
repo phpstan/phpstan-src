@@ -275,25 +275,58 @@ private:
 			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(traits));
 			return EG(exception) ? zv::Val() : zv::Val::null();
 		}
+		// inside a trait, only the traits reflection says it uses are processed: a trait on a
+		// trait cycle uses none, so its members stay those reflection knows about
+		zv::Arr usedTraitNames = zv::Arr::create(0);
+		bool filterUsedTraits;
+		if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(classScope), filterUsedTraits))) return zv::Val();
+		if (filterUsedTraits) {
+			zv::Val traitReflection = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(classScope));
+			if (UNEXPECTED(traitReflection.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(traitReflection.raw()) != IS_OBJECT)) {
+				memberCallOnNonObject("getTraits", traitReflection.raw());
+				return zv::Val();
+			}
+			zv::Val usedTraits = pt_type_call(Z_OBJ_P(traitReflection.raw()), PT_LC("gettraits"), 0, NULL);
+			if (UNEXPECTED(usedTraits.isUndef())) return zv::Val();
+			if (Z_TYPE_P(usedTraits.raw()) == IS_ARRAY) {
+				for (auto entry : zv::ArrRef(usedTraits.raw())) {
+					zval *usedTrait = entry.value().deref().raw();
+					if (UNEXPECTED(Z_TYPE_P(usedTrait) != IS_OBJECT)) {
+						memberCallOnNonObject("getName", usedTrait);
+						return zv::Val();
+					}
+					zv::Val usedTraitName = pt_class_reflection_get_name(Z_OBJ_P(usedTrait));
+					if (UNEXPECTED(usedTraitName.isUndef())) return zv::Val();
+					zv::Str lowercasedUsedTraitName = zv::Str::adopt(zend_string_tolower(Z_STR_P(usedTraitName.raw())));
+					zval trueValue;
+					ZVAL_TRUE(&trueValue);
+					zend_symtable_update(usedTraitNames.table(), lowercasedUsedTraitName.get(), &trueValue);
+				}
+			}
+		}
+
 		zv::Arr dependencies = zv::Arr::empty();
 		zv::Val iterated = zv::Val::copyOf(zv::Ref(traits));
 		for (auto entry : zv::ArrRef(iterated.raw())) {
-			if (UNEXPECTED(!processTrait(nodeScopeResolver, node, entry.value().deref().raw(), classScope, storage, nodeCallback, dependencies))) return zv::Val();
+			if (UNEXPECTED(!processTrait(nodeScopeResolver, node, entry.value().deref().raw(), classScope, storage, nodeCallback, dependencies, filterUsedTraits ? usedTraitNames.table() : NULL))) return zv::Val();
 		}
 
 		return pt_dependencies_merge_list(dependencies.table());
 	}
 
 	/* the traits loop body over one used trait name; `dependencies` is the
-	 * twin's $dependencies list (its non-null entries) */
-	[[nodiscard]] bool processTrait(zval *nodeScopeResolver, zval *node, zval *trait, zval *classScope, zval *storage, zval *nodeCallback, zv::Arr &dependencies) const
+	 * twin's $dependencies list (its non-null entries), `usedTraitNames` its
+	 * $usedTraitNames (NULL outside a trait) */
+	[[nodiscard]] bool processTrait(zval *nodeScopeResolver, zval *node, zval *trait, zval *classScope, zval *storage, zval *nodeCallback, zv::Arr &dependencies, HashTable *usedTraitNames) const
 	{
 		zend_string *traitNameString = zval_try_get_string(trait);
 		if (UNEXPECTED(traitNameString == NULL)) return false;
 		zv::Val traitName = zv::Val::adoptString(traitNameString);
+		zv::Str lowercasedTraitName = zv::Str::adopt(zend_string_tolower(traitNameString));
+		if (usedTraitNames != NULL && !zend_symtable_exists(usedTraitNames, lowercasedTraitName.get())) return true;
 		// traits can use each other in a cycle (even use themselves) which is a runtime
 		// fatal error in PHP, but must not send the analyser into an endless recursion
-		zv::Str lowercasedTraitName = zv::Str::adopt(zend_string_tolower(traitNameString));
 		{
 			zval *currentlyProcessedTraits = OBJ_PROP_NUM(self, slots::currentlyProcessedTraits);
 			ZVAL_DEREF(currentlyProcessedTraits);

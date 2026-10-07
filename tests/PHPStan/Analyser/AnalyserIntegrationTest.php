@@ -1089,7 +1089,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8082.php');
 		$this->assertSame(
-			[],
+			['Trait Bug8082\\TraitUsesSelf uses itself.'],
 			$this->uniqueErrorMessages($errors),
 		);
 	}
@@ -1099,7 +1099,25 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8082-trait-cycle.php');
 		$this->assertSame(
-			[],
+			[
+				'Trait Bug8082TraitCycle\\TraitA uses Bug8082TraitCycle\\TraitB, which uses Bug8082TraitCycle\\TraitA.',
+				'Trait Bug8082TraitCycle\\TraitB uses Bug8082TraitCycle\\TraitA, which uses Bug8082TraitCycle\\TraitB.',
+			],
+			$this->uniqueErrorMessages($errors),
+		);
+	}
+
+	public function testTraitCycleMembers(): void
+	{
+		// crash: the members of a trait on a cycle use the members of the other trait
+		$errors = $this->runAnalyse(__DIR__ . '/data/trait-cycle-members.php');
+		$this->assertSame(
+			[
+				'Trait TraitCycleMembers\\TraitA uses TraitCycleMembers\\TraitB, which uses TraitCycleMembers\\TraitA.',
+				'Trait TraitCycleMembers\\TraitB uses TraitCycleMembers\\TraitA, which uses TraitCycleMembers\\TraitB.',
+				// a trait on a cycle uses no traits, so the class gets the members of TraitA only
+				'Access to an undefined property TraitCycleMembers\\UsesCycle::$b.',
+			],
 			$this->uniqueErrorMessages($errors),
 		);
 	}
@@ -1109,7 +1127,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/circular-parent-class.php');
 		$this->assertSame(
-			[],
+			[
+				'Class CircularParentClass\\Foo extends CircularParentClass\\Bar, which extends CircularParentClass\\Foo.',
+				'Class CircularParentClass\\Bar extends CircularParentClass\\Foo, which extends CircularParentClass\\Bar.',
+			],
 			$this->uniqueErrorMessages($errors),
 		);
 	}
@@ -1127,7 +1148,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7787.php');
-		$this->assertCount(0, $errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Class Bug7787\TestClass extends itself.', $errors[0]->getMessage());
 	}
 
 	public function testBug3865(): void

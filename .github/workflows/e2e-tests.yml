@@ -1383,6 +1383,26 @@ jobs:
               ../bashunit assert contains 'Result cache was not saved because of non-ignorable exception: Class ResultCacheE2EInternalError\Missing was not found' "$OUTPUT"
               test ! -f tmp/resultCache.php
           - script: |
+              cd e2e/result-cache-circular-inheritance
+              # src/First.php, src/Second.php and src/Third.php extend each other in a cycle. src/TraitA.php
+              # uses TraitB, which uses TraitC, without a cycle.
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'First.php:5:Class ResultCacheE2ECircularInheritance\First extends ResultCacheE2ECircularInheritance\Second, which extends ResultCacheE2ECircularInheritance\Third, which extends ResultCacheE2ECircularInheritance\First.' "$OUTPUT"
+              ../bashunit assert not_contains 'TraitA' "$OUTPUT"
+              # The cycle is reported by a rule and is not a reflection error, so the result cache is saved.
+              ../bashunit assert contains 'Result cache is saved.' "$OUTPUT"
+              # Breaking the cycle in src/Third.php has to re-analyse src/First.php, although a class on a
+              # cycle has no parents and the file depends only on its direct parent otherwise.
+              cp patched/Third.php src/Third.php
+              # src/TraitC.php now uses TraitA, which closes a cycle. A trait declaration is not analysed on
+              # its own, so src/TraitA.php depends on the traits it uses only through the rule.
+              cp patched/TraitC.php src/TraitC.php
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert not_contains 'First.php' "$OUTPUT"
+              ../bashunit assert contains 'TraitA.php:5:Trait ResultCacheE2ECircularInheritance\TraitA uses ResultCacheE2ECircularInheritance\TraitB, which uses ResultCacheE2ECircularInheritance\TraitC, which uses ResultCacheE2ECircularInheritance\TraitA.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-string-class
               ../../bin/phpstan analyse
               # The instantiated class is named by a constant string, so it is resolved through the type

@@ -443,6 +443,19 @@ jobs:
               ../bashunit -a equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
               ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
           - script: |
+              cd e2e/result-cache-define-in-function
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Other.php:10:Method ResultCacheE2EDefineInFunction\Other::doOther() should return int but returns string.' "$OUTPUT"
+              # A define() inside a function or method body is not an exported node, so an edit of the
+              # file calling it looks like no symbol appeared or disappeared: only the file itself is
+              # re-analysed, not every file with errors.
+              patch -b src/functions.php < body.patch
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+          - script: |
               cd e2e/result-cache-function-shares-method-name
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"

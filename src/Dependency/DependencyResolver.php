@@ -96,10 +96,11 @@ final class DependencyResolver
 			$this->nameScopeTracker->enterNode($node);
 		}
 
-		// A function declared inside another function is not supported (function.inner), and the
-		// restore does not look inside function bodies for exported nodes (ExportedNodeVisitor):
-		// exporting it here would make every edit of its file look like a symbol disappeared.
-		if (($nodeProfile & self::PROFILE_EXPORT) === 0 || ($node instanceof Node\Stmt\Function_ && $scope->getFunction() !== null)) {
+		// Nothing declared inside a function or method body is a symbol other files can use: a function
+		// declared there is not supported (function.inner), and a class or a define() there is not found.
+		// The restore does not look inside function bodies for exported nodes (ExportedNodeVisitor), so
+		// exporting one here would make every edit of its file look like a symbol disappeared.
+		if (($nodeProfile & self::PROFILE_EXPORT) === 0 || $scope->getFunction() !== null) {
 			return null;
 		}
 

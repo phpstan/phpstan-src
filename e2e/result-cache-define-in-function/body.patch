@@ -1,0 +1,11 @@
+--- src/functions.php
++++ src/functions.php
+@@ -6,7 +6,7 @@
+ {
+ 	define('RESULT_CACHE_E2E_IN_FUNCTION', 1);
+ 
+-	return 1;
++	return 2;
+ }
+ 
+ class Bootstrap

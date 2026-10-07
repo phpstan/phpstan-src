@@ -217,6 +217,29 @@ private:
 				}
 				zv::Val staticObjectType = pt_type_call(Z_OBJ_P(changed.raw()), PT_LC("getstaticobjecttype"), 0, NULL);
 				if (UNEXPECTED(staticObjectType.isUndef())) return;
+				/* a GenericObjectType is rebuilt without the class reflection of the
+				 * declaring class, which would not know the resolved type arguments:
+				 * new GenericObjectType($t->getClassName(), $t->getTypes(), $t->getSubtractedType(), variances: $t->getVariances()) */
+				bool isGenericObject;
+				pt_type_instanceof_ce(staticObjectType.raw(), pt_ce_generic_object_type, isGenericObject);
+				if (isGenericObject) {
+					zend_object *objectType = Z_OBJ_P(staticObjectType.raw());
+					zv::Val className = pt_type_call(objectType, PT_LC("getclassname"), 0, NULL);
+					if (UNEXPECTED(className.isUndef())) return;
+					zv::Val objectTypes = pt_type_call(objectType, PT_LC("gettypes"), 0, NULL);
+					if (UNEXPECTED(objectTypes.isUndef())) return;
+					zv::Val subtracted = pt_type_call(objectType, PT_LC("getsubtractedtype"), 0, NULL);
+					if (UNEXPECTED(subtracted.isUndef())) return;
+					zv::Val objectVariances = pt_type_call(objectType, PT_LC("getvariances"), 0, NULL);
+					if (UNEXPECTED(objectVariances.isUndef())) return;
+					if (UNEXPECTED(Z_TYPE_P(className.raw()) != IS_STRING)) {
+						zend_type_error("phpstan_turbo: getClassName() must return a string");
+						return;
+					}
+					zval rebuiltRaw;
+					if (UNEXPECTED(!pt_generic_object_type_new(&rebuiltRaw, Z_STR_P(className.raw()), objectTypes.raw(), subtracted.raw(), NULL, objectVariances.raw()))) return;
+					staticObjectType = zv::Val::adopt(rebuiltRaw);
+				}
 				zv::Val traversed = pt_type_call_callable(&argv[1], 1, staticObjectType.raw());
 				if (UNEXPECTED(traversed.isUndef())) return;
 				traversed.intoReturnValue(return_value);

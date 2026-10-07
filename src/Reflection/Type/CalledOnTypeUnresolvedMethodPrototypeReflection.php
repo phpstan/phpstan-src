@@ -11,6 +11,7 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
@@ -149,7 +150,19 @@ final class CalledOnTypeUnresolvedMethodPrototypeReflection implements Unresolve
 				if (count($calledOnTypeReflections) === 1) {
 					$calledOnTypeReflection = $calledOnTypeReflections[0];
 
-					return $traverse($type->changeBaseClass($calledOnTypeReflection)->getStaticObjectType());
+					$staticObjectType = $type->changeBaseClass($calledOnTypeReflection)->getStaticObjectType();
+					if ($staticObjectType instanceof GenericObjectType) {
+						// do not carry over the class reflection of the declaring class,
+						// it would not know the type arguments of the resolved type
+						$staticObjectType = new GenericObjectType(
+							$staticObjectType->getClassName(),
+							$staticObjectType->getTypes(),
+							$staticObjectType->getSubtractedType(),
+							variances: $staticObjectType->getVariances(),
+						);
+					}
+
+					return $traverse($staticObjectType);
 				}
 
 				return $this->calledOnType;

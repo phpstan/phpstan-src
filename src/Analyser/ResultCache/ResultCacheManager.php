@@ -114,6 +114,12 @@ final class ResultCacheManager
 	 */
 	private const MISSING_FILE_HASH = '';
 
+	/**
+	 * Prefixes the recorded hash of an analysed file with a parse error, whose result is not cached.
+	 * The prefixed hash matches no real hash, so the file is re-analysed on every run.
+	 */
+	private const REANALYSE_FILE_HASH_PREFIX = 'reanalyse:';
+
 	private const SCANNED_FILE_APPEARED = 'appeared';
 	private const SCANNED_FILE_EDITED = 'edited';
 	private const SCANNED_FILE_GONE = 'gone';
@@ -1273,24 +1279,49 @@ final class ResultCacheManager
 				return false;
 			}
 
-			foreach ($errorsByFile as $errors) {
+			// A parse error describes the analysed code, so the result cache is still saved. The file's
+			// own result is not cached: its errors carry the exception, and it is re-analysed on every
+			// run instead.
+			$filesToReanalyse = [];
+			$currentFileHashes = $resultCache->getCurrentFileHashes();
+			foreach ($errorsByFile as $file => $errors) {
 				foreach ($errors as $error) {
 					if (!$error->hasNonIgnorableException()) {
 						continue;
 					}
 
-					if ($output->isVeryVerbose()) {
-						$output->writeLineFormatted(sprintf('Result cache was not saved because of non-ignorable exception: %s', $error->getMessage()));
+					// any other exception stops the save, and so does an error reported in a file
+					// that is not analysed, because only an analysed file is re-analysed
+					if (
+						$error->getIdentifier() !== 'phpstan.parse'
+						|| !array_key_exists($file, $currentFileHashes)
+					) {
+						if ($output->isVeryVerbose()) {
+							$output->writeLineFormatted(sprintf('Result cache was not saved because of non-ignorable exception: %s', $error->getMessage()));
+						}
+
+						return false;
 					}
 
-					return false;
+					if (array_key_exists($file, $filesToReanalyse)) {
+						continue;
+					}
+
+					if ($output->isVeryVerbose()) {
+						$output->writeLineFormatted(sprintf('Result cache will re-analyse %s because of non-ignorable exception: %s', $file, $error->getMessage()));
+					}
+
+					$filesToReanalyse[$file] = true;
 				}
+			}
+			foreach (array_keys($filesToReanalyse) as $file) {
+				unset($errorsByFile[$file]);
 			}
 
 			$stubFiles = $this->getStubFiles();
 			if (
 				!$resultCache->isFullAnalysis()
-				&& $resultCache->getFilesToAnalyse() === []
+				&& array_diff($resultCache->getFilesToAnalyse(), array_keys($filesToReanalyse)) === []
 				&& $this->restoredCacheUnchanged
 				&& $errorsByFile === $resultCache->getErrors()
 				&& $locallyIgnoredErrorsByFile === $resultCache->getLocallyIgnoredErrors()
@@ -1311,7 +1342,11 @@ final class ResultCacheManager
 				return true;
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta, $stubFiles);
+			foreach (array_keys($filesToReanalyse) as $file) {
+				$currentFileHashes[$file] = self::REANALYSE_FILE_HASH_PREFIX . $currentFileHashes[$file];
+			}
+
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $currentFileHashes, $meta, $stubFiles);
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -2771,7 +2806,11 @@ final class ResultCacheManager
 			'fileHash' => $currentFileHashes[$file] ?? $this->getDependencyFileHash($file),
 			'dependentFiles' => [],
 		];
-		if (array_key_exists($file, $currentFileHashes) && array_key_exists($file, $this->recordedFileStats)) {
+		if (
+			array_key_exists($file, $currentFileHashes)
+			&& !str_starts_with($currentFileHashes[$file], self::REANALYSE_FILE_HASH_PREFIX)
+			&& array_key_exists($file, $this->recordedFileStats)
+		) {
 			$entry['fileStat'] = $this->recordedFileStats[$file];
 		}
 
@@ -2849,6 +2888,10 @@ final class ResultCacheManager
 	{
 		foreach ($this->recordedFileStats as $file => $signature) {
 			if (!array_key_exists($file, $cachedDependencies)) {
+				continue;
+			}
+
+			if (str_starts_with($cachedDependencies[$file]['fileHash'], self::REANALYSE_FILE_HASH_PREFIX)) {
 				continue;
 			}
 

@@ -630,6 +630,15 @@ final class TemplateArgumentObserver
 						}
 						continue;
 					}
+					if ($member->isCallable()->yes()) {
+						// a callable member records no lower bound, but it still
+						// takes an argument it accepts: (callable(T): bool)|T
+						// receiving a matching Closure does not bind T to it
+						if ($member->isSuperTypeOf($argumentMember)->yes()) {
+							$taken = true;
+						}
+						continue;
+					}
 					$before = $constraints;
 					$constraints = $this->observeLowerBound($constraints, $member, $argumentMember);
 					if ($constraints === $before) {

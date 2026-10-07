@@ -96,7 +96,9 @@ final class ClassLikeHandler implements StmtHandler
 		$name = $stmt->namespacedName ?? $stmt->name;
 		$scope = $scope->invalidateExistenceCheckExpressions($existenceCheckFunctionNames, $name instanceof Name ? $name->toString() : null);
 
-		if (!$context->isTopLevel()) {
+		// PHP does not compile a class declared inside another class (NestedClassDeclarationRule),
+		// and entering it here would replace the class the scope is already in
+		if (!$context->isTopLevel() || (isset($stmt->namespacedName) && $scope->isInClass())) {
 			return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: $declarationDependencies);
 		}
 		if (isset($stmt->namespacedName)) {

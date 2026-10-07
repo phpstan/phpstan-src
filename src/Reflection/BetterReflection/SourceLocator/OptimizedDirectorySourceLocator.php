@@ -81,7 +81,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		}
 
 		$reflectionCacheKey = sprintf('odsl-%s-%s-%s', $file, $identifier->getType()->getName(), $identifier->getName());
-		$variableCacheKey = sprintf('v2-%s-%s-%s', ComposerHelper::getBetterReflectionVersion(), $this->phpVersion->getVersionString(), $fileHash);
+		$variableCacheKey = sprintf('v3-%s-%s-%s', ComposerHelper::getBetterReflectionVersion(), $this->phpVersion->getVersionString(), $fileHash);
 
 		return [$reflectionCacheKey, $variableCacheKey];
 	}
@@ -160,6 +160,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 			return $classReflection;
 		} elseif ($identifier->isFunction()) {
 			$fetchedFunctionNode = null;
+			$fetchedFile = null;
 			foreach ($files as $file) {
 				$fetchedFunctionNodes = $this->fileNodesFetcher->fetchNodes($file)->getFunctionNodes();
 
@@ -169,13 +170,17 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 				/** @var FetchedNode<Node\Stmt\Function_> $fetchedFunctionNode */
 				$fetchedFunctionNode = current($fetchedFunctionNodes[$identifierName]);
+				$fetchedFile = $file;
 			}
 
-			if ($fetchedFunctionNode === null) {
+			if ($fetchedFunctionNode === null || $fetchedFile === null) {
 				return null;
 			}
 
-			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier);
+			// the file declaring the function, not the last one searched - the symbol scan also lists
+			// the files with a method of the same name, and the reflection keyed to one of them would
+			// stay in the cache after the declaring file changes
+			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($fetchedFile, $identifier);
 			$functionReflection = $this->nodeToReflection($reflector, $fetchedFunctionNode);
 			$this->cache->save($reflectionCacheKey, $variableCacheKey, $functionReflection->exportToCache());
 

@@ -1,0 +1,12 @@
+--- src/functions.php
++++ src/functions.php
+@@ -2,7 +2,7 @@
+ 
+ namespace ResultCacheE2EFunctionSharesMethodName;
+ 
+-function shared(): int
++function shared(): string
+ {
+-	return 1;
++	return 'a';
+ }

@@ -443,6 +443,15 @@ jobs:
               ../bashunit -a equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
               ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
           - script: |
+              cd e2e/result-cache-function-shares-method-name
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Caller.php:10:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              # with-method.php has a method named like the function and is scanned after functions.php,
+              # so the cached reflection of the function must still be tied to functions.php
+              patch -b src/functions.php < changeReturnType.patch
+              ../../bin/phpstan analyse -vv --error-format raw
+          - script: |
               cd e2e/result-cache-value-dependency
               composer install
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")

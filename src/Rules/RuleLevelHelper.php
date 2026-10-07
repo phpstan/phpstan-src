@@ -25,6 +25,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
+use function spl_object_id;
 use function sprintf;
 
 #[AutowiredService]
@@ -86,23 +87,31 @@ final class RuleLevelHelper
 			return $type;
 		}
 
-		return TypeTraverser::map($type, function (Type $type, callable $traverse) {
-			if ($type instanceof TemplateMixedType) {
-				if ($this->checkExplicitMixed) {
-					return $type->toStrictMixedType();
-				}
+		// a type alias used in several places is one shared object: transform it once
+		$transformed = [];
+
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use (&$transformed) {
+			$id = spl_object_id($type);
+			if (isset($transformed[$id])) {
+				return $transformed[$id][1];
 			}
-			if (
+
+			if ($type instanceof TemplateMixedType && $this->checkExplicitMixed) {
+				$result = $type->toStrictMixedType();
+			} elseif (
 				$type instanceof MixedType
 				&& (
 					($type->isExplicitMixed() && $this->checkExplicitMixed)
 					|| (!$type->isExplicitMixed() && $this->checkImplicitMixed)
 				)
 			) {
-				return new StrictMixedType();
+				$result = new StrictMixedType();
+			} else {
+				$result = $traverse($type);
 			}
+			$transformed[$id] = [$type, $result];
 
-			return $traverse($type);
+			return $result;
 		});
 	}
 

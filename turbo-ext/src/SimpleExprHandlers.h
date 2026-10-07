@@ -132,11 +132,9 @@ inline zv::Val valueFlowContext(zval *context, zval *valueFlowWrite)
 	return pt_expression_context_enter_value_flow(deep.raw(), valueFlowWrite, false);
 }
 
-/* VariableFlow::sequence($varResult->getVariableFlow(), $valueFlowWrite !==
- * null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(),
- * $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null)
- * : null, VariableFlowBuilder::targetWrite($var, $kind, $assignedScope, $storage)) */
-inline zv::Val incDecFlow(zval *varFlow, zval *valueFlowWrite, zval *context, zval *var, zend_long kind, zval *assignedScope, zval *storage)
+/* Post-inc/dec consumes the inputs of the write; pre-inc/dec consumes the
+ * newly written value, so its target read must follow the target write. */
+inline zv::Val incDecFlow(zval *varFlow, zval *valueFlowWrite, zval *context, zval *var, zend_long kind, zval *assignedScope, zval *storage, bool readsNewValue = false)
 {
 	zv::Val inputsFlow = zv::Val::null();
 	if (Z_TYPE_P(valueFlowWrite) != IS_NULL) {
@@ -154,13 +152,15 @@ inline zv::Val incDecFlow(zval *varFlow, zval *valueFlowWrite, zval *context, zv
 				targetId = variableWriteId(target.raw());
 				if (UNEXPECTED(targetId.isUndef())) return zv::Val();
 			}
-			inputsFlow = pt_variable_flow_inputs(zval_get_long(writeId.raw()), targetId.raw());
+			inputsFlow = readsNewValue
+				? pt_variable_flow_builder_target_read(var, storage, true, targetId.raw())
+				: pt_variable_flow_inputs(zval_get_long(writeId.raw()), targetId.raw());
 			if (UNEXPECTED(inputsFlow.isUndef())) return zv::Val();
 		}
 	}
 	zv::Val targetWriteFlow = pt_variable_flow_builder_target_write(var, kind, assignedScope, storage, NULL);
 	if (UNEXPECTED(targetWriteFlow.isUndef())) return zv::Val();
-	zv::Args flows{varFlow, inputsFlow.raw(), targetWriteFlow.raw()};
+	zv::Args flows{varFlow, readsNewValue ? targetWriteFlow.raw() : inputsFlow.raw(), readsNewValue ? inputsFlow.raw() : targetWriteFlow.raw()};
 	return pt_variable_flow_sequence(3, flows);
 }
 

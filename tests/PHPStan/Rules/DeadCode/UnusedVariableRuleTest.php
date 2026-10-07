@@ -18,6 +18,11 @@ class UnusedVariableRuleTest extends RuleTestCase
 		return new UnusedVariableRule(self::getContainer()->getByType(ExprPrinter::class));
 	}
 
+	public function testBug15411(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15411.php'], []);
+	}
+
 	public function testThrowableCatchAfterDocumentedException(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-throwable-catch.php'], []);

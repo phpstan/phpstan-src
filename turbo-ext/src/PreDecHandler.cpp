@@ -102,7 +102,7 @@ public:
 		zv::Val assignedScope = ptse::scopeOf(assignResult.raw());
 		if (UNEXPECTED(assignedScope.isUndef())) return zv::Val();
 
-		zv::Val variableFlow = ptse::incDecFlow(child.variableFlow.raw(), valueFlowWrite.raw(), context, var, pt_pdh_kind, assignedScope.raw(), storage);
+		zv::Val variableFlow = ptse::incDecFlow(child.variableFlow.raw(), valueFlowWrite.raw(), context, var, pt_pdh_kind, assignedScope.raw(), storage, true);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val dependenciesHold;
 		zval *dependencies = pt_expression_result_dependencies(varResult.raw(), dependenciesHold);

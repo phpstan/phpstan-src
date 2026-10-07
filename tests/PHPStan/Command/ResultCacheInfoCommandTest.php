@@ -18,8 +18,10 @@ use function implode;
 use function md5;
 use function sprintf;
 use function sys_get_temp_dir;
+use function time;
 use function touch;
 use function uniqid;
+use function usleep;
 use const PHP_BINARY;
 
 #[Group('exec')]
@@ -146,6 +148,11 @@ PHP);
 
 	public function testWarmAnalysisDoesNotRewriteUnchangedResultCache(): void
 	{
+		// a file modified in the second the analysis starts gets no stat signature, so a cold run in
+		// the second setUp() wrote the files records none, and the warm run rewrites the cache to
+		// record them
+		$this->waitForNextSecond();
+
 		[$analyseOutput, $analyseExitCode] = $this->runPhpstan(['analyse', '--no-progress']);
 		$this->assertSame(0, $analyseExitCode, $analyseOutput);
 
@@ -208,6 +215,14 @@ PHP);
 		$this->assertStringContainsString('Result cache will be used.', $output);
 		$this->assertStringContainsString('Last full analysis: ', $output);
 		$this->assertStringContainsString('0 out of 2 files will be analysed.', $output);
+	}
+
+	private function waitForNextSecond(): void
+	{
+		$second = time();
+		while (time() === $second) {
+			usleep(10_000);
+		}
 	}
 
 	/**

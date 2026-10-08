@@ -372,4 +372,5 @@ void pt_abi_init()
 	pt_abi.stream_free = abi_stream_free;
 	pt_abi.stream_read = abi_stream_read;
 	pt_abi.run_on_fresh_stack = abi_run_on_fresh_stack;
+	pt_abi.is_true = [](const zval *op) -> bool { return zend_is_true((zval *) op); };
 }

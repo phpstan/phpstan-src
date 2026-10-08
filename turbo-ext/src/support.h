@@ -518,7 +518,11 @@ struct pt_globals_t {
 	char trusted_types_prefix[MAXPATHLEN + 16];
 };
 
-PT_CORE_API extern pt_globals_t pt_globals;
+extern pt_globals_t pt_globals;
+PT_CORE_API pt_globals_t *pt_core_globals();
+#ifdef PHPSTANTURBO_ABI_IMPL
+#define pt_globals (*pt_core_globals())
+#endif
 
 #define PT_G(v) (pt_globals.v)
 

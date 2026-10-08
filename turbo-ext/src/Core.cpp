@@ -10,10 +10,35 @@
 #include "support.h"
 #include "reg.h"
 #include "Engine.h"
+#include "version.h"
 
 #include <vector>
 
-PT_CORE_API pt_abi_globals pt_abi;
+pt_abi_globals pt_abi;
+
+/* the core's data, for the version-specific library: through functions,
+ * since a Windows DLL can delay-load functions only */
+PT_CORE_API pt_abi_globals *pt_core_abi()
+{
+	return &pt_abi;
+}
+
+PT_CORE_API pt_globals_t *pt_core_globals()
+{
+	return &pt_globals;
+}
+
+PT_CORE_API const pt_type_op_info *pt_core_type_op_infos()
+{
+	return pt_type_op_infos;
+}
+
+/* the version the core was built at — the extension refuses a core of
+ * another version (main.cpp) */
+PT_CORE_API const char *pt_core_version()
+{
+	return PHPSTANTURBO_VERSION;
+}
 
 /* the PT_MINIT_REGISTRATION() functions of every file, in name order; a
  * constant-initialized pointer, so it is null before any of the file-static

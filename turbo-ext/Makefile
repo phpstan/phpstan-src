@@ -207,17 +207,81 @@ CXXFLAGS += $(PGO_FLAGS)
 SOURCES := $(wildcard src/*.cpp) $(wildcard src/parser/*.cpp)
 OBJECTS := $(SOURCES:.cpp=.o)
 
+# The shared core and the per-PHP-version extension (README.md, "Shared
+# core"). The sources below are the only ones compiled against a PHP
+# version's own layout; every other object compiles to the same code against
+# each supported version's headers (bin/shared-core/gate-*.sh proves it), so
+# it is built once per platform into the core. TerminateHandler.cpp goes into
+# both: each links libstdc++ in statically.
+SHIM_SOURCES := src/Abi.cpp src/Shadow.cpp src/TrustedTypes.cpp src/main.cpp
+SHIM_OBJECTS := $(SHIM_SOURCES:.cpp=.o) src/TerminateHandler.o
+CORE_OBJECTS := $(filter-out $(SHIM_SOURCES:.cpp=.o),$(OBJECTS))
+CORE_LIB := phpstan_turbo_core.so
+
+# `make SPLIT=1` builds the pair — phpstan_turbo_core.so and a
+# phpstan_turbo.so loading it from its own directory — instead of the one
+# self-contained phpstan_turbo.so a plain `make` (and the phpize build)
+# produces; main.cpp then checks the core's version at startup
+ifeq ($(SPLIT),1)
+CXXFLAGS += -DPHPSTANTURBO_SPLIT
+endif
+
+ifeq ($(UNAME_S),Darwin)
+CORE_LINK_FLAGS := -install_name @loader_path/$(CORE_LIB)
+EXTENSION_LINK_FLAGS :=
+else
+# --exclude-libs: the statically folded libstdc++ stays out of the dynamic
+# symbol tables of both, so neither binds the other's copy
+CORE_LINK_FLAGS := -Wl,-soname,$(CORE_LIB) -Wl,--exclude-libs,ALL
+EXTENSION_LINK_FLAGS := -Wl,-rpath,'$$ORIGIN' -Wl,--exclude-libs,ALL
+endif
+
+# the symbols a shared object exports — a stripped one keeps only its
+# dynamic table on ELF
+ifeq ($(UNAME_S),Darwin)
+NM_EXPORTS := nm -g
+else
+NM_EXPORTS := nm -D --defined-only
+endif
+
 # the objects alone — what bin/shared-core/gate-*.sh compare between the PHP
 # versions' headers
 objects: $(OBJECTS)
 .PHONY: objects
 
+# a shared object links with undefined symbols allowed (the engine's are
+# resolved at load time), so a helper declared but never defined only
+# surfaces as a jump to NULL at run time — fail the build instead; the
+# extension's may come from the core, which must then export them
+define pt_check_undefined
+	@undefined=$$(nm -u $(1) | grep -E 'pt_[a-z_]+|phpstanturbo' | awk '{print $$NF}' | while read -r sym; do \
+		if [ -n "$(2)" ] && $(NM_EXPORTS) $(2) 2>/dev/null | awk '$$2 != "U" {print $$3}' | grep -qx "$$sym"; then continue; fi; \
+		echo "$$sym"; done); \
+	if [ -n "$$undefined" ]; then echo "undefined extension symbols in $(1):"; echo "$$undefined"; rm -f $(1); exit 1; fi
+endef
+
+ifeq ($(SPLIT),1)
+phpstan_turbo.so: $(SHIM_OBJECTS) $(CORE_LIB)
+	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LTO_FLAGS) $(LINK_FLAGS) $(EXTENSION_LINK_FLAGS) $(PGO_FLAGS) -o $@ $(SHIM_OBJECTS) $(CORE_LIB)
+	$(call pt_check_undefined,$@,$(CORE_LIB))
+else
 phpstan_turbo.so: $(OBJECTS)
 	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LTO_FLAGS) $(LINK_FLAGS) $(PGO_FLAGS) -o $@ $(OBJECTS)
-	@# a shared object links with undefined symbols allowed (the engine's are
-	@# resolved at load time), so a helper declared but never defined only
-	@# surfaces as a jump to NULL at run time — fail the build instead
-	@if nm -u $@ | grep -E 'pt_[a-z_]+|phpstanturbo' > /dev/null; then echo "undefined extension symbols in $@:"; nm -u $@ | grep -E 'pt_[a-z_]+|phpstanturbo'; rm -f $@; exit 1; fi
+	$(call pt_check_undefined,$@,)
+endif
+
+$(CORE_LIB): $(CORE_OBJECTS)
+	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LTO_FLAGS) $(LINK_FLAGS) $(CORE_LINK_FLAGS) $(PGO_FLAGS) -o $@ $(CORE_OBJECTS)
+	$(call pt_check_undefined,$@,)
+
+# the extension alone, against a $(CORE_LIB) already in place (built for
+# another PHP version, by the CI job building the platform's core): the
+# per-version CI legs compile only $(SHIM_SOURCES)
+extension: $(SHIM_OBJECTS)
+	@test -f $(CORE_LIB) || { echo "$(CORE_LIB) is missing — build it, or put the platform's core here"; exit 1; }
+	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LTO_FLAGS) $(LINK_FLAGS) $(EXTENSION_LINK_FLAGS) $(PGO_FLAGS) -o phpstan_turbo.so $(SHIM_OBJECTS) $(CORE_LIB)
+	$(call pt_check_undefined,phpstan_turbo.so,$(CORE_LIB))
+.PHONY: extension
 
 # The distributed binaries ship without symbol tables: a quarter of the .so
 # (2.4 MB on Linux, 3.2 MB on macOS) that the loader never reads, since the
@@ -228,9 +292,9 @@ phpstan_turbo.so: $(OBJECTS)
 strip:
 	@test -f phpstan_turbo.so || { echo "phpstan_turbo.so is missing — build it first"; exit 1; }
 ifeq ($(UNAME_S),Darwin)
-	strip -x phpstan_turbo.so
+	strip -x phpstan_turbo.so $(wildcard $(CORE_LIB))
 else
-	strip --strip-unneeded phpstan_turbo.so
+	strip --strip-unneeded phpstan_turbo.so $(wildcard $(CORE_LIB))
 endif
 
 # every object depends on every header: the op tables and the trait helper
@@ -240,7 +304,7 @@ HEADERS := $(wildcard src/*.h) $(wildcard src/generated/*.h)
 src/%.o: src/%.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-src/main.o: version.stamp
+src/main.o src/Core.o: version.stamp
 
 version.stamp: FORCE
 	@echo '$(PHPSTANTURBO_VERSION)' | cmp -s - $@ 2>/dev/null || echo '$(PHPSTANTURBO_VERSION)' > $@
@@ -262,7 +326,7 @@ pgo:
 	$(MAKE) pgo-clean
 	$(MAKE) PGO_FLAGS="$(PGO_GEN_FLAGS)" phpstan_turbo.so
 	PGO_DIR="$(PGO_DIR)" bin/pgo-train.sh
-	rm -f $(OBJECTS) phpstan_turbo.so
+	rm -f $(OBJECTS) phpstan_turbo.so $(CORE_LIB)
 ifeq ($(CXX_IS_CLANG),1)
 	$(LLVM_PROFDATA) merge -output=$(PGO_DIR)/turbo.profdata $(PGO_DIR)/*.profraw
 endif
@@ -273,7 +337,7 @@ endif
 LLVM_PROFDATA ?= $(shell command -v llvm-profdata 2>/dev/null || (command -v xcrun > /dev/null 2>&1 && echo "xcrun llvm-profdata") || ls /usr/bin/llvm-profdata-* 2>/dev/null | sort -V | tail -1)
 
 pgo-clean:
-	rm -f $(OBJECTS) phpstan_turbo.so version.stamp
+	rm -f $(OBJECTS) phpstan_turbo.so $(CORE_LIB) version.stamp
 	rm -rf $(PGO_DIR)
 	find src -name '*.gcda' -delete
 

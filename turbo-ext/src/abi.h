@@ -66,7 +66,11 @@
  * hidden. The dependency only runs that way — the core never references a
  * symbol of the version-specific library. */
 #if defined(_WIN32)
+#ifdef PHPSTANTURBO_CORE_BUILD
+#define PT_CORE_API __declspec(dllexport)
+#else
 #define PT_CORE_API
+#endif
 #else
 #define PT_CORE_API __attribute__((visibility("default")))
 #endif
@@ -169,10 +173,18 @@ struct pt_abi_globals
 	/* pt_engine_run_on_fresh_stack(): a fiber context, its switch and a
 	 * zend_try around the body (8.6 moved SETJMP to sigsetjmp) */
 	void (*run_on_fresh_stack)(void (*body)(void *), void *data);
+	/* zend_is_true() where the declaration cannot be renamed (MSVC, below) */
+	bool (*is_true)(const zval *op);
 };
 
-/* Defined by the shared core, filled by the version-specific library. */
-PT_CORE_API extern pt_abi_globals pt_abi;
+/* Defined by the shared core, filled by the version-specific library, which
+ * reaches it through pt_core_abi() (abi.h's PHPSTANTURBO_ABI_IMPL block) */
+extern pt_abi_globals pt_abi;
+PT_CORE_API pt_abi_globals *pt_core_abi();
+PT_CORE_API const char *pt_core_version();
+#ifdef PHPSTANTURBO_ABI_IMPL
+#define pt_abi (*pt_core_abi())
+#endif
 
 /* fills pt_abi from the running engine; first thing MINIT (and, in ZTS
  * builds, RINIT) does — version-specific (Abi.cpp) */
@@ -583,6 +595,10 @@ static zend_always_inline bool pt_abi_object_is_lazy(const zend_object *obj)
 #define PT_ABI_SYMBOL_STR(prefix, name) PT_ABI_SYMBOL_STR2(prefix, name)
 extern "C" ZEND_API bool ZEND_FASTCALL pt_abi_zend_is_true(const zval *op) __asm__(PT_ABI_SYMBOL_STR(__USER_LABEL_PREFIX__, zend_is_true));
 #define zend_is_true(op) pt_abi_zend_is_true(op)
+#else
+/* MSVC has no assembler names for declarations: through Abi.cpp, which
+ * calls the running engine's own */
+#define zend_is_true(op) pt_abi.is_true(op)
 #endif
 #endif
 

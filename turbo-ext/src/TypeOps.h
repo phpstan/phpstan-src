@@ -181,7 +181,11 @@ struct pt_type_op_info
 	uint8_t argKinds; /* two bits per argument, argument 0 in the low bits */
 };
 
-PT_CORE_API extern const pt_type_op_info pt_type_op_infos[PT_OP_COUNT];
+extern const pt_type_op_info pt_type_op_infos[PT_OP_COUNT];
+PT_CORE_API const pt_type_op_info *pt_core_type_op_infos();
+#ifdef PHPSTANTURBO_ABI_IMPL
+#define pt_type_op_infos (pt_core_type_op_infos())
+#endif
 
 constexpr uint8_t pt_type_op_kinds(pt_type_op_arg a0 = PT_OPARG_ANY, pt_type_op_arg a1 = PT_OPARG_ANY)
 {

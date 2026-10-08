@@ -9,7 +9,7 @@ set -eu
 apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd
 
 if [ "${PHP_ZTS:-0}" = "1" ]; then
-	apk add --no-cache pkgconf xz libxml2-dev oniguruma-dev curl-dev openssl-dev zlib-dev
+	apk add --no-cache jq pkgconf xz libxml2-dev oniguruma-dev curl-dev openssl-dev zlib-dev
 	PHP_MINOR="$PHP_MINOR" PHP_ZTS=1 sh "$(dirname "$0")/../turbo-build/build-php.sh"
 	exit 0
 fi

@@ -34,9 +34,9 @@ use const PHP_ZTS;
  * instead. Only non-debug builds for PHP >= MINIMUM_PHP_VERSION_ID are
  * shipped; a ZTS variant (-zts filename
  * suffix) exists for Windows, where XAMPP, WampServer and Scoop default
- * to thread-safe PHP, and for Linux from PHP 8.6 on, where the official
- * Docker images are thread-safe — a thread-safe PHP on macOS, or on Linux
- * before 8.6, finds no binary and runs without the extension. Workers run the regular
+ * to thread-safe PHP, and for Linux, where the official Docker images are
+ * thread-safe from 8.6 on (and the php:*-zts ones before) — a thread-safe
+ * PHP on macOS finds no binary and runs without the extension. Workers run the regular
  * entrypoint, so TurboExtensionEnabler still gates activation on the
  * expected extension version.
  *

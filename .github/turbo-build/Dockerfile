@@ -1,7 +1,7 @@
 # Prebuilt image for the turbo-compile gnu legs in phar.yml, published to
 # ghcr.io/phpstan/turbo-build by turbo-build-image.yml (tags gnu-php8.3,
-# gnu-php8.4, gnu-php8.5, gnu-php8.6, gnu-php8.6-zts; each a linux/amd64 +
-# linux/arm64 manifest).
+# gnu-php8.4, gnu-php8.5, gnu-php8.6 and the thread-safe gnu-php8.3-zts to
+# gnu-php8.6-zts; each a linux/amd64 + linux/arm64 manifest).
 #
 # Baking the PHP toolchain in keeps apt and the ondrej/php PPA out of the
 # compile jobs entirely: ports.ubuntu.com (the only Ubuntu arm64 mirror,
@@ -18,8 +18,9 @@ ARG PHP_MINOR
 ARG PHP_ZTS=0
 ENV DEBIAN_FRONTEND=noninteractive
 
-# These images build PHP from the official release tarball pinned in
-# build-php.sh instead of installing it from ondrej/php:
+# These images build PHP from the newest official tarball of the minor
+# (build-php.sh resolves it from php.net) instead of installing it from
+# ondrej/php:
 # - PHP 8.6 is a prerelease, and ondrej/php trails its tags by weeks: on
 #   2026-09-25 it still served 8.6.0beta3, whose module API (20250926) the
 #   8.6.0RC2 that the php:8.6-rc images ship had already replaced
@@ -50,7 +51,7 @@ RUN test -n "$PHP_MINOR"; \
 	}; \
 	apt_install software-properties-common gnupg ca-certificates curl git make g++ patch unzip zstd \
 	&& if [ "$PHP_MINOR" = "8.6" ] || [ "$PHP_ZTS" = "1" ]; then \
-		apt_install pkg-config xz-utils libxml2-dev libonig-dev libcurl4-openssl-dev libssl-dev zlib1g-dev \
+		apt_install jq pkg-config xz-utils libxml2-dev libonig-dev libcurl4-openssl-dev libssl-dev zlib1g-dev \
 		&& PHP_MINOR="$PHP_MINOR" PHP_ZTS="$PHP_ZTS" sh /tmp/build-php.sh; \
 	else \
 		add-apt-repository -y ppa:ondrej/php \

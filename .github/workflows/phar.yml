@@ -24,9 +24,9 @@ env:
   # more (paths under turbo-ext/, shell globs). The commit job deletes them
   # from the dist; without this, the torn-set guard there would refuse every
   # version bump, since a retired binary has no freshly built replacement.
-  # Linux ZTS binaries are built from PHP 8.6 on again (see turbo-compile),
-  # so only the older minors' are retired.
-  TURBO_RETIRED_BINARIES: "linux-gnu-x86_64/phpstan_turbo-8.[345]-zts.so linux-gnu-arm64/phpstan_turbo-8.[345]-zts.so"
+  # None at the moment: the Linux ZTS binaries retired for 8.3-8.5 are built
+  # again (see turbo-compile).
+  TURBO_RETIRED_BINARIES: ""
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
   SUPPORTED_PHP_PARSER_VERSION: "v5.9.0"
@@ -718,21 +718,22 @@ jobs:
     # the same core.
     runs-on: ${{ matrix.target.runs-on }}
     # Container legs pin the binaries' userland floor independently of the
-    # runner image, like turbo-compile-core. Linux ZTS legs (suffix -zts)
-    # exist from PHP 8.6 on: the official Docker images build every 8.6+
-    # variant thread-safe, cli and alpine included (docker-library/php#1686),
-    # while distros, ppa:ondrej/php, sury, Remi and setup-php keep shipping
-    # an NTS CLI — so 8.6+ needs both. Up to 8.5 thread-safe PHP on Linux
-    # (FrankenPHP, php:*-zts images) is a few percent of hosts and gets no
-    # binary; the commit job deletes those from phpstan/phpstan
-    # (TURBO_RETIRED_BINARIES). The thread-safe extension links against the
-    # same core: the core never touches TSRM (turbo-shared-core-gate compares
-    # the two builds too). The gnu-php8.6 and gnu-php8.6-zts images build the
-    # official 8.6 prerelease tarball (see the Dockerfile); the musl ZTS legs
-    # build the same tarball in alpine:3.24, since Alpine packages no
-    # thread-safe PHP. Alpine's NTS php86 packages are currently only in
-    # edge/testing.
-    container: ${{ matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}{1}', matrix.php-version, matrix.target.suffix || '') || matrix.target.family == 'musl' && matrix.php-version == '8.6' && matrix.target.suffix != '-zts' && 'alpine:edge' || matrix.target.container || '' }}
+    # runner image, like turbo-compile-core. Every Linux target has a ZTS
+    # leg (ts: zts, artifact suffix -zts) next to the NTS one for every
+    # minor: distros, ppa:ondrej/php, sury, Remi and setup-php ship an NTS
+    # CLI, while the official Docker images build every 8.6+ variant
+    # thread-safe, cli and alpine included (docker-library/php#1686), and
+    # their php:*-zts tags (the base of FrankenPHP) do so for older minors.
+    # The thread-safe extension is only the per-version shim — it links
+    # against the platform's one core, which never touches TSRM
+    # (turbo-shared-core-gate compares the two builds too) — so a ZTS leg
+    # compiles only those few sources. ondrej/php packages no thread-safe
+    # PHP, so the gnu-php<minor>-zts images build the minor's newest
+    # official tarball (build-php.sh; so does gnu-php8.6, a prerelease), and
+    # the musl ZTS legs build it in alpine:3.24, since Alpine packages no
+    # thread-safe PHP either. Alpine's NTS php86 packages are
+    # currently only in edge/testing.
+    container: ${{ matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}{1}', matrix.php-version, matrix.ts == 'zts' && '-zts' || '') || matrix.target.family == 'musl' && matrix.php-version == '8.6' && matrix.ts != 'zts' && 'alpine:edge' || matrix.target.container || '' }}
     needs: turbo-compile-core
     # one platform's failed core must not skip every platform's legs: a leg
     # whose core is missing fails at its download instead
@@ -741,13 +742,14 @@ jobs:
 
     env:
       PHP_MINOR: ${{ matrix.php-version }}
-      PHP_ZTS: ${{ matrix.target.suffix == '-zts' && '1' || '0' }}
-      TURBO_ARTIFACT: "phpstan_turbo-${{ matrix.target.name }}-php${{ matrix.php-version }}${{ matrix.target.suffix }}"
+      PHP_ZTS: ${{ matrix.ts == 'zts' && '1' || '0' }}
+      TURBO_ARTIFACT: "phpstan_turbo-${{ matrix.target.name }}-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
 
     strategy:
       fail-fast: false
       matrix:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
+        # the musl arm64 legs are in turbo-compile-musl-arm64
         target:
           - name: "linux-gnu-x86_64"
             runs-on: "ubuntu-latest"
@@ -763,28 +765,15 @@ jobs:
           - name: "macos-arm64"
             runs-on: "macos-latest"
             family: "macos"
-        # thread-safe builds, 8.6+ only (see above); the musl arm64 one is in
-        # turbo-compile-musl-arm64
-        include:
-          - php-version: "8.6"
-            target:
-              name: "linux-gnu-x86_64"
-              runs-on: "ubuntu-latest"
-              family: "gnu"
-              suffix: "-zts"
-          - php-version: "8.6"
-            target:
-              name: "linux-gnu-arm64"
-              runs-on: "ubuntu-24.04-arm"
-              family: "gnu"
-              suffix: "-zts"
-          - php-version: "8.6"
-            target:
-              name: "linux-musl-x86_64"
-              runs-on: "ubuntu-latest"
-              container: "alpine:3.24"
-              family: "musl"
-              suffix: "-zts"
+        ts: ["nts", "zts"]
+        # Homebrew and setup-php ship an NTS PHP on macOS, and no
+        # thread-safe distribution is common enough there to build for
+        exclude:
+          - target:
+              name: "macos-arm64"
+              runs-on: "macos-latest"
+              family: "macos"
+            ts: "zts"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -899,11 +888,8 @@ jobs:
       fail-fast: false
       matrix:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
-        ts: ["nts"]
-        # thread-safe from 8.6 on, see turbo-compile
-        include:
-          - php-version: "8.6"
-            ts: "zts"
+        # thread-safe for every minor too, see turbo-compile
+        ts: ["nts", "zts"]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -1027,14 +1013,16 @@ jobs:
     # turbo-differential. The 8.6+ images are thread-safe
     # (docker-library/php#1686), so those legs load the -zts binaries, and
     # an Alpine leg covers the musl one — php:*-alpine is the other image
-    # family people run PHPStan in. No macOS/Windows legs: those runners
+    # family people run PHPStan in. The 8.5 php:*-zts pair (the base of
+    # FrankenPHP's images) does the same for the older minors' ZTS
+    # binaries, which are compiled against our own build of the tarball. No macOS/Windows legs: those runners
     # cannot run Linux containers, and no alternative-numbered official
     # build is distributed for either platform today.
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
 
     env:
-      IMAGE: ${{ matrix.php-version == '8.6' && format('phpstan-turbo-test:{0}', matrix.binary) || matrix.image }}
+      IMAGE: ${{ (matrix.php-version == '8.6' || contains(matrix.image, 'alpine')) && format('phpstan-turbo-test:{0}', matrix.binary) || matrix.image }}
 
     permissions:
       contents: read
@@ -1047,6 +1035,8 @@ jobs:
           - "php:8.3.22-cli-bookworm"
           - "php:8.4-cli-bookworm"
           - "php:8.5-cli-bookworm"
+          - "php:8.5-zts-bookworm"
+          - "php:8.5-zts-alpine"
           - "php:8.6-rc-cli-bookworm"
           - "php:8.6-rc-cli-alpine"
         check: ["tests", "phpstan"]
@@ -1063,6 +1053,12 @@ jobs:
           - image: "php:8.5-cli-bookworm"
             php-version: "8.5"
             binary: "linux-gnu-x86_64-php8.5"
+          - image: "php:8.5-zts-bookworm"
+            php-version: "8.5"
+            binary: "linux-gnu-x86_64-php8.5-zts"
+          - image: "php:8.5-zts-alpine"
+            php-version: "8.5"
+            binary: "linux-musl-x86_64-php8.5-zts"
           - image: "php:8.6-rc-cli-bookworm"
             php-version: "8.6"
             binary: "linux-gnu-x86_64-php8.6-zts"
@@ -1112,8 +1108,8 @@ jobs:
           name: "phpstan_turbo-${{ matrix.binary }}"
           path: "turbo-ext"
 
-      - name: "Add mbstring to the PHP 8.6 prerelease image"
-        if: matrix.php-version == '8.6'
+      - name: "Add mbstring, bash and make to the 8.6 prerelease and Alpine images"
+        if: matrix.php-version == '8.6' || contains(matrix.image, 'alpine')
         env:
           PHP_IMAGE: ${{ matrix.image }}
         # Unlike the stable images, the 8.6 prerelease omits mbstring,
@@ -1126,14 +1122,19 @@ jobs:
           ARG PHP_IMAGE
           FROM ${PHP_IMAGE}
           RUN if command -v apk > /dev/null; then \
-              apk add --no-cache bash make oniguruma \
-              && apk add --no-cache --virtual .mbstring-build-deps $PHPIZE_DEPS oniguruma-dev \
-              && docker-php-ext-install mbstring \
-              && apk del .mbstring-build-deps; \
-            else \
-              apt-get update && apt-get install -y --no-install-recommends libonig-dev \
-              && docker-php-ext-install mbstring \
-              && rm -rf /var/lib/apt/lists/*; \
+              apk add --no-cache bash make; \
+            fi \
+            && if ! php -m | grep -qx mbstring; then \
+              if command -v apk > /dev/null; then \
+                apk add --no-cache oniguruma \
+                && apk add --no-cache --virtual .mbstring-build-deps $PHPIZE_DEPS oniguruma-dev \
+                && docker-php-ext-install mbstring \
+                && apk del .mbstring-build-deps; \
+              else \
+                apt-get update && apt-get install -y --no-install-recommends libonig-dev \
+                && docker-php-ext-install mbstring \
+                && rm -rf /var/lib/apt/lists/*; \
+              fi; \
             fi
           DOCKERFILE
 
@@ -1493,9 +1494,11 @@ jobs:
     # binary is built for. Kept out of the compile jobs so the commit job,
     # which only needs the binaries, does not wait for them (see there).
     # The musl binaries are tested in turbo-differential-musl. The linux-gnu
-    # 8.6 legs run in the image the binary is compiled in instead: setup-php's
-    # Linux 8.6 is a nightly snapshot that can predate the release the binary
-    # targets, and a module API mismatch refuses to load it at all.
+    # 8.6 and ZTS legs run in the image the binary is compiled in instead:
+    # setup-php's Linux 8.6 is a nightly snapshot that can predate the
+    # release the binary targets, and a module API mismatch refuses to load
+    # it at all; the ZTS legs so as not to depend on setup-php's thread-safe
+    # Linux builds.
     needs:
       - turbo-compile
       - turbo-compile-windows
@@ -1516,13 +1519,8 @@ jobs:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
         target: ["linux-gnu-x86_64", "linux-gnu-arm64", "macos-arm64", "windows-x86_64"]
         ts: ["nts", "zts"]
-        # Windows ships ZTS binaries for every minor, Linux from 8.6 on —
-        # added by the include entries below (see turbo-compile)
+        # macOS ships no ZTS binary (see turbo-compile)
         exclude:
-          - target: "linux-gnu-x86_64"
-            ts: "zts"
-          - target: "linux-gnu-arm64"
-            ts: "zts"
           - target: "macos-arm64"
             ts: "zts"
         include:
@@ -1537,10 +1535,44 @@ jobs:
             runs-on: "windows-latest"
           - target: "linux-gnu-x86_64"
             php-version: "8.6"
+            ts: "nts"
             container: "ghcr.io/phpstan/turbo-build:gnu-php8.6"
           - target: "linux-gnu-arm64"
             php-version: "8.6"
+            ts: "nts"
             container: "ghcr.io/phpstan/turbo-build:gnu-php8.6"
+          # the linux-gnu ZTS legs, in the image the binary is compiled in
+          # (see above); the official php:*-zts images get turbo-docker-run
+          - target: "linux-gnu-x86_64"
+            php-version: "8.3"
+            ts: "zts"
+            runs-on: "ubuntu-latest"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.3-zts"
+          - target: "linux-gnu-arm64"
+            php-version: "8.3"
+            ts: "zts"
+            runs-on: "ubuntu-24.04-arm"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.3-zts"
+          - target: "linux-gnu-x86_64"
+            php-version: "8.4"
+            ts: "zts"
+            runs-on: "ubuntu-latest"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.4-zts"
+          - target: "linux-gnu-arm64"
+            php-version: "8.4"
+            ts: "zts"
+            runs-on: "ubuntu-24.04-arm"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.4-zts"
+          - target: "linux-gnu-x86_64"
+            php-version: "8.5"
+            ts: "zts"
+            runs-on: "ubuntu-latest"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.5-zts"
+          - target: "linux-gnu-arm64"
+            php-version: "8.5"
+            ts: "zts"
+            runs-on: "ubuntu-24.04-arm"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.5-zts"
           - target: "linux-gnu-x86_64"
             php-version: "8.6"
             ts: "zts"
@@ -1677,15 +1709,8 @@ jobs:
       matrix:
         arch: ["x86_64", "arm64"]
         php-version: ["8.3", "8.4", "8.5", "8.6"]
-        ts: ["nts"]
-        # thread-safe from 8.6 on, see turbo-compile
-        include:
-          - arch: "x86_64"
-            php-version: "8.6"
-            ts: "zts"
-          - arch: "arm64"
-            php-version: "8.6"
-            ts: "zts"
+        # thread-safe for every minor too, see turbo-compile
+        ts: ["nts", "zts"]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -1784,9 +1809,8 @@ jobs:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
-        # Linux ships ZTS binaries only from 8.6 on (see turbo-compile), and
-        # the ubuntu 8.6 legs are excluded below — turbo-docker-run runs the
-        # 8.6 ZTS binaries in the official, thread-safe 8.6 images instead.
+        # The Linux ZTS binaries run the same checks in turbo-docker-run, in
+        # the official thread-safe images, instead of under setup-php.
         exclude:
           - operating-system: "ubuntu-latest"
             ts: "zts"

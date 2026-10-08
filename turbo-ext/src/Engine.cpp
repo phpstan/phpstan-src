@@ -479,85 +479,11 @@ bool pt_engine_call_node_callback(zval *callback, zval *node, zval *scope)
 	return !pt_type_call_callable(callback, 2, argv).isUndef();
 }
 
-namespace {
-
-/* one call continued on a fresh stack: the body, and the VM state it left
- * behind — zend_fiber_switch_context() restores the caller's state from
- * before the switch, which the body may legitimately have changed */
-struct FreshStackCall
-{
-	void (*body)(void *);
-	void *data;
-	bool bailout;
-	zend_vm_stack vmStack;
-	zval *vmStackTop;
-	zval *vmStackEnd;
-	size_t vmStackPageSize;
-	int errorReporting;
-};
-
-/* the call the coroutine starting next runs (read once, at its start) */
-FreshStackCall *pt_fresh_stack_call = nullptr;
-
-/* identifies the contexts in fiber observers */
-char pt_fresh_stack_kind;
-
-ZEND_STACK_ALIGNED void freshStackCoroutine(zend_fiber_transfer *transfer)
-{
-	(void) transfer; /* already addresses the caller, which is where it returns */
-	FreshStackCall *call = pt_fresh_stack_call;
-	zend_fiber_context *context = EG(current_fiber_context);
-#ifdef ZEND_CHECK_STACK_LIMIT
-	EG(stack_base) = zend_fiber_stack_base(context->stack);
-	EG(stack_limit) = zend_fiber_stack_limit(context->stack);
-#endif
-	zend_try {
-		call->body(call->data);
-	} zend_catch {
-		call->bailout = true;
-	} zend_end_try();
-	call->vmStack = EG(vm_stack);
-	call->vmStackTop = EG(vm_stack_top);
-	call->vmStackEnd = EG(vm_stack_end);
-	call->vmStackPageSize = EG(vm_stack_page_size);
-	call->errorReporting = EG(error_reporting);
-}
-
-} // namespace
-
 void pt_engine_run_on_fresh_stack(void (*body)(void *), void *data)
 {
-	zend_fiber_context context;
-	memset(&context, 0, sizeof(context));
-	if (UNEXPECTED(zend_fiber_init_context(&context, &pt_fresh_stack_kind, freshStackCoroutine, PT_ENGINE_FRESH_STACK_SIZE_LIMIT) == FAILURE)) {
-		/* no stack to be had: continue here, where the engine's own stack
-		 * limit decides */
-		if (EG(exception) != NULL) {
-			zend_clear_exception();
-		}
-		body(data);
-		return;
-	}
-
-	FreshStackCall call = { body, data, false, NULL, NULL, NULL, 0, 0 };
-	FreshStackCall *previous = pt_fresh_stack_call;
-	pt_fresh_stack_call = &call;
-	zend_fiber_transfer transfer;
-	transfer.context = &context;
-	transfer.flags = 0;
-	ZVAL_NULL(&transfer.value);
-	/* returns once the body finished; the dead context is destroyed then */
-	zend_fiber_switch_context(&transfer);
-	pt_fresh_stack_call = previous;
-
-	EG(vm_stack) = call.vmStack;
-	EG(vm_stack_top) = call.vmStackTop;
-	EG(vm_stack_end) = call.vmStackEnd;
-	EG(vm_stack_page_size) = call.vmStackPageSize;
-	EG(error_reporting) = call.errorReporting;
-	if (UNEXPECTED(call.bailout)) {
-		zend_bailout();
-	}
+	/* the fiber context, its switch and the bailout around the body are
+	 * engine internals of each minor (Abi.cpp) */
+	pt_abi.run_on_fresh_stack(body, data);
 }
 
 /* }}} */

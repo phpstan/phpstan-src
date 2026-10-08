@@ -24,7 +24,7 @@ def fingerprints(obj):
 		m = func_re.match(line)
 		if m:
 			flush()
-			cur, lines, n = m.group(1), [], 0
+			cur, lines, n = m.group(1).replace('16ZEND_RESULT_CODE', '11zend_result'), [], 0
 			continue
 		if cur is None:
 			continue
@@ -39,8 +39,14 @@ def fingerprints(obj):
 		s = re.sub(r'\$_\d+', '$_', s)
 		s = re.sub(r'\.cold\.\d+', '.cold', s)
 		s = re.sub(r'(l_\.str|ltmp|LJTI|lJTI|l___const|lCPI)[\.\d_]+', r'\1', s)
-		# GCC's local labels (.LC0, .LANCHOR1, .L42) and clone suffixes
-		s = re.sub(r'\.L[A-Za-z]*\d+', '.L', s)
+		# 8.6 renamed enum ZEND_RESULT_CODE to zend_result: a different
+		# mangling of the same type in our own functions' names
+		s = s.replace('16ZEND_RESULT_CODE', '11zend_result')
+		# local labels: GCC's .LC0, .LANCHOR1, .L42 and clang's .L.str.356 —
+		# numbered in the order the translation unit declares them, so one
+		# more string literal in a header renumbers every later one (their
+		# contents are compared by compare-data-*.sh)
+		s = re.sub(r'(\.L[A-Za-z_.]*?)\.?\d+', r'\1', s)
 		# GCC addresses merged strings through the section of whichever
 		# function emitted them first: section order, not content
 		s = re.sub(r'\.rodata\.[^ +]*\.str1\.\d+(\+0x[0-9a-f]+)?', '.rodata.str', s)

@@ -166,6 +166,9 @@ struct pt_abi_globals
 	void (*call_known_function)(zend_function *fn, zend_object *object, zend_class_entry *calledScope, zval *retval, uint32_t paramCount, zval *params, HashTable *namedParams);
 	int (*stream_free)(php_stream *stream, int closeOptions);
 	ssize_t (*stream_read)(php_stream *stream, char *buf, size_t count);
+	/* pt_engine_run_on_fresh_stack(): a fiber context, its switch and a
+	 * zend_try around the body (8.6 moved SETJMP to sigsetjmp) */
+	void (*run_on_fresh_stack)(void (*body)(void *), void *data);
 };
 
 /* Defined by the shared core, filled by the version-specific library. */
@@ -215,6 +218,53 @@ static zend_always_inline zend_class_entry *pt_abi_class_entry(T *ce)
 #undef ZEND_COLD
 #define ZEND_COLD __attribute__((cold))
 #endif
+
+/* Codegen pins: helpers whose result is the same in every minor but whose
+ * spelling changed (8.6 turned macros into inline functions and back), so
+ * the shared code would compile to different instructions per header set.
+ * One definition for all — 8.6's. */
+static zend_always_inline bool pt_abi_string_equals_cstr_ci(const zend_string *s1, const char *s2, size_t s2_length)
+{
+	return ZSTR_LEN(s1) == s2_length && !zend_binary_strcasecmp(ZSTR_VAL(s1), ZSTR_LEN(s1), s2, s2_length);
+}
+static zend_always_inline bool pt_abi_string_is_interned(const zend_string *s)
+{
+	return GC_FLAGS(s) & IS_STR_INTERNED;
+}
+#undef zend_string_equals_literal_ci
+#define zend_string_equals_literal_ci(str, literal) pt_abi_string_equals_cstr_ci(str, "" literal, sizeof(literal) - 1)
+#undef zend_string_starts_with_literal
+#define zend_string_starts_with_literal(str, prefix) zend_string_starts_with_cstr(str, "" prefix, sizeof(prefix) - 1)
+#undef zend_string_starts_with_literal_ci
+#define zend_string_starts_with_literal_ci(str, prefix) zend_string_starts_with_cstr_ci(str, "" prefix, sizeof(prefix) - 1)
+#undef ZSTR_IS_INTERNED
+#define ZSTR_IS_INTERNED(s) pt_abi_string_is_interned(s)
+#undef zend_string_equals_ci
+#define zend_string_equals_ci(s1, s2) pt_abi_string_equals_cstr_ci(s1, ZSTR_VAL(s2), ZSTR_LEN(s2))
+/* array_init(): a macro up to 8.5, an inline function from 8.6 */
+static zend_always_inline void pt_abi_array_init_size(zval *arg, uint32_t size)
+{
+	ZVAL_ARR(arg, zend_new_array(size));
+}
+#undef array_init
+#define array_init(arg) pt_abi_array_init_size((arg), 0)
+#undef array_init_size
+#define array_init_size(arg, size) pt_abi_array_init_size((arg), (size))
+/* 8.5 evaluates the argument once */
+#undef Z_TRY_ADDREF_P
+#define Z_TRY_ADDREF_P(pz) do { \
+		zval *_pz = (pz); \
+		if (Z_REFCOUNTED_P(_pz)) { \
+			Z_ADDREF_P(_pz); \
+		} \
+	} while (0)
+#undef Z_TRY_DELREF_P
+#define Z_TRY_DELREF_P(pz) do { \
+		zval *_pz = (pz); \
+		if (Z_REFCOUNTED_P(_pz)) { \
+			Z_DELREF_P(_pz); \
+		} \
+	} while (0)
 
 #undef EG
 #undef CG

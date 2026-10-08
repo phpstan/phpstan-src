@@ -28,6 +28,8 @@
  * native classes next to the PHP twins in one process.
  */
 
+/* version-specific: builds zend_class_entry / zend_op_array by hand */
+#define PHPSTANTURBO_ABI_IMPL
 #include "reg.h"
 
 #include "zend_inheritance.h"
@@ -41,32 +43,11 @@ extern "C" {
 extern zend_module_entry phpstan_turbo_module_entry;
 }
 
-static std::vector<reg::ShadowPlan> &pt_shadow_plans()
-{
-	static std::vector<reg::ShadowPlan> plans;
-	return plans;
-}
-
 static bool pt_shadow_active = false;
-
-void pt_shadow_plan_add(reg::ShadowPlan &&plan)
-{
-	pt_shadow_plans().push_back(std::move(plan));
-}
 
 bool pt_shadow_is_active()
 {
 	return pt_shadow_active;
-}
-
-bool pt_shadow_instanceof(zend_class_entry *ce, zend_class_entry *nativeCe, const char *realName, size_t realNameLen)
-{
-	if (EXPECTED(nativeCe != NULL && instanceof_function(ce, nativeCe))) return true;
-	if (nativeCe == NULL || zend_string_equals_cstr(nativeCe->name, realName, realNameLen)) return false;
-	zend_string *name = zend_string_init(realName, realNameLen, 0);
-	zend_class_entry *twin = zend_lookup_class_ex(name, NULL, ZEND_FETCH_CLASS_NO_AUTOLOAD);
-	zend_string_release(name);
-	return twin != NULL && instanceof_function(ce, twin);
 }
 
 static const char *pt_short_name(const char *fqcn)
@@ -97,7 +78,7 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
  * function table */
 static bool pt_shadow_plan_declares(const reg::ShadowPlan &plan, const char *lcname)
 {
-	for (const zend_function_entry &entry : plan.entries) {
+	for (const reg::FunctionEntry &entry : plan.entries) {
 		if (entry.fname != NULL && strcasecmp(entry.fname, lcname) == 0) return true;
 	}
 	return false;
@@ -155,7 +136,9 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
 	 * module is set the way module startup sets it */
 	zend_module_entry *previousModule = EG(current_module);
 	EG(current_module) = &phpstan_turbo_module_entry;
-	zend_result registered = zend_register_functions(ce, plan.entries.data(), &ce->function_table, MODULE_PERSISTENT);
+	zend_function_entry *functions = pt_abi_function_entries(plan.entries.data(), plan.entries.size());
+	zend_result registered = zend_register_functions(ce, functions, &ce->function_table, MODULE_PERSISTENT);
+	efree(functions);
 	EG(current_module) = previousModule;
 	if (registered != SUCCESS) {
 		zend_throw_error(NULL, "phpstan_turbo: registering the methods of %s failed", declared.c_str());

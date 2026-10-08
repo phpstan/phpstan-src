@@ -373,6 +373,176 @@ environment, falling back to `VERSION.txt`).
 
 [php-sdk-binary-tools]: https://github.com/php/php-sdk-binary-tools
 
+## Shared core
+
+The distributed binaries are not one self-contained extension per PHP
+version and platform: each platform ships one **shared core** with all the
+code, and per PHP version a **thin extension** (~70 KB) that PHP loads and
+that loads the core from its own directory:
+
+```
+turbo-ext/linux-gnu-x86_64/phpstan_turbo_core.so      the core (one per platform)
+turbo-ext/linux-gnu-x86_64/phpstan_turbo-8.3.so       the extension PHP 8.3 loads
+turbo-ext/linux-gnu-x86_64/phpstan_turbo-8.6-zts.so   ... and thread-safe 8.6 (same core)
+turbo-ext/windows-x86_64/phpstan_turbo_core.dll       Windows: one core per
+turbo-ext/windows-x86_64/phpstan_turbo_core-zts.dll   thread-safety flavour
+```
+
+A self-contained build per version used to repeat ~7 MB of identical
+machine code 33 times; the split keeps the same code once per platform.
+
+### What is version-specific
+
+Four sources are compiled per PHP version into the extension — the
+Makefile's `SHIM_SOURCES`, and the list in `config.w32`:
+
+- `main.cpp` — the module entry (it carries the engine's API number), the
+  version handshake with the core, and on Windows the loading of the core;
+- `Abi.cpp` — fills the `pt_abi` table (`abi.h`) at startup with everything
+  of the running engine whose layout, value or signature differs between
+  minors, and implements per minor what cannot be expressed as data;
+- `Shadow.cpp`, `TrustedTypes.cpp` — they build `zend_class_entry` /
+  `zend_op_array` structures by hand and walk them.
+
+Everything else is the core, compiled once per platform against any one
+version's headers. That is only correct because it compiles to **identical
+code** against every supported version's headers — the shared-core gate
+(below) proves it on every change. The shared sources reach anything whose
+layout moved through `abi.h`:
+
+| what changed between minors | in shared code |
+|---|---|
+| `EG()`/`CG()` field offsets (every minor) | `EG()`/`CG()` are redefined to read through pointers (`PT_ABI_EG_FIELDS`) |
+| `zend_class_entry` members after `ce_flags` (8.6 inserted `ce_flags2`) | `PT_CE(ce, member)` (refuses anything but a class entry) |
+| `zend_object_handlers` members (8.5 inserted `clone_obj_with`) | `PT_OBJ_HANDLER(obj, member)`, `Z_OBJ_HANDLER()` |
+| `zend_internal_function.handler` (8.4), `zend_arg_info` stride (8.6) | `PT_INTERNAL_HANDLER(fn)`, `PT_ARG_INFO(argInfo, i)` |
+| `zend_function_entry` (8.4, 8.6 grew it) | `reg::FunctionEntry`, turned into the engine's by `pt_abi` |
+| `ZSTR_KNOWN()` ids, `IS_REFERENCE_EX`, `ZEND_ACC_USE_GUARDS`, lazy-object flags | `pt_abi` values (`PT_ABI_KNOWN_STRINGS`, …) |
+| ZPP error codes / `Z_EXPECTED_*` numbering, parse slow paths (8.6) | neutral ZPP macros in `abi.h`, translated by `Abi.cpp` |
+| functions whose signature or behaviour changed (`zend_create_closure`, `zend_dval_to_lval`, …) or that stopped being exported (`zend_call_known_function`, …) | function pointers in `pt_abi`, implemented in `Abi.cpp` |
+| `#if PHP_VERSION_ID` gates | `PT_ABI_SINCE(version, then, otherwise)`, decided at run time |
+| helpers re-spelled without changing behaviour (macro → inline function) | one definition pinned in `abi.h` ("codegen pins") |
+
+The dependency runs one way: the extension calls the core (the functions
+marked `PT_CORE_API` — the only symbols the core exports — and only
+functions, since a Windows DLL can delay-load functions but not data); the
+core never references the extension. The extension refuses a core of
+another version (`pt_core_version()`): it registers nothing and reports
+`core-mismatch`, which `TurboExtensionEnabler` rejects, so a torn update
+runs PHPStan without the extension rather than mixing builds.
+
+Loading: on Linux the extension records the core as a dependency found next
+to itself (`DT_NEEDED` + `$ORIGIN`), on macOS likewise (`@loader_path`). On
+Windows the dependency is delay-loaded: PHP loads extensions with plain
+`LoadLibrary()`, which searches the application's directory, not the
+extension's, so `get_module()` (`main.cpp`) loads the core by its full path
+first and the delay-load helper finds it by name. One Linux core serves the
+thread-safe and the non-thread-safe extension (the core never touches TSRM);
+Windows needs two, since a DLL imports the engine from `php8.dll` or
+`php8ts.dll` by name.
+
+### Building the pair
+
+```bash
+cd turbo-ext
+make SPLIT=1                 # phpstan_turbo_core.so + phpstan_turbo.so (loads the core next to it)
+make SPLIT=1 pgo             # the same, profile-guided (what turbo-compile-core runs)
+make SPLIT=1 extension       # only the extension, against a phpstan_turbo_core.so already here
+make SPLIT=1 strip           # both; a plain `make strip` leaves the core untouched
+```
+
+A plain `make`, the phpize build (`config.m4`, what PIE drives) and
+`configure --enable-phpstan-turbo` on Windows still build one
+self-contained extension. On Windows, `configure --enable-phpstan-turbo=core`
+builds the core DLL and its import library, and `=extension` the extension
+against them (the import library expected in `turbo-ext/`).
+
+In CI (`.github/workflows/phar.yml`), `turbo-compile-core*` build one core
+per platform — profile-guided, against `php-version` of its matrix (Windows:
+against 8.3 with VS16, the oldest toolset, since PHP checks the toolset of
+the DLL it loads, the extension, and a core linked with an older one runs on
+any newer VC runtime) — and are what `turbo-origins` reuses from earlier
+runs; `turbo-compile*` link each version's extension against them in a
+minute and upload both, so every test job finds the core next to the
+extension. `.github/scripts/turbo-dist-layout.sh` maps the artifacts onto
+the layout above for the aggregate artifact and the commit job, and refuses
+legs of one platform carrying different cores.
+
+### The shared-core gate
+
+```bash
+SHARED_CORE_WORK_DIR=/tmp/shared-core turbo-ext/bin/shared-core/check-linux.sh
+```
+
+compiles every source against each supported version's headers (thread-safe
+8.6 included) in the CI build images with clang, and fails on any function,
+data section or relocation that differs outside the four version-specific
+objects. It runs as `turbo-shared-core-gate` in `phar.yml`, and the commit
+job waits for it. clang, not the GCC the Linux binaries ship with: the
+property proven is the source's (does it mean the same against every header
+set?), and GCC's register allocation drifts with incidental header spelling
+(a `const` added to a helper's parameter) where clang's output does not.
+CI runs it on x86_64; run it for the other architecture too when the result
+matters (`GATE_PLATFORM=linux/amd64` on an arm64 machine, or the reverse) —
+some differences only exist in one architecture's code, like an `int`
+parameter that became `size_t`, which arm64 passes with the same
+instruction and x86_64 does not.
+
+A failure lists the functions. Find the cause with the tools next to it —
+`gate-linux.sh` (any image/compiler, `GATE_VERSIONS`, `GATE_MAKE_ARGS`;
+`PGO_FLAGS='-fno-inline -fno-ipa-sra -fno-ipa-cp -fno-partial-inlining'`
+keeps each inline helper a function of its own, so the differing one shows
+up by name), `compare-functions.py`, `compare-data-linux.sh`, and their
+macOS counterparts (`gate-mac.sh`, `compare-data-mac.sh`,
+`link-split-mac.sh`, with Homebrew's `php@8.x`); `link-split-linux.sh` links
+a core from one version's objects with every version's extension and runs
+`tests/smoke.php` with each. Never accept a difference as "compiler noise"
+without naming its mechanism: one such difference was a `zend_arg_info`
+whose 8.6 stride crashed the 8.4-built core on 8.6. Windows-only header
+branches are not covered by the gate (it compiles Linux headers); the
+Windows legs' tests are their check.
+
+### Supporting a new PHP version
+
+1. **Gate it.** Build the new version's CI image (`.github/turbo-build`),
+   add the version to `VERSIONS` in `bin/shared-core/check-linux.sh` and run
+   it. Every function it reports reads something that changed; for each,
+   find what (diff the headers' struct layouts — `sizeof`/`offsetof` of the
+   structs the function touches — macro values, enum numbering and
+   function declarations between the old and the new version) and route it
+   through `abi.h`/`Abi.cpp` by the table above: a new `PT_ABI_*` list
+   entry, a `PT_CE`-style accessor, a pin, or a function pointer
+   implemented in `Abi.cpp` with an `#if PHP_VERSION_ID` there. Repeat until
+   it reports nothing.
+2. **Check the exports.** A function the new version stops exporting makes
+   the core fail to load on it, which the gate cannot see — the build legs
+   and `link-split-linux.sh` load it on every version.
+3. **Version-specific sources.** `Abi.cpp`, `Shadow.cpp`, `TrustedTypes.cpp`
+   and `main.cpp` compile against the new headers like any extension: fix
+   them with `#if PHP_VERSION_ID` as needed.
+4. **CI.** In `.github/workflows/phar.yml`, add the version to the
+   `php-version` lists of the thin legs (`turbo-compile`,
+   `turbo-compile-musl-arm64`, `turbo-compile-windows` — with its `vs`
+   infix and toolset in `include`) and of the jobs testing them
+   (`turbo-differential`, `turbo-differential-musl`, `turbo-run`,
+   `turbo-docker-run`), and give the new version a `gnu-php<minor>` image
+   for the Linux gnu legs. The cores need no change: they keep compiling
+   against the version they are pinned to (`php-version` in
+   `turbo-compile-core`'s targets, `["8.3"]` with the vs16 toolset in
+   `turbo-compile-core-windows`). Run the smoke test of every version
+   against one core (`link-split-linux.sh`); in CI the
+   `turbo-shared-core-gate` job reruns step 1.
+5. **Dropping a version** is the reverse of step 4 plus
+   `TURBO_RETIRED_BINARIES` for the files phpstan/phpstan should delete. If
+   it is the version a core is pinned to, move that pin to a version still
+   supported — on Windows to the oldest one, because a DLL linked with a
+   newer toolset than the PHP loading it is refused (see
+   `turbo-compile-windows`).
+6. **If a minor breaks too much to route** — a hot-path structure such as
+   `zval`, `zend_string` or `HashTable` changing layout — it gets a second
+   core: build the platform's core per group of minors and pick it by
+   version in `TurboExtensionSelector`. Nothing so far has needed it.
+
 ### Build flags: hardening and size
 
 `make` applies protections by default, each *probed* against the compiler in

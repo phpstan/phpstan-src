@@ -170,7 +170,7 @@ static pt_trav_class_info *pt_trav_class_info_for(zend_object *obj)
 
 	info = (pt_trav_class_info *) ecalloc(1, sizeof(pt_trav_class_info));
 
-	fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, "getsubnodenames", sizeof("getsubnodenames") - 1);
+	fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), "getsubnodenames", sizeof("getsubnodenames") - 1);
 	if (fn != NULL && (fn->common.fn_flags & ZEND_ACC_ABSTRACT) == 0) {
 		zend_call_known_function(fn, obj, ce, &names, 0, NULL, NULL);
 		if (!EG(exception) && Z_TYPE(names) == IS_ARRAY) {
@@ -181,7 +181,7 @@ static pt_trav_class_info *pt_trav_class_info_for(zend_object *obj)
 			ZEND_HASH_FOREACH_VAL(Z_ARRVAL(names), name_zv) {
 				zend_property_info *prop;
 				if (Z_TYPE_P(name_zv) != IS_STRING) continue;
-				prop = (zend_property_info *) zend_hash_find_ptr(&ce->properties_info, Z_STR_P(name_zv));
+				prop = (zend_property_info *) zend_hash_find_ptr(&PT_CE(ce, properties_info), Z_STR_P(name_zv));
 				if (prop == NULL || (prop->flags & ZEND_ACC_STATIC) != 0) continue;
 				info->offsets[info->count] = (uint32_t) prop->offset;
 				info->names[info->count] = zend_string_copy(Z_STR_P(name_zv));
@@ -905,7 +905,7 @@ private:
 	/* hook lookup by lowercased name; NULL when the class lacks the method */
 	static zend_function *findHook(zend_class_entry *ce, const char *lcname, size_t len)
 	{
-		return (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcname, len);
+		return (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), lcname, len);
 	}
 
 	/* calls one visitor hook through its cached zend_function;

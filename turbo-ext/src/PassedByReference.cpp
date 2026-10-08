@@ -33,7 +33,7 @@ static zval *pt_pbr_registry()
 		if (CE_STATIC_MEMBERS(ce) == NULL) {
 			zend_class_init_statics(ce);
 		}
-		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, PT_LC("registry"));
+		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), PT_LC("registry"));
 		ZEND_ASSERT(info != NULL && (info->flags & ZEND_ACC_STATIC) != 0);
 		pt_pbr_registry_slot = CE_STATIC_MEMBERS(ce) + info->offset;
 		pt_pbr_registry_ce = ce;

@@ -78,27 +78,6 @@ namespace sigs = ptdecl::TypeCombinatorCache::sig;
 #include "zv.h"
 
 #include <Zend/zend_weakrefs.h>
-#if PHP_VERSION_ID >= 80400
-#include <Zend/zend_lazy_objects.h>
-#endif
-
-/* zend_weakrefs_hash_clean()/_destroy() only exist since PHP 8.5; on 8.4 the
- * same unregister-then-destroy is spelled out with the 8.4-available API. */
-#if PHP_VERSION_ID < 80500
-static zend_always_inline void pt_weakrefs_hash_destroy(HashTable *ht)
-{
-	zend_ulong objKey;
-	ZEND_HASH_MAP_FOREACH_NUM_KEY(ht, objKey) {
-		zend_weakrefs_hash_del(ht, zend_weakref_key_to_object(objKey));
-	} ZEND_HASH_FOREACH_END();
-	zend_hash_destroy(ht);
-}
-#else
-static zend_always_inline void pt_weakrefs_hash_destroy(HashTable *ht)
-{
-	zend_weakrefs_hash_destroy(ht);
-}
-#endif
 
 namespace phpstanturbo {
 
@@ -196,13 +175,12 @@ struct TypeObjectHeader
 	zend_object std;
 };
 
-static zend_object_handlers pt_type_object_handlers;
-static bool pt_type_object_handlers_inited = false;
+static const zend_object_handlers *pt_type_object_handlers = nullptr;
 static uint32_t pt_memo_generation = 1;
 
 static zend_always_inline TypeObjectHeader *typeObjectHeader(zend_object *obj)
 {
-	if (obj->handlers != &pt_type_object_handlers) return NULL;
+	if (obj->handlers != pt_type_object_handlers) return NULL;
 	return (TypeObjectHeader *) ((char *) obj - offsetof(TypeObjectHeader, std));
 }
 
@@ -271,7 +249,7 @@ static CePlan cePlan(zend_class_entry *ce)
 		kind = CE_STRUCTURAL;
 	}
 
-	CePlan plan = { kind, (uint32_t) ce->default_properties_count };
+	CePlan plan = { kind, (uint32_t) PT_CE(ce, default_properties_count) };
 	zval packed;
 	ZVAL_LONG(&packed, ((zend_long) plan.slots << 1) | (zend_long) plan.kind);
 	zend_hash_index_add(&pt_ce_kinds, (zend_ulong) (uintptr_t) ce, &packed);
@@ -387,7 +365,7 @@ static bool hashZval(zval *value, Hash128 &h, uint32_t depth)
  * guarantee the object is CE_STRUCTURAL, so the plan does not need consulting. */
 static zend_always_inline bool hashZeroSlotObject(zend_object *obj, Hash128 &out)
 {
-	if (obj->ce->default_properties_count != 0) return false;
+	if (PT_CE(obj->ce, default_properties_count) != 0) return false;
 	Hash128 h = { FNV_OFFSET_A, FNV_OFFSET_B };
 	mixU64(h, (uint64_t) (uintptr_t) obj->ce);
 	out = h;
@@ -722,14 +700,7 @@ static void memoTrackResult(zend_object *obj, Hash128 key)
 static void memoResultsClean()
 {
 	pt_invalidate_active = false;
-#if PHP_VERSION_ID < 80500
-	zend_ulong objKey;
-	ZEND_HASH_MAP_FOREACH_NUM_KEY(&pt_memo_results, objKey) {
-		zend_weakrefs_hash_del(&pt_memo_results, zend_weakref_key_to_object(objKey));
-	} ZEND_HASH_FOREACH_END();
-#else
-	zend_weakrefs_hash_clean(&pt_memo_results);
-#endif
+	pt_abi_weakrefs_hash_clean(&pt_memo_results);
 	pt_invalidate_active = true;
 }
 
@@ -745,7 +716,7 @@ static zend_object *typeObjectCreate(zend_class_entry *ce)
 	header->memoGeneration = 0;
 	zend_object_std_init(&header->std, ce);
 	object_properties_init(&header->std, ce);
-	header->std.handlers = &pt_type_object_handlers;
+	header->std.handlers = pt_type_object_handlers;
 
 	return &header->std;
 }
@@ -769,20 +740,18 @@ static void typeObjectFree(zend_object *obj)
  * exported); that clone has no header and keeps to the weak maps. */
 static zend_object *typeObjectClone(zend_object *old)
 {
-#if PHP_VERSION_ID >= 80400
-	if (UNEXPECTED(zend_object_is_lazy(old))) {
+	if (UNEXPECTED(pt_abi_object_is_lazy(old))) {
 		return zend_objects_clone_obj(old);
 	}
-#endif
 	TypeObjectHeader *header = (TypeObjectHeader *) zend_object_alloc(sizeof(TypeObjectHeader), old->ce);
 	header->hashComputed = 0;
 	header->memoKeys = NULL;
 	header->memoGeneration = 0;
 	zend_object_std_init(&header->std, old->ce);
-	header->std.handlers = &pt_type_object_handlers;
-	if (old->ce->default_properties_count) {
+	header->std.handlers = pt_type_object_handlers;
+	if (PT_CE(old->ce, default_properties_count)) {
 		zval *p = header->std.properties_table;
-		zval *end = p + old->ce->default_properties_count;
+		zval *end = p + PT_CE(old->ce, default_properties_count);
 		do {
 			ZVAL_UNDEF(p);
 			p++;
@@ -795,12 +764,12 @@ static zend_object *typeObjectClone(zend_object *old)
 
 static void typeObjectHandlersInit()
 {
-	if (pt_type_object_handlers_inited) return;
-	memcpy(&pt_type_object_handlers, &std_object_handlers, sizeof(zend_object_handlers));
-	pt_type_object_handlers.offset = offsetof(TypeObjectHeader, std);
-	pt_type_object_handlers.free_obj = typeObjectFree;
-	pt_type_object_handlers.clone_obj = typeObjectClone;
-	pt_type_object_handlers_inited = true;
+	if (pt_type_object_handlers != nullptr) return;
+	pt_abi_handlers overrides = {};
+	overrides.offset = offsetof(TypeObjectHeader, std);
+	overrides.free_obj = typeObjectFree;
+	overrides.clone_obj = typeObjectClone;
+	pt_type_object_handlers = pt_abi_object_handlers(overrides);
 }
 
 /* }}} */
@@ -987,14 +956,14 @@ void pt_type_combinator_cache_rshutdown()
 	if (!pt_cache_inited) return;
 	TypeCombinatorCache::clear();
 	phpstanturbo::pt_invalidate_active = false;
-	pt_weakrefs_hash_destroy(&pt_memo_results);
+	pt_abi_weakrefs_hash_destroy(&pt_memo_results);
 	efree(pt_memo_slots);
 	pt_memo_slots = NULL;
 	pt_memo_mask = 0;
 	pt_memo_count = 0;
 	phpstanturbo::pt_memo_tombstones = 0;
-	pt_weakrefs_hash_destroy(&pt_type_hashes);
-	pt_weakrefs_hash_destroy(&pt_obj_serials);
+	pt_abi_weakrefs_hash_destroy(&pt_type_hashes);
+	pt_abi_weakrefs_hash_destroy(&pt_obj_serials);
 	zend_hash_destroy(&pt_ce_kinds);
 	pt_cache_inited = false;
 }
@@ -1027,14 +996,14 @@ zv::Val pt_type_combinator_cache_remove(zval *fromType, zval *typeToRemove)
  * of its own is left alone and keeps the weak maps. */
 void pt_type_combinator_cache_adopt_class(zend_class_entry *ce, const char *realName)
 {
-	if (ce->create_object != NULL) return;
+	if (PT_CE(ce, create_object) != NULL) return;
 	size_t len = strlen(realName);
 	bool structural = (len > sizeof("PHPStan\\Type\\") - 1 && memcmp(realName, "PHPStan\\Type\\", sizeof("PHPStan\\Type\\") - 1) == 0)
 		|| (len > sizeof("PHPStan\\Php\\") - 1 && memcmp(realName, "PHPStan\\Php\\", sizeof("PHPStan\\Php\\") - 1) == 0)
 		|| strcmp(realName, "PHPStan\\TrinaryLogic") == 0;
 	if (!structural) return;
 	phpstanturbo::typeObjectHandlersInit();
-	ce->create_object = phpstanturbo::typeObjectCreate;
+	PT_CE(ce, create_object) = phpstanturbo::typeObjectCreate;
 }
 
 void pt_type_combinator_cache_clear()

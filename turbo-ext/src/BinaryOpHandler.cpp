@@ -260,7 +260,7 @@ int namedCall(zval *node, bool requireCallable, NamedCall &out)
 	/* (string) $node->name: Name::__toString() is its $name */
 	zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
 	if (UNEXPECTED(nameCe == NULL)) return -1;
-	zend_function *toString = Z_OBJCE_P(name)->__tostring;
+	zend_function *toString = PT_CE(Z_OBJCE_P(name), __tostring);
 	zval *nameString = toString != NULL && toString->common.scope == nameCe ? pt_boh_name_name.of(Z_OBJ_P(name)) : NULL;
 	if (nameString != NULL && Z_TYPE_P(nameString) == IS_STRING) {
 		out.name = zv::Str::copyOf(Z_STR_P(nameString));

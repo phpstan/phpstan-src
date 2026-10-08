@@ -1366,13 +1366,13 @@ void rememberCollection(zend_object *factory, zval *collection, zval *defaultNar
 bool isGeneratedFactory(zend_object *factory)
 {
 	zend_class_entry *ce = factory->ce;
-	if ((ce->ce_flags & ZEND_ACC_ANON_CLASS) == 0 || ce->type != ZEND_USER_CLASS || ce->default_properties_count != 1 || ce->info.user.filename == NULL) return false;
-	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, PT_LC("container"));
+	if ((ce->ce_flags & ZEND_ACC_ANON_CLASS) == 0 || ce->type != ZEND_USER_CLASS || PT_CE(ce, default_properties_count) != 1 || PT_CE(ce, info).user.filename == NULL) return false;
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), PT_LC("container"));
 	if (info == NULL || info->offset != OBJ_PROP_TO_OFFSET(0)) return false;
 	zval *container = OBJ_PROP_NUM(factory, 0);
 	if (Z_TYPE_P(container) != IS_OBJECT) return false;
 	zend_class_entry *containerCe = Z_OBJCE_P(container);
-	return containerCe->type == ZEND_USER_CLASS && containerCe->info.user.filename != NULL && zend_string_equals(containerCe->info.user.filename, ce->info.user.filename);
+	return containerCe->type == ZEND_USER_CLASS && PT_CE(containerCe, info).user.filename != NULL && zend_string_equals(PT_CE(containerCe, info).user.filename, PT_CE(ce, info).user.filename);
 }
 
 inline zval *nullable(zval *value)

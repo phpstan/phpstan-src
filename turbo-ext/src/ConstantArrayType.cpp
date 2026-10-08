@@ -6821,7 +6821,7 @@ private:
 		zend_class_entry *ce = pt_class(PT_CLASS_ARRAY_SHAPE_NODE);
 		if (UNEXPECTED(ce == NULL)) return zv::Val();
 		const char *name = asList ? "KIND_LIST" : "KIND_ARRAY";
-		zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, strlen(name));
+		zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&PT_CE(ce, constants_table), name, strlen(name));
 		if (UNEXPECTED(constant == NULL)) {
 			zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
 			return zv::Val();
@@ -6854,7 +6854,7 @@ private:
 			zend_type_error("phpstan_turbo: cannot clone a non-object");
 			return zv::Val();
 		}
-		zend_object *cloned = Z_OBJ_HT_P(object)->clone_obj(Z_OBJ_P(object));
+		zend_object *cloned = Z_OBJ_HANDLER_P(object, clone_obj)(Z_OBJ_P(object));
 		if (UNEXPECTED(cloned == NULL || EG(exception))) {
 			if (cloned != NULL) {
 				OBJ_RELEASE(cloned);

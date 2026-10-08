@@ -315,6 +315,29 @@ run no restart, so `-d extension=` is fine there.)
 
 Output identity: `--error-format=raw` runs in both modes must diff empty.
 
+## Shared core: code must not depend on the PHP version's layout
+
+Everything outside `Abi.cpp`, `Shadow.cpp`, `TrustedTypes.cpp` and
+`main.cpp` is compiled once per platform into the shared core and runs on
+every supported PHP (README.md, "Shared core"). In those sources:
+
+- never read a `zend_class_entry` member after `ce_flags` directly — use
+  `PT_CE(ce, member)`, adding the member to `PT_ABI_CLASS_ENTRY_MEMBERS` if
+  it is new; object handlers through `PT_OBJ_HANDLER()` / `Z_OBJ_HANDLER()`
+  (add new ones to `PT_ABI_OBJECT_HANDLERS`), `internal_function.handler`
+  through `PT_INTERNAL_HANDLER()`, user `arg_info[i]` through `PT_ARG_INFO()`;
+- a new `EG()`/`CG()` field fails to compile until it is added to
+  `PT_ABI_EG_FIELDS` / `PT_ABI_CG_FIELDS` — add it there;
+- no `#if PHP_VERSION_ID`: `PT_ABI_SINCE(version, then, otherwise)`, or an
+  engine call whose signature differs goes into `Abi.cpp` behind a `pt_abi`
+  function pointer;
+- the version-specific sources call the core only through `PT_CORE_API`
+  functions (never data), and the core never calls them.
+
+Run `turbo-ext/bin/shared-core/check-linux.sh` (needs Docker) after touching
+engine-facing code; CI's `turbo-shared-core-gate` fails on any difference it
+finds, and never dismiss one without naming its mechanism.
+
 ## Zend-level gotchas (each of these cost real debugging time)
 
 - PHP literal `[]` is the read-only `zend_empty_array` in RODATA:

@@ -53,7 +53,7 @@ static zval *pt_vl_static(pt_vl_static_kind kind)
 			zend_class_init_statics(ce);
 		}
 		for (int i = 0; i < PT_VL_STATIC_COUNT; i++) {
-			zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, pt_vl_static_names[i], strlen(pt_vl_static_names[i]));
+			zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), pt_vl_static_names[i], strlen(pt_vl_static_names[i]));
 			ZEND_ASSERT(info != NULL && (info->flags & ZEND_ACC_STATIC) != 0);
 			pt_vl_statics[i] = CE_STATIC_MEMBERS(ce) + info->offset;
 		}

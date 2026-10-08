@@ -509,7 +509,7 @@ public:
 			}
 			return zv::Val();
 		}
-		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcmethod, methodLen);
+		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), lcmethod, methodLen);
 		if (UNEXPECTED(fn == NULL)) {
 			zend_throw_error(NULL, "phpstan_turbo: method %s::%s not found", className, lcmethod);
 			return zv::Val();
@@ -545,8 +545,8 @@ public:
 		}
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, ce) != SUCCESS)) return zv::Val();
-		if (ce->constructor != NULL) {
-			zend_call_known_instance_method(ce->constructor, Z_OBJ(object), NULL, argc, argv);
+		if (PT_CE(ce, constructor) != NULL) {
+			zend_call_known_instance_method(PT_CE(ce, constructor), Z_OBJ(object), NULL, argc, argv);
 			if (UNEXPECTED(EG(exception))) {
 				zval_ptr_dtor(&object);
 				return zv::Val();

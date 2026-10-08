@@ -48,6 +48,8 @@
  * error.
  */
 
+/* version-specific: walks zend_op_array and the property hooks of 8.4 */
+#define PHPSTANTURBO_ABI_IMPL
 #include "support.h"
 
 #pragma GCC diagnostic push

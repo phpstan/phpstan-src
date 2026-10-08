@@ -2636,7 +2636,14 @@ public:
 			PHP_MD5Update(&context, (const unsigned char *) ZSTR_VAL(parts.s), ZSTR_LEN(parts.s));
 		}
 		PHP_MD5Final(digest, &context);
-		make_digest_ex(hex, digest, sizeof(digest));
+		/* make_digest_ex()'s lowercase hex, spelled out: its length parameter
+		 * became a size_t in 8.5, so a call compiles differently per version */
+		static const char hexDigits[] = "0123456789abcdef";
+		for (size_t i = 0; i < sizeof(digest); i++) {
+			hex[2 * i] = hexDigits[digest[i] >> 4];
+			hex[2 * i + 1] = hexDigits[digest[i] & 0x0f];
+		}
+		hex[32] = '\0';
 		smart_str_free(&parts);
 		return zv::Val::string(hex, 32);
 	}

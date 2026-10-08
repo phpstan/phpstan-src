@@ -38,6 +38,8 @@ extern "C" {
 
 #pragma GCC diagnostic pop
 
+#include "abi.h"
+
 #include <initializer_list>
 
 #ifdef _WIN32
@@ -493,12 +495,12 @@ bool pt_combinations_helper_for_each(zval *arrays, pt_combination_consumer consu
 
 
 /* Called by Runtime::configure() */
-void pt_class_map_configure(zend_string *key, zend_string *value);
+PT_CORE_API void pt_class_map_configure(zend_string *key, zend_string *value);
 
 /* Fills return_value with key => default FQCN (or null) for every
  * pt_class_refs entry — Runtime::classRefs(), backing the smoke test's
  * structural checks against the generated class map. */
-void pt_class_refs_dump(zval *return_value);
+PT_CORE_API void pt_class_refs_dump(zval *return_value);
 
 /* }}} */
 
@@ -517,6 +519,10 @@ struct pt_globals_t {
 };
 
 extern pt_globals_t pt_globals;
+PT_CORE_API pt_globals_t *pt_core_globals();
+#ifdef PHPSTANTURBO_ABI_IMPL
+#define pt_globals (*pt_core_globals())
+#endif
 
 #define PT_G(v) (pt_globals.v)
 
@@ -557,7 +563,12 @@ struct pt_minit_registration {
 	pt_minit_registration(const char *name, void (*run)()) noexcept;
 };
 
-void pt_minit_registrations_run();
+PT_CORE_API void pt_minit_registrations_run();
+
+/* the module hooks of the shared core, called by main.cpp */
+PT_CORE_API void pt_core_rinit();
+PT_CORE_API void pt_core_rshutdown();
+PT_CORE_API void pt_core_mshutdown();
 
 #define PT_MINIT_REGISTRATION(fn) \
 	static ZEND_COLD void fn(); \
@@ -641,7 +652,7 @@ void pt_arena_mshutdown();
 /* Runtime::enablePharForkGuard() — privatizes the phar archive's fd cursor
  * in pcntl_fork()ed children via pthread_atfork (see PharForkGuard.cpp);
  * a no-op on Windows */
-void pt_phar_fork_guard_register(zend_string *path);
+PT_CORE_API void pt_phar_fork_guard_register(zend_string *path);
 
 /* Runtime::trustTypesUnder() — arms the optimizer pass that drops the
  * engine's argument and return type checks from scripts under the prefix
@@ -918,7 +929,7 @@ void pt_native_visitor_register(const pt_native_visitor *entry);
 const pt_native_visitor *pt_native_visitor_for(zend_class_entry *ce);
 /* drops the class-entry index; called per request and after activation
  * declared the shadowing classes */
-void pt_native_visitor_index_reset();
+PT_CORE_API void pt_native_visitor_index_reset();
 
 /* }}} */
 
@@ -1179,7 +1190,7 @@ zv::Val pt_type_combinator_cache_union(uint32_t argc, zval *argv);
 zv::Val pt_type_combinator_cache_intersect(uint32_t argc, zval *argv);
 zv::Val pt_type_combinator_cache_remove(zval *fromType, zval *typeToRemove);
 void pt_type_combinator_cache_clear();
-void pt_type_combinator_cache_adopt_class(zend_class_entry *ce, const char *realName);
+PT_CORE_API void pt_type_combinator_cache_adopt_class(zend_class_entry *ce, const char *realName);
 
 /* merged from the parallel port branch */
 /* merged from the parallel port branch */

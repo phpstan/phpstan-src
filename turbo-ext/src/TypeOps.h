@@ -182,6 +182,10 @@ struct pt_type_op_info
 };
 
 extern const pt_type_op_info pt_type_op_infos[PT_OP_COUNT];
+PT_CORE_API const pt_type_op_info *pt_core_type_op_infos();
+#ifdef PHPSTANTURBO_ABI_IMPL
+#define pt_type_op_infos (pt_core_type_op_infos())
+#endif
 
 constexpr uint8_t pt_type_op_kinds(pt_type_op_arg a0 = PT_OPARG_ANY, pt_type_op_arg a1 = PT_OPARG_ANY)
 {
@@ -234,7 +238,7 @@ static zend_always_inline const pt_type_ops *pt_type_ops_of(const zend_class_ent
 
 /* Shadow.cpp: records a class's ops once its class entry is linked (fatal
  * on a full table — cannot happen for the registered class count) */
-void pt_type_ops_attach(zend_class_entry *ce, const pt_type_ops *ops);
+PT_CORE_API void pt_type_ops_attach(zend_class_entry *ce, const pt_type_ops *ops);
 
 /* the op behind a lowercase method name, PT_OP_COUNT for any other name —
  * for the by-name call helpers (pt_type_call() and the per-file wrappers

@@ -280,7 +280,7 @@ public:
 		zv::Val target = getDelegate();
 		if (UNEXPECTED(target.isUndef())) return zv::Val();
 		zend_object *object = Z_OBJ_P(target.raw());
-		zend_function *fn = (zend_function *) zend_hash_find_ptr_lc(&object->ce->function_table, name);
+		zend_function *fn = (zend_function *) zend_hash_find_ptr_lc(&PT_CE(object->ce, function_table), name);
 		if (UNEXPECTED(fn == NULL)) {
 			zend_throw_error(NULL, "Call to undefined method %s::%s()", ZSTR_VAL(object->ce->name), ZSTR_VAL(name));
 			return zv::Val();

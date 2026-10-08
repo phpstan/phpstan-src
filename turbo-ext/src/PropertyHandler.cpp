@@ -74,7 +74,7 @@ bool inheritsNodeAbstractMethod(pt_method_site &site, zend_object *node, const c
 		return false;
 	}
 	if (EXPECTED(site.ce == node->ce && site.generation == pt_engine_generation && site.fn != NULL)) return site.fn->common.scope == nodeAbstractCe;
-	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&node->ce->function_table, lcname, len);
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(node->ce, function_table), lcname, len);
 	if (fn == NULL) return false;
 	site = { node->ce, fn, pt_engine_generation };
 	return fn->common.scope == nodeAbstractCe;

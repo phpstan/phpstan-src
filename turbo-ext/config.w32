@@ -6,22 +6,47 @@
 // builds there have no usable git history); with neither it defaults to
 // "dev", which the enabler rejects.
 
-ARG_ENABLE("phpstan-turbo", "phpstan turbo extension", "no");
+// "yes" builds the one self-contained php_phpstan_turbo.dll; "core" and
+// "extension" build the pair the distributed binaries are (README.md,
+// "Shared core"): the core DLL once per thread-safety flavour, and per PHP
+// version the extension DLL, which delay-loads the core from its own
+// directory (main.cpp) and links against its import library — expected in
+// the extension's directory when configuring with "extension".
+ARG_ENABLE("phpstan-turbo", "phpstan turbo extension (yes, core or extension)", "no");
+
+// The sources compiled against a PHP version's own layout — the Makefile's
+// SHIM_SOURCES; everything else goes into the core.
+var PHPSTAN_TURBO_SHIM_SOURCES = ["Abi.cpp", "Shadow.cpp", "TrustedTypes.cpp", "main.cpp"];
 
 // Every .cpp file of a directory under the extension, sorted, as the
 // space-separated list EXTENSION() and ADD_SOURCES() take, each name behind
 // the given prefix — the sources are discovered like the Makefile's
 // wildcard and config.m4's glob, not listed. buildconf concatenates every
 // extension's config.w32 into one configure.js, hence the prefixed name.
-function phpstan_turbo_sources(dir, prefix)
+// `select` picks the shim sources (true), the others (false), or all
+// (undefined); TerminateHandler.cpp only matters to the Linux static
+// libstdc++ link and goes with the core.
+function phpstan_turbo_sources(dir, prefix, select)
 {
 	var names = [];
 	var files = new Enumerator(FSO.GetFolder(configure_module_dirname + "\\" + dir).Files);
 	for (; !files.atEnd(); files.moveNext()) {
 		var name = FSO.GetFileName(files.item());
-		if (/\.cpp$/i.test(name)) {
-			names.push(prefix + name);
+		if (!/\.cpp$/i.test(name)) {
+			continue;
 		}
+		if (typeof(select) != "undefined") {
+			var shim = false;
+			for (var i = 0; i < PHPSTAN_TURBO_SHIM_SOURCES.length; i++) {
+				if (PHPSTAN_TURBO_SHIM_SOURCES[i].toLowerCase() == name.toLowerCase()) {
+					shim = true;
+				}
+			}
+			if (shim != select) {
+				continue;
+			}
+		}
+		names.push(prefix + name);
 	}
 	names.sort();
 	return names.join(" ");
@@ -47,11 +72,30 @@ if (PHP_PHPSTAN_TURBO != "no") {
 	// backslash-separated paths: confutils' ADD_SOURCES derives the object
 	// directory by splitting on backslashes only — with forward slashes the
 	// objects compile flat while the link list expects the subpath
-	EXTENSION("phpstan_turbo",
-		phpstan_turbo_sources("src", "src\\"),
-		true,
-		flags);
-	ADD_SOURCES(configure_module_dirname + "/src/parser",
-		phpstan_turbo_sources("src\\parser", ""),
-		"phpstan_turbo");
+	var core = PHP_ZTS == "yes" ? "phpstan_turbo_core-zts" : "phpstan_turbo_core";
+	if (PHP_PHPSTAN_TURBO == "core") {
+		EXTENSION("phpstan_turbo_core",
+			phpstan_turbo_sources("src", "src\\", false),
+			true,
+			flags + " /DPHPSTANTURBO_SPLIT /DPHPSTANTURBO_CORE_BUILD",
+			core + ".dll");
+		ADD_SOURCES(configure_module_dirname + "/src/parser",
+			phpstan_turbo_sources("src\\parser", ""),
+			"phpstan_turbo_core");
+	} else if (PHP_PHPSTAN_TURBO == "extension") {
+		EXTENSION("phpstan_turbo",
+			phpstan_turbo_sources("src", "src\\", true),
+			true,
+			flags + " /DPHPSTANTURBO_SPLIT");
+		ADD_FLAG("LIBS_PHPSTAN_TURBO", configure_module_dirname + "\\" + core + ".lib delayimp.lib");
+		ADD_FLAG("LDFLAGS_PHPSTAN_TURBO", "/DELAYLOAD:" + core + ".dll");
+	} else {
+		EXTENSION("phpstan_turbo",
+			phpstan_turbo_sources("src", "src\\"),
+			true,
+			flags);
+		ADD_SOURCES(configure_module_dirname + "/src/parser",
+			phpstan_turbo_sources("src\\parser", ""),
+			"phpstan_turbo");
+	}
 }

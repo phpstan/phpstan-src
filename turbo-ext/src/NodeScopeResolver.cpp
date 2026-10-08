@@ -70,7 +70,7 @@ NsrStatics pt_nsr_statics;
 
 zval *staticSlotOf(zend_class_entry *ce, const char *name, size_t len)
 {
-	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, name, len);
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), name, len);
 	ZEND_ASSERT(info != NULL && (info->flags & ZEND_ACC_STATIC) != 0);
 	return CE_STATIC_MEMBERS(ce) + info->offset;
 }

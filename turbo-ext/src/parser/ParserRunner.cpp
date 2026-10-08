@@ -295,13 +295,13 @@ NodeClassInfo *ParserEngine::resolveNodeClass(const char *alias, bool useCtor)
 		 * names — lazily, so a useCtor=true resolve (isInstanceOf) seeing the
 		 * class first cannot deny later slot-write callers the plan */
 		cls->planState = NodeClassInfo::PLAN_FAILED;
-		zend_function *ctor = cls->ce->constructor;
+		zend_function *ctor = PT_CE(cls->ce, constructor);
 		if (ctor != NULL && ctor->type == ZEND_USER_FUNCTION && cls->attrsSlot != UINT32_MAX) {
 			uint32_t numArgs = ctor->op_array.num_args;
 			int nprops = 0;
 			bool ok = true;
 			for (uint32_t i = 0; i < numArgs; i++) {
-				zend_string *argName = ctor->op_array.arg_info[i].name;
+				zend_string *argName = PT_ARG_INFO(ctor->op_array.arg_info, i)->name;
 				if (zend_string_equals_literal(argName, "attributes")) continue;
 				if (nprops >= 16) {
 					ok = false;
@@ -365,7 +365,7 @@ zv::Val ParserEngine::createNode(const char *alias, bool useCtor, zv::Val attrib
 		}
 	}
 	ZVAL_COPY_VALUE(&args[argc++], &attrs);
-	zend_call_known_function(cls->ce->constructor, Z_OBJ(node), cls->ce, NULL, argc, args, NULL);
+	zend_call_known_function(PT_CE(cls->ce, constructor), Z_OBJ(node), cls->ce, NULL, argc, args, NULL);
 	zval_ptr_dtor(&attrs);
 	if (EG(exception) != NULL) {
 		abortForPendingException();
@@ -426,7 +426,7 @@ static zval makeErrorObject(zend_string *msg, zval *attrsBorrowed)
 	zval error;
 	object_init_ex(&error, g_errorCe);
 	zv::Args args{msg, attrsBorrowed};
-	zend_call_known_function(g_errorCe->constructor, Z_OBJ(error), g_errorCe, NULL, 2, args, NULL);
+	zend_call_known_function(PT_CE(g_errorCe, constructor), Z_OBJ(error), g_errorCe, NULL, 2, args, NULL);
 	return error;
 }
 
@@ -973,7 +973,7 @@ zv::Val ParserEngine::makeComment(const Token *tok, int tokenPos)
 	ZVAL_LONG(&args[4], tok->line + countNewlines(tok->text));
 	ZVAL_LONG(&args[5], tok->pos + (int) ZSTR_LEN(tok->text) - 1);
 	ZVAL_LONG(&args[6], tokenPos);
-	zend_call_known_function(cls->ce->constructor, Z_OBJ(comment), cls->ce, NULL, 7, args, NULL);
+	zend_call_known_function(PT_CE(cls->ce, constructor), Z_OBJ(comment), cls->ce, NULL, 7, args, NULL);
 	zval_ptr_dtor(&args[0]);
 	return zv::Val::adopt(comment);
 }

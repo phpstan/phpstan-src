@@ -8,9 +8,12 @@
  * the boundary-economics rules in turbo-ext/README.md).
  */
 
+/* version-specific: the module entry carries the engine's API number */
+#define PHPSTANTURBO_ABI_IMPL
 #include "support.h"
 #include "reg.h"
 #include "Engine.h"
+#include "version.h"
 
 #ifdef PHP_WIN32
 #include <process.h>
@@ -18,41 +21,6 @@
 #include <unistd.h>
 #endif
 
-/* The Makefile's Linux build folds libstdc++ in statically, and with it the
- * default terminate handler, which demangles the type of the exception that
- * escaped — 45 KB of demangler for a path this code reaches only when a
- * standard container fails an internal check (it never throws or catches
- * itself). This definition keeps the archive's handler, and so the
- * demangler, out of the link. Only for the static link: against a shared
- * libstdc++ (the phpize build) the handler is the process's, not ours. The
- * signature must match <exception>'s declaration exactly — GCC rejects a
- * redeclaration adding [[noreturn]] or hidden visibility. */
-#ifdef PHPSTANTURBO_STATIC_LIBSTDCXX
-#include <cstdio>
-#include <cstdlib>
-namespace __gnu_cxx {
-void __verbose_terminate_handler()
-{
-	fputs("phpstan_turbo: terminate called (a C++ standard library check failed)\n", stderr);
-	abort();
-}
-} // namespace __gnu_cxx
-#endif
-
-/* The short SHA of the last commit touching the watched set: baked from git
- * by the Makefile (quoted string passed directly), or from the VERSION.txt
- * the subsplit workflow commits into phpstan/turbo-ext; "dev" with neither,
- * which the enabler rejects. config.w32 and config.m4 pass the bare token as
- * PHPSTANTURBO_VERSION_RAW — quote characters do not survive the Windows
- * configure-to-nmake pipeline — and it is stringized here. */
-#ifdef PHPSTANTURBO_VERSION_RAW
-#define PT_VERSION_STR2(x) #x
-#define PT_VERSION_STR(x) PT_VERSION_STR2(x)
-#define PHPSTANTURBO_VERSION PT_VERSION_STR(PHPSTANTURBO_VERSION_RAW)
-#endif
-#ifndef PHPSTANTURBO_VERSION
-#define PHPSTANTURBO_VERSION "dev"
-#endif
 
 /* PHPStanTurbo\Runtime::configure() — cold-path configuration entry point.
  * TurboExtensionEnabler passes the generated class map (derived from the
@@ -159,34 +127,64 @@ static void ZEND_FASTCALL runtimeExitImmediately(INTERNAL_FUNCTION_PARAMETERS)
 	_exit(EG(exit_status));
 }
 
-/* the PT_MINIT_REGISTRATION() functions of every file, in name order; a
- * constant-initialized pointer, so it is null before any of the file-static
- * registrations construct */
-static pt_minit_registration *pt_minit_registrations = nullptr;
+/* Whether the shared core loaded next to this library carries the same
+ * version: a mismatched pair (a torn update of the distributed files) must
+ * never run together — the extension then registers nothing and reports
+ * the mismatch as its version, which TurboExtensionEnabler rejects, so
+ * PHPStan runs without it. */
+static bool pt_core_matches = false;
 
-pt_minit_registration::pt_minit_registration(const char *name, void (*run)()) noexcept
-	: name(name), run(run), next(nullptr)
-{
-	pt_minit_registration **slot = &pt_minit_registrations;
-	while (*slot != nullptr && strcmp((*slot)->name, name) < 0) {
-		slot = &(*slot)->next;
-	}
-	next = *slot;
-	*slot = this;
+extern "C" {
+extern zend_module_entry phpstan_turbo_module_entry;
 }
 
-void pt_minit_registrations_run()
+#ifdef PHP_WIN32
+/* Windows searches the dependencies of a DLL loaded by full path in the
+ * application's directory, not the DLL's own, and PHP loads extensions with
+ * plain LoadLibrary(): the core is delay-loaded (config.w32) and loaded here
+ * by its full path, next to this DLL, before PHP calls anything that needs
+ * it — the delay-load helper then finds it already loaded by name. */
+#ifdef ZTS
+#define PT_CORE_DLL L"phpstan_turbo_core-zts.dll"
+#else
+#define PT_CORE_DLL L"phpstan_turbo_core.dll"
+#endif
+static bool pt_load_core()
 {
-	for (const pt_minit_registration *registration = pt_minit_registrations; registration != nullptr; registration = registration->next) {
-		registration->run();
-	}
+	HMODULE self = NULL;
+	if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR) &pt_load_core, &self)) return false;
+	wchar_t path[4096];
+	DWORD length = GetModuleFileNameW(self, path, (DWORD) (sizeof(path) / sizeof(path[0])));
+	if (length == 0 || length >= sizeof(path) / sizeof(path[0])) return false;
+	wchar_t *slash = wcsrchr(path, L'\\');
+	size_t directory = slash != NULL ? (size_t) (slash - path) + 1 : 0;
+	size_t name = wcslen(PT_CORE_DLL);
+	if (directory + name + 1 > sizeof(path) / sizeof(path[0])) return false;
+	wmemcpy(path + directory, PT_CORE_DLL, name + 1);
+	return LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL;
 }
+static bool pt_core_loaded = false;
+#endif
 
 static PHP_MINIT_FUNCTION(phpstan_turbo)
 {
 #ifdef ZTS
 	ZEND_TSRMLS_CACHE_UPDATE();
 #endif
+#ifdef PHPSTANTURBO_SPLIT
+#ifdef PHP_WIN32
+	if (!pt_core_loaded) {
+		phpstan_turbo_module_entry.version = "core-missing";
+		return SUCCESS;
+	}
+#endif
+	if (strcmp(pt_core_version(), PHPSTANTURBO_VERSION) != 0) {
+		phpstan_turbo_module_entry.version = "core-mismatch";
+		return SUCCESS;
+	}
+#endif
+	pt_core_matches = true;
+	pt_abi_init();
 
 	static const reg::Arg returnsBool = reg::boolArg("");
 	reg::Class runtime("PHPStanTurbo\\Runtime");
@@ -206,46 +204,29 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 
 static PHP_MSHUTDOWN_FUNCTION(phpstan_turbo)
 {
-	pt_arena_mshutdown();
+	if (!pt_core_matches) return SUCCESS;
+	pt_core_mshutdown();
 
 	return SUCCESS;
 }
 
 static PHP_RINIT_FUNCTION(phpstan_turbo)
 {
+	if (!pt_core_matches) return SUCCESS;
 #ifdef ZTS
 	ZEND_TSRMLS_CACHE_UPDATE();
+	pt_abi_init();
 #endif
 
-	pt_support_rinit();
-	pt_node_traverser_rinit();
-	pt_scope_ops_rinit();
-	pt_type_combinator_cache_rinit();
-	pt_is_super_type_of_result_rinit();
-	pt_accepts_result_rinit();
-	pt_integer_range_type_rinit();
-	pt_object_type_rinit();
-	pt_static_type_factory_rinit();
-	pt_scope_access_rinit();
-	pt_reflection_access_rinit();
-	pt_mutating_scope_rinit();
-	pt_variable_flow_rinit();
-	pt_engine_rinit();
+	pt_core_rinit();
 
 	return SUCCESS;
 }
 
 static PHP_RSHUTDOWN_FUNCTION(phpstan_turbo)
 {
-	pt_scope_ops_rshutdown();
-	pt_node_traverser_rshutdown();
-	pt_type_combinator_cache_rshutdown();
-	pt_is_super_type_of_result_rshutdown();
-	pt_accepts_result_rshutdown();
-	pt_support_rshutdown();
-	pt_object_type_rshutdown();
-	pt_static_type_factory_rshutdown();
-	pt_engine_rshutdown();
+	if (!pt_core_matches) return SUCCESS;
+	pt_core_rshutdown();
 
 	return SUCCESS;
 }
@@ -275,6 +256,14 @@ zend_module_entry phpstan_turbo_module_entry = {
 	STANDARD_MODULE_PROPERTIES,
 };
 
+#if defined(PHP_WIN32) && defined(PHPSTANTURBO_SPLIT)
+ZEND_DLEXPORT zend_module_entry *get_module(void)
+{
+	pt_core_loaded = pt_core_loaded || pt_load_core();
+	return &phpstan_turbo_module_entry;
+}
+#else
 ZEND_GET_MODULE(phpstan_turbo)
+#endif
 
 }

@@ -1289,7 +1289,7 @@ public:
 	static zv::Val identityCallback()
 	{
 		zval closure;
-		zend_create_closure(&closure, pt_identity_callback_fn, pt_ce_identity_callback, pt_ce_identity_callback, NULL);
+		pt_abi_create_closure(&closure, pt_identity_callback_fn, pt_ce_identity_callback, pt_ce_identity_callback, NULL);
 		return zv::Val::adopt(closure);
 	}
 };
@@ -1301,7 +1301,7 @@ using phpstanturbo::MixedType;
 zv::Val pt_type_identity_callback()
 {
 	zval closure;
-	zend_create_closure(&closure, pt_identity_callback_fn, pt_ce_identity_callback, pt_ce_identity_callback, NULL);
+	pt_abi_create_closure(&closure, pt_identity_callback_fn, pt_ce_identity_callback, pt_ce_identity_callback, NULL);
 	return zv::Val::adopt(closure);
 }
 
@@ -1339,7 +1339,7 @@ bool pt_identity_callback_direct_invoke(const zend_function *fn, zend_object *ob
 {
 	(void) object;
 	handled = false;
-	if (fn->internal_function.handler != identityCallbackIdentity && !(fn->common.scope == pt_ce_identity_callback && zend_string_equals_literal(fn->common.function_name, "identity"))) {
+	if (PT_INTERNAL_HANDLER(fn) != identityCallbackIdentity && !(fn->common.scope == pt_ce_identity_callback && zend_string_equals_literal(fn->common.function_name, "identity"))) {
 		return false;
 	}
 	if (argc != 1 || Z_TYPE_P(argv) != IS_OBJECT) return false;
@@ -1500,7 +1500,7 @@ PT_MINIT_REGISTRATION(pt_register_mixed_type)
 	holder.method("identity", reg::PublicStatic, 1, { reg::obj("type", ptcls::type) }, identityCallbackIdentity, &ptret::type);
 	pt_ce_identity_callback = holder.register_();
 	pt_ce_identity_callback->ce_flags |= ZEND_ACC_FINAL;
-	pt_identity_callback_fn = (zend_function *) zend_hash_str_find_ptr(&pt_ce_identity_callback->function_table, PT_LC("identity"));
+	pt_identity_callback_fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_identity_callback, function_table), PT_LC("identity"));
 	ZEND_ASSERT(pt_identity_callback_fn != NULL);
 
 	reg::Class cls("PHPStan\\Type\\MixedType");

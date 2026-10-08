@@ -434,12 +434,7 @@ private:
 			holderRef.propAtWrite(slots::result, zv::Val::copyOf(cb));
 			holderRef.propAtWrite(slots::reasons, zv::Val::copyOf(entry.value().deref()));
 			zval closure;
-#if PHP_VERSION_ID >= 80600
-			/* php-src fbb2e1f23d6: $this is passed as zend_object* from 8.6 on */
-			zend_create_closure(&closure, pt_decorated_lazy_reason_invoke, pt_ce_decorated_lazy_reason, pt_ce_decorated_lazy_reason, Z_OBJ(holder));
-#else
-			zend_create_closure(&closure, pt_decorated_lazy_reason_invoke, pt_ce_decorated_lazy_reason, pt_ce_decorated_lazy_reason, &holder);
-#endif
+			pt_abi_create_closure(&closure, pt_decorated_lazy_reason_invoke, pt_ce_decorated_lazy_reason, pt_ce_decorated_lazy_reason, Z_OBJ(holder));
 			zval_ptr_dtor(&holder); /* the closure holds its own reference */
 			wrapped.push(zv::Val::adopt(closure));
 		}
@@ -724,7 +719,7 @@ PT_MINIT_REGISTRATION(pt_register_is_super_type_of_result)
 	holder.method("__invoke", reg::Public, 0, {}, IsSuperTypeOfResult::invokeDecoratedLazyReason);
 	pt_ce_decorated_lazy_reason = holder.register_();
 	pt_ce_decorated_lazy_reason->ce_flags |= ZEND_ACC_FINAL;
-	pt_decorated_lazy_reason_invoke = (zend_function *) zend_hash_str_find_ptr(&pt_ce_decorated_lazy_reason->function_table, "__invoke", sizeof("__invoke") - 1);
+	pt_decorated_lazy_reason_invoke = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_decorated_lazy_reason, function_table), "__invoke", sizeof("__invoke") - 1);
 	ZEND_ASSERT(pt_decorated_lazy_reason_invoke != NULL);
 }
 

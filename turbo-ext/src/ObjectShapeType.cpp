@@ -1255,7 +1255,7 @@ PT_MINIT_REGISTRATION(pt_register_object_shape_type)
 	holder.method("__invoke", reg::Public, 1, { reg::stringArg("reason") }, invokeReasonDecorator, &ptret::string);
 	pt_ce_object_shape_reason_decorator = holder.register_();
 	pt_ce_object_shape_reason_decorator->ce_flags |= ZEND_ACC_FINAL;
-	pt_object_shape_reason_decorator_invoke = (zend_function *) zend_hash_str_find_ptr(&pt_ce_object_shape_reason_decorator->function_table, PT_LC("__invoke"));
+	pt_object_shape_reason_decorator_invoke = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_object_shape_reason_decorator, function_table), PT_LC("__invoke"));
 	ZEND_ASSERT(pt_object_shape_reason_decorator_invoke != NULL);
 
 	reg::Class cls("PHPStan\\Type\\ObjectShapeType");

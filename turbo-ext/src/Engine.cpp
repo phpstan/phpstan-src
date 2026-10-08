@@ -30,7 +30,7 @@ struct NativeClosureObject
 	zend_object std;
 };
 
-zend_object_handlers pt_native_closure_handlers;
+const zend_object_handlers *pt_native_closure_handlers;
 
 /* the class's __invoke() (a zend_class_entry has no slot for it) */
 zend_function *pt_native_closure_invoke_fn = nullptr;
@@ -54,7 +54,7 @@ NativeClosureObject *allocateClosure(zend_class_entry *ce, pt_native_closure_fn 
 	closure->fn = fn;
 	closure->count = count;
 	zend_object_std_init(&closure->std, ce);
-	closure->std.handlers = &pt_native_closure_handlers;
+	closure->std.handlers = pt_native_closure_handlers;
 	return closure;
 }
 
@@ -195,13 +195,14 @@ zv::Val pt_native_closure_to_closure(zval *closure)
 
 PT_MINIT_REGISTRATION(pt_register_native_closure)
 {
-	memcpy(&pt_native_closure_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-	pt_native_closure_handlers.offset = offsetof(NativeClosureObject, std);
-	pt_native_closure_handlers.free_obj = freeClosureObject;
-	pt_native_closure_handlers.get_gc = closureGc;
-	pt_native_closure_handlers.clone_obj = cloneClosureObject;
-	pt_native_closure_handlers.get_closure = getClosure;
-	pt_native_closure_handlers.compare = compareClosures;
+	pt_abi_handlers overrides = {};
+	overrides.offset = offsetof(NativeClosureObject, std);
+	overrides.free_obj = freeClosureObject;
+	overrides.get_gc = closureGc;
+	overrides.clone_obj = cloneClosureObject;
+	overrides.get_closure = getClosure;
+	overrides.compare = compareClosures;
+	pt_native_closure_handlers = pt_abi_object_handlers(overrides);
 
 	/* registered under a builder name other than `cls` on purpose — the
 	 * side-by-side parity scan pairs `cls.method(...)` lines with the
@@ -210,8 +211,8 @@ PT_MINIT_REGISTRATION(pt_register_native_closure)
 	holder.method("__invoke", reg::Public, 0, { reg::Arg{ "args", reg::detail::flagBits(false, true), nullptr } }, invokeNativeClosure);
 	pt_ce_native_closure = holder.register_();
 	pt_ce_native_closure->ce_flags |= ZEND_ACC_FINAL | ZEND_ACC_NO_DYNAMIC_PROPERTIES | ZEND_ACC_NOT_SERIALIZABLE;
-	pt_ce_native_closure->create_object = createClosureObject;
-	pt_native_closure_invoke_fn = (zend_function *) zend_hash_str_find_ptr(&pt_ce_native_closure->function_table, PT_LC("__invoke"));
+	PT_CE(pt_ce_native_closure, create_object) = createClosureObject;
+	pt_native_closure_invoke_fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_native_closure, function_table), PT_LC("__invoke"));
 	ZEND_ASSERT(pt_native_closure_invoke_fn != NULL);
 }
 
@@ -463,11 +464,11 @@ bool pt_engine_call_node_callback(zval *callback, zval *node, zval *scope)
 		bool handled;
 		bool ok = pt_class_statements_gatherer_invoke(object, node, scope, handled);
 		if (handled) return ok;
-		if (EXPECTED(object->handlers->get_closure != NULL)) {
+		if (EXPECTED(PT_OBJ_HANDLER(object, get_closure) != NULL)) {
 			zend_class_entry *calledScope;
 			zend_function *fn;
 			zend_object *thisObject;
-			if (EXPECTED(object->handlers->get_closure(object, &calledScope, &fn, &thisObject, false) == SUCCESS)) {
+			if (EXPECTED(PT_OBJ_HANDLER(object, get_closure)(object, &calledScope, &fn, &thisObject, false) == SUCCESS)) {
 				zval ret;
 				zend_call_known_function(fn, thisObject, calledScope, &ret, 2, argv, NULL);
 				zval_ptr_dtor(&ret);
@@ -478,85 +479,11 @@ bool pt_engine_call_node_callback(zval *callback, zval *node, zval *scope)
 	return !pt_type_call_callable(callback, 2, argv).isUndef();
 }
 
-namespace {
-
-/* one call continued on a fresh stack: the body, and the VM state it left
- * behind — zend_fiber_switch_context() restores the caller's state from
- * before the switch, which the body may legitimately have changed */
-struct FreshStackCall
-{
-	void (*body)(void *);
-	void *data;
-	bool bailout;
-	zend_vm_stack vmStack;
-	zval *vmStackTop;
-	zval *vmStackEnd;
-	size_t vmStackPageSize;
-	int errorReporting;
-};
-
-/* the call the coroutine starting next runs (read once, at its start) */
-FreshStackCall *pt_fresh_stack_call = nullptr;
-
-/* identifies the contexts in fiber observers */
-char pt_fresh_stack_kind;
-
-ZEND_STACK_ALIGNED void freshStackCoroutine(zend_fiber_transfer *transfer)
-{
-	(void) transfer; /* already addresses the caller, which is where it returns */
-	FreshStackCall *call = pt_fresh_stack_call;
-	zend_fiber_context *context = EG(current_fiber_context);
-#ifdef ZEND_CHECK_STACK_LIMIT
-	EG(stack_base) = zend_fiber_stack_base(context->stack);
-	EG(stack_limit) = zend_fiber_stack_limit(context->stack);
-#endif
-	zend_try {
-		call->body(call->data);
-	} zend_catch {
-		call->bailout = true;
-	} zend_end_try();
-	call->vmStack = EG(vm_stack);
-	call->vmStackTop = EG(vm_stack_top);
-	call->vmStackEnd = EG(vm_stack_end);
-	call->vmStackPageSize = EG(vm_stack_page_size);
-	call->errorReporting = EG(error_reporting);
-}
-
-} // namespace
-
 void pt_engine_run_on_fresh_stack(void (*body)(void *), void *data)
 {
-	zend_fiber_context context;
-	memset(&context, 0, sizeof(context));
-	if (UNEXPECTED(zend_fiber_init_context(&context, &pt_fresh_stack_kind, freshStackCoroutine, PT_ENGINE_FRESH_STACK_SIZE_LIMIT) == FAILURE)) {
-		/* no stack to be had: continue here, where the engine's own stack
-		 * limit decides */
-		if (EG(exception) != NULL) {
-			zend_clear_exception();
-		}
-		body(data);
-		return;
-	}
-
-	FreshStackCall call = { body, data, false, NULL, NULL, NULL, 0, 0 };
-	FreshStackCall *previous = pt_fresh_stack_call;
-	pt_fresh_stack_call = &call;
-	zend_fiber_transfer transfer;
-	transfer.context = &context;
-	transfer.flags = 0;
-	ZVAL_NULL(&transfer.value);
-	/* returns once the body finished; the dead context is destroyed then */
-	zend_fiber_switch_context(&transfer);
-	pt_fresh_stack_call = previous;
-
-	EG(vm_stack) = call.vmStack;
-	EG(vm_stack_top) = call.vmStackTop;
-	EG(vm_stack_end) = call.vmStackEnd;
-	EG(vm_stack_page_size) = call.vmStackPageSize;
-	EG(error_reporting) = call.errorReporting;
-	if (UNEXPECTED(call.bailout)) {
-		zend_bailout();
-	}
+	/* the fiber context, its switch and the bailout around the body are
+	 * engine internals of each minor (Abi.cpp) */
+	pt_abi.run_on_fresh_stack(body, data);
 }
 
 /* }}} */
@@ -596,10 +523,10 @@ const NodeAbstractInfo *nodeAbstractInfo()
 	if (EXPECTED(pt_node_abstract_info.generation == pt_engine_generation && pt_node_abstract_info.ce != NULL)) return &pt_node_abstract_info;
 	zend_class_entry *ce = pt_class(PT_CLASS_NODE_ABSTRACT);
 	if (UNEXPECTED(ce == NULL)) return NULL;
-	zend_property_info *attributes = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, PT_LC("attributes"));
-	zend_function *getAttribute = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("getattribute"));
-	zend_function *setAttribute = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("setattribute"));
-	zend_function *getComments = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("getcomments"));
+	zend_property_info *attributes = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), PT_LC("attributes"));
+	zend_function *getAttribute = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("getattribute"));
+	zend_function *setAttribute = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("setattribute"));
+	zend_function *getComments = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("getcomments"));
 	if (UNEXPECTED(attributes == NULL || (attributes->flags & ZEND_ACC_STATIC) != 0 || getAttribute == NULL || setAttribute == NULL || getComments == NULL)) {
 		zend_throw_error(NULL, "phpstan_turbo: %s does not declare the attributes it is expected to", ZSTR_VAL(ce->name));
 		return NULL;
@@ -614,9 +541,9 @@ bool inheritsNodeAbstract(zend_class_entry *ce, const NodeAbstractInfo *info)
 	NodeClassEntry &entry = pt_node_class_cache[(size_t) (h >> (sizeof(uintptr_t) * 8 - PT_NODE_CLASS_CACHE_BITS))];
 	if (EXPECTED(entry.ce == ce && entry.generation == pt_engine_generation)) return entry.inherits;
 	bool inherits = instanceof_function(ce, info->ce)
-		&& zend_hash_str_find_ptr(&ce->function_table, PT_LC("getattribute")) == info->getAttribute
-		&& zend_hash_str_find_ptr(&ce->function_table, PT_LC("setattribute")) == info->setAttribute
-		&& zend_hash_str_find_ptr(&ce->function_table, PT_LC("getcomments")) == info->getComments;
+		&& zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("getattribute")) == info->getAttribute
+		&& zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("setattribute")) == info->setAttribute
+		&& zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("getcomments")) == info->getComments;
 	entry = { ce, pt_engine_generation, inherits };
 	return inherits;
 }

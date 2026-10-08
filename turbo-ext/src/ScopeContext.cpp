@@ -325,7 +325,7 @@ bool inheritsScopeGetters(zend_class_entry *ce, zend_class_entry *mutatingScope)
 {
 	static const struct { const char *name; size_t len; } methods[] = { { "isinclass", sizeof("isinclass") - 1 }, { "getclassreflection", sizeof("getclassreflection") - 1 } };
 	for (const auto &method : methods) {
-		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, method.name, method.len);
+		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), method.name, method.len);
 		if (fn == NULL || fn->common.scope != mutatingScope) return false;
 	}
 	return true;

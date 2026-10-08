@@ -350,7 +350,8 @@ jobs:
     # (.github/scripts/find-turbo-origins.sh has the exact conditions), and
     # its turbo-compile-core leg skips the build altogether: it runs on
     # ubuntu-latest, outside any build container, and only carries that core
-    # over into this run. The per-version extensions always compile (a
+    # over into this run. The same goes for each turbo-shared-core-gate
+    # leg's fingerprint. The per-version extensions always compile (a
     # minute each) against it, then go through the version check and the
     # differential tests of the turbo-differential jobs like any build —
     # they compare the native side with the PHP side of this commit, which
@@ -1030,12 +1031,92 @@ jobs:
     # compile to identical code against each supported version's — a source
     # reading a member whose offset moved, a constant whose value changed or
     # a function whose signature did would otherwise misbehave on the other
-    # versions only, on the paths that touch it. Compiles every source
-    # against each version's (and the 8.6 thread-safe) headers in the CI
-    # build images with clang, and fails on any difference outside the
-    # version-specific sources (turbo-ext/bin/shared-core/check-linux.sh).
+    # versions only, on the paths that touch it. Each leg compiles every
+    # source against one version's headers in its CI build image with clang
+    # and uploads a fingerprint of the result (a hash per function, data
+    # section and relocation table, see turbo-ext/bin/shared-core/gate.py);
+    # turbo-shared-core-gate-compare compares them. A leg whose fingerprint
+    # turbo-origins found in an earlier run from identical build inputs only
+    # carries it over, like a reused core.
+    needs: turbo-origins
     runs-on: "ubuntu-latest"
-    timeout-minutes: 40
+    timeout-minutes: 30
+
+    permissions:
+      contents: read # actions/checkout of this repository
+      actions: read # downloads a reused fingerprint from an earlier run, see turbo-origins
+
+    env:
+      GATE_ARTIFACT: "turbo-gate-fingerprint-${{ matrix.php-version }}"
+      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('turbo-gate-fingerprint-{0}', matrix.php-version)] }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # every PHP the cores run on; thread-safe builds are "<minor>-zts"
+        php-version: ["8.3", "8.4", "8.5", "8.6", "8.3-zts", "8.4-zts", "8.5-zts", "8.6-zts"]
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Download the fingerprint compiled from identical build inputs"
+        if: env.ORIGIN_RUN_ID != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.GATE_ARTIFACT }}
+          path: "fingerprints"
+          run-id: ${{ env.ORIGIN_RUN_ID }}
+          github-token: ${{ github.token }}
+
+      - name: "Record the run that compiled the fingerprint"
+        if: env.ORIGIN_RUN_ID != ''
+        run: echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" | tee turbo-reused.txt
+
+      - name: "Checkout"
+        if: env.ORIGIN_RUN_ID == ''
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: "Compile against the PHP ${{ matrix.php-version }} headers and fingerprint the result"
+        if: env.ORIGIN_RUN_ID == ''
+        env:
+          SHARED_CORE_WORK_DIR: ${{ runner.temp }}/shared-core
+          GATE_VERSIONS: ${{ matrix.php-version }}
+        run: |
+          mkdir -p "$SHARED_CORE_WORK_DIR" fingerprints
+          GATE_JOBS="$(nproc)" bash turbo-ext/bin/shared-core/fingerprint-linux.sh
+          cp "$SHARED_CORE_WORK_DIR/fingerprints/fingerprint-$GATE_VERSIONS.tsv" fingerprints/
+
+      - name: "Upload the fingerprint"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ env.GATE_ARTIFACT }}
+          path: "fingerprints/fingerprint-${{ matrix.php-version }}.tsv"
+          if-no-files-found: "error"
+
+      - name: "Mark the fingerprint as reused"
+        if: env.ORIGIN_RUN_ID != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "turbo-reused-${{ env.GATE_ARTIFACT }}"
+          path: "turbo-reused.txt"
+          if-no-files-found: "error"
+
+  turbo-shared-core-gate-compare:
+    name: "Turbo Shared Core Gate (compare)"
+    # Fails on any function, data section or relocation table outside the
+    # version-specific sources (Abi.cpp, Shadow.cpp, TrustedTypes.cpp,
+    # main.cpp) whose fingerprint differs from the build against the
+    # version the cores are compiled against (turbo-compile-core). Not a
+    # gate of the commit job, like the other jobs that only test the
+    # shipped bits (see there).
+    needs: turbo-shared-core-gate
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -1047,14 +1128,17 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
+          sparse-checkout: turbo-ext/bin/shared-core
+
+      - name: "Download the fingerprints"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: "turbo-gate-fingerprint-*"
+          path: "fingerprints"
+          merge-multiple: true
 
       - name: "Compare the shared code across the supported PHP versions"
-        env:
-          SHARED_CORE_WORK_DIR: ${{ runner.temp }}/shared-core
-        run: |
-          mkdir -p "$SHARED_CORE_WORK_DIR"
-          bash turbo-ext/bin/shared-core/check-linux.sh
-
+        run: python3 -I turbo-ext/bin/shared-core/gate.py compare 8.5 fingerprints
   turbo-docker-run:
     name: "Run with Turbo Extension (Docker PHP builds)"
     needs: "turbo-compile"
@@ -2491,7 +2575,8 @@ jobs:
     # guards the version constant the staging logic compares. The jobs
     # that only test those bits are deliberately not gates: the
     # "Run with Turbo Extension" jobs (turbo-differential,
-    # turbo-differential-musl, turbo-run, turbo-docker-run) and
+    # turbo-differential-musl, turbo-run, turbo-docker-run), the shared-core
+    # gate (turbo-shared-core-gate, turbo-shared-core-gate-compare) and
     # turbo-phpize, whose build nothing ships (PIE
     # builds from the phpstan/turbo-ext subsplit). They produce nothing the
     # commit consumes, waiting for them would delay every dev phar by their
@@ -2503,7 +2588,6 @@ jobs:
     needs:
       - compiler-tests
       - turbo-version
-      - turbo-shared-core-gate
       - turbo-compile
       - turbo-compile-musl-arm64
       - turbo-compile-windows

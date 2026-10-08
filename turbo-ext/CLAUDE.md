@@ -335,8 +335,9 @@ every supported PHP (README.md, "Shared core"). In those sources:
   functions (never data), and the core never calls them.
 
 Run `turbo-ext/bin/shared-core/check-linux.sh` (needs Docker) after touching
-engine-facing code; CI's `turbo-shared-core-gate` fails on any difference it
-finds, and never dismiss one without naming its mechanism.
+engine-facing code; CI's `turbo-shared-core-gate-compare` fails on any
+difference it finds (without holding up the phar commit, so watch for it),
+and never dismiss one without naming its mechanism.
 
 ## Zend-level gotchas (each of these cost real debugging time)
 

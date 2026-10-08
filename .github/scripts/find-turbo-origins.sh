@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Finds, for every shared core the turbo-compile-core jobs in phar.yml
-# produce (phpstan_turbo_core-<platform>), the newest earlier run on $BRANCH
-# that compiled it from build inputs identical to HEAD's, and writes
-# {"<artifact name>": <run id>} to the `origins` step output. A core leg
-# whose artifact is listed downloads it from that run instead of building
-# (and profiling) it again (see the turbo-origins job in phar.yml). The
-# per-PHP-version extensions are not reused: they compile in a minute,
-# against whichever core this run carries.
+# produce (phpstan_turbo_core-<platform>) and every fingerprint the
+# turbo-shared-core-gate legs produce (turbo-gate-fingerprint-<version>),
+# the newest earlier run on $BRANCH that compiled it from build inputs
+# identical to HEAD's, and writes {"<artifact name>": <run id>} to the
+# `origins` step output. A leg whose artifact is listed downloads it from
+# that run instead of building (and profiling) it again (see the
+# turbo-origins job in phar.yml). The per-PHP-version extensions are not
+# reused: they compile in a minute, against whichever core this run carries.
 #
 # The search walks HEAD's first-parent history (on a pull request's merge
 # commit, the base branch) and asks the API for the runs of each commit
@@ -48,11 +49,12 @@ BUILD_INPUT_PATHS=(
 	.github/scripts/install-alpine-php.sh
 	.github/scripts/install-php86-windows.sh
 	.github/scripts/download-php-windows-devel.sh
+	turbo-ext/bin/shared-core
 )
 WORKFLOW_PATH=".github/workflows/phar.yml"
-# Workflow-level env and the three core compile jobs, as JSON: comment-only
-# edits do not change it.
-COMPILE_JOBS_QUERY='[.env, .jobs["turbo-compile-core"], .jobs["turbo-compile-core-musl-arm64"], .jobs["turbo-compile-core-windows"]]'
+# Workflow-level env, the three core compile jobs and the gate legs, as
+# JSON: comment-only edits do not change it.
+COMPILE_JOBS_QUERY='[.env, .jobs["turbo-compile-core"], .jobs["turbo-compile-core-musl-arm64"], .jobs["turbo-compile-core-windows"], .jobs["turbo-shared-core-gate"]]'
 # Commits whose runs are looked up through the API, newest first. The
 # commits git alone rules out do not count.
 COMMITS_LIMIT=50
@@ -126,7 +128,7 @@ while read -r sha; do
 		fi
 		if ! origins="$(jq -c --argjson run "$run_id" --arg artifacts "$artifacts" '
 			($artifacts | split("\n")) as $names
-			| reduce ($names[] | select(startswith("phpstan_turbo_core-"))) as $name (.;
+			| reduce ($names[] | select(startswith("phpstan_turbo_core-") or startswith("turbo-gate-fingerprint-"))) as $name (.;
 				if has($name) or ($names | any(. == "turbo-reused-" + $name)) then . else .[$name] = $run end)
 			' <<< "$origins")"; then
 			origins='{}'

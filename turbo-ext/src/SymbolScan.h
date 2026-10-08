@@ -791,10 +791,9 @@ inline size_t CommentStripper::castLength(size_t at) const
 {
 	static const char *const casts[] = {
 		"int", "integer", "float", "double", "real", "string", "binary", "array", "object", "bool", "boolean", "unset",
-#if PHP_VERSION_ID >= 80500
-		"void",
-#endif
+		"void", /* a cast since PHP 8.5 — the last entry, left out before */
 	};
+	const size_t castCount = sizeof(casts) / sizeof(casts[0]) - PT_ABI_SINCE(80500, 0, 1);
 	size_t p = at + 1;
 	while (this->at(p) == ' ' || this->at(p) == '\t') {
 		p++;
@@ -805,7 +804,8 @@ inline size_t CommentStripper::castLength(size_t at) const
 	}
 	size_t wordLength = p - word;
 	bool known = false;
-	for (const char *cast : casts) {
+	for (size_t i = 0; i < castCount; i++) {
+		const char *cast = casts[i];
 		if (strlen(cast) == wordLength && equalsIgnoreCase(contents + word, cast, wordLength)) {
 			known = true;
 			break;
@@ -1103,11 +1103,8 @@ inline CommentStripper::Kind CommentStripper::lexScripting()
 			index += c1 == '&' || c1 == '=' ? 2 : 1;
 			return OTHER;
 		case '|':
-#if PHP_VERSION_ID >= 80500
-			index += c1 == '|' || c1 == '=' || c1 == '>' ? 2 : 1;
-#else
-			index += c1 == '|' || c1 == '=' ? 2 : 1;
-#endif
+			/* |> is the pipe operator since PHP 8.5 */
+			index += c1 == '|' || c1 == '=' || (c1 == '>' && PT_ABI_SINCE(80500, true, false)) ? 2 : 1;
 			return OTHER;
 		case ':':
 			index += c1 == ':' ? 2 : 1;

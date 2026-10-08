@@ -67,7 +67,7 @@
 bool pt_type_method_is(zend_object *object, const char *lcname, size_t len, zif_handler handler)
 {
 	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&object->ce->function_table, lcname, len);
-	return fn != NULL && fn->type == ZEND_INTERNAL_FUNCTION && fn->internal_function.handler == handler;
+	return fn != NULL && fn->type == ZEND_INTERNAL_FUNCTION && PT_INTERNAL_HANDLER(fn) == handler;
 }
 
 bool pt_type_method_is_resolve(pt_method_is_site &site, zend_object *object, const char *lcname, size_t len, zif_handler handler)
@@ -82,7 +82,7 @@ bool pt_type_method_inherited_resolve(pt_method_is_site &site, zend_object *obje
 	/* not activated yet: nothing to remember */
 	if (UNEXPECTED(base == NULL)) return false;
 	zend_function *own = (zend_function *) zend_hash_str_find_ptr(&base->function_table, lcname, len);
-	bool is = own != NULL && own->type == ZEND_INTERNAL_FUNCTION && pt_type_method_is(object, lcname, len, own->internal_function.handler);
+	bool is = own != NULL && own->type == ZEND_INTERNAL_FUNCTION && pt_type_method_is(object, lcname, len, PT_INTERNAL_HANDLER(own));
 	site = { object->ce, lcname, (uintptr_t) base, pt_engine_generation, is };
 	return is;
 }
@@ -937,12 +937,7 @@ void pt_type_trait_non_generalizable(reg::Class &cls)
 		object_init_ex(&holder, pt_ce_generalize_callback);
 		zv::ObjRef(&holder).propAtWrite(PT_GC_PROP_PRECISION, zv::Val::copyOf(zv::Ref(precision)));
 		zval closure;
-#if PHP_VERSION_ID >= 80600
-		/* php-src fbb2e1f23d6: $this is passed as zend_object* from 8.6 on */
-		zend_create_closure(&closure, pt_generalize_callback_invoke, pt_ce_generalize_callback, pt_ce_generalize_callback, Z_OBJ(holder));
-#else
-		zend_create_closure(&closure, pt_generalize_callback_invoke, pt_ce_generalize_callback, pt_ce_generalize_callback, &holder);
-#endif
+		pt_abi_create_closure(&closure, pt_generalize_callback_invoke, pt_ce_generalize_callback, pt_ce_generalize_callback, Z_OBJ(holder));
 		zval_ptr_dtor(&holder); /* the closure holds its own reference */
 		zv::Val result = pt_type_op(PT_THIS_OBJ, PT_OP_TRAVERSE, 1, &closure);
 		zval_ptr_dtor(&closure);
@@ -1942,16 +1937,7 @@ zv::Val pt_type_new_ce(zend_class_entry *ce, uint32_t argc, zval *argv)
 zv::Val pt_type_closure_over(zend_function *fn, zend_class_entry *ce, zend_object *holder)
 {
 	zval closure;
-#if PHP_VERSION_ID >= 80600
-	/* php-src fbb2e1f23d6: $this is passed as zend_object* from 8.6 on */
-	zend_create_closure(&closure, fn, ce, ce, holder);
-#else
-	zval holderZv;
-	if (holder != NULL) {
-		ZVAL_OBJ(&holderZv, holder);
-	}
-	zend_create_closure(&closure, fn, ce, ce, holder != NULL ? &holderZv : NULL);
-#endif
+	pt_abi_create_closure(&closure, fn, ce, ce, holder);
 	return zv::Val::adopt(closure);
 }
 
@@ -1991,13 +1977,7 @@ zv::Val pt_type_call_callable(zval *callable, uint32_t argc, zval *argv)
 		if (object->ce == zend_ce_closure) {
 			const zend_function *fn = zend_get_closure_method_def(object);
 			if (fn->type == ZEND_INTERNAL_FUNCTION) {
-#if PHP_VERSION_ID >= 80600
-				/* PHP 8.6 holds the bound $this as a zend_object (NULL when unbound) */
-				zend_object *bound = zend_get_closure_this_ptr(target);
-#else
-				zval *thisZv = zend_get_closure_this_ptr(target);
-				zend_object *bound = thisZv != NULL && Z_TYPE_P(thisZv) == IS_OBJECT ? Z_OBJ_P(thisZv) : NULL;
-#endif
+				zend_object *bound = pt_abi_closure_this(target);
 				zval ret;
 				bool handled;
 				bool ok = pt_direct_invoke(fn, bound, argc, argv, &ret, handled);
@@ -2096,7 +2076,7 @@ zend_class_entry *pt_native_callback_ce()
 bool pt_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled)
 {
 	handled = true;
-	zif_handler handler = fn->internal_function.handler;
+	zif_handler handler = PT_INTERNAL_HANDLER(fn);
 	zend_class_entry *scope = fn->common.scope;
 	if (handler == pt_native_closure_invoke_handler() || (scope == pt_ce_native_closure && zend_string_equals_literal(fn->common.function_name, "__invoke"))) {
 		if (EXPECTED(object != NULL && object->ce == pt_ce_native_closure)) return pt_native_closure_invoke(object, argc, argv, retval);

@@ -187,6 +187,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 #ifdef ZTS
 	ZEND_TSRMLS_CACHE_UPDATE();
 #endif
+	pt_abi_init();
 
 	static const reg::Arg returnsBool = reg::boolArg("");
 	reg::Class runtime("PHPStanTurbo\\Runtime");
@@ -215,6 +216,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 {
 #ifdef ZTS
 	ZEND_TSRMLS_CACHE_UPDATE();
+	pt_abi_init();
 #endif
 
 	pt_support_rinit();

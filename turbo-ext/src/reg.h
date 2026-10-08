@@ -459,11 +459,26 @@ struct Constant
 };
 
 /*
+ * A method as the builder records it. zend_function_entry is not used here
+ * because its layout differs between PHP minors (8.4 appended
+ * frameless_function_infos and doc_comment, growing it from 32 to 48
+ * bytes); Abi.cpp and Shadow.cpp — the version-specific translation units —
+ * turn these into the engine's table, sentinel included.
+ */
+struct FunctionEntry
+{
+	const char *fname;
+	zif_handler handler;
+	zend_internal_arg_info *argInfo;
+	uint32_t numArgs;
+	uint32_t flags;
+};
+
+/*
  * Everything a shadowing class needs to be declared at activation time: the
  * PHP twin's real name (the class is registered under it, or under
  * "<prefix><short name>" in the differential tests), its final flag, parent
- * and interfaces, and the members. The entries vector ends with the sentinel
- * zend_register_functions() expects. `out` receives the linked class entry.
+ * and interfaces, and the members. `out` receives the linked class entry.
  */
 struct ShadowPlan
 {
@@ -471,7 +486,7 @@ struct ShadowPlan
 	uint32_t flags;
 	const char *parentName;
 	std::vector<const char *> interfaces;
-	std::vector<zend_function_entry> entries;
+	std::vector<FunctionEntry> entries;
 	std::vector<Property> properties;
 	std::vector<Constant> constants;
 	zend_class_entry **out;
@@ -954,7 +969,7 @@ public:
 	 * (case-insensitive, like the engine's function table) */
 	bool hasMethod(const char *methodName) const
 	{
-		for (const zend_function_entry &entry : entries) {
+		for (const FunctionEntry &entry : entries) {
 			if (strcasecmp(entry.fname, methodName) == 0) return true;
 		}
 		return false;
@@ -1266,15 +1281,7 @@ public:
 	 * classes with no PHP twin) */
 	zend_class_entry *register_()
 	{
-		zend_function_entry sentinel;
-		memset(&sentinel, 0, sizeof(sentinel));
-		entries.push_back(sentinel);
-
-		/* the engine copies fentry contents but references arg_info forever;
-		 * the entries vector lives only through this call, argInfo persists */
-		zend_class_entry ce;
-		INIT_CLASS_ENTRY_EX(ce, name, strlen(name), entries.data());
-		zend_class_entry *registered = zend_register_internal_class(&ce);
+		zend_class_entry *registered = pt_abi_register_internal_class(name, entries.data(), entries.size());
 		registered->ce_flags |= flags;
 		declareMembers(registered, properties, constants);
 		return registered;
@@ -1284,10 +1291,6 @@ public:
 	 * the twin's name by Runtime::activateShadowing(); *out is set then */
 	void shadow(zend_class_entry **out)
 	{
-		zend_function_entry sentinel;
-		memset(&sentinel, 0, sizeof(sentinel));
-		entries.push_back(sentinel);
-
 		reg::ShadowPlan plan;
 		plan.name = name;
 		plan.flags = flags;
@@ -1333,14 +1336,7 @@ public:
 private:
 	Class &addEntry(const char *methodName, uint32_t methodFlags, zend_internal_arg_info *argInfo, size_t argc, zif_handler handler)
 	{
-		zend_function_entry entry;
-		memset(&entry, 0, sizeof(entry));
-		entry.fname = methodName;
-		entry.handler = handler;
-		entry.arg_info = argInfo;
-		entry.num_args = (uint32_t) argc;
-		entry.flags = methodFlags;
-		entries.push_back(entry);
+		entries.push_back({ methodName, handler, argInfo, (uint32_t) argc, methodFlags });
 		return *this;
 	}
 
@@ -1348,7 +1344,7 @@ private:
 	uint32_t flags = 0;
 	const char *parentName = nullptr;
 	std::vector<const char *> interfaces;
-	std::vector<zend_function_entry> entries;
+	std::vector<FunctionEntry> entries;
 	std::vector<Property> properties;
 	std::vector<Constant> constants;
 	pt_type_op_fn opFns[PT_OP_COUNT] = {};

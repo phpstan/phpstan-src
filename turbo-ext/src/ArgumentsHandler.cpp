@@ -48,12 +48,8 @@ zend_class_entry *pt_ce_arguments_handler = nullptr;
 
 /* the twin's closure names, for the engine's messages */
 #define PT_AH_CLASS "PHPStan\\Analyser\\ArgumentsHandler"
-#if PHP_VERSION_ID >= 80400
-#define PT_AH_CLOSURE(method, line) PT_AH_CLASS "::{closure:" PT_AH_CLASS "::" method "():" line "}"
-#else
-/* PHP 8.3 names a closure by its namespace alone */
-#define PT_AH_CLOSURE(method, line) PT_AH_CLASS "::PHPStan\\Analyser\\{closure}"
-#endif
+/* the closure names differ: PHP 8.3 names a closure by its namespace alone */
+#define PT_AH_CLOSURE(method, line) PT_ABI_SINCE(80400, PT_AH_CLASS "::{closure:" PT_AH_CLASS "::" method "():" line "}", PT_AH_CLASS "::PHPStan\\Analyser\\{closure}")
 
 namespace {
 
@@ -880,7 +876,7 @@ private:
 		SkeletonFrame *frame = static_cast<SkeletonFrame *>(data);
 		ZVAL_DEREF(inner);
 		if (UNEXPECTED(Z_TYPE_P(inner) != IS_OBJECT)) {
-			zend_type_error(PT_AH_CLOSURE("gatherArrayArgTypeSkeleton", "977") "(): Argument #1 ($inner) must be of type PhpParser\\Node\\Expr, %s given", zend_zval_value_name(inner));
+			zend_type_error("%s(): Argument #1 ($inner) must be of type PhpParser\\Node\\Expr, %s given", PT_AH_CLOSURE("gatherArrayArgTypeSkeleton", "977"), zend_zval_value_name(inner));
 			return zv::Val();
 		}
 		ArgumentsHandler handler(frame->self);
@@ -916,7 +912,7 @@ private:
 	static void skeletonTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 1)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_AH_CLOSURE("gatherArrayArgTypeSkeleton", "977") "(), %u passed and exactly 1 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 1 expected", PT_AH_CLOSURE("gatherArrayArgTypeSkeleton", "977"), argc);
 			return;
 		}
 		SkeletonFrame frame{Z_OBJ(captures[0]), &captures[1], &captures[2], &captures[3]};

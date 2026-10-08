@@ -131,12 +131,8 @@ zv::Val weakReferenceCreate(zval *object)
 
 /* the twin's closure names, for the engine's messages */
 #define PT_RFV_CLASS "PHPStan\\Reflection\\ResolvedFunctionVariantWithOriginal"
-#if PHP_VERSION_ID >= 80400
-#define PT_RFV_CLOSURE(method, line) PT_RFV_CLASS "::{closure:" PT_RFV_CLASS "::" method "():" line "}"
-#else
-/* PHP 8.3 names a closure by its namespace alone */
-#define PT_RFV_CLOSURE(method, line) PT_RFV_CLASS "::PHPStan\\Reflection\\{closure}"
-#endif
+/* the closure names differ: PHP 8.3 names a closure by its namespace alone */
+#define PT_RFV_CLOSURE(method, line) PT_ABI_SINCE(80400, PT_RFV_CLASS "::{closure:" PT_RFV_CLASS "::" method "():" line "}", PT_RFV_CLASS "::PHPStan\\Reflection\\{closure}")
 #define PT_RFV_PARAMETERS_CLOSURE PT_RFV_CLOSURE("getParameters", "90")
 
 /* }}} */
@@ -547,7 +543,7 @@ private:
 		zend_class_entry *extendedParameterCe = pt_class(PT_CLASS_EXTENDED_PARAMETER_REFLECTION);
 		if (UNEXPECTED(extendedParameterCe == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(param) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(param), extendedParameterCe))) {
-			zend_type_error(PT_RFV_PARAMETERS_CLOSURE "(): Argument #1 ($param) must be of type PHPStan\\Reflection\\ExtendedParameterReflection, %s given", zend_zval_value_name(param));
+			zend_type_error("%s(): Argument #1 ($param) must be of type PHPStan\\Reflection\\ExtendedParameterReflection, %s given", PT_RFV_PARAMETERS_CLOSURE, zend_zval_value_name(param));
 			return zv::Val();
 		}
 
@@ -687,7 +683,7 @@ private:
 	static void typeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("resolveResolvableTemplateTypes", "338") "(), %u passed and exactly 2 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 2 expected", PT_RFV_CLOSURE("resolveResolvableTemplateTypes", "338"), argc);
 			return;
 		}
 		zend_object *self = Z_OBJ(captures[0]);
@@ -750,7 +746,7 @@ private:
 	static void objectCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("resolveResolvableTemplateTypes", "292") "(), %u passed and exactly 2 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 2 expected", PT_RFV_CLOSURE("resolveResolvableTemplateTypes", "292"), argc);
 			return;
 		}
 		zend_object *self = Z_OBJ(captures[0]);
@@ -811,7 +807,7 @@ private:
 	static void narrowCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("narrowTemplateTypesInConditionalTypesForParameter", "427") "(), %u passed and exactly 2 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 2 expected", PT_RFV_CLOSURE("narrowTemplateTypesInConditionalTypesForParameter", "427"), argc);
 			return;
 		}
 		zend_object *self = Z_OBJ(captures[0]);
@@ -868,7 +864,7 @@ private:
 	static void referencesCallbackBody(zval *references, zval *templateType, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_RFV_CLOSURE("referencesTemplateType", "490") "(), %u passed and exactly 2 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 2 expected", PT_RFV_CLOSURE("referencesTemplateType", "490"), argc);
 			return;
 		}
 		zval *type = &argv[0];

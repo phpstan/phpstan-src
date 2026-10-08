@@ -855,7 +855,7 @@ static void ZEND_FASTCALL callbackToArgument(INTERNAL_FUNCTION_PARAMETERS)
  * its type, is left to the engine path */
 bool pt_static_type_callbacks_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled)
 {
-	zif_handler handler = fn->internal_function.handler;
+	zif_handler handler = PT_INTERNAL_HANDLER(fn);
 	bool inHolder = fn->common.scope == pt_ce_static_type_callbacks;
 	zend_string *name = fn->common.function_name;
 	handled = false;

@@ -28,6 +28,8 @@
  * native classes next to the PHP twins in one process.
  */
 
+/* version-specific: builds zend_class_entry / zend_op_array by hand */
+#define PHPSTANTURBO_ABI_IMPL
 #include "reg.h"
 
 #include "zend_inheritance.h"
@@ -97,7 +99,7 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
  * function table */
 static bool pt_shadow_plan_declares(const reg::ShadowPlan &plan, const char *lcname)
 {
-	for (const zend_function_entry &entry : plan.entries) {
+	for (const reg::FunctionEntry &entry : plan.entries) {
 		if (entry.fname != NULL && strcasecmp(entry.fname, lcname) == 0) return true;
 	}
 	return false;
@@ -155,7 +157,9 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
 	 * module is set the way module startup sets it */
 	zend_module_entry *previousModule = EG(current_module);
 	EG(current_module) = &phpstan_turbo_module_entry;
-	zend_result registered = zend_register_functions(ce, plan.entries.data(), &ce->function_table, MODULE_PERSISTENT);
+	zend_function_entry *functions = pt_abi_function_entries(plan.entries.data(), plan.entries.size());
+	zend_result registered = zend_register_functions(ce, functions, &ce->function_table, MODULE_PERSISTENT);
+	efree(functions);
 	EG(current_module) = previousModule;
 	if (registered != SUCCESS) {
 		zend_throw_error(NULL, "phpstan_turbo: registering the methods of %s failed", declared.c_str());

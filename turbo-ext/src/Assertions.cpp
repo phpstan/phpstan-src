@@ -47,12 +47,8 @@ zv::Val tagCall(pt_method_site &site, zval *tag, const char *lcname, size_t len,
 
 /* the twin's closure names, for the parameter TypeError */
 #define PT_AS_CLASS "PHPStan\\Reflection\\Assertions"
-#if PHP_VERSION_ID >= 80400
-#define PT_AS_CLOSURE(method, line) PT_AS_CLASS "::{closure:" PT_AS_CLASS "::" method "():" line "}"
-#else
-/* PHP 8.3 names a closure by its namespace alone */
-#define PT_AS_CLOSURE(method, line) PT_AS_CLASS "::PHPStan\\Reflection\\{closure}"
-#endif
+/* the closure names differ: PHP 8.3 names a closure by its namespace alone */
+#define PT_AS_CLOSURE(method, line) PT_ABI_SINCE(80400, PT_AS_CLASS "::{closure:" PT_AS_CLASS "::" method "():" line "}", PT_AS_CLASS "::PHPStan\\Reflection\\{closure}")
 
 /* the closure's `AssertTag $assert` parameter check; false = TypeError raised */
 [[nodiscard]] bool requireAssertTag(zval *value, const char *closureName, const char *parameterName)

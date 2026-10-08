@@ -38,6 +38,8 @@ extern "C" {
 
 #pragma GCC diagnostic pop
 
+#include "abi.h"
+
 #include <initializer_list>
 
 #ifdef _WIN32

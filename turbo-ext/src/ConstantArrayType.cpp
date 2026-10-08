@@ -6854,7 +6854,7 @@ private:
 			zend_type_error("phpstan_turbo: cannot clone a non-object");
 			return zv::Val();
 		}
-		zend_object *cloned = Z_OBJ_HT_P(object)->clone_obj(Z_OBJ_P(object));
+		zend_object *cloned = Z_OBJ_HANDLER_P(object, clone_obj)(Z_OBJ_P(object));
 		if (UNEXPECTED(cloned == NULL || EG(exception))) {
 			if (cloned != NULL) {
 				OBJ_RELEASE(cloned);

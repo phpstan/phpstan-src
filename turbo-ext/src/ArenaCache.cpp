@@ -376,7 +376,7 @@ static bool serializeValue(WriteBuffer &out, zval *value, uint32_t depth, Serial
 			 * slots (mangled keys for private/protected) plus dynamic ones;
 			 * uninitialized typed props are UNDEF after deref and skipped —
 			 * the same shape serialize() writes for hook-free classes */
-			HashTable *props = obj->handlers->get_properties(obj);
+			HashTable *props = PT_OBJ_HANDLER(obj, get_properties)(obj);
 			uint32_t propCount = 0;
 			for (zv::ArrayEntry entry : zv::TableRef(props)) {
 				zval *propValue = entry.value().raw();

@@ -30,7 +30,7 @@ struct NativeClosureObject
 	zend_object std;
 };
 
-zend_object_handlers pt_native_closure_handlers;
+const zend_object_handlers *pt_native_closure_handlers;
 
 /* the class's __invoke() (a zend_class_entry has no slot for it) */
 zend_function *pt_native_closure_invoke_fn = nullptr;
@@ -54,7 +54,7 @@ NativeClosureObject *allocateClosure(zend_class_entry *ce, pt_native_closure_fn 
 	closure->fn = fn;
 	closure->count = count;
 	zend_object_std_init(&closure->std, ce);
-	closure->std.handlers = &pt_native_closure_handlers;
+	closure->std.handlers = pt_native_closure_handlers;
 	return closure;
 }
 
@@ -195,13 +195,14 @@ zv::Val pt_native_closure_to_closure(zval *closure)
 
 PT_MINIT_REGISTRATION(pt_register_native_closure)
 {
-	memcpy(&pt_native_closure_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
-	pt_native_closure_handlers.offset = offsetof(NativeClosureObject, std);
-	pt_native_closure_handlers.free_obj = freeClosureObject;
-	pt_native_closure_handlers.get_gc = closureGc;
-	pt_native_closure_handlers.clone_obj = cloneClosureObject;
-	pt_native_closure_handlers.get_closure = getClosure;
-	pt_native_closure_handlers.compare = compareClosures;
+	pt_abi_handlers overrides = {};
+	overrides.offset = offsetof(NativeClosureObject, std);
+	overrides.free_obj = freeClosureObject;
+	overrides.get_gc = closureGc;
+	overrides.clone_obj = cloneClosureObject;
+	overrides.get_closure = getClosure;
+	overrides.compare = compareClosures;
+	pt_native_closure_handlers = pt_abi_object_handlers(overrides);
 
 	/* registered under a builder name other than `cls` on purpose — the
 	 * side-by-side parity scan pairs `cls.method(...)` lines with the
@@ -463,11 +464,11 @@ bool pt_engine_call_node_callback(zval *callback, zval *node, zval *scope)
 		bool handled;
 		bool ok = pt_class_statements_gatherer_invoke(object, node, scope, handled);
 		if (handled) return ok;
-		if (EXPECTED(object->handlers->get_closure != NULL)) {
+		if (EXPECTED(PT_OBJ_HANDLER(object, get_closure) != NULL)) {
 			zend_class_entry *calledScope;
 			zend_function *fn;
 			zend_object *thisObject;
-			if (EXPECTED(object->handlers->get_closure(object, &calledScope, &fn, &thisObject, false) == SUCCESS)) {
+			if (EXPECTED(PT_OBJ_HANDLER(object, get_closure)(object, &calledScope, &fn, &thisObject, false) == SUCCESS)) {
 				zval ret;
 				zend_call_known_function(fn, thisObject, calledScope, &ret, 2, argv, NULL);
 				zval_ptr_dtor(&ret);

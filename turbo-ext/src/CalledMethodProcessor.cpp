@@ -391,7 +391,7 @@ private:
 			zend_string *name = zval_try_get_string(subNodeName);
 			if (UNEXPECTED(name == NULL)) return false;
 			zval rv;
-			zval *subNode = Z_OBJ_P(node)->handlers->read_property(Z_OBJ_P(node), name, BP_VAR_R, NULL, &rv);
+			zval *subNode = PT_OBJ_HANDLER(Z_OBJ_P(node), read_property)(Z_OBJ_P(node), name, BP_VAR_R, NULL, &rv);
 			zend_string_release(name);
 			if (UNEXPECTED(EG(exception))) {
 				if (subNode == &rv) zval_ptr_dtor(&rv);

@@ -30,15 +30,10 @@ zend_class_entry *pt_ce_conditional_type_for_parameter = nullptr;
 
 /* the twin's closure names, for the engine's messages */
 #define PT_CTFP_CLASS "PHPStan\\Type\\ConditionalTypeForParameter"
-#if PHP_VERSION_ID >= 80400
-#define PT_CTFP_CLOSURE(method, line) PT_CTFP_CLASS "::{closure:" PT_CTFP_CLASS "::" method "():" line "}"
+/* the closure names differ: PHP 8.3 names a closure by its namespace alone */
+#define PT_CTFP_CLOSURE(method, line) PT_ABI_SINCE(80400, PT_CTFP_CLASS "::{closure:" PT_CTFP_CLASS "::" method "():" line "}", PT_CTFP_CLASS "::PHPStan\\Type\\{closure}")
 /* a closure created by a closure of the method, both on the same line */
-#define PT_CTFP_NESTED_CLOSURE(method, line) PT_CTFP_CLASS "::{closure:{closure:" PT_CTFP_CLASS "::" method "():" line "}:" line "}"
-#else
-/* PHP 8.3 names a closure by its namespace alone */
-#define PT_CTFP_CLOSURE(method, line) PT_CTFP_CLASS "::PHPStan\\Type\\{closure}"
-#define PT_CTFP_NESTED_CLOSURE(method, line) PT_CTFP_CLOSURE(method, line)
-#endif
+#define PT_CTFP_NESTED_CLOSURE(method, line) PT_ABI_SINCE(80400, PT_CTFP_CLASS "::{closure:{closure:" PT_CTFP_CLASS "::" method "():" line "}:" line "}", PT_CTFP_CLASS "::PHPStan\\Type\\{closure}")
 
 
 namespace phpstanturbo {
@@ -393,12 +388,12 @@ private:
 	static void narrowedSubjectTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 1)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_CTFP_NESTED_CLOSURE("resolveWithSubject", "141") "(), 0 passed and exactly 1 expected");
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), 0 passed and exactly 1 expected", PT_CTFP_NESTED_CLOSURE("resolveWithSubject", "141"));
 			return;
 		}
 		zval *name = &argv[0];
 		if (UNEXPECTED(Z_TYPE_P(name) != IS_STRING)) {
-			zend_type_error(PT_CTFP_NESTED_CLOSURE("resolveWithSubject", "141") "(): Argument #1 ($parameterName) must be of type string, %s given", zend_zval_value_name(name));
+			zend_type_error("%s(): Argument #1 ($parameterName) must be of type string, %s given", PT_CTFP_NESTED_CLOSURE("resolveWithSubject", "141"), zend_zval_value_name(name));
 			return;
 		}
 		zv::Val subjectType;
@@ -420,7 +415,7 @@ private:
 	static void resolveInTypeCallback(zval *getSubjectType, zval *passedArgs, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_CTFP_CLOSURE("resolveInType", "116") "(), %u passed and exactly 2 expected", argc);
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 2 expected", PT_CTFP_CLOSURE("resolveInType", "116"), argc);
 			return;
 		}
 		zval *type = &argv[0];

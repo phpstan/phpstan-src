@@ -291,12 +291,7 @@ static zv::Val pt_ot_callback(pt_ot_callback_kind kind, zval *object, zval *arg,
 	ref.propAtWrite(slots::cachedInterfaces, arg != NULL ? zv::Val::copyOf(zv::Ref(arg)) : zv::Val::null());
 	ref.propAtWrite(slots::currentAncestors, scope != NULL ? zv::Val::copyOf(zv::Ref(scope)) : zv::Val::null());
 	zval closure;
-#if PHP_VERSION_ID >= 80600
-	/* php-src fbb2e1f23d6: $this is passed as zend_object* from 8.6 on */
-	zend_create_closure(&closure, pt_object_type_callback_invoke_fn, pt_ce_object_type_callback, pt_ce_object_type_callback, Z_OBJ(holder));
-#else
-	zend_create_closure(&closure, pt_object_type_callback_invoke_fn, pt_ce_object_type_callback, pt_ce_object_type_callback, &holder);
-#endif
+	pt_abi_create_closure(&closure, pt_object_type_callback_invoke_fn, pt_ce_object_type_callback, pt_ce_object_type_callback, Z_OBJ(holder));
 	if (holderOut != NULL) {
 		ZVAL_COPY_VALUE(holderOut, &holder); /* the closure holds its own reference */
 	} else {

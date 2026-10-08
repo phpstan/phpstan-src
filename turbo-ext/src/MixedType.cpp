@@ -1339,7 +1339,7 @@ bool pt_identity_callback_direct_invoke(const zend_function *fn, zend_object *ob
 {
 	(void) object;
 	handled = false;
-	if (fn->internal_function.handler != identityCallbackIdentity && !(fn->common.scope == pt_ce_identity_callback && zend_string_equals_literal(fn->common.function_name, "identity"))) {
+	if (PT_INTERNAL_HANDLER(fn) != identityCallbackIdentity && !(fn->common.scope == pt_ce_identity_callback && zend_string_equals_literal(fn->common.function_name, "identity"))) {
 		return false;
 	}
 	if (argc != 1 || Z_TYPE_P(argv) != IS_OBJECT) return false;

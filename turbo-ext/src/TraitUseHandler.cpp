@@ -104,7 +104,7 @@ zv::Val cloneNode(zval *node)
 zv::Val readProperty(zval *node, zend_string *name)
 {
 	zval rv;
-	zval *value = Z_OBJ_P(node)->handlers->read_property(Z_OBJ_P(node), name, BP_VAR_R, NULL, &rv);
+	zval *value = PT_OBJ_HANDLER(Z_OBJ_P(node), read_property)(Z_OBJ_P(node), name, BP_VAR_R, NULL, &rv);
 	if (UNEXPECTED(EG(exception))) {
 		if (value == &rv) zval_ptr_dtor(&rv);
 		return zv::Val();

@@ -38,13 +38,7 @@ zend_class_entry *pt_ce_generic_object_type = nullptr;
 {
 #ifdef ZEND_CHECK_STACK_LIMIT
 	if (UNEXPECTED(zend_call_stack_overflowed(EG(stack_limit)))) {
-#if PHP_VERSION_ID >= 80400
-		zend_call_stack_size_error();
-#else
-		/* static in PHP 8.3; the same message */
-		zend_throw_error(nullptr, "Maximum call stack size of %zu bytes (zend.max_allowed_stack_size - zend.reserved_stack_size) reached. Infinite recursion?",
-			(size_t) ((uintptr_t) EG(stack_base) - (uintptr_t) EG(stack_limit)));
-#endif
+		pt_abi_call_stack_size_error();
 		return true;
 	}
 #endif

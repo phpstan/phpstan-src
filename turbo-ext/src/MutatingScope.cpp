@@ -2938,7 +2938,13 @@ public:
 		if (!storage.isNull()) {
 			zv::Val result = storageFind(storage, node);
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
-			if (!result.isNull()) return result;
+			if (!result.isNull()) {
+				bool promoted;
+				if (UNEXPECTED(!scopeNativeTypesPromoted(Z_OBJ_P(scope.raw()), promoted))) return zv::Val();
+				bool matches;
+				if (UNEXPECTED(!pt_expression_result_ask_scope_variable_state_matches(result.raw(), scope.raw(), promoted, matches))) return zv::Val();
+				if (matches) return result;
+			}
 		}
 
 		bool fires;
@@ -2948,7 +2954,9 @@ public:
 			return zv::Val();
 		}
 
-		/* a synthetic node, or no analysis in progress */
+		/* a synthetic node, a counterfactual ask (the asking scope re-binds a
+		 * variable the node reads, e.g. array_filter narrowing by its
+		 * callback body per element), or no analysis in progress */
 		zv::Val resolver = containerGetByType(PT_LC("PHPStan\\Analyser\\NodeScopeResolver"));
 		if (UNEXPECTED(resolver.isUndef())) return zv::Val();
 		zend_object *resolverObject = requireObject(resolver, "processExprOnDemand");

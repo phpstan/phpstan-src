@@ -475,10 +475,18 @@ SHARED_CORE_WORK_DIR=/tmp/shared-core turbo-ext/bin/shared-core/check-linux.sh
 ```
 
 compiles every source against each supported version's headers (thread-safe
-8.6 included) in the CI build images with clang, and fails on any function,
-data section or relocation that differs outside the four version-specific
-objects. It runs as `turbo-shared-core-gate` in `phar.yml`, and the commit
-job waits for it. clang, not the GCC the Linux binaries ship with: the
+builds included) in the CI build images with clang, and fails on any
+function, data section or relocation that differs from the build against the
+version the cores are compiled against (8.5, `GATE_REFERENCE`) outside the
+four version-specific objects. It is two halves: `fingerprint-linux.sh`
+compiles for the versions in `GATE_VERSIONS` and writes a fingerprint per
+version (`gate.py fingerprint`: a hash per function, data section and
+relocation table), and `gate.py compare` compares them. In `phar.yml` the
+first half runs as one `turbo-shared-core-gate` leg per version — a leg
+reuses the fingerprint of an earlier run with identical build inputs, like a
+core — and the second as `turbo-shared-core-gate-compare`. The commit job
+does not wait for them: like the other test jobs, a failure is reported
+loudly but does not stop publication. clang, not the GCC the Linux binaries ship with: the
 property proven is the source's (does it mean the same against every header
 set?), and GCC's register allocation drifts with incidental header spelling
 (a `const` added to a helper's parameter) where clang's output does not.
@@ -492,7 +500,8 @@ A failure lists the functions. Find the cause with the tools next to it —
 `gate-linux.sh` (any image/compiler, `GATE_VERSIONS`, `GATE_MAKE_ARGS`;
 `PGO_FLAGS='-fno-inline -fno-ipa-sra -fno-ipa-cp -fno-partial-inlining'`
 keeps each inline helper a function of its own, so the differing one shows
-up by name), `compare-functions.py`, `compare-data-linux.sh`, and their
+up by name), `compare-functions.py` (the per-function comparison
+`gate.py` builds on, with a size summary per object), and their
 macOS counterparts (`gate-mac.sh`, `compare-data-mac.sh`,
 `link-split-mac.sh`, with Homebrew's `php@8.x`); `link-split-linux.sh` links
 a core from one version's objects with every version's extension and runs
@@ -505,8 +514,10 @@ Windows legs' tests are their check.
 ### Supporting a new PHP version
 
 1. **Gate it.** Build the new version's CI image (`.github/turbo-build`),
-   add the version to `VERSIONS` in `bin/shared-core/check-linux.sh` and run
-   it. Every function it reports reads something that changed; for each,
+   add the version (and its `-zts` twin) to `VERSIONS` in
+   `bin/shared-core/check-linux.sh` and `bin/shared-core/fingerprint-linux.sh`
+   and to the `turbo-shared-core-gate` matrix in `phar.yml`, and run
+   `check-linux.sh`. Every function it reports reads something that changed; for each,
    find what (diff the headers' struct layouts — `sizeof`/`offsetof` of the
    structs the function touches — macro values, enum numbering and
    function declarations between the old and the new version) and route it
@@ -531,7 +542,10 @@ Windows legs' tests are their check.
    `turbo-compile-core`'s targets, `["8.3"]` with the vs16 toolset in
    `turbo-compile-core-windows`). Run the smoke test of every version
    against one core (`link-split-linux.sh`); in CI the
-   `turbo-shared-core-gate` job reruns step 1.
+   `turbo-shared-core-gate` legs rerun step 1. When the version the cores
+   are compiled against moves, move the reference with it (`GATE_REFERENCE`
+   in `check-linux.sh`, the version passed to `gate.py compare` in
+   `turbo-shared-core-gate-compare`).
 5. **Dropping a version** is the reverse of step 4 plus
    `TURBO_RETIRED_BINARIES` for the files phpstan/phpstan should delete. If
    it is the version a core is pinned to, move that pin to a version still

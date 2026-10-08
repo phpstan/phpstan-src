@@ -108,4 +108,5 @@ def main():
 		print(f'identical across all {len(dirs)}: {allsame/1048576:.2f} MB ({100*allsame/total:.1f}%)')
 
 
-main()
+if __name__ == '__main__':
+	main()

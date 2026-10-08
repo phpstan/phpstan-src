@@ -225,6 +225,17 @@ pt_property_site pt_ah_closure_use_var_site;
 pt_property_site pt_ah_variable_name_site;
 pt_property_site pt_ah_array_dim_fetch_dim_site;
 pt_property_site pt_ah_new_class_site;
+pt_property_site pt_ah_array_items_site;
+pt_property_site pt_ah_array_item_key_site;
+pt_property_site pt_ah_array_item_value_site;
+pt_property_site pt_ah_closure_use_by_ref_site;
+pt_property_site pt_ah_func_call_name_site;
+pt_property_site pt_ah_method_call_var_site;
+pt_property_site pt_ah_method_call_name_site;
+pt_property_site pt_ah_static_call_class_site;
+pt_property_site pt_ah_static_call_name_site;
+pt_property_site pt_ah_class_const_fetch_class_site;
+pt_property_site pt_ah_class_const_fetch_name_site;
 pt_method_site pt_ah_identifier_to_string_site;
 
 /* $arg->value / ->name / ->unpack */
@@ -869,6 +880,7 @@ private:
 		zval *nodeScopeResolver;
 		zval *scope;
 		zval *initializerContext;
+		zval *staleLeaves;
 	};
 
 	static zv::Val skeletonType(void *data, zval *inner)
@@ -891,9 +903,11 @@ private:
 			pt_ietr_get_type getTypeCallback{&skeletonType, frame, &skeletonTypeCallable};
 			return pt_initializer_expr_type_resolver_get_array_type(handler.slot(slots::initializerExprTypeResolver), inner, getTypeCallback);
 		}
-		zv::Val stateType = pt_node_scope_resolver_find_scope_state_type(frame->nodeScopeResolver, inner, frame->scope);
-		if (UNEXPECTED(stateType.isUndef())) return zv::Val();
-		if (!stateType.isNull()) return stateType;
+		if (zend_hash_index_find(Z_ARRVAL_P(frame->staleLeaves), Z_OBJ_HANDLE_P(inner)) == NULL) {
+			zv::Val stateType = pt_node_scope_resolver_find_scope_state_type(frame->nodeScopeResolver, inner, frame->scope);
+			if (UNEXPECTED(stateType.isUndef())) return zv::Val();
+			if (!stateType.isNull()) return stateType;
+		}
 		return pt_initializer_expr_type_resolver_get_type(handler.slot(slots::initializerExprTypeResolver), inner, frame->initializerContext);
 	}
 
@@ -904,18 +918,18 @@ private:
 		SkeletonFrame *frame = static_cast<SkeletonFrame *>(data);
 		zval self;
 		ZVAL_OBJ(&self, frame->self);
-		return pt_native_closure(&skeletonTypeBody, &self, frame->nodeScopeResolver, frame->scope, frame->initializerContext);
+		return pt_native_closure(&skeletonTypeBody, &self, frame->nodeScopeResolver, frame->scope, frame->initializerContext, frame->staleLeaves);
 	}
 
 	/* the same closure called from PHP — captures: $this, $nodeScopeResolver,
-	 * $scope, $initializerContext */
+	 * $scope, $initializerContext, $staleLeaves */
 	static void skeletonTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 1)) {
 			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 1 expected", PT_AH_CLOSURE("gatherArrayArgTypeSkeleton", "977"), argc);
 			return;
 		}
-		SkeletonFrame frame{Z_OBJ(captures[0]), &captures[1], &captures[2], &captures[3]};
+		SkeletonFrame frame{Z_OBJ(captures[0]), &captures[1], &captures[2], &captures[3], &captures[4]};
 		zv::Val type = skeletonType(&frame, &argv[0]);
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);
@@ -1046,14 +1060,180 @@ private:
 	 * anything - nested array literals recurse, a closure / arrow function
 	 * contributes its declared signature, every other key/value is priced by
 	 * the scope state it is tracked as, falling back to the constant-expression
-	 * resolver. UNDEF = pending exception */
+	 * resolver - except for the keys/values evaluated after the first one that
+	 * may change the scope. UNDEF = pending exception */
 	zv::Val gatherArrayArgTypeSkeleton(zval *nodeScopeResolver, zval *expr, zval *scope) const
 	{
 		zv::Val initializerContext = pt_initializer_expr_context_from_scope(scope);
 		if (UNEXPECTED(initializerContext.isUndef())) return zv::Val();
-		SkeletonFrame frame{self, nodeScopeResolver, scope, initializerContext.raw()};
+		zv::Arr staleLeaves = zv::Arr::empty();
+		bool stale = false;
+		if (UNEXPECTED(!collectStaleSkeletonLeaves(expr, false, staleLeaves, stale))) return zv::Val();
+		SkeletonFrame frame{self, nodeScopeResolver, scope, initializerContext.raw(), staleLeaves.raw()};
 		pt_ietr_get_type getTypeCallback{&skeletonType, &frame, &skeletonTypeCallable};
 		return pt_initializer_expr_type_resolver_get_array_type(slot(slots::initializerExprTypeResolver), expr, getTypeCallback);
+	}
+
+	/* $staleLeaves[spl_object_id($leaf)] = true */
+	static void markStaleLeaf(zv::Arr &staleLeaves, zval *leaf)
+	{
+		zval isStale;
+		ZVAL_TRUE(&isStale);
+		staleLeaves.arrRef().setIndex(Z_OBJ_HANDLE_P(leaf), zv::Ref(&isStale));
+	}
+
+	/* Mirrors collectStaleSkeletonLeaves() (private static): walks the array
+	 * literal in evaluation order - an item's key before its value, a plain
+	 * variable read only when the item is added - and collects the keys/values
+	 * evaluated after the first one that may change the scope; out = the
+	 * returned stale flag. false = pending exception */
+	static bool collectStaleSkeletonLeaves(zval *expr, bool stale, zv::Arr &staleLeaves, bool &out)
+	{
+		zv::Val itemsHold;
+		zval *items = readProperty(pt_ah_array_items_site, expr, PT_LC("items"), itemsHold);
+		if (UNEXPECTED(items == NULL || !requireArray(items, "foreach() argument"))) return false;
+		for (zv::ArrayEntry entry : zv::ArrRef(items)) {
+			zval *item = entry.value().deref().raw();
+			zv::Val keyHold, valueHold;
+			zval *key = readProperty(pt_ah_array_item_key_site, item, PT_LC("key"), keyHold);
+			if (UNEXPECTED(key == NULL)) return false;
+			zval *value = readProperty(pt_ah_array_item_value_site, item, PT_LC("value"), valueHold);
+			if (UNEXPECTED(value == NULL)) return false;
+			bool hasKey = Z_TYPE_P(key) != IS_NULL;
+
+			bool valueStale = stale;
+			if (!valueStale && hasKey) {
+				bool keyNeutral = false;
+				if (UNEXPECTED(!isScopeNeutralSkeletonLeaf(key, keyNeutral))) return false;
+				valueStale = !keyNeutral;
+			}
+
+			bool valueIsArray = false;
+			if (UNEXPECTED(!isA(value, PT_CLASS_ARRAY_EXPR, valueIsArray))) return false;
+			bool staleAfterValue = false;
+			if (valueIsArray) {
+				if (UNEXPECTED(!collectStaleSkeletonLeaves(value, valueStale, staleLeaves, staleAfterValue))) return false;
+			} else {
+				if (valueStale) {
+					markStaleLeaf(staleLeaves, value);
+				}
+				staleAfterValue = valueStale;
+				if (!staleAfterValue) {
+					bool valueNeutral = false;
+					if (UNEXPECTED(!isScopeNeutralSkeletonLeaf(value, valueNeutral))) return false;
+					staleAfterValue = !valueNeutral;
+				}
+			}
+
+			if (hasKey) {
+				bool keyStale = stale;
+				if (!keyStale && staleAfterValue) {
+					if (UNEXPECTED(!isA(key, PT_CLASS_VARIABLE, keyStale))) return false;
+				}
+				if (keyStale) {
+					markStaleLeaf(staleLeaves, key);
+				}
+			}
+
+			stale = staleAfterValue;
+		}
+
+		out = stale;
+		return true;
+	}
+
+	/* Mirrors isScopeNeutralSkeletonLeaf() (private static): whether
+	 * evaluating the expression leaves the scope as it was. false = pending
+	 * exception */
+	static bool isScopeNeutralSkeletonLeaf(zval *expr, bool &out)
+	{
+		out = false;
+		bool is = false;
+		if (UNEXPECTED(!isA(expr, PT_CLASS_SCALAR, is))) return false;
+		if (is) {
+			bool isInterpolated = false;
+			if (UNEXPECTED(!isA(expr, PT_CLASS_INTERPOLATED_STRING, isInterpolated))) return false;
+			out = !isInterpolated;
+			return true;
+		}
+
+		if (UNEXPECTED(!isA(expr, PT_CLASS_VARIABLE, is))) return false;
+		if (is) {
+			zv::Val nameHold;
+			zval *name = readProperty(pt_ah_variable_name_site, expr, PT_LC("name"), nameHold);
+			if (UNEXPECTED(name == NULL)) return false;
+			out = Z_TYPE_P(name) == IS_STRING;
+			return true;
+		}
+
+		if (UNEXPECTED(!isA(expr, PT_CLASS_CONST_FETCH, is))) return false;
+		if (!is) {
+			if (UNEXPECTED(!isA(expr, PT_CLASS_ARROW_FUNCTION, is))) return false;
+		}
+		if (is) {
+			out = true;
+			return true;
+		}
+
+		if (UNEXPECTED(!isA(expr, PT_CLASS_CLASS_CONST_FETCH, is))) return false;
+		if (is) {
+			return namedOperand(expr, pt_ah_class_const_fetch_class_site, PT_LC("class"), PT_CLASS_NAME, out)
+				&& (!out || namedOperand(expr, pt_ah_class_const_fetch_name_site, PT_LC("name"), PT_CLASS_IDENTIFIER, out));
+		}
+
+		if (UNEXPECTED(!isA(expr, PT_CLASS_CLOSURE_EXPR, is))) return false;
+		if (is) {
+			zv::Val usesHold;
+			zval *uses = readProperty(pt_ah_closure_uses_site, expr, PT_LC("uses"), usesHold);
+			if (UNEXPECTED(uses == NULL || !requireArray(uses, "foreach() argument"))) return false;
+			for (zv::ArrayEntry entry : zv::ArrRef(uses)) {
+				zv::Val byRefHold;
+				zval *byRef = readProperty(pt_ah_closure_use_by_ref_site, entry.value().deref().raw(), PT_LC("byRef"), byRefHold);
+				if (UNEXPECTED(byRef == NULL)) return false;
+				if (zend_is_true(byRef)) return true;
+			}
+			out = true;
+			return true;
+		}
+
+		if (UNEXPECTED(!isA(expr, PT_CLASS_CALL_LIKE, is))) return false;
+		if (!is) return true;
+		bool isFirstClassCallable = false;
+		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), isFirstClassCallable))) return false;
+		if (!isFirstClassCallable) return true;
+
+		if (UNEXPECTED(!isA(expr, PT_CLASS_FUNC_CALL, is))) return false;
+		if (is) {
+			return namedOperand(expr, pt_ah_func_call_name_site, PT_LC("name"), PT_CLASS_NAME, out);
+		}
+
+		if (UNEXPECTED(!isA(expr, PT_CLASS_METHOD_CALL, is))) return false;
+		if (is) {
+			if (UNEXPECTED(!namedOperand(expr, pt_ah_method_call_name_site, PT_LC("name"), PT_CLASS_IDENTIFIER, out))) return false;
+			if (!out) return true;
+			zv::Val varHold;
+			zval *var = readProperty(pt_ah_method_call_var_site, expr, PT_LC("var"), varHold);
+			if (UNEXPECTED(var == NULL)) return false;
+			return isScopeNeutralSkeletonLeaf(var, out);
+		}
+
+		if (UNEXPECTED(!isA(expr, PT_CLASS_STATIC_CALL, is))) return false;
+		if (is) {
+			return namedOperand(expr, pt_ah_static_call_class_site, PT_LC("class"), PT_CLASS_NAME, out)
+				&& (!out || namedOperand(expr, pt_ah_static_call_name_site, PT_LC("name"), PT_CLASS_IDENTIFIER, out));
+		}
+
+		return true;
+	}
+
+	/* $node->{$property} instanceof <class-map class>; false = pending
+	 * exception */
+	static bool namedOperand(zval *node, pt_property_site &site, const char *property, size_t len, int classIdx, bool &out)
+	{
+		zv::Val hold;
+		zval *operand = readProperty(site, node, property, len, hold);
+		if (UNEXPECTED(operand == NULL)) return false;
+		return isA(operand, classIdx, out);
 	}
 
 	/* Mirrors gatherClosureArgType() */

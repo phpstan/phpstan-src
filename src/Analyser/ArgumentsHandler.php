@@ -71,6 +71,7 @@ use function array_merge;
 use function array_values;
 use function count;
 use function get_class;
+use function is_array;
 use function is_string;
 use function spl_object_id;
 use function sprintf;
@@ -1001,11 +1002,13 @@ final class ArgumentsHandler
 	 * built without walking anything: a nested array literal recurses, a closure /
 	 * arrow function contributes its DECLARED signature
 	 * (ClosureTypeResolver::getDeclaredClosureType()), and every other key/value
-	 * is priced by the scope state it is already tracked as, falling back to the
+	 * is priced by the scope state it is already tracked as, while preceding
+	 * elements have not changed that state, falling back to the
 	 * constant-expression resolver (literals, ::class, constants, concatenation)
-	 * and ultimately to mixed. Widening a slot to mixed is safe: a template is
-	 * never resolved below its bound, so the skeleton can only ever sharpen the
-	 * resolution.
+	 * and ultimately to mixed. Scope-known method callables retain their variants;
+	 * expressions that require a walk are mixed. Widening a slot to mixed is
+	 * safe: a template is never resolved below its bound, so the skeleton can
+	 * only ever sharpen the resolution.
 	 *
 	 * Unlike gatherClosureArgType() this type never reaches $gatheredTypes: it
 	 * exists solely to resolve the parameter type the nested closures are typed
@@ -1014,20 +1017,82 @@ final class ArgumentsHandler
 	private function gatherArrayArgTypeSkeleton(NodeScopeResolver $nodeScopeResolver, Expr\Array_ $expr, MutatingScope $scope): Type
 	{
 		$initializerContext = InitializerExprContext::fromScope($scope);
-		$getType = function (Expr $inner) use (&$getType, $nodeScopeResolver, $scope, $initializerContext): Type {
+		$changesScope = static function (Node $node) use (&$changesScope): bool {
+			if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
+				return false;
+			}
+			if (
+				($node instanceof CallLike && !$node->isFirstClassCallable())
+				|| $node instanceof Expr\Assign || $node instanceof Expr\AssignRef || $node instanceof Expr\AssignOp
+				|| $node instanceof Expr\PreInc || $node instanceof Expr\PreDec || $node instanceof Expr\PostInc || $node instanceof Expr\PostDec
+				|| $node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom || $node instanceof Expr\Include_ || $node instanceof Expr\Eval_
+			) {
+				return true;
+			}
+			foreach ($node->getSubNodeNames() as $name) {
+				$children = $node->{$name};
+				foreach (is_array($children) ? $children : [$children] as $child) {
+					if ($child instanceof Node && $changesScope($child)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		};
+		$types = [];
+		$scopeIsValid = true;
+		$getType = function (Expr $inner) use (&$getType, &$types, &$scopeIsValid, $changesScope, $nodeScopeResolver, $scope, $initializerContext): Type {
 			if ($inner instanceof Expr\Closure || $inner instanceof Expr\ArrowFunction) {
 				return $this->closureTypeResolver->getDeclaredClosureType($scope, $inner);
 			}
 
 			if ($inner instanceof Expr\Array_) {
-				return $this->initializerExprTypeResolver->getArrayType($inner, $getType);
+				// Price keys before values, as in the real walk. The array builder
+				// requests values first, so give it the already computed types.
+				foreach ($inner->items as $item) {
+					if ($item->key !== null) {
+						$types[spl_object_id($item->key)] = $getType($item->key);
+					}
+					$types[spl_object_id($item->value)] = $getType($item->value);
+					if (!$item->byRef) {
+						continue;
+					}
+
+					$scopeIsValid = false;
+				}
+				return $this->initializerExprTypeResolver->getArrayType($inner, static fn (Expr $item): Type => $types[spl_object_id($item)]);
 			}
 
-			return $nodeScopeResolver->findScopeStateType($inner, $scope)
-				?? $this->initializerExprTypeResolver->getType($inner, $initializerContext);
+			if ($changesScope($inner)) {
+				$scopeIsValid = false;
+				return new MixedType();
+			}
+			if ($scopeIsValid) {
+				$stateType = $nodeScopeResolver->findScopeStateType($inner, $scope);
+				if ($stateType !== null) {
+					return $stateType;
+				}
+				if ($inner instanceof MethodCall && $inner->isFirstClassCallable() && $inner->name instanceof Identifier) {
+					$receiverType = $nodeScopeResolver->findScopeStateType($inner->var, $scope);
+					if ($receiverType !== null) {
+						$method = $scope->getMethodReflection($receiverType, $inner->name->toString());
+						if ($method !== null) {
+							return $this->initializerExprTypeResolver->createFirstClassCallable($method, $method->getVariants(), $scope->nativeTypesPromoted);
+						}
+					}
+				}
+			}
+			if (
+				!($inner instanceof FuncCall && $inner->name instanceof Name)
+				&& !($inner instanceof StaticCall && $inner->class instanceof Name && $inner->name instanceof Identifier)
+				&& (new NodeFinder())->findFirst($inner, static fn (Node $node): bool => $node instanceof CallLike) !== null
+			) {
+				return new MixedType();
+			}
+			return $this->initializerExprTypeResolver->getType($inner, $initializerContext);
 		};
 
-		return $this->initializerExprTypeResolver->getArrayType($expr, $getType);
+		return $getType($expr);
 	}
 
 	/**

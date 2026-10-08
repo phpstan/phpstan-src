@@ -860,16 +860,81 @@ private:
 
 	zval *slot(uint32_t index) const { return OBJ_PROP_NUM(self, index); }
 
-	/* the `$getType = function (Expr $inner) use (&$getType, $nodeScopeResolver,
-	 * $scope, $initializerContext): Type` of gatherArrayArgTypeSkeleton() —
-	 * InitializerExprTypeResolver calls it synchronously, over this frame */
+	/* The structural skeleton is priced in evaluation order over this frame.
+	 * The array builder then reads the cached key/value types. */
 	struct SkeletonFrame
 	{
 		zend_object *self;
 		zval *nodeScopeResolver;
 		zval *scope;
 		zval *initializerContext;
+		zv::Arr *types;
+		bool scopeIsValid = true;
 	};
+
+	static bool skeletonIs(zval *node, int id)
+	{
+		zend_class_entry *ce = pt_class(id);
+		return ce != NULL && Z_TYPE_P(node) == IS_OBJECT && instanceof_function(Z_OBJCE_P(node), ce);
+	}
+
+	static bool skeletonChangesScope(zval *node, bool &out)
+	{
+		out = false;
+		bool isClosure, isArrow;
+		if (UNEXPECTED(!closureKind(node, isClosure, isArrow))) return false;
+		if (isClosure || isArrow) return true;
+		if (skeletonIs(node, PT_CLASS_CALL_LIKE)) {
+			bool firstClass;
+			if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(node), firstClass))) return false;
+			if (!firstClass) { out = true; return true; }
+		}
+		for (int id : {PT_CLASS_ASSIGN_EXPR, PT_CLASS_ASSIGN_REF_EXPR, PT_CLASS_ASSIGN_OP_EXPR,
+			PT_CLASS_PRE_INC, PT_CLASS_PRE_DEC, PT_CLASS_POST_INC, PT_CLASS_POST_DEC,
+			PT_CLASS_YIELD, PT_CLASS_YIELD_FROM, PT_CLASS_INCLUDE_EXPR, PT_CLASS_EVAL_EXPR}) {
+			if (skeletonIs(node, id)) { out = true; return true; }
+		}
+		if (UNEXPECTED(EG(exception))) return false;
+		static pt_method_site subNamesSite;
+		zv::Val names = callOn(subNamesSite, node, PT_LC("getsubnodenames"), "getSubNodeNames", 0, NULL);
+		if (UNEXPECTED(names.isUndef() || !requireArray(names.raw(), "getSubNodeNames()"))) return false;
+		for (zv::ArrayEntry entry : zv::ArrRef(names.raw())) {
+			zval *name = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(name) != IS_STRING)) { pt_throw_should_not_happen(); return false; }
+			zv::Val hold;
+			zval *child = readPropertySlow(node, Z_STRVAL_P(name), Z_STRLEN_P(name), hold);
+			if (UNEXPECTED(child == NULL)) return false;
+			auto inspect = [&](zval *value) -> bool {
+				ZVAL_DEREF(value);
+				if (!skeletonIs(value, PT_CLASS_NODE)) return !EG(exception);
+				return skeletonChangesScope(value, out);
+			};
+			if (Z_TYPE_P(child) == IS_ARRAY) {
+				for (zv::ArrayEntry nested : zv::ArrRef(child)) {
+					if (UNEXPECTED(!inspect(nested.value().raw()))) return false;
+					if (out) return true;
+				}
+			} else {
+				if (UNEXPECTED(!inspect(child))) return false;
+				if (out) return true;
+			}
+		}
+		return true;
+	}
+
+	static bool skeletonCallMatcher(zend_object *node, void *)
+	{
+		zend_class_entry *ce = pt_class(PT_CLASS_CALL_LIKE);
+		return ce != NULL && instanceof_function(node->ce, ce);
+	}
+
+	static zv::Val skeletonCachedType(void *data, zval *inner)
+	{
+		zv::Arr *types = static_cast<zv::Arr *>(data);
+		zval *type = readIndex(types->table(), Z_OBJ_HANDLE_P(inner));
+		if (UNEXPECTED(type == NULL)) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(type));
+	}
 
 	static zv::Val skeletonType(void *data, zval *inner)
 	{
@@ -888,35 +953,108 @@ private:
 		zend_class_entry *arrayExpr = pt_class(PT_CLASS_ARRAY_EXPR);
 		if (UNEXPECTED(arrayExpr == NULL)) return zv::Val();
 		if (instanceof_function(Z_OBJCE_P(inner), arrayExpr)) {
-			pt_ietr_get_type getTypeCallback{&skeletonType, frame, &skeletonTypeCallable};
+			zv::Val itemsHold;
+			zval *items = readPropertySlow(inner, PT_LC("items"), itemsHold);
+			if (UNEXPECTED(items == NULL || !requireArray(items, "items"))) return zv::Val();
+			for (zv::ArrayEntry entry : zv::ArrRef(items)) {
+				zval *item = entry.value().deref().raw();
+				zv::Val keyHold, valueHold, refHold;
+				zval *key = readPropertySlow(item, PT_LC("key"), keyHold);
+				if (UNEXPECTED(key == NULL)) return zv::Val();
+				if (Z_TYPE_P(key) != IS_NULL) {
+					zv::Val type = skeletonType(frame, key);
+					if (UNEXPECTED(type.isUndef())) return zv::Val();
+					setKey(*frame->types, NULL, Z_OBJ_HANDLE_P(key), type.raw());
+				}
+				zval *value = readPropertySlow(item, PT_LC("value"), valueHold);
+				if (UNEXPECTED(value == NULL)) return zv::Val();
+				zv::Val type = skeletonType(frame, value);
+				if (UNEXPECTED(type.isUndef())) return zv::Val();
+				setKey(*frame->types, NULL, Z_OBJ_HANDLE_P(value), type.raw());
+				zval *byRef = readPropertySlow(item, PT_LC("byRef"), refHold);
+				if (UNEXPECTED(byRef == NULL)) return zv::Val();
+				if (zend_is_true(byRef)) frame->scopeIsValid = false;
+			}
+			pt_ietr_get_type getTypeCallback{&skeletonCachedType, frame->types, &skeletonTypeCallable};
 			return pt_initializer_expr_type_resolver_get_array_type(handler.slot(slots::initializerExprTypeResolver), inner, getTypeCallback);
 		}
-		zv::Val stateType = pt_node_scope_resolver_find_scope_state_type(frame->nodeScopeResolver, inner, frame->scope);
-		if (UNEXPECTED(stateType.isUndef())) return zv::Val();
-		if (!stateType.isNull()) return stateType;
+		bool changes;
+		if (UNEXPECTED(!skeletonChangesScope(inner, changes))) return zv::Val();
+		if (changes) {
+			frame->scopeIsValid = false;
+			return pt_type_new_mixed_type();
+		}
+		if (frame->scopeIsValid) {
+			zv::Val stateType = pt_node_scope_resolver_find_scope_state_type(frame->nodeScopeResolver, inner, frame->scope);
+			if (UNEXPECTED(stateType.isUndef())) return zv::Val();
+			if (!stateType.isNull()) return stateType;
+			if (skeletonIs(inner, PT_CLASS_METHOD_CALL)) {
+				bool firstClass;
+				if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(inner), firstClass))) return zv::Val();
+				zv::Val nameHold;
+				zval *name = readPropertySlow(inner, PT_LC("name"), nameHold);
+				if (UNEXPECTED(name == NULL)) return zv::Val();
+				if (firstClass && skeletonIs(name, PT_CLASS_IDENTIFIER)) {
+					zv::Val varHold;
+					zval *var = readPropertySlow(inner, PT_LC("var"), varHold);
+					if (UNEXPECTED(var == NULL)) return zv::Val();
+					zv::Val receiver = pt_node_scope_resolver_find_scope_state_type(frame->nodeScopeResolver, var, frame->scope);
+					if (UNEXPECTED(receiver.isUndef())) return zv::Val();
+					if (!receiver.isNull()) {
+						zv::Val methodName = identifierToString(name);
+						if (UNEXPECTED(methodName.isUndef())) return zv::Val();
+						zv::Val method = pt_mutating_scope_get_method_reflection(Z_OBJ_P(frame->scope), receiver.raw(), Z_STR_P(methodName.raw()));
+						if (UNEXPECTED(method.isUndef())) return zv::Val();
+						if (!method.isNull()) {
+							zv::Val variants = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_VARIANTS);
+							bool nativeTypesPromoted;
+							if (UNEXPECTED(variants.isUndef() || !pt_mutating_scope_native_types_promoted(Z_OBJ_P(frame->scope), nativeTypesPromoted))) return zv::Val();
+							return pt_initializer_expr_type_resolver_create_first_class_callable(handler.slot(slots::initializerExprTypeResolver), method.raw(), variants.raw(), nativeTypesPromoted);
+						}
+					}
+				}
+			}
+		}
+		bool supported = false;
+		if (skeletonIs(inner, PT_CLASS_FUNC_CALL) || skeletonIs(inner, PT_CLASS_STATIC_CALL)) {
+			zv::Val nameHold;
+			zval *name = readPropertySlow(inner, PT_LC("name"), nameHold);
+			if (UNEXPECTED(name == NULL)) return zv::Val();
+			if (skeletonIs(inner, PT_CLASS_FUNC_CALL)) {
+				supported = skeletonIs(name, PT_CLASS_NAME);
+			} else {
+				zv::Val classHold;
+				zval *className = readPropertySlow(inner, PT_LC("class"), classHold);
+				if (UNEXPECTED(className == NULL)) return zv::Val();
+				supported = skeletonIs(className, PT_CLASS_NAME) && skeletonIs(name, PT_CLASS_IDENTIFIER);
+			}
+		}
+		if (!supported) {
+			pt_find_ctx ctx{};
+			zend_object *found = pt_find_first_recursive(Z_OBJ_P(inner), skeletonCallMatcher, &ctx);
+			if (UNEXPECTED(ctx.failed || EG(exception))) return zv::Val();
+			if (found != NULL) return pt_type_new_mixed_type();
+		}
 		return pt_initializer_expr_type_resolver_get_type(handler.slot(slots::initializerExprTypeResolver), inner, frame->initializerContext);
 	}
 
-	/* the callback as a PHP callable that outlives the call: the closure
-	 * over copies of what the frame points at */
+	/* The builder's PHP callback captures the computed types by value. */
 	static zv::Val skeletonTypeCallable(void *data)
 	{
-		SkeletonFrame *frame = static_cast<SkeletonFrame *>(data);
-		zval self;
-		ZVAL_OBJ(&self, frame->self);
-		return pt_native_closure(&skeletonTypeBody, &self, frame->nodeScopeResolver, frame->scope, frame->initializerContext);
+		zv::Arr *types = static_cast<zv::Arr *>(data);
+		zv::Val capture = zv::Val::copyOf(zv::Ref(types->raw()));
+		return pt_native_closure(&skeletonTypeBody, capture.raw());
 	}
 
-	/* the same closure called from PHP — captures: $this, $nodeScopeResolver,
-	 * $scope, $initializerContext */
+	/* The same cached-type callback called from PHP. */
 	static void skeletonTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 1)) {
 			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 1 expected", PT_AH_CLOSURE("gatherArrayArgTypeSkeleton", "977"), argc);
 			return;
 		}
-		SkeletonFrame frame{Z_OBJ(captures[0]), &captures[1], &captures[2], &captures[3]};
-		zv::Val type = skeletonType(&frame, &argv[0]);
+		zv::Arr types = zv::Arr::copyOfTable(Z_ARRVAL(captures[0]));
+		zv::Val type = skeletonCachedType(&types, &argv[0]);
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);
 	}
@@ -1044,16 +1182,17 @@ private:
 	/* Mirrors gatherArrayArgTypeSkeleton() (private): a structural stand-in for
 	 * an array literal argument that holds closures, built without walking
 	 * anything - nested array literals recurse, a closure / arrow function
-	 * contributes its declared signature, every other key/value is priced by
-	 * the scope state it is tracked as, falling back to the constant-expression
-	 * resolver. UNDEF = pending exception */
+	 * contributes its declared signature. Scope-known method callables retain
+	 * their variants; later leaves cannot reuse state after an effect. Constants
+	 * use the initializer resolver, walk-dependent expressions use mixed.
+	 * UNDEF = pending exception */
 	zv::Val gatherArrayArgTypeSkeleton(zval *nodeScopeResolver, zval *expr, zval *scope) const
 	{
 		zv::Val initializerContext = pt_initializer_expr_context_from_scope(scope);
 		if (UNEXPECTED(initializerContext.isUndef())) return zv::Val();
-		SkeletonFrame frame{self, nodeScopeResolver, scope, initializerContext.raw()};
-		pt_ietr_get_type getTypeCallback{&skeletonType, &frame, &skeletonTypeCallable};
-		return pt_initializer_expr_type_resolver_get_array_type(slot(slots::initializerExprTypeResolver), expr, getTypeCallback);
+		zv::Arr types = zv::Arr::empty();
+		SkeletonFrame frame{self, nodeScopeResolver, scope, initializerContext.raw(), &types};
+		return skeletonType(&frame, expr);
 	}
 
 	/* Mirrors gatherClosureArgType() */

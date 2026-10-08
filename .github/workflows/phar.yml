@@ -716,6 +716,12 @@ jobs:
     # extension — the tests of the turbo-differential jobs load it from
     # there, and the commit job checks that every leg of a platform carries
     # the same core.
+    # The `pie` variant legs build the same version self-contained instead,
+    # profile-guided like the core — PIE installs a pre-packaged binary by
+    # copying the one extension file, so the PIE release assets cannot be
+    # the thin extension (see .github/scripts/turbo-pie-assets.sh). Nothing
+    # else ships them, so they only run for release tags (turbo-pie-release
+    # publishes them) and on pull requests labelled turbo-pie.
     runs-on: ${{ matrix.target.runs-on }}
     # Container legs pin the binaries' userland floor independently of the
     # runner image, like turbo-compile-core. Every Linux target has a ZTS
@@ -738,12 +744,12 @@ jobs:
     # one platform's failed core must not skip every platform's legs: a leg
     # whose core is missing fails at its download instead
     if: ${{ !cancelled() }}
-    timeout-minutes: 20
+    timeout-minutes: ${{ matrix.variant == 'pie' && 45 || 20 }}
 
     env:
       PHP_MINOR: ${{ matrix.php-version }}
       PHP_ZTS: ${{ matrix.ts == 'zts' && '1' || '0' }}
-      TURBO_ARTIFACT: "phpstan_turbo-${{ matrix.target.name }}-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
+      TURBO_ARTIFACT: "${{ matrix.variant == 'pie' && 'phpstan_turbo_pie' || 'phpstan_turbo' }}-${{ matrix.target.name }}-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
 
     strategy:
       fail-fast: false
@@ -766,6 +772,9 @@ jobs:
             runs-on: "macos-latest"
             family: "macos"
         ts: ["nts", "zts"]
+        # split: the thin extension the dist ships; pie: self-contained, for
+        # the PIE release assets (see above)
+        variant: ${{ fromJSON((startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'turbo-pie')) && '["split", "pie"]' || '["split"]') }}
         # Homebrew and setup-php ship an NTS PHP on macOS, and no
         # thread-safe distribution is common enough there to build for
         exclude:
@@ -814,6 +823,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Download the platform's core"
+        if: matrix.variant == 'split'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: "phpstan_turbo_core-${{ matrix.target.name }}"
@@ -821,18 +831,41 @@ jobs:
 
       # The strict set lives in turbo-ext/Makefile (STRICT_WARN_FLAGS).
       - name: "Compile the extension with strict warnings"
+        if: matrix.variant == 'split'
         working-directory: "turbo-ext"
         run: |
           make SPLIT=1 extension WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+
+      # see the same steps in turbo-compile-core: the training run of
+      # `make pgo` runs bin/phpstan on the checkout
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        if: matrix.variant == 'pie' && matrix.target.family == 'macos'
+        with:
+          ignore-cache: true
+
+      - name: "Install Composer dependencies (pinned composer)"
+        if: matrix.variant == 'pie' && matrix.target.family != 'macos'
+        run: |
+          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
+          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          php composer.phar install --no-interaction --no-progress
+          rm composer.phar
+
+      # A plain `make pgo` builds one self-contained phpstan_turbo.so.
+      - name: "Compile the self-contained extension with strict warnings (profile-guided)"
+        if: matrix.variant == 'pie'
+        working-directory: "turbo-ext"
+        run: |
+          make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
 
       # Before signing and the upload; a plain `make strip` leaves the core
       # (already stripped and signed by its own job) untouched.
       - name: "Strip symbol tables"
         working-directory: "turbo-ext"
         run: |
-          ls -l phpstan_turbo.so phpstan_turbo_core.so
+          ls -l phpstan_turbo*.so
           make strip
-          ls -l phpstan_turbo.so phpstan_turbo_core.so
+          ls -l phpstan_turbo*.so
 
       # see turbo-compile-core
       - name: "Ad-hoc sign the extension (macOS)"
@@ -858,12 +891,21 @@ jobs:
           [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$PHP_ZTS" ]
 
       - name: "Upload extension artifact"
+        if: matrix.variant == 'split'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: |
             turbo-ext/phpstan_turbo.so
             turbo-ext/phpstan_turbo_core.so
+          if-no-files-found: "error"
+
+      - name: "Upload self-contained extension artifact"
+        if: matrix.variant == 'pie'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
   turbo-compile-musl-arm64:
@@ -877,12 +919,12 @@ jobs:
     runs-on: "ubuntu-24.04-arm"
     needs: turbo-compile-core-musl-arm64
     if: ${{ !cancelled() }}
-    timeout-minutes: 20
+    timeout-minutes: ${{ matrix.variant == 'pie' && 45 || 20 }}
 
     env:
       PHP_MINOR: ${{ matrix.php-version }}
       PHP_ZTS: ${{ matrix.ts == 'zts' && '1' || '0' }}
-      TURBO_ARTIFACT: "phpstan_turbo-linux-musl-arm64-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
+      TURBO_ARTIFACT: "${{ matrix.variant == 'pie' && 'phpstan_turbo_pie' || 'phpstan_turbo' }}-linux-musl-arm64-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
 
     strategy:
       fail-fast: false
@@ -890,6 +932,8 @@ jobs:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
         # thread-safe for every minor too, see turbo-compile
         ts: ["nts", "zts"]
+        # see turbo-compile
+        variant: ${{ fromJSON((startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'turbo-pie')) && '["split", "pie"]' || '["split"]') }}
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -904,6 +948,7 @@ jobs:
           fetch-depth: 0 # the version is baked from git log over turbo-ext/src
 
       - name: "Download the platform's core"
+        if: matrix.variant == 'split'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: "phpstan_turbo_core-linux-musl-arm64"
@@ -915,7 +960,7 @@ jobs:
         run: |
           docker run -d --name alpine-build \
             -v "$PWD:/work" -w /work \
-            -e PHP_MINOR -e PHP_ZTS \
+            -e PHP_MINOR -e PHP_ZTS -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
             "$ALPINE_IMAGE" sleep 7200
 
       - name: "Install PHP and build tools"
@@ -926,11 +971,28 @@ jobs:
         run: docker exec alpine-build git config --global --add safe.directory /work
 
       - name: "Compile the extension with strict warnings"
+        if: matrix.variant == 'split'
         run: |
           docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
           make SPLIT=1 extension WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
           make strip
           ls -l phpstan_turbo.so phpstan_turbo_core.so
+          EOF
+
+      # see turbo-compile: the training run of `make pgo` runs bin/phpstan
+      # on the checkout
+      - name: "Compile the self-contained extension with strict warnings (profile-guided)"
+        if: matrix.variant == 'pie'
+        run: |
+          docker exec -i -w /work alpine-build sh -e <<'EOF'
+          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
+          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          php composer.phar install --no-interaction --no-progress
+          rm composer.phar
+          cd turbo-ext
+          make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          make strip
+          ls -l phpstan_turbo.so
           EOF
 
       - name: "Verify the built extension reports the expected version"
@@ -944,12 +1006,21 @@ jobs:
           EOF
 
       - name: "Upload extension artifact"
+        if: matrix.variant == 'split'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: |
             turbo-ext/phpstan_turbo.so
             turbo-ext/phpstan_turbo_core.so
+          if-no-files-found: "error"
+
+      - name: "Upload self-contained extension artifact"
+        if: matrix.variant == 'pie'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
   turbo-shared-core-gate:
@@ -1312,7 +1383,8 @@ jobs:
     name: "Compile Turbo Extension (Windows)"
     # The extension DLL of one PHP version, linked against the core of
     # turbo-compile-core-windows (its import library) and delay-loading it
-    # from its own directory at run time (main.cpp, config.w32).
+    # from its own directory at run time (main.cpp, config.w32). The `pie`
+    # variant legs build it self-contained instead, see turbo-compile.
     # windows-latest and windows-2025 serve the VS2026 image, whose 14.5x
     # toolset links DLLs the official php.net binaries (built with vs17,
     # toolset 14.4x) refuse to load — PHP's loader rejects modules linked
@@ -1323,17 +1395,19 @@ jobs:
     needs: turbo-compile-core-windows
     # see turbo-compile
     if: ${{ !cancelled() }}
-    timeout-minutes: 30
+    timeout-minutes: ${{ matrix.variant == 'pie' && 45 || 30 }}
 
     env:
       PHP_SDK_COMMIT: "c73faaf1cce914e2fc04da5587132f8f425996af" # php-sdk-2.7.1, see turbo-compile-core-windows
-      TURBO_ARTIFACT: "phpstan_turbo-windows-x86_64-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
+      TURBO_ARTIFACT: "${{ matrix.variant == 'pie' && 'phpstan_turbo_pie' || 'phpstan_turbo' }}-windows-x86_64-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
 
     strategy:
       fail-fast: false
       matrix:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
+        # see turbo-compile
+        variant: ${{ fromJSON((startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'turbo-pie')) && '["split", "pie"]' || '["split"]') }}
         # The official 8.3 Windows binaries are built with VS16 (linker
         # 14.2x) and PHP's module loader is one-directional (module toolset
         # generation <= core's), so the 8.3 DLL must be linked with the v142
@@ -1384,6 +1458,7 @@ jobs:
       # the DLL and its import library, into the extension directory where
       # config.w32 expects the library
       - name: "Download the core"
+        if: matrix.variant == 'split'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: "phpstan_turbo_core-windows-x86_64${{ matrix.ts == 'zts' && '-zts' || '' }}"
@@ -1399,28 +1474,42 @@ jobs:
       - name: "Build the extension"
         shell: cmd
         working-directory: turbo-ext
+        env:
+          VARIANT: ${{ matrix.variant }}
         run: |
           for /d %%d in (C:\php-devel\php-*-devel-*) do set DEVEL=%%d
           set PATH=%DEVEL%;C:\php-sdk\bin;C:\php-sdk\msys2\usr\bin;%PATH%
           call phpize.bat
           if errorlevel 1 exit /b 1
-          call configure.bat --enable-phpstan-turbo=extension
+          if "%VARIANT%"=="pie" (
+            call configure.bat --enable-phpstan-turbo
+          ) else (
+            call configure.bat --enable-phpstan-turbo=extension
+          )
           if errorlevel 1 exit /b 1
           nmake
 
       # See the same step in turbo-compile. The extension loads its core
-      # from its own directory, so the core goes next to the built DLL first.
+      # from its own directory, so the core goes next to the built DLL first;
+      # the self-contained one (pie) carries the PHP generation it is built
+      # for instead, which the PIE asset name needs.
       - name: "Verify the built extension reports the expected version"
         shell: bash
         env:
           MATRIX_TS: ${{ matrix.ts }}
+          MATRIX_VS: ${{ matrix.vs }}
+          VARIANT: ${{ matrix.variant }}
         run: |
-          CORE=$([ "$MATRIX_TS" = "zts" ] && echo phpstan_turbo_core-zts.dll || echo phpstan_turbo_core.dll)
           DLL=$(find turbo-ext -name "php_phpstan_turbo.dll" | head -1)
           [ -n "$DLL" ]
           mkdir -p ext-out
           cp "$DLL" ext-out/php_phpstan_turbo.dll
-          cp "turbo-ext/$CORE" ext-out/
+          if [ "$VARIANT" = "pie" ]; then
+            echo "$MATRIX_VS" > ext-out/compiler
+          else
+            CORE=$([ "$MATRIX_TS" = "zts" ] && echo phpstan_turbo_core-zts.dll || echo phpstan_turbo_core.dll)
+            cp "turbo-ext/$CORE" ext-out/
+          fi
           REPORTED="$(php -d extension="$(cygpath -w "$PWD/ext-out/php_phpstan_turbo.dll")" -r 'echo phpversion("phpstan_turbo");')"
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
@@ -1435,7 +1524,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ env.TURBO_ARTIFACT }}
-          path: "ext-out/*.dll"
+          path: ${{ matrix.variant == 'pie' && 'ext-out/*' || 'ext-out/*.dll' }}
           if-no-files-found: "error"
 
   turbo-artifact:
@@ -1485,6 +1574,91 @@ jobs:
           name: "turbo-ext-files"
           path: "turbo-ext-dist"
           if-no-files-found: "error"
+
+  turbo-pie-release:
+    name: "Turbo Extension PIE Release"
+    # Publishes the self-contained binaries of the `pie` variant legs as the
+    # phpstan/turbo-ext release of the tag, named per PIE's release-asset
+    # conventions (.github/scripts/turbo-pie-assets.sh) so that
+    # `pie install phpstan/turbo` finds them. The tag itself is created in
+    # phpstan/turbo-ext by subsplit-turbo-ext.yml. On pull requests labelled
+    # turbo-pie it only packages them, as an artifact.
+    if: startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'turbo-pie')
+    needs:
+      - turbo-compile
+      - turbo-compile-musl-arm64
+      - turbo-compile-windows
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 15
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      # before the download: checkout empties the workspace
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      - name: "Download the self-contained extension artifacts"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: "phpstan_turbo_pie-*"
+          path: "turbo-pie-artifacts"
+
+      - name: "Package them as PIE release assets"
+        env:
+          VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'dev' }}
+        run: |
+          bash .github/scripts/turbo-pie-assets.sh turbo-pie-artifacts "$VERSION" pie-assets
+          ls -l pie-assets
+
+      - name: "Upload the PIE release assets"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "turbo-pie-assets"
+          path: "pie-assets"
+          if-no-files-found: "error"
+
+      - name: "Create the phpstan/turbo-ext release and upload the assets"
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          # The release must point at the tag subsplit-turbo-ext.yml creates
+          # in phpstan/turbo-ext when this repository is tagged; fail loudly
+          # if it has not appeared, and re-run this job once it has.
+          if ! gh api "repos/phpstan/turbo-ext/git/ref/tags/$TAG" > /dev/null; then
+            echo "::error::Tag $TAG does not exist in phpstan/turbo-ext yet. The subsplit-turbo-ext.yml workflow creates it; re-run this job once it has."
+            exit 1
+          fi
+
+          # Releases in the phpstan org are immutable — a published release
+          # can never gain or replace assets. Create a draft, upload every
+          # asset into it, and only then publish. A re-run resumes a
+          # half-finished draft; a published release is final.
+          state="$(gh api repos/phpstan/turbo-ext/releases --jq 'first(.[] | select(.tag_name == env.TAG) | if .draft then "draft" else "published" end)')"
+          case "${state:-absent}" in
+            published)
+              echo "Release $TAG is already published and immutable, nothing to do."
+              exit 0
+              ;;
+            draft)
+              echo "Draft release $TAG already exists, resuming the upload."
+              ;;
+            absent)
+              gh release create "$TAG" --repo phpstan/turbo-ext --verify-tag --draft \
+                --title "$TAG" \
+                --notes "Prebuilt \`phpstan_turbo\` binaries for [PIE](https://github.com/php/pie): \`pie install phpstan/turbo\`. Matches [PHPStan $TAG](https://github.com/phpstan/phpstan/releases/tag/$TAG)."
+              ;;
+          esac
+          gh release upload "$TAG" --repo phpstan/turbo-ext --clobber pie-assets/*
+          gh release edit "$TAG" --repo phpstan/turbo-ext --draft=false
 
   turbo-differential:
     name: "Run with Turbo Extension (differential tests)"

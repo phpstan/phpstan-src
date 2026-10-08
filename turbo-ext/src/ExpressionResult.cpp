@@ -458,14 +458,27 @@ public:
 	/* Mirrors getKeepVoidType(). */
 	zv::Val getKeepVoidType(bool nativeTypesPromoted)
 	{
+		// Only a call's value read can project void to null. Other expressions
+		// must honour their narrowed holder even when the raw type is mixed
+		// (whose isVoid() is maybe, not evidence of an actual void arm).
+		zend_long projects = projectsVoidToNull(nativeTypesPromoted);
+		if (UNEXPECTED(projects < 0)) return zv::Val();
+		if (projects == 0) {
+			return nativeTypesPromoted ? getNativeType() : getType();
+		}
+
 		zv::Val rawType = resolveOwnRawType(nativeTypesPromoted);
 		if (UNEXPECTED(rawType.isUndef())) return zv::Val();
-		zend_long isVoid = trinaryOp(rawType.raw(), PT_OP_IS_VOID);
-		if (UNEXPECTED(isVoid < 0)) return zv::Val();
-		if (isVoid != PT_TRI_NO) {
-			// there is void to keep - the raw type is the answer, and no read that
-			// projects it away may run
-			return rawType;
+		zv::Val projectedType = projectVoidToNull(zv::Val::copyOf(rawType.ref()), nativeTypesPromoted);
+		if (UNEXPECTED(projectedType.isUndef())) return zv::Val();
+		if (Z_OBJ_P(projectedType.raw()) != Z_OBJ_P(rawType.raw())) {
+			zv::Val equal = pt_type_op(Z_OBJ_P(projectedType.raw()), PT_OP_EQUALS, 1, rawType.raw());
+			if (UNEXPECTED(equal.isUndef())) return zv::Val();
+			if (!zend_is_true(equal.raw())) {
+				// Keep the raw type only when projection removes an actual void arm.
+				// mixed::isVoid() is maybe, but its projection leaves it unchanged.
+				return rawType;
+			}
 		}
 
 		// nothing to keep, so this is an ordinary value read: it must honour a

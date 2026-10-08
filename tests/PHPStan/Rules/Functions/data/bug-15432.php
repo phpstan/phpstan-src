@@ -59,3 +59,21 @@ function nested(Handler $handler): void
 		],
 	]);
 }
+
+/**
+ * @template T of string
+ * @param array<T, callable> $callbacks
+ */
+function consumeAny(array $callbacks): void {}
+
+function expressionCallables(\Closure $callback): void
+{
+	consumeAny([
+		'method' => $callback(...),
+		'closure' => static function (): void {},
+	]);
+	consumeAny([
+		'method' => 'strlen'(...),
+		'closure' => static function (): void {},
+	]);
+}

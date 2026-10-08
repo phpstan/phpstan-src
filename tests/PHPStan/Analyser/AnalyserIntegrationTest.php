@@ -1089,7 +1089,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8082.php');
 		$this->assertSame(
-			['Reflection error: Circular reference to class "Bug8082\\TraitUsesSelf"'],
+			[],
 			$this->uniqueErrorMessages($errors),
 		);
 	}
@@ -1099,7 +1099,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8082-trait-cycle.php');
 		$this->assertSame(
-			['Reflection error: Circular reference to class "Bug8082TraitCycle\\TraitA"'],
+			[],
 			$this->uniqueErrorMessages($errors),
 		);
 	}
@@ -1109,7 +1109,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/circular-parent-class.php');
 		$this->assertSame(
-			['Reflection error: Circular reference to class "CircularParentClass\\Foo"'],
+			[],
 			$this->uniqueErrorMessages($errors),
 		);
 	}
@@ -1127,8 +1127,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7787.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Reflection error: Circular reference to class "Bug7787\TestClass"', $errors[0]->getMessage());
+		$this->assertCount(0, $errors);
 	}
 
 	public function testBug3865(): void

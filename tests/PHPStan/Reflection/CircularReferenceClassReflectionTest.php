@@ -4,11 +4,9 @@ namespace PHPStan\Reflection;
 
 use CircularReferences\FirstClassInCycle;
 use CircularReferences\FirstTraitInCycle;
-use CircularReferences\SecondTraitInCycle;
 use CircularReferences\TraitUsingSelf;
 use CircularReferences\UsesTraitCycle;
 use CircularReferences\UsesTraitUsingSelf;
-use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\Testing\PHPStanTestCase;
 use function array_keys;
 
@@ -34,7 +32,7 @@ class CircularReferenceClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertSame(
-			[FirstTraitInCycle::class, SecondTraitInCycle::class],
+			[FirstTraitInCycle::class],
 			array_keys($reflectionProvider->getClass(UsesTraitCycle::class)->getTraits(true)),
 		);
 	}
@@ -54,7 +52,7 @@ class CircularReferenceClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertSame(
-			[UsesTraitCycle::class, FirstTraitInCycle::class, SecondTraitInCycle::class],
+			[UsesTraitCycle::class, FirstTraitInCycle::class],
 			array_keys($reflectionProvider->getClass(UsesTraitCycle::class)->getAncestors()),
 		);
 	}
@@ -64,7 +62,7 @@ class CircularReferenceClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertSame(
-			[FirstTraitInCycle::class, SecondTraitInCycle::class],
+			[FirstTraitInCycle::class],
 			array_keys($reflectionProvider->getClass(FirstTraitInCycle::class)->getAncestors()),
 		);
 	}
@@ -73,8 +71,7 @@ class CircularReferenceClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->expectException(CircularReference::class);
-		$this->expectExceptionMessage('Circular reference to class "CircularReferences\FirstClassInCycle"');
+		$this->expectNotToPerformAssertions();
 		$reflectionProvider->getClass(FirstClassInCycle::class)->getTraits(true);
 	}
 
@@ -82,8 +79,7 @@ class CircularReferenceClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->expectException(CircularReference::class);
-		$this->expectExceptionMessage('Circular reference to class "CircularReferences\FirstClassInCycle"');
+		$this->expectNotToPerformAssertions();
 		$reflectionProvider->getClass(FirstClassInCycle::class)->getClassHierarchyDistances();
 	}
 

@@ -1586,6 +1586,7 @@ private:
 		zv::Arr typesToRemove = zv::Arr::empty();
 		bool hasOptionalNonNullableOffset = false;
 		bool hasPossiblyNullOffsetValue = false;
+		bool hasUnsealedOptionalOffset = false;
 		if (Z_TYPE_P(constantArrays.raw()) == IS_ARRAY) {
 			for (zv::ArrayEntry entry : zv::ArrRef(constantArrays.raw())) {
 				zval *constantArray = entry.value().deref().raw();
@@ -1607,14 +1608,24 @@ private:
 					continue;
 				}
 
+				// Removing the key from an unsealed shape re-admits it through
+				// the unsealed extras, widening its value type instead.
+				zend_long isUnsealed = pt_type_op_trinary(Z_OBJ_P(constantArray), PT_OP_IS_UNSEALED, 0, NULL);
+				if (UNEXPECTED(isUnsealed < 0)) return zv::Val();
+				if (isUnsealed == PT_TRI_YES) {
+					hasUnsealedOptionalOffset = true;
+					continue;
+				}
+
 				hasOptionalNonNullableOffset = true;
 			}
 		}
 
 		// !isset() on an optional key with a non-nullable value means the
 		// key is absent - but only when no member can hold null at that
-		// offset (the removal distributes over every union member).
-		if (hasOptionalNonNullableOffset && !hasPossiblyNullOffsetValue) {
+		// offset and no member is unsealed (the removal distributes over
+		// every union member).
+		if (hasOptionalNonNullableOffset && !hasPossiblyNullOffsetValue && !hasUnsealedOptionalOffset) {
 			zval hasOffsetZv;
 			if (UNEXPECTED(!pt_has_offset_type_new(&hasOffsetZv, dimType.raw()))) return zv::Val();
 			typesToRemove.push(zv::Val::adopt(hasOffsetZv));

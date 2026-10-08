@@ -729,6 +729,7 @@ final class DefaultNarrowingHelper
 					$typesToRemove = [];
 					$hasOptionalNonNullableOffset = false;
 					$hasPossiblyNullOffsetValue = false;
+					$hasUnsealedOptionalOffset = false;
 					foreach ($constantArrays as $constantArray) {
 						$hasOffset = $constantArray->hasOffsetValueType($dimType);
 						if ($hasOffset->no()) {
@@ -744,13 +745,21 @@ final class DefaultNarrowingHelper
 							continue;
 						}
 
+						// Removing the key from an unsealed shape re-admits it through
+						// the unsealed extras, widening its value type instead.
+						if ($constantArray->isUnsealed()->yes()) {
+							$hasUnsealedOptionalOffset = true;
+							continue;
+						}
+
 						$hasOptionalNonNullableOffset = true;
 					}
 
 					// !isset() on an optional key with a non-nullable value means the
 					// key is absent - but only when no member can hold null at that
-					// offset (the removal distributes over every union member).
-					if ($hasOptionalNonNullableOffset && !$hasPossiblyNullOffsetValue) {
+					// offset and no member is unsealed (the removal distributes over
+					// every union member).
+					if ($hasOptionalNonNullableOffset && !$hasPossiblyNullOffsetValue && !$hasUnsealedOptionalOffset) {
 						$typesToRemove[] = new HasOffsetType($dimType);
 					}
 

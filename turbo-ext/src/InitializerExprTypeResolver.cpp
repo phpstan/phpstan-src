@@ -4334,12 +4334,6 @@ public:
 			return createFirstClassCallable(method.raw(), variants.raw(), nativeTypesPromoted);
 		}
 
-		int isMethodCall = isAClass(expr, PT_CLASS_METHOD_CALL);
-		if (UNEXPECTED(isMethodCall < 0)) return zv::Val();
-		if (isMethodCall) {
-			return newObjectTypeLiteral(PT_LC("Closure"));
-		}
-
 		int isNew = isAClass(expr, PT_CLASS_NEW);
 		if (UNEXPECTED(isNew < 0)) return zv::Val();
 		if (isNew) {

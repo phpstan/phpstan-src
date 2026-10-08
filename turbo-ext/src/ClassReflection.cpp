@@ -593,7 +593,7 @@ public:
 			}
 			return zv::Val();
 		}
-		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcmethod, methodLen);
+		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), lcmethod, methodLen);
 		if (UNEXPECTED(fn == NULL)) {
 			zend_throw_error(NULL, "phpstan_turbo: method %s::%s not found", className, lcmethod);
 			return zv::Val();
@@ -837,7 +837,7 @@ public:
 			if (CE_STATIC_MEMBERS(ce) == NULL) {
 				zend_class_init_statics(ce);
 			}
-			zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, PT_LC("resolvingTypeAliasImports"));
+			zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), PT_LC("resolvingTypeAliasImports"));
 			if (UNEXPECTED(info == NULL || (info->flags & ZEND_ACC_STATIC) == 0)) {
 				zend_throw_error(NULL, "phpstan_turbo: ClassReflection has no static $resolvingTypeAliasImports");
 				return NULL;

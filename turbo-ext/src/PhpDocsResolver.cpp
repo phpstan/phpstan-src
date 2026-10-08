@@ -115,7 +115,7 @@ zend_never_inline ZEND_COLD void memberCallOnNonObject(const char *method, zval 
 zend_function *resolveMethod(pt_method_site &site, zend_class_entry *ce, const char *lcname, size_t len)
 {
 	if (EXPECTED(site.ce == ce && site.generation == pt_engine_generation && site.fn != NULL)) return site.fn;
-	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcname, len);
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), lcname, len);
 	if (fn != NULL) site = { ce, fn, pt_engine_generation };
 	return fn;
 }

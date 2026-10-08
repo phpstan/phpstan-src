@@ -137,7 +137,7 @@ static zval *pt_ot_static(pt_ot_static_kind kind)
 			zend_class_init_statics(ce);
 		}
 		for (int i = 0; i < PT_OT_STATIC_COUNT; i++) {
-			zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, pt_ot_static_names[i], strlen(pt_ot_static_names[i]));
+			zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), pt_ot_static_names[i], strlen(pt_ot_static_names[i]));
 			ZEND_ASSERT(info != NULL && (info->flags & ZEND_ACC_STATIC) != 0);
 			pt_ot_statics[i] = CE_STATIC_MEMBERS(ce) + info->offset;
 		}
@@ -304,7 +304,7 @@ static zv::Val pt_ot_callback(pt_ot_callback_kind kind, zval *object, zval *arg,
 static zv::Val pt_ot_identity_callback()
 {
 	zval closure;
-	zend_create_closure(&closure, pt_object_type_callback_identity, pt_ce_object_type_callback, pt_ce_object_type_callback, NULL);
+	pt_abi_create_closure(&closure, pt_object_type_callback_identity, pt_ce_object_type_callback, pt_ce_object_type_callback, NULL);
 	return zv::Val::adopt(closure);
 }
 
@@ -2709,7 +2709,7 @@ public:
 		if (zv::Ref(typeToRemove).instanceOf(pt_ce_object_type)) {
 			zend_class_entry *unionCe = pt_ce_union_type;
 			if (UNEXPECTED(unionCe == NULL)) return zv::Val();
-			zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&unionCe->constants_table, PT_LC("EQUAL_UNION_CLASSES"));
+			zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&PT_CE(unionCe, constants_table), PT_LC("EQUAL_UNION_CLASSES"));
 			if (UNEXPECTED(constant == NULL)) {
 				zend_throw_error(NULL, "phpstan_turbo: %s::EQUAL_UNION_CLASSES not found", ZSTR_VAL(unionCe->name));
 				return zv::Val();
@@ -3594,8 +3594,8 @@ PT_MINIT_REGISTRATION(pt_register_object_type)
 	holder.method("identity", reg::PublicStatic, 1, { reg::obj("type", ptcls::type) }, objectTypeCallbackIdentity, &ptret::type);
 	pt_ce_object_type_callback = holder.register_();
 	pt_ce_object_type_callback->ce_flags |= ZEND_ACC_FINAL;
-	pt_object_type_callback_invoke_fn = (zend_function *) zend_hash_str_find_ptr(&pt_ce_object_type_callback->function_table, PT_LC("__invoke"));
-	pt_object_type_callback_identity = (zend_function *) zend_hash_str_find_ptr(&pt_ce_object_type_callback->function_table, PT_LC("identity"));
+	pt_object_type_callback_invoke_fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_object_type_callback, function_table), PT_LC("__invoke"));
+	pt_object_type_callback_identity = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_object_type_callback, function_table), PT_LC("identity"));
 	ZEND_ASSERT(pt_object_type_callback_invoke_fn != NULL && pt_object_type_callback_identity != NULL);
 
 	reg::Class cls("PHPStan\\Type\\ObjectType");

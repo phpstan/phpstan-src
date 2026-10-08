@@ -5,7 +5,7 @@
 import hashlib, os, re, subprocess, sys
 from concurrent.futures import ThreadPoolExecutor
 
-OBJDUMP = '/opt/homebrew/opt/llvm/bin/llvm-objdump'
+OBJDUMP = os.environ.get('LLVM_OBJDUMP', '/opt/homebrew/opt/llvm/bin/llvm-objdump')
 func_re = re.compile(r'^<(.+)>:$')
 addr_re = re.compile(r'0x[0-9a-f]+ <')
 
@@ -29,7 +29,7 @@ def fingerprints(obj):
 		if cur is None:
 			continue
 		s = line.strip()
-		if not s:
+		if not s or s.startswith('Disassembly of section'):
 			continue
 		# branch targets print absolute section offsets; keep only the symbolic part
 		s = addr_re.sub('<', s)
@@ -39,10 +39,15 @@ def fingerprints(obj):
 		s = re.sub(r'\$_\d+', '$_', s)
 		s = re.sub(r'\.cold\.\d+', '.cold', s)
 		s = re.sub(r'(l_\.str|ltmp|LJTI|lJTI|l___const|lCPI)[\.\d_]+', r'\1', s)
+		# GCC's local labels (.LC0, .LANCHOR1, .L42) and clone suffixes
+		s = re.sub(r'\.L[A-Za-z]*\d+', '.L', s)
+		# GCC addresses merged strings through the section of whichever
+		# function emitted them first: section order, not content
+		s = re.sub(r'\.rodata\.[^ +]*\.str1\.\d+(\+0x[0-9a-f]+)?', '.rodata.str', s)
 		# relocation lines print an offset column too
 		s = re.sub(r'^[0-9a-f]+:\s+', '', s)
 		lines.append(s)
-		if not s.startswith('ARM64_RELOC'):
+		if not s.startswith(('ARM64_RELOC', 'R_AARCH64', 'R_X86_64')):
 			n += 1
 	flush()
 	return funcs

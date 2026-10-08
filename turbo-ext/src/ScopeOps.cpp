@@ -69,11 +69,11 @@ static void pt_scope_offsets_free(zval *zv)
 static void pt_scope_offsets_collect_memos(zend_class_entry *ce, pt_scope_offsets *off)
 {
 	off->memo_count = 0;
-	off->memo_offsets = ce->default_properties_count > 0
-		? (uint32_t *) safe_emalloc((size_t) ce->default_properties_count, sizeof(uint32_t), 0)
+	off->memo_offsets = PT_CE(ce, default_properties_count) > 0
+		? (uint32_t *) safe_emalloc((size_t) PT_CE(ce, default_properties_count), sizeof(uint32_t), 0)
 		: NULL;
 	for (zend_class_entry *declaring = ce; declaring != NULL; declaring = declaring->parent) {
-		for (auto entry : zv::TableRef(&declaring->properties_info)) {
+		for (auto entry : zv::TableRef(&PT_CE(declaring, properties_info))) {
 			zend_property_info *info = (zend_property_info *) Z_PTR_P(entry.value().raw());
 			if (info->ce != declaring || (info->flags & ZEND_ACC_STATIC) != 0 || !ZEND_TYPE_IS_SET(info->type)) continue;
 			if (Z_TYPE(CE_DEFAULT_PROPERTIES_TABLE(ce)[OBJ_PROP_TO_NUM(info->offset)]) == IS_UNDEF) continue;
@@ -84,7 +84,7 @@ static void pt_scope_offsets_collect_memos(zend_class_entry *ce, pt_scope_offset
 					break;
 				}
 			}
-			if (!seen && off->memo_count < (uint32_t) ce->default_properties_count) off->memo_offsets[off->memo_count++] = info->offset;
+			if (!seen && off->memo_count < (uint32_t) PT_CE(ce, default_properties_count)) off->memo_offsets[off->memo_count++] = info->offset;
 		}
 	}
 }
@@ -1162,7 +1162,7 @@ private:
 	/* Scope property slot by name, deref'd; NULL + throw when missing. */
 	static zval *scopeProp(zval *scope, const char *name, size_t len)
 	{
-		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&Z_OBJCE_P(scope)->properties_info, name, len);
+		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(Z_OBJCE_P(scope), properties_info), name, len);
 		if (UNEXPECTED(info == NULL || (info->flags & ZEND_ACC_STATIC) != 0)) {
 			zend_throw_error(NULL, "phpstan_turbo: %s property not found", name);
 			return NULL;
@@ -1504,7 +1504,7 @@ private:
 			}
 			if (instanceof_function(node->ce, nameCe)) {
 				/* toLowerString() in [self, static, parent]? */
-				zend_function *toLower = (zend_function *) zend_hash_str_find_ptr(&node->ce->function_table, "tolowerstring", sizeof("tolowerstring") - 1);
+				zend_function *toLower = (zend_function *) zend_hash_str_find_ptr(&PT_CE(node->ce, function_table), "tolowerstring", sizeof("tolowerstring") - 1);
 				if (UNEXPECTED(toLower == NULL)) {
 					ctx->failed = true;
 					return false;
@@ -1527,7 +1527,7 @@ private:
 				/* getClassReflection() !== null && getClassReflection()->is(resolveName($node)) */
 				if (!ctx->class_reflection_fetched) {
 					zend_class_entry *scopeCe = Z_OBJCE_P(ctx->scope);
-					zend_function *getClassReflection = (zend_function *) zend_hash_str_find_ptr(&scopeCe->function_table, "getclassreflection", sizeof("getclassreflection") - 1);
+					zend_function *getClassReflection = (zend_function *) zend_hash_str_find_ptr(&PT_CE(scopeCe, function_table), "getclassreflection", sizeof("getclassreflection") - 1);
 					if (UNEXPECTED(getClassReflection == NULL)) {
 						ctx->failed = true;
 						return false;
@@ -1541,7 +1541,7 @@ private:
 				}
 				if (Z_TYPE(ctx->class_reflection) == IS_OBJECT) {
 					zend_class_entry *scopeCe = Z_OBJCE_P(ctx->scope);
-					zend_function *resolveName = (zend_function *) zend_hash_str_find_ptr(&scopeCe->function_table, "resolvename", sizeof("resolvename") - 1);
+					zend_function *resolveName = (zend_function *) zend_hash_str_find_ptr(&PT_CE(scopeCe, function_table), "resolvename", sizeof("resolvename") - 1);
 					if (UNEXPECTED(resolveName == NULL)) {
 						ctx->failed = true;
 						return false;
@@ -1556,7 +1556,7 @@ private:
 					zv::Val resolved = zv::Val::adopt(resolvedRaw);
 
 					zend_class_entry *reflectionCe = Z_OBJCE(ctx->class_reflection);
-					zend_function *isFn = (zend_function *) zend_hash_str_find_ptr(&reflectionCe->function_table, "is", sizeof("is") - 1);
+					zend_function *isFn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(reflectionCe, function_table), "is", sizeof("is") - 1);
 					if (UNEXPECTED(isFn == NULL)) {
 						ctx->failed = true;
 						return false;

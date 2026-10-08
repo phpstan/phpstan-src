@@ -137,7 +137,7 @@ static void throwMapped(int classIdx, uint32_t argc, zval *argv)
 {
 	zend_class_entry *ce = pt_class(classIdx);
 	if (UNEXPECTED(ce == NULL)) return NULL;
-	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, len);
+	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&PT_CE(ce, constants_table), name, len);
 	if (UNEXPECTED(constant == NULL)) {
 		zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
 		return NULL;
@@ -616,7 +616,7 @@ public:
 		}
 
 		/* foreach (self::EQUAL_UNION_CLASSES as $baseClass => $classes) */
-		zend_class_constant *equalUnionClasses = (zend_class_constant *) zend_hash_str_find_ptr(&pt_ce_union_type->constants_table, PT_LC("EQUAL_UNION_CLASSES"));
+		zend_class_constant *equalUnionClasses = (zend_class_constant *) zend_hash_str_find_ptr(&PT_CE(pt_ce_union_type, constants_table), PT_LC("EQUAL_UNION_CLASSES"));
 		if (UNEXPECTED(equalUnionClasses == NULL || Z_TYPE(equalUnionClasses->value) != IS_ARRAY)) {
 			zend_throw_error(NULL, "phpstan_turbo: %s::EQUAL_UNION_CLASSES not found", ZSTR_VAL(pt_ce_union_type->name));
 			return zv::Val();

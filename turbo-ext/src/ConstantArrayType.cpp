@@ -6821,7 +6821,7 @@ private:
 		zend_class_entry *ce = pt_class(PT_CLASS_ARRAY_SHAPE_NODE);
 		if (UNEXPECTED(ce == NULL)) return zv::Val();
 		const char *name = asList ? "KIND_LIST" : "KIND_ARRAY";
-		zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, strlen(name));
+		zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&PT_CE(ce, constants_table), name, strlen(name));
 		if (UNEXPECTED(constant == NULL)) {
 			zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
 			return zv::Val();

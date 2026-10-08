@@ -56,7 +56,7 @@ zend_class_entry *pt_ce_constant_string_type = nullptr;
  * exception */
 static zval *pt_class_constant(zend_class_entry *ce, const char *name, size_t len)
 {
-	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, len);
+	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&PT_CE(ce, constants_table), name, len);
 	if (UNEXPECTED(constant == NULL)) {
 		zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
 		return NULL;
@@ -623,7 +623,7 @@ public:
 			zval genericRaw;
 			if (UNEXPECTED(object_init_ex(&genericRaw, pt_ce_generic_class_string_type) != SUCCESS)) return zv::Val();
 			zv::Val generic = zv::Val::adopt(genericRaw);
-			zend_call_known_instance_method(pt_ce_generic_class_string_type->constructor, Z_OBJ_P(generic.raw()), NULL, 1, innerObjectType.raw());
+			zend_call_known_instance_method(PT_CE(pt_ce_generic_class_string_type, constructor), Z_OBJ_P(generic.raw()), NULL, 1, innerObjectType.raw());
 			if (UNEXPECTED(EG(exception))) return zv::Val();
 			zv::Arr types = zv::Arr::create(2);
 			types.push(std::move(objectType));

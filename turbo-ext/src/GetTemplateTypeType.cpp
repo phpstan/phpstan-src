@@ -248,7 +248,7 @@ private:
 	 * pending when missing */
 	[[nodiscard]] static zval *classConstant(zend_class_entry *ce, const char *name, size_t len)
 	{
-		zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, len);
+		zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&PT_CE(ce, constants_table), name, len);
 		if (UNEXPECTED(constant == NULL)) {
 			zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
 			return NULL;

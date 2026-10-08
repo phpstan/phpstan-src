@@ -437,7 +437,7 @@ void ParserEngine::parseEscapeSequencesInPart(zv::Ref partNode, const char *quot
 	NodeClassInfo *cls = resolveNodeClass("Scalar\\String_", true);
 	if (cls == NULL || cls->ce == NULL) return;
 	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(
-		&cls->ce->function_table, "parseescapesequences", sizeof("parseescapesequences") - 1);
+		&PT_CE(cls->ce, function_table), "parseescapesequences", sizeof("parseescapesequences") - 1);
 	if (fn == NULL) return;
 	zv::Ref value = prop(partNode, "value");
 	if (value.raw() == NULL) return;

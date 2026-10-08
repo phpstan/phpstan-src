@@ -192,9 +192,9 @@ bool pt_name_node_is_fully_qualified(zval *node, bool &out)
 zv::Val pt_name_node_new(int classIdx, zval *name)
 {
 	/* Name: final public function __construct($name, array $attributes = []) {
-	 *     $this->attributes = $attributes; $this->name = self::prepareName($name); }
+	 *     $PT_CE(this, attributes) = $attributes; $this->name = self::prepareName($name); }
 	 * Identifier: public function __construct(string $name, array $attributes = []) {
-	 *     if ($name === '') throw ...; $this->attributes = $attributes; $this->name = $name; }
+	 *     if ($name === '') throw ...; $PT_CE(this, attributes) = $attributes; $this->name = $name; }
 	 * — for a non-empty string both write it as is */
 	if (EXPECTED(Z_TYPE_P(name) == IS_STRING && Z_STRLEN_P(name) != 0)) {
 		zend_class_entry *ce = pt_class(classIdx);

@@ -103,7 +103,7 @@ zv::Val weakReferenceCreate(zval *object)
 {
 	static zend_function *create = NULL;
 	if (UNEXPECTED(create == NULL)) {
-		create = (zend_function *) zend_hash_str_find_ptr(&zend_ce_weakref->function_table, ZEND_STRL("create"));
+		create = (zend_function *) zend_hash_str_find_ptr(&PT_CE(zend_ce_weakref, function_table), ZEND_STRL("create"));
 		ZEND_ASSERT(create != NULL);
 	}
 	zval result;

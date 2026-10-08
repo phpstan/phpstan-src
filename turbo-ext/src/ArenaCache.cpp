@@ -294,12 +294,12 @@ static bool objectClassCodecable(zend_class_entry *ce)
 {
 	if (ce->type == ZEND_INTERNAL_CLASS && ce != zend_standard_class_def) return false;
 	if ((ce->ce_flags & (ZEND_ACC_INTERFACE | ZEND_ACC_ABSTRACT | ZEND_ACC_ENUM)) != 0) return false;
-	if (ce->__serialize != NULL || ce->__unserialize != NULL) return false;
-	if (zend_hash_str_exists(&ce->function_table, "__wakeup", sizeof("__wakeup") - 1)
-		|| zend_hash_str_exists(&ce->function_table, "__sleep", sizeof("__sleep") - 1)) {
+	if (PT_CE(ce, __serialize) != NULL || PT_CE(ce, __unserialize) != NULL) return false;
+	if (zend_hash_str_exists(&PT_CE(ce, function_table), "__wakeup", sizeof("__wakeup") - 1)
+		|| zend_hash_str_exists(&PT_CE(ce, function_table), "__sleep", sizeof("__sleep") - 1)) {
 		return false;
 	}
-	if (ce->create_object != NULL) return false;
+	if (PT_CE(ce, create_object) != NULL) return false;
 	return true;
 }
 

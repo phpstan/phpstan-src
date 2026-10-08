@@ -249,7 +249,7 @@ static CePlan cePlan(zend_class_entry *ce)
 		kind = CE_STRUCTURAL;
 	}
 
-	CePlan plan = { kind, (uint32_t) ce->default_properties_count };
+	CePlan plan = { kind, (uint32_t) PT_CE(ce, default_properties_count) };
 	zval packed;
 	ZVAL_LONG(&packed, ((zend_long) plan.slots << 1) | (zend_long) plan.kind);
 	zend_hash_index_add(&pt_ce_kinds, (zend_ulong) (uintptr_t) ce, &packed);
@@ -365,7 +365,7 @@ static bool hashZval(zval *value, Hash128 &h, uint32_t depth)
  * guarantee the object is CE_STRUCTURAL, so the plan does not need consulting. */
 static zend_always_inline bool hashZeroSlotObject(zend_object *obj, Hash128 &out)
 {
-	if (obj->ce->default_properties_count != 0) return false;
+	if (PT_CE(obj->ce, default_properties_count) != 0) return false;
 	Hash128 h = { FNV_OFFSET_A, FNV_OFFSET_B };
 	mixU64(h, (uint64_t) (uintptr_t) obj->ce);
 	out = h;
@@ -749,9 +749,9 @@ static zend_object *typeObjectClone(zend_object *old)
 	header->memoGeneration = 0;
 	zend_object_std_init(&header->std, old->ce);
 	header->std.handlers = pt_type_object_handlers;
-	if (old->ce->default_properties_count) {
+	if (PT_CE(old->ce, default_properties_count)) {
 		zval *p = header->std.properties_table;
-		zval *end = p + old->ce->default_properties_count;
+		zval *end = p + PT_CE(old->ce, default_properties_count);
 		do {
 			ZVAL_UNDEF(p);
 			p++;
@@ -996,14 +996,14 @@ zv::Val pt_type_combinator_cache_remove(zval *fromType, zval *typeToRemove)
  * of its own is left alone and keeps the weak maps. */
 void pt_type_combinator_cache_adopt_class(zend_class_entry *ce, const char *realName)
 {
-	if (ce->create_object != NULL) return;
+	if (PT_CE(ce, create_object) != NULL) return;
 	size_t len = strlen(realName);
 	bool structural = (len > sizeof("PHPStan\\Type\\") - 1 && memcmp(realName, "PHPStan\\Type\\", sizeof("PHPStan\\Type\\") - 1) == 0)
 		|| (len > sizeof("PHPStan\\Php\\") - 1 && memcmp(realName, "PHPStan\\Php\\", sizeof("PHPStan\\Php\\") - 1) == 0)
 		|| strcmp(realName, "PHPStan\\TrinaryLogic") == 0;
 	if (!structural) return;
 	phpstanturbo::typeObjectHandlersInit();
-	ce->create_object = phpstanturbo::typeObjectCreate;
+	PT_CE(ce, create_object) = phpstanturbo::typeObjectCreate;
 }
 
 void pt_type_combinator_cache_clear()

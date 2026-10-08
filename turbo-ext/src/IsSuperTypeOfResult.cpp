@@ -719,7 +719,7 @@ PT_MINIT_REGISTRATION(pt_register_is_super_type_of_result)
 	holder.method("__invoke", reg::Public, 0, {}, IsSuperTypeOfResult::invokeDecoratedLazyReason);
 	pt_ce_decorated_lazy_reason = holder.register_();
 	pt_ce_decorated_lazy_reason->ce_flags |= ZEND_ACC_FINAL;
-	pt_decorated_lazy_reason_invoke = (zend_function *) zend_hash_str_find_ptr(&pt_ce_decorated_lazy_reason->function_table, "__invoke", sizeof("__invoke") - 1);
+	pt_decorated_lazy_reason_invoke = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_decorated_lazy_reason, function_table), "__invoke", sizeof("__invoke") - 1);
 	ZEND_ASSERT(pt_decorated_lazy_reason_invoke != NULL);
 }
 

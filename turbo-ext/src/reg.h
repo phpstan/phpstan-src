@@ -652,6 +652,8 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 
 /* Shadow.cpp: the plan registry and Runtime::activateShadowing() */
 void pt_shadow_plan_add(reg::ShadowPlan &&plan);
+/* every recorded plan, for the activation (Shadow.cpp) */
+PT_CORE_API std::vector<reg::ShadowPlan> &pt_shadow_plans();
 
 namespace reg {
 

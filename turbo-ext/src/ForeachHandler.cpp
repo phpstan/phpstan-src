@@ -117,8 +117,8 @@ DocCommentMethodCache pt_feh_doc_comment_cache;
 	if (UNEXPECTED(cache.ce != ce || cache.generation != pt_engine_generation)) {
 		zend_class_entry *nodeAbstract = pt_class(PT_CLASS_NODE_ABSTRACT);
 		if (UNEXPECTED(nodeAbstract == NULL)) return false;
-		zend_function *base = (zend_function *) zend_hash_str_find_ptr(&nodeAbstract->function_table, PT_LC("getdoccomment"));
-		zend_function *own = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("getdoccomment"));
+		zend_function *base = (zend_function *) zend_hash_str_find_ptr(&PT_CE(nodeAbstract, function_table), PT_LC("getdoccomment"));
+		zend_function *own = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("getdoccomment"));
 		cache = { ce, pt_engine_generation, base != NULL && own == base, base };
 	}
 	if (EXPECTED(cache.inherits)) {

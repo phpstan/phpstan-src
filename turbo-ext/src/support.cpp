@@ -613,7 +613,7 @@ ZEND_COLD void pt_throw_undefined_method(zend_class_entry *ce, const char *lcnam
 	const char *name = lcname;
 	zend_class_entry *typeCe = pt_class_loaded(PT_CLASS_TYPE);
 	if (typeCe != NULL) {
-		zend_function *declared = (zend_function *) zend_hash_str_find_ptr(&typeCe->function_table, lcname, len);
+		zend_function *declared = (zend_function *) zend_hash_str_find_ptr(&PT_CE(typeCe, function_table), lcname, len);
 		if (declared != NULL) name = ZSTR_VAL(declared->common.function_name);
 	}
 	zend_throw_error(NULL, "Call to undefined method %s::%s()", ZSTR_VAL(ce->name), name);
@@ -621,7 +621,7 @@ ZEND_COLD void pt_throw_undefined_method(zend_class_entry *ce, const char *lcnam
 
 zend_function *pt_find_method(zend_class_entry *ce, const char *lcname, size_t len)
 {
-	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcname, len);
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), lcname, len);
 	if (UNEXPECTED(fn == NULL)) {
 		pt_throw_undefined_method(ce, lcname, len);
 	}
@@ -677,7 +677,7 @@ void pt_throw_should_not_happen()
 bool pt_call_scope_bool(zval *scope, const char *lcname, size_t len, uint32_t argc, zval *argv, bool *out)
 {
 	zend_class_entry *ce = Z_OBJCE_P(scope);
-	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcname, len);
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), lcname, len);
 	zval ret;
 
 	if (UNEXPECTED(fn == NULL)) {
@@ -706,7 +706,7 @@ static void pt_node_class_info_free(zval *zv)
 
 int32_t pt_instance_prop_offset(zend_class_entry *ce, const char *name, size_t len)
 {
-	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, name, len);
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), name, len);
 	if (info == NULL || (info->flags & ZEND_ACC_STATIC) != 0) return -1;
 	return (int32_t) info->offset;
 }
@@ -746,7 +746,7 @@ uint32_t pt_node_print_kind(zend_object *node)
 	if (UNEXPECTED(info == NULL)) return 0;
 	if (EXPECTED(info->print_kind != 0)) return info->print_kind;
 
-	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&node->ce->function_table, "gettype", sizeof("gettype") - 1);
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(node->ce, function_table), "gettype", sizeof("gettype") - 1);
 	if (UNEXPECTED(fn == NULL)) {
 		zend_throw_error(NULL, "phpstan_turbo: %s has no getType()", ZSTR_VAL(node->ce->name));
 		return 0;
@@ -802,7 +802,7 @@ pt_node_class_info *pt_node_class_info_for_object(zend_object *obj)
 	if (info == NULL) return NULL;
 	if (info->subnode_offsets != NULL || info->subnode_count == UINT32_MAX) return info;
 
-	fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, "getsubnodenames", sizeof("getsubnodenames") - 1);
+	fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), "getsubnodenames", sizeof("getsubnodenames") - 1);
 	if (fn == NULL || (fn->common.fn_flags & ZEND_ACC_ABSTRACT) != 0) {
 		info->subnode_count = UINT32_MAX;
 		return info;
@@ -1139,7 +1139,7 @@ uint32_t pt_call_like_classes_next = 0;
 /* the method's declaring class is one of the class-map classes */
 bool pt_call_like_declared_by(zend_class_entry *ce, const char *lcname, size_t len, std::initializer_list<int> classIdxs)
 {
-	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcname, len);
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), lcname, len);
 	if (fn == NULL) return false;
 	for (int classIdx : classIdxs) {
 		if (fn->common.scope == pt_class_loaded(classIdx)) return true;
@@ -1153,7 +1153,7 @@ int32_t pt_call_like_resolve(zend_class_entry *ce)
 		if (entry.ce == ce && entry.generation == pt_engine_generation) return entry.argsOffset;
 	}
 	int32_t argsOffset = -1;
-	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, "args", sizeof("args") - 1);
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), "args", sizeof("args") - 1);
 	if (info != NULL && (info->flags & ZEND_ACC_STATIC) == 0
 		&& pt_call_like_declared_by(ce, PT_LC("getrawargs"), { PT_CLASS_FUNC_CALL, PT_CLASS_METHOD_CALL, PT_CLASS_NULLSAFE_METHOD_CALL, PT_CLASS_STATIC_CALL, PT_CLASS_NEW })
 		&& pt_call_like_declared_by(ce, PT_LC("isfirstclasscallable"), { PT_CLASS_CALL_LIKE })

@@ -66,7 +66,7 @@
 
 bool pt_type_method_is(zend_object *object, const char *lcname, size_t len, zif_handler handler)
 {
-	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&object->ce->function_table, lcname, len);
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(object->ce, function_table), lcname, len);
 	return fn != NULL && fn->type == ZEND_INTERNAL_FUNCTION && PT_INTERNAL_HANDLER(fn) == handler;
 }
 
@@ -81,7 +81,7 @@ bool pt_type_method_inherited_resolve(pt_method_is_site &site, zend_object *obje
 {
 	/* not activated yet: nothing to remember */
 	if (UNEXPECTED(base == NULL)) return false;
-	zend_function *own = (zend_function *) zend_hash_str_find_ptr(&base->function_table, lcname, len);
+	zend_function *own = (zend_function *) zend_hash_str_find_ptr(&PT_CE(base, function_table), lcname, len);
 	bool is = own != NULL && own->type == ZEND_INTERNAL_FUNCTION && pt_type_method_is(object, lcname, len, PT_INTERNAL_HANDLER(own));
 	site = { object->ce, lcname, (uintptr_t) base, pt_engine_generation, is };
 	return is;
@@ -145,7 +145,7 @@ zend_long pt_type_trinary_value(zval *trinary)
 		if (EXPECTED(object->ce == pt_ce_trinary)) return pt_trinary_value(object);
 		/* the PHP twin declared next to the native class in the differential
 		 * tests: the same private int $value, found by name */
-		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&object->ce->properties_info, PT_LC("value"));
+		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(object->ce, properties_info), PT_LC("value"));
 		if (info != NULL && (info->flags & ZEND_ACC_STATIC) == 0) {
 			zval *slot = OBJ_PROP(object, info->offset);
 			if (Z_TYPE_P(slot) == IS_LONG) return Z_LVAL_P(slot);
@@ -170,8 +170,8 @@ zv::Val pt_type_new(int classIdx, uint32_t argc, zval *argv)
 	if (UNEXPECTED(ce == NULL)) return zv::Val();
 	zval object;
 	if (UNEXPECTED(object_init_ex(&object, ce) != SUCCESS)) return zv::Val();
-	if (ce->constructor != NULL) {
-		zend_call_known_instance_method(ce->constructor, Z_OBJ(object), NULL, argc, argv);
+	if (PT_CE(ce, constructor) != NULL) {
+		zend_call_known_instance_method(PT_CE(ce, constructor), Z_OBJ(object), NULL, argc, argv);
 		if (UNEXPECTED(EG(exception))) {
 			zval_ptr_dtor(&object);
 			return zv::Val();
@@ -955,7 +955,7 @@ void pt_type_trait_non_generalizable(reg::Class &cls)
  * twin's typed-property read raises */
 [[nodiscard]] zval *pt_type_constant_scalar_value(zend_object *object, zend_class_entry *scope)
 {
-	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&scope->properties_info, PT_LC("value"));
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(scope, properties_info), PT_LC("value"));
 	if (UNEXPECTED(info == NULL || (info->flags & ZEND_ACC_STATIC) != 0)) {
 		zend_throw_error(NULL, "phpstan_turbo: %s declares no $value property for ConstantScalarTypeTrait", ZSTR_VAL(scope->name));
 		return NULL;
@@ -1358,7 +1358,7 @@ PT_MINIT_REGISTRATION(pt_register_type_traits)
 	holder.method("__invoke", reg::Public, 1, { reg::obj("type", ptcls::type) }, invokeGeneralizeCallback);
 	pt_ce_generalize_callback = holder.register_();
 	pt_ce_generalize_callback->ce_flags |= ZEND_ACC_FINAL;
-	pt_generalize_callback_invoke = (zend_function *) zend_hash_str_find_ptr(&pt_ce_generalize_callback->function_table, PT_LC("__invoke"));
+	pt_generalize_callback_invoke = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_generalize_callback, function_table), PT_LC("__invoke"));
 	ZEND_ASSERT(pt_generalize_callback_invoke != NULL);
 	pt_register_native_callback();
 }
@@ -1924,8 +1924,8 @@ zv::Val pt_type_new_ce(zend_class_entry *ce, uint32_t argc, zval *argv)
 {
 	zval object;
 	if (UNEXPECTED(object_init_ex(&object, ce) != SUCCESS)) return zv::Val();
-	if (ce->constructor != NULL) {
-		zend_call_known_instance_method(ce->constructor, Z_OBJ(object), NULL, argc, argv);
+	if (PT_CE(ce, constructor) != NULL) {
+		zend_call_known_instance_method(PT_CE(ce, constructor), Z_OBJ(object), NULL, argc, argv);
 		if (UNEXPECTED(EG(exception))) {
 			zval_ptr_dtor(&object);
 			return zv::Val();
@@ -2650,7 +2650,7 @@ bool pt_type_unsafe_array_string_key_casting_not_prevented(bool &out)
 	if (UNEXPECTED(level.isUndef())) return false;
 	zend_class_entry *ce = pt_class(PT_CLASS_REPORT_UNSAFE_ARRAY_STRING_KEY_CASTING_TOGGLE);
 	if (UNEXPECTED(ce == NULL)) return false;
-	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, PT_LC("PREVENT"));
+	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&PT_CE(ce, constants_table), PT_LC("PREVENT"));
 	if (UNEXPECTED(constant == NULL)) {
 		zend_throw_error(NULL, "phpstan_turbo: %s::PREVENT not found", ZSTR_VAL(ce->name));
 		return false;
@@ -3374,7 +3374,7 @@ zv::Val pt_carr_native_closure(pt_native_callback fn, zval *state0, zval *state1
 {
 	zv::Val holder = pt_type_native_callback(fn, state0, state1);
 	if (UNEXPECTED(holder.isUndef())) return zv::Val();
-	zend_function *invoke = (zend_function *) zend_hash_str_find_ptr(&pt_ce_native_callback->function_table, PT_LC("__invoke"));
+	zend_function *invoke = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_native_callback, function_table), PT_LC("__invoke"));
 	ZEND_ASSERT(invoke != NULL);
 	return pt_type_closure_over(invoke, pt_ce_native_callback, Z_OBJ_P(holder.raw()));
 }
@@ -3425,7 +3425,7 @@ public:
 	 * an Error pending when scope declares none */
 	zval *resultSlot() const
 	{
-		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&scope->properties_info, PT_LC("result"));
+		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(scope, properties_info), PT_LC("result"));
 		if (UNEXPECTED(info == NULL || (info->flags & ZEND_ACC_STATIC) != 0)) {
 			zend_throw_error(NULL, "phpstan_turbo: %s declares no $result property for LateResolvableTypeTrait", ZSTR_VAL(scope->name));
 			return NULL;
@@ -3494,7 +3494,7 @@ public:
 		zv::Val result = resolved();
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		zend_object *target = Z_OBJ_P(result.raw());
-		zend_function *fn = (zend_function *) zend_hash_find_ptr_lc(&target->ce->function_table, name);
+		zend_function *fn = (zend_function *) zend_hash_find_ptr_lc(&PT_CE(target->ce, function_table), name);
 		if (UNEXPECTED(fn == NULL)) {
 			zend_throw_error(NULL, "Call to undefined method %s::%s()", ZSTR_VAL(target->ce->name), ZSTR_VAL(name));
 			return zv::Val();
@@ -3910,7 +3910,7 @@ public:
 
 	static zval *slotOf(zend_object *object, zend_class_entry *scope, int index)
 	{
-		return OBJ_PROP_NUM(object, (uint32_t) scope->default_properties_count - PT_TT_PROP_COUNT + (uint32_t) index);
+		return OBJ_PROP_NUM(object, (uint32_t) PT_CE(scope, default_properties_count) - PT_TT_PROP_COUNT + (uint32_t) index);
 	}
 
 	/* a slot read as the twin's typed-property read: NULL with an Error
@@ -3936,7 +3936,7 @@ public:
 	void init(zval *templateScope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType) const
 	{
 		zv::ObjRef object(self);
-		uint32_t base = (uint32_t) scope->default_properties_count - PT_TT_PROP_COUNT;
+		uint32_t base = (uint32_t) PT_CE(scope, default_properties_count) - PT_TT_PROP_COUNT;
 		object.propAtWrite(base + PT_TT_PROP_SCOPE, zv::Val::copyOf(zv::Ref(templateScope)));
 		object.propAtWrite(base + PT_TT_PROP_STRATEGY, zv::Val::copyOf(zv::Ref(strategy)));
 		object.propAtWrite(base + PT_TT_PROP_VARIANCE, zv::Val::copyOf(zv::Ref(variance)));

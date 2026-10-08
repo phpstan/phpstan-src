@@ -58,7 +58,7 @@ zend_function *pt_ncs_weakref_get_fn = nullptr;
 zv::Val weakReferenceCall(zend_function *&fn, const char *lcname, size_t len, zend_object *object, uint32_t argc, zval *argv)
 {
 	if (UNEXPECTED(fn == nullptr)) {
-		fn = (zend_function *) zend_hash_str_find_ptr(&zend_ce_weakref->function_table, lcname, len);
+		fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(zend_ce_weakref, function_table), lcname, len);
 		if (UNEXPECTED(fn == nullptr)) {
 			zend_throw_error(NULL, "phpstan_turbo: WeakReference::%s() does not exist", lcname);
 			return zv::Val();

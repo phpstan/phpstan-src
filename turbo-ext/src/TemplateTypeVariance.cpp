@@ -33,7 +33,7 @@ static zval *pt_ttv_registry()
 		if (CE_STATIC_MEMBERS(ce) == NULL) {
 			zend_class_init_statics(ce);
 		}
-		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, PT_LC("registry"));
+		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), PT_LC("registry"));
 		ZEND_ASSERT(info != NULL && (info->flags & ZEND_ACC_STATIC) != 0);
 		pt_ttv_registry_slot = CE_STATIC_MEMBERS(ce) + info->offset;
 		pt_ttv_registry_ce = ce;
@@ -45,7 +45,7 @@ static zval *pt_ttv_registry()
  * exception */
 static zval *pt_ttv_class_constant(zend_class_entry *ce, const char *name, size_t len)
 {
-	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, len);
+	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&PT_CE(ce, constants_table), name, len);
 	if (UNEXPECTED(constant == NULL)) {
 		zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
 		return NULL;

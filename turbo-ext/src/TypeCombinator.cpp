@@ -541,7 +541,7 @@ public:
 			return true;
 		}
 		if (UNEXPECTED(ce != cacheEnabledCe)) {
-			zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, PT_LC("cacheEnabled"));
+			zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), PT_LC("cacheEnabled"));
 			if (UNEXPECTED(info == NULL || (info->flags & ZEND_ACC_STATIC) == 0)) {
 				zend_throw_error(NULL, "phpstan_turbo: %s::$cacheEnabled not found", ZSTR_VAL(ce->name));
 				return false;

@@ -102,7 +102,7 @@ const RegistryMemberNames pt_registry_member_names[PT_REGISTRY_MEMBER_COUNT] = {
 zval *staticSlot(zend_class_entry *ce, const char *name, size_t len)
 {
 	if (UNEXPECTED(!(ce->ce_flags & ZEND_ACC_CONSTANTS_UPDATED)) || UNEXPECTED(CE_STATIC_MEMBERS(ce) == NULL)) return NULL;
-	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, name, len);
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), name, len);
 	if (UNEXPECTED(info == NULL || (info->flags & ZEND_ACC_STATIC) == 0)) return NULL;
 	return CE_STATIC_MEMBERS(ce) + info->offset;
 }

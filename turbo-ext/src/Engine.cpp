@@ -211,8 +211,8 @@ PT_MINIT_REGISTRATION(pt_register_native_closure)
 	holder.method("__invoke", reg::Public, 0, { reg::Arg{ "args", reg::detail::flagBits(false, true), nullptr } }, invokeNativeClosure);
 	pt_ce_native_closure = holder.register_();
 	pt_ce_native_closure->ce_flags |= ZEND_ACC_FINAL | ZEND_ACC_NO_DYNAMIC_PROPERTIES | ZEND_ACC_NOT_SERIALIZABLE;
-	pt_ce_native_closure->create_object = createClosureObject;
-	pt_native_closure_invoke_fn = (zend_function *) zend_hash_str_find_ptr(&pt_ce_native_closure->function_table, PT_LC("__invoke"));
+	PT_CE(pt_ce_native_closure, create_object) = createClosureObject;
+	pt_native_closure_invoke_fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_native_closure, function_table), PT_LC("__invoke"));
 	ZEND_ASSERT(pt_native_closure_invoke_fn != NULL);
 }
 
@@ -597,10 +597,10 @@ const NodeAbstractInfo *nodeAbstractInfo()
 	if (EXPECTED(pt_node_abstract_info.generation == pt_engine_generation && pt_node_abstract_info.ce != NULL)) return &pt_node_abstract_info;
 	zend_class_entry *ce = pt_class(PT_CLASS_NODE_ABSTRACT);
 	if (UNEXPECTED(ce == NULL)) return NULL;
-	zend_property_info *attributes = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, PT_LC("attributes"));
-	zend_function *getAttribute = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("getattribute"));
-	zend_function *setAttribute = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("setattribute"));
-	zend_function *getComments = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("getcomments"));
+	zend_property_info *attributes = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), PT_LC("attributes"));
+	zend_function *getAttribute = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("getattribute"));
+	zend_function *setAttribute = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("setattribute"));
+	zend_function *getComments = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("getcomments"));
 	if (UNEXPECTED(attributes == NULL || (attributes->flags & ZEND_ACC_STATIC) != 0 || getAttribute == NULL || setAttribute == NULL || getComments == NULL)) {
 		zend_throw_error(NULL, "phpstan_turbo: %s does not declare the attributes it is expected to", ZSTR_VAL(ce->name));
 		return NULL;
@@ -615,9 +615,9 @@ bool inheritsNodeAbstract(zend_class_entry *ce, const NodeAbstractInfo *info)
 	NodeClassEntry &entry = pt_node_class_cache[(size_t) (h >> (sizeof(uintptr_t) * 8 - PT_NODE_CLASS_CACHE_BITS))];
 	if (EXPECTED(entry.ce == ce && entry.generation == pt_engine_generation)) return entry.inherits;
 	bool inherits = instanceof_function(ce, info->ce)
-		&& zend_hash_str_find_ptr(&ce->function_table, PT_LC("getattribute")) == info->getAttribute
-		&& zend_hash_str_find_ptr(&ce->function_table, PT_LC("setattribute")) == info->setAttribute
-		&& zend_hash_str_find_ptr(&ce->function_table, PT_LC("getcomments")) == info->getComments;
+		&& zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("getattribute")) == info->getAttribute
+		&& zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("setattribute")) == info->setAttribute
+		&& zend_hash_str_find_ptr(&PT_CE(ce, function_table), PT_LC("getcomments")) == info->getComments;
 	entry = { ce, pt_engine_generation, inherits };
 	return inherits;
 }

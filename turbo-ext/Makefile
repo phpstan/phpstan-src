@@ -207,6 +207,11 @@ CXXFLAGS += $(PGO_FLAGS)
 SOURCES := $(wildcard src/*.cpp) $(wildcard src/parser/*.cpp)
 OBJECTS := $(SOURCES:.cpp=.o)
 
+# the objects alone — what bin/shared-core/gate-*.sh compare between the PHP
+# versions' headers
+objects: $(OBJECTS)
+.PHONY: objects
+
 phpstan_turbo.so: $(OBJECTS)
 	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LTO_FLAGS) $(LINK_FLAGS) $(PGO_FLAGS) -o $@ $(OBJECTS)
 	@# a shared object links with undefined symbols allowed (the engine's are

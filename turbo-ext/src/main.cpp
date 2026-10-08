@@ -18,27 +18,6 @@
 #include <unistd.h>
 #endif
 
-/* The Makefile's Linux build folds libstdc++ in statically, and with it the
- * default terminate handler, which demangles the type of the exception that
- * escaped — 45 KB of demangler for a path this code reaches only when a
- * standard container fails an internal check (it never throws or catches
- * itself). This definition keeps the archive's handler, and so the
- * demangler, out of the link. Only for the static link: against a shared
- * libstdc++ (the phpize build) the handler is the process's, not ours. The
- * signature must match <exception>'s declaration exactly — GCC rejects a
- * redeclaration adding [[noreturn]] or hidden visibility. */
-#ifdef PHPSTANTURBO_STATIC_LIBSTDCXX
-#include <cstdio>
-#include <cstdlib>
-namespace __gnu_cxx {
-void __verbose_terminate_handler()
-{
-	fputs("phpstan_turbo: terminate called (a C++ standard library check failed)\n", stderr);
-	abort();
-}
-} // namespace __gnu_cxx
-#endif
-
 /* The short SHA of the last commit touching the watched set: baked from git
  * by the Makefile (quoted string passed directly), or from the VERSION.txt
  * the subsplit workflow commits into phpstan/turbo-ext; "dev" with neither,
@@ -159,29 +138,6 @@ static void ZEND_FASTCALL runtimeExitImmediately(INTERNAL_FUNCTION_PARAMETERS)
 	_exit(EG(exit_status));
 }
 
-/* the PT_MINIT_REGISTRATION() functions of every file, in name order; a
- * constant-initialized pointer, so it is null before any of the file-static
- * registrations construct */
-static pt_minit_registration *pt_minit_registrations = nullptr;
-
-pt_minit_registration::pt_minit_registration(const char *name, void (*run)()) noexcept
-	: name(name), run(run), next(nullptr)
-{
-	pt_minit_registration **slot = &pt_minit_registrations;
-	while (*slot != nullptr && strcmp((*slot)->name, name) < 0) {
-		slot = &(*slot)->next;
-	}
-	next = *slot;
-	*slot = this;
-}
-
-void pt_minit_registrations_run()
-{
-	for (const pt_minit_registration *registration = pt_minit_registrations; registration != nullptr; registration = registration->next) {
-		registration->run();
-	}
-}
-
 static PHP_MINIT_FUNCTION(phpstan_turbo)
 {
 #ifdef ZTS
@@ -207,7 +163,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 
 static PHP_MSHUTDOWN_FUNCTION(phpstan_turbo)
 {
-	pt_arena_mshutdown();
+	pt_core_mshutdown();
 
 	return SUCCESS;
 }
@@ -219,35 +175,14 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_abi_init();
 #endif
 
-	pt_support_rinit();
-	pt_node_traverser_rinit();
-	pt_scope_ops_rinit();
-	pt_type_combinator_cache_rinit();
-	pt_is_super_type_of_result_rinit();
-	pt_accepts_result_rinit();
-	pt_integer_range_type_rinit();
-	pt_object_type_rinit();
-	pt_static_type_factory_rinit();
-	pt_scope_access_rinit();
-	pt_reflection_access_rinit();
-	pt_mutating_scope_rinit();
-	pt_variable_flow_rinit();
-	pt_engine_rinit();
+	pt_core_rinit();
 
 	return SUCCESS;
 }
 
 static PHP_RSHUTDOWN_FUNCTION(phpstan_turbo)
 {
-	pt_scope_ops_rshutdown();
-	pt_node_traverser_rshutdown();
-	pt_type_combinator_cache_rshutdown();
-	pt_is_super_type_of_result_rshutdown();
-	pt_accepts_result_rshutdown();
-	pt_support_rshutdown();
-	pt_object_type_rshutdown();
-	pt_static_type_factory_rshutdown();
-	pt_engine_rshutdown();
+	pt_core_rshutdown();
 
 	return SUCCESS;
 }

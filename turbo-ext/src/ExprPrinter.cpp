@@ -60,7 +60,7 @@ public:
 		}
 
 		zend_class_entry *ce = Z_OBJCE_P(printer);
-		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, "prettyprintexpr", sizeof("prettyprintexpr") - 1);
+		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), "prettyprintexpr", sizeof("prettyprintexpr") - 1);
 		if (UNEXPECTED(fn == NULL)) {
 			zend_throw_error(NULL, "phpstan_turbo: prettyPrintExpr not found");
 			return NULL;

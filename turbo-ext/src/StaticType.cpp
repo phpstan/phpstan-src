@@ -1035,10 +1035,10 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 	holder.method("toArgument", reg::PublicStatic, 2, { reg::stringArg("name"), reg::obj("type", ptcls::type) }, callbackToArgument, &ptret::type);
 	pt_ce_static_type_callbacks = holder.register_();
 	pt_ce_static_type_callbacks->ce_flags |= ZEND_ACC_FINAL;
-	pt_static_type_callbacks_transform = (zend_function *) zend_hash_str_find_ptr(&pt_ce_static_type_callbacks->function_table, PT_LC("transform"));
-	pt_static_type_callbacks_map = (zend_function *) zend_hash_str_find_ptr(&pt_ce_static_type_callbacks->function_table, PT_LC("map"));
-	pt_static_type_callbacks_guard = (zend_function *) zend_hash_str_find_ptr(&pt_ce_static_type_callbacks->function_table, PT_LC("guard"));
-	pt_static_type_callbacks_to_argument = (zend_function *) zend_hash_str_find_ptr(&pt_ce_static_type_callbacks->function_table, PT_LC("toargument"));
+	pt_static_type_callbacks_transform = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_static_type_callbacks, function_table), PT_LC("transform"));
+	pt_static_type_callbacks_map = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_static_type_callbacks, function_table), PT_LC("map"));
+	pt_static_type_callbacks_guard = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_static_type_callbacks, function_table), PT_LC("guard"));
+	pt_static_type_callbacks_to_argument = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_static_type_callbacks, function_table), PT_LC("toargument"));
 	ZEND_ASSERT(pt_static_type_callbacks_transform != NULL && pt_static_type_callbacks_map != NULL && pt_static_type_callbacks_guard != NULL && pt_static_type_callbacks_to_argument != NULL);
 
 	reg::Class cls("PHPStan\\Type\\StaticType");

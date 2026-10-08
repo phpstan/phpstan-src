@@ -25,7 +25,11 @@ use const PHP_ZTS;
  * The binaries are committed to the phpstan/phpstan repository next to
  * phpstan.phar (turbo-ext/<platform>/phpstan_turbo-<minor>.so, .dll on
  * Windows) by the phar.yml commit job, so they only exist for phar-based
- * installations —
+ * installations. Each is a thin per-PHP-version library loading the
+ * platform's shared core from its own directory (phpstan_turbo_core.so;
+ * phpstan_turbo_core.dll and phpstan_turbo_core-zts.dll on Windows, whose
+ * thread-safe PHP is a different DLL to link against), so both must be
+ * there —
  * a source checkout loads its locally built extension through php.ini
  * instead. Only non-debug builds for PHP >= MINIMUM_PHP_VERSION_ID are
  * shipped; a ZTS variant (-zts filename
@@ -105,7 +109,28 @@ final class TurboExtensionSelector
 			return null;
 		}
 
+		// without its core next to it, PHP would warn at startup that it
+		// cannot load the extension
+		if (!is_file(dirname($file) . '/' . self::resolveCoreFileName(PHP_OS_FAMILY, (bool) PHP_ZTS))) {
+			return null;
+		}
+
 		return $file;
+	}
+
+	/**
+	 * The shared core the extension binary loads, in the same directory.
+	 */
+	public static function resolveCoreFileName(string $osFamily, bool $zts): string
+	{
+		if ($osFamily === 'Windows') {
+			return $zts ? 'phpstan_turbo_core-zts.dll' : 'phpstan_turbo_core.dll';
+		}
+
+		// one core serves the thread-safe and the non-thread-safe extension:
+		// it reaches the engine's globals through the pointers the extension
+		// hands it, never through TSRM itself
+		return 'phpstan_turbo_core.so';
 	}
 
 	public static function resolvePlatformDirectory(string $osFamily, string $machine, bool $isMusl): ?string

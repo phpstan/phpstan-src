@@ -36,6 +36,24 @@ final class TurboExtensionSelectorTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @return iterable<array{string, bool, string}>
+	 */
+	public static function dataResolveCoreFileName(): iterable
+	{
+		yield ['Linux', false, 'phpstan_turbo_core.so'];
+		yield ['Linux', true, 'phpstan_turbo_core.so'];
+		yield ['Darwin', false, 'phpstan_turbo_core.so'];
+		yield ['Windows', false, 'phpstan_turbo_core.dll'];
+		yield ['Windows', true, 'phpstan_turbo_core-zts.dll'];
+	}
+
+	#[DataProvider('dataResolveCoreFileName')]
+	public function testResolveCoreFileName(string $osFamily, bool $zts, string $expected): void
+	{
+		$this->assertSame($expected, TurboExtensionSelector::resolveCoreFileName($osFamily, $zts));
+	}
+
+	/**
 	 * @return iterable<array{string|false, bool, bool}>
 	 */
 	public static function dataResolveIsMusl(): iterable

@@ -244,6 +244,9 @@ else
 NM_EXPORTS := nm -D --defined-only
 endif
 
+# `make` builds the extension (with SPLIT=1, the pair)
+.DEFAULT_GOAL := phpstan_turbo.so
+
 # the objects alone — what bin/shared-core/gate-*.sh compare between the PHP
 # versions' headers
 objects: $(OBJECTS)
@@ -288,13 +291,16 @@ extension: $(SHIM_OBJECTS)
 # only symbol PHP looks up is get_module, which stays in the dynamic table.
 # Local builds keep them — sample and perf name frames from them. Not a
 # dependency of phpstan_turbo.so on purpose: this runs after `make pgo`, and
-# must never rebuild what that produced with other flags.
+# must never rebuild what that produced with other flags. With SPLIT=1 the
+# core too; a plain `make strip` leaves a core put in place untouched (a
+# per-version leg must ship the core leg's bytes — on macOS restripping
+# would also invalidate its signature).
 strip:
 	@test -f phpstan_turbo.so || { echo "phpstan_turbo.so is missing — build it first"; exit 1; }
 ifeq ($(UNAME_S),Darwin)
-	strip -x phpstan_turbo.so $(wildcard $(CORE_LIB))
+	strip -x phpstan_turbo.so $(if $(filter 1,$(SPLIT)),$(CORE_LIB))
 else
-	strip --strip-unneeded phpstan_turbo.so $(wildcard $(CORE_LIB))
+	strip --strip-unneeded phpstan_turbo.so $(if $(filter 1,$(SPLIT)),$(CORE_LIB))
 endif
 
 # every object depends on every header: the op tables and the trait helper

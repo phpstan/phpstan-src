@@ -1,6 +1,6 @@
 #!/bin/sh
-# Builds and installs PHP $PHP_MINOR into /usr/local from the official
-# release tarball pinned below, thread-safe when $PHP_ZTS is 1. Used by the
+# Builds and installs the newest release of PHP $PHP_MINOR into /usr/local
+# from the official tarball, thread-safe when $PHP_ZTS is 1. Used by the
 # Dockerfile for the PHP builds ondrej/php does not ship (prerelease
 # minors, and every thread-safe build), and by the musl ZTS legs in
 # phar.yml, which run it in Alpine — Alpine packages no thread-safe PHP.
@@ -11,19 +11,39 @@
 # and curl, mbstring, openssl, xml and zlib for Composer.
 set -eu
 
-# The tarball for each minor this script builds; one pin shared by the
-# glibc image and the musl legs, so both build the same release.
-case "$PHP_MINOR" in
-	8.6)
-		PHP_VERSION=8.6.0RC2
-		PHP_URL=https://downloads.php.net/~mbeccati/php-8.6.0RC2.tar.xz
-		PHP_SHA256=ef3fba21c311e9bbace0e2102702446d322c275b8a10e6b33b28f2561299671c
-		;;
+# The release is resolved from php.net at build time, so the weekly image
+# rebuild and every musl leg pick up a new patch release (or the next
+# release candidate of a prerelease minor) without a change here: an
+# extension built against one patch release loads into every other of the
+# minor. The sha256 published next to the tarball guards the download. A
+# minor without a stable release yet is not in the releases API; its
+# current release candidate is in the pre-release one, under <minor>.0.
+php_net() {
+	curl -fsSL --retry 3 "$1"
+}
+RELEASE_JSON="$(php_net "https://www.php.net/releases/index.php?json&version=$PHP_MINOR")"
+PHP_VERSION="$(printf '%s' "$RELEASE_JSON" | jq -r '.version // empty')"
+if [ -n "$PHP_VERSION" ]; then
+	PHP_URL="https://www.php.net/distributions/php-$PHP_VERSION.tar.xz"
+	PHP_SHA256="$(printf '%s' "$RELEASE_JSON" | jq -r --arg file "php-$PHP_VERSION.tar.xz" '.source[] | select(.filename == $file) | .sha256')"
+else
+	PRERELEASE_JSON="$(php_net "https://www.php.net/pre-release-builds.php?format=json" | jq --arg minor "$PHP_MINOR.0" '.[$minor].release // empty')"
+	PHP_VERSION="$(printf '%s' "$PRERELEASE_JSON" | jq -r '.version // empty')"
+	PHP_URL="$(printf '%s' "$PRERELEASE_JSON" | jq -r '.files.xz.path // empty')"
+	PHP_SHA256="$(printf '%s' "$PRERELEASE_JSON" | jq -r '.files.xz.sha256 // empty')"
+fi
+case "$PHP_VERSION" in
+	"$PHP_MINOR".*) ;;
 	*)
-		echo "build-php.sh: no tarball pinned for PHP $PHP_MINOR" >&2
+		echo "build-php.sh: php.net lists no release of PHP $PHP_MINOR (resolved \"$PHP_VERSION\")" >&2
 		exit 1
 		;;
 esac
+if [ -z "$PHP_URL" ] || [ -z "$PHP_SHA256" ]; then
+	echo "build-php.sh: php.net lists no tar.xz with a sha256 for PHP $PHP_VERSION" >&2
+	exit 1
+fi
+echo "build-php.sh: building PHP $PHP_VERSION from $PHP_URL"
 export PHP_VERSION
 PHP_ZTS="${PHP_ZTS:-0}"
 export PHP_ZTS

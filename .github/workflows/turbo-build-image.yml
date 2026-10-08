@@ -4,7 +4,7 @@ name: "Build Turbo compile images"
 
 # Builds .github/turbo-build/Dockerfile natively on x86_64 and arm64
 # runners and publishes ghcr.io/phpstan/turbo-build:gnu-php{8.3,8.4,8.5,8.6}
-# and the thread-safe gnu-php8.6-zts as multi-arch manifests. The
+# and the thread-safe gnu-php{8.3,8.4,8.5,8.6}-zts as multi-arch manifests. The
 # turbo-compile gnu legs in phar.yml run in these images, so their only
 # network dependency is a GHCR pull — no apt, no ports.ubuntu.com, no PPA at
 # compile time.
@@ -47,7 +47,7 @@ jobs:
       fail-fast: false
       matrix:
         # <minor>[-zts]; a -zts tag builds a thread-safe PHP of that minor
-        tag: ["8.3", "8.4", "8.5", "8.6", "8.6-zts"]
+        tag: ["8.3", "8.4", "8.5", "8.6", "8.3-zts", "8.4-zts", "8.5-zts", "8.6-zts"]
         platform:
           - arch: "amd64"
             runs-on: "ubuntu-latest"
@@ -106,7 +106,7 @@ jobs:
 
     strategy:
       matrix:
-        tag: ["8.3", "8.4", "8.5", "8.6", "8.6-zts"]
+        tag: ["8.3", "8.4", "8.5", "8.6", "8.3-zts", "8.4-zts", "8.5-zts", "8.6-zts"]
 
     env:
       TAG: "ghcr.io/phpstan/turbo-build:gnu-php${{ matrix.tag }}"

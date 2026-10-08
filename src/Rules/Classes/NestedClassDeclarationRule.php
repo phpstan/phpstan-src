@@ -46,7 +46,7 @@ final class NestedClassDeclarationRule implements Rule
 				$kind,
 				$node->namespacedName->toString(),
 			))
-				->identifier('class.nested')
+				->identifier('class.inner')
 				->nonIgnorable()
 				->build(),
 		];

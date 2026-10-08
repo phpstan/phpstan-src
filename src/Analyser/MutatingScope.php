@@ -1417,7 +1417,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$storage = $this->expressionResultStorageStack->getCurrent();
 		if ($storage !== null) {
 			$result = $storage->findExpressionResult($node);
-			if ($result !== null) {
+			if ($result !== null && $result->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted)) {
 				return $result;
 			}
 		}
@@ -1434,7 +1434,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			));
 		}
 
-		// a synthetic node, or no analysis in progress
+		// a synthetic node, a counterfactual ask (the asking scope re-binds a
+		// variable the node reads, e.g. array_filter narrowing by its callback
+		// body per element), or no analysis in progress
 		return $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
 			$node,
 			$scope,

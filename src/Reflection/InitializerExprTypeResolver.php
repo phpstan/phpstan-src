@@ -957,6 +957,10 @@ final class InitializerExprTypeResolver
 			);
 		}
 
+		if ($expr instanceof Expr\MethodCall) {
+			return new ObjectType(Closure::class);
+		}
+
 		if ($expr instanceof New_) {
 			return new ErrorType();
 		}

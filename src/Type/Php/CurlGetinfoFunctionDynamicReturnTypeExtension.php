@@ -147,6 +147,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			'CURLINFO_HTTPAUTH_USED' => $integerFalseType,
 			'CURLINFO_PROXYAUTH_USED' => $integerFalseType,
 			'CURLINFO_CONN_ID' => $integerFalseType,
+			'CURLINFO_SIZE_DELIVERED' => $integerFalseType,
 		];
 
 		foreach ($componentTypesPairedConstants as $constantName => $type) {
@@ -193,6 +194,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			'pretransfer_time' => $floatType,
 			'size_upload' => $floatType,
 			'size_download' => $floatType,
+			'size_delivered' => $integerType,
 			'speed_download' => $floatType,
 			'speed_upload' => $floatType,
 			'download_content_length' => $floatType,

@@ -15,6 +15,11 @@
         "ignorable": true
     },
     {
+        "message": "Offset 'b' might not exist on array{a: 1}|stdClass.",
+        "line": 28,
+        "ignorable": true
+    },
+    {
         "message": "Offset 'b' might not exist on array{a: 1, b?: 1}.",
         "line": 40,
         "ignorable": true

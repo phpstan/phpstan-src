@@ -1444,4 +1444,54 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unsealed-array-shapes-has-offset.php'], $expectedErrors);
 	}
 
+	public function testOffsetOnMaybeAccessible(): void
+	{
+		$this->analyse([__DIR__ . '/data/offset-on-maybe-accessible.php'], [
+			[
+				'Cannot access offset \'host\' on array{host?: string}|false.',
+				13,
+			],
+			[
+				'Offset \'host\' might not exist on array{host?: string}|false.',
+				13,
+			],
+			[
+				'Cannot access offset \'host\' on array{host: string}|false.',
+				21,
+			],
+			[
+				'Cannot access offset \'host\' on array{host?: string}|int.',
+				29,
+			],
+			[
+				'Offset \'host\' might not exist on array{host?: string}|int.',
+				29,
+			],
+			[
+				'Cannot access offset \'host\' on array{scheme?: string, host?: string, port?: int<0, 65535>, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|false.',
+				35,
+			],
+			[
+				'Offset \'host\' might not exist on array{scheme?: string, host?: string, port?: int<0, 65535>, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|false.',
+				35,
+			],
+			[
+				'Offset \'host\' might not exist on array{host?: string}.',
+				47,
+			],
+			[
+				'Cannot access offset \'host\' on array{host?: string}|false.',
+				55,
+			],
+			[
+				'Cannot access offset \'host\' on array{host: string}|stdClass.',
+				67,
+			],
+			[
+				'Cannot access offset \'host\' on array{host: string}|iterable<int, int>.',
+				75,
+			],
+		]);
+	}
+
 }

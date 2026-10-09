@@ -13,10 +13,13 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
@@ -68,15 +71,19 @@ final class ArrayDestructuringRule implements Rule
 		if ($exprType instanceof ErrorType) {
 			return [];
 		}
+		$errors = [];
 		if (!$exprType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($exprType)->yes()) {
-			return [
-				RuleErrorBuilder::message(sprintf('Cannot use array destructuring on %s.', $exprType->describe(VerbosityLevel::typeOnly())))
-					->identifier('offsetAccess.nonArray')
-					->build(),
-			];
+			$errors[] = RuleErrorBuilder::message(sprintf('Cannot use array destructuring on %s.', $exprType->describe(VerbosityLevel::typeOnly())))
+				->identifier('offsetAccess.nonArray')
+				->build();
+			if (!$exprType->isArray()->maybe()) {
+				return $errors;
+			}
+
+			// array{0?: int}|false: the keys can also be missing on the array part
+			$expr = new TypeExpr(TypeCombinator::intersect($exprType, new ArrayType(new MixedType(), new MixedType())));
 		}
 
-		$errors = [];
 		$i = 0;
 		foreach ($var->items as $item) {
 			if ($item === null) {

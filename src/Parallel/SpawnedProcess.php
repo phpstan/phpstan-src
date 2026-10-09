@@ -76,6 +76,11 @@ final class SpawnedProcess extends ProcessBase
 		});
 	}
 
+	public function getPid(): ?int
+	{
+		return $this->process->getPid();
+	}
+
 	public function quit(): void
 	{
 		$this->cancelTimer();

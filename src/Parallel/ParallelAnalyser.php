@@ -16,6 +16,7 @@ use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Process\ProcessHelper;
+use PHPStan\Process\ProcessTreeMemoryTracker;
 use PHPStan\Process\TerminationSignal;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PreForkDirectorySymbolScanner;
 use React\EventLoop\LoopInterface;
@@ -59,6 +60,7 @@ final class ParallelAnalyser
 		private ForkParallelChecker $forkParallelChecker,
 		private PreForkDirectorySymbolScanner $preForkDirectorySymbolScanner,
 		private WorkerRunner $workerRunner,
+		private ProcessTreeMemoryTracker $processTreeMemoryTracker,
 	)
 	{
 		$this->processTimeout = max($processTimeout, self::DEFAULT_TIMEOUT);
@@ -132,8 +134,12 @@ final class ParallelAnalyser
 
 		$useFork = $this->forkParallelChecker->isSupported();
 
+		$memoryTracker = $this->processTreeMemoryTracker;
+
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, $loop, $memoryTracker, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
+			$memoryTracker->stop($loop);
+
 			if ($arenaName !== null) {
 				ArenaCache::destroy();
 			}
@@ -467,6 +473,24 @@ final class ParallelAnalyser
 				$this->processPool->tryQuitProcess($processIdentifier);
 			});
 			$this->processPool->attachProcess($processIdentifier, $process);
+		}
+
+		// the sampled number only ever prints at -v and above; a quiet run
+		// should not pay for reading 20 smaps_rollup files twice a second
+		if ($errorOutput !== null && $errorOutput->isVerbose()) {
+			$childPids = [];
+			foreach ($this->processPool->getAttachedProcesses() as $attachedProcess) {
+				$childPid = $attachedProcess->getPid();
+				if ($childPid === null) {
+					continue;
+				}
+
+				$childPids[] = $childPid;
+			}
+
+			if ($childPids !== []) {
+				$this->processTreeMemoryTracker->start($loop, $childPids);
+			}
 		}
 
 		return $deferred->promise();

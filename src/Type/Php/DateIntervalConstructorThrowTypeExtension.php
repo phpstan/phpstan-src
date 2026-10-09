@@ -13,6 +13,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use Throwable;
 use function count;
 
 #[AutowiredService]
@@ -40,7 +41,7 @@ final class DateIntervalConstructorThrowTypeExtension implements DynamicStaticMe
 		foreach ($constantStrings as $constantString) {
 			try {
 				new DateInterval($constantString->getValue());
-			} catch (\Exception $e) { // phpcs:ignore
+			} catch (Throwable) {
 				return $this->exceptionType();
 			}
 

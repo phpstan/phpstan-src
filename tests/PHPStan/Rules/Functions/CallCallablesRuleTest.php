@@ -21,6 +21,11 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	public function testRecursiveClosureCapture(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/Generics/data/recursive-closure-capture.php'], []);
+	}
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();

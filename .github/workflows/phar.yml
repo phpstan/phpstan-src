@@ -30,12 +30,6 @@ env:
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
   SUPPORTED_PHP_PARSER_VERSION: "v5.9.0"
-  # Composer for the turbo container legs, pinned by checksum. The distro
-  # composers are unusable there: jammy's 2.2.6 fatals under PHP 8.5, and
-  # Alpine's /usr/bin/composer is a shell wrapper hardwired to the
-  # distro-default PHP.
-  COMPOSER_VERSION: "2.9.2"
-  COMPOSER_PHAR_SHA256: "471f2d857abf0ec18af7b055e61472214d91adb24f9bdbbb864c1c64faad7dd6"
   # setup-php installs an 8.6 nightly, which has no matching Windows devel pack.
   PHP86_WINDOWS_VERSION: "8.6.0RC2"
 
@@ -520,14 +514,16 @@ jobs:
         with:
           ignore-cache: true
 
-      - name: "Install Composer dependencies (pinned composer)"
+      - name: "Install Composer dependencies (verified composer)"
         if: env.ORIGIN_RUN_ID == '' && matrix.target.family != 'macos'
-        # checksum-pinned composer, run under the matrix PHP so platform
-        # requirements are validated against the interpreter the build
-        # trains on
+        # signature-verified composer (.github/scripts/download-composer.sh;
+        # the distro composers are unusable here: jammy's 2.2.6 fatals under
+        # PHP 8.5, and Alpine's /usr/bin/composer is a shell wrapper
+        # hardwired to the distro-default PHP), run under the matrix PHP so
+        # platform requirements are validated against the interpreter the
+        # build trains on
         run: |
-          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
-          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          sh .github/scripts/download-composer.sh
           php composer.phar install --no-interaction --no-progress
           rm composer.phar
 
@@ -648,7 +644,7 @@ jobs:
         run: |
           docker run -d --name alpine-build \
             -v "$PWD:/work" -w /work \
-            -e PHP_MINOR -e PHP_ZTS -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
+            -e PHP_MINOR -e PHP_ZTS \
             alpine:3.24 sleep 7200
 
       - name: "Install PHP and build tools"
@@ -663,12 +659,11 @@ jobs:
         run: docker exec alpine-build git config --global --add safe.directory /work
 
       # The training run of `make pgo` runs bin/phpstan on the checkout.
-      - name: "Install Composer dependencies (pinned composer)"
+      - name: "Install Composer dependencies (verified composer)"
         if: env.ORIGIN_RUN_ID == ''
         run: |
           docker exec -i alpine-build sh -e <<'EOF'
-          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
-          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          sh .github/scripts/download-composer.sh
           COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
           rm composer.phar
           EOF
@@ -844,11 +839,10 @@ jobs:
         with:
           ignore-cache: true
 
-      - name: "Install Composer dependencies (pinned composer)"
+      - name: "Install Composer dependencies (verified composer)"
         if: matrix.variant == 'pie' && matrix.target.family != 'macos'
         run: |
-          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
-          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          sh .github/scripts/download-composer.sh
           php composer.phar install --no-interaction --no-progress
           rm composer.phar
 
@@ -961,7 +955,7 @@ jobs:
         run: |
           docker run -d --name alpine-build \
             -v "$PWD:/work" -w /work \
-            -e PHP_MINOR -e PHP_ZTS -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
+            -e PHP_MINOR -e PHP_ZTS \
             "$ALPINE_IMAGE" sleep 7200
 
       - name: "Install PHP and build tools"
@@ -986,8 +980,7 @@ jobs:
         if: matrix.variant == 'pie'
         run: |
           docker exec -i -w /work alpine-build sh -e <<'EOF'
-          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
-          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          sh .github/scripts/download-composer.sh
           php composer.phar install --no-interaction --no-progress
           rm composer.phar
           cd turbo-ext
@@ -1874,11 +1867,10 @@ jobs:
         with:
           ignore-cache: true
 
-      - name: "Install Composer dependencies (pinned composer)"
+      - name: "Install Composer dependencies (verified composer)"
         if: ${{ matrix.container }}
         run: |
-          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
-          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          sh .github/scripts/download-composer.sh
           php composer.phar install --no-interaction --no-progress
           rm composer.phar
 
@@ -1988,7 +1980,7 @@ jobs:
         run: |
           docker run -d --name alpine-test \
             -v "$PWD:/work" -w /work \
-            -e PHP_MINOR -e PHP_ZTS -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
+            -e PHP_MINOR -e PHP_ZTS \
             "$ALPINE_IMAGE" sleep 7200
 
       - name: "Install PHP and tools"
@@ -1997,11 +1989,10 @@ jobs:
       - name: "Trust the checkout despite the container/host uid mismatch"
         run: docker exec alpine-test git config --global --add safe.directory /work
 
-      - name: "Install Composer dependencies (pinned composer)"
+      - name: "Install Composer dependencies (verified composer)"
         run: |
           docker exec -i alpine-test sh -e <<'EOF'
-          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
-          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          sh .github/scripts/download-composer.sh
           COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
           rm composer.phar
           EOF

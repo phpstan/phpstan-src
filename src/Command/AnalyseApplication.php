@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use Closure;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
@@ -135,10 +136,13 @@ final class AnalyseApplication
 			$processedFiles = $intermediateAnalyserResult->getProcessedFiles();
 
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
+			[$preRuleCallback, $postRuleCallback] = $this->createRuleCallbacks($debug, $stdOutput);
 			$analyserResult = $this->analyserResultFinalizer->finalize(
 				$this->switchTmpFileInAnalyserResult($resultCacheResult->getAnalyserResult(), $insteadOfFile, $tmpFile),
 				$onlyFiles,
 				$debug,
+				$preRuleCallback,
+				$postRuleCallback,
 			)->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = array_merge(
@@ -289,6 +293,49 @@ final class AnalyseApplication
 		}
 
 		return $analyserResult;
+	}
+
+	/**
+	 * Prints the rules on CollectedDataNode the way --debug prints the analysed files. They run after
+	 * all files and can take longer than the analysis itself.
+	 *
+	 * @return array{(Closure(string $ruleClass): void)|null, (Closure(): void)|null}
+	 */
+	private function createRuleCallbacks(bool $debug, Output $stdOutput): array
+	{
+		if (!$debug) {
+			return [
+				null,
+				null,
+			];
+		}
+
+		$startTime = null;
+		$preRuleCallback = static function (string $ruleClass) use ($stdOutput, &$startTime): void {
+			$stdOutput->writeLineFormatted(sprintf('Running %s on the collected data', $ruleClass));
+			$startTime = microtime(true);
+		};
+		if (!$stdOutput->isDebug()) {
+			return [
+				$preRuleCallback,
+				null,
+			];
+		}
+
+		$previousMemory = memory_get_peak_usage(true);
+		$postRuleCallback = static function () use ($stdOutput, &$previousMemory, &$startTime): void {
+			if ($startTime === null) {
+				throw new ShouldNotHappenException();
+			}
+			$currentTotalMemory = memory_get_peak_usage(true);
+			$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), microtime(true) - $startTime));
+			$previousMemory = $currentTotalMemory;
+		};
+
+		return [
+			$preRuleCallback,
+			$postRuleCallback,
+		];
 	}
 
 	private function switchTmpFileInAnalyserResult(

@@ -537,7 +537,10 @@ Windows legs' tests are their check.
    infix and toolset in `include`) and of the jobs testing them
    (`turbo-differential`, `turbo-differential-musl`, `turbo-run`,
    `turbo-docker-run`), and give the new version a `gnu-php<minor>` image
-   for the Linux gnu legs. The cores need no change: they keep compiling
+   for the Linux gnu legs. Until the version has a stable Windows release,
+   the Windows legs install its current prerelease by themselves (the
+   `php-windows-prereleases` job reads windows.php.net's manifests), so
+   there is no version to pin. The cores need no change: they keep compiling
    against the version they are pinned to (`php-version` in
    `turbo-compile-core`'s targets, `["8.3"]` with the vs16 toolset in
    `turbo-compile-core-windows`). Run the smoke test of every version

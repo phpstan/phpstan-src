@@ -1004,9 +1004,36 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->setExistingOffsetValueType($offsetType, $valueType));
 	}
 
+	/**
+	 * Members that cannot have an offset unset (true, int, string, ...) yield ErrorType.
+	 * They are left out instead of turning the whole union into ErrorType.
+	 */
 	public function unsetOffset(Type $offsetType): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
+		$types = [];
+		$changed = false;
+		foreach ($this->types as $innerType) {
+			$newType = $innerType->unsetOffset($offsetType);
+			if ($newType instanceof ErrorType) {
+				$changed = true;
+				continue;
+			}
+			if ($newType !== $innerType) {
+				$changed = true;
+			}
+
+			$types[] = $newType;
+		}
+
+		if (count($types) === 0) {
+			return new ErrorType();
+		}
+
+		if (!$changed) {
+			return $this;
+		}
+
+		return TypeCombinator::union(...$types);
 	}
 
 	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type

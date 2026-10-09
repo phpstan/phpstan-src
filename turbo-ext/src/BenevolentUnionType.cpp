@@ -7,12 +7,12 @@
  * extends it in turn), not final, declaring only what the twin declares —
  * the constructor forwarding to the parent's, and the overrides that make
  * the union benevolent: unionResults() answering yes as soon as one member
- * does, unionTypes()/getOffsetValueType()/traverse()/traverseSimultaneously()/
- * tryRemove()/filterTypes() keeping the result benevolent, describe()
- * parenthesizing the parent's, pickFromTypes() consulting the criteria,
- * isAcceptedBy() or'ing the members, the template maps combined with
- * benevolentUnion(). Everything else is inherited from the parent's
- * class entry, as the PHP class inherits it.
+ * does, unionTypes()/unsetOffset()/getOffsetValueType()/traverse()/
+ * traverseSimultaneously()/tryRemove()/filterTypes() keeping the result
+ * benevolent, describe() parenthesizing the parent's, pickFromTypes()
+ * consulting the criteria, isAcceptedBy() or'ing the members, the template
+ * maps combined with benevolentUnion(). Everything else is inherited from
+ * the parent's class entry, as the PHP class inherits it.
  *
  * The logic lives in the BenevolentUnionType handle class below, mirroring
  * src/Type/BenevolentUnionType.php method for method; the parent:: calls go
@@ -181,6 +181,19 @@ public:
 			}
 		}
 		return zv::Val(std::move(values));
+	}
+
+	/* $this->unionTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType)):
+	 * the native body when unionTypes() is this class's own, a PHP
+	 * subclass's override through a callable otherwise; UNDEF = pending
+	 * exception */
+	zv::Val unsetOffset(zval *offsetType) const
+	{
+		UnionMemberOp op = UnionMemberOp::call(PT_LC("unsetoffset"), 1, offsetType);
+		if (EXPECTED(pt_type_method_is(self, PT_LC("uniontypes"), buUnionTypes))) return unionTypes(op);
+		zv::Val callback = pt_union_op_callback(op);
+		if (UNEXPECTED(callback.isUndef())) return zv::Val();
+		return callType(self, PT_LC("uniontypes"), 1, callback.raw());
 	}
 
 	/* the benevolent union of the members' offset value types that are no
@@ -519,6 +532,8 @@ PT_MINIT_REGISTRATION(pt_register_benevolent_union_type)
 
 	cls.method(sigs::unionTypes, buUnionTypes);
 	cls.method(sigs::pickFromTypes, buPickFromTypes);
+
+	cls.method<&BenevolentUnionType::unsetOffset, zp::Obj>(sigs::unsetOffset);
 
 	cls.method<&BenevolentUnionType::getOffsetValueType, zp::Obj>(sigs::getOffsetValueType);
 	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &BenevolentUnionType::getOffsetValueType>();

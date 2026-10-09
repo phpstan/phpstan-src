@@ -28,6 +28,15 @@ public:
 
 	static zv::Val getConstantStrings() { return zv::Val(zv::Arr::empty()); }
 
+	/* new ConstantBooleanType(false): unset() of an offset leaves false as
+	 * it is and throws on true; UNDEF = pending exception */
+	static zv::Val unsetOffset()
+	{
+		zval falseType;
+		if (UNEXPECTED(!pt_constant_boolean_type_new(&falseType, false))) return zv::Val();
+		return zv::Val::adopt(falseType);
+	}
+
 	/* UNDEF = pending exception */
 	static zv::Val getConstantScalarTypes() { return bothConstants(); }
 
@@ -244,6 +253,12 @@ PT_MINIT_REGISTRATION(pt_register_boolean_type)
 
 	cls.method<&BooleanType::getConstantStrings>(sigs::getConstantStrings);
 
+	cls.method(sigs::unsetOffset, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *offsetType;
+		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
+		PT_RETURN_VAL(BooleanType::unsetOffset());
+	});
+
 	cls.method<&BooleanType::getConstantScalarTypes>(sigs::getConstantScalarTypes);
 
 	cls.method<&BooleanType::getConstantScalarValues>(sigs::getConstantScalarValues);
@@ -335,8 +350,9 @@ PT_MINIT_REGISTRATION(pt_register_boolean_type)
 	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(BooleanType::hasTemplateOrLateResolvableType()); });
 
 	/* the traits, in the twin's `use` order; the class body above wins over
-	 * every name it declares (getConstantStrings, getConstantScalarTypes,
-	 * getConstantScalarValues, isNull, isTrue, isFalse, isBoolean) */
+	 * every name it declares (getConstantStrings, unsetOffset,
+	 * getConstantScalarTypes, getConstantScalarValues, isNull, isTrue,
+	 * isFalse, isBoolean) */
 	ptdecl::BooleanType::registerTraits(cls);
 
 	cls.shadow(&pt_ce_boolean_type);

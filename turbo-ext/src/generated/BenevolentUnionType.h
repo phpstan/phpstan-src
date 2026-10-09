@@ -41,23 +41,24 @@ inline constexpr char strings[] =
 	"criteria\0" /* 170 */
 	"pickFromTypes\0" /* 179 */
 	"offsetType\0" /* 193 */
-	"getOffsetValueType\0" /* 204 */
-	"getResult\0" /* 223 */
-	"PHPStan\\TrinaryLogic\0" /* 233 */
-	"unionResults\0" /* 254 */
-	"acceptingType\0" /* 267 */
-	"strictTypes\0" /* 281 */
-	"PHPStan\\Type\\AcceptsResult\0" /* 293 */
-	"isAcceptedBy\0" /* 320 */
-	"receivedType\0" /* 333 */
-	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 346 */
-	"inferTemplateTypes\0" /* 383 */
-	"templateType\0" /* 402 */
-	"inferTemplateTypesOn\0" /* 415 */
-	"cb\0" /* 436 */
-	"traverse\0" /* 439 */
-	"right\0" /* 448 */
-	"traverseSimultaneously"; /* 454 */
+	"unsetOffset\0" /* 204 */
+	"getOffsetValueType\0" /* 216 */
+	"getResult\0" /* 235 */
+	"PHPStan\\TrinaryLogic\0" /* 245 */
+	"unionResults\0" /* 266 */
+	"acceptingType\0" /* 279 */
+	"strictTypes\0" /* 293 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 305 */
+	"isAcceptedBy\0" /* 332 */
+	"receivedType\0" /* 345 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 358 */
+	"inferTemplateTypes\0" /* 395 */
+	"templateType\0" /* 414 */
+	"inferTemplateTypesOn\0" /* 427 */
+	"cb\0" /* 448 */
+	"traverse\0" /* 451 */
+	"right\0" /* 460 */
+	"traverseSimultaneously"; /* 466 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 17), /* __construct $normalized */
@@ -72,21 +73,23 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(160, MAY_BE_CALLABLE), /* pickFromTypes $getValues */
 	reg::packed(170, MAY_BE_CALLABLE), /* pickFromTypes $criteria */
 	reg::packed(44, MAY_BE_ARRAY), /* pickFromTypes return */
+	reg::packed(193, 0, 45), /* unsetOffset $offsetType */
+	reg::packed(44, 0, 45), /* unsetOffset return */
 	reg::packed(193, 0, 45), /* getOffsetValueType $offsetType */
 	reg::packed(44, 0, 45), /* getOffsetValueType return */
-	reg::packed(223, MAY_BE_CALLABLE), /* unionResults $getResult */
-	reg::packed(44, 0, 233), /* unionResults return */
-	reg::packed(267, 0, 45), /* isAcceptedBy $acceptingType */
-	reg::packed(281, MAY_BE_BOOL), /* isAcceptedBy $strictTypes */
-	reg::packed(44, 0, 293), /* isAcceptedBy return */
-	reg::packed(333, 0, 45), /* inferTemplateTypes $receivedType */
-	reg::packed(44, 0, 346), /* inferTemplateTypes return */
-	reg::packed(402, 0, 45), /* inferTemplateTypesOn $templateType */
-	reg::packed(44, 0, 346), /* inferTemplateTypesOn return */
-	reg::packed(436, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(235, MAY_BE_CALLABLE), /* unionResults $getResult */
+	reg::packed(44, 0, 245), /* unionResults return */
+	reg::packed(279, 0, 45), /* isAcceptedBy $acceptingType */
+	reg::packed(293, MAY_BE_BOOL), /* isAcceptedBy $strictTypes */
+	reg::packed(44, 0, 305), /* isAcceptedBy return */
+	reg::packed(345, 0, 45), /* inferTemplateTypes $receivedType */
+	reg::packed(44, 0, 358), /* inferTemplateTypes return */
+	reg::packed(414, 0, 45), /* inferTemplateTypesOn $templateType */
+	reg::packed(44, 0, 358), /* inferTemplateTypesOn return */
+	reg::packed(448, MAY_BE_CALLABLE), /* traverse $cb */
 	reg::packed(44, 0, 45), /* traverse return */
-	reg::packed(448, 0, 45), /* traverseSimultaneously $right */
-	reg::packed(436, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(460, 0, 45), /* traverseSimultaneously $right */
+	reg::packed(448, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(44, 0, 45), /* traverseSimultaneously return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -100,13 +103,14 @@ inline constexpr sigtab::Sig tryRemove = { { 88 /* tryRemove */, 1, 4, 1, 5, ZEN
 inline constexpr sigtab::Sig describe = { { 132 /* describe */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig unionTypes = { { 149 /* unionTypes */, 1, 8, 1, 9, ZEND_ACC_PROTECTED } };
 inline constexpr sigtab::Sig pickFromTypes = { { 179 /* pickFromTypes */, 2, 10, 2, 12, ZEND_ACC_PROTECTED } };
-inline constexpr sigtab::Sig getOffsetValueType = { { 204 /* getOffsetValueType */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig unionResults = { { 254 /* unionResults */, 1, 15, 1, 16, ZEND_ACC_PROTECTED } };
-inline constexpr sigtab::Sig isAcceptedBy = { { 320 /* isAcceptedBy */, 2, 17, 2, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig inferTemplateTypes = { { 383 /* inferTemplateTypes */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig inferTemplateTypesOn = { { 415 /* inferTemplateTypesOn */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverse = { { 439 /* traverse */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseSimultaneously = { { 454 /* traverseSimultaneously */, 2, 26, 2, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig unsetOffset = { { 204 /* unsetOffset */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOffsetValueType = { { 216 /* getOffsetValueType */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig unionResults = { { 266 /* unionResults */, 1, 17, 1, 18, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig isAcceptedBy = { { 332 /* isAcceptedBy */, 2, 19, 2, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig inferTemplateTypes = { { 395 /* inferTemplateTypes */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig inferTemplateTypesOn = { { 427 /* inferTemplateTypesOn */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverse = { { 451 /* traverse */, 1, 26, 1, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 466 /* traverseSimultaneously */, 2, 28, 2, 30, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::BenevolentUnionType

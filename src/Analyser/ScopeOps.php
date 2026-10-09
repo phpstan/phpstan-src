@@ -72,7 +72,9 @@ final class ScopeOps
 			&& (($attributes['startFilePos'] ?? null) !== null)
 		) {
 			$key .= '/*' . $attributes['startFilePos'];
-			foreach ($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] as $arg) {
+			/** @var Node\Arg[] $arrayMapArgs */
+			$arrayMapArgs = $attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME];
+			foreach ($arrayMapArgs as $arg) {
 				$key .= ':' . $exprPrinter->printExpr($arg->value);
 			}
 			$key .= '*/';

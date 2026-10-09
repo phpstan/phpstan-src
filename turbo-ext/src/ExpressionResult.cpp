@@ -458,6 +458,15 @@ public:
 	/* Mirrors getKeepVoidType(). */
 	zv::Val getKeepVoidType(bool nativeTypesPromoted)
 	{
+		// Only a call's value read can project void to null. Other expressions
+		// must honour their narrowed holder even when the raw type is mixed
+		// (whose isVoid() is maybe, not evidence of an actual void arm).
+		zend_long projects = projectsVoidToNull(nativeTypesPromoted);
+		if (UNEXPECTED(projects < 0)) return zv::Val();
+		if (projects == 0) {
+			return nativeTypesPromoted ? getNativeType() : getType();
+		}
+
 		zv::Val rawType = resolveOwnRawType(nativeTypesPromoted);
 		if (UNEXPECTED(rawType.isUndef())) return zv::Val();
 		zend_long isVoid = trinaryOp(rawType.raw(), PT_OP_IS_VOID);

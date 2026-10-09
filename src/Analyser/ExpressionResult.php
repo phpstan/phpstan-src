@@ -543,6 +543,13 @@ final class ExpressionResult
 	 */
 	public function getKeepVoidType(bool $nativeTypesPromoted): Type
 	{
+		// Only a call's value read can project void to null. Other expressions
+		// must honour their narrowed holder even when the raw type is mixed
+		// (whose isVoid() is maybe, not evidence of an actual void arm).
+		if (!$this->projectsVoidToNull($nativeTypesPromoted)) {
+			return $nativeTypesPromoted ? $this->getNativeType() : $this->getType();
+		}
+
 		$rawType = $this->resolveOwnRawType($nativeTypesPromoted);
 		if (!$rawType->isVoid()->no()) {
 			// there is void to keep - the raw type is the answer, and no read that

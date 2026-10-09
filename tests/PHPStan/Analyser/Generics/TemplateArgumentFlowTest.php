@@ -15,6 +15,7 @@ class TemplateArgumentFlowTest extends TypeInferenceTestCase
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/constraint-flow.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/data/joint-inference.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/recursive-closure-capture.php');
 		if (PHP_VERSION_ID < 80000) {
 			return;
 		}

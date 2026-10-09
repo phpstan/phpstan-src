@@ -82,6 +82,8 @@ final class TurboExtensionSelector
 	 */
 	public static function isMissingNextToPhar(): bool
 	{
+		// no binary is built for these runtimes, so installing PHPStan with
+		// Composer would not bring the extension either (see findExtension())
 		if (PHP_VERSION_ID < self::MINIMUM_PHP_VERSION_ID || (bool) PHP_DEBUG) {
 			return false;
 		}

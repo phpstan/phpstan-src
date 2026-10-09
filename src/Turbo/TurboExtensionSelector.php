@@ -5,6 +5,7 @@ namespace PHPStan\Turbo;
 use Phar;
 use function dirname;
 use function file_get_contents;
+use function is_dir;
 use function is_file;
 use function php_uname;
 use function sprintf;
@@ -71,6 +72,32 @@ final class TurboExtensionSelector
 		}
 
 		return self::findExtension();
+	}
+
+	/**
+	 * Whether PHPStan runs from a bare copy of phpstan.phar, without the
+	 * turbo-ext/ directory the phpstan/phpstan Composer package ships next to
+	 * it, on a runtime the extension is built for, and no php.ini loads the
+	 * extension either.
+	 */
+	public static function isMissingNextToPhar(): bool
+	{
+		if (PHP_VERSION_ID < self::MINIMUM_PHP_VERSION_ID || (bool) PHP_DEBUG) {
+			return false;
+		}
+		if (TurboExtensionEnabler::isLoaded()) {
+			return false;
+		}
+
+		$pharPath = Phar::running(false);
+		if ($pharPath === '') {
+			return false;
+		}
+		if (self::resolvePlatformDirectory(PHP_OS_FAMILY, php_uname('m'), self::isMusl()) === null) {
+			return false;
+		}
+
+		return !is_dir(dirname($pharPath) . '/turbo-ext');
 	}
 
 	/**

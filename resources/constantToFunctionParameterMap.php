@@ -305,6 +305,7 @@ return [
 			'constants' => [
 				'ARRAY_FILTER_USE_KEY',
 				'ARRAY_FILTER_USE_BOTH',
+				'ARRAY_FILTER_USE_VALUE',
 			],
 		],
 	],

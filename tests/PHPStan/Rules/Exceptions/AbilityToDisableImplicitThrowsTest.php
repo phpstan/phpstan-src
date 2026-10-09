@@ -134,4 +134,19 @@ class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testUnserializeThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15329.php'], [
+			[
+				'Dead catch - RuntimeException is never thrown in the try block.',
+				31,
+			],
+			[
+				'Dead catch - LogicException is never thrown in the try block.',
+				41,
+			],
+		]);
+	}
+
 }

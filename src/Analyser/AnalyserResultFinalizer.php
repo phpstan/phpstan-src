@@ -40,8 +40,8 @@ final class AnalyserResultFinalizer
 	}
 
 	/**
-	 * @param Closure(string $ruleClass): void|null $preRuleCallback called before each rule on CollectedDataNode runs
-	 * @param Closure(): void|null $postRuleCallback called after each of those rules, also when it throws
+	 * @param Closure(string $ruleClass): void|null $preRuleCallback
+	 * @param Closure(): void|null $postRuleCallback called when the rule's processNode() has returned or thrown, before its errors are processed
 	 */
 	public function finalize(
 		AnalyserResult $analyserResult,

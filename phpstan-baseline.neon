@@ -157,12 +157,6 @@ parameters:
 			path: src/Command/CommandHelper.php
 
 		-
-			rawMessage: 'Parameter #1 $path of function dirname expects string, string|false given.'
-			identifier: argument.type
-			count: 1
-			path: src/Command/CommandHelper.php
-
-		-
 			rawMessage: 'Static property PHPStan\Command\CommandHelper::$reservedMemory is never read, only written.'
 			identifier: property.onlyWritten
 			count: 1
@@ -239,12 +233,6 @@ parameters:
 			identifier: classConstant.deprecatedClass
 			count: 1
 			path: src/DependencyInjection/NeonAdapter.php
-
-		-
-			rawMessage: 'Parameter #1 $path of function dirname expects string, string|false given.'
-			identifier: argument.type
-			count: 1
-			path: src/Diagnose/PHPStanDiagnoseExtension.php
 
 		-
 			rawMessage: 'Call to method getContent() of internal class PhpMerge\internal\Line from outside its root namespace PhpMerge.'

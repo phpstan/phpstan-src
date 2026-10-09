@@ -22,6 +22,7 @@ use ReflectionClass;
 use function dirname;
 use function hash;
 use function is_file;
+use function is_string;
 use function serialize;
 use const PHP_VERSION_ID;
 
@@ -72,7 +73,12 @@ final class TestCaseSourceLocatorFactory
 				$vendorDirProperty->setAccessible(true);
 			}
 			foreach ($classLoaders as $classLoader) {
-				$composerProjectPath = dirname($vendorDirProperty->getValue($classLoader));
+				$vendorDir = $vendorDirProperty->getValue($classLoader);
+				if (!is_string($vendorDir)) {
+					continue;
+				}
+
+				$composerProjectPath = dirname($vendorDir);
 				if (!is_file($composerProjectPath . '/composer.json')) {
 					continue;
 				}

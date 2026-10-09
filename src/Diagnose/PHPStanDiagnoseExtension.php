@@ -12,6 +12,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
+use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use function array_count_values;
 use function array_key_exists;
@@ -133,7 +134,11 @@ final class PHPStanDiagnoseExtension
 			}
 
 			$generatedConfigReflection = new ReflectionClass('PHPStan\ExtensionInstaller\GeneratedConfig');
-			$generatedConfigDirectory = dirname($generatedConfigReflection->getFileName());
+			$generatedConfigFileName = $generatedConfigReflection->getFileName();
+			if ($generatedConfigFileName === false) {
+				throw new ShouldNotHappenException('PHPStan\ExtensionInstaller\GeneratedConfig is not defined in a file.');
+			}
+			$generatedConfigDirectory = dirname($generatedConfigFileName);
 			foreach (GeneratedConfig::EXTENSIONS as $name => $extensionConfig) {
 				$output->writeLineFormatted(sprintf('%s: %s', $name, $extensionConfig['version'] ?? 'Unknown version'));
 				foreach ($extensionConfig['extra']['includes'] ?? [] as $includedFile) {

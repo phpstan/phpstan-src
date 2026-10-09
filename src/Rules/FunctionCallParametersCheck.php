@@ -110,12 +110,14 @@ final class FunctionCallParametersCheck
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
 		$allowedConstantsTypes = [];
+		$parametersWithAllowedConstants = [];
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
 			if (
 				$parameter instanceof ExtendedParameterReflection
 				&& $parameter->getAllowedConstants() !== null
 			) {
 				$allowedConstantsTypes[] = $parameter->getType();
+				$parametersWithAllowedConstants[] = $parameter;
 			}
 			if (!$parameter->isOptional()) {
 				$functionParametersMinCount++;
@@ -491,6 +493,13 @@ final class FunctionCallParametersCheck
 								if ($constantReflection->isBuiltin()->no()) {
 									continue;
 								}
+								// This parameter has no constant list of its own, so the only mistake
+								// to report is one of the function's own flags in the wrong position.
+								// Any other builtin constant is a plain value there: PHP_INT_SIZE is
+								// a valid str_pad() length.
+								if (!$this->isAllowedByAnotherParameter($constantReflection, $parametersWithAllowedConstants)) {
+									continue;
+								}
 								$errors[] = RuleErrorBuilder::message(sprintf(
 									$invalidConstantMessage,
 									$constantReflection->describe(),
@@ -806,6 +815,23 @@ final class FunctionCallParametersCheck
 		}
 
 		return implode(' ', $parts);
+	}
+
+	/**
+	 * Whether the constant belongs to the allowed list of some other parameter of the same
+	 * function, which makes it a flag passed in the wrong position rather than a value.
+	 *
+	 * @param list<ExtendedParameterReflection> $parameters Parameters that have an allowed list
+	 */
+	private function isAllowedByAnotherParameter(ConstantReflection $constantReflection, array $parameters): bool
+	{
+		foreach ($parameters as $parameter) {
+			if ($parameter->checkAllowedConstants([$constantReflection])->getDisallowedConstants() === []) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

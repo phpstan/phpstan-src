@@ -30,8 +30,6 @@ env:
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
   SUPPORTED_PHP_PARSER_VERSION: "v5.9.0"
-  # setup-php installs an 8.6 nightly, which has no matching Windows devel pack.
-  PHP86_WINDOWS_VERSION: "8.6.0RC2"
 
 jobs:
   compiler-tests:
@@ -334,6 +332,45 @@ jobs:
         run: |
           make -C "$RUNNER_TEMP/turbo-ext" install INSTALL_ROOT="$RUNNER_TEMP/install-root"
           find "$RUNNER_TEMP/install-root" -name 'phpstan_turbo.so' | grep .
+
+  php-windows-prereleases:
+    name: "Find PHP Prereleases for Windows"
+    # For an unreleased minor, setup-php installs a nightly build on Windows,
+    # which has no devel pack to compile against; the Windows legs replace it
+    # with the official prerelease. This resolves the current one for every
+    # minor in this workflow's matrices that has no stable Windows build yet
+    # (.github/scripts/find-php-windows-prereleases.sh), once per run, so all
+    # legs install the same build even when a new release candidate comes out
+    # in the meantime.
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
+
+    permissions:
+      contents: read # actions/checkout of this repository
+
+    outputs:
+      prereleases: ${{ steps.find.outputs.prereleases }}
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts
+            .github/workflows
+
+      - name: "Find the prerelease of every PHP minor without a stable Windows build"
+        id: find
+        run: |
+          MINORS="$(yq -r '[.jobs[].strategy.matrix["php-version"] | select(. != null) | .[]] | unique | .[] | select(test("^[0-9]+\\.[0-9]+$"))' .github/workflows/phar.yml | tr '\n' ' ')"
+          echo "PHP minors in the matrices: $MINORS"
+          MINORS="$MINORS" bash .github/scripts/find-php-windows-prereleases.sh
 
   turbo-origins:
     name: "Find Reusable Turbo Extension Builds"
@@ -1469,7 +1506,9 @@ jobs:
     # is the one that ships VS2022.
     # PHP 8.6's vs18 development packs need the VS2026 toolchain.
     runs-on: ${{ matrix.php-version == '8.6' && 'windows-2025-vs2026' || 'windows-2022' }}
-    needs: turbo-compile-core-windows
+    needs:
+      - php-windows-prereleases
+      - turbo-compile-core-windows
     # see turbo-compile
     if: ${{ !cancelled() }}
     timeout-minutes: ${{ matrix.variant == 'pie' && 45 || 30 }}
@@ -1518,18 +1557,20 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
-      - name: "Install the matching PHP 8.6 prerelease runtime"
-        if: matrix.php-version == '8.6'
+      - name: "Install the PHP prerelease runtime"
+        if: fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]
         shell: bash
         env:
           MATRIX_TS: ${{ matrix.ts }}
-        run: bash .github/scripts/install-php86-windows.sh
+          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }}
+        run: bash .github/scripts/install-php-windows-prerelease.sh
 
       - name: "Compute the extension version and download the build tools"
         shell: bash
         env:
           MATRIX_TS: ${{ matrix.ts }}
           MATRIX_VS: ${{ matrix.vs }}
+          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }}
         run: bash .github/scripts/download-php-windows-devel.sh
 
       # the DLL and its import library, into the extension directory where
@@ -1751,6 +1792,7 @@ jobs:
     # it at all; the ZTS legs so as not to depend on setup-php's thread-safe
     # Linux builds.
     needs:
+      - php-windows-prereleases
       - turbo-compile
       - turbo-compile-windows
     runs-on: ${{ matrix.runs-on }}
@@ -1856,11 +1898,12 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
-      - name: "Install the matching PHP 8.6 prerelease runtime"
-        if: matrix.target == 'windows-x86_64' && matrix.php-version == '8.6'
+      - name: "Install the PHP prerelease runtime"
+        if: matrix.target == 'windows-x86_64' && fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]
         env:
           MATRIX_TS: ${{ matrix.ts }}
-        run: bash .github/scripts/install-php86-windows.sh
+          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }}
+        run: bash .github/scripts/install-php-windows-prerelease.sh
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         if: ${{ !matrix.container }}
@@ -2038,6 +2081,7 @@ jobs:
   turbo-run:
     name: "Run with Turbo Extension"
     needs:
+      - php-windows-prereleases
       - turbo-compile
       - turbo-compile-windows
     runs-on: ${{ matrix.operating-system }}
@@ -2109,11 +2153,12 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
-      - name: "Install the matching PHP 8.6 prerelease runtime"
-        if: matrix.operating-system == 'windows-latest' && matrix.php-version == '8.6'
+      - name: "Install the PHP prerelease runtime"
+        if: matrix.operating-system == 'windows-latest' && fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]
         env:
           MATRIX_TS: ${{ matrix.ts }}
-        run: bash .github/scripts/install-php86-windows.sh
+          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }}
+        run: bash .github/scripts/install-php-windows-prerelease.sh
 
       - name: "Download extension artifact"
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1

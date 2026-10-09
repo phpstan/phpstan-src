@@ -658,7 +658,7 @@ final class TemplateArgumentObserver
 			return $constraints;
 		}
 
-		if (($parameterType instanceof CallableType || $parameterType instanceof ClosureType) && $argumentType->isCallable()->yes()) {
+		if (($parameterType instanceof CallableType || $parameterType instanceof ClosureType) && $argumentType->isCallable()->yes()) { // @phpstan-ignore phpstanApi.instanceofType (Traverse signatures only; nominal invokable objects can return themselves.)
 			$scope = new OutOfClassScope();
 			foreach ($parameterType->getCallableParametersAcceptors($scope) as $parameterAcceptor) {
 				foreach ($argumentType->getCallableParametersAcceptors($scope) as $argumentAcceptor) {

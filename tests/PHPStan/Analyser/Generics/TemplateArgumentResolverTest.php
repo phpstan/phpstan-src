@@ -4,9 +4,9 @@ namespace PHPStan\Analyser\Generics;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ResolvedFunctionVariantWithOriginal;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;

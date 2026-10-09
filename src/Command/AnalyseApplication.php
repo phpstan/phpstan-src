@@ -299,7 +299,7 @@ final class AnalyseApplication
 	 * Prints the rules on CollectedDataNode the way --debug prints the analysed files. They run after
 	 * all files and can take longer than the analysis itself.
 	 *
-	 * @return array{(Closure(string $ruleClass): void)|null, (Closure(): void)|null}
+	 * @return array{Closure(string $ruleClass): void|null, Closure(): void|null}
 	 */
 	private function createRuleCallbacks(bool $debug, Output $stdOutput): array
 	{

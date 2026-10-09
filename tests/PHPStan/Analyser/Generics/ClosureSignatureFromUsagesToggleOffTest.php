@@ -19,6 +19,7 @@ class ClosureSignatureFromUsagesToggleOffTest extends TypeInferenceTestCase
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/closure-signature-from-usages-off.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/data/closure-byref-uses-at-invocation-off.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/callable-return-template-inference.php');
 	}
 
 	/**

@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -606,9 +607,7 @@ final class TemplateArgumentObserver
 			// never is its own iterable key and value type
 			return $constraints;
 		}
-		if ($parameterType instanceof TemplateType || $parameterType->isCallable()->yes()) {
-			// callable parameters put the template in a contravariant position:
-			// what they say about it is an upper bound, not something flowing in
+		if ($parameterType instanceof TemplateType) {
 			return $constraints;
 		}
 		if ($parameterType instanceof UnionType) {
@@ -654,6 +653,22 @@ final class TemplateArgumentObserver
 		if ($argumentType instanceof UnionType) {
 			foreach ($argumentType->getTypes() as $member) {
 				$constraints = $this->observeLowerBound($constraints, $parameterType, $member);
+			}
+
+			return $constraints;
+		}
+
+		if (($parameterType instanceof CallableType || $parameterType instanceof ClosureType) && $argumentType->isCallable()->yes()) {
+			$scope = new OutOfClassScope();
+			foreach ($parameterType->getCallableParametersAcceptors($scope) as $parameterAcceptor) {
+				foreach ($argumentType->getCallableParametersAcceptors($scope) as $argumentAcceptor) {
+					// Returns flow into the callable; its parameters are contravariant.
+					$constraints = $this->observeLowerBound(
+						$constraints,
+						$parameterAcceptor->getReturnType(),
+						$argumentAcceptor->getReturnType(),
+					);
+				}
 			}
 
 			return $constraints;

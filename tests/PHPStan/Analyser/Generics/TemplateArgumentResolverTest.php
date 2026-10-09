@@ -4,6 +4,8 @@ namespace PHPStan\Analyser\Generics;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
+use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ResolvedFunctionVariantWithOriginal;
 use PHPStan\Testing\PHPStanTestCase;
@@ -11,6 +13,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -125,10 +128,12 @@ class TemplateArgumentResolverTest extends PHPStanTestCase
 		$constraints = $constraints->merge((new TemplateArgumentObserver())->collectArgument($marker, new ConstantIntegerType(2)));
 		$constraints = $constraints->merge((new TemplateArgumentObserver())->collectArgument($marker, new ConstantStringType('a')));
 		$constraints = $constraints->merge((new TemplateArgumentObserver())->collectArgument(new ArrayType(new IntegerType(), $marker), new ArrayType(new IntegerType(), new NullType())));
-		$constraints = $constraints->merge((new TemplateArgumentObserver())->collectArgument(new CallableType([], $marker, false), new CallableType([], new StringType(), false)));
+		$parameter = new NativeParameterReflection('value', false, $marker, PassedByReference::createNo(), false, null);
+		$argument = new NativeParameterReflection('value', false, new FloatType(), PassedByReference::createNo(), false, null);
+		$constraints = $constraints->merge((new TemplateArgumentObserver())->collectArgument(new CallableType([$parameter], $marker, false), new CallableType([$argument], new StringType(), false)));
 		$frame = (new TemplateArgumentResolver())->resolve($constraints, null, []);
 
-		$this->assertSame("1|2|'a'|null", self::describe($frame->resolve($site, 'T')), 'callable parameters are contravariant and contribute nothing');
+		$this->assertSame('1|2|string|null', self::describe($frame->resolve($site, 'T')), 'callable returns contribute lower bounds, but contravariant parameters do not');
 
 		[$constraints, $site, $ofMarker] = self::constraintsWithA(new ConstantIntegerType(1));
 		$constraints = $constraints->merge((new TemplateArgumentObserver())->collectArgument($ofMarker->getTypes()[0], new ConstantStringType('a')));

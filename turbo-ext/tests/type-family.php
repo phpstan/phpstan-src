@@ -8172,6 +8172,50 @@ foreach ([\PHPStan\Analyser\Generics\TemplateArgumentConstraints::class => 'isEm
 			$r["observer pure argument $declaredName <- $actualName"] = $tacCatching(static fn () => $viewConstraints($observer->collectArgument($declared, $actual, true)));
 		}
 	}
+	// Callable returns contribute bounds, but contravariant parameters do not.
+	$callableParameterMarker = new \PHPStan\Reflection\Php\DummyParameter(
+		'value', $markers['m1U'], false, null, false, null,
+	);
+	$callableArgumentParameter = new \PHPStan\Reflection\Php\DummyParameter(
+		'value', $int, false, null, false, null,
+	);
+	$callableReturns = [
+		'bare return marker' => [
+			new \PHPStan\Type\CallableType([], $markers['m1T']),
+			new \PHPStan\Type\ClosureType([], $string),
+		],
+		'nested generic return marker' => [
+			new \PHPStan\Type\ClosureType([], $ao($int, $markers['m1T'])),
+			new \PHPStan\Type\CallableType([], $ao($int, $string)),
+		],
+		'contravariant parameter marker' => [
+			new \PHPStan\Type\CallableType([$callableParameterMarker], new \PHPStan\Type\VoidType()),
+			new \PHPStan\Type\ClosureType([$callableArgumentParameter], new \PHPStan\Type\VoidType()),
+		],
+		'return and contravariant parameter markers' => [
+			new \PHPStan\Type\CallableType([$callableParameterMarker], $markers['m1T']),
+			new \PHPStan\Type\ClosureType([$callableArgumentParameter], $string),
+		],
+		'union of callable arguments' => [
+			new \PHPStan\Type\CallableType([], $markers['m1T']),
+			new \PHPStan\Type\UnionType([
+				new \PHPStan\Type\ClosureType([], $string),
+				new \PHPStan\Type\CallableType([], $int),
+			]),
+		],
+		'union of callable parameters' => [
+			new \PHPStan\Type\UnionType([
+				new \PHPStan\Type\CallableType([], $markers['m1T']),
+				new \PHPStan\Type\NullType(),
+			]),
+			new \PHPStan\Type\ClosureType([], $string),
+		],
+	];
+	foreach ($callableReturns as $name => [$parameterType, $argumentType]) {
+		$r["observer callable argument $name"] = $tacCatching(
+			static fn () => $viewConstraints($observer->collectArgument($parameterType, $argumentType)),
+		);
+	}
 	$templateMap = new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $tT, 'U' => $tU]);
 	$parameters = [
 		new \PHPStan\Reflection\Php\DummyParameter('a', $ao($int, $tT), false, null, false, null),

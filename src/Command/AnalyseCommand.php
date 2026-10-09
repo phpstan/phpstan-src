@@ -345,10 +345,10 @@ final class AnalyseCommand extends Command
 		} elseif (TurboExtensionSelector::isMissingNextToPhar()) {
 			$phpstanVersion = ComposerHelper::getPhpStanVersion();
 			$errorOutput->getStyle()->note(sprintf(
-				'PHPStan runs without its Turbo extension.' . "\n"
-				. 'With the extension, PHPStan is up to 60%% faster.' . "\n"
+				'PHPStan runs without PHPStan Turbo.' . "\n"
+				. 'With PHPStan Turbo, analysis is up to 60%% faster.' . "\n"
 				. 'Install PHPStan with Composer: composer require --dev phpstan/phpstan' . "\n"
-				. 'Or install the extension with PIE: pie install %s',
+				. 'Or install PHPStan Turbo with PIE: pie install %s',
 				preg_match('/^\d+\.\d+\.\d+$/', $phpstanVersion) === 1 ? sprintf('phpstan/turbo:%s', $phpstanVersion) : 'phpstan/turbo',
 			));
 		}

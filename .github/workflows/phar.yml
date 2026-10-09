@@ -166,6 +166,46 @@ jobs:
               - '.github/workflows/phar.yml'
               - '.github/scripts/**'
 
+  turbo-missing-note:
+    name: "Note about a phar without PHPStan Turbo"
+    needs: compiler-tests
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 10
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      # the compiler-tests job runs the phar on PHP 8.2, where no binary exists
+      # and the note is not printed
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        with:
+          coverage: "none"
+          php-version: "8.4"
+
+      - name: "Download PHAR"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: phar-file
+          path: bare
+
+      # a copy of phpstan.phar alone prints the note, the same phar with a
+      # turbo-ext/ directory next to it (as in the Composer package) does not
+      - name: "Check the note"
+        run: |
+          printf '<?php\n\necho 1;\n' > test.php
+          php bare/phpstan.phar analyse -l 0 --no-progress test.php 2> bare.err
+          cat bare.err
+          grep -q 'PHPStan runs without PHPStan Turbo' bare.err
+          mkdir -p with-turbo-ext/turbo-ext
+          cp bare/phpstan.phar with-turbo-ext/
+          php with-turbo-ext/phpstan.phar analyse -l 0 --no-progress test.php 2> with-turbo-ext.err
+          cat with-turbo-ext.err
+          ! grep -q 'PHPStan Turbo' with-turbo-ext.err
+
   turbo-version:
     name: "Turbo Extension Version Check"
     runs-on: "ubuntu-latest"

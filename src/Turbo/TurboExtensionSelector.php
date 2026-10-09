@@ -82,24 +82,15 @@ final class TurboExtensionSelector
 	 */
 	public static function isMissingNextToPhar(): bool
 	{
-		// no binary is built for these runtimes, so installing PHPStan with
-		// Composer would not bring the extension either (see findExtension())
-		if (PHP_VERSION_ID < self::MINIMUM_PHP_VERSION_ID || (bool) PHP_DEBUG) {
+		$platformDirectory = self::getPlatformDirectoryNextToPhar();
+		if ($platformDirectory === null) {
 			return false;
 		}
 		if (TurboExtensionEnabler::isLoaded()) {
 			return false;
 		}
 
-		$pharPath = Phar::running(false);
-		if ($pharPath === '') {
-			return false;
-		}
-		if (self::resolvePlatformDirectory(PHP_OS_FAMILY, php_uname('m'), self::isMusl()) === null) {
-			return false;
-		}
-
-		return !is_dir(dirname($pharPath) . '/turbo-ext');
+		return !is_dir(dirname($platformDirectory));
 	}
 
 	/**
@@ -107,6 +98,40 @@ final class TurboExtensionSelector
 	 * present only next to a phar-based installation.
 	 */
 	public static function findExtension(): ?string
+	{
+		$platformDirectory = self::getPlatformDirectoryNextToPhar();
+		if ($platformDirectory === null) {
+			return null;
+		}
+
+		$file = sprintf(
+			'%s/phpstan_turbo-%d.%d%s.%s',
+			$platformDirectory,
+			PHP_MAJOR_VERSION,
+			PHP_MINOR_VERSION,
+			(bool) PHP_ZTS ? '-zts' : '',
+			PHP_OS_FAMILY === 'Windows' ? 'dll' : 'so',
+		);
+		if (!is_file($file)) {
+			return null;
+		}
+
+		// without its core next to it, PHP would warn at startup that it
+		// cannot load the extension
+		if (!is_file(dirname($file) . '/' . self::resolveCoreFileName(PHP_OS_FAMILY, (bool) PHP_ZTS))) {
+			return null;
+		}
+
+		return $file;
+	}
+
+	/**
+	 * The directory of turbo-ext/ next to the running phar that holds the
+	 * binaries for this platform, whether it exists or not. Null when no
+	 * binary is built for this runtime: PHP older than the minimum, a debug
+	 * build, a run from source, or a platform without binaries.
+	 */
+	private static function getPlatformDirectoryNextToPhar(): ?string
 	{
 		if (PHP_VERSION_ID < self::MINIMUM_PHP_VERSION_ID) {
 			return null;
@@ -125,26 +150,7 @@ final class TurboExtensionSelector
 			return null;
 		}
 
-		$file = sprintf(
-			'%s/turbo-ext/%s/phpstan_turbo-%d.%d%s.%s',
-			dirname($pharPath),
-			$platform,
-			PHP_MAJOR_VERSION,
-			PHP_MINOR_VERSION,
-			(bool) PHP_ZTS ? '-zts' : '',
-			PHP_OS_FAMILY === 'Windows' ? 'dll' : 'so',
-		);
-		if (!is_file($file)) {
-			return null;
-		}
-
-		// without its core next to it, PHP would warn at startup that it
-		// cannot load the extension
-		if (!is_file(dirname($file) . '/' . self::resolveCoreFileName(PHP_OS_FAMILY, (bool) PHP_ZTS))) {
-			return null;
-		}
-
-		return $file;
+		return sprintf('%s/turbo-ext/%s', dirname($pharPath), $platform);
 	}
 
 	/**

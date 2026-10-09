@@ -714,6 +714,7 @@ final class ForeachHandler implements StmtHandler
 		$allBodyScopes = [];
 		$allChainScopes = [];
 		$allBreakScopes = [];
+		$terminatedEndScopes = [];
 
 		$bodyContext = $context->enterUnrolledForeach($totalKeys);
 
@@ -797,6 +798,7 @@ final class ForeachHandler implements StmtHandler
 					}
 
 					// no later iteration runs, the loop is left only through its break statements
+					$terminatedEndScopes[] = $bodyResult->getScope();
 					$chainScope = null;
 					break;
 				}
@@ -841,6 +843,13 @@ final class ForeachHandler implements StmtHandler
 		$endScope = $chainEndScope;
 		foreach ($allBreakScopes as $breakScope) {
 			$endScope = $endScope === null ? $breakScope : $endScope->mergeWith($breakScope);
+		}
+
+		if ($endScope === null) {
+			// the code after the loop is unreachable, keep the narrowings that made the last iteration terminate
+			foreach ($terminatedEndScopes as $terminatedEndScope) {
+				$endScope = $endScope === null ? $terminatedEndScope : $endScope->mergeWith($terminatedEndScope);
+			}
 		}
 
 		// Unsealed shapes describe zero-or-more additional entries beyond the

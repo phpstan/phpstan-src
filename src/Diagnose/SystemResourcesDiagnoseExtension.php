@@ -2,11 +2,12 @@
 
 namespace PHPStan\Diagnose;
 
+use Fidry\CpuCoreCounter\Finder\CgroupCpuQuotaFinder;
+use Fidry\CpuCoreCounter\Finder\EnvVariableFinder;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Process\CpuCoreCounter;
-use PHPStan\Process\SystemResources;
 use function sprintf;
 
 /**
@@ -19,7 +20,6 @@ final class SystemResourcesDiagnoseExtension implements DiagnoseExtension
 
 	public function __construct(
 		private CpuCoreCounter $cpuCoreCounter,
-		private SystemResources $systemResources,
 		#[AutowiredParameter(ref: '%parallel.loadLimit%')]
 		private ?float $loadLimit,
 	)
@@ -32,21 +32,18 @@ final class SystemResourcesDiagnoseExtension implements DiagnoseExtension
 		$output->writeLineFormatted(sprintf('Detected CPU cores:        %d', $this->cpuCoreCounter->getDetectedNumberOfCpuCores()));
 		$output->writeLineFormatted(sprintf('Load limit:                %s', $this->loadLimit === null ? 'none' : (string) $this->loadLimit));
 
-		$kubernetesLimit = $this->cpuCoreCounter->getKubernetesCpuLimit();
-		$output->writeLineFormatted(sprintf(
-			'KUBERNETES_CPU_LIMIT:      %s',
-			$kubernetesLimit === null ? 'none' : sprintf('%d cores', $kubernetesLimit),
-		));
-		$output->writeLineFormatted(sprintf('Available after limits:    %d', $this->cpuCoreCounter->getNumberOfCpuCoresAfterLimits()));
-
-		$quota = $this->systemResources->getCpuQuota();
-		$output->writeLineFormatted(sprintf(
-			'cgroup CPU quota:          %s',
-			$quota === null ? 'none' : sprintf('%d cores', $quota),
-		));
+		// the counter applies only the first limit found, so each is looked up on its own
+		// to show a KUBERNETES_CPU_LIMIT that a cgroup quota overrides
+		$this->printCores($output, 'cgroup CPU quota:          %s', (new CgroupCpuQuotaFinder())->find());
+		$this->printCores($output, 'KUBERNETES_CPU_LIMIT:      %s', (new EnvVariableFinder('KUBERNETES_CPU_LIMIT'))->find());
 
 		$output->writeLineFormatted(sprintf('Usable CPU cores:          %d', $this->cpuCoreCounter->getNumberOfCpuCores()));
 		$output->writeLineFormatted('');
+	}
+
+	private function printCores(Output $output, string $format, ?int $cores): void
+	{
+		$output->writeLineFormatted(sprintf($format, $cores === null ? 'none' : sprintf('%d cores', $cores)));
 	}
 
 }

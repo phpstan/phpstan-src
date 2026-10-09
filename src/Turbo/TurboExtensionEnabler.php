@@ -12,6 +12,7 @@ use function in_array;
 use function is_file;
 use function json_decode;
 use function phpversion;
+use function realpath;
 
 /**
  * Activates the phpstan_turbo extension's shadowing classes.
@@ -62,6 +63,27 @@ final class TurboExtensionEnabler
 		return $version === false ? 'unknown' : $version;
 	}
 
+	/**
+	 * The phar the running code is compiled from. Code compiled out of a phar
+	 * carries the phar:// prefix of the path the phar was opened with, and
+	 * Composer's bootstrap.php opens it through __DIR__, a resolved path. A
+	 * path another program passes in, such as one with '..' in it, is
+	 * resolved the same way, so that it matches that prefix.
+	 */
+	private static function resolvePharPath(?string $pharPath): string
+	{
+		if ($pharPath === null) {
+			return Phar::running(false);
+		}
+
+		$resolvedPath = realpath($pharPath);
+		if ($resolvedPath === false) {
+			return '';
+		}
+
+		return $resolvedPath;
+	}
+
 	private static function isCompatible(): bool
 	{
 		return self::isLoaded() && phpversion('phpstan_turbo') === self::EXPECTED_EXTENSION_VERSION;
@@ -90,8 +112,13 @@ final class TurboExtensionEnabler
 	 * implement userland interfaces and may extend userland classes, resolved
 	 * through it) and before anything could autoload one of the shadowed
 	 * classes — a twin already declared cannot be shadowed.
+	 *
+	 * Another program that loads PHPStan's phar, Rector for example, passes
+	 * the path to that phar: Phar::running() only knows the phar that runs.
+	 *
+	 * @api
 	 */
-	public static function activateIfCompatible(): void
+	public static function activateIfCompatible(?string $pharPath = null): void
 	{
 		if (!self::isCompatible()) {
 			return;
@@ -136,7 +163,7 @@ final class TurboExtensionEnabler
 		// would otherwise race on. Fork mode requires the guard, and
 		// ForkParallelChecker only allows fork with the extension active.
 		if (class_exists('Phar', false)) {
-			$pharPath = Phar::running(false);
+			$pharPath = self::resolvePharPath($pharPath);
 			if ($pharPath !== '') {
 				Runtime::enablePharForkGuard($pharPath);
 			}
@@ -178,9 +205,13 @@ final class TurboExtensionEnabler
 	 * compiled earlier keeps its checks. Independent of activateIfCompatible()
 	 * — only the version gate matters here.
 	 *
+	 * Another program that loads PHPStan's phar, Rector for example, passes
+	 * the path to that phar: Phar::running() only knows the phar that runs.
+	 *
+	 * @api
 	 * @param list<string> $argv
 	 */
-	public static function trustOwnTypesIfSuitable(array $argv): void
+	public static function trustOwnTypesIfSuitable(array $argv, ?string $pharPath = null): void
 	{
 		if (!self::isCompatible()) {
 			return;
@@ -191,7 +222,7 @@ final class TurboExtensionEnabler
 		if (!class_exists('Phar', false)) {
 			return;
 		}
-		$pharPath = Phar::running(false);
+		$pharPath = self::resolvePharPath($pharPath);
 		if ($pharPath === '') {
 			return;
 		}

@@ -55,7 +55,7 @@ final class TurboExtensionSelector
 	 */
 	public const MINIMUM_PHP_VERSION_ID = 80300;
 
-	public static function findExtensionForWorkers(): ?string
+	public static function findExtensionForWorkers(?string $pharPath = null): ?string
 	{
 		if (TurboExtensionEnabler::isLoaded()) {
 			$restartPath = TurboProcessRestarter::getRestartExtensionPath();
@@ -71,7 +71,7 @@ final class TurboExtensionSelector
 			return null;
 		}
 
-		return self::findExtension();
+		return self::findExtension($pharPath);
 	}
 
 	/**
@@ -96,10 +96,13 @@ final class TurboExtensionSelector
 	/**
 	 * Locates the distributed extension binary for the current platform —
 	 * present only next to a phar-based installation.
+	 *
+	 * Another program that loads PHPStan's phar, Rector for example, passes
+	 * the path to that phar: Phar::running() only knows the phar that runs.
 	 */
-	public static function findExtension(): ?string
+	public static function findExtension(?string $pharPath = null): ?string
 	{
-		$platformDirectory = self::getPlatformDirectoryNextToPhar();
+		$platformDirectory = self::getPlatformDirectoryNextToPhar($pharPath);
 		if ($platformDirectory === null) {
 			return null;
 		}
@@ -131,7 +134,7 @@ final class TurboExtensionSelector
 	 * binary is built for this runtime: PHP older than the minimum, a debug
 	 * build, a run from source, or a platform without binaries.
 	 */
-	private static function getPlatformDirectoryNextToPhar(): ?string
+	private static function getPlatformDirectoryNextToPhar(?string $pharPath = null): ?string
 	{
 		if (PHP_VERSION_ID < self::MINIMUM_PHP_VERSION_ID) {
 			return null;
@@ -140,7 +143,7 @@ final class TurboExtensionSelector
 			return null;
 		}
 
-		$pharPath = Phar::running(false);
+		$pharPath ??= Phar::running(false);
 		if ($pharPath === '') {
 			return null;
 		}

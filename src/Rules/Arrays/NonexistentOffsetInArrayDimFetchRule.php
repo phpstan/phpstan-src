@@ -10,6 +10,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -18,6 +19,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
 use function count;
 use function in_array;
 use function is_string;
@@ -83,18 +85,13 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			return [];
 		}
 
+		$errors = [];
 		if (!$isOffsetAccessible->yes()) {
-			if ($isOffsetAccessible->no() || $this->reportMaybes) {
-				if ($dimType !== null) {
-					return [
-						RuleErrorBuilder::message(sprintf(
-							'Cannot access offset %s on %s.',
-							$dimType->describe(count($dimType->getConstantStrings()) > 0 ? VerbosityLevel::precise() : VerbosityLevel::value()),
-							$isOffsetAccessibleType->describe(VerbosityLevel::value()),
-						))->identifier('offsetAccess.nonOffsetAccessible')->build(),
-					];
-				}
+			if (!$isOffsetAccessible->no() && !$this->reportMaybes) {
+				return [];
+			}
 
+			if ($dimType === null) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Cannot access an offset on %s.',
@@ -103,13 +100,31 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 				];
 			}
 
-			return [];
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Cannot access offset %s on %s.',
+				$dimType->describe(count($dimType->getConstantStrings()) > 0 ? VerbosityLevel::precise() : VerbosityLevel::value()),
+				$isOffsetAccessibleType->describe(VerbosityLevel::value()),
+			))->identifier('offsetAccess.nonOffsetAccessible')->build();
+			// a write creates the offset, so only a read can find it missing
+			if ($isOffsetAccessible->no() || $scope->isInExpressionAssign($node)) {
+				return $errors;
+			}
+
+			// array{host?: string}|false: the offset can also be missing on the offset-accessible part
 		}
 
 		if ($dimType === null) {
-			return [];
+			return $errors;
 		}
 
+		return array_merge($errors, $this->checkOffset($node, $scope, $dimType, $unknownClassPattern));
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkOffset(Node\Expr\ArrayDimFetch $node, Scope $scope, Type $dimType, string $unknownClassPattern): array
+	{
 		if (
 			$node->dim instanceof Node\Expr\FuncCall
 			&& !$node->dim->isFirstClassCallable()

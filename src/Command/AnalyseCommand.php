@@ -30,6 +30,7 @@ use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\TurboExtensionEnabler;
+use PHPStan\Turbo\TurboExtensionSelector;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -56,6 +57,7 @@ use function is_file;
 use function is_string;
 use function microtime;
 use function pathinfo;
+use function preg_match;
 use function rewind;
 use function sprintf;
 use function str_contains;
@@ -339,6 +341,15 @@ final class AnalyseCommand extends Command
 				$incompatibleTurboVersion,
 				TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION,
 				$phpstanVersion === ComposerHelper::UNKNOWN_VERSION ? 'your PHPStan version' : sprintf('PHPStan %s', $phpstanVersion),
+			));
+		} elseif (TurboExtensionSelector::isMissingNextToPhar()) {
+			$phpstanVersion = ComposerHelper::getPhpStanVersion();
+			$errorOutput->getStyle()->note(sprintf(
+				'PHPStan runs without its Turbo extension.' . "\n"
+				. 'With the extension, PHPStan is up to 60%% faster.' . "\n"
+				. 'Install PHPStan with Composer: composer require --dev phpstan/phpstan' . "\n"
+				. 'Or install the extension with PIE: pie install %s',
+				preg_match('/^\d+\.\d+\.\d+$/', $phpstanVersion) === 1 ? sprintf('phpstan/turbo:%s', $phpstanVersion) : 'phpstan/turbo',
 			));
 		}
 

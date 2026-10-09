@@ -1007,6 +1007,10 @@ final class ArgumentsHandler
 	 * never resolved below its bound, so the skeleton can only ever sharpen the
 	 * resolution.
 	 *
+	 * The scope is the one before the array is evaluated, so its state only
+	 * holds up to the first key/value that may change it (an assignment, ++/--,
+	 * a call); the keys/values evaluated after it skip the scope state.
+	 *
 	 * Unlike gatherClosureArgType() this type never reaches $gatheredTypes: it
 	 * exists solely to resolve the parameter type the nested closures are typed
 	 * from. The argument's real type replaces it once the walk is done.
@@ -1014,7 +1018,9 @@ final class ArgumentsHandler
 	private function gatherArrayArgTypeSkeleton(NodeScopeResolver $nodeScopeResolver, Expr\Array_ $expr, MutatingScope $scope): Type
 	{
 		$initializerContext = InitializerExprContext::fromScope($scope);
-		$getType = function (Expr $inner) use (&$getType, $nodeScopeResolver, $scope, $initializerContext): Type {
+		$staleLeaves = [];
+		self::collectStaleSkeletonLeaves($expr, false, $staleLeaves);
+		$getType = function (Expr $inner) use (&$getType, $nodeScopeResolver, $scope, $initializerContext, $staleLeaves): Type {
 			if ($inner instanceof Expr\Closure || $inner instanceof Expr\ArrowFunction) {
 				return $this->closureTypeResolver->getDeclaredClosureType($scope, $inner);
 			}
@@ -1023,11 +1029,103 @@ final class ArgumentsHandler
 				return $this->initializerExprTypeResolver->getArrayType($inner, $getType);
 			}
 
-			return $nodeScopeResolver->findScopeStateType($inner, $scope)
-				?? $this->initializerExprTypeResolver->getType($inner, $initializerContext);
+			if (!isset($staleLeaves[spl_object_id($inner)])) {
+				$stateType = $nodeScopeResolver->findScopeStateType($inner, $scope);
+				if ($stateType !== null) {
+					return $stateType;
+				}
+			}
+
+			return $this->initializerExprTypeResolver->getType($inner, $initializerContext);
 		};
 
 		return $this->initializerExprTypeResolver->getArrayType($expr, $getType);
+	}
+
+	/**
+	 * Walks the array literal in evaluation order and collects the keys/values
+	 * evaluated after the first one that may change the scope. An item's key
+	 * runs before its value, but a plain variable is only read when the item is
+	 * added to the array - after both: `[$i++ => $i]` reads `$i` after the key.
+	 *
+	 * @param array<int, true> $staleLeaves
+	 */
+	private static function collectStaleSkeletonLeaves(Expr\Array_ $expr, bool $stale, array &$staleLeaves): bool
+	{
+		foreach ($expr->items as $item) {
+			$key = $item->key;
+			$value = $item->value;
+			$valueStale = $stale || ($key !== null && !self::isScopeNeutralSkeletonLeaf($key));
+			if ($value instanceof Expr\Array_) {
+				$staleAfterValue = self::collectStaleSkeletonLeaves($value, $valueStale, $staleLeaves);
+			} else {
+				if ($valueStale) {
+					$staleLeaves[spl_object_id($value)] = true;
+				}
+				$staleAfterValue = $valueStale || !self::isScopeNeutralSkeletonLeaf($value);
+			}
+
+			if ($key !== null && ($stale || ($staleAfterValue && $key instanceof Variable))) {
+				$staleLeaves[spl_object_id($key)] = true;
+			}
+
+			$stale = $staleAfterValue;
+		}
+
+		return $stale;
+	}
+
+	/**
+	 * Whether evaluating the expression leaves the scope as it was: reads of
+	 * variables and constants, literals, closures that bind nothing by
+	 * reference, and first-class callables on such operands. Anything else is
+	 * assumed to change it.
+	 */
+	private static function isScopeNeutralSkeletonLeaf(Expr $expr): bool
+	{
+		if ($expr instanceof Node\Scalar) {
+			return !$expr instanceof Node\Scalar\InterpolatedString;
+		}
+
+		if ($expr instanceof Variable) {
+			return is_string($expr->name);
+		}
+
+		if ($expr instanceof Expr\ConstFetch || $expr instanceof Expr\ArrowFunction) {
+			return true;
+		}
+
+		if ($expr instanceof Expr\ClassConstFetch) {
+			return $expr->class instanceof Name && $expr->name instanceof Identifier;
+		}
+
+		if ($expr instanceof Expr\Closure) {
+			foreach ($expr->uses as $use) {
+				if ($use->byRef) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		if (!$expr instanceof CallLike || !$expr->isFirstClassCallable()) {
+			return false;
+		}
+
+		if ($expr instanceof FuncCall) {
+			return $expr->name instanceof Name;
+		}
+
+		if ($expr instanceof MethodCall) {
+			return $expr->name instanceof Identifier && self::isScopeNeutralSkeletonLeaf($expr->var);
+		}
+
+		if ($expr instanceof StaticCall) {
+			return $expr->class instanceof Name && $expr->name instanceof Identifier;
+		}
+
+		return false;
 	}
 
 	/**

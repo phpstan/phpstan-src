@@ -1367,12 +1367,6 @@ jobs:
               OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vvv --error-format raw")
               echo "$OUTPUT"
               ../bashunit assert not_contains 'not found' "$OUTPUT"
-              # A reflection error, here a class that extends itself, still keeps the result cache from
-              # being saved.
-              cp loop/Loop.php src/Loop.php
-              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
-              echo "$OUTPUT"
-              ../bashunit assert contains 'Result cache was not saved because of non-ignorable exception: Reflection error: Circular reference' "$OUTPUT"
           - script: |
               cd e2e/result-cache-internal-error
               composer dump-autoload
@@ -1381,6 +1375,12 @@ jobs:
               echo "$OUTPUT"
               ../bashunit assert contains 'Internal error: The rule crashed.' "$OUTPUT"
               ../bashunit assert contains 'Result cache was not saved' "$OUTPUT"
+              test ! -f tmp/resultCache.php
+              # An exception about the analysed code other than a parse error, here a class that is not
+              # found, also keeps the result cache from being saved.
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -c class-not-found.neon -vvv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Result cache was not saved because of non-ignorable exception: Class ResultCacheE2EInternalError\Missing was not found' "$OUTPUT"
               test ! -f tmp/resultCache.php
           - script: |
               cd e2e/result-cache-string-class

@@ -2,19 +2,47 @@
 
 namespace PHPStan\Turbo;
 
+use FilesystemIterator;
+use Phar;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use Throwable;
+use function class_exists;
 use function explode;
 use function extension_loaded;
+use function filemtime;
+use function fileowner;
+use function fileperms;
+use function filesize;
 use function function_exists;
 use function get_cfg_var;
+use function getenv;
+use function implode;
 use function in_array;
 use function ini_get;
+use function is_dir;
+use function is_link;
 use function is_string;
+use function is_writable;
 use function max;
+use function mkdir;
 use function pcntl_exec;
 use function php_ini_loaded_file;
+use function phpversion;
+use function posix_geteuid;
+use function rmdir;
+use function scandir;
+use function sha1;
 use function strtolower;
+use function substr;
+use function sys_get_temp_dir;
+use function time;
+use function touch;
 use function trim;
+use function unlink;
 use const PHP_BINARY;
+use const PHP_OS_FAMILY;
+use const PHP_VERSION_ID;
 
 /**
  * Restarts the main PHPStan process via pcntl_exec() when the process it
@@ -67,6 +95,9 @@ final class TurboProcessRestarter
 
 	private const OPCACHE_MAX_ACCELERATED_FILES_LIMIT = 20000;
 
+	/** A file cache directory that no run has used for this long is deleted when a new one is created */
+	private const OPCACHE_FILE_CACHE_UNUSED_SECONDS_LIMIT = 7 * 24 * 60 * 60;
+
 	/** PHP's default opcache.optimization_level, pinned so the optimizer (and the extension's pass in it) always runs */
 	private const OPCACHE_OPTIMIZATION_LEVEL = '0x7FFEBFFF';
 
@@ -78,6 +109,17 @@ final class TurboProcessRestarter
 		'opcache.interned_strings_buffer',
 		'opcache.max_accelerated_files',
 	];
+
+	/**
+	 * Environment variables that CI services set (to a non-empty value other
+	 * than "false"): a CI job usually starts with an empty temp dir, so a file
+	 * cache there costs its writes on every run and is never read
+	 */
+	private const CI_ENVIRONMENT_VARIABLES = ['CI', 'GITHUB_ACTIONS', 'GITLAB_CI', 'BUILDKITE', 'TF_BUILD', 'JENKINS_URL', 'TEAMCITY_VERSION'];
+
+	private static ?string $fileCacheDirectory = null;
+
+	private static bool $fileCacheDirectoryResolved = false;
 
 	/**
 	 * The extension path this process was given through -d — by the restart,
@@ -245,7 +287,190 @@ final class TurboProcessRestarter
 			$ini[$name] = ini_get($name);
 		}
 
-		return self::resolveOpcacheArgs($ini);
+		return self::resolveOpcacheArgs($ini, self::getFileCacheDirectory());
+	}
+
+	/**
+	 * The directory for a persistent OPcache file cache, created if needed —
+	 * null when there should be none. See resolveOpcacheArgs() for why the
+	 * cache is safe to keep between runs.
+	 *
+	 * There is one directory per user under the system temp dir, and in it
+	 * one per key (see resolveFileCacheKey()). The directories must be owned
+	 * by this user and not writable by anyone else: whatever is in them runs
+	 * as opcodes, unchecked, inside PHPStan.
+	 *
+	 * Only runs from the phar get one: a source checkout changes all the time
+	 * and has no build to key the directory by. Not in CI (see
+	 * resolveContinuousIntegration()): an empty temp dir at the start of every
+	 * job would make the cache pure cost, and with a file cache the
+	 * extension's trusted-types pass is off. Not on PHP older than the oldest
+	 * one the extension is built for (TurboExtensionSelector::MINIMUM_PHP_VERSION_ID):
+	 * the file cache was only measured on that range. Not on Windows either: every
+	 * spawned worker there gets its own opcache.cache_id (see ProcessHelper),
+	 * and OPcache then keeps a separate file cache per worker that no later
+	 * run reuses: 2 GB after one benchmark run on a GitHub runner, and cold
+	 * runs 27-50% slower.
+	 */
+	private static function getFileCacheDirectory(): ?string
+	{
+		if (self::$fileCacheDirectoryResolved) {
+			return self::$fileCacheDirectory;
+		}
+
+		self::$fileCacheDirectoryResolved = true;
+		if (PHP_VERSION_ID < TurboExtensionSelector::MINIMUM_PHP_VERSION_ID) {
+			return null;
+		}
+		if (PHP_OS_FAMILY === 'Windows' || !function_exists('posix_geteuid') || !class_exists('Phar', false)) {
+			return null;
+		}
+		if (self::resolveContinuousIntegration(getenv())) {
+			return null;
+		}
+
+		$pharPath = Phar::running(false);
+		if ($pharPath === '') {
+			return null;
+		}
+
+		try {
+			$signature = (new Phar($pharPath))->getSignature();
+		} catch (Throwable) {
+			return null;
+		}
+
+		$argv = $_SERVER['argv'] ?? [];
+		$key = self::resolveFileCacheKey($signature['hash'], self::describeTurboBinary(), in_array('--debug', $argv, true));
+
+		$userId = posix_geteuid();
+		$baseDirectory = sys_get_temp_dir() . '/phpstan-opcache-' . $userId;
+		$directory = $baseDirectory . '/' . $key;
+		$created = !is_dir($directory);
+		if ($created) {
+			@mkdir($directory, 0700, true);
+		}
+		if (!self::isPrivateDirectory($baseDirectory, $userId) || !self::isPrivateDirectory($directory, $userId)) {
+			return null;
+		}
+
+		// the mtime marks the directory as in use, for the pruning below
+		@touch($directory);
+		if ($created) {
+			self::pruneFileCacheDirectories($baseDirectory, $key, time());
+		}
+
+		return self::$fileCacheDirectory = $directory;
+	}
+
+	/**
+	 * Everything that changes the opcodes compiled out of the same phar on the
+	 * same PHP build (OPcache itself separates builds): which extension binary
+	 * is loaded, and --debug, which keeps the type checks the extension's
+	 * optimizer pass drops (TurboExtensionEnabler::trustOwnTypesIfSuitable()).
+	 * The extension refuses that pass while a file cache is configured, since
+	 * stripped opcodes would outlive the run, so today it is off in every run
+	 * with a file cache. Keying by both keeps the states apart if that ever
+	 * changes.
+	 *
+	 * @param string $turboBinary see describeTurboBinary()
+	 */
+	public static function resolveFileCacheKey(string $pharSignature, string $turboBinary, bool $debug): string
+	{
+		return substr(sha1(implode("\0", [$pharSignature, $turboBinary, $debug ? 'debug' : ''])), 0, 16);
+	}
+
+	/**
+	 * @param array<string, string> $environment getenv()
+	 */
+	public static function resolveContinuousIntegration(array $environment): bool
+	{
+		foreach (self::CI_ENVIRONMENT_VARIABLES as $name) {
+			$value = $environment[$name] ?? '';
+			if ($value !== '' && strtolower($value) !== 'false') {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * The same answer before the restart and in the restarted process: the
+	 * binary the restart loads with -d, or the version of one loaded by the
+	 * php.ini, or none.
+	 */
+	private static function describeTurboBinary(): string
+	{
+		$path = self::getRestartExtensionPath();
+		if ($path === null && !extension_loaded('phpstan_turbo')) {
+			$path = TurboExtensionSelector::findExtension();
+		}
+		if ($path !== null) {
+			return 'binary:' . $path . ':' . @filesize($path) . ':' . @filemtime($path);
+		}
+		if (extension_loaded('phpstan_turbo')) {
+			return 'ini:' . phpversion('phpstan_turbo');
+		}
+
+		return 'none';
+	}
+
+	public static function isPrivateDirectory(string $directory, int $userId): bool
+	{
+		if (is_link($directory) || !is_dir($directory)) {
+			return false;
+		}
+
+		$permissions = @fileperms($directory);
+		if (@fileowner($directory) !== $userId || $permissions === false || ($permissions & 0022) !== 0) {
+			return false;
+		}
+
+		// OPcache refuses to start at all - exit code 254 - when it cannot write to opcache.file_cache
+		return is_writable($directory);
+	}
+
+	/**
+	 * Deletes the other key directories that no run has used for
+	 * OPCACHE_FILE_CACHE_UNUSED_SECONDS_LIMIT — the caches of PHPStan versions
+	 * no longer installed. Runs only when a new key directory was created, so
+	 * about once per update.
+	 */
+	public static function pruneFileCacheDirectories(string $baseDirectory, string $currentKey, int $now): void
+	{
+		$entries = @scandir($baseDirectory);
+		if ($entries === false) {
+			return;
+		}
+
+		foreach ($entries as $entry) {
+			if ($entry === '.' || $entry === '..' || $entry === $currentKey) {
+				continue;
+			}
+			$directory = $baseDirectory . '/' . $entry;
+			if (is_link($directory) || !is_dir($directory)) {
+				continue;
+			}
+			$mtime = @filemtime($directory);
+			if ($mtime === false || $now - $mtime < self::OPCACHE_FILE_CACHE_UNUSED_SECONDS_LIMIT) {
+				continue;
+			}
+
+			try {
+				$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
+				foreach ($files as $file) {
+					if ($file->isDir() && !$file->isLink()) {
+						@rmdir($file->getPathname());
+					} else {
+						@unlink($file->getPathname());
+					}
+				}
+			} catch (Throwable) {
+				continue;
+			}
+			@rmdir($directory);
+		}
 	}
 
 	/**
@@ -274,14 +499,16 @@ final class TurboProcessRestarter
 	 * (https://php.watch/versions/8.4/opcache-jit-ini-default-changes).
 	 * Pinning both directives covers both generations of defaults.
 	 *
-	 * Timestamp checks are switched off, or nothing of PHPStan itself would be
-	 * cached: opcache_compile_file() refuses any file whose mtime it reads as
-	 * 0, which is what every member of the distributed phar carried until the
-	 * build started stamping them (phar.yml). It reads the mtime whenever
-	 * opcache.validate_timestamps, opcache.file_update_protection or
-	 * opcache.max_file_size is on, so all three go — for a private cache that
-	 * dies with the process they revalidate nothing anyway, and skipping them
-	 * also drops a stat() per include. The uncached state is what made
+	 * Without a file cache, timestamp checks are switched off: for a private
+	 * cache that dies with the process they revalidate nothing, and skipping
+	 * them drops a stat() per include. They also used to be the difference
+	 * between caching PHPStan and not: opcache_compile_file() refuses any file
+	 * whose mtime it reads as 0, which is what every member of the
+	 * distributed phar carried until the build started stamping them
+	 * (phar.yml, and compiler/build/resign.php fails on a member left at 0).
+	 * It reads the mtime whenever opcache.validate_timestamps,
+	 * opcache.file_update_protection or opcache.max_file_size is on. The
+	 * uncached state is what made
 	 * OPcache *slower* than no OPcache for phar runs: code compiled under an
 	 * active OPcache but not persisted never gets its strings interned into
 	 * SHM, so its type names have no class-entry cache slot and every
@@ -302,14 +529,28 @@ final class TurboProcessRestarter
 	 * interned strings buffer is kept below the memory it is carved out of
 	 * (another fatal startup error otherwise).
 	 *
-	 * That private cache must neither outlive the process nor reach outside
+	 * Running from the phar, the opcodes also go to a persistent file cache
+	 * in a directory of PHPStan's own (see getFileCacheDirectory()), so the
+	 * next run loads PHPStan instead of compiling it again: a warm run on a
+	 * small project takes about half the time. The extension's trusted-types
+	 * pass stays off while a file cache is configured (see
+	 * resolveFileCacheKey()); on a large project that cost and the saved
+	 * compilation about cancel out. A file cache is validated by
+	 * the PHP build id and, only with opcache.validate_timestamps, the mtime,
+	 * so the checks are on in that case, at PHP's defaults: without them it
+	 * would serve the previous PHPStan's opcodes after an update (the phar
+	 * path being the same), and a project's bootstrap file as it was before
+	 * an edit. opcache.file_update_protection keeps a file changed in the
+	 * last seconds out of the cache, because the mtime has a resolution of
+	 * one second. The directory is keyed by what else changes the compiled
+	 * code (resolveFileCacheKey()).
+	 *
+	 * Otherwise the cache must neither outlive the process nor reach outside
 	 * it, which is what the remaining entries guard against in a php.ini tuned
 	 * for the web server rather than for us:
-	 * - opcache.file_cache is blanked. A file cache is validated by the PHP
-	 *   build id and (only with opcache.validate_timestamps) the mtime — so
-	 *   with the checks off it would keep serving the previous PHPStan's
-	 *   opcodes after an update, the phar path being the same, and it would
-	 *   fill the web server's cache directory with this run's scripts.
+	 * - opcache.file_cache is set to that directory, or blanked. The web
+	 *   server's own file cache directory would fill with this run's scripts,
+	 *   and it is validated with whatever that php.ini says.
 	 * - opcache.save_comments is pinned on: stripping doc comments (a common
 	 *   web tuning) breaks annotation readers in the project code the
 	 *   extensions bootstrap, which worked with OPcache dormant.
@@ -328,9 +569,10 @@ final class TurboProcessRestarter
 	 *   (the directive rejects an empty value).
 	 *
 	 * @param array<string, string|false> $ini
+	 * @param string|null $fileCacheDirectory see getFileCacheDirectory()
 	 * @return list<string>
 	 */
-	public static function resolveOpcacheArgs(array $ini): array
+	public static function resolveOpcacheArgs(array $ini, ?string $fileCacheDirectory = null): array
 	{
 		if (self::isIniOn($ini['opcache.file_cache_only'] ?? false)) {
 			return [];
@@ -352,10 +594,10 @@ final class TurboProcessRestarter
 			'opcache.enable_cli=1',
 			'opcache.jit=disable',
 			'opcache.jit_buffer_size=0',
-			'opcache.validate_timestamps=0',
-			'opcache.file_update_protection=0',
+			'opcache.validate_timestamps=' . ($fileCacheDirectory !== null ? '1' : '0'),
+			'opcache.file_update_protection=' . ($fileCacheDirectory !== null ? '2' : '0'),
 			'opcache.max_file_size=0',
-			'opcache.file_cache=',
+			'opcache.file_cache=' . ($fileCacheDirectory ?? ''),
 			'opcache.save_comments=1',
 			'opcache.optimization_level=' . self::OPCACHE_OPTIMIZATION_LEVEL,
 			'opcache.memory_consumption=' . $memory,

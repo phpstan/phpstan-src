@@ -68,6 +68,9 @@ final class FileTypeMapper
 	/** @var array<string, NameScope> */
 	private array $inProcessNameScopes = [];
 
+	/** @var array<string, int> */
+	private array $classNameScopesBeingCreated = [];
+
 	/** @var array<string, ResolvedPhpDocBlock> */
 	private array $resolvedPhpDocBlockCache = [];
 
@@ -149,6 +152,15 @@ final class FileTypeMapper
 			$docComment,
 			$fileName,
 		);
+	}
+
+	/**
+	 * While a class's name scope is being created, the PHPDoc resolved for that class
+	 * does not have its template tags yet.
+	 */
+	public function isClassNameScopeBeingCreated(string $className): bool
+	{
+		return isset($this->classNameScopesBeingCreated[$className]);
 	}
 
 	private function createResolvedPhpDocBlock(
@@ -240,6 +252,10 @@ final class FileTypeMapper
 		$intermediaryNameScope = $nameScopeMap[$nameScopeKey];
 
 		$this->inProcess[$nameScopeKey] = true;
+		$classNameScope = $className !== null && $traitName === null && $functionName === null ? $className : null;
+		if ($classNameScope !== null) {
+			$this->classNameScopesBeingCreated[$classNameScope] = ($this->classNameScopesBeingCreated[$classNameScope] ?? 0) + 1;
+		}
 
 		try {
 			$parents = [$intermediaryNameScope];
@@ -351,6 +367,9 @@ final class FileTypeMapper
 		} finally {
 			unset($this->inProcess[$nameScopeKey]);
 			unset($this->inProcessNameScopes[$nameScopeKey]);
+			if ($classNameScope !== null && --$this->classNameScopesBeingCreated[$classNameScope] === 0) {
+				unset($this->classNameScopesBeingCreated[$classNameScope]);
+			}
 		}
 	}
 

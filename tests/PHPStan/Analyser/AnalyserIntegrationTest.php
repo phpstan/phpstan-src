@@ -1392,15 +1392,17 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10049-recursive.php');
-		$this->assertCount(4, $errors);
+		$this->assertCount(5, $errors);
 		$this->assertSame('PHPDoc tag @template for class Bug10049Recursive\SimpleEntity cannot have existing class Bug10049Recursive\SimpleEntity as its name.', $errors[0]->getMessage());
 		$this->assertSame(8, $errors[0]->getLine());
 		$this->assertSame('Type Bug10049Recursive\SimpleEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> in PHPDoc tag @template Bug10049Recursive\SimpleEntity is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[1]->getMessage());
 		$this->assertSame(8, $errors[1]->getLine());
-		$this->assertSame('Type Bug10049Recursive\TestEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\TestEntity> in PHPDoc tag @extends is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[2]->getMessage());
-		$this->assertSame(46, $errors[2]->getLine());
-		$this->assertSame('Type Bug10049Recursive\AnotherEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\AnotherEntity> in PHPDoc tag @extends is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[3]->getMessage());
-		$this->assertSame(59, $errors[3]->getLine());
+		$this->assertSame('Method Bug10049Recursive\SimpleEntity::__construct() has parameter $table with generic class Bug10049Recursive\SimpleEntity but does not specify its types: SELF', $errors[2]->getMessage());
+		$this->assertSame(13, $errors[2]->getLine());
+		$this->assertSame('Type Bug10049Recursive\TestEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\TestEntity> in PHPDoc tag @extends is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[3]->getMessage());
+		$this->assertSame(46, $errors[3]->getLine());
+		$this->assertSame('Type Bug10049Recursive\AnotherEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\AnotherEntity> in PHPDoc tag @extends is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[4]->getMessage());
+		$this->assertSame(59, $errors[4]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.0.0')]

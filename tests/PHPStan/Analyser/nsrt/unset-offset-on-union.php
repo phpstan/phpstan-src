@@ -106,4 +106,46 @@ class Foo
 		assertType('array{path?: string}', $value);
 	}
 
+	/**
+	 * @param \ArrayAccess<string, int>|false $value
+	 */
+	public function arrayAccessOrFalse($value): void
+	{
+		unset($value['port']);
+		assertType('ArrayAccess<string, int>|false', $value);
+	}
+
+	public function nativeArrayAccessOrFalse(\ArrayAccess|false $value): void
+	{
+		unset($value['port']);
+		assertNativeType('ArrayAccess|false', $value);
+	}
+
+	/**
+	 * @param \ArrayAccess<string, int>|array{port?: int, path?: string}|false $value
+	 */
+	public function arrayAccessOrArrayOrFalse($value): void
+	{
+		unset($value['port']);
+		assertType('array{path?: string}|ArrayAccess<string, int>|false', $value);
+	}
+
+	/**
+	 * @param \ArrayAccess<string, int>|string $value
+	 */
+	public function arrayAccessOrString($value): void
+	{
+		unset($value['port']);
+		assertType('ArrayAccess<string, int>', $value);
+	}
+
+	/**
+	 * @param \ArrayAccess<string, int>|bool $value
+	 */
+	public function arrayAccessOrBool($value): void
+	{
+		unset($value['port']);
+		assertType('ArrayAccess<string, int>|false', $value);
+	}
+
 }

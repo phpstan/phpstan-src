@@ -139,6 +139,7 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 
 	public function unsetOffset(Type $offsetType): Type
 	{
+		/** unset() of an offset leaves false as it is (deprecated since PHP 8.1) and throws on true. see https://3v4l.org/mHHkL#veol */
 		if ($this->value) {
 			return new ErrorType();
 		}

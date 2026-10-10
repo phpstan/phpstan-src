@@ -1,0 +1,21 @@
+--- src/symbols.php
++++ src/symbols.php
+@@ -2,15 +2,15 @@
+ 
+ namespace ResultCacheE2EReorderedSymbols;
+ 
+-define('RESULT_CACHE_E2E_REORDERED_A', 1);
+ define('RESULT_CACHE_E2E_REORDERED_B', 2);
++define('RESULT_CACHE_E2E_REORDERED_A', 1);
+ 
+-class First
++class Second
+ {
+ 
+ }
+ 
+-class Second
++class First
+ {
+ 
+ }

@@ -41,6 +41,7 @@ use function array_filter;
 use function array_intersect;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -1184,32 +1185,43 @@ final class ResultCacheManager
 	 */
 	private function compareExportedNodes(array $cachedFileExportedNodes, array $fileExportedNodes): ?bool
 	{
-		$cachedSymbols = [];
-		foreach ($cachedFileExportedNodes as $cachedFileExportedNode) {
-			$cachedSymbols[$cachedFileExportedNode->getType()][] = $cachedFileExportedNode->getName();
-		}
+		// The order of the symbols in a file is not visible to the files using them,
+		// so moving a symbol within the file does not count as a new symbol.
+		$cachedSymbols = $this->groupExportedNodesBySymbol($cachedFileExportedNodes);
+		$fileSymbols = $this->groupExportedNodesBySymbol($fileExportedNodes);
 
-		$fileSymbols = [];
-		foreach ($fileExportedNodes as $fileExportedNode) {
-			$fileSymbols[$fileExportedNode->getType()][] = $fileExportedNode->getName();
-		}
-
-		if ($cachedSymbols !== $fileSymbols) {
+		$countNodes = static fn (array $nodes): int => count($nodes);
+		if (array_map($countNodes, $cachedSymbols) !== array_map($countNodes, $fileSymbols)) {
 			return true;
 		}
 
-		if (count($fileExportedNodes) !== count($cachedFileExportedNodes)) {
-			return true;
-		}
-
-		foreach ($fileExportedNodes as $i => $fileExportedNodeAgain) {
-			$cachedExportedNode = $cachedFileExportedNodes[$i];
-			if (!$cachedExportedNode->equals($fileExportedNodeAgain)) {
-				return false;
+		foreach ($fileSymbols as $symbol => $fileSymbolNodes) {
+			foreach ($fileSymbolNodes as $i => $fileExportedNode) {
+				if (!$cachedSymbols[$symbol][$i]->equals($fileExportedNode)) {
+					return false;
+				}
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * A symbol declared more than once, for example by two define() calls with the same name, keeps its nodes in the order of the file.
+	 *
+	 * @param array<int, RootExportedNode> $exportedNodes
+	 * @return array<string, list<RootExportedNode>>
+	 */
+	private function groupExportedNodesBySymbol(array $exportedNodes): array
+	{
+		$symbols = [];
+		foreach ($exportedNodes as $exportedNode) {
+			$symbols[$exportedNode->getType() . ' ' . $exportedNode->getName()][] = $exportedNode;
+		}
+
+		ksort($symbols);
+
+		return $symbols;
 	}
 
 	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, bool $save): ResultCacheProcessResult

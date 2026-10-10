@@ -1435,7 +1435,35 @@ public:
 		return unionTypes(UnionMemberOp::call(PT_LC("setexistingoffsetvaluetype"), 2, args));
 	}
 
-	zv::Val unsetOffset(zval *offsetType) const { return unionTypes(UnionMemberOp::call(PT_LC("unsetoffset"), 1, offsetType)); }
+	/* the members' unsetOffset() results with the ErrorTypes left out: $this
+	 * when nothing changed, an ErrorType when nothing is left, their union
+	 * otherwise; UNDEF = pending exception */
+	zv::Val unsetOffset(zval *offsetType) const
+	{
+		zval *types = this->types();
+		if (UNEXPECTED(types == NULL)) return zv::Val();
+		zv::Val typesCopy = zv::Val::copyOf(zv::Ref(types));
+		zv::Arr newTypes = zv::Arr::create(zv::ArrRef(typesCopy.raw()).size());
+		bool changed = false;
+		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
+			zend_object *innerType = entry.value().deref().asObject();
+			zv::Val newType = callType(innerType, PT_LC("unsetoffset"), 1, offsetType);
+			if (UNEXPECTED(newType.isUndef())) return zv::Val();
+			bool isError;
+			if (UNEXPECTED(!isInstance(newType.raw(), pt_ce_error_type, isError))) return zv::Val();
+			if (isError) {
+				changed = true;
+				continue;
+			}
+			if (Z_OBJ_P(newType.raw()) != innerType) {
+				changed = true;
+			}
+			newTypes.push(std::move(newType));
+		}
+		if (zend_hash_num_elements(newTypes.table()) == 0) return errorType();
+		if (!changed) return thisValue();
+		return combinatorUnion(newTypes.table());
+	}
 
 	zv::Val getKeysArrayFiltered(zval *filterValueType, zval *strict) const
 	{

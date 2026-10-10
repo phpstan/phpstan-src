@@ -137,6 +137,16 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		return TrinaryLogic::createFromBoolean($this->value === false);
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		/** unset() of an offset leaves false as it is (deprecated since PHP 8.1) and throws on true. see https://3v4l.org/mHHkL#veol */
+		if ($this->value) {
+			return new ErrorType();
+		}
+
+		return $this;
+	}
+
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new BooleanType();

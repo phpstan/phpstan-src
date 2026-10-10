@@ -49,6 +49,12 @@ class BooleanType implements Type
 		return [];
 	}
 
+	/** unset() of an offset leaves false as it is (deprecated since PHP 8.1) and throws on true. */
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ConstantBooleanType(false);
+	}
+
 	public function getConstantScalarTypes(): array
 	{
 		return [new ConstantBooleanType(true), new ConstantBooleanType(false)];

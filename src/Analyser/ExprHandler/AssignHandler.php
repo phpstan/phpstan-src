@@ -1372,7 +1372,7 @@ final class AssignHandler implements ExprHandler
 					$scope = $scope->addConditionalExpressions((string) $exprString, $holders);
 				}
 
-				if ($assignedExpr instanceof Expr\Array_) {
+				if ($assignedExpr instanceof Expr\Array_ && self::hasArrayReference($assignedExpr)) {
 					$scope = $this->processArrayByRefItems($nodeScopeResolver, $scope, $storage, $var->name, $assignedExpr, new Variable($var->name));
 				}
 			} else {

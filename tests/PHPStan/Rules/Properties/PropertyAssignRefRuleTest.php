@@ -61,4 +61,26 @@ class PropertyAssignRefRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug14243(): void
+	{
+		$this->analyse([
+			__DIR__ . '/data/bug-14243.php',
+			__DIR__ . '/data/bug-14243-asymmetric.php',
+		], [
+			[
+				'Property Bug14243\ReadonlyArrayProperties::$params with protected(set) visibility is assigned by reference.',
+				56,
+			],
+			[
+				'Property Bug14243Asymmetric\AsymmetricVisibility::$params with private(set) visibility is assigned by reference.',
+				28,
+			],
+			[
+				'Property Bug14243Asymmetric\AsymmetricVisibility::$nested with protected(set) visibility is assigned by reference.',
+				29,
+			],
+		]);
+	}
+
 }

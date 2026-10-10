@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\ExprHandler;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Scalar;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
@@ -24,6 +25,7 @@ use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Analyser\VariableWriteOffset;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\Variable\VariableWrite;
@@ -32,15 +34,15 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
-use function array_map;
 use function array_merge;
-use function array_values;
 use function count;
 use function is_int;
 use function max;
@@ -70,8 +72,9 @@ final class ArrayHandler implements ExprHandler
 	{
 		$beforeScope = $scope;
 		$itemNodes = [];
-		$itemResults = [];
+		$itemTypes = [];
 		$variableFlows = [];
+		$dependencies = [];
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
@@ -83,6 +86,7 @@ final class ArrayHandler implements ExprHandler
 		$passedToType = $this->getExpectedArrayType($context->getPassedToType());
 		$nativePassedToType = $this->getExpectedArrayType($context->getNativePassedToType());
 		$hasExpectedType = $passedToType !== null || $nativePassedToType !== null;
+		$hasArrayRef = self::hasArrayReference($expr);
 		$nextIndex = 0;
 		foreach ($expr->items as $arrayItem) {
 			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
@@ -90,11 +94,26 @@ final class ArrayHandler implements ExprHandler
 			$keyResult = null;
 			if ($arrayItem->key !== null) {
 				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow());
-				$itemResults[spl_object_id($arrayItem->key)] = $keyResult;
-				$variableFlows[] = $keyResult->getVariableFlow();
+				if (!$arrayItem->key instanceof Scalar\String_ && !$arrayItem->key instanceof Scalar\Int_ && !$arrayItem->key instanceof Scalar\Float_) {
+					$itemTypes[spl_object_id($arrayItem->key)] = [$keyResult->getType(), $keyResult->getNativeType()];
+				}
+				$keyDeps = $keyResult->getDependencies();
+				if ($keyDeps !== null) {
+					$dependencies[] = $keyDeps;
+				}
+				$keyFlow = $keyResult->getVariableFlow();
+				if ($keyFlow !== null) {
+					$variableFlows[] = $keyFlow;
+				}
 				$hasYield = $hasYield || $keyResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
+				$keyThrow = $keyResult->getThrowPoints();
+				if ($keyThrow !== []) {
+					$throwPoints = array_merge($throwPoints, $keyThrow);
+				}
+				$keyImpure = $keyResult->getImpurePoints();
+				if ($keyImpure !== []) {
+					$impurePoints = array_merge($impurePoints, $keyImpure);
+				}
 				$isAlwaysTerminating = $isAlwaysTerminating || $keyResult->isAlwaysTerminating();
 				$scope = $keyResult->getScope();
 			}
@@ -134,24 +153,46 @@ final class ArrayHandler implements ExprHandler
 				);
 			}
 			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $valueContext);
-			$itemResults[spl_object_id($arrayItem->value)] = $valueResult;
-			$variableFlows[] = $valueResult->getVariableFlow();
+			if (!$arrayItem->value instanceof Scalar\String_ && !$arrayItem->value instanceof Scalar\Int_ && !$arrayItem->value instanceof Scalar\Float_) {
+				$itemTypes[spl_object_id($arrayItem->value)] = [$valueResult->getType(), $valueResult->getNativeType()];
+			}
+			$valDeps = $valueResult->getDependencies();
+			if ($valDeps !== null) {
+				$dependencies[] = $valDeps;
+			}
+			$valFlow = $valueResult->getVariableFlow();
+			if ($valFlow !== null) {
+				$variableFlows[] = $valFlow;
+			}
 			if ($arrayItem->byRef) {
 				$variableFlows[] = VariableFlowBuilder::escapeRoot($arrayItem->value);
 			}
 			$hasYield = $hasYield || $valueResult->hasYield();
-			$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
+			$valThrow = $valueResult->getThrowPoints();
+			if ($valThrow !== []) {
+				$throwPoints = array_merge($throwPoints, $valThrow);
+			}
+			$valImpure = $valueResult->getImpurePoints();
+			if ($valImpure !== []) {
+				$impurePoints = array_merge($impurePoints, $valImpure);
+			}
 			$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 			$scope = $valueResult->getScope();
 			// the item's callback fires after its key and value were processed,
 			// with the item's entry scope - callback-side asks answer from the
 			// storage instead of re-walking the yet-unstored sub-expressions
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $itemCallbackScope, $storage);
+
+			if (!$hasArrayRef) {
+				if ($arrayItem->key !== null) {
+					$storage->removeExpressionResult($arrayItem->key);
+				}
+				$storage->removeExpressionResult($arrayItem->value);
+			}
 		}
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
 		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
-			$scope = $this->collectAbsorbedItems($expr, $itemResults, $scope);
+			$scope = $this->collectAbsorbedItems($expr, $itemTypes, $scope);
 		}
 
 		$result = $this->expressionResultFactory->create(
@@ -163,16 +204,25 @@ final class ArrayHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			typeCallback: function (bool $nativeTypesPromoted) use ($expr, $itemResults, $beforeScope): Type {
-				// each item type was captured at its own evaluation point in the
-				// sequence - resolving all items on any single scope (the old world)
-				// cannot handle items with side effects like [$b = 1, $b + 1, $b++]
-				$type = $this->initializerExprTypeResolver->getArrayType($expr, static function (Expr $inner) use ($itemResults, $nativeTypesPromoted): Type {
+			typeCallback: function (bool $nativeTypesPromoted) use ($expr, $itemTypes, $beforeScope): Type {
+				$type = $this->initializerExprTypeResolver->getArrayType($expr, static function (Expr $inner) use ($itemTypes, $nativeTypesPromoted): Type {
+					if ($inner instanceof Scalar\String_) {
+						return new ConstantStringType($inner->value);
+					}
+					if ($inner instanceof Scalar\Int_) {
+						return new ConstantIntegerType($inner->value);
+					}
+					if ($inner instanceof Scalar\Float_) {
+						return new ConstantFloatType($inner->value);
+					}
+					if ($inner instanceof TypeExpr) {
+						return $inner->getExprType();
+					}
 					$id = spl_object_id($inner);
-					if (array_key_exists($id, $itemResults)) {
+					if (array_key_exists($id, $itemTypes)) {
 						return $nativeTypesPromoted
-							? $itemResults[$id]->getNativeType()
-							: $itemResults[$id]->getType();
+							? $itemTypes[$id][1]
+							: $itemTypes[$id][0];
 					}
 
 					throw new ShouldNotHappenException();
@@ -186,14 +236,8 @@ final class ArrayHandler implements ExprHandler
 						new FullyQualified('is_callable'),
 						[new Arg($expr)],
 					);
-					// isCallable() is asked last - it reflects the class named by the
-					// first item, which is expensive and unnecessary for arrays never
-					// narrowed by is_callable()
 					if (
 						$beforeScope->hasExpressionType($isCallableCall)->yes()
-						// read the narrowed type from expressionTypes directly (the
-						// synthetic is_callable() call was never processed as a child),
-						// mirroring ConstFetchHandler's narrowed-constant lookup
 						&& $beforeScope->expressionTypes[$beforeScope->getNodeKey($isCallableCall)]->getType()->isTrue()->yes()
 						&& $type->isCallable()->maybe()
 					) {
@@ -206,18 +250,20 @@ final class ArrayHandler implements ExprHandler
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 		);
 
-		return $result->withDependencies(Dependencies::merge(
-			$this->getCallableDependencies($beforeScope, $expr, $itemResults, $result),
-			...array_map(static fn (ExpressionResult $itemResult): ?Dependencies => $itemResult->getDependencies(), array_values($itemResults)),
-		));
+		$callableDeps = $this->getCallableDependencies($beforeScope, $expr, $itemTypes, $result);
+		if ($callableDeps !== null) {
+			$dependencies[] = $callableDeps;
+		}
+
+		return $result->withDependencies(Dependencies::merge(...$dependencies));
 	}
 
 	/**
 	 * An array that may be a callable - `[Foo::class, 'method']` - depends on what calling it returns.
 	 *
-	 * @param array<int, ExpressionResult> $itemResults
+	 * @param array<int, array{Type, Type}> $itemTypes
 	 */
-	private function getCallableDependencies(MutatingScope $scope, Array_ $expr, array $itemResults, ExpressionResult $result): ?Dependencies
+	private function getCallableDependencies(MutatingScope $scope, Array_ $expr, array $itemTypes, ExpressionResult $result): ?Dependencies
 	{
 		if (count($expr->items) !== 2 || !isset($expr->items[0])) {
 			return null;
@@ -234,8 +280,17 @@ final class ArrayHandler implements ExprHandler
 			return null;
 		}
 
-		$firstItemResult = $itemResults[spl_object_id($expr->items[0]->value)] ?? null;
-		if ($firstItemResult === null || !$firstItemResult->getType()->isClassString()->yes()) {
+		$firstItemValue = $expr->items[0]->value;
+		$firstItemType = null;
+		if ($firstItemValue instanceof Scalar\String_) {
+			$firstItemType = new ConstantStringType($firstItemValue->value);
+		} elseif ($firstItemValue instanceof TypeExpr) {
+			$firstItemType = $firstItemValue->getExprType();
+		} elseif (isset($itemTypes[spl_object_id($firstItemValue)])) {
+			$firstItemType = $itemTypes[spl_object_id($firstItemValue)][0];
+		}
+
+		if ($firstItemType === null || !$firstItemType->isClassString()->yes()) {
 			return null;
 		}
 
@@ -256,25 +311,51 @@ final class ArrayHandler implements ExprHandler
 	 * A literal generalized by an unpacked item absorbs the closures of its items
 	 * into a wider value type - see ClosureSignatureInference::collectAbsorbed().
 	 *
-	 * @param array<int, ExpressionResult> $itemResults
+	 * @param array<int, array{Type, Type}> $itemTypes
 	 */
-	private function collectAbsorbedItems(Array_ $expr, array $itemResults, MutatingScope $scope): MutatingScope
+	private function collectAbsorbedItems(Array_ $expr, array $itemTypes, MutatingScope $scope): MutatingScope
 	{
-		$itemTypes = [];
+		$absorbedItemTypes = [];
 		foreach ($expr->items as $arrayItem) {
-			$itemType = $itemResults[spl_object_id($arrayItem->value)]->getType();
+			if ($arrayItem->value instanceof Scalar\String_ || $arrayItem->value instanceof Scalar\Int_ || $arrayItem->value instanceof Scalar\Float_) {
+				continue;
+			}
+			$id = spl_object_id($arrayItem->value);
+			if (!isset($itemTypes[$id])) {
+				continue;
+			}
+			$itemType = $itemTypes[$id][0];
 			if (!ClosureSignatureInference::hasMarkers($itemType)) {
 				continue;
 			}
-			$itemTypes[] = $itemType;
+			$absorbedItemTypes[] = $itemType;
 		}
-		if ($itemTypes === []) {
+		if ($absorbedItemTypes === []) {
 			return $scope;
 		}
 
-		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => $itemResults[spl_object_id($inner)]->getType());
+		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static function (Expr $inner) use ($itemTypes): Type {
+			if ($inner instanceof Scalar\String_) {
+				return new ConstantStringType($inner->value);
+			}
+			if ($inner instanceof Scalar\Int_) {
+				return new ConstantIntegerType($inner->value);
+			}
+			if ($inner instanceof Scalar\Float_) {
+				return new ConstantFloatType($inner->value);
+			}
+			if ($inner instanceof TypeExpr) {
+				return $inner->getExprType();
+			}
+			$id = spl_object_id($inner);
+			if (array_key_exists($id, $itemTypes)) {
+				return $itemTypes[$id][0];
+			}
 
-		return $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInto($itemTypes, $arrayType));
+			throw new ShouldNotHappenException();
+		});
+
+		return $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInto($absorbedItemTypes, $arrayType));
 	}
 
 	private function getExpectedArrayType(?Type $type): ?Type
@@ -297,6 +378,17 @@ final class ArrayHandler implements ExprHandler
 		}
 
 		return $arrayType->getOffsetValueType($keyType);
+	}
+
+	private static function hasArrayReference(Expr\Array_ $array): bool
+	{
+		foreach ($array->items as $item) {
+			if ($item->byRef || ($item->value instanceof Expr\Array_ && self::hasArrayReference($item->value))) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

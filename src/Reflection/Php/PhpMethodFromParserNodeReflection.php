@@ -26,7 +26,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
+use function array_key_exists;
 use function in_array;
+use function is_string;
 use function sprintf;
 use function strtolower;
 
@@ -36,6 +38,24 @@ use function strtolower;
 #[ReferencedByTurboExtension(key: 'phpMethodFromParserNodeReflection')]
 final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements ExtendedMethodReflection
 {
+
+	private const MAGIC_METHOD_PARAMETER_TYPES = [
+		'__destruct' => [],
+		'__clone' => [],
+		'__tostring' => [],
+		'__debuginfo' => [],
+		'__serialize' => [],
+		'__sleep' => [],
+		'__wakeup' => [],
+		'__get' => ['string'],
+		'__set' => ['string', 'mixed'],
+		'__isset' => ['string'],
+		'__unset' => ['string'],
+		'__call' => ['string', 'array'],
+		'__callstatic' => ['string', 'array'],
+		'__unserialize' => ['array'],
+		'__set_state' => ['array'],
+	];
 
 	/**
 	 * @param Type[] $realParameterTypes
@@ -120,6 +140,10 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 			$realReturnType = new ArrayType(new MixedType(true), new MixedType(true));
 		}
 
+		if (array_key_exists($name, self::MAGIC_METHOD_PARAMETER_TYPES)) {
+			$realParameterTypes = $this->resolveMagicMethodParameterTypes($classMethod, self::MAGIC_METHOD_PARAMETER_TYPES[$name], $realParameterTypes);
+		}
+
 		parent::__construct(
 			$classMethod,
 			$fileName,
@@ -145,6 +169,46 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 			$pureUnlessCallableIsImpureParameters,
 			$pureUnlessParameterPassedParameters,
 		);
+	}
+
+	/**
+	 * Untyped parameters of magic methods get the types PHP passes to them.
+	 * Parameters the magic method cannot take are reported by MagicMethodParametersRule,
+	 * so they are not reported as missing a type.
+	 *
+	 * @param list<'string'|'mixed'|'array'> $magicParameterTypes
+	 * @param Type[] $realParameterTypes
+	 * @return Type[]
+	 */
+	private function resolveMagicMethodParameterTypes(ClassMethod|Node\PropertyHook $classMethod, array $magicParameterTypes, array $realParameterTypes): array
+	{
+		$i = 0;
+		foreach ($classMethod->getParams() as $param) {
+			if ($param->variadic) {
+				break;
+			}
+
+			$magicParameterType = $magicParameterTypes[$i] ?? 'mixed';
+			$i++;
+			if ($param->type !== null) {
+				continue;
+			}
+			if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
+				throw new ShouldNotHappenException();
+			}
+
+			if ($magicParameterType === 'string') {
+				$type = new StringType();
+			} elseif ($magicParameterType === 'mixed') {
+				$type = new MixedType(true);
+			} else {
+				$type = new ArrayType(new MixedType(true), new MixedType(true));
+			}
+
+			$realParameterTypes[$param->var->name] = $type;
+		}
+
+		return $realParameterTypes;
 	}
 
 	public function getDeclaringClass(): ClassReflection

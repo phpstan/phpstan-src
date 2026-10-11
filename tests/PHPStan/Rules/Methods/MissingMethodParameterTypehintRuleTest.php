@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<MissingMethodParameterTypehintRule>
@@ -185,6 +186,60 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 			[
 				'Method Bug15350\\Foo::aliasGeneric() has parameter $a with generic class Bug15350\\Box but does not specify its types: T',
 				44,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testMagicMethodParameters(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15454.php'], [
+			[
+				'Method Bug15454\\Valid::__construct() has parameter $a with no type specified.',
+				37,
+			],
+			[
+				'Method Bug15454\\Valid::__construct() has parameter $b with no type specified.',
+				37,
+			],
+			[
+				'Method Bug15454\\Valid::__unserialize() has parameter $data with no value type specified in iterable type array.',
+				49,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method Bug15454\\Valid::__invoke() has parameter $a with no type specified.',
+				53,
+			],
+			[
+				'Method Bug15454\\Valid::__invoke() has parameter $b with no type specified.',
+				53,
+			],
+			[
+				'Method Bug15454\\Valid::__invoke() has parameter $c with no type specified.',
+				53,
+			],
+			[
+				'Method Bug15454\\VariadicIsNotCounted::__clone() has parameter $args with no type specified.',
+				58,
+			],
+			[
+				'Method Bug15454\\VariadicIsNotCounted::__get() has parameter $args with no type specified.',
+				59,
+			],
+			[
+				'Method Bug15454\\VariadicIsNotCounted::__call() has parameter $args with no type specified.',
+				60,
+			],
+			[
+				'Method Bug15454\\WrongCounts::__unserialize() has parameter $data with no value type specified in iterable type array.',
+				73,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
+				'Method Bug15454\\ByRef::__unserialize() has parameter $data with no value type specified in iterable type array.',
+				88,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 		]);
 	}

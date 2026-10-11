@@ -7,6 +7,7 @@ use Clue\React\NDJson\Encoder;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\RuleScopedAnalysis;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Command\BootstrapFilesRunner;
@@ -60,6 +61,7 @@ final class WorkerRunner
 		private NodeScopeResolver $nodeScopeResolver,
 		#[AutowiredParameter(ref: '%parallel.buffer%')]
 		private int $decoderBufferSize,
+		private RuleScopedAnalysis $ruleScopedAnalysis,
 	)
 	{
 	}
@@ -190,11 +192,15 @@ final class WorkerRunner
 		$fileAnalyser = $this->fileAnalyser;
 		$ruleRegistry = $this->ruleRegistry;
 		$collectorRegistry = $this->collectorRegistry;
-		$in->on('data', static function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $out, $analysedFiles, $tmpFile, $insteadOfFile): void {
+		$ruleScopedAnalysis = $this->ruleScopedAnalysis;
+		$in->on('data', static function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $ruleScopedAnalysis, $out, $analysedFiles, $tmpFile, $insteadOfFile): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
 			}
+
+			// which of the job's files only the changed rules re-analyse - see ParallelAnalyser
+			$ruleScopedAnalysis->set($json['ruleScope']['ruleClasses'] ?? [], $json['ruleScope']['files'] ?? []);
 
 			$internalErrorsCount = 0;
 			$files = $json['files'];

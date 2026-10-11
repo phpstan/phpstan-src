@@ -2,7 +2,6 @@
 
 namespace PHPStan\Command;
 
-use Nette\Utils\Json;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
@@ -24,15 +23,10 @@ use function count;
 use function fclose;
 use function feof;
 use function fgets;
-use function file_put_contents;
 use function fopen;
 use function memory_get_peak_usage;
 use function microtime;
-use function putenv;
 use function sprintf;
-use function sys_get_temp_dir;
-use function uniqid;
-use function unlink;
 
 /**
  * @phpstan-import-type CollectorData from CollectedData
@@ -98,17 +92,8 @@ final class AnalyseApplication
 			}
 		} else {
 			$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $projectConfigArray, $errorOutput);
-			$ruleScopeFile = null;
-			if ($resultCache->getRuleScopedFiles() !== []) {
-				$this->ruleScopedAnalysis->set($resultCache->getChangedRuleClasses(), $resultCache->getRuleScopedFiles());
-				// the parallel workers - spawned or forked - inherit the environment
-				$ruleScopeFile = sprintf('%s/phpstan-rule-scope-%s.json', sys_get_temp_dir(), uniqid());
-				file_put_contents($ruleScopeFile, Json::encode([
-					'ruleClasses' => $resultCache->getChangedRuleClasses(),
-					'files' => $resultCache->getRuleScopedFiles(),
-				]));
-				putenv(sprintf('%s=%s', RuleScopedAnalysis::ENVIRONMENT_VARIABLE, $ruleScopeFile));
-			}
+			// the in-process analysis reads it here, the parallel workers get it with each job
+			$this->ruleScopedAnalysis->set($resultCache->getChangedRuleClasses(), $resultCache->getRuleScopedFiles());
 			$intermediateAnalyserResult = $this->runAnalyser(
 				$resultCache->getFilesToAnalyse(),
 				$files,
@@ -120,10 +105,6 @@ final class AnalyseApplication
 				$errorOutput,
 				$input,
 			);
-			if ($ruleScopeFile !== null) {
-				putenv(RuleScopedAnalysis::ENVIRONMENT_VARIABLE);
-				@unlink($ruleScopeFile);
-			}
 
 			$projectStubFiles = $this->stubFilesProvider->getProjectStubFiles();
 

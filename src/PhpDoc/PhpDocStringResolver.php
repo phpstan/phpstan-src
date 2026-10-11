@@ -7,10 +7,21 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
+use function array_key_first;
+use function count;
 
 #[AutowiredService]
 final class PhpDocStringResolver
 {
+
+	/**
+	 * FileTypeMapper and the rules that validate PHPDocs parse the same strings, often one right after
+	 * another. The parsed nodes are not modified afterwards, so equal strings can share one node.
+	 */
+	private const PARSED_PHPDOC_CACHE_LIMIT = 1024;
+
+	/** @var array<string, PhpDocNode> least recently used first */
+	private array $parsedPhpDocs = [];
 
 	public function __construct(private Lexer $phpDocLexer, private PhpDocParser $phpDocParser)
 	{
@@ -18,11 +29,22 @@ final class PhpDocStringResolver
 
 	public function resolve(string $phpDocString): PhpDocNode
 	{
+		if (isset($this->parsedPhpDocs[$phpDocString])) {
+			$phpDocNode = $this->parsedPhpDocs[$phpDocString];
+			unset($this->parsedPhpDocs[$phpDocString]);
+
+			return $this->parsedPhpDocs[$phpDocString] = $phpDocNode;
+		}
+
 		$tokens = new TokenIterator($this->phpDocLexer->tokenize($phpDocString));
 		$phpDocNode = $this->phpDocParser->parse($tokens);
 		$tokens->consumeTokenType(Lexer::TOKEN_END); // @phpstan-ignore missingType.checkedException
 
-		return $phpDocNode;
+		if (count($this->parsedPhpDocs) >= self::PARSED_PHPDOC_CACHE_LIMIT) {
+			unset($this->parsedPhpDocs[array_key_first($this->parsedPhpDocs)]);
+		}
+
+		return $this->parsedPhpDocs[$phpDocString] = $phpDocNode;
 	}
 
 }

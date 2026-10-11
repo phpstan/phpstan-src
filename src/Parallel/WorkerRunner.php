@@ -212,6 +212,7 @@ final class WorkerRunner
 			$packageDependencies = [];
 			$exportedNodes = [];
 			$processedFiles = [];
+			$nodeTypes = [];
 			foreach ($files as $file) {
 				try {
 					if ($file === $insteadOfFile) {
@@ -228,6 +229,7 @@ final class WorkerRunner
 					$valueDependencies = ValueDependencyCollector::merge($valueDependencies, $fileAnalyserResult->getValueDependencies());
 					$packageDependencies[$file] = $fileAnalyserResult->getPackageDependencies();
 					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
+					$nodeTypes[$file] = $fileAnalyserResult->getNodeTypes();
 					$processedFiles = array_merge($processedFiles, $fileAnalyserResult->getProcessedFiles());
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
@@ -273,6 +275,7 @@ final class WorkerRunner
 					'exportedNodes' => $exportedNodes,
 					'files' => $files,
 					'processedFiles' => $processedFiles,
+					'nodeTypes' => $nodeTypes,
 					'internalErrorsCount' => $internalErrorsCount,
 				]]);
 		});

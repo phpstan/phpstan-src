@@ -129,6 +129,8 @@ final class ParallelAnalyser
 		$exportedNodes = [];
 		/** @var list<string> $allProcessedFiles */
 		$allProcessedFiles = [];
+		/** @var array<string, list<string>> $nodeTypes */
+		$nodeTypes = [];
 
 		/** @var Deferred<AnalyserResult> $deferred */
 		$deferred = new Deferred();
@@ -136,7 +138,7 @@ final class ParallelAnalyser
 		$useFork = $this->forkParallelChecker->isSupported();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, &$nodeTypes, $arenaName): void {
 			if ($arenaName !== null) {
 				ArenaCache::destroy();
 			}
@@ -173,6 +175,7 @@ final class ParallelAnalyser
 				peakMemoryUsageBytes: $peakMemoryUsages === [] ? 0 : max($peakMemoryUsages),
 				processedFiles: $allProcessedFiles,
 				workerCount: count($peakMemoryUsages),
+				nodeTypes: $nodeTypes,
 			));
 		});
 		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs, $arenaName, $expectedWorkerCount, &$helloCount, $errorOutput, $useFork): void {
@@ -287,7 +290,7 @@ final class ParallelAnalyser
 				$insteadOfFile,
 				$input,
 			);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles, &$nodeTypes): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
 					$fileErrors[] = Error::decode($jsonError);
@@ -389,6 +392,10 @@ final class ParallelAnalyser
 
 				foreach ($json['processedFiles'] as $processedFile) {
 					$allProcessedFiles[] = $processedFile;
+				}
+
+				foreach ($json['nodeTypes'] ?? [] as $file => $fileNodeTypes) {
+					$nodeTypes[$file] = $fileNodeTypes;
 				}
 
 				if ($postFileCallback !== null) {

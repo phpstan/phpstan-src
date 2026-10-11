@@ -2,12 +2,14 @@
 
 namespace PHPStan\Command;
 
+use Nette\Utils\Json;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\Analyser\RuleScopedAnalysis;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -22,10 +24,15 @@ use function count;
 use function fclose;
 use function feof;
 use function fgets;
+use function file_put_contents;
 use function fopen;
 use function memory_get_peak_usage;
 use function microtime;
+use function putenv;
 use function sprintf;
+use function sys_get_temp_dir;
+use function uniqid;
+use function unlink;
 
 /**
  * @phpstan-import-type CollectorData from CollectedData
@@ -44,6 +51,7 @@ final class AnalyseApplication
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private StubFilesProvider $stubFilesProvider,
+		private RuleScopedAnalysis $ruleScopedAnalysis,
 	)
 	{
 	}
@@ -90,6 +98,17 @@ final class AnalyseApplication
 			}
 		} else {
 			$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $projectConfigArray, $errorOutput);
+			$ruleScopeFile = null;
+			if ($resultCache->getRuleScopedFiles() !== []) {
+				$this->ruleScopedAnalysis->set($resultCache->getChangedRuleClasses(), $resultCache->getRuleScopedFiles());
+				// the parallel workers - spawned or forked - inherit the environment
+				$ruleScopeFile = sprintf('%s/phpstan-rule-scope-%s.json', sys_get_temp_dir(), uniqid());
+				file_put_contents($ruleScopeFile, Json::encode([
+					'ruleClasses' => $resultCache->getChangedRuleClasses(),
+					'files' => $resultCache->getRuleScopedFiles(),
+				]));
+				putenv(sprintf('%s=%s', RuleScopedAnalysis::ENVIRONMENT_VARIABLE, $ruleScopeFile));
+			}
 			$intermediateAnalyserResult = $this->runAnalyser(
 				$resultCache->getFilesToAnalyse(),
 				$files,
@@ -101,6 +120,10 @@ final class AnalyseApplication
 				$errorOutput,
 				$input,
 			);
+			if ($ruleScopeFile !== null) {
+				putenv(RuleScopedAnalysis::ENVIRONMENT_VARIABLE);
+				@unlink($ruleScopeFile);
+			}
 
 			$projectStubFiles = $this->stubFilesProvider->getProjectStubFiles();
 
@@ -129,6 +152,7 @@ final class AnalyseApplication
 					peakMemoryUsageBytes: $intermediateAnalyserResult->getPeakMemoryUsageBytes(),
 					processedFiles: $intermediateAnalyserResult->getProcessedFiles(),
 					workerCount: $intermediateAnalyserResult->getWorkerCount(),
+					nodeTypes: $intermediateAnalyserResult->getNodeTypes(),
 				);
 			}
 
@@ -354,6 +378,7 @@ final class AnalyseApplication
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
 			workerCount: $analyserResult->getWorkerCount(),
+			nodeTypes: $analyserResult->getNodeTypes(),
 		);
 	}
 

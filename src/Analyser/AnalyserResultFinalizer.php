@@ -158,6 +158,7 @@ final class AnalyserResultFinalizer
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
 			workerCount: $analyserResult->getWorkerCount(),
+			nodeTypes: $analyserResult->getNodeTypes(),
 		), $collectorErrors, $locallyIgnoredCollectorErrors);
 	}
 
@@ -181,6 +182,7 @@ final class AnalyserResultFinalizer
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
 			workerCount: $analyserResult->getWorkerCount(),
+			nodeTypes: $analyserResult->getNodeTypes(),
 		);
 	}
 
@@ -249,6 +251,7 @@ final class AnalyserResultFinalizer
 				peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 				processedFiles: $analyserResult->getProcessedFiles(),
 				workerCount: $analyserResult->getWorkerCount(),
+				nodeTypes: $analyserResult->getNodeTypes(),
 			),
 			$collectorErrors,
 			$locallyIgnoredCollectorErrors,

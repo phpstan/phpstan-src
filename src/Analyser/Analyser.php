@@ -76,6 +76,7 @@ final class Analyser
 		$valueDependencies = ['values' => [], 'dependents' => []];
 		$packageDependencies = [];
 		$exportedNodes = [];
+		$nodeTypes = [];
 		$allProcessedFiles = [];
 		foreach ($files as $file) {
 			if ($preFileCallback !== null) {
@@ -104,6 +105,7 @@ final class Analyser
 				$usedTraitDependencies[$file] = $fileAnalyserResult->getUsedTraitDependencies();
 				$valueDependencies = ValueDependencyCollector::merge($valueDependencies, $fileAnalyserResult->getValueDependencies());
 				$packageDependencies[$file] = $fileAnalyserResult->getPackageDependencies();
+				$nodeTypes[$file] = $fileAnalyserResult->getNodeTypes();
 
 				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
 				if (count($fileExportedNodes) > 0) {
@@ -152,6 +154,7 @@ final class Analyser
 			// analysis ran in this process - its peak is read where the number is printed
 			peakMemoryUsageBytes: 0,
 			processedFiles: $allProcessedFiles,
+			nodeTypes: $nodeTypes,
 		);
 	}
 

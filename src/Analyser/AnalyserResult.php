@@ -32,6 +32,7 @@ final class AnalyserResult
 	 * @param array<string, array<string>>|null $packageDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param list<string> $processedFiles
+	 * @param array<string, list<string>> $nodeTypes the node classes each analysed file passed to the rules
 	 */
 	public function __construct(
 		private array $unorderedErrors,
@@ -51,8 +52,17 @@ final class AnalyserResult
 		private int $peakMemoryUsageBytes,
 		private array $processedFiles,
 		private int $workerCount = 0,
+		private array $nodeTypes = [],
 	)
 	{
+	}
+
+	/**
+	 * @return array<string, list<string>>
+	 */
+	public function getNodeTypes(): array
+	{
+		return $this->nodeTypes;
 	}
 
 	/**

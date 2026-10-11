@@ -1,6 +1,30 @@
-<?php // lint >= 8.4
+<?php
 
-namespace ArrayAny;
+namespace {
+
+	// array_all()/array_any() are PHP 8.4 functions: declare them for older
+	// runtimes so this test (and the mutation tests relying on it) still runs.
+	if (!function_exists('array_any')) {
+		/**
+		 * @param array<mixed> $array
+		 * @param callable $callback
+		 */
+		function array_any(array $array, callable $callback): bool
+		{
+			foreach ($array as $key => $value) {
+				if ($callback($value, $key)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
+}
+
+namespace ArrayAny
+{
 
 use DateTime;
 
@@ -163,4 +187,6 @@ class Foo {
  */
 function isIntValue(mixed $value, int|string $key): bool {
 	return is_int($value);
+}
+
 }

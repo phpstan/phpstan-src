@@ -342,6 +342,15 @@ final class ConstantArrayTypeBuilder
 					return;
 				}
 
+				// One of the keys gets written without the shape saying which,
+				// and the keys it adds are optional, so the array is a list only
+				// when each outcome is - including the array without them.
+				$isListOutcomes = [$this->isList];
+				foreach ($unmatchedScalars as $scalarType) {
+					$isListOutcomes[] = $this->isListAfterAddingKey($scalarType);
+				}
+				$isList = TrinaryLogic::extremeIdentity(...$isListOutcomes);
+
 				foreach ($unmatchedScalars as $scalarType) {
 					$this->keyTypes[] = $scalarType;
 					$this->valueTypes[] = $valueType;
@@ -369,7 +378,7 @@ final class ConstantArrayTypeBuilder
 					$this->nextAutoIndexes[] = $newAutoIndex;
 				}
 
-				$this->isList = TrinaryLogic::createNo();
+				$this->isList = $isList;
 
 				if (
 					!$this->disableArrayDegradation
@@ -435,6 +444,27 @@ final class ConstantArrayTypeBuilder
 			$this->optionalKeys[] = count($this->keyTypes) - 1;
 		}
 		$this->degradeToGeneralArray = true;
+	}
+
+	/**
+	 * Whether the array is a list after the key is written to it, when the key
+	 * is not in the array yet - the same rules as for a single constant key.
+	 */
+	private function isListAfterAddingKey(Type $keyType): TrinaryLogic
+	{
+		if (!$keyType instanceof ConstantIntegerType || count($this->nextAutoIndexes) === 0 || $keyType->getValue() < 0) {
+			return TrinaryLogic::createNo();
+		}
+
+		if ($keyType->getValue() <= min($this->nextAutoIndexes)) {
+			return $this->isList;
+		}
+
+		if ($keyType->getValue() <= max($this->nextAutoIndexes)) {
+			return $this->isList->and(TrinaryLogic::createMaybe());
+		}
+
+		return TrinaryLogic::createNo();
 	}
 
 	/**

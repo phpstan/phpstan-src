@@ -515,6 +515,25 @@ final class InitializerExprTypeResolver
 	}
 
 	/**
+	 * Resolves the backing value of an enum case. A read of the case while
+	 * its value is being resolved gives mixed - like a class constant does - to prevent endless recursions.
+	 */
+	public function getEnumCaseValueType(string $className, string $caseName, Expr $valueExpr, InitializerExprContext $context): Type
+	{
+		$resolvingName = sprintf('%s::%s', $className, $caseName);
+		if (array_key_exists($resolvingName, $this->currentlyResolvingClassConstant)) {
+			return new MixedType();
+		}
+
+		$this->currentlyResolvingClassConstant[$resolvingName] = true;
+		try {
+			return $this->getType($valueExpr, $context);
+		} finally {
+			unset($this->currentlyResolvingClassConstant[$resolvingName]);
+		}
+	}
+
+	/**
 	 * @param callable(Expr): Type $getTypeCallback
 	 */
 	public function getConcatType(Expr $left, Expr $right, callable $getTypeCallback): Type

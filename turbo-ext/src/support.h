@@ -3998,6 +3998,9 @@ enum pt_ietr_binary_operator : uint8_t
  * borrowed and of the twin's parameter types, NULL-free: PHP null as an
  * IS_NULL zval; $constantName a string zval); UNDEF = pending exception */
 zv::Val pt_initializer_expr_type_resolver_get_type(zval *resolver, zval *expr, zval *context);
+/* ->getEnumCaseValueType($className, $caseName, $valueExpr, $context), the
+ * same dispatch; the strings borrowed */
+zv::Val pt_initializer_expr_type_resolver_get_enum_case_value_type(zval *resolver, zend_string *className, zend_string *caseName, zval *valueExpr, zval *context);
 zv::Val pt_initializer_expr_type_resolver_get_binary_op_type(zval *resolver, pt_ietr_binary_operator op, zval *left, zval *right, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_resolve_concat_type(zval *resolver, zval *left, zval *right);
 zv::Val pt_initializer_expr_type_resolver_resolve_identical_type(zval *resolver, zval *leftType, zval *rightType);

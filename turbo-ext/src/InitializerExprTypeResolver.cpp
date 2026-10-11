@@ -4838,6 +4838,25 @@ public:
 		return getClassConstFetchTypeByReflection(class_, constantName, classReflection.raw(), getTypeCallback);
 	}
 
+	/* getEnumCaseValueType(): the case value resolved under the
+	 * currentlyResolvingClassConstant guard, mixed on re-entry */
+	zv::Val getEnumCaseValueType(zend_string *className, zend_string *caseName, zval *valueExpr, zval *context) const
+	{
+		zend_string *resolvingName = zend_string_concat3(ZSTR_VAL(className), ZSTR_LEN(className), "::", 2, ZSTR_VAL(caseName), ZSTR_LEN(caseName));
+		zv::Val resolvingNameHold = zv::Val::adoptString(resolvingName);
+		if (zend_symtable_exists(Z_ARRVAL_P(prop(slots::currentlyResolvingClassConstant)), resolvingName)) {
+			return newMixedType();
+		}
+
+		zval trueValue = {};
+		ZVAL_TRUE(&trueValue);
+		writeArrayProperty(slots::currentlyResolvingClassConstant, resolvingName, &trueValue);
+		zv::Val type = getType(valueExpr, context);
+		/* the twin's finally: released with an exception pending too */
+		unsetArrayProperty(slots::currentlyResolvingClassConstant, resolvingName);
+		return type;
+	}
+
 	/* }}} */
 
 private:
@@ -5336,6 +5355,19 @@ zv::Val pt_initializer_expr_type_resolver_get_type(zval *resolver, zval *expr, z
 	return callResolverMethod(site, resolver, PT_LC("gettype"), 2, argv);
 }
 
+zv::Val pt_initializer_expr_type_resolver_get_enum_case_value_type(zval *resolver, zend_string *className, zend_string *caseName, zval *valueExpr, zval *context)
+{
+	if (EXPECTED(isNativeResolver(resolver) && Z_TYPE_P(valueExpr) == IS_OBJECT)) {
+		return InitializerExprTypeResolver(Z_OBJ_P(resolver)).getEnumCaseValueType(className, caseName, valueExpr, context);
+	}
+	static pt_method_site site;
+	zval classNameZv, caseNameZv;
+	ZVAL_STR(&classNameZv, className);
+	ZVAL_STR(&caseNameZv, caseName);
+	zv::Args argv{&classNameZv, &caseNameZv, valueExpr, context};
+	return callResolverMethod(site, resolver, PT_LC("getenumcasevaluetype"), 4, argv);
+}
+
 zv::Val pt_initializer_expr_type_resolver_get_binary_op_type(zval *resolver, pt_ietr_binary_operator op, zval *left, zval *right, const pt_ietr_get_type &getTypeCallback)
 {
 	if (EXPECTED(isNativeResolver(resolver))) {
@@ -5639,6 +5671,14 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, context)) RETURN_THROWS();
 		if (UNEXPECTED(!ietrArgExpr(expr, 1) || !ietrArgContext(context, 2))) RETURN_THROWS();
 		PT_RETURN_VAL(IETR_THIS.getType(expr, context));
+	});
+
+	cls.method(sigs::getEnumCaseValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *className, *caseName;
+		zval *valueExpr, *context;
+		if (!zp::parse<zp::Str, zp::Str, zp::Obj, zp::Obj>(execute_data, className, caseName, valueExpr, context)) RETURN_THROWS();
+		if (UNEXPECTED(!ietrArgExpr(valueExpr, 3) || !ietrArgContext(context, 4))) RETURN_THROWS();
+		PT_RETURN_VAL(IETR_THIS.getEnumCaseValueType(className, caseName, valueExpr, context));
 	});
 
 	cls.method(sigs::getConcatType, IETR_OPERATOR_GLUE(self.getConcatType(left, right, getTypeCallback)));

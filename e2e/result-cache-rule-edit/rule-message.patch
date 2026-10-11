@@ -1,0 +1,15 @@
+--- rules/R.php
++++ rules/R.php
+@@ -28,10 +28,10 @@
+ 
+ 		$name = $node->name->toString();
+ 		if ($name === 'foo') {
+-			return [RuleErrorBuilder::message('R: foo v1')->identifier('r.foo')->build()];
++			return [RuleErrorBuilder::message('R: foo v2')->identifier('r.foo')->build()];
+ 		}
+ 		if ($name === 'elsewhere') {
+-			return [RuleErrorBuilder::message('R: reported in Other.php v1')->identifier('r.elsewhere')->file(realpath(__DIR__ . '/../src/Other.php'))->line(3)->build()];
++			return [RuleErrorBuilder::message('R: reported in Other.php v2')->identifier('r.elsewhere')->file(realpath(__DIR__ . '/../src/Other.php'))->line(3)->build()];
+ 		}
+ 
+ 		return [];

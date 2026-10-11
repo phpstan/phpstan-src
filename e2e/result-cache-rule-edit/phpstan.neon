@@ -1,0 +1,16 @@
+parameters:
+	level: 0
+	tmpDir: tmp
+	paths:
+		- src
+		- rules
+
+rules:
+	- ResultCacheE2ERuleEdit\R
+	- ResultCacheE2ERuleEdit\CalledRule
+
+services:
+	-
+		class: ResultCacheE2ERuleEdit\CalledCollector
+		tags:
+			- phpstan.collector

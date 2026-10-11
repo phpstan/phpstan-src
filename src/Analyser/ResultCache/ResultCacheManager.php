@@ -412,11 +412,20 @@ final class ResultCacheManager
 		$fileStatSignaturesChanged = $this->fileStatSignaturesDiffer($data['dependencies']);
 		$data['packageDependencies'] = $transformer->absolutizeFileKeyed($data['packageDependencies'] ?? []);
 		$ruleScopeData = null;
-		if (is_array($data['ruleScope'] ?? null)) {
-			$ruleScopeData = [
-				'nodeTypes' => $transformer->absolutizeFileKeyed($data['ruleScope']['nodeTypes']),
-				'ruleNodeTypes' => $data['ruleScope']['ruleNodeTypes'],
-			];
+		if (array_key_exists('ruleScope', $data)) {
+			try {
+				$ruleScopeData = $this->decodeRuleScope($data['ruleScope'], $transformer);
+			} catch (Throwable $e) {
+				@unlink($cacheFilePath);
+
+				return $this->fullAnalysis(
+					sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()),
+					$allAnalysedFiles,
+					$this->getMeta($allAnalysedFiles, $projectConfigArray),
+					$currentFileHashes,
+					$output,
+				);
+			}
 		}
 		try {
 			$cachedValueDependencies = $this->decodeValueDependencies($data['valueDependencies'] ?? ['paths' => [], 'entries' => []], $transformer);
@@ -2064,10 +2073,7 @@ final class ResultCacheManager
 		ksort($projectRuleNodeTypes);
 		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
 		ksort($nodeTypes);
-		$ruleScope = [
-			'nodeTypes' => $transformer->relativizeFileKeyed($nodeTypes),
-			'ruleNodeTypes' => $projectRuleNodeTypes,
-		];
+		$ruleScope = $this->encodeRuleScope($transformer->relativizeFileKeyed($nodeTypes), $projectRuleNodeTypes);
 
 		$file = $this->cacheFilePath;
 
@@ -2227,6 +2233,70 @@ final class ResultCacheManager
 		}
 
 		return $dependencies;
+	}
+
+	/**
+	 * The node types of each file name the same few node classes again and again, so the classes are
+	 * named once in a table and each file refers to them by position, as the dependency graph does
+	 * with paths.
+	 *
+	 * @param array<string, list<string>> $nodeTypes
+	 * @param array<string, list<string>> $ruleNodeTypes
+	 * @return array{nodeClasses: list<string>, nodeTypes: array<string, list<int>>, ruleNodeTypes: array<string, list<string>>}
+	 */
+	private function encodeRuleScope(array $nodeTypes, array $ruleNodeTypes): array
+	{
+		$ids = [];
+		$nodeClasses = [];
+		$encodedNodeTypes = [];
+		foreach ($nodeTypes as $file => $fileNodeTypes) {
+			$fileNodeTypeIds = [];
+			foreach ($fileNodeTypes as $nodeType) {
+				if (!isset($ids[$nodeType])) {
+					$ids[$nodeType] = count($nodeClasses);
+					$nodeClasses[] = $nodeType;
+				}
+				$fileNodeTypeIds[] = $ids[$nodeType];
+			}
+			$encodedNodeTypes[$file] = $fileNodeTypeIds;
+		}
+
+		return ['nodeClasses' => $nodeClasses, 'nodeTypes' => $encodedNodeTypes, 'ruleNodeTypes' => $ruleNodeTypes];
+	}
+
+	/**
+	 * @param mixed $ruleScope
+	 * @return array{nodeTypes: array<string, list<string>>, ruleNodeTypes: array<string, list<string>>}
+	 */
+	private function decodeRuleScope($ruleScope, ResultCachePathTransformer $transformer): array
+	{
+		if (
+			!is_array($ruleScope)
+			|| !is_array($ruleScope['nodeClasses'] ?? null)
+			|| !is_array($ruleScope['nodeTypes'] ?? null)
+			|| !is_array($ruleScope['ruleNodeTypes'] ?? null)
+		) {
+			throw new RuntimeException('The rule scope is malformed.');
+		}
+
+		$nodeClasses = $ruleScope['nodeClasses'];
+		$nodeTypes = [];
+		foreach ($ruleScope['nodeTypes'] as $file => $fileNodeTypeIds) {
+			if (!is_array($fileNodeTypeIds)) {
+				throw new RuntimeException('The rule scope is malformed.');
+			}
+
+			$fileNodeTypes = [];
+			foreach ($fileNodeTypeIds as $nodeTypeId) {
+				if (!is_int($nodeTypeId) || !isset($nodeClasses[$nodeTypeId])) {
+					throw new RuntimeException('The rule scope is malformed.');
+				}
+				$fileNodeTypes[] = $nodeClasses[$nodeTypeId];
+			}
+			$nodeTypes[$file] = $fileNodeTypes;
+		}
+
+		return ['nodeTypes' => $transformer->absolutizeFileKeyed($nodeTypes), 'ruleNodeTypes' => $ruleScope['ruleNodeTypes']];
 	}
 
 	/**

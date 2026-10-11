@@ -14,6 +14,13 @@ use PHPStan\Testing\PHPStanTestCase;
 final class ArrayCallableDependenciesTest extends PHPStanTestCase
 {
 
+	public static function getAdditionalConfigFiles(): array
+	{
+		// On PHP 7, a class-string|object pair can have a known callable return
+		// type, so skipping its dependency must come from the class-string guard.
+		return [__DIR__ . '/nodeScopeResolverPhp7.neon'];
+	}
+
 	public function testCallableArrayDependencies(): void
 	{
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);

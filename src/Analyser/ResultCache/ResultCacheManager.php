@@ -2050,11 +2050,23 @@ final class ResultCacheManager
 		$encodedValueDependencies = $this->encodeValueDependencies($valueDependencies, $transformer);
 		unset($invertedDependencies);
 		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
+		// only a rule of the project itself can change without a full analysis, so only those rules
+		// need their node types remembered
+		$projectRuleNodeTypes = [];
+		$allRuleNodeTypes = $this->getRuleNodeTypes();
+		foreach ($projectExtensionFiles as [, , $extensionClassName]) {
+			if (!array_key_exists($extensionClassName, $allRuleNodeTypes)) {
+				continue;
+			}
+
+			$projectRuleNodeTypes[$extensionClassName] = $allRuleNodeTypes[$extensionClassName];
+		}
+		ksort($projectRuleNodeTypes);
 		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
 		ksort($nodeTypes);
 		$ruleScope = [
 			'nodeTypes' => $transformer->relativizeFileKeyed($nodeTypes),
-			'ruleNodeTypes' => $this->getRuleNodeTypes(),
+			'ruleNodeTypes' => $projectRuleNodeTypes,
 		];
 
 		$file = $this->cacheFilePath;

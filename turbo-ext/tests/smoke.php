@@ -4285,8 +4285,10 @@ foreach ($hhResults['php'] as $label => $described) {
 }
 check(($hhResults['php']['variable / top']['type'] ?? null) === 'int' && ($hhResults['php']['dynamic name / top']['flow']['kind'] ?? null) === 'sequence', 'ScalarHandler/VariableHandler: the fixture resolves a variable and walks a dynamic name: ' . json_encode([$hhResults['php']['variable / top'] ?? null, $hhResults['php']['dynamic name / top'] ?? null]));
 // a native closure is not serializable and has no body when userland creates one
+// (the closure comes from the native VariableHandler: the ScalarHandler's
+// result carries a precomputed type and no typeCallback since 2.3.x)
 try {
-	serialize((new \ReflectionProperty(\PHPStan\Analyser\ExpressionResult::class, 'typeCallback'))->getValue((new \PHPStanTurbo\ScalarHandler($hhInitializer, $hhFactory))->processExpr($hhNodeScopeResolver, $hhStmt, $hhExprs['int'], $hhScope, new \PHPStan\Analyser\ExpressionResultStorage(), new \PHPStan\Analyser\NoopNodeCallback(), $hhContexts['top'])));
+	serialize((new \ReflectionProperty(\PHPStan\Analyser\ExpressionResult::class, 'typeCallback'))->getValue((new \PHPStanTurbo\VariableHandler($hhNativeFactory, $hhDefault, $hhIdentical, $hhInitializer))->processExpr($hhNodeScopeResolver, $hhStmt, $hhExprs['variable'], $hhScope, new \PHPStan\Analyser\ExpressionResultStorage(), new \PHPStan\Analyser\NoopNodeCallback(), $hhContexts['top'])));
 	check(false, 'NativeClosure: serialize() must refuse');
 } catch (\Exception $e) {
 	check(str_contains($e->getMessage(), 'is not allowed'), 'NativeClosure: serialize() message: ' . $e->getMessage());

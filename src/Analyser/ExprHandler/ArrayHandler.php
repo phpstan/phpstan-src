@@ -5,11 +5,11 @@ namespace PHPStan\Analyser\ExprHandler;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
-use PhpParser\Node\Scalar;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Scalar;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -183,12 +183,14 @@ final class ArrayHandler implements ExprHandler
 			// storage instead of re-walking the yet-unstored sub-expressions
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $itemCallbackScope, $storage);
 
-			if (!$hasArrayRef) {
-				if ($arrayItem->key !== null) {
-					$storage->removeExpressionResult($arrayItem->key);
-				}
-				$storage->removeExpressionResult($arrayItem->value);
+			if ($hasArrayRef) {
+				continue;
 			}
+
+			if ($arrayItem->key !== null) {
+				$storage->removeExpressionResult($arrayItem->key);
+			}
+			$storage->removeExpressionResult($arrayItem->value);
 		}
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
 		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {

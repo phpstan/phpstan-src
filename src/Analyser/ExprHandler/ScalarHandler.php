@@ -8,9 +8,6 @@ use PhpParser\Node\Scalar;
 use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
-use PHPStan\Type\Constant\ConstantFloatType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
@@ -22,6 +19,9 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 
 /**
  * @implements ExprHandler<Scalar>

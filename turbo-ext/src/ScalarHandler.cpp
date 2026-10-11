@@ -5,9 +5,11 @@
  * A DI service (#[AutowiredService]): the constructor keeps the twin's
  * arginfo so Nette autowires it. processExpr() is registered as the
  * class's handler entry (Engine.h), so native callers dispatch to it
- * without an engine frame. The typeCallback is a native closure capturing
- * what the twin's arrow function captures ($this, $expr and the initializer
- * context); the result is built through pt_expression_result_create().
+ * without an engine frame. The literal scalars (String_, Int_, Float_) get
+ * their constant type directly; anything else (the magic constants) goes
+ * through InitializerExprTypeResolver::getType() once, eagerly - the result
+ * is built through pt_expression_result_create() with the precomputed
+ * type/nativeType and no typeCallback, like the twin.
  *
  * SpecifiedTypes and InitializerExprTypeResolver are called through their
  * direct entries; InitializerExprContext, which stays PHP for now, through the
@@ -22,10 +24,13 @@ namespace sigs = ptdecl::ScalarHandler::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "Engine.h"
+#include "ParserVisitors.h"
 
 zend_class_entry *pt_ce_scalar_handler = nullptr;
 
 namespace {
+
+using phpstanturbo::visitors::NodeProp;
 
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
@@ -41,6 +46,28 @@ zv::Val initializerExprContextFromScope(zval *scope)
 zv::Val initializerExprType(zval *initializerExprTypeResolver, zval *expr, zval *context)
 {
 	return pt_initializer_expr_type_resolver_get_type(initializerExprTypeResolver, expr, context);
+}
+
+/* }}} */
+
+/* {{{ the scalar nodes' value properties */
+
+NodeProp pt_sh_scalar_string_value = PT_NODE_PROP(PT_CLASS_SCALAR_STRING, "value");
+NodeProp pt_sh_scalar_int_value = PT_NODE_PROP(PT_CLASS_SCALAR_INT, "value");
+NodeProp pt_sh_scalar_float_value = PT_NODE_PROP(PT_CLASS_SCALAR_FLOAT, "value");
+
+/* $node->value (dereferenced); NULL = pending exception */
+zval *nodeProp(NodeProp &prop, zval *node)
+{
+	zval *value = prop.of(Z_OBJ_P(node));
+	if (EXPECTED(value != NULL && Z_TYPE_P(value) != IS_UNDEF)) return value;
+	if (EG(exception) != NULL) return NULL;
+	if (value == NULL) {
+		zend_throw_error(NULL, "Undefined property: %s::$%s", ZSTR_VAL(Z_OBJCE_P(node)->name), prop.name);
+		return NULL;
+	}
+	zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization", ZSTR_VAL(Z_OBJCE_P(node)->name), prop.name);
+	return NULL;
 }
 
 /* }}} */
@@ -87,15 +114,52 @@ public:
 		(void) storage;
 		(void) nodeCallback;
 		(void) context;
-		// a literal's type and its initializer context (file/namespace/class) are
-		// lexical - identical on every scope - so build the context once here.
-		zv::Val initializerExprContext = initializerExprContextFromScope(scope);
-		if (UNEXPECTED(initializerExprContext.isUndef())) return zv::Val();
+		// a literal's type is lexical - identical on every scope - so compute it
+		// once, eagerly; anything but the plain scalars (the magic constants)
+		// keeps going through the initializer resolver
+		zv::Val type;
+		if (visitors::isInstanceOf(Z_OBJ_P(expr), PT_CLASS_SCALAR_STRING)) {
+			zval *value = nodeProp(pt_sh_scalar_string_value, expr);
+			if (UNEXPECTED(value == NULL)) return zv::Val();
+			if (EXPECTED(Z_TYPE_P(value) == IS_STRING)) {
+				zval out;
+				if (UNEXPECTED(!pt_constant_string_type_new(&out, Z_STR_P(value), false))) return zv::Val();
+				type = zv::Val::adopt(out);
+			} else {
+				type = pt_type_new_ce(pt_ce_constant_string_type, 1, value);
+			}
+		} else if (visitors::isInstanceOf(Z_OBJ_P(expr), PT_CLASS_SCALAR_INT)) {
+			zval *value = nodeProp(pt_sh_scalar_int_value, expr);
+			if (UNEXPECTED(value == NULL)) return zv::Val();
+			if (EXPECTED(Z_TYPE_P(value) == IS_LONG)) {
+				zval out;
+				if (UNEXPECTED(!pt_constant_integer_type_new(&out, Z_LVAL_P(value)))) return zv::Val();
+				type = zv::Val::adopt(out);
+			} else {
+				type = pt_type_new_ce(pt_ce_constant_integer_type, 1, value);
+			}
+		} else if (visitors::isInstanceOf(Z_OBJ_P(expr), PT_CLASS_SCALAR_FLOAT)) {
+			zval *value = nodeProp(pt_sh_scalar_float_value, expr);
+			if (UNEXPECTED(value == NULL)) return zv::Val();
+			if (EXPECTED(Z_TYPE_P(value) == IS_DOUBLE)) {
+				zval out;
+				if (UNEXPECTED(!pt_constant_float_type_new(&out, Z_DVAL_P(value)))) return zv::Val();
+				type = zv::Val::adopt(out);
+			} else {
+				type = pt_type_new_ce(pt_ce_constant_float_type, 1, value);
+			}
+		} else {
+			zv::Val initializerExprContext = initializerExprContextFromScope(scope);
+			if (UNEXPECTED(initializerExprContext.isUndef())) return zv::Val();
+			type = initializerExprType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, initializerExprContext.raw());
+			if (UNEXPECTED(type.isUndef())) return zv::Val();
+		}
 
-		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, initializerExprContext.raw());
 		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		if (UNEXPECTED(specifyTypesCallback.isUndef())) return zv::Val();
-		pt_expression_result_args args(scope, scope, expr, false, false, NULL, NULL, typeCallback.raw(), specifyTypesCallback.raw());
+		pt_expression_result_args args(scope, scope, expr, false, false, NULL, NULL, NULL, specifyTypesCallback.raw());
+		args.withType(type.raw());
+		args.withNativeType(type.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 
@@ -107,18 +171,6 @@ public:
 
 private:
 	zend_object *self;
-
-	/* fn () => $this->initializerExprTypeResolver->getType($expr, $initializerExprContext)
-	 * — captures: $this, $expr, $initializerExprContext */
-	static void typeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
-	{
-		(void) argc;
-		(void) argv;
-		zval *handler = &captures[0];
-		zv::Val type = initializerExprType(OBJ_PROP_NUM(Z_OBJ_P(handler), slots::initializerExprTypeResolver), &captures[1], &captures[2]);
-		if (UNEXPECTED(type.isUndef())) return;
-		type.intoReturnValue(return_value);
-	}
 };
 
 } // namespace phpstanturbo

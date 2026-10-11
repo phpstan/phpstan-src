@@ -2112,7 +2112,7 @@ private:
 				}
 			}
 
-			if (ahIs(assignedExpr.raw(), PT_CLASS_ARRAY_EXPR)) {
+			if (ahIs(assignedExpr.raw(), PT_CLASS_ARRAY_EXPR) && hasArrayReference(assignedExpr.raw())) {
 				AH_VALB(rootVariable, newVariable(varName));
 				AH_SETB(scope, processArrayByRefItems(nsr, scope.raw(), storage, varName, assignedExpr.raw(), rootVariable.raw()));
 			}

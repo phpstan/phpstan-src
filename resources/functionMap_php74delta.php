@@ -58,6 +58,7 @@ return [
 		'WeakReference::create' => ['WeakReference', 'referent'=>'object'],
 		'WeakReference::get' => ['?object'],
 		'proc_open' => ['resource|false', 'command'=>'string|list<string>', 'descriptorspec'=>'array', '&w_pipes'=>'resource[]', 'cwd='=>'?string', 'env='=>'?array', 'other_options='=>'array'],
+		'unserialize' => ['mixed', 'data'=>'string', 'options='=>'array{allowed_classes?:class-string[]|bool,max_depth?:int<0,max>}'],
 	],
 	'old' => [
 		'implode\'2' => ['string', 'pieces'=>'array', 'glue'=>'string'],

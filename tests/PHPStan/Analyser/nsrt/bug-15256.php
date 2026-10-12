@@ -35,7 +35,7 @@ class Shuffle
 	public static function pick3ArrayKeys(array $array): array
 	{
 		$randomizer = new Randomizer();
-		assertType('non-empty-list<TKey of (int|string) (method Bug15256\Shuffle::pick3ArrayKeys(), argument)>', $randomizer->pickArrayKeys($array, 3));
+		assertType('array{TKey of (int|string) (method Bug15256\\Shuffle::pick3ArrayKeys(), argument), TKey of (int|string) (method Bug15256\\Shuffle::pick3ArrayKeys(), argument), TKey of (int|string) (method Bug15256\\Shuffle::pick3ArrayKeys(), argument)}', $randomizer->pickArrayKeys($array, 3));
 
 		return $randomizer->pickArrayKeys($array, 3);
 	}
@@ -68,26 +68,26 @@ function arrayMethods(
 	assertType('array{}', $randomizer->shuffleArray([]));
 	assertType('list<bool>', $randomizer->shuffleArray($mixedKeys));
 
-	assertType('non-empty-list<string>', $randomizer->pickArrayKeys($nonEmptyArray, 2));
-	assertType('non-empty-list<int<0, max>>', $randomizer->pickArrayKeys($list, 2));
-	assertType('non-empty-list<int|string>', $randomizer->pickArrayKeys($mixedKeys, 2));
-	assertType("non-empty-list<'a'|'b'>", $randomizer->pickArrayKeys(['a' => 1, 'b' => 2], 2));
+	assertType('array{(int|string), (int|string)}', $randomizer->pickArrayKeys($nonEmptyArray, 2));
+	assertType('array{int<0, max>, int<0, max>}', $randomizer->pickArrayKeys($list, 2));
+	assertType('array{int|string, int|string}', $randomizer->pickArrayKeys($mixedKeys, 2));
+	assertType("array{'a'|'b', 'a'|'b'}", $randomizer->pickArrayKeys(['a' => 1, 'b' => 2], 2));
 
 	// Numeric string keys are cast to integers, just like array_rand() describes them.
-	assertType('non-empty-list<int|numeric-string>', $randomizer->pickArrayKeys($numericStringKeys, 2));
-	assertType('non-empty-list<1|2>', $randomizer->pickArrayKeys(['1' => 'a', '2' => 'b'], 2));
-	assertType("non-empty-list<1|'b'>", $randomizer->pickArrayKeys(['1' => 'a', 'b' => 'b'], 2));
+	assertType('array{int|numeric-string, int|numeric-string}', $randomizer->pickArrayKeys($numericStringKeys, 2));
+	assertType('array{1|2, 1|2}', $randomizer->pickArrayKeys(['1' => 'a', '2' => 'b'], 2));
+	assertType("array{1|'b', 1|'b'}", $randomizer->pickArrayKeys(['1' => 'a', 'b' => 'b'], 2));
 
 	// A decimal-int-string key is always cast to an integer, a non-decimal-int-string one never is.
-	assertType('non-empty-list<int>', $randomizer->pickArrayKeys($decimalIntStringKeys, 2));
-	assertType('non-empty-list<non-decimal-int-string>', $randomizer->pickArrayKeys($nonDecimalIntStringKeys, 2));
+	assertType('array{int, int}', $randomizer->pickArrayKeys($decimalIntStringKeys, 2));
+	assertType('array{non-decimal-int-string, non-decimal-int-string}', $randomizer->pickArrayKeys($nonDecimalIntStringKeys, 2));
 	assertType('array{int}', $randomizer->pickArrayKeys($decimalIntStringKeys, 1));
 	assertType('array{non-decimal-int-string}', $randomizer->pickArrayKeys($nonDecimalIntStringKeys, 1));
 
 	// Unlike array_rand(), picking a single key still returns an array.
-	assertType('array{string}', $randomizer->pickArrayKeys($nonEmptyArray, 1));
+	assertType('(array{int}|array{string})', $randomizer->pickArrayKeys($nonEmptyArray, 1));
 	assertType("array{'a'}|array{'b'}", $randomizer->pickArrayKeys(['a' => 1, 'b' => 2], 1));
-	assertType('non-empty-list<string>', $randomizer->pickArrayKeys($nonEmptyArray, $num));
+	assertType('non-empty-list<(int|string)>', $randomizer->pickArrayKeys($nonEmptyArray, $num));
 }
 
 /**

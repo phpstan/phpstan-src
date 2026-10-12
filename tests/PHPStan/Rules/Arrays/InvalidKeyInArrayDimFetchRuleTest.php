@@ -157,11 +157,11 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-12981.php'], [
 			[
-				'Invalid array key type list<(int|string)>.',
+				'Invalid array key type array<int, (int|string)>.',
 				31,
 			],
 			[
-				'Invalid array key type list<(int|string)>.',
+				'Invalid array key type array<int, (int|string)>.',
 				33,
 			],
 			[

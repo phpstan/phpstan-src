@@ -136,6 +136,11 @@ return [
 	'lchgrp' => ['hasSideEffects' => true],
 	'lchown' => ['hasSideEffects' => true],
 	'link' => ['hasSideEffects' => true],
+	// Pragmatic: stub is #[Pure(true)], but treat like other mbstring string functions.
+	// Result can change if the analysed program changes internal encoding
+	// (mb_internal_encoding() or default_charset); PHPStan does not track that.
+	// https://github.com/phpstan/phpstan/issues/15224
+	'mb_str_pad' => ['hasSideEffects' => false],
 	'mkdir' => ['hasSideEffects' => true],
 	'move_uploaded_file' => ['hasSideEffects' => true],
 	'mysqli_affected_rows' => ['hasSideEffects' => true],

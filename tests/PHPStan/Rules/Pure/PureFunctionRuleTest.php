@@ -230,6 +230,12 @@ class PureFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6574.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug15224(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15224.php'], []);
+	}
+
 	public function testPureUnlessCallableIsImpure(): void
 	{
 		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure.php'], [

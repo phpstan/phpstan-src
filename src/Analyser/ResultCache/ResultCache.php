@@ -51,8 +51,18 @@ final class ResultCache
 		private array $currentFileHashes,
 		private array $collectedDataRuleResults = [],
 		private array $filesWithCollectedDataRuleErrors = [],
+		private bool $stubFilesChanged = false,
 	)
 	{
+	}
+
+	/**
+	 * Whether a project stub file changed without the whole analysis having to run. The stub files
+	 * are validated again then, which otherwise happens only in a full analysis.
+	 */
+	public function hasChangedStubFiles(): bool
+	{
+		return $this->stubFilesChanged;
 	}
 
 	/**

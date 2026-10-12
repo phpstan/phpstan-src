@@ -24,6 +24,7 @@ e2e/bashunit
 /e2e/result-cache-stale-objects/tmp
 /e2e/result-cache-collected-data-rules/tmp
 /e2e/result-cache-collected-data-rules-tracking/tmp
+/e2e/result-cache-stub-edit/tmp
 /e2e/result-cache-truncated/tmp
 /e2e/result-cache-stub-files-errors/tmp
 /e2e/result-cache-worker-count/tmp

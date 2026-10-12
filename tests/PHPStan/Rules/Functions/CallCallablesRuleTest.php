@@ -198,6 +198,11 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4192(): void
+	{
+		$this->analyse([__DIR__ . '/../Methods/data/bug-4192.php'], []);
+	}
+
 	public static function dataBug3566(): array
 	{
 		return [

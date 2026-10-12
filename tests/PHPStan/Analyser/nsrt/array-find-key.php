@@ -33,8 +33,8 @@ namespace ArrayFindKey
 	 */
 	function testMixed(array $array, callable $callback): void
 	{
-		assertType('int|string|null', array_find_key($array, $callback));
-		assertType('int|string|null', array_find_key($array, 'is_int'));
+		assertType('(int|string|null)', array_find_key($array, $callback));
+		assertType('(int|string|null)', array_find_key($array, 'is_int'));
 	}
 
 	/**

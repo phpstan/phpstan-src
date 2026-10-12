@@ -1325,7 +1325,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				54,
 			],
 			[
-				'Offset string|false might not exist on array<string, int|string>.',
+				'Offset int|string|false might not exist on array<string, int|string>.',
 				58,
 			],
 		]);

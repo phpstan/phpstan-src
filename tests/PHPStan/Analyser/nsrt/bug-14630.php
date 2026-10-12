@@ -20,7 +20,7 @@ function d(array $a, array $b, ?int $i): void
 				$beforeDynamicPeriodKey = array_find_key($b, static fn ($beforeDynamicPeriodDetail): bool => $beforeDynamicPeriodDetail->getRange()->equals($splitFromPeriodRange));
 			}
 
-			assertType('int|string|null', $beforeDynamicPeriodKey);
+			assertType('(int|string|null)', $beforeDynamicPeriodKey);
 			if ($beforeDynamicPeriodKey === null) {
 				continue;
 			}
@@ -37,7 +37,7 @@ function arrayFindKeyNullDoesNotImplyEmptyArray(array $b): void
 	if ($key === null) {
 		assertType('array<object>', $b);
 		$key2 = array_find_key($b, static fn ($v): bool => $v->bar());
-		assertType('int|string|null', $key2);
+		assertType('(int|string|null)', $key2);
 	}
 }
 

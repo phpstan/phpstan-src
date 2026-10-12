@@ -17,6 +17,8 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class SealedDefinitionClassRuleTest extends RuleTestCase
 {
 
+	private bool $checkSealedSubtypes = true;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -32,6 +34,7 @@ class SealedDefinitionClassRuleTest extends RuleTestCase
 			),
 			true,
 			true,
+			$this->checkSealedSubtypes,
 		);
 	}
 
@@ -59,6 +62,39 @@ class SealedDefinitionClassRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.2.0')]
+	public function testSubtypes(): void
+	{
+		$this->analyse([__DIR__ . '/data/sealed-subtypes.php'], [
+			[
+				'PHPDoc tag @phpstan-sealed contains final type SealedSubtypes\\__YEnumInvalid that is not subtype of SealedSubtypes\\__EnumError.',
+				10,
+			],
+			[
+				'PHPDoc tag @phpstan-sealed contains final type SealedSubtypes\\__YClassInvalid that is not subtype of SealedSubtypes\\__ClassError.',
+				20,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNonFinalSubtypes(): void
+	{
+		$this->analyse([__DIR__ . '/data/sealed-non-final-subtypes.php'], [
+			[
+				'PHPDoc tag @phpstan-sealed contains final type SealedNonFinalSubtypes\\InvalidZ that is not subtype of SealedNonFinalSubtypes\\InvalidSealed.',
+				8,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testFinalSubtypesAreNotCheckedWhenDisabled(): void
+	{
+		$this->checkSealedSubtypes = false;
+		$this->analyse([__DIR__ . '/data/sealed-non-final-subtypes.php'], []);
 	}
 
 }

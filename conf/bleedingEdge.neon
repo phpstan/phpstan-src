@@ -1,6 +1,7 @@
 parameters:
 	featureToggles:
 		bleedingEdge: true
+		preciseArrayShapeUnpacking: true
 		checkNonStringableDynamicAccess: true
 		checkParameterCastableToNumberFunctions: true
 		skipCheckGenericClasses!: []

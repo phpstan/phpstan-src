@@ -124,7 +124,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 
 						}),
 						$constantResolver,
-						new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), new OperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])), new UnaryOperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])), new OversizedArrayBuilder(), true),
+						new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), new OperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])), new UnaryOperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])), new OversizedArrayBuilder(), true, $builder->parameters['featureToggles']['preciseArrayShapeUnpacking']),
 						reportUnsafeArrayStringKeyCasting: null,
 					),
 				),

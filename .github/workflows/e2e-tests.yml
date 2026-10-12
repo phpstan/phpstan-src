@@ -1455,30 +1455,28 @@ jobs:
               composer install
               # The rule comes from a package Composer symlinked out of the project, so the file the
               # class reflects to is the source directory, outside vendor/ and outside the analysed
-              # paths. Editing it has to re-run the rule on every file it can report on.
+              # paths. Editing it has to invalidate the cache: the rule decides what every file reports.
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
               patch -p0 < patch.patch
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Changed rule: ' "$OUTPUT"
-              ../bashunit -a not_contains 'Result cache not used' "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
               ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
               ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
           - script: |
               cd e2e/result-cache-extension-autoload-dev
               composer install
               # The rule lives in a directory that is only in autoload-dev and is not analysed, so
-              # nothing in the dependency graph points at it. Editing it still has to re-run the rule.
+              # nothing in the dependency graph points at it. Editing it still has to invalidate.
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
               patch -p0 < patch.patch
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Changed rule: ' "$OUTPUT"
-              ../bashunit -a not_contains 'Result cache not used' "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
               ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
               ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
           - script: |
@@ -1493,15 +1491,15 @@ jobs:
               patch -p0 < patch.patch
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Changed rule: ' "$OUTPUT"
-              ../bashunit -a not_contains 'Result cache not used' "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
               ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
               ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
           - script: |
               cd e2e/result-cache-rule-edit
               composer install
-              # Composer loads the rules and the collector, which are the project's own code. A run follows
-              # each edit below. The expected lines come from a cold run of the same files.
+              # Composer loads the rules and the collector, which are the project's own code, and the project
+              # turns on resultCacheRuleScopedReanalysis. A run follows each edit below. The expected lines
+              # come from a cold run of the same files.
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a contains 'A.php:8:R: foo v1' "$OUTPUT"

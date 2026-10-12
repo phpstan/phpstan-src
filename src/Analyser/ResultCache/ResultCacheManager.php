@@ -231,6 +231,8 @@ final class ResultCacheManager
 		private array $fileReplacements,
 		#[AutowiredParameter(ref: '%resultCacheChecksProjectExtensionFilesDependencies%')]
 		private bool $checkDependenciesOfProjectExtensionFiles,
+		#[AutowiredParameter(ref: '%resultCacheRuleScopedReanalysis%')]
+		private bool $ruleScopedReanalysis,
 		#[AutowiredParameter]
 		private array $parametersNotInvalidatingCache,
 		#[AutowiredParameter(ref: '%resultCacheSkipIfOlderThanDays%')]
@@ -412,7 +414,7 @@ final class ResultCacheManager
 		$fileStatSignaturesChanged = $this->fileStatSignaturesDiffer($data['dependencies']);
 		$data['packageDependencies'] = $transformer->absolutizeFileKeyed($data['packageDependencies'] ?? []);
 		$ruleScopeData = null;
-		if (array_key_exists('ruleScope', $data)) {
+		if ($this->ruleScopedReanalysis && array_key_exists('ruleScope', $data)) {
 			try {
 				$ruleScopeData = RuleScopeCodec::decode($data['ruleScope']);
 				$ruleScopeData['nodeTypes'] = $transformer->absolutizeFileKeyed($ruleScopeData['nodeTypes']);
@@ -2060,21 +2062,24 @@ final class ResultCacheManager
 		$encodedValueDependencies = $this->encodeValueDependencies($valueDependencies, $transformer);
 		unset($invertedDependencies);
 		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
-		// only a rule of the project itself can change without a full analysis, so only those rules
-		// need their node types remembered
-		$projectRuleNodeTypes = [];
-		$allRuleNodeTypes = $this->getRuleNodeTypes();
-		foreach ($projectExtensionFiles as [, , $extensionClassName]) {
-			if (!array_key_exists($extensionClassName, $allRuleNodeTypes)) {
-				continue;
-			}
+		$ruleScope = null;
+		if ($this->ruleScopedReanalysis) {
+			// only a rule of the project itself can change without a full analysis, so only those rules
+			// need their node types remembered
+			$projectRuleNodeTypes = [];
+			$allRuleNodeTypes = $this->getRuleNodeTypes();
+			foreach ($projectExtensionFiles as [, , $extensionClassName]) {
+				if (!array_key_exists($extensionClassName, $allRuleNodeTypes)) {
+					continue;
+				}
 
-			$projectRuleNodeTypes[$extensionClassName] = $allRuleNodeTypes[$extensionClassName];
+				$projectRuleNodeTypes[$extensionClassName] = $allRuleNodeTypes[$extensionClassName];
+			}
+			ksort($projectRuleNodeTypes);
+			ksort($nodeTypes);
+			$ruleScope = RuleScopeCodec::encode($transformer->relativizeFileKeyed($nodeTypes), $projectRuleNodeTypes);
 		}
-		ksort($projectRuleNodeTypes);
 		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
-		ksort($nodeTypes);
-		$ruleScope = RuleScopeCodec::encode($transformer->relativizeFileKeyed($nodeTypes), $projectRuleNodeTypes);
 
 		$file = $this->cacheFilePath;
 
@@ -2117,7 +2122,9 @@ final class ResultCacheManager
 			$this->writeValueFrame($handle, $file, 'dependencyGraph', $dependencyGraph);
 			$this->writeValueFrame($handle, $file, 'valueDependencies', $encodedValueDependencies);
 			$this->writeArrayFrame($handle, $file, 'packageDependencies', $packageDependencies);
-			$this->writeValueFrame($handle, $file, 'ruleScope', $ruleScope);
+			if ($ruleScope !== null) {
+				$this->writeValueFrame($handle, $file, 'ruleScope', $ruleScope);
+			}
 			$this->writeExportedNodes($handle, $file, $exportedNodes, $cachedExportedNodes, $transformer);
 			fclose($handle);
 			$closed = true;

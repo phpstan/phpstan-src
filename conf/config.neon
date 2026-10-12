@@ -187,6 +187,7 @@ parameters:
 	resultCachePath: %tmpDir%/resultCache.php
 	resultCacheSkipIfOlderThanDays: 7
 	resultCacheChecksProjectExtensionFilesDependencies: false
+	resultCacheRuleScopedReanalysis: false
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION

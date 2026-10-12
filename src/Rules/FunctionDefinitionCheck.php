@@ -754,6 +754,9 @@ final class FunctionDefinitionCheck
 		if ($parameter->getClosureThisType() !== null) {
 			$moreClasses = array_merge($moreClasses, $parameter->getClosureThisType()->getReferencedClasses());
 		}
+		if ($parameter->getClosureScopeType() !== null) {
+			$moreClasses = array_merge($moreClasses, $parameter->getClosureScopeType()->getReferencedClasses());
+		}
 
 		return array_merge(
 			$parameter->getNativeType()->getReferencedClasses(),

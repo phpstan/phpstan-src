@@ -1862,6 +1862,43 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * @param FunctionReflection|MethodReflection|null $calleeReflection
+	 * @return array{MutatingScope, MutatingScope|null}
+	 */
+	private function applyClosureThisAndScope(
+		MutatingScope $scopeToPass,
+		?CallLike $call,
+		$calleeReflection,
+		ParameterReflection $parameter,
+		bool $isStatic,
+	): array
+	{
+		if (!$parameter instanceof ExtendedParameterReflection) {
+			return [$scopeToPass, null];
+		}
+
+		$closureThisType = null;
+		if (!$isStatic) {
+			$closureThisType = $this->resolveClosureThisType($call, $calleeReflection, $parameter, $scopeToPass);
+		}
+		$closureScopeType = $parameter->getClosureScopeType();
+
+		if ($closureThisType === null && $closureScopeType === null) {
+			return [$scopeToPass, null];
+		}
+
+		$restoreThisScope = $scopeToPass;
+		if ($closureThisType !== null) {
+			$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes());
+		}
+		if ($closureScopeType !== null) {
+			$scopeToPass = $scopeToPass->withClosureBindScopeClasses($closureScopeType->getObjectClassNames());
+		}
+
+		return [$scopeToPass, $restoreThisScope];
+	}
+
+	/**
 	 * @param MethodReflection|FunctionReflection|null $calleeReflection
 	 * @param ParametersAcceptor[] $parametersAcceptors
 	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
@@ -2103,14 +2140,8 @@ class NodeScopeResolver
 				if (
 					$closureBindScopeFactory === null
 					&& $parameter instanceof ExtendedParameterReflection
-					&& !$arg->value->static
 				) {
-					$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
-					if ($closureThisType !== null) {
-						$restoreThisScope = $scopeToPass;
-						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
-							->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
-					}
+					[$scopeToPass, $restoreThisScope] = $this->applyClosureThisAndScope($scopeToPass, $callLike, $calleeReflection, $parameter, $arg->value->static);
 				}
 
 				if ($parameter !== null) {
@@ -2195,13 +2226,8 @@ class NodeScopeResolver
 				if (
 					$closureBindScopeFactory === null
 					&& $parameter instanceof ExtendedParameterReflection
-					&& !$arg->value->static
 				) {
-					$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
-					if ($closureThisType !== null) {
-						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
-							->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
-					}
+					[$scopeToPass] = $this->applyClosureThisAndScope($scopeToPass, $callLike, $calleeReflection, $parameter, $arg->value->static);
 				}
 
 				if ($parameter !== null) {

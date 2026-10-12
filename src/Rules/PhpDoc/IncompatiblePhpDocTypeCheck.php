@@ -49,7 +49,7 @@ final class IncompatiblePhpDocTypeCheck
 	{
 		$errors = [];
 
-		foreach (['@param' => $resolvedPhpDoc->getParamTags(), '@param-out' => $resolvedPhpDoc->getParamOutTags(), '@param-closure-this' => $resolvedPhpDoc->getParamClosureThisTags()] as $tagName => $parameters) {
+		foreach (['@param' => $resolvedPhpDoc->getParamTags(), '@param-out' => $resolvedPhpDoc->getParamOutTags(), '@param-closure-this' => $resolvedPhpDoc->getParamClosureThisTags(), '@param-closure-scope' => $resolvedPhpDoc->getParamClosureScopeTags()] as $tagName => $parameters) {
 			foreach ($parameters as $parameterName => $phpDocParamTag) {
 				$phpDocParamType = $phpDocParamTag->getType();
 				$unresolvableType = $this->unresolvableTypeHelper->getUnresolvableType($phpDocParamType);
@@ -169,7 +169,7 @@ final class IncompatiblePhpDocTypeCheck
 						}
 					}
 
-					if ($tagName === '@param-closure-this') {
+					if ($tagName === '@param-closure-this' || $tagName === '@param-closure-scope') {
 						$isNonClosure = (new ClosureType())->isSuperTypeOf($nativeParamType)->no();
 						if ($isNonClosure) {
 							$errors[] = RuleErrorBuilder::message(sprintf(
@@ -177,7 +177,7 @@ final class IncompatiblePhpDocTypeCheck
 								$tagName,
 								$parameterName,
 								$nativeParamType->describe(VerbosityLevel::typeOnly()),
-							))->identifier('paramClosureThis.nonClosure')->build();
+							))->identifier($tagName === '@param-closure-this' ? 'paramClosureThis.nonClosure' : 'paramClosureScope.nonClosure')->build();
 						}
 					}
 				}

@@ -108,6 +108,19 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 						);
 					}
 
+					$closureScopeType = $param->getClosureScopeType();
+					if ($closureScopeType !== null) {
+						$closureScopeType = TypeUtils::resolveLateResolvableTypes(
+							TemplateTypeHelper::resolveTemplateTypes(
+								$this->resolveConditionalTypesForParameter($closureScopeType),
+								$this->resolvedTemplateTypeMap,
+								$this->callSiteVarianceMap,
+								TemplateTypeVariance::createCovariant(),
+							),
+							false,
+						);
+					}
+
 					return new ExtendedDummyParameter(
 						$param->getName(),
 						$paramType,
@@ -123,6 +136,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 						$param->getAttributes(),
 						$param->getAllowedConstants(),
 						$param->isPureUnlessCallableIsImpureParameter(),
+						$closureScopeType,
 					);
 				},
 				$this->parametersAcceptor->getParameters(),

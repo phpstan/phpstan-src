@@ -1,0 +1,11 @@
+<?php
+
+namespace ResultCacheE2EStubEdit;
+
+class Foo
+{
+
+	/** @return int */
+	public function get() {}
+
+}

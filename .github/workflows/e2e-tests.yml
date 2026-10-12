@@ -354,6 +354,43 @@ jobs:
               ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               ../bashunit assert contains 'Instantiated class ResultCacheE2EGenerated\Foo not found.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-stub-edit
+              # A project stub file is a dependency of the files using the symbols it declares, so editing
+              # a PHPDoc in it re-analyses just those files. The expected lines come from a cold run.
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'UseFoo::run() should return string but returns int.' "$OUTPUT"
+              patch -p0 < phpdoc-change.patch
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert not_contains 'Result cache not used' "$OUTPUT"
+              ../bashunit assert contains 'UseChild::run() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert not_contains 'UseFoo::run()' "$OUTPUT"
+              # A comment outside the PHPDocs changes nothing the analysed files see.
+              patch -p0 < comment-change.patch
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              # The stub files are validated again, as in a full analysis.
+              patch -p0 < invalid-phpdoc.patch
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert not_contains 'Result cache not used' "$OUTPUT"
+              ../bashunit assert contains 'Foo::get() has invalid return type ResultCacheE2EStubEdit\NotAClass.' "$OUTPUT"
+              ../bashunit assert contains 'UseFoo::run() should return string but returns ResultCacheE2EStubEdit\NotAClass.' "$OUTPUT"
+              patch -p0 -R < invalid-phpdoc.patch
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert not_contains 'has invalid return type' "$OUTPUT"
+              ../bashunit assert contains 'UseChild::run() should return int but returns string.' "$OUTPUT"
+              # A class the stub file did not declare before: the files using it depend only on the file
+              # declaring it, so the whole result cache is invalidated.
+              patch -p0 < new-symbol.patch
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'declares different symbols' "$OUTPUT"
+              ../bashunit assert contains 'UseBar::run() should return string but returns int.' "$OUTPUT"
+          - script: |
               cd e2e/bug-15125
               composer install
               # scanFiles points at vendor/autoload.php through a parent-directory segment in the

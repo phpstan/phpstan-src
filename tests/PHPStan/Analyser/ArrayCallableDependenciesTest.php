@@ -25,15 +25,15 @@ final class ArrayCallableDependenciesTest extends PHPStanTestCase
 	{
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$dataDir = $fileHelper->normalizePath(__DIR__ . '/data/array-callable-deps');
-		$resultFile = $dataDir . '/result.php';
-		$definiteFile = $dataDir . '/user-definite.php';
-		$maybeFile = $dataDir . '/user-maybe.php';
+		$resultFile = $fileHelper->normalizePath($dataDir . '/result.php');
+		$definiteFile = $fileHelper->normalizePath($dataDir . '/user-definite.php');
+		$maybeFile = $fileHelper->normalizePath($dataDir . '/user-maybe.php');
 
 		$analyser = self::getContainer()->getByType(Analyser::class);
 		$analyserResult = $analyser->analyse([
 			$definiteFile,
 			$maybeFile,
-			$dataDir . '/factory.php',
+			$fileHelper->normalizePath($dataDir . '/factory.php'),
 			$resultFile,
 		]);
 

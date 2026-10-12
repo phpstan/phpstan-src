@@ -322,7 +322,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 	}
 
 	#[DataProvider('dataOverridingFinalMethod')]
-	public function testBug3403(int $phpVersion): void
+	public function testBug3403(int $phpVersion, string $contravariantMessage, string $covariantMessage): void
 	{
 		$this->phpVersionId = $phpVersion;
 		$this->analyse([__DIR__ . '/data/bug-3403.php'], []);

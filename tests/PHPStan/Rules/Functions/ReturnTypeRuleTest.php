@@ -516,4 +516,29 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15289(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15289.php'], [
+			[
+				'Function Bug15289\afterEmptyBranch() should return Bug15289\Option<string> but returns Bug15289\None|Bug15289\Some<int>.',
+				52,
+			],
+			[
+				'Function Bug15289\inTheBranch() should return Bug15289\Option<string> but returns Bug15289\Some<int>.',
+				64,
+			],
+			[
+				'Function Bug15289\elseBranch() should return Bug15289\Err<int> but returns Bug15289\Err<string>.',
+				81,
+			],
+			[
+				'Function Bug15289\unsealedControl() should return Bug15289\UnsealedOption<string> but returns Bug15289\UnsealedOption<int>.',
+				113,
+			],
+		]);
+	}
+
 }

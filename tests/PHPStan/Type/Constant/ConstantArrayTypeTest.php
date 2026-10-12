@@ -7,8 +7,10 @@ use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
@@ -1677,6 +1679,147 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			$array = $this->buildShape([[0, new IntegerType(), false], [2, new StringType(), true]]);
 			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isList()->describe());
 			$this->assertSame($expectedList, $array->makeList()->describe(VerbosityLevel::precise()));
+		});
+	}
+
+	/**
+	 * @return iterable<string, array{bool, list<array{int|string, Type, bool}>, bool, string, list<int|string>}>
+	 */
+	public static function dataMakeListPutsKeysInAscendingOrderAndRequiresTheOnesBelowARequiredKey(): iterable
+	{
+		foreach ([true, false] as $bleedingEdge) {
+			$suffix = $bleedingEdge ? ' (sealed)' : ' (unsealed === null)';
+
+			yield 'descending keys' . $suffix => [
+				$bleedingEdge,
+				[[1, new IntegerType(), true], [0, new StringType(), true]],
+				false,
+				'list{0?: string, 1?: int}',
+				[0, 1],
+			];
+
+			yield 'optional key below a required one' . $suffix => [
+				$bleedingEdge,
+				[[0, new StringType(), true], [1, new IntegerType(), false]],
+				false,
+				'array{string, int}',
+				[0, 1],
+			];
+		}
+
+		// A list never has a non-integer or a negative key, even where unsealed
+		// extras keep the keys past a gap.
+		yield 'string key is dropped (unsealed === null)' => [
+			false,
+			[[1, new IntegerType(), true], ['a', new BooleanType(), true], [0, new StringType(), true]],
+			false,
+			'list{0?: string, 1?: int}',
+			[0, 1],
+		];
+
+		yield 'negative key is dropped (unsealed === null)' => [
+			false,
+			[[-1, new BooleanType(), true], [0, new StringType(), true], [1, new IntegerType(), false]],
+			false,
+			'array{string, int}',
+			[0, 1],
+		];
+
+		yield 'real extras are kept' => [
+			true,
+			[[1, new IntegerType(), true], [0, new StringType(), true]],
+			true,
+			'list{0?: string, 1?: int, ...<bool>}',
+			[0, 1],
+		];
+	}
+
+	/**
+	 * @param list<array{int|string, Type, bool}> $items
+	 * @param list<int|string> $expectedKeys
+	 */
+	#[DataProvider('dataMakeListPutsKeysInAscendingOrderAndRequiresTheOnesBelowARequiredKey')]
+	public function testMakeListPutsKeysInAscendingOrderAndRequiresTheOnesBelowARequiredKey(
+		bool $bleedingEdge,
+		array $items,
+		bool $unsealed,
+		string $expectedList,
+		array $expectedKeys,
+	): void
+	{
+		BleedingEdgeToggle::withBleedingEdge($bleedingEdge, function () use ($items, $unsealed, $expectedList, $expectedKeys): void {
+			$array = $this->buildShape($items);
+			if ($unsealed) {
+				$builder = ConstantArrayTypeBuilder::createFromConstantArray($array);
+				$builder->makeUnsealed(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new BooleanType());
+				$array = $builder->getArray();
+				$this->assertInstanceOf(ConstantArrayType::class, $array);
+			}
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isList()->describe());
+
+			$list = $array->makeList();
+			$this->assertInstanceOf(ConstantArrayType::class, $list);
+			$this->assertSame($expectedList, $list->describe(VerbosityLevel::precise()));
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $list->isList()->describe());
+			$this->assertSame($expectedKeys, array_map(static fn (ConstantIntegerType|ConstantStringType $key): int|string => $key->getValue(), $list->getKeyTypes()));
+			$this->assertSame($array->isUnsealed()->describe(), $list->isUnsealed()->describe());
+		});
+	}
+
+	/**
+	 * @return iterable<string, array{bool, list<array{int|string, Type, bool}>, bool, string}>
+	 */
+	public static function dataIntersectWithListPutsKeysInAscendingOrder(): iterable
+	{
+		foreach ([true, false] as $bleedingEdge) {
+			$suffix = $bleedingEdge ? ' (sealed)' : ' (unsealed === null)';
+
+			// these shapes are not subtypes of array<int<0, max>, mixed>, so the
+			// intersection rebuilds them before they meet the list accessory
+			yield 'string key' . $suffix => [
+				$bleedingEdge,
+				[['a', new BooleanType(), true], [1, new IntegerType(), true], [0, new StringType(), true]],
+				false,
+				'list{0?: string, 1?: int}',
+			];
+
+			yield 'negative key' . $suffix => [
+				$bleedingEdge,
+				[[-1, new BooleanType(), true], [0, new StringType(), true], [1, new IntegerType(), false]],
+				false,
+				'array{string, int}',
+			];
+
+			// the rule that requires the first optional key of a non-empty list
+			// must see the key 0 first, not the negative one
+			yield 'negative key in a non-empty list' . $suffix => [
+				$bleedingEdge,
+				[[0, new StringType(), true], [-1, new BooleanType(), true]],
+				true,
+				'array{string}',
+			];
+		}
+	}
+
+	/**
+	 * @param list<array{int|string, Type, bool}> $items
+	 */
+	#[DataProvider('dataIntersectWithListPutsKeysInAscendingOrder')]
+	public function testIntersectWithListPutsKeysInAscendingOrder(bool $bleedingEdge, array $items, bool $nonEmpty, string $expected): void
+	{
+		BleedingEdgeToggle::withBleedingEdge($bleedingEdge, function () use ($items, $nonEmpty, $expected): void {
+			$types = [
+				$this->buildShape($items),
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType()),
+				new AccessoryArrayListType(),
+			];
+			if ($nonEmpty) {
+				$types[] = new NonEmptyArrayType();
+			}
+
+			$list = TypeCombinator::intersect(...$types);
+			$this->assertSame($expected, $list->describe(VerbosityLevel::precise()));
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $list->isList()->describe());
 		});
 	}
 

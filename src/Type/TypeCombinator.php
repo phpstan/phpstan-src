@@ -2085,8 +2085,11 @@ final class TypeCombinator
 						}
 
 						if ($constArrayIsI) {
-							$types[$i] = $newArrayType;
-							array_splice($types, $j--, 1);
+							// The rebuilt shape meets the other members from the
+							// start again - the list accessory of `list<mixed>` can
+							// come after the array it is paired with.
+							$types[$i--] = $newArrayType;
+							array_splice($types, $j, 1);
 						} else {
 							$types[$j] = $newArrayType;
 							array_splice($types, $i--, 1);

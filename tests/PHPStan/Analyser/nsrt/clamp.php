@@ -70,3 +70,17 @@ function doDates(DateTimeImmutable $date, DateTimeImmutable $min, DateTimeImmuta
 	assertType('DateTime|DateTimeImmutable', clamp($mutable, $min, $max));
 	assertType('DateTimeImmutable', clamp(new DateTimeImmutable('2025-08-01'), new DateTimeImmutable('2025-08-15'), new DateTimeImmutable('2025-08-31')));
 }
+
+/**
+ * @param array{int, 1, 10} $tuple
+ * @param array{1, 10} $bounds
+ * @param list<int> $list
+ */
+function doSplat(int $i, array $tuple, array $bounds, array $list): void
+{
+	assertType('mixed', clamp(...$tuple));
+	assertType('mixed', clamp($i, ...$bounds));
+	assertType('mixed', clamp(...$list));
+	assertType('mixed', clamp(...[$i], ...[1], ...[10]));
+	assertType('mixed', clamp($i, 1, ...[10]));
+}

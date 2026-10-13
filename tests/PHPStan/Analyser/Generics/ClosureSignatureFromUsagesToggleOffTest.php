@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\Generics;
 use PHPStan\Testing\TypeInferenceTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_merge;
+use const PHP_VERSION_ID;
 
 /**
  * With unresolved template arguments on but closure signature inference off,
@@ -19,6 +20,10 @@ class ClosureSignatureFromUsagesToggleOffTest extends TypeInferenceTestCase
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/closure-signature-from-usages-off.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/data/closure-byref-uses-at-invocation-off.php');
+		if (PHP_VERSION_ID < 80000) {
+			return;
+		}
+		yield from self::gatherAssertTypes(__DIR__ . '/data/callable-return-template-inference.php');
 	}
 
 	/**

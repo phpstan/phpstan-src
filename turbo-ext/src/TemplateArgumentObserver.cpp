@@ -957,9 +957,6 @@ public:
 		bool parameterTemplate;
 		if (UNEXPECTED(!isTemplateType(parameterType, parameterTemplate))) return zv::Val();
 		if (parameterTemplate) return constraints;
-		zend_long callable = pt_type_op_trinary(Z_OBJ_P(parameterType), PT_OP_IS_CALLABLE, 0, NULL);
-		if (UNEXPECTED(callable < 0)) return zv::Val();
-		if (callable == PT_TRI_YES) return constraints;
 
 		if (isInstance(parameterType, pt_ce_union_type)) {
 			zv::Val argumentMembers;
@@ -1015,6 +1012,31 @@ public:
 				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
 			}
 			return constraints;
+		}
+
+		if (isInstance(parameterType, pt_ce_callable_type) || isInstance(parameterType, pt_ce_closure_type)) {
+			zend_long argumentCallable = pt_type_op_trinary(Z_OBJ_P(argumentType), PT_OP_IS_CALLABLE, 0, NULL);
+			if (UNEXPECTED(argumentCallable < 0)) return zv::Val();
+			if (argumentCallable == PT_TRI_YES) {
+				zv::Val scope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
+				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+				zv::Val parameterAcceptors = pt_type_call(Z_OBJ_P(parameterType), PT_LC("getcallableparametersacceptors"), 1, scope.raw());
+				if (UNEXPECTED(parameterAcceptors.isUndef())) return zv::Val();
+				for (auto parameterEntry : zv::ArrRef(parameterAcceptors.raw())) {
+					zv::Val argumentAcceptors = pt_type_call(Z_OBJ_P(argumentType), PT_LC("getcallableparametersacceptors"), 1, scope.raw());
+					if (UNEXPECTED(argumentAcceptors.isUndef())) return zv::Val();
+					for (auto argumentEntry : zv::ArrRef(argumentAcceptors.raw())) {
+						// Returns flow into the callable; its parameters are contravariant.
+						zv::Val parameterReturn = pt_parameters_acceptor_call(parameterEntry.value().deref().raw(), PT_PA_GET_RETURN_TYPE);
+						if (UNEXPECTED(parameterReturn.isUndef())) return zv::Val();
+						zv::Val argumentReturn = pt_parameters_acceptor_call(argumentEntry.value().deref().raw(), PT_PA_GET_RETURN_TYPE);
+						if (UNEXPECTED(argumentReturn.isUndef())) return zv::Val();
+						constraints = observeLowerBound(std::move(constraints), parameterReturn.raw(), argumentReturn.raw());
+						if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+					}
+				}
+				return constraints;
+			}
 		}
 
 		zv::Val parameterReflections = objectClassReflections(parameterType);

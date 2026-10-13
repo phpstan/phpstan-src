@@ -18,6 +18,7 @@ class TemplateArgumentFlowTest extends TypeInferenceTestCase
 		if (PHP_VERSION_ID < 80000) {
 			return;
 		}
+		yield from self::gatherAssertTypes(__DIR__ . '/data/callable-return-template-inference.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/../../Rules/Functions/data/joint-inference-named.php');
 	}
 

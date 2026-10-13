@@ -503,6 +503,8 @@ zend_string *pt_str_cache_printer = nullptr;
 zend_string *pt_str_contains_super_global = nullptr;
 zend_string *pt_str_contains_call = nullptr;
 zend_string *pt_str_array_map_args = nullptr;
+/* ArrayReduceArgVisitor::ATTRIBUTE_NAME, read by pt_node_key() only */
+static zend_string *pt_str_array_reduce_args = nullptr;
 zend_string *pt_str_start_file_pos = nullptr;
 zend_string *pt_str_end_file_pos = nullptr;
 static bool pt_strs_inited = false;
@@ -518,6 +520,7 @@ void pt_init_strs()
 	pt_str_contains_super_global = zend_string_init("containsSuperGlobal", sizeof("containsSuperGlobal") - 1, 0);
 	pt_str_contains_call = zend_string_init("containsCall", sizeof("containsCall") - 1, 0);
 	pt_str_array_map_args = zend_string_init("arrayMapArgs", sizeof("arrayMapArgs") - 1, 0);
+	pt_str_array_reduce_args = zend_string_init("arrayReduceArgs", sizeof("arrayReduceArgs") - 1, 0);
 	pt_str_start_file_pos = zend_string_init("startFilePos", sizeof("startFilePos") - 1, 0);
 	pt_str_end_file_pos = zend_string_init("endFilePos", sizeof("endFilePos") - 1, 0);
 	pt_strs_inited = true;
@@ -562,6 +565,7 @@ void pt_support_rshutdown()
 		zend_string_release(pt_str_contains_super_global);
 		zend_string_release(pt_str_contains_call);
 		zend_string_release(pt_str_array_map_args);
+		zend_string_release(pt_str_array_reduce_args);
 		zend_string_release(pt_str_start_file_pos);
 		zend_string_release(pt_str_end_file_pos);
 		pt_strs_inited = false;
@@ -960,8 +964,9 @@ zend_string *pt_node_key(zend_object *node, zval *expr_printer)
 	key = pt_node_printed_expr(node, expr_printer);
 	if (key == NULL) return NULL;
 
-	/* FunctionLike with arrayMapArgs + startFilePos: append the array_map
-	 * argument suffix exactly like MutatingScope::getNodeKey() */
+	/* FunctionLike with arrayMapArgs or arrayReduceArgs + startFilePos: append
+	 * the position (and the array_map arguments) exactly like
+	 * ScopeOps::nodeKey() */
 	{
 		zend_class_entry *fl_ce = pt_class(PT_CLASS_FUNCTION_LIKE);
 		if (fl_ce == NULL) {
@@ -970,8 +975,9 @@ zend_string *pt_node_key(zend_object *node, zval *expr_printer)
 		}
 		if (instanceof_function(node->ce, fl_ce)) {
 			zval *map_args = pt_node_attribute(node, pt_str_array_map_args);
+			zval *reduce_args = pt_node_attribute(node, pt_str_array_reduce_args);
 			zval *start_pos = pt_node_attribute(node, pt_str_start_file_pos);
-			if (map_args != NULL && Z_TYPE_P(map_args) != IS_NULL
+			if (((map_args != NULL && Z_TYPE_P(map_args) != IS_NULL) || (reduce_args != NULL && Z_TYPE_P(reduce_args) != IS_NULL))
 				&& start_pos != NULL && Z_TYPE_P(start_pos) != IS_NULL) {
 				smart_str str = {};
 				smart_str_append(&str, key);
@@ -979,7 +985,7 @@ zend_string *pt_node_key(zend_object *node, zval *expr_printer)
 				if (Z_TYPE_P(start_pos) == IS_LONG) {
 					smart_str_append_long(&str, Z_LVAL_P(start_pos));
 				}
-				if (Z_TYPE_P(map_args) == IS_ARRAY) {
+				if (map_args != NULL && Z_TYPE_P(map_args) == IS_ARRAY) {
 					zval *arg;
 					ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(map_args), arg) {
 						zval *arg_deref = arg;

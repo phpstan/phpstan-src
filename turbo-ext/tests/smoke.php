@@ -643,6 +643,7 @@ $covered[\PHPStan\Parser\ArrayFilterArgVisitor::class] = true;
 $covered[\PHPStan\Parser\ArrayFindArgVisitor::class] = true;
 $covered[\PHPStan\Parser\ArrayMapArgVisitor::class] = true;
 $covered[\PHPStan\Parser\ArrayOffsetNormalizingVisitor::class] = true;
+$covered[\PHPStan\Parser\ArrayReduceArgVisitor::class] = true;
 $covered[\PHPStan\Parser\ArrayWalkArgVisitor::class] = true;
 $covered[\PHPStan\Parser\ArrowFunctionArgVisitor::class] = true;
 $covered[\PHPStan\Parser\ClosureArgVisitor::class] = true;
@@ -688,11 +689,15 @@ $exprPrinter = new \PHPStan\Node\Printer\ExprPrinter(new \PHPStan\Node\Printer\P
 $arrayMapClosure = new \PhpParser\Node\Expr\Closure();
 $arrayMapClosure->setAttribute(\PHPStan\Parser\ArrayMapArgVisitor::ATTRIBUTE_NAME, [new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('items'))]);
 $arrayMapClosure->setAttribute('startFilePos', 123);
+$arrayReduceClosure = new \PhpParser\Node\Expr\ArrowFunction(['expr' => new \PhpParser\Node\Expr\Variable('carry')]);
+$arrayReduceClosure->setAttribute(\PHPStan\Parser\ArrayReduceArgVisitor::ATTRIBUTE_NAME, [new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('items')), null]);
+$arrayReduceClosure->setAttribute('startFilePos', 456);
 $nodeKeyCases = [
 	'variable fast path' => new \PhpParser\Node\Expr\Variable('foo'),
 	'variable variable' => new \PhpParser\Node\Expr\Variable(new \PhpParser\Node\Expr\Variable('foo')),
 	'method call' => new \PhpParser\Node\Expr\MethodCall(new \PhpParser\Node\Expr\Variable('o'), 'm', [new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(1))]),
 	'array_map closure' => $arrayMapClosure,
+	'array_reduce arrow function' => $arrayReduceClosure,
 ];
 foreach ($nodeKeyCases as $label => $nodeKeyExpr) {
 	check(

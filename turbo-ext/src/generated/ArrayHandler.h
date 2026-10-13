@@ -12,6 +12,7 @@ namespace ptdecl::ArrayHandler {
 namespace slot {
 inline constexpr uint32_t initializerExprTypeResolver = 0;
 inline constexpr uint32_t expressionResultFactory = 1;
+inline constexpr uint32_t phpVersion = 2;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -25,6 +26,7 @@ inline void declareProperties(reg::Class &cls)
 {
 	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\InitializerExprTypeResolver");
 	cls.property("expressionResultFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionResultFactory");
+	cls.property("phpVersion", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Php\\PhpVersion");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -34,76 +36,79 @@ inline constexpr char strings[] =
 	"PHPStan\\Reflection\\InitializerExprTypeResolver\0" /* 28 */
 	"expressionResultFactory\0" /* 75 */
 	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 99 */
-	"__construct\0" /* 140 */
-	"expr\0" /* 152 */
-	"PhpParser\\Node\\Expr\0" /* 157 */
-	"\0" /* 177 */
-	"supports\0" /* 178 */
-	"nodeScopeResolver\0" /* 187 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 205 */
-	"stmt\0" /* 240 */
-	"PhpParser\\Node\\Stmt\0" /* 245 */
-	"scope\0" /* 265 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 271 */
-	"storage\0" /* 302 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 310 */
-	"nodeCallback\0" /* 351 */
-	"context\0" /* 364 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 372 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 407 */
-	"processExpr\0" /* 441 */
-	"PhpParser\\Node\\Expr\\Array_\0" /* 453 */
-	"itemResults\0" /* 480 */
-	"result\0" /* 492 */
-	"PHPStan\\Dependency\\Dependencies\0" /* 499 */
-	"getCallableDependencies\0" /* 531 */
-	"collectAbsorbedItems\0" /* 555 */
-	"type\0" /* 576 */
-	"PHPStan\\Type\\Type\0" /* 581 */
-	"getExpectedArrayType\0" /* 599 */
-	"arrayType\0" /* 620 */
-	"keyType\0" /* 630 */
-	"getExpectedValueType"; /* 638 */
+	"phpVersion\0" /* 140 */
+	"PHPStan\\Php\\PhpVersion\0" /* 151 */
+	"__construct\0" /* 174 */
+	"expr\0" /* 186 */
+	"PhpParser\\Node\\Expr\0" /* 191 */
+	"\0" /* 211 */
+	"supports\0" /* 212 */
+	"nodeScopeResolver\0" /* 221 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 239 */
+	"stmt\0" /* 274 */
+	"PhpParser\\Node\\Stmt\0" /* 279 */
+	"scope\0" /* 299 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 305 */
+	"storage\0" /* 336 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 344 */
+	"nodeCallback\0" /* 385 */
+	"context\0" /* 398 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 406 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 441 */
+	"processExpr\0" /* 475 */
+	"PhpParser\\Node\\Expr\\Array_\0" /* 487 */
+	"itemResults\0" /* 514 */
+	"result\0" /* 526 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 533 */
+	"getCallableDependencies\0" /* 565 */
+	"collectAbsorbedItems\0" /* 589 */
+	"type\0" /* 610 */
+	"PHPStan\\Type\\Type\0" /* 615 */
+	"getExpectedArrayType\0" /* 633 */
+	"arrayType\0" /* 654 */
+	"keyType\0" /* 664 */
+	"getExpectedValueType"; /* 672 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
 	reg::packed(75, 0, 99), /* __construct $expressionResultFactory */
-	reg::packed(152, 0, 157), /* supports $expr */
-	reg::packed(177, MAY_BE_BOOL), /* supports return */
-	reg::packed(187, 0, 205), /* processExpr $nodeScopeResolver */
-	reg::packed(240, 0, 245), /* processExpr $stmt */
-	reg::packed(152, 0, 157), /* processExpr $expr */
-	reg::packed(265, 0, 271), /* processExpr $scope */
-	reg::packed(302, 0, 310), /* processExpr $storage */
-	reg::packed(351, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(364, 0, 372), /* processExpr $context */
-	reg::packed(177, 0, 407), /* processExpr return */
-	reg::packed(265, 0, 271), /* getCallableDependencies $scope */
-	reg::packed(152, 0, 453), /* getCallableDependencies $expr */
-	reg::packed(480, MAY_BE_ARRAY), /* getCallableDependencies $itemResults */
-	reg::packed(492, 0, 407), /* getCallableDependencies $result */
-	reg::packed(177, MAY_BE_NULL, 499), /* getCallableDependencies return */
-	reg::packed(152, 0, 453), /* collectAbsorbedItems $expr */
-	reg::packed(480, MAY_BE_ARRAY), /* collectAbsorbedItems $itemResults */
-	reg::packed(265, 0, 271), /* collectAbsorbedItems $scope */
-	reg::packed(177, 0, 271), /* collectAbsorbedItems return */
-	reg::packed(576, MAY_BE_NULL, 581), /* getExpectedArrayType $type */
-	reg::packed(177, MAY_BE_NULL, 581), /* getExpectedArrayType return */
-	reg::packed(620, MAY_BE_NULL, 581), /* getExpectedValueType $arrayType */
-	reg::packed(630, 0, 581), /* getExpectedValueType $keyType */
-	reg::packed(177, MAY_BE_NULL, 581), /* getExpectedValueType return */
+	reg::packed(140, 0, 151), /* __construct $phpVersion */
+	reg::packed(186, 0, 191), /* supports $expr */
+	reg::packed(211, MAY_BE_BOOL), /* supports return */
+	reg::packed(221, 0, 239), /* processExpr $nodeScopeResolver */
+	reg::packed(274, 0, 279), /* processExpr $stmt */
+	reg::packed(186, 0, 191), /* processExpr $expr */
+	reg::packed(299, 0, 305), /* processExpr $scope */
+	reg::packed(336, 0, 344), /* processExpr $storage */
+	reg::packed(385, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(398, 0, 406), /* processExpr $context */
+	reg::packed(211, 0, 441), /* processExpr return */
+	reg::packed(299, 0, 305), /* getCallableDependencies $scope */
+	reg::packed(186, 0, 487), /* getCallableDependencies $expr */
+	reg::packed(514, MAY_BE_ARRAY), /* getCallableDependencies $itemResults */
+	reg::packed(526, 0, 441), /* getCallableDependencies $result */
+	reg::packed(211, MAY_BE_NULL, 533), /* getCallableDependencies return */
+	reg::packed(186, 0, 487), /* collectAbsorbedItems $expr */
+	reg::packed(514, MAY_BE_ARRAY), /* collectAbsorbedItems $itemResults */
+	reg::packed(299, 0, 305), /* collectAbsorbedItems $scope */
+	reg::packed(211, 0, 305), /* collectAbsorbedItems return */
+	reg::packed(610, MAY_BE_NULL, 615), /* getExpectedArrayType $type */
+	reg::packed(211, MAY_BE_NULL, 615), /* getExpectedArrayType return */
+	reg::packed(654, MAY_BE_NULL, 615), /* getExpectedValueType $arrayType */
+	reg::packed(664, 0, 615), /* getExpectedValueType $keyType */
+	reg::packed(211, MAY_BE_NULL, 615), /* getExpectedValueType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 140 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 178 /* supports */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processExpr = { { 441 /* processExpr */, 7, 4, 7, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getCallableDependencies = { { 531 /* getCallableDependencies */, 4, 12, 4, 16, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig collectAbsorbedItems = { { 555 /* collectAbsorbedItems */, 3, 17, 3, 20, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getExpectedArrayType = { { 599 /* getExpectedArrayType */, 1, 21, 1, 22, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getExpectedValueType = { { 638 /* getExpectedValueType */, 2, 23, 2, 25, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 174 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 212 /* supports */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 475 /* processExpr */, 7, 5, 7, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCallableDependencies = { { 565 /* getCallableDependencies */, 4, 13, 4, 17, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectAbsorbedItems = { { 589 /* collectAbsorbedItems */, 3, 18, 3, 21, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getExpectedArrayType = { { 633 /* getExpectedArrayType */, 1, 22, 1, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getExpectedValueType = { { 672 /* getExpectedValueType */, 2, 24, 2, 26, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayHandler

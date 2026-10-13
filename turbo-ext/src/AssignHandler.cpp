@@ -651,6 +651,18 @@ zv::Val vehCreateTypeExprResult(zval *helper, zval *scope, zval *expr)
 	return pt_php_version_supports_property_hooks(phpVersion, out);
 }
 
+/* $phpVersion->throwsTypeErrorForIllegalOffsets(); false = pending exception */
+[[nodiscard]] bool phpVersionThrowsTypeErrorForIllegalOffsets(zval *phpVersion, bool &out)
+{
+	return pt_php_version_answer(phpVersion, PT_PHP_VERSION_THROWS_TYPE_ERROR_FOR_ILLEGAL_OFFSETS, out);
+}
+
+/* IllegalOffsetTypeHelper::mayOffsetThrowTypeError($offsetType); false = pending exception */
+[[nodiscard]] bool iothMayOffsetThrowTypeError(zval *offsetType, bool &out)
+{
+	return pt_illegal_offset_type_helper_may_offset_throw_type_error(offsetType, out);
+}
+
 /* VirtualAssignNodeCallback::create($nodeCallback) */
 zv::Val vancCreate(zval *nodeCallback)
 {
@@ -760,6 +772,7 @@ struct PreparedTarget
 	zval *targetChainResults = NULL;
 	zval *variableNameResult = NULL;
 	zval *dependencies = NULL;
+	zval *illegalOffsetDimFetches = NULL;
 };
 
 /* new PreparedAssignTarget(...) */
@@ -774,9 +787,9 @@ zv::Val preparedAssignTargetNew(const PreparedTarget &t)
 	zv::Args argv{
 		kind.raw(), t.var, t.assignedExpr, t.beforeScope, t.scope, t.enterExpressionAssign, t.isAssignOp, t.hasYield, t.throwPoints, t.impurePoints, t.isAlwaysTerminating,
 		orNull(t.rootVar), orNull(t.varResult), orNull(t.dimFetchStack), orNull(t.assignedPropertyExpr), orNull(t.offsetTypes), orNull(t.offsetNativeTypes), orNull(t.existingOffsetTypes), orNull(t.existingOffsetNativeTypes), orNull(t.offsetSetTargetResult), orNull(t.objectResult), orNull(t.propertyName), orNull(t.propertyHolderType), orNull(t.targetReadResult), t.targetChainResults != NULL ? t.targetChainResults : &emptyArray, orNull(t.variableNameResult),
-		orNull(t.dependencies),
+		orNull(t.dependencies), t.illegalOffsetDimFetches != NULL ? t.illegalOffsetDimFetches : &emptyArray,
 	};
-	return pt_prepared_assign_target_new(27, argv);
+	return pt_prepared_assign_target_new(28, argv);
 }
 
 /* the getters: the borrowed slots of the native class (its private
@@ -1249,9 +1262,15 @@ public:
 					AH_SET(inputsFlow, pt_variable_flow_inputs(zval_get_long(writeId.raw()), targetId.raw()));
 				}
 			}
+			// an illegal offset throws before the write
+			zv::Val illegalOffsetThrowFlow = ahNull();
+			if (zend_hash_num_elements(Z_ARRVAL_P(AH_TARGET(target.raw(), illegalOffsetDimFetches))) > 0) {
+				AH_VAL(typeError, newObjectType(PT_LC("TypeError")));
+				AH_SET(illegalOffsetThrowFlow, pt_variable_flow_throwing(typeError.raw(), true, false));
+			}
 			AH_VAL(targetWriteFlow, pt_variable_flow_builder_target_write(exprVar, PT_AH_KIND_ASSIGN, scope.raw(), storage, redundantType.raw()));
-			zv::Args flows{targetReadFlow.raw(), assignedFlow.raw(), inputsFlow.raw(), targetWriteFlow.raw()};
-			AH_SET(variableFlow, pt_variable_flow_sequence(4, flows));
+			zv::Args flows{targetReadFlow.raw(), assignedFlow.raw(), inputsFlow.raw(), illegalOffsetThrowFlow.raw(), targetWriteFlow.raw()};
+			AH_SET(variableFlow, pt_variable_flow_sequence(5, flows));
 		}
 		if (isAssign && ahIs(exprExpr, PT_CLASS_ARRAY_EXPR) && hasArrayReference(exprExpr)) {
 			AH_VAL(escape, pt_variable_flow_builder_escape_root(exprVar));
@@ -1543,6 +1562,52 @@ public:
 				AH_OK(nsrCallNodeCallback(nsr, nodeCallback, dimFetch, callbackScope.raw(), storage));
 			}
 
+			// the links whose offset may throw TypeError - PHP throws only after
+			// evaluating the assigned value, so applyWrite() creates their throw points
+			zv::Val illegalOffsetDimFetches = ahEmptyArray();
+			bool throwsTypeErrorForIllegalOffsets;
+			AH_OK(phpVersionThrowsTypeErrorForIllegalOffsets(prop(slots::phpVersion), throwsTypeErrorForIllegalOffsets));
+			if (throwsTypeErrorForIllegalOffsets) {
+				HashTable *links = Z_ARRVAL_P(deferredDimFetchResults.raw());
+				for (auto entry : zv::TableRef(Z_ARRVAL_P(offsetTypes.raw()))) {
+					zend_ulong i = entry.indexKey();
+					HashTable *pair = Z_ARRVAL_P(entry.value().raw());
+					zval *offsetType = zend_hash_index_find(pair, 0);
+					// $arr[] = ... never throws for the offset
+					if (Z_TYPE_P(offsetType) == IS_NULL) continue;
+					bool mayThrow;
+					AH_OK(iothMayOffsetThrowTypeError(offsetType, mayThrow));
+					if (!mayThrow) continue;
+					// writes to ArrayAccess objects go through offsetSet() whose throw points applyWrite() models;
+					// the container is the previous chain link - the root for the first dimension
+					zval *containerResult = i == 0 ? varResult.raw() : zend_hash_index_find(Z_ARRVAL_P(zend_hash_index_find(links, i - 1)), 1);
+					AH_VAL(containerType, pt_expression_result_get_type(containerResult));
+					AH_VAL(arrayAccess, newObjectType(PT_LC("ArrayAccess")));
+					zend_long isArrayAccess = ahTypeOpTri(arrayAccess.raw(), PT_OP_IS_SUPER_TYPE_OF, 1, containerType.raw());
+					AH_OK(isArrayAccess >= 0);
+					if (isArrayAccess == PT_TRI_YES) continue;
+					// `$lvalue ??= ...` throws reading an array or a string container,
+					// before the assigned value is evaluated
+					if (walkModeIssetSemanticsForRead(mode)) {
+						zend_long containerIsArray = ahTypeOpTri(containerType.raw(), PT_OP_IS_ARRAY, 0, NULL);
+						AH_OK(containerIsArray >= 0);
+						bool readThrows = containerIsArray == PT_TRI_YES;
+						if (!readThrows) {
+							zend_long containerIsString = ahTypeOpTri(containerType.raw(), PT_OP_IS_STRING, 0, NULL);
+							AH_OK(containerIsString >= 0);
+							readThrows = containerIsString == PT_TRI_YES;
+						}
+						if (readThrows) {
+							AH_VAL(typeError, newObjectType(PT_LC("TypeError")));
+							AH_VAL(throwPoint, itpCreateExplicit(scope.raw(), typeError.raw(), zend_hash_index_find(pair, 1), false));
+							ahPush(throwPoints, std::move(throwPoint));
+							continue;
+						}
+					}
+					ahPushRef(illegalOffsetDimFetches, zend_hash_index_find(pair, 1));
+				}
+			}
+
 			HashTable *deferred = Z_ARRVAL_P(deferredDimFetchResults.raw());
 			uint32_t deferredCount = zend_hash_num_elements(deferred);
 			if (walkModeIssetSemanticsForRead(mode)) {
@@ -1623,6 +1688,7 @@ public:
 			t.targetReadResult = targetReadResult.raw();
 			t.targetChainResults = targetChainResults.raw();
 			t.dependencies = targetDependencies.raw();
+			t.illegalOffsetDimFetches = illegalOffsetDimFetches.raw();
 			return preparedAssignTargetNew(t);
 		}
 
@@ -3052,6 +3118,29 @@ private:
 			AH_SETB(varType, newEmptyConstantArrayType());
 			AH_SETB(varNativeType, newEmptyConstantArrayType());
 		}
+
+		// an illegal offset throws TypeError after the assigned value was
+		// evaluated and an undefined root was turned into an array
+		zval *illegalOffsetDimFetches = AH_TARGET(target, illegalOffsetDimFetches);
+		if (zend_hash_num_elements(Z_ARRVAL_P(illegalOffsetDimFetches)) > 0) {
+			zv::Val throwPointScope = zv::Val::copyOf(scope.ref());
+			zend_string *rootName = isImplicitArrayCreation != PT_TRI_NO ? ahStringVariableName(var) : NULL;
+			if (rootName != NULL) {
+				AH_VALB(emptyArray, newEmptyConstantArrayType());
+				zv::Args unionArgs{varType.raw(), emptyArray.raw()};
+				AH_VALB(rootType, pt_type_combinator_union(2, unionArgs));
+				AH_VALB(nativeEmptyArray, newEmptyConstantArrayType());
+				zv::Args nativeUnionArgs{varNativeType.raw(), nativeEmptyArray.raw()};
+				AH_VALB(rootNativeType, pt_type_combinator_union(2, nativeUnionArgs));
+				AH_SETB(throwPointScope, pt_mutating_scope_assign_variable(Z_OBJ_P(throwPointScope.raw()), rootName, rootType.raw(), rootNativeType.raw(), ahTrinary(PT_TRI_YES)));
+			}
+			for (auto entry : zv::TableRef(Z_ARRVAL_P(illegalOffsetDimFetches))) {
+				AH_VALB(typeError, newObjectType(PT_LC("TypeError")));
+				AH_VALB(throwPoint, itpCreateExplicit(throwPointScope.raw(), typeError.raw(), entry.value().raw(), false));
+				ahPush(throwPoints, std::move(throwPoint));
+			}
+		}
+
 		zval *offsetValueType = varType.raw();
 		zval *offsetNativeValueType = varNativeType.raw();
 

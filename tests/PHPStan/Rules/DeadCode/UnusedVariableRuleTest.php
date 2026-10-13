@@ -28,6 +28,17 @@ class UnusedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-variable-throwable-catch.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testIllegalOffsetThrowReachesCatch(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-illegal-offset.php'], [
+			[
+				'Value assigned to variable $x is never read before being overwritten.',
+				74,
+			],
+		]);
+	}
+
 	public function testOverridingThrowsReachesCatch(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-overriding-throws.php'], [

@@ -471,6 +471,7 @@ PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(target_read_result, targetReadResult, "get
 PT_AV_PREPARED_ASSIGN_TARGET(target_chain_results, targetChainResults, "gettargetchainresults")
 PT_AV_PREPARED_ASSIGN_TARGET(variable_name_result, variableNameResult, "getvariablenameresult")
 PT_AV_PREPARED_ASSIGN_TARGET(dependencies, dependencies, "getdependencies")
+PT_AV_PREPARED_ASSIGN_TARGET(illegal_offset_dim_fetches, illegalOffsetDimFetches, "getillegaloffsetdimfetches")
 
 #undef PT_AV_PREPARED_ASSIGN_TARGET
 #undef PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED

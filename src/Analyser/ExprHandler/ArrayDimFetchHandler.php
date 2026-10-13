@@ -15,9 +15,11 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\IllegalOffsetTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\IssetabilityDescriptor;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -29,6 +31,7 @@ use PHPStan\Analyser\VariableWriteOffset;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
@@ -36,6 +39,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use TypeError;
 use function array_merge;
 use function is_string;
 
@@ -52,6 +56,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private MethodThrowPointHelper $methodThrowPointHelper,
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -128,6 +133,17 @@ final class ArrayDimFetchHandler implements ExprHandler
 			// type extensions receive - nothing walks it. Gated by the same
 			// maybe-ArrayAccess condition, so plain arrays never reach it.
 			$offsetGetCall = new MethodCall($expr->var, new Identifier('offsetGet'), [new Arg($expr->dim)], [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]);
+		}
+
+		if (
+			$this->phpVersion->throwsTypeErrorForIllegalOffsets()
+			// only array and string offset reads throw TypeError for illegal offsets,
+			// reads on null and other scalars emit a warning, ArrayAccess objects go through offsetGet();
+			// isset() and empty() of a string offset are false instead
+			&& (!$varType->isArray()->no() || (!$context->isIssetTarget() && !$varType->isString()->no()))
+			&& IllegalOffsetTypeHelper::mayOffsetThrowTypeError($dimResult->getType())
+		) {
+			$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $expr, false);
 		}
 
 		$result = $this->expressionResultFactory->create(

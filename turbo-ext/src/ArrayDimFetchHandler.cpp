@@ -16,9 +16,10 @@
  * NodeScopeResolver, MutatingScope, ExpressionResult, ExpressionContext,
  * VariableFlow(Builder), IssetabilityDescriptor, DefaultNarrowingHelper,
  * MethodThrowPointHelper, MethodCallReturnTypeHelper, the method reflections,
- * VariableWriteOffset, TypeCombinator and the Type kernel are called through
- * their direct entries; ParametersAcceptorSelector through its
- * CallHandlerSupport.h helper.
+ * VariableWriteOffset, TypeCombinator, IllegalOffsetTypeHelper,
+ * InternalThrowPoint and the Type kernel are called through their direct
+ * entries; ParametersAcceptorSelector through its CallHandlerSupport.h helper;
+ * PhpVersion through PhpVersionAccess.cpp.
  */
 
 #include "support.h"
@@ -53,6 +54,7 @@ zval *variableName(zval *variable) { return nodeProperty(pt_adfh_variable_name_s
 /* the permanent interned literals (module startup) */
 zend_string *pt_adfh_offset_get = nullptr;
 zend_string *pt_adfh_array_access = nullptr;
+zend_string *pt_adfh_type_error = nullptr;
 zend_string *pt_adfh_synthetic_site_attribute = nullptr;
 
 /* $type->$op() as a PT_TRI_* value (a TrinaryLogic or a result object); -1 =
@@ -102,12 +104,13 @@ public:
 	explicit ArrayDimFetchHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *methodThrowPointHelper, zval *methodCallReturnTypeHelper) const
+	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *methodThrowPointHelper, zval *methodCallReturnTypeHelper, zval *phpVersion) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
 		pt_write_slot(self, slots::methodThrowPointHelper, methodThrowPointHelper);
 		pt_write_slot(self, slots::methodCallReturnTypeHelper, methodCallReturnTypeHelper);
+		pt_write_slot(self, slots::phpVersion, phpVersion);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -257,6 +260,39 @@ public:
 				// return type extensions receive - nothing walks it
 				offsetGetCall = newOffsetGetCall(expr);
 				if (UNEXPECTED(offsetGetCall.isUndef())) return zv::Val();
+			}
+		}
+
+		bool throwsTypeErrorForIllegalOffsets;
+		if (UNEXPECTED(!pt_php_version_answer(OBJ_PROP_NUM(self, slots::phpVersion), PT_PHP_VERSION_THROWS_TYPE_ERROR_FOR_ILLEGAL_OFFSETS, throwsTypeErrorForIllegalOffsets))) return zv::Val();
+		if (throwsTypeErrorForIllegalOffsets) {
+			// only array and string offset reads throw TypeError for illegal offsets,
+			// reads on null and other scalars emit a warning, ArrayAccess objects go through offsetGet();
+			// isset() and empty() of a string offset are false instead
+			bool mayBeArrayOrString = varIsArray != PT_TRI_NO;
+			if (!mayBeArrayOrString) {
+				bool issetTarget;
+				if (UNEXPECTED(!pt_expression_context_is_isset_target(context, issetTarget))) return zv::Val();
+				if (!issetTarget) {
+					zend_long varIsString = typeOpTrinary(varType.raw(), PT_OP_IS_STRING, 0, NULL);
+					if (UNEXPECTED(varIsString < 0)) return zv::Val();
+					mayBeArrayOrString = varIsString != PT_TRI_NO;
+				}
+			}
+			if (mayBeArrayOrString) {
+				zv::Val dimType = pt_expression_result_get_type(dimResult);
+				if (UNEXPECTED(dimType.isUndef())) return zv::Val();
+				bool mayThrow;
+				if (UNEXPECTED(!pt_illegal_offset_type_helper_may_offset_throw_type_error(dimType.raw(), mayThrow))) return zv::Val();
+				if (mayThrow) {
+					zval className;
+					ZVAL_STR(&className, pt_adfh_type_error);
+					zv::Val typeError = pt_type_new_object_type(&className);
+					if (UNEXPECTED(typeError.isUndef())) return zv::Val();
+					zv::Val throwPoint = pt_internal_throw_point_create_explicit(scope.raw(), typeError.raw(), expr, false);
+					if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
+					appendTo(throwPoints, std::move(throwPoint));
+				}
 			}
 		}
 
@@ -522,6 +558,7 @@ PT_MINIT_REGISTRATION(pt_register_array_dim_fetch_handler)
 {
 	pt_adfh_offset_get = zend_string_init_interned(PT_LC("offsetGet"), 1);
 	pt_adfh_array_access = zend_string_init_interned(PT_LC("ArrayAccess"), 1);
+	pt_adfh_type_error = zend_string_init_interned(PT_LC("TypeError"), 1);
 	pt_adfh_synthetic_site_attribute = zend_string_init_interned(PT_LC("templateArgumentSyntheticSite"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ArrayDimFetchHandler");
@@ -531,9 +568,9 @@ PT_MINIT_REGISTRATION(pt_register_array_dim_fetch_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expressionResultFactory, *defaultNarrowingHelper, *methodThrowPointHelper, *methodCallReturnTypeHelper;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper, methodThrowPointHelper, methodCallReturnTypeHelper)) RETURN_THROWS();
-		ArrayDimFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper, methodThrowPointHelper, methodCallReturnTypeHelper);
+		zval *expressionResultFactory, *defaultNarrowingHelper, *methodThrowPointHelper, *methodCallReturnTypeHelper, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper, methodThrowPointHelper, methodCallReturnTypeHelper, phpVersion)) RETURN_THROWS();
+		ArrayDimFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper, methodThrowPointHelper, methodCallReturnTypeHelper, phpVersion);
 	});
 
 	cls.method<&ArrayDimFetchHandler::supports, zp::Obj>(sigs::supports);

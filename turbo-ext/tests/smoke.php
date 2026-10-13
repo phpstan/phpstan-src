@@ -2687,6 +2687,46 @@ foreach (['php' => \PHPStan\Analyser\VolatileExpressionHelper::class, 'native' =
 check($vehResults['php'] === $vehResults['native'], 'VolatileExpressionHelper parity: ' . json_encode($vehResults['php']) . ' vs ' . json_encode($vehResults['native']));
 check($vehResults['php'][0][0] === true && $vehResults['php'][2][0] === true && $vehResults['php'][4][0] === true && $vehResults['php'][3][0] === false, 'VolatileExpressionHelper: the fixture exercises removals and no-ops');
 
+// ---- IllegalOffsetTypeHelper ----
+// every flavour an offset type comes in, built from the PHP type classes and
+// from the native ones (the helper only asks the type, so both sides must
+// answer the same for either)
+$covered[\PHPStan\Analyser\ExprHandler\Helper\IllegalOffsetTypeHelper::class] = true;
+$iothTypes = static function (bool $nativeTypes) use ($shadowedClasses): array {
+	$t = static fn (string $class, ...$args) => new ($nativeTypes ? $shadowedClasses[$class]['turboClass'] : $class)(...$args);
+	$object = $t(\PHPStan\Type\ObjectType::class, \stdClass::class);
+	$array = $t(\PHPStan\Type\ArrayType::class, $t(\PHPStan\Type\MixedType::class), $t(\PHPStan\Type\MixedType::class));
+	return [
+		'int' => $t(\PHPStan\Type\IntegerType::class),
+		'string' => $t(\PHPStan\Type\StringType::class),
+		'float' => $t(\PHPStan\Type\FloatType::class),
+		'bool' => $t(\PHPStan\Type\BooleanType::class),
+		'true' => $t(\PHPStan\Type\Constant\ConstantBooleanType::class, true),
+		'null' => $t(\PHPStan\Type\NullType::class),
+		'resource' => $t(\PHPStan\Type\ResourceType::class),
+		'never' => $t(\PHPStan\Type\NeverType::class),
+		'mixed' => $t(\PHPStan\Type\MixedType::class),
+		'object' => $object,
+		'object without class' => $t(\PHPStan\Type\ObjectWithoutClassType::class),
+		'array' => $array,
+		'array{}' => $t(\PHPStan\Type\Constant\ConstantArrayType::class, [], []),
+		'int|object' => $t(\PHPStan\Type\UnionType::class, [$t(\PHPStan\Type\IntegerType::class), $object]),
+		'array|null' => $t(\PHPStan\Type\UnionType::class, [$array, $t(\PHPStan\Type\NullType::class)]),
+		'int|string' => $t(\PHPStan\Type\UnionType::class, [$t(\PHPStan\Type\IntegerType::class), $t(\PHPStan\Type\StringType::class)]),
+		'benevolent int|object' => $t(\PHPStan\Type\BenevolentUnionType::class, [$t(\PHPStan\Type\IntegerType::class), $object]),
+	];
+};
+$iothAnswers = [];
+foreach (['php types' => false, 'native types' => true] as $typesSide => $nativeTypes) {
+	foreach ($iothTypes($nativeTypes) as $label => $type) {
+		$php = \PHPStan\Analyser\ExprHandler\Helper\IllegalOffsetTypeHelper::mayOffsetThrowTypeError($type);
+		$native = \PHPStanTurbo\IllegalOffsetTypeHelper::mayOffsetThrowTypeError($type);
+		check($php === $native, "IllegalOffsetTypeHelper::mayOffsetThrowTypeError($label, $typesSide): " . var_export($php, true) . ' vs ' . var_export($native, true));
+		$iothAnswers[] = $php;
+	}
+}
+check(in_array(true, $iothAnswers, true) && in_array(false, $iothAnswers, true), 'IllegalOffsetTypeHelper: the fixture exercises both answers');
+
 // ---- VariableFlow ----
 // The factories build each side's flow classes over shared nodes and writes
 // (the native flow classes are a separate hierarchy under the prefix); flows

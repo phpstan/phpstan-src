@@ -42,6 +42,7 @@ final class PreparedAssignTarget
 	 * @param non-empty-list<array{Type, ExistingArrayDimFetch}>|null $existingOffsetTypes
 	 * @param non-empty-list<array{Type, ExistingArrayDimFetch}>|null $existingOffsetNativeTypes
 	 * @param ExpressionResult[] $targetChainResults
+	 * @param list<ArrayDimFetch> $illegalOffsetDimFetches
 	 */
 	public function __construct(
 		private string $kind,
@@ -71,6 +72,7 @@ final class PreparedAssignTarget
 		private array $targetChainResults = [],
 		private ?ExpressionResult $variableNameResult = null,
 		private ?Dependencies $dependencies = null,
+		private array $illegalOffsetDimFetches = [],
 	)
 	{
 	}
@@ -300,6 +302,18 @@ final class PreparedAssignTarget
 	public function getVariableNameResult(): ?ExpressionResult
 	{
 		return $this->variableNameResult;
+	}
+
+	/**
+	 * The links of an offset write whose offset may be an array or an object,
+	 * which throws TypeError on PHP 8+ - after the assigned value was evaluated
+	 * and an undefined root was turned into an array.
+	 *
+	 * @return list<ArrayDimFetch>
+	 */
+	public function getIllegalOffsetDimFetches(): array
+	{
+		return $this->illegalOffsetDimFetches;
 	}
 
 }

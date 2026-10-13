@@ -964,11 +964,22 @@ public:
 		zend_string *parentNameStr = zval_get_string(parentName.raw());
 		zv::Str parentNameOwned = zv::Str::adopt(parentNameStr);
 
+		/* a class on an inheritance cycle cannot be declared, so it has no
+		 * parent, and every walk over the hierarchy ends; a class that extends
+		 * a class on a cycle keeps that parent */
 		zv::Val circularParentClassName = findCircularParentClassName(parentNameStr);
 		if (UNEXPECTED(circularParentClassName.isUndef())) return zv::Val();
 		if (!circularParentClassName.isNull()) {
-			throwCircularReference(circularParentClassName.ref());
-			return zv::Val();
+			zv::Val ownName = getName();
+			if (UNEXPECTED(ownName.isUndef())) return zv::Val();
+			zend_string *circularName = zval_get_string(circularParentClassName.raw());
+			zv::Str circularNameOwned = zv::Str::adopt(circularName);
+			zend_string *ownNameStr = zval_get_string(ownName.raw());
+			zv::Str ownNameOwned = zv::Str::adopt(ownNameStr);
+			if (zend_string_equals_ci(circularName, ownNameStr)) {
+				writeSlot(PT_CR_PROP_CACHED_PARENT_CLASS, zv::Val::null());
+				return zv::Val::null();
+			}
 		}
 
 		zv::Val extendsTag = getFirstExtendsTag();
@@ -1056,22 +1067,6 @@ public:
 			if (UNEXPECTED(parentName.isUndef())) return zv::Val();
 			currentClassName = zv::Str::adopt(zval_get_string(parentName.raw()));
 		}
-	}
-
-	/* throw CircularReference::fromClassName($className) */
-	static void throwCircularReference(zv::Ref className)
-	{
-		static const char circularReference[] = "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference";
-		zv::Str name = zv::Str::adopt(zend_string_init(circularReference, sizeof(circularReference) - 1, 0));
-		zend_class_entry *ce = zend_lookup_class(name.get());
-		if (UNEXPECTED(ce == NULL)) {
-			if (!EG(exception)) zend_throw_error(NULL, "Class \"%s\" not found", circularReference);
-			return;
-		}
-		zv::Val exception = pt_type_call_static_ce(ce, PT_LC("fromclassname"), 1, className.raw());
-		if (UNEXPECTED(exception.isUndef())) return;
-		zval thrown = exception.take();
-		zend_throw_exception_object(&thrown);
 	}
 
 	zv::Val getName()
@@ -1212,8 +1207,8 @@ public:
 
 			/* while (($currentClassReflection = $currentClassReflection->getParentClass()) !== null):
 			 * walking the parents through getParentClass() and not through
-			 * the native reflection makes a cyclic class hierarchy end in a
-			 * CircularReference exception instead of looping forever */
+			 * the native reflection makes a cyclic class hierarchy end
+			 * instead of looping forever */
 			while (true) {
 				zv::Val parent = crGetParentClass(current.ref());
 				if (UNEXPECTED(parent.isUndef())) return zv::Val();

@@ -1352,12 +1352,13 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vvv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a not_contains 'not found' "$OUTPUT"
-              # A reflection error, here a class that extends itself, still keeps the result cache from
-              # being saved.
+              # A class that extends itself is reported by a rule and is not a reflection error, so the
+              # result cache is saved.
               cp loop/Loop.php src/Loop.php
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache was not saved because of non-ignorable exception: Reflection error: Circular reference' "$OUTPUT"
+              ../bashunit -a contains 'Loop.php:5:Class ResultCacheE2EParseError\Loop extends itself.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-internal-error
               composer dump-autoload
@@ -1367,6 +1368,24 @@ jobs:
               ../bashunit -a contains 'Internal error: The rule crashed.' "$OUTPUT"
               ../bashunit -a contains 'Result cache was not saved' "$OUTPUT"
               test ! -f tmp/resultCache.php
+          - script: |
+              cd e2e/result-cache-circular-inheritance
+              # src/First.php, src/Second.php and src/Third.php extend each other in a cycle. src/TraitA.php
+              # uses TraitB, which uses TraitC, without a cycle.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'First.php:5:Class ResultCacheE2ECircularInheritance\First extends ResultCacheE2ECircularInheritance\Second, which extends ResultCacheE2ECircularInheritance\Third, which extends ResultCacheE2ECircularInheritance\First.' "$OUTPUT"
+              ../bashunit -a not_contains 'TraitA' "$OUTPUT"
+              # Breaking the cycle in src/Third.php has to re-analyse src/First.php, although a class on a
+              # cycle has no parents and the file depends only on its direct parent otherwise.
+              cp patched/Third.php src/Third.php
+              # src/TraitC.php now uses TraitA, which closes a cycle. A trait declaration is not analysed on
+              # its own, so src/TraitA.php depends on the traits it uses only through the rule.
+              cp patched/TraitC.php src/TraitC.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'First.php' "$OUTPUT"
+              ../bashunit -a contains 'TraitA.php:5:Trait ResultCacheE2ECircularInheritance\TraitA uses ResultCacheE2ECircularInheritance\TraitB, which uses ResultCacheE2ECircularInheritance\TraitC, which uses ResultCacheE2ECircularInheritance\TraitA.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-string-class
               ../../bin/phpstan analyse

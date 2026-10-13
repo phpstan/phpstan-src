@@ -1,0 +1,12 @@
+parameters:
+	level: 5
+	tmpDir: tmp
+	paths:
+		- src
+	parallel:
+		# Two jobs of two files each, so the four files reach the main process interleaved
+		# (F1, F3 in one job, F2, F4 in the other) and no worker completion order can put
+		# them in ascending order by accident.
+		jobSize: 2
+		maximumNumberOfProcesses: 4
+		minimumNumberOfJobsPerProcess: 1

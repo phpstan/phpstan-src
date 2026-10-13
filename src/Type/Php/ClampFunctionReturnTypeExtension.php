@@ -42,11 +42,6 @@ final class ClampFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		$minType = $scope->getType($minExpr);
 		$maxType = $scope->getType($maxExpr);
 
-		// arrays are compared by size first, keep the native return type for them
-		if (!$valueType->isArray()->no() || !$minType->isArray()->no() || !$maxType->isArray()->no()) {
-			return null;
-		}
-
 		$value = new AlwaysRememberedExpr($valueExpr, $valueType, $scope->getNativeType($valueExpr));
 		$min = new AlwaysRememberedExpr($minExpr, $minType, $scope->getNativeType($minExpr));
 		$max = new AlwaysRememberedExpr($maxExpr, $maxType, $scope->getNativeType($maxExpr));

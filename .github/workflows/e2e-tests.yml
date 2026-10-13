@@ -34,6 +34,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - script: bash e2e/result-cache-name-scopes/test.sh
+            php-version: '8.3'
           - script: |
               cd e2e/result-cache-1
               echo -n > phpstan-baseline.neon
@@ -2034,7 +2036,7 @@ jobs:
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
         with:
           coverage: "none"
-          php-version: "8.2"
+          php-version: ${{ matrix.php-version || '8.2' }}
           tools: ${{ matrix.tools }}
           extensions: ${{ matrix.extensions }}
 
@@ -2165,6 +2167,9 @@ jobs:
           # fits through the assertion once grep has narrowed it down
           ../bashunit -a not_contains 'parallel worker' "$(grep -F 'parallel worker' "$RUNNER_TEMP/small-shm.txt" || true)"
           diff "$RUNNER_TEMP/reference.txt" "$RUNNER_TEMP/small-shm.txt"
+
+      - name: "Verify PHPDoc name scopes survive partial analyses"
+        run: bash e2e/result-cache-name-scopes/test.sh
 
   turbo-fork-unsafe-extension-e2e-tests:
     name: "Turbo fork-unsafe extension E2E tests"

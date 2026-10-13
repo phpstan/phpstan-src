@@ -75,7 +75,7 @@ final class FileTypeMapper
 
 	public function __construct(
 		private ReflectionProviderProvider $reflectionProviderProvider,
-		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
+		#[AutowiredParameter(ref: '@fileTypeMapperParser')]
 		private Parser $phpParser,
 		private PhpDocStringResolver $phpDocStringResolver,
 		private PhpDocNodeResolver $phpDocNodeResolver,
@@ -371,7 +371,8 @@ final class FileTypeMapper
 		// and the content hashes cannot tell them apart from real ones.
 		// v7: IntermediaryNameScope refers to a NamespaceUses shared with the other name scopes
 		// created under the same use statements
-		$variableCacheKey = sprintf('v7-%s', ComposerHelper::getPhpDocParserVersion());
+		// v8: earlier entries can lack name scopes for classes inside cleaned function bodies.
+		$variableCacheKey = sprintf('v8-%s', ComposerHelper::getPhpDocParserVersion());
 		$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 		if ($cached === null) {
 			[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);

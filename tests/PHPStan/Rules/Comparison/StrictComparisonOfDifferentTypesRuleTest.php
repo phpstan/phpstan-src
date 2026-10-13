@@ -1288,4 +1288,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testArrayArgSkeletonStaleScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-arg-skeleton-stale-scope.php'], []);
+	}
+
 }

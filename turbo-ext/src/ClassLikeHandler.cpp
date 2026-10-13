@@ -282,6 +282,15 @@ public:
 		zv::Val classReflection;
 		zval *namespacedName = rawNodeProperty(pt_clh_namespaced_name_site, stmt, PT_LC("namespacedName"));
 		if (namespacedName != NULL) ZVAL_DEREF(namespacedName);
+		/* PHP does not compile a class declared inside another class, and entering it would
+		 * replace the class the scope is already in - the PHP twin's isset() && isInClass() */
+		if (namespacedName != NULL && Z_TYPE_P(namespacedName) != IS_UNDEF && Z_TYPE_P(namespacedName) != IS_NULL) {
+			bool isInClass;
+			if (UNEXPECTED(!pt_scope_is_in_class(Z_OBJ_P(resultScope), isInClass))) return zv::Val();
+			if (isInClass) {
+				return pt_internal_statement_result_new(resultScope, false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, declarationDependencies.raw());
+			}
+		}
 		if (namespacedName != NULL && Z_TYPE_P(namespacedName) != IS_UNDEF && Z_TYPE_P(namespacedName) != IS_NULL) {
 			if (UNEXPECTED(Z_TYPE_P(namespacedName) != IS_OBJECT)) {
 				memberCallOnNonObject("toString", namespacedName);

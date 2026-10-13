@@ -96,6 +96,11 @@ class BenevolentUnionType extends UnionType
 		return $values;
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
+	}
+
 	public function getOffsetValueType(Type $offsetType): Type
 	{
 		$types = [];

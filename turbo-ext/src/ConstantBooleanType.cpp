@@ -193,6 +193,16 @@ public:
 		return v ? PT_TRI_NO : PT_TRI_YES;
 	}
 
+	/* an ErrorType for true, $this for false: unset() of an offset throws on
+	 * true and leaves false as it is; UNDEF = pending exception */
+	zv::Val unsetOffset() const
+	{
+		bool v = false;
+		if (UNEXPECTED(!value(v))) return zv::Val();
+		if (v) return pt_type_new_error_type();
+		return thisValue();
+	}
+
 	/* new BooleanType() */
 	static zv::Val generalize()
 	{
@@ -322,6 +332,12 @@ PT_MINIT_REGISTRATION(pt_register_constant_boolean_type)
 	cls.method(sigs::isFalse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.isFalse());
+	});
+
+	cls.method(sigs::unsetOffset, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *offsetType;
+		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.unsetOffset());
 	});
 
 	cls.method(sigs::generalize, [](INTERNAL_FUNCTION_PARAMETERS) {

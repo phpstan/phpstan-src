@@ -3985,9 +3985,23 @@ public:
 		zv::Args args{fileName.raw(), name.raw(), zv::null, zv::null, slot(PT_CR_PROP_REFLECTION_DOC_COMMENT).raw()};
 		zv::Val resolved = callService(PT_CR_PROP_FILE_TYPE_MAPPER, "fileTypeMapper", PT_LC("getresolvedphpdoc"), 5, args);
 		if (UNEXPECTED(resolved.isUndef())) return zv::Val();
+		bool beingCreated;
+		if (UNEXPECTED(!isClassNameScopeBeingCreated(beingCreated))) return zv::Val();
+		if (beingCreated) return resolved;
 		writeSlot(PT_CR_PROP_RESOLVED_PHP_DOC_BLOCK, zv::Val::copyOf(resolved.ref()));
 
 		return resolved;
+	}
+
+	/* $this->fileTypeMapper->isClassNameScopeBeingCreated($this->getName()); false = pending exception */
+	bool isClassNameScopeBeingCreated(bool &out)
+	{
+		zv::Val name = getName();
+		if (UNEXPECTED(name.isUndef())) return false;
+		zv::Val result = callService(PT_CR_PROP_FILE_TYPE_MAPPER, "fileTypeMapper", PT_LC("isclassnamescopebeingcreated"), 1, name.raw());
+		if (UNEXPECTED(result.isUndef())) return false;
+		out = result.ref().isTrue();
+		return true;
 	}
 
 	/* ?ResolvedPhpDocBlock */
@@ -4318,7 +4332,14 @@ public:
 
 			zv::Val templateTags = getTemplateTags();
 			if (UNEXPECTED(templateTags.isUndef())) return false;
-			writeSlot(PT_CR_PROP_IS_GENERIC, zv::Val::boolean(countOf(templateTags.ref()) > 0));
+			bool isGeneric_ = countOf(templateTags.ref()) > 0;
+			bool beingCreated;
+			if (UNEXPECTED(!isClassNameScopeBeingCreated(beingCreated))) return false;
+			if (beingCreated) {
+				out = isGeneric_;
+				return true;
+			}
+			writeSlot(PT_CR_PROP_IS_GENERIC, zv::Val::boolean(isGeneric_));
 		}
 
 		out = slot(PT_CR_PROP_IS_GENERIC).isTrue();

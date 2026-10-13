@@ -2492,6 +2492,19 @@ $objectOthers = static fn (string $object, string $generic, string $case): array
 		$r["enum minus cases $caseName"] = $view($remaining);
 	}
 	$r['equal union classes'] = [$view($subjects['throwable']->tryRemove(new $objectClass(\Error::class))), $view($subjects['dateTimeInterface']->tryRemove(new $objectClass(\DateTime::class))), $view($subjects['dateTimeInterface']->tryRemove(new $objectClass(\DateTimeImmutable::class)))];
+	// a sealed type minus a union: a member that is a supertype of the whole
+	// type removes everything, whatever the other members are
+	$sealedUnion = static fn (\PHPStan\Type\Type ...$members): \PHPStan\Type\Type => new \PHPStan\Type\UnionType($members);
+	$r['sealed tryRemove union'] = [
+		$view($subjects['enum']->tryRemove($sealedUnion(new $objectClass($objectEnum), $others['stdClass']))),
+		$view($subjects['enum']->tryRemove($sealedUnion($others['stdClass'], new $objectClass($objectEnum)))),
+		$view($subjects['enum']->tryRemove($sealedUnion(new $objectClass(\UnitEnum::class), $others['exception']))),
+		$view($subjects['enum']->tryRemove($sealedUnion($others['caseFoo'], new $objectClass(\UnitEnum::class)))),
+		$view($subjects['enum']->tryRemove($sealedUnion($others['caseFoo'], $others['stdClass']))),
+		$view($subjects['enumMinusFoo']->tryRemove($sealedUnion(new $objectClass($objectEnum), $others['stdClass']))),
+		$view($subjects['enumWithReflection']->tryRemove($sealedUnion(new $objectClass($objectEnum), $others['stdClass']))),
+		$view(\PHPStan\Type\TypeCombinator::remove($subjects['enum'], $sealedUnion(new $objectClass($objectEnum), $others['stdClass']))),
+	];
 	$r['object equals object'] = [(new $objectClass(\stdClass::class))->equals(new $objectClass(\stdClass::class)), (new $objectClass(\stdClass::class))->equals(new $objectClass('stdclass')), (new $objectClass(\stdClass::class))->equals(new $genericClass(\stdClass::class, [])), (new $genericClass(\stdClass::class, []))->equals(new $objectClass(\stdClass::class)), (new $caseClass($objectEnum, 'FOO'))->equals(new $caseClass($objectEnum, 'FOO')), (new $caseClass($objectEnum, 'FOO'))->equals(new $objectClass($objectEnum))];
 	// the constructors by named arguments
 	$r['object named'] = $view(new $objectClass(className: \stdClass::class, classReflection: null));

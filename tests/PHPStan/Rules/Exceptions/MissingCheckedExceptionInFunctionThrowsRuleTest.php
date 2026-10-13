@@ -83,4 +83,15 @@ class MissingCheckedExceptionInFunctionThrowsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15392(): void
+	{
+		require_once __DIR__ . '/data/bug-15392.php';
+		$this->analyse([__DIR__ . '/data/bug-15392.php'], [
+			[
+				'Function Bug15392\\multiCatchLeaksOtherSubtype() throws checked exception Bug15392\\SubB but it\'s missing from the PHPDoc @throws tag.',
+				84,
+			],
+		]);
+	}
+
 }

@@ -1684,7 +1684,7 @@ jobs:
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
         with:
           coverage: "none"
-          php-version: "8.2"
+          php-version: ${{ matrix.php-version || '8.2' }}
           extensions: mbstring
           ini-values: memory_limit=256M
 
@@ -2036,7 +2036,7 @@ jobs:
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
         with:
           coverage: "none"
-          php-version: ${{ matrix.php-version || '8.2' }}
+          php-version: "8.2"
           tools: ${{ matrix.tools }}
           extensions: ${{ matrix.extensions }}
 

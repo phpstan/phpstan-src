@@ -42,20 +42,21 @@ final class IssetCheck
 	/**
 	 * @param ErrorIdentifier $identifier
 	 * @param callable(Type): ?string $typeMessageCallback
+	 * @param int|null $line null reports the error on the line of the node the error is attached to
 	 */
-	public function check(ExpressionResult $exprResult, Scope $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback): ?IdentifierRuleError
+	public function check(ExpressionResult $exprResult, Scope $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, ?int $line = null): ?IdentifierRuleError
 	{
 		$walkScope = $scope->toWalkScope();
 		$resolution = $exprResult->getIssetabilityResolution($walkScope, !$this->treatPhpDocTypesAsCertain, true);
 
-		return $this->doCheck($resolution, $walkScope, $operatorDescription, $identifier, $typeMessageCallback, null);
+		return $this->doCheck($resolution, $walkScope, $operatorDescription, $identifier, $typeMessageCallback, null, $line);
 	}
 
 	/**
 	 * @param ErrorIdentifier $identifier
 	 * @param callable(Type): ?string $typeMessageCallback
 	 */
-	private function doCheck(IssetabilityResolution $resolution, MutatingScope $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, ?IdentifierRuleError $error): ?IdentifierRuleError
+	private function doCheck(IssetabilityResolution $resolution, MutatingScope $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, ?IdentifierRuleError $error, ?int $line): ?IdentifierRuleError
 	{
 		$link = $resolution->getLink();
 		$inner = $resolution->getInner();
@@ -80,11 +81,12 @@ final class IssetCheck
 							$typeMessageCallback,
 							$identifier,
 							'variable',
+							$line,
 						);
 					}
 				}
 
-				return RuleErrorBuilder::message(sprintf('Variable $%s %s is never defined.', $link->getVariableName(), $operatorDescription))
+				return $this->errorBuilder(sprintf('Variable $%s %s is never defined.', $link->getVariableName(), $operatorDescription), $line)
 					->identifier(sprintf('%s.variable', $identifier))
 					->build();
 			}
@@ -95,7 +97,7 @@ final class IssetCheck
 		if ($link->isOffset()) {
 			$type = $link->getVarType();
 			if (!$link->getIsOffsetAccessible()->yes()) {
-				return $error ?? $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier);
+				return $error ?? $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier, $line);
 			}
 
 			$dimType = $link->getDimType();
@@ -105,13 +107,14 @@ final class IssetCheck
 					return null;
 				}
 
-				return RuleErrorBuilder::message(
+				return $this->errorBuilder(
 					sprintf(
 						'Offset %s on %s %s does not exist.',
 						$dimType->describe(VerbosityLevel::value()),
 						$type->describe(VerbosityLevel::value()),
 						$operatorDescription,
 					),
+					$line,
 				)->identifier(sprintf('%s.offset', $identifier))->build();
 			}
 
@@ -127,10 +130,10 @@ final class IssetCheck
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),
 					$operatorDescription,
-				), $typeMessageCallback, $identifier, 'offset');
+				), $typeMessageCallback, $identifier, 'offset', $line);
 
 				if ($error !== null) {
-					return $inner !== null ? $this->doCheck($inner, $scope, $operatorDescription, $identifier, $typeMessageCallback, $error) : $error;
+					return $inner !== null ? $this->doCheck($inner, $scope, $operatorDescription, $identifier, $typeMessageCallback, $error, $line) : $error;
 				}
 			}
 
@@ -143,7 +146,7 @@ final class IssetCheck
 			$propertyFetch = $link->getPropertyFetch();
 
 			if ($reflection === null || !$link->isReflectionNative()) {
-				return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier);
+				return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier, $line);
 			}
 
 			if ($link->hasNativeType() && !$link->isVirtual()->yes()) {
@@ -165,6 +168,7 @@ final class IssetCheck
 						},
 						$identifier,
 						'initializedProperty',
+						$line,
 					);
 				}
 
@@ -182,11 +186,11 @@ final class IssetCheck
 			$propertyType = $reflection->getWritableType();
 			if ($error !== null) {
 				return $inner !== null
-					? $this->doCheck($inner, $scope, $operatorDescription, $identifier, $typeMessageCallback, $error)
+					? $this->doCheck($inner, $scope, $operatorDescription, $identifier, $typeMessageCallback, $error, $line)
 					: $error;
 			}
 			if (!$this->checkAdvancedIsset) {
-				return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier);
+				return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier, $line);
 			}
 
 			$error = $this->generateError(
@@ -195,10 +199,11 @@ final class IssetCheck
 				$typeMessageCallback,
 				$identifier,
 				'property',
+				$line,
 			);
 
 			if ($error !== null && $inner !== null) {
-				return $this->doCheck($inner, $scope, $operatorDescription, $identifier, $typeMessageCallback, $error);
+				return $this->doCheck($inner, $scope, $operatorDescription, $identifier, $typeMessageCallback, $error, $line);
 			}
 
 			return $error;
@@ -219,6 +224,7 @@ final class IssetCheck
 			$typeMessageCallback,
 			$identifier,
 			'expr',
+			$line,
 		);
 		if ($error !== null) {
 			return $error;
@@ -227,12 +233,12 @@ final class IssetCheck
 		if ($link->leafIsNullsafePropertyFetch()) {
 			$leafExpr = $link->getLeafExpr();
 			if ($leafExpr instanceof NullsafePropertyFetch && $leafExpr->name instanceof Identifier) {
-				return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->%s" %s is unnecessary. Use -> instead.', $leafExpr->name->name, $operatorDescription))
+				return $this->errorBuilder(sprintf('Using nullsafe property access "?->%s" %s is unnecessary. Use -> instead.', $leafExpr->name->name, $operatorDescription), $line)
 					->identifier('nullsafe.neverNull')
 					->build();
 			}
 
-			return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->(Expression)" %s is unnecessary. Use -> instead.', $operatorDescription))
+			return $this->errorBuilder(sprintf('Using nullsafe property access "?->(Expression)" %s is unnecessary. Use -> instead.', $operatorDescription), $line)
 				->identifier('nullsafe.neverNull')
 				->build();
 		}
@@ -243,7 +249,7 @@ final class IssetCheck
 	/**
 	 * @param ErrorIdentifier $identifier
 	 */
-	private function checkUndefinedInner(?IssetabilityResolution $resolution, MutatingScope $scope, string $operatorDescription, string $identifier): ?IdentifierRuleError
+	private function checkUndefinedInner(?IssetabilityResolution $resolution, MutatingScope $scope, string $operatorDescription, string $identifier, ?int $line): ?IdentifierRuleError
 	{
 		if ($resolution === null) {
 			return null;
@@ -257,32 +263,33 @@ final class IssetCheck
 				return null;
 			}
 
-			return RuleErrorBuilder::message(sprintf('Variable $%s %s is never defined.', $link->getVariableName(), $operatorDescription))
+			return $this->errorBuilder(sprintf('Variable $%s %s is never defined.', $link->getVariableName(), $operatorDescription), $line)
 				->identifier(sprintf('%s.variable', $identifier))
 				->build();
 		}
 
 		if ($link->isOffset()) {
 			if (!$link->getIsOffsetAccessible()->yes()) {
-				return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier);
+				return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier, $line);
 			}
 
 			if (!$link->getHasOffsetValue()->no()) {
-				return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier);
+				return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier, $line);
 			}
 
-			return RuleErrorBuilder::message(
+			return $this->errorBuilder(
 				sprintf(
 					'Offset %s on %s %s does not exist.',
 					$link->getDimType()->describe(VerbosityLevel::value()),
 					$link->getVarType()->describe(VerbosityLevel::value()),
 					$operatorDescription,
 				),
+				$line,
 			)->identifier(sprintf('%s.offset', $identifier))->build();
 		}
 
 		if ($link->isProperty()) {
-			return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier);
+			return $this->checkUndefinedInner($inner, $scope, $operatorDescription, $identifier, $line);
 		}
 
 		return null;
@@ -293,16 +300,30 @@ final class IssetCheck
 	 * @param ErrorIdentifier $identifier
 	 * @param 'variable'|'offset'|'property'|'expr'|'initializedProperty' $identifierSecondPart
 	 */
-	private function generateError(Type $type, string $message, callable $typeMessageCallback, string $identifier, string $identifierSecondPart): ?IdentifierRuleError
+	private function generateError(Type $type, string $message, callable $typeMessageCallback, string $identifier, string $identifierSecondPart, ?int $line): ?IdentifierRuleError
 	{
 		$typeMessage = $typeMessageCallback($type);
 		if ($typeMessage === null) {
 			return null;
 		}
 
-		return RuleErrorBuilder::message(
+		return $this->errorBuilder(
 			sprintf('%s %s.', $message, $typeMessage),
+			$line,
 		)->identifier(sprintf('%s.%s', $identifier, $identifierSecondPart))->build();
+	}
+
+	/**
+	 * @return RuleErrorBuilder<RuleError>
+	 */
+	private function errorBuilder(string $message, ?int $line): RuleErrorBuilder
+	{
+		$builder = RuleErrorBuilder::message($message);
+		if ($line === null) {
+			return $builder;
+		}
+
+		return $builder->line($line);
 	}
 
 }

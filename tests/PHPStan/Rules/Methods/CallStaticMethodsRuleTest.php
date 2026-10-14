@@ -30,9 +30,13 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	private bool $checkThisOnly;
 
+	private bool $checkUnionTypes = true;
+
 	private bool $checkExplicitMixed = false;
 
 	private bool $checkImplicitMixed = false;
+
+	private bool $reportMagicMethods = true;
 
 	protected function getRule(): Rule
 	{
@@ -41,7 +45,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			$reflectionProvider,
 			checkNullables: $this->checkNullables,
 			checkThisOnly: $this->checkThisOnly,
-			checkUnionTypes: true,
+			checkUnionTypes: $this->checkUnionTypes,
 			checkExplicitMixed: $this->checkExplicitMixed,
 			checkImplicitMixed: $this->checkImplicitMixed,
 			checkBenevolentUnionTypes: false,
@@ -64,7 +68,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				),
 				checkFunctionNameCase: true,
 				discoveringSymbolsTip: true,
-				reportMagicMethods: true,
+				reportMagicMethods: $this->reportMagicMethods,
 			),
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,
@@ -1128,6 +1132,187 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			[
 				'Static method Bug15251\\A::sfoo() invoked with 0 parameters, at least 1 required.',
 				42,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug11353(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-11353.php'], [
+			[
+				'Call to an undefined static method Bug11353\A|Bug11353\B|Bug11353\C::create().',
+				46,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testStaticCallsOnStringUnions(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/static-call-string-unions.php'], [
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz::create().',
+				53,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz|StaticCallStringUnions\Foo::create().',
+				59,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz|StaticCallStringUnions\Foo::create().',
+				71,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz|StaticCallStringUnions\Foo::create().',
+				79,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz::create().',
+				87,
+			],
+			[
+				'Static call to instance method StaticCallStringUnions\Foo::doBar().',
+				101,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\WithMagic::whatever().',
+				107,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Foo|StaticCallStringUnions\WithMagic::create().',
+				115,
+			],
+			[
+				'Call to an undefined static method object::create().',
+				133,
+			],
+			[
+				'Call to an undefined static method T of object::create().',
+				142,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz|StaticCallStringUnions\Foo::create().',
+				150,
+			],
+			[
+				'Call to private static method privateMethod() of class StaticCallStringUnions\WithNonPublic.',
+				162,
+			],
+			[
+				'Call to protected static method protectedMethod() of class StaticCallStringUnions\WithNonPublic.',
+				163,
+			],
+			[
+				'Call to static method create() on an unknown class StaticCallStringUnions\UnknownClass.',
+				171,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testStaticCallsOnStringUnionsWithoutCheckUnionTypes(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/static-call-string-unions.php'], [
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz::create().',
+				53,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz::create().',
+				87,
+			],
+			[
+				'Static call to instance method StaticCallStringUnions\Foo::doBar().',
+				101,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\WithMagic::whatever().',
+				107,
+			],
+			[
+				'Call to an undefined static method object::create().',
+				133,
+			],
+			[
+				'Call to an undefined static method T of object::create().',
+				142,
+			],
+			[
+				'Call to private static method privateMethod() of class StaticCallStringUnions\WithNonPublic.',
+				162,
+			],
+			[
+				'Call to protected static method protectedMethod() of class StaticCallStringUnions\WithNonPublic.',
+				163,
+			],
+			[
+				'Call to static method create() on an unknown class StaticCallStringUnions\UnknownClass.',
+				171,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testStaticCallsOnStringUnionsWithoutReportMagicMethods(): void
+	{
+		$this->checkThisOnly = false;
+		$this->reportMagicMethods = false;
+		$this->analyse([__DIR__ . '/data/static-call-string-unions.php'], [
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz::create().',
+				53,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz|StaticCallStringUnions\Foo::create().',
+				59,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz|StaticCallStringUnions\Foo::create().',
+				71,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz|StaticCallStringUnions\Foo::create().',
+				79,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz::create().',
+				87,
+			],
+			[
+				'Static call to instance method StaticCallStringUnions\Foo::doBar().',
+				101,
+			],
+			[
+				'Call to an undefined static method object::create().',
+				133,
+			],
+			[
+				'Call to an undefined static method T of object::create().',
+				142,
+			],
+			[
+				'Call to an undefined static method StaticCallStringUnions\Baz|StaticCallStringUnions\Foo::create().',
+				150,
+			],
+			[
+				'Call to private static method privateMethod() of class StaticCallStringUnions\WithNonPublic.',
+				162,
+			],
+			[
+				'Call to protected static method protectedMethod() of class StaticCallStringUnions\WithNonPublic.',
+				163,
+			],
+			[
+				'Call to static method create() on an unknown class StaticCallStringUnions\UnknownClass.',
+				171,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

@@ -67,3 +67,14 @@ class Ipsum
 	}
 
 }
+
+class Dolor
+{
+
+	public function doFoo(bool $flag): void
+	{
+		$class = $flag ? Foo::class : Bar::class;
+		$class::doFoo(...);
+	}
+
+}

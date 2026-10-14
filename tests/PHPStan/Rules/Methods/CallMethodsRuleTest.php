@@ -3584,6 +3584,42 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Argument for parameter $dialect of method ArgumentsByNameMethod\FooImplementation::doFoo() must be passed by name.',
 				106,
 			],
+			[
+				'Argument for parameter $dialect of method ArgumentsByNameMethod\NoNamedArgumentsByDefault::all() must be passed by name.',
+				235,
+			],
+			[
+				'Argument for optional parameter $group of method ArgumentsByNameMethod\NoNamedArgumentsByDefault::optional() must be passed by name.',
+				237,
+			],
+			[
+				'Method ArgumentsByNameMethod\NoNamedArgumentsByDefault::doDefault() invoked with named argument $dialect, but it\'s not allowed because of @no-named-arguments.',
+				240,
+			],
+			[
+				'Argument for optional parameter $group of method ArgumentsByNameMethod\ArgumentsByNameByDefault::optional() must be passed by name.',
+				243,
+			],
+			[
+				'Method ArgumentsByNameMethod\ArgumentsByNameByDefault::noNamed() invoked with named argument $dialect, but it\'s not allowed because of @no-named-arguments.',
+				245,
+			],
+			[
+				'Argument for optional parameter $group of method ArgumentsByNameMethod\ChildOfClassLevel::doFoo() must be passed by name.',
+				247,
+			],
+			[
+				'Argument for parameter $dialect of method ArgumentsByNameMethod\ClassLevelInterfaceImplementation::doFoo() must be passed by name.',
+				248,
+			],
+			[
+				'Argument for parameter $dialect of method ArgumentsByNameMethod\ArgumentsByNameChild::doFoo() must be passed by name.',
+				250,
+			],
+			[
+				'Method ArgumentsByNameMethod\ConflictingClassLevel::doFoo() invoked with named argument $dialect, but it\'s not allowed because of @no-named-arguments.',
+				322,
+			],
 		]);
 	}
 

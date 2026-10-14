@@ -384,6 +384,14 @@ class InstantiationRuleTest extends RuleTestCase
 				'Argument for parameter $dialect of class InstantiationArgumentsByName\ClassLevel constructor must be passed by name.',
 				44,
 			],
+			[
+				'Argument for parameter $dialect of class InstantiationArgumentsByName\NoNamedArgumentsByDefault constructor must be passed by name.',
+				101,
+			],
+			[
+				'Argument for optional parameter $groups of class InstantiationArgumentsByName\NoNamedArgumentsByDefaultWithOptional constructor must be passed by name.',
+				103,
+			],
 		]);
 	}
 

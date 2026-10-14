@@ -9,10 +9,10 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\ArgumentsByNameHelper;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use function count;
@@ -52,7 +52,6 @@ final class CallToFunctionParametersRule implements Rule
 			$function->getVariants(),
 			$function->getNamedArgumentsVariants(),
 		);
-		[$requiresArgumentsByName, $requiresOptionalArgumentsByName] = ArgumentsByNameHelper::getForFunction($function);
 
 		return $this->check->check(
 			self::getVariantForArgumentsCount($node->getArgs(), $function->getVariants(), $parametersAcceptor) ?? $parametersAcceptor,
@@ -61,8 +60,6 @@ final class CallToFunctionParametersRule implements Rule
 			$node,
 			'function',
 			$function->acceptsNamedArguments(),
-			$requiresArgumentsByName,
-			$requiresOptionalArgumentsByName,
 			'Function ' . $functionName . ' invoked with %d parameter, %d required.',
 			'Function ' . $functionName . ' invoked with %d parameters, %d required.',
 			'Function ' . $functionName . ' invoked with %d parameter, at least %d required.',
@@ -78,11 +75,12 @@ final class CallToFunctionParametersRule implements Rule
 			'Return type of call to function ' . $functionName . ' contains unresolvable type.',
 			'%s of function ' . $functionName . ' contains unresolvable type.',
 			'Function ' . $functionName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
-			'Argument for %s of function ' . $functionName . ' must be passed by name.',
 			'Constant %s is not allowed for %s of function ' . $functionName . '.',
 			'Constants %s cannot be combined for %s of function ' . $functionName . '.',
 			'Combining constants with | is not allowed for %s of function ' . $functionName . '.',
 			null,
+			ArgumentsByNameTagResolver::resolveForFunction($function),
+			'Argument for %s of function ' . $functionName . ' must be passed by name.',
 		);
 	}
 

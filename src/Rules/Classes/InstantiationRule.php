@@ -12,12 +12,12 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
-use PHPStan\Rules\ArgumentsByNameHelper;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
@@ -308,8 +308,6 @@ final class InstantiationRule implements Rule
 			))->getTransformedMethod();
 		}
 
-		[$requiresArgumentsByName, $requiresOptionalArgumentsByName] = ArgumentsByNameHelper::getForMethod($constructorReflection);
-
 		return array_merge($messages, $this->check->check(
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
@@ -322,8 +320,6 @@ final class InstantiationRule implements Rule
 			$node,
 			'new',
 			$constructorReflection->acceptsNamedArguments(),
-			$requiresArgumentsByName,
-			$requiresOptionalArgumentsByName,
 			'Class ' . $classDisplayName . ' constructor invoked with %d parameter, %d required.',
 			'Class ' . $classDisplayName . ' constructor invoked with %d parameters, %d required.',
 			'Class ' . $classDisplayName . ' constructor invoked with %d parameter, at least %d required.',
@@ -339,11 +335,12 @@ final class InstantiationRule implements Rule
 			'Return type of call to ' . $classDisplayName . ' constructor contains unresolvable type.',
 			'%s of class ' . $classDisplayName . ' constructor contains unresolvable type.',
 			'Class ' . $classDisplayName . ' constructor invoked with %s, but it\'s not allowed because of @no-named-arguments.',
-			'Argument for %s of class ' . $classDisplayName . ' constructor must be passed by name.',
 			'Constant %s is not allowed for %s of class ' . $classDisplayName . ' constructor.',
 			'Constants %s cannot be combined for %s of class ' . $classDisplayName . ' constructor.',
 			'Combining constants with | is not allowed for %s of class ' . $classDisplayName . ' constructor.',
 			null,
+			ArgumentsByNameTagResolver::resolveForMethod($constructorReflection),
+			'Argument for %s of class ' . $classDisplayName . ' constructor must be passed by name.',
 		));
 	}
 

@@ -11,8 +11,8 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Rules\ArgumentsByNameHelper;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
@@ -94,8 +94,6 @@ final class CallStaticMethodsRule implements Rule
 			$method->getDeclaringClass()->getDisplayName() . '::' . $method->getName() . '()',
 		));
 
-		[$requiresArgumentsByName, $requiresOptionalArgumentsByName] = ArgumentsByNameHelper::getForMethod($method);
-
 		$errors = array_merge($errors, $this->parametersCheck->check(
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
@@ -108,8 +106,6 @@ final class CallStaticMethodsRule implements Rule
 			$node,
 			'staticMethod',
 			$method->acceptsNamedArguments(),
-			$requiresArgumentsByName,
-			$requiresOptionalArgumentsByName,
 			$displayMethodName . ' invoked with %d parameter, %d required.',
 			$displayMethodName . ' invoked with %d parameters, %d required.',
 			$displayMethodName . ' invoked with %d parameter, at least %d required.',
@@ -125,11 +121,12 @@ final class CallStaticMethodsRule implements Rule
 			'Return type of call to ' . $lowercasedMethodName . ' contains unresolvable type.',
 			'%s of ' . $lowercasedMethodName . ' contains unresolvable type.',
 			$displayMethodName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
-			'Argument for %s of ' . $lowercasedMethodName . ' must be passed by name.',
 			'Constant %s is not allowed for %s of ' . $lowercasedMethodName . '.',
 			'Constants %s cannot be combined for %s of ' . $lowercasedMethodName . '.',
 			'Combining constants with | is not allowed for %s of ' . $lowercasedMethodName . '.',
 			null,
+			ArgumentsByNameTagResolver::resolveForMethod($method),
+			'Argument for %s of ' . $lowercasedMethodName . ' must be passed by name.',
 		));
 
 		return $errors;

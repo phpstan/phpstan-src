@@ -7,6 +7,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\AttributeReflectionFactory;
@@ -390,8 +391,14 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function acceptsNamedArguments(): TrinaryLogic
 	{
+		if (!$this->acceptsNamedArguments) {
+			return TrinaryLogic::createNo();
+		}
+
+		// a tag of the method overrides @no-named-arguments on the class
 		return TrinaryLogic::createFromBoolean(
-			$this->declaringClass->acceptsNamedArguments() && $this->acceptsNamedArguments,
+			$this->declaringClass->acceptsNamedArguments()
+			|| ArgumentsByNameTagResolver::resolveForMethod($this) !== null,
 		);
 	}
 

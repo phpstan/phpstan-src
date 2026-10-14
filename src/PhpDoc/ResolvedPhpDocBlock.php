@@ -276,9 +276,10 @@ final class ResolvedPhpDocBlock
 		// skip $result->phpDocNode
 		$phpDocNodes = $this->phpDocNodes;
 		$acceptsNamedArguments = $this->acceptsNamedArguments();
+		$hasArgumentsByNameTag = $this->requiresArgumentsByName() || $this->requiresOptionalArgumentsByName() || $this->hasStableParameterNames();
 		foreach ($parent->phpDocNodes as $phpDocNode) {
 			$phpDocNodes[] = $phpDocNode;
-			$acceptsNamedArguments = $acceptsNamedArguments && $parent->acceptsNamedArguments();
+			$acceptsNamedArguments = $acceptsNamedArguments && ($hasArgumentsByNameTag || $parent->acceptsNamedArguments());
 		}
 		$result->phpDocNodes = $phpDocNodes;
 		$result->phpDocString = $this->phpDocString;
@@ -322,9 +323,9 @@ final class ResolvedPhpDocBlock
 		$result->isAllowedPrivateMutation = $this->isAllowedPrivateMutation();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
 		$result->acceptsNamedArguments = $acceptsNamedArguments;
-		$result->requiresArgumentsByName = $this->requiresArgumentsByName() || $parent->requiresArgumentsByName();
-		$result->requiresOptionalArgumentsByName = $this->requiresOptionalArgumentsByName() || $parent->requiresOptionalArgumentsByName();
-		$result->hasStableParameterNames = $this->hasStableParameterNames() || $parent->hasStableParameterNames();
+		$result->requiresArgumentsByName = $this->requiresArgumentsByName();
+		$result->requiresOptionalArgumentsByName = $this->requiresOptionalArgumentsByName();
+		$result->hasStableParameterNames = $this->hasStableParameterNames();
 
 		return $result;
 	}

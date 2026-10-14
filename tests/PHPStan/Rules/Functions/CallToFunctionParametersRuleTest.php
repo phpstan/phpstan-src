@@ -2272,23 +2272,23 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			],
 			[
 				'Argument for optional parameter $group of function ArgumentsByNameFunction\optional must be passed by name.',
-				63,
+				64,
 			],
 			[
 				'Argument for optional parameter $group of function ArgumentsByNameFunction\optional must be passed by name.',
-				67,
+				68,
 			],
 			[
 				'Argument for parameter $dialect of function ArgumentsByNameFunction\all must be passed by name.',
-				71,
+				72,
 			],
 			[
 				'Argument for parameter $dialect of function ArgumentsByNameFunction\all must be passed by name.',
-				73,
+				74,
 			],
 			[
 				'Argument for parameter $dialect of function ArgumentsByNameFunction\all must be passed by name.',
-				77,
+				78,
 			],
 		]);
 	}

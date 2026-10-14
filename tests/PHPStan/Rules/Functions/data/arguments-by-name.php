@@ -57,8 +57,9 @@ function (): void {
  * @param non-empty-list<string> $nonEmptyList
  * @param array<string, string> $named
  * @param array<string> $unknown
+ * @param non-empty-array<string> $nonEmptyUnknown
  */
-function unpacking(array $list, array $nonEmptyList, array $named, array $unknown): void
+function unpacking(array $list, array $nonEmptyList, array $named, array $unknown, array $nonEmptyUnknown): void
 {
 	optional(...['openapi-3.1', 'read']);
 	optional(...['openapi-3.1', 'group' => 'read']);
@@ -75,4 +76,5 @@ function unpacking(array $list, array $nonEmptyList, array $named, array $unknow
 	all(...$named);
 	all(...$unknown);
 	all(...$nonEmptyList, ...$nonEmptyList);
+	all(...$nonEmptyUnknown);
 }

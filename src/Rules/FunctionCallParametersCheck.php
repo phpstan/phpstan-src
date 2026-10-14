@@ -10,6 +10,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -71,6 +72,7 @@ final class FunctionCallParametersCheck
 	/**
 	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
 	 * @param array{class-string, string}|null $renamedNamedArgumentParameterData
+	 * @param ArgumentsByNameTagResolver::*|null $argumentsByNameTag
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
@@ -80,8 +82,6 @@ final class FunctionCallParametersCheck
 		Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall,
 		string $nodeType,
 		TrinaryLogic $acceptsNamedArguments,
-		bool $requiresArgumentsByName,
-		bool $requiresOptionalArgumentsByName,
 		string $singleInsufficientParameterMessage,
 		string $pluralInsufficientParametersMessage,
 		string $singleInsufficientParameterInVariadicFunctionMessage,
@@ -97,13 +97,17 @@ final class FunctionCallParametersCheck
 		string $unresolvableReturnTypeMessage,
 		string $unresolvableParameterTypeMessage,
 		string $namedArgumentMessage,
-		string $positionalArgumentMessage,
 		string $invalidConstantMessage,
 		string $exclusiveConstantsMessage,
 		string $bitmaskNotAllowedMessage,
 		?array $renamedNamedArgumentParameterData,
+		?string $argumentsByNameTag = null,
+		string $positionalArgumentMessage = '',
 	): array
 	{
+		$requiresArgumentsByName = $argumentsByNameTag === ArgumentsByNameTagResolver::ARGUMENTS_BY_NAME;
+		$requiresOptionalArgumentsByName = $argumentsByNameTag === ArgumentsByNameTagResolver::OPTIONAL_ARGUMENTS_BY_NAME;
+
 		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
 			$funcCallLine = $funcCall->name->getStartLine();
 		} else {

@@ -11,6 +11,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_key_exists;
@@ -132,8 +133,6 @@ final class AttributesCheck
 				$nodeAttributes = $attribute->getAttributes();
 				$nodeAttributes['isAttribute'] = true;
 
-				[$requiresArgumentsByName, $requiresOptionalArgumentsByName] = ArgumentsByNameHelper::getForMethod($attributeConstructor);
-
 				$parameterErrors = $this->functionCallParametersCheck->check(
 					ParametersAcceptorSelector::selectFromArgs(
 						$scope,
@@ -146,8 +145,6 @@ final class AttributesCheck
 					new New_($attribute->name, $attribute->args, $nodeAttributes),
 					'attribute',
 					$attributeConstructor->acceptsNamedArguments(),
-					$requiresArgumentsByName,
-					$requiresOptionalArgumentsByName,
 					'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameter, %d required.',
 					'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameters, %d required.',
 					'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameter, at least %d required.',
@@ -163,11 +160,12 @@ final class AttributesCheck
 					'Return type of call to ' . $attributeClassName . ' constructor contains unresolvable type.',
 					'%s of attribute class ' . $attributeClassName . ' constructor contains unresolvable type.',
 					'Attribute class ' . $attributeClassName . ' constructor invoked with %s, but it\'s not allowed because of @no-named-arguments.',
-					'Argument for %s of attribute class ' . $attributeClassName . ' constructor must be passed by name.',
 					'Constant %s is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
 					'Constants %s cannot be combined for %s of attribute class ' . $attributeClassName . ' constructor.',
 					'Combining constants with | is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
 					null,
+					ArgumentsByNameTagResolver::resolveForMethod($attributeConstructor),
+					'Argument for %s of attribute class ' . $attributeClassName . ' constructor must be passed by name.',
 				);
 
 				foreach ($parameterErrors as $error) {

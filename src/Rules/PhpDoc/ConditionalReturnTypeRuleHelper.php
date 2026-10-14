@@ -30,15 +30,18 @@ final class ConditionalReturnTypeRuleHelper
 		$conditionalTypes = [];
 		$parametersByName = [];
 		foreach ($acceptor->getParameters() as $parameter) {
-			TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
-				if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-					$conditionalTypes[] = $type;
-				}
+			// conditional types are late-resolvable, so a type without any cannot contain one
+			if ($parameter->getType()->hasTemplateOrLateResolvableType()) {
+				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+						$conditionalTypes[] = $type;
+					}
 
-				return $traverse($type);
-			});
+					return $traverse($type);
+				});
+			}
 
-			if ($parameter->getOutType() !== null) {
+			if ($parameter->getOutType() !== null && $parameter->getOutType()->hasTemplateOrLateResolvableType()) {
 				TypeTraverser::map($parameter->getOutType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 						$conditionalTypes[] = $type;
@@ -48,7 +51,7 @@ final class ConditionalReturnTypeRuleHelper
 				});
 			}
 
-			if ($parameter->getClosureThisType() !== null) {
+			if ($parameter->getClosureThisType() !== null && $parameter->getClosureThisType()->hasTemplateOrLateResolvableType()) {
 				TypeTraverser::map($parameter->getClosureThisType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 					if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 						$conditionalTypes[] = $type;
@@ -61,13 +64,15 @@ final class ConditionalReturnTypeRuleHelper
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 
-		TypeTraverser::map($acceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
-			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-				$conditionalTypes[] = $type;
-			}
+		if ($acceptor->getReturnType()->hasTemplateOrLateResolvableType()) {
+			TypeTraverser::map($acceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+				if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+					$conditionalTypes[] = $type;
+				}
 
-			return $traverse($type);
-		});
+				return $traverse($type);
+			});
+		}
 
 		$errors = [];
 		foreach ($conditionalTypes as $conditionalType) {

@@ -7,13 +7,17 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Throwable;
 use function chdir;
 use function getcwd;
+use function getenv;
 use function microtime;
+use function putenv;
 use function realpath;
 use function sprintf;
+use function sys_get_temp_dir;
 use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
@@ -68,6 +72,69 @@ class AnalyseCommandTest extends PHPStanTestCase
 		} catch (Throwable $e) {
 			chdir($originalDir);
 			throw $e;
+		}
+	}
+
+	public function testSummaryIsPrintedToStdOutputInCiWithTableFormat(): void
+	{
+		[$stdOutput, $errorOutput] = $this->runCommandInGithubActions('table');
+		$this->assertStringContainsString('[OK] No errors', $stdOutput);
+		$this->assertStringContainsString('PHPStan version:', $stdOutput);
+		$this->assertStringContainsString('Elapsed time:', $stdOutput);
+		$this->assertStringContainsString('Peak memory:', $stdOutput);
+		$this->assertStringNotContainsString('PHPStan version:', $errorOutput);
+		$this->assertStringNotContainsString('Elapsed time:', $errorOutput);
+		$this->assertStringNotContainsString('Peak memory:', $errorOutput);
+	}
+
+	public function testSummaryIsPrintedToErrorOutputInCiWithMachineReadableFormat(): void
+	{
+		[$stdOutput, $errorOutput] = $this->runCommandInGithubActions('json');
+		$this->assertStringNotContainsString('PHPStan version:', $stdOutput);
+		$this->assertStringNotContainsString('Elapsed time:', $stdOutput);
+		$this->assertStringNotContainsString('Peak memory:', $stdOutput);
+		$this->assertStringContainsString('PHPStan version:', $errorOutput);
+		$this->assertStringContainsString('Elapsed time:', $errorOutput);
+		$this->assertStringContainsString('Peak memory:', $errorOutput);
+	}
+
+	public function testSummaryIsPrintedToStdOutputInCiWhenGeneratingBaseline(): void
+	{
+		[$stdOutput, $errorOutput] = $this->runCommandInGithubActions('json', 1, ['--generate-baseline' => sys_get_temp_dir() . '/phpstan-summary-baseline.neon']);
+		$this->assertStringContainsString('To allow generating empty baselines', $stdOutput);
+		$this->assertStringContainsString('Elapsed time:', $stdOutput);
+		$this->assertStringNotContainsString('Elapsed time:', $errorOutput);
+	}
+
+	/**
+	 * @param array<string, string> $parameters
+	 * @return array{string, string}
+	 */
+	private function runCommandInGithubActions(string $errorFormat, int $expectedStatusCode = 0, array $parameters = []): array
+	{
+		$originalDir = getcwd();
+		if ($originalDir === false) {
+			throw new ShouldNotHappenException();
+		}
+		$originalGithubActions = getenv('GITHUB_ACTIONS');
+
+		chdir(__DIR__);
+		putenv('GITHUB_ACTIONS=true');
+
+		try {
+			$commandTester = new CommandTester(new AnalyseCommand([], microtime(true)));
+			$commandTester->execute([
+				'paths' => [__DIR__ . DIRECTORY_SEPARATOR . 'test'],
+				'--debug' => true,
+				'--error-format' => $errorFormat,
+			] + $parameters, ['verbosity' => OutputInterface::VERBOSITY_DEBUG, 'capture_stderr_separately' => true]);
+
+			$this->assertSame($expectedStatusCode, $commandTester->getStatusCode(), $commandTester->getDisplay() . $commandTester->getErrorOutput());
+
+			return [$commandTester->getDisplay(), $commandTester->getErrorOutput()];
+		} finally {
+			chdir($originalDir);
+			putenv($originalGithubActions === false ? 'GITHUB_ACTIONS' : 'GITHUB_ACTIONS=' . $originalGithubActions);
 		}
 	}
 

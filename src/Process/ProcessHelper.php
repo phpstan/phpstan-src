@@ -135,7 +135,8 @@ final class ProcessHelper
 	 * the same from them - optimized opcodes, interned strings, the
 	 * inheritance cache - and, with the turbo extension active in a phar,
 	 * the optimizer pass dropping PHPStan's own run-time type checks, which
-	 * exists only inside OPcache. Without them, a worker on a pcntl host
+	 * exists only inside OPcache (and is skipped while opcache.file_cache is
+	 * set). Without them, a worker on a pcntl host
 	 * re-executed itself through TurboProcessRestarter to get OPcache: one
 	 * exec more per worker, and one that rebuilt the command line from
 	 * scratch, dropping the sys_temp_dir and extension entries of the spawn.

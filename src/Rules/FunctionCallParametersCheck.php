@@ -80,6 +80,8 @@ final class FunctionCallParametersCheck
 		Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall,
 		string $nodeType,
 		TrinaryLogic $acceptsNamedArguments,
+		bool $requiresArgumentsByName,
+		bool $requiresOptionalArgumentsByName,
 		string $singleInsufficientParameterMessage,
 		string $pluralInsufficientParametersMessage,
 		string $singleInsufficientParameterInVariadicFunctionMessage,
@@ -95,6 +97,7 @@ final class FunctionCallParametersCheck
 		string $unresolvableReturnTypeMessage,
 		string $unresolvableParameterTypeMessage,
 		string $namedArgumentMessage,
+		string $positionalArgumentMessage,
 		string $invalidConstantMessage,
 		string $exclusiveConstantsMessage,
 		string $bitmaskNotAllowedMessage,
@@ -329,7 +332,11 @@ final class FunctionCallParametersCheck
 			return $errors;
 		}
 
+		$isAfterUnpackedArgument = false;
 		foreach ($argumentsWithParameters as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $parameter, $originalParameter]) {
+			$isPositionKnown = !$isAfterUnpackedArgument;
+			$isAfterUnpackedArgument = $isAfterUnpackedArgument || $unpack;
+
 			if ($this->checkArgumentTypes && $unpack) {
 				$iterableTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 					$scope,
@@ -387,6 +394,20 @@ final class FunctionCallParametersCheck
 					$renamedNamedArgumentParameterData,
 					[$parameter->getName(), $argumentLine],
 				));
+			} elseif (
+				$argumentName === null
+				&& $isPositionKnown
+				&& !$parameter->isVariadic()
+				&& ($requiresArgumentsByName || ($requiresOptionalArgumentsByName && $parameter->isOptional()))
+				&& (!$unpack || $this->isUnpackedAsPositionalArguments($scope->getType($argumentValue)))
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					$positionalArgumentMessage,
+					sprintf($requiresArgumentsByName ? 'parameter $%s' : 'optional parameter $%s', $parameter->getName()),
+				))
+					->identifier('argument.positional')
+					->line($argumentLine)
+					->build();
 			}
 
 			if ($this->checkArgumentTypes) {
@@ -787,6 +808,12 @@ final class FunctionCallParametersCheck
 		}
 
 		return [$errors, $newArguments];
+	}
+
+	private function isUnpackedAsPositionalArguments(Type $unpackedType): bool
+	{
+		return $unpackedType->getIterableKeyType()->isInteger()->yes()
+			&& $unpackedType->isIterableAtLeastOnce()->yes();
 	}
 
 	private function describeParameter(ParameterReflection $parameter, int|string|null $positionOrNamed): string

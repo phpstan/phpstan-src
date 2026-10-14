@@ -12,6 +12,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Rules\ArgumentsByNameHelper;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
@@ -83,6 +84,7 @@ final class CallMethodsRule implements Rule
 
 		$declaringClass = $methodReflection->getDeclaringClass();
 		$messagesMethodName = SprintfHelper::escapeFormatString($declaringClass->getDisplayName() . '::' . $methodReflection->getName() . '()');
+		[$requiresArgumentsByName, $requiresOptionalArgumentsByName] = ArgumentsByNameHelper::getForMethod($methodReflection);
 
 		return array_merge($errors, $this->parametersCheck->check(
 			ParametersAcceptorSelector::selectFromArgs(
@@ -96,6 +98,8 @@ final class CallMethodsRule implements Rule
 			$node,
 			'method',
 			$methodReflection->acceptsNamedArguments(),
+			$requiresArgumentsByName,
+			$requiresOptionalArgumentsByName,
 			'Method ' . $messagesMethodName . ' invoked with %d parameter, %d required.',
 			'Method ' . $messagesMethodName . ' invoked with %d parameters, %d required.',
 			'Method ' . $messagesMethodName . ' invoked with %d parameter, at least %d required.',
@@ -111,6 +115,7 @@ final class CallMethodsRule implements Rule
 			'Return type of call to method ' . $messagesMethodName . ' contains unresolvable type.',
 			'%s of method ' . $messagesMethodName . ' contains unresolvable type.',
 			'Method ' . $messagesMethodName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
+			'Argument for %s of method ' . $messagesMethodName . ' must be passed by name.',
 			'Constant %s is not allowed for %s of method ' . $messagesMethodName . '.',
 			'Constants %s cannot be combined for %s of method ' . $messagesMethodName . '.',
 			'Combining constants with | is not allowed for %s of method ' . $messagesMethodName . '.',

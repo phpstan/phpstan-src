@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
@@ -39,6 +40,7 @@ interface FunctionReflectionFactory
 		array $attributes,
 		array $phpDocParameterPureUnlessCallableIsImpure,
 		array $phpDocParameterPureUnlessParameterPassed,
+		?ResolvedPhpDocBlock $resolvedPhpDocBlock,
 	): PhpFunctionReflection;
 
 }

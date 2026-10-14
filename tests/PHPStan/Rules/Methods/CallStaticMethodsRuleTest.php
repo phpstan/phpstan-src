@@ -450,6 +450,31 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testArgumentsByName(): void
+	{
+		$this->checkThisOnly = false;
+
+		$this->analyse([__DIR__ . '/data/static-method-arguments-by-name.php'], [
+			[
+				'Argument for optional parameter $group of static method StaticMethodArgumentsByName\Foo::optional() must be passed by name.',
+				27,
+			],
+			[
+				'Argument for parameter $dialect of static method StaticMethodArgumentsByName\Foo::all() must be passed by name.',
+				29,
+			],
+			[
+				'Argument for parameter $dialect of static method StaticMethodArgumentsByName\ClassLevel::doFoo() must be passed by name.',
+				30,
+			],
+			[
+				'Argument for parameter $group of static method StaticMethodArgumentsByName\ClassLevel::doFoo() must be passed by name.',
+				30,
+			],
+		]);
+	}
+
 	public function testBug577(): void
 	{
 		$this->checkThisOnly = false;

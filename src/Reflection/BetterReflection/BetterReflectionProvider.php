@@ -375,6 +375,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$this->attributeReflectionFactory->fromNativeReflection($reflectionFunction->getAttributes(), InitializerExprContext::fromFunction($reflectionFunction->getName(), $reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null)),
 			$phpDocParameterPureUnlessCallableIsImpure,
 			$phpDocParameterPureUnlessParameterPassed,
+			$resolvedPhpDoc,
 		);
 	}
 

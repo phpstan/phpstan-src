@@ -368,6 +368,25 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testArgumentsByName(): void
+	{
+		$this->analyse([__DIR__ . '/data/instantiation-arguments-by-name.php'], [
+			[
+				'Argument for optional parameter $groups of class InstantiationArgumentsByName\Configuration constructor must be passed by name.',
+				40,
+			],
+			[
+				'Argument for optional parameter $groups of class InstantiationArgumentsByName\ChildConfiguration constructor must be passed by name.',
+				42,
+			],
+			[
+				'Argument for parameter $dialect of class InstantiationArgumentsByName\ClassLevel constructor must be passed by name.',
+				44,
+			],
+		]);
+	}
+
 	public function testBug4471(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4471.php'], [

@@ -3543,6 +3543,50 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testArgumentsByName(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/arguments-by-name.php'], [
+			[
+				'Argument for optional parameter $group of method ArgumentsByNameMethod\Foo::optional() must be passed by name.',
+				93,
+			],
+			[
+				'Argument for optional parameter $allowExtraAttributes of method ArgumentsByNameMethod\Foo::optional() must be passed by name.',
+				93,
+			],
+			[
+				'Argument for parameter $dialect of method ArgumentsByNameMethod\Foo::all() must be passed by name.',
+				95,
+			],
+			[
+				'Argument for optional parameter $group of method ArgumentsByNameMethod\ClassLevel::doFoo() must be passed by name.',
+				100,
+			],
+			[
+				'Argument for optional parameter $group of method ArgumentsByNameMethod\Child::optional() must be passed by name.',
+				102,
+			],
+			[
+				'Argument for parameter $dialect of method ArgumentsByNameMethod\Child::all() must be passed by name.',
+				103,
+			],
+			[
+				'Argument for parameter $dialect of method ArgumentsByNameMethod\FooInterface::doFoo() must be passed by name.',
+				105,
+			],
+			[
+				'Argument for parameter $dialect of method ArgumentsByNameMethod\FooImplementation::doFoo() must be passed by name.',
+				106,
+			],
+		]);
+	}
+
 	public function testTraitMixin(): void
 	{
 		$this->checkThisOnly = false;

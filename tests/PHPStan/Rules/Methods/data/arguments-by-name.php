@@ -323,3 +323,21 @@ function (
 	$stableChild->doFoo(dialect: 'openapi-3.1', group: 'read');
 	$stableChild->doFoo('openapi-3.1', 'read');
 };
+
+/**
+ * @arguments-by-name
+ */
+class ClassLevelWithPrivateMethod
+{
+
+	public function doFoo(string $dialect): void
+	{
+		$this->doBar($dialect);
+	}
+
+	private function doBar(string $dialect): void
+	{
+
+	}
+
+}

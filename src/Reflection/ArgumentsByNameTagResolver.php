@@ -10,7 +10,7 @@ use function strtolower;
  * Finds which of @arguments-by-name, @optional-arguments-by-name and @stable-parameter-names applies to a function or a method.
  *
  * For a method, the tag on the method comes first. Then comes the tag of the method it overrides or implements,
- * except for constructors. The class-level tag of the declaring class comes last.
+ * except for constructors. The class-level tag of the declaring class comes last, except for private methods.
  * A docblock with @no-named-arguments has none of these tags.
  */
 final class ArgumentsByNameTagResolver
@@ -55,6 +55,11 @@ final class ArgumentsByNameTagResolver
 			if ($tag !== null) {
 				return $tag;
 			}
+		}
+
+		// private methods are only called by their class
+		if ($method->isPrivate()) {
+			return null;
 		}
 
 		return self::resolveFromPhpDoc($declaringClass->getResolvedPhpDoc());

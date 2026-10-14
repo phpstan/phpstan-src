@@ -14,6 +14,7 @@ use PHPStan\Type\TypeTraverser;
 use function is_string;
 use function ltrim;
 use function sprintf;
+use function str_starts_with;
 
 /**
  * The per-parameter half of the unused-parameter rules, on top of the
@@ -59,6 +60,9 @@ final class UnusedParametersCheck
 				continue;
 			}
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
+				continue;
+			}
+			if (str_starts_with($parameter->var->name, '_')) {
 				continue;
 			}
 			if (isset($contractParameterNames[$parameter->var->name])) {

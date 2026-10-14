@@ -20,11 +20,12 @@ function usedParameter(int $input): int
 	return $copy;
 }
 
-function unusedCapture(int $input): \Closure
+function unusedCapture(int $input, int $_ignoredInput): \Closure
 {
 	return function () use ($input): void {
 		while (rand(0, 1)) {
 			$input = $input + 1;
+			$_ignoredInput = $_ignoredInput + 1;
 		}
 	};
 }
@@ -52,8 +53,9 @@ function unusedCaptureOverwritten(int $input): \Closure
 	};
 }
 
-function overwrittenParameter(int $input): int
+function overwrittenParameter(int $input, int $_ignoredInput): int
 {
 	$input = 1;
-	return $input;
+	$_ignoredInput = 2;
+	$input + $_ignoredInput;
 }

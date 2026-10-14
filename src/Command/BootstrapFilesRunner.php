@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Reflection\BetterReflection\SourceLocator\BootstrapAutoloaderExceptionReporter;
 use function spl_autoload_functions;
 
 /**
@@ -32,7 +33,10 @@ final class BootstrapFilesRunner
 
 	private bool $hasRun = false;
 
-	public function __construct(private Container $container)
+	public function __construct(
+		private Container $container,
+		private BootstrapAutoloaderExceptionReporter $bootstrapAutoloaderExceptionReporter,
+	)
 	{
 	}
 
@@ -41,6 +45,10 @@ final class BootstrapFilesRunner
 	 */
 	public function run(Output $errorOutput, bool $debugEnabled): void
 	{
+		if ($debugEnabled) {
+			$this->bootstrapAutoloaderExceptionReporter->enable($errorOutput);
+		}
+
 		if ($this->hasRun) {
 			return;
 		}

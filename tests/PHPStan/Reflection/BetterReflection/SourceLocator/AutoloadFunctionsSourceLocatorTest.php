@@ -9,10 +9,17 @@ use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use PHPStan\Command\Symfony\SymfonyOutput;
+use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\Testing\PHPStanTestCase;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 use TestSingleFileSourceLocator\AFoo;
 use function class_alias;
 use function class_exists;
+use function fopen;
+use function rewind;
+use function stream_get_contents;
 
 class AutoloadFunctionsSourceLocatorTest extends PHPStanTestCase
 {
@@ -81,7 +88,44 @@ class AutoloadFunctionsSourceLocatorTest extends PHPStanTestCase
 		}
 	}
 
-	private function createLocator(): AutoloadFunctionsSourceLocator
+	/**
+	 * With --debug, BootstrapFilesRunner enables the reporter, and the autoloader's own message
+	 * reaches the error output. The class is still reported as not found.
+	 */
+	public function testTheReporterPrintsTheSwallowedException(): void
+	{
+		$GLOBALS['__phpstanAutoloadFunctions'] = [
+			static function (string $class): void {
+				throw new LogicException('Cannot read the class map.');
+			},
+		];
+
+		$stream = fopen('php://memory', 'w+');
+		$this->assertNotFalse($stream);
+		$output = new StreamOutput($stream);
+		$reporter = new BootstrapAutoloaderExceptionReporter();
+		$reporter->enable(new SymfonyOutput($output, new SymfonyStyle(new \Symfony\Component\Console\Style\SymfonyStyle($this->createStub(InputInterface::class), $output))));
+
+		try {
+			$locator = $this->createLocator($reporter);
+			$reflection = $locator->locateIdentifier(
+				new DefaultReflector($locator),
+				new Identifier('NeverDefinedByAnyAutoloader', new IdentifierType(IdentifierType::IDENTIFIER_CLASS)),
+			);
+
+			$this->assertNull($reflection);
+		} finally {
+			unset($GLOBALS['__phpstanAutoloadFunctions']);
+		}
+
+		rewind($stream);
+		$printed = stream_get_contents($stream);
+		$this->assertIsString($printed);
+		$this->assertStringContainsString('LogicException thrown in ' . __FILE__, $printed);
+		$this->assertStringContainsString('by a bootstrap autoloader for class NeverDefinedByAnyAutoloader: Cannot read the class map.', $printed);
+	}
+
+	private function createLocator(?BootstrapAutoloaderExceptionReporter $reporter = null): AutoloadFunctionsSourceLocator
 	{
 		$container = self::getContainer();
 
@@ -91,6 +135,7 @@ class AutoloadFunctionsSourceLocatorTest extends PHPStanTestCase
 				new Locator($container->getService('phpParserDecorator')),
 				new ReflectionSourceStubber(new Standard()),
 			),
+			$reporter ?? new BootstrapAutoloaderExceptionReporter(),
 		);
 	}
 

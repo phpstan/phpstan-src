@@ -19,6 +19,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\BootstrapAutoloaderExceptionReporter;
 use PHPStan\Reflection\BetterReflection\SourceLocator\CachedPhpInternalSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
@@ -69,6 +70,7 @@ final class BetterReflectionSourceLocatorFactory
 		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
 		private FileNodesFetcher $fileNodesFetcher,
+		private BootstrapAutoloaderExceptionReporter $bootstrapAutoloaderExceptionReporter,
 		#[AutowiredParameter]
 		private array $scanFiles,
 		#[AutowiredParameter]
@@ -109,6 +111,7 @@ final class BetterReflectionSourceLocatorFactory
 					$astLocator,
 					$this->reflectionSourceStubber,
 				),
+				$this->bootstrapAutoloaderExceptionReporter,
 			));
 
 			$analysedDirectories = [];

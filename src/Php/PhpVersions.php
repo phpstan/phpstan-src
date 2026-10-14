@@ -193,6 +193,11 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function supportsDebugInfoOnEnums(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80600, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function arrayFunctionsReturnNullWithNonArray(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;

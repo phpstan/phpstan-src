@@ -6,6 +6,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<EnumSanityRule>
@@ -188,6 +189,25 @@ class EnumSanityRuleTest extends RuleTestCase
 				5,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testDebugInfoPhpVersions(): void
+	{
+		$errors = [
+			[
+				'Enum EnumDebugInfoPhpVersions\\UnsupportedInBranch contains magic method __debugInfo().',
+				18,
+			],
+		];
+		if (PHP_VERSION_ID < 80600) {
+			$errors[] = [
+				'Enum EnumDebugInfoPhpVersions\\DependsOnPhpVersion contains magic method __debugInfo().',
+				27,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/enum-debug-info-php-versions.php'], $errors);
 	}
 
 }

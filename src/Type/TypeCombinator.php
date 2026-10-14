@@ -2310,6 +2310,9 @@ final class TypeCombinator
 								);
 							}
 							$newArrayType = $newArray->getArray();
+							if ($constArray->isList()->yes()) {
+								$newArrayType = self::intersect($newArrayType, new AccessoryArrayListType());
+							}
 						}
 
 						if ($constArrayIsI) {

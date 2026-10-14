@@ -112,6 +112,7 @@ parametersSchema:
 	reportPossiblyNonexistentConstantArrayOffset: bool()
 	checkMissingOverrideMethodAttribute: bool()
 	checkMissingOverridePropertyAttribute: schema(bool(), nullable())
+	checkMissingOverrideConstantAttribute: schema(bool(), nullable())
 	parallel: structure([
 		jobSize: int(),
 		processTimeout: float(),

@@ -204,7 +204,7 @@ final class ParametersAcceptorSelector
 			count($args) > 0
 			&& count($parametersAcceptors) > 0
 		) {
-			$arrayMapArgs = $args[0]->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
+			$arrayMapArgs = (ArgumentsNormalizer::getArgsByPosition($args, ArrayMapArgVisitor::PARAMETER_NAMES)[0] ?? null)?->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 			if ($arrayMapArgs !== null) {
 				$callbackParameters = [];
 				$nativeCallbackParameters = [];
@@ -252,8 +252,13 @@ final class ParametersAcceptorSelector
 				}
 			}
 
-			if (count($args) >= 3 && (bool) $args[0]->getAttribute(CurlSetOptArgVisitor::ATTRIBUTE_NAME)) {
-				$optType = ($typeGetter)($args[1]->value);
+			$curlSetOptArgs = ArgumentsNormalizer::getArgsByPosition($args, CurlSetOptArgVisitor::PARAMETER_NAMES);
+			if (
+				count($args) >= 3
+				&& isset($curlSetOptArgs[0], $curlSetOptArgs[1])
+				&& (bool) $curlSetOptArgs[0]->getAttribute(CurlSetOptArgVisitor::ATTRIBUTE_NAME)
+			) {
+				$optType = ($typeGetter)($curlSetOptArgs[1]->value);
 
 				$valueTypes = [];
 				foreach ($optType->getConstantScalarValues() as $scalarValue) {
@@ -296,8 +301,12 @@ final class ParametersAcceptorSelector
 				}
 			}
 
-			if (count($args) >= 2 && (bool) $args[1]->getAttribute(CurlSetOptArrayArgVisitor::ATTRIBUTE_NAME)) {
-				$optArrayType = ($typeGetter)($args[1]->value);
+			$curlSetOptArrayArgs = ArgumentsNormalizer::getArgsByPosition($args, CurlSetOptArrayArgVisitor::PARAMETER_NAMES);
+			if (
+				isset($curlSetOptArrayArgs[1])
+				&& (bool) $curlSetOptArrayArgs[1]->getAttribute(CurlSetOptArrayArgVisitor::ATTRIBUTE_NAME)
+			) {
+				$optArrayType = ($typeGetter)($curlSetOptArrayArgs[1]->value);
 
 				$hasTypes = false;
 				$builder = ConstantArrayTypeBuilder::createEmpty();
@@ -348,27 +357,28 @@ final class ParametersAcceptorSelector
 				}
 			}
 
-			if ((bool) $args[0]->getAttribute(ArrayFilterArgVisitor::ATTRIBUTE_NAME)) {
+			$arrayFilterArgs = ArgumentsNormalizer::getArgsByPosition($args, ArrayFilterArgVisitor::PARAMETER_NAMES);
+			if (isset($arrayFilterArgs[0]) && (bool) $arrayFilterArgs[0]->getAttribute(ArrayFilterArgVisitor::ATTRIBUTE_NAME)) {
 				$arrayFilterParameters = null;
 				$nativeArrayFilterParameters = null;
-				if (isset($args[2])) {
-					$mode = ($typeGetter)($args[2]->value);
+				if (isset($arrayFilterArgs[2])) {
+					$mode = ($typeGetter)($arrayFilterArgs[2]->value);
 					if ($mode instanceof ConstantIntegerType) {
 						if ($mode->getValue() === ARRAY_FILTER_USE_KEY) {
 							$arrayFilterParameters = [
-								new DummyParameter('key', ($iterableKeyTypeGetter)(($typeGetter)($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+								new DummyParameter('key', ($iterableKeyTypeGetter)(($typeGetter)($arrayFilterArgs[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 							];
 							$nativeArrayFilterParameters = [
-								new DummyParameter('key', ($iterableKeyTypeGetter)(($nativeTypeGetter)($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+								new DummyParameter('key', ($iterableKeyTypeGetter)(($nativeTypeGetter)($arrayFilterArgs[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 							];
 						} elseif ($mode->getValue() === ARRAY_FILTER_USE_BOTH) {
 							$arrayFilterParameters = [
-								new DummyParameter('item', ($iterableValueTypeGetter)(($typeGetter)($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
-								new DummyParameter('key', ($iterableKeyTypeGetter)(($typeGetter)($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+								new DummyParameter('item', ($iterableValueTypeGetter)(($typeGetter)($arrayFilterArgs[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+								new DummyParameter('key', ($iterableKeyTypeGetter)(($typeGetter)($arrayFilterArgs[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 							];
 							$nativeArrayFilterParameters = [
-								new DummyParameter('item', ($iterableValueTypeGetter)(($nativeTypeGetter)($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
-								new DummyParameter('key', ($iterableKeyTypeGetter)(($nativeTypeGetter)($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+								new DummyParameter('item', ($iterableValueTypeGetter)(($nativeTypeGetter)($arrayFilterArgs[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+								new DummyParameter('key', ($iterableKeyTypeGetter)(($nativeTypeGetter)($arrayFilterArgs[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 							];
 						}
 					}
@@ -377,7 +387,7 @@ final class ParametersAcceptorSelector
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
 				if (isset($parameters[1])) {
-					$arrayArgType = ($typeGetter)($args[0]->value);
+					$arrayArgType = ($typeGetter)($arrayFilterArgs[0]->value);
 					$callableType = new UnionType([
 						new CallableType(
 							$arrayFilterParameters ?? [
@@ -388,7 +398,7 @@ final class ParametersAcceptorSelector
 						),
 						new NullType(),
 					]);
-					$nativeArrayArgType = ($nativeTypeGetter)($args[0]->value);
+					$nativeArrayArgType = ($nativeTypeGetter)($arrayFilterArgs[0]->value);
 					$nativeCallableType = new UnionType([
 						new CallableType(
 							$nativeArrayFilterParameters ?? [
@@ -404,11 +414,13 @@ final class ParametersAcceptorSelector
 				}
 			}
 
-			if (count($args) <= 2 && (bool) $args[0]->getAttribute(ImplodeArgVisitor::ATTRIBUTE_NAME)) {
+			$implodeArgs = ArgumentsNormalizer::getArgsByPosition($args, ImplodeArgVisitor::PARAMETER_NAMES);
+			$implodeMarkedArg = $implodeArgs[0] ?? $implodeArgs[1] ?? null;
+			if (count($args) <= 2 && $implodeMarkedArg !== null && (bool) $implodeMarkedArg->getAttribute(ImplodeArgVisitor::ATTRIBUTE_NAME)) {
 				$acceptor = $namedArgumentsVariants[0] ?? $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
 				if (
-					(isset($args[1]) || ($args[0]->name !== null && $args[0]->name->name === 'array'))
+					isset($implodeArgs[1])
 					&& isset($parameters[0]) && isset($parameters[1])
 				) {
 					$parameters = [
@@ -433,9 +445,10 @@ final class ParametersAcceptorSelector
 				];
 			}
 
-			if ((bool) $args[0]->getAttribute(ArrayWalkArgVisitor::ATTRIBUTE_NAME)) {
-				$arrayArgType = ($typeGetter)($args[0]->value);
-				$nativeArrayArgType = ($nativeTypeGetter)($args[0]->value);
+			$arrayWalkArgs = ArgumentsNormalizer::getArgsByPosition($args, ArrayWalkArgVisitor::PARAMETER_NAMES);
+			if (isset($arrayWalkArgs[0]) && (bool) $arrayWalkArgs[0]->getAttribute(ArrayWalkArgVisitor::ATTRIBUTE_NAME)) {
+				$arrayArgType = ($typeGetter)($arrayWalkArgs[0]->value);
+				$nativeArrayArgType = ($nativeTypeGetter)($arrayWalkArgs[0]->value);
 				$arrayWalkParameters = [
 					new DummyParameter('item', ($iterableValueTypeGetter)($arrayArgType), optional: false, passedByReference: PassedByReference::createReadsArgument(), variadic: false, defaultValue: null),
 					new DummyParameter('key', ($iterableKeyTypeGetter)($arrayArgType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
@@ -444,9 +457,9 @@ final class ParametersAcceptorSelector
 					new DummyParameter('item', ($iterableValueTypeGetter)($nativeArrayArgType), optional: false, passedByReference: PassedByReference::createReadsArgument(), variadic: false, defaultValue: null),
 					new DummyParameter('key', ($iterableKeyTypeGetter)($nativeArrayArgType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 				];
-				if (isset($args[2])) {
-					$arrayWalkParameters[] = new DummyParameter('arg', ($typeGetter)($args[2]->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-					$nativeArrayWalkParameters[] = new DummyParameter('arg', ($nativeTypeGetter)($args[2]->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				if (isset($arrayWalkArgs[2])) {
+					$arrayWalkParameters[] = new DummyParameter('arg', ($typeGetter)($arrayWalkArgs[2]->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+					$nativeArrayWalkParameters[] = new DummyParameter('arg', ($nativeTypeGetter)($arrayWalkArgs[2]->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 				}
 
 				$acceptor = $parametersAcceptors[0];
@@ -459,11 +472,12 @@ final class ParametersAcceptorSelector
 				}
 			}
 
-			if ((bool) $args[0]->getAttribute(ArrayFindArgVisitor::ATTRIBUTE_NAME)) {
+			$arrayFindArgs = ArgumentsNormalizer::getArgsByPosition($args, ArrayFindArgVisitor::PARAMETER_NAMES);
+			if (isset($arrayFindArgs[0]) && (bool) $arrayFindArgs[0]->getAttribute(ArrayFindArgVisitor::ATTRIBUTE_NAME)) {
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
 				if (isset($parameters[1])) {
-					$argType = ($typeGetter)($args[0]->value);
+					$argType = ($typeGetter)($arrayFindArgs[0]->value);
 					$callableType = new CallableType(
 						[
 							new DummyParameter('value', ($iterableValueTypeGetter)($argType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
@@ -472,7 +486,7 @@ final class ParametersAcceptorSelector
 						new BooleanType(),
 						false,
 					);
-					$nativeArgType = ($nativeTypeGetter)($args[0]->value);
+					$nativeArgType = ($nativeTypeGetter)($arrayFindArgs[0]->value);
 					$nativeCallableType = new CallableType(
 						[
 							new DummyParameter('value', ($iterableValueTypeGetter)($nativeArgType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
@@ -486,7 +500,7 @@ final class ParametersAcceptorSelector
 				}
 			}
 
-			$closureBindToVar = $args[0]->getAttribute(ClosureBindToVarVisitor::ATTRIBUTE_NAME);
+			$closureBindToVar = (ArgumentsNormalizer::getArgsByPosition($args, ClosureBindToVarVisitor::PARAMETER_NAMES)[0] ?? null)?->getAttribute(ClosureBindToVarVisitor::ATTRIBUTE_NAME);
 			if (
 				$closureBindToVar instanceof Node\Expr\Variable
 				&& is_string($closureBindToVar->name)
@@ -532,12 +546,14 @@ final class ParametersAcceptorSelector
 				}
 			}
 
+			$closureBindArg = ArgumentsNormalizer::getArgsByPosition($args, ClosureBindArgVisitor::PARAMETER_NAMES)[0] ?? null;
 			if (
-				$args[0]->getAttribute(ClosureBindArgVisitor::ATTRIBUTE_NAME) !== null
-				&& $args[0]->value instanceof Node\Expr\Variable
-				&& is_string($args[0]->value->name)
+				$closureBindArg !== null
+				&& $closureBindArg->getAttribute(ClosureBindArgVisitor::ATTRIBUTE_NAME) !== null
+				&& $closureBindArg->value instanceof Node\Expr\Variable
+				&& is_string($closureBindArg->value->name)
 			) {
-				$closureVarName = $args[0]->value->name;
+				$closureVarName = $closureBindArg->value->name;
 				$inFunction = $scope->getFunction();
 				if ($inFunction !== null) {
 					$closureThisParameters = [];

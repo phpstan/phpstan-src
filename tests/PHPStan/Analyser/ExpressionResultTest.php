@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
 use PHPStan\Parser\Parser;
@@ -15,7 +16,11 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\VoidType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 use function get_class;
@@ -278,6 +283,36 @@ class ExpressionResultTest extends PHPStanTestCase
 		$this->assertSame($throwPoints, $final->getThrowPoints());
 		$this->assertSame($flow, $final->getVariableFlow());
 		$this->assertSame($type, $final->getType());
+	}
+
+	/** @return iterable<array{Type, Type}> */
+	public static function dataKeepVoidType(): iterable
+	{
+		yield [new VoidType(), new NullType()];
+		yield [TypeCombinator::union(new IntegerType(), new VoidType()), TypeCombinator::union(new IntegerType(), new NullType())];
+		yield [TypeCombinator::union(new IntegerType(), new StringType()), TypeCombinator::union(new IntegerType(), new StringType())];
+		yield [new MixedType(), new MixedType()];
+	}
+
+	#[DataProvider('dataKeepVoidType')]
+	public function testKeepVoidType(Type $rawType, Type $projectedType): void
+	{
+		$scope = self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create('test.php'));
+		$result = self::getContainer()->getByType(ExpressionResultFactory::class)->create(
+			$scope,
+			$scope,
+			new FuncCall(new Name('gettype')),
+			false,
+			false,
+			[],
+			[],
+			static fn (): Type => $rawType,
+			SpecifiedTypes::emptySpecifyCallback(),
+		);
+
+		$this->assertTrue($rawType->equals($result->getKeepVoidType(false)));
+		$this->assertTrue($projectedType->equals($result->getType()));
+		$this->assertTrue($rawType->equals($result->getKeepVoidType(true)));
 	}
 
 	/** @return iterable<array{string, int}> */

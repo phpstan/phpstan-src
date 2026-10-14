@@ -13,14 +13,16 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
-use TypeError;
+use Throwable;
 use function count;
 use function preg_match;
 
 /**
- * unserialize() throws TypeError and ValueError for invalid $options, and
- * TypeError when the data does not fit a typed property. Objects of classes
- * that are not allowed are unserialized as __PHP_Incomplete_Class.
+ * unserialize() throws TypeError and ValueError for invalid $options. When
+ * classes are allowed, it can also throw anything from autoloaders, __wakeup(),
+ * __unserialize() or Serializable::unserialize(), and TypeError when the data
+ * does not fit a typed property. Objects of classes that are not allowed are
+ * unserialized as __PHP_Incomplete_Class.
  */
 #[AutowiredService]
 final class UnserializeFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
@@ -33,45 +35,41 @@ final class UnserializeFunctionThrowTypeExtension implements DynamicFunctionThro
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
-			return new VoidType();
-		}
-
 		$args = $funcCall->getArgs();
 		foreach ($args as $arg) {
 			if ($arg->unpack || $arg->name !== null) {
-				return $functionReflection->getThrowType();
+				return new ObjectType(Throwable::class);
 			}
 		}
 
 		if (count($args) < 2) {
-			return new ObjectType(TypeError::class);
+			return new ObjectType(Throwable::class);
 		}
 
 		$optionsType = $scope->getNativeType($args[1]->value);
 		$constantArrays = $optionsType->getConstantArrays();
 		if (!$optionsType->isArray()->yes() || count($constantArrays) === 0) {
-			return $functionReflection->getThrowType();
+			return new ObjectType(Throwable::class);
 		}
 
-		$allowsNoClasses = true;
+		$areOptionsValid = true;
 		foreach ($constantArrays as $constantArray) {
-			if (!$this->areOptionsValid($constantArray)) {
-				return $functionReflection->getThrowType();
+			if (!$this->allowsNoClasses($constantArray)) {
+				return new ObjectType(Throwable::class);
 			}
 
-			if ($this->allowsNoClasses($constantArray)) {
+			if ($this->areOptionsValid($constantArray)) {
 				continue;
 			}
 
-			$allowsNoClasses = false;
+			$areOptionsValid = false;
 		}
 
-		if ($allowsNoClasses) {
+		if ($areOptionsValid || $scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
 			return new VoidType();
 		}
 
-		return new ObjectType(TypeError::class);
+		return $functionReflection->getThrowType();
 	}
 
 	private function areOptionsValid(ConstantArrayType $options): bool

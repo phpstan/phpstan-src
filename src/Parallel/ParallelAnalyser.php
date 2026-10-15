@@ -9,6 +9,7 @@ use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
+use PHPStan\Analyser\RuleScopedAnalysis;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Cache\ArenaCache;
 use PHPStan\Command\CommandHelper;
@@ -27,6 +28,7 @@ use React\Socket\ConnectionInterface;
 use React\Socket\TcpServer;
 use Symfony\Component\Console\Input\InputInterface;
 use Throwable;
+use function array_keys;
 use function array_map;
 use function array_pop;
 use function array_reverse;
@@ -61,9 +63,37 @@ final class ParallelAnalyser
 		private ForkParallelChecker $forkParallelChecker,
 		private PreForkDirectorySymbolScanner $preForkDirectorySymbolScanner,
 		private WorkerRunner $workerRunner,
+		private RuleScopedAnalysis $ruleScopedAnalysis,
 	)
 	{
 		$this->processTimeout = max($processTimeout, self::DEFAULT_TIMEOUT);
+	}
+
+	/**
+	 * @param array<string> $files
+	 * @return array{action: 'analyse', files: array<string>, ruleScope?: array{ruleClasses: list<string>, files: list<string>}}
+	 */
+	private function createAnalyseRequest(array $files): array
+	{
+		$request = ['action' => 'analyse', 'files' => $files];
+		$ruleScopedFiles = [];
+		foreach ($files as $file) {
+			if (!$this->ruleScopedAnalysis->isScoped($file)) {
+				continue;
+			}
+
+			$ruleScopedFiles[] = $file;
+		}
+
+		if ($ruleScopedFiles !== []) {
+			// the files that only the changed rules re-analyse - see RuleScopedAnalysis
+			$request['ruleScope'] = [
+				'ruleClasses' => array_keys($this->ruleScopedAnalysis->getRuleClasses()),
+				'files' => $ruleScopedFiles,
+			];
+		}
+
+		return $request;
 	}
 
 	/**
@@ -87,7 +117,11 @@ final class ParallelAnalyser
 		?Output $errorOutput,
 	): PromiseInterface
 	{
-		$jobs = array_reverse($schedule->getJobs());
+		// each job travels to a worker as the request that analyses it
+		$jobs = [];
+		foreach (array_reverse($schedule->getJobs()) as $job) {
+			$jobs[] = $this->createAnalyseRequest($job);
+		}
 
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
 
@@ -129,6 +163,8 @@ final class ParallelAnalyser
 		$exportedNodes = [];
 		/** @var list<string> $allProcessedFiles */
 		$allProcessedFiles = [];
+		/** @var array<string, list<string>> $nodeTypes */
+		$nodeTypes = [];
 
 		/** @var Deferred<AnalyserResult> $deferred */
 		$deferred = new Deferred();
@@ -136,7 +172,7 @@ final class ParallelAnalyser
 		$useFork = $this->forkParallelChecker->isSupported();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, &$nodeTypes, $arenaName): void {
 			if ($arenaName !== null) {
 				ArenaCache::destroy();
 			}
@@ -173,6 +209,7 @@ final class ParallelAnalyser
 				peakMemoryUsageBytes: $peakMemoryUsages === [] ? 0 : max($peakMemoryUsages),
 				processedFiles: $allProcessedFiles,
 				workerCount: count($peakMemoryUsages),
+				nodeTypes: $nodeTypes,
 			));
 		});
 		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs, $arenaName, $expectedWorkerCount, &$helloCount, $errorOutput, $useFork): void {
@@ -217,7 +254,7 @@ final class ParallelAnalyser
 				}
 
 				$job = array_pop($jobs);
-				$process->request(['action' => 'analyse', 'files' => $job]);
+				$process->request($job);
 			});
 		});
 		/** @var string $serverAddress */
@@ -287,7 +324,7 @@ final class ParallelAnalyser
 				$insteadOfFile,
 				$input,
 			);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles, &$nodeTypes): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
 					$fileErrors[] = Error::decode($jsonError);
@@ -391,6 +428,10 @@ final class ParallelAnalyser
 					$allProcessedFiles[] = $processedFile;
 				}
 
+				foreach ($json['nodeTypes'] ?? [] as $file => $fileNodeTypes) {
+					$nodeTypes[$file] = $fileNodeTypes;
+				}
+
 				if ($postFileCallback !== null) {
 					$postFileCallback(count($json['files']), $json['processedFiles']);
 				}
@@ -411,7 +452,7 @@ final class ParallelAnalyser
 				}
 
 				$job = array_pop($jobs);
-				$process->request(['action' => 'analyse', 'files' => $job]);
+				$process->request($job);
 			}, $handleError, function ($exitCode, string $output, ?int $termSignal) use (&$someChildEnded, &$internalErrors, &$internalErrorsCount, $processIdentifier): void {
 				// The main process is not sampled here any more: its own peak comes
 				// later (collecting the workers' results, saving the result cache) and

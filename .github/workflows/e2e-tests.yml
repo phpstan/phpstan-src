@@ -1495,6 +1495,64 @@ jobs:
               ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
               ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-rule-edit
+              composer install
+              # Composer loads the rules and the collector, which are the project's own code, and the project
+              # turns on resultCacheRuleScopedReanalysis. A run follows each edit below. The expected lines
+              # come from a cold run of the same files.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'A.php:8:R: foo v1' "$OUTPUT"
+              ../bashunit -a contains 'A.php:10:No error with identifier r.foo is reported on line 10.' "$OUTPUT"
+              ../bashunit -a contains 'C.php:1:Called v1: foo' "$OUTPUT"
+              # The rule changes its messages. The trait error and the error that R reports into
+              # Other.php follow the edit. A cold run reports the unmatched ignore on that line too.
+              patch -p0 < rule-message.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Changed rule: ' "$OUTPUT"
+              ../bashunit -a not_contains 'Result cache not used' "$OUTPUT"
+              ../bashunit -a contains 'A.php:8:R: foo v2' "$OUTPUT"
+              ../bashunit -a contains 'T.php (in context of class ResultCacheE2ERuleEdit\C):9:R: foo v2' "$OUTPUT"
+              ../bashunit -a contains 'Other.php:3:R: reported in Other.php v2' "$OUTPUT"
+              ../bashunit -a contains 'Other.php:3:No error with identifier r.elsewhere is reported on line 3.' "$OUTPUT"
+              ../bashunit -a not_contains 'v1 [identifier=r.' "$OUTPUT"
+              # The rule stops reporting foo(), so the ignore comment on A.php line 7 matches nothing.
+              patch -p0 < rule-stops-foo.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Changed rule: ' "$OUTPUT"
+              ../bashunit -a not_contains 'Result cache not used' "$OUTPUT"
+              ../bashunit -a contains 'A.php:7:No error with identifier r.foo is reported on line 7.' "$OUTPUT"
+              ../bashunit -a not_contains 'R: foo' "$OUTPUT"
+              # The rule reports foo() again, and strlen() under the same identifier. The ignore comment
+              # on A.php line 10 now matches, so its unmatched-ignore error goes away.
+              patch -p0 < rule-reports-strlen.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Changed rule: ' "$OUTPUT"
+              ../bashunit -a not_contains 'Result cache not used' "$OUTPUT"
+              ../bashunit -a contains 'A.php:8:R: foo v3' "$OUTPUT"
+              ../bashunit -a contains 'T.php (in context of class ResultCacheE2ERuleEdit\C):9:R: foo v3' "$OUTPUT"
+              ../bashunit -a contains 'Other.php:3:R: reported in Other.php v3' "$OUTPUT"
+              ../bashunit -a not_contains 'No error with identifier r.foo' "$OUTPUT"
+              # The CollectedDataNode rule changes. It runs on the collected data, not on files.
+              patch -p0 < collected-data-rule.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Re-running it on 0 files' "$OUTPUT"
+              ../bashunit -a not_contains 'Result cache not used' "$OUTPUT"
+              ../bashunit -a contains 'A.php:1:Called v2: foo' "$OUTPUT"
+              ../bashunit -a contains 'C.php:1:Called v2: foo' "$OUTPUT"
+              ../bashunit -a not_contains 'Called v1' "$OUTPUT"
+              # A changed collector can change the collected data of every file, so PHPStan analyses all files again.
+              patch -p0 < collector.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
+              ../bashunit -a contains 'A.php:1:Called v2: foo' "$OUTPUT"
+              ../bashunit -a not_contains 'C.php:1:Called' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-path-package-update
               composer install
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")

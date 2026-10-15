@@ -3,9 +3,11 @@
 namespace PHPStan\Analyser\ResultCache;
 
 use Nette\Neon\Neon;
+use PhpParser\Node;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
+use PHPStan\Analyser\LocalIgnoresProcessor;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
@@ -30,6 +32,8 @@ use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
+use PHPStan\Rules\MultipleNodeTypesRule;
+use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use ReflectionException;
@@ -45,6 +49,7 @@ use function array_merge;
 use function array_unique;
 use function array_values;
 use function class_exists;
+use function class_implements;
 use function count;
 use function error_get_last;
 use function explode;
@@ -56,11 +61,13 @@ use function fseek;
 use function fstat;
 use function ftell;
 use function fwrite;
+use function get_class;
 use function get_loaded_extensions;
 use function getmypid;
 use function hash_file;
 use function implode;
 use function in_array;
+use function is_a;
 use function is_array;
 use function is_dir;
 use function is_file;
@@ -189,6 +196,7 @@ final class ResultCacheManager
 	 * @param list<string|non-empty-list<string>> $parametersNotInvalidatingCache
 	 * @param array<string, string> $fileReplacements
 	 * @param ExtensionsCollection<ResultCacheMetaExtension> $resultCacheMetaExtensions
+	 * @param ExtensionsCollection<Rule<Node>> $rules
 	 */
 	public function __construct(
 		#[AutowiredExtensions(of: ResultCacheMetaExtension::class)]
@@ -223,6 +231,8 @@ final class ResultCacheManager
 		private array $fileReplacements,
 		#[AutowiredParameter(ref: '%resultCacheChecksProjectExtensionFilesDependencies%')]
 		private bool $checkDependenciesOfProjectExtensionFiles,
+		#[AutowiredParameter(ref: '%resultCacheRuleScopedReanalysis%')]
+		private bool $ruleScopedReanalysis,
 		#[AutowiredParameter]
 		private array $parametersNotInvalidatingCache,
 		#[AutowiredParameter(ref: '%resultCacheSkipIfOlderThanDays%')]
@@ -233,6 +243,9 @@ final class ResultCacheManager
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
 		private FileStatSignatures $fileStatSignatures,
 		private ValueDependencyCollector $valueDependencyCollector,
+		#[AutowiredExtensions(of: Rule::class)]
+		private ExtensionsCollection $rules,
+		private LocalIgnoresProcessor $localIgnoresProcessor,
 	)
 	{
 	}
@@ -400,6 +413,23 @@ final class ResultCacheManager
 		$currentFileHashes = $this->hashAnalysedFiles($analysedFileStats, $data['dependencies']);
 		$fileStatSignaturesChanged = $this->fileStatSignaturesDiffer($data['dependencies']);
 		$data['packageDependencies'] = $transformer->absolutizeFileKeyed($data['packageDependencies'] ?? []);
+		$ruleScopeData = null;
+		if ($this->ruleScopedReanalysis && array_key_exists('ruleScope', $data)) {
+			try {
+				$ruleScopeData = RuleScopeCodec::decode($data['ruleScope']);
+				$ruleScopeData['nodeTypes'] = $transformer->absolutizeFileKeyed($ruleScopeData['nodeTypes']);
+			} catch (Throwable $e) {
+				@unlink($cacheFilePath);
+
+				return $this->fullAnalysis(
+					sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()),
+					$allAnalysedFiles,
+					$this->getMeta($allAnalysedFiles, $projectConfigArray),
+					$currentFileHashes,
+					$output,
+				);
+			}
+		}
 		try {
 			$cachedValueDependencies = $this->decodeValueDependencies($data['valueDependencies'] ?? ['paths' => [], 'entries' => []], $transformer);
 		} catch (Throwable $e) {
@@ -627,6 +657,7 @@ final class ResultCacheManager
 			);
 		}
 
+		$changedRuleClasses = [];
 		/**
 		 * An extension file is code that runs during the analysis, so a change in one can change any
 		 * result. That holds whether or not the file is part of the analysed paths - a file outside them
@@ -635,7 +666,7 @@ final class ResultCacheManager
 		 *
 		 * @var string $fileHash
 		 */
-		foreach ($data['projectExtensionFiles'] as $extensionFile => [$fileHash]) {
+		foreach ($data['projectExtensionFiles'] as $extensionFile => [$fileHash, , $extensionClassName]) {
 			if (!is_file($extensionFile)) {
 				return $this->fullAnalysis(
 					sprintf('Result cache not used because extension file %s was not found.', $extensionFile),
@@ -647,6 +678,13 @@ final class ResultCacheManager
 			}
 
 			if ($this->getFileHash($extensionFile) === $fileHash) {
+				continue;
+			}
+
+			// a rule runs only on the nodes of its type, so a changed rule needs only the files that
+			// have them, and only itself
+			if ($ruleScopeData !== null && $this->isPlainRule($extensionClassName)) {
+				$changedRuleClasses[$extensionClassName] = true;
 				continue;
 			}
 
@@ -1036,6 +1074,34 @@ final class ResultCacheManager
 		}
 
 		$filesToAnalyse = array_unique($filesToAnalyse);
+		$ruleScopedFiles = [];
+		if ($changedRuleClasses !== [] && $ruleScopeData !== null) {
+			$ruleScopedFiles = $this->findRuleScopedFiles(array_keys($changedRuleClasses), $ruleScopeData, $allAnalysedFiles, $filesToAnalyse);
+			if ($ruleScopedFiles === null) {
+				return $this->fullAnalysis(
+					'Result cache not used because a changed rule is not registered any more.',
+					$allAnalysedFiles,
+					$meta,
+					$currentFileHashes,
+					$output,
+				);
+			}
+
+			if ($output->isVeryVerbose()) {
+				$output->writeLineFormatted(sprintf(
+					'Changed %s: %s. Re-running %s on %d %s.',
+					count($changedRuleClasses) === 1 ? 'rule' : 'rules',
+					implode(', ', array_keys($changedRuleClasses)),
+					count($changedRuleClasses) === 1 ? 'it' : 'them',
+					count($ruleScopedFiles),
+					count($ruleScopedFiles) === 1 ? 'file' : 'files',
+				));
+			}
+
+			foreach ($ruleScopedFiles as $ruleScopedFile) {
+				$filesToAnalyse[] = $ruleScopedFile;
+			}
+		}
 		$filesToAnalyseCount = count($filesToAnalyse);
 
 		if ($output->isVeryVerbose()) {
@@ -1057,7 +1123,11 @@ final class ResultCacheManager
 
 		// The merge in process() replaces the entries of re-analysed files without reading them, so
 		// they need not stay in memory alongside the fresh results while the analysis runs.
+		$ruleScopedFilesLookup = array_fill_keys($ruleScopedFiles, true);
 		foreach ($filesToAnalyse as $fileToAnalyse) {
+			if (isset($ruleScopedFilesLookup[$fileToAnalyse])) {
+				continue;
+			}
 			unset(
 				$filteredErrors[$fileToAnalyse],
 				$filteredLocallyIgnoredErrors[$fileToAnalyse],
@@ -1087,6 +1157,9 @@ final class ResultCacheManager
 			cachedExportedNodes: $cachedExportedNodes->only($keptCachedExportedNodes),
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
+			ruleScopedFiles: $ruleScopedFiles,
+			changedRuleClasses: array_keys($changedRuleClasses),
+			nodeTypes: $ruleScopeData['nodeTypes'] ?? [],
 		);
 	}
 
@@ -1233,7 +1306,7 @@ final class ResultCacheManager
 			$projectConfigArray = $this->getPathTransformer()->relativizeProjectConfig($projectConfigArray);
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
-		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $valueDependencies, ?array $packageDependencies, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $valueDependencies, ?array $packageDependencies, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles, array $nodeTypes) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -1332,6 +1405,7 @@ final class ResultCacheManager
 				&& $exportedNodes === $resultCache->getExportedNodes()
 				&& $cachedExportedNodes->getFiles() === $resultCache->getCachedExportedNodes()->getFiles()
 				&& $projectExtensionFiles === $resultCache->getProjectExtensionFiles()
+				&& $nodeTypes === $resultCache->getNodeTypes()
 				&& $stubFiles === $this->restoredStubFiles
 				&& is_file($this->cacheFilePath)
 			) {
@@ -1346,7 +1420,7 @@ final class ResultCacheManager
 				$currentFileHashes[$file] = self::REANALYSE_FILE_HASH_PREFIX . $currentFileHashes[$file];
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $currentFileHashes, $meta, $stubFiles);
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $currentFileHashes, $meta, $stubFiles, $nodeTypes);
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -1362,7 +1436,7 @@ final class ResultCacheManager
 				if ($analyserResult->getDependencies() !== null) {
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
-				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getValueDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles);
+				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getValueDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles, $analyserResult->getNodeTypes());
 			} else {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -1372,6 +1446,9 @@ final class ResultCacheManager
 			return new ResultCacheProcessResult($analyserResult, $saved);
 		}
 
+		// the rule-scoped files keep everything cached but the errors of the changed rules
+		$ruleScopedResultCache = $resultCache;
+		$resultCache = $resultCache->withoutRuleScopedFiles();
 		$errorsByFile = $this->mergeErrors($resultCache, $freshErrorsByFile);
 		$locallyIgnoredErrorsByFile = $this->mergeLocallyIgnoredErrors($resultCache, $freshLocallyIgnoredErrorsByFile);
 		$collectedDataByFile = $this->mergeCollectedData($resultCache, $freshCollectedDataByFile);
@@ -1384,6 +1461,18 @@ final class ResultCacheManager
 		$exportedNodes = $this->addNonAnalysedExportedNodes($this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes()), $dependencies, $usedTraitDependencies, $cachedExportedNodes);
 		$linesToIgnore = $this->mergeLinesToIgnore($resultCache, $analyserResult->getLinesToIgnore());
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());
+		if ($ruleScopedResultCache->getChangedRuleClasses() !== []) {
+			[$errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores] = $this->mergeRuleScopedErrors(
+				$ruleScopedResultCache,
+				$resultCache->getFilesToAnalyse(),
+				$errorsByFile,
+				$locallyIgnoredErrorsByFile,
+				$linesToIgnore,
+				$unmatchedLineIgnores,
+				$analyserResult,
+			);
+		}
+		$nodeTypes = $this->mergeNodeTypes($resultCache, $analyserResult->getNodeTypes());
 
 		$saved = false;
 		if ($save !== false) {
@@ -1407,7 +1496,11 @@ final class ResultCacheManager
 					$projectExtensionFiles[$file] = [$hash, true, $className];
 				}
 			}
-			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles);
+			if ($ruleScopedResultCache->getChangedRuleClasses() !== [] && $dependencies !== null) {
+				// the changed rules' new hashes, whether or not their files are analysed
+				$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $dependencies);
+			}
+			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $nodeTypes);
 		}
 
 		$flatErrors = [];
@@ -1866,6 +1959,7 @@ final class ResultCacheManager
 	 * @param array<string, string> $currentFileHashes
 	 * @param mixed[] $meta
 	 * @param array<string, string> $stubFiles
+	 * @param array<string, list<string>> $nodeTypes
 	 */
 	private function save(
 		int $lastFullAnalysisTime,
@@ -1884,6 +1978,7 @@ final class ResultCacheManager
 		array $currentFileHashes,
 		array $meta,
 		array $stubFiles,
+		array $nodeTypes,
 	): void
 	{
 		$invertedDependencies = [];
@@ -1967,6 +2062,23 @@ final class ResultCacheManager
 		$encodedValueDependencies = $this->encodeValueDependencies($valueDependencies, $transformer);
 		unset($invertedDependencies);
 		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
+		$ruleScope = null;
+		if ($this->ruleScopedReanalysis) {
+			// only a rule of the project itself can change without a full analysis, so only those rules
+			// need their node types remembered
+			$projectRuleNodeTypes = [];
+			$allRuleNodeTypes = $this->getRuleNodeTypes();
+			foreach ($projectExtensionFiles as [, , $extensionClassName]) {
+				if (!array_key_exists($extensionClassName, $allRuleNodeTypes)) {
+					continue;
+				}
+
+				$projectRuleNodeTypes[$extensionClassName] = $allRuleNodeTypes[$extensionClassName];
+			}
+			ksort($projectRuleNodeTypes);
+			ksort($nodeTypes);
+			$ruleScope = RuleScopeCodec::encode($transformer->relativizeFileKeyed($nodeTypes), $projectRuleNodeTypes);
+		}
 		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
 
 		$file = $this->cacheFilePath;
@@ -2010,6 +2122,9 @@ final class ResultCacheManager
 			$this->writeValueFrame($handle, $file, 'dependencyGraph', $dependencyGraph);
 			$this->writeValueFrame($handle, $file, 'valueDependencies', $encodedValueDependencies);
 			$this->writeArrayFrame($handle, $file, 'packageDependencies', $packageDependencies);
+			if ($ruleScope !== null) {
+				$this->writeValueFrame($handle, $file, 'ruleScope', $ruleScope);
+			}
 			$this->writeExportedNodes($handle, $file, $exportedNodes, $cachedExportedNodes, $transformer);
 			fclose($handle);
 			$closed = true;
@@ -2729,6 +2844,273 @@ final class ResultCacheManager
 		}
 
 		return $exportedNodes;
+	}
+
+	/**
+	 * Whether a changed extension class is only a rule, so that re-running it is enough. Anything
+	 * else that PHPStan calls during the analysis - a collector, a type extension - can change any
+	 * result.
+	 */
+	private function isPlainRule(string $className): bool
+	{
+		if (!class_exists($className) || !is_a($className, Rule::class, true)) {
+			return false;
+		}
+
+		foreach (class_implements($className) as $interface) {
+			if (!str_starts_with($interface, 'PHPStan\\')) {
+				continue;
+			}
+
+			if (in_array($interface, [Rule::class, MultipleNodeTypesRule::class], true)) {
+				continue;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @return array<string, list<string>> rule class => the node types it runs on
+	 */
+	private function getRuleNodeTypes(): array
+	{
+		$ruleNodeTypes = [];
+		foreach ($this->rules->getAll() as $rule) {
+			foreach ($rule instanceof MultipleNodeTypesRule ? $rule->getNodeTypes() : [$rule->getNodeType()] as $nodeType) {
+				$ruleNodeTypes[get_class($rule)][] = $nodeType;
+			}
+		}
+
+		ksort($ruleNodeTypes);
+
+		return $ruleNodeTypes;
+	}
+
+	/**
+	 * The analysed files, apart from the ones re-analysed anyway, that passed a node of a changed
+	 * rule's type to the rules - with the node types of the rule now and when the cache was saved.
+	 * Null when a changed rule is not registered any more.
+	 *
+	 * @param list<string> $changedRuleClasses
+	 * @param array{nodeTypes: array<string, list<string>>, ruleNodeTypes: array<string, list<string>>} $ruleScopeData
+	 * @param array<string> $allAnalysedFiles
+	 * @param array<string> $filesToAnalyse
+	 * @return list<string>|null
+	 */
+	private function findRuleScopedFiles(array $changedRuleClasses, array $ruleScopeData, array $allAnalysedFiles, array $filesToAnalyse): ?array
+	{
+		$currentRuleNodeTypes = $this->getRuleNodeTypes();
+		$ruleNodeTypes = [];
+		foreach ($changedRuleClasses as $changedRuleClass) {
+			if (!array_key_exists($changedRuleClass, $currentRuleNodeTypes)) {
+				return null;
+			}
+
+			foreach ($currentRuleNodeTypes[$changedRuleClass] as $nodeType) {
+				$ruleNodeTypes[$nodeType] = true;
+			}
+			foreach ($ruleScopeData['ruleNodeTypes'][$changedRuleClass] ?? [] as $nodeType) {
+				$ruleNodeTypes[$nodeType] = true;
+			}
+		}
+
+		$alreadyAnalysed = array_fill_keys($filesToAnalyse, true);
+		$matchesByNodeType = [];
+		$ruleScopedFiles = [];
+		foreach ($allAnalysedFiles as $analysedFile) {
+			if (isset($alreadyAnalysed[$analysedFile])) {
+				continue;
+			}
+
+			if (!array_key_exists($analysedFile, $ruleScopeData['nodeTypes'])) {
+				// nothing recorded about the file, so it might need the rule
+				$ruleScopedFiles[] = $analysedFile;
+				continue;
+			}
+
+			foreach ($ruleScopeData['nodeTypes'][$analysedFile] as $fileNodeType) {
+				if (!array_key_exists($fileNodeType, $matchesByNodeType)) {
+					$matchesByNodeType[$fileNodeType] = false;
+					foreach (array_keys($ruleNodeTypes) as $ruleNodeType) {
+						if (is_a($fileNodeType, $ruleNodeType, true)) {
+							$matchesByNodeType[$fileNodeType] = true;
+							break;
+						}
+					}
+				}
+
+				if (!$matchesByNodeType[$fileNodeType]) {
+					continue;
+				}
+
+				$ruleScopedFiles[] = $analysedFile;
+				break;
+			}
+		}
+
+		return $ruleScopedFiles;
+	}
+
+	/**
+	 * Replaces the cached errors of the changed rules with the fresh ones, and matches the local
+	 * ignores of each rule-scoped file again against its cached and fresh errors - in those files
+	 * only the changed rules ran, so the analysis could not match them itself.
+	 *
+	 * @param array<string> $fullyReanalysedFiles
+	 * @param array<string, list<Error>> $errorsByFile
+	 * @param array<string, list<Error>> $locallyIgnoredErrorsByFile
+	 * @param array<string, LinesToIgnore> $linesToIgnore
+	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
+	 * @return array{array<string, list<Error>>, array<string, list<Error>>, array<string, LinesToIgnore>, array<string, LinesToIgnore>}
+	 */
+	private function mergeRuleScopedErrors(
+		ResultCache $resultCache,
+		array $fullyReanalysedFiles,
+		array $errorsByFile,
+		array $locallyIgnoredErrorsByFile,
+		array $linesToIgnore,
+		array $unmatchedLineIgnores,
+		AnalyserResult $analyserResult,
+	): array
+	{
+		$changedRuleClasses = array_fill_keys($resultCache->getChangedRuleClasses(), true);
+		$fullyReanalysed = array_fill_keys($fullyReanalysedFiles, true);
+		$ruleScoped = array_fill_keys($resultCache->getRuleScopedFiles(), true);
+
+		// a rule can report an error in another file, so the old errors go from every file
+		$withoutChangedRules = static function (array $errorsByFile) use ($changedRuleClasses, $fullyReanalysed): array {
+			foreach ($errorsByFile as $file => $errors) {
+				if (isset($fullyReanalysed[$file])) {
+					continue;
+				}
+
+				$kept = [];
+				foreach ($errors as $error) {
+					if ($error->getRuleClass() !== null && isset($changedRuleClasses[$error->getRuleClass()])) {
+						continue;
+					}
+
+					$kept[] = $error;
+				}
+
+				if ($kept === []) {
+					unset($errorsByFile[$file]);
+					continue;
+				}
+
+				$errorsByFile[$file] = $kept;
+			}
+
+			return $errorsByFile;
+		};
+		$errorsByFile = $withoutChangedRules($errorsByFile);
+		$locallyIgnoredErrorsByFile = $withoutChangedRules($locallyIgnoredErrorsByFile);
+
+		// the rule-scoped files reported only the changed rules' errors, the rest of what they
+		// reported is cached
+		$freshErrorsByFile = [];
+		foreach ($analyserResult->getErrors() as $error) {
+			if ($error->getRuleClass() === null || !isset($changedRuleClasses[$error->getRuleClass()])) {
+				continue;
+			}
+
+			$file = $error->getFilePath();
+			if (isset($fullyReanalysed[$file])) {
+				continue;
+			}
+
+			$freshErrorsByFile[$file][] = $error;
+		}
+
+		$freshLinesToIgnore = $analyserResult->getLinesToIgnore();
+		$freshUnmatchedLineIgnores = $analyserResult->getUnmatchedLineIgnores();
+		foreach (array_keys($ruleScoped) as $file) {
+			// the errors another file's analysis reported here were never matched against this
+			// file's ignores, so they stay as they are
+			$errors = [];
+			$foreignErrors = [];
+			foreach ([$errorsByFile[$file] ?? [], $locallyIgnoredErrorsByFile[$file] ?? [], $freshErrorsByFile[$file] ?? []] as $someErrors) {
+				foreach ($someErrors as $error) {
+					if ($error->getOriginFile() !== null) {
+						$foreignErrors[] = $error;
+						continue;
+					}
+
+					$errors[] = $error;
+				}
+			}
+			unset($freshErrorsByFile[$file]);
+
+			$result = $this->localIgnoresProcessor->process($errors, $freshLinesToIgnore[$file] ?? [], $freshUnmatchedLineIgnores[$file] ?? []);
+
+			$fileErrors = $result->getFileErrors();
+			foreach ($foreignErrors as $foreignError) {
+				$fileErrors[] = $foreignError;
+			}
+			if ($fileErrors === []) {
+				unset($errorsByFile[$file]);
+			} else {
+				$errorsByFile[$file] = $fileErrors;
+			}
+
+			$fileLocallyIgnoredErrors = $result->getLocallyIgnoredErrors();
+			if ($fileLocallyIgnoredErrors === []) {
+				unset($locallyIgnoredErrorsByFile[$file]);
+			} else {
+				$locallyIgnoredErrorsByFile[$file] = $fileLocallyIgnoredErrors;
+			}
+
+			$linesToIgnore[$file] = array_filter($result->getLinesToIgnore(), static fn (array $lines): bool => $lines !== []);
+			if ($linesToIgnore[$file] === []) {
+				unset($linesToIgnore[$file]);
+			}
+			$unmatchedLineIgnores[$file] = array_filter($result->getUnmatchedLineIgnores(), static fn (array $lines): bool => $lines !== []);
+			if ($unmatchedLineIgnores[$file] !== []) {
+				continue;
+			}
+
+			unset($unmatchedLineIgnores[$file]);
+		}
+
+		// errors the changed rules reported in files that were not re-analysed
+		foreach ($freshErrorsByFile as $file => $errors) {
+			foreach ($errors as $error) {
+				$errorsByFile[$file][] = $error;
+			}
+		}
+
+		return [$errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores];
+	}
+
+	/**
+	 * @param array<string, list<string>> $freshNodeTypes
+	 * @return array<string, list<string>>
+	 */
+	private function mergeNodeTypes(ResultCache $resultCache, array $freshNodeTypes): array
+	{
+		$nodeTypes = [];
+		$currentFileHashes = $resultCache->getCurrentFileHashes();
+		foreach ($resultCache->getNodeTypes() as $file => $fileNodeTypes) {
+			if (!array_key_exists($file, $currentFileHashes)) {
+				continue;
+			}
+
+			$nodeTypes[$file] = $fileNodeTypes;
+		}
+
+		foreach ($resultCache->getFilesToAnalyse() as $file) {
+			if (!array_key_exists($file, $freshNodeTypes)) {
+				unset($nodeTypes[$file]);
+				continue;
+			}
+
+			$nodeTypes[$file] = $freshNodeTypes[$file];
+		}
+
+		return $nodeTypes;
 	}
 
 	/**

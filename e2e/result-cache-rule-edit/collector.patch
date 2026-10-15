@@ -1,0 +1,13 @@
+--- rules/CalledCollector.php
++++ rules/CalledCollector.php
+@@ -21,6 +21,10 @@
+ 
+ 	public function processNode(Node $node, Scope $scope)
+ 	{
++		if ($scope->isInTrait()) {
++			return null;
++		}
++
+ 		return $node->name instanceof Name ? $node->name->toString() : null;
+ 	}
+ 

@@ -69,6 +69,7 @@ final class FileAnalyser
 		private bool $reportIgnoresWithoutComments,
 		private ValueDependencyCollector $valueDependencyCollector,
 		private DependencyResolver $dependencyResolver,
+		private ?RuleScopedAnalysis $ruleScopedAnalysis = null,
 	)
 	{
 	}
@@ -103,6 +104,13 @@ final class FileAnalyser
 		$exportedNodes = [];
 		$linesToIgnore = [];
 		$unmatchedLineIgnores = [];
+		$nodeTypes = [];
+		// re-analysed only for a changed rule: the result cache keeps everything else of the file
+		$ruleScoped = $this->ruleScopedAnalysis !== null && $this->ruleScopedAnalysis->isScoped($file);
+		if ($ruleScoped) {
+			$ruleRegistry = new RuleScopedRegistry($ruleRegistry, $this->ruleScopedAnalysis->getRuleClasses());
+			$collectorRegistry = new CollectorRegistry([]);
+		}
 		$this->valueDependencyCollector->startFile($file);
 		if (is_file($file)) {
 			try {
@@ -145,6 +153,7 @@ final class FileAnalyser
 				$unmatchedLineIgnores = $nodeCallback->getUnmatchedLineIgnores();
 				$temporaryFileErrors = $nodeCallback->getTemporaryFileErrors();
 				$processedFiles = $nodeCallback->getProcessedFiles();
+				$nodeTypes = $nodeCallback->getNodeTypes();
 
 				if ($this->reportIgnoresWithoutComments) {
 					foreach ($linesToIgnore as $ignoredFile => $lines) {
@@ -183,6 +192,14 @@ final class FileAnalyser
 							}
 						}
 					}
+				}
+
+				if ($ruleScoped) {
+					// the result cache matches the local ignores against these and the cached errors
+					foreach ($temporaryFileErrors as $temporaryFileError) {
+						$fileErrors[] = $temporaryFileError;
+					}
+					$temporaryFileErrors = [];
 				}
 
 				$localIgnoresProcessorResult = $this->localIgnoresProcessor->process(
@@ -264,6 +281,7 @@ final class FileAnalyser
 			$linesToIgnore,
 			$unmatchedLineIgnores,
 			$processedFiles,
+			$nodeTypes,
 		);
 	}
 

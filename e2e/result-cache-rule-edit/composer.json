@@ -1,0 +1,8 @@
+{
+	"name": "phpstan/result-cache-rule-edit-e2e",
+	"autoload": {
+		"psr-4": {
+			"ResultCacheE2ERuleEdit\\": "rules/"
+		}
+	}
+}

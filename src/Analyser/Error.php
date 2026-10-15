@@ -43,6 +43,8 @@ final class Error implements JsonSerializable
 		private array $metadata = [],
 		private ?FixedErrorDiff $fixedErrorDiff = null,
 		private array $traitContexts = [],
+		private ?string $ruleClass = null,
+		private ?string $originFile = null,
 	)
 	{
 		if ($this->identifier !== null && !self::validateIdentifier($this->identifier)) {
@@ -88,6 +90,8 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile,
 		);
 	}
 
@@ -107,6 +111,8 @@ final class Error implements JsonSerializable
 			$this->metadata,
 			$this->fixedErrorDiff,
 			$this->traitContexts,
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile,
 		);
 	}
 
@@ -130,6 +136,8 @@ final class Error implements JsonSerializable
 			$this->metadata,
 			$this->fixedErrorDiff,
 			$this->traitContexts,
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile,
 		);
 	}
 
@@ -171,6 +179,8 @@ final class Error implements JsonSerializable
 			$this->metadata,
 			$this->fixedErrorDiff,
 			$traitContexts,
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile,
 		);
 	}
 
@@ -197,6 +207,8 @@ final class Error implements JsonSerializable
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile,
 		);
 	}
 
@@ -224,6 +236,8 @@ final class Error implements JsonSerializable
 			$this->metadata,
 			$this->fixedErrorDiff,
 			$this->transformTraitContexts($transformPath),
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile === null ? null : $transformPath($this->originFile),
 		);
 	}
 
@@ -267,6 +281,8 @@ final class Error implements JsonSerializable
 			$this->metadata,
 			$this->fixedErrorDiff,
 			$this->traitContexts,
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile,
 		);
 	}
 
@@ -290,6 +306,8 @@ final class Error implements JsonSerializable
 			$this->metadata,
 			$this->fixedErrorDiff,
 			$this->traitContexts,
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile,
 		);
 	}
 
@@ -313,6 +331,8 @@ final class Error implements JsonSerializable
 			$this->metadata,
 			$this->fixedErrorDiff,
 			$this->traitContexts,
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile,
 		);
 	}
 
@@ -339,6 +359,8 @@ final class Error implements JsonSerializable
 			$metadata,
 			$this->fixedErrorDiff,
 			$this->traitContexts,
+			ruleClass: $this->ruleClass,
+			originFile: $this->originFile,
 		);
 	}
 
@@ -353,6 +375,66 @@ final class Error implements JsonSerializable
 	public function getNodeType(): ?string
 	{
 		return $this->nodeType;
+	}
+
+	/**
+	 * The class of the rule that reported this error, when a rule did. The result cache uses it to
+	 * re-run a single changed rule.
+	 */
+	public function getRuleClass(): ?string
+	{
+		return $this->ruleClass;
+	}
+
+	/**
+	 * The analysed file whose analysis reported this error, when that is another file than the
+	 * one the error is in. Only the ignores of that file can match the error.
+	 */
+	public function getOriginFile(): ?string
+	{
+		return $this->originFile;
+	}
+
+	public function withOriginFile(string $originFile): self
+	{
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$this->traitFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$this->fixedErrorDiff,
+			$this->traitContexts,
+			$this->ruleClass,
+			$originFile,
+		);
+	}
+
+	public function withRuleClass(string $ruleClass): self
+	{
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$this->traitFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$this->fixedErrorDiff,
+			$this->traitContexts,
+			$ruleClass,
+			$this->originFile,
+		);
 	}
 
 	/**
@@ -410,6 +492,8 @@ final class Error implements JsonSerializable
 			'fixedErrorDiffHash' => $fixedErrorDiffHash,
 			'fixedErrorDiffDiff' => $fixedErrorDiffDiff,
 			'traitContexts' => $this->traitContexts,
+			'ruleClass' => $this->ruleClass,
+			'originFile' => $this->originFile,
 		];
 	}
 
@@ -437,6 +521,8 @@ final class Error implements JsonSerializable
 			$json['metadata'] ?? [],
 			$fixedErrorDiff,
 			$json['traitContexts'] ?? [],
+			$json['ruleClass'] ?? null,
+			$json['originFile'] ?? null,
 		);
 	}
 
@@ -459,6 +545,8 @@ final class Error implements JsonSerializable
 			$properties['metadata'] ?? [],
 			$properties['fixedErrorDiff'] ?? null,
 			$properties['traitContexts'] ?? [],
+			$properties['ruleClass'] ?? null,
+			$properties['originFile'] ?? null,
 		);
 	}
 

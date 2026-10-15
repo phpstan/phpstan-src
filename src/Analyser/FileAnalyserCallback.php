@@ -60,6 +60,14 @@ final class FileAnalyserCallback
 	private array $collectorsByNodeType = [];
 
 	/**
+	 * The classes of the nodes this file passed to the rules, so that the result cache can tell
+	 * which files a changed rule needs.
+	 *
+	 * @var array<class-string<Node>, true>
+	 */
+	private array $nodeTypes = [];
+
+	/**
 	 * Whether a node of the class can be exported or change the PHPDoc name scope - most cannot, and
 	 * the walk does not ask DependencyResolver about them at all.
 	 *
@@ -98,6 +106,7 @@ final class FileAnalyserCallback
 			$this->fileCollectedData[$scope->getFile()][$node->getCollectorType()][] = $node->getData();
 			return;
 		}
+		$this->nodeTypes[$nodeType] = true;
 
 		$parserNodes = $this->parserNodes;
 
@@ -154,7 +163,8 @@ final class FileAnalyserCallback
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
 						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
-					]);
+					])
+					->withRuleClass(get_class($rule));
 				continue;
 			} catch (IdentifierNotFound $e) {
 				$this->fileErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $this->file, $node->getStartLine(), $e, tip: 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))
@@ -162,7 +172,8 @@ final class FileAnalyserCallback
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
 						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
-					]);
+					])
+					->withRuleClass(get_class($rule));
 				continue;
 			} catch (UnableToCompileNode | CircularReference $e) {
 				$this->fileErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $this->file, $node->getStartLine(), $e))
@@ -170,7 +181,8 @@ final class FileAnalyserCallback
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
 						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
-					]);
+					])
+					->withRuleClass(get_class($rule));
 				continue;
 			}
 
@@ -192,6 +204,13 @@ final class FileAnalyserCallback
 					}
 				}
 
+				if ($error->getRuleClass() === null) {
+					$error = $error->withRuleClass(get_class($rule));
+				}
+				if ($error->getFilePath() !== $this->file && $error->getOriginFile() === null) {
+					// reported in another file: only this file's ignores could match it
+					$error = $error->withOriginFile($this->file);
+				}
 				$this->temporaryFileErrors[] = $error;
 			}
 		}
@@ -320,6 +339,14 @@ final class FileAnalyserCallback
 	public function getTemporaryFileErrors(): array
 	{
 		return $this->temporaryFileErrors;
+	}
+
+	/**
+	 * @return list<class-string<Node>>
+	 */
+	public function getNodeTypes(): array
+	{
+		return array_keys($this->nodeTypes);
 	}
 
 	/**

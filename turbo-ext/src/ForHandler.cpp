@@ -271,9 +271,20 @@ public:
 					zv::Val backEdgeScope = pt_internal_statement_result_loop_back_edge_scope(bodyScopeResult.raw());
 					if (UNEXPECTED(backEdgeScope.isUndef())) return;
 					if (backEdgeScope.isNull()) {
-						bodyScope = std::move(prevScope);
-						brokeOut = true;
-						return;
+						bool bodyIsReplayable;
+						if (UNEXPECTED(!pt_node_scope_resolver_is_replayable_convergence_body(nodeScopeResolver, stmt, stmtsHold.raw(), bodyIsReplayable))) return;
+						if (bodyIsReplayable) {
+							bodyScope = std::move(prevScope);
+							brokeOut = true;
+							return;
+						}
+						// a nested loop is walked only once in deep context, so the
+						// back edge it would reach on a later iteration can look dead -
+						// continue from the end of the body instead of stopping here
+						zv::Val hold;
+						zval *resultScope = pt_internal_statement_result_scope(bodyScopeResult.raw(), hold);
+						if (UNEXPECTED(resultScope == NULL)) return;
+						backEdgeScope = zv::Val::copyOf(zv::Ref(resultScope));
 					}
 					bodyScope = std::move(backEdgeScope);
 

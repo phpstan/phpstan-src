@@ -221,8 +221,14 @@ final class ForHandler implements StmtHandler
 					$passFlows[] = $bodyScopeResult->getVariableFlow();
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 					if ($backEdgeScope === null) {
-						$bodyScope = $prevScope;
-						break;
+						if ($nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts)) {
+							$bodyScope = $prevScope;
+							break;
+						}
+						// a nested loop is walked only once in deep context, so the
+						// back edge it would reach on a later iteration can look dead -
+						// continue from the end of the body instead of stopping here
+						$backEdgeScope = $bodyScopeResult->getScope();
 					}
 					$bodyScope = $backEdgeScope;
 

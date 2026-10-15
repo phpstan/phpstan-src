@@ -2447,7 +2447,22 @@ private:
 		// on loop-convergence passes); synthetic terms narrowing extensions built
 		// (@phpstan-assert property fetches etc.) answer from scope state or a walk
 		AH_VAL(storedResult, pt_expression_result_storage_find(storage, expr));
-		if (!storedResult.isNull()) return ahTypeOnScope(storedResult.raw(), scope);
+		if (!storedResult.isNull()) {
+			// a subexpression walked on a narrower branch (the right side of
+			// `$a['k'] === null || is_int($a['k'])` sees `$a['k']` without null)
+			// does not answer on this scope - re-price it here
+			bool promoted;
+			AH_OK(ahPromoted(scope, promoted));
+			bool answers;
+			AH_OK(pt_expression_result_answers_on_scope(storedResult.raw(), scope, promoted, answers));
+			if (!answers) {
+				AH_VAL(onDemandStorage, pt_expression_result_storage_new());
+				AH_VAL(onDemandResult, pt_node_scope_resolver_process_expr_on_demand(nsr, expr, scope, onDemandStorage.raw()));
+				return ahTypeOnScope(onDemandResult.raw(), scope);
+			}
+
+			return ahTypeOnScope(storedResult.raw(), scope);
+		}
 
 		return nsrReadScopeStateOrSyntheticType(nsr, expr, scope);
 	}

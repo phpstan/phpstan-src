@@ -8,9 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\VirtualNode;
-use PHPStan\PhpDocParser\Lexer\Lexer;
-use PHPStan\PhpDocParser\Parser\PhpDocParser;
-use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function in_array;
@@ -70,10 +68,7 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 		'@phpstan-all-methods-impure',
 	];
 
-	public function __construct(
-		private Lexer $phpDocLexer,
-		private PhpDocParser $phpDocParser,
-	)
+	public function __construct(private PhpDocStringResolver $phpDocStringResolver)
 	{
 	}
 
@@ -111,8 +106,7 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 			return [];
 		}
 		$phpDocString = $docComment->getText();
-		$tokens = new TokenIterator($this->phpDocLexer->tokenize($phpDocString));
-		$phpDocNode = $this->phpDocParser->parse($tokens);
+		$phpDocNode = $this->phpDocStringResolver->resolve($phpDocString);
 
 		$errors = [];
 		foreach ($phpDocNode->getTags() as $phpDocTag) {

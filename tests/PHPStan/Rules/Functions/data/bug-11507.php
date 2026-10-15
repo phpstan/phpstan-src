@@ -1,0 +1,48 @@
+<?php declare(strict_types = 1);
+
+use function PHPStan\dumpType;
+
+/**
+ * @template TValue
+ */
+class Collection
+{
+	/**
+	* @param array<int, TValue> $items
+	*/ 
+	public function __construct(
+		public array $items,
+	) {}
+
+	 /**
+     * Run a map over each of the items.
+     *
+     * @template TMapValue
+     *
+     * @param  callable(TValue, int=): TMapValue  $callback
+     * @return Collection<TMapValue>
+     */
+	public function map(callable $callback) 
+	{
+		$keys = array_keys($this->items);
+
+		$items = array_map($callback, $this->items);
+
+        $result = array_combine($keys, $items);
+
+		return new self($result);
+	}
+}
+
+/**
+ * @param  Collection<non-empty-array<string>>  $collection
+ * @return Collection<non-empty-array<string>>
+ */
+function foo(Collection $collection)
+{
+	return $collection->map(function (array $item) {
+		$item['foo'] = '100';
+
+		return $item;
+	});
+}

@@ -3678,11 +3678,14 @@ public:
 		if (UNEXPECTED(constType.isUndef())) return zv::Val();
 
 		bool isOverallPhpVersionRange = false;
+		bool hasMinAnalyzableVersion = false;
+		zv::Val max;
 		if (constType.ref().isObject() && constType.ref().instanceOf(pt_ce_integer_range_type)) {
 			zv::Val min = pt_type_call(constType.ref().asObject(), PT_LC("getmin"), 0, NULL);
 			if (UNEXPECTED(min.isUndef())) return zv::Val();
 			if (min.ref().isLong() && min.ref().asLong() == PT_MS_PHP_MIN_ANALYZABLE_VERSION_ID) {
-				zv::Val max = pt_type_call(constType.ref().asObject(), PT_LC("getmax"), 0, NULL);
+				hasMinAnalyzableVersion = true;
+				max = pt_type_call(constType.ref().asObject(), PT_LC("getmax"), 0, NULL);
 				if (UNEXPECTED(max.isUndef())) return zv::Val();
 				if (max.isNull() || (max.ref().isLong() && max.ref().asLong() == PT_MS_MAX_PHP_VERSION)) {
 					isOverallPhpVersionRange = true;
@@ -3690,12 +3693,56 @@ public:
 			}
 		}
 
-		if (!constType.isNull() && !isOverallPhpVersionRange) return pt_type_new(PT_CLASS_PHP_VERSIONS, 1, constType.raw());
+		if (!constType.isNull() && !isOverallPhpVersionRange) {
+			if (hasMinAnalyzableVersion && max.ref().isLong()) {
+				zv::Val configuredRange = getConfiguredPhpVersionRange();
+				if (UNEXPECTED(configuredRange.isUndef())) return zv::Val();
+				if (configuredRange.isNull()) {
+					// A guard like `PHP_VERSION_ID < 80400` only gives an upper bound. Without
+					// a configured version range, the lower bound is merely the lowest version
+					// PHPStan knows, while outside the guard the single analysed PHP version
+					// applies. Keep the lower bound at that version, or as close to it as
+					// the guard allows.
+					zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
+					if (UNEXPECTED(!phpVersion.isObject())) return uninitializedProperty("phpVersion");
+					zv::Val versionId = pt_php_version_get_version_id(phpVersion.raw());
+					if (UNEXPECTED(versionId.isUndef())) return zv::Val();
+					zend_long maxVersionId = max.ref().asLong();
+					zend_long minVersionId = zval_get_long(versionId.raw());
+					zval interval[2];
+					ZVAL_LONG(&interval[0], minVersionId < maxVersionId ? minVersionId : maxVersionId);
+					ZVAL_LONG(&interval[1], maxVersionId);
+					zv::Val versionRange = pt_type_call_static_ce(pt_ce_integer_range_type, PT_LC("frominterval"), 2, interval);
+					if (UNEXPECTED(versionRange.isUndef())) return zv::Val();
+					return pt_type_new(PT_CLASS_PHP_VERSIONS, 1, versionRange.raw());
+				}
+			}
 
-		// The analysed PHP version range comes either from the NEON phpVersion min/max
-		// config or from the composer.json "require.php" constraint - the very same
-		// source ConstantResolver narrows PHP_VERSION_ID with, so that
-		// Scope::getPhpVersion() never contradicts the PHP_VERSION_ID constant.
+			return pt_type_new(PT_CLASS_PHP_VERSIONS, 1, constType.raw());
+		}
+
+		zv::Val configuredRange = getConfiguredPhpVersionRange();
+		if (UNEXPECTED(configuredRange.isUndef())) return zv::Val();
+		if (!configuredRange.isNull()) return pt_type_new(PT_CLASS_PHP_VERSIONS, 1, configuredRange.raw());
+
+		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
+		if (UNEXPECTED(!phpVersion.isObject())) return uninitializedProperty("phpVersion");
+		zv::Val versionId = pt_php_version_get_version_id(phpVersion.raw());
+		if (UNEXPECTED(versionId.isUndef())) return zv::Val();
+		zval constantInteger;
+		if (UNEXPECTED(!pt_constant_integer_type_new(&constantInteger, zval_get_long(versionId.raw())))) return zv::Val();
+		zv::Val constantIntegerType = zv::Val::adopt(constantInteger);
+		return pt_type_new(PT_CLASS_PHP_VERSIONS, 1, constantIntegerType.raw());
+	}
+
+	/* The analysed PHP version range comes either from the NEON phpVersion min/max
+	 * config or from the composer.json "require.php" constraint - the very same
+	 * source ConstantResolver narrows PHP_VERSION_ID with, so that
+	 * Scope::getPhpVersion() never contradicts the PHP_VERSION_ID constant.
+	 * NULL when neither is set and a single PHP version is analysed; UNDEF =
+	 * pending exception */
+	zv::Val getConfiguredPhpVersionRange()
+	{
 		if (UNEXPECTED(!requireService())) return zv::Val();
 		zv::Ref rangeHelper = service(PT_MSS_CONFIGURED_PHP_VERSION_RANGE_HELPER);
 		zv::Val range = pt_type_call(rangeHelper.asObject(), PT_LC("getversionrange"), 0, NULL);
@@ -3722,36 +3769,25 @@ public:
 			if (UNEXPECTED(maxVersionId.isUndef())) return zv::Val();
 			narrowed = !(maxVersionId.ref().isLong() && maxVersionId.ref().asLong() == PT_MS_MAX_PHP_VERSION);
 		}
-		if (narrowed) {
-			zval interval[2];
-			zv::Val minVersionId, maxVersionId;
-			if (minPhpVersion != NULL) {
-				minVersionId = pt_php_version_get_version_id(minPhpVersion);
-				if (UNEXPECTED(minVersionId.isUndef())) return zv::Val();
-				ZVAL_COPY_VALUE(&interval[0], minVersionId.raw());
-			} else {
-				ZVAL_LONG(&interval[0], PT_MS_PHP_MIN_ANALYZABLE_VERSION_ID);
-			}
-			if (maxPhpVersion != NULL) {
-				maxVersionId = pt_php_version_get_version_id(maxPhpVersion);
-				if (UNEXPECTED(maxVersionId.isUndef())) return zv::Val();
-				ZVAL_COPY_VALUE(&interval[1], maxVersionId.raw());
-			} else {
-				ZVAL_NULL(&interval[1]);
-			}
-			zv::Val versionRange = pt_type_call_static_ce(pt_ce_integer_range_type, PT_LC("frominterval"), 2, interval);
-			if (UNEXPECTED(versionRange.isUndef())) return zv::Val();
-			return pt_type_new(PT_CLASS_PHP_VERSIONS, 1, versionRange.raw());
-		}
+		if (!narrowed) return zv::Val::null();
 
-		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
-		if (UNEXPECTED(!phpVersion.isObject())) return uninitializedProperty("phpVersion");
-		zv::Val versionId = pt_php_version_get_version_id(phpVersion.raw());
-		if (UNEXPECTED(versionId.isUndef())) return zv::Val();
-		zval constantInteger;
-		if (UNEXPECTED(!pt_constant_integer_type_new(&constantInteger, zval_get_long(versionId.raw())))) return zv::Val();
-		zv::Val constantIntegerType = zv::Val::adopt(constantInteger);
-		return pt_type_new(PT_CLASS_PHP_VERSIONS, 1, constantIntegerType.raw());
+		zval interval[2];
+		zv::Val minVersionId, maxVersionId;
+		if (minPhpVersion != NULL) {
+			minVersionId = pt_php_version_get_version_id(minPhpVersion);
+			if (UNEXPECTED(minVersionId.isUndef())) return zv::Val();
+			ZVAL_COPY_VALUE(&interval[0], minVersionId.raw());
+		} else {
+			ZVAL_LONG(&interval[0], PT_MS_PHP_MIN_ANALYZABLE_VERSION_ID);
+		}
+		if (maxPhpVersion != NULL) {
+			maxVersionId = pt_php_version_get_version_id(maxPhpVersion);
+			if (UNEXPECTED(maxVersionId.isUndef())) return zv::Val();
+			ZVAL_COPY_VALUE(&interval[1], maxVersionId.raw());
+		} else {
+			ZVAL_NULL(&interval[1]);
+		}
+		return pt_type_call_static_ce(pt_ce_integer_range_type, PT_LC("frominterval"), 2, interval);
 	}
 
 	/* $this->getPhpVersion()->supportsNamedArguments()->no() negated — the

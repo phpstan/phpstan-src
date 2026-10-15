@@ -123,6 +123,7 @@ use function in_array;
 use function is_string;
 use function ltrim;
 use function md5;
+use function min;
 use function preg_match;
 use function preg_match_all;
 use function spl_object_id;
@@ -5877,25 +5878,56 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	{
 		$constType = $this->getGlobalConstantType(new Name('PHP_VERSION_ID'));
 		if ($constType !== null && !$this->isOverallPhpVersionRange($constType)) {
+			if (
+				$constType instanceof IntegerRangeType
+				&& $constType->getMin() === ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID
+				&& $constType->getMax() !== null
+				&& $this->getConfiguredPhpVersionRange() === null
+			) {
+				// A guard like `PHP_VERSION_ID < 80400` only gives an upper bound. Without
+				// a configured version range, the lower bound is merely the lowest version
+				// PHPStan knows, while outside the guard the single analysed PHP version
+				// applies. Keep the lower bound at that version, or as close to it as
+				// the guard allows.
+				$maxVersionId = $constType->getMax();
+				return new PhpVersions(IntegerRangeType::fromInterval(
+					min($this->services->phpVersion->getVersionId(), $maxVersionId),
+					$maxVersionId,
+				));
+			}
+
 			return new PhpVersions($constType);
 		}
 
-		// The analysed PHP version range comes either from the NEON phpVersion min/max
-		// config or from the composer.json "require.php" constraint - the very same
-		// source ConstantResolver narrows PHP_VERSION_ID with, so that
-		// Scope::getPhpVersion() never contradicts the PHP_VERSION_ID constant.
-		[$minPhpVersion, $maxPhpVersion] = $this->services->configuredPhpVersionRangeHelper->getVersionRange();
-		if (
-			$minPhpVersion !== null
-			|| ($maxPhpVersion !== null && $maxPhpVersion->getVersionId() !== PhpVersionFactory::MAX_PHP_VERSION)
-		) {
-			return new PhpVersions(IntegerRangeType::fromInterval(
-				$minPhpVersion !== null ? $minPhpVersion->getVersionId() : ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID,
-				$maxPhpVersion !== null ? $maxPhpVersion->getVersionId() : null,
-			));
+		$configuredRange = $this->getConfiguredPhpVersionRange();
+		if ($configuredRange !== null) {
+			return new PhpVersions($configuredRange);
 		}
 
 		return new PhpVersions(new ConstantIntegerType($this->services->phpVersion->getVersionId()));
+	}
+
+	/**
+	 * The analysed PHP version range comes either from the NEON phpVersion min/max
+	 * config or from the composer.json "require.php" constraint - the very same
+	 * source ConstantResolver narrows PHP_VERSION_ID with, so that
+	 * Scope::getPhpVersion() never contradicts the PHP_VERSION_ID constant.
+	 * Null when neither is set and a single PHP version is analysed.
+	 */
+	private function getConfiguredPhpVersionRange(): ?Type
+	{
+		[$minPhpVersion, $maxPhpVersion] = $this->services->configuredPhpVersionRangeHelper->getVersionRange();
+		if (
+			$minPhpVersion === null
+			&& ($maxPhpVersion === null || $maxPhpVersion->getVersionId() === PhpVersionFactory::MAX_PHP_VERSION)
+		) {
+			return null;
+		}
+
+		return IntegerRangeType::fromInterval(
+			$minPhpVersion !== null ? $minPhpVersion->getVersionId() : ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID,
+			$maxPhpVersion !== null ? $maxPhpVersion->getVersionId() : null,
+		);
 	}
 
 	/**

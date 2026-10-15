@@ -141,4 +141,10 @@ class InvalidPromotedPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/promoted-properties-php-versions.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15425(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15425.php'], []);
+	}
+
 }

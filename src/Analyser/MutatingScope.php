@@ -4238,6 +4238,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				// a combinatorially-grown offset union doubles it with every isset()-
 				// style check and gets skipped (overwrites assign, they never narrow)
 				continue;
+			} elseif ($trackedNativeType === null) {
+				// tracked with its PHPDoc type only (e.g. by a conditional holder) -
+				// the native base is still read from the scope, not taken from
+				// the PHPDoc type
+				$trackedNativeType = $scope->getCurrentTypesOfSpecifiedExpr($expr)[1] ?? null;
 			}
 
 			if (isset($typeSpecification['terms'])) {

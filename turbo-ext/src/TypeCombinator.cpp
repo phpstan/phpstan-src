@@ -2090,10 +2090,15 @@ public:
 		}
 
 		zv::Arr arrayTypesArray = listOf(arrayTypes);
-		zv::Val reduced = reduceArrays(arrayTypesArray.raw(), true);
-		PT_FAIL_IF_UNDEF(reduced);
-		zv::Val reducedArrayTypes = optimizeConstantArrays(reduced.raw());
+		zv::Val reducedArrayTypes = reduceArrays(arrayTypesArray.raw(), true);
 		PT_FAIL_IF_UNDEF(reducedArrayTypes);
+		zval *singleReducedArrayType = countOf(reducedArrayTypes.raw()) == 1 ? indexOf(reducedArrayTypes.raw(), 0) : NULL;
+		int noLarger = singleReducedArrayType != NULL ? isNoLargerThanLargestArray(singleReducedArrayType, arrayTypes) : 0;
+		PT_FAIL_IF_NEG(noLarger);
+		if (noLarger == 0) {
+			reducedArrayTypes = optimizeConstantArrays(reducedArrayTypes.raw());
+			PT_FAIL_IF_UNDEF(reducedArrayTypes);
+		}
 		zv::Arr result = zv::Arr::adoptVal(std::move(reducedArrayTypes));
 		result.separate();
 		for (zv::ArrayEntry entry : zv::ArrRef(result.raw())) {
@@ -2295,6 +2300,33 @@ public:
 		zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
 		if (UNEXPECTED(traversed.isUndef())) return;
 		traversed.intoReturnValue(return_value);
+	}
+
+	/* countConstantArrayValueTypes([$type]); -1 = pending exception */
+	[[nodiscard]] static zend_long countConstantArrayValueTypesOf(zval *type)
+	{
+		zv::Arr types = zv::Arr::create(1);
+		types.push(zv::Ref(type));
+		return countConstantArrayValueTypes(types.raw());
+	}
+
+	/* private static isNoLargerThanLargestArray(Type $reducedArrayType, Type[] $arrayTypes): bool;
+	 * -1 = pending exception */
+	[[nodiscard]] static int isNoLargerThanLargestArray(zval *reducedArrayType, TypeList &arrayTypes)
+	{
+		zend_long constantArrayValuesCount = countConstantArrayValueTypesOf(reducedArrayType);
+		if (UNEXPECTED(constantArrayValuesCount < 0)) return -1;
+		zend_long limit = arrayCountLimit();
+		if (UNEXPECTED(limit < 0)) return -1;
+		if (constantArrayValuesCount <= limit) return 1;
+
+		for (zv::Val &arrayType : arrayTypes) {
+			zend_long arrayTypeValuesCount = countConstantArrayValueTypesOf(arrayType.raw());
+			if (UNEXPECTED(arrayTypeValuesCount < 0)) return -1;
+			if (arrayTypeValuesCount >= constantArrayValuesCount) return 1;
+		}
+
+		return 0;
 	}
 
 	/* private static optimizeConstantArrays(Type[] $types): Type[] */

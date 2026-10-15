@@ -59,27 +59,29 @@ inline constexpr char strings[] =
 	"processArrayAccessoryTypes\0" /* 509 */
 	"findEmptyArrayNextToOversizedArray\0" /* 536 */
 	"processArrayTypes\0" /* 571 */
-	"optimizeConstantArrays\0" /* 589 */
-	"countConstantArrayValueTypes\0" /* 612 */
-	"array\0" /* 641 */
-	"PHPStan\\Type\\Constant\\ConstantArrayType\0" /* 647 */
-	"getConstantScalarValuesByKey\0" /* 687 */
-	"oneUnrelatedKeyAllowed\0" /* 716 */
-	"haveDisjointConstantScalarValues\0" /* 739 */
-	"constantArrays\0" /* 772 */
-	"preserveTaggedUnions\0" /* 787 */
-	"reduceArrays\0" /* 808 */
-	"isPlainOrBenevolentUnion\0" /* 821 */
-	"PHPStan\\Type\\UnionType\0" /* 846 */
-	"intersectFiniteUnions\0" /* 869 */
-	"finiteUnionMembers\0" /* 891 */
-	"intersect\0" /* 910 */
-	"doIntersect\0" /* 920 */
-	"intersectDefiniteConstantArrays\0" /* 932 */
-	"PHPStan\\Type\\IntersectionType\0" /* 964 */
-	"mergeIntersectionsForUnion\0" /* 994 */
-	"removeFalsey\0" /* 1021 */
-	"removeTruthy"; /* 1034 */
+	"reducedArrayType\0" /* 589 */
+	"isNoLargerThanLargestArray\0" /* 606 */
+	"optimizeConstantArrays\0" /* 633 */
+	"countConstantArrayValueTypes\0" /* 656 */
+	"array\0" /* 685 */
+	"PHPStan\\Type\\Constant\\ConstantArrayType\0" /* 691 */
+	"getConstantScalarValuesByKey\0" /* 731 */
+	"oneUnrelatedKeyAllowed\0" /* 760 */
+	"haveDisjointConstantScalarValues\0" /* 783 */
+	"constantArrays\0" /* 816 */
+	"preserveTaggedUnions\0" /* 831 */
+	"reduceArrays\0" /* 852 */
+	"isPlainOrBenevolentUnion\0" /* 865 */
+	"PHPStan\\Type\\UnionType\0" /* 890 */
+	"intersectFiniteUnions\0" /* 913 */
+	"finiteUnionMembers\0" /* 935 */
+	"intersect\0" /* 954 */
+	"doIntersect\0" /* 964 */
+	"intersectDefiniteConstantArrays\0" /* 976 */
+	"PHPStan\\Type\\IntersectionType\0" /* 1008 */
+	"mergeIntersectionsForUnion\0" /* 1038 */
+	"removeFalsey\0" /* 1065 */
+	"removeTruthy"; /* 1078 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_VOID), /* clearCache return */
 	reg::packed(12, 0, 17), /* addNull $type */
@@ -131,35 +133,38 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_NULL, 17), /* findEmptyArrayNextToOversizedArray return */
 	reg::packed(498, MAY_BE_ARRAY), /* processArrayTypes $arrayTypes */
 	reg::packed(0, MAY_BE_ARRAY), /* processArrayTypes return */
+	reg::packed(589, 0, 17), /* isNoLargerThanLargestArray $reducedArrayType */
+	reg::packed(498, MAY_BE_ARRAY), /* isNoLargerThanLargestArray $arrayTypes */
+	reg::packed(0, MAY_BE_BOOL), /* isNoLargerThanLargestArray return */
 	reg::packed(126, MAY_BE_ARRAY), /* optimizeConstantArrays $types */
 	reg::packed(0, MAY_BE_ARRAY), /* optimizeConstantArrays return */
 	reg::packed(126, MAY_BE_ARRAY), /* countConstantArrayValueTypes $types */
 	reg::packed(0, MAY_BE_LONG), /* countConstantArrayValueTypes return */
-	reg::packed(641, 0, 647), /* getConstantScalarValuesByKey $array */
+	reg::packed(685, 0, 691), /* getConstantScalarValuesByKey $array */
 	reg::packed(0, MAY_BE_NULL | MAY_BE_ARRAY), /* getConstantScalarValuesByKey return */
 	reg::packed(263, MAY_BE_NULL | MAY_BE_ARRAY), /* haveDisjointConstantScalarValues $a */
 	reg::packed(265, MAY_BE_NULL | MAY_BE_ARRAY), /* haveDisjointConstantScalarValues $b */
-	reg::packed(716, MAY_BE_BOOL), /* haveDisjointConstantScalarValues $oneUnrelatedKeyAllowed */
+	reg::packed(760, MAY_BE_BOOL), /* haveDisjointConstantScalarValues $oneUnrelatedKeyAllowed */
 	reg::packed(0, MAY_BE_BOOL), /* haveDisjointConstantScalarValues return */
-	reg::packed(772, MAY_BE_ARRAY), /* reduceArrays $constantArrays */
-	reg::packed(787, MAY_BE_BOOL), /* reduceArrays $preserveTaggedUnions */
+	reg::packed(816, MAY_BE_ARRAY), /* reduceArrays $constantArrays */
+	reg::packed(831, MAY_BE_BOOL), /* reduceArrays $preserveTaggedUnions */
 	reg::packed(0, MAY_BE_ARRAY), /* reduceArrays return */
 	reg::packed(12, 0, 17), /* isPlainOrBenevolentUnion $type */
 	reg::packed(0, MAY_BE_BOOL), /* isPlainOrBenevolentUnion return */
-	reg::packed(263, 0, 846), /* intersectFiniteUnions $a */
-	reg::packed(265, 0, 846), /* intersectFiniteUnions $b */
+	reg::packed(263, 0, 890), /* intersectFiniteUnions $a */
+	reg::packed(265, 0, 890), /* intersectFiniteUnions $b */
 	reg::packed(0, MAY_BE_NULL, 17), /* intersectFiniteUnions return */
-	reg::packed(132, 0, 846), /* finiteUnionMembers $union */
+	reg::packed(132, 0, 890), /* finiteUnionMembers $union */
 	reg::packed(0, MAY_BE_NULL | MAY_BE_ARRAY), /* finiteUnionMembers return */
 	reg::packed(126, 0, 17, false, true), /* intersect $types */
 	reg::packed(0, 0, 17), /* intersect return */
 	reg::packed(126, 0, 17, false, true), /* doIntersect $types */
 	reg::packed(0, 0, 17), /* doIntersect return */
-	reg::packed(263, 0, 647), /* intersectDefiniteConstantArrays $a */
-	reg::packed(265, 0, 647), /* intersectDefiniteConstantArrays $b */
+	reg::packed(263, 0, 691), /* intersectDefiniteConstantArrays $a */
+	reg::packed(265, 0, 691), /* intersectDefiniteConstantArrays $b */
 	reg::packed(0, 0, 17), /* intersectDefiniteConstantArrays return */
-	reg::packed(263, 0, 964), /* mergeIntersectionsForUnion $a */
-	reg::packed(265, 0, 964), /* mergeIntersectionsForUnion $b */
+	reg::packed(263, 0, 1008), /* mergeIntersectionsForUnion $a */
+	reg::packed(265, 0, 1008), /* mergeIntersectionsForUnion $b */
 	reg::packed(0, MAY_BE_NULL, 17), /* mergeIntersectionsForUnion return */
 	reg::packed(12, 0, 17), /* removeFalsey $type */
 	reg::packed(0, 0, 17), /* removeFalsey return */
@@ -192,20 +197,21 @@ inline constexpr sigtab::Sig intersectWithSubtractedType = { { 470 /* intersectW
 inline constexpr sigtab::Sig processArrayAccessoryTypes = { { 509 /* processArrayAccessoryTypes */, 1, 44, 1, 45, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig findEmptyArrayNextToOversizedArray = { { 536 /* findEmptyArrayNextToOversizedArray */, 1, 46, 1, 47, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig processArrayTypes = { { 571 /* processArrayTypes */, 1, 48, 1, 49, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig optimizeConstantArrays = { { 589 /* optimizeConstantArrays */, 1, 50, 1, 51, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig countConstantArrayValueTypes = { { 612 /* countConstantArrayValueTypes */, 1, 52, 1, 53, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getConstantScalarValuesByKey = { { 687 /* getConstantScalarValuesByKey */, 1, 54, 1, 55, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig haveDisjointConstantScalarValues = { { 739 /* haveDisjointConstantScalarValues */, 3, 56, 3, 59, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig reduceArrays = { { 808 /* reduceArrays */, 2, 60, 2, 62, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig isPlainOrBenevolentUnion = { { 821 /* isPlainOrBenevolentUnion */, 1, 63, 1, 64, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intersectFiniteUnions = { { 869 /* intersectFiniteUnions */, 2, 65, 2, 67, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig finiteUnionMembers = { { 891 /* finiteUnionMembers */, 1, 68, 1, 69, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intersect = { { 910 /* intersect */, 0, 70, 1, 71, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig doIntersect = { { 920 /* doIntersect */, 0, 72, 1, 73, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intersectDefiniteConstantArrays = { { 932 /* intersectDefiniteConstantArrays */, 2, 74, 2, 76, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig mergeIntersectionsForUnion = { { 994 /* mergeIntersectionsForUnion */, 2, 77, 2, 79, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig removeFalsey = { { 1021 /* removeFalsey */, 1, 80, 1, 81, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig removeTruthy = { { 1034 /* removeTruthy */, 1, 82, 1, 83, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isNoLargerThanLargestArray = { { 606 /* isNoLargerThanLargestArray */, 2, 50, 2, 52, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig optimizeConstantArrays = { { 633 /* optimizeConstantArrays */, 1, 53, 1, 54, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig countConstantArrayValueTypes = { { 656 /* countConstantArrayValueTypes */, 1, 55, 1, 56, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getConstantScalarValuesByKey = { { 731 /* getConstantScalarValuesByKey */, 1, 57, 1, 58, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig haveDisjointConstantScalarValues = { { 783 /* haveDisjointConstantScalarValues */, 3, 59, 3, 62, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reduceArrays = { { 852 /* reduceArrays */, 2, 63, 2, 65, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isPlainOrBenevolentUnion = { { 865 /* isPlainOrBenevolentUnion */, 1, 66, 1, 67, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersectFiniteUnions = { { 913 /* intersectFiniteUnions */, 2, 68, 2, 70, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig finiteUnionMembers = { { 935 /* finiteUnionMembers */, 1, 71, 1, 72, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersect = { { 954 /* intersect */, 0, 73, 1, 74, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig doIntersect = { { 964 /* doIntersect */, 0, 75, 1, 76, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersectDefiniteConstantArrays = { { 976 /* intersectDefiniteConstantArrays */, 2, 77, 2, 79, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig mergeIntersectionsForUnion = { { 1038 /* mergeIntersectionsForUnion */, 2, 80, 2, 82, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig removeFalsey = { { 1065 /* removeFalsey */, 1, 83, 1, 84, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig removeTruthy = { { 1078 /* removeTruthy */, 1, 85, 1, 86, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeCombinator

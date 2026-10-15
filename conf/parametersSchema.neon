@@ -61,6 +61,7 @@ parametersSchema:
 		staticVariablesFromUsages: bool()
 		unusedVariable: bool()
 		unusedParameters: bool()
+		unsetOffsetOnMaybeAccessible: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

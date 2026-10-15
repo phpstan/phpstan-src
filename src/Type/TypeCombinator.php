@@ -1240,7 +1240,10 @@ final class TypeCombinator
 			];
 		}
 
-		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true));
+		$reducedArrayTypes = self::reduceArrays($arrayTypes, true);
+		if (count($reducedArrayTypes) !== 1 || !self::isNoLargerThanLargestArray($reducedArrayTypes[0], $arrayTypes)) {
+			$reducedArrayTypes = self::optimizeConstantArrays($reducedArrayTypes);
+		}
 		foreach ($reducedArrayTypes as $idx => $reducedArray) {
 			$applied = $accessoryTypes;
 			if ($reducedArray->isIterableAtLeastOnce()->no()) {
@@ -1256,6 +1259,31 @@ final class TypeCombinator
 			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$applied);
 		}
 		return $reducedArrayTypes;
+	}
+
+	/**
+	 * Whether the single array a union reduced to holds no more constant array
+	 * values than the largest of the arrays it was made of - e.g. a shape and
+	 * its narrowed variant merged back together. Each of those arrays was kept
+	 * as it is, so generalizing their union would lose a shape that the limit
+	 * did not apply to and that does not grow.
+	 *
+	 * @param Type[] $arrayTypes
+	 */
+	private static function isNoLargerThanLargestArray(Type $reducedArrayType, array $arrayTypes): bool
+	{
+		$constantArrayValuesCount = self::countConstantArrayValueTypes([$reducedArrayType]);
+		if ($constantArrayValuesCount <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			return true;
+		}
+
+		foreach ($arrayTypes as $arrayType) {
+			if (self::countConstantArrayValueTypes([$arrayType]) >= $constantArrayValuesCount) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

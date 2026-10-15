@@ -1,0 +1,11 @@
+--- stubs/Foo.stub
++++ stubs/Foo.stub
+@@ -6,7 +6,7 @@
+ class Foo
+ {
+ 
+-	/** @return string */
++	/** @return NotAClass */
+ 	public function get() {}
+ 
+ }

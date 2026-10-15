@@ -456,6 +456,18 @@ jobs:
               ../bashunit -a equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
               ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
           - script: |
+              cd e2e/result-cache-reordered-symbols
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Other.php:10:Method ResultCacheE2EReorderedSymbols\Other::doOther() should return int but returns string.' "$OUTPUT"
+              # Swapping two define() calls and two classes changes no symbol, so only the file itself
+              # is re-analysed, not every file with errors.
+              patch -b src/symbols.php < reorder.patch
+              INFO=$(../../bin/phpstan result-cache-info --json)
+              echo "$INFO"
+              ../bashunit -a equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+          - script: |
               cd e2e/result-cache-function-shares-method-name
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"

@@ -2156,6 +2156,13 @@ final class AssignHandler implements ExprHandler
 		// (@phpstan-assert property fetches etc.) answer from scope state or a walk
 		$storedResult = $storage->findExpressionResult($expr);
 		if ($storedResult !== null) {
+			// a subexpression walked on a narrower branch (the right side of
+			// `$a['k'] === null || is_int($a['k'])` sees `$a['k']` without null)
+			// does not answer on this scope - re-price it here
+			if (!$storedResult->answersOnScope($scope, $scope->nativeTypesPromoted)) {
+				return $nodeScopeResolver->processExprOnDemand($expr, $scope, new ExpressionResultStorage())->getTypeOnScope($scope, $scope->nativeTypesPromoted);
+			}
+
 			return $storedResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 		}
 

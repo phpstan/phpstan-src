@@ -528,21 +528,22 @@ inline constexpr char strings[] =
 	"getIterableValueType\0" /* 9182 */
 	"PHPStan\\Php\\PhpVersions\0" /* 9203 */
 	"getPhpVersion\0" /* 9227 */
-	"isOverallPhpVersionRange\0" /* 9241 */
-	"PhpParser\\Node\0" /* 9266 */
-	"invokeNodeCallback\0" /* 9281 */
-	"collectorType\0" /* 9300 */
-	"data\0" /* 9314 */
-	"emitCollectedData\0" /* 9319 */
-	"extensionClass\0" /* 9337 */
-	"trackValueDependency\0" /* 9352 */
-	"file\0" /* 9373 */
-	"trackFileDependency\0" /* 9378 */
-	"directory\0" /* 9398 */
-	"pattern\0" /* 9408 */
-	"'*'\0" /* 9416 */
-	"trackDirectoryDependency\0" /* 9420 */
-	"trackClassDependency"; /* 9445 */
+	"getConfiguredPhpVersionRange\0" /* 9241 */
+	"isOverallPhpVersionRange\0" /* 9270 */
+	"PhpParser\\Node\0" /* 9295 */
+	"invokeNodeCallback\0" /* 9310 */
+	"collectorType\0" /* 9329 */
+	"data\0" /* 9343 */
+	"emitCollectedData\0" /* 9348 */
+	"extensionClass\0" /* 9366 */
+	"trackValueDependency\0" /* 9381 */
+	"file\0" /* 9402 */
+	"trackFileDependency\0" /* 9407 */
+	"directory\0" /* 9427 */
+	"pattern\0" /* 9437 */
+	"'*'\0" /* 9445 */
+	"trackDirectoryDependency\0" /* 9449 */
+	"trackClassDependency"; /* 9474 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 10), /* __construct $container */
 	reg::packed(48, 0, 61), /* __construct $scopeFactory */
@@ -1070,20 +1071,21 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(5878, 0, 2162), /* getIterableValueType $iteratee */
 	reg::packed(1476, 0, 2162), /* getIterableValueType return */
 	reg::packed(1476, 0, 9203), /* getPhpVersion return */
+	reg::packed(1476, MAY_BE_NULL, 2162), /* getConfiguredPhpVersionRange return */
 	reg::packed(4614, 0, 2162), /* isOverallPhpVersionRange $type */
 	reg::packed(1476, MAY_BE_BOOL), /* isOverallPhpVersionRange return */
-	reg::packed(2500, 0, 9266), /* invokeNodeCallback $node */
+	reg::packed(2500, 0, 9295), /* invokeNodeCallback $node */
 	reg::packed(1476, MAY_BE_VOID), /* invokeNodeCallback return */
-	reg::packed(9300, MAY_BE_STRING), /* emitCollectedData $collectorType */
-	reg::packed(9314, MAY_BE_ANY), /* emitCollectedData $data */
+	reg::packed(9329, MAY_BE_STRING), /* emitCollectedData $collectorType */
+	reg::packed(9343, MAY_BE_ANY), /* emitCollectedData $data */
 	reg::packed(1476, MAY_BE_VOID), /* emitCollectedData return */
-	reg::packed(9337, MAY_BE_STRING), /* trackValueDependency $extensionClass */
+	reg::packed(9366, MAY_BE_STRING), /* trackValueDependency $extensionClass */
 	reg::packed(3280, MAY_BE_STRING), /* trackValueDependency $key */
 	reg::packed(1476, MAY_BE_VOID), /* trackValueDependency return */
-	reg::packed(9373, MAY_BE_STRING), /* trackFileDependency $file */
+	reg::packed(9402, MAY_BE_STRING), /* trackFileDependency $file */
 	reg::packed(1476, MAY_BE_VOID), /* trackFileDependency return */
-	reg::packed(9398, MAY_BE_STRING), /* trackDirectoryDependency $directory */
-	reg::packed(9408, MAY_BE_STRING, reg::NoString, false, false, 9416), /* trackDirectoryDependency $pattern */
+	reg::packed(9427, MAY_BE_STRING), /* trackDirectoryDependency $directory */
+	reg::packed(9437, MAY_BE_STRING, reg::NoString, false, false, 9445), /* trackDirectoryDependency $pattern */
 	reg::packed(1476, MAY_BE_VOID), /* trackDirectoryDependency return */
 	reg::packed(3717, MAY_BE_STRING), /* trackClassDependency $className */
 	reg::packed(1476, MAY_BE_VOID), /* trackClassDependency return */
@@ -1285,13 +1287,14 @@ inline constexpr sigtab::Sig getNativeConstantTypes = { { 9140 /* getNativeConst
 inline constexpr sigtab::Sig getIterableKeyType = { { 9163 /* getIterableKeyType */, 1, 521, 1, 522, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getIterableValueType = { { 9182 /* getIterableValueType */, 1, 523, 1, 524, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getPhpVersion = { { 9227 /* getPhpVersion */, 0, 525, 0, 525, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isOverallPhpVersionRange = { { 9241 /* isOverallPhpVersionRange */, 1, 526, 1, 527, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig invokeNodeCallback = { { 9281 /* invokeNodeCallback */, 1, 528, 1, 529, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig emitCollectedData = { { 9319 /* emitCollectedData */, 2, 530, 2, 532, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackValueDependency = { { 9352 /* trackValueDependency */, 2, 533, 2, 535, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackFileDependency = { { 9378 /* trackFileDependency */, 1, 536, 1, 537, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackDirectoryDependency = { { 9420 /* trackDirectoryDependency */, 1, 538, 2, 540, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackClassDependency = { { 9445 /* trackClassDependency */, 1, 541, 1, 542, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConfiguredPhpVersionRange = { { 9241 /* getConfiguredPhpVersionRange */, 0, 526, 0, 526, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isOverallPhpVersionRange = { { 9270 /* isOverallPhpVersionRange */, 1, 527, 1, 528, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig invokeNodeCallback = { { 9310 /* invokeNodeCallback */, 1, 529, 1, 530, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig emitCollectedData = { { 9348 /* emitCollectedData */, 2, 531, 2, 533, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackValueDependency = { { 9381 /* trackValueDependency */, 2, 534, 2, 536, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackFileDependency = { { 9407 /* trackFileDependency */, 1, 537, 1, 538, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackDirectoryDependency = { { 9449 /* trackDirectoryDependency */, 1, 539, 2, 541, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackClassDependency = { { 9474 /* trackClassDependency */, 1, 542, 1, 543, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MutatingScope

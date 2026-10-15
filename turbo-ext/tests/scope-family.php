@@ -643,6 +643,35 @@ $sfOverallVersionTables = static function (string $side) use ($sfHarness, $sfOve
 
 	return [$table, $table, []];
 };
+// PHP_VERSION_ID under a guard that only gives an upper bound (`PHP_VERSION_ID < X`),
+// with a single analysed version pinned to phpVersion: 80500 whatever PHP runs
+// this: getPhpVersion() raises the lower bound to the analysed version, or as
+// close to it as the guard allows - once with the analysed version above the
+// guard's bound and once below it
+$sfGuardedVersionScopes = [];
+foreach ([80399, 80599] as $sfGuardedMax) {
+	$sfGuardedVersionFetch = new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('PHP_VERSION_ID'));
+	$sfGuardedVersionArgs = $sfHarness->constructorArgs(
+		$sfScopeFactory->create(\PHPStan\Analyser\ScopeContext::create($sfFile))
+			->assignExpression($sfGuardedVersionFetch, \PHPStan\Type\IntegerRangeType::fromInterval(\PHPStan\Analyser\ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID, $sfGuardedMax), new \PHPStan\Type\IntegerType()),
+	);
+	$sfGuardedVersionArgs['phpVersion'] = new \PHPStan\Php\PhpVersion(80500);
+	$sfGuardedVersionArgs['configuredPhpVersionRangeHelper'] = new \PHPStan\Php\ConfiguredPhpVersionRangeHelper(80500, $scContainer->getByType(\PHPStan\Php\ComposerPhpVersionFactory::class));
+	$sfGuardedVersionScope = new \PHPStan\Analyser\MutatingScope(...array_values($sfGuardedVersionArgs));
+	$sfScopes[spl_object_id($sfGuardedVersionScope)] = [$sfGuardedVersionScope, [$sfGuardedVersionFetch], null];
+	$sfGuardedVersionScopes[] = [$sfGuardedVersionScope, static function (string $side) use ($sfHarness, $sfGuardedVersionFetch, $sfGuardedMax): array {
+		$native = $side === 'native';
+		$range = $native
+			? \PHPStanTurbo\IntegerRangeType::fromInterval(\PHPStan\Analyser\ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID, $sfGuardedMax)
+			: \PHPStan\Type\IntegerRangeType::fromInterval(\PHPStan\Analyser\ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID, $sfGuardedMax);
+		$holder = $native
+			? new \PHPStanTurbo\ExpressionTypeHolder($sfGuardedVersionFetch, $range, \PHPStanTurbo\TrinaryLogic::createYes())
+			: new \PHPStan\Analyser\ExpressionTypeHolder($sfGuardedVersionFetch, $range, \PHPStan\TrinaryLogic::createYes());
+		$table = [$sfHarness->key($sfGuardedVersionFetch) => $holder];
+
+		return [$table, $table, []];
+	}];
+}
 foreach ([80500, 70400] as $sfVersionId) {
 	$sfVersionScope = $sfScopeFactory->create(\PHPStan\Analyser\ScopeContext::create($sfFile)->enterClass($sfReflectionProvider->getClass(\ScopeFamilyFixture\Holder::class)))
 		->assignExpression(new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('PHP_VERSION_ID')), new \PHPStan\Type\Constant\ConstantIntegerType($sfVersionId), new \PHPStan\Type\IntegerType());
@@ -759,6 +788,9 @@ $sfScopes[spl_object_id($sfConditionalScope)] = [$sfConditionalScope, [new \PhpP
 // the scopes whose tables are built per side (each side's own Type classes)
 $sfScopes[spl_object_id($sfSyntheticScope)][3] = $sfSyntheticTables;
 $sfScopes[spl_object_id($sfOverallVersionScope)][3] = $sfOverallVersionTables;
+foreach ($sfGuardedVersionScopes as [$sfGuardedVersionScope, $sfGuardedVersionTables]) {
+	$sfScopes[spl_object_id($sfGuardedVersionScope)][3] = $sfGuardedVersionTables;
+}
 $sfPromotedArgs = $sfHarness->constructorArgs($sfSyntheticScope);
 $sfPromotedArgs['nativeTypesPromoted'] = true;
 $sfPromotedScope = new \PHPStan\Analyser\MutatingScope(...array_values($sfPromotedArgs));

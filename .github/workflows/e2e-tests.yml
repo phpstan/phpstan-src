@@ -2031,7 +2031,7 @@ jobs:
           - script: |
               echo "<?php echo 'Hello world';" > test.php
               XDEBUG_HANDLER_DEBUG=1 bin/phpstan analyse test.php 2> output.txt
-              ../bashunit -a file_contains output.txt "Process restarting"
+              e2e/bashunit -a file_contains output.txt "Process restarting"
               cat output.txt
             extensions: "pcov"
 

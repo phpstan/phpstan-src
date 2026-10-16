@@ -10,6 +10,7 @@ use function file_put_contents;
 use function preg_replace;
 use const PHP_EOL;
 
+// see https://github.com/composer/xdebug-handler/issues/174
 final class ProcessRestarter extends XdebugHandler
 {
 

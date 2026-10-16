@@ -6,8 +6,10 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
@@ -219,17 +221,18 @@ final class ArrayHandler implements ExprHandler
 	 */
 	private function getCallableDependencies(MutatingScope $scope, Array_ $expr, array $itemResults, ExpressionResult $result): ?Dependencies
 	{
-		if (count($expr->items) !== 2 || !isset($expr->items[0])) {
+		if (count($expr->items) !== 2 || !isset($expr->items[0], $expr->items[1])) {
 			return null;
 		}
 
-		// a class constant, property default or enum case value is not called where it is
-		// declared - testing it would reflect whatever class its first item happens to name
+		if ($scope->getFunctionCallStack() === []) {
+			return null;
+		}
+
 		if (
-			$scope->isInClass()
-			&& $scope->getFunction() === null
-			&& !$scope->isInAnonymousFunction()
-			&& $scope->getFunctionCallStack() === []
+			!$expr->items[0]->value instanceof ClassConstFetch
+			|| !$expr->items[0]->value->name instanceof Identifier
+			|| $expr->items[0]->value->name->toLowerString() !== 'class'
 		) {
 			return null;
 		}

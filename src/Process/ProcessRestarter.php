@@ -22,13 +22,13 @@ final class ProcessRestarter extends XdebugHandler
 	protected function requiresRestart(bool $default): bool
 	{
 		// pcov has a perf impact similar to xdebug, so we want to disable it
-		// tideways seem to hook deep enough in the php engine, so it can segfault when running phpstan with turbo.
-		foreach (['pcov', 'tideways'] as $extension) {
-			if (!extension_loaded($extension)) {
-				continue;
-			}
+		if (extension_loaded('pcov') && ini_get('pcov.enabled') === '1') {
+			$this->extensions[] = 'pcov';
+		}
 
-			$this->extensions[] = $extension;
+		// tideways hooks deep in the php engine, so it can segfault when running phpstan with turbo.
+		if (extension_loaded('tideways')) {
+			$this->extensions[] = 'tideways';
 		}
 
 		return $default || count($this->extensions) > 0;

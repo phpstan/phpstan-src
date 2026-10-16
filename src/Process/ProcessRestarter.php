@@ -3,6 +3,7 @@
 namespace PHPStan\Process;
 
 use Composer\XdebugHandler\XdebugHandler;
+use Override;
 use function count;
 use function extension_loaded;
 use function file_get_contents;
@@ -14,12 +15,10 @@ use const PHP_EOL;
 final class ProcessRestarter extends XdebugHandler
 {
 
-	/**
-	 * @var array<string>
-	 */
+	/** @var array<string> */
 	private array $extensions = [];
 
-	#[\Override]
+	#[Override]
 	protected function requiresRestart(bool $default): bool
 	{
 		// pcov has a perf impact similar to xdebug, so we want to disable it
@@ -35,7 +34,7 @@ final class ProcessRestarter extends XdebugHandler
 		return $default || count($this->extensions) > 0;
 	}
 
-	#[\Override]
+	#[Override]
 	protected function restart(array $command): void
 	{
 		if (count($this->extensions) > 0) {

@@ -517,9 +517,13 @@ final class FilterFunctionReturnTypeHelper
 
 	private function hasThrowOnFailureFlag(?Type $flagsType, PhpVersions $phpVersions): TrinaryLogic
 	{
-		return $phpVersions->hasFilterThrowOnFailureConstant()->no()
-			? TrinaryLogic::createNo()
-			: $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType);
+		$hasThrowOnFailureConstant = $phpVersions->hasFilterThrowOnFailureConstant();
+		if ($hasThrowOnFailureConstant->no()) {
+			return TrinaryLogic::createNo();
+		}
+
+		// before PHP 8.5, this bit is FILTER_FLAG_GLOBAL_RANGE and the failure value is still returned
+		return $hasThrowOnFailureConstant->and($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType));
 	}
 
 	private function getFlagsValue(Type $exprType): Type

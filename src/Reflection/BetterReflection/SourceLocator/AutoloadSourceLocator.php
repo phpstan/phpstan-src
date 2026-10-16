@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use Composer\Autoload\ClassLoader;
 use Override;
 use ParseError;
 use PhpParser\Node\Arg;
@@ -31,12 +32,15 @@ use function count;
 use function defined;
 use function function_exists;
 use function interface_exists;
+use function is_array;
 use function is_file;
 use function is_string;
 use function opcache_invalidate;
+use function realpath;
 use function restore_error_handler;
 use function set_error_handler;
 use function spl_autoload_functions;
+use function str_contains;
 use function strtolower;
 use function trait_exists;
 use const PHP_VERSION_ID;
@@ -336,14 +340,21 @@ final class AutoloadSourceLocator implements SourceLocator
 		$this->silenceErrors();
 
 		try {
+			$foundByComposer = false;
 			$result = FileReadTrapStreamWrapper::withStreamWrapperOverride(
-				static function () use ($className): ?array {
+				static function () use ($className, &$foundByComposer): ?array {
 					$functions = spl_autoload_functions();
 					if ($functions === false) {
 						return null;
 					}
 
 					foreach ($functions as $preExistingAutoloader) {
+						$composerFile = self::findFileWithComposer($preExistingAutoloader, $className);
+						if ($composerFile !== null) {
+							$foundByComposer = true;
+							return [[$composerFile], $className, null];
+						}
+
 						try {
 							$preExistingAutoloader($className);
 						} catch (ParseError) {
@@ -370,7 +381,8 @@ final class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
-			if (!function_exists('opcache_invalidate')) {
+			// nothing was included, so there is no trapped script to invalidate
+			if ($foundByComposer || !function_exists('opcache_invalidate')) {
 				return $result;
 			}
 
@@ -385,6 +397,39 @@ final class AutoloadSourceLocator implements SourceLocator
 		} finally {
 			restore_error_handler();
 		}
+	}
+
+	/**
+	 * Asks Composer's ClassLoader which file loadClass() would include, without
+	 * including it. With OPcache holding a file this process already ran, an
+	 * include inside the trap runs the cached script instead of the trap's empty
+	 * one, and a file declaring a function dies with "Cannot redeclare".
+	 *
+	 * A path behind a stream wrapper is left to the trap: realpath() cannot
+	 * resolve it, and the phar's own ClassLoader maps PHPStan\ to phar://.
+	 *
+	 * @param callable(string): void $autoloader
+	 */
+	private static function findFileWithComposer(callable $autoloader, string $className): ?string
+	{
+		if (!is_array($autoloader) || !$autoloader[0] instanceof ClassLoader) {
+			return null;
+		}
+
+		$file = $autoloader[0]->findFile($className);
+		if ($file === false || str_contains($file, '://')) {
+			return null;
+		}
+
+		// findFile() can return ../ segments and mixed separators; resolve them
+		// as an include would, so that locateIdentifier() can compare the path
+		// with ReflectionClass::getFileName()
+		$resolvedFile = realpath($file);
+		if ($resolvedFile === false || !is_file($resolvedFile)) {
+			return null;
+		}
+
+		return $resolvedFile;
 	}
 
 	private function silenceErrors(): void

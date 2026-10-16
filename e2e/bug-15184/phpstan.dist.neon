@@ -1,0 +1,11 @@
+parameters:
+	level: 8
+	paths:
+		- test.php
+	ignoreErrors:
+		# The analysis must report the unknown class, not die including src/Type/optional.php again.
+		-
+			message: '#^Class Bug15184\\Type\\optional not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: test.php

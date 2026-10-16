@@ -2033,6 +2033,18 @@ jobs:
               XDEBUG_HANDLER_DEBUG=1 bin/phpstan analyse test.php 2>&1 | tee -a output.txt
               e2e/bashunit -a file_contains output.txt "Process restarting"
             coverage: "pcov"
+          - script: |
+              echo "<?php echo 'Hello world';" > test.php
+              XDEBUG_HANDLER_DEBUG=1 bin/phpstan analyse test.php 2>&1 | tee -a output.txt
+              e2e/bashunit -a file_contains output.txt "Process restarting"
+            coverage: "pcov"
+            ini-values: "pcov.enabled=0"
+          - script: |
+              echo "<?php echo 'Hello world';" > test.php
+              XDEBUG_HANDLER_DEBUG=1 bin/phpstan analyse test.php 2>&1 | tee -a output.txt
+              e2e/bashunit -a file_not_contains output.txt "Process restarting"
+            coverage: "pcov"
+            ini-values: "pcov.enabled=1"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -2047,6 +2059,7 @@ jobs:
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
         with:
           coverage: ${{ matrix.coverage || 'none' }}
+          ini-values: ${{ matrix.ini-values || '' }}
           php-version: "8.2"
           tools: ${{ matrix.tools }}
           extensions: ${{ matrix.extensions }}

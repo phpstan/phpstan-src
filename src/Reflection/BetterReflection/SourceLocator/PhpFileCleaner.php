@@ -148,7 +148,7 @@ final class PhpFileCleaner
 
 					if (
 						substr($this->contents, $this->index, $type['length']) === $type['name']
-						&& $this->match('~.\\b(?<![\\$:>])' . $type['name'] . '\\b~Ais', offset: $this->index - 1)
+						&& $this->match('~.\\b(?<![\\$:>])' . $type['name'] . '\\b~Ais', $match, $this->index - 1)
 					) {
 						if ($maxMatches === 1 && $this->match($type['pattern'], $match, $this->index - 1)) {
 							return $clean . $match[0];

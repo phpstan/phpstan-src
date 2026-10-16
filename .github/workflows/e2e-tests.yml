@@ -2038,13 +2038,13 @@ jobs:
               XDEBUG_HANDLER_DEBUG=1 bin/phpstan analyse test.php 2>&1 | tee -a output.txt
               e2e/bashunit -a file_contains output.txt "Process restarting"
             coverage: "pcov"
-            ini-values: "pcov.enabled=0"
+            ini-values: "pcov.enabled=1"
           - script: |
               echo "<?php echo 'Hello world';" > test.php
               XDEBUG_HANDLER_DEBUG=1 bin/phpstan analyse test.php 2>&1 | tee -a output.txt
               e2e/bashunit -a file_not_contains output.txt "Process restarting"
             coverage: "pcov"
-            ini-values: "pcov.enabled=1"
+            ini-values: "pcov.enabled=0"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

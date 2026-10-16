@@ -810,4 +810,18 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14002(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-14002.php'], []);
+	}
+
+	public function testBug14002Part2(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-14002-2.php'], []);
+	}
+
 }

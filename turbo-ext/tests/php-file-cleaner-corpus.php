@@ -88,6 +88,7 @@ $fixtures = [
 	'short echo tag' => "<?php\nclass A {}\n?>\n<?= 'class NotAClass' ?>\n<?php class B {}\n",
 	'anon class' => "<?php\n\$a = new class extends Foo implements Bar {};\nclass Real {}\n",
 	'property named class' => "<?php\nclass A { public \$class = 1; }\n\$x = Foo::class;\n\$y = \$obj->class;\n",
+	'class name before global constant' => "<?php\nfunction f() { return Foo::class; }\nconst AFTER_CLASS_NAME = 1;\nfunction className() {}\nconst AFTER_CLASS_PREFIX = 2;\n",
 	'function by reference' => "<?php\nfunction &refFn() {}\nfunction plain(): void {}\n",
 	'namespace braces' => "<?php\nnamespace A\\B { class C {} }\nnamespace D { const E = 1; }\n",
 	'no php tag' => "just text, no php at all\n",

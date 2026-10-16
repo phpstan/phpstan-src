@@ -2030,7 +2030,6 @@ jobs:
               ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
           - script: |
               echo "<?php echo 'Hello world';" > test.php
-              php -m | grep pcov
               XDEBUG_HANDLER_DEBUG=1 bin/phpstan analyse test.php 2>&1 | tee -a output.txt
               e2e/bashunit -a file_contains output.txt "Process restarting"
             coverage: "pcov"

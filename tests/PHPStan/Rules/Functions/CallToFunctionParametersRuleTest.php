@@ -3325,4 +3325,48 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15487(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15487.php'], $this->getBug15487Errors());
+	}
+
+	public function testBug15487ImplicitMixed(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15487.php'], $this->getBug15487Errors());
+	}
+
+	/**
+	 * @return list<array{0: string, 1: int, 2?: string|null}>
+	 */
+	private function getBug15487Errors(): array
+	{
+		return [
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrBox expects Bug15487\\Box<array<int>>, Bug15487\\PositiveIntArrBox given.',
+				56,
+				'Template type T on class Bug15487\\Box is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrBox expects Bug15487\\Box<array<int>>, Bug15487\\Box<array<int<1, max>>> given.',
+				57,
+				'Template type T on class Bug15487\\Box is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrBox expects Bug15487\\Box<array<int>>, Bug15487\\ArrBox given.',
+				58,
+			],
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrBox expects Bug15487\\Box<array<int>>, Bug15487\\Box<array<mixed>> given.',
+				59,
+			],
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrCovariantBox expects Bug15487\\CovariantBox<array<int>>, Bug15487\\ArrCovariantBox given.',
+				77,
+			],
+		];
+	}
+
 }

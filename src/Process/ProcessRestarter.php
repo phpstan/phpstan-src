@@ -8,6 +8,7 @@ use function count;
 use function extension_loaded;
 use function file_get_contents;
 use function file_put_contents;
+use function ini_get;
 use function preg_replace;
 use const PHP_EOL;
 

@@ -60,6 +60,7 @@ final class DeclareHandler implements StmtHandler
 			$scope = $scope->enterDeclareStrictTypes();
 		}
 
+		$variableFlow = null;
 		if ($stmt->stmts !== null) {
 			$result = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
 			$dependencies[] = $result->getDependencies();
@@ -69,9 +70,10 @@ final class DeclareHandler implements StmtHandler
 			$impurePoints = $result->getImpurePoints();
 			$alwaysTerminating = $result->isAlwaysTerminating();
 			$exitPoints = $result->getExitPoints();
+			$variableFlow = $result->getVariableFlow();
 		}
 
-		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, dependencies: Dependencies::merge(...$dependencies));
+		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $variableFlow, dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

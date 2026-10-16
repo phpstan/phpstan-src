@@ -2028,6 +2028,12 @@ jobs:
               ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
               ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
               ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+          - script: |
+              echo "<?php echo 'Hello world';" > test.php
+              XDEBUG_HANDLER_DEBUG=1 bin/phpstan analyse test.php 2> output.txt
+              ../bashunit -a file_contains output.txt "Process restarting"
+              cat output.txt
+            extensions: "pcov"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

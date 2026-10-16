@@ -31,6 +31,8 @@ use function constant;
 use function count;
 use function defined;
 use function function_exists;
+use function get_included_files;
+use function ini_get;
 use function interface_exists;
 use function is_array;
 use function is_file;
@@ -68,6 +70,9 @@ final class AutoloadSourceLocator implements SourceLocator
 
 	/** @var array<string, int> */
 	private array $startLineByClass = [];
+
+	/** How many get_included_files() entries invalidateIncludedFiles() has handled. */
+	private static int $invalidatedIncludedFilesCount = 0;
 
 	public function __construct(private FileNodesFetcher $fileNodesFetcher, private bool $executeAutoloadersInFileReadTrap)
 	{
@@ -355,6 +360,8 @@ final class AutoloadSourceLocator implements SourceLocator
 							return [[$composerFile], $className, null];
 						}
 
+						self::invalidateIncludedFiles();
+
 						try {
 							$preExistingAutoloader($className);
 						} catch (ParseError) {
@@ -430,6 +437,33 @@ final class AutoloadSourceLocator implements SourceLocator
 		}
 
 		return $resolvedFile;
+	}
+
+	/**
+	 * An autoloader can include a file that this process already included for real, for example a file
+	 * a bootstrap autoloader included without declaring the class. With OPcache active, the trapped
+	 * include of that file runs the script OPcache compiled from the real file, not the empty script
+	 * FileReadTrapStreamWrapper serves, and dies with "Cannot redeclare". Invalidating the entries of
+	 * the included files makes that include go through the trap. The opcache_invalidate() loop after
+	 * the trap cannot do this, because the include has already run by then. That loop removes the
+	 * empty script the trap left in OPcache.
+	 *
+	 * Only an autoloader that runs inside the trap needs this. findFileWithComposer() includes nothing.
+	 * Forked workers switch OPcache off (see ForkedProcess), so they skip this.
+	 */
+	private static function invalidateIncludedFiles(): void
+	{
+		if (!function_exists('opcache_invalidate') || !(bool) ini_get('opcache.enable') || !(bool) ini_get('opcache.enable_cli')) {
+			return;
+		}
+
+		$includedFiles = get_included_files();
+		$includedFilesCount = count($includedFiles);
+		for ($i = self::$invalidatedIncludedFilesCount; $i < $includedFilesCount; $i++) {
+			opcache_invalidate($includedFiles[$i], true);
+		}
+
+		self::$invalidatedIncludedFilesCount = $includedFilesCount;
 	}
 
 	private function silenceErrors(): void

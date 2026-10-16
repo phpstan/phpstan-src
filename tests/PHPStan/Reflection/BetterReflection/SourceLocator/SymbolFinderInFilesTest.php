@@ -13,6 +13,15 @@ final class SymbolFinderInFilesTest extends PHPStanTestCase
 	 */
 	public static function dataFindSymbols(): iterable
 	{
+		yield 'class name expressions do not hide later global constants' => [
+			__DIR__ . '/data/symbol-finder/class-name-before-global-constant.php',
+			[
+				[],
+				['symbolfinderclassname', 'classname', 'symbolfinderanonymousclass'],
+				['AFTER_CLASS_NAME', 'AFTER_CLASS_PREFIX', 'AFTER_ANONYMOUS_CLASS'],
+			],
+		];
+
 		yield 'namespaced constants do not leak a class entry' => [
 			__DIR__ . '/data/symbol-finder/namespaced-constants.php',
 			[

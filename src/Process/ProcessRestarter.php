@@ -43,7 +43,7 @@ final class ProcessRestarter extends XdebugHandler
 
 			if ($content !== false) {
 				foreach ($this->extensions as $extension) {
-					$regex = '/^\s*(zend_extension\s*=.*' . $extension . '.*)$/mi';
+					$regex = '/^\s*((?:zend_)?extension\s*=.*' . $extension . '.*)$/mi';
 					$content = preg_replace($regex, ';$1', $content) . PHP_EOL;
 				}
 				file_put_contents((string) $this->tmpIni, $content);

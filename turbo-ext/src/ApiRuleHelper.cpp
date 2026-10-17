@@ -12,12 +12,10 @@ static zval pg_lit[7];
 static pt_method_site pg_site_0; /* method_getNamespace_0 */
 static pt_method_site pg_site_1; /* method_getFile_1 */
 static pgrt::FunctionSite pg_site_2; /* function_dirname */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\File\ParentDirectoryRelativePathHelper */
-static pt_method_site pg_site_4; /* method_getFilenameParts_4 */
-static pgrt::FunctionSite pg_site_5; /* function_pathinfo */
-static pgrt::FunctionSite pg_site_6; /* function_str_starts_with */
-static pgrt::FunctionSite pg_site_7; /* function_stripos */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
+static pgrt::FunctionSite pg_site_3; /* function_pathinfo */
+static pgrt::FunctionSite pg_site_4; /* function_str_starts_with */
+static pgrt::FunctionSite pg_site_5; /* function_stripos */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ApiRuleHelper {
 
@@ -78,45 +76,41 @@ namespace pgen::ApiRuleHelper {
 						l_dir = std::move(r7);
 					}
 					 {
-						zval av9[1];
-						ZVAL_COPY_VALUE(&av9[0], l_dir.raw());
-						zend_class_entry *ce10 = pgrt::lookupClass(pg_site_3, "PHPStan\\File\\ParentDirectoryRelativePathHelper", 46);
-						if (UNEXPECTED(ce10 == NULL)) return false;
-						zv::Val n8;
-						if (UNEXPECTED(!pgrt::newObject(ce10, 1, av9, n8.raw(), NULL))) return false;
+						zval n8_raw;
+						if (UNEXPECTED(object_init_ex(&n8_raw, pt_ce_parent_directory_relative_path_helper) != SUCCESS)) return false;
+						zv::Val n8 = zv::Val::adopt(n8_raw);
+						if (UNEXPECTED(!pgen::ParentDirectoryRelativePathHelper::m___construct(Z_OBJ_P(n8.raw()), l_dir.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n8.raw())); return false; }
 						l_helper = std::move(n8);
 					}
 					 {
-						zval av11[1];
-						ZVAL_COPY_VALUE(&av11[0], p_declaringFile);
-						zv::Val r12;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_helper.raw(), "getFilenameParts", "getfilenameparts", 16, 1, av11, r12.raw(), NULL))) return false;
-						l_pathParts = std::move(r12);
+						zv::Val r9;
+						if (UNEXPECTED(!pgen::ParentDirectoryRelativePathHelper::m_getFilenameParts(Z_OBJ_P(l_helper.raw()), p_declaringFile, r9.raw()))) return false;
+						l_pathParts = std::move(r9);
 					}
 					 {
-						zv::Val r13;
-						if (UNEXPECTED(!pgen::ApiRuleHelper::m_createAbsoluteDirectories(Z_OBJ_P(&this_zv), l_dir.raw(), l_pathParts.raw(), r13.raw()))) return false;
-						l_directories = std::move(r13);
+						zv::Val r10;
+						if (UNEXPECTED(!pgen::ApiRuleHelper::m_createAbsoluteDirectories(Z_OBJ_P(&this_zv), l_dir.raw(), l_pathParts.raw(), r10.raw()))) return false;
+						l_directories = std::move(r10);
 					}
 					 {
-						zv::Val a15 = zv::Val::copyOf(zv::Ref(l_directories.raw()).deref());
-						HashTable *ht14 = Z_ARRVAL_P(a15.raw());
-						zval *v16;
-						zend_ulong n17;
-						zend_string *s18;
-						ZEND_HASH_FOREACH_KEY_VAL(ht14, n17, s18, v16) {
-							(void) n17; (void) s18;
-							l_directory = zv::Ref(v16).deref().raw();
+						zv::Val a12 = zv::Val::copyOf(zv::Ref(l_directories.raw()).deref());
+						HashTable *ht11 = Z_ARRVAL_P(a12.raw());
+						zval *v13;
+						zend_ulong n14;
+						zend_string *s15;
+						ZEND_HASH_FOREACH_KEY_VAL(ht11, n14, s15, v13) {
+							(void) n14; (void) s15;
+							l_directory = zv::Ref(v13).deref().raw();
 							 {
 								 {
-									zval av21[2];
-									ZVAL_COPY_VALUE(&av21[0], l_directory);
-									zval z22;
-									ZVAL_LONG(&z22, 2);
-									ZVAL_COPY_VALUE(&av21[1], &z22);
-									zv::Val r23;
-									if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "pathinfo", 8, pt_ce_api_rule_helper, 2, av21, r23.raw(), NULL))) return false;
-									if (zend_is_identical(r23.raw(), &pg_lit[0])) {
+									zval av18[2];
+									ZVAL_COPY_VALUE(&av18[0], l_directory);
+									zval z19;
+									ZVAL_LONG(&z19, 2);
+									ZVAL_COPY_VALUE(&av18[1], &z19);
+									zv::Val r20;
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "pathinfo", 8, pt_ce_api_rule_helper, 2, av18, r20.raw(), NULL))) return false;
+									if (zend_is_identical(r20.raw(), &pg_lit[0])) {
 										 {
 											*ret = true;
 											return true;
@@ -136,9 +130,9 @@ namespace pgen::ApiRuleHelper {
 		}
 	}
 	 {
-		bool r24;
-		if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), p_namespace, &r24))) return false;
-		*ret = r24;
+		bool r21;
+		if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), p_namespace, &r21))) return false;
+		*ret = r21;
 		return true;
 	}
 }
@@ -230,7 +224,7 @@ namespace pgen::ApiRuleHelper {
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::strMatch(pg_site_6, "str_starts_with", 15, pgrt::StrMatch::STARTS, p_namespace, &pg_lit[4], r2.raw()))) return false;
+		if (UNEXPECTED(!pgrt::strMatch(pg_site_4, "str_starts_with", 15, pgrt::StrMatch::STARTS, p_namespace, &pg_lit[4], r2.raw()))) return false;
 		if (Z_TYPE_P(r2.raw()) == IS_TRUE) {
 			 {
 				*ret = false;
@@ -240,7 +234,7 @@ namespace pgen::ApiRuleHelper {
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::strMatch(pg_site_6, "str_starts_with", 15, pgrt::StrMatch::STARTS, p_namespace, &pg_lit[5], r3.raw()))) return false;
+		if (UNEXPECTED(!pgrt::strMatch(pg_site_4, "str_starts_with", 15, pgrt::StrMatch::STARTS, p_namespace, &pg_lit[5], r3.raw()))) return false;
 		if (Z_TYPE_P(r3.raw()) == IS_TRUE) {
 			 {
 				*ret = false;
@@ -253,7 +247,7 @@ namespace pgen::ApiRuleHelper {
 		ZVAL_COPY_VALUE(&av4[0], p_namespace);
 		ZVAL_COPY_VALUE(&av4[1], &pg_lit[6]);
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "stripos", 7, pt_ce_api_rule_helper, 2, av4, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "stripos", 7, pt_ce_api_rule_helper, 2, av4, r5.raw(), NULL))) return false;
 		*ret = (Z_TYPE_P(r5.raw()) == IS_LONG && Z_LVAL_P(r5.raw()) == 0);
 		return true;
 	}
@@ -291,7 +285,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ApiRuleHelper)
 			Z_PARAM_STR(p_namespace_str)
 			Z_PARAM_STR_OR_NULL(p_declaringFile_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		if (p_namespace_str != NULL) { ZVAL_STR(&p_namespace_zv, p_namespace_str); p_namespace = &p_namespace_zv; }
 		if (p_declaringFile_str != NULL) { ZVAL_STR(&p_declaringFile_zv, p_declaringFile_str); p_declaringFile = &p_declaringFile_zv; }
 		if (p_declaringFile == NULL) p_declaringFile = &p_declaringFile_null;

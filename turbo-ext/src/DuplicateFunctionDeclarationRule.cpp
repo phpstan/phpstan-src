@@ -63,19 +63,29 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			q5 = std::move(o6);
 		}
 		}
-		zval av7[1];
-		ZVAL_COPY_VALUE(&av7[0], q5.raw());
-		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, o2.raw(), "getRelativePath", "getrelativepath", 15, 1, av7, r8.raw(), NULL))) return;
-		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_function, "getStartLine", "getstartline", 12, 0, NULL, r9.raw(), NULL))) return;
-		pgrt::StringBuilder sb10;
-		sb10.appendLiteral("- ", 2);
-		if (UNEXPECTED(!sb10.append(r8.raw()))) return;
-		sb10.appendLiteral(":", 1);
-		sb10.appendLong(Z_LVAL_P(r9.raw()));
-		zv::Val r11 = sb10.finish();
-		*return_value = r11.take();
+		zv::Val vd7;
+		zend_class_entry *vd7_ce = Z_TYPE_P(o2.raw()) == IS_OBJECT ? Z_OBJCE_P(o2.raw()) : NULL;
+		bool vd7_done = false;
+		if (vd7_ce == pt_ce_parent_directory_relative_path_helper) {
+			zv::Val r8;
+			if (UNEXPECTED(!pgen::ParentDirectoryRelativePathHelper::m_getRelativePath(Z_OBJ_P(o2.raw()), q5.raw(), r8.raw()))) return;
+			vd7 = std::move(r8);
+			vd7_done = true;
+		}
+		if (!vd7_done) {
+			zval av9[1];
+			ZVAL_COPY_VALUE(&av9[0], q5.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, o2.raw(), "getRelativePath", "getrelativepath", 15, 1, av9, vd7.raw()))) return;
+		}
+		zv::Val r10;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_function, "getStartLine", "getstartline", 12, 0, NULL, r10.raw(), NULL))) return;
+		pgrt::StringBuilder sb11;
+		sb11.appendLiteral("- ", 2);
+		if (UNEXPECTED(!sb11.append(vd7.raw()))) return;
+		sb11.appendLiteral(":", 1);
+		sb11.appendLong(Z_LVAL_P(r10.raw()));
+		zv::Val r12 = sb11.finish();
+		*return_value = r12.take();
 		return;
 	}
 }

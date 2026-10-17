@@ -42,57 +42,100 @@ namespace pgen::ReadOnlyByPhpDocPropertyRule {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "isReadOnlyByPhpDoc", "isreadonlybyphpdoc", 18, 0, NULL, r3.raw(), NULL))) return false;
-		bool b2 = zend_is_true(r3.raw());
+		zv::Val vd3;
+		zend_class_entry *vd3_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd3_done = false;
+		if (vd3_ce == pt_ce_class_property_node) {
+			bool r4;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_isReadOnlyByPhpDoc(Z_OBJ_P(p_node), &r4))) return false;
+			zv::Val o5 = zv::Val::boolean(r4);
+			vd3 = std::move(o5);
+			vd3_done = true;
+		}
+		if (!vd3_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "isReadOnlyByPhpDoc", "isreadonlybyphpdoc", 18, 0, NULL, vd3.raw()))) return false;
+		}
+		bool b2 = zend_is_true(vd3.raw());
 		if (b2) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "isAllowedPrivateMutation", "isallowedprivatemutation", 24, 0, NULL, r4.raw(), NULL))) return false;
-			b2 = !(zend_is_true(r4.raw()));
+			zv::Val vd6;
+			zend_class_entry *vd6_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+			bool vd6_done = false;
+			if (vd6_ce == pt_ce_class_property_node) {
+				bool r7;
+				if (UNEXPECTED(!pgen::ClassPropertyNode::m_isAllowedPrivateMutation(Z_OBJ_P(p_node), &r7))) return false;
+				zv::Val o8 = zv::Val::boolean(r7);
+				vd6 = std::move(o8);
+				vd6_done = true;
+			}
+			if (!vd6_done) {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "isAllowedPrivateMutation", "isallowedprivatemutation", 24, 0, NULL, vd6.raw()))) return false;
+			}
+			b2 = !(zend_is_true(vd6.raw()));
 		}
 		bool b1 = !(b2);
 		if (!b1) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "isReadOnly", "isreadonly", 10, 0, NULL, r5.raw(), NULL))) return false;
-			b1 = zend_is_true(r5.raw());
+			zv::Val vd9;
+			zend_class_entry *vd9_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+			bool vd9_done = false;
+			if (vd9_ce == pt_ce_class_property_node) {
+				bool r10;
+				if (UNEXPECTED(!pgen::ClassPropertyNode::m_isReadOnly(Z_OBJ_P(p_node), &r10))) return false;
+				zv::Val o11 = zv::Val::boolean(r10);
+				vd9 = std::move(o11);
+				vd9_done = true;
+			}
+			if (!vd9_done) {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "isReadOnly", "isreadonly", 10, 0, NULL, vd9.raw()))) return false;
+			}
+			b1 = zend_is_true(vd9.raw());
 		}
 		if (b1) {
 			 {
-				zval arr6_raw;
-				ZVAL_EMPTY_ARRAY(&arr6_raw);
-				ZVAL_COPY(ret, &arr6_raw);
+				zval arr12_raw;
+				ZVAL_EMPTY_ARRAY(&arr12_raw);
+				ZVAL_COPY(ret, &arr12_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval arr7_raw;
-		ZVAL_EMPTY_ARRAY(&arr7_raw);
-		zv::Val o8 = zv::Val::copyOf(zv::Ref(&arr7_raw));
-		l_errors = std::move(o8);
+		zval arr13_raw;
+		ZVAL_EMPTY_ARRAY(&arr13_raw);
+		zv::Val o14 = zv::Val::copyOf(zv::Ref(&arr13_raw));
+		l_errors = std::move(o14);
 	}
 	 {
-		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getDefault", "getdefault", 10, 0, NULL, r9.raw(), NULL))) return false;
-		if (!(Z_TYPE_P(r9.raw()) == IS_NULL)) {
+		zv::Val vd15;
+		zend_class_entry *vd15_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd15_done = false;
+		if (vd15_ce == pt_ce_class_property_node) {
+			zv::Val r16;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getDefault(Z_OBJ_P(p_node), r16.raw()))) return false;
+			vd15 = std::move(r16);
+			vd15_done = true;
+		}
+		if (!vd15_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getDefault", "getdefault", 10, 0, NULL, vd15.raw()))) return false;
+		}
+		if (!(Z_TYPE_P(vd15.raw()) == IS_NULL)) {
 			 {
-				zval av10[1];
-				ZVAL_COPY_VALUE(&av10[0], &pg_lit[1]);
-				zend_class_entry *ce11 = pgrt::lookupClass(pg_site_4, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-				if (UNEXPECTED(ce11 == NULL)) return false;
-				zv::Val r12;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_5, ce11, "message", 7, 1, av10, r12.raw(), NULL))) return false;
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], &pg_lit[2]);
-				zv::Val r14;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r12.raw(), "identifier", "identifier", 10, 1, av13, r14.raw(), NULL))) return false;
-				zv::Val r15;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r14.raw(), "build", "build", 5, 0, NULL, r15.raw(), NULL))) return false;
-				zv::Val o16 = zv::Val::copyOf(zv::Ref(r15.raw()));
-				zval *w17 = zv::Ref(l_errors.raw()).deref().raw();
-				if (Z_TYPE_P(w17) <= IS_NULL) { zval_ptr_dtor(w17); array_init(w17); } else if (UNEXPECTED(Z_TYPE_P(w17) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w17);
-				{ zval v = o16.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w17), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+				zval av17[1];
+				ZVAL_COPY_VALUE(&av17[0], &pg_lit[1]);
+				zend_class_entry *ce18 = pgrt::lookupClass(pg_site_4, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+				if (UNEXPECTED(ce18 == NULL)) return false;
+				zv::Val r19;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_5, ce18, "message", 7, 1, av17, r19.raw(), NULL))) return false;
+				zval av20[1];
+				ZVAL_COPY_VALUE(&av20[0], &pg_lit[2]);
+				zv::Val r21;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r19.raw(), "identifier", "identifier", 10, 1, av20, r21.raw(), NULL))) return false;
+				zv::Val r22;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r21.raw(), "build", "build", 5, 0, NULL, r22.raw(), NULL))) return false;
+				zv::Val o23 = zv::Val::copyOf(zv::Ref(r22.raw()));
+				zval *w24 = zv::Ref(l_errors.raw()).deref().raw();
+				if (Z_TYPE_P(w24) <= IS_NULL) { zval_ptr_dtor(w24); array_init(w24); } else if (UNEXPECTED(Z_TYPE_P(w24) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w24);
+				{ zval v = o23.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w24), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 			}
 		}
 	}

@@ -20,19 +20,13 @@ static pt_method_site pg_site_7; /* static_PHPStan\Type\Generic\TemplateTypeVari
 static pt_method_site pg_site_8; /* static_PHPStan\Type\Generic\TemplateTypeVariance::createInvariant */
 static pt_method_site pg_site_9; /* method_getReadableType_9 */
 static pt_method_site pg_site_10; /* method_getDisplayName_10 */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Internal\SprintfHelper */
-static pt_method_site pg_site_12; /* static_PHPStan\Internal\SprintfHelper::escapeFormatString */
-static pt_method_site pg_site_13; /* method_getName_13 */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_15; /* method_isReadOnly_15 */
-static pt_method_site pg_site_16; /* method_isReadOnlyByPhpDoc_16 */
-static pt_method_site pg_site_17; /* method_isPrivateSet_17 */
-static pt_method_site pg_site_18; /* method_getHooks_18 */
-static pgrt::PropSite pg_site_19; /* prop_name_19 */
-static pgrt::PropSite pg_site_20; /* prop_name_20 */
-static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Rules\Generics\VarianceCheck */
-static pgrt::ClassSite pg_site_22; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_23; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Type */
+static pgrt::PropSite pg_site_13; /* prop_name_13 */
+static pgrt::PropSite pg_site_14; /* prop_name_14 */
+static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Rules\Generics\VarianceCheck */
+static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::PropertyVarianceRule {
 
@@ -156,7 +150,7 @@ namespace pgen::PropertyVarianceRule {
 		}
 	}
 	 {
-		if (UNEXPECTED(!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Node\\ClassPropertyNode", 30))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\PropertyVarianceRule::hasRestrictedWriteAccess", 1, "node", "PHPStan\\Node\\ClassPropertyNode", p_node); return false; }
+		if (UNEXPECTED(!((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Node\\ClassPropertyNode", 30))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\PropertyVarianceRule::hasRestrictedWriteAccess", 1, "node", "PHPStan\\Node\\ClassPropertyNode", p_node); return false; }
 		bool r13;
 		if (UNEXPECTED(!pgen::PropertyVarianceRule::m_hasRestrictedWriteAccess(Z_OBJ_P(&this_zv), p_node, &r13))) return false;
 		zv::Val q14;
@@ -196,37 +190,31 @@ namespace pgen::PropertyVarianceRule {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r21.raw()))) return false;
 		}
 		}
-		zval av22[1];
-		ZVAL_COPY_VALUE(&av22[0], r21.raw());
-		zend_class_entry *ce23 = pgrt::lookupClass(pg_site_11, "PHPStan\\Internal\\SprintfHelper", 30);
-		if (UNEXPECTED(ce23 == NULL)) return false;
-		zv::Val r24;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_12, ce23, "escapeformatstring", 18, 1, av22, r24.raw(), NULL))) return false;
-		zv::Val r25;
+		if (UNEXPECTED(!(Z_TYPE_P(r21.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", r21.raw()); return false; }
+		zv::Val r22;
+		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(r21.raw(), r22.raw()))) return false;
+		zv::Val r23;
 		if (EXPECTED(Z_TYPE_P(p_node) == IS_OBJECT)) {
-			r25 = pt_type_op(Z_OBJ_P(p_node), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r25.isUndef())) return false;
+			r23 = pt_type_op(Z_OBJ_P(p_node), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r23.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_node, "getName", "getname", 7, 0, NULL, r25.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_node, "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
 		}
 		}
-		zval av26[1];
-		ZVAL_COPY_VALUE(&av26[0], r25.raw());
-		zend_class_entry *ce27 = pgrt::lookupClass(pg_site_11, "PHPStan\\Internal\\SprintfHelper", 30);
-		if (UNEXPECTED(ce27 == NULL)) return false;
-		zv::Val r28;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_12, ce27, "escapeformatstring", 18, 1, av26, r28.raw(), NULL))) return false;
-		pgrt::StringBuilder sb29;
-		sb29.appendLiteral("in property ", 12);
-		if (UNEXPECTED(!sb29.append(r24.raw()))) return false;
-		sb29.appendLiteral("::$", 3);
-		if (UNEXPECTED(!sb29.append(r28.raw()))) return false;
-		zv::Val r30 = sb29.finish();
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r20.raw(), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\VarianceCheck::check", 2, "type", "PHPStan\\Type\\Type", r20.raw()); return false; }
-		zv::Val r31;
-		if (UNEXPECTED(!pgen::VarianceCheck::m_check(Z_OBJ_P(o18.raw()), o19.raw(), r20.raw(), r30.raw(), r31.raw()))) return false;
-		*ret = r31.take();
+		if (UNEXPECTED(!(Z_TYPE_P(r23.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", r23.raw()); return false; }
+		zv::Val r24;
+		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(r23.raw(), r24.raw()))) return false;
+		pgrt::StringBuilder sb25;
+		sb25.appendLiteral("in property ", 12);
+		if (UNEXPECTED(!sb25.append(r22.raw()))) return false;
+		sb25.appendLiteral("::$", 3);
+		if (UNEXPECTED(!sb25.append(r24.raw()))) return false;
+		zv::Val r26 = sb25.finish();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(r20.raw(), pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\VarianceCheck::check", 2, "type", "PHPStan\\Type\\Type", r20.raw()); return false; }
+		zv::Val r27;
+		if (UNEXPECTED(!pgen::VarianceCheck::m_check(Z_OBJ_P(o18.raw()), o19.raw(), r20.raw(), r26.raw(), r27.raw()))) return false;
+		*ret = r27.take();
 		return true;
 	}
 }
@@ -240,13 +228,13 @@ namespace pgen::PropertyVarianceRule {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_node, "isReadOnly", "isreadonly", 10, 0, NULL, r2.raw(), NULL))) return false;
-		bool b1 = (Z_TYPE_P(r2.raw()) == IS_TRUE);
+		bool r2;
+		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isReadOnly(Z_OBJ_P(p_node), &r2))) return false;
+		bool b1 = r2;
 		if (!b1) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p_node, "isReadOnlyByPhpDoc", "isreadonlybyphpdoc", 18, 0, NULL, r3.raw(), NULL))) return false;
-			b1 = (Z_TYPE_P(r3.raw()) == IS_TRUE);
+			bool r3;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_isReadOnlyByPhpDoc(Z_OBJ_P(p_node), &r3))) return false;
+			b1 = r3;
 		}
 		if (b1) {
 			 {
@@ -256,9 +244,9 @@ namespace pgen::PropertyVarianceRule {
 		}
 	}
 	 {
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_node, "isPrivateSet", "isprivateset", 12, 0, NULL, r4.raw(), NULL))) return false;
-		if (Z_TYPE_P(r4.raw()) == IS_TRUE) {
+		bool r4;
+		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isPrivateSet(Z_OBJ_P(p_node), &r4))) return false;
+		if (r4) {
 			 {
 				*ret = true;
 				return true;
@@ -267,7 +255,7 @@ namespace pgen::PropertyVarianceRule {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_node, "getHooks", "gethooks", 8, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getHooks(Z_OBJ_P(p_node), r5.raw()))) return false;
 		l_hooks = std::move(r5);
 	}
 	 {
@@ -292,13 +280,13 @@ namespace pgen::PropertyVarianceRule {
 			 {
 				 {
 					zv::Val o15;
-					zval *p14 = Z_TYPE_P(l_hook) == IS_OBJECT ? pgrt::propCached(pg_site_19, Z_OBJ_P(l_hook), "name", 4) : NULL;
+					zval *p14 = Z_TYPE_P(l_hook) == IS_OBJECT ? pgrt::propCached(pg_site_13, Z_OBJ_P(l_hook), "name", 4) : NULL;
 					if (UNEXPECTED(p14 == NULL || Z_ISUNDEF_P(p14))) {
 						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_hook, pt_ce_property_variance_rule, "name", 4, o15.raw()))) return false;
 						p14 = o15.raw();
 					}
 					zv::Val o17;
-					zval *p16 = Z_TYPE_P(zv::Ref(p14).deref().raw()) == IS_OBJECT ? pgrt::propCached(pg_site_20, Z_OBJ_P(zv::Ref(p14).deref().raw()), "name", 4) : NULL;
+					zval *p16 = Z_TYPE_P(zv::Ref(p14).deref().raw()) == IS_OBJECT ? pgrt::propCached(pg_site_14, Z_OBJ_P(zv::Ref(p14).deref().raw()), "name", 4) : NULL;
 					if (UNEXPECTED(p16 == NULL || Z_ISUNDEF_P(p16))) {
 						if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(p14).deref().raw(), pt_ce_property_variance_rule, "name", 4, o17.raw()))) return false;
 						p16 = o17.raw();
@@ -337,7 +325,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyVarianceRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_varianceCheck)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_varianceCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_varianceCheck) == IS_OBJECT && Z_OBJCE_P(p_varianceCheck) == pt_ce_variance_check) || pgrt::instanceOfClass(p_varianceCheck, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Rules\\Generics\\VarianceCheck", 36))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\VarianceCheck", zend_zval_value_name(p_varianceCheck)); RETURN_THROWS(); }
+		if (p_varianceCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_varianceCheck) == IS_OBJECT && Z_OBJCE_P(p_varianceCheck) == pt_ce_variance_check) || pgrt::instanceOfClass(p_varianceCheck, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Rules\\Generics\\VarianceCheck", 36))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\VarianceCheck", zend_zval_value_name(p_varianceCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::PropertyVarianceRule::m___construct(Z_OBJ_P(ZEND_THIS), p_varianceCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\PropertyVarianceRule::getNodeType() */
@@ -352,8 +340,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyVarianceRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_22, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PropertyVarianceRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -362,7 +350,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyVarianceRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Node\\ClassPropertyNode", 30)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::PropertyVarianceRule::m_hasRestrictedWriteAccess(Z_OBJ_P(ZEND_THIS), p_node, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

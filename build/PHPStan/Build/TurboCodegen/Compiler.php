@@ -274,8 +274,11 @@ final class Compiler
 		}
 
 		$returnType = $reflection->getReturnType();
-		if ($method->name->toLowerString() === '__construct' || $returnType === null) {
+		if ($method->name->toLowerString() === '__construct' || ($returnType === null && !$this->returnsValue($method->stmts ?? []))) {
 			$return = new ReturnInfo('void', new VoidType(), 'void');
+		} elseif ($returnType === null) {
+			// no declaration, but a value returned: mixed
+			$return = new ReturnInfo('zval', new MixedType(), 'mixed');
 		} else {
 			[$kind, $declared, $describe, $class, $nullable] = $this->lowerDeclaredType($returnType, $unit, false);
 			if ($kind === 'callable') {
@@ -294,6 +297,40 @@ final class Compiler
 			$method,
 			$trait,
 		);
+	}
+
+	/**
+	 * Whether a body returns a value (closures and nested functions aside).
+	 *
+	 * @param array<Stmt> $stmts
+	 */
+	private function returnsValue(array $stmts): bool
+	{
+		$stack = $stmts;
+		while ($stack !== []) {
+			$node = array_pop($stack);
+			if ($node instanceof Stmt\Return_ && $node->expr !== null) {
+				return true;
+			}
+			if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction || $node instanceof Stmt\Function_ || $node instanceof Stmt\Class_) {
+				continue;
+			}
+			foreach ($node->getSubNodeNames() as $name) {
+				$sub = $node->$name;
+				if ($sub instanceof Node) {
+					$stack[] = $sub;
+				} elseif (is_array($sub)) {
+					foreach ($sub as $item) {
+						if (!($item instanceof Node)) {
+							continue;
+						}
+
+						$stack[] = $item;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -3756,7 +3793,21 @@ final class Compiler
 
 	private function hasSideEffects(Expr $expr): bool
 	{
-		return $this->finder->findFirst([$expr], static fn (Node $n): bool => $n instanceof Expr\CallLike || $n instanceof Expr\Assign || $n instanceof Expr\AssignOp || $n instanceof Expr\Throw_) !== null;
+		return $this->finder->findFirst([$expr], static fn (Node $n): bool => ($n instanceof Expr\CallLike && !self::isPureBuiltinCall($n)) || $n instanceof Expr\Assign || $n instanceof Expr\AssignOp || $n instanceof Expr\AssignRef || $n instanceof Expr\PreInc || $n instanceof Expr\PreDec || $n instanceof Expr\PostInc || $n instanceof Expr\PostDec || $n instanceof Expr\Throw_) !== null;
+	}
+
+	/** a call of a builtin that only computes from its (by-value) arguments */
+	private static function isPureBuiltinCall(Expr\CallLike $call): bool
+	{
+		if (!$call instanceof Expr\FuncCall || !$call->name instanceof Node\Name) {
+			return false;
+		}
+		return in_array($call->name->toLowerString(), [
+			'strtolower', 'strtoupper', 'ucfirst', 'lcfirst', 'trim', 'ltrim', 'rtrim', 'strlen', 'substr', 'str_replace',
+			'sprintf', 'implode', 'count', 'is_int', 'is_string', 'is_bool', 'is_array', 'is_object', 'is_null', 'is_float',
+			'array_keys', 'array_values', 'in_array', 'array_key_exists', 'spl_object_id', 'get_class', 'strpos', 'str_contains',
+			'str_starts_with', 'str_ends_with', 'abs', 'min', 'max', 'intdiv', 'array_merge', 'array_slice', 'max', 'md5', 'sha1',
+		], true);
 	}
 
 	/** pins a value so later side effects cannot change what it reads */

@@ -81,35 +81,57 @@ namespace pgen::PropertyTagTraitRule {
 		zv::Val o6 = zv::Val::copyOf(zv::Ref(p5));
 		zv::Val r7;
 		if (UNEXPECTED(!pgrt::nameToString(pg_site_1, l_traitName.raw(), r7.raw()))) return false;
-		zval av8[1];
-		ZVAL_COPY_VALUE(&av8[0], r7.raw());
-		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, o6.raw(), "hasClass", "hasclass", 8, 1, av8, r9.raw(), NULL))) return false;
-		if (!((Z_TYPE_P(r9.raw()) == IS_TRUE))) {
+		zv::Val vd8;
+		zend_class_entry *vd8_ce = Z_TYPE_P(o6.raw()) == IS_OBJECT ? Z_OBJCE_P(o6.raw()) : NULL;
+		bool vd8_done = false;
+		if (vd8_ce == pt_ce_memoizing_reflection_provider) {
+			if (UNEXPECTED(!(Z_TYPE_P(r7.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", r7.raw()); return false; }
+			bool r9;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(o6.raw()), r7.raw(), &r9))) return false;
+			zv::Val o10 = zv::Val::boolean(r9);
+			vd8 = std::move(o10);
+			vd8_done = true;
+		}
+		if (!vd8_done) {
+			zval av11[1];
+			ZVAL_COPY_VALUE(&av11[0], r7.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, o6.raw(), "hasClass", "hasclass", 8, 1, av11, vd8.raw()))) return false;
+		}
+		if (!((Z_TYPE_P(vd8.raw()) == IS_TRUE))) {
 			 {
-				zval arr10_raw;
-				ZVAL_EMPTY_ARRAY(&arr10_raw);
-				ZVAL_COPY(ret, &arr10_raw);
+				zval arr12_raw;
+				ZVAL_EMPTY_ARRAY(&arr12_raw);
+				ZVAL_COPY(ret, &arr12_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PropertyTagTraitRule::slot::check, "check");
-		if (UNEXPECTED(p11 == NULL)) return false;
-		zv::Val o12 = zv::Val::copyOf(zv::Ref(p11));
-		zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PropertyTagTraitRule::slot::reflectionProvider, "reflectionProvider");
+		zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PropertyTagTraitRule::slot::check, "check");
 		if (UNEXPECTED(p13 == NULL)) return false;
 		zv::Val o14 = zv::Val::copyOf(zv::Ref(p13));
-		zv::Val r15;
-		if (UNEXPECTED(!pgrt::nameToString(pg_site_3, l_traitName.raw(), r15.raw()))) return false;
-		zval av16[1];
-		ZVAL_COPY_VALUE(&av16[0], r15.raw());
+		zval *p15 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PropertyTagTraitRule::slot::reflectionProvider, "reflectionProvider");
+		if (UNEXPECTED(p15 == NULL)) return false;
+		zv::Val o16 = zv::Val::copyOf(zv::Ref(p15));
 		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, o14.raw(), "getClass", "getclass", 8, 1, av16, r17.raw(), NULL))) return false;
-		zv::Val r18;
-		if (UNEXPECTED(!pgen::PropertyTagCheck::m_checkInTraitDefinitionContext(Z_OBJ_P(o12.raw()), r17.raw(), r18.raw()))) return false;
-		*ret = r18.take();
+		if (UNEXPECTED(!pgrt::nameToString(pg_site_3, l_traitName.raw(), r17.raw()))) return false;
+		zv::Val vd18;
+		zend_class_entry *vd18_ce = Z_TYPE_P(o16.raw()) == IS_OBJECT ? Z_OBJCE_P(o16.raw()) : NULL;
+		bool vd18_done = false;
+		if (vd18_ce == pt_ce_memoizing_reflection_provider) {
+			zv::Val r19;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(o16.raw()), r17.raw(), r19.raw()))) return false;
+			vd18 = std::move(r19);
+			vd18_done = true;
+		}
+		if (!vd18_done) {
+			zval av20[1];
+			ZVAL_COPY_VALUE(&av20[0], r17.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, o16.raw(), "getClass", "getclass", 8, 1, av20, vd18.raw()))) return false;
+		}
+		zv::Val r21;
+		if (UNEXPECTED(!pgen::PropertyTagCheck::m_checkInTraitDefinitionContext(Z_OBJ_P(o14.raw()), vd18.raw(), r21.raw()))) return false;
+		*ret = r21.take();
 		return true;
 	}
 }

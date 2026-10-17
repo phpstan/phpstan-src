@@ -6,8 +6,10 @@ use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[ReferencedByTurboExtension(key: 'variableAssignNode')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableAssignNode.cpp')]
 final class VariableAssignNode extends NodeAbstract implements VirtualNode
 {
 

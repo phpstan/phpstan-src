@@ -1517,7 +1517,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 			Z_PARAM_OBJECT(p_phpVersion)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
-		if (p_phpVersion != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Php\\PhpVersion", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
+		if (p_phpVersion != NULL && UNEXPECTED(!((Z_TYPE_P(p_phpVersion) == IS_OBJECT && Z_OBJCE_P(p_phpVersion) == pt_ce_php_version) || pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Php\\PhpVersion", 22))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_looseCompare(Z_OBJ_P(ZEND_THIS), p_type, p_phpVersion, return_value))) RETURN_THROWS();
 	});

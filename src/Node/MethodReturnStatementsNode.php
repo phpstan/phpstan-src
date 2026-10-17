@@ -13,12 +13,14 @@ use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'methodReturnStatementsNode')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MethodReturnStatementsNode.cpp')]
 final class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

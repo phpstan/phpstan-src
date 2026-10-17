@@ -16,41 +16,39 @@ static pt_method_site pg_site_3; /* method_isInExpressionAssign_3 */
 static pt_method_site pg_site_4; /* method_isUndefinedExpressionAllowed_4 */
 static pt_method_site pg_site_5; /* method_hasOffsetValueType_5 */
 static pt_method_site pg_site_6; /* method_isArray_6 */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\Arrays\AllowedArrayKeysTypes */
-static pt_method_site pg_site_8; /* static_PHPStan\Rules\Arrays\AllowedArrayKeysTypes::getType */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Type\NeverType */
-static pt_method_site pg_site_10; /* method_getConstantStrings_10 */
-static pt_method_site pg_site_11; /* method_describe_11 */
-static pt_method_site pg_site_12; /* method_describe_12 */
-static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_14; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_15; /* method_identifier_15 */
-static pt_method_site pg_site_16; /* method_build_16 */
-static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Type\BenevolentUnionType */
-static pt_method_site pg_site_18; /* static_PHPStan\Type\TypeUtils::flattenTypes */
-static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Type\MixedType */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\NeverType */
+static pt_method_site pg_site_8; /* method_getConstantStrings_8 */
+static pt_method_site pg_site_9; /* method_describe_9 */
+static pt_method_site pg_site_10; /* method_describe_10 */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\RuleErrorBuilder */
+static pt_method_site pg_site_12; /* static_PHPStan\Rules\RuleErrorBuilder::message */
+static pt_method_site pg_site_13; /* method_identifier_13 */
+static pt_method_site pg_site_14; /* method_build_14 */
+static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Type\BenevolentUnionType */
+static pt_method_site pg_site_16; /* static_PHPStan\Type\TypeUtils::flattenTypes */
+static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Type\MixedType */
+static pt_method_site pg_site_18; /* method_isArray_18 */
+static pt_method_site pg_site_19; /* method_yes_19 */
 static pt_method_site pg_site_20; /* method_isArray_20 */
 static pt_method_site pg_site_21; /* method_yes_21 */
-static pt_method_site pg_site_22; /* method_isArray_22 */
+static pt_method_site pg_site_22; /* method_isConstantArray_22 */
 static pt_method_site pg_site_23; /* method_yes_23 */
-static pt_method_site pg_site_24; /* method_isConstantArray_24 */
+static pt_method_site pg_site_24; /* method_hasOffsetValueType_24 */
 static pt_method_site pg_site_25; /* method_yes_25 */
-static pt_method_site pg_site_26; /* method_hasOffsetValueType_26 */
+static pt_method_site pg_site_26; /* method_isConstantArray_26 */
 static pt_method_site pg_site_27; /* method_yes_27 */
-static pt_method_site pg_site_28; /* method_isConstantArray_28 */
+static pt_method_site pg_site_28; /* method_hasOffsetValueType_28 */
 static pt_method_site pg_site_29; /* method_yes_29 */
-static pt_method_site pg_site_30; /* method_hasOffsetValueType_30 */
-static pt_method_site pg_site_31; /* method_yes_31 */
-static pt_method_site pg_site_32; /* method_isConstantScalarValue_32 */
-static pt_method_site pg_site_33; /* method_hasOffsetValueType_33 */
-static pt_method_site pg_site_34; /* method_no_34 */
-static pt_method_site pg_site_35; /* method_getConstantStrings_35 */
-static pt_method_site pg_site_36; /* method_describe_36 */
-static pt_method_site pg_site_37; /* method_describe_37 */
-static pt_method_site pg_site_38; /* method_identifier_38 */
-static pt_method_site pg_site_39; /* method_build_39 */
-static pgrt::ClassSite pg_site_40; /* cls_PHPStan\Analyser\Scope */
-static pgrt::ClassSite pg_site_41; /* cls_PhpParser\Node\Expr */
+static pt_method_site pg_site_30; /* method_isConstantScalarValue_30 */
+static pt_method_site pg_site_31; /* method_hasOffsetValueType_31 */
+static pt_method_site pg_site_32; /* method_no_32 */
+static pt_method_site pg_site_33; /* method_getConstantStrings_33 */
+static pt_method_site pg_site_34; /* method_describe_34 */
+static pt_method_site pg_site_35; /* method_describe_35 */
+static pt_method_site pg_site_36; /* method_identifier_36 */
+static pt_method_site pg_site_37; /* method_build_37 */
+static pgrt::ClassSite pg_site_38; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_39; /* cls_PhpParser\Node\Expr */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -219,10 +217,10 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r20.raw()), &r21))) return false;
 				if (r21) {
 					 {
-						zend_class_entry *ce22 = pgrt::lookupClass(pg_site_7, "PHPStan\\Rules\\Arrays\\AllowedArrayKeysTypes", 42);
-						if (UNEXPECTED(ce22 == NULL)) return false;
+						zval d22;
+						ZVAL_NULL(&d22);
 						zv::Val r23;
-						if (UNEXPECTED(!pgrt::callStatic(pg_site_8, ce22, "gettype", 7, 0, NULL, r23.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgen::AllowedArrayKeysTypes::m_getType(&d22, false, r23.raw()))) return false;
 						zv::Val o24 = zv::Val::copyOf(zv::Ref(p_dimType));
 						zval vv25[2];
 						ZVAL_COPY_VALUE(&vv25[0], r23.raw());
@@ -235,7 +233,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 						l_validArrayDimType = std::move(r26);
 					}
 					 {
-						if (pgrt::instanceOfClass(l_validArrayDimType.raw(), pt_ce_never_type) || pgrt::instanceOfClass(l_validArrayDimType.raw(), pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\NeverType", 22))) {
+						if (pgrt::instanceOfClass(l_validArrayDimType.raw(), pt_ce_never_type) || pgrt::instanceOfClass(l_validArrayDimType.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\NeverType", 22))) {
 							 {
 								zval arr27_raw;
 								ZVAL_EMPTY_ARRAY(&arr27_raw);
@@ -259,7 +257,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 					vd30_done = true;
 				}
 				if (!vd30_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_dimType, "getConstantStrings", "getconstantstrings", 18, 0, NULL, vd30.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_dimType, "getConstantStrings", "getconstantstrings", 18, 0, NULL, vd30.raw()))) return false;
 				}
 				zv::Val q32;
 				if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(vd30.raw())) > 0) {
@@ -283,7 +281,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 					if (UNEXPECTED(r36.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, o29.raw(), "describe", "describe", 8, 1, av35, r36.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, o29.raw(), "describe", "describe", 8, 1, av35, r36.raw(), NULL))) return false;
 				}
 				}
 				zv::Val o37 = zv::Val::copyOf(zv::Ref(l_type.raw()));
@@ -298,7 +296,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 					if (UNEXPECTED(r40.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, o37.raw(), "describe", "describe", 8, 1, av39, r40.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, o37.raw(), "describe", "describe", 8, 1, av39, r40.raw(), NULL))) return false;
 				}
 				}
 				pgrt::StringBuilder sb41;
@@ -310,16 +308,16 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 				zv::Val r42 = sb41.finish();
 				zval av43[1];
 				ZVAL_COPY_VALUE(&av43[0], r42.raw());
-				zend_class_entry *ce44 = pgrt::lookupClass(pg_site_13, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+				zend_class_entry *ce44 = pgrt::lookupClass(pg_site_11, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 				if (UNEXPECTED(ce44 == NULL)) return false;
 				zv::Val r45;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_14, ce44, "message", 7, 1, av43, r45.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_12, ce44, "message", 7, 1, av43, r45.raw(), NULL))) return false;
 				zval av46[1];
 				ZVAL_COPY_VALUE(&av46[0], &pg_lit[0]);
 				zv::Val r47;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r45.raw(), "identifier", "identifier", 10, 1, av46, r47.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r45.raw(), "identifier", "identifier", 10, 1, av46, r47.raw(), NULL))) return false;
 				zv::Val r48;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_16, r47.raw(), "build", "build", 5, 0, NULL, r48.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r47.raw(), "build", "build", 5, 0, NULL, r48.raw(), NULL))) return false;
 				{ zval v = r48.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr28.raw()), &v); }
 				*ret = arr28.take();
 				return true;
@@ -334,7 +332,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 				l_report = false;
 			}
 			 {
-				if (pgrt::instanceOfClass(l_type.raw(), pt_ce_benevolent_union_type) || pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\BenevolentUnionType", 32))) {
+				if (pgrt::instanceOfClass(l_type.raw(), pt_ce_benevolent_union_type) || pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\BenevolentUnionType", 32))) {
 					 {
 						zv::Val arr50 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 						zv::Val o51 = zv::Val::copyOf(zv::Ref(l_type.raw()));
@@ -347,7 +345,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 						zval av52[1];
 						ZVAL_COPY_VALUE(&av52[0], l_type.raw());
 						zv::Val r53;
-						if (UNEXPECTED(!pgrt::callStatic(pg_site_18, pt_ce_type_utils, "flattentypes", 12, 1, av52, r53.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callStatic(pg_site_16, pt_ce_type_utils, "flattentypes", 12, 1, av52, r53.raw(), NULL))) return false;
 						l_flattenedTypes = std::move(r53);
 					}
 				}
@@ -355,15 +353,15 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 			}
 			 {
 				zv::Val q54;
-				if (pgrt::instanceOfClass(p_dimType, pt_ce_mixed_type) || pgrt::instanceOfClass(p_dimType, pgrt::lookupClassQuiet(pg_site_19, "PHPStan\\Type\\MixedType", 22))) {
+				if (pgrt::instanceOfClass(p_dimType, pt_ce_mixed_type) || pgrt::instanceOfClass(p_dimType, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\MixedType", 22))) {
 					zv::Val o55 = zv::Val::copyOf(zv::Ref(p_dimType));
 					q54 = std::move(o55);
 				} else {
 				 {
-					zend_class_entry *ce56 = pgrt::lookupClass(pg_site_7, "PHPStan\\Rules\\Arrays\\AllowedArrayKeysTypes", 42);
-					if (UNEXPECTED(ce56 == NULL)) return false;
+					zval d56;
+					ZVAL_NULL(&d56);
 					zv::Val r57;
-					if (UNEXPECTED(!pgrt::callStatic(pg_site_8, ce56, "gettype", 7, 0, NULL, r57.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgen::AllowedArrayKeysTypes::m_getType(&d56, false, r57.raw()))) return false;
 					zv::Val o58 = zv::Val::copyOf(zv::Ref(p_dimType));
 					zval vv59[2];
 					ZVAL_COPY_VALUE(&vv59[0], r57.raw());
@@ -395,7 +393,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 								if (UNEXPECTED(r68.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_innerType, "isArray", "isarray", 7, 0, NULL, r68.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_innerType, "isArray", "isarray", 7, 0, NULL, r68.raw(), NULL))) return false;
 							}
 							}
 							zv::Val vd69;
@@ -409,7 +407,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 								vd69_done = true;
 							}
 							if (!vd69_done) {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_21, r68.raw(), "yes", "yes", 3, 0, NULL, vd69.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_19, r68.raw(), "yes", "yes", 3, 0, NULL, vd69.raw()))) return false;
 							}
 							zv::Val q72;
 							if (zend_is_true(vd69.raw())) {
@@ -434,7 +432,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									if (UNEXPECTED(r79.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_innerType, "isArray", "isarray", 7, 0, NULL, r79.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_innerType, "isArray", "isarray", 7, 0, NULL, r79.raw(), NULL))) return false;
 								}
 								}
 								zv::Val vd80;
@@ -448,7 +446,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									vd80_done = true;
 								}
 								if (!vd80_done) {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_23, r79.raw(), "yes", "yes", 3, 0, NULL, vd80.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_21, r79.raw(), "yes", "yes", 3, 0, NULL, vd80.raw()))) return false;
 								}
 								b77 = zend_is_true(vd80.raw());
 							}
@@ -460,7 +458,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									if (UNEXPECTED(r83.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_innerType, "isConstantArray", "isconstantarray", 15, 0, NULL, r83.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_innerType, "isConstantArray", "isconstantarray", 15, 0, NULL, r83.raw(), NULL))) return false;
 								}
 								}
 								zv::Val vd84;
@@ -474,7 +472,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									vd84_done = true;
 								}
 								if (!vd84_done) {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_25, r83.raw(), "yes", "yes", 3, 0, NULL, vd84.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_23, r83.raw(), "yes", "yes", 3, 0, NULL, vd84.raw()))) return false;
 								}
 								b76 = !(zend_is_true(vd84.raw()));
 							}
@@ -488,7 +486,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									if (UNEXPECTED(r88.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_innerType, "hasOffsetValueType", "hasoffsetvaluetype", 18, 1, av87, r88.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_innerType, "hasOffsetValueType", "hasoffsetvaluetype", 18, 1, av87, r88.raw(), NULL))) return false;
 								}
 								}
 								zv::Val vd89;
@@ -502,7 +500,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									vd89_done = true;
 								}
 								if (!vd89_done) {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_27, r88.raw(), "yes", "yes", 3, 0, NULL, vd89.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_25, r88.raw(), "yes", "yes", 3, 0, NULL, vd89.raw()))) return false;
 								}
 								b75 = !(zend_is_true(vd89.raw()));
 							}
@@ -520,7 +518,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 								if (UNEXPECTED(r93.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_innerType, "isConstantArray", "isconstantarray", 15, 0, NULL, r93.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_innerType, "isConstantArray", "isconstantarray", 15, 0, NULL, r93.raw(), NULL))) return false;
 							}
 							}
 							zv::Val vd94;
@@ -534,7 +532,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 								vd94_done = true;
 							}
 							if (!vd94_done) {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_29, r93.raw(), "yes", "yes", 3, 0, NULL, vd94.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_27, r93.raw(), "yes", "yes", 3, 0, NULL, vd94.raw()))) return false;
 							}
 							bool b92 = zend_is_true(vd94.raw());
 							if (b92) {
@@ -546,7 +544,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									if (UNEXPECTED(r98.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_innerType, "hasOffsetValueType", "hasoffsetvaluetype", 18, 1, av97, r98.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_innerType, "hasOffsetValueType", "hasoffsetvaluetype", 18, 1, av97, r98.raw(), NULL))) return false;
 								}
 								}
 								zv::Val vd99;
@@ -560,7 +558,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									vd99_done = true;
 								}
 								if (!vd99_done) {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_31, r98.raw(), "yes", "yes", 3, 0, NULL, vd99.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_29, r98.raw(), "yes", "yes", 3, 0, NULL, vd99.raw()))) return false;
 								}
 								b92 = !(zend_is_true(vd99.raw()));
 							}
@@ -582,7 +580,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 												if (UNEXPECTED(r103.isUndef())) return false;
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_dimTypeToCheck.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r103.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_dimTypeToCheck.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r103.raw(), NULL))) return false;
 											}
 											}
 											bool r104;
@@ -600,7 +598,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 							}
 						}
 						 {
-							if (pgrt::instanceOfClass(l_dimTypeToCheck.raw(), pt_ce_benevolent_union_type) || pgrt::instanceOfClass(l_dimTypeToCheck.raw(), pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\BenevolentUnionType", 32))) {
+							if (pgrt::instanceOfClass(l_dimTypeToCheck.raw(), pt_ce_benevolent_union_type) || pgrt::instanceOfClass(l_dimTypeToCheck.raw(), pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\BenevolentUnionType", 32))) {
 								 {
 									zv::Val arr105 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 									zv::Val o106 = zv::Val::copyOf(zv::Ref(l_dimTypeToCheck.raw()));
@@ -613,7 +611,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									zval av107[1];
 									ZVAL_COPY_VALUE(&av107[0], l_dimTypeToCheck.raw());
 									zv::Val r108;
-									if (UNEXPECTED(!pgrt::callStatic(pg_site_18, pt_ce_type_utils, "flattentypes", 12, 1, av107, r108.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callStatic(pg_site_16, pt_ce_type_utils, "flattentypes", 12, 1, av107, r108.raw(), NULL))) return false;
 									l_flattenedInnerTypes = std::move(r108);
 								}
 							}
@@ -638,7 +636,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 											if (UNEXPECTED(r117.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_33, l_innerType, "hasOffsetValueType", "hasoffsetvaluetype", 18, 1, av116, r117.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_innerType, "hasOffsetValueType", "hasoffsetvaluetype", 18, 1, av116, r117.raw(), NULL))) return false;
 										}
 										}
 										zv::Val vd118;
@@ -652,7 +650,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 											vd118_done = true;
 										}
 										if (!vd118_done) {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_34, r117.raw(), "no", "no", 2, 0, NULL, vd118.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod(pg_site_32, r117.raw(), "no", "no", 2, 0, NULL, vd118.raw()))) return false;
 										}
 										if (zend_is_true(vd118.raw())) {
 											 {
@@ -685,7 +683,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 							vd123_done = true;
 						}
 						if (!vd123_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_35, p_dimType, "getConstantStrings", "getconstantstrings", 18, 0, NULL, vd123.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_dimType, "getConstantStrings", "getconstantstrings", 18, 0, NULL, vd123.raw()))) return false;
 						}
 						zv::Val q125;
 						if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(vd123.raw())) > 0) {
@@ -709,7 +707,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 							if (UNEXPECTED(r129.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_36, o122.raw(), "describe", "describe", 8, 1, av128, r129.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_34, o122.raw(), "describe", "describe", 8, 1, av128, r129.raw(), NULL))) return false;
 						}
 						}
 						zv::Val o130 = zv::Val::copyOf(zv::Ref(l_type.raw()));
@@ -724,7 +722,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 							if (UNEXPECTED(r133.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_37, o130.raw(), "describe", "describe", 8, 1, av132, r133.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_35, o130.raw(), "describe", "describe", 8, 1, av132, r133.raw(), NULL))) return false;
 						}
 						}
 						pgrt::StringBuilder sb134;
@@ -736,16 +734,16 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 						zv::Val r135 = sb134.finish();
 						zval av136[1];
 						ZVAL_COPY_VALUE(&av136[0], r135.raw());
-						zend_class_entry *ce137 = pgrt::lookupClass(pg_site_13, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+						zend_class_entry *ce137 = pgrt::lookupClass(pg_site_11, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 						if (UNEXPECTED(ce137 == NULL)) return false;
 						zv::Val r138;
-						if (UNEXPECTED(!pgrt::callStatic(pg_site_14, ce137, "message", 7, 1, av136, r138.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callStatic(pg_site_12, ce137, "message", 7, 1, av136, r138.raw(), NULL))) return false;
 						zval av139[1];
 						ZVAL_COPY_VALUE(&av139[0], &pg_lit[0]);
 						zv::Val r140;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_38, r138.raw(), "identifier", "identifier", 10, 1, av139, r140.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_36, r138.raw(), "identifier", "identifier", 10, 1, av139, r140.raw(), NULL))) return false;
 						zv::Val r141;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_39, r140.raw(), "build", "build", 5, 0, NULL, r141.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_37, r140.raw(), "build", "build", 5, 0, NULL, r141.raw(), NULL))) return false;
 						{ zval v = r141.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr121.raw()), &v); }
 						*ret = arr121.take();
 						return true;
@@ -800,8 +798,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonexistentOffsetInArrayDimFetchCheck)
 			Z_PARAM_STR(p_unknownClassPattern_str)
 			Z_PARAM_OBJECT(p_dimType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_40, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_var != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_var, pgrt::lookupClassQuiet(pg_site_41, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_var)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_38, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_var != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_var, pgrt::lookupClassQuiet(pg_site_39, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_var)); RETURN_THROWS(); }
 		if (p_unknownClassPattern_str != NULL) { ZVAL_STR(&p_unknownClassPattern_zv, p_unknownClassPattern_str); p_unknownClassPattern = &p_unknownClassPattern_zv; }
 		if (p_dimType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_dimType, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_dimType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);

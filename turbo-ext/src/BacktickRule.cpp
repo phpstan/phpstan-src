@@ -9,24 +9,23 @@ zend_class_entry *pt_ce_backtick_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_deprecatesBacktickOperator_0 */
-static pgrt::PropSite pg_site_1; /* prop_parts_1 */
-static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\InterpolatedStringPart */
-static pgrt::PropSite pg_site_3; /* prop_value_3 */
-static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Scalar\String_ */
-static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Expr\BinaryOp\Concat */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\ShouldNotHappenException */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_8; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_9; /* method_identifier_9 */
-static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Name */
-static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Arg */
-static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Expr\FuncCall */
-static pt_method_site pg_site_13; /* method_fixNode_13 */
-static pt_method_site pg_site_14; /* method_build_14 */
-static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Php\PhpVersion */
-static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
+static pgrt::PropSite pg_site_0; /* prop_parts_0 */
+static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\InterpolatedStringPart */
+static pgrt::PropSite pg_site_2; /* prop_value_2 */
+static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Scalar\String_ */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr\BinaryOp\Concat */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\ShouldNotHappenException */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\RuleErrorBuilder */
+static pt_method_site pg_site_7; /* static_PHPStan\Rules\RuleErrorBuilder::message */
+static pt_method_site pg_site_8; /* method_identifier_8 */
+static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Name */
+static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Arg */
+static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr\FuncCall */
+static pt_method_site pg_site_12; /* method_fixNode_12 */
+static pt_method_site pg_site_13; /* method_build_13 */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Php\PhpVersion */
+static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -36,14 +35,14 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		zval av3[1];
 		ZVAL_COPY_VALUE(&av3[0], &pg_lit[3]);
-		zend_class_entry *ce4 = pgrt::lookupClass(pg_site_10, "PhpParser\\Node\\Name", 19);
+		zend_class_entry *ce4 = pgrt::lookupClass(pg_site_9, "PhpParser\\Node\\Name", 19);
 		if (UNEXPECTED(ce4 == NULL)) return;
 		zv::Val n2;
 		if (UNEXPECTED(!pgrt::newObject(ce4, 1, av3, n2.raw(), NULL))) return;
 		zv::Val arr5 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zval av7[1];
 		ZVAL_COPY_VALUE(&av7[0], zv::Ref(&captures[0]).deref().raw());
-		zend_class_entry *ce8 = pgrt::lookupClass(pg_site_11, "PhpParser\\Node\\Arg", 18);
+		zend_class_entry *ce8 = pgrt::lookupClass(pg_site_10, "PhpParser\\Node\\Arg", 18);
 		if (UNEXPECTED(ce8 == NULL)) return;
 		zv::Val n6;
 		if (UNEXPECTED(!pgrt::newObject(ce8, 1, av7, n6.raw(), NULL))) return;
@@ -51,7 +50,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zval av9[2];
 		ZVAL_COPY_VALUE(&av9[0], n2.raw());
 		ZVAL_COPY_VALUE(&av9[1], arr5.raw());
-		zend_class_entry *ce10 = pgrt::lookupClass(pg_site_12, "PhpParser\\Node\\Expr\\FuncCall", 28);
+		zend_class_entry *ce10 = pgrt::lookupClass(pg_site_11, "PhpParser\\Node\\Expr\\FuncCall", 28);
 		if (UNEXPECTED(ce10 == NULL)) return;
 		zv::Val n1;
 		if (UNEXPECTED(!pgrt::newObject(ce10, 2, av9, n1.raw(), NULL))) return;
@@ -98,9 +97,9 @@ namespace pgen::BacktickRule {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BacktickRule::slot::phpVersion, "phpVersion");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "deprecatesBacktickOperator", "deprecatesbacktickoperator", 26, 0, NULL, r2.raw(), NULL))) return false;
-		if (!((Z_TYPE_P(r2.raw()) == IS_TRUE))) {
+		bool r2;
+		if (UNEXPECTED(!pgen::PhpVersion::m_deprecatesBacktickOperator(Z_OBJ_P(p1), &r2))) return false;
+		if (!(r2)) {
 			 {
 				zval arr3_raw;
 				ZVAL_EMPTY_ARRAY(&arr3_raw);
@@ -115,7 +114,7 @@ namespace pgen::BacktickRule {
 	}
 	 {
 		zv::Val o7;
-		zval *p6 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(p_node), "parts", 5) : NULL;
+		zval *p6 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_0, Z_OBJ_P(p_node), "parts", 5) : NULL;
 		if (UNEXPECTED(p6 == NULL || Z_ISUNDEF_P(p6))) {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_backtick_rule, "parts", 5, o7.raw()))) return false;
 			p6 = o7.raw();
@@ -136,17 +135,17 @@ namespace pgen::BacktickRule {
 			l_part = zv::Ref(v9).deref().raw();
 			 {
 				 {
-					if (pgrt::instanceOfClass(l_part, pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\InterpolatedStringPart", 37))) {
+					if (pgrt::instanceOfClass(l_part, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\InterpolatedStringPart", 37))) {
 						 {
 							zv::Val o16;
-							zval *p15 = Z_TYPE_P(l_part) == IS_OBJECT ? pgrt::propCached(pg_site_3, Z_OBJ_P(l_part), "value", 5) : NULL;
+							zval *p15 = Z_TYPE_P(l_part) == IS_OBJECT ? pgrt::propCached(pg_site_2, Z_OBJ_P(l_part), "value", 5) : NULL;
 							if (UNEXPECTED(p15 == NULL || Z_ISUNDEF_P(p15))) {
 								if (UNEXPECTED(!pgrt::readPropertyGeneric(l_part, pt_ce_backtick_rule, "value", 5, o16.raw()))) return false;
 								p15 = o16.raw();
 							}
 							zval av17[1];
 							ZVAL_COPY_VALUE(&av17[0], zv::Ref(p15).deref().raw());
-							zend_class_entry *ce18 = pgrt::lookupClass(pg_site_4, "PhpParser\\Node\\Scalar\\String_", 29);
+							zend_class_entry *ce18 = pgrt::lookupClass(pg_site_3, "PhpParser\\Node\\Scalar\\String_", 29);
 							if (UNEXPECTED(ce18 == NULL)) return false;
 							zv::Val n14;
 							if (UNEXPECTED(!pgrt::newObject(ce18, 1, av17, n14.raw(), NULL))) return false;
@@ -174,7 +173,7 @@ namespace pgen::BacktickRule {
 					zval av22[2];
 					ZVAL_COPY_VALUE(&av22[0], l_argExpr.raw());
 					ZVAL_COPY_VALUE(&av22[1], l_expr.raw());
-					zend_class_entry *ce23 = pgrt::lookupClass(pg_site_5, "PhpParser\\Node\\Expr\\BinaryOp\\Concat", 35);
+					zend_class_entry *ce23 = pgrt::lookupClass(pg_site_4, "PhpParser\\Node\\Expr\\BinaryOp\\Concat", 35);
 					if (UNEXPECTED(ce23 == NULL)) return false;
 					zv::Val n21;
 					if (UNEXPECTED(!pgrt::newObject(ce23, 2, av22, n21.raw(), NULL))) return false;
@@ -188,7 +187,7 @@ namespace pgen::BacktickRule {
 	 {
 		if (Z_TYPE_P(l_argExpr.raw()) == IS_NULL) {
 			 {
-				zend_class_entry *ce25 = pgrt::lookupClass(pg_site_6, "PHPStan\\ShouldNotHappenException", 32);
+				zend_class_entry *ce25 = pgrt::lookupClass(pg_site_5, "PHPStan\\ShouldNotHappenException", 32);
 				if (UNEXPECTED(ce25 == NULL)) return false;
 				zv::Val n24;
 				if (UNEXPECTED(!pgrt::newObject(ce25, 0, NULL, n24.raw(), NULL))) return false;
@@ -201,14 +200,14 @@ namespace pgen::BacktickRule {
 		zv::Val arr26 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zval av27[1];
 		ZVAL_COPY_VALUE(&av27[0], &pg_lit[1]);
-		zend_class_entry *ce28 = pgrt::lookupClass(pg_site_7, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+		zend_class_entry *ce28 = pgrt::lookupClass(pg_site_6, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 		if (UNEXPECTED(ce28 == NULL)) return false;
 		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_8, ce28, "message", 7, 1, av27, r29.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce28, "message", 7, 1, av27, r29.raw(), NULL))) return false;
 		zval av30[1];
 		ZVAL_COPY_VALUE(&av30[0], &pg_lit[2]);
 		zv::Val r31;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r29.raw(), "identifier", "identifier", 10, 1, av30, r31.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r29.raw(), "identifier", "identifier", 10, 1, av30, r31.raw(), NULL))) return false;
 		zval cap32[1];
 		ZVAL_COPY_VALUE(&cap32[0], l_argExpr.raw());
 		zv::Val h33 = pt_native_closure_new(&pg_closure_1, 1, cap32, 0u);
@@ -216,9 +215,9 @@ namespace pgen::BacktickRule {
 		ZVAL_COPY_VALUE(&av34[0], p_node);
 		ZVAL_COPY_VALUE(&av34[1], h33.raw());
 		zv::Val r35;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r31.raw(), "fixNode", "fixnode", 7, 2, av34, r35.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r31.raw(), "fixNode", "fixnode", 7, 2, av34, r35.raw(), NULL))) return false;
 		zv::Val r36;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r35.raw(), "build", "build", 5, 0, NULL, r36.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r35.raw(), "build", "build", 5, 0, NULL, r36.raw(), NULL))) return false;
 		{ zval v = r36.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr26.raw()), &v); }
 		*ret = arr26.take();
 		return true;
@@ -244,7 +243,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BacktickRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_phpVersion)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_phpVersion != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Php\\PhpVersion", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
+		if (p_phpVersion != NULL && UNEXPECTED(!((Z_TYPE_P(p_phpVersion) == IS_OBJECT && Z_OBJCE_P(p_phpVersion) == pt_ce_php_version) || pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Php\\PhpVersion", 22))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::BacktickRule::m___construct(Z_OBJ_P(ZEND_THIS), p_phpVersion))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\BacktickRule::getNodeType() */
@@ -259,8 +258,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BacktickRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BacktickRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

@@ -10,20 +10,19 @@ zend_class_entry *pt_ce_assign_to_by_ref_expr_from_foreach_rule = nullptr;
 static zval pg_lit[5];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\VariableAssignNode */
-static pt_method_site pg_site_1; /* method_getVariable_1 */
-static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Node\PropertyAssignNode */
-static pt_method_site pg_site_3; /* method_getPropertyFetch_3 */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Node\Expr\ForeachValueByRefExpr */
-static pt_method_site pg_site_5; /* method_hasExpressionType_5 */
-static pt_method_site pg_site_6; /* method_printExpr_6 */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_8; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_9; /* method_identifier_9 */
-static pt_method_site pg_site_10; /* method_tip_10 */
-static pt_method_site pg_site_11; /* method_build_11 */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Node\Printer\ExprPrinter */
-static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Node\PropertyAssignNode */
+static pt_method_site pg_site_2; /* method_getPropertyFetch_2 */
+static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Node\Expr\ForeachValueByRefExpr */
+static pt_method_site pg_site_4; /* method_hasExpressionType_4 */
+static pt_method_site pg_site_5; /* method_printExpr_5 */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\RuleErrorBuilder */
+static pt_method_site pg_site_7; /* static_PHPStan\Rules\RuleErrorBuilder::message */
+static pt_method_site pg_site_8; /* method_identifier_8 */
+static pt_method_site pg_site_9; /* method_tip_9 */
+static pt_method_site pg_site_10; /* method_build_10 */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Node\Printer\ExprPrinter */
+static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::AssignToByRefExprFromForeachRule {
 
@@ -76,19 +75,19 @@ namespace pgen::AssignToByRefExprFromForeachRule {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Node\\VariableAssignNode", 31))) {
+		if ((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_variable_assign_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Node\\VariableAssignNode", 31))) {
 			 {
 				zv::Val r1;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getVariable", "getvariable", 11, 0, NULL, r1.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgen::VariableAssignNode::m_getVariable(Z_OBJ_P(p_node), r1.raw()))) return false;
 				l_expr = std::move(r1);
 			}
 		} else {
 		 {
 			 {
-				if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Node\\PropertyAssignNode", 31))) {
+				if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Node\\PropertyAssignNode", 31))) {
 					 {
 						zv::Val r2;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getPropertyFetch", "getpropertyfetch", 16, 0, NULL, r2.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getPropertyFetch", "getpropertyfetch", 16, 0, NULL, r2.raw(), NULL))) return false;
 						l_expr = std::move(r2);
 					}
 				} else {
@@ -108,14 +107,14 @@ namespace pgen::AssignToByRefExprFromForeachRule {
 	 {
 		zval av5[1];
 		ZVAL_COPY_VALUE(&av5[0], l_expr.raw());
-		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_4, "PHPStan\\Node\\Expr\\ForeachValueByRefExpr", 39);
+		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_3, "PHPStan\\Node\\Expr\\ForeachValueByRefExpr", 39);
 		if (UNEXPECTED(ce6 == NULL)) return false;
 		zv::Val n4;
 		if (UNEXPECTED(!pgrt::newObject(ce6, 1, av5, n4.raw(), NULL))) return false;
 		zval av7[1];
 		ZVAL_COPY_VALUE(&av7[0], n4.raw());
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "hasExpressionType", "hasexpressiontype", 17, 1, av7, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "hasExpressionType", "hasexpressiontype", 17, 1, av7, r8.raw(), NULL))) return false;
 		bool r9;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r8.raw()), &r9))) return false;
 		if (r9) {
@@ -134,7 +133,7 @@ namespace pgen::AssignToByRefExprFromForeachRule {
 		zval av13[1];
 		ZVAL_COPY_VALUE(&av13[0], l_expr.raw());
 		zv::Val r14;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p12, "printExpr", "printexpr", 9, 1, av13, r14.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p12, "printExpr", "printexpr", 9, 1, av13, r14.raw(), NULL))) return false;
 		pgrt::StringBuilder sb15;
 		sb15.appendLiteral("Assign to ", 10);
 		if (UNEXPECTED(!sb15.append(r14.raw()))) return false;
@@ -142,20 +141,20 @@ namespace pgen::AssignToByRefExprFromForeachRule {
 		zv::Val r16 = sb15.finish();
 		zval av17[1];
 		ZVAL_COPY_VALUE(&av17[0], r16.raw());
-		zend_class_entry *ce18 = pgrt::lookupClass(pg_site_7, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+		zend_class_entry *ce18 = pgrt::lookupClass(pg_site_6, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 		if (UNEXPECTED(ce18 == NULL)) return false;
 		zv::Val r19;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_8, ce18, "message", 7, 1, av17, r19.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce18, "message", 7, 1, av17, r19.raw(), NULL))) return false;
 		zval av20[1];
 		ZVAL_COPY_VALUE(&av20[0], &pg_lit[3]);
 		zv::Val r21;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r19.raw(), "identifier", "identifier", 10, 1, av20, r21.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r19.raw(), "identifier", "identifier", 10, 1, av20, r21.raw(), NULL))) return false;
 		zval av22[1];
 		ZVAL_COPY_VALUE(&av22[0], &pg_lit[4]);
 		zv::Val r23;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r21.raw(), "tip", "tip", 3, 1, av22, r23.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r21.raw(), "tip", "tip", 3, 1, av22, r23.raw(), NULL))) return false;
 		zv::Val r24;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, r23.raw(), "build", "build", 5, 0, NULL, r24.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r23.raw(), "build", "build", 5, 0, NULL, r24.raw(), NULL))) return false;
 		{ zval v = r24.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr11.raw()), &v); }
 		*ret = arr11.take();
 		return true;
@@ -182,7 +181,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssignToByRefExprFromForeachRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_printer)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_printer != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_printer, pt_ce_expr_printer) || pgrt::instanceOfClass(p_printer, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Node\\Printer\\ExprPrinter", 32))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Printer\\ExprPrinter", zend_zval_value_name(p_printer)); RETURN_THROWS(); }
+		if (p_printer != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_printer, pt_ce_expr_printer) || pgrt::instanceOfClass(p_printer, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Node\\Printer\\ExprPrinter", 32))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Printer\\ExprPrinter", zend_zval_value_name(p_printer)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::AssignToByRefExprFromForeachRule::m___construct(Z_OBJ_P(ZEND_THIS), p_printer))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\AssignToByRefExprFromForeachRule::getNodeTypes() */
@@ -202,8 +201,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssignToByRefExprFromForeachRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_13, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssignToByRefExprFromForeachRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

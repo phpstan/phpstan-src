@@ -53,24 +53,52 @@ namespace pgen::DuplicateTraitDeclarationRule {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DuplicateTraitDeclarationRule::slot::helper, "helper");
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
-		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, r3.raw(), NULL))) return false;
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getTraitReflection", "gettraitreflection", 18, 0, NULL, r4.raw(), NULL))) return false;
-		zv::Val r5;
-		if (EXPECTED(Z_TYPE_P(r4.raw()) == IS_OBJECT && Z_OBJCE_P(r4.raw()) == pt_ce_class_reflection)) {
-			r5 = pt_class_reflection_get_display_name(Z_OBJ_P(r4.raw()));
-			if (UNEXPECTED(r5.isUndef())) return false;
+		zv::Val vd3;
+		zend_class_entry *vd3_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd3_done = false;
+		if (vd3_ce == pt_ce_in_class_method_node) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::InClassMethodNode::m_getOriginalNode(Z_OBJ_P(p_node), r4.raw()))) return false;
+			vd3 = std::move(r4);
+			vd3_done = true;
+		}
+		if (vd3_ce == pt_ce_method_call_expression_node) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getOriginalNode(Z_OBJ_P(p_node), r5.raw()))) return false;
+			vd3 = std::move(r5);
+			vd3_done = true;
+		}
+		if (vd3_ce == pt_ce_class_property_node) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getOriginalNode(Z_OBJ_P(p_node), r6.raw()))) return false;
+			vd3 = std::move(r6);
+			vd3_done = true;
+		}
+		if (vd3_ce == pt_ce_in_class_node) {
+			zv::Val r7;
+			if (UNEXPECTED(!pgen::InClassNode::m_getOriginalNode(Z_OBJ_P(p_node), r7.raw()))) return false;
+			vd3 = std::move(r7);
+			vd3_done = true;
+		}
+		if (!vd3_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd3.raw()))) return false;
+		}
+		zv::Val r8;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getTraitReflection", "gettraitreflection", 18, 0, NULL, r8.raw(), NULL))) return false;
+		zv::Val r9;
+		if (EXPECTED(Z_TYPE_P(r8.raw()) == IS_OBJECT && Z_OBJCE_P(r8.raw()) == pt_ce_class_reflection)) {
+			r9 = pt_class_reflection_get_display_name(Z_OBJ_P(r8.raw()));
+			if (UNEXPECTED(r9.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, r4.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r5.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, r8.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r9.raw()))) return false;
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r3.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\DuplicateDeclarationHelper::checkClassLike", 1, "classLike", "PhpParser\\Node\\Stmt\\ClassLike", r3.raw()); return false; }
-		if (UNEXPECTED(!(Z_TYPE_P(r5.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\DuplicateDeclarationHelper::checkClassLike", 2, "displayName", "string", r5.raw()); return false; }
-		zv::Val r6;
-		if (UNEXPECTED(!pgen::DuplicateDeclarationHelper::m_checkClassLike(Z_OBJ_P(o2.raw()), r3.raw(), r5.raw(), &pg_lit[1], r6.raw()))) return false;
-		*ret = r6.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd3.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\DuplicateDeclarationHelper::checkClassLike", 1, "classLike", "PhpParser\\Node\\Stmt\\ClassLike", vd3.raw()); return false; }
+		if (UNEXPECTED(!(Z_TYPE_P(r9.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\DuplicateDeclarationHelper::checkClassLike", 2, "displayName", "string", r9.raw()); return false; }
+		zv::Val r10;
+		if (UNEXPECTED(!pgen::DuplicateDeclarationHelper::m_checkClassLike(Z_OBJ_P(o2.raw()), vd3.raw(), r9.raw(), &pg_lit[1], r10.raw()))) return false;
+		*ret = r10.take();
 		return true;
 	}
 }

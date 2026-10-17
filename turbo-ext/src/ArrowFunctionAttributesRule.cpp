@@ -53,18 +53,46 @@ namespace pgen::ArrowFunctionAttributesRule {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ArrowFunctionAttributesRule::slot::attributesCheck, "attributesCheck");
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
-		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, r3.raw(), NULL))) return false;
-		zv::Val o5;
-		zval *p4 = Z_TYPE_P(r3.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(r3.raw()), "attrGroups", 10) : NULL;
-		if (UNEXPECTED(p4 == NULL || Z_ISUNDEF_P(p4))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(r3.raw(), pt_ce_arrow_function_attributes_rule, "attrGroups", 10, o5.raw()))) return false;
-			p4 = o5.raw();
+		zv::Val vd3;
+		zend_class_entry *vd3_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd3_done = false;
+		if (vd3_ce == pt_ce_in_class_method_node) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::InClassMethodNode::m_getOriginalNode(Z_OBJ_P(p_node), r4.raw()))) return false;
+			vd3 = std::move(r4);
+			vd3_done = true;
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(p4).deref().raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\AttributesCheck::check", 2, "attrGroups", "array", zv::Ref(p4).deref().raw()); return false; }
-		zv::Val r6;
-		if (UNEXPECTED(!pgen::AttributesCheck::m_check(Z_OBJ_P(o2.raw()), p_scope, zv::Ref(p4).deref().raw(), 2, &pg_lit[1], r6.raw()))) return false;
-		*ret = r6.take();
+		if (vd3_ce == pt_ce_method_call_expression_node) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getOriginalNode(Z_OBJ_P(p_node), r5.raw()))) return false;
+			vd3 = std::move(r5);
+			vd3_done = true;
+		}
+		if (vd3_ce == pt_ce_class_property_node) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getOriginalNode(Z_OBJ_P(p_node), r6.raw()))) return false;
+			vd3 = std::move(r6);
+			vd3_done = true;
+		}
+		if (vd3_ce == pt_ce_in_class_node) {
+			zv::Val r7;
+			if (UNEXPECTED(!pgen::InClassNode::m_getOriginalNode(Z_OBJ_P(p_node), r7.raw()))) return false;
+			vd3 = std::move(r7);
+			vd3_done = true;
+		}
+		if (!vd3_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd3.raw()))) return false;
+		}
+		zv::Val o9;
+		zval *p8 = Z_TYPE_P(vd3.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(vd3.raw()), "attrGroups", 10) : NULL;
+		if (UNEXPECTED(p8 == NULL || Z_ISUNDEF_P(p8))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(vd3.raw(), pt_ce_arrow_function_attributes_rule, "attrGroups", 10, o9.raw()))) return false;
+			p8 = o9.raw();
+		}
+		if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(p8).deref().raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\AttributesCheck::check", 2, "attrGroups", "array", zv::Ref(p8).deref().raw()); return false; }
+		zv::Val r10;
+		if (UNEXPECTED(!pgen::AttributesCheck::m_check(Z_OBJ_P(o2.raw()), p_scope, zv::Ref(p8).deref().raw(), 2, &pg_lit[1], r10.raw()))) return false;
+		*ret = r10.take();
 		return true;
 	}
 }

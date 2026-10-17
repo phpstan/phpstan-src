@@ -13,21 +13,19 @@ static pt_method_site pg_site_0; /* method_getOriginalNode_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Stmt\Enum_ */
 static pt_method_site pg_site_2; /* method_getClassReflection_2 */
 static pt_method_site pg_site_3; /* method_getName_3 */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Internal\SprintfHelper */
-static pt_method_site pg_site_5; /* static_PHPStan\Internal\SprintfHelper::escapeFormatString */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\PhpDoc\Tag\ExtendsTag */
-static pt_method_site pg_site_7; /* method_getType_7 */
-static pt_method_site pg_site_8; /* method_getExtendsTags_8 */
-static pgrt::FunctionSite pg_site_9; /* function_array_map */
-static pgrt::PropSite pg_site_10; /* prop_implements_10 */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\PhpDoc\Tag\ImplementsTag */
-static pt_method_site pg_site_12; /* method_getType_12 */
-static pt_method_site pg_site_13; /* method_getImplementsTags_13 */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Reflection\ClassReflection */
-static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Rules\Generics\GenericAncestorsCheck */
-static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Rules\Generics\CrossCheckInterfacesHelper */
-static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\PhpDoc\Tag\ExtendsTag */
+static pt_method_site pg_site_5; /* method_getType_5 */
+static pt_method_site pg_site_6; /* method_getExtendsTags_6 */
+static pgrt::FunctionSite pg_site_7; /* function_array_map */
+static pgrt::PropSite pg_site_8; /* prop_implements_8 */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\PhpDoc\Tag\ImplementsTag */
+static pt_method_site pg_site_10; /* method_getType_10 */
+static pt_method_site pg_site_11; /* method_getImplementsTags_11 */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\ClassReflection */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Rules\Generics\GenericAncestorsCheck */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Rules\Generics\CrossCheckInterfacesHelper */
+static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -36,7 +34,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	if (UNEXPECTED(argc < 1)) { pgrt::throwTooFewArguments("PHPStan\\Rules\\Generics\\EnumAncestorsRule::{closure}", argc, 1); return; }
 	zval *a_tag;
 	a_tag = zv::Ref(&argv[0]).deref().raw();
-	if (UNEXPECTED(!(pgrt::instanceOfClass(a_tag, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\PhpDoc\\Tag\\ExtendsTag", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\EnumAncestorsRule::{closure}", 1, "tag", "PHPStan\\PhpDoc\\Tag\\ExtendsTag", a_tag); return; }
+	if (UNEXPECTED(!(pgrt::instanceOfClass(a_tag, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\PhpDoc\\Tag\\ExtendsTag", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\EnumAncestorsRule::{closure}", 1, "tag", "PHPStan\\PhpDoc\\Tag\\ExtendsTag", a_tag); return; }
 	zval *p_tag = a_tag;
 	(void) p_tag;
 	 {
@@ -46,7 +44,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_tag, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_tag, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return;
 		}
 		}
 		*return_value = r1.take();
@@ -61,7 +59,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 	if (UNEXPECTED(argc < 1)) { pgrt::throwTooFewArguments("PHPStan\\Rules\\Generics\\EnumAncestorsRule::{closure}", argc, 1); return; }
 	zval *a_tag;
 	a_tag = zv::Ref(&argv[0]).deref().raw();
-	if (UNEXPECTED(!(pgrt::instanceOfClass(a_tag, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\PhpDoc\\Tag\\ImplementsTag", 32))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\EnumAncestorsRule::{closure}", 1, "tag", "PHPStan\\PhpDoc\\Tag\\ImplementsTag", a_tag); return; }
+	if (UNEXPECTED(!(pgrt::instanceOfClass(a_tag, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\PhpDoc\\Tag\\ImplementsTag", 32))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\EnumAncestorsRule::{closure}", 1, "tag", "PHPStan\\PhpDoc\\Tag\\ImplementsTag", a_tag); return; }
 	zval *p_tag = a_tag;
 	(void) p_tag;
 	 {
@@ -71,7 +69,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_tag, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_tag, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return;
 		}
 		}
 		*return_value = r1.take();
@@ -122,187 +120,212 @@ namespace pgen::EnumAncestorsRule {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, r1.raw(), NULL))) return false;
-		l_originalNode = std::move(r1);
+		zv::Val vd1;
+		zend_class_entry *vd1_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd1_done = false;
+		if (vd1_ce == pt_ce_in_class_method_node) {
+			zv::Val r2;
+			if (UNEXPECTED(!pgen::InClassMethodNode::m_getOriginalNode(Z_OBJ_P(p_node), r2.raw()))) return false;
+			vd1 = std::move(r2);
+			vd1_done = true;
+		}
+		if (vd1_ce == pt_ce_method_call_expression_node) {
+			zv::Val r3;
+			if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getOriginalNode(Z_OBJ_P(p_node), r3.raw()))) return false;
+			vd1 = std::move(r3);
+			vd1_done = true;
+		}
+		if (vd1_ce == pt_ce_class_property_node) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getOriginalNode(Z_OBJ_P(p_node), r4.raw()))) return false;
+			vd1 = std::move(r4);
+			vd1_done = true;
+		}
+		if (vd1_ce == pt_ce_in_class_node) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::InClassNode::m_getOriginalNode(Z_OBJ_P(p_node), r5.raw()))) return false;
+			vd1 = std::move(r5);
+			vd1_done = true;
+		}
+		if (!vd1_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd1.raw()))) return false;
+		}
+		l_originalNode = std::move(vd1);
 	}
 	 {
 		if (!(pgrt::instanceOfClass(l_originalNode.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Stmt\\Enum_", 25)))) {
 			 {
-				zval arr2_raw;
-				ZVAL_EMPTY_ARRAY(&arr2_raw);
-				ZVAL_COPY(ret, &arr2_raw);
+				zval arr6_raw;
+				ZVAL_EMPTY_ARRAY(&arr6_raw);
+				ZVAL_COPY(ret, &arr6_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val r3;
-		if (EXPECTED(Z_TYPE_P(p_node) == IS_OBJECT)) {
-			r3 = pt_type_op(Z_OBJ_P(p_node), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
-			if (UNEXPECTED(r3.isUndef())) return false;
-		} else {
-		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r3.raw(), NULL))) return false;
-		}
-		}
-		l_classReflection = std::move(r3);
-	}
-	 {
-		zv::Val r4;
-		if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-			r4 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r4.isUndef())) return false;
-		} else {
-		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
-		}
-		}
-		l_enumName = std::move(r4);
-	}
-	 {
-		zval av5[1];
-		ZVAL_COPY_VALUE(&av5[0], l_enumName.raw());
-		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_4, "PHPStan\\Internal\\SprintfHelper", 30);
-		if (UNEXPECTED(ce6 == NULL)) return false;
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_5, ce6, "escapeformatstring", 18, 1, av5, r7.raw(), NULL))) return false;
-		l_escapedEnumName = std::move(r7);
+		if (EXPECTED(Z_TYPE_P(p_node) == IS_OBJECT)) {
+			r7 = pt_type_op(Z_OBJ_P(p_node), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
+			if (UNEXPECTED(r7.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r7.raw(), NULL))) return false;
+		}
+		}
+		l_classReflection = std::move(r7);
 	}
 	 {
-		zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::EnumAncestorsRule::slot::genericAncestorsCheck, "genericAncestorsCheck");
-		if (UNEXPECTED(p8 == NULL)) return false;
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(p8));
-		zval arr10_raw;
-		ZVAL_EMPTY_ARRAY(&arr10_raw);
-		zv::Val o11 = zv::Val::copyOf(zv::Ref(&arr10_raw));
-		zv::Val h12 = pt_native_closure_new(&pg_closure_1, 0, NULL, 0u);
-		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_classReflection.raw(), "getExtendsTags", "getextendstags", 14, 0, NULL, r13.raw(), NULL))) return false;
-		zval av14[2];
-		ZVAL_COPY_VALUE(&av14[0], h12.raw());
-		ZVAL_COPY_VALUE(&av14[1], r13.raw());
+		zv::Val r8;
+		if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
+			r8 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r8.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+		}
+		}
+		l_enumName = std::move(r8);
+	}
+	 {
+		if (UNEXPECTED(!(Z_TYPE_P(l_enumName.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", l_enumName.raw()); return false; }
+		zv::Val r9;
+		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(l_enumName.raw(), r9.raw()))) return false;
+		l_escapedEnumName = std::move(r9);
+	}
+	 {
+		zval *p10 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::EnumAncestorsRule::slot::genericAncestorsCheck, "genericAncestorsCheck");
+		if (UNEXPECTED(p10 == NULL)) return false;
+		zv::Val o11 = zv::Val::copyOf(zv::Ref(p10));
+		zval arr12_raw;
+		ZVAL_EMPTY_ARRAY(&arr12_raw);
+		zv::Val o13 = zv::Val::copyOf(zv::Ref(&arr12_raw));
+		zv::Val h14 = pt_native_closure_new(&pg_closure_1, 0, NULL, 0u);
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "array_map", 9, pt_ce_enum_ancestors_rule, 2, av14, r15.raw(), NULL))) return false;
-		pgrt::StringBuilder sb16;
-		sb16.appendLiteral("Enum ", 5);
-		if (UNEXPECTED(!sb16.append(l_escapedEnumName.raw()))) return false;
-		sb16.appendLiteral(" @extends tag contains incompatible type ", 41);
-		sb16.appendLiteral("%", 1);
-		sb16.appendLiteral("s.", 2);
-		zv::Val r17 = sb16.finish();
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_classReflection.raw(), "getExtendsTags", "getextendstags", 14, 0, NULL, r15.raw(), NULL))) return false;
+		zval av16[2];
+		ZVAL_COPY_VALUE(&av16[0], h14.raw());
+		ZVAL_COPY_VALUE(&av16[1], r15.raw());
+		zv::Val r17;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "array_map", 9, pt_ce_enum_ancestors_rule, 2, av16, r17.raw(), NULL))) return false;
 		pgrt::StringBuilder sb18;
 		sb18.appendLiteral("Enum ", 5);
-		if (UNEXPECTED(!sb18.append(l_enumName.raw()))) return false;
-		sb18.appendLiteral(" @extends tag contains unresolvable type.", 41);
+		if (UNEXPECTED(!sb18.append(l_escapedEnumName.raw()))) return false;
+		sb18.appendLiteral(" @extends tag contains incompatible type ", 41);
+		sb18.appendLiteral("%", 1);
+		sb18.appendLiteral("s.", 2);
 		zv::Val r19 = sb18.finish();
 		pgrt::StringBuilder sb20;
 		sb20.appendLiteral("Enum ", 5);
-		if (UNEXPECTED(!sb20.append(l_escapedEnumName.raw()))) return false;
-		sb20.appendLiteral(" has @extends tag, but cannot extend anything.", 46);
+		if (UNEXPECTED(!sb20.append(l_enumName.raw()))) return false;
+		sb20.appendLiteral(" @extends tag contains unresolvable type.", 41);
 		zv::Val r21 = sb20.finish();
-		zv::Val r22;
-		if (UNEXPECTED(!pgen::GenericAncestorsCheck::m_check(Z_OBJ_P(o9.raw()), o11.raw(), r15.raw(), r17.raw(), r19.raw(), r21.raw(), &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], r22.raw()))) return false;
-		l_extendsErrors = std::move(r22);
+		pgrt::StringBuilder sb22;
+		sb22.appendLiteral("Enum ", 5);
+		if (UNEXPECTED(!sb22.append(l_escapedEnumName.raw()))) return false;
+		sb22.appendLiteral(" has @extends tag, but cannot extend anything.", 46);
+		zv::Val r23 = sb22.finish();
+		zv::Val r24;
+		if (UNEXPECTED(!pgen::GenericAncestorsCheck::m_check(Z_OBJ_P(o11.raw()), o13.raw(), r17.raw(), r19.raw(), r21.raw(), r23.raw(), &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], &pg_lit[1], r24.raw()))) return false;
+		l_extendsErrors = std::move(r24);
 	}
 	 {
-		zval *p23 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::EnumAncestorsRule::slot::genericAncestorsCheck, "genericAncestorsCheck");
-		if (UNEXPECTED(p23 == NULL)) return false;
-		zv::Val o24 = zv::Val::copyOf(zv::Ref(p23));
-		zv::Val o26;
-		zval *p25 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_10, Z_OBJ_P(l_originalNode.raw()), "implements", 10) : NULL;
-		if (UNEXPECTED(p25 == NULL || Z_ISUNDEF_P(p25))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_enum_ancestors_rule, "implements", 10, o26.raw()))) return false;
-			p25 = o26.raw();
+		zval *p25 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::EnumAncestorsRule::slot::genericAncestorsCheck, "genericAncestorsCheck");
+		if (UNEXPECTED(p25 == NULL)) return false;
+		zv::Val o26 = zv::Val::copyOf(zv::Ref(p25));
+		zv::Val o28;
+		zval *p27 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_8, Z_OBJ_P(l_originalNode.raw()), "implements", 10) : NULL;
+		if (UNEXPECTED(p27 == NULL || Z_ISUNDEF_P(p27))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_enum_ancestors_rule, "implements", 10, o28.raw()))) return false;
+			p27 = o28.raw();
 		}
-		zv::Val o27 = zv::Val::copyOf(zv::Ref(zv::Ref(p25).deref().raw()));
-		zv::Val h28 = pt_native_closure_new(&pg_closure_2, 0, NULL, 0u);
-		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_classReflection.raw(), "getImplementsTags", "getimplementstags", 17, 0, NULL, r29.raw(), NULL))) return false;
-		zval av30[2];
-		ZVAL_COPY_VALUE(&av30[0], h28.raw());
-		ZVAL_COPY_VALUE(&av30[1], r29.raw());
+		zv::Val o29 = zv::Val::copyOf(zv::Ref(zv::Ref(p27).deref().raw()));
+		zv::Val h30 = pt_native_closure_new(&pg_closure_2, 0, NULL, 0u);
 		zv::Val r31;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "array_map", 9, pt_ce_enum_ancestors_rule, 2, av30, r31.raw(), NULL))) return false;
-		pgrt::StringBuilder sb32;
-		sb32.appendLiteral("Enum ", 5);
-		if (UNEXPECTED(!sb32.append(l_escapedEnumName.raw()))) return false;
-		sb32.appendLiteral(" @implements tag contains incompatible type ", 44);
-		sb32.appendLiteral("%", 1);
-		sb32.appendLiteral("s.", 2);
-		zv::Val r33 = sb32.finish();
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_classReflection.raw(), "getImplementsTags", "getimplementstags", 17, 0, NULL, r31.raw(), NULL))) return false;
+		zval av32[2];
+		ZVAL_COPY_VALUE(&av32[0], h30.raw());
+		ZVAL_COPY_VALUE(&av32[1], r31.raw());
+		zv::Val r33;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "array_map", 9, pt_ce_enum_ancestors_rule, 2, av32, r33.raw(), NULL))) return false;
 		pgrt::StringBuilder sb34;
 		sb34.appendLiteral("Enum ", 5);
-		if (UNEXPECTED(!sb34.append(l_enumName.raw()))) return false;
-		sb34.appendLiteral(" @implements tag contains unresolvable type.", 44);
+		if (UNEXPECTED(!sb34.append(l_escapedEnumName.raw()))) return false;
+		sb34.appendLiteral(" @implements tag contains incompatible type ", 44);
+		sb34.appendLiteral("%", 1);
+		sb34.appendLiteral("s.", 2);
 		zv::Val r35 = sb34.finish();
 		pgrt::StringBuilder sb36;
 		sb36.appendLiteral("Enum ", 5);
-		if (UNEXPECTED(!sb36.append(l_escapedEnumName.raw()))) return false;
-		sb36.appendLiteral(" has @implements tag, but does not implement any interface.", 59);
+		if (UNEXPECTED(!sb36.append(l_enumName.raw()))) return false;
+		sb36.appendLiteral(" @implements tag contains unresolvable type.", 44);
 		zv::Val r37 = sb36.finish();
 		pgrt::StringBuilder sb38;
-		sb38.appendLiteral("The @implements tag of enum ", 28);
+		sb38.appendLiteral("Enum ", 5);
 		if (UNEXPECTED(!sb38.append(l_escapedEnumName.raw()))) return false;
-		sb38.appendLiteral(" describes ", 11);
-		sb38.appendLiteral("%", 1);
-		sb38.appendLiteral("s but the enum implements: ", 27);
-		sb38.appendLiteral("%", 1);
-		sb38.appendLiteral("s", 1);
+		sb38.appendLiteral(" has @implements tag, but does not implement any interface.", 59);
 		zv::Val r39 = sb38.finish();
 		pgrt::StringBuilder sb40;
-		sb40.appendLiteral("Enum ", 5);
+		sb40.appendLiteral("The @implements tag of enum ", 28);
 		if (UNEXPECTED(!sb40.append(l_escapedEnumName.raw()))) return false;
-		sb40.appendLiteral(" implements generic interface ", 30);
+		sb40.appendLiteral(" describes ", 11);
 		sb40.appendLiteral("%", 1);
-		sb40.appendLiteral("s but does not specify its types: ", 34);
+		sb40.appendLiteral("s but the enum implements: ", 27);
 		sb40.appendLiteral("%", 1);
 		sb40.appendLiteral("s", 1);
 		zv::Val r41 = sb40.finish();
 		pgrt::StringBuilder sb42;
-		sb42.appendLiteral("in implemented type ", 20);
-		sb42.appendLiteral("%", 1);
-		sb42.appendLiteral("s of enum ", 10);
+		sb42.appendLiteral("Enum ", 5);
 		if (UNEXPECTED(!sb42.append(l_escapedEnumName.raw()))) return false;
+		sb42.appendLiteral(" implements generic interface ", 30);
+		sb42.appendLiteral("%", 1);
+		sb42.appendLiteral("s but does not specify its types: ", 34);
+		sb42.appendLiteral("%", 1);
+		sb42.appendLiteral("s", 1);
 		zv::Val r43 = sb42.finish();
-		zv::Val r44;
-		if (UNEXPECTED(!pgen::GenericAncestorsCheck::m_check(Z_OBJ_P(o24.raw()), o27.raw(), r31.raw(), r33.raw(), r35.raw(), r37.raw(), r39.raw(), &pg_lit[2], &pg_lit[3], &pg_lit[4], &pg_lit[5], &pg_lit[6], &pg_lit[7], r41.raw(), r43.raw(), r44.raw()))) return false;
-		l_implementsErrors = std::move(r44);
+		pgrt::StringBuilder sb44;
+		sb44.appendLiteral("in implemented type ", 20);
+		sb44.appendLiteral("%", 1);
+		sb44.appendLiteral("s of enum ", 10);
+		if (UNEXPECTED(!sb44.append(l_escapedEnumName.raw()))) return false;
+		zv::Val r45 = sb44.finish();
+		zv::Val r46;
+		if (UNEXPECTED(!pgen::GenericAncestorsCheck::m_check(Z_OBJ_P(o26.raw()), o29.raw(), r33.raw(), r35.raw(), r37.raw(), r39.raw(), r41.raw(), &pg_lit[2], &pg_lit[3], &pg_lit[4], &pg_lit[5], &pg_lit[6], &pg_lit[7], r43.raw(), r45.raw(), r46.raw()))) return false;
+		l_implementsErrors = std::move(r46);
 	}
 	 {
-		zval *p46 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::EnumAncestorsRule::slot::crossCheckInterfacesHelper, "crossCheckInterfacesHelper");
-		if (UNEXPECTED(p46 == NULL)) return false;
-		if (UNEXPECTED(!(pgrt::instanceOfClass(l_classReflection.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(l_classReflection.raw(), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper::check", 1, "classReflection", "PHPStan\\Reflection\\ClassReflection", l_classReflection.raw()); return false; }
-		zv::Val r47;
-		if (UNEXPECTED(!pgen::CrossCheckInterfacesHelper::m_check(Z_OBJ_P(p46), l_classReflection.raw(), r47.raw()))) return false;
-		zv::Val a48 = zv::Val::copyOf(zv::Ref(r47.raw()).deref());
-		HashTable *ht45 = Z_ARRVAL_P(a48.raw());
-		zval *v49;
-		zend_ulong n50;
-		zend_string *s51;
-		ZEND_HASH_FOREACH_KEY_VAL(ht45, n50, s51, v49) {
-			(void) n50; (void) s51;
-			l_error = zv::Ref(v49).deref().raw();
+		zval *p48 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::EnumAncestorsRule::slot::crossCheckInterfacesHelper, "crossCheckInterfacesHelper");
+		if (UNEXPECTED(p48 == NULL)) return false;
+		if (UNEXPECTED(!(pgrt::instanceOfClass(l_classReflection.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(l_classReflection.raw(), pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper::check", 1, "classReflection", "PHPStan\\Reflection\\ClassReflection", l_classReflection.raw()); return false; }
+		zv::Val r49;
+		if (UNEXPECTED(!pgen::CrossCheckInterfacesHelper::m_check(Z_OBJ_P(p48), l_classReflection.raw(), r49.raw()))) return false;
+		zv::Val a50 = zv::Val::copyOf(zv::Ref(r49.raw()).deref());
+		HashTable *ht47 = Z_ARRVAL_P(a50.raw());
+		zval *v51;
+		zend_ulong n52;
+		zend_string *s53;
+		ZEND_HASH_FOREACH_KEY_VAL(ht47, n52, s53, v51) {
+			(void) n52; (void) s53;
+			l_error = zv::Ref(v51).deref().raw();
 			 {
 				 {
-					zv::Val o54 = zv::Val::copyOf(zv::Ref(l_error));
-					zv::Val o55 = zv::Val::copyOf(zv::Ref(o54.raw()));
-					zval *w56 = zv::Ref(l_implementsErrors.raw()).deref().raw();
-					if (Z_TYPE_P(w56) <= IS_NULL) { zval_ptr_dtor(w56); array_init(w56); } else if (UNEXPECTED(Z_TYPE_P(w56) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w56);
-					{ zval v = o55.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w56), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zv::Val o56 = zv::Val::copyOf(zv::Ref(l_error));
+					zv::Val o57 = zv::Val::copyOf(zv::Ref(o56.raw()));
+					zval *w58 = zv::Ref(l_implementsErrors.raw()).deref().raw();
+					if (Z_TYPE_P(w58) <= IS_NULL) { zval_ptr_dtor(w58); array_init(w58); } else if (UNEXPECTED(Z_TYPE_P(w58) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w58);
+					{ zval v = o57.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w58), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval av57[2];
-		ZVAL_COPY_VALUE(&av57[0], l_extendsErrors.raw());
-		ZVAL_COPY_VALUE(&av57[1], l_implementsErrors.raw());
-		zv::Val r58;
-		if (UNEXPECTED(!pgrt::arrayMerge(2, av57, r58.raw()))) return false;
-		*ret = r58.take();
+		zval av59[2];
+		ZVAL_COPY_VALUE(&av59[0], l_extendsErrors.raw());
+		ZVAL_COPY_VALUE(&av59[1], l_implementsErrors.raw());
+		zv::Val r60;
+		if (UNEXPECTED(!pgrt::arrayMerge(2, av59, r60.raw()))) return false;
+		*ret = r60.take();
 		return true;
 	}
 }
@@ -332,8 +355,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_EnumAncestorsRule)
 			Z_PARAM_OBJECT(p_genericAncestorsCheck)
 			Z_PARAM_OBJECT(p_crossCheckInterfacesHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_genericAncestorsCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_genericAncestorsCheck) == IS_OBJECT && Z_OBJCE_P(p_genericAncestorsCheck) == pt_ce_generic_ancestors_check) || pgrt::instanceOfClass(p_genericAncestorsCheck, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Rules\\Generics\\GenericAncestorsCheck", 44))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\GenericAncestorsCheck", zend_zval_value_name(p_genericAncestorsCheck)); RETURN_THROWS(); }
-		if (p_crossCheckInterfacesHelper != NULL && UNEXPECTED(!((Z_TYPE_P(p_crossCheckInterfacesHelper) == IS_OBJECT && Z_OBJCE_P(p_crossCheckInterfacesHelper) == pt_ce_cross_check_interfaces_helper) || pgrt::instanceOfClass(p_crossCheckInterfacesHelper, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper", 49))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper", zend_zval_value_name(p_crossCheckInterfacesHelper)); RETURN_THROWS(); }
+		if (p_genericAncestorsCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_genericAncestorsCheck) == IS_OBJECT && Z_OBJCE_P(p_genericAncestorsCheck) == pt_ce_generic_ancestors_check) || pgrt::instanceOfClass(p_genericAncestorsCheck, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Rules\\Generics\\GenericAncestorsCheck", 44))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\GenericAncestorsCheck", zend_zval_value_name(p_genericAncestorsCheck)); RETURN_THROWS(); }
+		if (p_crossCheckInterfacesHelper != NULL && UNEXPECTED(!((Z_TYPE_P(p_crossCheckInterfacesHelper) == IS_OBJECT && Z_OBJCE_P(p_crossCheckInterfacesHelper) == pt_ce_cross_check_interfaces_helper) || pgrt::instanceOfClass(p_crossCheckInterfacesHelper, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper", 49))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper", zend_zval_value_name(p_crossCheckInterfacesHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::EnumAncestorsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_genericAncestorsCheck, p_crossCheckInterfacesHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\EnumAncestorsRule::getNodeType() */
@@ -348,8 +371,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_EnumAncestorsRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_17, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::EnumAncestorsRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

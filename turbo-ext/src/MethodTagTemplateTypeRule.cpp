@@ -80,15 +80,43 @@ namespace pgen::MethodTagTemplateTypeRule {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r5.raw(), NULL))) return false;
 		}
 		}
-		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, r6.raw(), NULL))) return false;
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r7.raw(), NULL))) return false;
+		zv::Val vd6;
+		zend_class_entry *vd6_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd6_done = false;
+		if (vd6_ce == pt_ce_in_class_method_node) {
+			zv::Val r7;
+			if (UNEXPECTED(!pgen::InClassMethodNode::m_getOriginalNode(Z_OBJ_P(p_node), r7.raw()))) return false;
+			vd6 = std::move(r7);
+			vd6_done = true;
+		}
+		if (vd6_ce == pt_ce_method_call_expression_node) {
+			zv::Val r8;
+			if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getOriginalNode(Z_OBJ_P(p_node), r8.raw()))) return false;
+			vd6 = std::move(r8);
+			vd6_done = true;
+		}
+		if (vd6_ce == pt_ce_class_property_node) {
+			zv::Val r9;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getOriginalNode(Z_OBJ_P(p_node), r9.raw()))) return false;
+			vd6 = std::move(r9);
+			vd6_done = true;
+		}
+		if (vd6_ce == pt_ce_in_class_node) {
+			zv::Val r10;
+			if (UNEXPECTED(!pgen::InClassNode::m_getOriginalNode(Z_OBJ_P(p_node), r10.raw()))) return false;
+			vd6 = std::move(r10);
+			vd6_done = true;
+		}
+		if (!vd6_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd6.raw()))) return false;
+		}
+		zv::Val r11;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r11.raw(), NULL))) return false;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r5.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(r5.raw(), pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 1, "classReflection", "PHPStan\\Reflection\\ClassReflection", r5.raw()); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r6.raw(), pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 3, "node", "PhpParser\\Node\\Stmt\\ClassLike", r6.raw()); return false; }
-		zv::Val r8;
-		if (UNEXPECTED(!pgen::MethodTagTemplateTypeCheck::m_check(Z_OBJ_P(o4.raw()), r5.raw(), p_scope, r6.raw(), r7.raw(), r8.raw()))) return false;
-		*ret = r8.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd6.raw(), pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 3, "node", "PhpParser\\Node\\Stmt\\ClassLike", vd6.raw()); return false; }
+		zv::Val r12;
+		if (UNEXPECTED(!pgen::MethodTagTemplateTypeCheck::m_check(Z_OBJ_P(o4.raw()), r5.raw(), p_scope, vd6.raw(), r11.raw(), r12.raw()))) return false;
+		*ret = r12.take();
 		return true;
 	}
 }

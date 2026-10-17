@@ -11,12 +11,10 @@ static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
 static pt_method_site pg_site_1; /* method_getName_1 */
-static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Internal\SprintfHelper */
-static pt_method_site pg_site_3; /* static_PHPStan\Internal\SprintfHelper::escapeFormatString */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
-static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Rules\Generics\VarianceCheck */
-static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
+static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\Generics\VarianceCheck */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::FunctionSignatureVarianceRule {
 
@@ -74,46 +72,40 @@ namespace pgen::FunctionSignatureVarianceRule {
 		if (UNEXPECTED(p3 == NULL)) return false;
 		zv::Val o4 = zv::Val::copyOf(zv::Ref(p3));
 		zv::Val o5 = zv::Val::copyOf(zv::Ref(l_functionReflection.raw()));
-		zval av6[1];
-		ZVAL_COPY_VALUE(&av6[0], l_functionName.raw());
-		zend_class_entry *ce7 = pgrt::lookupClass(pg_site_2, "PHPStan\\Internal\\SprintfHelper", 30);
-		if (UNEXPECTED(ce7 == NULL)) return false;
-		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, ce7, "escapeformatstring", 18, 1, av6, r8.raw(), NULL))) return false;
-		pgrt::StringBuilder sb9;
-		sb9.appendLiteral("in parameter ", 13);
-		sb9.appendLiteral("%", 1);
-		sb9.appendLiteral("s of function ", 14);
-		if (UNEXPECTED(!sb9.append(r8.raw()))) return false;
-		sb9.appendLiteral("()", 2);
-		zv::Val r10 = sb9.finish();
-		zval av11[1];
-		ZVAL_COPY_VALUE(&av11[0], l_functionName.raw());
-		zend_class_entry *ce12 = pgrt::lookupClass(pg_site_2, "PHPStan\\Internal\\SprintfHelper", 30);
-		if (UNEXPECTED(ce12 == NULL)) return false;
-		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, ce12, "escapeformatstring", 18, 1, av11, r13.raw(), NULL))) return false;
+		if (UNEXPECTED(!(Z_TYPE_P(l_functionName.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", l_functionName.raw()); return false; }
+		zv::Val r6;
+		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(l_functionName.raw(), r6.raw()))) return false;
+		pgrt::StringBuilder sb7;
+		sb7.appendLiteral("in parameter ", 13);
+		sb7.appendLiteral("%", 1);
+		sb7.appendLiteral("s of function ", 14);
+		if (UNEXPECTED(!sb7.append(r6.raw()))) return false;
+		sb7.appendLiteral("()", 2);
+		zv::Val r8 = sb7.finish();
+		if (UNEXPECTED(!(Z_TYPE_P(l_functionName.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", l_functionName.raw()); return false; }
+		zv::Val r9;
+		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(l_functionName.raw(), r9.raw()))) return false;
+		pgrt::StringBuilder sb10;
+		sb10.appendLiteral("in param-out type of parameter ", 31);
+		sb10.appendLiteral("%", 1);
+		sb10.appendLiteral("s of function ", 14);
+		if (UNEXPECTED(!sb10.append(r9.raw()))) return false;
+		sb10.appendLiteral("()", 2);
+		zv::Val r11 = sb10.finish();
+		pgrt::StringBuilder sb12;
+		sb12.appendLiteral("in return type of function ", 27);
+		if (UNEXPECTED(!sb12.append(l_functionName.raw()))) return false;
+		sb12.appendLiteral("()", 2);
+		zv::Val r13 = sb12.finish();
 		pgrt::StringBuilder sb14;
-		sb14.appendLiteral("in param-out type of parameter ", 31);
-		sb14.appendLiteral("%", 1);
-		sb14.appendLiteral("s of function ", 14);
-		if (UNEXPECTED(!sb14.append(r13.raw()))) return false;
+		sb14.appendLiteral("in function ", 12);
+		if (UNEXPECTED(!sb14.append(l_functionName.raw()))) return false;
 		sb14.appendLiteral("()", 2);
 		zv::Val r15 = sb14.finish();
-		pgrt::StringBuilder sb16;
-		sb16.appendLiteral("in return type of function ", 27);
-		if (UNEXPECTED(!sb16.append(l_functionName.raw()))) return false;
-		sb16.appendLiteral("()", 2);
-		zv::Val r17 = sb16.finish();
-		pgrt::StringBuilder sb18;
-		sb18.appendLiteral("in function ", 12);
-		if (UNEXPECTED(!sb18.append(l_functionName.raw()))) return false;
-		sb18.appendLiteral("()", 2);
-		zv::Val r19 = sb18.finish();
-		if (UNEXPECTED(!(pgrt::instanceOfClass(o5.raw(), pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Reflection\\ExtendedParametersAcceptor", 45))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\VarianceCheck::checkParametersAcceptor", 1, "parametersAcceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor", o5.raw()); return false; }
-		zv::Val r20;
-		if (UNEXPECTED(!pgen::VarianceCheck::m_checkParametersAcceptor(Z_OBJ_P(o4.raw()), o5.raw(), r10.raw(), r15.raw(), r17.raw(), r19.raw(), false, false, &pg_lit[1], r20.raw()))) return false;
-		*ret = r20.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(o5.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Reflection\\ExtendedParametersAcceptor", 45))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\VarianceCheck::checkParametersAcceptor", 1, "parametersAcceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor", o5.raw()); return false; }
+		zv::Val r16;
+		if (UNEXPECTED(!pgen::VarianceCheck::m_checkParametersAcceptor(Z_OBJ_P(o4.raw()), o5.raw(), r8.raw(), r11.raw(), r13.raw(), r15.raw(), false, false, &pg_lit[1], r16.raw()))) return false;
+		*ret = r16.take();
 		return true;
 	}
 }
@@ -135,7 +127,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionSignatureVarianceRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_varianceCheck)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_varianceCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_varianceCheck) == IS_OBJECT && Z_OBJCE_P(p_varianceCheck) == pt_ce_variance_check) || pgrt::instanceOfClass(p_varianceCheck, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Rules\\Generics\\VarianceCheck", 36))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\VarianceCheck", zend_zval_value_name(p_varianceCheck)); RETURN_THROWS(); }
+		if (p_varianceCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_varianceCheck) == IS_OBJECT && Z_OBJCE_P(p_varianceCheck) == pt_ce_variance_check) || pgrt::instanceOfClass(p_varianceCheck, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Rules\\Generics\\VarianceCheck", 36))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\VarianceCheck", zend_zval_value_name(p_varianceCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::FunctionSignatureVarianceRule::m___construct(Z_OBJ_P(ZEND_THIS), p_varianceCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\FunctionSignatureVarianceRule::getNodeType() */
@@ -150,8 +142,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionSignatureVarianceRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FunctionSignatureVarianceRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

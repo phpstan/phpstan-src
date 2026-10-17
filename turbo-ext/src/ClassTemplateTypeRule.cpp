@@ -14,12 +14,10 @@ static pt_method_site pg_site_1; /* method_isClass_1 */
 static pt_method_site pg_site_2; /* method_getName_2 */
 static pt_method_site pg_site_3; /* method_isAnonymous_3 */
 static pt_method_site pg_site_4; /* method_getDisplayName_4 */
-static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Internal\SprintfHelper */
-static pt_method_site pg_site_6; /* static_PHPStan\Internal\SprintfHelper::escapeFormatString */
-static pt_method_site pg_site_7; /* method_getTemplateTags_7 */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\Generics\TemplateTypeCheck */
-static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_5; /* method_getTemplateTags_5 */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\Generics\TemplateTypeCheck */
+static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ClassTemplateTypeRule {
 
@@ -120,93 +118,90 @@ namespace pgen::ClassTemplateTypeRule {
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r8.raw()))) return false;
 				}
 				}
-				zval av9[1];
-				ZVAL_COPY_VALUE(&av9[0], r8.raw());
-				zend_class_entry *ce10 = pgrt::lookupClass(pg_site_5, "PHPStan\\Internal\\SprintfHelper", 30);
-				if (UNEXPECTED(ce10 == NULL)) return false;
-				zv::Val r11;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_6, ce10, "escapeformatstring", 18, 1, av9, r11.raw(), NULL))) return false;
-				zv::Val cat12;
-				if (UNEXPECTED(!pgrt::concat(&pg_lit[2], r11.raw(), cat12.raw()))) return false;
-				l_displayName = std::move(cat12);
+				if (UNEXPECTED(!(Z_TYPE_P(r8.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", r8.raw()); return false; }
+				zv::Val r9;
+				if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(r8.raw(), r9.raw()))) return false;
+				zv::Val cat10;
+				if (UNEXPECTED(!pgrt::concat(&pg_lit[2], r9.raw(), cat10.raw()))) return false;
+				l_displayName = std::move(cat10);
 			}
 		}
 		}
 	}
 	 {
-		zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassTemplateTypeRule::slot::templateTypeCheck, "templateTypeCheck");
-		if (UNEXPECTED(p13 == NULL)) return false;
-		zv::Val o14 = zv::Val::copyOf(zv::Ref(p13));
+		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassTemplateTypeRule::slot::templateTypeCheck, "templateTypeCheck");
+		if (UNEXPECTED(p11 == NULL)) return false;
+		zv::Val o12 = zv::Val::copyOf(zv::Ref(p11));
 		if (UNEXPECTED(!(Z_TYPE_P(l_className.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Type\\Generic\\TemplateTypeScope::createWithClass", 1, "className", "string", l_className.raw()); return false; }
-		zv::Val r15;
-		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithClass(l_className.raw(), r15.raw()))) return false;
-		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r16.raw(), NULL))) return false;
+		zv::Val r13;
+		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithClass(l_className.raw(), r13.raw()))) return false;
+		zv::Val r14;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r14.raw(), NULL))) return false;
+		pgrt::StringBuilder sb15;
+		sb15.appendLiteral("PHPDoc tag @template for ", 25);
+		if (UNEXPECTED(!sb15.append(l_displayName.raw()))) return false;
+		sb15.appendLiteral(" cannot have existing class ", 28);
+		sb15.appendLiteral("%", 1);
+		sb15.appendLiteral("s as its name.", 14);
+		zv::Val r16 = sb15.finish();
 		pgrt::StringBuilder sb17;
 		sb17.appendLiteral("PHPDoc tag @template for ", 25);
 		if (UNEXPECTED(!sb17.append(l_displayName.raw()))) return false;
-		sb17.appendLiteral(" cannot have existing class ", 28);
+		sb17.appendLiteral(" cannot have existing type alias ", 33);
 		sb17.appendLiteral("%", 1);
 		sb17.appendLiteral("s as its name.", 14);
 		zv::Val r18 = sb17.finish();
 		pgrt::StringBuilder sb19;
-		sb19.appendLiteral("PHPDoc tag @template for ", 25);
-		if (UNEXPECTED(!sb19.append(l_displayName.raw()))) return false;
-		sb19.appendLiteral(" cannot have existing type alias ", 33);
+		sb19.appendLiteral("PHPDoc tag @template ", 21);
 		sb19.appendLiteral("%", 1);
-		sb19.appendLiteral("s as its name.", 14);
+		sb19.appendLiteral("s for ", 6);
+		if (UNEXPECTED(!sb19.append(l_displayName.raw()))) return false;
+		sb19.appendLiteral(" has invalid bound type ", 24);
+		sb19.appendLiteral("%", 1);
+		sb19.appendLiteral("s.", 2);
 		zv::Val r20 = sb19.finish();
 		pgrt::StringBuilder sb21;
 		sb21.appendLiteral("PHPDoc tag @template ", 21);
 		sb21.appendLiteral("%", 1);
 		sb21.appendLiteral("s for ", 6);
 		if (UNEXPECTED(!sb21.append(l_displayName.raw()))) return false;
-		sb21.appendLiteral(" has invalid bound type ", 24);
+		sb21.appendLiteral(" with bound type ", 17);
 		sb21.appendLiteral("%", 1);
-		sb21.appendLiteral("s.", 2);
+		sb21.appendLiteral("s is not supported.", 19);
 		zv::Val r22 = sb21.finish();
 		pgrt::StringBuilder sb23;
 		sb23.appendLiteral("PHPDoc tag @template ", 21);
 		sb23.appendLiteral("%", 1);
 		sb23.appendLiteral("s for ", 6);
 		if (UNEXPECTED(!sb23.append(l_displayName.raw()))) return false;
-		sb23.appendLiteral(" with bound type ", 17);
+		sb23.appendLiteral(" has invalid default type ", 26);
 		sb23.appendLiteral("%", 1);
-		sb23.appendLiteral("s is not supported.", 19);
+		sb23.appendLiteral("s.", 2);
 		zv::Val r24 = sb23.finish();
 		pgrt::StringBuilder sb25;
-		sb25.appendLiteral("PHPDoc tag @template ", 21);
+		sb25.appendLiteral("Default type ", 13);
+		sb25.appendLiteral("%", 1);
+		sb25.appendLiteral("s in PHPDoc tag @template ", 26);
 		sb25.appendLiteral("%", 1);
 		sb25.appendLiteral("s for ", 6);
 		if (UNEXPECTED(!sb25.append(l_displayName.raw()))) return false;
-		sb25.appendLiteral(" has invalid default type ", 26);
+		sb25.appendLiteral(" is not subtype of bound type ", 30);
 		sb25.appendLiteral("%", 1);
 		sb25.appendLiteral("s.", 2);
 		zv::Val r26 = sb25.finish();
 		pgrt::StringBuilder sb27;
-		sb27.appendLiteral("Default type ", 13);
-		sb27.appendLiteral("%", 1);
-		sb27.appendLiteral("s in PHPDoc tag @template ", 26);
+		sb27.appendLiteral("PHPDoc tag @template ", 21);
 		sb27.appendLiteral("%", 1);
 		sb27.appendLiteral("s for ", 6);
 		if (UNEXPECTED(!sb27.append(l_displayName.raw()))) return false;
-		sb27.appendLiteral(" is not subtype of bound type ", 30);
+		sb27.appendLiteral(" does not have a default type but follows an optional @template ", 64);
 		sb27.appendLiteral("%", 1);
 		sb27.appendLiteral("s.", 2);
 		zv::Val r28 = sb27.finish();
-		pgrt::StringBuilder sb29;
-		sb29.appendLiteral("PHPDoc tag @template ", 21);
-		sb29.appendLiteral("%", 1);
-		sb29.appendLiteral("s for ", 6);
-		if (UNEXPECTED(!sb29.append(l_displayName.raw()))) return false;
-		sb29.appendLiteral(" does not have a default type but follows an optional @template ", 64);
-		sb29.appendLiteral("%", 1);
-		sb29.appendLiteral("s.", 2);
-		zv::Val r30 = sb29.finish();
-		if (UNEXPECTED(!(Z_TYPE_P(r16.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\TemplateTypeCheck::check", 4, "templateTags", "array", r16.raw()); return false; }
-		zv::Val r31;
-		if (UNEXPECTED(!pgen::TemplateTypeCheck::m_check(Z_OBJ_P(o14.raw()), p_scope, p_node, r15.raw(), r16.raw(), r18.raw(), r20.raw(), r22.raw(), r24.raw(), r26.raw(), r28.raw(), r30.raw(), r31.raw()))) return false;
-		*ret = r31.take();
+		if (UNEXPECTED(!(Z_TYPE_P(r14.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\TemplateTypeCheck::check", 4, "templateTags", "array", r14.raw()); return false; }
+		zv::Val r29;
+		if (UNEXPECTED(!pgen::TemplateTypeCheck::m_check(Z_OBJ_P(o12.raw()), p_scope, p_node, r13.raw(), r14.raw(), r16.raw(), r18.raw(), r20.raw(), r22.raw(), r24.raw(), r26.raw(), r28.raw(), r29.raw()))) return false;
+		*ret = r29.take();
 		return true;
 	}
 }
@@ -229,7 +224,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassTemplateTypeRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_templateTypeCheck)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_templateTypeCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_templateTypeCheck) == IS_OBJECT && Z_OBJCE_P(p_templateTypeCheck) == pt_ce_template_type_check) || pgrt::instanceOfClass(p_templateTypeCheck, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Rules\\Generics\\TemplateTypeCheck", 40))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\TemplateTypeCheck", zend_zval_value_name(p_templateTypeCheck)); RETURN_THROWS(); }
+		if (p_templateTypeCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_templateTypeCheck) == IS_OBJECT && Z_OBJCE_P(p_templateTypeCheck) == pt_ce_template_type_check) || pgrt::instanceOfClass(p_templateTypeCheck, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Rules\\Generics\\TemplateTypeCheck", 40))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\TemplateTypeCheck", zend_zval_value_name(p_templateTypeCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ClassTemplateTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_templateTypeCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\ClassTemplateTypeRule::getNodeType() */
@@ -244,8 +239,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassTemplateTypeRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassTemplateTypeRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

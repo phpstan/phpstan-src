@@ -62,30 +62,50 @@ namespace pgen::TooWideFunctionReturnTypehintRule {
 		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TooWideFunctionReturnTypehintRule::slot::check, "check");
 		if (UNEXPECTED(p2 == NULL)) return false;
 		zv::Val o3 = zv::Val::copyOf(zv::Ref(p2));
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_function.raw(), "getNativeReturnType", "getnativereturntype", 19, 0, NULL, r4.raw(), NULL))) return false;
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_function.raw(), "getPhpDocReturnType", "getphpdocreturntype", 19, 0, NULL, r5.raw(), NULL))) return false;
-		zv::Val r6;
+		zv::Val vd4;
+		zend_class_entry *vd4_ce = Z_TYPE_P(l_function.raw()) == IS_OBJECT ? Z_OBJCE_P(l_function.raw()) : NULL;
+		bool vd4_done = false;
+		if (vd4_ce == pt_ce_php_function_from_parser_node_reflection || vd4_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getNativeReturnType(Z_OBJ_P(l_function.raw()), r5.raw()))) return false;
+			vd4 = std::move(r5);
+			vd4_done = true;
+		}
+		if (!vd4_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_function.raw(), "getNativeReturnType", "getnativereturntype", 19, 0, NULL, vd4.raw()))) return false;
+		}
+		zv::Val vd6;
+		zend_class_entry *vd6_ce = Z_TYPE_P(l_function.raw()) == IS_OBJECT ? Z_OBJCE_P(l_function.raw()) : NULL;
+		bool vd6_done = false;
+		if (vd6_ce == pt_ce_php_function_from_parser_node_reflection || vd6_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r7;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getPhpDocReturnType(Z_OBJ_P(l_function.raw()), r7.raw()))) return false;
+			vd6 = std::move(r7);
+			vd6_done = true;
+		}
+		if (!vd6_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_function.raw(), "getPhpDocReturnType", "getphpdocreturntype", 19, 0, NULL, vd6.raw()))) return false;
+		}
+		zv::Val r8;
 		if (EXPECTED(Z_TYPE_P(l_function.raw()) == IS_OBJECT)) {
-			r6 = pt_type_op(Z_OBJ_P(l_function.raw()), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r6.isUndef())) return false;
+			r8 = pt_type_op(Z_OBJ_P(l_function.raw()), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_function.raw(), "getName", "getname", 7, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_function.raw(), "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
 		}
 		}
-		pgrt::StringBuilder sb7;
-		sb7.appendLiteral("Function ", 9);
-		if (UNEXPECTED(!sb7.append(r6.raw()))) return false;
-		sb7.appendLiteral("()", 2);
-		zv::Val r8 = sb7.finish();
-		if (UNEXPECTED(!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\MethodReturnStatementsNode", 39)) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Node\\FunctionReturnStatementsNode", 41))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 1, "node", "PHPStan\\Node\\MethodReturnStatementsNode|PHPStan\\Node\\FunctionReturnStatementsNode", p_node); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r4.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 2, "nativeFunctionReturnType", "PHPStan\\Type\\Type", r4.raw()); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r5.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 3, "phpDocFunctionReturnType", "PHPStan\\Type\\Type", r5.raw()); return false; }
-		zv::Val r9;
-		if (UNEXPECTED(!pgen::TooWideTypeCheck::m_checkFunctionReturnType(Z_OBJ_P(o3.raw()), p_node, r4.raw(), r5.raw(), r8.raw(), false, p_scope, r9.raw()))) return false;
-		*ret = r9.take();
+		pgrt::StringBuilder sb9;
+		sb9.appendLiteral("Function ", 9);
+		if (UNEXPECTED(!sb9.append(r8.raw()))) return false;
+		sb9.appendLiteral("()", 2);
+		zv::Val r10 = sb9.finish();
+		if (UNEXPECTED(!(((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_method_return_statements_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\MethodReturnStatementsNode", 39))) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Node\\FunctionReturnStatementsNode", 41))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 1, "node", "PHPStan\\Node\\MethodReturnStatementsNode|PHPStan\\Node\\FunctionReturnStatementsNode", p_node); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd4.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 2, "nativeFunctionReturnType", "PHPStan\\Type\\Type", vd4.raw()); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd6.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 3, "phpDocFunctionReturnType", "PHPStan\\Type\\Type", vd6.raw()); return false; }
+		zv::Val r11;
+		if (UNEXPECTED(!pgen::TooWideTypeCheck::m_checkFunctionReturnType(Z_OBJ_P(o3.raw()), p_node, vd4.raw(), vd6.raw(), r10.raw(), false, p_scope, r11.raw()))) return false;
+		*ret = r11.take();
 		return true;
 	}
 }

@@ -10,18 +10,17 @@ zend_class_entry *pt_ce_void_cast_rule = nullptr;
 static zval pg_lit[5];
 
 static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
-static pt_method_site pg_site_1; /* method_supportsVoidCast_1 */
-static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_3; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_4; /* method_identifier_4 */
-static pt_method_site pg_site_5; /* method_nonIgnorable_5 */
-static pt_method_site pg_site_6; /* method_build_6 */
-static pt_method_site pg_site_7; /* method_isInFirstLevelStatement_7 */
-static pt_method_site pg_site_8; /* method_identifier_8 */
-static pt_method_site pg_site_9; /* method_nonIgnorable_9 */
-static pt_method_site pg_site_10; /* method_build_10 */
-static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Rules\RuleErrorBuilder */
+static pt_method_site pg_site_2; /* static_PHPStan\Rules\RuleErrorBuilder::message */
+static pt_method_site pg_site_3; /* method_identifier_3 */
+static pt_method_site pg_site_4; /* method_nonIgnorable_4 */
+static pt_method_site pg_site_5; /* method_build_5 */
+static pt_method_site pg_site_6; /* method_isInFirstLevelStatement_6 */
+static pt_method_site pg_site_7; /* method_identifier_7 */
+static pt_method_site pg_site_8; /* method_nonIgnorable_8 */
+static pt_method_site pg_site_9; /* method_build_9 */
+static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::VoidCastRule {
 
@@ -54,25 +53,25 @@ namespace pgen::VoidCastRule {
 		zv::Val r3;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r3.raw(), NULL))) return false;
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, r3.raw(), "supportsVoidCast", "supportsvoidcast", 16, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgen::PhpVersions::m_supportsVoidCast(Z_OBJ_P(r3.raw()), r4.raw()))) return false;
 		bool r5;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r4.raw()), &r5))) return false;
 		if (!(r5)) {
 			 {
 				zval av6[1];
 				ZVAL_COPY_VALUE(&av6[0], &pg_lit[1]);
-				zend_class_entry *ce7 = pgrt::lookupClass(pg_site_2, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+				zend_class_entry *ce7 = pgrt::lookupClass(pg_site_1, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 				if (UNEXPECTED(ce7 == NULL)) return false;
 				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_3, ce7, "message", 7, 1, av6, r8.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_2, ce7, "message", 7, 1, av6, r8.raw(), NULL))) return false;
 				zval av9[1];
 				ZVAL_COPY_VALUE(&av9[0], &pg_lit[2]);
 				zv::Val r10;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r8.raw(), "identifier", "identifier", 10, 1, av9, r10.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, r8.raw(), "identifier", "identifier", 10, 1, av9, r10.raw(), NULL))) return false;
 				zv::Val r11;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r10.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r11.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r10.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r11.raw(), NULL))) return false;
 				zv::Val r12;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r11.raw(), "build", "build", 5, 0, NULL, r12.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r11.raw(), "build", "build", 5, 0, NULL, r12.raw(), NULL))) return false;
 				zv::Val o13 = zv::Val::copyOf(zv::Ref(r12.raw()));
 				zval *w14 = zv::Ref(l_errors.raw()).deref().raw();
 				if (Z_TYPE_P(w14) <= IS_NULL) { zval_ptr_dtor(w14); array_init(w14); } else if (UNEXPECTED(Z_TYPE_P(w14) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -83,7 +82,7 @@ namespace pgen::VoidCastRule {
 	}
 	 {
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, 0, NULL, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, 0, NULL, r15.raw(), NULL))) return false;
 		if (Z_TYPE_P(r15.raw()) == IS_TRUE) {
 			 {
 				ZVAL_COPY(ret, l_errors.raw());
@@ -94,18 +93,18 @@ namespace pgen::VoidCastRule {
 	 {
 		zval av16[1];
 		ZVAL_COPY_VALUE(&av16[0], &pg_lit[3]);
-		zend_class_entry *ce17 = pgrt::lookupClass(pg_site_2, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+		zend_class_entry *ce17 = pgrt::lookupClass(pg_site_1, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 		if (UNEXPECTED(ce17 == NULL)) return false;
 		zv::Val r18;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, ce17, "message", 7, 1, av16, r18.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_2, ce17, "message", 7, 1, av16, r18.raw(), NULL))) return false;
 		zval av19[1];
 		ZVAL_COPY_VALUE(&av19[0], &pg_lit[4]);
 		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r18.raw(), "identifier", "identifier", 10, 1, av19, r20.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r18.raw(), "identifier", "identifier", 10, 1, av19, r20.raw(), NULL))) return false;
 		zv::Val r21;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r20.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r21.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r20.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r21.raw(), NULL))) return false;
 		zv::Val r22;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r21.raw(), "build", "build", 5, 0, NULL, r22.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r21.raw(), "build", "build", 5, 0, NULL, r22.raw(), NULL))) return false;
 		zv::Val o23 = zv::Val::copyOf(zv::Ref(r22.raw()));
 		zval *w24 = zv::Ref(l_errors.raw()).deref().raw();
 		if (Z_TYPE_P(w24) <= IS_NULL) { zval_ptr_dtor(w24); array_init(w24); } else if (UNEXPECTED(Z_TYPE_P(w24) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -145,8 +144,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VoidCastRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VoidCastRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

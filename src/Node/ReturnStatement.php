@@ -6,11 +6,13 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'returnStatement')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ReturnStatement.cpp')]
 final class ReturnStatement
 {
 

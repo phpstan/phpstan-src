@@ -178,8 +178,7 @@ namespace pgen::TrivialParametersAcceptor {
 		sb4.appendLiteral("call to a ", 10);
 		if (UNEXPECTED(!sb4.append(p3))) return false;
 		zv::Val r5 = sb4.finish();
-		bool k6 = false;
-		zv::Val n2 = pt_simple_impure_point_new(Z_STR_P(&pg_lit[0]), Z_STR_P(r5.raw()), k6);
+		zv::Val n2 = pt_simple_impure_point_new(Z_STR_P(&pg_lit[0]), Z_STR_P(r5.raw()), false);
 		if (UNEXPECTED(n2.isUndef())) return false;
 		{ zval v = n2.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr1.raw()), &v); }
 		*ret = arr1.take();

@@ -14,6 +14,7 @@ use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -34,6 +35,7 @@ use function strtolower;
  * @api
  */
 #[ReferencedByTurboExtension(key: 'phpMethodFromParserNodeReflection')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PhpMethodFromParserNodeReflection.cpp')]
 final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements ExtendedMethodReflection
 {
 

@@ -12,12 +12,10 @@ static zval pg_lit[1];
 static pt_method_site pg_site_0; /* method_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_isInterface_1 */
 static pt_method_site pg_site_2; /* method_getName_2 */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Internal\SprintfHelper */
-static pt_method_site pg_site_4; /* static_PHPStan\Internal\SprintfHelper::escapeFormatString */
-static pt_method_site pg_site_5; /* method_getTemplateTags_5 */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\Generics\TemplateTypeCheck */
-static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_3; /* method_getTemplateTags_3 */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Rules\Generics\TemplateTypeCheck */
+static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::InterfaceTemplateTypeRule {
 
@@ -98,88 +96,85 @@ namespace pgen::InterfaceTemplateTypeRule {
 		l_interfaceName = std::move(r4);
 	}
 	 {
-		zval av5[1];
-		ZVAL_COPY_VALUE(&av5[0], l_interfaceName.raw());
-		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_3, "PHPStan\\Internal\\SprintfHelper", 30);
-		if (UNEXPECTED(ce6 == NULL)) return false;
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_4, ce6, "escapeformatstring", 18, 1, av5, r7.raw(), NULL))) return false;
-		l_escapadInterfaceName = std::move(r7);
+		if (UNEXPECTED(!(Z_TYPE_P(l_interfaceName.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", l_interfaceName.raw()); return false; }
+		zv::Val r5;
+		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(l_interfaceName.raw(), r5.raw()))) return false;
+		l_escapadInterfaceName = std::move(r5);
 	}
 	 {
-		zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::InterfaceTemplateTypeRule::slot::templateTypeCheck, "templateTypeCheck");
-		if (UNEXPECTED(p8 == NULL)) return false;
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(p8));
+		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::InterfaceTemplateTypeRule::slot::templateTypeCheck, "templateTypeCheck");
+		if (UNEXPECTED(p6 == NULL)) return false;
+		zv::Val o7 = zv::Val::copyOf(zv::Ref(p6));
 		if (UNEXPECTED(!(Z_TYPE_P(l_interfaceName.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Type\\Generic\\TemplateTypeScope::createWithClass", 1, "className", "string", l_interfaceName.raw()); return false; }
-		zv::Val r10;
-		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithClass(l_interfaceName.raw(), r10.raw()))) return false;
-		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r11.raw(), NULL))) return false;
+		zv::Val r8;
+		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithClass(l_interfaceName.raw(), r8.raw()))) return false;
+		zv::Val r9;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r9.raw(), NULL))) return false;
+		pgrt::StringBuilder sb10;
+		sb10.appendLiteral("PHPDoc tag @template for interface ", 35);
+		if (UNEXPECTED(!sb10.append(l_escapadInterfaceName.raw()))) return false;
+		sb10.appendLiteral(" cannot have existing class ", 28);
+		sb10.appendLiteral("%", 1);
+		sb10.appendLiteral("s as its name.", 14);
+		zv::Val r11 = sb10.finish();
 		pgrt::StringBuilder sb12;
 		sb12.appendLiteral("PHPDoc tag @template for interface ", 35);
 		if (UNEXPECTED(!sb12.append(l_escapadInterfaceName.raw()))) return false;
-		sb12.appendLiteral(" cannot have existing class ", 28);
+		sb12.appendLiteral(" cannot have existing type alias ", 33);
 		sb12.appendLiteral("%", 1);
 		sb12.appendLiteral("s as its name.", 14);
 		zv::Val r13 = sb12.finish();
 		pgrt::StringBuilder sb14;
-		sb14.appendLiteral("PHPDoc tag @template for interface ", 35);
-		if (UNEXPECTED(!sb14.append(l_escapadInterfaceName.raw()))) return false;
-		sb14.appendLiteral(" cannot have existing type alias ", 33);
+		sb14.appendLiteral("PHPDoc tag @template ", 21);
 		sb14.appendLiteral("%", 1);
-		sb14.appendLiteral("s as its name.", 14);
+		sb14.appendLiteral("s for interface ", 16);
+		if (UNEXPECTED(!sb14.append(l_escapadInterfaceName.raw()))) return false;
+		sb14.appendLiteral(" has invalid bound type ", 24);
+		sb14.appendLiteral("%", 1);
+		sb14.appendLiteral("s.", 2);
 		zv::Val r15 = sb14.finish();
 		pgrt::StringBuilder sb16;
 		sb16.appendLiteral("PHPDoc tag @template ", 21);
 		sb16.appendLiteral("%", 1);
 		sb16.appendLiteral("s for interface ", 16);
 		if (UNEXPECTED(!sb16.append(l_escapadInterfaceName.raw()))) return false;
-		sb16.appendLiteral(" has invalid bound type ", 24);
+		sb16.appendLiteral(" with bound type ", 17);
 		sb16.appendLiteral("%", 1);
-		sb16.appendLiteral("s.", 2);
+		sb16.appendLiteral("s is not supported.", 19);
 		zv::Val r17 = sb16.finish();
 		pgrt::StringBuilder sb18;
 		sb18.appendLiteral("PHPDoc tag @template ", 21);
 		sb18.appendLiteral("%", 1);
 		sb18.appendLiteral("s for interface ", 16);
 		if (UNEXPECTED(!sb18.append(l_escapadInterfaceName.raw()))) return false;
-		sb18.appendLiteral(" with bound type ", 17);
+		sb18.appendLiteral(" has invalid default type ", 26);
 		sb18.appendLiteral("%", 1);
-		sb18.appendLiteral("s is not supported.", 19);
+		sb18.appendLiteral("s.", 2);
 		zv::Val r19 = sb18.finish();
 		pgrt::StringBuilder sb20;
-		sb20.appendLiteral("PHPDoc tag @template ", 21);
+		sb20.appendLiteral("Default type ", 13);
+		sb20.appendLiteral("%", 1);
+		sb20.appendLiteral("s in PHPDoc tag @template ", 26);
 		sb20.appendLiteral("%", 1);
 		sb20.appendLiteral("s for interface ", 16);
 		if (UNEXPECTED(!sb20.append(l_escapadInterfaceName.raw()))) return false;
-		sb20.appendLiteral(" has invalid default type ", 26);
+		sb20.appendLiteral(" is not subtype of bound type ", 30);
 		sb20.appendLiteral("%", 1);
 		sb20.appendLiteral("s.", 2);
 		zv::Val r21 = sb20.finish();
 		pgrt::StringBuilder sb22;
-		sb22.appendLiteral("Default type ", 13);
-		sb22.appendLiteral("%", 1);
-		sb22.appendLiteral("s in PHPDoc tag @template ", 26);
+		sb22.appendLiteral("PHPDoc tag @template ", 21);
 		sb22.appendLiteral("%", 1);
 		sb22.appendLiteral("s for interface ", 16);
 		if (UNEXPECTED(!sb22.append(l_escapadInterfaceName.raw()))) return false;
-		sb22.appendLiteral(" is not subtype of bound type ", 30);
+		sb22.appendLiteral(" does not have a default type but follows an optional @template ", 64);
 		sb22.appendLiteral("%", 1);
 		sb22.appendLiteral("s.", 2);
 		zv::Val r23 = sb22.finish();
-		pgrt::StringBuilder sb24;
-		sb24.appendLiteral("PHPDoc tag @template ", 21);
-		sb24.appendLiteral("%", 1);
-		sb24.appendLiteral("s for interface ", 16);
-		if (UNEXPECTED(!sb24.append(l_escapadInterfaceName.raw()))) return false;
-		sb24.appendLiteral(" does not have a default type but follows an optional @template ", 64);
-		sb24.appendLiteral("%", 1);
-		sb24.appendLiteral("s.", 2);
-		zv::Val r25 = sb24.finish();
-		if (UNEXPECTED(!(Z_TYPE_P(r11.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\TemplateTypeCheck::check", 4, "templateTags", "array", r11.raw()); return false; }
-		zv::Val r26;
-		if (UNEXPECTED(!pgen::TemplateTypeCheck::m_check(Z_OBJ_P(o9.raw()), p_scope, p_node, r10.raw(), r11.raw(), r13.raw(), r15.raw(), r17.raw(), r19.raw(), r21.raw(), r23.raw(), r25.raw(), r26.raw()))) return false;
-		*ret = r26.take();
+		if (UNEXPECTED(!(Z_TYPE_P(r9.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\TemplateTypeCheck::check", 4, "templateTags", "array", r9.raw()); return false; }
+		zv::Val r24;
+		if (UNEXPECTED(!pgen::TemplateTypeCheck::m_check(Z_OBJ_P(o7.raw()), p_scope, p_node, r8.raw(), r9.raw(), r11.raw(), r13.raw(), r15.raw(), r17.raw(), r19.raw(), r21.raw(), r23.raw(), r24.raw()))) return false;
+		*ret = r24.take();
 		return true;
 	}
 }
@@ -200,7 +195,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InterfaceTemplateTypeRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_templateTypeCheck)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_templateTypeCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_templateTypeCheck) == IS_OBJECT && Z_OBJCE_P(p_templateTypeCheck) == pt_ce_template_type_check) || pgrt::instanceOfClass(p_templateTypeCheck, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Rules\\Generics\\TemplateTypeCheck", 40))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\TemplateTypeCheck", zend_zval_value_name(p_templateTypeCheck)); RETURN_THROWS(); }
+		if (p_templateTypeCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_templateTypeCheck) == IS_OBJECT && Z_OBJCE_P(p_templateTypeCheck) == pt_ce_template_type_check) || pgrt::instanceOfClass(p_templateTypeCheck, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Rules\\Generics\\TemplateTypeCheck", 40))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\TemplateTypeCheck", zend_zval_value_name(p_templateTypeCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::InterfaceTemplateTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_templateTypeCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\InterfaceTemplateTypeRule::getNodeType() */
@@ -215,8 +210,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InterfaceTemplateTypeRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InterfaceTemplateTypeRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

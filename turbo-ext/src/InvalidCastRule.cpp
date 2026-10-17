@@ -346,14 +346,23 @@ namespace pgen::InvalidCastRule {
 			 {
 				zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::InvalidCastRule::slot::reflectionProvider, "reflectionProvider");
 				if (UNEXPECTED(p21 == NULL)) return false;
-				zv::Val o22 = zv::Val::copyOf(zv::Ref(p21));
-				zv::Val r23;
-				if (UNEXPECTED(!pgrt::getClass(p_node, r23.raw()))) return false;
-				zval av24[1];
-				ZVAL_COPY_VALUE(&av24[0], r23.raw());
-				zv::Val r25;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, o22.raw(), "getClass", "getclass", 8, 1, av24, r25.raw(), NULL))) return false;
-				l_classReflection = std::move(r25);
+				zv::Val r22;
+				if (UNEXPECTED(!pgrt::getClass(p_node, r22.raw()))) return false;
+				zv::Val vd23;
+				zend_class_entry *vd23_ce = Z_TYPE_P(p21) == IS_OBJECT ? Z_OBJCE_P(p21) : NULL;
+				bool vd23_done = false;
+				if (vd23_ce == pt_ce_memoizing_reflection_provider) {
+					zv::Val r24;
+					if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p21), r22.raw(), r24.raw()))) return false;
+					vd23 = std::move(r24);
+					vd23_done = true;
+				}
+				if (!vd23_done) {
+					zval av25[1];
+					ZVAL_COPY_VALUE(&av25[0], r22.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p21, "getClass", "getclass", 8, 1, av25, vd23.raw()))) return false;
+				}
+				l_classReflection = std::move(vd23);
 			}
 			 {
 				zv::Val r26;

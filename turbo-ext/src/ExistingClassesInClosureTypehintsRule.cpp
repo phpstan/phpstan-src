@@ -56,13 +56,23 @@ namespace pgen::ExistingClassesInClosureTypehintsRule {
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getParams", "getparams", 9, 0, NULL, r3.raw(), NULL))) return false;
 		zv::Val r4;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getReturnType", "getreturntype", 13, 0, NULL, r4.raw(), NULL))) return false;
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getAttrGroups", "getattrgroups", 13, 0, NULL, r5.raw(), NULL))) return false;
+		zv::Val vd5;
+		zend_class_entry *vd5_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd5_done = false;
+		if (vd5_ce == pt_ce_class_property_node) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getAttrGroups(Z_OBJ_P(p_node), r6.raw()))) return false;
+			vd5 = std::move(r6);
+			vd5_done = true;
+		}
+		if (!vd5_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getAttrGroups", "getattrgroups", 13, 0, NULL, vd5.raw()))) return false;
+		}
 		if (UNEXPECTED(!(Z_TYPE_P(r3.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\FunctionDefinitionCheck::checkAnonymousFunction", 2, "parameters", "array", r3.raw()); return false; }
-		if (UNEXPECTED(!(Z_TYPE_P(r5.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\FunctionDefinitionCheck::checkAnonymousFunction", 4, "attribGroups", "array", r5.raw()); return false; }
-		zv::Val r6;
-		if (UNEXPECTED(!pgen::FunctionDefinitionCheck::m_checkAnonymousFunction(Z_OBJ_P(o2.raw()), p_scope, r3.raw(), r4.raw(), r5.raw(), &pg_lit[1], &pg_lit[2], &pg_lit[3], &pg_lit[4], &pg_lit[5], &pg_lit[6], r6.raw()))) return false;
-		*ret = r6.take();
+		if (UNEXPECTED(!(Z_TYPE_P(vd5.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\FunctionDefinitionCheck::checkAnonymousFunction", 4, "attribGroups", "array", vd5.raw()); return false; }
+		zv::Val r7;
+		if (UNEXPECTED(!pgen::FunctionDefinitionCheck::m_checkAnonymousFunction(Z_OBJ_P(o2.raw()), p_scope, r3.raw(), r4.raw(), vd5.raw(), &pg_lit[1], &pg_lit[2], &pg_lit[3], &pg_lit[4], &pg_lit[5], &pg_lit[6], r7.raw()))) return false;
+		*ret = r7.take();
 		return true;
 	}
 }

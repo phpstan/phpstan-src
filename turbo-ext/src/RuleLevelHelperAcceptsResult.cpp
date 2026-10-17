@@ -41,20 +41,19 @@ namespace pgen::RuleLevelHelperAcceptsResult {
 			if (UNEXPECTED(p4 == NULL)) return false;
 			b2 = (Z_TYPE_P(p4) == IS_TRUE);
 		}
-		bool k5 = b2;
-		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RuleLevelHelperAcceptsResult::slot::reasons, "reasons");
+		zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RuleLevelHelperAcceptsResult::slot::reasons, "reasons");
+		if (UNEXPECTED(p5 == NULL)) return false;
+		zval *p6 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::RuleLevelHelperAcceptsResult::slot::reasons, "reasons");
 		if (UNEXPECTED(p6 == NULL)) return false;
-		zval *p7 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::RuleLevelHelperAcceptsResult::slot::reasons, "reasons");
-		if (UNEXPECTED(p7 == NULL)) return false;
-		zval av8[2];
-		ZVAL_COPY_VALUE(&av8[0], p6);
-		ZVAL_COPY_VALUE(&av8[1], p7);
-		zv::Val r9;
-		if (UNEXPECTED(!pgrt::arrayMerge(2, av8, r9.raw()))) return false;
+		zval av7[2];
+		ZVAL_COPY_VALUE(&av7[0], p5);
+		ZVAL_COPY_VALUE(&av7[1], p6);
+		zv::Val r8;
+		if (UNEXPECTED(!pgrt::arrayMerge(2, av7, r8.raw()))) return false;
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_rule_level_helper_accepts_result) != SUCCESS)) return false;
 		zv::Val n1 = zv::Val::adopt(n1_raw);
-		if (UNEXPECTED(!pgen::RuleLevelHelperAcceptsResult::m___construct(Z_OBJ_P(n1.raw()), k5, r9.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
+		if (UNEXPECTED(!pgen::RuleLevelHelperAcceptsResult::m___construct(Z_OBJ_P(n1.raw()), b2, r8.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
 		*ret = n1.take();
 		return true;
 	}

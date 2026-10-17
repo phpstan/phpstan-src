@@ -95,6 +95,20 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(o6);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			bool r7;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_isStatic(Z_OBJ_P(p1), &r7))) return false;
+			zv::Val o8 = zv::Val::boolean(r7);
+			vd2 = std::move(o8);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			bool r9;
+			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_isStatic(Z_OBJ_P(p1), &r9))) return false;
+			zv::Val o10 = zv::Val::boolean(r9);
+			vd2 = std::move(o10);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "isStatic", "isstatic", 8, 0, NULL, vd2.raw()))) return false;
 		}
@@ -127,6 +141,20 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_isPrivate(Z_OBJ_P(p1), &r5))) return false;
 			zv::Val o6 = zv::Val::boolean(r5);
 			vd2 = std::move(o6);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			bool r7;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_isPrivate(Z_OBJ_P(p1), &r7))) return false;
+			zv::Val o8 = zv::Val::boolean(r7);
+			vd2 = std::move(o8);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			bool r9;
+			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_isPrivate(Z_OBJ_P(p1), &r9))) return false;
+			zv::Val o10 = zv::Val::boolean(r9);
+			vd2 = std::move(o10);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -184,6 +212,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDocComment(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getDocComment(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p1, "getDocComment", "getdoccomment", 13, 0, NULL, vd2.raw()))) return false;
 		}
@@ -214,6 +254,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			zv::Val r4;
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getVariants(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getVariants(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getVariants(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -248,6 +300,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getOnlyVariant(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getOnlyVariant(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p1, "getOnlyVariant", "getonlyvariant", 14, 0, NULL, vd2.raw()))) return false;
 		}
@@ -278,6 +342,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			zv::Val r4;
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getNamedArgumentsVariants(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getNamedArgumentsVariants(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getNamedArgumentsVariants(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -312,6 +388,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_acceptsNamedArguments(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_acceptsNamedArguments(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p1, "acceptsNamedArguments", "acceptsnamedarguments", 21, 0, NULL, vd2.raw()))) return false;
 		}
@@ -342,6 +430,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			zv::Val r4;
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getAsserts(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getAsserts(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getAsserts(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -376,6 +476,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getSelfOutType(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getSelfOutType(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p1, "getSelfOutType", "getselfouttype", 14, 0, NULL, vd2.raw()))) return false;
 		}
@@ -406,6 +518,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			zv::Val r4;
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_returnsByReference(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_returnsByReference(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_returnsByReference(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -463,6 +587,19 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			bool r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_isAbstract(Z_OBJ_P(p1), &r5))) return false;
+			zv::Val o6 = zv::Val::boolean(r5);
+			vd2 = std::move(o6);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r7;
+			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_isAbstract(Z_OBJ_P(p1), r7.raw()))) return false;
+			vd2 = std::move(r7);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p1, "isAbstract", "isabstract", 10, 0, NULL, vd2.raw()))) return false;
 		}
@@ -518,6 +655,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_isPure(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_isPure(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p1, "isPure", "ispure", 6, 0, NULL, vd2.raw()))) return false;
 		}
@@ -548,6 +697,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			zv::Val r4;
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getPureUnlessCallableIsImpureParameters(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getPureUnlessCallableIsImpureParameters(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getPureUnlessCallableIsImpureParameters(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -582,6 +743,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getPureUnlessParameterPassedParameters(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getPureUnlessParameterPassedParameters(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p1, "getPureUnlessParameterPassedParameters", "getpureunlessparameterpassedparameters", 38, 0, NULL, vd2.raw()))) return false;
 		}
@@ -612,6 +785,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			zv::Val r4;
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getAttributes(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getAttributes(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getAttributes(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -669,6 +854,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getPrototype(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getPrototype(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p1, "getPrototype", "getprototype", 12, 0, NULL, vd2.raw()))) return false;
 		}
@@ -701,6 +898,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_isDeprecated(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_isDeprecated(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p1, "isDeprecated", "isdeprecated", 12, 0, NULL, vd2.raw()))) return false;
 		}
@@ -731,6 +940,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			zv::Val r4;
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDeprecatedDescription(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeprecatedDescription(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getDeprecatedDescription(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -788,6 +1009,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_isInternal(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_isInternal(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p1, "isInternal", "isinternal", 10, 0, NULL, vd2.raw()))) return false;
 		}
@@ -818,6 +1051,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			zv::Val r4;
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getThrowType(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -852,6 +1097,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_hasSideEffects(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_hasSideEffects(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_25, p1, "hasSideEffects", "hassideeffects", 14, 0, NULL, vd2.raw()))) return false;
 		}
@@ -882,6 +1139,18 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			zv::Val r4;
 			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_mustUseReturnValue(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_reflection) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_mustUseReturnValue(Z_OBJ_P(p1), r5.raw()))) return false;
+			vd2 = std::move(r5);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_mustUseReturnValue(Z_OBJ_P(p1), r6.raw()))) return false;
+			vd2 = std::move(r6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {

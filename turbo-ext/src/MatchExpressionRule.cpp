@@ -922,9 +922,19 @@ namespace pgen::MatchExpressionRule {
 		}
 	}
 	 {
-		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_51, l_function.raw(), "getThrowType", "getthrowtype", 12, 0, NULL, r2.raw(), NULL))) return false;
-		l_throwsType = std::move(r2);
+		zv::Val vd2;
+		zend_class_entry *vd2_ce = Z_TYPE_P(l_function.raw()) == IS_OBJECT ? Z_OBJCE_P(l_function.raw()) : NULL;
+		bool vd2_done = false;
+		if (vd2_ce == pt_ce_php_function_from_parser_node_reflection || vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r3;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(l_function.raw()), r3.raw()))) return false;
+			vd2 = std::move(r3);
+			vd2_done = true;
+		}
+		if (!vd2_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_51, l_function.raw(), "getThrowType", "getthrowtype", 12, 0, NULL, vd2.raw()))) return false;
+		}
+		l_throwsType = std::move(vd2);
 	}
 	 {
 		if (Z_TYPE_P(l_throwsType.raw()) == IS_NULL) {
@@ -935,23 +945,23 @@ namespace pgen::MatchExpressionRule {
 		}
 	}
 	 {
-		zv::Val o3 = zv::Val::copyOf(zv::Ref(l_throwsType.raw()));
-		zv::Val n4;
-		if (UNEXPECTED(!pt_object_type_new(n4.raw(), Z_STR_P(&pg_lit[9])))) return false;
-		zval av5[1];
-		ZVAL_COPY_VALUE(&av5[0], n4.raw());
-		zv::Val r6;
-		if (EXPECTED(Z_TYPE_P(o3.raw()) == IS_OBJECT)) {
-			r6 = pt_type_op(Z_OBJ_P(o3.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av5);
-			if (UNEXPECTED(r6.isUndef())) return false;
+		zv::Val o4 = zv::Val::copyOf(zv::Ref(l_throwsType.raw()));
+		zv::Val n5;
+		if (UNEXPECTED(!pt_object_type_new(n5.raw(), Z_STR_P(&pg_lit[9])))) return false;
+		zval av6[1];
+		ZVAL_COPY_VALUE(&av6[0], n5.raw());
+		zv::Val r7;
+		if (EXPECTED(Z_TYPE_P(o4.raw()) == IS_OBJECT)) {
+			r7 = pt_type_op(Z_OBJ_P(o4.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av6);
+			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_52, o3.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av5, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_52, o4.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av6, r7.raw(), NULL))) return false;
 		}
 		}
-		bool r7;
-		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r6.raw()), &r7))) return false;
-		*ret = r7;
+		bool r8;
+		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r7.raw()), &r8))) return false;
+		*ret = r8;
 		return true;
 	}
 }

@@ -972,61 +972,60 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 		}
 	}
 	 {
-		zv::Val o172 = zv::Val::copyOf(zv::Ref(l_errorBuilder.raw()));
-		zv::Val q173;
+		zv::Val q172;
 		if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr\\BinaryOp\\Identical", 38))) {
-			zv::Val o174 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
-			q173 = std::move(o174);
+			zv::Val o173 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
+			q172 = std::move(o173);
 		} else {
 		 {
-			zv::Val o175 = zv::Val::copyOf(zv::Ref(&pg_lit[3]));
-			q173 = std::move(o175);
+			zv::Val o174 = zv::Val::copyOf(zv::Ref(&pg_lit[3]));
+			q172 = std::move(o174);
 		}
 		}
-		pgrt::StringBuilder sb176;
-		if (UNEXPECTED(!sb176.append(q173.raw()))) return false;
-		sb176.appendLiteral(".alwaysTrue", 11);
-		zv::Val r177 = sb176.finish();
-		zval av178[1];
-		ZVAL_COPY_VALUE(&av178[0], r177.raw());
+		pgrt::StringBuilder sb175;
+		if (UNEXPECTED(!sb175.append(q172.raw()))) return false;
+		sb175.appendLiteral(".alwaysTrue", 11);
+		zv::Val r176 = sb175.finish();
+		zval av177[1];
+		ZVAL_COPY_VALUE(&av177[0], r176.raw());
+		zv::Val r178;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_57, l_errorBuilder.raw(), "identifier", "identifier", 10, 1, av177, r178.raw(), NULL))) return false;
+	}
+	 {
 		zv::Val r179;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_57, o172.raw(), "identifier", "identifier", 10, 1, av178, r179.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_58, l_errorBuilder.raw(), "build", "build", 5, 0, NULL, r179.raw(), NULL))) return false;
+		l_ruleError = std::move(r179);
 	}
 	 {
-		zv::Val r180;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_58, l_errorBuilder.raw(), "build", "build", 5, 0, NULL, r180.raw(), NULL))) return false;
-		l_ruleError = std::move(r180);
-	}
-	 {
-		bool bo181 = false;
+		bool bo180 = false;
 		if (EXPECTED(Z_TYPE_P(p_scope) == IS_OBJECT && Z_OBJCE_P(p_scope) == pt_ce_mutating_scope)) {
-			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo181))) return false;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo180))) return false;
 		} else {
 		 {
-			zv::Val r182;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "isInTrait", "isintrait", 9, 0, NULL, r182.raw()))) return false;
-			bo181 = zend_is_true(r182.raw());
+			zv::Val r181;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "isInTrait", "isintrait", 9, 0, NULL, r181.raw()))) return false;
+			bo180 = zend_is_true(r181.raw());
 		}
 		}
-		if (bo181) {
+		if (bo180) {
 			 {
-				zval *p183 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::StrictComparisonOfDifferentTypesRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
-				if (UNEXPECTED(p183 == NULL)) return false;
-				if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitError(Z_OBJ_P(p183), &pg_lit[1], p_scope, p_node, true, l_ruleError.raw()))) return false;
+				zval *p182 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::StrictComparisonOfDifferentTypesRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
+				if (UNEXPECTED(p182 == NULL)) return false;
+				if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitError(Z_OBJ_P(p182), &pg_lit[1], p_scope, p_node, true, l_ruleError.raw()))) return false;
 			}
 			 {
-				zval arr185_raw;
-				ZVAL_EMPTY_ARRAY(&arr185_raw);
-				ZVAL_COPY(ret, &arr185_raw);
+				zval arr184_raw;
+				ZVAL_EMPTY_ARRAY(&arr184_raw);
+				ZVAL_COPY(ret, &arr184_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val arr186 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val o187 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
-		{ zval v = o187.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr186.raw()), &v); }
-		*ret = arr186.take();
+		zv::Val arr185 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zv::Val o186 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
+		{ zval v = o186.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr185.raw()), &v); }
+		*ret = arr185.take();
 		return true;
 	}
 }

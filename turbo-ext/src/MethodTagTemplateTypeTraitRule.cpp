@@ -100,38 +100,60 @@ namespace pgen::MethodTagTemplateTypeTraitRule {
 		zv::Val o8 = zv::Val::copyOf(zv::Ref(p7));
 		zv::Val r9;
 		if (UNEXPECTED(!pgrt::nameToString(pg_site_2, l_traitName.raw(), r9.raw()))) return false;
-		zval av10[1];
-		ZVAL_COPY_VALUE(&av10[0], r9.raw());
-		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, o8.raw(), "hasClass", "hasclass", 8, 1, av10, r11.raw(), NULL))) return false;
-		if (!((Z_TYPE_P(r11.raw()) == IS_TRUE))) {
+		zv::Val vd10;
+		zend_class_entry *vd10_ce = Z_TYPE_P(o8.raw()) == IS_OBJECT ? Z_OBJCE_P(o8.raw()) : NULL;
+		bool vd10_done = false;
+		if (vd10_ce == pt_ce_memoizing_reflection_provider) {
+			if (UNEXPECTED(!(Z_TYPE_P(r9.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", r9.raw()); return false; }
+			bool r11;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(o8.raw()), r9.raw(), &r11))) return false;
+			zv::Val o12 = zv::Val::boolean(r11);
+			vd10 = std::move(o12);
+			vd10_done = true;
+		}
+		if (!vd10_done) {
+			zval av13[1];
+			ZVAL_COPY_VALUE(&av13[0], r9.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, o8.raw(), "hasClass", "hasclass", 8, 1, av13, vd10.raw()))) return false;
+		}
+		if (!((Z_TYPE_P(vd10.raw()) == IS_TRUE))) {
 			 {
-				zval arr12_raw;
-				ZVAL_EMPTY_ARRAY(&arr12_raw);
-				ZVAL_COPY(ret, &arr12_raw);
+				zval arr14_raw;
+				ZVAL_EMPTY_ARRAY(&arr14_raw);
+				ZVAL_COPY(ret, &arr14_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MethodTagTemplateTypeTraitRule::slot::check, "check");
-		if (UNEXPECTED(p13 == NULL)) return false;
-		zv::Val o14 = zv::Val::copyOf(zv::Ref(p13));
-		zval *p15 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MethodTagTemplateTypeTraitRule::slot::reflectionProvider, "reflectionProvider");
+		zval *p15 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MethodTagTemplateTypeTraitRule::slot::check, "check");
 		if (UNEXPECTED(p15 == NULL)) return false;
 		zv::Val o16 = zv::Val::copyOf(zv::Ref(p15));
-		zv::Val r17;
-		if (UNEXPECTED(!pgrt::nameToString(pg_site_4, l_traitName.raw(), r17.raw()))) return false;
-		zval av18[1];
-		ZVAL_COPY_VALUE(&av18[0], r17.raw());
+		zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MethodTagTemplateTypeTraitRule::slot::reflectionProvider, "reflectionProvider");
+		if (UNEXPECTED(p17 == NULL)) return false;
+		zv::Val o18 = zv::Val::copyOf(zv::Ref(p17));
 		zv::Val r19;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, o16.raw(), "getClass", "getclass", 8, 1, av18, r19.raw(), NULL))) return false;
-		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r20.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::nameToString(pg_site_4, l_traitName.raw(), r19.raw()))) return false;
+		zv::Val vd20;
+		zend_class_entry *vd20_ce = Z_TYPE_P(o18.raw()) == IS_OBJECT ? Z_OBJCE_P(o18.raw()) : NULL;
+		bool vd20_done = false;
+		if (vd20_ce == pt_ce_memoizing_reflection_provider) {
+			zv::Val r21;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(o18.raw()), r19.raw(), r21.raw()))) return false;
+			vd20 = std::move(r21);
+			vd20_done = true;
+		}
+		if (!vd20_done) {
+			zval av22[1];
+			ZVAL_COPY_VALUE(&av22[0], r19.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, o18.raw(), "getClass", "getclass", 8, 1, av22, vd20.raw()))) return false;
+		}
+		zv::Val r23;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r23.raw(), NULL))) return false;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 3, "node", "PhpParser\\Node\\Stmt\\ClassLike", p_node); return false; }
-		zv::Val r21;
-		if (UNEXPECTED(!pgen::MethodTagTemplateTypeCheck::m_check(Z_OBJ_P(o14.raw()), r19.raw(), p_scope, p_node, r20.raw(), r21.raw()))) return false;
-		*ret = r21.take();
+		zv::Val r24;
+		if (UNEXPECTED(!pgen::MethodTagTemplateTypeCheck::m_check(Z_OBJ_P(o16.raw()), vd20.raw(), p_scope, p_node, r23.raw(), r24.raw()))) return false;
+		*ret = r24.take();
 		return true;
 	}
 }

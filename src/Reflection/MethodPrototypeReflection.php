@@ -2,8 +2,10 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MethodPrototypeReflection.cpp')]
 final class MethodPrototypeReflection implements ClassMemberReflection
 {
 

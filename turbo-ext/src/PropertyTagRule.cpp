@@ -62,13 +62,41 @@ namespace pgen::PropertyTagRule {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r3.raw(), NULL))) return false;
 		}
 		}
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, r4.raw(), NULL))) return false;
+		zv::Val vd4;
+		zend_class_entry *vd4_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd4_done = false;
+		if (vd4_ce == pt_ce_in_class_method_node) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::InClassMethodNode::m_getOriginalNode(Z_OBJ_P(p_node), r5.raw()))) return false;
+			vd4 = std::move(r5);
+			vd4_done = true;
+		}
+		if (vd4_ce == pt_ce_method_call_expression_node) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getOriginalNode(Z_OBJ_P(p_node), r6.raw()))) return false;
+			vd4 = std::move(r6);
+			vd4_done = true;
+		}
+		if (vd4_ce == pt_ce_class_property_node) {
+			zv::Val r7;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getOriginalNode(Z_OBJ_P(p_node), r7.raw()))) return false;
+			vd4 = std::move(r7);
+			vd4_done = true;
+		}
+		if (vd4_ce == pt_ce_in_class_node) {
+			zv::Val r8;
+			if (UNEXPECTED(!pgen::InClassNode::m_getOriginalNode(Z_OBJ_P(p_node), r8.raw()))) return false;
+			vd4 = std::move(r8);
+			vd4_done = true;
+		}
+		if (!vd4_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd4.raw()))) return false;
+		}
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r3.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(r3.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\PropertyTagCheck::check", 2, "classReflection", "PHPStan\\Reflection\\ClassReflection", r3.raw()); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r4.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\PropertyTagCheck::check", 3, "node", "PhpParser\\Node\\Stmt\\ClassLike", r4.raw()); return false; }
-		zv::Val r5;
-		if (UNEXPECTED(!pgen::PropertyTagCheck::m_check(Z_OBJ_P(o2.raw()), p_scope, r3.raw(), r4.raw(), r5.raw()))) return false;
-		*ret = r5.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd4.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\PropertyTagCheck::check", 3, "node", "PhpParser\\Node\\Stmt\\ClassLike", vd4.raw()); return false; }
+		zv::Val r9;
+		if (UNEXPECTED(!pgen::PropertyTagCheck::m_check(Z_OBJ_P(o2.raw()), p_scope, r3.raw(), vd4.raw(), r9.raw()))) return false;
+		*ret = r9.take();
 		return true;
 	}
 }

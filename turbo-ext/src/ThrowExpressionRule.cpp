@@ -10,15 +10,14 @@ zend_class_entry *pt_ce_throw_expression_rule = nullptr;
 static zval pg_lit[4];
 
 static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
-static pt_method_site pg_site_1; /* method_supportsThrowExpression_1 */
-static pt_method_site pg_site_2; /* method_getAttribute_2 */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_4; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_5; /* method_nonIgnorable_5 */
-static pt_method_site pg_site_6; /* method_identifier_6 */
-static pt_method_site pg_site_7; /* method_build_7 */
-static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_1; /* method_getAttribute_1 */
+static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Rules\RuleErrorBuilder */
+static pt_method_site pg_site_3; /* static_PHPStan\Rules\RuleErrorBuilder::message */
+static pt_method_site pg_site_4; /* method_nonIgnorable_4 */
+static pt_method_site pg_site_5; /* method_identifier_5 */
+static pt_method_site pg_site_6; /* method_build_6 */
+static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ThrowExpressionRule {
 
@@ -44,7 +43,7 @@ namespace pgen::ThrowExpressionRule {
 		zv::Val r1;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, r1.raw(), "supportsThrowExpression", "supportsthrowexpression", 23, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgen::PhpVersions::m_supportsThrowExpression(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r2.raw()), &r3))) return false;
 		if (r3) {
@@ -58,7 +57,7 @@ namespace pgen::ThrowExpressionRule {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::nodeGetAttribute(pg_site_2, p_node, &pg_lit[1], NULL, r5.raw()))) return false;
+		if (UNEXPECTED(!pgrt::nodeGetAttribute(pg_site_1, p_node, &pg_lit[1], NULL, r5.raw()))) return false;
 		if (Z_TYPE_P(r5.raw()) == (true ? IS_TRUE : IS_FALSE)) {
 			 {
 				zval arr6_raw;
@@ -72,18 +71,18 @@ namespace pgen::ThrowExpressionRule {
 		zv::Val arr7 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zval av8[1];
 		ZVAL_COPY_VALUE(&av8[0], &pg_lit[2]);
-		zend_class_entry *ce9 = pgrt::lookupClass(pg_site_3, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+		zend_class_entry *ce9 = pgrt::lookupClass(pg_site_2, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 		if (UNEXPECTED(ce9 == NULL)) return false;
 		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_4, ce9, "message", 7, 1, av8, r10.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, ce9, "message", 7, 1, av8, r10.raw(), NULL))) return false;
 		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r10.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r11.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r10.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r11.raw(), NULL))) return false;
 		zval av12[1];
 		ZVAL_COPY_VALUE(&av12[0], &pg_lit[3]);
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r11.raw(), "identifier", "identifier", 10, 1, av12, r13.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r11.raw(), "identifier", "identifier", 10, 1, av12, r13.raw(), NULL))) return false;
 		zv::Val r14;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r13.raw(), "build", "build", 5, 0, NULL, r14.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r13.raw(), "build", "build", 5, 0, NULL, r14.raw(), NULL))) return false;
 		{ zval v = r14.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr7.raw()), &v); }
 		*ret = arr7.take();
 		return true;
@@ -116,8 +115,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ThrowExpressionRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ThrowExpressionRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

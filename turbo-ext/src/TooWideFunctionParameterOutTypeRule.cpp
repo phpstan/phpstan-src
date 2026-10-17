@@ -64,32 +64,62 @@ namespace pgen::TooWideFunctionParameterOutTypeRule {
 		zv::Val r4;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getStartLine", "getstartline", 12, 0, NULL, r4.raw(), NULL))) return false;
 		zend_long k5 = Z_LVAL_P(r4.raw());
-		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getExecutionEnds", "getexecutionends", 16, 0, NULL, r6.raw(), NULL))) return false;
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getReturnStatements", "getreturnstatements", 19, 0, NULL, r7.raw(), NULL))) return false;
-		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_inFunction.raw(), "getParameters", "getparameters", 13, 0, NULL, r8.raw(), NULL))) return false;
-		zv::Val r9;
+		zv::Val vd6;
+		zend_class_entry *vd6_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd6_done = false;
+		if (vd6_ce == pt_ce_method_return_statements_node) {
+			zv::Val r7;
+			if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getExecutionEnds(Z_OBJ_P(p_node), r7.raw()))) return false;
+			vd6 = std::move(r7);
+			vd6_done = true;
+		}
+		if (!vd6_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getExecutionEnds", "getexecutionends", 16, 0, NULL, vd6.raw()))) return false;
+		}
+		zv::Val vd8;
+		zend_class_entry *vd8_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd8_done = false;
+		if (vd8_ce == pt_ce_method_return_statements_node) {
+			zv::Val r9;
+			if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getReturnStatements(Z_OBJ_P(p_node), r9.raw()))) return false;
+			vd8 = std::move(r9);
+			vd8_done = true;
+		}
+		if (!vd8_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getReturnStatements", "getreturnstatements", 19, 0, NULL, vd8.raw()))) return false;
+		}
+		zv::Val vd10;
+		zend_class_entry *vd10_ce = Z_TYPE_P(l_inFunction.raw()) == IS_OBJECT ? Z_OBJCE_P(l_inFunction.raw()) : NULL;
+		bool vd10_done = false;
+		if (vd10_ce == pt_ce_php_function_from_parser_node_reflection || vd10_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r11;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getParameters(Z_OBJ_P(l_inFunction.raw()), r11.raw()))) return false;
+			vd10 = std::move(r11);
+			vd10_done = true;
+		}
+		if (!vd10_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_inFunction.raw(), "getParameters", "getparameters", 13, 0, NULL, vd10.raw()))) return false;
+		}
+		zv::Val r12;
 		if (EXPECTED(Z_TYPE_P(l_inFunction.raw()) == IS_OBJECT)) {
-			r9 = pt_type_op(Z_OBJ_P(l_inFunction.raw()), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r9.isUndef())) return false;
+			r12 = pt_type_op(Z_OBJ_P(l_inFunction.raw()), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r12.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_inFunction.raw(), "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_inFunction.raw(), "getName", "getname", 7, 0, NULL, r12.raw(), NULL))) return false;
 		}
 		}
-		pgrt::StringBuilder sb10;
-		sb10.appendLiteral("Function ", 9);
-		if (UNEXPECTED(!sb10.append(r9.raw()))) return false;
-		sb10.appendLiteral("()", 2);
-		zv::Val r11 = sb10.finish();
-		if (UNEXPECTED(!(Z_TYPE_P(r6.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideParameterOutTypeCheck::check", 2, "executionEnds", "array", r6.raw()); return false; }
-		if (UNEXPECTED(!(Z_TYPE_P(r7.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideParameterOutTypeCheck::check", 3, "returnStatements", "array", r7.raw()); return false; }
-		if (UNEXPECTED(!(Z_TYPE_P(r8.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideParameterOutTypeCheck::check", 4, "parameters", "array", r8.raw()); return false; }
-		zv::Val r12;
-		if (UNEXPECTED(!pgen::TooWideParameterOutTypeCheck::m_check(Z_OBJ_P(o3.raw()), k5, r6.raw(), r7.raw(), r8.raw(), r11.raw(), r12.raw()))) return false;
-		*ret = r12.take();
+		pgrt::StringBuilder sb13;
+		sb13.appendLiteral("Function ", 9);
+		if (UNEXPECTED(!sb13.append(r12.raw()))) return false;
+		sb13.appendLiteral("()", 2);
+		zv::Val r14 = sb13.finish();
+		if (UNEXPECTED(!(Z_TYPE_P(vd6.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideParameterOutTypeCheck::check", 2, "executionEnds", "array", vd6.raw()); return false; }
+		if (UNEXPECTED(!(Z_TYPE_P(vd8.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideParameterOutTypeCheck::check", 3, "returnStatements", "array", vd8.raw()); return false; }
+		if (UNEXPECTED(!(Z_TYPE_P(vd10.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideParameterOutTypeCheck::check", 4, "parameters", "array", vd10.raw()); return false; }
+		zv::Val r15;
+		if (UNEXPECTED(!pgen::TooWideParameterOutTypeCheck::m_check(Z_OBJ_P(o3.raw()), k5, vd6.raw(), vd8.raw(), vd10.raw(), r14.raw(), r15.raw()))) return false;
+		*ret = r15.take();
 		return true;
 	}
 }

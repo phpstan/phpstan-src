@@ -120,27 +120,36 @@ namespace pgen::PromoteParameterRule {
 			 {
 				zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PromoteParameterRule::slot::container, "container");
 				if (UNEXPECTED(p7 == NULL)) goto catch_c6;
-				zv::Val o8 = zv::Val::copyOf(zv::Ref(p7));
-				zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PromoteParameterRule::slot::rule, "rule");
-				if (UNEXPECTED(p9 == NULL)) goto catch_c6;
-				zv::Val r10;
-				if (UNEXPECTED(!pgrt::getClass(p9, r10.raw()))) goto catch_c6;
-				zval av11[1];
-				ZVAL_COPY_VALUE(&av11[0], r10.raw());
-				zv::Val r12;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_0, o8.raw(), "getByType", "getbytype", 9, 1, av11, r12.raw(), NULL))) goto catch_c6;
-				l_originalRule = std::move(r12);
+				zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PromoteParameterRule::slot::rule, "rule");
+				if (UNEXPECTED(p8 == NULL)) goto catch_c6;
+				zv::Val r9;
+				if (UNEXPECTED(!pgrt::getClass(p8, r9.raw()))) goto catch_c6;
+				zval av10[1];
+				ZVAL_COPY_VALUE(&av10[0], r9.raw());
+				zv::Val r11;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p7, "getByType", "getbytype", 9, 1, av10, r11.raw(), NULL))) goto catch_c6;
+				l_originalRule = std::move(r11);
 			}
 			 {
-				zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PromoteParameterRule::slot::container, "container");
-				if (UNEXPECTED(p13 == NULL)) goto catch_c6;
-				zval av14[1];
-				ZVAL_COPY_VALUE(&av14[0], &pg_lit[0]);
-				zv::Val r15;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p13, "getExtensionsCollection", "getextensionscollection", 23, 1, av14, r15.raw(), NULL))) goto catch_c6;
-				zv::Val r16;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, r15.raw(), "getAll", "getall", 6, 0, NULL, r16.raw(), NULL))) goto catch_c6;
-				l_taggedRules = std::move(r16);
+				zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PromoteParameterRule::slot::container, "container");
+				if (UNEXPECTED(p12 == NULL)) goto catch_c6;
+				zval av13[1];
+				ZVAL_COPY_VALUE(&av13[0], &pg_lit[0]);
+				zv::Val r14;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p12, "getExtensionsCollection", "getextensionscollection", 23, 1, av13, r14.raw(), NULL))) goto catch_c6;
+				zv::Val vd15;
+				zend_class_entry *vd15_ce = Z_TYPE_P(r14.raw()) == IS_OBJECT ? Z_OBJCE_P(r14.raw()) : NULL;
+				bool vd15_done = false;
+				if (vd15_ce == pt_ce_lazy_extensions_collection) {
+					zv::Val r16;
+					if (UNEXPECTED(!pgen::LazyExtensionsCollection::m_getAll(Z_OBJ_P(r14.raw()), r16.raw()))) goto catch_c6;
+					vd15 = std::move(r16);
+					vd15_done = true;
+				}
+				if (!vd15_done) {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, r14.raw(), "getAll", "getall", 6, 0, NULL, vd15.raw()))) goto catch_c6;
+				}
+				l_taggedRules = std::move(vd15);
 			}
 			 {
 				l_found = false;

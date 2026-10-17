@@ -13,19 +13,17 @@ static pt_method_site pg_site_0; /* method_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_isReadOnly_1 */
 static pt_method_site pg_site_2; /* method_isAnonymous_2 */
 static pt_method_site pg_site_3; /* method_getPhpVersion_3 */
-static pt_method_site pg_site_4; /* method_supportsReadOnlyAnonymousClasses_4 */
-static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_6; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_7; /* method_identifier_7 */
-static pt_method_site pg_site_8; /* method_nonIgnorable_8 */
-static pt_method_site pg_site_9; /* method_build_9 */
-static pt_method_site pg_site_10; /* method_getPhpVersion_10 */
-static pt_method_site pg_site_11; /* method_supportsReadOnlyClasses_11 */
-static pt_method_site pg_site_12; /* method_identifier_12 */
-static pt_method_site pg_site_13; /* method_nonIgnorable_13 */
-static pt_method_site pg_site_14; /* method_build_14 */
-static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Rules\RuleErrorBuilder */
+static pt_method_site pg_site_5; /* static_PHPStan\Rules\RuleErrorBuilder::message */
+static pt_method_site pg_site_6; /* method_identifier_6 */
+static pt_method_site pg_site_7; /* method_nonIgnorable_7 */
+static pt_method_site pg_site_8; /* method_build_8 */
+static pt_method_site pg_site_9; /* method_getPhpVersion_9 */
+static pt_method_site pg_site_10; /* method_identifier_10 */
+static pt_method_site pg_site_11; /* method_nonIgnorable_11 */
+static pt_method_site pg_site_12; /* method_build_12 */
+static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ReadOnlyClassRule {
 
@@ -96,7 +94,7 @@ namespace pgen::ReadOnlyClassRule {
 				zv::Val r7;
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r7.raw(), NULL))) return false;
 				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r7.raw(), "supportsReadOnlyAnonymousClasses", "supportsreadonlyanonymousclasses", 32, 0, NULL, r8.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgen::PhpVersions::m_supportsReadOnlyAnonymousClasses(Z_OBJ_P(r7.raw()), r8.raw()))) return false;
 				bool r9;
 				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r8.raw()), &r9))) return false;
 				if (r9) {
@@ -112,18 +110,18 @@ namespace pgen::ReadOnlyClassRule {
 				zv::Val arr11 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 				zval av12[1];
 				ZVAL_COPY_VALUE(&av12[0], &pg_lit[1]);
-				zend_class_entry *ce13 = pgrt::lookupClass(pg_site_5, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+				zend_class_entry *ce13 = pgrt::lookupClass(pg_site_4, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 				if (UNEXPECTED(ce13 == NULL)) return false;
 				zv::Val r14;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_6, ce13, "message", 7, 1, av12, r14.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_5, ce13, "message", 7, 1, av12, r14.raw(), NULL))) return false;
 				zval av15[1];
 				ZVAL_COPY_VALUE(&av15[0], &pg_lit[2]);
 				zv::Val r16;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r14.raw(), "identifier", "identifier", 10, 1, av15, r16.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r14.raw(), "identifier", "identifier", 10, 1, av15, r16.raw(), NULL))) return false;
 				zv::Val r17;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r16.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r17.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r16.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r17.raw(), NULL))) return false;
 				zv::Val r18;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r17.raw(), "build", "build", 5, 0, NULL, r18.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r17.raw(), "build", "build", 5, 0, NULL, r18.raw(), NULL))) return false;
 				{ zval v = r18.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr11.raw()), &v); }
 				*ret = arr11.take();
 				return true;
@@ -132,9 +130,9 @@ namespace pgen::ReadOnlyClassRule {
 	}
 	 {
 		zv::Val r19;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r19.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r19.raw(), NULL))) return false;
 		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, r19.raw(), "supportsReadOnlyClasses", "supportsreadonlyclasses", 23, 0, NULL, r20.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgen::PhpVersions::m_supportsReadOnlyClasses(Z_OBJ_P(r19.raw()), r20.raw()))) return false;
 		bool r21;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r20.raw()), &r21))) return false;
 		if (r21) {
@@ -150,18 +148,18 @@ namespace pgen::ReadOnlyClassRule {
 		zv::Val arr23 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zval av24[1];
 		ZVAL_COPY_VALUE(&av24[0], &pg_lit[3]);
-		zend_class_entry *ce25 = pgrt::lookupClass(pg_site_5, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+		zend_class_entry *ce25 = pgrt::lookupClass(pg_site_4, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 		if (UNEXPECTED(ce25 == NULL)) return false;
 		zv::Val r26;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_6, ce25, "message", 7, 1, av24, r26.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_5, ce25, "message", 7, 1, av24, r26.raw(), NULL))) return false;
 		zval av27[1];
 		ZVAL_COPY_VALUE(&av27[0], &pg_lit[2]);
 		zv::Val r28;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r26.raw(), "identifier", "identifier", 10, 1, av27, r28.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r26.raw(), "identifier", "identifier", 10, 1, av27, r28.raw(), NULL))) return false;
 		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r28.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r29.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, r28.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r29.raw(), NULL))) return false;
 		zv::Val r30;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r29.raw(), "build", "build", 5, 0, NULL, r30.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r29.raw(), "build", "build", 5, 0, NULL, r30.raw(), NULL))) return false;
 		{ zval v = r30.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr23.raw()), &v); }
 		*ret = arr23.take();
 		return true;
@@ -194,8 +192,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ReadOnlyClassRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_13, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ReadOnlyClassRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

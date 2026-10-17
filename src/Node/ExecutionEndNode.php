@@ -8,11 +8,13 @@ use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\StatementResult;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'executionEndNode')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExecutionEndNode.cpp')]
 final class ExecutionEndNode extends NodeAbstract implements VirtualNode
 {
 

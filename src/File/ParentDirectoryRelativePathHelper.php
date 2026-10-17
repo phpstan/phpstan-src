@@ -5,6 +5,7 @@ namespace PHPStan\File;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\NonAutowiredService;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_fill;
 use function array_merge;
 use function array_slice;
@@ -17,6 +18,7 @@ use function substr;
 use function trim;
 
 #[NonAutowiredService(name: 'parentDirectoryRelativePathHelper')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ParentDirectoryRelativePathHelper.cpp')]
 final class ParentDirectoryRelativePathHelper implements RelativePathHelper
 {
 

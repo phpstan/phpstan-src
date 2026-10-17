@@ -58,90 +58,118 @@ namespace pgen::TooWideArrowFunctionReturnTypehintRule {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, r1.raw(), NULL))) return false;
-		l_arrowFunction = std::move(r1);
+		zv::Val vd1;
+		zend_class_entry *vd1_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd1_done = false;
+		if (vd1_ce == pt_ce_in_class_method_node) {
+			zv::Val r2;
+			if (UNEXPECTED(!pgen::InClassMethodNode::m_getOriginalNode(Z_OBJ_P(p_node), r2.raw()))) return false;
+			vd1 = std::move(r2);
+			vd1_done = true;
+		}
+		if (vd1_ce == pt_ce_method_call_expression_node) {
+			zv::Val r3;
+			if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getOriginalNode(Z_OBJ_P(p_node), r3.raw()))) return false;
+			vd1 = std::move(r3);
+			vd1_done = true;
+		}
+		if (vd1_ce == pt_ce_class_property_node) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getOriginalNode(Z_OBJ_P(p_node), r4.raw()))) return false;
+			vd1 = std::move(r4);
+			vd1_done = true;
+		}
+		if (vd1_ce == pt_ce_in_class_node) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::InClassNode::m_getOriginalNode(Z_OBJ_P(p_node), r5.raw()))) return false;
+			vd1 = std::move(r5);
+			vd1_done = true;
+		}
+		if (!vd1_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd1.raw()))) return false;
+		}
+		l_arrowFunction = std::move(vd1);
 	}
 	 {
-		zv::Val o3;
-		zval *p2 = Z_TYPE_P(l_arrowFunction.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(l_arrowFunction.raw()), "returnType", 10) : NULL;
-		if (UNEXPECTED(p2 == NULL || Z_ISUNDEF_P(p2))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_arrowFunction.raw(), pt_ce_too_wide_arrow_function_return_typehint_rule, "returnType", 10, o3.raw()))) return false;
-			p2 = o3.raw();
+		zv::Val o7;
+		zval *p6 = Z_TYPE_P(l_arrowFunction.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(l_arrowFunction.raw()), "returnType", 10) : NULL;
+		if (UNEXPECTED(p6 == NULL || Z_ISUNDEF_P(p6))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_arrowFunction.raw(), pt_ce_too_wide_arrow_function_return_typehint_rule, "returnType", 10, o7.raw()))) return false;
+			p6 = o7.raw();
 		}
-		if (Z_TYPE_P(zv::Ref(p2).deref().raw()) == IS_NULL) {
+		if (Z_TYPE_P(zv::Ref(p6).deref().raw()) == IS_NULL) {
 			 {
-				zval arr4_raw;
-				ZVAL_EMPTY_ARRAY(&arr4_raw);
-				ZVAL_COPY(ret, &arr4_raw);
+				zval arr8_raw;
+				ZVAL_EMPTY_ARRAY(&arr8_raw);
+				ZVAL_COPY(ret, &arr8_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val o6;
-		zval *p5 = Z_TYPE_P(l_arrowFunction.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_2, Z_OBJ_P(l_arrowFunction.raw()), "expr", 4) : NULL;
-		if (UNEXPECTED(p5 == NULL || Z_ISUNDEF_P(p5))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_arrowFunction.raw(), pt_ce_too_wide_arrow_function_return_typehint_rule, "expr", 4, o6.raw()))) return false;
-			p5 = o6.raw();
+		zv::Val o10;
+		zval *p9 = Z_TYPE_P(l_arrowFunction.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_2, Z_OBJ_P(l_arrowFunction.raw()), "expr", 4) : NULL;
+		if (UNEXPECTED(p9 == NULL || Z_ISUNDEF_P(p9))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_arrowFunction.raw(), pt_ce_too_wide_arrow_function_return_typehint_rule, "expr", 4, o10.raw()))) return false;
+			p9 = o10.raw();
 		}
-		zv::Val o7 = zv::Val::copyOf(zv::Ref(zv::Ref(p5).deref().raw()));
-		l_expr = std::move(o7);
+		zv::Val o11 = zv::Val::copyOf(zv::Ref(zv::Ref(p9).deref().raw()));
+		l_expr = std::move(o11);
 	}
 	 {
-		bool b8 = pgrt::instanceOfClass(l_expr.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr\\YieldFrom", 29));
-		if (!b8) {
-			b8 = pgrt::instanceOfClass(l_expr.raw(), pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr\\Yield_", 26));
+		bool b12 = pgrt::instanceOfClass(l_expr.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr\\YieldFrom", 29));
+		if (!b12) {
+			b12 = pgrt::instanceOfClass(l_expr.raw(), pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr\\Yield_", 26));
 		}
-		if (b8) {
+		if (b12) {
 			 {
-				zval arr9_raw;
-				ZVAL_EMPTY_ARRAY(&arr9_raw);
-				ZVAL_COPY(ret, &arr9_raw);
+				zval arr13_raw;
+				ZVAL_EMPTY_ARRAY(&arr13_raw);
+				ZVAL_COPY(ret, &arr13_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val o11;
-		zval *p10 = Z_TYPE_P(l_arrowFunction.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_5, Z_OBJ_P(l_arrowFunction.raw()), "returnType", 10) : NULL;
-		if (UNEXPECTED(p10 == NULL || Z_ISUNDEF_P(p10))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_arrowFunction.raw(), pt_ce_too_wide_arrow_function_return_typehint_rule, "returnType", 10, o11.raw()))) return false;
-			p10 = o11.raw();
+		zv::Val o15;
+		zval *p14 = Z_TYPE_P(l_arrowFunction.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_5, Z_OBJ_P(l_arrowFunction.raw()), "returnType", 10) : NULL;
+		if (UNEXPECTED(p14 == NULL || Z_ISUNDEF_P(p14))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_arrowFunction.raw(), pt_ce_too_wide_arrow_function_return_typehint_rule, "returnType", 10, o15.raw()))) return false;
+			p14 = o15.raw();
 		}
-		zval av12[3];
-		ZVAL_COPY_VALUE(&av12[0], zv::Ref(p10).deref().raw());
-		zval z13;
-		ZVAL_BOOL(&z13, false);
-		ZVAL_COPY_VALUE(&av12[1], &z13);
-		zval z14;
-		ZVAL_BOOL(&z14, false);
-		ZVAL_COPY_VALUE(&av12[2], &z14);
-		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "getFunctionType", "getfunctiontype", 15, 3, av12, r15.raw(), NULL))) return false;
-		l_functionReturnType = std::move(r15);
+		zval av16[3];
+		ZVAL_COPY_VALUE(&av16[0], zv::Ref(p14).deref().raw());
+		zval z17;
+		ZVAL_BOOL(&z17, false);
+		ZVAL_COPY_VALUE(&av16[1], &z17);
+		zval z18;
+		ZVAL_BOOL(&z18, false);
+		ZVAL_COPY_VALUE(&av16[2], &z18);
+		zv::Val r19;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "getFunctionType", "getfunctiontype", 15, 3, av16, r19.raw(), NULL))) return false;
+		l_functionReturnType = std::move(r19);
 	}
 	 {
 		if (!((pgrt::instanceOfClass(l_functionReturnType.raw(), pt_ce_union_type) || pgrt::instanceOfClass(l_functionReturnType.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\UnionType", 22))))) {
 			 {
-				zval arr16_raw;
-				ZVAL_EMPTY_ARRAY(&arr16_raw);
-				ZVAL_COPY(ret, &arr16_raw);
+				zval arr20_raw;
+				ZVAL_EMPTY_ARRAY(&arr20_raw);
+				ZVAL_COPY(ret, &arr20_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TooWideArrowFunctionReturnTypehintRule::slot::check, "check");
-		if (UNEXPECTED(p17 == NULL)) return false;
-		zv::Val o18 = zv::Val::copyOf(zv::Ref(p17));
-		zval av19[1];
-		ZVAL_COPY_VALUE(&av19[0], l_expr.raw());
-		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_scope, "getType", "gettype", 7, 1, av19, r20.raw(), NULL))) return false;
-		zv::Val r21;
-		if (UNEXPECTED(!pgen::TooWideTypeCheck::m_checkAnonymousFunction(Z_OBJ_P(o18.raw()), r20.raw(), l_functionReturnType.raw(), r21.raw()))) return false;
-		*ret = r21.take();
+		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TooWideArrowFunctionReturnTypehintRule::slot::check, "check");
+		if (UNEXPECTED(p21 == NULL)) return false;
+		zv::Val o22 = zv::Val::copyOf(zv::Ref(p21));
+		zval av23[1];
+		ZVAL_COPY_VALUE(&av23[0], l_expr.raw());
+		zv::Val r24;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_scope, "getType", "gettype", 7, 1, av23, r24.raw(), NULL))) return false;
+		zv::Val r25;
+		if (UNEXPECTED(!pgen::TooWideTypeCheck::m_checkAnonymousFunction(Z_OBJ_P(o22.raw()), r24.raw(), l_functionReturnType.raw(), r25.raw()))) return false;
+		*ret = r25.take();
 		return true;
 	}
 }

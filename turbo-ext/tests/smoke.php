@@ -22,12 +22,16 @@ function check(bool $cond, string $msg): void
 // the mapped class (the native code holds the class entries of the classes
 // it shadows itself, so the table never names one of them).
 $classRefs = \PHPStanTurbo\Runtime::classRefs();
+$compiledClasses = require __DIR__ . '/../compiled-classes.php';
 ksort($classRefs);
 check(array_keys($classRefs) === array_keys($classMap), 'the class map covers the native class-reference table exactly');
 foreach ($classRefs as $key => $default) {
 	check($default !== null, "class-map key $key has no baked default name");
 	check(($classMap[$key] ?? null) === $default, "class-map key $key must match the native default");
-	check(!isset($shadowedClasses[$default]), "class-map key $key names a shadowed class");
+	// a class compiled from its twin after hand-written code referenced it
+	// by name keeps the reference: the name resolves to the native class
+	// once activated, the twin in the prefixed tests
+	check(!isset($shadowedClasses[$default]) || isset($compiledClasses[$default]), "class-map key $key names a shadowed class");
 }
 
 // each differential section registers the shadowed class it exercises; the
@@ -4666,6 +4670,34 @@ $coveredElsewhere = [
 	\PHPStan\Rules\Properties\AccessPropertiesCheck::class => 'make tests',
 	\PHPStan\Rules\Functions\CallToFunctionParametersRule::class => 'make tests',
 	\PHPStan\Rules\FunctionCallParametersCheck::class => 'make tests',
+	\PHPStan\Node\InClassMethodNode::class => 'walk-trace.php',
+	\PHPStan\Node\VariableWritesNode::class => 'walk-trace.php',
+	\PHPStan\Node\MethodReturnStatementsNode::class => 'walk-trace.php',
+	\PHPStan\Node\MethodCallExpressionNode::class => 'walk-trace.php',
+	\PHPStan\Node\VariableAssignNode::class => 'walk-trace.php',
+	\PHPStan\Node\NoopExpressionNode::class => 'walk-trace.php',
+	\PHPStan\Node\ExecutionEndNode::class => 'walk-trace.php',
+	\PHPStan\Node\ClassPropertyNode::class => 'walk-trace.php',
+	\PHPStan\Node\InClassNode::class => 'walk-trace.php',
+	\PHPStan\Reflection\ReflectionProvider\MemoizingReflectionProvider::class => 'make tests',
+	\PHPStan\Reflection\Php\PhpMethodReflection::class => 'make tests',
+	\PHPStan\Internal\SprintfHelper::class => 'make tests',
+	\PHPStan\DependencyInjection\LazyExtensionsCollection::class => 'make tests',
+	\PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::class => 'make tests',
+	\PHPStan\Node\Variable\VariableWrite::class => 'make tests',
+	\PHPStan\Node\Method\MethodCall::class => 'make tests',
+	\PHPStan\Php\PhpVersions::class => 'make tests',
+	\PHPStan\File\ParentDirectoryRelativePathHelper::class => 'make tests',
+	\PHPStan\Node\Property\PropertyRead::class => 'make tests',
+	\PHPStan\Php\PhpVersion::class => 'make tests',
+	\PHPStan\Node\ReturnStatement::class => 'make tests',
+	\PHPStan\Reflection\MethodPrototypeReflection::class => 'make tests',
+	\PHPStan\Type\ParserNodeTypeToPHPStanType::class => 'make tests',
+	\PHPStan\Node\ClassMethod::class => 'make tests',
+	\PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection::class => 'make tests',
+	\PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection::class => 'make tests',
+	\PHPStan\Rules\Arrays\AllowedArrayKeysTypes::class => 'make tests',
+	\PHPStan\Rules\PhpDoc\UnresolvableTypeResult::class => 'make tests',
 	\PHPStan\Rules\Generics\ClassTemplateTypeRule::class => 'make tests',
 	\PHPStan\Rules\Generics\VarianceCheck::class => 'make tests',
 	\PHPStan\Rules\Generics\TraitTemplateTypeRule::class => 'make tests',

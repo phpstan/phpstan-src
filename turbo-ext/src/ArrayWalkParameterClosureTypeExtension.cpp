@@ -127,6 +127,10 @@ namespace pgen::ArrayWalkParameterClosureTypeExtension {
 			r18 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
 			if (UNEXPECTED(r18.isUndef())) return false;
 		}
+		else if (rc19 == pt_ce_node_callback_scope) {
+			r18 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
+			if (UNEXPECTED(r18.isUndef())) return false;
+		}
 		else {
 			zval av20[1];
 			ZVAL_COPY_VALUE(&av20[0], l_arrayType.raw());
@@ -145,6 +149,10 @@ namespace pgen::ArrayWalkParameterClosureTypeExtension {
 		zv::Val r25;
 		zend_class_entry *rc26 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc26 == pt_ce_mutating_scope) {
+			r25 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), l_arrayType.raw());
+			if (UNEXPECTED(r25.isUndef())) return false;
+		}
+		else if (rc26 == pt_ce_node_callback_scope) {
 			r25 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), l_arrayType.raw());
 			if (UNEXPECTED(r25.isUndef())) return false;
 		}

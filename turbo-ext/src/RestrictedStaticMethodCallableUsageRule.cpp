@@ -227,6 +227,10 @@ namespace pgen::RestrictedStaticMethodCallableUsageRule {
 					r16 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(r15.raw()));
 					if (UNEXPECTED(r16.isUndef())) return false;
 				}
+				else if (rc17 == pt_ce_node_callback_scope) {
+					r16 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(r15.raw()));
+					if (UNEXPECTED(r16.isUndef())) return false;
+				}
 				else {
 					zval av18[1];
 					ZVAL_COPY_VALUE(&av18[0], r15.raw());

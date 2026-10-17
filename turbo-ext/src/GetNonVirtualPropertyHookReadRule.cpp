@@ -184,6 +184,10 @@ namespace pgen::GetNonVirtualPropertyHookReadRule {
 						r24 = pt_mutating_scope_get_function(Z_OBJ_P(o23.raw()));
 						if (UNEXPECTED(r24.isUndef())) return false;
 					}
+					else if (rc25 == pt_ce_node_callback_scope) {
+						r24 = pt_mutating_scope_get_function(Z_OBJ_P(o23.raw()));
+						if (UNEXPECTED(r24.isUndef())) return false;
+					}
 					else {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_12, o23.raw(), "getFunction", "getfunction", 11, 0, NULL, r24.raw()))) return false;
 					}

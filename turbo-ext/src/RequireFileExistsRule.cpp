@@ -341,41 +341,50 @@ namespace pgen::RequireFileExistsRule {
 			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo3))) return false;
 			ZVAL_BOOL(r1.raw(), bo3);
 		}
+		else if (rc2 == pt_ce_node_callback_scope) {
+			bool bo4 = false;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo4))) return false;
+			ZVAL_BOOL(r1.raw(), bo4);
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_scope, "isInTrait", "isintrait", 9, 0, NULL, r1.raw()))) return false;
 		}
 		if (Z_TYPE_P(r1.raw()) == IS_TRUE) {
 			 {
-				zv::Val r4;
-				zend_class_entry *rc5 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
-				if (rc5 == pt_ce_mutating_scope) {
-					r4 = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(p_scope));
-					if (UNEXPECTED(r4.isUndef())) return false;
+				zv::Val r5;
+				zend_class_entry *rc6 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+				if (rc6 == pt_ce_mutating_scope) {
+					r5 = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(p_scope));
+					if (UNEXPECTED(r5.isUndef())) return false;
+				}
+				else if (rc6 == pt_ce_node_callback_scope) {
+					r5 = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(p_scope));
+					if (UNEXPECTED(r5.isUndef())) return false;
 				}
 				else {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_scope, "getTraitReflection", "gettraitreflection", 18, 0, NULL, r4.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_scope, "getTraitReflection", "gettraitreflection", 18, 0, NULL, r5.raw()))) return false;
 				}
-				zv::Val r6;
-				if (EXPECTED(Z_TYPE_P(r4.raw()) == IS_OBJECT)) {
-					r6 = pt_type_op(Z_OBJ_P(r4.raw()), PT_OP_GET_FILE_NAME, 0, NULL);
-					if (UNEXPECTED(r6.isUndef())) return false;
+				zv::Val r7;
+				if (EXPECTED(Z_TYPE_P(r5.raw()) == IS_OBJECT)) {
+					r7 = pt_type_op(Z_OBJ_P(r5.raw()), PT_OP_GET_FILE_NAME, 0, NULL);
+					if (UNEXPECTED(r7.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r4.raw(), "getFileName", "getfilename", 11, 0, NULL, r6.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r5.raw(), "getFileName", "getfilename", 11, 0, NULL, r7.raw(), NULL))) return false;
 				}
 				}
-				l_traitFileName = std::move(r6);
+				l_traitFileName = std::move(r7);
 			}
 			 {
 				if (!(Z_TYPE_P(l_traitFileName.raw()) == IS_NULL)) {
 					 {
-						zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RequireFileExistsRule::slot::fileHelper, "fileHelper");
-						if (UNEXPECTED(p7 == NULL)) return false;
-						zval av8[1];
-						ZVAL_COPY_VALUE(&av8[0], l_traitFileName.raw());
-						zv::Val r9;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p7, "normalizePath", "normalizepath", 13, 1, av8, r9.raw(), NULL))) return false;
-						*ret = r9.take();
+						zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RequireFileExistsRule::slot::fileHelper, "fileHelper");
+						if (UNEXPECTED(p8 == NULL)) return false;
+						zval av9[1];
+						ZVAL_COPY_VALUE(&av9[0], l_traitFileName.raw());
+						zv::Val r10;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p8, "normalizePath", "normalizepath", 13, 1, av9, r10.raw(), NULL))) return false;
+						*ret = r10.take();
 						return true;
 					}
 				}
@@ -383,16 +392,20 @@ namespace pgen::RequireFileExistsRule {
 		}
 	}
 	 {
-		zv::Val r10;
-		zend_class_entry *rc11 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
-		if (rc11 == pt_ce_mutating_scope) {
-			r10 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
-			if (UNEXPECTED(r10.isUndef())) return false;
+		zv::Val r11;
+		zend_class_entry *rc12 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+		if (rc12 == pt_ce_mutating_scope) {
+			r11 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r11.isUndef())) return false;
+		}
+		else if (rc12 == pt_ce_node_callback_scope) {
+			r11 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r11.isUndef())) return false;
 		}
 		else {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_scope, "getFile", "getfile", 7, 0, NULL, r10.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_scope, "getFile", "getfile", 7, 0, NULL, r11.raw()))) return false;
 		}
-		*ret = r10.take();
+		*ret = r11.take();
 		return true;
 	}
 }

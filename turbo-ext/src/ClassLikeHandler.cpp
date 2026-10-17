@@ -1144,6 +1144,10 @@ namespace pgen::ClassLikeHandler {
 			r12 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r12.isUndef())) return false;
 		}
+		else if (rc13 == pt_ce_node_callback_scope) {
+			r12 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r12.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_81, p_scope, "getFile", "getfile", 7, 0, NULL, r12.raw()))) return false;
 		}
@@ -1215,6 +1219,10 @@ namespace pgen::ClassLikeHandler {
 			r7 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r7.isUndef())) return false;
 		}
+		else if (rc8 == pt_ce_node_callback_scope) {
+			r7 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r7.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_86, p_scope, "getFile", "getfile", 7, 0, NULL, r7.raw()))) return false;
 		}
@@ -1223,6 +1231,10 @@ namespace pgen::ClassLikeHandler {
 		zv::Val r10;
 		zend_class_entry *rc11 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc11 == pt_ce_mutating_scope) {
+			r10 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r10.isUndef())) return false;
+		}
+		else if (rc11 == pt_ce_node_callback_scope) {
 			r10 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r10.isUndef())) return false;
 		}
@@ -1243,6 +1255,10 @@ namespace pgen::ClassLikeHandler {
 			r14 = pt_mutating_scope_get_namespace(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r14.isUndef())) return false;
 		}
+		else if (rc15 == pt_ce_node_callback_scope) {
+			r14 = pt_mutating_scope_get_namespace(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r14.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_89, p_scope, "getNamespace", "getnamespace", 12, 0, NULL, r14.raw()))) return false;
 		}
@@ -1251,6 +1267,10 @@ namespace pgen::ClassLikeHandler {
 			zv::Val r19;
 			zend_class_entry *rc20 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 			if (rc20 == pt_ce_mutating_scope) {
+				r19 = pt_mutating_scope_get_namespace(Z_OBJ_P(p_scope));
+				if (UNEXPECTED(r19.isUndef())) return false;
+			}
+			else if (rc20 == pt_ce_node_callback_scope) {
 				r19 = pt_mutating_scope_get_namespace(Z_OBJ_P(p_scope));
 				if (UNEXPECTED(r19.isUndef())) return false;
 			}
@@ -1339,6 +1359,10 @@ namespace pgen::ClassLikeHandler {
 		zv::Val r42;
 		zend_class_entry *rc43 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc43 == pt_ce_mutating_scope) {
+			r42 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r42.isUndef())) return false;
+		}
+		else if (rc43 == pt_ce_node_callback_scope) {
 			r42 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r42.isUndef())) return false;
 		}

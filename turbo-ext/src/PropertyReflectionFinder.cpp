@@ -351,6 +351,10 @@ namespace pgen::PropertyReflectionFinder {
 					r58 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p56).deref().raw()));
 					if (UNEXPECTED(r58.isUndef())) return false;
 				}
+				else if (rc59 == pt_ce_node_callback_scope) {
+					r58 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p56).deref().raw()));
+					if (UNEXPECTED(r58.isUndef())) return false;
+				}
 				else {
 					zval av60[1];
 					ZVAL_COPY_VALUE(&av60[0], zv::Ref(p56).deref().raw());
@@ -859,6 +863,10 @@ namespace pgen::PropertyReflectionFinder {
 				zv::Val r34;
 				zend_class_entry *rc35 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 				if (rc35 == pt_ce_mutating_scope) {
+					r34 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p32).deref().raw()));
+					if (UNEXPECTED(r34.isUndef())) return false;
+				}
+				else if (rc35 == pt_ce_node_callback_scope) {
 					r34 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p32).deref().raw()));
 					if (UNEXPECTED(r34.isUndef())) return false;
 				}

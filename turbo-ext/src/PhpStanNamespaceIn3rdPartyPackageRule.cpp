@@ -116,6 +116,10 @@ namespace pgen::PhpStanNamespaceIn3rdPartyPackageRule {
 			r11 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r11.isUndef())) return false;
 		}
+		else if (rc12 == pt_ce_node_callback_scope) {
+			r11 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r11.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "getFile", "getfile", 7, 0, NULL, r11.raw()))) return false;
 		}

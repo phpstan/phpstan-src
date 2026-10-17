@@ -359,6 +359,10 @@ namespace pgen::CallToStaticMethodStatementWithNoDiscardRule {
 					r45 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p43).deref().raw()));
 					if (UNEXPECTED(r45.isUndef())) return false;
 				}
+				else if (rc46 == pt_ce_node_callback_scope) {
+					r45 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p43).deref().raw()));
+					if (UNEXPECTED(r45.isUndef())) return false;
+				}
 				else {
 					zval av47[1];
 					ZVAL_COPY_VALUE(&av47[0], zv::Ref(p43).deref().raw());

@@ -125,6 +125,10 @@ namespace pgen::ArrayFindParameterClosureTypeExtension {
 			r19 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
 			if (UNEXPECTED(r19.isUndef())) return false;
 		}
+		else if (rc20 == pt_ce_node_callback_scope) {
+			r19 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
+			if (UNEXPECTED(r19.isUndef())) return false;
+		}
 		else {
 			zval av21[1];
 			ZVAL_COPY_VALUE(&av21[0], l_arrayType.raw());
@@ -148,6 +152,10 @@ namespace pgen::ArrayFindParameterClosureTypeExtension {
 		zv::Val r27;
 		zend_class_entry *rc28 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc28 == pt_ce_mutating_scope) {
+			r27 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), l_arrayType.raw());
+			if (UNEXPECTED(r27.isUndef())) return false;
+		}
+		else if (rc28 == pt_ce_node_callback_scope) {
 			r27 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), l_arrayType.raw());
 			if (UNEXPECTED(r27.isUndef())) return false;
 		}

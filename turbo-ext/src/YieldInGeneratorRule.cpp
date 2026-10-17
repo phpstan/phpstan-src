@@ -104,6 +104,10 @@ namespace pgen::YieldInGeneratorRule {
 			r3 = pt_mutating_scope_get_anonymous_function_return_type(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r3.isUndef())) return false;
 		}
+		else if (rc4 == pt_ce_node_callback_scope) {
+			r3 = pt_mutating_scope_get_anonymous_function_return_type(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r3.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getAnonymousFunctionReturnType", "getanonymousfunctionreturntype", 30, 0, NULL, r3.raw()))) return false;
 		}
@@ -113,6 +117,10 @@ namespace pgen::YieldInGeneratorRule {
 		zv::Val r5;
 		zend_class_entry *rc6 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc6 == pt_ce_mutating_scope) {
+			r5 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r5.isUndef())) return false;
+		}
+		else if (rc6 == pt_ce_node_callback_scope) {
 			r5 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r5.isUndef())) return false;
 		}

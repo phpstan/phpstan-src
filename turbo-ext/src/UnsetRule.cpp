@@ -548,6 +548,10 @@ namespace pgen::UnsetRule {
 					r7 = pt_mutating_scope_has_variable_type(Z_OBJ_P(p_scope), Z_STR_P(zv::Ref(p5).deref().raw()));
 					if (UNEXPECTED(r7.isUndef())) return false;
 				}
+				else if (rc8 == pt_ce_node_callback_scope) {
+					r7 = pt_mutating_scope_has_variable_type(Z_OBJ_P(p_scope), Z_STR_P(zv::Ref(p5).deref().raw()));
+					if (UNEXPECTED(r7.isUndef())) return false;
+				}
 				else {
 					zval av9[1];
 					ZVAL_COPY_VALUE(&av9[0], zv::Ref(p5).deref().raw());

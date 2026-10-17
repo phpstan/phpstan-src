@@ -150,6 +150,10 @@ namespace pgen::ArrayUnpackingRule {
 			r16 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), r13.raw());
 			if (UNEXPECTED(r16.isUndef())) return false;
 		}
+		else if (rc17 == pt_ce_node_callback_scope) {
+			r16 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), r13.raw());
+			if (UNEXPECTED(r16.isUndef())) return false;
+		}
 		else {
 			zval av18[1];
 			ZVAL_COPY_VALUE(&av18[0], r13.raw());
@@ -175,6 +179,10 @@ namespace pgen::ArrayUnpackingRule {
 		zv::Val r24;
 		zend_class_entry *rc25 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc25 == pt_ce_mutating_scope) {
+			r24 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), r21.raw());
+			if (UNEXPECTED(r24.isUndef())) return false;
+		}
+		else if (rc25 == pt_ce_node_callback_scope) {
 			r24 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), r21.raw());
 			if (UNEXPECTED(r24.isUndef())) return false;
 		}

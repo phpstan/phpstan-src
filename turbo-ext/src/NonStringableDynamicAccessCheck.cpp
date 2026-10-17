@@ -357,6 +357,10 @@ namespace pgen::NonStringableDynamicAccessCheck {
 						r2 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(p_classNode));
 						if (UNEXPECTED(r2.isUndef())) return false;
 					}
+					else if (rc3 == pt_ce_node_callback_scope) {
+						r2 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(p_classNode));
+						if (UNEXPECTED(r2.isUndef())) return false;
+					}
 					else {
 						zval av4[1];
 						ZVAL_COPY_VALUE(&av4[0], p_classNode);

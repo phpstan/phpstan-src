@@ -65,29 +65,38 @@ namespace pgen::ClosureGetCurrentDynamicReturnTypeExtension {
 			if (UNEXPECTED(!pt_mutating_scope_is_in_anonymous_function(Z_OBJ_P(p_scope), bo3))) return false;
 			ZVAL_BOOL(r1.raw(), bo3);
 		}
+		else if (rc2 == pt_ce_node_callback_scope) {
+			bool bo4 = false;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_anonymous_function(Z_OBJ_P(p_scope), bo4))) return false;
+			ZVAL_BOOL(r1.raw(), bo4);
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "isInAnonymousFunction", "isinanonymousfunction", 21, 0, NULL, r1.raw()))) return false;
 		}
 		if (!((Z_TYPE_P(r1.raw()) == IS_TRUE))) {
 			 {
-				zv::Val n4;
-				if (UNEXPECTED(!pgrt::newObject(pt_ce_never_type, 0, NULL, n4.raw(), NULL))) return false;
-				*ret = n4.take();
+				zv::Val n5;
+				if (UNEXPECTED(!pgrt::newObject(pt_ce_never_type, 0, NULL, n5.raw(), NULL))) return false;
+				*ret = n5.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val r5;
-		zend_class_entry *rc6 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
-		if (rc6 == pt_ce_mutating_scope) {
-			r5 = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(p_scope));
-			if (UNEXPECTED(r5.isUndef())) return false;
+		zv::Val r6;
+		zend_class_entry *rc7 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+		if (rc7 == pt_ce_mutating_scope) {
+			r6 = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r6.isUndef())) return false;
+		}
+		else if (rc7 == pt_ce_node_callback_scope) {
+			r6 = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r6.isUndef())) return false;
 		}
 		else {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getAnonymousFunctionReflection", "getanonymousfunctionreflection", 30, 0, NULL, r5.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getAnonymousFunctionReflection", "getanonymousfunctionreflection", 30, 0, NULL, r6.raw()))) return false;
 		}
-		*ret = r5.take();
+		*ret = r6.take();
 		return true;
 	}
 }

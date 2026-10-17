@@ -50,6 +50,11 @@ namespace pgen::TransformStaticTypeTraverser {
 			if (UNEXPECTED(!pt_mutating_scope_is_in_class(Z_OBJ_P(o2.raw()), bo5))) return false;
 			ZVAL_BOOL(r3.raw(), bo5);
 		}
+		else if (rc4 == pt_ce_node_callback_scope) {
+			bool bo6 = false;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_class(Z_OBJ_P(o2.raw()), bo6))) return false;
+			ZVAL_BOOL(r3.raw(), bo6);
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, o2.raw(), "isInClass", "isinclass", 9, 0, NULL, r3.raw()))) return false;
 		}
@@ -63,73 +68,73 @@ namespace pgen::TransformStaticTypeTraverser {
 	 {
 		if (pgrt::instanceOfClass(p_type, pt_ce_static_type) || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\StaticType", 23))) {
 			 {
-				zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TransformStaticTypeTraverser::slot::scope, "scope");
-				if (UNEXPECTED(p6 == NULL)) return false;
-				zv::Val r7;
-				if (EXPECTED(Z_TYPE_P(p6) == IS_OBJECT)) {
-					r7 = pt_type_op(Z_OBJ_P(p6), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
-					if (UNEXPECTED(r7.isUndef())) return false;
+				zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TransformStaticTypeTraverser::slot::scope, "scope");
+				if (UNEXPECTED(p7 == NULL)) return false;
+				zv::Val r8;
+				if (EXPECTED(Z_TYPE_P(p7) == IS_OBJECT)) {
+					r8 = pt_type_op(Z_OBJ_P(p7), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
+					if (UNEXPECTED(r8.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p6, "getClassReflection", "getclassreflection", 18, 0, NULL, r7.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p7, "getClassReflection", "getclassreflection", 18, 0, NULL, r8.raw(), NULL))) return false;
 				}
 				}
-				l_classReflection = std::move(r7);
+				l_classReflection = std::move(r8);
 			}
 			 {
-				zval av8[1];
-				ZVAL_COPY_VALUE(&av8[0], l_classReflection.raw());
-				zv::Val r9;
+				zval av9[1];
+				ZVAL_COPY_VALUE(&av9[0], l_classReflection.raw());
+				zv::Val r10;
 				if (EXPECTED(Z_TYPE_P(p_type) == IS_OBJECT)) {
-					r9 = pt_type_op(Z_OBJ_P(p_type), PT_OP_CHANGE_BASE_CLASS, 1, av8);
-					if (UNEXPECTED(r9.isUndef())) return false;
+					r10 = pt_type_op(Z_OBJ_P(p_type), PT_OP_CHANGE_BASE_CLASS, 1, av9);
+					if (UNEXPECTED(r10.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_type, "changeBaseClass", "changebaseclass", 15, 1, av8, r9.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_type, "changeBaseClass", "changebaseclass", 15, 1, av9, r10.raw(), NULL))) return false;
 				}
 				}
-				l_changedType = std::move(r9);
+				l_changedType = std::move(r10);
 			}
 			 {
-				zv::Val r11;
+				zv::Val r12;
 				if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-					r11 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_IS_FINAL, 0, NULL);
-					if (UNEXPECTED(r11.isUndef())) return false;
+					r12 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_IS_FINAL, 0, NULL);
+					if (UNEXPECTED(r12.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "isFinal", "isfinal", 7, 0, NULL, r11.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "isFinal", "isfinal", 7, 0, NULL, r12.raw(), NULL))) return false;
 				}
 				}
-				bool b10 = (Z_TYPE_P(r11.raw()) == IS_TRUE);
-				if (b10) {
-					b10 = !((pgrt::instanceOfClass(p_type, pt_ce_this_type) || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\ThisType", 21))));
+				bool b11 = (Z_TYPE_P(r12.raw()) == IS_TRUE);
+				if (b11) {
+					b11 = !((pgrt::instanceOfClass(p_type, pt_ce_this_type) || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\ThisType", 21))));
 				}
-				if (b10) {
+				if (b11) {
 					 {
-						zv::Val r12;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_changedType.raw(), "getStaticObjectType", "getstaticobjecttype", 19, 0, NULL, r12.raw(), NULL))) return false;
-						l_changedType = std::move(r12);
+						zv::Val r13;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_changedType.raw(), "getStaticObjectType", "getstaticobjecttype", 19, 0, NULL, r13.raw(), NULL))) return false;
+						l_changedType = std::move(r13);
 					}
 				}
 			}
 			 {
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], l_changedType.raw());
-				zv::Val r14;
-				if (UNEXPECTED(!pgrt::callValue(p_traverse, 1, av13, r14.raw(), NULL))) return false;
-				if (UNEXPECTED(!(pgrt::instanceOfClass(r14.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { pgrt::throwReturnType("PHPStan\\Analyser\\Traverser\\TransformStaticTypeTraverser::traverse", "PHPStan\\Type\\Type", r14.raw()); return false; }
-				*ret = r14.take();
+				zval av14[1];
+				ZVAL_COPY_VALUE(&av14[0], l_changedType.raw());
+				zv::Val r15;
+				if (UNEXPECTED(!pgrt::callValue(p_traverse, 1, av14, r15.raw(), NULL))) return false;
+				if (UNEXPECTED(!(pgrt::instanceOfClass(r15.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { pgrt::throwReturnType("PHPStan\\Analyser\\Traverser\\TransformStaticTypeTraverser::traverse", "PHPStan\\Type\\Type", r15.raw()); return false; }
+				*ret = r15.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval av15[1];
-		ZVAL_COPY_VALUE(&av15[0], p_type);
-		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callValue(p_traverse, 1, av15, r16.raw(), NULL))) return false;
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r16.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { pgrt::throwReturnType("PHPStan\\Analyser\\Traverser\\TransformStaticTypeTraverser::traverse", "PHPStan\\Type\\Type", r16.raw()); return false; }
-		*ret = r16.take();
+		zval av16[1];
+		ZVAL_COPY_VALUE(&av16[0], p_type);
+		zv::Val r17;
+		if (UNEXPECTED(!pgrt::callValue(p_traverse, 1, av16, r17.raw(), NULL))) return false;
+		if (UNEXPECTED(!(pgrt::instanceOfClass(r17.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { pgrt::throwReturnType("PHPStan\\Analyser\\Traverser\\TransformStaticTypeTraverser::traverse", "PHPStan\\Type\\Type", r17.raw()); return false; }
+		*ret = r17.take();
 		return true;
 	}
 }

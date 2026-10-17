@@ -4854,6 +4854,15 @@ final class Compiler
 			}
 			$entryName = 'pt_' . self::snake($reflection->getShortName()) . '_' . self::snake($name);
 			$entry = $entries[$entryName] ?? null;
+			if ($entry === null && $reflection->hasMethod($name)) {
+				// an inherited method: the declaring class's export, which
+				// the inherited internal method runs too
+				$declaring = $reflection->getMethod($name)->getDeclaringClass();
+				if ($declaring->getName() !== $reflection->getName() && $this->shadowCe($declaring->getName()) !== null) {
+					$entryName = 'pt_' . self::snake($declaring->getShortName()) . '_' . self::snake($name);
+					$entry = $entries[$entryName] ?? null;
+				}
+			}
 			if ($entry === null || $entry['variadic'] !== null || ($entry['kind'] === 'status' && !$returnsVoid) || !in_array($entry['kind'], ['val', 'out', 'status', 'boolout'], true)) {
 				continue;
 			}

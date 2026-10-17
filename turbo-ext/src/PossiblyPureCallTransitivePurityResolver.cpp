@@ -1178,6 +1178,10 @@ namespace pgen::PossiblyPureCallTransitivePurityResolver {
 					r109 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p107).deref().raw()));
 					if (UNEXPECTED(r109.isUndef())) return false;
 				}
+				else if (rc110 == pt_ce_node_callback_scope) {
+					r109 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p107).deref().raw()));
+					if (UNEXPECTED(r109.isUndef())) return false;
+				}
 				else {
 					zval av111[1];
 					ZVAL_COPY_VALUE(&av111[0], zv::Ref(p107).deref().raw());
@@ -1189,6 +1193,10 @@ namespace pgen::PossiblyPureCallTransitivePurityResolver {
 				zv::Val r112;
 				zend_class_entry *rc113 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 				if (rc113 == pt_ce_mutating_scope) {
+					r112 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), l_calledOnType.raw(), Z_STR_P(l_methodName.raw()));
+					if (UNEXPECTED(r112.isUndef())) return false;
+				}
+				else if (rc113 == pt_ce_node_callback_scope) {
 					r112 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), l_calledOnType.raw(), Z_STR_P(l_methodName.raw()));
 					if (UNEXPECTED(r112.isUndef())) return false;
 				}

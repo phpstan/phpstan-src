@@ -93,32 +93,37 @@ namespace pgen::InvalidVariableAssignRule {
 					if (UNEXPECTED(!pt_mutating_scope_is_in_class(Z_OBJ_P(p_scope), bo11))) return false;
 					ZVAL_BOOL(r9.raw(), bo11);
 				}
+				else if (rc10 == pt_ce_node_callback_scope) {
+					bool bo12 = false;
+					if (UNEXPECTED(!pt_mutating_scope_is_in_class(Z_OBJ_P(p_scope), bo12))) return false;
+					ZVAL_BOOL(r9.raw(), bo12);
+				}
 				else {
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "isInClass", "isinclass", 9, 0, NULL, r9.raw()))) return false;
 				}
 				if (Z_TYPE_P(r9.raw()) == IS_TRUE) {
 					 {
-						zv::Val r12;
+						zv::Val r13;
 						if (EXPECTED(Z_TYPE_P(p_scope) == IS_OBJECT)) {
-							r12 = pt_type_op(Z_OBJ_P(p_scope), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
-							if (UNEXPECTED(r12.isUndef())) return false;
+							r13 = pt_type_op(Z_OBJ_P(p_scope), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
+							if (UNEXPECTED(r13.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r12.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r13.raw(), NULL))) return false;
 						}
 						}
-						l_classReflection = std::move(r12);
+						l_classReflection = std::move(r13);
 					}
 					 {
-						zval av13[1];
-						ZVAL_COPY_VALUE(&av13[0], &pg_lit[2]);
-						zv::Val r14;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_classReflection.raw(), "implementsInterface", "implementsinterface", 19, 1, av13, r14.raw(), NULL))) return false;
-						if (Z_TYPE_P(r14.raw()) == IS_TRUE) {
+						zval av14[1];
+						ZVAL_COPY_VALUE(&av14[0], &pg_lit[2]);
+						zv::Val r15;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_classReflection.raw(), "implementsInterface", "implementsinterface", 19, 1, av14, r15.raw(), NULL))) return false;
+						if (Z_TYPE_P(r15.raw()) == IS_TRUE) {
 							 {
-								zval arr15_raw;
-								ZVAL_EMPTY_ARRAY(&arr15_raw);
-								ZVAL_COPY(ret, &arr15_raw);
+								zval arr16_raw;
+								ZVAL_EMPTY_ARRAY(&arr16_raw);
+								ZVAL_COPY(ret, &arr16_raw);
 								return true;
 							}
 						}
@@ -126,31 +131,31 @@ namespace pgen::InvalidVariableAssignRule {
 				}
 			}
 			 {
-				zv::Val arr16 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-				zval av17[1];
-				ZVAL_COPY_VALUE(&av17[0], &pg_lit[3]);
-				zend_class_entry *ce18 = pgrt::lookupClass(pg_site_6, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-				if (UNEXPECTED(ce18 == NULL)) return false;
-				zv::Val r19;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce18, "message", 7, 1, av17, r19.raw(), NULL))) return false;
-				zval av20[1];
-				ZVAL_COPY_VALUE(&av20[0], &pg_lit[4]);
-				zv::Val r21;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r19.raw(), "identifier", "identifier", 10, 1, av20, r21.raw(), NULL))) return false;
+				zv::Val arr17 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+				zval av18[1];
+				ZVAL_COPY_VALUE(&av18[0], &pg_lit[3]);
+				zend_class_entry *ce19 = pgrt::lookupClass(pg_site_6, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+				if (UNEXPECTED(ce19 == NULL)) return false;
+				zv::Val r20;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce19, "message", 7, 1, av18, r20.raw(), NULL))) return false;
+				zval av21[1];
+				ZVAL_COPY_VALUE(&av21[0], &pg_lit[4]);
 				zv::Val r22;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r21.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r22.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r20.raw(), "identifier", "identifier", 10, 1, av21, r22.raw(), NULL))) return false;
 				zv::Val r23;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r22.raw(), "build", "build", 5, 0, NULL, r23.raw(), NULL))) return false;
-				{ zval v = r23.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr16.raw()), &v); }
-				*ret = arr16.take();
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r22.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r23.raw(), NULL))) return false;
+				zv::Val r24;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r23.raw(), "build", "build", 5, 0, NULL, r24.raw(), NULL))) return false;
+				{ zval v = r24.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr17.raw()), &v); }
+				*ret = arr17.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval arr24_raw;
-		ZVAL_EMPTY_ARRAY(&arr24_raw);
-		ZVAL_COPY(ret, &arr24_raw);
+		zval arr25_raw;
+		ZVAL_EMPTY_ARRAY(&arr25_raw);
+		ZVAL_COPY(ret, &arr25_raw);
 		return true;
 	}
 }

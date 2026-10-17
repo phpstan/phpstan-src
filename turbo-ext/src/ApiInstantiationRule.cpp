@@ -106,6 +106,10 @@ namespace pgen::ApiInstantiationRule {
 			r6 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p4).deref().raw()));
 			if (UNEXPECTED(r6.isUndef())) return false;
 		}
+		else if (rc7 == pt_ce_node_callback_scope) {
+			r6 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p4).deref().raw()));
+			if (UNEXPECTED(r6.isUndef())) return false;
+		}
 		else {
 			zval av8[1];
 			ZVAL_COPY_VALUE(&av8[0], zv::Ref(p4).deref().raw());

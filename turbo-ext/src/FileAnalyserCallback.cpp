@@ -220,6 +220,10 @@ namespace pgen::FileAnalyserCallback {
 					r10 = pt_mutating_scope_get_file(Z_OBJ_P(o9.raw()));
 					if (UNEXPECTED(r10.isUndef())) return false;
 				}
+				else if (rc11 == pt_ce_node_callback_scope) {
+					r10 = pt_mutating_scope_get_file(Z_OBJ_P(o9.raw()));
+					if (UNEXPECTED(r10.isUndef())) return false;
+				}
 				else {
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, o9.raw(), "getFile", "getfile", 7, 0, NULL, r10.raw()))) return false;
 				}
@@ -435,3863 +439,3872 @@ namespace pgen::FileAnalyserCallback {
 			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(o70.raw()), bo73))) return false;
 			ZVAL_BOOL(r71.raw(), bo73);
 		}
+		else if (rc72 == pt_ce_node_callback_scope) {
+			bool bo74 = false;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(o70.raw()), bo74))) return false;
+			ZVAL_BOOL(r71.raw(), bo74);
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, o70.raw(), "isInTrait", "isintrait", 9, 0, NULL, r71.raw()))) return false;
 		}
 		if (Z_TYPE_P(r71.raw()) == IS_TRUE) {
 			 {
-				zv::Val o74 = zv::Val::copyOf(zv::Ref(p_scope));
-				zv::Val r75;
-				zend_class_entry *rc76 = Z_TYPE_P(o74.raw()) == IS_OBJECT ? Z_OBJCE_P(o74.raw()) : NULL;
-				if (rc76 == pt_ce_mutating_scope) {
-					r75 = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(o74.raw()));
-					if (UNEXPECTED(r75.isUndef())) return false;
+				zv::Val o75 = zv::Val::copyOf(zv::Ref(p_scope));
+				zv::Val r76;
+				zend_class_entry *rc77 = Z_TYPE_P(o75.raw()) == IS_OBJECT ? Z_OBJCE_P(o75.raw()) : NULL;
+				if (rc77 == pt_ce_mutating_scope) {
+					r76 = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(o75.raw()));
+					if (UNEXPECTED(r76.isUndef())) return false;
+				}
+				else if (rc77 == pt_ce_node_callback_scope) {
+					r76 = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(o75.raw()));
+					if (UNEXPECTED(r76.isUndef())) return false;
 				}
 				else {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, o74.raw(), "getTraitReflection", "gettraitreflection", 18, 0, NULL, r75.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, o75.raw(), "getTraitReflection", "gettraitreflection", 18, 0, NULL, r76.raw()))) return false;
 				}
-				l_traitReflection = std::move(r75);
+				l_traitReflection = std::move(r76);
 			}
 			 {
-				zv::Val r77;
+				zv::Val r78;
 				if (EXPECTED(Z_TYPE_P(l_traitReflection.raw()) == IS_OBJECT)) {
-					r77 = pt_type_op(Z_OBJ_P(l_traitReflection.raw()), PT_OP_GET_FILE_NAME, 0, NULL);
-					if (UNEXPECTED(r77.isUndef())) return false;
+					r78 = pt_type_op(Z_OBJ_P(l_traitReflection.raw()), PT_OP_GET_FILE_NAME, 0, NULL);
+					if (UNEXPECTED(r78.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_traitReflection.raw(), "getFileName", "getfilename", 11, 0, NULL, r77.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_traitReflection.raw(), "getFileName", "getfilename", 11, 0, NULL, r78.raw(), NULL))) return false;
 				}
 				}
-				if (!(Z_TYPE_P(r77.raw()) == IS_NULL)) {
+				if (!(Z_TYPE_P(r78.raw()) == IS_NULL)) {
 					 {
-						zv::Val r78;
+						zv::Val r79;
 						if (EXPECTED(Z_TYPE_P(l_traitReflection.raw()) == IS_OBJECT)) {
-							r78 = pt_type_op(Z_OBJ_P(l_traitReflection.raw()), PT_OP_GET_FILE_NAME, 0, NULL);
-							if (UNEXPECTED(r78.isUndef())) return false;
+							r79 = pt_type_op(Z_OBJ_P(l_traitReflection.raw()), PT_OP_GET_FILE_NAME, 0, NULL);
+							if (UNEXPECTED(r79.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_traitReflection.raw(), "getFileName", "getfilename", 11, 0, NULL, r78.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_traitReflection.raw(), "getFileName", "getfilename", 11, 0, NULL, r79.raw(), NULL))) return false;
 						}
 						}
-						l_traitFilePath = std::move(r78);
+						l_traitFilePath = std::move(r79);
 					}
 					 {
-						zval *p79 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::parser, "parser");
-						if (UNEXPECTED(p79 == NULL)) return false;
-						zv::Val o80 = zv::Val::copyOf(zv::Ref(l_traitFilePath.raw()));
-						zv::Val vd81;
-						zend_class_entry *vd81_ce = Z_TYPE_P(p79) == IS_OBJECT ? Z_OBJCE_P(p79) : NULL;
-						bool vd81_done = false;
-						if (vd81_ce == pt_ce_rich_parser) {
-							zv::Val r82;
-							if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p79), o80.raw(), r82.raw()))) return false;
-							vd81 = std::move(r82);
-							vd81_done = true;
-						}
-						if (vd81_ce == pt_ce_cached_parser) {
+						zval *p80 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::parser, "parser");
+						if (UNEXPECTED(p80 == NULL)) return false;
+						zv::Val o81 = zv::Val::copyOf(zv::Ref(l_traitFilePath.raw()));
+						zv::Val vd82;
+						zend_class_entry *vd82_ce = Z_TYPE_P(p80) == IS_OBJECT ? Z_OBJCE_P(p80) : NULL;
+						bool vd82_done = false;
+						if (vd82_ce == pt_ce_rich_parser) {
 							zv::Val r83;
-							if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p79), o80.raw(), r83.raw()))) return false;
-							vd81 = std::move(r83);
-							vd81_done = true;
+							if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r83.raw()))) return false;
+							vd82 = std::move(r83);
+							vd82_done = true;
 						}
-						if (vd81_ce == pt_ce_simple_parser) {
+						if (vd82_ce == pt_ce_cached_parser) {
 							zv::Val r84;
-							if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p79), o80.raw(), r84.raw()))) return false;
-							vd81 = std::move(r84);
-							vd81_done = true;
+							if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r84.raw()))) return false;
+							vd82 = std::move(r84);
+							vd82_done = true;
 						}
-						if (vd81_ce == pt_ce_path_routing_parser) {
+						if (vd82_ce == pt_ce_simple_parser) {
 							zv::Val r85;
-							if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p79), o80.raw(), r85.raw()))) return false;
-							vd81 = std::move(r85);
-							vd81_done = true;
+							if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r85.raw()))) return false;
+							vd82 = std::move(r85);
+							vd82_done = true;
 						}
-						if (!vd81_done) {
-							zval av86[1];
-							ZVAL_COPY_VALUE(&av86[0], o80.raw());
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_21, p79, "parseFile", "parsefile", 9, 1, av86, vd81.raw()))) return false;
+						if (vd82_ce == pt_ce_path_routing_parser) {
+							zv::Val r86;
+							if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r86.raw()))) return false;
+							vd82 = std::move(r86);
+							vd82_done = true;
 						}
-						l_parserNodes = std::move(vd81);
+						if (!vd82_done) {
+							zval av87[1];
+							ZVAL_COPY_VALUE(&av87[0], o81.raw());
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_21, p80, "parseFile", "parsefile", 9, 1, av87, vd82.raw()))) return false;
+						}
+						l_parserNodes = std::move(vd82);
 					}
 				}
 			}
 		}
 	}
 	 {
-		zval *p87 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::outerNodeCallback, "outerNodeCallback");
-		if (UNEXPECTED(p87 == NULL)) return false;
-		if (!(Z_TYPE_P(p87) == IS_NULL)) {
+		zval *p88 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::outerNodeCallback, "outerNodeCallback");
+		if (UNEXPECTED(p88 == NULL)) return false;
+		if (!(Z_TYPE_P(p88) == IS_NULL)) {
 			 {
-				zval *p88 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::outerNodeCallback, "outerNodeCallback");
-				if (UNEXPECTED(p88 == NULL)) return false;
-				zv::Val o89 = zv::Val::copyOf(zv::Ref(p88));
-				zval av90[2];
-				ZVAL_COPY_VALUE(&av90[0], p_node);
-				ZVAL_COPY_VALUE(&av90[1], p_scope);
-				zv::Val r91;
-				if (UNEXPECTED(!pgrt::callValue(o89.raw(), 2, av90, r91.raw(), NULL))) return false;
+				zval *p89 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::outerNodeCallback, "outerNodeCallback");
+				if (UNEXPECTED(p89 == NULL)) return false;
+				zv::Val o90 = zv::Val::copyOf(zv::Ref(p89));
+				zval av91[2];
+				ZVAL_COPY_VALUE(&av91[0], p_node);
+				ZVAL_COPY_VALUE(&av91[1], p_scope);
+				zv::Val r92;
+				if (UNEXPECTED(!pgrt::callValue(o90.raw(), 2, av91, r92.raw(), NULL))) return false;
 			}
 		}
 	}
 	 {
-		zval arr92_raw;
-		ZVAL_EMPTY_ARRAY(&arr92_raw);
-		zv::Val o93 = zv::Val::copyOf(zv::Ref(&arr92_raw));
-		l_uniquedAnalysedCodeExceptionMessages = std::move(o93);
+		zval arr93_raw;
+		ZVAL_EMPTY_ARRAY(&arr93_raw);
+		zv::Val o94 = zv::Val::copyOf(zv::Ref(&arr93_raw));
+		l_uniquedAnalysedCodeExceptionMessages = std::move(o94);
 	}
 	 {
-		zval *is95 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::rulesByNodeType)).deref().raw();
-		if (Z_ISUNDEF_P(is95)) is95 = NULL;
-		zv::Val o96 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-		zv::Val ist97;
-		zval *is94 = is95 == NULL ? NULL : pgrt::dimIs(is95, o96.raw(), ist97.raw());
+		zval *is96 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::rulesByNodeType)).deref().raw();
+		if (Z_ISUNDEF_P(is96)) is96 = NULL;
+		zv::Val o97 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+		zv::Val ist98;
+		zval *is95 = is96 == NULL ? NULL : pgrt::dimIs(is96, o97.raw(), ist98.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q98;
-		if (is94 != NULL && Z_TYPE_P(is94) > IS_NULL) {
-			q98 = zv::Val::copyOf(zv::Ref(is94));
+		zv::Val q99;
+		if (is95 != NULL && Z_TYPE_P(is95) > IS_NULL) {
+			q99 = zv::Val::copyOf(zv::Ref(is95));
 		} else {
 		 {
-			zv::Val o99 = zv::Val::null();
-			q98 = std::move(o99);
+			zv::Val o100 = zv::Val::null();
+			q99 = std::move(o100);
 		}
 		}
-		l_rules = std::move(q98);
+		l_rules = std::move(q99);
 	}
 	 {
 		if (Z_TYPE_P(l_rules.raw()) == IS_NULL) {
 			 {
-				zval *p100 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ruleRegistry, "ruleRegistry");
-				if (UNEXPECTED(p100 == NULL)) return false;
-				zv::Val o101 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-				zv::Val vd102;
-				zend_class_entry *vd102_ce = Z_TYPE_P(p100) == IS_OBJECT ? Z_OBJCE_P(p100) : NULL;
-				bool vd102_done = false;
-				if (vd102_ce == pt_ce_direct_registry) {
-					zv::Val r103;
-					if (UNEXPECTED(!pgen::DirectRegistry::m_getRules(Z_OBJ_P(p100), o101.raw(), r103.raw()))) return false;
-					vd102 = std::move(r103);
-					vd102_done = true;
-				}
-				if (vd102_ce == pt_ce_lazy_registry) {
+				zval *p101 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ruleRegistry, "ruleRegistry");
+				if (UNEXPECTED(p101 == NULL)) return false;
+				zv::Val o102 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+				zv::Val vd103;
+				zend_class_entry *vd103_ce = Z_TYPE_P(p101) == IS_OBJECT ? Z_OBJCE_P(p101) : NULL;
+				bool vd103_done = false;
+				if (vd103_ce == pt_ce_direct_registry) {
 					zv::Val r104;
-					if (UNEXPECTED(!pgen::LazyRegistry::m_getRules(Z_OBJ_P(p100), o101.raw(), r104.raw()))) return false;
-					vd102 = std::move(r104);
-					vd102_done = true;
+					if (UNEXPECTED(!pgen::DirectRegistry::m_getRules(Z_OBJ_P(p101), o102.raw(), r104.raw()))) return false;
+					vd103 = std::move(r104);
+					vd103_done = true;
 				}
-				if (!vd102_done) {
-					zval av105[1];
-					ZVAL_COPY_VALUE(&av105[0], o101.raw());
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_22, p100, "getRules", "getrules", 8, 1, av105, vd102.raw()))) return false;
+				if (vd103_ce == pt_ce_lazy_registry) {
+					zv::Val r105;
+					if (UNEXPECTED(!pgen::LazyRegistry::m_getRules(Z_OBJ_P(p101), o102.raw(), r105.raw()))) return false;
+					vd103 = std::move(r105);
+					vd103_done = true;
 				}
-				l_rules = std::move(vd102);
+				if (!vd103_done) {
+					zval av106[1];
+					ZVAL_COPY_VALUE(&av106[0], o102.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_22, p101, "getRules", "getrules", 8, 1, av106, vd103.raw()))) return false;
+				}
+				l_rules = std::move(vd103);
 			}
 			 {
-				zv::Val o106 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-				zv::Val o107 = zv::Val::copyOf(zv::Ref(l_rules.raw()));
-				zv::Val o108 = zv::Val::copyOf(zv::Ref(o107.raw()));
-				zval *w109 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::rulesByNodeType)).deref().raw();
-				if (Z_TYPE_P(w109) <= IS_NULL) { zval_ptr_dtor(w109); array_init(w109); } else if (UNEXPECTED(Z_TYPE_P(w109) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w109);
-				zval *e110 = pgrt::dimWrite(w109, o106.raw());
-				if (UNEXPECTED(e110 == NULL)) return false;
-				zv::Ref(e110).assign(std::move(o108));
+				zv::Val o107 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+				zv::Val o108 = zv::Val::copyOf(zv::Ref(l_rules.raw()));
+				zv::Val o109 = zv::Val::copyOf(zv::Ref(o108.raw()));
+				zval *w110 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::rulesByNodeType)).deref().raw();
+				if (Z_TYPE_P(w110) <= IS_NULL) { zval_ptr_dtor(w110); array_init(w110); } else if (UNEXPECTED(Z_TYPE_P(w110) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w110);
+				zval *e111 = pgrt::dimWrite(w110, o107.raw());
+				if (UNEXPECTED(e111 == NULL)) return false;
+				zv::Ref(e111).assign(std::move(o109));
 			}
 		}
 	}
 	 {
-		pgrt::ForeachIter it112;
-		if (UNEXPECTED(!it112.begin(l_rules.raw()))) return false;
-		while (it112.valid()) {
-			l_rule = zv::Ref(it112.current()).deref().raw();
+		pgrt::ForeachIter it113;
+		if (UNEXPECTED(!it113.begin(l_rules.raw()))) return false;
+		while (it113.valid()) {
+			l_rule = zv::Ref(it113.current()).deref().raw();
 			 {
 				 {
 					 {
 						 {
-							zv::Val o116 = zv::Val::copyOf(zv::Ref(p_node));
-							zv::Val o117 = zv::Val::copyOf(zv::Ref(p_scope));
-							zv::Val vd118;
-							zend_class_entry *vd118_ce = Z_TYPE_P(l_rule) == IS_OBJECT ? Z_OBJCE_P(l_rule) : NULL;
-							bool vd118_done = false;
-							static zend_class_entry **const vd118_table[] = { &pt_ce_defined_variable_rule, &pt_ce_call_methods_rule, &pt_ce_access_properties_rule, &pt_ce_call_to_function_parameters_rule, &pt_ce_class_template_type_rule, &pt_ce_trait_template_type_rule, &pt_ce_interface_template_type_rule, &pt_ce_class_ancestors_rule, &pt_ce_method_signature_variance_rule, &pt_ce_used_traits_rule, &pt_ce_interface_ancestors_rule, &pt_ce_enum_ancestors_rule, &pt_ce_property_variance_rule, &pt_ce_function_signature_variance_rule, &pt_ce_method_tag_template_type_rule, &pt_ce_function_template_type_rule, &pt_ce_method_tag_template_type_trait_rule, &pt_ce_method_template_type_rule, &pt_ce_enum_template_type_rule, &pt_ce_incompatible_property_hook_php_doc_type_rule, &pt_ce_sealed_definition_trait_rule, &pt_ce_incompatible_self_out_type_rule, &pt_ce_require_extends_definition_trait_rule, &pt_ce_invalid_phpstan_doc_tag_rule, &pt_ce_require_implements_definition_class_rule, &pt_ce_incompatible_php_doc_type_rule, &pt_ce_method_assert_rule, &pt_ce_invalid_php_doc_var_tag_type_rule, &pt_ce_function_assert_rule, &pt_ce_incompatible_class_constant_php_doc_type_rule, &pt_ce_incompatible_param_immediately_invoked_callable_rule, &pt_ce_function_conditional_return_type_rule, &pt_ce_require_implements_definition_trait_rule, &pt_ce_wrong_variable_name_in_var_tag_rule, &pt_ce_incompatible_property_php_doc_type_rule, &pt_ce_invalid_throws_php_doc_value_rule, &pt_ce_sealed_definition_class_rule, &pt_ce_invalid_php_doc_tag_value_rule, &pt_ce_method_conditional_return_type_rule, &pt_ce_var_tag_changed_expression_type_rule, &pt_ce_require_extends_definition_class_rule, &pt_ce_invalid_types_in_union_rule, &pt_ce_call_to_method_statement_with_no_discard_rule, &pt_ce_method_callable_rule, &pt_ce_abstract_method_in_non_abstract_class_rule, &pt_ce_call_to_constructor_statement_without_side_effects_rule, &pt_ce_static_method_callable_rule, &pt_ce_missing_method_self_out_type_rule, &pt_ce_constructor_return_type_rule, &pt_ce_missing_method_return_typehint_rule, &pt_ce_missing_method_implementation_rule, &pt_ce_existing_classes_in_typehints_rule, &pt_ce_method_attributes_rule, &pt_ce_nullsafe_method_call_rule, &pt_ce_return_type_rule, &pt_ce_abstract_private_method_rule, &pt_ce_consistent_constructor_declaration_rule, &pt_ce_unused_method_parameters_rule, &pt_ce_method_call_with_possibly_renamed_named_argument_rule, &pt_ce_method_signature_rule, &pt_ce_call_to_static_method_statement_with_no_discard_rule, &pt_ce_call_private_method_through_static_rule, &pt_ce_call_to_static_method_statement_without_side_effects_rule, &pt_ce_call_static_methods_rule, &pt_ce_final_private_method_rule, &pt_ce_consistent_constructor_rule, &pt_ce_missing_magic_serialization_methods_rule, &pt_ce_missing_method_parameter_typehint_rule, &pt_ce_method_visibility_in_interface_rule, &pt_ce_call_to_method_statement_without_side_effects_rule, &pt_ce_incompatible_default_parameter_type_rule, &pt_ce_used_names_rule, &pt_ce_regular_expression_quoting_rule, &pt_ce_phpdoc_comment_rule, &pt_ce_function_never_rule, &pt_ce_promote_parameter_rule, &pt_ce_method_never_rule, &pt_ce_no_php_code_rule, &pt_ce_array_dim_cast_rule, &pt_ce_literal_array_key_cast_rule, &pt_ce_not_analysed_trait_rule, &pt_ce_invalid_inc_dec_operation_rule, &pt_ce_invalid_assign_var_rule, &pt_ce_invalid_unary_operation_rule, &pt_ce_backtick_rule, &pt_ce_pipe_operator_rule, &pt_ce_invalid_comparison_operation_rule, &pt_ce_invalid_binary_operation_rule, &pt_ce_constants_in_traits_rule, &pt_ce_conflicting_trait_constants_rule, &pt_ce_trait_attributes_rule, &pt_ce_impossible_instance_of_rule, &pt_ce_duplicate_trait_declaration_rule, &pt_ce_allowed_sub_types_rule, &pt_ce_local_type_aliases_rule, &pt_ce_existing_class_in_trait_use_rule, &pt_ce_existing_class_in_instance_of_rule, &pt_ce_class_constant_rule, &pt_ce_invalid_promoted_properties_rule, &pt_ce_non_class_attribute_class_rule, &pt_ce_existing_classes_in_interface_extends_rule, &pt_ce_access_private_constant_through_static_rule, &pt_ce_existing_classes_in_class_implements_rule, &pt_ce_method_tag_rule, &pt_ce_existing_classes_in_enum_implements_rule, &pt_ce_method_tag_trait_use_rule, &pt_ce_trait_attribute_class_rule, &pt_ce_instantiation_rule, &pt_ce_read_only_class_rule, &pt_ce_existing_class_in_class_extends_rule, &pt_ce_mixin_trait_rule, &pt_ce_property_tag_trait_use_rule, &pt_ce_local_type_trait_aliases_rule, &pt_ce_unused_constructor_parameters_rule, &pt_ce_enum_sanity_rule, &pt_ce_require_implements_rule, &pt_ce_class_attributes_rule, &pt_ce_duplicate_class_declaration_rule, &pt_ce_mixin_trait_use_rule, &pt_ce_instantiation_callable_rule, &pt_ce_mixin_rule, &pt_ce_method_tag_trait_rule, &pt_ce_new_static_rule, &pt_ce_duplicate_declaration_rule, &pt_ce_require_extends_rule, &pt_ce_class_constant_attributes_rule, &pt_ce_local_type_trait_use_aliases_rule, &pt_ce_new_static_in_abstract_class_static_method_rule, &pt_ce_property_tag_rule, &pt_ce_property_tag_trait_rule, &pt_ce_void_cast_rule, &pt_ce_deprecated_cast_rule, &pt_ce_print_rule, &pt_ce_unset_cast_rule, &pt_ce_invalid_part_of_encapsed_string_rule, &pt_ce_invalid_cast_rule, &pt_ce_echo_rule, &pt_ce_ignore_parse_error_rule, &pt_ce_date_time_instantiation_rule, &pt_ce_magic_constant_context_rule, &pt_ce_constant_attributes_rule, &pt_ce_dynamic_class_constant_fetch_rule, &pt_ce_value_assigned_to_define_rule, &pt_ce_overriding_constant_rule, &pt_ce_final_private_constant_rule, &pt_ce_constant_rule, &pt_ce_final_constant_rule, &pt_ce_class_as_class_constant_rule, &pt_ce_missing_class_constant_typehint_rule, &pt_ce_value_assigned_to_class_constant_rule, &pt_ce_native_typed_class_constant_rule, &pt_ce_value_assigned_to_global_constant_rule, &pt_ce_too_wide_function_return_typehint_rule, &pt_ce_too_wide_method_return_typehint_rule, &pt_ce_too_wide_closure_return_typehint_rule, &pt_ce_too_wide_function_parameter_out_type_rule, &pt_ce_too_wide_method_parameter_out_type_rule, &pt_ce_too_wide_property_type_rule, &pt_ce_too_wide_arrow_function_return_typehint_rule, &pt_ce_missing_return_rule, &pt_ce_missing_checked_exception_in_method_throws_rule, &pt_ce_too_wide_property_hook_throw_type_rule, &pt_ce_throws_void_method_with_explicit_throw_point_rule, &pt_ce_overwritten_exit_point_by_finally_rule, &pt_ce_too_wide_method_throw_type_rule, &pt_ce_method_throw_type_covariance_rule, &pt_ce_caught_exception_existence_rule, &pt_ce_throws_void_property_hook_with_explicit_throw_point_rule, &pt_ce_missing_checked_exception_in_function_throws_rule, &pt_ce_missing_checked_exception_in_property_hook_throws_rule, &pt_ce_throw_expr_type_rule, &pt_ce_throw_expression_rule, &pt_ce_catch_with_unthrown_exception_rule, &pt_ce_noncapturing_catch_rule, &pt_ce_throws_void_function_with_explicit_throw_point_rule, &pt_ce_too_wide_function_throw_type_rule, &pt_ce_restricted_static_method_callable_usage_rule, &pt_ce_restricted_function_usage_rule, &pt_ce_restricted_static_property_usage_rule, &pt_ce_restricted_method_usage_rule, &pt_ce_restricted_function_callable_usage_rule, &pt_ce_restricted_static_method_usage_rule, &pt_ce_restricted_method_callable_usage_rule, &pt_ce_restricted_usage_of_deprecated_string_cast_rule, &pt_ce_restricted_property_usage_rule, &pt_ce_restricted_class_constant_usage_rule, &pt_ce_existing_names_in_use_rule, &pt_ce_existing_names_in_group_use_rule, &pt_ce_read_only_by_php_doc_property_rule, &pt_ce_set_property_hook_parameter_rule, &pt_ce_existing_classes_in_properties_rule, &pt_ce_existing_classes_in_property_hook_typehints_rule, &pt_ce_reading_write_only_properties_rule, &pt_ce_types_assigned_to_properties_rule, &pt_ce_get_non_virtual_property_hook_read_rule, &pt_ce_default_value_types_assigned_to_properties_rule, &pt_ce_set_non_virtual_property_hook_assign_rule, &pt_ce_access_static_properties_rule, &pt_ce_access_properties_in_assign_rule, &pt_ce_writing_to_read_only_properties_rule, &pt_ce_missing_property_typehint_rule, &pt_ce_property_in_class_rule, &pt_ce_nullsafe_property_fetch_rule, &pt_ce_read_only_by_php_doc_property_assign_rule, &pt_ce_access_static_properties_in_assign_rule, &pt_ce_read_only_property_assign_ref_rule, &pt_ce_missing_read_only_property_assign_rule, &pt_ce_property_hook_attributes_rule, &pt_ce_access_private_property_through_static_rule, &pt_ce_read_only_property_assign_rule, &pt_ce_missing_read_only_by_php_doc_property_assign_rule, &pt_ce_properties_in_interface_rule, &pt_ce_invalid_callable_property_type_rule, &pt_ce_uninitialized_property_rule, &pt_ce_property_attributes_rule, &pt_ce_read_only_by_php_doc_property_assign_ref_rule, &pt_ce_read_only_property_rule, &pt_ce_property_assign_ref_rule, &pt_ce_call_to_static_method_statement_without_impure_points_rule, &pt_ce_unused_private_method_rule, &pt_ce_unreachable_statement_rule, &pt_ce_noop_rule, &pt_ce_call_to_function_statement_without_impure_points_rule, &pt_ce_call_to_constructor_statement_without_impure_points_rule, &pt_ce_call_to_method_statement_without_impure_points_rule, &pt_ce_unused_private_property_rule, &pt_ce_unused_variable_rule, &pt_ce_unused_private_constant_rule, &pt_ce_isset_rule, &pt_ce_this_in_static_statement_rule, &pt_ce_parameter_out_execution_end_type_rule, &pt_ce_this_in_global_statement_rule, &pt_ce_compact_variables_rule, &pt_ce_null_coalesce_rule, &pt_ce_parameter_out_assigned_type_rule, &pt_ce_invalid_variable_assign_rule, &pt_ce_variable_cloning_rule, &pt_ce_assign_to_by_ref_expr_from_foreach_rule, &pt_ce_unset_rule, &pt_ce_empty_rule, &pt_ce_invalid_key_in_array_item_rule, &pt_ce_invalid_key_in_array_dim_fetch_rule, &pt_ce_offset_access_value_assignment_rule, &pt_ce_offset_access_without_dim_for_reading_rule, &pt_ce_offset_access_assign_op_rule, &pt_ce_array_unpacking_rule, &pt_ce_offset_access_assignment_rule, &pt_ce_array_destructuring_rule, &pt_ce_unpack_iterable_in_array_rule, &pt_ce_duplicate_keys_in_literal_arrays_rule, &pt_ce_nonexistent_offset_in_array_dim_fetch_rule, &pt_ce_dead_foreach_rule, &pt_ce_iterable_in_foreach_rule, &pt_ce_api_static_call_rule, &pt_ce_old_php_parser4_class_rule, &pt_ce_api_class_const_fetch_rule, &pt_ce_runtime_reflection_function_rule, &pt_ce_api_method_call_rule, &pt_ce_get_template_type_rule, &pt_ce_api_trait_use_rule, &pt_ce_api_class_extends_rule, &pt_ce_api_class_implements_rule, &pt_ce_runtime_reflection_instantiation_rule, &pt_ce_php_stan_namespace_in3rd_party_package_rule, &pt_ce_node_connecting_visitor_attributes_rule, &pt_ce_api_instantiation_rule, &pt_ce_api_instanceof_rule, &pt_ce_api_interface_extends_rule, &pt_ce_call_to_function_statement_with_no_discard_rule, &pt_ce_unused_function_parameters_rule, &pt_ce_useless_function_return_value_rule, &pt_ce_array_filter_rule, &pt_ce_parameter_castable_to_number_rule, &pt_ce_missing_function_return_typehint_rule, &pt_ce_existing_classes_in_arrow_function_typehints_rule, &pt_ce_inner_function_rule, &pt_ce_arrow_function_attributes_rule, &pt_ce_array_values_rule, &pt_ce_call_user_func_rule, &pt_ce_sort_without_effect_rule, &pt_ce_arrow_function_return_type_rule, &pt_ce_arrow_function_return_nullsafe_by_ref_rule, &pt_ce_define_parameters_rule, &pt_ce_function_attributes_rule, &pt_ce_unused_closure_uses_rule, &pt_ce_param_attributes_rule, &pt_ce_invalid_lexical_variables_in_closure_use_rule, &pt_ce_printf_parameter_type_rule, &pt_ce_duplicate_function_declaration_rule, &pt_ce_random_int_parameters_rule, &pt_ce_incompatible_arrow_function_default_parameter_type_rule, &pt_ce_call_callables_rule, &pt_ce_return_type_after_finally_rule, &pt_ce_missing_function_parameter_typehint_rule, &pt_ce_redefined_parameters_rule, &pt_ce_closure_return_type_rule, &pt_ce_incompatible_closure_default_parameter_type_rule, &pt_ce_existing_classes_in_closure_typehints_rule, &pt_ce_variadic_parameters_declaration_rule, &pt_ce_implode_parameter_castable_to_string_rule, &pt_ce_closure_attributes_rule, &pt_ce_parameter_castable_to_string_rule, &pt_ce_filter_var_rule, &pt_ce_invalid_parameter_name_rule, &pt_ce_call_to_non_existent_function_rule, &pt_ce_printf_array_parameters_rule, &pt_ce_function_callable_rule, &pt_ce_return_nullsafe_by_ref_rule, &pt_ce_call_to_function_statement_without_side_effects_rule, &pt_ce_impossible_in_array_haystack_finite_types_rule, &pt_ce_impossible_check_type_static_method_call_rule, &pt_ce_logical_xor_constant_condition_rule, &pt_ce_while_loop_always_false_condition_rule, &pt_ce_usage_of_void_match_expression_rule, &pt_ce_switch_condition_rule, &pt_ce_impossible_check_type_method_call_rule, &pt_ce_number_comparison_operators_constant_condition_rule, &pt_ce_constant_loose_comparison_rule, &pt_ce_strict_comparison_of_different_types_rule, &pt_ce_if_constant_condition_rule, &pt_ce_match_expression_rule, &pt_ce_function_call_constant_condition_rule, &pt_ce_boolean_and_constant_condition_rule, &pt_ce_else_if_constant_condition_rule, &pt_ce_boolean_not_constant_condition_rule, &pt_ce_do_while_loop_constant_condition_rule, &pt_ce_boolean_or_constant_condition_rule, &pt_ce_ternary_operator_constant_condition_rule, &pt_ce_while_loop_always_true_condition_rule, &pt_ce_constant_condition_in_trait_rule, &pt_ce_yield_type_rule, &pt_ce_yield_from_type_rule, &pt_ce_yield_in_generator_rule, &pt_ce_enum_case_outside_enum_rule, &pt_ce_enum_case_attributes_rule, &pt_ce_declare_strict_types_rule, &pt_ce_require_file_exists_rule, &pt_ce_unused_label_rule, &pt_ce_goto_undefined_label_rule, &pt_ce_continue_break_in_loop_rule, &pt_ce_pure_function_rule, &pt_ce_pure_property_hook_rule, &pt_ce_pure_method_rule, &pt_ce_dump_php_doc_type_rule, &pt_ce_dump_native_type_rule, &pt_ce_debug_scope_rule, &pt_ce_dump_type_rule, &pt_ce_traits_not_analysed_trait_rule, &pt_ce_functions_existing_classes_in_typehints_rule, &pt_ce_functions_return_type_rule, &pt_ce_functions_incompatible_default_parameter_type_rule, &pt_ce_impossible_check_type_function_call_rule };
-							static const uint16_t vd118_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352 };
-							switch (pgrt::dispatchCase(pg_site_23, vd118_ce, vd118_table, vd118_cases, 352)) {
+							zv::Val o117 = zv::Val::copyOf(zv::Ref(p_node));
+							zv::Val o118 = zv::Val::copyOf(zv::Ref(p_scope));
+							zv::Val vd119;
+							zend_class_entry *vd119_ce = Z_TYPE_P(l_rule) == IS_OBJECT ? Z_OBJCE_P(l_rule) : NULL;
+							bool vd119_done = false;
+							static zend_class_entry **const vd119_table[] = { &pt_ce_defined_variable_rule, &pt_ce_call_methods_rule, &pt_ce_access_properties_rule, &pt_ce_call_to_function_parameters_rule, &pt_ce_class_template_type_rule, &pt_ce_trait_template_type_rule, &pt_ce_interface_template_type_rule, &pt_ce_class_ancestors_rule, &pt_ce_method_signature_variance_rule, &pt_ce_used_traits_rule, &pt_ce_interface_ancestors_rule, &pt_ce_enum_ancestors_rule, &pt_ce_property_variance_rule, &pt_ce_function_signature_variance_rule, &pt_ce_method_tag_template_type_rule, &pt_ce_function_template_type_rule, &pt_ce_method_tag_template_type_trait_rule, &pt_ce_method_template_type_rule, &pt_ce_enum_template_type_rule, &pt_ce_incompatible_property_hook_php_doc_type_rule, &pt_ce_sealed_definition_trait_rule, &pt_ce_incompatible_self_out_type_rule, &pt_ce_require_extends_definition_trait_rule, &pt_ce_invalid_phpstan_doc_tag_rule, &pt_ce_require_implements_definition_class_rule, &pt_ce_incompatible_php_doc_type_rule, &pt_ce_method_assert_rule, &pt_ce_invalid_php_doc_var_tag_type_rule, &pt_ce_function_assert_rule, &pt_ce_incompatible_class_constant_php_doc_type_rule, &pt_ce_incompatible_param_immediately_invoked_callable_rule, &pt_ce_function_conditional_return_type_rule, &pt_ce_require_implements_definition_trait_rule, &pt_ce_wrong_variable_name_in_var_tag_rule, &pt_ce_incompatible_property_php_doc_type_rule, &pt_ce_invalid_throws_php_doc_value_rule, &pt_ce_sealed_definition_class_rule, &pt_ce_invalid_php_doc_tag_value_rule, &pt_ce_method_conditional_return_type_rule, &pt_ce_var_tag_changed_expression_type_rule, &pt_ce_require_extends_definition_class_rule, &pt_ce_invalid_types_in_union_rule, &pt_ce_call_to_method_statement_with_no_discard_rule, &pt_ce_method_callable_rule, &pt_ce_abstract_method_in_non_abstract_class_rule, &pt_ce_call_to_constructor_statement_without_side_effects_rule, &pt_ce_static_method_callable_rule, &pt_ce_missing_method_self_out_type_rule, &pt_ce_constructor_return_type_rule, &pt_ce_missing_method_return_typehint_rule, &pt_ce_missing_method_implementation_rule, &pt_ce_existing_classes_in_typehints_rule, &pt_ce_method_attributes_rule, &pt_ce_nullsafe_method_call_rule, &pt_ce_return_type_rule, &pt_ce_abstract_private_method_rule, &pt_ce_consistent_constructor_declaration_rule, &pt_ce_unused_method_parameters_rule, &pt_ce_method_call_with_possibly_renamed_named_argument_rule, &pt_ce_method_signature_rule, &pt_ce_call_to_static_method_statement_with_no_discard_rule, &pt_ce_call_private_method_through_static_rule, &pt_ce_call_to_static_method_statement_without_side_effects_rule, &pt_ce_call_static_methods_rule, &pt_ce_final_private_method_rule, &pt_ce_consistent_constructor_rule, &pt_ce_missing_magic_serialization_methods_rule, &pt_ce_missing_method_parameter_typehint_rule, &pt_ce_method_visibility_in_interface_rule, &pt_ce_call_to_method_statement_without_side_effects_rule, &pt_ce_incompatible_default_parameter_type_rule, &pt_ce_used_names_rule, &pt_ce_regular_expression_quoting_rule, &pt_ce_phpdoc_comment_rule, &pt_ce_function_never_rule, &pt_ce_promote_parameter_rule, &pt_ce_method_never_rule, &pt_ce_no_php_code_rule, &pt_ce_array_dim_cast_rule, &pt_ce_literal_array_key_cast_rule, &pt_ce_not_analysed_trait_rule, &pt_ce_invalid_inc_dec_operation_rule, &pt_ce_invalid_assign_var_rule, &pt_ce_invalid_unary_operation_rule, &pt_ce_backtick_rule, &pt_ce_pipe_operator_rule, &pt_ce_invalid_comparison_operation_rule, &pt_ce_invalid_binary_operation_rule, &pt_ce_constants_in_traits_rule, &pt_ce_conflicting_trait_constants_rule, &pt_ce_trait_attributes_rule, &pt_ce_impossible_instance_of_rule, &pt_ce_duplicate_trait_declaration_rule, &pt_ce_allowed_sub_types_rule, &pt_ce_local_type_aliases_rule, &pt_ce_existing_class_in_trait_use_rule, &pt_ce_existing_class_in_instance_of_rule, &pt_ce_class_constant_rule, &pt_ce_invalid_promoted_properties_rule, &pt_ce_non_class_attribute_class_rule, &pt_ce_existing_classes_in_interface_extends_rule, &pt_ce_access_private_constant_through_static_rule, &pt_ce_existing_classes_in_class_implements_rule, &pt_ce_method_tag_rule, &pt_ce_existing_classes_in_enum_implements_rule, &pt_ce_method_tag_trait_use_rule, &pt_ce_trait_attribute_class_rule, &pt_ce_instantiation_rule, &pt_ce_read_only_class_rule, &pt_ce_existing_class_in_class_extends_rule, &pt_ce_mixin_trait_rule, &pt_ce_property_tag_trait_use_rule, &pt_ce_local_type_trait_aliases_rule, &pt_ce_unused_constructor_parameters_rule, &pt_ce_enum_sanity_rule, &pt_ce_require_implements_rule, &pt_ce_class_attributes_rule, &pt_ce_duplicate_class_declaration_rule, &pt_ce_mixin_trait_use_rule, &pt_ce_instantiation_callable_rule, &pt_ce_mixin_rule, &pt_ce_method_tag_trait_rule, &pt_ce_new_static_rule, &pt_ce_duplicate_declaration_rule, &pt_ce_require_extends_rule, &pt_ce_class_constant_attributes_rule, &pt_ce_local_type_trait_use_aliases_rule, &pt_ce_new_static_in_abstract_class_static_method_rule, &pt_ce_property_tag_rule, &pt_ce_property_tag_trait_rule, &pt_ce_void_cast_rule, &pt_ce_deprecated_cast_rule, &pt_ce_print_rule, &pt_ce_unset_cast_rule, &pt_ce_invalid_part_of_encapsed_string_rule, &pt_ce_invalid_cast_rule, &pt_ce_echo_rule, &pt_ce_ignore_parse_error_rule, &pt_ce_date_time_instantiation_rule, &pt_ce_magic_constant_context_rule, &pt_ce_constant_attributes_rule, &pt_ce_dynamic_class_constant_fetch_rule, &pt_ce_value_assigned_to_define_rule, &pt_ce_overriding_constant_rule, &pt_ce_final_private_constant_rule, &pt_ce_constant_rule, &pt_ce_final_constant_rule, &pt_ce_class_as_class_constant_rule, &pt_ce_missing_class_constant_typehint_rule, &pt_ce_value_assigned_to_class_constant_rule, &pt_ce_native_typed_class_constant_rule, &pt_ce_value_assigned_to_global_constant_rule, &pt_ce_too_wide_function_return_typehint_rule, &pt_ce_too_wide_method_return_typehint_rule, &pt_ce_too_wide_closure_return_typehint_rule, &pt_ce_too_wide_function_parameter_out_type_rule, &pt_ce_too_wide_method_parameter_out_type_rule, &pt_ce_too_wide_property_type_rule, &pt_ce_too_wide_arrow_function_return_typehint_rule, &pt_ce_missing_return_rule, &pt_ce_missing_checked_exception_in_method_throws_rule, &pt_ce_too_wide_property_hook_throw_type_rule, &pt_ce_throws_void_method_with_explicit_throw_point_rule, &pt_ce_overwritten_exit_point_by_finally_rule, &pt_ce_too_wide_method_throw_type_rule, &pt_ce_method_throw_type_covariance_rule, &pt_ce_caught_exception_existence_rule, &pt_ce_throws_void_property_hook_with_explicit_throw_point_rule, &pt_ce_missing_checked_exception_in_function_throws_rule, &pt_ce_missing_checked_exception_in_property_hook_throws_rule, &pt_ce_throw_expr_type_rule, &pt_ce_throw_expression_rule, &pt_ce_catch_with_unthrown_exception_rule, &pt_ce_noncapturing_catch_rule, &pt_ce_throws_void_function_with_explicit_throw_point_rule, &pt_ce_too_wide_function_throw_type_rule, &pt_ce_restricted_static_method_callable_usage_rule, &pt_ce_restricted_function_usage_rule, &pt_ce_restricted_static_property_usage_rule, &pt_ce_restricted_method_usage_rule, &pt_ce_restricted_function_callable_usage_rule, &pt_ce_restricted_static_method_usage_rule, &pt_ce_restricted_method_callable_usage_rule, &pt_ce_restricted_usage_of_deprecated_string_cast_rule, &pt_ce_restricted_property_usage_rule, &pt_ce_restricted_class_constant_usage_rule, &pt_ce_existing_names_in_use_rule, &pt_ce_existing_names_in_group_use_rule, &pt_ce_read_only_by_php_doc_property_rule, &pt_ce_set_property_hook_parameter_rule, &pt_ce_existing_classes_in_properties_rule, &pt_ce_existing_classes_in_property_hook_typehints_rule, &pt_ce_reading_write_only_properties_rule, &pt_ce_types_assigned_to_properties_rule, &pt_ce_get_non_virtual_property_hook_read_rule, &pt_ce_default_value_types_assigned_to_properties_rule, &pt_ce_set_non_virtual_property_hook_assign_rule, &pt_ce_access_static_properties_rule, &pt_ce_access_properties_in_assign_rule, &pt_ce_writing_to_read_only_properties_rule, &pt_ce_missing_property_typehint_rule, &pt_ce_property_in_class_rule, &pt_ce_nullsafe_property_fetch_rule, &pt_ce_read_only_by_php_doc_property_assign_rule, &pt_ce_access_static_properties_in_assign_rule, &pt_ce_read_only_property_assign_ref_rule, &pt_ce_missing_read_only_property_assign_rule, &pt_ce_property_hook_attributes_rule, &pt_ce_access_private_property_through_static_rule, &pt_ce_read_only_property_assign_rule, &pt_ce_missing_read_only_by_php_doc_property_assign_rule, &pt_ce_properties_in_interface_rule, &pt_ce_invalid_callable_property_type_rule, &pt_ce_uninitialized_property_rule, &pt_ce_property_attributes_rule, &pt_ce_read_only_by_php_doc_property_assign_ref_rule, &pt_ce_read_only_property_rule, &pt_ce_property_assign_ref_rule, &pt_ce_call_to_static_method_statement_without_impure_points_rule, &pt_ce_unused_private_method_rule, &pt_ce_unreachable_statement_rule, &pt_ce_noop_rule, &pt_ce_call_to_function_statement_without_impure_points_rule, &pt_ce_call_to_constructor_statement_without_impure_points_rule, &pt_ce_call_to_method_statement_without_impure_points_rule, &pt_ce_unused_private_property_rule, &pt_ce_unused_variable_rule, &pt_ce_unused_private_constant_rule, &pt_ce_isset_rule, &pt_ce_this_in_static_statement_rule, &pt_ce_parameter_out_execution_end_type_rule, &pt_ce_this_in_global_statement_rule, &pt_ce_compact_variables_rule, &pt_ce_null_coalesce_rule, &pt_ce_parameter_out_assigned_type_rule, &pt_ce_invalid_variable_assign_rule, &pt_ce_variable_cloning_rule, &pt_ce_assign_to_by_ref_expr_from_foreach_rule, &pt_ce_unset_rule, &pt_ce_empty_rule, &pt_ce_invalid_key_in_array_item_rule, &pt_ce_invalid_key_in_array_dim_fetch_rule, &pt_ce_offset_access_value_assignment_rule, &pt_ce_offset_access_without_dim_for_reading_rule, &pt_ce_offset_access_assign_op_rule, &pt_ce_array_unpacking_rule, &pt_ce_offset_access_assignment_rule, &pt_ce_array_destructuring_rule, &pt_ce_unpack_iterable_in_array_rule, &pt_ce_duplicate_keys_in_literal_arrays_rule, &pt_ce_nonexistent_offset_in_array_dim_fetch_rule, &pt_ce_dead_foreach_rule, &pt_ce_iterable_in_foreach_rule, &pt_ce_api_static_call_rule, &pt_ce_old_php_parser4_class_rule, &pt_ce_api_class_const_fetch_rule, &pt_ce_runtime_reflection_function_rule, &pt_ce_api_method_call_rule, &pt_ce_get_template_type_rule, &pt_ce_api_trait_use_rule, &pt_ce_api_class_extends_rule, &pt_ce_api_class_implements_rule, &pt_ce_runtime_reflection_instantiation_rule, &pt_ce_php_stan_namespace_in3rd_party_package_rule, &pt_ce_node_connecting_visitor_attributes_rule, &pt_ce_api_instantiation_rule, &pt_ce_api_instanceof_rule, &pt_ce_api_interface_extends_rule, &pt_ce_call_to_function_statement_with_no_discard_rule, &pt_ce_unused_function_parameters_rule, &pt_ce_useless_function_return_value_rule, &pt_ce_array_filter_rule, &pt_ce_parameter_castable_to_number_rule, &pt_ce_missing_function_return_typehint_rule, &pt_ce_existing_classes_in_arrow_function_typehints_rule, &pt_ce_inner_function_rule, &pt_ce_arrow_function_attributes_rule, &pt_ce_array_values_rule, &pt_ce_call_user_func_rule, &pt_ce_sort_without_effect_rule, &pt_ce_arrow_function_return_type_rule, &pt_ce_arrow_function_return_nullsafe_by_ref_rule, &pt_ce_define_parameters_rule, &pt_ce_function_attributes_rule, &pt_ce_unused_closure_uses_rule, &pt_ce_param_attributes_rule, &pt_ce_invalid_lexical_variables_in_closure_use_rule, &pt_ce_printf_parameter_type_rule, &pt_ce_duplicate_function_declaration_rule, &pt_ce_random_int_parameters_rule, &pt_ce_incompatible_arrow_function_default_parameter_type_rule, &pt_ce_call_callables_rule, &pt_ce_return_type_after_finally_rule, &pt_ce_missing_function_parameter_typehint_rule, &pt_ce_redefined_parameters_rule, &pt_ce_closure_return_type_rule, &pt_ce_incompatible_closure_default_parameter_type_rule, &pt_ce_existing_classes_in_closure_typehints_rule, &pt_ce_variadic_parameters_declaration_rule, &pt_ce_implode_parameter_castable_to_string_rule, &pt_ce_closure_attributes_rule, &pt_ce_parameter_castable_to_string_rule, &pt_ce_filter_var_rule, &pt_ce_invalid_parameter_name_rule, &pt_ce_call_to_non_existent_function_rule, &pt_ce_printf_array_parameters_rule, &pt_ce_function_callable_rule, &pt_ce_return_nullsafe_by_ref_rule, &pt_ce_call_to_function_statement_without_side_effects_rule, &pt_ce_impossible_in_array_haystack_finite_types_rule, &pt_ce_impossible_check_type_static_method_call_rule, &pt_ce_logical_xor_constant_condition_rule, &pt_ce_while_loop_always_false_condition_rule, &pt_ce_usage_of_void_match_expression_rule, &pt_ce_switch_condition_rule, &pt_ce_impossible_check_type_method_call_rule, &pt_ce_number_comparison_operators_constant_condition_rule, &pt_ce_constant_loose_comparison_rule, &pt_ce_strict_comparison_of_different_types_rule, &pt_ce_if_constant_condition_rule, &pt_ce_match_expression_rule, &pt_ce_function_call_constant_condition_rule, &pt_ce_boolean_and_constant_condition_rule, &pt_ce_else_if_constant_condition_rule, &pt_ce_boolean_not_constant_condition_rule, &pt_ce_do_while_loop_constant_condition_rule, &pt_ce_boolean_or_constant_condition_rule, &pt_ce_ternary_operator_constant_condition_rule, &pt_ce_while_loop_always_true_condition_rule, &pt_ce_constant_condition_in_trait_rule, &pt_ce_yield_type_rule, &pt_ce_yield_from_type_rule, &pt_ce_yield_in_generator_rule, &pt_ce_enum_case_outside_enum_rule, &pt_ce_enum_case_attributes_rule, &pt_ce_declare_strict_types_rule, &pt_ce_require_file_exists_rule, &pt_ce_unused_label_rule, &pt_ce_goto_undefined_label_rule, &pt_ce_continue_break_in_loop_rule, &pt_ce_pure_function_rule, &pt_ce_pure_property_hook_rule, &pt_ce_pure_method_rule, &pt_ce_dump_php_doc_type_rule, &pt_ce_dump_native_type_rule, &pt_ce_debug_scope_rule, &pt_ce_dump_type_rule, &pt_ce_traits_not_analysed_trait_rule, &pt_ce_functions_existing_classes_in_typehints_rule, &pt_ce_functions_return_type_rule, &pt_ce_functions_incompatible_default_parameter_type_rule, &pt_ce_impossible_check_type_function_call_rule };
+							static const uint16_t vd119_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352 };
+							switch (pgrt::dispatchCase(pg_site_23, vd119_ce, vd119_table, vd119_cases, 352)) {
 								case 1: {
-									zv::Val r119;
-									if (UNEXPECTED(!pgen::DefinedVariableRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r119.raw()))) goto catch_c115;
-									vd118 = std::move(r119);
-									vd118_done = true;
+									zv::Val r120;
+									if (UNEXPECTED(!pgen::DefinedVariableRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r120.raw()))) goto catch_c116;
+									vd119 = std::move(r120);
+									vd119_done = true;
 								}
 								break;
 								case 2: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\CallMethodsRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r120;
-									if (UNEXPECTED(!pgen::CallMethodsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r120.raw()))) goto catch_c115;
-									vd118 = std::move(r120);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\CallMethodsRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r121;
+									if (UNEXPECTED(!pgen::CallMethodsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r121.raw()))) goto catch_c116;
+									vd119 = std::move(r121);
+									vd119_done = true;
 								}
 								break;
 								case 3: {
-									zv::Val r121;
-									if (UNEXPECTED(!pgen::AccessPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r121.raw()))) goto catch_c115;
-									vd118 = std::move(r121);
-									vd118_done = true;
+									zv::Val r122;
+									if (UNEXPECTED(!pgen::AccessPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r122.raw()))) goto catch_c116;
+									vd119 = std::move(r122);
+									vd119_done = true;
 								}
 								break;
 								case 4: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\CallToFunctionParametersRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r122;
-									if (UNEXPECTED(!pgen::CallToFunctionParametersRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r122.raw()))) goto catch_c115;
-									vd118 = std::move(r122);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\CallToFunctionParametersRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r123;
+									if (UNEXPECTED(!pgen::CallToFunctionParametersRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r123.raw()))) goto catch_c116;
+									vd119 = std::move(r123);
+									vd119_done = true;
 								}
 								break;
 								case 5: {
-									zv::Val r123;
-									if (UNEXPECTED(!pgen::ClassTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r123.raw()))) goto catch_c115;
-									vd118 = std::move(r123);
-									vd118_done = true;
+									zv::Val r124;
+									if (UNEXPECTED(!pgen::ClassTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r124.raw()))) goto catch_c116;
+									vd119 = std::move(r124);
+									vd119_done = true;
 								}
 								break;
 								case 6: {
-									zv::Val r124;
-									if (UNEXPECTED(!pgen::TraitTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r124.raw()))) goto catch_c115;
-									vd118 = std::move(r124);
-									vd118_done = true;
+									zv::Val r125;
+									if (UNEXPECTED(!pgen::TraitTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r125.raw()))) goto catch_c116;
+									vd119 = std::move(r125);
+									vd119_done = true;
 								}
 								break;
 								case 7: {
-									zv::Val r125;
-									if (UNEXPECTED(!pgen::InterfaceTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r125.raw()))) goto catch_c115;
-									vd118 = std::move(r125);
-									vd118_done = true;
+									zv::Val r126;
+									if (UNEXPECTED(!pgen::InterfaceTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r126.raw()))) goto catch_c116;
+									vd119 = std::move(r126);
+									vd119_done = true;
 								}
 								break;
 								case 8: {
-									zv::Val r126;
-									if (UNEXPECTED(!pgen::ClassAncestorsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r126.raw()))) goto catch_c115;
-									vd118 = std::move(r126);
-									vd118_done = true;
+									zv::Val r127;
+									if (UNEXPECTED(!pgen::ClassAncestorsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r127.raw()))) goto catch_c116;
+									vd119 = std::move(r127);
+									vd119_done = true;
 								}
 								break;
 								case 9: {
-									zv::Val r127;
-									if (UNEXPECTED(!pgen::MethodSignatureVarianceRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r127.raw()))) goto catch_c115;
-									vd118 = std::move(r127);
-									vd118_done = true;
+									zv::Val r128;
+									if (UNEXPECTED(!pgen::MethodSignatureVarianceRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r128.raw()))) goto catch_c116;
+									vd119 = std::move(r128);
+									vd119_done = true;
 								}
 								break;
 								case 10: {
-									zv::Val r128;
-									if (UNEXPECTED(!pgen::UsedTraitsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r128.raw()))) goto catch_c115;
-									vd118 = std::move(r128);
-									vd118_done = true;
+									zv::Val r129;
+									if (UNEXPECTED(!pgen::UsedTraitsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r129.raw()))) goto catch_c116;
+									vd119 = std::move(r129);
+									vd119_done = true;
 								}
 								break;
 								case 11: {
-									zv::Val r129;
-									if (UNEXPECTED(!pgen::InterfaceAncestorsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r129.raw()))) goto catch_c115;
-									vd118 = std::move(r129);
-									vd118_done = true;
+									zv::Val r130;
+									if (UNEXPECTED(!pgen::InterfaceAncestorsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r130.raw()))) goto catch_c116;
+									vd119 = std::move(r130);
+									vd119_done = true;
 								}
 								break;
 								case 12: {
-									zv::Val r130;
-									if (UNEXPECTED(!pgen::EnumAncestorsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r130.raw()))) goto catch_c115;
-									vd118 = std::move(r130);
-									vd118_done = true;
+									zv::Val r131;
+									if (UNEXPECTED(!pgen::EnumAncestorsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r131.raw()))) goto catch_c116;
+									vd119 = std::move(r131);
+									vd119_done = true;
 								}
 								break;
 								case 13: {
-									zv::Val r131;
-									if (UNEXPECTED(!pgen::PropertyVarianceRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r131.raw()))) goto catch_c115;
-									vd118 = std::move(r131);
-									vd118_done = true;
+									zv::Val r132;
+									if (UNEXPECTED(!pgen::PropertyVarianceRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r132.raw()))) goto catch_c116;
+									vd119 = std::move(r132);
+									vd119_done = true;
 								}
 								break;
 								case 14: {
-									zv::Val r132;
-									if (UNEXPECTED(!pgen::FunctionSignatureVarianceRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r132.raw()))) goto catch_c115;
-									vd118 = std::move(r132);
-									vd118_done = true;
+									zv::Val r133;
+									if (UNEXPECTED(!pgen::FunctionSignatureVarianceRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r133.raw()))) goto catch_c116;
+									vd119 = std::move(r133);
+									vd119_done = true;
 								}
 								break;
 								case 15: {
-									zv::Val r133;
-									if (UNEXPECTED(!pgen::MethodTagTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r133.raw()))) goto catch_c115;
-									vd118 = std::move(r133);
-									vd118_done = true;
+									zv::Val r134;
+									if (UNEXPECTED(!pgen::MethodTagTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r134.raw()))) goto catch_c116;
+									vd119 = std::move(r134);
+									vd119_done = true;
 								}
 								break;
 								case 16: {
-									zv::Val r134;
-									if (UNEXPECTED(!pgen::FunctionTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r134.raw()))) goto catch_c115;
-									vd118 = std::move(r134);
-									vd118_done = true;
+									zv::Val r135;
+									if (UNEXPECTED(!pgen::FunctionTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r135.raw()))) goto catch_c116;
+									vd119 = std::move(r135);
+									vd119_done = true;
 								}
 								break;
 								case 17: {
-									zv::Val r135;
-									if (UNEXPECTED(!pgen::MethodTagTemplateTypeTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r135.raw()))) goto catch_c115;
-									vd118 = std::move(r135);
-									vd118_done = true;
+									zv::Val r136;
+									if (UNEXPECTED(!pgen::MethodTagTemplateTypeTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r136.raw()))) goto catch_c116;
+									vd119 = std::move(r136);
+									vd119_done = true;
 								}
 								break;
 								case 18: {
-									zv::Val r136;
-									if (UNEXPECTED(!pgen::MethodTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r136.raw()))) goto catch_c115;
-									vd118 = std::move(r136);
-									vd118_done = true;
+									zv::Val r137;
+									if (UNEXPECTED(!pgen::MethodTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r137.raw()))) goto catch_c116;
+									vd119 = std::move(r137);
+									vd119_done = true;
 								}
 								break;
 								case 19: {
-									zv::Val r137;
-									if (UNEXPECTED(!pgen::EnumTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r137.raw()))) goto catch_c115;
-									vd118 = std::move(r137);
-									vd118_done = true;
+									zv::Val r138;
+									if (UNEXPECTED(!pgen::EnumTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r138.raw()))) goto catch_c116;
+									vd119 = std::move(r138);
+									vd119_done = true;
 								}
 								break;
 								case 20: {
-									zv::Val r138;
-									if (UNEXPECTED(!pgen::IncompatiblePropertyHookPhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r138.raw()))) goto catch_c115;
-									vd118 = std::move(r138);
-									vd118_done = true;
+									zv::Val r139;
+									if (UNEXPECTED(!pgen::IncompatiblePropertyHookPhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r139.raw()))) goto catch_c116;
+									vd119 = std::move(r139);
+									vd119_done = true;
 								}
 								break;
 								case 21: {
-									zv::Val r139;
-									if (UNEXPECTED(!pgen::SealedDefinitionTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r139.raw()))) goto catch_c115;
-									vd118 = std::move(r139);
-									vd118_done = true;
+									zv::Val r140;
+									if (UNEXPECTED(!pgen::SealedDefinitionTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r140.raw()))) goto catch_c116;
+									vd119 = std::move(r140);
+									vd119_done = true;
 								}
 								break;
 								case 22: {
-									zv::Val r140;
-									if (UNEXPECTED(!pgen::IncompatibleSelfOutTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r140.raw()))) goto catch_c115;
-									vd118 = std::move(r140);
-									vd118_done = true;
+									zv::Val r141;
+									if (UNEXPECTED(!pgen::IncompatibleSelfOutTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r141.raw()))) goto catch_c116;
+									vd119 = std::move(r141);
+									vd119_done = true;
 								}
 								break;
 								case 23: {
-									zv::Val r141;
-									if (UNEXPECTED(!pgen::RequireExtendsDefinitionTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r141.raw()))) goto catch_c115;
-									vd118 = std::move(r141);
-									vd118_done = true;
+									zv::Val r142;
+									if (UNEXPECTED(!pgen::RequireExtendsDefinitionTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r142.raw()))) goto catch_c116;
+									vd119 = std::move(r142);
+									vd119_done = true;
 								}
 								break;
 								case 24: {
-									zv::Val r142;
-									if (UNEXPECTED(!pgen::InvalidPHPStanDocTagRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r142.raw()))) goto catch_c115;
-									vd118 = std::move(r142);
-									vd118_done = true;
+									zv::Val r143;
+									if (UNEXPECTED(!pgen::InvalidPHPStanDocTagRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r143.raw()))) goto catch_c116;
+									vd119 = std::move(r143);
+									vd119_done = true;
 								}
 								break;
 								case 25: {
-									zv::Val r143;
-									if (UNEXPECTED(!pgen::RequireImplementsDefinitionClassRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r143.raw()))) goto catch_c115;
-									vd118 = std::move(r143);
-									vd118_done = true;
+									zv::Val r144;
+									if (UNEXPECTED(!pgen::RequireImplementsDefinitionClassRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r144.raw()))) goto catch_c116;
+									vd119 = std::move(r144);
+									vd119_done = true;
 								}
 								break;
 								case 26: {
-									zv::Val r144;
-									if (UNEXPECTED(!pgen::IncompatiblePhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r144.raw()))) goto catch_c115;
-									vd118 = std::move(r144);
-									vd118_done = true;
+									zv::Val r145;
+									if (UNEXPECTED(!pgen::IncompatiblePhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r145.raw()))) goto catch_c116;
+									vd119 = std::move(r145);
+									vd119_done = true;
 								}
 								break;
 								case 27: {
-									zv::Val r145;
-									if (UNEXPECTED(!pgen::MethodAssertRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r145.raw()))) goto catch_c115;
-									vd118 = std::move(r145);
-									vd118_done = true;
+									zv::Val r146;
+									if (UNEXPECTED(!pgen::MethodAssertRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r146.raw()))) goto catch_c116;
+									vd119 = std::move(r146);
+									vd119_done = true;
 								}
 								break;
 								case 28: {
-									zv::Val r146;
-									if (UNEXPECTED(!pgen::InvalidPhpDocVarTagTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r146.raw()))) goto catch_c115;
-									vd118 = std::move(r146);
-									vd118_done = true;
+									zv::Val r147;
+									if (UNEXPECTED(!pgen::InvalidPhpDocVarTagTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r147.raw()))) goto catch_c116;
+									vd119 = std::move(r147);
+									vd119_done = true;
 								}
 								break;
 								case 29: {
-									zv::Val r147;
-									if (UNEXPECTED(!pgen::FunctionAssertRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r147.raw()))) goto catch_c115;
-									vd118 = std::move(r147);
-									vd118_done = true;
+									zv::Val r148;
+									if (UNEXPECTED(!pgen::FunctionAssertRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r148.raw()))) goto catch_c116;
+									vd119 = std::move(r148);
+									vd119_done = true;
 								}
 								break;
 								case 30: {
-									zv::Val r148;
-									if (UNEXPECTED(!pgen::IncompatibleClassConstantPhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r148.raw()))) goto catch_c115;
-									vd118 = std::move(r148);
-									vd118_done = true;
+									zv::Val r149;
+									if (UNEXPECTED(!pgen::IncompatibleClassConstantPhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r149.raw()))) goto catch_c116;
+									vd119 = std::move(r149);
+									vd119_done = true;
 								}
 								break;
 								case 31: {
-									zv::Val r149;
-									if (UNEXPECTED(!pgen::IncompatibleParamImmediatelyInvokedCallableRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r149.raw()))) goto catch_c115;
-									vd118 = std::move(r149);
-									vd118_done = true;
+									zv::Val r150;
+									if (UNEXPECTED(!pgen::IncompatibleParamImmediatelyInvokedCallableRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r150.raw()))) goto catch_c116;
+									vd119 = std::move(r150);
+									vd119_done = true;
 								}
 								break;
 								case 32: {
-									zv::Val r150;
-									if (UNEXPECTED(!pgen::FunctionConditionalReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r150.raw()))) goto catch_c115;
-									vd118 = std::move(r150);
-									vd118_done = true;
+									zv::Val r151;
+									if (UNEXPECTED(!pgen::FunctionConditionalReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r151.raw()))) goto catch_c116;
+									vd119 = std::move(r151);
+									vd119_done = true;
 								}
 								break;
 								case 33: {
-									zv::Val r151;
-									if (UNEXPECTED(!pgen::RequireImplementsDefinitionTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r151.raw()))) goto catch_c115;
-									vd118 = std::move(r151);
-									vd118_done = true;
+									zv::Val r152;
+									if (UNEXPECTED(!pgen::RequireImplementsDefinitionTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r152.raw()))) goto catch_c116;
+									vd119 = std::move(r152);
+									vd119_done = true;
 								}
 								break;
 								case 34: {
-									zv::Val r152;
-									if (UNEXPECTED(!pgen::WrongVariableNameInVarTagRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r152.raw()))) goto catch_c115;
-									vd118 = std::move(r152);
-									vd118_done = true;
+									zv::Val r153;
+									if (UNEXPECTED(!pgen::WrongVariableNameInVarTagRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r153.raw()))) goto catch_c116;
+									vd119 = std::move(r153);
+									vd119_done = true;
 								}
 								break;
 								case 35: {
-									zv::Val r153;
-									if (UNEXPECTED(!pgen::IncompatiblePropertyPhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r153.raw()))) goto catch_c115;
-									vd118 = std::move(r153);
-									vd118_done = true;
+									zv::Val r154;
+									if (UNEXPECTED(!pgen::IncompatiblePropertyPhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r154.raw()))) goto catch_c116;
+									vd119 = std::move(r154);
+									vd119_done = true;
 								}
 								break;
 								case 36: {
-									zv::Val r154;
-									if (UNEXPECTED(!pgen::InvalidThrowsPhpDocValueRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r154.raw()))) goto catch_c115;
-									vd118 = std::move(r154);
-									vd118_done = true;
+									zv::Val r155;
+									if (UNEXPECTED(!pgen::InvalidThrowsPhpDocValueRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r155.raw()))) goto catch_c116;
+									vd119 = std::move(r155);
+									vd119_done = true;
 								}
 								break;
 								case 37: {
-									zv::Val r155;
-									if (UNEXPECTED(!pgen::SealedDefinitionClassRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r155.raw()))) goto catch_c115;
-									vd118 = std::move(r155);
-									vd118_done = true;
+									zv::Val r156;
+									if (UNEXPECTED(!pgen::SealedDefinitionClassRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r156.raw()))) goto catch_c116;
+									vd119 = std::move(r156);
+									vd119_done = true;
 								}
 								break;
 								case 38: {
-									zv::Val r156;
-									if (UNEXPECTED(!pgen::InvalidPhpDocTagValueRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r156.raw()))) goto catch_c115;
-									vd118 = std::move(r156);
-									vd118_done = true;
+									zv::Val r157;
+									if (UNEXPECTED(!pgen::InvalidPhpDocTagValueRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r157.raw()))) goto catch_c116;
+									vd119 = std::move(r157);
+									vd119_done = true;
 								}
 								break;
 								case 39: {
-									zv::Val r157;
-									if (UNEXPECTED(!pgen::MethodConditionalReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r157.raw()))) goto catch_c115;
-									vd118 = std::move(r157);
-									vd118_done = true;
+									zv::Val r158;
+									if (UNEXPECTED(!pgen::MethodConditionalReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r158.raw()))) goto catch_c116;
+									vd119 = std::move(r158);
+									vd119_done = true;
 								}
 								break;
 								case 40: {
-									zv::Val r158;
-									if (UNEXPECTED(!pgen::VarTagChangedExpressionTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r158.raw()))) goto catch_c115;
-									vd118 = std::move(r158);
-									vd118_done = true;
+									zv::Val r159;
+									if (UNEXPECTED(!pgen::VarTagChangedExpressionTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r159.raw()))) goto catch_c116;
+									vd119 = std::move(r159);
+									vd119_done = true;
 								}
 								break;
 								case 41: {
-									zv::Val r159;
-									if (UNEXPECTED(!pgen::RequireExtendsDefinitionClassRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r159.raw()))) goto catch_c115;
-									vd118 = std::move(r159);
-									vd118_done = true;
+									zv::Val r160;
+									if (UNEXPECTED(!pgen::RequireExtendsDefinitionClassRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r160.raw()))) goto catch_c116;
+									vd119 = std::move(r160);
+									vd119_done = true;
 								}
 								break;
 								case 42: {
-									zv::Val r160;
-									if (UNEXPECTED(!pgen::InvalidTypesInUnionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r160.raw()))) goto catch_c115;
-									vd118 = std::move(r160);
-									vd118_done = true;
+									zv::Val r161;
+									if (UNEXPECTED(!pgen::InvalidTypesInUnionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r161.raw()))) goto catch_c116;
+									vd119 = std::move(r161);
+									vd119_done = true;
 								}
 								break;
 								case 43: {
-									zv::Val r161;
-									if (UNEXPECTED(!pgen::CallToMethodStatementWithNoDiscardRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r161.raw()))) goto catch_c115;
-									vd118 = std::move(r161);
-									vd118_done = true;
+									zv::Val r162;
+									if (UNEXPECTED(!pgen::CallToMethodStatementWithNoDiscardRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r162.raw()))) goto catch_c116;
+									vd119 = std::move(r162);
+									vd119_done = true;
 								}
 								break;
 								case 44: {
-									zv::Val r162;
-									if (UNEXPECTED(!pgen::MethodCallableRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r162.raw()))) goto catch_c115;
-									vd118 = std::move(r162);
-									vd118_done = true;
+									zv::Val r163;
+									if (UNEXPECTED(!pgen::MethodCallableRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r163.raw()))) goto catch_c116;
+									vd119 = std::move(r163);
+									vd119_done = true;
 								}
 								break;
 								case 45: {
-									zv::Val r163;
-									if (UNEXPECTED(!pgen::AbstractMethodInNonAbstractClassRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r163.raw()))) goto catch_c115;
-									vd118 = std::move(r163);
-									vd118_done = true;
+									zv::Val r164;
+									if (UNEXPECTED(!pgen::AbstractMethodInNonAbstractClassRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r164.raw()))) goto catch_c116;
+									vd119 = std::move(r164);
+									vd119_done = true;
 								}
 								break;
 								case 46: {
-									zv::Val r164;
-									if (UNEXPECTED(!pgen::CallToConstructorStatementWithoutSideEffectsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r164.raw()))) goto catch_c115;
-									vd118 = std::move(r164);
-									vd118_done = true;
+									zv::Val r165;
+									if (UNEXPECTED(!pgen::CallToConstructorStatementWithoutSideEffectsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r165.raw()))) goto catch_c116;
+									vd119 = std::move(r165);
+									vd119_done = true;
 								}
 								break;
 								case 47: {
-									zv::Val r165;
-									if (UNEXPECTED(!pgen::StaticMethodCallableRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r165.raw()))) goto catch_c115;
-									vd118 = std::move(r165);
-									vd118_done = true;
+									zv::Val r166;
+									if (UNEXPECTED(!pgen::StaticMethodCallableRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r166.raw()))) goto catch_c116;
+									vd119 = std::move(r166);
+									vd119_done = true;
 								}
 								break;
 								case 48: {
-									zv::Val r166;
-									if (UNEXPECTED(!pgen::MissingMethodSelfOutTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r166.raw()))) goto catch_c115;
-									vd118 = std::move(r166);
-									vd118_done = true;
+									zv::Val r167;
+									if (UNEXPECTED(!pgen::MissingMethodSelfOutTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r167.raw()))) goto catch_c116;
+									vd119 = std::move(r167);
+									vd119_done = true;
 								}
 								break;
 								case 49: {
-									zv::Val r167;
-									if (UNEXPECTED(!pgen::ConstructorReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r167.raw()))) goto catch_c115;
-									vd118 = std::move(r167);
-									vd118_done = true;
+									zv::Val r168;
+									if (UNEXPECTED(!pgen::ConstructorReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r168.raw()))) goto catch_c116;
+									vd119 = std::move(r168);
+									vd119_done = true;
 								}
 								break;
 								case 50: {
-									zv::Val r168;
-									if (UNEXPECTED(!pgen::MissingMethodReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r168.raw()))) goto catch_c115;
-									vd118 = std::move(r168);
-									vd118_done = true;
+									zv::Val r169;
+									if (UNEXPECTED(!pgen::MissingMethodReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r169.raw()))) goto catch_c116;
+									vd119 = std::move(r169);
+									vd119_done = true;
 								}
 								break;
 								case 51: {
-									zv::Val r169;
-									if (UNEXPECTED(!pgen::MissingMethodImplementationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r169.raw()))) goto catch_c115;
-									vd118 = std::move(r169);
-									vd118_done = true;
+									zv::Val r170;
+									if (UNEXPECTED(!pgen::MissingMethodImplementationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r170.raw()))) goto catch_c116;
+									vd119 = std::move(r170);
+									vd119_done = true;
 								}
 								break;
 								case 52: {
-									zv::Val r170;
-									if (UNEXPECTED(!pgen::ExistingClassesInTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r170.raw()))) goto catch_c115;
-									vd118 = std::move(r170);
-									vd118_done = true;
+									zv::Val r171;
+									if (UNEXPECTED(!pgen::ExistingClassesInTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r171.raw()))) goto catch_c116;
+									vd119 = std::move(r171);
+									vd119_done = true;
 								}
 								break;
 								case 53: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r171;
-									if (UNEXPECTED(!pgen::MethodAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r171.raw()))) goto catch_c115;
-									vd118 = std::move(r171);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r172;
+									if (UNEXPECTED(!pgen::MethodAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r172.raw()))) goto catch_c116;
+									vd119 = std::move(r172);
+									vd119_done = true;
 								}
 								break;
 								case 54: {
-									zv::Val r172;
-									if (UNEXPECTED(!pgen::NullsafeMethodCallRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r172.raw()))) goto catch_c115;
-									vd118 = std::move(r172);
-									vd118_done = true;
+									zv::Val r173;
+									if (UNEXPECTED(!pgen::NullsafeMethodCallRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r173.raw()))) goto catch_c116;
+									vd119 = std::move(r173);
+									vd119_done = true;
 								}
 								break;
 								case 55: {
-									zv::Val r173;
-									if (UNEXPECTED(!pgen::ReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r173.raw()))) goto catch_c115;
-									vd118 = std::move(r173);
-									vd118_done = true;
+									zv::Val r174;
+									if (UNEXPECTED(!pgen::ReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r174.raw()))) goto catch_c116;
+									vd119 = std::move(r174);
+									vd119_done = true;
 								}
 								break;
 								case 56: {
-									zv::Val r174;
-									if (UNEXPECTED(!pgen::AbstractPrivateMethodRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r174.raw()))) goto catch_c115;
-									vd118 = std::move(r174);
-									vd118_done = true;
+									zv::Val r175;
+									if (UNEXPECTED(!pgen::AbstractPrivateMethodRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r175.raw()))) goto catch_c116;
+									vd119 = std::move(r175);
+									vd119_done = true;
 								}
 								break;
 								case 57: {
-									zv::Val r175;
-									if (UNEXPECTED(!pgen::ConsistentConstructorDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r175.raw()))) goto catch_c115;
-									vd118 = std::move(r175);
-									vd118_done = true;
+									zv::Val r176;
+									if (UNEXPECTED(!pgen::ConsistentConstructorDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r176.raw()))) goto catch_c116;
+									vd119 = std::move(r176);
+									vd119_done = true;
 								}
 								break;
 								case 58: {
-									zv::Val r176;
-									if (UNEXPECTED(!pgen::UnusedMethodParametersRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r176.raw()))) goto catch_c115;
-									vd118 = std::move(r176);
-									vd118_done = true;
+									zv::Val r177;
+									if (UNEXPECTED(!pgen::UnusedMethodParametersRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r177.raw()))) goto catch_c116;
+									vd119 = std::move(r177);
+									vd119_done = true;
 								}
 								break;
 								case 59: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodCallWithPossiblyRenamedNamedArgumentRule::processNode", 2, "scope", "PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r177;
-									if (UNEXPECTED(!pgen::MethodCallWithPossiblyRenamedNamedArgumentRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r177.raw()))) goto catch_c115;
-									vd118 = std::move(r177);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodCallWithPossiblyRenamedNamedArgumentRule::processNode", 2, "scope", "PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r178;
+									if (UNEXPECTED(!pgen::MethodCallWithPossiblyRenamedNamedArgumentRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r178.raw()))) goto catch_c116;
+									vd119 = std::move(r178);
+									vd119_done = true;
 								}
 								break;
 								case 60: {
-									zv::Val r178;
-									if (UNEXPECTED(!pgen::MethodSignatureRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r178.raw()))) goto catch_c115;
-									vd118 = std::move(r178);
-									vd118_done = true;
+									zv::Val r179;
+									if (UNEXPECTED(!pgen::MethodSignatureRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r179.raw()))) goto catch_c116;
+									vd119 = std::move(r179);
+									vd119_done = true;
 								}
 								break;
 								case 61: {
-									zv::Val r179;
-									if (UNEXPECTED(!pgen::CallToStaticMethodStatementWithNoDiscardRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r179.raw()))) goto catch_c115;
-									vd118 = std::move(r179);
-									vd118_done = true;
+									zv::Val r180;
+									if (UNEXPECTED(!pgen::CallToStaticMethodStatementWithNoDiscardRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r180.raw()))) goto catch_c116;
+									vd119 = std::move(r180);
+									vd119_done = true;
 								}
 								break;
 								case 62: {
-									zv::Val r180;
-									if (UNEXPECTED(!pgen::CallPrivateMethodThroughStaticRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r180.raw()))) goto catch_c115;
-									vd118 = std::move(r180);
-									vd118_done = true;
+									zv::Val r181;
+									if (UNEXPECTED(!pgen::CallPrivateMethodThroughStaticRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r181.raw()))) goto catch_c116;
+									vd119 = std::move(r181);
+									vd119_done = true;
 								}
 								break;
 								case 63: {
-									zv::Val r181;
-									if (UNEXPECTED(!pgen::CallToStaticMethodStatementWithoutSideEffectsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r181.raw()))) goto catch_c115;
-									vd118 = std::move(r181);
-									vd118_done = true;
+									zv::Val r182;
+									if (UNEXPECTED(!pgen::CallToStaticMethodStatementWithoutSideEffectsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r182.raw()))) goto catch_c116;
+									vd119 = std::move(r182);
+									vd119_done = true;
 								}
 								break;
 								case 64: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\CallStaticMethodsRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r182;
-									if (UNEXPECTED(!pgen::CallStaticMethodsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r182.raw()))) goto catch_c115;
-									vd118 = std::move(r182);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\CallStaticMethodsRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r183;
+									if (UNEXPECTED(!pgen::CallStaticMethodsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r183.raw()))) goto catch_c116;
+									vd119 = std::move(r183);
+									vd119_done = true;
 								}
 								break;
 								case 65: {
-									zv::Val r183;
-									if (UNEXPECTED(!pgen::FinalPrivateMethodRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r183.raw()))) goto catch_c115;
-									vd118 = std::move(r183);
-									vd118_done = true;
+									zv::Val r184;
+									if (UNEXPECTED(!pgen::FinalPrivateMethodRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r184.raw()))) goto catch_c116;
+									vd119 = std::move(r184);
+									vd119_done = true;
 								}
 								break;
 								case 66: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\ConsistentConstructorRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r184;
-									if (UNEXPECTED(!pgen::ConsistentConstructorRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r184.raw()))) goto catch_c115;
-									vd118 = std::move(r184);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\ConsistentConstructorRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r185;
+									if (UNEXPECTED(!pgen::ConsistentConstructorRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r185.raw()))) goto catch_c116;
+									vd119 = std::move(r185);
+									vd119_done = true;
 								}
 								break;
 								case 67: {
-									zv::Val r185;
-									if (UNEXPECTED(!pgen::MissingMagicSerializationMethodsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r185.raw()))) goto catch_c115;
-									vd118 = std::move(r185);
-									vd118_done = true;
+									zv::Val r186;
+									if (UNEXPECTED(!pgen::MissingMagicSerializationMethodsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r186.raw()))) goto catch_c116;
+									vd119 = std::move(r186);
+									vd119_done = true;
 								}
 								break;
 								case 68: {
-									zv::Val r186;
-									if (UNEXPECTED(!pgen::MissingMethodParameterTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r186.raw()))) goto catch_c115;
-									vd118 = std::move(r186);
-									vd118_done = true;
+									zv::Val r187;
+									if (UNEXPECTED(!pgen::MissingMethodParameterTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r187.raw()))) goto catch_c116;
+									vd119 = std::move(r187);
+									vd119_done = true;
 								}
 								break;
 								case 69: {
-									zv::Val r187;
-									if (UNEXPECTED(!pgen::MethodVisibilityInInterfaceRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r187.raw()))) goto catch_c115;
-									vd118 = std::move(r187);
-									vd118_done = true;
+									zv::Val r188;
+									if (UNEXPECTED(!pgen::MethodVisibilityInInterfaceRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r188.raw()))) goto catch_c116;
+									vd119 = std::move(r188);
+									vd119_done = true;
 								}
 								break;
 								case 70: {
-									zv::Val r188;
-									if (UNEXPECTED(!pgen::CallToMethodStatementWithoutSideEffectsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r188.raw()))) goto catch_c115;
-									vd118 = std::move(r188);
-									vd118_done = true;
+									zv::Val r189;
+									if (UNEXPECTED(!pgen::CallToMethodStatementWithoutSideEffectsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r189.raw()))) goto catch_c116;
+									vd119 = std::move(r189);
+									vd119_done = true;
 								}
 								break;
 								case 71: {
-									zv::Val r189;
-									if (UNEXPECTED(!pgen::IncompatibleDefaultParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r189.raw()))) goto catch_c115;
-									vd118 = std::move(r189);
-									vd118_done = true;
+									zv::Val r190;
+									if (UNEXPECTED(!pgen::IncompatibleDefaultParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r190.raw()))) goto catch_c116;
+									vd119 = std::move(r190);
+									vd119_done = true;
 								}
 								break;
 								case 72: {
-									zv::Val r190;
-									if (UNEXPECTED(!pgen::UsedNamesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r190.raw()))) goto catch_c115;
-									vd118 = std::move(r190);
-									vd118_done = true;
+									zv::Val r191;
+									if (UNEXPECTED(!pgen::UsedNamesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r191.raw()))) goto catch_c116;
+									vd119 = std::move(r191);
+									vd119_done = true;
 								}
 								break;
 								case 73: {
-									zv::Val r191;
-									if (UNEXPECTED(!pgen::RegularExpressionQuotingRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r191.raw()))) goto catch_c115;
-									vd118 = std::move(r191);
-									vd118_done = true;
+									zv::Val r192;
+									if (UNEXPECTED(!pgen::RegularExpressionQuotingRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r192.raw()))) goto catch_c116;
+									vd119 = std::move(r192);
+									vd119_done = true;
 								}
 								break;
 								case 74: {
-									zv::Val r192;
-									if (UNEXPECTED(!pgen::PhpdocCommentRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r192.raw()))) goto catch_c115;
-									vd118 = std::move(r192);
-									vd118_done = true;
+									zv::Val r193;
+									if (UNEXPECTED(!pgen::PhpdocCommentRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r193.raw()))) goto catch_c116;
+									vd119 = std::move(r193);
+									vd119_done = true;
 								}
 								break;
 								case 75: {
-									zv::Val r193;
-									if (UNEXPECTED(!pgen::FunctionNeverRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r193.raw()))) goto catch_c115;
-									vd118 = std::move(r193);
-									vd118_done = true;
+									zv::Val r194;
+									if (UNEXPECTED(!pgen::FunctionNeverRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r194.raw()))) goto catch_c116;
+									vd119 = std::move(r194);
+									vd119_done = true;
 								}
 								break;
 								case 76: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_27, "PHPStan\\Analyser\\DependencyTracker", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Playground\\PromoteParameterRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter&PHPStan\\Analyser\\DependencyTracker", o117.raw()); goto catch_c115; }
-									zv::Val r194;
-									if (UNEXPECTED(!pgen::PromoteParameterRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r194.raw()))) goto catch_c115;
-									vd118 = std::move(r194);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_27, "PHPStan\\Analyser\\DependencyTracker", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Playground\\PromoteParameterRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter&PHPStan\\Analyser\\DependencyTracker", o118.raw()); goto catch_c116; }
+									zv::Val r195;
+									if (UNEXPECTED(!pgen::PromoteParameterRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r195.raw()))) goto catch_c116;
+									vd119 = std::move(r195);
+									vd119_done = true;
 								}
 								break;
 								case 77: {
-									zv::Val r195;
-									if (UNEXPECTED(!pgen::MethodNeverRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r195.raw()))) goto catch_c115;
-									vd118 = std::move(r195);
-									vd118_done = true;
+									zv::Val r196;
+									if (UNEXPECTED(!pgen::MethodNeverRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r196.raw()))) goto catch_c116;
+									vd119 = std::move(r196);
+									vd119_done = true;
 								}
 								break;
 								case 78: {
-									zv::Val r196;
-									if (UNEXPECTED(!pgen::NoPhpCodeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r196.raw()))) goto catch_c115;
-									vd118 = std::move(r196);
-									vd118_done = true;
+									zv::Val r197;
+									if (UNEXPECTED(!pgen::NoPhpCodeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r197.raw()))) goto catch_c116;
+									vd119 = std::move(r197);
+									vd119_done = true;
 								}
 								break;
 								case 79: {
-									zv::Val r197;
-									if (UNEXPECTED(!pgen::ArrayDimCastRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r197.raw()))) goto catch_c115;
-									vd118 = std::move(r197);
-									vd118_done = true;
+									zv::Val r198;
+									if (UNEXPECTED(!pgen::ArrayDimCastRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r198.raw()))) goto catch_c116;
+									vd119 = std::move(r198);
+									vd119_done = true;
 								}
 								break;
 								case 80: {
-									zv::Val r198;
-									if (UNEXPECTED(!pgen::LiteralArrayKeyCastRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r198.raw()))) goto catch_c115;
-									vd118 = std::move(r198);
-									vd118_done = true;
+									zv::Val r199;
+									if (UNEXPECTED(!pgen::LiteralArrayKeyCastRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r199.raw()))) goto catch_c116;
+									vd119 = std::move(r199);
+									vd119_done = true;
 								}
 								break;
 								case 81: {
-									zv::Val r199;
-									if (UNEXPECTED(!pgen::NotAnalysedTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r199.raw()))) goto catch_c115;
-									vd118 = std::move(r199);
-									vd118_done = true;
+									zv::Val r200;
+									if (UNEXPECTED(!pgen::NotAnalysedTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r200.raw()))) goto catch_c116;
+									vd119 = std::move(r200);
+									vd119_done = true;
 								}
 								break;
 								case 82: {
-									zv::Val r200;
-									if (UNEXPECTED(!pgen::InvalidIncDecOperationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r200.raw()))) goto catch_c115;
-									vd118 = std::move(r200);
-									vd118_done = true;
+									zv::Val r201;
+									if (UNEXPECTED(!pgen::InvalidIncDecOperationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r201.raw()))) goto catch_c116;
+									vd119 = std::move(r201);
+									vd119_done = true;
 								}
 								break;
 								case 83: {
-									zv::Val r201;
-									if (UNEXPECTED(!pgen::InvalidAssignVarRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r201.raw()))) goto catch_c115;
-									vd118 = std::move(r201);
-									vd118_done = true;
+									zv::Val r202;
+									if (UNEXPECTED(!pgen::InvalidAssignVarRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r202.raw()))) goto catch_c116;
+									vd119 = std::move(r202);
+									vd119_done = true;
 								}
 								break;
 								case 84: {
-									zv::Val r202;
-									if (UNEXPECTED(!pgen::InvalidUnaryOperationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r202.raw()))) goto catch_c115;
-									vd118 = std::move(r202);
-									vd118_done = true;
+									zv::Val r203;
+									if (UNEXPECTED(!pgen::InvalidUnaryOperationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r203.raw()))) goto catch_c116;
+									vd119 = std::move(r203);
+									vd119_done = true;
 								}
 								break;
 								case 85: {
-									zv::Val r203;
-									if (UNEXPECTED(!pgen::BacktickRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r203.raw()))) goto catch_c115;
-									vd118 = std::move(r203);
-									vd118_done = true;
+									zv::Val r204;
+									if (UNEXPECTED(!pgen::BacktickRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r204.raw()))) goto catch_c116;
+									vd119 = std::move(r204);
+									vd119_done = true;
 								}
 								break;
 								case 86: {
-									zv::Val r204;
-									if (UNEXPECTED(!pgen::PipeOperatorRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r204.raw()))) goto catch_c115;
-									vd118 = std::move(r204);
-									vd118_done = true;
+									zv::Val r205;
+									if (UNEXPECTED(!pgen::PipeOperatorRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r205.raw()))) goto catch_c116;
+									vd119 = std::move(r205);
+									vd119_done = true;
 								}
 								break;
 								case 87: {
-									zv::Val r205;
-									if (UNEXPECTED(!pgen::InvalidComparisonOperationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r205.raw()))) goto catch_c115;
-									vd118 = std::move(r205);
-									vd118_done = true;
+									zv::Val r206;
+									if (UNEXPECTED(!pgen::InvalidComparisonOperationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r206.raw()))) goto catch_c116;
+									vd119 = std::move(r206);
+									vd119_done = true;
 								}
 								break;
 								case 88: {
-									zv::Val r206;
-									if (UNEXPECTED(!pgen::InvalidBinaryOperationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r206.raw()))) goto catch_c115;
-									vd118 = std::move(r206);
-									vd118_done = true;
+									zv::Val r207;
+									if (UNEXPECTED(!pgen::InvalidBinaryOperationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r207.raw()))) goto catch_c116;
+									vd119 = std::move(r207);
+									vd119_done = true;
 								}
 								break;
 								case 89: {
-									zv::Val r207;
-									if (UNEXPECTED(!pgen::ConstantsInTraitsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r207.raw()))) goto catch_c115;
-									vd118 = std::move(r207);
-									vd118_done = true;
+									zv::Val r208;
+									if (UNEXPECTED(!pgen::ConstantsInTraitsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r208.raw()))) goto catch_c116;
+									vd119 = std::move(r208);
+									vd119_done = true;
 								}
 								break;
 								case 90: {
-									zv::Val r208;
-									if (UNEXPECTED(!pgen::ConflictingTraitConstantsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r208.raw()))) goto catch_c115;
-									vd118 = std::move(r208);
-									vd118_done = true;
+									zv::Val r209;
+									if (UNEXPECTED(!pgen::ConflictingTraitConstantsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r209.raw()))) goto catch_c116;
+									vd119 = std::move(r209);
+									vd119_done = true;
 								}
 								break;
 								case 91: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Traits\\TraitAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r209;
-									if (UNEXPECTED(!pgen::TraitAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r209.raw()))) goto catch_c115;
-									vd118 = std::move(r209);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Traits\\TraitAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r210;
+									if (UNEXPECTED(!pgen::TraitAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r210.raw()))) goto catch_c116;
+									vd119 = std::move(r210);
+									vd119_done = true;
 								}
 								break;
 								case 92: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\ImpossibleInstanceOfRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r210;
-									if (UNEXPECTED(!pgen::ImpossibleInstanceOfRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r210.raw()))) goto catch_c115;
-									vd118 = std::move(r210);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\ImpossibleInstanceOfRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r211;
+									if (UNEXPECTED(!pgen::ImpossibleInstanceOfRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r211.raw()))) goto catch_c116;
+									vd119 = std::move(r211);
+									vd119_done = true;
 								}
 								break;
 								case 93: {
-									zv::Val r211;
-									if (UNEXPECTED(!pgen::DuplicateTraitDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r211.raw()))) goto catch_c115;
-									vd118 = std::move(r211);
-									vd118_done = true;
+									zv::Val r212;
+									if (UNEXPECTED(!pgen::DuplicateTraitDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r212.raw()))) goto catch_c116;
+									vd119 = std::move(r212);
+									vd119_done = true;
 								}
 								break;
 								case 94: {
-									zv::Val r212;
-									if (UNEXPECTED(!pgen::AllowedSubTypesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r212.raw()))) goto catch_c115;
-									vd118 = std::move(r212);
-									vd118_done = true;
+									zv::Val r213;
+									if (UNEXPECTED(!pgen::AllowedSubTypesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r213.raw()))) goto catch_c116;
+									vd119 = std::move(r213);
+									vd119_done = true;
 								}
 								break;
 								case 95: {
-									zv::Val r213;
-									if (UNEXPECTED(!pgen::LocalTypeAliasesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r213.raw()))) goto catch_c115;
-									vd118 = std::move(r213);
-									vd118_done = true;
+									zv::Val r214;
+									if (UNEXPECTED(!pgen::LocalTypeAliasesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r214.raw()))) goto catch_c116;
+									vd119 = std::move(r214);
+									vd119_done = true;
 								}
 								break;
 								case 96: {
-									zv::Val r214;
-									if (UNEXPECTED(!pgen::ExistingClassInTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r214.raw()))) goto catch_c115;
-									vd118 = std::move(r214);
-									vd118_done = true;
+									zv::Val r215;
+									if (UNEXPECTED(!pgen::ExistingClassInTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r215.raw()))) goto catch_c116;
+									vd119 = std::move(r215);
+									vd119_done = true;
 								}
 								break;
 								case 97: {
-									zv::Val r215;
-									if (UNEXPECTED(!pgen::ExistingClassInInstanceOfRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r215.raw()))) goto catch_c115;
-									vd118 = std::move(r215);
-									vd118_done = true;
+									zv::Val r216;
+									if (UNEXPECTED(!pgen::ExistingClassInInstanceOfRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r216.raw()))) goto catch_c116;
+									vd119 = std::move(r216);
+									vd119_done = true;
 								}
 								break;
 								case 98: {
-									zv::Val r216;
-									if (UNEXPECTED(!pgen::ClassConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r216.raw()))) goto catch_c115;
-									vd118 = std::move(r216);
-									vd118_done = true;
+									zv::Val r217;
+									if (UNEXPECTED(!pgen::ClassConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r217.raw()))) goto catch_c116;
+									vd119 = std::move(r217);
+									vd119_done = true;
 								}
 								break;
 								case 99: {
-									zv::Val r217;
-									if (UNEXPECTED(!pgen::InvalidPromotedPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r217.raw()))) goto catch_c115;
-									vd118 = std::move(r217);
-									vd118_done = true;
+									zv::Val r218;
+									if (UNEXPECTED(!pgen::InvalidPromotedPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r218.raw()))) goto catch_c116;
+									vd119 = std::move(r218);
+									vd119_done = true;
 								}
 								break;
 								case 100: {
-									zv::Val r218;
-									if (UNEXPECTED(!pgen::NonClassAttributeClassRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r218.raw()))) goto catch_c115;
-									vd118 = std::move(r218);
-									vd118_done = true;
+									zv::Val r219;
+									if (UNEXPECTED(!pgen::NonClassAttributeClassRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r219.raw()))) goto catch_c116;
+									vd119 = std::move(r219);
+									vd119_done = true;
 								}
 								break;
 								case 101: {
-									zv::Val r219;
-									if (UNEXPECTED(!pgen::ExistingClassesInInterfaceExtendsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r219.raw()))) goto catch_c115;
-									vd118 = std::move(r219);
-									vd118_done = true;
+									zv::Val r220;
+									if (UNEXPECTED(!pgen::ExistingClassesInInterfaceExtendsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r220.raw()))) goto catch_c116;
+									vd119 = std::move(r220);
+									vd119_done = true;
 								}
 								break;
 								case 102: {
-									zv::Val r220;
-									if (UNEXPECTED(!pgen::AccessPrivateConstantThroughStaticRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r220.raw()))) goto catch_c115;
-									vd118 = std::move(r220);
-									vd118_done = true;
+									zv::Val r221;
+									if (UNEXPECTED(!pgen::AccessPrivateConstantThroughStaticRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r221.raw()))) goto catch_c116;
+									vd119 = std::move(r221);
+									vd119_done = true;
 								}
 								break;
 								case 103: {
-									zv::Val r221;
-									if (UNEXPECTED(!pgen::ExistingClassesInClassImplementsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r221.raw()))) goto catch_c115;
-									vd118 = std::move(r221);
-									vd118_done = true;
+									zv::Val r222;
+									if (UNEXPECTED(!pgen::ExistingClassesInClassImplementsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r222.raw()))) goto catch_c116;
+									vd119 = std::move(r222);
+									vd119_done = true;
 								}
 								break;
 								case 104: {
-									zv::Val r222;
-									if (UNEXPECTED(!pgen::MethodTagRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r222.raw()))) goto catch_c115;
-									vd118 = std::move(r222);
-									vd118_done = true;
+									zv::Val r223;
+									if (UNEXPECTED(!pgen::MethodTagRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r223.raw()))) goto catch_c116;
+									vd119 = std::move(r223);
+									vd119_done = true;
 								}
 								break;
 								case 105: {
-									zv::Val r223;
-									if (UNEXPECTED(!pgen::ExistingClassesInEnumImplementsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r223.raw()))) goto catch_c115;
-									vd118 = std::move(r223);
-									vd118_done = true;
+									zv::Val r224;
+									if (UNEXPECTED(!pgen::ExistingClassesInEnumImplementsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r224.raw()))) goto catch_c116;
+									vd119 = std::move(r224);
+									vd119_done = true;
 								}
 								break;
 								case 106: {
-									zv::Val r224;
-									if (UNEXPECTED(!pgen::MethodTagTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r224.raw()))) goto catch_c115;
-									vd118 = std::move(r224);
-									vd118_done = true;
+									zv::Val r225;
+									if (UNEXPECTED(!pgen::MethodTagTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r225.raw()))) goto catch_c116;
+									vd119 = std::move(r225);
+									vd119_done = true;
 								}
 								break;
 								case 107: {
-									zv::Val r225;
-									if (UNEXPECTED(!pgen::TraitAttributeClassRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r225.raw()))) goto catch_c115;
-									vd118 = std::move(r225);
-									vd118_done = true;
+									zv::Val r226;
+									if (UNEXPECTED(!pgen::TraitAttributeClassRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r226.raw()))) goto catch_c116;
+									vd119 = std::move(r226);
+									vd119_done = true;
 								}
 								break;
 								case 108: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\InstantiationRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r226;
-									if (UNEXPECTED(!pgen::InstantiationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r226.raw()))) goto catch_c115;
-									vd118 = std::move(r226);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\InstantiationRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r227;
+									if (UNEXPECTED(!pgen::InstantiationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r227.raw()))) goto catch_c116;
+									vd119 = std::move(r227);
+									vd119_done = true;
 								}
 								break;
 								case 109: {
-									zv::Val r227;
-									if (UNEXPECTED(!pgen::ReadOnlyClassRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r227.raw()))) goto catch_c115;
-									vd118 = std::move(r227);
-									vd118_done = true;
+									zv::Val r228;
+									if (UNEXPECTED(!pgen::ReadOnlyClassRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r228.raw()))) goto catch_c116;
+									vd119 = std::move(r228);
+									vd119_done = true;
 								}
 								break;
 								case 110: {
-									zv::Val r228;
-									if (UNEXPECTED(!pgen::ExistingClassInClassExtendsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r228.raw()))) goto catch_c115;
-									vd118 = std::move(r228);
-									vd118_done = true;
+									zv::Val r229;
+									if (UNEXPECTED(!pgen::ExistingClassInClassExtendsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r229.raw()))) goto catch_c116;
+									vd119 = std::move(r229);
+									vd119_done = true;
 								}
 								break;
 								case 111: {
-									zv::Val r229;
-									if (UNEXPECTED(!pgen::MixinTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r229.raw()))) goto catch_c115;
-									vd118 = std::move(r229);
-									vd118_done = true;
+									zv::Val r230;
+									if (UNEXPECTED(!pgen::MixinTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r230.raw()))) goto catch_c116;
+									vd119 = std::move(r230);
+									vd119_done = true;
 								}
 								break;
 								case 112: {
-									zv::Val r230;
-									if (UNEXPECTED(!pgen::PropertyTagTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r230.raw()))) goto catch_c115;
-									vd118 = std::move(r230);
-									vd118_done = true;
+									zv::Val r231;
+									if (UNEXPECTED(!pgen::PropertyTagTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r231.raw()))) goto catch_c116;
+									vd119 = std::move(r231);
+									vd119_done = true;
 								}
 								break;
 								case 113: {
-									zv::Val r231;
-									if (UNEXPECTED(!pgen::LocalTypeTraitAliasesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r231.raw()))) goto catch_c115;
-									vd118 = std::move(r231);
-									vd118_done = true;
+									zv::Val r232;
+									if (UNEXPECTED(!pgen::LocalTypeTraitAliasesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r232.raw()))) goto catch_c116;
+									vd119 = std::move(r232);
+									vd119_done = true;
 								}
 								break;
 								case 114: {
-									zv::Val r232;
-									if (UNEXPECTED(!pgen::UnusedConstructorParametersRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r232.raw()))) goto catch_c115;
-									vd118 = std::move(r232);
-									vd118_done = true;
+									zv::Val r233;
+									if (UNEXPECTED(!pgen::UnusedConstructorParametersRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r233.raw()))) goto catch_c116;
+									vd119 = std::move(r233);
+									vd119_done = true;
 								}
 								break;
 								case 115: {
-									zv::Val r233;
-									if (UNEXPECTED(!pgen::EnumSanityRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r233.raw()))) goto catch_c115;
-									vd118 = std::move(r233);
-									vd118_done = true;
+									zv::Val r234;
+									if (UNEXPECTED(!pgen::EnumSanityRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r234.raw()))) goto catch_c116;
+									vd119 = std::move(r234);
+									vd119_done = true;
 								}
 								break;
 								case 116: {
-									zv::Val r234;
-									if (UNEXPECTED(!pgen::RequireImplementsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r234.raw()))) goto catch_c115;
-									vd118 = std::move(r234);
-									vd118_done = true;
+									zv::Val r235;
+									if (UNEXPECTED(!pgen::RequireImplementsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r235.raw()))) goto catch_c116;
+									vd119 = std::move(r235);
+									vd119_done = true;
 								}
 								break;
 								case 117: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\ClassAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r235;
-									if (UNEXPECTED(!pgen::ClassAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r235.raw()))) goto catch_c115;
-									vd118 = std::move(r235);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\ClassAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r236;
+									if (UNEXPECTED(!pgen::ClassAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r236.raw()))) goto catch_c116;
+									vd119 = std::move(r236);
+									vd119_done = true;
 								}
 								break;
 								case 118: {
-									zv::Val r236;
-									if (UNEXPECTED(!pgen::DuplicateClassDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r236.raw()))) goto catch_c115;
-									vd118 = std::move(r236);
-									vd118_done = true;
+									zv::Val r237;
+									if (UNEXPECTED(!pgen::DuplicateClassDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r237.raw()))) goto catch_c116;
+									vd119 = std::move(r237);
+									vd119_done = true;
 								}
 								break;
 								case 119: {
-									zv::Val r237;
-									if (UNEXPECTED(!pgen::MixinTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r237.raw()))) goto catch_c115;
-									vd118 = std::move(r237);
-									vd118_done = true;
+									zv::Val r238;
+									if (UNEXPECTED(!pgen::MixinTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r238.raw()))) goto catch_c116;
+									vd119 = std::move(r238);
+									vd119_done = true;
 								}
 								break;
 								case 120: {
-									zv::Val r238;
-									if (UNEXPECTED(!pgen::InstantiationCallableRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r238.raw()))) goto catch_c115;
-									vd118 = std::move(r238);
-									vd118_done = true;
+									zv::Val r239;
+									if (UNEXPECTED(!pgen::InstantiationCallableRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r239.raw()))) goto catch_c116;
+									vd119 = std::move(r239);
+									vd119_done = true;
 								}
 								break;
 								case 121: {
-									zv::Val r239;
-									if (UNEXPECTED(!pgen::MixinRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r239.raw()))) goto catch_c115;
-									vd118 = std::move(r239);
-									vd118_done = true;
+									zv::Val r240;
+									if (UNEXPECTED(!pgen::MixinRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r240.raw()))) goto catch_c116;
+									vd119 = std::move(r240);
+									vd119_done = true;
 								}
 								break;
 								case 122: {
-									zv::Val r240;
-									if (UNEXPECTED(!pgen::MethodTagTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r240.raw()))) goto catch_c115;
-									vd118 = std::move(r240);
-									vd118_done = true;
+									zv::Val r241;
+									if (UNEXPECTED(!pgen::MethodTagTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r241.raw()))) goto catch_c116;
+									vd119 = std::move(r241);
+									vd119_done = true;
 								}
 								break;
 								case 123: {
-									zv::Val r241;
-									if (UNEXPECTED(!pgen::NewStaticRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r241.raw()))) goto catch_c115;
-									vd118 = std::move(r241);
-									vd118_done = true;
+									zv::Val r242;
+									if (UNEXPECTED(!pgen::NewStaticRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r242.raw()))) goto catch_c116;
+									vd119 = std::move(r242);
+									vd119_done = true;
 								}
 								break;
 								case 124: {
-									zv::Val r242;
-									if (UNEXPECTED(!pgen::DuplicateDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r242.raw()))) goto catch_c115;
-									vd118 = std::move(r242);
-									vd118_done = true;
+									zv::Val r243;
+									if (UNEXPECTED(!pgen::DuplicateDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r243.raw()))) goto catch_c116;
+									vd119 = std::move(r243);
+									vd119_done = true;
 								}
 								break;
 								case 125: {
-									zv::Val r243;
-									if (UNEXPECTED(!pgen::RequireExtendsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r243.raw()))) goto catch_c115;
-									vd118 = std::move(r243);
-									vd118_done = true;
+									zv::Val r244;
+									if (UNEXPECTED(!pgen::RequireExtendsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r244.raw()))) goto catch_c116;
+									vd119 = std::move(r244);
+									vd119_done = true;
 								}
 								break;
 								case 126: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\ClassConstantAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r244;
-									if (UNEXPECTED(!pgen::ClassConstantAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r244.raw()))) goto catch_c115;
-									vd118 = std::move(r244);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\ClassConstantAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r245;
+									if (UNEXPECTED(!pgen::ClassConstantAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r245.raw()))) goto catch_c116;
+									vd119 = std::move(r245);
+									vd119_done = true;
 								}
 								break;
 								case 127: {
-									zv::Val r245;
-									if (UNEXPECTED(!pgen::LocalTypeTraitUseAliasesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r245.raw()))) goto catch_c115;
-									vd118 = std::move(r245);
-									vd118_done = true;
+									zv::Val r246;
+									if (UNEXPECTED(!pgen::LocalTypeTraitUseAliasesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r246.raw()))) goto catch_c116;
+									vd119 = std::move(r246);
+									vd119_done = true;
 								}
 								break;
 								case 128: {
-									zv::Val r246;
-									if (UNEXPECTED(!pgen::NewStaticInAbstractClassStaticMethodRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r246.raw()))) goto catch_c115;
-									vd118 = std::move(r246);
-									vd118_done = true;
+									zv::Val r247;
+									if (UNEXPECTED(!pgen::NewStaticInAbstractClassStaticMethodRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r247.raw()))) goto catch_c116;
+									vd119 = std::move(r247);
+									vd119_done = true;
 								}
 								break;
 								case 129: {
-									zv::Val r247;
-									if (UNEXPECTED(!pgen::PropertyTagRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r247.raw()))) goto catch_c115;
-									vd118 = std::move(r247);
-									vd118_done = true;
+									zv::Val r248;
+									if (UNEXPECTED(!pgen::PropertyTagRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r248.raw()))) goto catch_c116;
+									vd119 = std::move(r248);
+									vd119_done = true;
 								}
 								break;
 								case 130: {
-									zv::Val r248;
-									if (UNEXPECTED(!pgen::PropertyTagTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r248.raw()))) goto catch_c115;
-									vd118 = std::move(r248);
-									vd118_done = true;
+									zv::Val r249;
+									if (UNEXPECTED(!pgen::PropertyTagTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r249.raw()))) goto catch_c116;
+									vd119 = std::move(r249);
+									vd119_done = true;
 								}
 								break;
 								case 131: {
-									zv::Val r249;
-									if (UNEXPECTED(!pgen::VoidCastRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r249.raw()))) goto catch_c115;
-									vd118 = std::move(r249);
-									vd118_done = true;
+									zv::Val r250;
+									if (UNEXPECTED(!pgen::VoidCastRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r250.raw()))) goto catch_c116;
+									vd119 = std::move(r250);
+									vd119_done = true;
 								}
 								break;
 								case 132: {
-									zv::Val r250;
-									if (UNEXPECTED(!pgen::DeprecatedCastRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r250.raw()))) goto catch_c115;
-									vd118 = std::move(r250);
-									vd118_done = true;
+									zv::Val r251;
+									if (UNEXPECTED(!pgen::DeprecatedCastRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r251.raw()))) goto catch_c116;
+									vd119 = std::move(r251);
+									vd119_done = true;
 								}
 								break;
 								case 133: {
-									zv::Val r251;
-									if (UNEXPECTED(!pgen::PrintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r251.raw()))) goto catch_c115;
-									vd118 = std::move(r251);
-									vd118_done = true;
+									zv::Val r252;
+									if (UNEXPECTED(!pgen::PrintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r252.raw()))) goto catch_c116;
+									vd119 = std::move(r252);
+									vd119_done = true;
 								}
 								break;
 								case 134: {
-									zv::Val r252;
-									if (UNEXPECTED(!pgen::UnsetCastRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r252.raw()))) goto catch_c115;
-									vd118 = std::move(r252);
-									vd118_done = true;
+									zv::Val r253;
+									if (UNEXPECTED(!pgen::UnsetCastRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r253.raw()))) goto catch_c116;
+									vd119 = std::move(r253);
+									vd119_done = true;
 								}
 								break;
 								case 135: {
-									zv::Val r253;
-									if (UNEXPECTED(!pgen::InvalidPartOfEncapsedStringRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r253.raw()))) goto catch_c115;
-									vd118 = std::move(r253);
-									vd118_done = true;
+									zv::Val r254;
+									if (UNEXPECTED(!pgen::InvalidPartOfEncapsedStringRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r254.raw()))) goto catch_c116;
+									vd119 = std::move(r254);
+									vd119_done = true;
 								}
 								break;
 								case 136: {
-									zv::Val r254;
-									if (UNEXPECTED(!pgen::InvalidCastRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r254.raw()))) goto catch_c115;
-									vd118 = std::move(r254);
-									vd118_done = true;
+									zv::Val r255;
+									if (UNEXPECTED(!pgen::InvalidCastRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r255.raw()))) goto catch_c116;
+									vd119 = std::move(r255);
+									vd119_done = true;
 								}
 								break;
 								case 137: {
-									zv::Val r255;
-									if (UNEXPECTED(!pgen::EchoRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r255.raw()))) goto catch_c115;
-									vd118 = std::move(r255);
-									vd118_done = true;
+									zv::Val r256;
+									if (UNEXPECTED(!pgen::EchoRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r256.raw()))) goto catch_c116;
+									vd119 = std::move(r256);
+									vd119_done = true;
 								}
 								break;
 								case 138: {
-									zv::Val r256;
-									if (UNEXPECTED(!pgen::IgnoreParseErrorRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r256.raw()))) goto catch_c115;
-									vd118 = std::move(r256);
-									vd118_done = true;
+									zv::Val r257;
+									if (UNEXPECTED(!pgen::IgnoreParseErrorRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r257.raw()))) goto catch_c116;
+									vd119 = std::move(r257);
+									vd119_done = true;
 								}
 								break;
 								case 139: {
-									zv::Val r257;
-									if (UNEXPECTED(!pgen::DateTimeInstantiationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r257.raw()))) goto catch_c115;
-									vd118 = std::move(r257);
-									vd118_done = true;
+									zv::Val r258;
+									if (UNEXPECTED(!pgen::DateTimeInstantiationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r258.raw()))) goto catch_c116;
+									vd119 = std::move(r258);
+									vd119_done = true;
 								}
 								break;
 								case 140: {
-									zv::Val r258;
-									if (UNEXPECTED(!pgen::MagicConstantContextRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r258.raw()))) goto catch_c115;
-									vd118 = std::move(r258);
-									vd118_done = true;
+									zv::Val r259;
+									if (UNEXPECTED(!pgen::MagicConstantContextRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r259.raw()))) goto catch_c116;
+									vd119 = std::move(r259);
+									vd119_done = true;
 								}
 								break;
 								case 141: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Constants\\ConstantAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r259;
-									if (UNEXPECTED(!pgen::ConstantAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r259.raw()))) goto catch_c115;
-									vd118 = std::move(r259);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Constants\\ConstantAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r260;
+									if (UNEXPECTED(!pgen::ConstantAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r260.raw()))) goto catch_c116;
+									vd119 = std::move(r260);
+									vd119_done = true;
 								}
 								break;
 								case 142: {
-									zv::Val r260;
-									if (UNEXPECTED(!pgen::DynamicClassConstantFetchRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r260.raw()))) goto catch_c115;
-									vd118 = std::move(r260);
-									vd118_done = true;
+									zv::Val r261;
+									if (UNEXPECTED(!pgen::DynamicClassConstantFetchRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r261.raw()))) goto catch_c116;
+									vd119 = std::move(r261);
+									vd119_done = true;
 								}
 								break;
 								case 143: {
-									zv::Val r261;
-									if (UNEXPECTED(!pgen::ValueAssignedToDefineRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r261.raw()))) goto catch_c115;
-									vd118 = std::move(r261);
-									vd118_done = true;
+									zv::Val r262;
+									if (UNEXPECTED(!pgen::ValueAssignedToDefineRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r262.raw()))) goto catch_c116;
+									vd119 = std::move(r262);
+									vd119_done = true;
 								}
 								break;
 								case 144: {
-									zv::Val r262;
-									if (UNEXPECTED(!pgen::OverridingConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r262.raw()))) goto catch_c115;
-									vd118 = std::move(r262);
-									vd118_done = true;
+									zv::Val r263;
+									if (UNEXPECTED(!pgen::OverridingConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r263.raw()))) goto catch_c116;
+									vd119 = std::move(r263);
+									vd119_done = true;
 								}
 								break;
 								case 145: {
-									zv::Val r263;
-									if (UNEXPECTED(!pgen::FinalPrivateConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r263.raw()))) goto catch_c115;
-									vd118 = std::move(r263);
-									vd118_done = true;
+									zv::Val r264;
+									if (UNEXPECTED(!pgen::FinalPrivateConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r264.raw()))) goto catch_c116;
+									vd119 = std::move(r264);
+									vd119_done = true;
 								}
 								break;
 								case 146: {
-									zv::Val r264;
-									if (UNEXPECTED(!pgen::ConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r264.raw()))) goto catch_c115;
-									vd118 = std::move(r264);
-									vd118_done = true;
+									zv::Val r265;
+									if (UNEXPECTED(!pgen::ConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r265.raw()))) goto catch_c116;
+									vd119 = std::move(r265);
+									vd119_done = true;
 								}
 								break;
 								case 147: {
-									zv::Val r265;
-									if (UNEXPECTED(!pgen::FinalConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r265.raw()))) goto catch_c115;
-									vd118 = std::move(r265);
-									vd118_done = true;
+									zv::Val r266;
+									if (UNEXPECTED(!pgen::FinalConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r266.raw()))) goto catch_c116;
+									vd119 = std::move(r266);
+									vd119_done = true;
 								}
 								break;
 								case 148: {
-									zv::Val r266;
-									if (UNEXPECTED(!pgen::ClassAsClassConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r266.raw()))) goto catch_c115;
-									vd118 = std::move(r266);
-									vd118_done = true;
+									zv::Val r267;
+									if (UNEXPECTED(!pgen::ClassAsClassConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r267.raw()))) goto catch_c116;
+									vd119 = std::move(r267);
+									vd119_done = true;
 								}
 								break;
 								case 149: {
-									zv::Val r267;
-									if (UNEXPECTED(!pgen::MissingClassConstantTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r267.raw()))) goto catch_c115;
-									vd118 = std::move(r267);
-									vd118_done = true;
+									zv::Val r268;
+									if (UNEXPECTED(!pgen::MissingClassConstantTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r268.raw()))) goto catch_c116;
+									vd119 = std::move(r268);
+									vd119_done = true;
 								}
 								break;
 								case 150: {
-									zv::Val r268;
-									if (UNEXPECTED(!pgen::ValueAssignedToClassConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r268.raw()))) goto catch_c115;
-									vd118 = std::move(r268);
-									vd118_done = true;
+									zv::Val r269;
+									if (UNEXPECTED(!pgen::ValueAssignedToClassConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r269.raw()))) goto catch_c116;
+									vd119 = std::move(r269);
+									vd119_done = true;
 								}
 								break;
 								case 151: {
-									zv::Val r269;
-									if (UNEXPECTED(!pgen::NativeTypedClassConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r269.raw()))) goto catch_c115;
-									vd118 = std::move(r269);
-									vd118_done = true;
+									zv::Val r270;
+									if (UNEXPECTED(!pgen::NativeTypedClassConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r270.raw()))) goto catch_c116;
+									vd119 = std::move(r270);
+									vd119_done = true;
 								}
 								break;
 								case 152: {
-									zv::Val r270;
-									if (UNEXPECTED(!pgen::ValueAssignedToGlobalConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r270.raw()))) goto catch_c115;
-									vd118 = std::move(r270);
-									vd118_done = true;
+									zv::Val r271;
+									if (UNEXPECTED(!pgen::ValueAssignedToGlobalConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r271.raw()))) goto catch_c116;
+									vd119 = std::move(r271);
+									vd119_done = true;
 								}
 								break;
 								case 153: {
-									zv::Val r271;
-									if (UNEXPECTED(!pgen::TooWideFunctionReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r271.raw()))) goto catch_c115;
-									vd118 = std::move(r271);
-									vd118_done = true;
+									zv::Val r272;
+									if (UNEXPECTED(!pgen::TooWideFunctionReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r272.raw()))) goto catch_c116;
+									vd119 = std::move(r272);
+									vd119_done = true;
 								}
 								break;
 								case 154: {
-									zv::Val r272;
-									if (UNEXPECTED(!pgen::TooWideMethodReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r272.raw()))) goto catch_c115;
-									vd118 = std::move(r272);
-									vd118_done = true;
+									zv::Val r273;
+									if (UNEXPECTED(!pgen::TooWideMethodReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r273.raw()))) goto catch_c116;
+									vd119 = std::move(r273);
+									vd119_done = true;
 								}
 								break;
 								case 155: {
-									zv::Val r273;
-									if (UNEXPECTED(!pgen::TooWideClosureReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r273.raw()))) goto catch_c115;
-									vd118 = std::move(r273);
-									vd118_done = true;
+									zv::Val r274;
+									if (UNEXPECTED(!pgen::TooWideClosureReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r274.raw()))) goto catch_c116;
+									vd119 = std::move(r274);
+									vd119_done = true;
 								}
 								break;
 								case 156: {
-									zv::Val r274;
-									if (UNEXPECTED(!pgen::TooWideFunctionParameterOutTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r274.raw()))) goto catch_c115;
-									vd118 = std::move(r274);
-									vd118_done = true;
+									zv::Val r275;
+									if (UNEXPECTED(!pgen::TooWideFunctionParameterOutTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r275.raw()))) goto catch_c116;
+									vd119 = std::move(r275);
+									vd119_done = true;
 								}
 								break;
 								case 157: {
-									zv::Val r275;
-									if (UNEXPECTED(!pgen::TooWideMethodParameterOutTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r275.raw()))) goto catch_c115;
-									vd118 = std::move(r275);
-									vd118_done = true;
+									zv::Val r276;
+									if (UNEXPECTED(!pgen::TooWideMethodParameterOutTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r276.raw()))) goto catch_c116;
+									vd119 = std::move(r276);
+									vd119_done = true;
 								}
 								break;
 								case 158: {
-									zv::Val r276;
-									if (UNEXPECTED(!pgen::TooWidePropertyTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r276.raw()))) goto catch_c115;
-									vd118 = std::move(r276);
-									vd118_done = true;
+									zv::Val r277;
+									if (UNEXPECTED(!pgen::TooWidePropertyTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r277.raw()))) goto catch_c116;
+									vd119 = std::move(r277);
+									vd119_done = true;
 								}
 								break;
 								case 159: {
-									zv::Val r277;
-									if (UNEXPECTED(!pgen::TooWideArrowFunctionReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r277.raw()))) goto catch_c115;
-									vd118 = std::move(r277);
-									vd118_done = true;
+									zv::Val r278;
+									if (UNEXPECTED(!pgen::TooWideArrowFunctionReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r278.raw()))) goto catch_c116;
+									vd119 = std::move(r278);
+									vd119_done = true;
 								}
 								break;
 								case 160: {
-									zv::Val r278;
-									if (UNEXPECTED(!pgen::MissingReturnRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r278.raw()))) goto catch_c115;
-									vd118 = std::move(r278);
-									vd118_done = true;
+									zv::Val r279;
+									if (UNEXPECTED(!pgen::MissingReturnRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r279.raw()))) goto catch_c116;
+									vd119 = std::move(r279);
+									vd119_done = true;
 								}
 								break;
 								case 161: {
-									zv::Val r279;
-									if (UNEXPECTED(!pgen::MissingCheckedExceptionInMethodThrowsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r279.raw()))) goto catch_c115;
-									vd118 = std::move(r279);
-									vd118_done = true;
+									zv::Val r280;
+									if (UNEXPECTED(!pgen::MissingCheckedExceptionInMethodThrowsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r280.raw()))) goto catch_c116;
+									vd119 = std::move(r280);
+									vd119_done = true;
 								}
 								break;
 								case 162: {
-									zv::Val r280;
-									if (UNEXPECTED(!pgen::TooWidePropertyHookThrowTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r280.raw()))) goto catch_c115;
-									vd118 = std::move(r280);
-									vd118_done = true;
+									zv::Val r281;
+									if (UNEXPECTED(!pgen::TooWidePropertyHookThrowTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r281.raw()))) goto catch_c116;
+									vd119 = std::move(r281);
+									vd119_done = true;
 								}
 								break;
 								case 163: {
-									zv::Val r281;
-									if (UNEXPECTED(!pgen::ThrowsVoidMethodWithExplicitThrowPointRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r281.raw()))) goto catch_c115;
-									vd118 = std::move(r281);
-									vd118_done = true;
+									zv::Val r282;
+									if (UNEXPECTED(!pgen::ThrowsVoidMethodWithExplicitThrowPointRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r282.raw()))) goto catch_c116;
+									vd119 = std::move(r282);
+									vd119_done = true;
 								}
 								break;
 								case 164: {
-									zv::Val r282;
-									if (UNEXPECTED(!pgen::OverwrittenExitPointByFinallyRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r282.raw()))) goto catch_c115;
-									vd118 = std::move(r282);
-									vd118_done = true;
+									zv::Val r283;
+									if (UNEXPECTED(!pgen::OverwrittenExitPointByFinallyRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r283.raw()))) goto catch_c116;
+									vd119 = std::move(r283);
+									vd119_done = true;
 								}
 								break;
 								case 165: {
-									zv::Val r283;
-									if (UNEXPECTED(!pgen::TooWideMethodThrowTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r283.raw()))) goto catch_c115;
-									vd118 = std::move(r283);
-									vd118_done = true;
+									zv::Val r284;
+									if (UNEXPECTED(!pgen::TooWideMethodThrowTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r284.raw()))) goto catch_c116;
+									vd119 = std::move(r284);
+									vd119_done = true;
 								}
 								break;
 								case 166: {
-									zv::Val r284;
-									if (UNEXPECTED(!pgen::MethodThrowTypeCovarianceRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r284.raw()))) goto catch_c115;
-									vd118 = std::move(r284);
-									vd118_done = true;
+									zv::Val r285;
+									if (UNEXPECTED(!pgen::MethodThrowTypeCovarianceRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r285.raw()))) goto catch_c116;
+									vd119 = std::move(r285);
+									vd119_done = true;
 								}
 								break;
 								case 167: {
-									zv::Val r285;
-									if (UNEXPECTED(!pgen::CaughtExceptionExistenceRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r285.raw()))) goto catch_c115;
-									vd118 = std::move(r285);
-									vd118_done = true;
+									zv::Val r286;
+									if (UNEXPECTED(!pgen::CaughtExceptionExistenceRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r286.raw()))) goto catch_c116;
+									vd119 = std::move(r286);
+									vd119_done = true;
 								}
 								break;
 								case 168: {
-									zv::Val r286;
-									if (UNEXPECTED(!pgen::ThrowsVoidPropertyHookWithExplicitThrowPointRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r286.raw()))) goto catch_c115;
-									vd118 = std::move(r286);
-									vd118_done = true;
+									zv::Val r287;
+									if (UNEXPECTED(!pgen::ThrowsVoidPropertyHookWithExplicitThrowPointRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r287.raw()))) goto catch_c116;
+									vd119 = std::move(r287);
+									vd119_done = true;
 								}
 								break;
 								case 169: {
-									zv::Val r287;
-									if (UNEXPECTED(!pgen::MissingCheckedExceptionInFunctionThrowsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r287.raw()))) goto catch_c115;
-									vd118 = std::move(r287);
-									vd118_done = true;
+									zv::Val r288;
+									if (UNEXPECTED(!pgen::MissingCheckedExceptionInFunctionThrowsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r288.raw()))) goto catch_c116;
+									vd119 = std::move(r288);
+									vd119_done = true;
 								}
 								break;
 								case 170: {
-									zv::Val r288;
-									if (UNEXPECTED(!pgen::MissingCheckedExceptionInPropertyHookThrowsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r288.raw()))) goto catch_c115;
-									vd118 = std::move(r288);
-									vd118_done = true;
+									zv::Val r289;
+									if (UNEXPECTED(!pgen::MissingCheckedExceptionInPropertyHookThrowsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r289.raw()))) goto catch_c116;
+									vd119 = std::move(r289);
+									vd119_done = true;
 								}
 								break;
 								case 171: {
-									zv::Val r289;
-									if (UNEXPECTED(!pgen::ThrowExprTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r289.raw()))) goto catch_c115;
-									vd118 = std::move(r289);
-									vd118_done = true;
+									zv::Val r290;
+									if (UNEXPECTED(!pgen::ThrowExprTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r290.raw()))) goto catch_c116;
+									vd119 = std::move(r290);
+									vd119_done = true;
 								}
 								break;
 								case 172: {
-									zv::Val r290;
-									if (UNEXPECTED(!pgen::ThrowExpressionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r290.raw()))) goto catch_c115;
-									vd118 = std::move(r290);
-									vd118_done = true;
+									zv::Val r291;
+									if (UNEXPECTED(!pgen::ThrowExpressionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r291.raw()))) goto catch_c116;
+									vd119 = std::move(r291);
+									vd119_done = true;
 								}
 								break;
 								case 173: {
-									zv::Val r291;
-									if (UNEXPECTED(!pgen::CatchWithUnthrownExceptionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r291.raw()))) goto catch_c115;
-									vd118 = std::move(r291);
-									vd118_done = true;
+									zv::Val r292;
+									if (UNEXPECTED(!pgen::CatchWithUnthrownExceptionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r292.raw()))) goto catch_c116;
+									vd119 = std::move(r292);
+									vd119_done = true;
 								}
 								break;
 								case 174: {
-									zv::Val r292;
-									if (UNEXPECTED(!pgen::NoncapturingCatchRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r292.raw()))) goto catch_c115;
-									vd118 = std::move(r292);
-									vd118_done = true;
+									zv::Val r293;
+									if (UNEXPECTED(!pgen::NoncapturingCatchRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r293.raw()))) goto catch_c116;
+									vd119 = std::move(r293);
+									vd119_done = true;
 								}
 								break;
 								case 175: {
-									zv::Val r293;
-									if (UNEXPECTED(!pgen::ThrowsVoidFunctionWithExplicitThrowPointRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r293.raw()))) goto catch_c115;
-									vd118 = std::move(r293);
-									vd118_done = true;
+									zv::Val r294;
+									if (UNEXPECTED(!pgen::ThrowsVoidFunctionWithExplicitThrowPointRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r294.raw()))) goto catch_c116;
+									vd119 = std::move(r294);
+									vd119_done = true;
 								}
 								break;
 								case 176: {
-									zv::Val r294;
-									if (UNEXPECTED(!pgen::TooWideFunctionThrowTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r294.raw()))) goto catch_c115;
-									vd118 = std::move(r294);
-									vd118_done = true;
+									zv::Val r295;
+									if (UNEXPECTED(!pgen::TooWideFunctionThrowTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r295.raw()))) goto catch_c116;
+									vd119 = std::move(r295);
+									vd119_done = true;
 								}
 								break;
 								case 177: {
-									zv::Val r295;
-									if (UNEXPECTED(!pgen::RestrictedStaticMethodCallableUsageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r295.raw()))) goto catch_c115;
-									vd118 = std::move(r295);
-									vd118_done = true;
+									zv::Val r296;
+									if (UNEXPECTED(!pgen::RestrictedStaticMethodCallableUsageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r296.raw()))) goto catch_c116;
+									vd119 = std::move(r296);
+									vd119_done = true;
 								}
 								break;
 								case 178: {
-									zv::Val r296;
-									if (UNEXPECTED(!pgen::RestrictedFunctionUsageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r296.raw()))) goto catch_c115;
-									vd118 = std::move(r296);
-									vd118_done = true;
+									zv::Val r297;
+									if (UNEXPECTED(!pgen::RestrictedFunctionUsageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r297.raw()))) goto catch_c116;
+									vd119 = std::move(r297);
+									vd119_done = true;
 								}
 								break;
 								case 179: {
-									zv::Val r297;
-									if (UNEXPECTED(!pgen::RestrictedStaticPropertyUsageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r297.raw()))) goto catch_c115;
-									vd118 = std::move(r297);
-									vd118_done = true;
+									zv::Val r298;
+									if (UNEXPECTED(!pgen::RestrictedStaticPropertyUsageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r298.raw()))) goto catch_c116;
+									vd119 = std::move(r298);
+									vd119_done = true;
 								}
 								break;
 								case 180: {
-									zv::Val r298;
-									if (UNEXPECTED(!pgen::RestrictedMethodUsageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r298.raw()))) goto catch_c115;
-									vd118 = std::move(r298);
-									vd118_done = true;
+									zv::Val r299;
+									if (UNEXPECTED(!pgen::RestrictedMethodUsageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r299.raw()))) goto catch_c116;
+									vd119 = std::move(r299);
+									vd119_done = true;
 								}
 								break;
 								case 181: {
-									zv::Val r299;
-									if (UNEXPECTED(!pgen::RestrictedFunctionCallableUsageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r299.raw()))) goto catch_c115;
-									vd118 = std::move(r299);
-									vd118_done = true;
+									zv::Val r300;
+									if (UNEXPECTED(!pgen::RestrictedFunctionCallableUsageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r300.raw()))) goto catch_c116;
+									vd119 = std::move(r300);
+									vd119_done = true;
 								}
 								break;
 								case 182: {
-									zv::Val r300;
-									if (UNEXPECTED(!pgen::RestrictedStaticMethodUsageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r300.raw()))) goto catch_c115;
-									vd118 = std::move(r300);
-									vd118_done = true;
+									zv::Val r301;
+									if (UNEXPECTED(!pgen::RestrictedStaticMethodUsageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r301.raw()))) goto catch_c116;
+									vd119 = std::move(r301);
+									vd119_done = true;
 								}
 								break;
 								case 183: {
-									zv::Val r301;
-									if (UNEXPECTED(!pgen::RestrictedMethodCallableUsageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r301.raw()))) goto catch_c115;
-									vd118 = std::move(r301);
-									vd118_done = true;
+									zv::Val r302;
+									if (UNEXPECTED(!pgen::RestrictedMethodCallableUsageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r302.raw()))) goto catch_c116;
+									vd119 = std::move(r302);
+									vd119_done = true;
 								}
 								break;
 								case 184: {
-									zv::Val r302;
-									if (UNEXPECTED(!pgen::RestrictedUsageOfDeprecatedStringCastRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r302.raw()))) goto catch_c115;
-									vd118 = std::move(r302);
-									vd118_done = true;
+									zv::Val r303;
+									if (UNEXPECTED(!pgen::RestrictedUsageOfDeprecatedStringCastRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r303.raw()))) goto catch_c116;
+									vd119 = std::move(r303);
+									vd119_done = true;
 								}
 								break;
 								case 185: {
-									zv::Val r303;
-									if (UNEXPECTED(!pgen::RestrictedPropertyUsageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r303.raw()))) goto catch_c115;
-									vd118 = std::move(r303);
-									vd118_done = true;
+									zv::Val r304;
+									if (UNEXPECTED(!pgen::RestrictedPropertyUsageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r304.raw()))) goto catch_c116;
+									vd119 = std::move(r304);
+									vd119_done = true;
 								}
 								break;
 								case 186: {
-									zv::Val r304;
-									if (UNEXPECTED(!pgen::RestrictedClassConstantUsageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r304.raw()))) goto catch_c115;
-									vd118 = std::move(r304);
-									vd118_done = true;
+									zv::Val r305;
+									if (UNEXPECTED(!pgen::RestrictedClassConstantUsageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r305.raw()))) goto catch_c116;
+									vd119 = std::move(r305);
+									vd119_done = true;
 								}
 								break;
 								case 187: {
-									zv::Val r305;
-									if (UNEXPECTED(!pgen::ExistingNamesInUseRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r305.raw()))) goto catch_c115;
-									vd118 = std::move(r305);
-									vd118_done = true;
+									zv::Val r306;
+									if (UNEXPECTED(!pgen::ExistingNamesInUseRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r306.raw()))) goto catch_c116;
+									vd119 = std::move(r306);
+									vd119_done = true;
 								}
 								break;
 								case 188: {
-									zv::Val r306;
-									if (UNEXPECTED(!pgen::ExistingNamesInGroupUseRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r306.raw()))) goto catch_c115;
-									vd118 = std::move(r306);
-									vd118_done = true;
+									zv::Val r307;
+									if (UNEXPECTED(!pgen::ExistingNamesInGroupUseRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r307.raw()))) goto catch_c116;
+									vd119 = std::move(r307);
+									vd119_done = true;
 								}
 								break;
 								case 189: {
-									zv::Val r307;
-									if (UNEXPECTED(!pgen::ReadOnlyByPhpDocPropertyRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r307.raw()))) goto catch_c115;
-									vd118 = std::move(r307);
-									vd118_done = true;
+									zv::Val r308;
+									if (UNEXPECTED(!pgen::ReadOnlyByPhpDocPropertyRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r308.raw()))) goto catch_c116;
+									vd119 = std::move(r308);
+									vd119_done = true;
 								}
 								break;
 								case 190: {
-									zv::Val r308;
-									if (UNEXPECTED(!pgen::SetPropertyHookParameterRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r308.raw()))) goto catch_c115;
-									vd118 = std::move(r308);
-									vd118_done = true;
+									zv::Val r309;
+									if (UNEXPECTED(!pgen::SetPropertyHookParameterRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r309.raw()))) goto catch_c116;
+									vd119 = std::move(r309);
+									vd119_done = true;
 								}
 								break;
 								case 191: {
-									zv::Val r309;
-									if (UNEXPECTED(!pgen::ExistingClassesInPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r309.raw()))) goto catch_c115;
-									vd118 = std::move(r309);
-									vd118_done = true;
+									zv::Val r310;
+									if (UNEXPECTED(!pgen::ExistingClassesInPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r310.raw()))) goto catch_c116;
+									vd119 = std::move(r310);
+									vd119_done = true;
 								}
 								break;
 								case 192: {
-									zv::Val r310;
-									if (UNEXPECTED(!pgen::ExistingClassesInPropertyHookTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r310.raw()))) goto catch_c115;
-									vd118 = std::move(r310);
-									vd118_done = true;
+									zv::Val r311;
+									if (UNEXPECTED(!pgen::ExistingClassesInPropertyHookTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r311.raw()))) goto catch_c116;
+									vd119 = std::move(r311);
+									vd119_done = true;
 								}
 								break;
 								case 193: {
-									zv::Val r311;
-									if (UNEXPECTED(!pgen::ReadingWriteOnlyPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r311.raw()))) goto catch_c115;
-									vd118 = std::move(r311);
-									vd118_done = true;
+									zv::Val r312;
+									if (UNEXPECTED(!pgen::ReadingWriteOnlyPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r312.raw()))) goto catch_c116;
+									vd119 = std::move(r312);
+									vd119_done = true;
 								}
 								break;
 								case 194: {
-									zv::Val r312;
-									if (UNEXPECTED(!pgen::TypesAssignedToPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r312.raw()))) goto catch_c115;
-									vd118 = std::move(r312);
-									vd118_done = true;
+									zv::Val r313;
+									if (UNEXPECTED(!pgen::TypesAssignedToPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r313.raw()))) goto catch_c116;
+									vd119 = std::move(r313);
+									vd119_done = true;
 								}
 								break;
 								case 195: {
-									zv::Val r313;
-									if (UNEXPECTED(!pgen::GetNonVirtualPropertyHookReadRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r313.raw()))) goto catch_c115;
-									vd118 = std::move(r313);
-									vd118_done = true;
+									zv::Val r314;
+									if (UNEXPECTED(!pgen::GetNonVirtualPropertyHookReadRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r314.raw()))) goto catch_c116;
+									vd119 = std::move(r314);
+									vd119_done = true;
 								}
 								break;
 								case 196: {
-									zv::Val r314;
-									if (UNEXPECTED(!pgen::DefaultValueTypesAssignedToPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r314.raw()))) goto catch_c115;
-									vd118 = std::move(r314);
-									vd118_done = true;
+									zv::Val r315;
+									if (UNEXPECTED(!pgen::DefaultValueTypesAssignedToPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r315.raw()))) goto catch_c116;
+									vd119 = std::move(r315);
+									vd119_done = true;
 								}
 								break;
 								case 197: {
-									zv::Val r315;
-									if (UNEXPECTED(!pgen::SetNonVirtualPropertyHookAssignRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r315.raw()))) goto catch_c115;
-									vd118 = std::move(r315);
-									vd118_done = true;
+									zv::Val r316;
+									if (UNEXPECTED(!pgen::SetNonVirtualPropertyHookAssignRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r316.raw()))) goto catch_c116;
+									vd119 = std::move(r316);
+									vd119_done = true;
 								}
 								break;
 								case 198: {
-									zv::Val r316;
-									if (UNEXPECTED(!pgen::AccessStaticPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r316.raw()))) goto catch_c115;
-									vd118 = std::move(r316);
-									vd118_done = true;
+									zv::Val r317;
+									if (UNEXPECTED(!pgen::AccessStaticPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r317.raw()))) goto catch_c116;
+									vd119 = std::move(r317);
+									vd119_done = true;
 								}
 								break;
 								case 199: {
-									zv::Val r317;
-									if (UNEXPECTED(!pgen::AccessPropertiesInAssignRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r317.raw()))) goto catch_c115;
-									vd118 = std::move(r317);
-									vd118_done = true;
+									zv::Val r318;
+									if (UNEXPECTED(!pgen::AccessPropertiesInAssignRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r318.raw()))) goto catch_c116;
+									vd119 = std::move(r318);
+									vd119_done = true;
 								}
 								break;
 								case 200: {
-									zv::Val r318;
-									if (UNEXPECTED(!pgen::WritingToReadOnlyPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r318.raw()))) goto catch_c115;
-									vd118 = std::move(r318);
-									vd118_done = true;
+									zv::Val r319;
+									if (UNEXPECTED(!pgen::WritingToReadOnlyPropertiesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r319.raw()))) goto catch_c116;
+									vd119 = std::move(r319);
+									vd119_done = true;
 								}
 								break;
 								case 201: {
-									zv::Val r319;
-									if (UNEXPECTED(!pgen::MissingPropertyTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r319.raw()))) goto catch_c115;
-									vd118 = std::move(r319);
-									vd118_done = true;
+									zv::Val r320;
+									if (UNEXPECTED(!pgen::MissingPropertyTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r320.raw()))) goto catch_c116;
+									vd119 = std::move(r320);
+									vd119_done = true;
 								}
 								break;
 								case 202: {
-									zv::Val r320;
-									if (UNEXPECTED(!pgen::PropertyInClassRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r320.raw()))) goto catch_c115;
-									vd118 = std::move(r320);
-									vd118_done = true;
+									zv::Val r321;
+									if (UNEXPECTED(!pgen::PropertyInClassRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r321.raw()))) goto catch_c116;
+									vd119 = std::move(r321);
+									vd119_done = true;
 								}
 								break;
 								case 203: {
-									zv::Val r321;
-									if (UNEXPECTED(!pgen::NullsafePropertyFetchRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r321.raw()))) goto catch_c115;
-									vd118 = std::move(r321);
-									vd118_done = true;
+									zv::Val r322;
+									if (UNEXPECTED(!pgen::NullsafePropertyFetchRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r322.raw()))) goto catch_c116;
+									vd119 = std::move(r322);
+									vd119_done = true;
 								}
 								break;
 								case 204: {
-									zv::Val r322;
-									if (UNEXPECTED(!pgen::ReadOnlyByPhpDocPropertyAssignRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r322.raw()))) goto catch_c115;
-									vd118 = std::move(r322);
-									vd118_done = true;
+									zv::Val r323;
+									if (UNEXPECTED(!pgen::ReadOnlyByPhpDocPropertyAssignRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r323.raw()))) goto catch_c116;
+									vd119 = std::move(r323);
+									vd119_done = true;
 								}
 								break;
 								case 205: {
-									zv::Val r323;
-									if (UNEXPECTED(!pgen::AccessStaticPropertiesInAssignRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r323.raw()))) goto catch_c115;
-									vd118 = std::move(r323);
-									vd118_done = true;
+									zv::Val r324;
+									if (UNEXPECTED(!pgen::AccessStaticPropertiesInAssignRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r324.raw()))) goto catch_c116;
+									vd119 = std::move(r324);
+									vd119_done = true;
 								}
 								break;
 								case 206: {
-									zv::Val r324;
-									if (UNEXPECTED(!pgen::ReadOnlyPropertyAssignRefRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r324.raw()))) goto catch_c115;
-									vd118 = std::move(r324);
-									vd118_done = true;
+									zv::Val r325;
+									if (UNEXPECTED(!pgen::ReadOnlyPropertyAssignRefRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r325.raw()))) goto catch_c116;
+									vd119 = std::move(r325);
+									vd119_done = true;
 								}
 								break;
 								case 207: {
-									zv::Val r325;
-									if (UNEXPECTED(!pgen::MissingReadOnlyPropertyAssignRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r325.raw()))) goto catch_c115;
-									vd118 = std::move(r325);
-									vd118_done = true;
+									zv::Val r326;
+									if (UNEXPECTED(!pgen::MissingReadOnlyPropertyAssignRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r326.raw()))) goto catch_c116;
+									vd119 = std::move(r326);
+									vd119_done = true;
 								}
 								break;
 								case 208: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Properties\\PropertyHookAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r326;
-									if (UNEXPECTED(!pgen::PropertyHookAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r326.raw()))) goto catch_c115;
-									vd118 = std::move(r326);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Properties\\PropertyHookAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r327;
+									if (UNEXPECTED(!pgen::PropertyHookAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r327.raw()))) goto catch_c116;
+									vd119 = std::move(r327);
+									vd119_done = true;
 								}
 								break;
 								case 209: {
-									zv::Val r327;
-									if (UNEXPECTED(!pgen::AccessPrivatePropertyThroughStaticRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r327.raw()))) goto catch_c115;
-									vd118 = std::move(r327);
-									vd118_done = true;
+									zv::Val r328;
+									if (UNEXPECTED(!pgen::AccessPrivatePropertyThroughStaticRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r328.raw()))) goto catch_c116;
+									vd119 = std::move(r328);
+									vd119_done = true;
 								}
 								break;
 								case 210: {
-									zv::Val r328;
-									if (UNEXPECTED(!pgen::ReadOnlyPropertyAssignRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r328.raw()))) goto catch_c115;
-									vd118 = std::move(r328);
-									vd118_done = true;
+									zv::Val r329;
+									if (UNEXPECTED(!pgen::ReadOnlyPropertyAssignRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r329.raw()))) goto catch_c116;
+									vd119 = std::move(r329);
+									vd119_done = true;
 								}
 								break;
 								case 211: {
-									zv::Val r329;
-									if (UNEXPECTED(!pgen::MissingReadOnlyByPhpDocPropertyAssignRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r329.raw()))) goto catch_c115;
-									vd118 = std::move(r329);
-									vd118_done = true;
+									zv::Val r330;
+									if (UNEXPECTED(!pgen::MissingReadOnlyByPhpDocPropertyAssignRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r330.raw()))) goto catch_c116;
+									vd119 = std::move(r330);
+									vd119_done = true;
 								}
 								break;
 								case 212: {
-									zv::Val r330;
-									if (UNEXPECTED(!pgen::PropertiesInInterfaceRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r330.raw()))) goto catch_c115;
-									vd118 = std::move(r330);
-									vd118_done = true;
+									zv::Val r331;
+									if (UNEXPECTED(!pgen::PropertiesInInterfaceRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r331.raw()))) goto catch_c116;
+									vd119 = std::move(r331);
+									vd119_done = true;
 								}
 								break;
 								case 213: {
-									zv::Val r331;
-									if (UNEXPECTED(!pgen::InvalidCallablePropertyTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r331.raw()))) goto catch_c115;
-									vd118 = std::move(r331);
-									vd118_done = true;
+									zv::Val r332;
+									if (UNEXPECTED(!pgen::InvalidCallablePropertyTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r332.raw()))) goto catch_c116;
+									vd119 = std::move(r332);
+									vd119_done = true;
 								}
 								break;
 								case 214: {
-									zv::Val r332;
-									if (UNEXPECTED(!pgen::UninitializedPropertyRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r332.raw()))) goto catch_c115;
-									vd118 = std::move(r332);
-									vd118_done = true;
+									zv::Val r333;
+									if (UNEXPECTED(!pgen::UninitializedPropertyRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r333.raw()))) goto catch_c116;
+									vd119 = std::move(r333);
+									vd119_done = true;
 								}
 								break;
 								case 215: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Properties\\PropertyAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r333;
-									if (UNEXPECTED(!pgen::PropertyAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r333.raw()))) goto catch_c115;
-									vd118 = std::move(r333);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Properties\\PropertyAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r334;
+									if (UNEXPECTED(!pgen::PropertyAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r334.raw()))) goto catch_c116;
+									vd119 = std::move(r334);
+									vd119_done = true;
 								}
 								break;
 								case 216: {
-									zv::Val r334;
-									if (UNEXPECTED(!pgen::ReadOnlyByPhpDocPropertyAssignRefRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r334.raw()))) goto catch_c115;
-									vd118 = std::move(r334);
-									vd118_done = true;
+									zv::Val r335;
+									if (UNEXPECTED(!pgen::ReadOnlyByPhpDocPropertyAssignRefRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r335.raw()))) goto catch_c116;
+									vd119 = std::move(r335);
+									vd119_done = true;
 								}
 								break;
 								case 217: {
-									zv::Val r335;
-									if (UNEXPECTED(!pgen::ReadOnlyPropertyRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r335.raw()))) goto catch_c115;
-									vd118 = std::move(r335);
-									vd118_done = true;
+									zv::Val r336;
+									if (UNEXPECTED(!pgen::ReadOnlyPropertyRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r336.raw()))) goto catch_c116;
+									vd119 = std::move(r336);
+									vd119_done = true;
 								}
 								break;
 								case 218: {
-									zv::Val r336;
-									if (UNEXPECTED(!pgen::PropertyAssignRefRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r336.raw()))) goto catch_c115;
-									vd118 = std::move(r336);
-									vd118_done = true;
+									zv::Val r337;
+									if (UNEXPECTED(!pgen::PropertyAssignRefRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r337.raw()))) goto catch_c116;
+									vd119 = std::move(r337);
+									vd119_done = true;
 								}
 								break;
 								case 219: {
-									zv::Val r337;
-									if (UNEXPECTED(!pgen::CallToStaticMethodStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r337.raw()))) goto catch_c115;
-									vd118 = std::move(r337);
-									vd118_done = true;
+									zv::Val r338;
+									if (UNEXPECTED(!pgen::CallToStaticMethodStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r338.raw()))) goto catch_c116;
+									vd119 = std::move(r338);
+									vd119_done = true;
 								}
 								break;
 								case 220: {
-									zv::Val r338;
-									if (UNEXPECTED(!pgen::UnusedPrivateMethodRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r338.raw()))) goto catch_c115;
-									vd118 = std::move(r338);
-									vd118_done = true;
+									zv::Val r339;
+									if (UNEXPECTED(!pgen::UnusedPrivateMethodRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r339.raw()))) goto catch_c116;
+									vd119 = std::move(r339);
+									vd119_done = true;
 								}
 								break;
 								case 221: {
-									zv::Val r339;
-									if (UNEXPECTED(!pgen::UnreachableStatementRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r339.raw()))) goto catch_c115;
-									vd118 = std::move(r339);
-									vd118_done = true;
+									zv::Val r340;
+									if (UNEXPECTED(!pgen::UnreachableStatementRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r340.raw()))) goto catch_c116;
+									vd119 = std::move(r340);
+									vd119_done = true;
 								}
 								break;
 								case 222: {
-									zv::Val r340;
-									if (UNEXPECTED(!pgen::NoopRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r340.raw()))) goto catch_c115;
-									vd118 = std::move(r340);
-									vd118_done = true;
+									zv::Val r341;
+									if (UNEXPECTED(!pgen::NoopRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r341.raw()))) goto catch_c116;
+									vd119 = std::move(r341);
+									vd119_done = true;
 								}
 								break;
 								case 223: {
-									zv::Val r341;
-									if (UNEXPECTED(!pgen::CallToFunctionStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r341.raw()))) goto catch_c115;
-									vd118 = std::move(r341);
-									vd118_done = true;
+									zv::Val r342;
+									if (UNEXPECTED(!pgen::CallToFunctionStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r342.raw()))) goto catch_c116;
+									vd119 = std::move(r342);
+									vd119_done = true;
 								}
 								break;
 								case 224: {
-									zv::Val r342;
-									if (UNEXPECTED(!pgen::CallToConstructorStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r342.raw()))) goto catch_c115;
-									vd118 = std::move(r342);
-									vd118_done = true;
+									zv::Val r343;
+									if (UNEXPECTED(!pgen::CallToConstructorStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r343.raw()))) goto catch_c116;
+									vd119 = std::move(r343);
+									vd119_done = true;
 								}
 								break;
 								case 225: {
-									zv::Val r343;
-									if (UNEXPECTED(!pgen::CallToMethodStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r343.raw()))) goto catch_c115;
-									vd118 = std::move(r343);
-									vd118_done = true;
+									zv::Val r344;
+									if (UNEXPECTED(!pgen::CallToMethodStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r344.raw()))) goto catch_c116;
+									vd119 = std::move(r344);
+									vd119_done = true;
 								}
 								break;
 								case 226: {
-									zv::Val r344;
-									if (UNEXPECTED(!pgen::UnusedPrivatePropertyRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r344.raw()))) goto catch_c115;
-									vd118 = std::move(r344);
-									vd118_done = true;
+									zv::Val r345;
+									if (UNEXPECTED(!pgen::UnusedPrivatePropertyRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r345.raw()))) goto catch_c116;
+									vd119 = std::move(r345);
+									vd119_done = true;
 								}
 								break;
 								case 227: {
-									zv::Val r345;
-									if (UNEXPECTED(!pgen::UnusedVariableRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r345.raw()))) goto catch_c115;
-									vd118 = std::move(r345);
-									vd118_done = true;
+									zv::Val r346;
+									if (UNEXPECTED(!pgen::UnusedVariableRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r346.raw()))) goto catch_c116;
+									vd119 = std::move(r346);
+									vd119_done = true;
 								}
 								break;
 								case 228: {
-									zv::Val r346;
-									if (UNEXPECTED(!pgen::UnusedPrivateConstantRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r346.raw()))) goto catch_c115;
-									vd118 = std::move(r346);
-									vd118_done = true;
+									zv::Val r347;
+									if (UNEXPECTED(!pgen::UnusedPrivateConstantRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r347.raw()))) goto catch_c116;
+									vd119 = std::move(r347);
+									vd119_done = true;
 								}
 								break;
 								case 229: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Variables\\IssetRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r347;
-									if (UNEXPECTED(!pgen::IssetRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r347.raw()))) goto catch_c115;
-									vd118 = std::move(r347);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Variables\\IssetRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r348;
+									if (UNEXPECTED(!pgen::IssetRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r348.raw()))) goto catch_c116;
+									vd119 = std::move(r348);
+									vd119_done = true;
 								}
 								break;
 								case 230: {
-									zv::Val r348;
-									if (UNEXPECTED(!pgen::ThisInStaticStatementRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r348.raw()))) goto catch_c115;
-									vd118 = std::move(r348);
-									vd118_done = true;
+									zv::Val r349;
+									if (UNEXPECTED(!pgen::ThisInStaticStatementRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r349.raw()))) goto catch_c116;
+									vd119 = std::move(r349);
+									vd119_done = true;
 								}
 								break;
 								case 231: {
-									zv::Val r349;
-									if (UNEXPECTED(!pgen::ParameterOutExecutionEndTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r349.raw()))) goto catch_c115;
-									vd118 = std::move(r349);
-									vd118_done = true;
+									zv::Val r350;
+									if (UNEXPECTED(!pgen::ParameterOutExecutionEndTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r350.raw()))) goto catch_c116;
+									vd119 = std::move(r350);
+									vd119_done = true;
 								}
 								break;
 								case 232: {
-									zv::Val r350;
-									if (UNEXPECTED(!pgen::ThisInGlobalStatementRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r350.raw()))) goto catch_c115;
-									vd118 = std::move(r350);
-									vd118_done = true;
+									zv::Val r351;
+									if (UNEXPECTED(!pgen::ThisInGlobalStatementRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r351.raw()))) goto catch_c116;
+									vd119 = std::move(r351);
+									vd119_done = true;
 								}
 								break;
 								case 233: {
-									zv::Val r351;
-									if (UNEXPECTED(!pgen::CompactVariablesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r351.raw()))) goto catch_c115;
-									vd118 = std::move(r351);
-									vd118_done = true;
+									zv::Val r352;
+									if (UNEXPECTED(!pgen::CompactVariablesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r352.raw()))) goto catch_c116;
+									vd119 = std::move(r352);
+									vd119_done = true;
 								}
 								break;
 								case 234: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Variables\\NullCoalesceRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r352;
-									if (UNEXPECTED(!pgen::NullCoalesceRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r352.raw()))) goto catch_c115;
-									vd118 = std::move(r352);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Variables\\NullCoalesceRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r353;
+									if (UNEXPECTED(!pgen::NullCoalesceRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r353.raw()))) goto catch_c116;
+									vd119 = std::move(r353);
+									vd119_done = true;
 								}
 								break;
 								case 235: {
-									zv::Val r353;
-									if (UNEXPECTED(!pgen::ParameterOutAssignedTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r353.raw()))) goto catch_c115;
-									vd118 = std::move(r353);
-									vd118_done = true;
+									zv::Val r354;
+									if (UNEXPECTED(!pgen::ParameterOutAssignedTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r354.raw()))) goto catch_c116;
+									vd119 = std::move(r354);
+									vd119_done = true;
 								}
 								break;
 								case 236: {
-									zv::Val r354;
-									if (UNEXPECTED(!pgen::InvalidVariableAssignRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r354.raw()))) goto catch_c115;
-									vd118 = std::move(r354);
-									vd118_done = true;
+									zv::Val r355;
+									if (UNEXPECTED(!pgen::InvalidVariableAssignRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r355.raw()))) goto catch_c116;
+									vd119 = std::move(r355);
+									vd119_done = true;
 								}
 								break;
 								case 237: {
-									zv::Val r355;
-									if (UNEXPECTED(!pgen::VariableCloningRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r355.raw()))) goto catch_c115;
-									vd118 = std::move(r355);
-									vd118_done = true;
+									zv::Val r356;
+									if (UNEXPECTED(!pgen::VariableCloningRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r356.raw()))) goto catch_c116;
+									vd119 = std::move(r356);
+									vd119_done = true;
 								}
 								break;
 								case 238: {
-									zv::Val r356;
-									if (UNEXPECTED(!pgen::AssignToByRefExprFromForeachRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r356.raw()))) goto catch_c115;
-									vd118 = std::move(r356);
-									vd118_done = true;
+									zv::Val r357;
+									if (UNEXPECTED(!pgen::AssignToByRefExprFromForeachRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r357.raw()))) goto catch_c116;
+									vd119 = std::move(r357);
+									vd119_done = true;
 								}
 								break;
 								case 239: {
-									zv::Val r357;
-									if (UNEXPECTED(!pgen::UnsetRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r357.raw()))) goto catch_c115;
-									vd118 = std::move(r357);
-									vd118_done = true;
+									zv::Val r358;
+									if (UNEXPECTED(!pgen::UnsetRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r358.raw()))) goto catch_c116;
+									vd119 = std::move(r358);
+									vd119_done = true;
 								}
 								break;
 								case 240: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Variables\\EmptyRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r358;
-									if (UNEXPECTED(!pgen::EmptyRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r358.raw()))) goto catch_c115;
-									vd118 = std::move(r358);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Variables\\EmptyRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r359;
+									if (UNEXPECTED(!pgen::EmptyRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r359.raw()))) goto catch_c116;
+									vd119 = std::move(r359);
+									vd119_done = true;
 								}
 								break;
 								case 241: {
-									zv::Val r359;
-									if (UNEXPECTED(!pgen::InvalidKeyInArrayItemRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r359.raw()))) goto catch_c115;
-									vd118 = std::move(r359);
-									vd118_done = true;
+									zv::Val r360;
+									if (UNEXPECTED(!pgen::InvalidKeyInArrayItemRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r360.raw()))) goto catch_c116;
+									vd119 = std::move(r360);
+									vd119_done = true;
 								}
 								break;
 								case 242: {
-									zv::Val r360;
-									if (UNEXPECTED(!pgen::InvalidKeyInArrayDimFetchRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r360.raw()))) goto catch_c115;
-									vd118 = std::move(r360);
-									vd118_done = true;
+									zv::Val r361;
+									if (UNEXPECTED(!pgen::InvalidKeyInArrayDimFetchRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r361.raw()))) goto catch_c116;
+									vd119 = std::move(r361);
+									vd119_done = true;
 								}
 								break;
 								case 243: {
-									zv::Val r361;
-									if (UNEXPECTED(!pgen::OffsetAccessValueAssignmentRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r361.raw()))) goto catch_c115;
-									vd118 = std::move(r361);
-									vd118_done = true;
+									zv::Val r362;
+									if (UNEXPECTED(!pgen::OffsetAccessValueAssignmentRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r362.raw()))) goto catch_c116;
+									vd119 = std::move(r362);
+									vd119_done = true;
 								}
 								break;
 								case 244: {
-									zv::Val r362;
-									if (UNEXPECTED(!pgen::OffsetAccessWithoutDimForReadingRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r362.raw()))) goto catch_c115;
-									vd118 = std::move(r362);
-									vd118_done = true;
+									zv::Val r363;
+									if (UNEXPECTED(!pgen::OffsetAccessWithoutDimForReadingRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r363.raw()))) goto catch_c116;
+									vd119 = std::move(r363);
+									vd119_done = true;
 								}
 								break;
 								case 245: {
-									zv::Val r363;
-									if (UNEXPECTED(!pgen::OffsetAccessAssignOpRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r363.raw()))) goto catch_c115;
-									vd118 = std::move(r363);
-									vd118_done = true;
+									zv::Val r364;
+									if (UNEXPECTED(!pgen::OffsetAccessAssignOpRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r364.raw()))) goto catch_c116;
+									vd119 = std::move(r364);
+									vd119_done = true;
 								}
 								break;
 								case 246: {
-									zv::Val r364;
-									if (UNEXPECTED(!pgen::ArrayUnpackingRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r364.raw()))) goto catch_c115;
-									vd118 = std::move(r364);
-									vd118_done = true;
+									zv::Val r365;
+									if (UNEXPECTED(!pgen::ArrayUnpackingRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r365.raw()))) goto catch_c116;
+									vd119 = std::move(r365);
+									vd119_done = true;
 								}
 								break;
 								case 247: {
-									zv::Val r365;
-									if (UNEXPECTED(!pgen::OffsetAccessAssignmentRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r365.raw()))) goto catch_c115;
-									vd118 = std::move(r365);
-									vd118_done = true;
+									zv::Val r366;
+									if (UNEXPECTED(!pgen::OffsetAccessAssignmentRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r366.raw()))) goto catch_c116;
+									vd119 = std::move(r366);
+									vd119_done = true;
 								}
 								break;
 								case 248: {
-									zv::Val r366;
-									if (UNEXPECTED(!pgen::ArrayDestructuringRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r366.raw()))) goto catch_c115;
-									vd118 = std::move(r366);
-									vd118_done = true;
+									zv::Val r367;
+									if (UNEXPECTED(!pgen::ArrayDestructuringRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r367.raw()))) goto catch_c116;
+									vd119 = std::move(r367);
+									vd119_done = true;
 								}
 								break;
 								case 249: {
-									zv::Val r367;
-									if (UNEXPECTED(!pgen::UnpackIterableInArrayRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r367.raw()))) goto catch_c115;
-									vd118 = std::move(r367);
-									vd118_done = true;
+									zv::Val r368;
+									if (UNEXPECTED(!pgen::UnpackIterableInArrayRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r368.raw()))) goto catch_c116;
+									vd119 = std::move(r368);
+									vd119_done = true;
 								}
 								break;
 								case 250: {
-									zv::Val r368;
-									if (UNEXPECTED(!pgen::DuplicateKeysInLiteralArraysRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r368.raw()))) goto catch_c115;
-									vd118 = std::move(r368);
-									vd118_done = true;
+									zv::Val r369;
+									if (UNEXPECTED(!pgen::DuplicateKeysInLiteralArraysRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r369.raw()))) goto catch_c116;
+									vd119 = std::move(r369);
+									vd119_done = true;
 								}
 								break;
 								case 251: {
-									zv::Val r369;
-									if (UNEXPECTED(!pgen::NonexistentOffsetInArrayDimFetchRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r369.raw()))) goto catch_c115;
-									vd118 = std::move(r369);
-									vd118_done = true;
+									zv::Val r370;
+									if (UNEXPECTED(!pgen::NonexistentOffsetInArrayDimFetchRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r370.raw()))) goto catch_c116;
+									vd119 = std::move(r370);
+									vd119_done = true;
 								}
 								break;
 								case 252: {
-									zv::Val r370;
-									if (UNEXPECTED(!pgen::DeadForeachRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r370.raw()))) goto catch_c115;
-									vd118 = std::move(r370);
-									vd118_done = true;
+									zv::Val r371;
+									if (UNEXPECTED(!pgen::DeadForeachRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r371.raw()))) goto catch_c116;
+									vd119 = std::move(r371);
+									vd119_done = true;
 								}
 								break;
 								case 253: {
-									zv::Val r371;
-									if (UNEXPECTED(!pgen::IterableInForeachRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r371.raw()))) goto catch_c115;
-									vd118 = std::move(r371);
-									vd118_done = true;
+									zv::Val r372;
+									if (UNEXPECTED(!pgen::IterableInForeachRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r372.raw()))) goto catch_c116;
+									vd119 = std::move(r372);
+									vd119_done = true;
 								}
 								break;
 								case 254: {
-									zv::Val r372;
-									if (UNEXPECTED(!pgen::ApiStaticCallRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r372.raw()))) goto catch_c115;
-									vd118 = std::move(r372);
-									vd118_done = true;
+									zv::Val r373;
+									if (UNEXPECTED(!pgen::ApiStaticCallRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r373.raw()))) goto catch_c116;
+									vd119 = std::move(r373);
+									vd119_done = true;
 								}
 								break;
 								case 255: {
-									zv::Val r373;
-									if (UNEXPECTED(!pgen::OldPhpParser4ClassRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r373.raw()))) goto catch_c115;
-									vd118 = std::move(r373);
-									vd118_done = true;
+									zv::Val r374;
+									if (UNEXPECTED(!pgen::OldPhpParser4ClassRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r374.raw()))) goto catch_c116;
+									vd119 = std::move(r374);
+									vd119_done = true;
 								}
 								break;
 								case 256: {
-									zv::Val r374;
-									if (UNEXPECTED(!pgen::ApiClassConstFetchRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r374.raw()))) goto catch_c115;
-									vd118 = std::move(r374);
-									vd118_done = true;
+									zv::Val r375;
+									if (UNEXPECTED(!pgen::ApiClassConstFetchRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r375.raw()))) goto catch_c116;
+									vd119 = std::move(r375);
+									vd119_done = true;
 								}
 								break;
 								case 257: {
-									zv::Val r375;
-									if (UNEXPECTED(!pgen::RuntimeReflectionFunctionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r375.raw()))) goto catch_c115;
-									vd118 = std::move(r375);
-									vd118_done = true;
+									zv::Val r376;
+									if (UNEXPECTED(!pgen::RuntimeReflectionFunctionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r376.raw()))) goto catch_c116;
+									vd119 = std::move(r376);
+									vd119_done = true;
 								}
 								break;
 								case 258: {
-									zv::Val r376;
-									if (UNEXPECTED(!pgen::ApiMethodCallRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r376.raw()))) goto catch_c115;
-									vd118 = std::move(r376);
-									vd118_done = true;
+									zv::Val r377;
+									if (UNEXPECTED(!pgen::ApiMethodCallRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r377.raw()))) goto catch_c116;
+									vd119 = std::move(r377);
+									vd119_done = true;
 								}
 								break;
 								case 259: {
-									zv::Val r377;
-									if (UNEXPECTED(!pgen::GetTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r377.raw()))) goto catch_c115;
-									vd118 = std::move(r377);
-									vd118_done = true;
+									zv::Val r378;
+									if (UNEXPECTED(!pgen::GetTemplateTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r378.raw()))) goto catch_c116;
+									vd119 = std::move(r378);
+									vd119_done = true;
 								}
 								break;
 								case 260: {
-									zv::Val r378;
-									if (UNEXPECTED(!pgen::ApiTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r378.raw()))) goto catch_c115;
-									vd118 = std::move(r378);
-									vd118_done = true;
+									zv::Val r379;
+									if (UNEXPECTED(!pgen::ApiTraitUseRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r379.raw()))) goto catch_c116;
+									vd119 = std::move(r379);
+									vd119_done = true;
 								}
 								break;
 								case 261: {
-									zv::Val r379;
-									if (UNEXPECTED(!pgen::ApiClassExtendsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r379.raw()))) goto catch_c115;
-									vd118 = std::move(r379);
-									vd118_done = true;
+									zv::Val r380;
+									if (UNEXPECTED(!pgen::ApiClassExtendsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r380.raw()))) goto catch_c116;
+									vd119 = std::move(r380);
+									vd119_done = true;
 								}
 								break;
 								case 262: {
-									zv::Val r380;
-									if (UNEXPECTED(!pgen::ApiClassImplementsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r380.raw()))) goto catch_c115;
-									vd118 = std::move(r380);
-									vd118_done = true;
+									zv::Val r381;
+									if (UNEXPECTED(!pgen::ApiClassImplementsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r381.raw()))) goto catch_c116;
+									vd119 = std::move(r381);
+									vd119_done = true;
 								}
 								break;
 								case 263: {
-									zv::Val r381;
-									if (UNEXPECTED(!pgen::RuntimeReflectionInstantiationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r381.raw()))) goto catch_c115;
-									vd118 = std::move(r381);
-									vd118_done = true;
+									zv::Val r382;
+									if (UNEXPECTED(!pgen::RuntimeReflectionInstantiationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r382.raw()))) goto catch_c116;
+									vd119 = std::move(r382);
+									vd119_done = true;
 								}
 								break;
 								case 264: {
-									zv::Val r382;
-									if (UNEXPECTED(!pgen::PhpStanNamespaceIn3rdPartyPackageRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r382.raw()))) goto catch_c115;
-									vd118 = std::move(r382);
-									vd118_done = true;
+									zv::Val r383;
+									if (UNEXPECTED(!pgen::PhpStanNamespaceIn3rdPartyPackageRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r383.raw()))) goto catch_c116;
+									vd119 = std::move(r383);
+									vd119_done = true;
 								}
 								break;
 								case 265: {
-									zv::Val r383;
-									if (UNEXPECTED(!pgen::NodeConnectingVisitorAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r383.raw()))) goto catch_c115;
-									vd118 = std::move(r383);
-									vd118_done = true;
+									zv::Val r384;
+									if (UNEXPECTED(!pgen::NodeConnectingVisitorAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r384.raw()))) goto catch_c116;
+									vd119 = std::move(r384);
+									vd119_done = true;
 								}
 								break;
 								case 266: {
-									zv::Val r384;
-									if (UNEXPECTED(!pgen::ApiInstantiationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r384.raw()))) goto catch_c115;
-									vd118 = std::move(r384);
-									vd118_done = true;
+									zv::Val r385;
+									if (UNEXPECTED(!pgen::ApiInstantiationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r385.raw()))) goto catch_c116;
+									vd119 = std::move(r385);
+									vd119_done = true;
 								}
 								break;
 								case 267: {
-									zv::Val r385;
-									if (UNEXPECTED(!pgen::ApiInstanceofRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r385.raw()))) goto catch_c115;
-									vd118 = std::move(r385);
-									vd118_done = true;
+									zv::Val r386;
+									if (UNEXPECTED(!pgen::ApiInstanceofRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r386.raw()))) goto catch_c116;
+									vd119 = std::move(r386);
+									vd119_done = true;
 								}
 								break;
 								case 268: {
-									zv::Val r386;
-									if (UNEXPECTED(!pgen::ApiInterfaceExtendsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r386.raw()))) goto catch_c115;
-									vd118 = std::move(r386);
-									vd118_done = true;
+									zv::Val r387;
+									if (UNEXPECTED(!pgen::ApiInterfaceExtendsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r387.raw()))) goto catch_c116;
+									vd119 = std::move(r387);
+									vd119_done = true;
 								}
 								break;
 								case 269: {
-									zv::Val r387;
-									if (UNEXPECTED(!pgen::CallToFunctionStatementWithNoDiscardRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r387.raw()))) goto catch_c115;
-									vd118 = std::move(r387);
-									vd118_done = true;
+									zv::Val r388;
+									if (UNEXPECTED(!pgen::CallToFunctionStatementWithNoDiscardRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r388.raw()))) goto catch_c116;
+									vd119 = std::move(r388);
+									vd119_done = true;
 								}
 								break;
 								case 270: {
-									zv::Val r388;
-									if (UNEXPECTED(!pgen::UnusedFunctionParametersRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r388.raw()))) goto catch_c115;
-									vd118 = std::move(r388);
-									vd118_done = true;
+									zv::Val r389;
+									if (UNEXPECTED(!pgen::UnusedFunctionParametersRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r389.raw()))) goto catch_c116;
+									vd119 = std::move(r389);
+									vd119_done = true;
 								}
 								break;
 								case 271: {
-									zv::Val r389;
-									if (UNEXPECTED(!pgen::UselessFunctionReturnValueRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r389.raw()))) goto catch_c115;
-									vd118 = std::move(r389);
-									vd118_done = true;
+									zv::Val r390;
+									if (UNEXPECTED(!pgen::UselessFunctionReturnValueRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r390.raw()))) goto catch_c116;
+									vd119 = std::move(r390);
+									vd119_done = true;
 								}
 								break;
 								case 272: {
-									zv::Val r390;
-									if (UNEXPECTED(!pgen::ArrayFilterRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r390.raw()))) goto catch_c115;
-									vd118 = std::move(r390);
-									vd118_done = true;
+									zv::Val r391;
+									if (UNEXPECTED(!pgen::ArrayFilterRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r391.raw()))) goto catch_c116;
+									vd119 = std::move(r391);
+									vd119_done = true;
 								}
 								break;
 								case 273: {
-									zv::Val r391;
-									if (UNEXPECTED(!pgen::ParameterCastableToNumberRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r391.raw()))) goto catch_c115;
-									vd118 = std::move(r391);
-									vd118_done = true;
+									zv::Val r392;
+									if (UNEXPECTED(!pgen::ParameterCastableToNumberRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r392.raw()))) goto catch_c116;
+									vd119 = std::move(r392);
+									vd119_done = true;
 								}
 								break;
 								case 274: {
-									zv::Val r392;
-									if (UNEXPECTED(!pgen::MissingFunctionReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r392.raw()))) goto catch_c115;
-									vd118 = std::move(r392);
-									vd118_done = true;
+									zv::Val r393;
+									if (UNEXPECTED(!pgen::MissingFunctionReturnTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r393.raw()))) goto catch_c116;
+									vd119 = std::move(r393);
+									vd119_done = true;
 								}
 								break;
 								case 275: {
-									zv::Val r393;
-									if (UNEXPECTED(!pgen::ExistingClassesInArrowFunctionTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r393.raw()))) goto catch_c115;
-									vd118 = std::move(r393);
-									vd118_done = true;
+									zv::Val r394;
+									if (UNEXPECTED(!pgen::ExistingClassesInArrowFunctionTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r394.raw()))) goto catch_c116;
+									vd119 = std::move(r394);
+									vd119_done = true;
 								}
 								break;
 								case 276: {
-									zv::Val r394;
-									if (UNEXPECTED(!pgen::InnerFunctionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r394.raw()))) goto catch_c115;
-									vd118 = std::move(r394);
-									vd118_done = true;
+									zv::Val r395;
+									if (UNEXPECTED(!pgen::InnerFunctionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r395.raw()))) goto catch_c116;
+									vd119 = std::move(r395);
+									vd119_done = true;
 								}
 								break;
 								case 277: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\ArrowFunctionAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r395;
-									if (UNEXPECTED(!pgen::ArrowFunctionAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r395.raw()))) goto catch_c115;
-									vd118 = std::move(r395);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\ArrowFunctionAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r396;
+									if (UNEXPECTED(!pgen::ArrowFunctionAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r396.raw()))) goto catch_c116;
+									vd119 = std::move(r396);
+									vd119_done = true;
 								}
 								break;
 								case 278: {
-									zv::Val r396;
-									if (UNEXPECTED(!pgen::ArrayValuesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r396.raw()))) goto catch_c115;
-									vd118 = std::move(r396);
-									vd118_done = true;
+									zv::Val r397;
+									if (UNEXPECTED(!pgen::ArrayValuesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r397.raw()))) goto catch_c116;
+									vd119 = std::move(r397);
+									vd119_done = true;
 								}
 								break;
 								case 279: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\CallUserFuncRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r397;
-									if (UNEXPECTED(!pgen::CallUserFuncRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r397.raw()))) goto catch_c115;
-									vd118 = std::move(r397);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\CallUserFuncRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r398;
+									if (UNEXPECTED(!pgen::CallUserFuncRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r398.raw()))) goto catch_c116;
+									vd119 = std::move(r398);
+									vd119_done = true;
 								}
 								break;
 								case 280: {
-									zv::Val r398;
-									if (UNEXPECTED(!pgen::SortWithoutEffectRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r398.raw()))) goto catch_c115;
-									vd118 = std::move(r398);
-									vd118_done = true;
+									zv::Val r399;
+									if (UNEXPECTED(!pgen::SortWithoutEffectRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r399.raw()))) goto catch_c116;
+									vd119 = std::move(r399);
+									vd119_done = true;
 								}
 								break;
 								case 281: {
-									zv::Val r399;
-									if (UNEXPECTED(!pgen::ArrowFunctionReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r399.raw()))) goto catch_c115;
-									vd118 = std::move(r399);
-									vd118_done = true;
+									zv::Val r400;
+									if (UNEXPECTED(!pgen::ArrowFunctionReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r400.raw()))) goto catch_c116;
+									vd119 = std::move(r400);
+									vd119_done = true;
 								}
 								break;
 								case 282: {
-									zv::Val r400;
-									if (UNEXPECTED(!pgen::ArrowFunctionReturnNullsafeByRefRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r400.raw()))) goto catch_c115;
-									vd118 = std::move(r400);
-									vd118_done = true;
+									zv::Val r401;
+									if (UNEXPECTED(!pgen::ArrowFunctionReturnNullsafeByRefRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r401.raw()))) goto catch_c116;
+									vd119 = std::move(r401);
+									vd119_done = true;
 								}
 								break;
 								case 283: {
-									zv::Val r401;
-									if (UNEXPECTED(!pgen::DefineParametersRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r401.raw()))) goto catch_c115;
-									vd118 = std::move(r401);
-									vd118_done = true;
+									zv::Val r402;
+									if (UNEXPECTED(!pgen::DefineParametersRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r402.raw()))) goto catch_c116;
+									vd119 = std::move(r402);
+									vd119_done = true;
 								}
 								break;
 								case 284: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\FunctionAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r402;
-									if (UNEXPECTED(!pgen::FunctionAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r402.raw()))) goto catch_c115;
-									vd118 = std::move(r402);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\FunctionAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r403;
+									if (UNEXPECTED(!pgen::FunctionAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r403.raw()))) goto catch_c116;
+									vd119 = std::move(r403);
+									vd119_done = true;
 								}
 								break;
 								case 285: {
-									zv::Val r403;
-									if (UNEXPECTED(!pgen::UnusedClosureUsesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r403.raw()))) goto catch_c115;
-									vd118 = std::move(r403);
-									vd118_done = true;
+									zv::Val r404;
+									if (UNEXPECTED(!pgen::UnusedClosureUsesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r404.raw()))) goto catch_c116;
+									vd119 = std::move(r404);
+									vd119_done = true;
 								}
 								break;
 								case 286: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\ParamAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r404;
-									if (UNEXPECTED(!pgen::ParamAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r404.raw()))) goto catch_c115;
-									vd118 = std::move(r404);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\ParamAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r405;
+									if (UNEXPECTED(!pgen::ParamAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r405.raw()))) goto catch_c116;
+									vd119 = std::move(r405);
+									vd119_done = true;
 								}
 								break;
 								case 287: {
-									zv::Val r405;
-									if (UNEXPECTED(!pgen::InvalidLexicalVariablesInClosureUseRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r405.raw()))) goto catch_c115;
-									vd118 = std::move(r405);
-									vd118_done = true;
+									zv::Val r406;
+									if (UNEXPECTED(!pgen::InvalidLexicalVariablesInClosureUseRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r406.raw()))) goto catch_c116;
+									vd119 = std::move(r406);
+									vd119_done = true;
 								}
 								break;
 								case 288: {
-									zv::Val r406;
-									if (UNEXPECTED(!pgen::PrintfParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r406.raw()))) goto catch_c115;
-									vd118 = std::move(r406);
-									vd118_done = true;
+									zv::Val r407;
+									if (UNEXPECTED(!pgen::PrintfParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r407.raw()))) goto catch_c116;
+									vd119 = std::move(r407);
+									vd119_done = true;
 								}
 								break;
 								case 289: {
-									zv::Val r407;
-									if (UNEXPECTED(!pgen::DuplicateFunctionDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r407.raw()))) goto catch_c115;
-									vd118 = std::move(r407);
-									vd118_done = true;
+									zv::Val r408;
+									if (UNEXPECTED(!pgen::DuplicateFunctionDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r408.raw()))) goto catch_c116;
+									vd119 = std::move(r408);
+									vd119_done = true;
 								}
 								break;
 								case 290: {
-									zv::Val r408;
-									if (UNEXPECTED(!pgen::RandomIntParametersRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r408.raw()))) goto catch_c115;
-									vd118 = std::move(r408);
-									vd118_done = true;
+									zv::Val r409;
+									if (UNEXPECTED(!pgen::RandomIntParametersRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r409.raw()))) goto catch_c116;
+									vd119 = std::move(r409);
+									vd119_done = true;
 								}
 								break;
 								case 291: {
-									zv::Val r409;
-									if (UNEXPECTED(!pgen::IncompatibleArrowFunctionDefaultParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r409.raw()))) goto catch_c115;
-									vd118 = std::move(r409);
-									vd118_done = true;
+									zv::Val r410;
+									if (UNEXPECTED(!pgen::IncompatibleArrowFunctionDefaultParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r410.raw()))) goto catch_c116;
+									vd119 = std::move(r410);
+									vd119_done = true;
 								}
 								break;
 								case 292: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\CallCallablesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r410;
-									if (UNEXPECTED(!pgen::CallCallablesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r410.raw()))) goto catch_c115;
-									vd118 = std::move(r410);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\CallCallablesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r411;
+									if (UNEXPECTED(!pgen::CallCallablesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r411.raw()))) goto catch_c116;
+									vd119 = std::move(r411);
+									vd119_done = true;
 								}
 								break;
 								case 293: {
-									zv::Val r411;
-									if (UNEXPECTED(!pgen::ReturnTypeAfterFinallyRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r411.raw()))) goto catch_c115;
-									vd118 = std::move(r411);
-									vd118_done = true;
+									zv::Val r412;
+									if (UNEXPECTED(!pgen::ReturnTypeAfterFinallyRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r412.raw()))) goto catch_c116;
+									vd119 = std::move(r412);
+									vd119_done = true;
 								}
 								break;
 								case 294: {
-									zv::Val r412;
-									if (UNEXPECTED(!pgen::MissingFunctionParameterTypehintRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r412.raw()))) goto catch_c115;
-									vd118 = std::move(r412);
-									vd118_done = true;
+									zv::Val r413;
+									if (UNEXPECTED(!pgen::MissingFunctionParameterTypehintRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r413.raw()))) goto catch_c116;
+									vd119 = std::move(r413);
+									vd119_done = true;
 								}
 								break;
 								case 295: {
-									zv::Val r413;
-									if (UNEXPECTED(!pgen::RedefinedParametersRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r413.raw()))) goto catch_c115;
-									vd118 = std::move(r413);
-									vd118_done = true;
+									zv::Val r414;
+									if (UNEXPECTED(!pgen::RedefinedParametersRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r414.raw()))) goto catch_c116;
+									vd119 = std::move(r414);
+									vd119_done = true;
 								}
 								break;
 								case 296: {
-									zv::Val r414;
-									if (UNEXPECTED(!pgen::ClosureReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r414.raw()))) goto catch_c115;
-									vd118 = std::move(r414);
-									vd118_done = true;
+									zv::Val r415;
+									if (UNEXPECTED(!pgen::ClosureReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r415.raw()))) goto catch_c116;
+									vd119 = std::move(r415);
+									vd119_done = true;
 								}
 								break;
 								case 297: {
-									zv::Val r415;
-									if (UNEXPECTED(!pgen::IncompatibleClosureDefaultParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r415.raw()))) goto catch_c115;
-									vd118 = std::move(r415);
-									vd118_done = true;
+									zv::Val r416;
+									if (UNEXPECTED(!pgen::IncompatibleClosureDefaultParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r416.raw()))) goto catch_c116;
+									vd119 = std::move(r416);
+									vd119_done = true;
 								}
 								break;
 								case 298: {
-									zv::Val r416;
-									if (UNEXPECTED(!pgen::ExistingClassesInClosureTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r416.raw()))) goto catch_c115;
-									vd118 = std::move(r416);
-									vd118_done = true;
+									zv::Val r417;
+									if (UNEXPECTED(!pgen::ExistingClassesInClosureTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r417.raw()))) goto catch_c116;
+									vd119 = std::move(r417);
+									vd119_done = true;
 								}
 								break;
 								case 299: {
-									zv::Val r417;
-									if (UNEXPECTED(!pgen::VariadicParametersDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r417.raw()))) goto catch_c115;
-									vd118 = std::move(r417);
-									vd118_done = true;
+									zv::Val r418;
+									if (UNEXPECTED(!pgen::VariadicParametersDeclarationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r418.raw()))) goto catch_c116;
+									vd119 = std::move(r418);
+									vd119_done = true;
 								}
 								break;
 								case 300: {
-									zv::Val r418;
-									if (UNEXPECTED(!pgen::ImplodeParameterCastableToStringRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r418.raw()))) goto catch_c115;
-									vd118 = std::move(r418);
-									vd118_done = true;
+									zv::Val r419;
+									if (UNEXPECTED(!pgen::ImplodeParameterCastableToStringRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r419.raw()))) goto catch_c116;
+									vd119 = std::move(r419);
+									vd119_done = true;
 								}
 								break;
 								case 301: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\ClosureAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r419;
-									if (UNEXPECTED(!pgen::ClosureAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r419.raw()))) goto catch_c115;
-									vd118 = std::move(r419);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Functions\\ClosureAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r420;
+									if (UNEXPECTED(!pgen::ClosureAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r420.raw()))) goto catch_c116;
+									vd119 = std::move(r420);
+									vd119_done = true;
 								}
 								break;
 								case 302: {
-									zv::Val r420;
-									if (UNEXPECTED(!pgen::ParameterCastableToStringRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r420.raw()))) goto catch_c115;
-									vd118 = std::move(r420);
-									vd118_done = true;
+									zv::Val r421;
+									if (UNEXPECTED(!pgen::ParameterCastableToStringRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r421.raw()))) goto catch_c116;
+									vd119 = std::move(r421);
+									vd119_done = true;
 								}
 								break;
 								case 303: {
-									zv::Val r421;
-									if (UNEXPECTED(!pgen::FilterVarRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r421.raw()))) goto catch_c115;
-									vd118 = std::move(r421);
-									vd118_done = true;
+									zv::Val r422;
+									if (UNEXPECTED(!pgen::FilterVarRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r422.raw()))) goto catch_c116;
+									vd119 = std::move(r422);
+									vd119_done = true;
 								}
 								break;
 								case 304: {
-									zv::Val r422;
-									if (UNEXPECTED(!pgen::InvalidParameterNameRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r422.raw()))) goto catch_c115;
-									vd118 = std::move(r422);
-									vd118_done = true;
+									zv::Val r423;
+									if (UNEXPECTED(!pgen::InvalidParameterNameRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r423.raw()))) goto catch_c116;
+									vd119 = std::move(r423);
+									vd119_done = true;
 								}
 								break;
 								case 305: {
-									zv::Val r423;
-									if (UNEXPECTED(!pgen::CallToNonExistentFunctionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r423.raw()))) goto catch_c115;
-									vd118 = std::move(r423);
-									vd118_done = true;
+									zv::Val r424;
+									if (UNEXPECTED(!pgen::CallToNonExistentFunctionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r424.raw()))) goto catch_c116;
+									vd119 = std::move(r424);
+									vd119_done = true;
 								}
 								break;
 								case 306: {
-									zv::Val r424;
-									if (UNEXPECTED(!pgen::PrintfArrayParametersRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r424.raw()))) goto catch_c115;
-									vd118 = std::move(r424);
-									vd118_done = true;
+									zv::Val r425;
+									if (UNEXPECTED(!pgen::PrintfArrayParametersRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r425.raw()))) goto catch_c116;
+									vd119 = std::move(r425);
+									vd119_done = true;
 								}
 								break;
 								case 307: {
-									zv::Val r425;
-									if (UNEXPECTED(!pgen::FunctionCallableRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r425.raw()))) goto catch_c115;
-									vd118 = std::move(r425);
-									vd118_done = true;
+									zv::Val r426;
+									if (UNEXPECTED(!pgen::FunctionCallableRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r426.raw()))) goto catch_c116;
+									vd119 = std::move(r426);
+									vd119_done = true;
 								}
 								break;
 								case 308: {
-									zv::Val r426;
-									if (UNEXPECTED(!pgen::ReturnNullsafeByRefRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r426.raw()))) goto catch_c115;
-									vd118 = std::move(r426);
-									vd118_done = true;
+									zv::Val r427;
+									if (UNEXPECTED(!pgen::ReturnNullsafeByRefRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r427.raw()))) goto catch_c116;
+									vd119 = std::move(r427);
+									vd119_done = true;
 								}
 								break;
 								case 309: {
-									zv::Val r427;
-									if (UNEXPECTED(!pgen::CallToFunctionStatementWithoutSideEffectsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r427.raw()))) goto catch_c115;
-									vd118 = std::move(r427);
-									vd118_done = true;
+									zv::Val r428;
+									if (UNEXPECTED(!pgen::CallToFunctionStatementWithoutSideEffectsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r428.raw()))) goto catch_c116;
+									vd119 = std::move(r428);
+									vd119_done = true;
 								}
 								break;
 								case 310: {
-									zv::Val r428;
-									if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r428.raw()))) goto catch_c115;
-									vd118 = std::move(r428);
-									vd118_done = true;
+									zv::Val r429;
+									if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r429.raw()))) goto catch_c116;
+									vd119 = std::move(r429);
+									vd119_done = true;
 								}
 								break;
 								case 311: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ImpossibleCheckTypeStaticMethodCallRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r429;
-									if (UNEXPECTED(!pgen::ImpossibleCheckTypeStaticMethodCallRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r429.raw()))) goto catch_c115;
-									vd118 = std::move(r429);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ImpossibleCheckTypeStaticMethodCallRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r430;
+									if (UNEXPECTED(!pgen::ImpossibleCheckTypeStaticMethodCallRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r430.raw()))) goto catch_c116;
+									vd119 = std::move(r430);
+									vd119_done = true;
 								}
 								break;
 								case 312: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\LogicalXorConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r430;
-									if (UNEXPECTED(!pgen::LogicalXorConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r430.raw()))) goto catch_c115;
-									vd118 = std::move(r430);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\LogicalXorConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r431;
+									if (UNEXPECTED(!pgen::LogicalXorConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r431.raw()))) goto catch_c116;
+									vd119 = std::move(r431);
+									vd119_done = true;
 								}
 								break;
 								case 313: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\WhileLoopAlwaysFalseConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r431;
-									if (UNEXPECTED(!pgen::WhileLoopAlwaysFalseConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r431.raw()))) goto catch_c115;
-									vd118 = std::move(r431);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\WhileLoopAlwaysFalseConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r432;
+									if (UNEXPECTED(!pgen::WhileLoopAlwaysFalseConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r432.raw()))) goto catch_c116;
+									vd119 = std::move(r432);
+									vd119_done = true;
 								}
 								break;
 								case 314: {
-									zv::Val r432;
-									if (UNEXPECTED(!pgen::UsageOfVoidMatchExpressionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r432.raw()))) goto catch_c115;
-									vd118 = std::move(r432);
-									vd118_done = true;
+									zv::Val r433;
+									if (UNEXPECTED(!pgen::UsageOfVoidMatchExpressionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r433.raw()))) goto catch_c116;
+									vd119 = std::move(r433);
+									vd119_done = true;
 								}
 								break;
 								case 315: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\SwitchConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r433;
-									if (UNEXPECTED(!pgen::SwitchConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r433.raw()))) goto catch_c115;
-									vd118 = std::move(r433);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\SwitchConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r434;
+									if (UNEXPECTED(!pgen::SwitchConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r434.raw()))) goto catch_c116;
+									vd119 = std::move(r434);
+									vd119_done = true;
 								}
 								break;
 								case 316: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ImpossibleCheckTypeMethodCallRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r434;
-									if (UNEXPECTED(!pgen::ImpossibleCheckTypeMethodCallRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r434.raw()))) goto catch_c115;
-									vd118 = std::move(r434);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ImpossibleCheckTypeMethodCallRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r435;
+									if (UNEXPECTED(!pgen::ImpossibleCheckTypeMethodCallRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r435.raw()))) goto catch_c116;
+									vd119 = std::move(r435);
+									vd119_done = true;
 								}
 								break;
 								case 317: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\NumberComparisonOperatorsConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r435;
-									if (UNEXPECTED(!pgen::NumberComparisonOperatorsConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r435.raw()))) goto catch_c115;
-									vd118 = std::move(r435);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\NumberComparisonOperatorsConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r436;
+									if (UNEXPECTED(!pgen::NumberComparisonOperatorsConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r436.raw()))) goto catch_c116;
+									vd119 = std::move(r436);
+									vd119_done = true;
 								}
 								break;
 								case 318: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantLooseComparisonRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r436;
-									if (UNEXPECTED(!pgen::ConstantLooseComparisonRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r436.raw()))) goto catch_c115;
-									vd118 = std::move(r436);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantLooseComparisonRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r437;
+									if (UNEXPECTED(!pgen::ConstantLooseComparisonRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r437.raw()))) goto catch_c116;
+									vd119 = std::move(r437);
+									vd119_done = true;
 								}
 								break;
 								case 319: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\StrictComparisonOfDifferentTypesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r437;
-									if (UNEXPECTED(!pgen::StrictComparisonOfDifferentTypesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r437.raw()))) goto catch_c115;
-									vd118 = std::move(r437);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\StrictComparisonOfDifferentTypesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r438;
+									if (UNEXPECTED(!pgen::StrictComparisonOfDifferentTypesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r438.raw()))) goto catch_c116;
+									vd119 = std::move(r438);
+									vd119_done = true;
 								}
 								break;
 								case 320: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\IfConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r438;
-									if (UNEXPECTED(!pgen::IfConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r438.raw()))) goto catch_c115;
-									vd118 = std::move(r438);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\IfConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r439;
+									if (UNEXPECTED(!pgen::IfConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r439.raw()))) goto catch_c116;
+									vd119 = std::move(r439);
+									vd119_done = true;
 								}
 								break;
 								case 321: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\MatchExpressionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r439;
-									if (UNEXPECTED(!pgen::MatchExpressionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r439.raw()))) goto catch_c115;
-									vd118 = std::move(r439);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\MatchExpressionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r440;
+									if (UNEXPECTED(!pgen::MatchExpressionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r440.raw()))) goto catch_c116;
+									vd119 = std::move(r440);
+									vd119_done = true;
 								}
 								break;
 								case 322: {
-									zv::Val r440;
-									if (UNEXPECTED(!pgen::FunctionCallConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r440.raw()))) goto catch_c115;
-									vd118 = std::move(r440);
-									vd118_done = true;
+									zv::Val r441;
+									if (UNEXPECTED(!pgen::FunctionCallConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r441.raw()))) goto catch_c116;
+									vd119 = std::move(r441);
+									vd119_done = true;
 								}
 								break;
 								case 323: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\BooleanAndConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r441;
-									if (UNEXPECTED(!pgen::BooleanAndConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r441.raw()))) goto catch_c115;
-									vd118 = std::move(r441);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\BooleanAndConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r442;
+									if (UNEXPECTED(!pgen::BooleanAndConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r442.raw()))) goto catch_c116;
+									vd119 = std::move(r442);
+									vd119_done = true;
 								}
 								break;
 								case 324: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ElseIfConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r442;
-									if (UNEXPECTED(!pgen::ElseIfConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r442.raw()))) goto catch_c115;
-									vd118 = std::move(r442);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ElseIfConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r443;
+									if (UNEXPECTED(!pgen::ElseIfConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r443.raw()))) goto catch_c116;
+									vd119 = std::move(r443);
+									vd119_done = true;
 								}
 								break;
 								case 325: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\BooleanNotConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r443;
-									if (UNEXPECTED(!pgen::BooleanNotConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r443.raw()))) goto catch_c115;
-									vd118 = std::move(r443);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\BooleanNotConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r444;
+									if (UNEXPECTED(!pgen::BooleanNotConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r444.raw()))) goto catch_c116;
+									vd119 = std::move(r444);
+									vd119_done = true;
 								}
 								break;
 								case 326: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\DoWhileLoopConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r444;
-									if (UNEXPECTED(!pgen::DoWhileLoopConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r444.raw()))) goto catch_c115;
-									vd118 = std::move(r444);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\DoWhileLoopConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r445;
+									if (UNEXPECTED(!pgen::DoWhileLoopConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r445.raw()))) goto catch_c116;
+									vd119 = std::move(r445);
+									vd119_done = true;
 								}
 								break;
 								case 327: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\BooleanOrConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r445;
-									if (UNEXPECTED(!pgen::BooleanOrConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r445.raw()))) goto catch_c115;
-									vd118 = std::move(r445);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\BooleanOrConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r446;
+									if (UNEXPECTED(!pgen::BooleanOrConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r446.raw()))) goto catch_c116;
+									vd119 = std::move(r446);
+									vd119_done = true;
 								}
 								break;
 								case 328: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\TernaryOperatorConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r446;
-									if (UNEXPECTED(!pgen::TernaryOperatorConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r446.raw()))) goto catch_c115;
-									vd118 = std::move(r446);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\TernaryOperatorConstantConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r447;
+									if (UNEXPECTED(!pgen::TernaryOperatorConstantConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r447.raw()))) goto catch_c116;
+									vd119 = std::move(r447);
+									vd119_done = true;
 								}
 								break;
 								case 329: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\WhileLoopAlwaysTrueConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r447;
-									if (UNEXPECTED(!pgen::WhileLoopAlwaysTrueConditionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r447.raw()))) goto catch_c115;
-									vd118 = std::move(r447);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\WhileLoopAlwaysTrueConditionRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r448;
+									if (UNEXPECTED(!pgen::WhileLoopAlwaysTrueConditionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r448.raw()))) goto catch_c116;
+									vd119 = std::move(r448);
+									vd119_done = true;
 								}
 								break;
 								case 330: {
-									zv::Val r448;
-									if (UNEXPECTED(!pgen::ConstantConditionInTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r448.raw()))) goto catch_c115;
-									vd118 = std::move(r448);
-									vd118_done = true;
+									zv::Val r449;
+									if (UNEXPECTED(!pgen::ConstantConditionInTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r449.raw()))) goto catch_c116;
+									vd119 = std::move(r449);
+									vd119_done = true;
 								}
 								break;
 								case 331: {
-									zv::Val r449;
-									if (UNEXPECTED(!pgen::YieldTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r449.raw()))) goto catch_c115;
-									vd118 = std::move(r449);
-									vd118_done = true;
+									zv::Val r450;
+									if (UNEXPECTED(!pgen::YieldTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r450.raw()))) goto catch_c116;
+									vd119 = std::move(r450);
+									vd119_done = true;
 								}
 								break;
 								case 332: {
-									zv::Val r450;
-									if (UNEXPECTED(!pgen::YieldFromTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r450.raw()))) goto catch_c115;
-									vd118 = std::move(r450);
-									vd118_done = true;
+									zv::Val r451;
+									if (UNEXPECTED(!pgen::YieldFromTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r451.raw()))) goto catch_c116;
+									vd119 = std::move(r451);
+									vd119_done = true;
 								}
 								break;
 								case 333: {
-									zv::Val r451;
-									if (UNEXPECTED(!pgen::YieldInGeneratorRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r451.raw()))) goto catch_c115;
-									vd118 = std::move(r451);
-									vd118_done = true;
+									zv::Val r452;
+									if (UNEXPECTED(!pgen::YieldInGeneratorRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r452.raw()))) goto catch_c116;
+									vd119 = std::move(r452);
+									vd119_done = true;
 								}
 								break;
 								case 334: {
-									zv::Val r452;
-									if (UNEXPECTED(!pgen::EnumCaseOutsideEnumRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r452.raw()))) goto catch_c115;
-									vd118 = std::move(r452);
-									vd118_done = true;
+									zv::Val r453;
+									if (UNEXPECTED(!pgen::EnumCaseOutsideEnumRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r453.raw()))) goto catch_c116;
+									vd119 = std::move(r453);
+									vd119_done = true;
 								}
 								break;
 								case 335: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\EnumCases\\EnumCaseAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r453;
-									if (UNEXPECTED(!pgen::EnumCaseAttributesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r453.raw()))) goto catch_c115;
-									vd118 = std::move(r453);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\EnumCases\\EnumCaseAttributesRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r454;
+									if (UNEXPECTED(!pgen::EnumCaseAttributesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r454.raw()))) goto catch_c116;
+									vd119 = std::move(r454);
+									vd119_done = true;
 								}
 								break;
 								case 336: {
-									zv::Val r454;
-									if (UNEXPECTED(!pgen::DeclareStrictTypesRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r454.raw()))) goto catch_c115;
-									vd118 = std::move(r454);
-									vd118_done = true;
+									zv::Val r455;
+									if (UNEXPECTED(!pgen::DeclareStrictTypesRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r455.raw()))) goto catch_c116;
+									vd119 = std::move(r455);
+									vd119_done = true;
 								}
 								break;
 								case 337: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_27, "PHPStan\\Analyser\\DependencyTracker", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Keywords\\RequireFileExistsRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\DependencyTracker", o117.raw()); goto catch_c115; }
-									zv::Val r455;
-									if (UNEXPECTED(!pgen::RequireFileExistsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r455.raw()))) goto catch_c115;
-									vd118 = std::move(r455);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_27, "PHPStan\\Analyser\\DependencyTracker", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Keywords\\RequireFileExistsRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\DependencyTracker", o118.raw()); goto catch_c116; }
+									zv::Val r456;
+									if (UNEXPECTED(!pgen::RequireFileExistsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r456.raw()))) goto catch_c116;
+									vd119 = std::move(r456);
+									vd119_done = true;
 								}
 								break;
 								case 338: {
-									zv::Val r456;
-									if (UNEXPECTED(!pgen::UnusedLabelRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r456.raw()))) goto catch_c115;
-									vd118 = std::move(r456);
-									vd118_done = true;
+									zv::Val r457;
+									if (UNEXPECTED(!pgen::UnusedLabelRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r457.raw()))) goto catch_c116;
+									vd119 = std::move(r457);
+									vd119_done = true;
 								}
 								break;
 								case 339: {
-									zv::Val r457;
-									if (UNEXPECTED(!pgen::GotoUndefinedLabelRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r457.raw()))) goto catch_c115;
-									vd118 = std::move(r457);
-									vd118_done = true;
+									zv::Val r458;
+									if (UNEXPECTED(!pgen::GotoUndefinedLabelRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r458.raw()))) goto catch_c116;
+									vd119 = std::move(r458);
+									vd119_done = true;
 								}
 								break;
 								case 340: {
-									zv::Val r458;
-									if (UNEXPECTED(!pgen::ContinueBreakInLoopRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r458.raw()))) goto catch_c115;
-									vd118 = std::move(r458);
-									vd118_done = true;
+									zv::Val r459;
+									if (UNEXPECTED(!pgen::ContinueBreakInLoopRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r459.raw()))) goto catch_c116;
+									vd119 = std::move(r459);
+									vd119_done = true;
 								}
 								break;
 								case 341: {
-									zv::Val r459;
-									if (UNEXPECTED(!pgen::PureFunctionRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r459.raw()))) goto catch_c115;
-									vd118 = std::move(r459);
-									vd118_done = true;
+									zv::Val r460;
+									if (UNEXPECTED(!pgen::PureFunctionRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r460.raw()))) goto catch_c116;
+									vd119 = std::move(r460);
+									vd119_done = true;
 								}
 								break;
 								case 342: {
-									zv::Val r460;
-									if (UNEXPECTED(!pgen::PurePropertyHookRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r460.raw()))) goto catch_c115;
-									vd118 = std::move(r460);
-									vd118_done = true;
+									zv::Val r461;
+									if (UNEXPECTED(!pgen::PurePropertyHookRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r461.raw()))) goto catch_c116;
+									vd119 = std::move(r461);
+									vd119_done = true;
 								}
 								break;
 								case 343: {
-									zv::Val r461;
-									if (UNEXPECTED(!pgen::PureMethodRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r461.raw()))) goto catch_c115;
-									vd118 = std::move(r461);
-									vd118_done = true;
+									zv::Val r462;
+									if (UNEXPECTED(!pgen::PureMethodRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r462.raw()))) goto catch_c116;
+									vd119 = std::move(r462);
+									vd119_done = true;
 								}
 								break;
 								case 344: {
-									zv::Val r462;
-									if (UNEXPECTED(!pgen::DumpPhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r462.raw()))) goto catch_c115;
-									vd118 = std::move(r462);
-									vd118_done = true;
+									zv::Val r463;
+									if (UNEXPECTED(!pgen::DumpPhpDocTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r463.raw()))) goto catch_c116;
+									vd119 = std::move(r463);
+									vd119_done = true;
 								}
 								break;
 								case 345: {
-									zv::Val r463;
-									if (UNEXPECTED(!pgen::DumpNativeTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r463.raw()))) goto catch_c115;
-									vd118 = std::move(r463);
-									vd118_done = true;
+									zv::Val r464;
+									if (UNEXPECTED(!pgen::DumpNativeTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r464.raw()))) goto catch_c116;
+									vd119 = std::move(r464);
+									vd119_done = true;
 								}
 								break;
 								case 346: {
-									zv::Val r464;
-									if (UNEXPECTED(!pgen::DebugScopeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r464.raw()))) goto catch_c115;
-									vd118 = std::move(r464);
-									vd118_done = true;
+									zv::Val r465;
+									if (UNEXPECTED(!pgen::DebugScopeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r465.raw()))) goto catch_c116;
+									vd119 = std::move(r465);
+									vd119_done = true;
 								}
 								break;
 								case 347: {
-									zv::Val r465;
-									if (UNEXPECTED(!pgen::DumpTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r465.raw()))) goto catch_c115;
-									vd118 = std::move(r465);
-									vd118_done = true;
+									zv::Val r466;
+									if (UNEXPECTED(!pgen::DumpTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r466.raw()))) goto catch_c116;
+									vd119 = std::move(r466);
+									vd119_done = true;
 								}
 								break;
 								case 348: {
-									zv::Val r466;
-									if (UNEXPECTED(!pgen::TraitsNotAnalysedTraitRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r466.raw()))) goto catch_c115;
-									vd118 = std::move(r466);
-									vd118_done = true;
+									zv::Val r467;
+									if (UNEXPECTED(!pgen::TraitsNotAnalysedTraitRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r467.raw()))) goto catch_c116;
+									vd119 = std::move(r467);
+									vd119_done = true;
 								}
 								break;
 								case 349: {
-									zv::Val r467;
-									if (UNEXPECTED(!pgen::FunctionsExistingClassesInTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r467.raw()))) goto catch_c115;
-									vd118 = std::move(r467);
-									vd118_done = true;
+									zv::Val r468;
+									if (UNEXPECTED(!pgen::FunctionsExistingClassesInTypehintsRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r468.raw()))) goto catch_c116;
+									vd119 = std::move(r468);
+									vd119_done = true;
 								}
 								break;
 								case 350: {
-									zv::Val r468;
-									if (UNEXPECTED(!pgen::FunctionsReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r468.raw()))) goto catch_c115;
-									vd118 = std::move(r468);
-									vd118_done = true;
+									zv::Val r469;
+									if (UNEXPECTED(!pgen::FunctionsReturnTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r469.raw()))) goto catch_c116;
+									vd119 = std::move(r469);
+									vd119_done = true;
 								}
 								break;
 								case 351: {
-									zv::Val r469;
-									if (UNEXPECTED(!pgen::FunctionsIncompatibleDefaultParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r469.raw()))) goto catch_c115;
-									vd118 = std::move(r469);
-									vd118_done = true;
+									zv::Val r470;
+									if (UNEXPECTED(!pgen::FunctionsIncompatibleDefaultParameterTypeRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r470.raw()))) goto catch_c116;
+									vd119 = std::move(r470);
+									vd119_done = true;
 								}
 								break;
 								case 352: {
-									if (UNEXPECTED(!(pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o117.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ImpossibleCheckTypeFunctionCallRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o117.raw()); goto catch_c115; }
-									zv::Val r470;
-									if (UNEXPECTED(!pgen::ImpossibleCheckTypeFunctionCallRule::m_processNode(Z_OBJ_P(l_rule), o116.raw(), o117.raw(), r470.raw()))) goto catch_c115;
-									vd118 = std::move(r470);
-									vd118_done = true;
+									if (UNEXPECTED(!(pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(o118.raw(), pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ImpossibleCheckTypeFunctionCallRule::processNode", 2, "scope", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", o118.raw()); goto catch_c116; }
+									zv::Val r471;
+									if (UNEXPECTED(!pgen::ImpossibleCheckTypeFunctionCallRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r471.raw()))) goto catch_c116;
+									vd119 = std::move(r471);
+									vd119_done = true;
 								}
 								break;
 								default:
 								break;
 							}
-							if (!vd118_done) {
-								zval av471[2];
-								ZVAL_COPY_VALUE(&av471[0], o116.raw());
-								ZVAL_COPY_VALUE(&av471[1], o117.raw());
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_rule, "processNode", "processnode", 11, 2, av471, vd118.raw()))) goto catch_c115;
+							if (!vd119_done) {
+								zval av472[2];
+								ZVAL_COPY_VALUE(&av472[0], o117.raw());
+								ZVAL_COPY_VALUE(&av472[1], o118.raw());
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_rule, "processNode", "processnode", 11, 2, av472, vd119.raw()))) goto catch_c116;
 							}
-							l_ruleErrors = std::move(vd118);
+							l_ruleErrors = std::move(vd119);
 						}
 					}
 					if (false) {
-					catch_c115:
+					catch_c116:
 					 {
 						zend_object *thrown = EG(exception);
-						bool caught472 = false;
-						if (!caught472 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
-							caught472 = true;
+						bool caught473 = false;
+						if (!caught473 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
+							caught473 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zval *is474 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
-								zv::Val r475;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r475.raw(), NULL))) return false;
-								zv::Val ist476;
-								zval *is473 = is474 == NULL ? NULL : pgrt::dimIs(is474, r475.raw(), ist476.raw());
+								zval *is475 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
+								zv::Val r476;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r476.raw(), NULL))) return false;
+								zv::Val ist477;
+								zval *is474 = is475 == NULL ? NULL : pgrt::dimIs(is475, r476.raw(), ist477.raw());
 								if (UNEXPECTED(EG(exception))) return false;
-								if (is473 != NULL && Z_TYPE_P(is473) > IS_NULL) {
-									goto cont114;
+								if (is474 != NULL && Z_TYPE_P(is474) > IS_NULL) {
+									goto cont115;
 								}
 							}
 							 {
-								zv::Val r477;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r477.raw(), NULL))) return false;
-								bool k478 = true;
-								zval z480;
-								ZVAL_BOOL(&z480, k478);
-								zv::Val o479 = zv::Val::copyOf(zv::Ref(&z480));
-								zval *w481 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
-								if (Z_TYPE_P(w481) <= IS_NULL) { zval_ptr_dtor(w481); array_init(w481); } else if (UNEXPECTED(Z_TYPE_P(w481) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w481);
-								zval *e482 = pgrt::dimWrite(w481, r477.raw());
-								if (UNEXPECTED(e482 == NULL)) return false;
-								zv::Ref(e482).assign(std::move(o479));
+								zv::Val r478;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r478.raw(), NULL))) return false;
+								bool k479 = true;
+								zval z481;
+								ZVAL_BOOL(&z481, k479);
+								zv::Val o480 = zv::Val::copyOf(zv::Ref(&z481));
+								zval *w482 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
+								if (Z_TYPE_P(w482) <= IS_NULL) { zval_ptr_dtor(w482); array_init(w482); } else if (UNEXPECTED(Z_TYPE_P(w482) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w482);
+								zval *e483 = pgrt::dimWrite(w482, r478.raw());
+								if (UNEXPECTED(e483 == NULL)) return false;
+								zv::Ref(e483).assign(std::move(o480));
 							}
 							 {
-								zv::Val r484;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r484.raw(), NULL))) return false;
-								zval *p485 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p485 == NULL)) return false;
-								zv::Val o486 = zv::Val::copyOf(zv::Ref(p485));
-								zv::Val r487;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_node, "getStartLine", "getstartline", 12, 0, NULL, r487.raw(), NULL))) return false;
-								zend_long k488 = Z_LVAL_P(r487.raw());
-								zv::Val o489 = zv::Val::copyOf(zv::Ref(l_e.raw()));
-								zv::Val r490;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r490.raw(), NULL))) return false;
-								zval av491[4];
-								ZVAL_COPY_VALUE(&av491[0], r484.raw());
-								ZVAL_COPY_VALUE(&av491[1], o486.raw());
-								zval z492;
-								ZVAL_LONG(&z492, k488);
-								ZVAL_COPY_VALUE(&av491[2], &z492);
-								ZVAL_COPY_VALUE(&av491[3], o489.raw());
-								zv::Arr na493 = zv::Arr::create(1);
-								{ zval v; ZVAL_COPY(&v, r490.raw()); zend_hash_str_add_new(na493.table(), "tip", 3, &v); }
-								zend_class_entry *ce494 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce494 == NULL)) return false;
-								zv::Val n483;
-								if (UNEXPECTED(!pgrt::newObject(ce494, 4, av491, n483.raw(), na493.table()))) return false;
-								zval av495[1];
-								ZVAL_COPY_VALUE(&av495[0], &pg_lit[0]);
-								zv::Val r496;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_36, n483.raw(), "withIdentifier", "withidentifier", 14, 1, av495, r496.raw(), NULL))) return false;
-								zv::Val arr497 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av498[1];
-								ZVAL_COPY_VALUE(&av498[0], l_e.raw());
-								zend_class_entry *ce499 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce499 == NULL)) return false;
-								zv::Val r500;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce499, "preparetrace", 12, 1, av498, r500.raw(), NULL))) return false;
-								{ zval v = r500.take(); zend_symtable_update(Z_ARRVAL_P(arr497.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r485;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r485.raw(), NULL))) return false;
+								zval *p486 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p486 == NULL)) return false;
+								zv::Val o487 = zv::Val::copyOf(zv::Ref(p486));
+								zv::Val r488;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_node, "getStartLine", "getstartline", 12, 0, NULL, r488.raw(), NULL))) return false;
+								zend_long k489 = Z_LVAL_P(r488.raw());
+								zv::Val o490 = zv::Val::copyOf(zv::Ref(l_e.raw()));
+								zv::Val r491;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r491.raw(), NULL))) return false;
+								zval av492[4];
+								ZVAL_COPY_VALUE(&av492[0], r485.raw());
+								ZVAL_COPY_VALUE(&av492[1], o487.raw());
+								zval z493;
+								ZVAL_LONG(&z493, k489);
+								ZVAL_COPY_VALUE(&av492[2], &z493);
+								ZVAL_COPY_VALUE(&av492[3], o490.raw());
+								zv::Arr na494 = zv::Arr::create(1);
+								{ zval v; ZVAL_COPY(&v, r491.raw()); zend_hash_str_add_new(na494.table(), "tip", 3, &v); }
+								zend_class_entry *ce495 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce495 == NULL)) return false;
+								zv::Val n484;
+								if (UNEXPECTED(!pgrt::newObject(ce495, 4, av492, n484.raw(), na494.table()))) return false;
+								zval av496[1];
+								ZVAL_COPY_VALUE(&av496[0], &pg_lit[0]);
+								zv::Val r497;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_36, n484.raw(), "withIdentifier", "withidentifier", 14, 1, av496, r497.raw(), NULL))) return false;
+								zv::Val arr498 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+								zval av499[1];
+								ZVAL_COPY_VALUE(&av499[0], l_e.raw());
+								zend_class_entry *ce500 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce500 == NULL)) return false;
 								zv::Val r501;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_39, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r501.raw(), NULL))) return false;
-								{ zval v = r501.take(); zend_symtable_update(Z_ARRVAL_P(arr497.raw()), Z_STR_P(&pg_lit[2]), &v); }
-								zval av502[1];
-								ZVAL_COPY_VALUE(&av502[0], arr497.raw());
-								zv::Val r503;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_40, r496.raw(), "withMetadata", "withmetadata", 12, 1, av502, r503.raw(), NULL))) return false;
-								zv::Val o504 = zv::Val::copyOf(zv::Ref(r503.raw()));
-								zval *w505 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w505) <= IS_NULL) { zval_ptr_dtor(w505); array_init(w505); } else if (UNEXPECTED(Z_TYPE_P(w505) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w505);
-								{ zval v = o504.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w505), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce500, "preparetrace", 12, 1, av499, r501.raw(), NULL))) return false;
+								{ zval v = r501.take(); zend_symtable_update(Z_ARRVAL_P(arr498.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r502;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_39, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r502.raw(), NULL))) return false;
+								{ zval v = r502.take(); zend_symtable_update(Z_ARRVAL_P(arr498.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av503[1];
+								ZVAL_COPY_VALUE(&av503[0], arr498.raw());
+								zv::Val r504;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_40, r497.raw(), "withMetadata", "withmetadata", 12, 1, av503, r504.raw(), NULL))) return false;
+								zv::Val o505 = zv::Val::copyOf(zv::Ref(r504.raw()));
+								zval *w506 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w506) <= IS_NULL) { zval_ptr_dtor(w506); array_init(w506); } else if (UNEXPECTED(Z_TYPE_P(w506) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w506);
+								{ zval v = o505.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w506), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
-							goto cont114;
+							goto cont115;
 						}
-						if (!caught472 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-							caught472 = true;
+						if (!caught473 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+							caught473 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zval *gs507 = Z_TYPE_P(l_e.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_42, Z_OBJ_P(l_e.raw()), pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63), "getidentifier", 13, "identifier", 10) : NULL;
-								zv::Val r508;
-								if (EXPECTED(gs507 != NULL)) {
-									ZVAL_COPY(r508.raw(), gs507);
-								} else {
-								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r508.raw()))) return false;
-								}
-								}
+								zval *gs508 = Z_TYPE_P(l_e.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_42, Z_OBJ_P(l_e.raw()), pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63), "getidentifier", 13, "identifier", 10) : NULL;
 								zv::Val r509;
-								if (EXPECTED(Z_TYPE_P(r508.raw()) == IS_OBJECT)) {
-									r509 = pt_type_op(Z_OBJ_P(r508.raw()), PT_OP_GET_NAME, 0, NULL);
-									if (UNEXPECTED(r509.isUndef())) return false;
+								if (EXPECTED(gs508 != NULL)) {
+									ZVAL_COPY(r509.raw(), gs508);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_44, r508.raw(), "getName", "getname", 7, 0, NULL, r509.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r509.raw()))) return false;
 								}
 								}
-								pgrt::StringBuilder sb510;
-								sb510.appendLiteral("Reflection error: ", 18);
-								if (UNEXPECTED(!sb510.append(r509.raw()))) return false;
-								sb510.appendLiteral(" not found.", 11);
-								zv::Val r511 = sb510.finish();
-								zval *p512 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p512 == NULL)) return false;
-								zv::Val o513 = zv::Val::copyOf(zv::Ref(p512));
-								zv::Val r514;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_45, p_node, "getStartLine", "getstartline", 12, 0, NULL, r514.raw(), NULL))) return false;
-								zval av515[4];
-								ZVAL_COPY_VALUE(&av515[0], r511.raw());
-								ZVAL_COPY_VALUE(&av515[1], o513.raw());
-								zval z516;
-								ZVAL_LONG(&z516, Z_LVAL_P(r514.raw()));
-								ZVAL_COPY_VALUE(&av515[2], &z516);
-								ZVAL_COPY_VALUE(&av515[3], l_e.raw());
-								zv::Arr na517 = zv::Arr::create(1);
-								{ zval v; ZVAL_COPY(&v, &pg_lit[3]); zend_hash_str_add_new(na517.table(), "tip", 3, &v); }
-								zend_class_entry *ce518 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce518 == NULL)) return false;
-								zv::Val n506;
-								if (UNEXPECTED(!pgrt::newObject(ce518, 4, av515, n506.raw(), na517.table()))) return false;
-								zval av519[1];
-								ZVAL_COPY_VALUE(&av519[0], &pg_lit[4]);
-								zv::Val r520;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_46, n506.raw(), "withIdentifier", "withidentifier", 14, 1, av519, r520.raw(), NULL))) return false;
-								zv::Val arr521 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av522[1];
-								ZVAL_COPY_VALUE(&av522[0], l_e.raw());
-								zend_class_entry *ce523 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce523 == NULL)) return false;
-								zv::Val r524;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce523, "preparetrace", 12, 1, av522, r524.raw(), NULL))) return false;
-								{ zval v = r524.take(); zend_symtable_update(Z_ARRVAL_P(arr521.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r510;
+								if (EXPECTED(Z_TYPE_P(r509.raw()) == IS_OBJECT)) {
+									r510 = pt_type_op(Z_OBJ_P(r509.raw()), PT_OP_GET_NAME, 0, NULL);
+									if (UNEXPECTED(r510.isUndef())) return false;
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_44, r509.raw(), "getName", "getname", 7, 0, NULL, r510.raw(), NULL))) return false;
+								}
+								}
+								pgrt::StringBuilder sb511;
+								sb511.appendLiteral("Reflection error: ", 18);
+								if (UNEXPECTED(!sb511.append(r510.raw()))) return false;
+								sb511.appendLiteral(" not found.", 11);
+								zv::Val r512 = sb511.finish();
+								zval *p513 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p513 == NULL)) return false;
+								zv::Val o514 = zv::Val::copyOf(zv::Ref(p513));
+								zv::Val r515;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_45, p_node, "getStartLine", "getstartline", 12, 0, NULL, r515.raw(), NULL))) return false;
+								zval av516[4];
+								ZVAL_COPY_VALUE(&av516[0], r512.raw());
+								ZVAL_COPY_VALUE(&av516[1], o514.raw());
+								zval z517;
+								ZVAL_LONG(&z517, Z_LVAL_P(r515.raw()));
+								ZVAL_COPY_VALUE(&av516[2], &z517);
+								ZVAL_COPY_VALUE(&av516[3], l_e.raw());
+								zv::Arr na518 = zv::Arr::create(1);
+								{ zval v; ZVAL_COPY(&v, &pg_lit[3]); zend_hash_str_add_new(na518.table(), "tip", 3, &v); }
+								zend_class_entry *ce519 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce519 == NULL)) return false;
+								zv::Val n507;
+								if (UNEXPECTED(!pgrt::newObject(ce519, 4, av516, n507.raw(), na518.table()))) return false;
+								zval av520[1];
+								ZVAL_COPY_VALUE(&av520[0], &pg_lit[4]);
+								zv::Val r521;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_46, n507.raw(), "withIdentifier", "withidentifier", 14, 1, av520, r521.raw(), NULL))) return false;
+								zv::Val arr522 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+								zval av523[1];
+								ZVAL_COPY_VALUE(&av523[0], l_e.raw());
+								zend_class_entry *ce524 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce524 == NULL)) return false;
 								zv::Val r525;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_47, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r525.raw(), NULL))) return false;
-								{ zval v = r525.take(); zend_symtable_update(Z_ARRVAL_P(arr521.raw()), Z_STR_P(&pg_lit[2]), &v); }
-								zval av526[1];
-								ZVAL_COPY_VALUE(&av526[0], arr521.raw());
-								zv::Val r527;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_48, r520.raw(), "withMetadata", "withmetadata", 12, 1, av526, r527.raw(), NULL))) return false;
-								zv::Val o528 = zv::Val::copyOf(zv::Ref(r527.raw()));
-								zval *w529 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w529) <= IS_NULL) { zval_ptr_dtor(w529); array_init(w529); } else if (UNEXPECTED(Z_TYPE_P(w529) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w529);
-								{ zval v = o528.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w529), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce524, "preparetrace", 12, 1, av523, r525.raw(), NULL))) return false;
+								{ zval v = r525.take(); zend_symtable_update(Z_ARRVAL_P(arr522.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r526;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_47, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r526.raw(), NULL))) return false;
+								{ zval v = r526.take(); zend_symtable_update(Z_ARRVAL_P(arr522.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av527[1];
+								ZVAL_COPY_VALUE(&av527[0], arr522.raw());
+								zv::Val r528;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_48, r521.raw(), "withMetadata", "withmetadata", 12, 1, av527, r528.raw(), NULL))) return false;
+								zv::Val o529 = zv::Val::copyOf(zv::Ref(r528.raw()));
+								zval *w530 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w530) <= IS_NULL) { zval_ptr_dtor(w530); array_init(w530); } else if (UNEXPECTED(Z_TYPE_P(w530) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w530);
+								{ zval v = o529.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w530), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
-							goto cont114;
+							goto cont115;
 						}
-						if (!caught472 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)) || pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference", 63)))) {
-							caught472 = true;
+						if (!caught473 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)) || pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference", 63)))) {
+							caught473 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zv::Val r531;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_51, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r531.raw(), NULL))) return false;
-								pgrt::StringBuilder sb532;
-								sb532.appendLiteral("Reflection error: ", 18);
-								if (UNEXPECTED(!sb532.append(r531.raw()))) return false;
-								zv::Val r533 = sb532.finish();
-								zval *p534 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p534 == NULL)) return false;
-								zv::Val o535 = zv::Val::copyOf(zv::Ref(p534));
-								zv::Val r536;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_52, p_node, "getStartLine", "getstartline", 12, 0, NULL, r536.raw(), NULL))) return false;
-								zval av537[4];
-								ZVAL_COPY_VALUE(&av537[0], r533.raw());
-								ZVAL_COPY_VALUE(&av537[1], o535.raw());
-								zval z538;
-								ZVAL_LONG(&z538, Z_LVAL_P(r536.raw()));
-								ZVAL_COPY_VALUE(&av537[2], &z538);
-								ZVAL_COPY_VALUE(&av537[3], l_e.raw());
-								zend_class_entry *ce539 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce539 == NULL)) return false;
-								zv::Val n530;
-								if (UNEXPECTED(!pgrt::newObject(ce539, 4, av537, n530.raw(), NULL))) return false;
-								zval av540[1];
-								ZVAL_COPY_VALUE(&av540[0], &pg_lit[4]);
-								zv::Val r541;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_53, n530.raw(), "withIdentifier", "withidentifier", 14, 1, av540, r541.raw(), NULL))) return false;
-								zv::Val arr542 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av543[1];
-								ZVAL_COPY_VALUE(&av543[0], l_e.raw());
-								zend_class_entry *ce544 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce544 == NULL)) return false;
-								zv::Val r545;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce544, "preparetrace", 12, 1, av543, r545.raw(), NULL))) return false;
-								{ zval v = r545.take(); zend_symtable_update(Z_ARRVAL_P(arr542.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r532;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_51, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r532.raw(), NULL))) return false;
+								pgrt::StringBuilder sb533;
+								sb533.appendLiteral("Reflection error: ", 18);
+								if (UNEXPECTED(!sb533.append(r532.raw()))) return false;
+								zv::Val r534 = sb533.finish();
+								zval *p535 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p535 == NULL)) return false;
+								zv::Val o536 = zv::Val::copyOf(zv::Ref(p535));
+								zv::Val r537;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_52, p_node, "getStartLine", "getstartline", 12, 0, NULL, r537.raw(), NULL))) return false;
+								zval av538[4];
+								ZVAL_COPY_VALUE(&av538[0], r534.raw());
+								ZVAL_COPY_VALUE(&av538[1], o536.raw());
+								zval z539;
+								ZVAL_LONG(&z539, Z_LVAL_P(r537.raw()));
+								ZVAL_COPY_VALUE(&av538[2], &z539);
+								ZVAL_COPY_VALUE(&av538[3], l_e.raw());
+								zend_class_entry *ce540 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce540 == NULL)) return false;
+								zv::Val n531;
+								if (UNEXPECTED(!pgrt::newObject(ce540, 4, av538, n531.raw(), NULL))) return false;
+								zval av541[1];
+								ZVAL_COPY_VALUE(&av541[0], &pg_lit[4]);
+								zv::Val r542;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_53, n531.raw(), "withIdentifier", "withidentifier", 14, 1, av541, r542.raw(), NULL))) return false;
+								zv::Val arr543 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+								zval av544[1];
+								ZVAL_COPY_VALUE(&av544[0], l_e.raw());
+								zend_class_entry *ce545 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce545 == NULL)) return false;
 								zv::Val r546;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_54, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r546.raw(), NULL))) return false;
-								{ zval v = r546.take(); zend_symtable_update(Z_ARRVAL_P(arr542.raw()), Z_STR_P(&pg_lit[2]), &v); }
-								zval av547[1];
-								ZVAL_COPY_VALUE(&av547[0], arr542.raw());
-								zv::Val r548;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_55, r541.raw(), "withMetadata", "withmetadata", 12, 1, av547, r548.raw(), NULL))) return false;
-								zv::Val o549 = zv::Val::copyOf(zv::Ref(r548.raw()));
-								zval *w550 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w550) <= IS_NULL) { zval_ptr_dtor(w550); array_init(w550); } else if (UNEXPECTED(Z_TYPE_P(w550) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w550);
-								{ zval v = o549.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w550), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce545, "preparetrace", 12, 1, av544, r546.raw(), NULL))) return false;
+								{ zval v = r546.take(); zend_symtable_update(Z_ARRVAL_P(arr543.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r547;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_54, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r547.raw(), NULL))) return false;
+								{ zval v = r547.take(); zend_symtable_update(Z_ARRVAL_P(arr543.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av548[1];
+								ZVAL_COPY_VALUE(&av548[0], arr543.raw());
+								zv::Val r549;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_55, r542.raw(), "withMetadata", "withmetadata", 12, 1, av548, r549.raw(), NULL))) return false;
+								zv::Val o550 = zv::Val::copyOf(zv::Ref(r549.raw()));
+								zval *w551 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w551) <= IS_NULL) { zval_ptr_dtor(w551); array_init(w551); } else if (UNEXPECTED(Z_TYPE_P(w551) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w551);
+								{ zval v = o550.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w551), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
-							goto cont114;
+							goto cont115;
 						}
-						if (!caught472) return false;
+						if (!caught473) return false;
 					}
 					}
 				}
 				 {
-					pgrt::ForeachIter it552;
-					if (UNEXPECTED(!it552.begin(l_ruleErrors.raw()))) return false;
-					while (it552.valid()) {
-						l_ruleError = zv::Ref(it552.current()).deref().raw();
+					pgrt::ForeachIter it553;
+					if (UNEXPECTED(!it553.begin(l_ruleErrors.raw()))) return false;
+					while (it553.valid()) {
+						l_ruleError = zv::Ref(it553.current()).deref().raw();
 						 {
 							 {
 								if (pgrt::instanceOfClass(l_ruleError, pgrt::lookupClassQuiet(pg_site_56, "PHPStan\\Rules\\FileDependenciesRuleError", 39))) {
 									 {
-										zv::Val vd556;
-										zend_class_entry *vd556_ce = Z_TYPE_P(l_ruleError) == IS_OBJECT ? Z_OBJCE_P(l_ruleError) : NULL;
-										bool vd556_done = false;
-										static zend_class_entry **const vd556_table[] = { &pt_ce_rule_error381, &pt_ce_rule_error395, &pt_ce_rule_error419, &pt_ce_rule_error431, &pt_ce_rule_error357, &pt_ce_rule_error343, &pt_ce_rule_error425, &pt_ce_rule_error355, &pt_ce_rule_error433, &pt_ce_rule_error427, &pt_ce_rule_error341, &pt_ce_rule_error369, &pt_ce_rule_error383, &pt_ce_rule_error397, &pt_ce_rule_error393, &pt_ce_rule_error387, &pt_ce_rule_error345, &pt_ce_rule_error423, &pt_ce_rule_error437, &pt_ce_rule_error351, &pt_ce_rule_error379, &pt_ce_rule_error409, &pt_ce_rule_error421, &pt_ce_rule_error347, &pt_ce_rule_error353, &pt_ce_rule_error435, &pt_ce_rule_error391, &pt_ce_rule_error385, &pt_ce_rule_error269, &pt_ce_rule_error447, &pt_ce_rule_error321, &pt_ce_rule_error335, &pt_ce_rule_error453, &pt_ce_rule_error309, &pt_ce_rule_error491, &pt_ce_rule_error485, &pt_ce_rule_error283, &pt_ce_rule_error297, &pt_ce_rule_error281, &pt_ce_rule_error295, &pt_ce_rule_error493, &pt_ce_rule_error487, &pt_ce_rule_error479, &pt_ce_rule_error323, &pt_ce_rule_error445, &pt_ce_rule_error451, &pt_ce_rule_error337, &pt_ce_rule_error257, &pt_ce_rule_error509, &pt_ce_rule_error469, &pt_ce_rule_error333, &pt_ce_rule_error455, &pt_ce_rule_error441, &pt_ce_rule_error327, &pt_ce_rule_error483, &pt_ce_rule_error497, &pt_ce_rule_error291, &pt_ce_rule_error285, &pt_ce_rule_error293, &pt_ce_rule_error287, &pt_ce_rule_error481, &pt_ce_rule_error495, &pt_ce_rule_error457, &pt_ce_rule_error331, &pt_ce_rule_error325, &pt_ce_rule_error443, &pt_ce_rule_error319, &pt_ce_rule_error279, &pt_ce_rule_error499, &pt_ce_rule_error329, &pt_ce_rule_error315, &pt_ce_rule_error473, &pt_ce_rule_error467, &pt_ce_rule_error301, &pt_ce_rule_error261, &pt_ce_rule_error507, &pt_ce_rule_error275, &pt_ce_rule_error505, &pt_ce_rule_error263, &pt_ce_rule_error277, &pt_ce_rule_error511, &pt_ce_rule_error471, &pt_ce_rule_error317, &pt_ce_rule_error303, &pt_ce_rule_error465, &pt_ce_rule_error459, &pt_ce_rule_error289, &pt_ce_rule_error299, &pt_ce_rule_error461, &pt_ce_rule_error307, &pt_ce_rule_error313, &pt_ce_rule_error475, &pt_ce_rule_error449, &pt_ce_rule_error273, &pt_ce_rule_error267, &pt_ce_rule_error501, &pt_ce_rule_error259, &pt_ce_rule_error271, &pt_ce_rule_error503, &pt_ce_rule_error265, &pt_ce_rule_error339, &pt_ce_rule_error305, &pt_ce_rule_error463, &pt_ce_rule_error477, &pt_ce_rule_error311, &pt_ce_rule_error489, &pt_ce_rule_error363, &pt_ce_rule_error405, &pt_ce_rule_error411, &pt_ce_rule_error377, &pt_ce_rule_error439, &pt_ce_rule_error389, &pt_ce_rule_error349, &pt_ce_rule_error407, &pt_ce_rule_error361, &pt_ce_rule_error375, &pt_ce_rule_error413, &pt_ce_rule_error359, &pt_ce_rule_error417, &pt_ce_rule_error371, &pt_ce_rule_error365, &pt_ce_rule_error403, &pt_ce_rule_error399, &pt_ce_rule_error373, &pt_ce_rule_error415, &pt_ce_rule_error401, &pt_ce_rule_error367, &pt_ce_rule_error429 };
-										static const uint16_t vd556_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128 };
-										switch (pgrt::dispatchCase(pg_site_57, vd556_ce, vd556_table, vd556_cases, 128)) {
+										zv::Val vd557;
+										zend_class_entry *vd557_ce = Z_TYPE_P(l_ruleError) == IS_OBJECT ? Z_OBJCE_P(l_ruleError) : NULL;
+										bool vd557_done = false;
+										static zend_class_entry **const vd557_table[] = { &pt_ce_rule_error381, &pt_ce_rule_error395, &pt_ce_rule_error419, &pt_ce_rule_error431, &pt_ce_rule_error357, &pt_ce_rule_error343, &pt_ce_rule_error425, &pt_ce_rule_error355, &pt_ce_rule_error433, &pt_ce_rule_error427, &pt_ce_rule_error341, &pt_ce_rule_error369, &pt_ce_rule_error383, &pt_ce_rule_error397, &pt_ce_rule_error393, &pt_ce_rule_error387, &pt_ce_rule_error345, &pt_ce_rule_error423, &pt_ce_rule_error437, &pt_ce_rule_error351, &pt_ce_rule_error379, &pt_ce_rule_error409, &pt_ce_rule_error421, &pt_ce_rule_error347, &pt_ce_rule_error353, &pt_ce_rule_error435, &pt_ce_rule_error391, &pt_ce_rule_error385, &pt_ce_rule_error269, &pt_ce_rule_error447, &pt_ce_rule_error321, &pt_ce_rule_error335, &pt_ce_rule_error453, &pt_ce_rule_error309, &pt_ce_rule_error491, &pt_ce_rule_error485, &pt_ce_rule_error283, &pt_ce_rule_error297, &pt_ce_rule_error281, &pt_ce_rule_error295, &pt_ce_rule_error493, &pt_ce_rule_error487, &pt_ce_rule_error479, &pt_ce_rule_error323, &pt_ce_rule_error445, &pt_ce_rule_error451, &pt_ce_rule_error337, &pt_ce_rule_error257, &pt_ce_rule_error509, &pt_ce_rule_error469, &pt_ce_rule_error333, &pt_ce_rule_error455, &pt_ce_rule_error441, &pt_ce_rule_error327, &pt_ce_rule_error483, &pt_ce_rule_error497, &pt_ce_rule_error291, &pt_ce_rule_error285, &pt_ce_rule_error293, &pt_ce_rule_error287, &pt_ce_rule_error481, &pt_ce_rule_error495, &pt_ce_rule_error457, &pt_ce_rule_error331, &pt_ce_rule_error325, &pt_ce_rule_error443, &pt_ce_rule_error319, &pt_ce_rule_error279, &pt_ce_rule_error499, &pt_ce_rule_error329, &pt_ce_rule_error315, &pt_ce_rule_error473, &pt_ce_rule_error467, &pt_ce_rule_error301, &pt_ce_rule_error261, &pt_ce_rule_error507, &pt_ce_rule_error275, &pt_ce_rule_error505, &pt_ce_rule_error263, &pt_ce_rule_error277, &pt_ce_rule_error511, &pt_ce_rule_error471, &pt_ce_rule_error317, &pt_ce_rule_error303, &pt_ce_rule_error465, &pt_ce_rule_error459, &pt_ce_rule_error289, &pt_ce_rule_error299, &pt_ce_rule_error461, &pt_ce_rule_error307, &pt_ce_rule_error313, &pt_ce_rule_error475, &pt_ce_rule_error449, &pt_ce_rule_error273, &pt_ce_rule_error267, &pt_ce_rule_error501, &pt_ce_rule_error259, &pt_ce_rule_error271, &pt_ce_rule_error503, &pt_ce_rule_error265, &pt_ce_rule_error339, &pt_ce_rule_error305, &pt_ce_rule_error463, &pt_ce_rule_error477, &pt_ce_rule_error311, &pt_ce_rule_error489, &pt_ce_rule_error363, &pt_ce_rule_error405, &pt_ce_rule_error411, &pt_ce_rule_error377, &pt_ce_rule_error439, &pt_ce_rule_error389, &pt_ce_rule_error349, &pt_ce_rule_error407, &pt_ce_rule_error361, &pt_ce_rule_error375, &pt_ce_rule_error413, &pt_ce_rule_error359, &pt_ce_rule_error417, &pt_ce_rule_error371, &pt_ce_rule_error365, &pt_ce_rule_error403, &pt_ce_rule_error399, &pt_ce_rule_error373, &pt_ce_rule_error415, &pt_ce_rule_error401, &pt_ce_rule_error367, &pt_ce_rule_error429 };
+										static const uint16_t vd557_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128 };
+										switch (pgrt::dispatchCase(pg_site_57, vd557_ce, vd557_table, vd557_cases, 128)) {
 											case 1: {
-												zv::Val r557;
-												if (UNEXPECTED(!pgen::RuleError381::m_getFileDependencies(Z_OBJ_P(l_ruleError), r557.raw()))) return false;
-												vd556 = std::move(r557);
-												vd556_done = true;
+												zv::Val r558;
+												if (UNEXPECTED(!pgen::RuleError381::m_getFileDependencies(Z_OBJ_P(l_ruleError), r558.raw()))) return false;
+												vd557 = std::move(r558);
+												vd557_done = true;
 											}
 											break;
 											case 2: {
-												zv::Val r558;
-												if (UNEXPECTED(!pgen::RuleError395::m_getFileDependencies(Z_OBJ_P(l_ruleError), r558.raw()))) return false;
-												vd556 = std::move(r558);
-												vd556_done = true;
+												zv::Val r559;
+												if (UNEXPECTED(!pgen::RuleError395::m_getFileDependencies(Z_OBJ_P(l_ruleError), r559.raw()))) return false;
+												vd557 = std::move(r559);
+												vd557_done = true;
 											}
 											break;
 											case 3: {
-												zv::Val r559;
-												if (UNEXPECTED(!pgen::RuleError419::m_getFileDependencies(Z_OBJ_P(l_ruleError), r559.raw()))) return false;
-												vd556 = std::move(r559);
-												vd556_done = true;
+												zv::Val r560;
+												if (UNEXPECTED(!pgen::RuleError419::m_getFileDependencies(Z_OBJ_P(l_ruleError), r560.raw()))) return false;
+												vd557 = std::move(r560);
+												vd557_done = true;
 											}
 											break;
 											case 4: {
-												zv::Val r560;
-												if (UNEXPECTED(!pgen::RuleError431::m_getFileDependencies(Z_OBJ_P(l_ruleError), r560.raw()))) return false;
-												vd556 = std::move(r560);
-												vd556_done = true;
+												zv::Val r561;
+												if (UNEXPECTED(!pgen::RuleError431::m_getFileDependencies(Z_OBJ_P(l_ruleError), r561.raw()))) return false;
+												vd557 = std::move(r561);
+												vd557_done = true;
 											}
 											break;
 											case 5: {
-												zv::Val r561;
-												if (UNEXPECTED(!pgen::RuleError357::m_getFileDependencies(Z_OBJ_P(l_ruleError), r561.raw()))) return false;
-												vd556 = std::move(r561);
-												vd556_done = true;
+												zv::Val r562;
+												if (UNEXPECTED(!pgen::RuleError357::m_getFileDependencies(Z_OBJ_P(l_ruleError), r562.raw()))) return false;
+												vd557 = std::move(r562);
+												vd557_done = true;
 											}
 											break;
 											case 6: {
-												zv::Val r562;
-												if (UNEXPECTED(!pgen::RuleError343::m_getFileDependencies(Z_OBJ_P(l_ruleError), r562.raw()))) return false;
-												vd556 = std::move(r562);
-												vd556_done = true;
+												zv::Val r563;
+												if (UNEXPECTED(!pgen::RuleError343::m_getFileDependencies(Z_OBJ_P(l_ruleError), r563.raw()))) return false;
+												vd557 = std::move(r563);
+												vd557_done = true;
 											}
 											break;
 											case 7: {
-												zv::Val r563;
-												if (UNEXPECTED(!pgen::RuleError425::m_getFileDependencies(Z_OBJ_P(l_ruleError), r563.raw()))) return false;
-												vd556 = std::move(r563);
-												vd556_done = true;
+												zv::Val r564;
+												if (UNEXPECTED(!pgen::RuleError425::m_getFileDependencies(Z_OBJ_P(l_ruleError), r564.raw()))) return false;
+												vd557 = std::move(r564);
+												vd557_done = true;
 											}
 											break;
 											case 8: {
-												zv::Val r564;
-												if (UNEXPECTED(!pgen::RuleError355::m_getFileDependencies(Z_OBJ_P(l_ruleError), r564.raw()))) return false;
-												vd556 = std::move(r564);
-												vd556_done = true;
+												zv::Val r565;
+												if (UNEXPECTED(!pgen::RuleError355::m_getFileDependencies(Z_OBJ_P(l_ruleError), r565.raw()))) return false;
+												vd557 = std::move(r565);
+												vd557_done = true;
 											}
 											break;
 											case 9: {
-												zv::Val r565;
-												if (UNEXPECTED(!pgen::RuleError433::m_getFileDependencies(Z_OBJ_P(l_ruleError), r565.raw()))) return false;
-												vd556 = std::move(r565);
-												vd556_done = true;
+												zv::Val r566;
+												if (UNEXPECTED(!pgen::RuleError433::m_getFileDependencies(Z_OBJ_P(l_ruleError), r566.raw()))) return false;
+												vd557 = std::move(r566);
+												vd557_done = true;
 											}
 											break;
 											case 10: {
-												zv::Val r566;
-												if (UNEXPECTED(!pgen::RuleError427::m_getFileDependencies(Z_OBJ_P(l_ruleError), r566.raw()))) return false;
-												vd556 = std::move(r566);
-												vd556_done = true;
+												zv::Val r567;
+												if (UNEXPECTED(!pgen::RuleError427::m_getFileDependencies(Z_OBJ_P(l_ruleError), r567.raw()))) return false;
+												vd557 = std::move(r567);
+												vd557_done = true;
 											}
 											break;
 											case 11: {
-												zv::Val r567;
-												if (UNEXPECTED(!pgen::RuleError341::m_getFileDependencies(Z_OBJ_P(l_ruleError), r567.raw()))) return false;
-												vd556 = std::move(r567);
-												vd556_done = true;
+												zv::Val r568;
+												if (UNEXPECTED(!pgen::RuleError341::m_getFileDependencies(Z_OBJ_P(l_ruleError), r568.raw()))) return false;
+												vd557 = std::move(r568);
+												vd557_done = true;
 											}
 											break;
 											case 12: {
-												zv::Val r568;
-												if (UNEXPECTED(!pgen::RuleError369::m_getFileDependencies(Z_OBJ_P(l_ruleError), r568.raw()))) return false;
-												vd556 = std::move(r568);
-												vd556_done = true;
+												zv::Val r569;
+												if (UNEXPECTED(!pgen::RuleError369::m_getFileDependencies(Z_OBJ_P(l_ruleError), r569.raw()))) return false;
+												vd557 = std::move(r569);
+												vd557_done = true;
 											}
 											break;
 											case 13: {
-												zv::Val r569;
-												if (UNEXPECTED(!pgen::RuleError383::m_getFileDependencies(Z_OBJ_P(l_ruleError), r569.raw()))) return false;
-												vd556 = std::move(r569);
-												vd556_done = true;
+												zv::Val r570;
+												if (UNEXPECTED(!pgen::RuleError383::m_getFileDependencies(Z_OBJ_P(l_ruleError), r570.raw()))) return false;
+												vd557 = std::move(r570);
+												vd557_done = true;
 											}
 											break;
 											case 14: {
-												zv::Val r570;
-												if (UNEXPECTED(!pgen::RuleError397::m_getFileDependencies(Z_OBJ_P(l_ruleError), r570.raw()))) return false;
-												vd556 = std::move(r570);
-												vd556_done = true;
+												zv::Val r571;
+												if (UNEXPECTED(!pgen::RuleError397::m_getFileDependencies(Z_OBJ_P(l_ruleError), r571.raw()))) return false;
+												vd557 = std::move(r571);
+												vd557_done = true;
 											}
 											break;
 											case 15: {
-												zv::Val r571;
-												if (UNEXPECTED(!pgen::RuleError393::m_getFileDependencies(Z_OBJ_P(l_ruleError), r571.raw()))) return false;
-												vd556 = std::move(r571);
-												vd556_done = true;
+												zv::Val r572;
+												if (UNEXPECTED(!pgen::RuleError393::m_getFileDependencies(Z_OBJ_P(l_ruleError), r572.raw()))) return false;
+												vd557 = std::move(r572);
+												vd557_done = true;
 											}
 											break;
 											case 16: {
-												zv::Val r572;
-												if (UNEXPECTED(!pgen::RuleError387::m_getFileDependencies(Z_OBJ_P(l_ruleError), r572.raw()))) return false;
-												vd556 = std::move(r572);
-												vd556_done = true;
+												zv::Val r573;
+												if (UNEXPECTED(!pgen::RuleError387::m_getFileDependencies(Z_OBJ_P(l_ruleError), r573.raw()))) return false;
+												vd557 = std::move(r573);
+												vd557_done = true;
 											}
 											break;
 											case 17: {
-												zv::Val r573;
-												if (UNEXPECTED(!pgen::RuleError345::m_getFileDependencies(Z_OBJ_P(l_ruleError), r573.raw()))) return false;
-												vd556 = std::move(r573);
-												vd556_done = true;
+												zv::Val r574;
+												if (UNEXPECTED(!pgen::RuleError345::m_getFileDependencies(Z_OBJ_P(l_ruleError), r574.raw()))) return false;
+												vd557 = std::move(r574);
+												vd557_done = true;
 											}
 											break;
 											case 18: {
-												zv::Val r574;
-												if (UNEXPECTED(!pgen::RuleError423::m_getFileDependencies(Z_OBJ_P(l_ruleError), r574.raw()))) return false;
-												vd556 = std::move(r574);
-												vd556_done = true;
+												zv::Val r575;
+												if (UNEXPECTED(!pgen::RuleError423::m_getFileDependencies(Z_OBJ_P(l_ruleError), r575.raw()))) return false;
+												vd557 = std::move(r575);
+												vd557_done = true;
 											}
 											break;
 											case 19: {
-												zv::Val r575;
-												if (UNEXPECTED(!pgen::RuleError437::m_getFileDependencies(Z_OBJ_P(l_ruleError), r575.raw()))) return false;
-												vd556 = std::move(r575);
-												vd556_done = true;
+												zv::Val r576;
+												if (UNEXPECTED(!pgen::RuleError437::m_getFileDependencies(Z_OBJ_P(l_ruleError), r576.raw()))) return false;
+												vd557 = std::move(r576);
+												vd557_done = true;
 											}
 											break;
 											case 20: {
-												zv::Val r576;
-												if (UNEXPECTED(!pgen::RuleError351::m_getFileDependencies(Z_OBJ_P(l_ruleError), r576.raw()))) return false;
-												vd556 = std::move(r576);
-												vd556_done = true;
+												zv::Val r577;
+												if (UNEXPECTED(!pgen::RuleError351::m_getFileDependencies(Z_OBJ_P(l_ruleError), r577.raw()))) return false;
+												vd557 = std::move(r577);
+												vd557_done = true;
 											}
 											break;
 											case 21: {
-												zv::Val r577;
-												if (UNEXPECTED(!pgen::RuleError379::m_getFileDependencies(Z_OBJ_P(l_ruleError), r577.raw()))) return false;
-												vd556 = std::move(r577);
-												vd556_done = true;
+												zv::Val r578;
+												if (UNEXPECTED(!pgen::RuleError379::m_getFileDependencies(Z_OBJ_P(l_ruleError), r578.raw()))) return false;
+												vd557 = std::move(r578);
+												vd557_done = true;
 											}
 											break;
 											case 22: {
-												zv::Val r578;
-												if (UNEXPECTED(!pgen::RuleError409::m_getFileDependencies(Z_OBJ_P(l_ruleError), r578.raw()))) return false;
-												vd556 = std::move(r578);
-												vd556_done = true;
+												zv::Val r579;
+												if (UNEXPECTED(!pgen::RuleError409::m_getFileDependencies(Z_OBJ_P(l_ruleError), r579.raw()))) return false;
+												vd557 = std::move(r579);
+												vd557_done = true;
 											}
 											break;
 											case 23: {
-												zv::Val r579;
-												if (UNEXPECTED(!pgen::RuleError421::m_getFileDependencies(Z_OBJ_P(l_ruleError), r579.raw()))) return false;
-												vd556 = std::move(r579);
-												vd556_done = true;
+												zv::Val r580;
+												if (UNEXPECTED(!pgen::RuleError421::m_getFileDependencies(Z_OBJ_P(l_ruleError), r580.raw()))) return false;
+												vd557 = std::move(r580);
+												vd557_done = true;
 											}
 											break;
 											case 24: {
-												zv::Val r580;
-												if (UNEXPECTED(!pgen::RuleError347::m_getFileDependencies(Z_OBJ_P(l_ruleError), r580.raw()))) return false;
-												vd556 = std::move(r580);
-												vd556_done = true;
+												zv::Val r581;
+												if (UNEXPECTED(!pgen::RuleError347::m_getFileDependencies(Z_OBJ_P(l_ruleError), r581.raw()))) return false;
+												vd557 = std::move(r581);
+												vd557_done = true;
 											}
 											break;
 											case 25: {
-												zv::Val r581;
-												if (UNEXPECTED(!pgen::RuleError353::m_getFileDependencies(Z_OBJ_P(l_ruleError), r581.raw()))) return false;
-												vd556 = std::move(r581);
-												vd556_done = true;
+												zv::Val r582;
+												if (UNEXPECTED(!pgen::RuleError353::m_getFileDependencies(Z_OBJ_P(l_ruleError), r582.raw()))) return false;
+												vd557 = std::move(r582);
+												vd557_done = true;
 											}
 											break;
 											case 26: {
-												zv::Val r582;
-												if (UNEXPECTED(!pgen::RuleError435::m_getFileDependencies(Z_OBJ_P(l_ruleError), r582.raw()))) return false;
-												vd556 = std::move(r582);
-												vd556_done = true;
+												zv::Val r583;
+												if (UNEXPECTED(!pgen::RuleError435::m_getFileDependencies(Z_OBJ_P(l_ruleError), r583.raw()))) return false;
+												vd557 = std::move(r583);
+												vd557_done = true;
 											}
 											break;
 											case 27: {
-												zv::Val r583;
-												if (UNEXPECTED(!pgen::RuleError391::m_getFileDependencies(Z_OBJ_P(l_ruleError), r583.raw()))) return false;
-												vd556 = std::move(r583);
-												vd556_done = true;
+												zv::Val r584;
+												if (UNEXPECTED(!pgen::RuleError391::m_getFileDependencies(Z_OBJ_P(l_ruleError), r584.raw()))) return false;
+												vd557 = std::move(r584);
+												vd557_done = true;
 											}
 											break;
 											case 28: {
-												zv::Val r584;
-												if (UNEXPECTED(!pgen::RuleError385::m_getFileDependencies(Z_OBJ_P(l_ruleError), r584.raw()))) return false;
-												vd556 = std::move(r584);
-												vd556_done = true;
+												zv::Val r585;
+												if (UNEXPECTED(!pgen::RuleError385::m_getFileDependencies(Z_OBJ_P(l_ruleError), r585.raw()))) return false;
+												vd557 = std::move(r585);
+												vd557_done = true;
 											}
 											break;
 											case 29: {
-												zv::Val r585;
-												if (UNEXPECTED(!pgen::RuleError269::m_getFileDependencies(Z_OBJ_P(l_ruleError), r585.raw()))) return false;
-												vd556 = std::move(r585);
-												vd556_done = true;
+												zv::Val r586;
+												if (UNEXPECTED(!pgen::RuleError269::m_getFileDependencies(Z_OBJ_P(l_ruleError), r586.raw()))) return false;
+												vd557 = std::move(r586);
+												vd557_done = true;
 											}
 											break;
 											case 30: {
-												zv::Val r586;
-												if (UNEXPECTED(!pgen::RuleError447::m_getFileDependencies(Z_OBJ_P(l_ruleError), r586.raw()))) return false;
-												vd556 = std::move(r586);
-												vd556_done = true;
+												zv::Val r587;
+												if (UNEXPECTED(!pgen::RuleError447::m_getFileDependencies(Z_OBJ_P(l_ruleError), r587.raw()))) return false;
+												vd557 = std::move(r587);
+												vd557_done = true;
 											}
 											break;
 											case 31: {
-												zv::Val r587;
-												if (UNEXPECTED(!pgen::RuleError321::m_getFileDependencies(Z_OBJ_P(l_ruleError), r587.raw()))) return false;
-												vd556 = std::move(r587);
-												vd556_done = true;
+												zv::Val r588;
+												if (UNEXPECTED(!pgen::RuleError321::m_getFileDependencies(Z_OBJ_P(l_ruleError), r588.raw()))) return false;
+												vd557 = std::move(r588);
+												vd557_done = true;
 											}
 											break;
 											case 32: {
-												zv::Val r588;
-												if (UNEXPECTED(!pgen::RuleError335::m_getFileDependencies(Z_OBJ_P(l_ruleError), r588.raw()))) return false;
-												vd556 = std::move(r588);
-												vd556_done = true;
+												zv::Val r589;
+												if (UNEXPECTED(!pgen::RuleError335::m_getFileDependencies(Z_OBJ_P(l_ruleError), r589.raw()))) return false;
+												vd557 = std::move(r589);
+												vd557_done = true;
 											}
 											break;
 											case 33: {
-												zv::Val r589;
-												if (UNEXPECTED(!pgen::RuleError453::m_getFileDependencies(Z_OBJ_P(l_ruleError), r589.raw()))) return false;
-												vd556 = std::move(r589);
-												vd556_done = true;
+												zv::Val r590;
+												if (UNEXPECTED(!pgen::RuleError453::m_getFileDependencies(Z_OBJ_P(l_ruleError), r590.raw()))) return false;
+												vd557 = std::move(r590);
+												vd557_done = true;
 											}
 											break;
 											case 34: {
-												zv::Val r590;
-												if (UNEXPECTED(!pgen::RuleError309::m_getFileDependencies(Z_OBJ_P(l_ruleError), r590.raw()))) return false;
-												vd556 = std::move(r590);
-												vd556_done = true;
+												zv::Val r591;
+												if (UNEXPECTED(!pgen::RuleError309::m_getFileDependencies(Z_OBJ_P(l_ruleError), r591.raw()))) return false;
+												vd557 = std::move(r591);
+												vd557_done = true;
 											}
 											break;
 											case 35: {
-												zv::Val r591;
-												if (UNEXPECTED(!pgen::RuleError491::m_getFileDependencies(Z_OBJ_P(l_ruleError), r591.raw()))) return false;
-												vd556 = std::move(r591);
-												vd556_done = true;
+												zv::Val r592;
+												if (UNEXPECTED(!pgen::RuleError491::m_getFileDependencies(Z_OBJ_P(l_ruleError), r592.raw()))) return false;
+												vd557 = std::move(r592);
+												vd557_done = true;
 											}
 											break;
 											case 36: {
-												zv::Val r592;
-												if (UNEXPECTED(!pgen::RuleError485::m_getFileDependencies(Z_OBJ_P(l_ruleError), r592.raw()))) return false;
-												vd556 = std::move(r592);
-												vd556_done = true;
+												zv::Val r593;
+												if (UNEXPECTED(!pgen::RuleError485::m_getFileDependencies(Z_OBJ_P(l_ruleError), r593.raw()))) return false;
+												vd557 = std::move(r593);
+												vd557_done = true;
 											}
 											break;
 											case 37: {
-												zv::Val r593;
-												if (UNEXPECTED(!pgen::RuleError283::m_getFileDependencies(Z_OBJ_P(l_ruleError), r593.raw()))) return false;
-												vd556 = std::move(r593);
-												vd556_done = true;
+												zv::Val r594;
+												if (UNEXPECTED(!pgen::RuleError283::m_getFileDependencies(Z_OBJ_P(l_ruleError), r594.raw()))) return false;
+												vd557 = std::move(r594);
+												vd557_done = true;
 											}
 											break;
 											case 38: {
-												zv::Val r594;
-												if (UNEXPECTED(!pgen::RuleError297::m_getFileDependencies(Z_OBJ_P(l_ruleError), r594.raw()))) return false;
-												vd556 = std::move(r594);
-												vd556_done = true;
+												zv::Val r595;
+												if (UNEXPECTED(!pgen::RuleError297::m_getFileDependencies(Z_OBJ_P(l_ruleError), r595.raw()))) return false;
+												vd557 = std::move(r595);
+												vd557_done = true;
 											}
 											break;
 											case 39: {
-												zv::Val r595;
-												if (UNEXPECTED(!pgen::RuleError281::m_getFileDependencies(Z_OBJ_P(l_ruleError), r595.raw()))) return false;
-												vd556 = std::move(r595);
-												vd556_done = true;
+												zv::Val r596;
+												if (UNEXPECTED(!pgen::RuleError281::m_getFileDependencies(Z_OBJ_P(l_ruleError), r596.raw()))) return false;
+												vd557 = std::move(r596);
+												vd557_done = true;
 											}
 											break;
 											case 40: {
-												zv::Val r596;
-												if (UNEXPECTED(!pgen::RuleError295::m_getFileDependencies(Z_OBJ_P(l_ruleError), r596.raw()))) return false;
-												vd556 = std::move(r596);
-												vd556_done = true;
+												zv::Val r597;
+												if (UNEXPECTED(!pgen::RuleError295::m_getFileDependencies(Z_OBJ_P(l_ruleError), r597.raw()))) return false;
+												vd557 = std::move(r597);
+												vd557_done = true;
 											}
 											break;
 											case 41: {
-												zv::Val r597;
-												if (UNEXPECTED(!pgen::RuleError493::m_getFileDependencies(Z_OBJ_P(l_ruleError), r597.raw()))) return false;
-												vd556 = std::move(r597);
-												vd556_done = true;
+												zv::Val r598;
+												if (UNEXPECTED(!pgen::RuleError493::m_getFileDependencies(Z_OBJ_P(l_ruleError), r598.raw()))) return false;
+												vd557 = std::move(r598);
+												vd557_done = true;
 											}
 											break;
 											case 42: {
-												zv::Val r598;
-												if (UNEXPECTED(!pgen::RuleError487::m_getFileDependencies(Z_OBJ_P(l_ruleError), r598.raw()))) return false;
-												vd556 = std::move(r598);
-												vd556_done = true;
+												zv::Val r599;
+												if (UNEXPECTED(!pgen::RuleError487::m_getFileDependencies(Z_OBJ_P(l_ruleError), r599.raw()))) return false;
+												vd557 = std::move(r599);
+												vd557_done = true;
 											}
 											break;
 											case 43: {
-												zv::Val r599;
-												if (UNEXPECTED(!pgen::RuleError479::m_getFileDependencies(Z_OBJ_P(l_ruleError), r599.raw()))) return false;
-												vd556 = std::move(r599);
-												vd556_done = true;
+												zv::Val r600;
+												if (UNEXPECTED(!pgen::RuleError479::m_getFileDependencies(Z_OBJ_P(l_ruleError), r600.raw()))) return false;
+												vd557 = std::move(r600);
+												vd557_done = true;
 											}
 											break;
 											case 44: {
-												zv::Val r600;
-												if (UNEXPECTED(!pgen::RuleError323::m_getFileDependencies(Z_OBJ_P(l_ruleError), r600.raw()))) return false;
-												vd556 = std::move(r600);
-												vd556_done = true;
+												zv::Val r601;
+												if (UNEXPECTED(!pgen::RuleError323::m_getFileDependencies(Z_OBJ_P(l_ruleError), r601.raw()))) return false;
+												vd557 = std::move(r601);
+												vd557_done = true;
 											}
 											break;
 											case 45: {
-												zv::Val r601;
-												if (UNEXPECTED(!pgen::RuleError445::m_getFileDependencies(Z_OBJ_P(l_ruleError), r601.raw()))) return false;
-												vd556 = std::move(r601);
-												vd556_done = true;
+												zv::Val r602;
+												if (UNEXPECTED(!pgen::RuleError445::m_getFileDependencies(Z_OBJ_P(l_ruleError), r602.raw()))) return false;
+												vd557 = std::move(r602);
+												vd557_done = true;
 											}
 											break;
 											case 46: {
-												zv::Val r602;
-												if (UNEXPECTED(!pgen::RuleError451::m_getFileDependencies(Z_OBJ_P(l_ruleError), r602.raw()))) return false;
-												vd556 = std::move(r602);
-												vd556_done = true;
+												zv::Val r603;
+												if (UNEXPECTED(!pgen::RuleError451::m_getFileDependencies(Z_OBJ_P(l_ruleError), r603.raw()))) return false;
+												vd557 = std::move(r603);
+												vd557_done = true;
 											}
 											break;
 											case 47: {
-												zv::Val r603;
-												if (UNEXPECTED(!pgen::RuleError337::m_getFileDependencies(Z_OBJ_P(l_ruleError), r603.raw()))) return false;
-												vd556 = std::move(r603);
-												vd556_done = true;
+												zv::Val r604;
+												if (UNEXPECTED(!pgen::RuleError337::m_getFileDependencies(Z_OBJ_P(l_ruleError), r604.raw()))) return false;
+												vd557 = std::move(r604);
+												vd557_done = true;
 											}
 											break;
 											case 48: {
-												zv::Val r604;
-												if (UNEXPECTED(!pgen::RuleError257::m_getFileDependencies(Z_OBJ_P(l_ruleError), r604.raw()))) return false;
-												vd556 = std::move(r604);
-												vd556_done = true;
+												zv::Val r605;
+												if (UNEXPECTED(!pgen::RuleError257::m_getFileDependencies(Z_OBJ_P(l_ruleError), r605.raw()))) return false;
+												vd557 = std::move(r605);
+												vd557_done = true;
 											}
 											break;
 											case 49: {
-												zv::Val r605;
-												if (UNEXPECTED(!pgen::RuleError509::m_getFileDependencies(Z_OBJ_P(l_ruleError), r605.raw()))) return false;
-												vd556 = std::move(r605);
-												vd556_done = true;
+												zv::Val r606;
+												if (UNEXPECTED(!pgen::RuleError509::m_getFileDependencies(Z_OBJ_P(l_ruleError), r606.raw()))) return false;
+												vd557 = std::move(r606);
+												vd557_done = true;
 											}
 											break;
 											case 50: {
-												zv::Val r606;
-												if (UNEXPECTED(!pgen::RuleError469::m_getFileDependencies(Z_OBJ_P(l_ruleError), r606.raw()))) return false;
-												vd556 = std::move(r606);
-												vd556_done = true;
+												zv::Val r607;
+												if (UNEXPECTED(!pgen::RuleError469::m_getFileDependencies(Z_OBJ_P(l_ruleError), r607.raw()))) return false;
+												vd557 = std::move(r607);
+												vd557_done = true;
 											}
 											break;
 											case 51: {
-												zv::Val r607;
-												if (UNEXPECTED(!pgen::RuleError333::m_getFileDependencies(Z_OBJ_P(l_ruleError), r607.raw()))) return false;
-												vd556 = std::move(r607);
-												vd556_done = true;
+												zv::Val r608;
+												if (UNEXPECTED(!pgen::RuleError333::m_getFileDependencies(Z_OBJ_P(l_ruleError), r608.raw()))) return false;
+												vd557 = std::move(r608);
+												vd557_done = true;
 											}
 											break;
 											case 52: {
-												zv::Val r608;
-												if (UNEXPECTED(!pgen::RuleError455::m_getFileDependencies(Z_OBJ_P(l_ruleError), r608.raw()))) return false;
-												vd556 = std::move(r608);
-												vd556_done = true;
+												zv::Val r609;
+												if (UNEXPECTED(!pgen::RuleError455::m_getFileDependencies(Z_OBJ_P(l_ruleError), r609.raw()))) return false;
+												vd557 = std::move(r609);
+												vd557_done = true;
 											}
 											break;
 											case 53: {
-												zv::Val r609;
-												if (UNEXPECTED(!pgen::RuleError441::m_getFileDependencies(Z_OBJ_P(l_ruleError), r609.raw()))) return false;
-												vd556 = std::move(r609);
-												vd556_done = true;
+												zv::Val r610;
+												if (UNEXPECTED(!pgen::RuleError441::m_getFileDependencies(Z_OBJ_P(l_ruleError), r610.raw()))) return false;
+												vd557 = std::move(r610);
+												vd557_done = true;
 											}
 											break;
 											case 54: {
-												zv::Val r610;
-												if (UNEXPECTED(!pgen::RuleError327::m_getFileDependencies(Z_OBJ_P(l_ruleError), r610.raw()))) return false;
-												vd556 = std::move(r610);
-												vd556_done = true;
+												zv::Val r611;
+												if (UNEXPECTED(!pgen::RuleError327::m_getFileDependencies(Z_OBJ_P(l_ruleError), r611.raw()))) return false;
+												vd557 = std::move(r611);
+												vd557_done = true;
 											}
 											break;
 											case 55: {
-												zv::Val r611;
-												if (UNEXPECTED(!pgen::RuleError483::m_getFileDependencies(Z_OBJ_P(l_ruleError), r611.raw()))) return false;
-												vd556 = std::move(r611);
-												vd556_done = true;
+												zv::Val r612;
+												if (UNEXPECTED(!pgen::RuleError483::m_getFileDependencies(Z_OBJ_P(l_ruleError), r612.raw()))) return false;
+												vd557 = std::move(r612);
+												vd557_done = true;
 											}
 											break;
 											case 56: {
-												zv::Val r612;
-												if (UNEXPECTED(!pgen::RuleError497::m_getFileDependencies(Z_OBJ_P(l_ruleError), r612.raw()))) return false;
-												vd556 = std::move(r612);
-												vd556_done = true;
+												zv::Val r613;
+												if (UNEXPECTED(!pgen::RuleError497::m_getFileDependencies(Z_OBJ_P(l_ruleError), r613.raw()))) return false;
+												vd557 = std::move(r613);
+												vd557_done = true;
 											}
 											break;
 											case 57: {
-												zv::Val r613;
-												if (UNEXPECTED(!pgen::RuleError291::m_getFileDependencies(Z_OBJ_P(l_ruleError), r613.raw()))) return false;
-												vd556 = std::move(r613);
-												vd556_done = true;
+												zv::Val r614;
+												if (UNEXPECTED(!pgen::RuleError291::m_getFileDependencies(Z_OBJ_P(l_ruleError), r614.raw()))) return false;
+												vd557 = std::move(r614);
+												vd557_done = true;
 											}
 											break;
 											case 58: {
-												zv::Val r614;
-												if (UNEXPECTED(!pgen::RuleError285::m_getFileDependencies(Z_OBJ_P(l_ruleError), r614.raw()))) return false;
-												vd556 = std::move(r614);
-												vd556_done = true;
+												zv::Val r615;
+												if (UNEXPECTED(!pgen::RuleError285::m_getFileDependencies(Z_OBJ_P(l_ruleError), r615.raw()))) return false;
+												vd557 = std::move(r615);
+												vd557_done = true;
 											}
 											break;
 											case 59: {
-												zv::Val r615;
-												if (UNEXPECTED(!pgen::RuleError293::m_getFileDependencies(Z_OBJ_P(l_ruleError), r615.raw()))) return false;
-												vd556 = std::move(r615);
-												vd556_done = true;
+												zv::Val r616;
+												if (UNEXPECTED(!pgen::RuleError293::m_getFileDependencies(Z_OBJ_P(l_ruleError), r616.raw()))) return false;
+												vd557 = std::move(r616);
+												vd557_done = true;
 											}
 											break;
 											case 60: {
-												zv::Val r616;
-												if (UNEXPECTED(!pgen::RuleError287::m_getFileDependencies(Z_OBJ_P(l_ruleError), r616.raw()))) return false;
-												vd556 = std::move(r616);
-												vd556_done = true;
+												zv::Val r617;
+												if (UNEXPECTED(!pgen::RuleError287::m_getFileDependencies(Z_OBJ_P(l_ruleError), r617.raw()))) return false;
+												vd557 = std::move(r617);
+												vd557_done = true;
 											}
 											break;
 											case 61: {
-												zv::Val r617;
-												if (UNEXPECTED(!pgen::RuleError481::m_getFileDependencies(Z_OBJ_P(l_ruleError), r617.raw()))) return false;
-												vd556 = std::move(r617);
-												vd556_done = true;
+												zv::Val r618;
+												if (UNEXPECTED(!pgen::RuleError481::m_getFileDependencies(Z_OBJ_P(l_ruleError), r618.raw()))) return false;
+												vd557 = std::move(r618);
+												vd557_done = true;
 											}
 											break;
 											case 62: {
-												zv::Val r618;
-												if (UNEXPECTED(!pgen::RuleError495::m_getFileDependencies(Z_OBJ_P(l_ruleError), r618.raw()))) return false;
-												vd556 = std::move(r618);
-												vd556_done = true;
+												zv::Val r619;
+												if (UNEXPECTED(!pgen::RuleError495::m_getFileDependencies(Z_OBJ_P(l_ruleError), r619.raw()))) return false;
+												vd557 = std::move(r619);
+												vd557_done = true;
 											}
 											break;
 											case 63: {
-												zv::Val r619;
-												if (UNEXPECTED(!pgen::RuleError457::m_getFileDependencies(Z_OBJ_P(l_ruleError), r619.raw()))) return false;
-												vd556 = std::move(r619);
-												vd556_done = true;
+												zv::Val r620;
+												if (UNEXPECTED(!pgen::RuleError457::m_getFileDependencies(Z_OBJ_P(l_ruleError), r620.raw()))) return false;
+												vd557 = std::move(r620);
+												vd557_done = true;
 											}
 											break;
 											case 64: {
-												zv::Val r620;
-												if (UNEXPECTED(!pgen::RuleError331::m_getFileDependencies(Z_OBJ_P(l_ruleError), r620.raw()))) return false;
-												vd556 = std::move(r620);
-												vd556_done = true;
+												zv::Val r621;
+												if (UNEXPECTED(!pgen::RuleError331::m_getFileDependencies(Z_OBJ_P(l_ruleError), r621.raw()))) return false;
+												vd557 = std::move(r621);
+												vd557_done = true;
 											}
 											break;
 											case 65: {
-												zv::Val r621;
-												if (UNEXPECTED(!pgen::RuleError325::m_getFileDependencies(Z_OBJ_P(l_ruleError), r621.raw()))) return false;
-												vd556 = std::move(r621);
-												vd556_done = true;
+												zv::Val r622;
+												if (UNEXPECTED(!pgen::RuleError325::m_getFileDependencies(Z_OBJ_P(l_ruleError), r622.raw()))) return false;
+												vd557 = std::move(r622);
+												vd557_done = true;
 											}
 											break;
 											case 66: {
-												zv::Val r622;
-												if (UNEXPECTED(!pgen::RuleError443::m_getFileDependencies(Z_OBJ_P(l_ruleError), r622.raw()))) return false;
-												vd556 = std::move(r622);
-												vd556_done = true;
+												zv::Val r623;
+												if (UNEXPECTED(!pgen::RuleError443::m_getFileDependencies(Z_OBJ_P(l_ruleError), r623.raw()))) return false;
+												vd557 = std::move(r623);
+												vd557_done = true;
 											}
 											break;
 											case 67: {
-												zv::Val r623;
-												if (UNEXPECTED(!pgen::RuleError319::m_getFileDependencies(Z_OBJ_P(l_ruleError), r623.raw()))) return false;
-												vd556 = std::move(r623);
-												vd556_done = true;
+												zv::Val r624;
+												if (UNEXPECTED(!pgen::RuleError319::m_getFileDependencies(Z_OBJ_P(l_ruleError), r624.raw()))) return false;
+												vd557 = std::move(r624);
+												vd557_done = true;
 											}
 											break;
 											case 68: {
-												zv::Val r624;
-												if (UNEXPECTED(!pgen::RuleError279::m_getFileDependencies(Z_OBJ_P(l_ruleError), r624.raw()))) return false;
-												vd556 = std::move(r624);
-												vd556_done = true;
+												zv::Val r625;
+												if (UNEXPECTED(!pgen::RuleError279::m_getFileDependencies(Z_OBJ_P(l_ruleError), r625.raw()))) return false;
+												vd557 = std::move(r625);
+												vd557_done = true;
 											}
 											break;
 											case 69: {
-												zv::Val r625;
-												if (UNEXPECTED(!pgen::RuleError499::m_getFileDependencies(Z_OBJ_P(l_ruleError), r625.raw()))) return false;
-												vd556 = std::move(r625);
-												vd556_done = true;
+												zv::Val r626;
+												if (UNEXPECTED(!pgen::RuleError499::m_getFileDependencies(Z_OBJ_P(l_ruleError), r626.raw()))) return false;
+												vd557 = std::move(r626);
+												vd557_done = true;
 											}
 											break;
 											case 70: {
-												zv::Val r626;
-												if (UNEXPECTED(!pgen::RuleError329::m_getFileDependencies(Z_OBJ_P(l_ruleError), r626.raw()))) return false;
-												vd556 = std::move(r626);
-												vd556_done = true;
+												zv::Val r627;
+												if (UNEXPECTED(!pgen::RuleError329::m_getFileDependencies(Z_OBJ_P(l_ruleError), r627.raw()))) return false;
+												vd557 = std::move(r627);
+												vd557_done = true;
 											}
 											break;
 											case 71: {
-												zv::Val r627;
-												if (UNEXPECTED(!pgen::RuleError315::m_getFileDependencies(Z_OBJ_P(l_ruleError), r627.raw()))) return false;
-												vd556 = std::move(r627);
-												vd556_done = true;
+												zv::Val r628;
+												if (UNEXPECTED(!pgen::RuleError315::m_getFileDependencies(Z_OBJ_P(l_ruleError), r628.raw()))) return false;
+												vd557 = std::move(r628);
+												vd557_done = true;
 											}
 											break;
 											case 72: {
-												zv::Val r628;
-												if (UNEXPECTED(!pgen::RuleError473::m_getFileDependencies(Z_OBJ_P(l_ruleError), r628.raw()))) return false;
-												vd556 = std::move(r628);
-												vd556_done = true;
+												zv::Val r629;
+												if (UNEXPECTED(!pgen::RuleError473::m_getFileDependencies(Z_OBJ_P(l_ruleError), r629.raw()))) return false;
+												vd557 = std::move(r629);
+												vd557_done = true;
 											}
 											break;
 											case 73: {
-												zv::Val r629;
-												if (UNEXPECTED(!pgen::RuleError467::m_getFileDependencies(Z_OBJ_P(l_ruleError), r629.raw()))) return false;
-												vd556 = std::move(r629);
-												vd556_done = true;
+												zv::Val r630;
+												if (UNEXPECTED(!pgen::RuleError467::m_getFileDependencies(Z_OBJ_P(l_ruleError), r630.raw()))) return false;
+												vd557 = std::move(r630);
+												vd557_done = true;
 											}
 											break;
 											case 74: {
-												zv::Val r630;
-												if (UNEXPECTED(!pgen::RuleError301::m_getFileDependencies(Z_OBJ_P(l_ruleError), r630.raw()))) return false;
-												vd556 = std::move(r630);
-												vd556_done = true;
+												zv::Val r631;
+												if (UNEXPECTED(!pgen::RuleError301::m_getFileDependencies(Z_OBJ_P(l_ruleError), r631.raw()))) return false;
+												vd557 = std::move(r631);
+												vd557_done = true;
 											}
 											break;
 											case 75: {
-												zv::Val r631;
-												if (UNEXPECTED(!pgen::RuleError261::m_getFileDependencies(Z_OBJ_P(l_ruleError), r631.raw()))) return false;
-												vd556 = std::move(r631);
-												vd556_done = true;
+												zv::Val r632;
+												if (UNEXPECTED(!pgen::RuleError261::m_getFileDependencies(Z_OBJ_P(l_ruleError), r632.raw()))) return false;
+												vd557 = std::move(r632);
+												vd557_done = true;
 											}
 											break;
 											case 76: {
-												zv::Val r632;
-												if (UNEXPECTED(!pgen::RuleError507::m_getFileDependencies(Z_OBJ_P(l_ruleError), r632.raw()))) return false;
-												vd556 = std::move(r632);
-												vd556_done = true;
+												zv::Val r633;
+												if (UNEXPECTED(!pgen::RuleError507::m_getFileDependencies(Z_OBJ_P(l_ruleError), r633.raw()))) return false;
+												vd557 = std::move(r633);
+												vd557_done = true;
 											}
 											break;
 											case 77: {
-												zv::Val r633;
-												if (UNEXPECTED(!pgen::RuleError275::m_getFileDependencies(Z_OBJ_P(l_ruleError), r633.raw()))) return false;
-												vd556 = std::move(r633);
-												vd556_done = true;
+												zv::Val r634;
+												if (UNEXPECTED(!pgen::RuleError275::m_getFileDependencies(Z_OBJ_P(l_ruleError), r634.raw()))) return false;
+												vd557 = std::move(r634);
+												vd557_done = true;
 											}
 											break;
 											case 78: {
-												zv::Val r634;
-												if (UNEXPECTED(!pgen::RuleError505::m_getFileDependencies(Z_OBJ_P(l_ruleError), r634.raw()))) return false;
-												vd556 = std::move(r634);
-												vd556_done = true;
+												zv::Val r635;
+												if (UNEXPECTED(!pgen::RuleError505::m_getFileDependencies(Z_OBJ_P(l_ruleError), r635.raw()))) return false;
+												vd557 = std::move(r635);
+												vd557_done = true;
 											}
 											break;
 											case 79: {
-												zv::Val r635;
-												if (UNEXPECTED(!pgen::RuleError263::m_getFileDependencies(Z_OBJ_P(l_ruleError), r635.raw()))) return false;
-												vd556 = std::move(r635);
-												vd556_done = true;
+												zv::Val r636;
+												if (UNEXPECTED(!pgen::RuleError263::m_getFileDependencies(Z_OBJ_P(l_ruleError), r636.raw()))) return false;
+												vd557 = std::move(r636);
+												vd557_done = true;
 											}
 											break;
 											case 80: {
-												zv::Val r636;
-												if (UNEXPECTED(!pgen::RuleError277::m_getFileDependencies(Z_OBJ_P(l_ruleError), r636.raw()))) return false;
-												vd556 = std::move(r636);
-												vd556_done = true;
+												zv::Val r637;
+												if (UNEXPECTED(!pgen::RuleError277::m_getFileDependencies(Z_OBJ_P(l_ruleError), r637.raw()))) return false;
+												vd557 = std::move(r637);
+												vd557_done = true;
 											}
 											break;
 											case 81: {
-												zv::Val r637;
-												if (UNEXPECTED(!pgen::RuleError511::m_getFileDependencies(Z_OBJ_P(l_ruleError), r637.raw()))) return false;
-												vd556 = std::move(r637);
-												vd556_done = true;
+												zv::Val r638;
+												if (UNEXPECTED(!pgen::RuleError511::m_getFileDependencies(Z_OBJ_P(l_ruleError), r638.raw()))) return false;
+												vd557 = std::move(r638);
+												vd557_done = true;
 											}
 											break;
 											case 82: {
-												zv::Val r638;
-												if (UNEXPECTED(!pgen::RuleError471::m_getFileDependencies(Z_OBJ_P(l_ruleError), r638.raw()))) return false;
-												vd556 = std::move(r638);
-												vd556_done = true;
+												zv::Val r639;
+												if (UNEXPECTED(!pgen::RuleError471::m_getFileDependencies(Z_OBJ_P(l_ruleError), r639.raw()))) return false;
+												vd557 = std::move(r639);
+												vd557_done = true;
 											}
 											break;
 											case 83: {
-												zv::Val r639;
-												if (UNEXPECTED(!pgen::RuleError317::m_getFileDependencies(Z_OBJ_P(l_ruleError), r639.raw()))) return false;
-												vd556 = std::move(r639);
-												vd556_done = true;
+												zv::Val r640;
+												if (UNEXPECTED(!pgen::RuleError317::m_getFileDependencies(Z_OBJ_P(l_ruleError), r640.raw()))) return false;
+												vd557 = std::move(r640);
+												vd557_done = true;
 											}
 											break;
 											case 84: {
-												zv::Val r640;
-												if (UNEXPECTED(!pgen::RuleError303::m_getFileDependencies(Z_OBJ_P(l_ruleError), r640.raw()))) return false;
-												vd556 = std::move(r640);
-												vd556_done = true;
+												zv::Val r641;
+												if (UNEXPECTED(!pgen::RuleError303::m_getFileDependencies(Z_OBJ_P(l_ruleError), r641.raw()))) return false;
+												vd557 = std::move(r641);
+												vd557_done = true;
 											}
 											break;
 											case 85: {
-												zv::Val r641;
-												if (UNEXPECTED(!pgen::RuleError465::m_getFileDependencies(Z_OBJ_P(l_ruleError), r641.raw()))) return false;
-												vd556 = std::move(r641);
-												vd556_done = true;
+												zv::Val r642;
+												if (UNEXPECTED(!pgen::RuleError465::m_getFileDependencies(Z_OBJ_P(l_ruleError), r642.raw()))) return false;
+												vd557 = std::move(r642);
+												vd557_done = true;
 											}
 											break;
 											case 86: {
-												zv::Val r642;
-												if (UNEXPECTED(!pgen::RuleError459::m_getFileDependencies(Z_OBJ_P(l_ruleError), r642.raw()))) return false;
-												vd556 = std::move(r642);
-												vd556_done = true;
+												zv::Val r643;
+												if (UNEXPECTED(!pgen::RuleError459::m_getFileDependencies(Z_OBJ_P(l_ruleError), r643.raw()))) return false;
+												vd557 = std::move(r643);
+												vd557_done = true;
 											}
 											break;
 											case 87: {
-												zv::Val r643;
-												if (UNEXPECTED(!pgen::RuleError289::m_getFileDependencies(Z_OBJ_P(l_ruleError), r643.raw()))) return false;
-												vd556 = std::move(r643);
-												vd556_done = true;
+												zv::Val r644;
+												if (UNEXPECTED(!pgen::RuleError289::m_getFileDependencies(Z_OBJ_P(l_ruleError), r644.raw()))) return false;
+												vd557 = std::move(r644);
+												vd557_done = true;
 											}
 											break;
 											case 88: {
-												zv::Val r644;
-												if (UNEXPECTED(!pgen::RuleError299::m_getFileDependencies(Z_OBJ_P(l_ruleError), r644.raw()))) return false;
-												vd556 = std::move(r644);
-												vd556_done = true;
+												zv::Val r645;
+												if (UNEXPECTED(!pgen::RuleError299::m_getFileDependencies(Z_OBJ_P(l_ruleError), r645.raw()))) return false;
+												vd557 = std::move(r645);
+												vd557_done = true;
 											}
 											break;
 											case 89: {
-												zv::Val r645;
-												if (UNEXPECTED(!pgen::RuleError461::m_getFileDependencies(Z_OBJ_P(l_ruleError), r645.raw()))) return false;
-												vd556 = std::move(r645);
-												vd556_done = true;
+												zv::Val r646;
+												if (UNEXPECTED(!pgen::RuleError461::m_getFileDependencies(Z_OBJ_P(l_ruleError), r646.raw()))) return false;
+												vd557 = std::move(r646);
+												vd557_done = true;
 											}
 											break;
 											case 90: {
-												zv::Val r646;
-												if (UNEXPECTED(!pgen::RuleError307::m_getFileDependencies(Z_OBJ_P(l_ruleError), r646.raw()))) return false;
-												vd556 = std::move(r646);
-												vd556_done = true;
+												zv::Val r647;
+												if (UNEXPECTED(!pgen::RuleError307::m_getFileDependencies(Z_OBJ_P(l_ruleError), r647.raw()))) return false;
+												vd557 = std::move(r647);
+												vd557_done = true;
 											}
 											break;
 											case 91: {
-												zv::Val r647;
-												if (UNEXPECTED(!pgen::RuleError313::m_getFileDependencies(Z_OBJ_P(l_ruleError), r647.raw()))) return false;
-												vd556 = std::move(r647);
-												vd556_done = true;
+												zv::Val r648;
+												if (UNEXPECTED(!pgen::RuleError313::m_getFileDependencies(Z_OBJ_P(l_ruleError), r648.raw()))) return false;
+												vd557 = std::move(r648);
+												vd557_done = true;
 											}
 											break;
 											case 92: {
-												zv::Val r648;
-												if (UNEXPECTED(!pgen::RuleError475::m_getFileDependencies(Z_OBJ_P(l_ruleError), r648.raw()))) return false;
-												vd556 = std::move(r648);
-												vd556_done = true;
+												zv::Val r649;
+												if (UNEXPECTED(!pgen::RuleError475::m_getFileDependencies(Z_OBJ_P(l_ruleError), r649.raw()))) return false;
+												vd557 = std::move(r649);
+												vd557_done = true;
 											}
 											break;
 											case 93: {
-												zv::Val r649;
-												if (UNEXPECTED(!pgen::RuleError449::m_getFileDependencies(Z_OBJ_P(l_ruleError), r649.raw()))) return false;
-												vd556 = std::move(r649);
-												vd556_done = true;
+												zv::Val r650;
+												if (UNEXPECTED(!pgen::RuleError449::m_getFileDependencies(Z_OBJ_P(l_ruleError), r650.raw()))) return false;
+												vd557 = std::move(r650);
+												vd557_done = true;
 											}
 											break;
 											case 94: {
-												zv::Val r650;
-												if (UNEXPECTED(!pgen::RuleError273::m_getFileDependencies(Z_OBJ_P(l_ruleError), r650.raw()))) return false;
-												vd556 = std::move(r650);
-												vd556_done = true;
+												zv::Val r651;
+												if (UNEXPECTED(!pgen::RuleError273::m_getFileDependencies(Z_OBJ_P(l_ruleError), r651.raw()))) return false;
+												vd557 = std::move(r651);
+												vd557_done = true;
 											}
 											break;
 											case 95: {
-												zv::Val r651;
-												if (UNEXPECTED(!pgen::RuleError267::m_getFileDependencies(Z_OBJ_P(l_ruleError), r651.raw()))) return false;
-												vd556 = std::move(r651);
-												vd556_done = true;
+												zv::Val r652;
+												if (UNEXPECTED(!pgen::RuleError267::m_getFileDependencies(Z_OBJ_P(l_ruleError), r652.raw()))) return false;
+												vd557 = std::move(r652);
+												vd557_done = true;
 											}
 											break;
 											case 96: {
-												zv::Val r652;
-												if (UNEXPECTED(!pgen::RuleError501::m_getFileDependencies(Z_OBJ_P(l_ruleError), r652.raw()))) return false;
-												vd556 = std::move(r652);
-												vd556_done = true;
+												zv::Val r653;
+												if (UNEXPECTED(!pgen::RuleError501::m_getFileDependencies(Z_OBJ_P(l_ruleError), r653.raw()))) return false;
+												vd557 = std::move(r653);
+												vd557_done = true;
 											}
 											break;
 											case 97: {
-												zv::Val r653;
-												if (UNEXPECTED(!pgen::RuleError259::m_getFileDependencies(Z_OBJ_P(l_ruleError), r653.raw()))) return false;
-												vd556 = std::move(r653);
-												vd556_done = true;
+												zv::Val r654;
+												if (UNEXPECTED(!pgen::RuleError259::m_getFileDependencies(Z_OBJ_P(l_ruleError), r654.raw()))) return false;
+												vd557 = std::move(r654);
+												vd557_done = true;
 											}
 											break;
 											case 98: {
-												zv::Val r654;
-												if (UNEXPECTED(!pgen::RuleError271::m_getFileDependencies(Z_OBJ_P(l_ruleError), r654.raw()))) return false;
-												vd556 = std::move(r654);
-												vd556_done = true;
+												zv::Val r655;
+												if (UNEXPECTED(!pgen::RuleError271::m_getFileDependencies(Z_OBJ_P(l_ruleError), r655.raw()))) return false;
+												vd557 = std::move(r655);
+												vd557_done = true;
 											}
 											break;
 											case 99: {
-												zv::Val r655;
-												if (UNEXPECTED(!pgen::RuleError503::m_getFileDependencies(Z_OBJ_P(l_ruleError), r655.raw()))) return false;
-												vd556 = std::move(r655);
-												vd556_done = true;
+												zv::Val r656;
+												if (UNEXPECTED(!pgen::RuleError503::m_getFileDependencies(Z_OBJ_P(l_ruleError), r656.raw()))) return false;
+												vd557 = std::move(r656);
+												vd557_done = true;
 											}
 											break;
 											case 100: {
-												zv::Val r656;
-												if (UNEXPECTED(!pgen::RuleError265::m_getFileDependencies(Z_OBJ_P(l_ruleError), r656.raw()))) return false;
-												vd556 = std::move(r656);
-												vd556_done = true;
+												zv::Val r657;
+												if (UNEXPECTED(!pgen::RuleError265::m_getFileDependencies(Z_OBJ_P(l_ruleError), r657.raw()))) return false;
+												vd557 = std::move(r657);
+												vd557_done = true;
 											}
 											break;
 											case 101: {
-												zv::Val r657;
-												if (UNEXPECTED(!pgen::RuleError339::m_getFileDependencies(Z_OBJ_P(l_ruleError), r657.raw()))) return false;
-												vd556 = std::move(r657);
-												vd556_done = true;
+												zv::Val r658;
+												if (UNEXPECTED(!pgen::RuleError339::m_getFileDependencies(Z_OBJ_P(l_ruleError), r658.raw()))) return false;
+												vd557 = std::move(r658);
+												vd557_done = true;
 											}
 											break;
 											case 102: {
-												zv::Val r658;
-												if (UNEXPECTED(!pgen::RuleError305::m_getFileDependencies(Z_OBJ_P(l_ruleError), r658.raw()))) return false;
-												vd556 = std::move(r658);
-												vd556_done = true;
+												zv::Val r659;
+												if (UNEXPECTED(!pgen::RuleError305::m_getFileDependencies(Z_OBJ_P(l_ruleError), r659.raw()))) return false;
+												vd557 = std::move(r659);
+												vd557_done = true;
 											}
 											break;
 											case 103: {
-												zv::Val r659;
-												if (UNEXPECTED(!pgen::RuleError463::m_getFileDependencies(Z_OBJ_P(l_ruleError), r659.raw()))) return false;
-												vd556 = std::move(r659);
-												vd556_done = true;
+												zv::Val r660;
+												if (UNEXPECTED(!pgen::RuleError463::m_getFileDependencies(Z_OBJ_P(l_ruleError), r660.raw()))) return false;
+												vd557 = std::move(r660);
+												vd557_done = true;
 											}
 											break;
 											case 104: {
-												zv::Val r660;
-												if (UNEXPECTED(!pgen::RuleError477::m_getFileDependencies(Z_OBJ_P(l_ruleError), r660.raw()))) return false;
-												vd556 = std::move(r660);
-												vd556_done = true;
+												zv::Val r661;
+												if (UNEXPECTED(!pgen::RuleError477::m_getFileDependencies(Z_OBJ_P(l_ruleError), r661.raw()))) return false;
+												vd557 = std::move(r661);
+												vd557_done = true;
 											}
 											break;
 											case 105: {
-												zv::Val r661;
-												if (UNEXPECTED(!pgen::RuleError311::m_getFileDependencies(Z_OBJ_P(l_ruleError), r661.raw()))) return false;
-												vd556 = std::move(r661);
-												vd556_done = true;
+												zv::Val r662;
+												if (UNEXPECTED(!pgen::RuleError311::m_getFileDependencies(Z_OBJ_P(l_ruleError), r662.raw()))) return false;
+												vd557 = std::move(r662);
+												vd557_done = true;
 											}
 											break;
 											case 106: {
-												zv::Val r662;
-												if (UNEXPECTED(!pgen::RuleError489::m_getFileDependencies(Z_OBJ_P(l_ruleError), r662.raw()))) return false;
-												vd556 = std::move(r662);
-												vd556_done = true;
+												zv::Val r663;
+												if (UNEXPECTED(!pgen::RuleError489::m_getFileDependencies(Z_OBJ_P(l_ruleError), r663.raw()))) return false;
+												vd557 = std::move(r663);
+												vd557_done = true;
 											}
 											break;
 											case 107: {
-												zv::Val r663;
-												if (UNEXPECTED(!pgen::RuleError363::m_getFileDependencies(Z_OBJ_P(l_ruleError), r663.raw()))) return false;
-												vd556 = std::move(r663);
-												vd556_done = true;
+												zv::Val r664;
+												if (UNEXPECTED(!pgen::RuleError363::m_getFileDependencies(Z_OBJ_P(l_ruleError), r664.raw()))) return false;
+												vd557 = std::move(r664);
+												vd557_done = true;
 											}
 											break;
 											case 108: {
-												zv::Val r664;
-												if (UNEXPECTED(!pgen::RuleError405::m_getFileDependencies(Z_OBJ_P(l_ruleError), r664.raw()))) return false;
-												vd556 = std::move(r664);
-												vd556_done = true;
+												zv::Val r665;
+												if (UNEXPECTED(!pgen::RuleError405::m_getFileDependencies(Z_OBJ_P(l_ruleError), r665.raw()))) return false;
+												vd557 = std::move(r665);
+												vd557_done = true;
 											}
 											break;
 											case 109: {
-												zv::Val r665;
-												if (UNEXPECTED(!pgen::RuleError411::m_getFileDependencies(Z_OBJ_P(l_ruleError), r665.raw()))) return false;
-												vd556 = std::move(r665);
-												vd556_done = true;
+												zv::Val r666;
+												if (UNEXPECTED(!pgen::RuleError411::m_getFileDependencies(Z_OBJ_P(l_ruleError), r666.raw()))) return false;
+												vd557 = std::move(r666);
+												vd557_done = true;
 											}
 											break;
 											case 110: {
-												zv::Val r666;
-												if (UNEXPECTED(!pgen::RuleError377::m_getFileDependencies(Z_OBJ_P(l_ruleError), r666.raw()))) return false;
-												vd556 = std::move(r666);
-												vd556_done = true;
+												zv::Val r667;
+												if (UNEXPECTED(!pgen::RuleError377::m_getFileDependencies(Z_OBJ_P(l_ruleError), r667.raw()))) return false;
+												vd557 = std::move(r667);
+												vd557_done = true;
 											}
 											break;
 											case 111: {
-												zv::Val r667;
-												if (UNEXPECTED(!pgen::RuleError439::m_getFileDependencies(Z_OBJ_P(l_ruleError), r667.raw()))) return false;
-												vd556 = std::move(r667);
-												vd556_done = true;
+												zv::Val r668;
+												if (UNEXPECTED(!pgen::RuleError439::m_getFileDependencies(Z_OBJ_P(l_ruleError), r668.raw()))) return false;
+												vd557 = std::move(r668);
+												vd557_done = true;
 											}
 											break;
 											case 112: {
-												zv::Val r668;
-												if (UNEXPECTED(!pgen::RuleError389::m_getFileDependencies(Z_OBJ_P(l_ruleError), r668.raw()))) return false;
-												vd556 = std::move(r668);
-												vd556_done = true;
+												zv::Val r669;
+												if (UNEXPECTED(!pgen::RuleError389::m_getFileDependencies(Z_OBJ_P(l_ruleError), r669.raw()))) return false;
+												vd557 = std::move(r669);
+												vd557_done = true;
 											}
 											break;
 											case 113: {
-												zv::Val r669;
-												if (UNEXPECTED(!pgen::RuleError349::m_getFileDependencies(Z_OBJ_P(l_ruleError), r669.raw()))) return false;
-												vd556 = std::move(r669);
-												vd556_done = true;
+												zv::Val r670;
+												if (UNEXPECTED(!pgen::RuleError349::m_getFileDependencies(Z_OBJ_P(l_ruleError), r670.raw()))) return false;
+												vd557 = std::move(r670);
+												vd557_done = true;
 											}
 											break;
 											case 114: {
-												zv::Val r670;
-												if (UNEXPECTED(!pgen::RuleError407::m_getFileDependencies(Z_OBJ_P(l_ruleError), r670.raw()))) return false;
-												vd556 = std::move(r670);
-												vd556_done = true;
+												zv::Val r671;
+												if (UNEXPECTED(!pgen::RuleError407::m_getFileDependencies(Z_OBJ_P(l_ruleError), r671.raw()))) return false;
+												vd557 = std::move(r671);
+												vd557_done = true;
 											}
 											break;
 											case 115: {
-												zv::Val r671;
-												if (UNEXPECTED(!pgen::RuleError361::m_getFileDependencies(Z_OBJ_P(l_ruleError), r671.raw()))) return false;
-												vd556 = std::move(r671);
-												vd556_done = true;
+												zv::Val r672;
+												if (UNEXPECTED(!pgen::RuleError361::m_getFileDependencies(Z_OBJ_P(l_ruleError), r672.raw()))) return false;
+												vd557 = std::move(r672);
+												vd557_done = true;
 											}
 											break;
 											case 116: {
-												zv::Val r672;
-												if (UNEXPECTED(!pgen::RuleError375::m_getFileDependencies(Z_OBJ_P(l_ruleError), r672.raw()))) return false;
-												vd556 = std::move(r672);
-												vd556_done = true;
+												zv::Val r673;
+												if (UNEXPECTED(!pgen::RuleError375::m_getFileDependencies(Z_OBJ_P(l_ruleError), r673.raw()))) return false;
+												vd557 = std::move(r673);
+												vd557_done = true;
 											}
 											break;
 											case 117: {
-												zv::Val r673;
-												if (UNEXPECTED(!pgen::RuleError413::m_getFileDependencies(Z_OBJ_P(l_ruleError), r673.raw()))) return false;
-												vd556 = std::move(r673);
-												vd556_done = true;
+												zv::Val r674;
+												if (UNEXPECTED(!pgen::RuleError413::m_getFileDependencies(Z_OBJ_P(l_ruleError), r674.raw()))) return false;
+												vd557 = std::move(r674);
+												vd557_done = true;
 											}
 											break;
 											case 118: {
-												zv::Val r674;
-												if (UNEXPECTED(!pgen::RuleError359::m_getFileDependencies(Z_OBJ_P(l_ruleError), r674.raw()))) return false;
-												vd556 = std::move(r674);
-												vd556_done = true;
+												zv::Val r675;
+												if (UNEXPECTED(!pgen::RuleError359::m_getFileDependencies(Z_OBJ_P(l_ruleError), r675.raw()))) return false;
+												vd557 = std::move(r675);
+												vd557_done = true;
 											}
 											break;
 											case 119: {
-												zv::Val r675;
-												if (UNEXPECTED(!pgen::RuleError417::m_getFileDependencies(Z_OBJ_P(l_ruleError), r675.raw()))) return false;
-												vd556 = std::move(r675);
-												vd556_done = true;
+												zv::Val r676;
+												if (UNEXPECTED(!pgen::RuleError417::m_getFileDependencies(Z_OBJ_P(l_ruleError), r676.raw()))) return false;
+												vd557 = std::move(r676);
+												vd557_done = true;
 											}
 											break;
 											case 120: {
-												zv::Val r676;
-												if (UNEXPECTED(!pgen::RuleError371::m_getFileDependencies(Z_OBJ_P(l_ruleError), r676.raw()))) return false;
-												vd556 = std::move(r676);
-												vd556_done = true;
+												zv::Val r677;
+												if (UNEXPECTED(!pgen::RuleError371::m_getFileDependencies(Z_OBJ_P(l_ruleError), r677.raw()))) return false;
+												vd557 = std::move(r677);
+												vd557_done = true;
 											}
 											break;
 											case 121: {
-												zv::Val r677;
-												if (UNEXPECTED(!pgen::RuleError365::m_getFileDependencies(Z_OBJ_P(l_ruleError), r677.raw()))) return false;
-												vd556 = std::move(r677);
-												vd556_done = true;
+												zv::Val r678;
+												if (UNEXPECTED(!pgen::RuleError365::m_getFileDependencies(Z_OBJ_P(l_ruleError), r678.raw()))) return false;
+												vd557 = std::move(r678);
+												vd557_done = true;
 											}
 											break;
 											case 122: {
-												zv::Val r678;
-												if (UNEXPECTED(!pgen::RuleError403::m_getFileDependencies(Z_OBJ_P(l_ruleError), r678.raw()))) return false;
-												vd556 = std::move(r678);
-												vd556_done = true;
+												zv::Val r679;
+												if (UNEXPECTED(!pgen::RuleError403::m_getFileDependencies(Z_OBJ_P(l_ruleError), r679.raw()))) return false;
+												vd557 = std::move(r679);
+												vd557_done = true;
 											}
 											break;
 											case 123: {
-												zv::Val r679;
-												if (UNEXPECTED(!pgen::RuleError399::m_getFileDependencies(Z_OBJ_P(l_ruleError), r679.raw()))) return false;
-												vd556 = std::move(r679);
-												vd556_done = true;
+												zv::Val r680;
+												if (UNEXPECTED(!pgen::RuleError399::m_getFileDependencies(Z_OBJ_P(l_ruleError), r680.raw()))) return false;
+												vd557 = std::move(r680);
+												vd557_done = true;
 											}
 											break;
 											case 124: {
-												zv::Val r680;
-												if (UNEXPECTED(!pgen::RuleError373::m_getFileDependencies(Z_OBJ_P(l_ruleError), r680.raw()))) return false;
-												vd556 = std::move(r680);
-												vd556_done = true;
+												zv::Val r681;
+												if (UNEXPECTED(!pgen::RuleError373::m_getFileDependencies(Z_OBJ_P(l_ruleError), r681.raw()))) return false;
+												vd557 = std::move(r681);
+												vd557_done = true;
 											}
 											break;
 											case 125: {
-												zv::Val r681;
-												if (UNEXPECTED(!pgen::RuleError415::m_getFileDependencies(Z_OBJ_P(l_ruleError), r681.raw()))) return false;
-												vd556 = std::move(r681);
-												vd556_done = true;
+												zv::Val r682;
+												if (UNEXPECTED(!pgen::RuleError415::m_getFileDependencies(Z_OBJ_P(l_ruleError), r682.raw()))) return false;
+												vd557 = std::move(r682);
+												vd557_done = true;
 											}
 											break;
 											case 126: {
-												zv::Val r682;
-												if (UNEXPECTED(!pgen::RuleError401::m_getFileDependencies(Z_OBJ_P(l_ruleError), r682.raw()))) return false;
-												vd556 = std::move(r682);
-												vd556_done = true;
+												zv::Val r683;
+												if (UNEXPECTED(!pgen::RuleError401::m_getFileDependencies(Z_OBJ_P(l_ruleError), r683.raw()))) return false;
+												vd557 = std::move(r683);
+												vd557_done = true;
 											}
 											break;
 											case 127: {
-												zv::Val r683;
-												if (UNEXPECTED(!pgen::RuleError367::m_getFileDependencies(Z_OBJ_P(l_ruleError), r683.raw()))) return false;
-												vd556 = std::move(r683);
-												vd556_done = true;
+												zv::Val r684;
+												if (UNEXPECTED(!pgen::RuleError367::m_getFileDependencies(Z_OBJ_P(l_ruleError), r684.raw()))) return false;
+												vd557 = std::move(r684);
+												vd557_done = true;
 											}
 											break;
 											case 128: {
-												zv::Val r684;
-												if (UNEXPECTED(!pgen::RuleError429::m_getFileDependencies(Z_OBJ_P(l_ruleError), r684.raw()))) return false;
-												vd556 = std::move(r684);
-												vd556_done = true;
+												zv::Val r685;
+												if (UNEXPECTED(!pgen::RuleError429::m_getFileDependencies(Z_OBJ_P(l_ruleError), r685.raw()))) return false;
+												vd557 = std::move(r685);
+												vd557_done = true;
 											}
 											break;
 											default:
 											break;
 										}
-										if (!vd556_done) {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_58, l_ruleError, "getFileDependencies", "getfiledependencies", 19, 0, NULL, vd556.raw()))) return false;
+										if (!vd557_done) {
+											if (UNEXPECTED(!pgrt::callMethod(pg_site_58, l_ruleError, "getFileDependencies", "getfiledependencies", 19, 0, NULL, vd557.raw()))) return false;
 										}
-										zv::Val a685 = zv::Val::copyOf(zv::Ref(vd556.raw()).deref());
-										HashTable *ht555 = Z_ARRVAL_P(a685.raw());
-										zval *v686;
-										zend_ulong n687;
-										zend_string *s688;
-										ZEND_HASH_FOREACH_KEY_VAL(ht555, n687, s688, v686) {
-											(void) n687; (void) s688;
-											l_fileDependency = zv::Ref(v686).deref().raw();
+										zv::Val a686 = zv::Val::copyOf(zv::Ref(vd557.raw()).deref());
+										HashTable *ht556 = Z_ARRVAL_P(a686.raw());
+										zval *v687;
+										zend_ulong n688;
+										zend_string *s689;
+										ZEND_HASH_FOREACH_KEY_VAL(ht556, n688, s689, v687) {
+											(void) n688; (void) s689;
+											l_fileDependency = zv::Ref(v687).deref().raw();
 											 {
 												 {
-													zval av691[1];
-													ZVAL_COPY_VALUE(&av691[0], l_fileDependency);
-													zv::Val r692;
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "trackFileDependency", "trackfiledependency", 19, 1, av691, r692.raw(), NULL))) return false;
+													zval av692[1];
+													ZVAL_COPY_VALUE(&av692[0], l_fileDependency);
+													zv::Val r693;
+													if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "trackFileDependency", "trackfiledependency", 19, 1, av692, r693.raw(), NULL))) return false;
 												}
 											}
 										}
@@ -4300,42 +4313,42 @@ namespace pgen::FileAnalyserCallback {
 								}
 							}
 							 {
-								zval *p693 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ruleErrorTransformer, "ruleErrorTransformer");
-								if (UNEXPECTED(p693 == NULL)) return false;
-								zval av694[4];
-								ZVAL_COPY_VALUE(&av694[0], l_ruleError);
-								ZVAL_COPY_VALUE(&av694[1], p_scope);
-								ZVAL_COPY_VALUE(&av694[2], l_parserNodes.raw());
-								ZVAL_COPY_VALUE(&av694[3], p_node);
-								zv::Val r695;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_60, p693, "transform", "transform", 9, 4, av694, r695.raw(), NULL))) return false;
-								l_error = std::move(r695);
+								zval *p694 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ruleErrorTransformer, "ruleErrorTransformer");
+								if (UNEXPECTED(p694 == NULL)) return false;
+								zval av695[4];
+								ZVAL_COPY_VALUE(&av695[0], l_ruleError);
+								ZVAL_COPY_VALUE(&av695[1], p_scope);
+								ZVAL_COPY_VALUE(&av695[2], l_parserNodes.raw());
+								ZVAL_COPY_VALUE(&av695[3], p_node);
+								zv::Val r696;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_60, p694, "transform", "transform", 9, 4, av695, r696.raw(), NULL))) return false;
+								l_error = std::move(r696);
 							}
 							 {
-								zv::Val r696;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_61, l_error.raw(), "canBeIgnored", "canbeignored", 12, 0, NULL, r696.raw(), NULL))) return false;
-								if (Z_TYPE_P(r696.raw()) == IS_TRUE) {
+								zv::Val r697;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_61, l_error.raw(), "canBeIgnored", "canbeignored", 12, 0, NULL, r697.raw(), NULL))) return false;
+								if (Z_TYPE_P(r697.raw()) == IS_TRUE) {
 									 {
-										zval *p698 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ignoreErrorExtensions, "ignoreErrorExtensions");
-										if (UNEXPECTED(p698 == NULL)) return false;
-										zv::Val a699 = zv::Val::copyOf(zv::Ref(p698).deref());
-										HashTable *ht697 = Z_ARRVAL_P(a699.raw());
-										zval *v700;
-										zend_ulong n701;
-										zend_string *s702;
-										ZEND_HASH_FOREACH_KEY_VAL(ht697, n701, s702, v700) {
-											(void) n701; (void) s702;
-											l_ignoreErrorExtension = zv::Ref(v700).deref().raw();
+										zval *p699 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ignoreErrorExtensions, "ignoreErrorExtensions");
+										if (UNEXPECTED(p699 == NULL)) return false;
+										zv::Val a700 = zv::Val::copyOf(zv::Ref(p699).deref());
+										HashTable *ht698 = Z_ARRVAL_P(a700.raw());
+										zval *v701;
+										zend_ulong n702;
+										zend_string *s703;
+										ZEND_HASH_FOREACH_KEY_VAL(ht698, n702, s703, v701) {
+											(void) n702; (void) s703;
+											l_ignoreErrorExtension = zv::Ref(v701).deref().raw();
 											 {
 												 {
-													zval av705[3];
-													ZVAL_COPY_VALUE(&av705[0], l_error.raw());
-													ZVAL_COPY_VALUE(&av705[1], p_node);
-													ZVAL_COPY_VALUE(&av705[2], p_scope);
-													zv::Val r706;
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_62, l_ignoreErrorExtension, "shouldIgnore", "shouldignore", 12, 3, av705, r706.raw(), NULL))) return false;
-													if (zend_is_true(r706.raw())) {
-														goto cont554;
+													zval av706[3];
+													ZVAL_COPY_VALUE(&av706[0], l_error.raw());
+													ZVAL_COPY_VALUE(&av706[1], p_node);
+													ZVAL_COPY_VALUE(&av706[2], p_scope);
+													zv::Val r707;
+													if (UNEXPECTED(!pgrt::callMethod(pg_site_62, l_ignoreErrorExtension, "shouldIgnore", "shouldignore", 12, 3, av706, r707.raw(), NULL))) return false;
+													if (zend_is_true(r707.raw())) {
+														goto cont555;
 													}
 												}
 											}
@@ -4345,429 +4358,433 @@ namespace pgen::FileAnalyserCallback {
 								}
 							}
 							 {
-								zv::Val o707 = zv::Val::copyOf(zv::Ref(l_error.raw()));
-								zv::Val o708 = zv::Val::copyOf(zv::Ref(o707.raw()));
-								zval *w709 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::temporaryFileErrors)).deref().raw();
-								if (Z_TYPE_P(w709) <= IS_NULL) { zval_ptr_dtor(w709); array_init(w709); } else if (UNEXPECTED(Z_TYPE_P(w709) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w709);
-								{ zval v = o708.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w709), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val o708 = zv::Val::copyOf(zv::Ref(l_error.raw()));
+								zv::Val o709 = zv::Val::copyOf(zv::Ref(o708.raw()));
+								zval *w710 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::temporaryFileErrors)).deref().raw();
+								if (Z_TYPE_P(w710) <= IS_NULL) { zval_ptr_dtor(w710); array_init(w710); } else if (UNEXPECTED(Z_TYPE_P(w710) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w710);
+								{ zval v = o709.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w710), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
-						cont554:;
-						if (UNEXPECTED(!it552.next())) return false;
+						cont555:;
+						if (UNEXPECTED(!it553.next())) return false;
 					}
 					if (UNEXPECTED(EG(exception))) return false;
 				}
 			}
-			cont114:;
-			if (UNEXPECTED(!it112.next())) return false;
+			cont115:;
+			if (UNEXPECTED(!it113.next())) return false;
 		}
 		if (UNEXPECTED(EG(exception))) return false;
 	}
 	 {
-		zval *is711 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::collectorsByNodeType)).deref().raw();
-		if (Z_ISUNDEF_P(is711)) is711 = NULL;
-		zv::Val o712 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-		zv::Val ist713;
-		zval *is710 = is711 == NULL ? NULL : pgrt::dimIs(is711, o712.raw(), ist713.raw());
+		zval *is712 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::collectorsByNodeType)).deref().raw();
+		if (Z_ISUNDEF_P(is712)) is712 = NULL;
+		zv::Val o713 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+		zv::Val ist714;
+		zval *is711 = is712 == NULL ? NULL : pgrt::dimIs(is712, o713.raw(), ist714.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q714;
-		if (is710 != NULL && Z_TYPE_P(is710) > IS_NULL) {
-			q714 = zv::Val::copyOf(zv::Ref(is710));
+		zv::Val q715;
+		if (is711 != NULL && Z_TYPE_P(is711) > IS_NULL) {
+			q715 = zv::Val::copyOf(zv::Ref(is711));
 		} else {
 		 {
-			zv::Val o715 = zv::Val::null();
-			q714 = std::move(o715);
+			zv::Val o716 = zv::Val::null();
+			q715 = std::move(o716);
 		}
 		}
-		l_collectors = std::move(q714);
+		l_collectors = std::move(q715);
 	}
 	 {
 		if (Z_TYPE_P(l_collectors.raw()) == IS_NULL) {
 			 {
-				zval *p716 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::collectorRegistry, "collectorRegistry");
-				if (UNEXPECTED(p716 == NULL)) return false;
-				zval av717[1];
-				ZVAL_COPY_VALUE(&av717[0], l_nodeType.raw());
-				zv::Val r718;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_63, p716, "getCollectors", "getcollectors", 13, 1, av717, r718.raw(), NULL))) return false;
-				l_collectors = std::move(r718);
+				zval *p717 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::collectorRegistry, "collectorRegistry");
+				if (UNEXPECTED(p717 == NULL)) return false;
+				zval av718[1];
+				ZVAL_COPY_VALUE(&av718[0], l_nodeType.raw());
+				zv::Val r719;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_63, p717, "getCollectors", "getcollectors", 13, 1, av718, r719.raw(), NULL))) return false;
+				l_collectors = std::move(r719);
 			}
 			 {
-				zv::Val o719 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-				zv::Val o720 = zv::Val::copyOf(zv::Ref(l_collectors.raw()));
-				zv::Val o721 = zv::Val::copyOf(zv::Ref(o720.raw()));
-				zval *w722 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::collectorsByNodeType)).deref().raw();
-				if (Z_TYPE_P(w722) <= IS_NULL) { zval_ptr_dtor(w722); array_init(w722); } else if (UNEXPECTED(Z_TYPE_P(w722) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w722);
-				zval *e723 = pgrt::dimWrite(w722, o719.raw());
-				if (UNEXPECTED(e723 == NULL)) return false;
-				zv::Ref(e723).assign(std::move(o721));
+				zv::Val o720 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+				zv::Val o721 = zv::Val::copyOf(zv::Ref(l_collectors.raw()));
+				zv::Val o722 = zv::Val::copyOf(zv::Ref(o721.raw()));
+				zval *w723 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::collectorsByNodeType)).deref().raw();
+				if (Z_TYPE_P(w723) <= IS_NULL) { zval_ptr_dtor(w723); array_init(w723); } else if (UNEXPECTED(Z_TYPE_P(w723) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w723);
+				zval *e724 = pgrt::dimWrite(w723, o720.raw());
+				if (UNEXPECTED(e724 == NULL)) return false;
+				zv::Ref(e724).assign(std::move(o722));
 			}
 		}
 	}
 	 {
-		pgrt::ForeachIter it725;
-		if (UNEXPECTED(!it725.begin(l_collectors.raw()))) return false;
-		while (it725.valid()) {
-			l_collector = zv::Ref(it725.current()).deref().raw();
+		pgrt::ForeachIter it726;
+		if (UNEXPECTED(!it726.begin(l_collectors.raw()))) return false;
+		while (it726.valid()) {
+			l_collector = zv::Ref(it726.current()).deref().raw();
 			 {
 				 {
 					 {
 						 {
-							zv::Val o729 = zv::Val::copyOf(zv::Ref(p_node));
-							zv::Val o730 = zv::Val::copyOf(zv::Ref(p_scope));
-							zv::Val vd731;
-							zend_class_entry *vd731_ce = Z_TYPE_P(l_collector) == IS_OBJECT ? Z_OBJCE_P(l_collector) : NULL;
-							bool vd731_done = false;
-							static zend_class_entry **const vd731_table[] = { &pt_ce_overriding_method_renames_parameter_collector, &pt_ce_named_argument_parameter_method_calls_collector, &pt_ce_trait_use_collector, &pt_ce_impossible_check_type_reported_collector, &pt_ce_method_without_impure_points_collector };
-							static const uint16_t vd731_cases[] = { 1, 2, 3, 4, 5 };
-							switch (pgrt::dispatchCase(pg_site_64, vd731_ce, vd731_table, vd731_cases, 5)) {
+							zv::Val o730 = zv::Val::copyOf(zv::Ref(p_node));
+							zv::Val o731 = zv::Val::copyOf(zv::Ref(p_scope));
+							zv::Val vd732;
+							zend_class_entry *vd732_ce = Z_TYPE_P(l_collector) == IS_OBJECT ? Z_OBJCE_P(l_collector) : NULL;
+							bool vd732_done = false;
+							static zend_class_entry **const vd732_table[] = { &pt_ce_overriding_method_renames_parameter_collector, &pt_ce_named_argument_parameter_method_calls_collector, &pt_ce_trait_use_collector, &pt_ce_impossible_check_type_reported_collector, &pt_ce_method_without_impure_points_collector };
+							static const uint16_t vd732_cases[] = { 1, 2, 3, 4, 5 };
+							switch (pgrt::dispatchCase(pg_site_64, vd732_ce, vd732_table, vd732_cases, 5)) {
 								case 1: {
-									if (UNEXPECTED(!pgen::OverridingMethodRenamesParameterCollector::m_processNode(Z_OBJ_P(l_collector), o729.raw(), o730.raw()))) goto catch_c728;
-									vd731_done = true;
+									if (UNEXPECTED(!pgen::OverridingMethodRenamesParameterCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw()))) goto catch_c729;
+									vd732_done = true;
 								}
 								break;
 								case 2: {
-									if (UNEXPECTED(!pgen::NamedArgumentParameterMethodCallsCollector::m_processNode(Z_OBJ_P(l_collector), o729.raw(), o730.raw()))) goto catch_c728;
-									vd731_done = true;
+									if (UNEXPECTED(!pgen::NamedArgumentParameterMethodCallsCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw()))) goto catch_c729;
+									vd732_done = true;
 								}
 								break;
 								case 3: {
-									zv::Val r734;
-									if (UNEXPECTED(!pgen::TraitUseCollector::m_processNode(Z_OBJ_P(l_collector), o729.raw(), o730.raw(), r734.raw()))) goto catch_c728;
-									vd731 = std::move(r734);
-									vd731_done = true;
+									zv::Val r735;
+									if (UNEXPECTED(!pgen::TraitUseCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw(), r735.raw()))) goto catch_c729;
+									vd732 = std::move(r735);
+									vd732_done = true;
 								}
 								break;
 								case 4: {
-									if (UNEXPECTED(!pgen::ImpossibleCheckTypeReportedCollector::m_processNode(Z_OBJ_P(l_collector), o729.raw(), o730.raw()))) goto catch_c728;
-									vd731_done = true;
+									if (UNEXPECTED(!pgen::ImpossibleCheckTypeReportedCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw()))) goto catch_c729;
+									vd732_done = true;
 								}
 								break;
 								case 5: {
-									zv::Val r736;
-									if (UNEXPECTED(!pgen::MethodWithoutImpurePointsCollector::m_processNode(Z_OBJ_P(l_collector), o729.raw(), o730.raw(), r736.raw()))) goto catch_c728;
-									vd731 = std::move(r736);
-									vd731_done = true;
+									zv::Val r737;
+									if (UNEXPECTED(!pgen::MethodWithoutImpurePointsCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw(), r737.raw()))) goto catch_c729;
+									vd732 = std::move(r737);
+									vd732_done = true;
 								}
 								break;
 								default:
 								break;
 							}
-							if (!vd731_done) {
-								zval av737[2];
-								ZVAL_COPY_VALUE(&av737[0], o729.raw());
-								ZVAL_COPY_VALUE(&av737[1], o730.raw());
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_65, l_collector, "processNode", "processnode", 11, 2, av737, vd731.raw()))) goto catch_c728;
+							if (!vd732_done) {
+								zval av738[2];
+								ZVAL_COPY_VALUE(&av738[0], o730.raw());
+								ZVAL_COPY_VALUE(&av738[1], o731.raw());
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_65, l_collector, "processNode", "processnode", 11, 2, av738, vd732.raw()))) goto catch_c729;
 							}
-							l_collectedData = std::move(vd731);
+							l_collectedData = std::move(vd732);
 						}
 					}
 					if (false) {
-					catch_c728:
+					catch_c729:
 					 {
 						zend_object *thrown = EG(exception);
-						bool caught738 = false;
-						if (!caught738 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
-							caught738 = true;
+						bool caught739 = false;
+						if (!caught739 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
+							caught739 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zval *is740 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
-								zv::Val r741;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_66, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r741.raw(), NULL))) return false;
-								zv::Val ist742;
-								zval *is739 = is740 == NULL ? NULL : pgrt::dimIs(is740, r741.raw(), ist742.raw());
+								zval *is741 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
+								zv::Val r742;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_66, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r742.raw(), NULL))) return false;
+								zv::Val ist743;
+								zval *is740 = is741 == NULL ? NULL : pgrt::dimIs(is741, r742.raw(), ist743.raw());
 								if (UNEXPECTED(EG(exception))) return false;
-								if (is739 != NULL && Z_TYPE_P(is739) > IS_NULL) {
-									goto cont727;
+								if (is740 != NULL && Z_TYPE_P(is740) > IS_NULL) {
+									goto cont728;
 								}
 							}
 							 {
-								zv::Val r743;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_67, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r743.raw(), NULL))) return false;
-								bool k744 = true;
-								zval z746;
-								ZVAL_BOOL(&z746, k744);
-								zv::Val o745 = zv::Val::copyOf(zv::Ref(&z746));
-								zval *w747 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
-								if (Z_TYPE_P(w747) <= IS_NULL) { zval_ptr_dtor(w747); array_init(w747); } else if (UNEXPECTED(Z_TYPE_P(w747) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w747);
-								zval *e748 = pgrt::dimWrite(w747, r743.raw());
-								if (UNEXPECTED(e748 == NULL)) return false;
-								zv::Ref(e748).assign(std::move(o745));
+								zv::Val r744;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_67, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r744.raw(), NULL))) return false;
+								bool k745 = true;
+								zval z747;
+								ZVAL_BOOL(&z747, k745);
+								zv::Val o746 = zv::Val::copyOf(zv::Ref(&z747));
+								zval *w748 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
+								if (Z_TYPE_P(w748) <= IS_NULL) { zval_ptr_dtor(w748); array_init(w748); } else if (UNEXPECTED(Z_TYPE_P(w748) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w748);
+								zval *e749 = pgrt::dimWrite(w748, r744.raw());
+								if (UNEXPECTED(e749 == NULL)) return false;
+								zv::Ref(e749).assign(std::move(o746));
 							}
 							 {
-								zv::Val r750;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_68, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r750.raw(), NULL))) return false;
-								zval *p751 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p751 == NULL)) return false;
-								zv::Val o752 = zv::Val::copyOf(zv::Ref(p751));
-								zv::Val r753;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_69, p_node, "getStartLine", "getstartline", 12, 0, NULL, r753.raw(), NULL))) return false;
-								zend_long k754 = Z_LVAL_P(r753.raw());
-								zv::Val o755 = zv::Val::copyOf(zv::Ref(l_e.raw()));
-								zv::Val r756;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_70, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r756.raw(), NULL))) return false;
-								zval av757[4];
-								ZVAL_COPY_VALUE(&av757[0], r750.raw());
-								ZVAL_COPY_VALUE(&av757[1], o752.raw());
-								zval z758;
-								ZVAL_LONG(&z758, k754);
-								ZVAL_COPY_VALUE(&av757[2], &z758);
-								ZVAL_COPY_VALUE(&av757[3], o755.raw());
-								zv::Arr na759 = zv::Arr::create(1);
-								{ zval v; ZVAL_COPY(&v, r756.raw()); zend_hash_str_add_new(na759.table(), "tip", 3, &v); }
-								zend_class_entry *ce760 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce760 == NULL)) return false;
-								zv::Val n749;
-								if (UNEXPECTED(!pgrt::newObject(ce760, 4, av757, n749.raw(), na759.table()))) return false;
-								zval av761[1];
-								ZVAL_COPY_VALUE(&av761[0], &pg_lit[0]);
-								zv::Val r762;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_71, n749.raw(), "withIdentifier", "withidentifier", 14, 1, av761, r762.raw(), NULL))) return false;
-								zv::Val arr763 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av764[1];
-								ZVAL_COPY_VALUE(&av764[0], l_e.raw());
-								zend_class_entry *ce765 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce765 == NULL)) return false;
-								zv::Val r766;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce765, "preparetrace", 12, 1, av764, r766.raw(), NULL))) return false;
-								{ zval v = r766.take(); zend_symtable_update(Z_ARRVAL_P(arr763.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r751;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_68, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r751.raw(), NULL))) return false;
+								zval *p752 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p752 == NULL)) return false;
+								zv::Val o753 = zv::Val::copyOf(zv::Ref(p752));
+								zv::Val r754;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_69, p_node, "getStartLine", "getstartline", 12, 0, NULL, r754.raw(), NULL))) return false;
+								zend_long k755 = Z_LVAL_P(r754.raw());
+								zv::Val o756 = zv::Val::copyOf(zv::Ref(l_e.raw()));
+								zv::Val r757;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_70, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r757.raw(), NULL))) return false;
+								zval av758[4];
+								ZVAL_COPY_VALUE(&av758[0], r751.raw());
+								ZVAL_COPY_VALUE(&av758[1], o753.raw());
+								zval z759;
+								ZVAL_LONG(&z759, k755);
+								ZVAL_COPY_VALUE(&av758[2], &z759);
+								ZVAL_COPY_VALUE(&av758[3], o756.raw());
+								zv::Arr na760 = zv::Arr::create(1);
+								{ zval v; ZVAL_COPY(&v, r757.raw()); zend_hash_str_add_new(na760.table(), "tip", 3, &v); }
+								zend_class_entry *ce761 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce761 == NULL)) return false;
+								zv::Val n750;
+								if (UNEXPECTED(!pgrt::newObject(ce761, 4, av758, n750.raw(), na760.table()))) return false;
+								zval av762[1];
+								ZVAL_COPY_VALUE(&av762[0], &pg_lit[0]);
+								zv::Val r763;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_71, n750.raw(), "withIdentifier", "withidentifier", 14, 1, av762, r763.raw(), NULL))) return false;
+								zv::Val arr764 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+								zval av765[1];
+								ZVAL_COPY_VALUE(&av765[0], l_e.raw());
+								zend_class_entry *ce766 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce766 == NULL)) return false;
 								zv::Val r767;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_72, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r767.raw(), NULL))) return false;
-								{ zval v = r767.take(); zend_symtable_update(Z_ARRVAL_P(arr763.raw()), Z_STR_P(&pg_lit[2]), &v); }
-								zval av768[1];
-								ZVAL_COPY_VALUE(&av768[0], arr763.raw());
-								zv::Val r769;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_73, r762.raw(), "withMetadata", "withmetadata", 12, 1, av768, r769.raw(), NULL))) return false;
-								zv::Val o770 = zv::Val::copyOf(zv::Ref(r769.raw()));
-								zval *w771 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w771) <= IS_NULL) { zval_ptr_dtor(w771); array_init(w771); } else if (UNEXPECTED(Z_TYPE_P(w771) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w771);
-								{ zval v = o770.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w771), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce766, "preparetrace", 12, 1, av765, r767.raw(), NULL))) return false;
+								{ zval v = r767.take(); zend_symtable_update(Z_ARRVAL_P(arr764.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r768;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_72, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r768.raw(), NULL))) return false;
+								{ zval v = r768.take(); zend_symtable_update(Z_ARRVAL_P(arr764.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av769[1];
+								ZVAL_COPY_VALUE(&av769[0], arr764.raw());
+								zv::Val r770;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_73, r763.raw(), "withMetadata", "withmetadata", 12, 1, av769, r770.raw(), NULL))) return false;
+								zv::Val o771 = zv::Val::copyOf(zv::Ref(r770.raw()));
+								zval *w772 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w772) <= IS_NULL) { zval_ptr_dtor(w772); array_init(w772); } else if (UNEXPECTED(Z_TYPE_P(w772) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w772);
+								{ zval v = o771.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w772), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
-							goto cont727;
+							goto cont728;
 						}
-						if (!caught738 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-							caught738 = true;
+						if (!caught739 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+							caught739 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zval *gs773 = Z_TYPE_P(l_e.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_74, Z_OBJ_P(l_e.raw()), pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63), "getidentifier", 13, "identifier", 10) : NULL;
-								zv::Val r774;
-								if (EXPECTED(gs773 != NULL)) {
-									ZVAL_COPY(r774.raw(), gs773);
-								} else {
-								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_75, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r774.raw()))) return false;
-								}
-								}
+								zval *gs774 = Z_TYPE_P(l_e.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_74, Z_OBJ_P(l_e.raw()), pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63), "getidentifier", 13, "identifier", 10) : NULL;
 								zv::Val r775;
-								if (EXPECTED(Z_TYPE_P(r774.raw()) == IS_OBJECT)) {
-									r775 = pt_type_op(Z_OBJ_P(r774.raw()), PT_OP_GET_NAME, 0, NULL);
-									if (UNEXPECTED(r775.isUndef())) return false;
+								if (EXPECTED(gs774 != NULL)) {
+									ZVAL_COPY(r775.raw(), gs774);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_76, r774.raw(), "getName", "getname", 7, 0, NULL, r775.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_75, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r775.raw()))) return false;
 								}
 								}
-								pgrt::StringBuilder sb776;
-								sb776.appendLiteral("Reflection error: ", 18);
-								if (UNEXPECTED(!sb776.append(r775.raw()))) return false;
-								sb776.appendLiteral(" not found.", 11);
-								zv::Val r777 = sb776.finish();
-								zval *p778 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p778 == NULL)) return false;
-								zv::Val o779 = zv::Val::copyOf(zv::Ref(p778));
-								zv::Val r780;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_77, p_node, "getStartLine", "getstartline", 12, 0, NULL, r780.raw(), NULL))) return false;
-								zval av781[4];
-								ZVAL_COPY_VALUE(&av781[0], r777.raw());
-								ZVAL_COPY_VALUE(&av781[1], o779.raw());
-								zval z782;
-								ZVAL_LONG(&z782, Z_LVAL_P(r780.raw()));
-								ZVAL_COPY_VALUE(&av781[2], &z782);
-								ZVAL_COPY_VALUE(&av781[3], l_e.raw());
-								zv::Arr na783 = zv::Arr::create(1);
-								{ zval v; ZVAL_COPY(&v, &pg_lit[3]); zend_hash_str_add_new(na783.table(), "tip", 3, &v); }
-								zend_class_entry *ce784 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce784 == NULL)) return false;
-								zv::Val n772;
-								if (UNEXPECTED(!pgrt::newObject(ce784, 4, av781, n772.raw(), na783.table()))) return false;
-								zval av785[1];
-								ZVAL_COPY_VALUE(&av785[0], &pg_lit[4]);
-								zv::Val r786;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_78, n772.raw(), "withIdentifier", "withidentifier", 14, 1, av785, r786.raw(), NULL))) return false;
-								zv::Val arr787 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av788[1];
-								ZVAL_COPY_VALUE(&av788[0], l_e.raw());
-								zend_class_entry *ce789 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce789 == NULL)) return false;
-								zv::Val r790;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce789, "preparetrace", 12, 1, av788, r790.raw(), NULL))) return false;
-								{ zval v = r790.take(); zend_symtable_update(Z_ARRVAL_P(arr787.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r776;
+								if (EXPECTED(Z_TYPE_P(r775.raw()) == IS_OBJECT)) {
+									r776 = pt_type_op(Z_OBJ_P(r775.raw()), PT_OP_GET_NAME, 0, NULL);
+									if (UNEXPECTED(r776.isUndef())) return false;
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_76, r775.raw(), "getName", "getname", 7, 0, NULL, r776.raw(), NULL))) return false;
+								}
+								}
+								pgrt::StringBuilder sb777;
+								sb777.appendLiteral("Reflection error: ", 18);
+								if (UNEXPECTED(!sb777.append(r776.raw()))) return false;
+								sb777.appendLiteral(" not found.", 11);
+								zv::Val r778 = sb777.finish();
+								zval *p779 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p779 == NULL)) return false;
+								zv::Val o780 = zv::Val::copyOf(zv::Ref(p779));
+								zv::Val r781;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_77, p_node, "getStartLine", "getstartline", 12, 0, NULL, r781.raw(), NULL))) return false;
+								zval av782[4];
+								ZVAL_COPY_VALUE(&av782[0], r778.raw());
+								ZVAL_COPY_VALUE(&av782[1], o780.raw());
+								zval z783;
+								ZVAL_LONG(&z783, Z_LVAL_P(r781.raw()));
+								ZVAL_COPY_VALUE(&av782[2], &z783);
+								ZVAL_COPY_VALUE(&av782[3], l_e.raw());
+								zv::Arr na784 = zv::Arr::create(1);
+								{ zval v; ZVAL_COPY(&v, &pg_lit[3]); zend_hash_str_add_new(na784.table(), "tip", 3, &v); }
+								zend_class_entry *ce785 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce785 == NULL)) return false;
+								zv::Val n773;
+								if (UNEXPECTED(!pgrt::newObject(ce785, 4, av782, n773.raw(), na784.table()))) return false;
+								zval av786[1];
+								ZVAL_COPY_VALUE(&av786[0], &pg_lit[4]);
+								zv::Val r787;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_78, n773.raw(), "withIdentifier", "withidentifier", 14, 1, av786, r787.raw(), NULL))) return false;
+								zv::Val arr788 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+								zval av789[1];
+								ZVAL_COPY_VALUE(&av789[0], l_e.raw());
+								zend_class_entry *ce790 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce790 == NULL)) return false;
 								zv::Val r791;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_79, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r791.raw(), NULL))) return false;
-								{ zval v = r791.take(); zend_symtable_update(Z_ARRVAL_P(arr787.raw()), Z_STR_P(&pg_lit[2]), &v); }
-								zval av792[1];
-								ZVAL_COPY_VALUE(&av792[0], arr787.raw());
-								zv::Val r793;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_80, r786.raw(), "withMetadata", "withmetadata", 12, 1, av792, r793.raw(), NULL))) return false;
-								zv::Val o794 = zv::Val::copyOf(zv::Ref(r793.raw()));
-								zval *w795 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w795) <= IS_NULL) { zval_ptr_dtor(w795); array_init(w795); } else if (UNEXPECTED(Z_TYPE_P(w795) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w795);
-								{ zval v = o794.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w795), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce790, "preparetrace", 12, 1, av789, r791.raw(), NULL))) return false;
+								{ zval v = r791.take(); zend_symtable_update(Z_ARRVAL_P(arr788.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r792;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_79, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r792.raw(), NULL))) return false;
+								{ zval v = r792.take(); zend_symtable_update(Z_ARRVAL_P(arr788.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av793[1];
+								ZVAL_COPY_VALUE(&av793[0], arr788.raw());
+								zv::Val r794;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_80, r787.raw(), "withMetadata", "withmetadata", 12, 1, av793, r794.raw(), NULL))) return false;
+								zv::Val o795 = zv::Val::copyOf(zv::Ref(r794.raw()));
+								zval *w796 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w796) <= IS_NULL) { zval_ptr_dtor(w796); array_init(w796); } else if (UNEXPECTED(Z_TYPE_P(w796) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w796);
+								{ zval v = o795.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w796), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
-							goto cont727;
+							goto cont728;
 						}
-						if (!caught738 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)) || pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference", 63)))) {
-							caught738 = true;
+						if (!caught739 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)) || pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference", 63)))) {
+							caught739 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zv::Val r797;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_81, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r797.raw(), NULL))) return false;
-								pgrt::StringBuilder sb798;
-								sb798.appendLiteral("Reflection error: ", 18);
-								if (UNEXPECTED(!sb798.append(r797.raw()))) return false;
-								zv::Val r799 = sb798.finish();
-								zval *p800 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p800 == NULL)) return false;
-								zv::Val o801 = zv::Val::copyOf(zv::Ref(p800));
-								zv::Val r802;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_82, p_node, "getStartLine", "getstartline", 12, 0, NULL, r802.raw(), NULL))) return false;
-								zval av803[4];
-								ZVAL_COPY_VALUE(&av803[0], r799.raw());
-								ZVAL_COPY_VALUE(&av803[1], o801.raw());
-								zval z804;
-								ZVAL_LONG(&z804, Z_LVAL_P(r802.raw()));
-								ZVAL_COPY_VALUE(&av803[2], &z804);
-								ZVAL_COPY_VALUE(&av803[3], l_e.raw());
-								zend_class_entry *ce805 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce805 == NULL)) return false;
-								zv::Val n796;
-								if (UNEXPECTED(!pgrt::newObject(ce805, 4, av803, n796.raw(), NULL))) return false;
-								zval av806[1];
-								ZVAL_COPY_VALUE(&av806[0], &pg_lit[4]);
-								zv::Val r807;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_83, n796.raw(), "withIdentifier", "withidentifier", 14, 1, av806, r807.raw(), NULL))) return false;
-								zv::Val arr808 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av809[1];
-								ZVAL_COPY_VALUE(&av809[0], l_e.raw());
-								zend_class_entry *ce810 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce810 == NULL)) return false;
-								zv::Val r811;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce810, "preparetrace", 12, 1, av809, r811.raw(), NULL))) return false;
-								{ zval v = r811.take(); zend_symtable_update(Z_ARRVAL_P(arr808.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r798;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_81, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r798.raw(), NULL))) return false;
+								pgrt::StringBuilder sb799;
+								sb799.appendLiteral("Reflection error: ", 18);
+								if (UNEXPECTED(!sb799.append(r798.raw()))) return false;
+								zv::Val r800 = sb799.finish();
+								zval *p801 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p801 == NULL)) return false;
+								zv::Val o802 = zv::Val::copyOf(zv::Ref(p801));
+								zv::Val r803;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_82, p_node, "getStartLine", "getstartline", 12, 0, NULL, r803.raw(), NULL))) return false;
+								zval av804[4];
+								ZVAL_COPY_VALUE(&av804[0], r800.raw());
+								ZVAL_COPY_VALUE(&av804[1], o802.raw());
+								zval z805;
+								ZVAL_LONG(&z805, Z_LVAL_P(r803.raw()));
+								ZVAL_COPY_VALUE(&av804[2], &z805);
+								ZVAL_COPY_VALUE(&av804[3], l_e.raw());
+								zend_class_entry *ce806 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce806 == NULL)) return false;
+								zv::Val n797;
+								if (UNEXPECTED(!pgrt::newObject(ce806, 4, av804, n797.raw(), NULL))) return false;
+								zval av807[1];
+								ZVAL_COPY_VALUE(&av807[0], &pg_lit[4]);
+								zv::Val r808;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_83, n797.raw(), "withIdentifier", "withidentifier", 14, 1, av807, r808.raw(), NULL))) return false;
+								zv::Val arr809 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+								zval av810[1];
+								ZVAL_COPY_VALUE(&av810[0], l_e.raw());
+								zend_class_entry *ce811 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce811 == NULL)) return false;
 								zv::Val r812;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_84, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r812.raw(), NULL))) return false;
-								{ zval v = r812.take(); zend_symtable_update(Z_ARRVAL_P(arr808.raw()), Z_STR_P(&pg_lit[2]), &v); }
-								zval av813[1];
-								ZVAL_COPY_VALUE(&av813[0], arr808.raw());
-								zv::Val r814;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_85, r807.raw(), "withMetadata", "withmetadata", 12, 1, av813, r814.raw(), NULL))) return false;
-								zv::Val o815 = zv::Val::copyOf(zv::Ref(r814.raw()));
-								zval *w816 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w816) <= IS_NULL) { zval_ptr_dtor(w816); array_init(w816); } else if (UNEXPECTED(Z_TYPE_P(w816) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w816);
-								{ zval v = o815.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w816), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce811, "preparetrace", 12, 1, av810, r812.raw(), NULL))) return false;
+								{ zval v = r812.take(); zend_symtable_update(Z_ARRVAL_P(arr809.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r813;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_84, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r813.raw(), NULL))) return false;
+								{ zval v = r813.take(); zend_symtable_update(Z_ARRVAL_P(arr809.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av814[1];
+								ZVAL_COPY_VALUE(&av814[0], arr809.raw());
+								zv::Val r815;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_85, r808.raw(), "withMetadata", "withmetadata", 12, 1, av814, r815.raw(), NULL))) return false;
+								zv::Val o816 = zv::Val::copyOf(zv::Ref(r815.raw()));
+								zval *w817 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w817) <= IS_NULL) { zval_ptr_dtor(w817); array_init(w817); } else if (UNEXPECTED(Z_TYPE_P(w817) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w817);
+								{ zval v = o816.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w817), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
-							goto cont727;
+							goto cont728;
 						}
-						if (!caught738) return false;
+						if (!caught739) return false;
 					}
 					}
 				}
 				 {
 					if (Z_TYPE_P(l_collectedData.raw()) == IS_NULL) {
-						goto cont727;
+						goto cont728;
 					}
 				}
 				 {
-					zv::Val o817 = zv::Val::copyOf(zv::Ref(l_collectedData.raw()));
-					zv::Val o818 = zv::Val::copyOf(zv::Ref(o817.raw()));
-					zv::Val r820;
-					if (UNEXPECTED(!pgrt::getClass(l_collector, r820.raw()))) return false;
-					zv::Val o822 = zv::Val::copyOf(zv::Ref(p_scope));
-					zv::Val r823;
-					zend_class_entry *rc824 = Z_TYPE_P(o822.raw()) == IS_OBJECT ? Z_OBJCE_P(o822.raw()) : NULL;
-					if (rc824 == pt_ce_mutating_scope) {
-						r823 = pt_mutating_scope_get_file(Z_OBJ_P(o822.raw()));
-						if (UNEXPECTED(r823.isUndef())) return false;
+					zv::Val o818 = zv::Val::copyOf(zv::Ref(l_collectedData.raw()));
+					zv::Val o819 = zv::Val::copyOf(zv::Ref(o818.raw()));
+					zv::Val r821;
+					if (UNEXPECTED(!pgrt::getClass(l_collector, r821.raw()))) return false;
+					zv::Val o823 = zv::Val::copyOf(zv::Ref(p_scope));
+					zv::Val r824;
+					zend_class_entry *rc825 = Z_TYPE_P(o823.raw()) == IS_OBJECT ? Z_OBJCE_P(o823.raw()) : NULL;
+					if (rc825 == pt_ce_mutating_scope) {
+						r824 = pt_mutating_scope_get_file(Z_OBJ_P(o823.raw()));
+						if (UNEXPECTED(r824.isUndef())) return false;
+					}
+					else if (rc825 == pt_ce_node_callback_scope) {
+						r824 = pt_mutating_scope_get_file(Z_OBJ_P(o823.raw()));
+						if (UNEXPECTED(r824.isUndef())) return false;
 					}
 					else {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_86, o822.raw(), "getFile", "getfile", 7, 0, NULL, r823.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_86, o823.raw(), "getFile", "getfile", 7, 0, NULL, r824.raw()))) return false;
 					}
-					zval *w825 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileCollectedData)).deref().raw();
-					if (Z_TYPE_P(w825) <= IS_NULL) { zval_ptr_dtor(w825); array_init(w825); } else if (UNEXPECTED(Z_TYPE_P(w825) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w825);
-					zval *w821;
-					w821 = pgrt::dimWrite(w825, r823.raw());
-					if (UNEXPECTED(w821 == NULL)) return false;
-					ZVAL_DEREF(w821);
-					if (Z_TYPE_P(w821) <= IS_NULL) { zval_ptr_dtor(w821); array_init(w821); } else if (UNEXPECTED(Z_TYPE_P(w821) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w821);
-					zval *w819;
-					w819 = pgrt::dimWrite(w821, r820.raw());
-					if (UNEXPECTED(w819 == NULL)) return false;
-					ZVAL_DEREF(w819);
-					if (Z_TYPE_P(w819) <= IS_NULL) { zval_ptr_dtor(w819); array_init(w819); } else if (UNEXPECTED(Z_TYPE_P(w819) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w819);
-					{ zval v = o818.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w819), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zval *w826 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileCollectedData)).deref().raw();
+					if (Z_TYPE_P(w826) <= IS_NULL) { zval_ptr_dtor(w826); array_init(w826); } else if (UNEXPECTED(Z_TYPE_P(w826) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w826);
+					zval *w822;
+					w822 = pgrt::dimWrite(w826, r824.raw());
+					if (UNEXPECTED(w822 == NULL)) return false;
+					ZVAL_DEREF(w822);
+					if (Z_TYPE_P(w822) <= IS_NULL) { zval_ptr_dtor(w822); array_init(w822); } else if (UNEXPECTED(Z_TYPE_P(w822) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w822);
+					zval *w820;
+					w820 = pgrt::dimWrite(w822, r821.raw());
+					if (UNEXPECTED(w820 == NULL)) return false;
+					ZVAL_DEREF(w820);
+					if (Z_TYPE_P(w820) <= IS_NULL) { zval_ptr_dtor(w820); array_init(w820); } else if (UNEXPECTED(Z_TYPE_P(w820) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w820);
+					{ zval v = o819.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w820), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
-			cont727:;
-			if (UNEXPECTED(!it725.next())) return false;
+			cont728:;
+			if (UNEXPECTED(!it726.next())) return false;
 		}
 		if (UNEXPECTED(EG(exception))) return false;
 	}
 	 {
-		zval *is827 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::exportableByNodeType)).deref().raw();
-		if (Z_ISUNDEF_P(is827)) is827 = NULL;
-		zv::Val o828 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-		zv::Val ist829;
-		zval *is826 = is827 == NULL ? NULL : pgrt::dimIs(is827, o828.raw(), ist829.raw());
+		zval *is828 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::exportableByNodeType)).deref().raw();
+		if (Z_ISUNDEF_P(is828)) is828 = NULL;
+		zv::Val o829 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+		zv::Val ist830;
+		zval *is827 = is828 == NULL ? NULL : pgrt::dimIs(is828, o829.raw(), ist830.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca830;
-		if (is826 != NULL && Z_TYPE_P(is826) > IS_NULL) {
-			ca830 = zv::Val::copyOf(zv::Ref(is826));
+		zv::Val ca831;
+		if (is827 != NULL && Z_TYPE_P(is827) > IS_NULL) {
+			ca831 = zv::Val::copyOf(zv::Ref(is827));
 		} else {
 		 {
-			zv::Val o831 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-			zval *p832 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::dependencyResolver, "dependencyResolver");
-			if (UNEXPECTED(p832 == NULL)) return false;
-			zval av833[1];
-			ZVAL_COPY_VALUE(&av833[0], p_node);
-			zv::Val r834;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_87, p832, "canExportNode", "canexportnode", 13, 1, av833, r834.raw(), NULL))) return false;
-			bool k835 = (Z_TYPE_P(r834.raw()) == IS_TRUE);
-			zval z837;
-			ZVAL_BOOL(&z837, k835);
-			zv::Val o836 = zv::Val::copyOf(zv::Ref(&z837));
-			zval *w838 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::exportableByNodeType)).deref().raw();
-			if (Z_TYPE_P(w838) <= IS_NULL) { zval_ptr_dtor(w838); array_init(w838); } else if (UNEXPECTED(Z_TYPE_P(w838) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w838);
-			zval *e839 = pgrt::dimWrite(w838, o831.raw());
-			if (UNEXPECTED(e839 == NULL)) return false;
-			zv::Ref(e839).assign(std::move(o836));
-			zval z840;
-			ZVAL_BOOL(&z840, k835);
-			ca830 = zv::Val::copyOf(zv::Ref(&z840));
+			zv::Val o832 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+			zval *p833 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::dependencyResolver, "dependencyResolver");
+			if (UNEXPECTED(p833 == NULL)) return false;
+			zval av834[1];
+			ZVAL_COPY_VALUE(&av834[0], p_node);
+			zv::Val r835;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_87, p833, "canExportNode", "canexportnode", 13, 1, av834, r835.raw(), NULL))) return false;
+			bool k836 = (Z_TYPE_P(r835.raw()) == IS_TRUE);
+			zval z838;
+			ZVAL_BOOL(&z838, k836);
+			zv::Val o837 = zv::Val::copyOf(zv::Ref(&z838));
+			zval *w839 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::exportableByNodeType)).deref().raw();
+			if (Z_TYPE_P(w839) <= IS_NULL) { zval_ptr_dtor(w839); array_init(w839); } else if (UNEXPECTED(Z_TYPE_P(w839) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w839);
+			zval *e840 = pgrt::dimWrite(w839, o832.raw());
+			if (UNEXPECTED(e840 == NULL)) return false;
+			zv::Ref(e840).assign(std::move(o837));
+			zval z841;
+			ZVAL_BOOL(&z841, k836);
+			ca831 = zv::Val::copyOf(zv::Ref(&z841));
 		}
 		}
-		if (!(zend_is_true(ca830.raw()))) {
+		if (!(zend_is_true(ca831.raw()))) {
 			 {
 				return true;
 			}
@@ -4776,55 +4793,55 @@ namespace pgen::FileAnalyserCallback {
 	 {
 		 {
 			 {
-				zval *p842 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::dependencyResolver, "dependencyResolver");
-				if (UNEXPECTED(p842 == NULL)) goto catch_c841;
-				zval av843[2];
-				ZVAL_COPY_VALUE(&av843[0], p_node);
-				ZVAL_COPY_VALUE(&av843[1], p_scope);
-				zv::Val r844;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_88, p842, "resolveExportedNode", "resolveexportednode", 19, 2, av843, r844.raw(), NULL))) goto catch_c841;
-				l_exportedNode = std::move(r844);
+				zval *p843 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::dependencyResolver, "dependencyResolver");
+				if (UNEXPECTED(p843 == NULL)) goto catch_c842;
+				zval av844[2];
+				ZVAL_COPY_VALUE(&av844[0], p_node);
+				ZVAL_COPY_VALUE(&av844[1], p_scope);
+				zv::Val r845;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_88, p843, "resolveExportedNode", "resolveexportednode", 19, 2, av844, r845.raw(), NULL))) goto catch_c842;
+				l_exportedNode = std::move(r845);
 			}
 			 {
 				if (!(Z_TYPE_P(l_exportedNode.raw()) == IS_NULL)) {
 					 {
-						zv::Val o845 = zv::Val::copyOf(zv::Ref(l_exportedNode.raw()));
-						zv::Val o846 = zv::Val::copyOf(zv::Ref(o845.raw()));
-						zval *w847 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::exportedNodes)).deref().raw();
-						if (Z_TYPE_P(w847) <= IS_NULL) { zval_ptr_dtor(w847); array_init(w847); } else if (UNEXPECTED(Z_TYPE_P(w847) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c841; }
-						SEPARATE_ARRAY(w847);
-						{ zval v = o846.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w847), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); goto catch_c841; } }
+						zv::Val o846 = zv::Val::copyOf(zv::Ref(l_exportedNode.raw()));
+						zv::Val o847 = zv::Val::copyOf(zv::Ref(o846.raw()));
+						zval *w848 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::exportedNodes)).deref().raw();
+						if (Z_TYPE_P(w848) <= IS_NULL) { zval_ptr_dtor(w848); array_init(w848); } else if (UNEXPECTED(Z_TYPE_P(w848) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c842; }
+						SEPARATE_ARRAY(w848);
+						{ zval v = o847.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w848), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); goto catch_c842; } }
 					}
 				}
 			}
 		}
 		if (false) {
-		catch_c841:
+		catch_c842:
 		 {
 			zend_object *thrown = EG(exception);
-			bool caught848 = false;
-			if (!caught848 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
-				caught848 = true;
+			bool caught849 = false;
+			if (!caught849 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
+				caught849 = true;
 				zval exception;
 				ZVAL_OBJ_COPY(&exception, thrown);
 				zend_clear_exception();
 				zval_ptr_dtor(&exception);
 			}
-			if (!caught848 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-				caught848 = true;
+			if (!caught849 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+				caught849 = true;
 				zval exception;
 				ZVAL_OBJ_COPY(&exception, thrown);
 				zend_clear_exception();
 				zval_ptr_dtor(&exception);
 			}
-			if (!caught848 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)))) {
-				caught848 = true;
+			if (!caught849 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)))) {
+				caught849 = true;
 				zval exception;
 				ZVAL_OBJ_COPY(&exception, thrown);
 				zend_clear_exception();
 				zval_ptr_dtor(&exception);
 			}
-			if (!caught848) return false;
+			if (!caught849) return false;
 		}
 		}
 	}

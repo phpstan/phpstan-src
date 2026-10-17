@@ -123,6 +123,10 @@ namespace pgen::ApiMethodCallRule {
 			r12 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), r6.raw(), Z_STR_P(r11.raw()));
 			if (UNEXPECTED(r12.isUndef())) return false;
 		}
+		else if (rc13 == pt_ce_node_callback_scope) {
+			r12 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), r6.raw(), Z_STR_P(r11.raw()));
+			if (UNEXPECTED(r12.isUndef())) return false;
+		}
 		else {
 			zval av14[2];
 			ZVAL_COPY_VALUE(&av14[0], r6.raw());

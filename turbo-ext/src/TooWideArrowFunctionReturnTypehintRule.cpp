@@ -147,6 +147,10 @@ namespace pgen::TooWideArrowFunctionReturnTypehintRule {
 			r18 = pt_mutating_scope_get_function_type(Z_OBJ_P(p_scope), zv::Ref(p14).deref().raw(), false, false);
 			if (UNEXPECTED(r18.isUndef())) return false;
 		}
+		else if (rc19 == pt_ce_node_callback_scope) {
+			r18 = pt_mutating_scope_get_function_type(Z_OBJ_P(p_scope), zv::Ref(p14).deref().raw(), false, false);
+			if (UNEXPECTED(r18.isUndef())) return false;
+		}
 		else {
 			zval av20[3];
 			ZVAL_COPY_VALUE(&av20[0], zv::Ref(p14).deref().raw());

@@ -445,52 +445,57 @@ namespace pgen::NumberComparisonOperatorsConstantConditionRule {
 					if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo66))) return false;
 					ZVAL_BOOL(r64.raw(), bo66);
 				}
+				else if (rc65 == pt_ce_node_callback_scope) {
+					bool bo67 = false;
+					if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo67))) return false;
+					ZVAL_BOOL(r64.raw(), bo67);
+				}
 				else {
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p_scope, "isInTrait", "isintrait", 9, 0, NULL, r64.raw()))) return false;
 				}
 				if (Z_TYPE_P(r64.raw()) == IS_TRUE) {
 					 {
-						zval *p67 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NumberComparisonOperatorsConstantConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
-						if (UNEXPECTED(p67 == NULL)) return false;
-						zv::Val o68 = zv::Val::copyOf(zv::Ref(p67));
-						zv::Val o69 = zv::Val::copyOf(zv::Ref(p_node));
-						zv::Val r70;
+						zval *p68 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NumberComparisonOperatorsConstantConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
+						if (UNEXPECTED(p68 == NULL)) return false;
+						zv::Val o69 = zv::Val::copyOf(zv::Ref(p68));
+						zv::Val o70 = zv::Val::copyOf(zv::Ref(p_node));
+						zv::Val r71;
 						if (EXPECTED(Z_TYPE_P(l_exprType.raw()) == IS_OBJECT)) {
-							r70 = pt_type_op(Z_OBJ_P(l_exprType.raw()), PT_OP_GET_VALUE, 0, NULL);
-							if (UNEXPECTED(r70.isUndef())) return false;
+							r71 = pt_type_op(Z_OBJ_P(l_exprType.raw()), PT_OP_GET_VALUE, 0, NULL);
+							if (UNEXPECTED(r71.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r70.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r71.raw(), NULL))) return false;
 						}
 						}
-						if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitError(Z_OBJ_P(o68.raw()), &pg_lit[13], p_scope, o69.raw(), (Z_TYPE_P(r70.raw()) == IS_TRUE), l_ruleError.raw()))) return false;
+						if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitError(Z_OBJ_P(o69.raw()), &pg_lit[13], p_scope, o70.raw(), (Z_TYPE_P(r71.raw()) == IS_TRUE), l_ruleError.raw()))) return false;
 					}
 					 {
-						zval arr72_raw;
-						ZVAL_EMPTY_ARRAY(&arr72_raw);
-						ZVAL_COPY(ret, &arr72_raw);
+						zval arr73_raw;
+						ZVAL_EMPTY_ARRAY(&arr73_raw);
+						ZVAL_COPY(ret, &arr73_raw);
 						return true;
 					}
 				}
 			}
 			 {
-				zv::Val arr73 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-				zv::Val o74 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
-				{ zval v = o74.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr73.raw()), &v); }
-				*ret = arr73.take();
+				zv::Val arr74 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+				zv::Val o75 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
+				{ zval v = o75.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr74.raw()), &v); }
+				*ret = arr74.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p75 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NumberComparisonOperatorsConstantConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
-		if (UNEXPECTED(p75 == NULL)) return false;
-		if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitNoError(Z_OBJ_P(p75), &pg_lit[13], p_scope, p_node))) return false;
+		zval *p76 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NumberComparisonOperatorsConstantConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
+		if (UNEXPECTED(p76 == NULL)) return false;
+		if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitNoError(Z_OBJ_P(p76), &pg_lit[13], p_scope, p_node))) return false;
 	}
 	 {
-		zval arr77_raw;
-		ZVAL_EMPTY_ARRAY(&arr77_raw);
-		ZVAL_COPY(ret, &arr77_raw);
+		zval arr78_raw;
+		ZVAL_EMPTY_ARRAY(&arr78_raw);
+		ZVAL_COPY(ret, &arr78_raw);
 		return true;
 	}
 }

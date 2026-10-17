@@ -3027,6 +3027,10 @@ namespace pgen::ImpossibleCheckTypeHelper {
 						r7 = pt_mutating_scope_has_variable_type(Z_OBJ_P(p_scope), Z_STR_P(zv::Ref(p5).deref().raw()));
 						if (UNEXPECTED(r7.isUndef())) return false;
 					}
+					else if (rc8 == pt_ce_node_callback_scope) {
+						r7 = pt_mutating_scope_has_variable_type(Z_OBJ_P(p_scope), Z_STR_P(zv::Ref(p5).deref().raw()));
+						if (UNEXPECTED(r7.isUndef())) return false;
+					}
 					else {
 						zval av9[1];
 						ZVAL_COPY_VALUE(&av9[0], zv::Ref(p5).deref().raw());
@@ -3449,6 +3453,10 @@ namespace pgen::ImpossibleCheckTypeHelper {
 							r50 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), l_methodCalledOnType.raw(), Z_STR_P(zv::Ref(p48).deref().raw()));
 							if (UNEXPECTED(r50.isUndef())) return false;
 						}
+						else if (rc51 == pt_ce_node_callback_scope) {
+							r50 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), l_methodCalledOnType.raw(), Z_STR_P(zv::Ref(p48).deref().raw()));
+							if (UNEXPECTED(r50.isUndef())) return false;
+						}
 						else {
 							zval av52[2];
 							ZVAL_COPY_VALUE(&av52[0], l_methodCalledOnType.raw());
@@ -3648,6 +3656,10 @@ namespace pgen::ImpossibleCheckTypeHelper {
 											r82 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p80).deref().raw()));
 											if (UNEXPECTED(r82.isUndef())) return false;
 										}
+										else if (rc83 == pt_ce_node_callback_scope) {
+											r82 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p80).deref().raw()));
+											if (UNEXPECTED(r82.isUndef())) return false;
+										}
 										else {
 											zval av84[1];
 											ZVAL_COPY_VALUE(&av84[0], zv::Ref(p80).deref().raw());
@@ -3700,6 +3712,10 @@ namespace pgen::ImpossibleCheckTypeHelper {
 								zv::Val r94;
 								zend_class_entry *rc95 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 								if (rc95 == pt_ce_mutating_scope) {
+									r94 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), l_calleeType.raw(), Z_STR_P(zv::Ref(p92).deref().raw()));
+									if (UNEXPECTED(r94.isUndef())) return false;
+								}
+								else if (rc95 == pt_ce_node_callback_scope) {
 									r94 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), l_calleeType.raw(), Z_STR_P(zv::Ref(p92).deref().raw()));
 									if (UNEXPECTED(r94.isUndef())) return false;
 								}

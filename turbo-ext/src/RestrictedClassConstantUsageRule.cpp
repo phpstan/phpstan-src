@@ -231,6 +231,10 @@ namespace pgen::RestrictedClassConstantUsageRule {
 					r20 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p18).deref().raw()));
 					if (UNEXPECTED(r20.isUndef())) return false;
 				}
+				else if (rc21 == pt_ce_node_callback_scope) {
+					r20 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p18).deref().raw()));
+					if (UNEXPECTED(r20.isUndef())) return false;
+				}
 				else {
 					zval av22[1];
 					ZVAL_COPY_VALUE(&av22[0], zv::Ref(p18).deref().raw());

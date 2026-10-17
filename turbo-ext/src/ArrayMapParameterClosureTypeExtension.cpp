@@ -203,6 +203,10 @@ namespace pgen::ArrayMapParameterClosureTypeExtension {
 														r32 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_valueType);
 														if (UNEXPECTED(r32.isUndef())) return false;
 													}
+													else if (rc33 == pt_ce_node_callback_scope) {
+														r32 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_valueType);
+														if (UNEXPECTED(r32.isUndef())) return false;
+													}
 													else {
 														zval av34[1];
 														ZVAL_COPY_VALUE(&av34[0], l_valueType);
@@ -231,6 +235,10 @@ namespace pgen::ArrayMapParameterClosureTypeExtension {
 							zv::Val r38;
 							zend_class_entry *rc39 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 							if (rc39 == pt_ce_mutating_scope) {
+								r38 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
+								if (UNEXPECTED(r38.isUndef())) return false;
+							}
+							else if (rc39 == pt_ce_node_callback_scope) {
 								r38 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
 								if (UNEXPECTED(r38.isUndef())) return false;
 							}

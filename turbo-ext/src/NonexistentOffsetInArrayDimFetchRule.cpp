@@ -1367,6 +1367,10 @@ namespace pgen::NonexistentOffsetInArrayDimFetchRule {
 			r16 = pt_mutating_scope_has_variable_type(Z_OBJ_P(p_scope), Z_STR_P(zv::Ref(p14).deref().raw()));
 			if (UNEXPECTED(r16.isUndef())) return false;
 		}
+		else if (rc17 == pt_ce_node_callback_scope) {
+			r16 = pt_mutating_scope_has_variable_type(Z_OBJ_P(p_scope), Z_STR_P(zv::Ref(p14).deref().raw()));
+			if (UNEXPECTED(r16.isUndef())) return false;
+		}
 		else {
 			zval av18[1];
 			ZVAL_COPY_VALUE(&av18[0], zv::Ref(p14).deref().raw());

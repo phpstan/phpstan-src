@@ -96,6 +96,10 @@ namespace pgen::ReturnTypeRule {
 			r1 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r1.isUndef())) return false;
 		}
+		else if (rc2 == pt_ce_node_callback_scope) {
+			r1 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r1.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getFunction", "getfunction", 11, 0, NULL, r1.raw()))) return false;
 		}
@@ -116,1204 +120,1213 @@ namespace pgen::ReturnTypeRule {
 			if (UNEXPECTED(!pt_mutating_scope_is_in_anonymous_function(Z_OBJ_P(p_scope), bo6))) return false;
 			ZVAL_BOOL(r4.raw(), bo6);
 		}
+		else if (rc5 == pt_ce_node_callback_scope) {
+			bool bo7 = false;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_anonymous_function(Z_OBJ_P(p_scope), bo7))) return false;
+			ZVAL_BOOL(r4.raw(), bo7);
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "isInAnonymousFunction", "isinanonymousfunction", 21, 0, NULL, r4.raw()))) return false;
 		}
 		if (Z_TYPE_P(r4.raw()) == IS_TRUE) {
 			 {
-				zval arr7_raw;
-				ZVAL_EMPTY_ARRAY(&arr7_raw);
-				ZVAL_COPY(ret, &arr7_raw);
+				zval arr8_raw;
+				ZVAL_EMPTY_ARRAY(&arr8_raw);
+				ZVAL_COPY(ret, &arr8_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val r8;
-		zend_class_entry *rc9 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
-		if (rc9 == pt_ce_mutating_scope) {
-			r8 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
-			if (UNEXPECTED(r8.isUndef())) return false;
+		zv::Val r9;
+		zend_class_entry *rc10 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+		if (rc10 == pt_ce_mutating_scope) {
+			r9 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r9.isUndef())) return false;
+		}
+		else if (rc10 == pt_ce_node_callback_scope) {
+			r9 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r9.isUndef())) return false;
 		}
 		else {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getFunction", "getfunction", 11, 0, NULL, r8.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getFunction", "getfunction", 11, 0, NULL, r9.raw()))) return false;
 		}
-		l_method = std::move(r8);
+		l_method = std::move(r9);
 	}
 	 {
 		if (!(((Z_TYPE_P(l_method.raw()) == IS_OBJECT && Z_OBJCE_P(l_method.raw()) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(l_method.raw(), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) {
 			 {
-				zval arr10_raw;
-				ZVAL_EMPTY_ARRAY(&arr10_raw);
-				ZVAL_COPY(ret, &arr10_raw);
+				zval arr11_raw;
+				ZVAL_EMPTY_ARRAY(&arr11_raw);
+				ZVAL_COPY(ret, &arr11_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		bool r11;
-		if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_isPropertyHook(Z_OBJ_P(l_method.raw()), &r11))) return false;
-		if (r11) {
+		bool r12;
+		if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_isPropertyHook(Z_OBJ_P(l_method.raw()), &r12))) return false;
+		if (r12) {
 			 {
-				zv::Val r12;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getPropertyHookName(Z_OBJ_P(l_method.raw()), r12.raw()))) return false;
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], r12.raw());
-				zv::Val r14;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "ucfirst", 7, pt_ce_return_type_rule, 1, av13, r14.raw(), NULL))) return false;
+				zv::Val r13;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getPropertyHookName(Z_OBJ_P(l_method.raw()), r13.raw()))) return false;
+				zval av14[1];
+				ZVAL_COPY_VALUE(&av14[0], r13.raw());
 				zv::Val r15;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_method.raw()), r15.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "ucfirst", 7, pt_ce_return_type_rule, 1, av14, r15.raw(), NULL))) return false;
 				zv::Val r16;
-				if (EXPECTED(Z_TYPE_P(r15.raw()) == IS_OBJECT && Z_OBJCE_P(r15.raw()) == pt_ce_class_reflection)) {
-					r16 = pt_class_reflection_get_display_name(Z_OBJ_P(r15.raw()));
-					if (UNEXPECTED(r16.isUndef())) return false;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_method.raw()), r16.raw()))) return false;
+				zv::Val r17;
+				if (EXPECTED(Z_TYPE_P(r16.raw()) == IS_OBJECT && Z_OBJCE_P(r16.raw()) == pt_ce_class_reflection)) {
+					r17 = pt_class_reflection_get_display_name(Z_OBJ_P(r16.raw()));
+					if (UNEXPECTED(r17.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r15.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r16.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r16.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r17.raw()))) return false;
 				}
 				}
-				zv::Val r17;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getHookedPropertyName(Z_OBJ_P(l_method.raw()), r17.raw()))) return false;
-				pgrt::StringBuilder sb18;
-				if (UNEXPECTED(!sb18.append(r14.raw()))) return false;
-				sb18.appendLiteral(" hook for property ", 19);
-				if (UNEXPECTED(!sb18.append(r16.raw()))) return false;
-				sb18.appendLiteral("::$", 3);
-				if (UNEXPECTED(!sb18.append(r17.raw()))) return false;
-				zv::Val r19 = sb18.finish();
-				l_methodDescription = std::move(r19);
+				zv::Val r18;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getHookedPropertyName(Z_OBJ_P(l_method.raw()), r18.raw()))) return false;
+				pgrt::StringBuilder sb19;
+				if (UNEXPECTED(!sb19.append(r15.raw()))) return false;
+				sb19.appendLiteral(" hook for property ", 19);
+				if (UNEXPECTED(!sb19.append(r17.raw()))) return false;
+				sb19.appendLiteral("::$", 3);
+				if (UNEXPECTED(!sb19.append(r18.raw()))) return false;
+				zv::Val r20 = sb19.finish();
+				l_methodDescription = std::move(r20);
 			}
 		} else {
 		 {
 			 {
-				zv::Val r20;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_method.raw()), r20.raw()))) return false;
 				zv::Val r21;
-				if (EXPECTED(Z_TYPE_P(r20.raw()) == IS_OBJECT && Z_OBJCE_P(r20.raw()) == pt_ce_class_reflection)) {
-					r21 = pt_class_reflection_get_display_name(Z_OBJ_P(r20.raw()));
-					if (UNEXPECTED(r21.isUndef())) return false;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_method.raw()), r21.raw()))) return false;
+				zv::Val r22;
+				if (EXPECTED(Z_TYPE_P(r21.raw()) == IS_OBJECT && Z_OBJCE_P(r21.raw()) == pt_ce_class_reflection)) {
+					r22 = pt_class_reflection_get_display_name(Z_OBJ_P(r21.raw()));
+					if (UNEXPECTED(r22.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r20.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r21.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r21.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r22.raw()))) return false;
 				}
 				}
-				zv::Val r22;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getName(Z_OBJ_P(l_method.raw()), r22.raw()))) return false;
-				pgrt::StringBuilder sb23;
-				sb23.appendLiteral("Method ", 7);
-				if (UNEXPECTED(!sb23.append(r21.raw()))) return false;
-				sb23.appendLiteral("::", 2);
-				if (UNEXPECTED(!sb23.append(r22.raw()))) return false;
-				sb23.appendLiteral("()", 2);
-				zv::Val r24 = sb23.finish();
-				l_methodDescription = std::move(r24);
+				zv::Val r23;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getName(Z_OBJ_P(l_method.raw()), r23.raw()))) return false;
+				pgrt::StringBuilder sb24;
+				sb24.appendLiteral("Method ", 7);
+				if (UNEXPECTED(!sb24.append(r22.raw()))) return false;
+				sb24.appendLiteral("::", 2);
+				if (UNEXPECTED(!sb24.append(r23.raw()))) return false;
+				sb24.appendLiteral("()", 2);
+				zv::Val r25 = sb24.finish();
+				l_methodDescription = std::move(r25);
 			}
 		}
 		}
 	}
 	 {
-		zv::Val vd25;
-		zend_class_entry *vd25_ce = Z_TYPE_P(l_method.raw()) == IS_OBJECT ? Z_OBJCE_P(l_method.raw()) : NULL;
-		bool vd25_done = false;
-		if (vd25_ce == pt_ce_php_method_from_parser_node_reflection) {
-			zv::Val r26;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getReturnType(Z_OBJ_P(l_method.raw()), r26.raw()))) return false;
-			vd25 = std::move(r26);
-			vd25_done = true;
+		zv::Val vd26;
+		zend_class_entry *vd26_ce = Z_TYPE_P(l_method.raw()) == IS_OBJECT ? Z_OBJCE_P(l_method.raw()) : NULL;
+		bool vd26_done = false;
+		if (vd26_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r27;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getReturnType(Z_OBJ_P(l_method.raw()), r27.raw()))) return false;
+			vd26 = std::move(r27);
+			vd26_done = true;
 		}
-		if (!vd25_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_method.raw(), "getReturnType", "getreturntype", 13, 0, NULL, vd25.raw()))) return false;
+		if (!vd26_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_method.raw(), "getReturnType", "getreturntype", 13, 0, NULL, vd26.raw()))) return false;
 		}
-		l_returnType = std::move(vd25);
+		l_returnType = std::move(vd26);
 	}
 	 {
-		zval *p27 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ReturnTypeRule::slot::returnTypeCheck, "returnTypeCheck");
-		if (UNEXPECTED(p27 == NULL)) return false;
-		zv::Val o28 = zv::Val::copyOf(zv::Ref(p27));
-		zv::Val o29 = zv::Val::copyOf(zv::Ref(l_returnType.raw()));
-		zv::Val o31;
-		zval *p30 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_8, Z_OBJ_P(p_node), "expr", 4) : NULL;
-		if (UNEXPECTED(p30 == NULL || Z_ISUNDEF_P(p30))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_return_type_rule, "expr", 4, o31.raw()))) return false;
-			p30 = o31.raw();
+		zval *p28 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ReturnTypeRule::slot::returnTypeCheck, "returnTypeCheck");
+		if (UNEXPECTED(p28 == NULL)) return false;
+		zv::Val o29 = zv::Val::copyOf(zv::Ref(p28));
+		zv::Val o30 = zv::Val::copyOf(zv::Ref(l_returnType.raw()));
+		zv::Val o32;
+		zval *p31 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_8, Z_OBJ_P(p_node), "expr", 4) : NULL;
+		if (UNEXPECTED(p31 == NULL || Z_ISUNDEF_P(p31))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_return_type_rule, "expr", 4, o32.raw()))) return false;
+			p31 = o32.raw();
 		}
-		zv::Val o32 = zv::Val::copyOf(zv::Ref(zv::Ref(p30).deref().raw()));
-		pgrt::StringBuilder sb33;
-		if (UNEXPECTED(!sb33.append(l_methodDescription.raw()))) return false;
-		sb33.appendLiteral(" should return ", 15);
-		sb33.appendLiteral("%", 1);
-		sb33.appendLiteral("s but empty return statement found.", 35);
-		zv::Val r34 = sb33.finish();
-		pgrt::StringBuilder sb35;
-		if (UNEXPECTED(!sb35.append(l_methodDescription.raw()))) return false;
-		sb35.appendLiteral(" with return type void returns ", 31);
-		sb35.appendLiteral("%", 1);
-		sb35.appendLiteral("s but should not return anything.", 33);
-		zv::Val r36 = sb35.finish();
-		pgrt::StringBuilder sb37;
-		if (UNEXPECTED(!sb37.append(l_methodDescription.raw()))) return false;
-		sb37.appendLiteral(" should return ", 15);
-		sb37.appendLiteral("%", 1);
-		sb37.appendLiteral("s but returns ", 14);
-		sb37.appendLiteral("%", 1);
-		sb37.appendLiteral("s.", 2);
-		zv::Val r38 = sb37.finish();
-		pgrt::StringBuilder sb39;
-		if (UNEXPECTED(!sb39.append(l_methodDescription.raw()))) return false;
-		sb39.appendLiteral(" should never return but return statement found.", 48);
-		zv::Val r40 = sb39.finish();
-		zv::Val vd41;
-		zend_class_entry *vd41_ce = Z_TYPE_P(l_method.raw()) == IS_OBJECT ? Z_OBJCE_P(l_method.raw()) : NULL;
-		bool vd41_done = false;
-		if (vd41_ce == pt_ce_php_method_from_parser_node_reflection) {
-			bool r42;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_isGenerator(Z_OBJ_P(l_method.raw()), &r42))) return false;
-			zv::Val o43 = zv::Val::boolean(r42);
-			vd41 = std::move(o43);
-			vd41_done = true;
+		zv::Val o33 = zv::Val::copyOf(zv::Ref(zv::Ref(p31).deref().raw()));
+		pgrt::StringBuilder sb34;
+		if (UNEXPECTED(!sb34.append(l_methodDescription.raw()))) return false;
+		sb34.appendLiteral(" should return ", 15);
+		sb34.appendLiteral("%", 1);
+		sb34.appendLiteral("s but empty return statement found.", 35);
+		zv::Val r35 = sb34.finish();
+		pgrt::StringBuilder sb36;
+		if (UNEXPECTED(!sb36.append(l_methodDescription.raw()))) return false;
+		sb36.appendLiteral(" with return type void returns ", 31);
+		sb36.appendLiteral("%", 1);
+		sb36.appendLiteral("s but should not return anything.", 33);
+		zv::Val r37 = sb36.finish();
+		pgrt::StringBuilder sb38;
+		if (UNEXPECTED(!sb38.append(l_methodDescription.raw()))) return false;
+		sb38.appendLiteral(" should return ", 15);
+		sb38.appendLiteral("%", 1);
+		sb38.appendLiteral("s but returns ", 14);
+		sb38.appendLiteral("%", 1);
+		sb38.appendLiteral("s.", 2);
+		zv::Val r39 = sb38.finish();
+		pgrt::StringBuilder sb40;
+		if (UNEXPECTED(!sb40.append(l_methodDescription.raw()))) return false;
+		sb40.appendLiteral(" should never return but return statement found.", 48);
+		zv::Val r41 = sb40.finish();
+		zv::Val vd42;
+		zend_class_entry *vd42_ce = Z_TYPE_P(l_method.raw()) == IS_OBJECT ? Z_OBJCE_P(l_method.raw()) : NULL;
+		bool vd42_done = false;
+		if (vd42_ce == pt_ce_php_method_from_parser_node_reflection) {
+			bool r43;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_isGenerator(Z_OBJ_P(l_method.raw()), &r43))) return false;
+			zv::Val o44 = zv::Val::boolean(r43);
+			vd42 = std::move(o44);
+			vd42_done = true;
 		}
-		if (!vd41_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_method.raw(), "isGenerator", "isgenerator", 11, 0, NULL, vd41.raw()))) return false;
+		if (!vd42_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_method.raw(), "isGenerator", "isgenerator", 11, 0, NULL, vd42.raw()))) return false;
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(o32.raw(), pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node\\Expr", 19)) || Z_TYPE_P(o32.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Rules\\FunctionReturnTypeCheck::checkReturnType", 3, "returnValue", "?PhpParser\\Node\\Expr", o32.raw()); return false; }
-		zv::Val r44;
-		if (UNEXPECTED(!pgen::FunctionReturnTypeCheck::m_checkReturnType(Z_OBJ_P(o28.raw()), p_scope, o29.raw(), o32.raw(), p_node, r34.raw(), r36.raw(), r38.raw(), r40.raw(), (Z_TYPE_P(vd41.raw()) == IS_TRUE), r44.raw()))) return false;
-		l_errors = std::move(r44);
+		if (UNEXPECTED(!(pgrt::instanceOfClass(o33.raw(), pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node\\Expr", 19)) || Z_TYPE_P(o33.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Rules\\FunctionReturnTypeCheck::checkReturnType", 3, "returnValue", "?PhpParser\\Node\\Expr", o33.raw()); return false; }
+		zv::Val r45;
+		if (UNEXPECTED(!pgen::FunctionReturnTypeCheck::m_checkReturnType(Z_OBJ_P(o29.raw()), p_scope, o30.raw(), o33.raw(), p_node, r35.raw(), r37.raw(), r39.raw(), r41.raw(), (Z_TYPE_P(vd42.raw()) == IS_TRUE), r45.raw()))) return false;
+		l_errors = std::move(r45);
 	}
 	 {
-		bool b50 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_errors.raw())) == 1);
-		if (b50) {
-			zv::Val et52;
-			zval *e51 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
-			if (UNEXPECTED(e51 == NULL)) {
-				zval z53;
-				ZVAL_LONG(&z53, 0);
-				e51 = pgrt::dimRead(l_errors.raw(), &z53, et52.raw());
-				if (UNEXPECTED(e51 == NULL)) return false;
+		bool b51 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_errors.raw())) == 1);
+		if (b51) {
+			zv::Val et53;
+			zval *e52 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
+			if (UNEXPECTED(e52 == NULL)) {
+				zval z54;
+				ZVAL_LONG(&z54, 0);
+				e52 = pgrt::dimRead(l_errors.raw(), &z54, et53.raw());
+				if (UNEXPECTED(e52 == NULL)) return false;
 			}
-			zv::Val vd54;
-			zend_class_entry *vd54_ce = Z_TYPE_P(zv::Ref(e51).deref().raw()) == IS_OBJECT ? Z_OBJCE_P(zv::Ref(e51).deref().raw()) : NULL;
-			bool vd54_done = false;
-			static zend_class_entry **const vd54_table[] = { &pt_ce_rule_error183, &pt_ce_rule_error381, &pt_ce_rule_error343, &pt_ce_rule_error155, &pt_ce_rule_error223, &pt_ce_rule_error221, &pt_ce_rule_error209, &pt_ce_rule_error157, &pt_ce_rule_error433, &pt_ce_rule_error341, &pt_ce_rule_error369, &pt_ce_rule_error383, &pt_ce_rule_error181, &pt_ce_rule_error191, &pt_ce_rule_error185, &pt_ce_rule_error345, &pt_ce_rule_error437, &pt_ce_rule_error351, &pt_ce_rule_error379, &pt_ce_rule_error147, &pt_ce_rule_error153, &pt_ce_rule_error29, &pt_ce_rule_error219, &pt_ce_rule_error17, &pt_ce_rule_error179, &pt_ce_rule_error145, &pt_ce_rule_error151, &pt_ce_rule_error409, &pt_ce_rule_error347, &pt_ce_rule_error435, &pt_ce_rule_error187, &pt_ce_rule_error255, &pt_ce_rule_error241, &pt_ce_rule_error59, &pt_ce_rule_error123, &pt_ce_rule_error447, &pt_ce_rule_error309, &pt_ce_rule_error283, &pt_ce_rule_error281, &pt_ce_rule_error479, &pt_ce_rule_error445, &pt_ce_rule_error337, &pt_ce_rule_error121, &pt_ce_rule_error243, &pt_ce_rule_error509, &pt_ce_rule_error247, &pt_ce_rule_error63, &pt_ce_rule_error253, &pt_ce_transformed_rule_error, &pt_ce_rule_error119, &pt_ce_rule_error125, &pt_ce_rule_error469, &pt_ce_rule_error441, &pt_ce_rule_error497, &pt_ce_rule_error285, &pt_ce_rule_error89, &pt_ce_rule_error287, &pt_ce_rule_error443, &pt_ce_rule_error319, &pt_ce_rule_error127, &pt_ce_rule_error61, &pt_ce_rule_error245, &pt_ce_rule_error251, &pt_ce_rule_error279, &pt_ce_rule_error49, &pt_ce_rule_error93, &pt_ce_rule_error87, &pt_ce_rule_error499, &pt_ce_rule_error315, &pt_ce_rule_error473, &pt_ce_rule_error467, &pt_ce_rule_error117, &pt_ce_rule_error249, &pt_ce_rule_error507, &pt_ce_rule_error51, &pt_ce_rule_error275, &pt_ce_rule_error505, &pt_ce_rule_error277, &pt_ce_rule_error511, &pt_ce_rule_error53, &pt_ce_rule_error115, &pt_ce_rule_error471, &pt_ce_rule_error317, &pt_ce_rule_error465, &pt_ce_rule_error91, &pt_ce_rule_error85, &pt_ce_rule_error81, &pt_ce_rule_error95, &pt_ce_rule_error307, &pt_ce_rule_error313, &pt_ce_rule_error475, &pt_ce_rule_error57, &pt_ce_rule_error273, &pt_ce_rule_error501, &pt_ce_rule_error55, &pt_ce_rule_error503, &pt_ce_rule_error113, &pt_ce_rule_error339, &pt_ce_rule_error305, &pt_ce_rule_error477, &pt_ce_rule_error311, &pt_ce_rule_error83, &pt_ce_rule_error217, &pt_ce_rule_error27, &pt_ce_rule_error149, &pt_ce_rule_error405, &pt_ce_rule_error411, &pt_ce_rule_error377, &pt_ce_rule_error439, &pt_ce_rule_error189, &pt_ce_rule_error349, &pt_ce_rule_error407, &pt_ce_rule_error375, &pt_ce_rule_error413, &pt_ce_rule_error177, &pt_ce_rule_error19, &pt_ce_rule_error31, &pt_ce_rule_error215, &pt_ce_rule_error25, &pt_ce_rule_error21, &pt_ce_rule_error211, &pt_ce_rule_error371, &pt_ce_rule_error403, &pt_ce_rule_error373, &pt_ce_rule_error415, &pt_ce_rule_error401, &pt_ce_rule_error159, &pt_ce_rule_error23, &pt_ce_rule_error213 };
-			static const uint16_t vd54_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129 };
-			switch (pgrt::dispatchCase(pg_site_11, vd54_ce, vd54_table, vd54_cases, 129)) {
+			zv::Val vd55;
+			zend_class_entry *vd55_ce = Z_TYPE_P(zv::Ref(e52).deref().raw()) == IS_OBJECT ? Z_OBJCE_P(zv::Ref(e52).deref().raw()) : NULL;
+			bool vd55_done = false;
+			static zend_class_entry **const vd55_table[] = { &pt_ce_rule_error183, &pt_ce_rule_error381, &pt_ce_rule_error343, &pt_ce_rule_error155, &pt_ce_rule_error223, &pt_ce_rule_error221, &pt_ce_rule_error209, &pt_ce_rule_error157, &pt_ce_rule_error433, &pt_ce_rule_error341, &pt_ce_rule_error369, &pt_ce_rule_error383, &pt_ce_rule_error181, &pt_ce_rule_error191, &pt_ce_rule_error185, &pt_ce_rule_error345, &pt_ce_rule_error437, &pt_ce_rule_error351, &pt_ce_rule_error379, &pt_ce_rule_error147, &pt_ce_rule_error153, &pt_ce_rule_error29, &pt_ce_rule_error219, &pt_ce_rule_error17, &pt_ce_rule_error179, &pt_ce_rule_error145, &pt_ce_rule_error151, &pt_ce_rule_error409, &pt_ce_rule_error347, &pt_ce_rule_error435, &pt_ce_rule_error187, &pt_ce_rule_error255, &pt_ce_rule_error241, &pt_ce_rule_error59, &pt_ce_rule_error123, &pt_ce_rule_error447, &pt_ce_rule_error309, &pt_ce_rule_error283, &pt_ce_rule_error281, &pt_ce_rule_error479, &pt_ce_rule_error445, &pt_ce_rule_error337, &pt_ce_rule_error121, &pt_ce_rule_error243, &pt_ce_rule_error509, &pt_ce_rule_error247, &pt_ce_rule_error63, &pt_ce_rule_error253, &pt_ce_transformed_rule_error, &pt_ce_rule_error119, &pt_ce_rule_error125, &pt_ce_rule_error469, &pt_ce_rule_error441, &pt_ce_rule_error497, &pt_ce_rule_error285, &pt_ce_rule_error89, &pt_ce_rule_error287, &pt_ce_rule_error443, &pt_ce_rule_error319, &pt_ce_rule_error127, &pt_ce_rule_error61, &pt_ce_rule_error245, &pt_ce_rule_error251, &pt_ce_rule_error279, &pt_ce_rule_error49, &pt_ce_rule_error93, &pt_ce_rule_error87, &pt_ce_rule_error499, &pt_ce_rule_error315, &pt_ce_rule_error473, &pt_ce_rule_error467, &pt_ce_rule_error117, &pt_ce_rule_error249, &pt_ce_rule_error507, &pt_ce_rule_error51, &pt_ce_rule_error275, &pt_ce_rule_error505, &pt_ce_rule_error277, &pt_ce_rule_error511, &pt_ce_rule_error53, &pt_ce_rule_error115, &pt_ce_rule_error471, &pt_ce_rule_error317, &pt_ce_rule_error465, &pt_ce_rule_error91, &pt_ce_rule_error85, &pt_ce_rule_error81, &pt_ce_rule_error95, &pt_ce_rule_error307, &pt_ce_rule_error313, &pt_ce_rule_error475, &pt_ce_rule_error57, &pt_ce_rule_error273, &pt_ce_rule_error501, &pt_ce_rule_error55, &pt_ce_rule_error503, &pt_ce_rule_error113, &pt_ce_rule_error339, &pt_ce_rule_error305, &pt_ce_rule_error477, &pt_ce_rule_error311, &pt_ce_rule_error83, &pt_ce_rule_error217, &pt_ce_rule_error27, &pt_ce_rule_error149, &pt_ce_rule_error405, &pt_ce_rule_error411, &pt_ce_rule_error377, &pt_ce_rule_error439, &pt_ce_rule_error189, &pt_ce_rule_error349, &pt_ce_rule_error407, &pt_ce_rule_error375, &pt_ce_rule_error413, &pt_ce_rule_error177, &pt_ce_rule_error19, &pt_ce_rule_error31, &pt_ce_rule_error215, &pt_ce_rule_error25, &pt_ce_rule_error21, &pt_ce_rule_error211, &pt_ce_rule_error371, &pt_ce_rule_error403, &pt_ce_rule_error373, &pt_ce_rule_error415, &pt_ce_rule_error401, &pt_ce_rule_error159, &pt_ce_rule_error23, &pt_ce_rule_error213 };
+			static const uint16_t vd55_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129 };
+			switch (pgrt::dispatchCase(pg_site_11, vd55_ce, vd55_table, vd55_cases, 129)) {
 				case 1: {
-					zv::Val r55;
-					if (UNEXPECTED(!pgen::RuleError183::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r55.raw()))) return false;
-					vd54 = std::move(r55);
-					vd54_done = true;
+					zv::Val r56;
+					if (UNEXPECTED(!pgen::RuleError183::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r56.raw()))) return false;
+					vd55 = std::move(r56);
+					vd55_done = true;
 				}
 				break;
 				case 2: {
-					zv::Val r56;
-					if (UNEXPECTED(!pgen::RuleError381::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r56.raw()))) return false;
-					vd54 = std::move(r56);
-					vd54_done = true;
+					zv::Val r57;
+					if (UNEXPECTED(!pgen::RuleError381::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r57.raw()))) return false;
+					vd55 = std::move(r57);
+					vd55_done = true;
 				}
 				break;
 				case 3: {
-					zv::Val r57;
-					if (UNEXPECTED(!pgen::RuleError343::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r57.raw()))) return false;
-					vd54 = std::move(r57);
-					vd54_done = true;
+					zv::Val r58;
+					if (UNEXPECTED(!pgen::RuleError343::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r58.raw()))) return false;
+					vd55 = std::move(r58);
+					vd55_done = true;
 				}
 				break;
 				case 4: {
-					zv::Val r58;
-					if (UNEXPECTED(!pgen::RuleError155::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r58.raw()))) return false;
-					vd54 = std::move(r58);
-					vd54_done = true;
+					zv::Val r59;
+					if (UNEXPECTED(!pgen::RuleError155::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r59.raw()))) return false;
+					vd55 = std::move(r59);
+					vd55_done = true;
 				}
 				break;
 				case 5: {
-					zv::Val r59;
-					if (UNEXPECTED(!pgen::RuleError223::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r59.raw()))) return false;
-					vd54 = std::move(r59);
-					vd54_done = true;
+					zv::Val r60;
+					if (UNEXPECTED(!pgen::RuleError223::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r60.raw()))) return false;
+					vd55 = std::move(r60);
+					vd55_done = true;
 				}
 				break;
 				case 6: {
-					zv::Val r60;
-					if (UNEXPECTED(!pgen::RuleError221::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r60.raw()))) return false;
-					vd54 = std::move(r60);
-					vd54_done = true;
+					zv::Val r61;
+					if (UNEXPECTED(!pgen::RuleError221::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r61.raw()))) return false;
+					vd55 = std::move(r61);
+					vd55_done = true;
 				}
 				break;
 				case 7: {
-					zv::Val r61;
-					if (UNEXPECTED(!pgen::RuleError209::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r61.raw()))) return false;
-					vd54 = std::move(r61);
-					vd54_done = true;
+					zv::Val r62;
+					if (UNEXPECTED(!pgen::RuleError209::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r62.raw()))) return false;
+					vd55 = std::move(r62);
+					vd55_done = true;
 				}
 				break;
 				case 8: {
-					zv::Val r62;
-					if (UNEXPECTED(!pgen::RuleError157::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r62.raw()))) return false;
-					vd54 = std::move(r62);
-					vd54_done = true;
+					zv::Val r63;
+					if (UNEXPECTED(!pgen::RuleError157::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r63.raw()))) return false;
+					vd55 = std::move(r63);
+					vd55_done = true;
 				}
 				break;
 				case 9: {
-					zv::Val r63;
-					if (UNEXPECTED(!pgen::RuleError433::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r63.raw()))) return false;
-					vd54 = std::move(r63);
-					vd54_done = true;
+					zv::Val r64;
+					if (UNEXPECTED(!pgen::RuleError433::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r64.raw()))) return false;
+					vd55 = std::move(r64);
+					vd55_done = true;
 				}
 				break;
 				case 10: {
-					zv::Val r64;
-					if (UNEXPECTED(!pgen::RuleError341::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r64.raw()))) return false;
-					vd54 = std::move(r64);
-					vd54_done = true;
+					zv::Val r65;
+					if (UNEXPECTED(!pgen::RuleError341::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r65.raw()))) return false;
+					vd55 = std::move(r65);
+					vd55_done = true;
 				}
 				break;
 				case 11: {
-					zv::Val r65;
-					if (UNEXPECTED(!pgen::RuleError369::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r65.raw()))) return false;
-					vd54 = std::move(r65);
-					vd54_done = true;
+					zv::Val r66;
+					if (UNEXPECTED(!pgen::RuleError369::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r66.raw()))) return false;
+					vd55 = std::move(r66);
+					vd55_done = true;
 				}
 				break;
 				case 12: {
-					zv::Val r66;
-					if (UNEXPECTED(!pgen::RuleError383::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r66.raw()))) return false;
-					vd54 = std::move(r66);
-					vd54_done = true;
+					zv::Val r67;
+					if (UNEXPECTED(!pgen::RuleError383::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r67.raw()))) return false;
+					vd55 = std::move(r67);
+					vd55_done = true;
 				}
 				break;
 				case 13: {
-					zv::Val r67;
-					if (UNEXPECTED(!pgen::RuleError181::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r67.raw()))) return false;
-					vd54 = std::move(r67);
-					vd54_done = true;
+					zv::Val r68;
+					if (UNEXPECTED(!pgen::RuleError181::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r68.raw()))) return false;
+					vd55 = std::move(r68);
+					vd55_done = true;
 				}
 				break;
 				case 14: {
-					zv::Val r68;
-					if (UNEXPECTED(!pgen::RuleError191::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r68.raw()))) return false;
-					vd54 = std::move(r68);
-					vd54_done = true;
+					zv::Val r69;
+					if (UNEXPECTED(!pgen::RuleError191::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r69.raw()))) return false;
+					vd55 = std::move(r69);
+					vd55_done = true;
 				}
 				break;
 				case 15: {
-					zv::Val r69;
-					if (UNEXPECTED(!pgen::RuleError185::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r69.raw()))) return false;
-					vd54 = std::move(r69);
-					vd54_done = true;
+					zv::Val r70;
+					if (UNEXPECTED(!pgen::RuleError185::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r70.raw()))) return false;
+					vd55 = std::move(r70);
+					vd55_done = true;
 				}
 				break;
 				case 16: {
-					zv::Val r70;
-					if (UNEXPECTED(!pgen::RuleError345::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r70.raw()))) return false;
-					vd54 = std::move(r70);
-					vd54_done = true;
+					zv::Val r71;
+					if (UNEXPECTED(!pgen::RuleError345::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r71.raw()))) return false;
+					vd55 = std::move(r71);
+					vd55_done = true;
 				}
 				break;
 				case 17: {
-					zv::Val r71;
-					if (UNEXPECTED(!pgen::RuleError437::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r71.raw()))) return false;
-					vd54 = std::move(r71);
-					vd54_done = true;
+					zv::Val r72;
+					if (UNEXPECTED(!pgen::RuleError437::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r72.raw()))) return false;
+					vd55 = std::move(r72);
+					vd55_done = true;
 				}
 				break;
 				case 18: {
-					zv::Val r72;
-					if (UNEXPECTED(!pgen::RuleError351::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r72.raw()))) return false;
-					vd54 = std::move(r72);
-					vd54_done = true;
+					zv::Val r73;
+					if (UNEXPECTED(!pgen::RuleError351::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r73.raw()))) return false;
+					vd55 = std::move(r73);
+					vd55_done = true;
 				}
 				break;
 				case 19: {
-					zv::Val r73;
-					if (UNEXPECTED(!pgen::RuleError379::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r73.raw()))) return false;
-					vd54 = std::move(r73);
-					vd54_done = true;
+					zv::Val r74;
+					if (UNEXPECTED(!pgen::RuleError379::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r74.raw()))) return false;
+					vd55 = std::move(r74);
+					vd55_done = true;
 				}
 				break;
 				case 20: {
-					zv::Val r74;
-					if (UNEXPECTED(!pgen::RuleError147::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r74.raw()))) return false;
-					vd54 = std::move(r74);
-					vd54_done = true;
+					zv::Val r75;
+					if (UNEXPECTED(!pgen::RuleError147::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r75.raw()))) return false;
+					vd55 = std::move(r75);
+					vd55_done = true;
 				}
 				break;
 				case 21: {
-					zv::Val r75;
-					if (UNEXPECTED(!pgen::RuleError153::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r75.raw()))) return false;
-					vd54 = std::move(r75);
-					vd54_done = true;
+					zv::Val r76;
+					if (UNEXPECTED(!pgen::RuleError153::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r76.raw()))) return false;
+					vd55 = std::move(r76);
+					vd55_done = true;
 				}
 				break;
 				case 22: {
-					zv::Val r76;
-					if (UNEXPECTED(!pgen::RuleError29::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r76.raw()))) return false;
-					vd54 = std::move(r76);
-					vd54_done = true;
+					zv::Val r77;
+					if (UNEXPECTED(!pgen::RuleError29::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r77.raw()))) return false;
+					vd55 = std::move(r77);
+					vd55_done = true;
 				}
 				break;
 				case 23: {
-					zv::Val r77;
-					if (UNEXPECTED(!pgen::RuleError219::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r77.raw()))) return false;
-					vd54 = std::move(r77);
-					vd54_done = true;
+					zv::Val r78;
+					if (UNEXPECTED(!pgen::RuleError219::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r78.raw()))) return false;
+					vd55 = std::move(r78);
+					vd55_done = true;
 				}
 				break;
 				case 24: {
-					zv::Val r78;
-					if (UNEXPECTED(!pgen::RuleError17::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r78.raw()))) return false;
-					vd54 = std::move(r78);
-					vd54_done = true;
+					zv::Val r79;
+					if (UNEXPECTED(!pgen::RuleError17::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r79.raw()))) return false;
+					vd55 = std::move(r79);
+					vd55_done = true;
 				}
 				break;
 				case 25: {
-					zv::Val r79;
-					if (UNEXPECTED(!pgen::RuleError179::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r79.raw()))) return false;
-					vd54 = std::move(r79);
-					vd54_done = true;
+					zv::Val r80;
+					if (UNEXPECTED(!pgen::RuleError179::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r80.raw()))) return false;
+					vd55 = std::move(r80);
+					vd55_done = true;
 				}
 				break;
 				case 26: {
-					zv::Val r80;
-					if (UNEXPECTED(!pgen::RuleError145::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r80.raw()))) return false;
-					vd54 = std::move(r80);
-					vd54_done = true;
+					zv::Val r81;
+					if (UNEXPECTED(!pgen::RuleError145::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r81.raw()))) return false;
+					vd55 = std::move(r81);
+					vd55_done = true;
 				}
 				break;
 				case 27: {
-					zv::Val r81;
-					if (UNEXPECTED(!pgen::RuleError151::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r81.raw()))) return false;
-					vd54 = std::move(r81);
-					vd54_done = true;
+					zv::Val r82;
+					if (UNEXPECTED(!pgen::RuleError151::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r82.raw()))) return false;
+					vd55 = std::move(r82);
+					vd55_done = true;
 				}
 				break;
 				case 28: {
-					zv::Val r82;
-					if (UNEXPECTED(!pgen::RuleError409::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r82.raw()))) return false;
-					vd54 = std::move(r82);
-					vd54_done = true;
+					zv::Val r83;
+					if (UNEXPECTED(!pgen::RuleError409::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r83.raw()))) return false;
+					vd55 = std::move(r83);
+					vd55_done = true;
 				}
 				break;
 				case 29: {
-					zv::Val r83;
-					if (UNEXPECTED(!pgen::RuleError347::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r83.raw()))) return false;
-					vd54 = std::move(r83);
-					vd54_done = true;
+					zv::Val r84;
+					if (UNEXPECTED(!pgen::RuleError347::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r84.raw()))) return false;
+					vd55 = std::move(r84);
+					vd55_done = true;
 				}
 				break;
 				case 30: {
-					zv::Val r84;
-					if (UNEXPECTED(!pgen::RuleError435::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r84.raw()))) return false;
-					vd54 = std::move(r84);
-					vd54_done = true;
+					zv::Val r85;
+					if (UNEXPECTED(!pgen::RuleError435::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r85.raw()))) return false;
+					vd55 = std::move(r85);
+					vd55_done = true;
 				}
 				break;
 				case 31: {
-					zv::Val r85;
-					if (UNEXPECTED(!pgen::RuleError187::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r85.raw()))) return false;
-					vd54 = std::move(r85);
-					vd54_done = true;
+					zv::Val r86;
+					if (UNEXPECTED(!pgen::RuleError187::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r86.raw()))) return false;
+					vd55 = std::move(r86);
+					vd55_done = true;
 				}
 				break;
 				case 32: {
-					zv::Val r86;
-					if (UNEXPECTED(!pgen::RuleError255::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r86.raw()))) return false;
-					vd54 = std::move(r86);
-					vd54_done = true;
+					zv::Val r87;
+					if (UNEXPECTED(!pgen::RuleError255::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r87.raw()))) return false;
+					vd55 = std::move(r87);
+					vd55_done = true;
 				}
 				break;
 				case 33: {
-					zv::Val r87;
-					if (UNEXPECTED(!pgen::RuleError241::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r87.raw()))) return false;
-					vd54 = std::move(r87);
-					vd54_done = true;
+					zv::Val r88;
+					if (UNEXPECTED(!pgen::RuleError241::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r88.raw()))) return false;
+					vd55 = std::move(r88);
+					vd55_done = true;
 				}
 				break;
 				case 34: {
-					zv::Val r88;
-					if (UNEXPECTED(!pgen::RuleError59::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r88.raw()))) return false;
-					vd54 = std::move(r88);
-					vd54_done = true;
+					zv::Val r89;
+					if (UNEXPECTED(!pgen::RuleError59::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r89.raw()))) return false;
+					vd55 = std::move(r89);
+					vd55_done = true;
 				}
 				break;
 				case 35: {
-					zv::Val r89;
-					if (UNEXPECTED(!pgen::RuleError123::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r89.raw()))) return false;
-					vd54 = std::move(r89);
-					vd54_done = true;
+					zv::Val r90;
+					if (UNEXPECTED(!pgen::RuleError123::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r90.raw()))) return false;
+					vd55 = std::move(r90);
+					vd55_done = true;
 				}
 				break;
 				case 36: {
-					zv::Val r90;
-					if (UNEXPECTED(!pgen::RuleError447::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r90.raw()))) return false;
-					vd54 = std::move(r90);
-					vd54_done = true;
+					zv::Val r91;
+					if (UNEXPECTED(!pgen::RuleError447::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r91.raw()))) return false;
+					vd55 = std::move(r91);
+					vd55_done = true;
 				}
 				break;
 				case 37: {
-					zv::Val r91;
-					if (UNEXPECTED(!pgen::RuleError309::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r91.raw()))) return false;
-					vd54 = std::move(r91);
-					vd54_done = true;
+					zv::Val r92;
+					if (UNEXPECTED(!pgen::RuleError309::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r92.raw()))) return false;
+					vd55 = std::move(r92);
+					vd55_done = true;
 				}
 				break;
 				case 38: {
-					zv::Val r92;
-					if (UNEXPECTED(!pgen::RuleError283::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r92.raw()))) return false;
-					vd54 = std::move(r92);
-					vd54_done = true;
+					zv::Val r93;
+					if (UNEXPECTED(!pgen::RuleError283::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r93.raw()))) return false;
+					vd55 = std::move(r93);
+					vd55_done = true;
 				}
 				break;
 				case 39: {
-					zv::Val r93;
-					if (UNEXPECTED(!pgen::RuleError281::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r93.raw()))) return false;
-					vd54 = std::move(r93);
-					vd54_done = true;
+					zv::Val r94;
+					if (UNEXPECTED(!pgen::RuleError281::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r94.raw()))) return false;
+					vd55 = std::move(r94);
+					vd55_done = true;
 				}
 				break;
 				case 40: {
-					zv::Val r94;
-					if (UNEXPECTED(!pgen::RuleError479::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r94.raw()))) return false;
-					vd54 = std::move(r94);
-					vd54_done = true;
+					zv::Val r95;
+					if (UNEXPECTED(!pgen::RuleError479::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r95.raw()))) return false;
+					vd55 = std::move(r95);
+					vd55_done = true;
 				}
 				break;
 				case 41: {
-					zv::Val r95;
-					if (UNEXPECTED(!pgen::RuleError445::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r95.raw()))) return false;
-					vd54 = std::move(r95);
-					vd54_done = true;
+					zv::Val r96;
+					if (UNEXPECTED(!pgen::RuleError445::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r96.raw()))) return false;
+					vd55 = std::move(r96);
+					vd55_done = true;
 				}
 				break;
 				case 42: {
-					zv::Val r96;
-					if (UNEXPECTED(!pgen::RuleError337::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r96.raw()))) return false;
-					vd54 = std::move(r96);
-					vd54_done = true;
+					zv::Val r97;
+					if (UNEXPECTED(!pgen::RuleError337::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r97.raw()))) return false;
+					vd55 = std::move(r97);
+					vd55_done = true;
 				}
 				break;
 				case 43: {
-					zv::Val r97;
-					if (UNEXPECTED(!pgen::RuleError121::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r97.raw()))) return false;
-					vd54 = std::move(r97);
-					vd54_done = true;
+					zv::Val r98;
+					if (UNEXPECTED(!pgen::RuleError121::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r98.raw()))) return false;
+					vd55 = std::move(r98);
+					vd55_done = true;
 				}
 				break;
 				case 44: {
-					zv::Val r98;
-					if (UNEXPECTED(!pgen::RuleError243::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r98.raw()))) return false;
-					vd54 = std::move(r98);
-					vd54_done = true;
+					zv::Val r99;
+					if (UNEXPECTED(!pgen::RuleError243::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r99.raw()))) return false;
+					vd55 = std::move(r99);
+					vd55_done = true;
 				}
 				break;
 				case 45: {
-					zv::Val r99;
-					if (UNEXPECTED(!pgen::RuleError509::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r99.raw()))) return false;
-					vd54 = std::move(r99);
-					vd54_done = true;
+					zv::Val r100;
+					if (UNEXPECTED(!pgen::RuleError509::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r100.raw()))) return false;
+					vd55 = std::move(r100);
+					vd55_done = true;
 				}
 				break;
 				case 46: {
-					zv::Val r100;
-					if (UNEXPECTED(!pgen::RuleError247::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r100.raw()))) return false;
-					vd54 = std::move(r100);
-					vd54_done = true;
+					zv::Val r101;
+					if (UNEXPECTED(!pgen::RuleError247::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r101.raw()))) return false;
+					vd55 = std::move(r101);
+					vd55_done = true;
 				}
 				break;
 				case 47: {
-					zv::Val r101;
-					if (UNEXPECTED(!pgen::RuleError63::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r101.raw()))) return false;
-					vd54 = std::move(r101);
-					vd54_done = true;
+					zv::Val r102;
+					if (UNEXPECTED(!pgen::RuleError63::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r102.raw()))) return false;
+					vd55 = std::move(r102);
+					vd55_done = true;
 				}
 				break;
 				case 48: {
-					zv::Val r102;
-					if (UNEXPECTED(!pgen::RuleError253::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r102.raw()))) return false;
-					vd54 = std::move(r102);
-					vd54_done = true;
+					zv::Val r103;
+					if (UNEXPECTED(!pgen::RuleError253::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r103.raw()))) return false;
+					vd55 = std::move(r103);
+					vd55_done = true;
 				}
 				break;
 				case 49: {
-					zv::Val r103;
-					if (UNEXPECTED(!pgen::TransformedRuleError::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r103.raw()))) return false;
-					vd54 = std::move(r103);
-					vd54_done = true;
+					zv::Val r104;
+					if (UNEXPECTED(!pgen::TransformedRuleError::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r104.raw()))) return false;
+					vd55 = std::move(r104);
+					vd55_done = true;
 				}
 				break;
 				case 50: {
-					zv::Val r104;
-					if (UNEXPECTED(!pgen::RuleError119::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r104.raw()))) return false;
-					vd54 = std::move(r104);
-					vd54_done = true;
+					zv::Val r105;
+					if (UNEXPECTED(!pgen::RuleError119::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r105.raw()))) return false;
+					vd55 = std::move(r105);
+					vd55_done = true;
 				}
 				break;
 				case 51: {
-					zv::Val r105;
-					if (UNEXPECTED(!pgen::RuleError125::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r105.raw()))) return false;
-					vd54 = std::move(r105);
-					vd54_done = true;
+					zv::Val r106;
+					if (UNEXPECTED(!pgen::RuleError125::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r106.raw()))) return false;
+					vd55 = std::move(r106);
+					vd55_done = true;
 				}
 				break;
 				case 52: {
-					zv::Val r106;
-					if (UNEXPECTED(!pgen::RuleError469::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r106.raw()))) return false;
-					vd54 = std::move(r106);
-					vd54_done = true;
+					zv::Val r107;
+					if (UNEXPECTED(!pgen::RuleError469::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r107.raw()))) return false;
+					vd55 = std::move(r107);
+					vd55_done = true;
 				}
 				break;
 				case 53: {
-					zv::Val r107;
-					if (UNEXPECTED(!pgen::RuleError441::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r107.raw()))) return false;
-					vd54 = std::move(r107);
-					vd54_done = true;
+					zv::Val r108;
+					if (UNEXPECTED(!pgen::RuleError441::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r108.raw()))) return false;
+					vd55 = std::move(r108);
+					vd55_done = true;
 				}
 				break;
 				case 54: {
-					zv::Val r108;
-					if (UNEXPECTED(!pgen::RuleError497::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r108.raw()))) return false;
-					vd54 = std::move(r108);
-					vd54_done = true;
+					zv::Val r109;
+					if (UNEXPECTED(!pgen::RuleError497::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r109.raw()))) return false;
+					vd55 = std::move(r109);
+					vd55_done = true;
 				}
 				break;
 				case 55: {
-					zv::Val r109;
-					if (UNEXPECTED(!pgen::RuleError285::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r109.raw()))) return false;
-					vd54 = std::move(r109);
-					vd54_done = true;
+					zv::Val r110;
+					if (UNEXPECTED(!pgen::RuleError285::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r110.raw()))) return false;
+					vd55 = std::move(r110);
+					vd55_done = true;
 				}
 				break;
 				case 56: {
-					zv::Val r110;
-					if (UNEXPECTED(!pgen::RuleError89::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r110.raw()))) return false;
-					vd54 = std::move(r110);
-					vd54_done = true;
+					zv::Val r111;
+					if (UNEXPECTED(!pgen::RuleError89::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r111.raw()))) return false;
+					vd55 = std::move(r111);
+					vd55_done = true;
 				}
 				break;
 				case 57: {
-					zv::Val r111;
-					if (UNEXPECTED(!pgen::RuleError287::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r111.raw()))) return false;
-					vd54 = std::move(r111);
-					vd54_done = true;
+					zv::Val r112;
+					if (UNEXPECTED(!pgen::RuleError287::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r112.raw()))) return false;
+					vd55 = std::move(r112);
+					vd55_done = true;
 				}
 				break;
 				case 58: {
-					zv::Val r112;
-					if (UNEXPECTED(!pgen::RuleError443::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r112.raw()))) return false;
-					vd54 = std::move(r112);
-					vd54_done = true;
+					zv::Val r113;
+					if (UNEXPECTED(!pgen::RuleError443::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r113.raw()))) return false;
+					vd55 = std::move(r113);
+					vd55_done = true;
 				}
 				break;
 				case 59: {
-					zv::Val r113;
-					if (UNEXPECTED(!pgen::RuleError319::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r113.raw()))) return false;
-					vd54 = std::move(r113);
-					vd54_done = true;
+					zv::Val r114;
+					if (UNEXPECTED(!pgen::RuleError319::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r114.raw()))) return false;
+					vd55 = std::move(r114);
+					vd55_done = true;
 				}
 				break;
 				case 60: {
-					zv::Val r114;
-					if (UNEXPECTED(!pgen::RuleError127::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r114.raw()))) return false;
-					vd54 = std::move(r114);
-					vd54_done = true;
+					zv::Val r115;
+					if (UNEXPECTED(!pgen::RuleError127::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r115.raw()))) return false;
+					vd55 = std::move(r115);
+					vd55_done = true;
 				}
 				break;
 				case 61: {
-					zv::Val r115;
-					if (UNEXPECTED(!pgen::RuleError61::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r115.raw()))) return false;
-					vd54 = std::move(r115);
-					vd54_done = true;
+					zv::Val r116;
+					if (UNEXPECTED(!pgen::RuleError61::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r116.raw()))) return false;
+					vd55 = std::move(r116);
+					vd55_done = true;
 				}
 				break;
 				case 62: {
-					zv::Val r116;
-					if (UNEXPECTED(!pgen::RuleError245::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r116.raw()))) return false;
-					vd54 = std::move(r116);
-					vd54_done = true;
+					zv::Val r117;
+					if (UNEXPECTED(!pgen::RuleError245::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r117.raw()))) return false;
+					vd55 = std::move(r117);
+					vd55_done = true;
 				}
 				break;
 				case 63: {
-					zv::Val r117;
-					if (UNEXPECTED(!pgen::RuleError251::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r117.raw()))) return false;
-					vd54 = std::move(r117);
-					vd54_done = true;
+					zv::Val r118;
+					if (UNEXPECTED(!pgen::RuleError251::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r118.raw()))) return false;
+					vd55 = std::move(r118);
+					vd55_done = true;
 				}
 				break;
 				case 64: {
-					zv::Val r118;
-					if (UNEXPECTED(!pgen::RuleError279::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r118.raw()))) return false;
-					vd54 = std::move(r118);
-					vd54_done = true;
+					zv::Val r119;
+					if (UNEXPECTED(!pgen::RuleError279::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r119.raw()))) return false;
+					vd55 = std::move(r119);
+					vd55_done = true;
 				}
 				break;
 				case 65: {
-					zv::Val r119;
-					if (UNEXPECTED(!pgen::RuleError49::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r119.raw()))) return false;
-					vd54 = std::move(r119);
-					vd54_done = true;
+					zv::Val r120;
+					if (UNEXPECTED(!pgen::RuleError49::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r120.raw()))) return false;
+					vd55 = std::move(r120);
+					vd55_done = true;
 				}
 				break;
 				case 66: {
-					zv::Val r120;
-					if (UNEXPECTED(!pgen::RuleError93::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r120.raw()))) return false;
-					vd54 = std::move(r120);
-					vd54_done = true;
+					zv::Val r121;
+					if (UNEXPECTED(!pgen::RuleError93::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r121.raw()))) return false;
+					vd55 = std::move(r121);
+					vd55_done = true;
 				}
 				break;
 				case 67: {
-					zv::Val r121;
-					if (UNEXPECTED(!pgen::RuleError87::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r121.raw()))) return false;
-					vd54 = std::move(r121);
-					vd54_done = true;
+					zv::Val r122;
+					if (UNEXPECTED(!pgen::RuleError87::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r122.raw()))) return false;
+					vd55 = std::move(r122);
+					vd55_done = true;
 				}
 				break;
 				case 68: {
-					zv::Val r122;
-					if (UNEXPECTED(!pgen::RuleError499::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r122.raw()))) return false;
-					vd54 = std::move(r122);
-					vd54_done = true;
+					zv::Val r123;
+					if (UNEXPECTED(!pgen::RuleError499::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r123.raw()))) return false;
+					vd55 = std::move(r123);
+					vd55_done = true;
 				}
 				break;
 				case 69: {
-					zv::Val r123;
-					if (UNEXPECTED(!pgen::RuleError315::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r123.raw()))) return false;
-					vd54 = std::move(r123);
-					vd54_done = true;
+					zv::Val r124;
+					if (UNEXPECTED(!pgen::RuleError315::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r124.raw()))) return false;
+					vd55 = std::move(r124);
+					vd55_done = true;
 				}
 				break;
 				case 70: {
-					zv::Val r124;
-					if (UNEXPECTED(!pgen::RuleError473::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r124.raw()))) return false;
-					vd54 = std::move(r124);
-					vd54_done = true;
+					zv::Val r125;
+					if (UNEXPECTED(!pgen::RuleError473::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r125.raw()))) return false;
+					vd55 = std::move(r125);
+					vd55_done = true;
 				}
 				break;
 				case 71: {
-					zv::Val r125;
-					if (UNEXPECTED(!pgen::RuleError467::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r125.raw()))) return false;
-					vd54 = std::move(r125);
-					vd54_done = true;
+					zv::Val r126;
+					if (UNEXPECTED(!pgen::RuleError467::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r126.raw()))) return false;
+					vd55 = std::move(r126);
+					vd55_done = true;
 				}
 				break;
 				case 72: {
-					zv::Val r126;
-					if (UNEXPECTED(!pgen::RuleError117::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r126.raw()))) return false;
-					vd54 = std::move(r126);
-					vd54_done = true;
+					zv::Val r127;
+					if (UNEXPECTED(!pgen::RuleError117::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r127.raw()))) return false;
+					vd55 = std::move(r127);
+					vd55_done = true;
 				}
 				break;
 				case 73: {
-					zv::Val r127;
-					if (UNEXPECTED(!pgen::RuleError249::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r127.raw()))) return false;
-					vd54 = std::move(r127);
-					vd54_done = true;
+					zv::Val r128;
+					if (UNEXPECTED(!pgen::RuleError249::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r128.raw()))) return false;
+					vd55 = std::move(r128);
+					vd55_done = true;
 				}
 				break;
 				case 74: {
-					zv::Val r128;
-					if (UNEXPECTED(!pgen::RuleError507::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r128.raw()))) return false;
-					vd54 = std::move(r128);
-					vd54_done = true;
+					zv::Val r129;
+					if (UNEXPECTED(!pgen::RuleError507::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r129.raw()))) return false;
+					vd55 = std::move(r129);
+					vd55_done = true;
 				}
 				break;
 				case 75: {
-					zv::Val r129;
-					if (UNEXPECTED(!pgen::RuleError51::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r129.raw()))) return false;
-					vd54 = std::move(r129);
-					vd54_done = true;
+					zv::Val r130;
+					if (UNEXPECTED(!pgen::RuleError51::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r130.raw()))) return false;
+					vd55 = std::move(r130);
+					vd55_done = true;
 				}
 				break;
 				case 76: {
-					zv::Val r130;
-					if (UNEXPECTED(!pgen::RuleError275::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r130.raw()))) return false;
-					vd54 = std::move(r130);
-					vd54_done = true;
+					zv::Val r131;
+					if (UNEXPECTED(!pgen::RuleError275::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r131.raw()))) return false;
+					vd55 = std::move(r131);
+					vd55_done = true;
 				}
 				break;
 				case 77: {
-					zv::Val r131;
-					if (UNEXPECTED(!pgen::RuleError505::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r131.raw()))) return false;
-					vd54 = std::move(r131);
-					vd54_done = true;
+					zv::Val r132;
+					if (UNEXPECTED(!pgen::RuleError505::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r132.raw()))) return false;
+					vd55 = std::move(r132);
+					vd55_done = true;
 				}
 				break;
 				case 78: {
-					zv::Val r132;
-					if (UNEXPECTED(!pgen::RuleError277::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r132.raw()))) return false;
-					vd54 = std::move(r132);
-					vd54_done = true;
+					zv::Val r133;
+					if (UNEXPECTED(!pgen::RuleError277::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r133.raw()))) return false;
+					vd55 = std::move(r133);
+					vd55_done = true;
 				}
 				break;
 				case 79: {
-					zv::Val r133;
-					if (UNEXPECTED(!pgen::RuleError511::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r133.raw()))) return false;
-					vd54 = std::move(r133);
-					vd54_done = true;
+					zv::Val r134;
+					if (UNEXPECTED(!pgen::RuleError511::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r134.raw()))) return false;
+					vd55 = std::move(r134);
+					vd55_done = true;
 				}
 				break;
 				case 80: {
-					zv::Val r134;
-					if (UNEXPECTED(!pgen::RuleError53::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r134.raw()))) return false;
-					vd54 = std::move(r134);
-					vd54_done = true;
+					zv::Val r135;
+					if (UNEXPECTED(!pgen::RuleError53::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r135.raw()))) return false;
+					vd55 = std::move(r135);
+					vd55_done = true;
 				}
 				break;
 				case 81: {
-					zv::Val r135;
-					if (UNEXPECTED(!pgen::RuleError115::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r135.raw()))) return false;
-					vd54 = std::move(r135);
-					vd54_done = true;
+					zv::Val r136;
+					if (UNEXPECTED(!pgen::RuleError115::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r136.raw()))) return false;
+					vd55 = std::move(r136);
+					vd55_done = true;
 				}
 				break;
 				case 82: {
-					zv::Val r136;
-					if (UNEXPECTED(!pgen::RuleError471::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r136.raw()))) return false;
-					vd54 = std::move(r136);
-					vd54_done = true;
+					zv::Val r137;
+					if (UNEXPECTED(!pgen::RuleError471::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r137.raw()))) return false;
+					vd55 = std::move(r137);
+					vd55_done = true;
 				}
 				break;
 				case 83: {
-					zv::Val r137;
-					if (UNEXPECTED(!pgen::RuleError317::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r137.raw()))) return false;
-					vd54 = std::move(r137);
-					vd54_done = true;
+					zv::Val r138;
+					if (UNEXPECTED(!pgen::RuleError317::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r138.raw()))) return false;
+					vd55 = std::move(r138);
+					vd55_done = true;
 				}
 				break;
 				case 84: {
-					zv::Val r138;
-					if (UNEXPECTED(!pgen::RuleError465::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r138.raw()))) return false;
-					vd54 = std::move(r138);
-					vd54_done = true;
+					zv::Val r139;
+					if (UNEXPECTED(!pgen::RuleError465::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r139.raw()))) return false;
+					vd55 = std::move(r139);
+					vd55_done = true;
 				}
 				break;
 				case 85: {
-					zv::Val r139;
-					if (UNEXPECTED(!pgen::RuleError91::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r139.raw()))) return false;
-					vd54 = std::move(r139);
-					vd54_done = true;
+					zv::Val r140;
+					if (UNEXPECTED(!pgen::RuleError91::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r140.raw()))) return false;
+					vd55 = std::move(r140);
+					vd55_done = true;
 				}
 				break;
 				case 86: {
-					zv::Val r140;
-					if (UNEXPECTED(!pgen::RuleError85::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r140.raw()))) return false;
-					vd54 = std::move(r140);
-					vd54_done = true;
+					zv::Val r141;
+					if (UNEXPECTED(!pgen::RuleError85::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r141.raw()))) return false;
+					vd55 = std::move(r141);
+					vd55_done = true;
 				}
 				break;
 				case 87: {
-					zv::Val r141;
-					if (UNEXPECTED(!pgen::RuleError81::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r141.raw()))) return false;
-					vd54 = std::move(r141);
-					vd54_done = true;
+					zv::Val r142;
+					if (UNEXPECTED(!pgen::RuleError81::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r142.raw()))) return false;
+					vd55 = std::move(r142);
+					vd55_done = true;
 				}
 				break;
 				case 88: {
-					zv::Val r142;
-					if (UNEXPECTED(!pgen::RuleError95::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r142.raw()))) return false;
-					vd54 = std::move(r142);
-					vd54_done = true;
+					zv::Val r143;
+					if (UNEXPECTED(!pgen::RuleError95::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r143.raw()))) return false;
+					vd55 = std::move(r143);
+					vd55_done = true;
 				}
 				break;
 				case 89: {
-					zv::Val r143;
-					if (UNEXPECTED(!pgen::RuleError307::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r143.raw()))) return false;
-					vd54 = std::move(r143);
-					vd54_done = true;
+					zv::Val r144;
+					if (UNEXPECTED(!pgen::RuleError307::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r144.raw()))) return false;
+					vd55 = std::move(r144);
+					vd55_done = true;
 				}
 				break;
 				case 90: {
-					zv::Val r144;
-					if (UNEXPECTED(!pgen::RuleError313::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r144.raw()))) return false;
-					vd54 = std::move(r144);
-					vd54_done = true;
+					zv::Val r145;
+					if (UNEXPECTED(!pgen::RuleError313::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r145.raw()))) return false;
+					vd55 = std::move(r145);
+					vd55_done = true;
 				}
 				break;
 				case 91: {
-					zv::Val r145;
-					if (UNEXPECTED(!pgen::RuleError475::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r145.raw()))) return false;
-					vd54 = std::move(r145);
-					vd54_done = true;
+					zv::Val r146;
+					if (UNEXPECTED(!pgen::RuleError475::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r146.raw()))) return false;
+					vd55 = std::move(r146);
+					vd55_done = true;
 				}
 				break;
 				case 92: {
-					zv::Val r146;
-					if (UNEXPECTED(!pgen::RuleError57::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r146.raw()))) return false;
-					vd54 = std::move(r146);
-					vd54_done = true;
+					zv::Val r147;
+					if (UNEXPECTED(!pgen::RuleError57::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r147.raw()))) return false;
+					vd55 = std::move(r147);
+					vd55_done = true;
 				}
 				break;
 				case 93: {
-					zv::Val r147;
-					if (UNEXPECTED(!pgen::RuleError273::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r147.raw()))) return false;
-					vd54 = std::move(r147);
-					vd54_done = true;
+					zv::Val r148;
+					if (UNEXPECTED(!pgen::RuleError273::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r148.raw()))) return false;
+					vd55 = std::move(r148);
+					vd55_done = true;
 				}
 				break;
 				case 94: {
-					zv::Val r148;
-					if (UNEXPECTED(!pgen::RuleError501::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r148.raw()))) return false;
-					vd54 = std::move(r148);
-					vd54_done = true;
+					zv::Val r149;
+					if (UNEXPECTED(!pgen::RuleError501::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r149.raw()))) return false;
+					vd55 = std::move(r149);
+					vd55_done = true;
 				}
 				break;
 				case 95: {
-					zv::Val r149;
-					if (UNEXPECTED(!pgen::RuleError55::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r149.raw()))) return false;
-					vd54 = std::move(r149);
-					vd54_done = true;
+					zv::Val r150;
+					if (UNEXPECTED(!pgen::RuleError55::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r150.raw()))) return false;
+					vd55 = std::move(r150);
+					vd55_done = true;
 				}
 				break;
 				case 96: {
-					zv::Val r150;
-					if (UNEXPECTED(!pgen::RuleError503::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r150.raw()))) return false;
-					vd54 = std::move(r150);
-					vd54_done = true;
+					zv::Val r151;
+					if (UNEXPECTED(!pgen::RuleError503::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r151.raw()))) return false;
+					vd55 = std::move(r151);
+					vd55_done = true;
 				}
 				break;
 				case 97: {
-					zv::Val r151;
-					if (UNEXPECTED(!pgen::RuleError113::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r151.raw()))) return false;
-					vd54 = std::move(r151);
-					vd54_done = true;
+					zv::Val r152;
+					if (UNEXPECTED(!pgen::RuleError113::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r152.raw()))) return false;
+					vd55 = std::move(r152);
+					vd55_done = true;
 				}
 				break;
 				case 98: {
-					zv::Val r152;
-					if (UNEXPECTED(!pgen::RuleError339::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r152.raw()))) return false;
-					vd54 = std::move(r152);
-					vd54_done = true;
+					zv::Val r153;
+					if (UNEXPECTED(!pgen::RuleError339::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r153.raw()))) return false;
+					vd55 = std::move(r153);
+					vd55_done = true;
 				}
 				break;
 				case 99: {
-					zv::Val r153;
-					if (UNEXPECTED(!pgen::RuleError305::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r153.raw()))) return false;
-					vd54 = std::move(r153);
-					vd54_done = true;
+					zv::Val r154;
+					if (UNEXPECTED(!pgen::RuleError305::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r154.raw()))) return false;
+					vd55 = std::move(r154);
+					vd55_done = true;
 				}
 				break;
 				case 100: {
-					zv::Val r154;
-					if (UNEXPECTED(!pgen::RuleError477::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r154.raw()))) return false;
-					vd54 = std::move(r154);
-					vd54_done = true;
+					zv::Val r155;
+					if (UNEXPECTED(!pgen::RuleError477::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r155.raw()))) return false;
+					vd55 = std::move(r155);
+					vd55_done = true;
 				}
 				break;
 				case 101: {
-					zv::Val r155;
-					if (UNEXPECTED(!pgen::RuleError311::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r155.raw()))) return false;
-					vd54 = std::move(r155);
-					vd54_done = true;
+					zv::Val r156;
+					if (UNEXPECTED(!pgen::RuleError311::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r156.raw()))) return false;
+					vd55 = std::move(r156);
+					vd55_done = true;
 				}
 				break;
 				case 102: {
-					zv::Val r156;
-					if (UNEXPECTED(!pgen::RuleError83::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r156.raw()))) return false;
-					vd54 = std::move(r156);
-					vd54_done = true;
+					zv::Val r157;
+					if (UNEXPECTED(!pgen::RuleError83::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r157.raw()))) return false;
+					vd55 = std::move(r157);
+					vd55_done = true;
 				}
 				break;
 				case 103: {
-					zv::Val r157;
-					if (UNEXPECTED(!pgen::RuleError217::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r157.raw()))) return false;
-					vd54 = std::move(r157);
-					vd54_done = true;
+					zv::Val r158;
+					if (UNEXPECTED(!pgen::RuleError217::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r158.raw()))) return false;
+					vd55 = std::move(r158);
+					vd55_done = true;
 				}
 				break;
 				case 104: {
-					zv::Val r158;
-					if (UNEXPECTED(!pgen::RuleError27::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r158.raw()))) return false;
-					vd54 = std::move(r158);
-					vd54_done = true;
+					zv::Val r159;
+					if (UNEXPECTED(!pgen::RuleError27::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r159.raw()))) return false;
+					vd55 = std::move(r159);
+					vd55_done = true;
 				}
 				break;
 				case 105: {
-					zv::Val r159;
-					if (UNEXPECTED(!pgen::RuleError149::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r159.raw()))) return false;
-					vd54 = std::move(r159);
-					vd54_done = true;
+					zv::Val r160;
+					if (UNEXPECTED(!pgen::RuleError149::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r160.raw()))) return false;
+					vd55 = std::move(r160);
+					vd55_done = true;
 				}
 				break;
 				case 106: {
-					zv::Val r160;
-					if (UNEXPECTED(!pgen::RuleError405::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r160.raw()))) return false;
-					vd54 = std::move(r160);
-					vd54_done = true;
+					zv::Val r161;
+					if (UNEXPECTED(!pgen::RuleError405::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r161.raw()))) return false;
+					vd55 = std::move(r161);
+					vd55_done = true;
 				}
 				break;
 				case 107: {
-					zv::Val r161;
-					if (UNEXPECTED(!pgen::RuleError411::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r161.raw()))) return false;
-					vd54 = std::move(r161);
-					vd54_done = true;
+					zv::Val r162;
+					if (UNEXPECTED(!pgen::RuleError411::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r162.raw()))) return false;
+					vd55 = std::move(r162);
+					vd55_done = true;
 				}
 				break;
 				case 108: {
-					zv::Val r162;
-					if (UNEXPECTED(!pgen::RuleError377::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r162.raw()))) return false;
-					vd54 = std::move(r162);
-					vd54_done = true;
+					zv::Val r163;
+					if (UNEXPECTED(!pgen::RuleError377::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r163.raw()))) return false;
+					vd55 = std::move(r163);
+					vd55_done = true;
 				}
 				break;
 				case 109: {
-					zv::Val r163;
-					if (UNEXPECTED(!pgen::RuleError439::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r163.raw()))) return false;
-					vd54 = std::move(r163);
-					vd54_done = true;
+					zv::Val r164;
+					if (UNEXPECTED(!pgen::RuleError439::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r164.raw()))) return false;
+					vd55 = std::move(r164);
+					vd55_done = true;
 				}
 				break;
 				case 110: {
-					zv::Val r164;
-					if (UNEXPECTED(!pgen::RuleError189::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r164.raw()))) return false;
-					vd54 = std::move(r164);
-					vd54_done = true;
+					zv::Val r165;
+					if (UNEXPECTED(!pgen::RuleError189::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r165.raw()))) return false;
+					vd55 = std::move(r165);
+					vd55_done = true;
 				}
 				break;
 				case 111: {
-					zv::Val r165;
-					if (UNEXPECTED(!pgen::RuleError349::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r165.raw()))) return false;
-					vd54 = std::move(r165);
-					vd54_done = true;
+					zv::Val r166;
+					if (UNEXPECTED(!pgen::RuleError349::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r166.raw()))) return false;
+					vd55 = std::move(r166);
+					vd55_done = true;
 				}
 				break;
 				case 112: {
-					zv::Val r166;
-					if (UNEXPECTED(!pgen::RuleError407::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r166.raw()))) return false;
-					vd54 = std::move(r166);
-					vd54_done = true;
+					zv::Val r167;
+					if (UNEXPECTED(!pgen::RuleError407::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r167.raw()))) return false;
+					vd55 = std::move(r167);
+					vd55_done = true;
 				}
 				break;
 				case 113: {
-					zv::Val r167;
-					if (UNEXPECTED(!pgen::RuleError375::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r167.raw()))) return false;
-					vd54 = std::move(r167);
-					vd54_done = true;
+					zv::Val r168;
+					if (UNEXPECTED(!pgen::RuleError375::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r168.raw()))) return false;
+					vd55 = std::move(r168);
+					vd55_done = true;
 				}
 				break;
 				case 114: {
-					zv::Val r168;
-					if (UNEXPECTED(!pgen::RuleError413::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r168.raw()))) return false;
-					vd54 = std::move(r168);
-					vd54_done = true;
+					zv::Val r169;
+					if (UNEXPECTED(!pgen::RuleError413::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r169.raw()))) return false;
+					vd55 = std::move(r169);
+					vd55_done = true;
 				}
 				break;
 				case 115: {
-					zv::Val r169;
-					if (UNEXPECTED(!pgen::RuleError177::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r169.raw()))) return false;
-					vd54 = std::move(r169);
-					vd54_done = true;
+					zv::Val r170;
+					if (UNEXPECTED(!pgen::RuleError177::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r170.raw()))) return false;
+					vd55 = std::move(r170);
+					vd55_done = true;
 				}
 				break;
 				case 116: {
-					zv::Val r170;
-					if (UNEXPECTED(!pgen::RuleError19::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r170.raw()))) return false;
-					vd54 = std::move(r170);
-					vd54_done = true;
+					zv::Val r171;
+					if (UNEXPECTED(!pgen::RuleError19::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r171.raw()))) return false;
+					vd55 = std::move(r171);
+					vd55_done = true;
 				}
 				break;
 				case 117: {
-					zv::Val r171;
-					if (UNEXPECTED(!pgen::RuleError31::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r171.raw()))) return false;
-					vd54 = std::move(r171);
-					vd54_done = true;
+					zv::Val r172;
+					if (UNEXPECTED(!pgen::RuleError31::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r172.raw()))) return false;
+					vd55 = std::move(r172);
+					vd55_done = true;
 				}
 				break;
 				case 118: {
-					zv::Val r172;
-					if (UNEXPECTED(!pgen::RuleError215::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r172.raw()))) return false;
-					vd54 = std::move(r172);
-					vd54_done = true;
+					zv::Val r173;
+					if (UNEXPECTED(!pgen::RuleError215::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r173.raw()))) return false;
+					vd55 = std::move(r173);
+					vd55_done = true;
 				}
 				break;
 				case 119: {
-					zv::Val r173;
-					if (UNEXPECTED(!pgen::RuleError25::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r173.raw()))) return false;
-					vd54 = std::move(r173);
-					vd54_done = true;
+					zv::Val r174;
+					if (UNEXPECTED(!pgen::RuleError25::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r174.raw()))) return false;
+					vd55 = std::move(r174);
+					vd55_done = true;
 				}
 				break;
 				case 120: {
-					zv::Val r174;
-					if (UNEXPECTED(!pgen::RuleError21::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r174.raw()))) return false;
-					vd54 = std::move(r174);
-					vd54_done = true;
+					zv::Val r175;
+					if (UNEXPECTED(!pgen::RuleError21::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r175.raw()))) return false;
+					vd55 = std::move(r175);
+					vd55_done = true;
 				}
 				break;
 				case 121: {
-					zv::Val r175;
-					if (UNEXPECTED(!pgen::RuleError211::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r175.raw()))) return false;
-					vd54 = std::move(r175);
-					vd54_done = true;
+					zv::Val r176;
+					if (UNEXPECTED(!pgen::RuleError211::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r176.raw()))) return false;
+					vd55 = std::move(r176);
+					vd55_done = true;
 				}
 				break;
 				case 122: {
-					zv::Val r176;
-					if (UNEXPECTED(!pgen::RuleError371::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r176.raw()))) return false;
-					vd54 = std::move(r176);
-					vd54_done = true;
+					zv::Val r177;
+					if (UNEXPECTED(!pgen::RuleError371::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r177.raw()))) return false;
+					vd55 = std::move(r177);
+					vd55_done = true;
 				}
 				break;
 				case 123: {
-					zv::Val r177;
-					if (UNEXPECTED(!pgen::RuleError403::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r177.raw()))) return false;
-					vd54 = std::move(r177);
-					vd54_done = true;
+					zv::Val r178;
+					if (UNEXPECTED(!pgen::RuleError403::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r178.raw()))) return false;
+					vd55 = std::move(r178);
+					vd55_done = true;
 				}
 				break;
 				case 124: {
-					zv::Val r178;
-					if (UNEXPECTED(!pgen::RuleError373::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r178.raw()))) return false;
-					vd54 = std::move(r178);
-					vd54_done = true;
+					zv::Val r179;
+					if (UNEXPECTED(!pgen::RuleError373::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r179.raw()))) return false;
+					vd55 = std::move(r179);
+					vd55_done = true;
 				}
 				break;
 				case 125: {
-					zv::Val r179;
-					if (UNEXPECTED(!pgen::RuleError415::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r179.raw()))) return false;
-					vd54 = std::move(r179);
-					vd54_done = true;
+					zv::Val r180;
+					if (UNEXPECTED(!pgen::RuleError415::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r180.raw()))) return false;
+					vd55 = std::move(r180);
+					vd55_done = true;
 				}
 				break;
 				case 126: {
-					zv::Val r180;
-					if (UNEXPECTED(!pgen::RuleError401::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r180.raw()))) return false;
-					vd54 = std::move(r180);
-					vd54_done = true;
+					zv::Val r181;
+					if (UNEXPECTED(!pgen::RuleError401::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r181.raw()))) return false;
+					vd55 = std::move(r181);
+					vd55_done = true;
 				}
 				break;
 				case 127: {
-					zv::Val r181;
-					if (UNEXPECTED(!pgen::RuleError159::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r181.raw()))) return false;
-					vd54 = std::move(r181);
-					vd54_done = true;
+					zv::Val r182;
+					if (UNEXPECTED(!pgen::RuleError159::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r182.raw()))) return false;
+					vd55 = std::move(r182);
+					vd55_done = true;
 				}
 				break;
 				case 128: {
-					zv::Val r182;
-					if (UNEXPECTED(!pgen::RuleError23::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r182.raw()))) return false;
-					vd54 = std::move(r182);
-					vd54_done = true;
+					zv::Val r183;
+					if (UNEXPECTED(!pgen::RuleError23::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r183.raw()))) return false;
+					vd55 = std::move(r183);
+					vd55_done = true;
 				}
 				break;
 				case 129: {
-					zv::Val r183;
-					if (UNEXPECTED(!pgen::RuleError213::m_getIdentifier(Z_OBJ_P(zv::Ref(e51).deref().raw()), r183.raw()))) return false;
-					vd54 = std::move(r183);
-					vd54_done = true;
+					zv::Val r184;
+					if (UNEXPECTED(!pgen::RuleError213::m_getIdentifier(Z_OBJ_P(zv::Ref(e52).deref().raw()), r184.raw()))) return false;
+					vd55 = std::move(r184);
+					vd55_done = true;
 				}
 				break;
 				default:
 				break;
 			}
-			if (!vd54_done) {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, zv::Ref(e51).deref().raw(), "getIdentifier", "getidentifier", 13, 0, NULL, vd54.raw()))) return false;
+			if (!vd55_done) {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, zv::Ref(e52).deref().raw(), "getIdentifier", "getidentifier", 13, 0, NULL, vd55.raw()))) return false;
 			}
-			b50 = zend_is_identical(vd54.raw(), &pg_lit[1]);
+			b51 = zend_is_identical(vd55.raw(), &pg_lit[1]);
+		}
+		bool b50 = b51;
+		if (b50) {
+			zv::Val et186;
+			zval *e185 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
+			if (UNEXPECTED(e185 == NULL)) {
+				zval z187;
+				ZVAL_LONG(&z187, 0);
+				e185 = pgrt::dimRead(l_errors.raw(), &z187, et186.raw());
+				if (UNEXPECTED(e185 == NULL)) return false;
+			}
+			b50 = !(pgrt::instanceOfClass(zv::Ref(e185).deref().raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Rules\\TipRuleError", 26)));
 		}
 		bool b49 = b50;
 		if (b49) {
-			zv::Val et185;
-			zval *e184 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
-			if (UNEXPECTED(e184 == NULL)) {
-				zval z186;
-				ZVAL_LONG(&z186, 0);
-				e184 = pgrt::dimRead(l_errors.raw(), &z186, et185.raw());
-				if (UNEXPECTED(e184 == NULL)) return false;
+			zv::Val et189;
+			zval *e188 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
+			if (UNEXPECTED(e188 == NULL)) {
+				zval z190;
+				ZVAL_LONG(&z190, 0);
+				e188 = pgrt::dimRead(l_errors.raw(), &z190, et189.raw());
+				if (UNEXPECTED(e188 == NULL)) return false;
 			}
-			b49 = !(pgrt::instanceOfClass(zv::Ref(e184).deref().raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Rules\\TipRuleError", 26)));
+			b49 = pgrt::instanceOfClass(zv::Ref(e188).deref().raw(), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\LineRuleError", 27));
 		}
 		bool b48 = b49;
 		if (b48) {
-			zv::Val et188;
-			zval *e187 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
-			if (UNEXPECTED(e187 == NULL)) {
-				zval z189;
-				ZVAL_LONG(&z189, 0);
-				e187 = pgrt::dimRead(l_errors.raw(), &z189, et188.raw());
-				if (UNEXPECTED(e187 == NULL)) return false;
+			zv::Val r191;
+			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_method.raw()), r191.raw()))) return false;
+			zval av192[1];
+			ZVAL_COPY_VALUE(&av192[0], &pg_lit[2]);
+			zv::Val r193;
+			if (EXPECTED(Z_TYPE_P(r191.raw()) == IS_OBJECT)) {
+				r193 = pt_type_op(Z_OBJ_P(r191.raw()), PT_OP_IS, 1, av192);
+				if (UNEXPECTED(r193.isUndef())) return false;
+			} else {
+			 {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r191.raw(), "is", "is", 2, 1, av192, r193.raw(), NULL))) return false;
 			}
-			b48 = pgrt::instanceOfClass(zv::Ref(e187).deref().raw(), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\LineRuleError", 27));
+			}
+			b48 = (Z_TYPE_P(r193.raw()) == IS_TRUE);
 		}
 		bool b47 = b48;
 		if (b47) {
-			zv::Val r190;
-			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_method.raw()), r190.raw()))) return false;
-			zval av191[1];
-			ZVAL_COPY_VALUE(&av191[0], &pg_lit[2]);
-			zv::Val r192;
-			if (EXPECTED(Z_TYPE_P(r190.raw()) == IS_OBJECT)) {
-				r192 = pt_type_op(Z_OBJ_P(r190.raw()), PT_OP_IS, 1, av191);
-				if (UNEXPECTED(r192.isUndef())) return false;
-			} else {
-			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r190.raw(), "is", "is", 2, 1, av191, r192.raw(), NULL))) return false;
-			}
-			}
-			b47 = (Z_TYPE_P(r192.raw()) == IS_TRUE);
+			zv::Val r194;
+			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getName(Z_OBJ_P(l_method.raw()), r194.raw()))) return false;
+			zv::Val r195 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r194.raw())));
+			b47 = zend_is_identical(r195.raw(), &pg_lit[3]);
 		}
 		bool b46 = b47;
 		if (b46) {
-			zv::Val r193;
-			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getName(Z_OBJ_P(l_method.raw()), r193.raw()))) return false;
-			zv::Val r194 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r193.raw())));
-			b46 = zend_is_identical(r194.raw(), &pg_lit[3]);
-		}
-		bool b45 = b46;
-		if (b45) {
-			zv::Val o196;
-			zval *p195 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_16, Z_OBJ_P(p_node), "expr", 4) : NULL;
-			if (UNEXPECTED(p195 == NULL || Z_ISUNDEF_P(p195))) {
-				if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_return_type_rule, "expr", 4, o196.raw()))) return false;
-				p195 = o196.raw();
+			zv::Val o197;
+			zval *p196 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_16, Z_OBJ_P(p_node), "expr", 4) : NULL;
+			if (UNEXPECTED(p196 == NULL || Z_ISUNDEF_P(p196))) {
+				if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_return_type_rule, "expr", 4, o197.raw()))) return false;
+				p196 = o197.raw();
 			}
-			b45 = !(Z_TYPE_P(zv::Ref(p195).deref().raw()) == IS_NULL);
+			b46 = !(Z_TYPE_P(zv::Ref(p196).deref().raw()) == IS_NULL);
 		}
-		if (b45) {
-			 {
-				zv::Val n197;
-				if (UNEXPECTED(!pt_object_type_new(n197.raw(), Z_STR_P(&pg_lit[4])))) return false;
-				l_ruleErrorType = std::move(n197);
-			}
+		if (b46) {
 			 {
 				zv::Val n198;
-				if (UNEXPECTED(!pt_object_type_new(n198.raw(), Z_STR_P(&pg_lit[5])))) return false;
-				l_identifierRuleErrorType = std::move(n198);
+				if (UNEXPECTED(!pt_object_type_new(n198.raw(), Z_STR_P(&pg_lit[4])))) return false;
+				l_ruleErrorType = std::move(n198);
 			}
 			 {
-				zv::Val arr200 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-				zval av202[2];
-				zval z203;
-				ZVAL_LONG(&z203, 0);
-				ZVAL_COPY_VALUE(&av202[0], &z203);
-				zval z204;
-				ZVAL_NULL(&z204);
-				ZVAL_COPY_VALUE(&av202[1], &z204);
-				zv::Val r205;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_17, pt_ce_integer_range_type, "frominterval", 12, 2, av202, r205.raw(), NULL))) return false;
-				zv::Val o206 = zv::Val::copyOf(zv::Ref(l_identifierRuleErrorType.raw()));
-				zv::Val n201;
-				if (UNEXPECTED(!pt_array_type_new(n201.raw(), r205.raw(), o206.raw()))) return false;
-				{ zval v = n201.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr200.raw()), &v); }
-				zv::Val n207;
-				if (UNEXPECTED(!pt_accessory_array_list_type_new(n207.raw()))) return false;
-				{ zval v = n207.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr200.raw()), &v); }
 				zv::Val n199;
-				if (UNEXPECTED(!pt_intersection_type_new(n199.raw(), arr200.raw()))) return false;
-				l_listOfIdentifierRuleErrors = std::move(n199);
+				if (UNEXPECTED(!pt_object_type_new(n199.raw(), Z_STR_P(&pg_lit[5])))) return false;
+				l_identifierRuleErrorType = std::move(n199);
 			}
 			 {
-				zval av208[1];
-				ZVAL_COPY_VALUE(&av208[0], l_returnType.raw());
-				zv::Val r209;
+				zv::Val arr201 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+				zval av203[2];
+				zval z204;
+				ZVAL_LONG(&z204, 0);
+				ZVAL_COPY_VALUE(&av203[0], &z204);
+				zval z205;
+				ZVAL_NULL(&z205);
+				ZVAL_COPY_VALUE(&av203[1], &z205);
+				zv::Val r206;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_17, pt_ce_integer_range_type, "frominterval", 12, 2, av203, r206.raw(), NULL))) return false;
+				zv::Val o207 = zv::Val::copyOf(zv::Ref(l_identifierRuleErrorType.raw()));
+				zv::Val n202;
+				if (UNEXPECTED(!pt_array_type_new(n202.raw(), r206.raw(), o207.raw()))) return false;
+				{ zval v = n202.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr201.raw()), &v); }
+				zv::Val n208;
+				if (UNEXPECTED(!pt_accessory_array_list_type_new(n208.raw()))) return false;
+				{ zval v = n208.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr201.raw()), &v); }
+				zv::Val n200;
+				if (UNEXPECTED(!pt_intersection_type_new(n200.raw(), arr201.raw()))) return false;
+				l_listOfIdentifierRuleErrors = std::move(n200);
+			}
+			 {
+				zval av209[1];
+				ZVAL_COPY_VALUE(&av209[0], l_returnType.raw());
+				zv::Val r210;
 				if (EXPECTED(Z_TYPE_P(l_listOfIdentifierRuleErrors.raw()) == IS_OBJECT)) {
-					r209 = pt_type_op(Z_OBJ_P(l_listOfIdentifierRuleErrors.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av208);
-					if (UNEXPECTED(r209.isUndef())) return false;
+					r210 = pt_type_op(Z_OBJ_P(l_listOfIdentifierRuleErrors.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av209);
+					if (UNEXPECTED(r210.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_listOfIdentifierRuleErrors.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av208, r209.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_listOfIdentifierRuleErrors.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av209, r210.raw(), NULL))) return false;
 				}
 				}
-				bool r210;
-				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r209.raw()), &r210))) return false;
-				if (!(r210)) {
+				bool r211;
+				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r210.raw()), &r211))) return false;
+				if (!(r211)) {
 					 {
 						ZVAL_COPY(ret, l_errors.raw());
 						return true;
@@ -1321,141 +1334,141 @@ namespace pgen::ReturnTypeRule {
 				}
 			}
 			 {
-				zv::Val o212;
-				zval *p211 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_19, Z_OBJ_P(p_node), "expr", 4) : NULL;
-				if (UNEXPECTED(p211 == NULL || Z_ISUNDEF_P(p211))) {
-					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_return_type_rule, "expr", 4, o212.raw()))) return false;
-					p211 = o212.raw();
+				zv::Val o213;
+				zval *p212 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_19, Z_OBJ_P(p_node), "expr", 4) : NULL;
+				if (UNEXPECTED(p212 == NULL || Z_ISUNDEF_P(p212))) {
+					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_return_type_rule, "expr", 4, o213.raw()))) return false;
+					p212 = o213.raw();
 				}
-				zv::Val r213;
-				zend_class_entry *rc214 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
-				if (rc214 == pt_ce_mutating_scope) {
-					r213 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p211).deref().raw());
-					if (UNEXPECTED(r213.isUndef())) return false;
+				zv::Val r214;
+				zend_class_entry *rc215 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+				if (rc215 == pt_ce_mutating_scope) {
+					r214 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p212).deref().raw());
+					if (UNEXPECTED(r214.isUndef())) return false;
 				}
 				else {
-					zval av215[1];
-					ZVAL_COPY_VALUE(&av215[0], zv::Ref(p211).deref().raw());
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_scope, "getType", "gettype", 7, 1, av215, r213.raw()))) return false;
+					zval av216[1];
+					ZVAL_COPY_VALUE(&av216[0], zv::Ref(p212).deref().raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_scope, "getType", "gettype", 7, 1, av216, r214.raw()))) return false;
 				}
-				zv::Val r216;
-				if (EXPECTED(Z_TYPE_P(r213.raw()) == IS_OBJECT)) {
-					r216 = pt_type_op(Z_OBJ_P(r213.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
-					if (UNEXPECTED(r216.isUndef())) return false;
+				zv::Val r217;
+				if (EXPECTED(Z_TYPE_P(r214.raw()) == IS_OBJECT)) {
+					r217 = pt_type_op(Z_OBJ_P(r214.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
+					if (UNEXPECTED(r217.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_21, r213.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r216.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_21, r214.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r217.raw(), NULL))) return false;
 				}
 				}
-				l_returnValueType = std::move(r216);
+				l_returnValueType = std::move(r217);
 			}
 			 {
-				zv::Val et218;
-				zval *e217 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
-				if (UNEXPECTED(e217 == NULL)) {
-					zval z219;
-					ZVAL_LONG(&z219, 0);
-					e217 = pgrt::dimRead(l_errors.raw(), &z219, et218.raw());
-					if (UNEXPECTED(e217 == NULL)) return false;
+				zv::Val et219;
+				zval *e218 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
+				if (UNEXPECTED(e218 == NULL)) {
+					zval z220;
+					ZVAL_LONG(&z220, 0);
+					e218 = pgrt::dimRead(l_errors.raw(), &z220, et219.raw());
+					if (UNEXPECTED(e218 == NULL)) return false;
 				}
-				zv::Val r220;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_22, zv::Ref(e217).deref().raw(), "getMessage", "getmessage", 10, 0, NULL, r220.raw(), NULL))) return false;
-				zval av221[1];
-				ZVAL_COPY_VALUE(&av221[0], r220.raw());
-				zend_class_entry *ce222 = pgrt::lookupClass(pg_site_23, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-				if (UNEXPECTED(ce222 == NULL)) return false;
-				zv::Val r223;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_24, ce222, "message", 7, 1, av221, r223.raw(), NULL))) return false;
-				zv::Val et225;
-				zval *e224 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
-				if (UNEXPECTED(e224 == NULL)) {
-					zval z226;
-					ZVAL_LONG(&z226, 0);
-					e224 = pgrt::dimRead(l_errors.raw(), &z226, et225.raw());
-					if (UNEXPECTED(e224 == NULL)) return false;
+				zv::Val r221;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_22, zv::Ref(e218).deref().raw(), "getMessage", "getmessage", 10, 0, NULL, r221.raw(), NULL))) return false;
+				zval av222[1];
+				ZVAL_COPY_VALUE(&av222[0], r221.raw());
+				zend_class_entry *ce223 = pgrt::lookupClass(pg_site_23, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+				if (UNEXPECTED(ce223 == NULL)) return false;
+				zv::Val r224;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_24, ce223, "message", 7, 1, av222, r224.raw(), NULL))) return false;
+				zv::Val et226;
+				zval *e225 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
+				if (UNEXPECTED(e225 == NULL)) {
+					zval z227;
+					ZVAL_LONG(&z227, 0);
+					e225 = pgrt::dimRead(l_errors.raw(), &z227, et226.raw());
+					if (UNEXPECTED(e225 == NULL)) return false;
 				}
-				zv::Val r227;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_25, zv::Ref(e224).deref().raw(), "getLine", "getline", 7, 0, NULL, r227.raw(), NULL))) return false;
-				zval av228[1];
-				zval z229;
-				ZVAL_LONG(&z229, Z_LVAL_P(r227.raw()));
-				ZVAL_COPY_VALUE(&av228[0], &z229);
-				zv::Val r230;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_26, r223.raw(), "line", "line", 4, 1, av228, r230.raw(), NULL))) return false;
-				zv::Val et232;
-				zval *e231 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
-				if (UNEXPECTED(e231 == NULL)) {
-					zval z233;
-					ZVAL_LONG(&z233, 0);
-					e231 = pgrt::dimRead(l_errors.raw(), &z233, et232.raw());
-					if (UNEXPECTED(e231 == NULL)) return false;
+				zv::Val r228;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_25, zv::Ref(e225).deref().raw(), "getLine", "getline", 7, 0, NULL, r228.raw(), NULL))) return false;
+				zval av229[1];
+				zval z230;
+				ZVAL_LONG(&z230, Z_LVAL_P(r228.raw()));
+				ZVAL_COPY_VALUE(&av229[0], &z230);
+				zv::Val r231;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_26, r224.raw(), "line", "line", 4, 1, av229, r231.raw(), NULL))) return false;
+				zv::Val et233;
+				zval *e232 = Z_TYPE_P(l_errors.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_errors.raw()), 0) : NULL;
+				if (UNEXPECTED(e232 == NULL)) {
+					zval z234;
+					ZVAL_LONG(&z234, 0);
+					e232 = pgrt::dimRead(l_errors.raw(), &z234, et233.raw());
+					if (UNEXPECTED(e232 == NULL)) return false;
 				}
-				zv::Val r234;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_27, zv::Ref(e231).deref().raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r234.raw(), NULL))) return false;
-				zval av235[1];
-				ZVAL_COPY_VALUE(&av235[0], r234.raw());
-				zv::Val r236;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_28, r230.raw(), "identifier", "identifier", 10, 1, av235, r236.raw(), NULL))) return false;
-				l_builder = std::move(r236);
-			}
-			 {
+				zv::Val r235;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_27, zv::Ref(e232).deref().raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r235.raw(), NULL))) return false;
+				zval av236[1];
+				ZVAL_COPY_VALUE(&av236[0], r235.raw());
 				zv::Val r237;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_28, r231.raw(), "identifier", "identifier", 10, 1, av236, r237.raw(), NULL))) return false;
+				l_builder = std::move(r237);
+			}
+			 {
+				zv::Val r238;
 				if (EXPECTED(Z_TYPE_P(l_returnValueType.raw()) == IS_OBJECT)) {
-					r237 = pt_type_op(Z_OBJ_P(l_returnValueType.raw()), PT_OP_IS_STRING, 0, NULL);
-					if (UNEXPECTED(r237.isUndef())) return false;
+					r238 = pt_type_op(Z_OBJ_P(l_returnValueType.raw()), PT_OP_IS_STRING, 0, NULL);
+					if (UNEXPECTED(r238.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_returnValueType.raw(), "isString", "isstring", 8, 0, NULL, r237.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_returnValueType.raw(), "isString", "isstring", 8, 0, NULL, r238.raw(), NULL))) return false;
 				}
 				}
-				bool r238;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r237.raw()), &r238))) return false;
-				if (!(r238)) {
+				bool r239;
+				if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r238.raw()), &r239))) return false;
+				if (!(r239)) {
 					 {
-						zval av239[1];
-						ZVAL_COPY_VALUE(&av239[0], &pg_lit[6]);
-						zv::Val r240;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_builder.raw(), "tip", "tip", 3, 1, av239, r240.raw(), NULL))) return false;
+						zval av240[1];
+						ZVAL_COPY_VALUE(&av240[0], &pg_lit[6]);
+						zv::Val r241;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_builder.raw(), "tip", "tip", 3, 1, av240, r241.raw(), NULL))) return false;
 					}
 				} else {
 				 {
 					 {
-						zval av242[1];
-						ZVAL_COPY_VALUE(&av242[0], l_returnValueType.raw());
-						zv::Val r243;
+						zval av243[1];
+						ZVAL_COPY_VALUE(&av243[0], l_returnValueType.raw());
+						zv::Val r244;
 						if (EXPECTED(Z_TYPE_P(l_ruleErrorType.raw()) == IS_OBJECT)) {
-							r243 = pt_type_op(Z_OBJ_P(l_ruleErrorType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av242);
-							if (UNEXPECTED(r243.isUndef())) return false;
+							r244 = pt_type_op(Z_OBJ_P(l_ruleErrorType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av243);
+							if (UNEXPECTED(r244.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_ruleErrorType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av242, r243.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_ruleErrorType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av243, r244.raw(), NULL))) return false;
 						}
 						}
-						bool r244;
-						if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r243.raw()), &r244))) return false;
-						bool b241 = r244;
-						if (b241) {
-							zval av245[1];
-							ZVAL_COPY_VALUE(&av245[0], l_returnValueType.raw());
-							zv::Val r246;
+						bool r245;
+						if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r244.raw()), &r245))) return false;
+						bool b242 = r245;
+						if (b242) {
+							zval av246[1];
+							ZVAL_COPY_VALUE(&av246[0], l_returnValueType.raw());
+							zv::Val r247;
 							if (EXPECTED(Z_TYPE_P(l_identifierRuleErrorType.raw()) == IS_OBJECT)) {
-								r246 = pt_type_op(Z_OBJ_P(l_identifierRuleErrorType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av245);
-								if (UNEXPECTED(r246.isUndef())) return false;
+								r247 = pt_type_op(Z_OBJ_P(l_identifierRuleErrorType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av246);
+								if (UNEXPECTED(r247.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_identifierRuleErrorType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av245, r246.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_identifierRuleErrorType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av246, r247.raw(), NULL))) return false;
 							}
 							}
-							bool r247;
-							if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r246.raw()), &r247))) return false;
-							b241 = !(r247);
+							bool r248;
+							if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r247.raw()), &r248))) return false;
+							b242 = !(r248);
 						}
-						if (b241) {
+						if (b242) {
 							 {
-								zval av248[1];
-								ZVAL_COPY_VALUE(&av248[0], &pg_lit[7]);
-								zv::Val r249;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_33, l_builder.raw(), "tip", "tip", 3, 1, av248, r249.raw(), NULL))) return false;
+								zval av249[1];
+								ZVAL_COPY_VALUE(&av249[0], &pg_lit[7]);
+								zv::Val r250;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_33, l_builder.raw(), "tip", "tip", 3, 1, av249, r250.raw(), NULL))) return false;
 							}
 						}
 					}
@@ -1463,11 +1476,11 @@ namespace pgen::ReturnTypeRule {
 				}
 			}
 			 {
-				zv::Val arr250 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-				zv::Val r251;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_builder.raw(), "build", "build", 5, 0, NULL, r251.raw(), NULL))) return false;
-				{ zval v = r251.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr250.raw()), &v); }
-				l_errors = std::move(arr250);
+				zv::Val arr251 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+				zv::Val r252;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_builder.raw(), "build", "build", 5, 0, NULL, r252.raw(), NULL))) return false;
+				{ zval v = r252.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr251.raw()), &v); }
+				l_errors = std::move(arr251);
 			}
 		}
 	}

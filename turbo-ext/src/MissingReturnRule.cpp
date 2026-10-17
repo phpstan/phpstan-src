@@ -156,6 +156,10 @@ namespace pgen::MissingReturnRule {
 			r7 = pt_mutating_scope_get_anonymous_function_return_type(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r7.isUndef())) return false;
 		}
+		else if (rc8 == pt_ce_node_callback_scope) {
+			r7 = pt_mutating_scope_get_anonymous_function_return_type(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r7.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getAnonymousFunctionReturnType", "getanonymousfunctionreturntype", 30, 0, NULL, r7.raw()))) return false;
 		}
@@ -165,6 +169,10 @@ namespace pgen::MissingReturnRule {
 		zv::Val r9;
 		zend_class_entry *rc10 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc10 == pt_ce_mutating_scope) {
+			r9 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r9.isUndef())) return false;
+		}
+		else if (rc10 == pt_ce_node_callback_scope) {
 			r9 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r9.isUndef())) return false;
 		}

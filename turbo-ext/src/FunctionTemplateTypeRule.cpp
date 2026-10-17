@@ -113,6 +113,10 @@ namespace pgen::FunctionTemplateTypeRule {
 			r13 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r13.isUndef())) return false;
 		}
+		else if (rc14 == pt_ce_node_callback_scope) {
+			r13 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r13.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "getFile", "getfile", 7, 0, NULL, r13.raw()))) return false;
 		}

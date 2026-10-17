@@ -148,78 +148,83 @@ namespace pgen::RoundFunctionReturnTypeExtension {
 					if (UNEXPECTED(!pt_mutating_scope_is_declare_strict_types(Z_OBJ_P(p_scope), bo23))) return false;
 					ZVAL_BOOL(r21.raw(), bo23);
 				}
+				else if (rc22 == pt_ce_node_callback_scope) {
+					bool bo24 = false;
+					if (UNEXPECTED(!pt_mutating_scope_is_declare_strict_types(Z_OBJ_P(p_scope), bo24))) return false;
+					ZVAL_BOOL(r21.raw(), bo24);
+				}
 				else {
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_scope, "isDeclareStrictTypes", "isdeclarestricttypes", 20, 0, NULL, r21.raw()))) return false;
 				}
 				if (!((Z_TYPE_P(r21.raw()) == IS_TRUE))) {
 					 {
-						zv::Val arr25 = zv::Val::adopt([]() { zval a; array_init_size(&a, 5); return a; }());
-						zv::Val n26;
-						if (UNEXPECTED(!pt_integer_type_new(n26.raw()))) return false;
-						{ zval v = n26.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr25.raw()), &v); }
+						zv::Val arr26 = zv::Val::adopt([]() { zval a; array_init_size(&a, 5); return a; }());
 						zv::Val n27;
-						if (UNEXPECTED(!pt_float_type_new(n27.raw()))) return false;
-						{ zval v = n27.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr25.raw()), &v); }
-						zv::Val arr29 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-						zv::Val n30;
-						if (UNEXPECTED(!pt_string_type_new(n30.raw()))) return false;
-						{ zval v = n30.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr29.raw()), &v); }
-						zv::Val n31;
-						if (UNEXPECTED(!pt_accessory_numeric_string_type_new(n31.raw()))) return false;
-						{ zval v = n31.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr29.raw()), &v); }
+						if (UNEXPECTED(!pt_integer_type_new(n27.raw()))) return false;
+						{ zval v = n27.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr26.raw()), &v); }
 						zv::Val n28;
-						if (UNEXPECTED(!pt_intersection_type_new(n28.raw(), arr29.raw()))) return false;
-						{ zval v = n28.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr25.raw()), &v); }
+						if (UNEXPECTED(!pt_float_type_new(n28.raw()))) return false;
+						{ zval v = n28.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr26.raw()), &v); }
+						zv::Val arr30 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+						zv::Val n31;
+						if (UNEXPECTED(!pt_string_type_new(n31.raw()))) return false;
+						{ zval v = n31.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr30.raw()), &v); }
 						zv::Val n32;
-						if (UNEXPECTED(!pt_null_type_new(n32.raw()))) return false;
-						{ zval v = n32.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr25.raw()), &v); }
+						if (UNEXPECTED(!pt_accessory_numeric_string_type_new(n32.raw()))) return false;
+						{ zval v = n32.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr30.raw()), &v); }
+						zv::Val n29;
+						if (UNEXPECTED(!pt_intersection_type_new(n29.raw(), arr30.raw()))) return false;
+						{ zval v = n29.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr26.raw()), &v); }
 						zv::Val n33;
-						if (UNEXPECTED(!pt_boolean_type_new(n33.raw()))) return false;
-						{ zval v = n33.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr25.raw()), &v); }
-						zv::Val n24;
-						if (UNEXPECTED(!pt_union_type_new(n24.raw(), arr25.raw()))) return false;
-						l_allowed = std::move(n24);
+						if (UNEXPECTED(!pt_null_type_new(n33.raw()))) return false;
+						{ zval v = n33.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr26.raw()), &v); }
+						zv::Val n34;
+						if (UNEXPECTED(!pt_boolean_type_new(n34.raw()))) return false;
+						{ zval v = n34.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr26.raw()), &v); }
+						zv::Val n25;
+						if (UNEXPECTED(!pt_union_type_new(n25.raw(), arr26.raw()))) return false;
+						l_allowed = std::move(n25);
 					}
 				} else {
 				 {
 					 {
-						zv::Val arr35 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-						zv::Val n36;
-						if (UNEXPECTED(!pt_integer_type_new(n36.raw()))) return false;
-						{ zval v = n36.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr35.raw()), &v); }
+						zv::Val arr36 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
 						zv::Val n37;
-						if (UNEXPECTED(!pt_float_type_new(n37.raw()))) return false;
-						{ zval v = n37.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr35.raw()), &v); }
-						zv::Val n34;
-						if (UNEXPECTED(!pt_union_type_new(n34.raw(), arr35.raw()))) return false;
-						l_allowed = std::move(n34);
+						if (UNEXPECTED(!pt_integer_type_new(n37.raw()))) return false;
+						{ zval v = n37.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr36.raw()), &v); }
+						zv::Val n38;
+						if (UNEXPECTED(!pt_float_type_new(n38.raw()))) return false;
+						{ zval v = n38.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr36.raw()), &v); }
+						zv::Val n35;
+						if (UNEXPECTED(!pt_union_type_new(n35.raw(), arr36.raw()))) return false;
+						l_allowed = std::move(n35);
 					}
 				}
 				}
 			}
 			 {
-				zval av38[1];
-				ZVAL_COPY_VALUE(&av38[0], l_firstArgType.raw());
-				zv::Val r39;
+				zval av39[1];
+				ZVAL_COPY_VALUE(&av39[0], l_firstArgType.raw());
+				zv::Val r40;
 				if (EXPECTED(Z_TYPE_P(l_allowed.raw()) == IS_OBJECT)) {
-					r39 = pt_type_op(Z_OBJ_P(l_allowed.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av38);
-					if (UNEXPECTED(r39.isUndef())) return false;
+					r40 = pt_type_op(Z_OBJ_P(l_allowed.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av39);
+					if (UNEXPECTED(r40.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_allowed.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av38, r39.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_allowed.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av39, r40.raw(), NULL))) return false;
 				}
 				}
-				bool r40;
-				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_no(Z_OBJ_P(r39.raw()), &r40))) return false;
-				if (r40) {
+				bool r41;
+				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_no(Z_OBJ_P(r40.raw()), &r41))) return false;
+				if (r41) {
 					 {
-						zval av42[1];
-						zval z43;
-						ZVAL_BOOL(&z43, true);
-						ZVAL_COPY_VALUE(&av42[0], &z43);
-						zv::Val n41;
-						if (UNEXPECTED(!pgrt::newObject(pt_ce_never_type, 1, av42, n41.raw(), NULL))) return false;
-						*ret = n41.take();
+						zval av43[1];
+						zval z44;
+						ZVAL_BOOL(&z44, true);
+						ZVAL_COPY_VALUE(&av43[0], &z44);
+						zv::Val n42;
+						if (UNEXPECTED(!pgrt::newObject(pt_ce_never_type, 1, av43, n42.raw(), NULL))) return false;
+						*ret = n42.take();
 						return true;
 					}
 				}
@@ -227,22 +232,22 @@ namespace pgen::RoundFunctionReturnTypeExtension {
 		} else {
 		 {
 			 {
-				zv::Val r44;
+				zv::Val r45;
 				if (EXPECTED(Z_TYPE_P(l_firstArgType.raw()) == IS_OBJECT)) {
-					r44 = pt_type_op(Z_OBJ_P(l_firstArgType.raw()), PT_OP_IS_ARRAY, 0, NULL);
-					if (UNEXPECTED(r44.isUndef())) return false;
+					r45 = pt_type_op(Z_OBJ_P(l_firstArgType.raw()), PT_OP_IS_ARRAY, 0, NULL);
+					if (UNEXPECTED(r45.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_firstArgType.raw(), "isArray", "isarray", 7, 0, NULL, r44.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_firstArgType.raw(), "isArray", "isarray", 7, 0, NULL, r45.raw(), NULL))) return false;
 				}
 				}
-				bool r45;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r44.raw()), &r45))) return false;
-				if (r45) {
+				bool r46;
+				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r45.raw()), &r46))) return false;
+				if (r46) {
 					 {
-						zv::Val n46;
-						if (UNEXPECTED(!pt_constant_boolean_type_new(n46.raw(), false))) return false;
-						*ret = n46.take();
+						zv::Val n47;
+						if (UNEXPECTED(!pt_constant_boolean_type_new(n47.raw(), false))) return false;
+						*ret = n47.take();
 						return true;
 					}
 				}
@@ -251,9 +256,9 @@ namespace pgen::RoundFunctionReturnTypeExtension {
 		}
 	}
 	 {
-		zv::Val n47;
-		if (UNEXPECTED(!pt_float_type_new(n47.raw()))) return false;
-		*ret = n47.take();
+		zv::Val n48;
+		if (UNEXPECTED(!pt_float_type_new(n48.raw()))) return false;
+		*ret = n48.take();
 		return true;
 	}
 }

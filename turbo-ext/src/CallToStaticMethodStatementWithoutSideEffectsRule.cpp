@@ -235,6 +235,10 @@ namespace pgen::CallToStaticMethodStatementWithoutSideEffectsRule {
 					r17 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p15).deref().raw()));
 					if (UNEXPECTED(r17.isUndef())) return false;
 				}
+				else if (rc18 == pt_ce_node_callback_scope) {
+					r17 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p15).deref().raw()));
+					if (UNEXPECTED(r17.isUndef())) return false;
+				}
 				else {
 					zval av19[1];
 					ZVAL_COPY_VALUE(&av19[0], zv::Ref(p15).deref().raw());

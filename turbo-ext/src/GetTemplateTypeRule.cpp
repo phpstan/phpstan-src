@@ -181,6 +181,10 @@ namespace pgen::GetTemplateTypeRule {
 			r21 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), o17.raw(), Z_STR_P(r20.raw()));
 			if (UNEXPECTED(r21.isUndef())) return false;
 		}
+		else if (rc22 == pt_ce_node_callback_scope) {
+			r21 = pt_mutating_scope_get_method_reflection(Z_OBJ_P(p_scope), o17.raw(), Z_STR_P(r20.raw()));
+			if (UNEXPECTED(r21.isUndef())) return false;
+		}
 		else {
 			zval av23[2];
 			ZVAL_COPY_VALUE(&av23[0], o17.raw());

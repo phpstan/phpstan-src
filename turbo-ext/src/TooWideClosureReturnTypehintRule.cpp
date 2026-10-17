@@ -175,6 +175,10 @@ namespace pgen::TooWideClosureReturnTypehintRule {
 			r20 = pt_mutating_scope_get_function_type(Z_OBJ_P(p_scope), zv::Ref(p16).deref().raw(), false, false);
 			if (UNEXPECTED(r20.isUndef())) return false;
 		}
+		else if (rc21 == pt_ce_node_callback_scope) {
+			r20 = pt_mutating_scope_get_function_type(Z_OBJ_P(p_scope), zv::Ref(p16).deref().raw(), false, false);
+			if (UNEXPECTED(r20.isUndef())) return false;
+		}
 		else {
 			zval av22[3];
 			ZVAL_COPY_VALUE(&av22[0], zv::Ref(p16).deref().raw());

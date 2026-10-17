@@ -39,6 +39,10 @@ namespace pgen::ApiRuleHelper {
 			r1 = pt_mutating_scope_get_namespace(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r1.isUndef())) return false;
 		}
+		else if (rc2 == pt_ce_node_callback_scope) {
+			r1 = pt_mutating_scope_get_namespace(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r1.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getNamespace", "getnamespace", 12, 0, NULL, r1.raw()))) return false;
 		}
@@ -74,6 +78,10 @@ namespace pgen::ApiRuleHelper {
 						zv::Val r6;
 						zend_class_entry *rc7 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 						if (rc7 == pt_ce_mutating_scope) {
+							r6 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+							if (UNEXPECTED(r6.isUndef())) return false;
+						}
+						else if (rc7 == pt_ce_node_callback_scope) {
 							r6 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
 							if (UNEXPECTED(r6.isUndef())) return false;
 						}

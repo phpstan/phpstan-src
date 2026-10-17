@@ -819,6 +819,10 @@ namespace pgen::UnusedPrivatePropertyRule {
 								r144 = pt_mutating_scope_get_function(Z_OBJ_P(o143.raw()));
 								if (UNEXPECTED(r144.isUndef())) return false;
 							}
+							else if (rc145 == pt_ce_node_callback_scope) {
+								r144 = pt_mutating_scope_get_function(Z_OBJ_P(o143.raw()));
+								if (UNEXPECTED(r144.isUndef())) return false;
+							}
 							else {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_37, o143.raw(), "getFunction", "getfunction", 11, 0, NULL, r144.raw()))) return false;
 							}
@@ -875,6 +879,10 @@ namespace pgen::UnusedPrivatePropertyRule {
 									zv::Val r158;
 									zend_class_entry *rc159 = Z_TYPE_P(o157.raw()) == IS_OBJECT ? Z_OBJCE_P(o157.raw()) : NULL;
 									if (rc159 == pt_ce_mutating_scope) {
+										r158 = pt_mutating_scope_get_function(Z_OBJ_P(o157.raw()));
+										if (UNEXPECTED(r158.isUndef())) return false;
+									}
+									else if (rc159 == pt_ce_node_callback_scope) {
 										r158 = pt_mutating_scope_get_function(Z_OBJ_P(o157.raw()));
 										if (UNEXPECTED(r158.isUndef())) return false;
 									}
@@ -1071,6 +1079,10 @@ namespace pgen::UnusedPrivatePropertyRule {
 										r207 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(o204.raw()), Z_OBJ_P(zv::Ref(p205).deref().raw()));
 										if (UNEXPECTED(r207.isUndef())) return false;
 									}
+									else if (rc208 == pt_ce_node_callback_scope) {
+										r207 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(o204.raw()), Z_OBJ_P(zv::Ref(p205).deref().raw()));
+										if (UNEXPECTED(r207.isUndef())) return false;
+									}
 									else {
 										zval av209[1];
 										ZVAL_COPY_VALUE(&av209[0], zv::Ref(p205).deref().raw());
@@ -1167,6 +1179,10 @@ namespace pgen::UnusedPrivatePropertyRule {
 											r235 = pt_mutating_scope_get_static_property_reflection(Z_OBJ_P(o234.raw()), l_fetchedOnType.raw(), Z_STR_P(l_propertyName.raw()));
 											if (UNEXPECTED(r235.isUndef())) return false;
 										}
+										else if (rc236 == pt_ce_node_callback_scope) {
+											r235 = pt_mutating_scope_get_static_property_reflection(Z_OBJ_P(o234.raw()), l_fetchedOnType.raw(), Z_STR_P(l_propertyName.raw()));
+											if (UNEXPECTED(r235.isUndef())) return false;
+										}
 										else {
 											zval av237[2];
 											ZVAL_COPY_VALUE(&av237[0], l_fetchedOnType.raw());
@@ -1182,6 +1198,10 @@ namespace pgen::UnusedPrivatePropertyRule {
 										zv::Val r239;
 										zend_class_entry *rc240 = Z_TYPE_P(o238.raw()) == IS_OBJECT ? Z_OBJCE_P(o238.raw()) : NULL;
 										if (rc240 == pt_ce_mutating_scope) {
+											r239 = pt_mutating_scope_get_instance_property_reflection(Z_OBJ_P(o238.raw()), l_fetchedOnType.raw(), Z_STR_P(l_propertyName.raw()));
+											if (UNEXPECTED(r239.isUndef())) return false;
+										}
+										else if (rc240 == pt_ce_node_callback_scope) {
 											r239 = pt_mutating_scope_get_instance_property_reflection(Z_OBJ_P(o238.raw()), l_fetchedOnType.raw(), Z_STR_P(l_propertyName.raw()));
 											if (UNEXPECTED(r239.isUndef())) return false;
 										}

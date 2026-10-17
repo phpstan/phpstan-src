@@ -124,6 +124,10 @@ namespace pgen::UnusedFunctionParametersRule {
 			r12 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
 			if (UNEXPECTED(r12.isUndef())) return false;
 		}
+		else if (rc13 == pt_ce_node_callback_scope) {
+			r12 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r12.isUndef())) return false;
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getFunction", "getfunction", 11, 0, NULL, r12.raw()))) return false;
 		}

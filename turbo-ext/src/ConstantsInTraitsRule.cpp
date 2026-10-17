@@ -63,36 +63,41 @@ namespace pgen::ConstantsInTraitsRule {
 			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo7))) return false;
 			ZVAL_BOOL(r5.raw(), bo7);
 		}
+		else if (rc6 == pt_ce_node_callback_scope) {
+			bool bo8 = false;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo8))) return false;
+			ZVAL_BOOL(r5.raw(), bo8);
+		}
 		else {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "isInTrait", "isintrait", 9, 0, NULL, r5.raw()))) return false;
 		}
 		if (!((Z_TYPE_P(r5.raw()) == IS_TRUE))) {
 			 {
-				zval arr8_raw;
-				ZVAL_EMPTY_ARRAY(&arr8_raw);
-				ZVAL_COPY(ret, &arr8_raw);
+				zval arr9_raw;
+				ZVAL_EMPTY_ARRAY(&arr9_raw);
+				ZVAL_COPY(ret, &arr9_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val arr9 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zval av10[1];
-		ZVAL_COPY_VALUE(&av10[0], &pg_lit[1]);
-		zend_class_entry *ce11 = pgrt::lookupClass(pg_site_2, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce11 == NULL)) return false;
-		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, ce11, "message", 7, 1, av10, r12.raw(), NULL))) return false;
-		zval av13[1];
-		ZVAL_COPY_VALUE(&av13[0], &pg_lit[2]);
-		zv::Val r14;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r12.raw(), "identifier", "identifier", 10, 1, av13, r14.raw(), NULL))) return false;
+		zv::Val arr10 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zval av11[1];
+		ZVAL_COPY_VALUE(&av11[0], &pg_lit[1]);
+		zend_class_entry *ce12 = pgrt::lookupClass(pg_site_2, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+		if (UNEXPECTED(ce12 == NULL)) return false;
+		zv::Val r13;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, ce12, "message", 7, 1, av11, r13.raw(), NULL))) return false;
+		zval av14[1];
+		ZVAL_COPY_VALUE(&av14[0], &pg_lit[2]);
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r14.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r13.raw(), "identifier", "identifier", 10, 1, av14, r15.raw(), NULL))) return false;
 		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r15.raw(), "build", "build", 5, 0, NULL, r16.raw(), NULL))) return false;
-		{ zval v = r16.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr9.raw()), &v); }
-		*ret = arr9.take();
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r15.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r16.raw(), NULL))) return false;
+		zv::Val r17;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r16.raw(), "build", "build", 5, 0, NULL, r17.raw(), NULL))) return false;
+		{ zval v = r17.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr10.raw()), &v); }
+		*ret = arr10.take();
 		return true;
 	}
 }

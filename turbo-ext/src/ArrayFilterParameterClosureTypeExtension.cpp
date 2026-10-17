@@ -185,6 +185,10 @@ namespace pgen::ArrayFilterParameterClosureTypeExtension {
 									r30 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), l_arrayType.raw());
 									if (UNEXPECTED(r30.isUndef())) return false;
 								}
+								else if (rc31 == pt_ce_node_callback_scope) {
+									r30 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), l_arrayType.raw());
+									if (UNEXPECTED(r30.isUndef())) return false;
+								}
 								else {
 									zval av32[1];
 									ZVAL_COPY_VALUE(&av32[0], l_arrayType.raw());
@@ -216,6 +220,10 @@ namespace pgen::ArrayFilterParameterClosureTypeExtension {
 											r36 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
 											if (UNEXPECTED(r36.isUndef())) return false;
 										}
+										else if (rc37 == pt_ce_node_callback_scope) {
+											r36 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
+											if (UNEXPECTED(r36.isUndef())) return false;
+										}
 										else {
 											zval av38[1];
 											ZVAL_COPY_VALUE(&av38[0], l_arrayType.raw());
@@ -227,6 +235,10 @@ namespace pgen::ArrayFilterParameterClosureTypeExtension {
 										zv::Val r40;
 										zend_class_entry *rc41 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 										if (rc41 == pt_ce_mutating_scope) {
+											r40 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), l_arrayType.raw());
+											if (UNEXPECTED(r40.isUndef())) return false;
+										}
+										else if (rc41 == pt_ce_node_callback_scope) {
 											r40 = pt_mutating_scope_get_iterable_key_type(Z_OBJ_P(p_scope), l_arrayType.raw());
 											if (UNEXPECTED(r40.isUndef())) return false;
 										}
@@ -260,6 +272,10 @@ namespace pgen::ArrayFilterParameterClosureTypeExtension {
 			zv::Val r47;
 			zend_class_entry *rc48 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 			if (rc48 == pt_ce_mutating_scope) {
+				r47 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
+				if (UNEXPECTED(r47.isUndef())) return false;
+			}
+			else if (rc48 == pt_ce_node_callback_scope) {
 				r47 = pt_mutating_scope_get_iterable_value_type(Z_OBJ_P(p_scope), l_arrayType.raw());
 				if (UNEXPECTED(r47.isUndef())) return false;
 			}

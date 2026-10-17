@@ -109,6 +109,10 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				r4 = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(p_scope));
 				if (UNEXPECTED(r4.isUndef())) return;
 			}
+			else if (rc5 == pt_ce_node_callback_scope) {
+				r4 = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(p_scope));
+				if (UNEXPECTED(r4.isUndef())) return;
+			}
 			else {
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_scope, "getAnonymousFunctionReflection", "getanonymousfunctionreflection", 30, 0, NULL, r4.raw()))) return;
 			}
@@ -128,6 +132,10 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			zv::Val r7;
 			zend_class_entry *rc8 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 			if (rc8 == pt_ce_mutating_scope) {
+				r7 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+				if (UNEXPECTED(r7.isUndef())) return;
+			}
+			else if (rc8 == pt_ce_node_callback_scope) {
 				r7 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
 				if (UNEXPECTED(r7.isUndef())) return;
 			}

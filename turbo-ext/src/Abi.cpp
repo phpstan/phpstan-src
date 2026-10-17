@@ -11,6 +11,7 @@
 #include "zend_closures.h"
 #include "zend_fibers.h"
 #include "zend_weakrefs.h"
+#include "zend_observer.h"
 
 
 static const zend_object_handlers *abi_object_handlers(const pt_abi_handlers &overrides)
@@ -229,8 +230,74 @@ static bool abi_parse_arg_str_slow(zval *arg, zend_string **dest, uint32_t num)
 #endif
 }
 
+/* zend_call_known_function() of an internal function, as zend_call_function()
+ * runs it but without the callable resolution around it: a frame pushed on
+ * the VM stack, the arguments copied (a reference as its value), the
+ * handler, the frame popped, and an exception rethrown into a calling user
+ * frame. The native code calls internal functions — builtins and the
+ * extension's own methods — millions of times per analysis. Anything that
+ * needs more of zend_call_function() takes it: observers, an
+ * execute_internal hook, trampolines, closures, deprecated functions,
+ * by-reference parameters and named arguments. */
+static bool abi_call_internal_lean(zend_function *fn, zend_object *object, zend_class_entry *calledScope, zval *retval, uint32_t paramCount, zval *params)
+{
+	if (UNEXPECTED(ZEND_OBSERVER_ENABLED || zend_execute_internal != NULL || (fn->common.fn_flags & (ZEND_ACC_CALL_VIA_TRAMPOLINE | ZEND_ACC_DEPRECATED | ZEND_ACC_CLOSURE)))) {
+		return false;
+	}
+	for (uint32_t i = 0; i < paramCount; i++) {
+		if (UNEXPECTED(ARG_SHOULD_BE_SENT_BY_REF(fn, i + 1))) {
+			return false;
+		}
+	}
+	ZVAL_UNDEF(retval);
+	if (UNEXPECTED(EG(exception) != NULL)) {
+		return true;
+	}
+	uint32_t callInfo = ZEND_CALL_TOP_FUNCTION | ZEND_CALL_DYNAMIC;
+	void *objectOrCalledScope = calledScope;
+	if (object != NULL && !(fn->common.fn_flags & ZEND_ACC_STATIC)) {
+		callInfo |= ZEND_CALL_HAS_THIS;
+		objectOrCalledScope = object;
+	}
+	zend_execute_data *call = zend_vm_stack_push_call_frame(callInfo, fn, paramCount, objectOrCalledScope);
+	for (uint32_t i = 0; i < paramCount; i++) {
+		zval *arg = &params[i];
+		ZVAL_DEREF(arg);
+		ZVAL_COPY(ZEND_CALL_ARG(call, i + 1), arg);
+	}
+	ZVAL_NULL(retval);
+	call->prev_execute_data = EG(current_execute_data);
+	EG(current_execute_data) = call;
+	fn->internal_function.handler(call, retval);
+	EG(current_execute_data) = call->prev_execute_data;
+	zend_vm_stack_free_args(call);
+	if (UNEXPECTED(EG(exception) != NULL)) {
+		zval_ptr_dtor(retval);
+		ZVAL_UNDEF(retval);
+	}
+	zend_vm_stack_free_call_frame(call);
+	if (UNEXPECTED(EG(exception) != NULL)) {
+		if (UNEXPECTED(EG(current_execute_data) == NULL)) {
+			zend_throw_exception_internal(NULL);
+		} else if (EG(current_execute_data)->func && ZEND_USER_CODE(EG(current_execute_data)->func->common.type)) {
+			zend_rethrow_exception(EG(current_execute_data));
+		}
+	}
+	return true;
+}
+
 static void abi_call_known_function(zend_function *fn, zend_object *object, zend_class_entry *calledScope, zval *retval, uint32_t paramCount, zval *params, HashTable *namedParams)
 {
+	if (fn->type == ZEND_INTERNAL_FUNCTION && namedParams == NULL) {
+		/* a NULL retval discards the result, as zend_call_known_function() does */
+		zval discarded;
+		if (abi_call_internal_lean(fn, object, calledScope, retval != NULL ? retval : &discarded, paramCount, params)) {
+			if (retval == NULL) {
+				zval_ptr_dtor(&discarded);
+			}
+			return;
+		}
+	}
 	zend_call_known_function(fn, object, calledScope, retval, paramCount, params, namedParams);
 }
 

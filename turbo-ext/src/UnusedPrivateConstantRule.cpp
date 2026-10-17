@@ -426,6 +426,10 @@ namespace pgen::UnusedPrivateConstantRule {
 								r89 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(o86.raw()), Z_OBJ_P(zv::Ref(p87).deref().raw()));
 								if (UNEXPECTED(r89.isUndef())) return false;
 							}
+							else if (rc90 == pt_ce_node_callback_scope) {
+								r89 = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(o86.raw()), Z_OBJ_P(zv::Ref(p87).deref().raw()));
+								if (UNEXPECTED(r89.isUndef())) return false;
+							}
 							else {
 								zval av91[1];
 								ZVAL_COPY_VALUE(&av91[0], zv::Ref(p87).deref().raw());

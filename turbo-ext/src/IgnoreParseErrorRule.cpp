@@ -12,14 +12,8 @@ static zval pg_lit[3];
 static pt_method_site pg_site_0; /* method_getNodes_0 */
 static pgrt::FunctionSite pg_site_1; /* function_count */
 static pt_method_site pg_site_2; /* method_getAttribute_2 */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_4; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_5; /* method_line_5 */
-static pt_method_site pg_site_6; /* method_identifier_6 */
-static pt_method_site pg_site_7; /* method_nonIgnorable_7 */
-static pt_method_site pg_site_8; /* method_build_8 */
-static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::IgnoreParseErrorRule {
 
@@ -112,29 +106,22 @@ namespace pgen::IgnoreParseErrorRule {
 								sb22.appendLiteral("Parse error in @phpstan-ignore: ", 32);
 								if (UNEXPECTED(!sb22.append(l_parseError))) return false;
 								zv::Val r23 = sb22.finish();
-								zval av24[1];
-								ZVAL_COPY_VALUE(&av24[0], r23.raw());
-								zend_class_entry *ce25 = pgrt::lookupClass(pg_site_3, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-								if (UNEXPECTED(ce25 == NULL)) return false;
+								zv::Val r24;
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r23.raw(), r24.raw()))) return false;
+								if (UNEXPECTED(Z_TYPE_P(l_line.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", l_line.raw()); return false; }
+								zv::Val r25;
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r24.raw()), Z_LVAL_P(l_line.raw()), r25.raw()))) return false;
 								zv::Val r26;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_4, ce25, "message", 7, 1, av24, r26.raw(), NULL))) return false;
-								zval av27[1];
-								ZVAL_COPY_VALUE(&av27[0], l_line.raw());
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r25.raw()), &pg_lit[2], r26.raw()))) return false;
+								zv::Val r27;
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(r26.raw()), r27.raw()))) return false;
 								zv::Val r28;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r26.raw(), "line", "line", 4, 1, av27, r28.raw(), NULL))) return false;
-								zval av29[1];
-								ZVAL_COPY_VALUE(&av29[0], &pg_lit[2]);
-								zv::Val r30;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r28.raw(), "identifier", "identifier", 10, 1, av29, r30.raw(), NULL))) return false;
-								zv::Val r31;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r30.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r31.raw(), NULL))) return false;
-								zv::Val r32;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r31.raw(), "build", "build", 5, 0, NULL, r32.raw(), NULL))) return false;
-								zv::Val o33 = zv::Val::copyOf(zv::Ref(r32.raw()));
-								zval *w34 = zv::Ref(l_errors.raw()).deref().raw();
-								if (Z_TYPE_P(w34) <= IS_NULL) { zval_ptr_dtor(w34); array_init(w34); } else if (UNEXPECTED(Z_TYPE_P(w34) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w34);
-								{ zval v = o33.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w34), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r27.raw()), r28.raw()))) return false;
+								zv::Val o29 = zv::Val::copyOf(zv::Ref(r28.raw()));
+								zval *w30 = zv::Ref(l_errors.raw()).deref().raw();
+								if (Z_TYPE_P(w30) <= IS_NULL) { zval_ptr_dtor(w30); array_init(w30); } else if (UNEXPECTED(Z_TYPE_P(w30) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w30);
+								{ zval v = o29.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w30), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 						if (UNEXPECTED(!it19.next())) return false;
@@ -177,8 +164,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IgnoreParseErrorRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IgnoreParseErrorRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

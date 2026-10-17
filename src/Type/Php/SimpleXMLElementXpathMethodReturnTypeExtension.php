@@ -14,8 +14,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use SimpleXMLElement;
 use function extension_loaded;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SimpleXMLElementXpathMethodReturnTypeExtension.cpp')]
 final class SimpleXMLElementXpathMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

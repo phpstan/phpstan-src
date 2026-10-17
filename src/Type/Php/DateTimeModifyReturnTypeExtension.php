@@ -17,7 +17,9 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use Throwable;
 use function count;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DateTimeModifyReturnTypeExtension.cpp')]
 final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

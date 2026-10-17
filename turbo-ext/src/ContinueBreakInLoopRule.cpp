@@ -17,17 +17,9 @@ static pgrt::PropSite pg_site_4; /* prop_num_4 */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
 static pt_method_site pg_site_6; /* method_getAttribute_6 */
 static pgrt::FunctionSite pg_site_7; /* function_array_reverse */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_9; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_10; /* method_nonIgnorable_10 */
-static pt_method_site pg_site_11; /* method_identifier_11 */
-static pt_method_site pg_site_12; /* method_build_12 */
-static pgrt::FunctionSite pg_site_13; /* function_in_array */
-static pt_method_site pg_site_14; /* method_nonIgnorable_14 */
-static pt_method_site pg_site_15; /* method_identifier_15 */
-static pt_method_site pg_site_16; /* method_build_16 */
-static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Analyser\Scope */
+static pgrt::FunctionSite pg_site_8; /* function_in_array */
+static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ContinueBreakInLoopRule {
 
@@ -142,64 +134,58 @@ namespace pgen::ContinueBreakInLoopRule {
 							if (UNEXPECTED(!sb24.append(q21.raw()))) return false;
 							sb24.appendLiteral(" used outside of a loop or a switch statement.", 46);
 							zv::Val r25 = sb24.finish();
-							zval av26[1];
-							ZVAL_COPY_VALUE(&av26[0], r25.raw());
-							zend_class_entry *ce27 = pgrt::lookupClass(pg_site_8, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-							if (UNEXPECTED(ce27 == NULL)) return false;
-							zv::Val r28;
-							if (UNEXPECTED(!pgrt::callStatic(pg_site_9, ce27, "message", 7, 1, av26, r28.raw(), NULL))) return false;
-							zv::Val r29;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r28.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r29.raw(), NULL))) return false;
-							zv::Val q30;
+							zv::Val r26;
+							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r25.raw(), r26.raw()))) return false;
+							zv::Val r27;
+							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(r26.raw()), r27.raw()))) return false;
+							zv::Val q28;
 							if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt\\Continue_", 29))) {
-								zv::Val o31 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
-								q30 = std::move(o31);
+								zv::Val o29 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
+								q28 = std::move(o29);
 							} else {
 							 {
-								zv::Val o32 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
-								q30 = std::move(o32);
+								zv::Val o30 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
+								q28 = std::move(o30);
 							}
 							}
-							pgrt::StringBuilder sb33;
-							if (UNEXPECTED(!sb33.append(q30.raw()))) return false;
-							sb33.appendLiteral(".outOfLoop", 10);
-							zv::Val r34 = sb33.finish();
-							zval av35[1];
-							ZVAL_COPY_VALUE(&av35[0], r34.raw());
-							zv::Val r36;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_11, r29.raw(), "identifier", "identifier", 10, 1, av35, r36.raw(), NULL))) return false;
-							zv::Val r37;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r36.raw(), "build", "build", 5, 0, NULL, r37.raw(), NULL))) return false;
-							{ zval v = r37.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr20.raw()), &v); }
+							pgrt::StringBuilder sb31;
+							if (UNEXPECTED(!sb31.append(q28.raw()))) return false;
+							sb31.appendLiteral(".outOfLoop", 10);
+							zv::Val r32 = sb31.finish();
+							zv::Val r33;
+							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r27.raw()), r32.raw(), r33.raw()))) return false;
+							zv::Val r34;
+							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r33.raw()), r34.raw()))) return false;
+							{ zval v = r34.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr20.raw()), &v); }
 							*ret = arr20.take();
 							return true;
 						}
 					}
 				}
 				 {
-					zv::Val arr38 = zv::Val::adopt([]() { zval a; array_init_size(&a, 5); return a; }());
-					zv::Val o39 = zv::Val::copyOf(zv::Ref(&pg_lit[6]));
-					{ zval v = o39.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr38.raw()), &v); }
-					zv::Val o40 = zv::Val::copyOf(zv::Ref(&pg_lit[7]));
-					{ zval v = o40.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr38.raw()), &v); }
-					zv::Val o41 = zv::Val::copyOf(zv::Ref(&pg_lit[8]));
-					{ zval v = o41.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr38.raw()), &v); }
-					zv::Val o42 = zv::Val::copyOf(zv::Ref(&pg_lit[9]));
-					{ zval v = o42.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr38.raw()), &v); }
-					zv::Val o43 = zv::Val::copyOf(zv::Ref(&pg_lit[10]));
-					{ zval v = o43.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr38.raw()), &v); }
-					zval av44[3];
-					ZVAL_COPY_VALUE(&av44[0], l_parentStmtType);
-					ZVAL_COPY_VALUE(&av44[1], arr38.raw());
-					zval z45;
-					ZVAL_BOOL(&z45, true);
-					ZVAL_COPY_VALUE(&av44[2], &z45);
-					zv::Val r46;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "in_array", 8, pt_ce_continue_break_in_loop_rule, 3, av44, r46.raw(), NULL))) return false;
-					if (Z_TYPE_P(r46.raw()) == IS_TRUE) {
+					zv::Val arr35 = zv::Val::adopt([]() { zval a; array_init_size(&a, 5); return a; }());
+					zv::Val o36 = zv::Val::copyOf(zv::Ref(&pg_lit[6]));
+					{ zval v = o36.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr35.raw()), &v); }
+					zv::Val o37 = zv::Val::copyOf(zv::Ref(&pg_lit[7]));
+					{ zval v = o37.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr35.raw()), &v); }
+					zv::Val o38 = zv::Val::copyOf(zv::Ref(&pg_lit[8]));
+					{ zval v = o38.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr35.raw()), &v); }
+					zv::Val o39 = zv::Val::copyOf(zv::Ref(&pg_lit[9]));
+					{ zval v = o39.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr35.raw()), &v); }
+					zv::Val o40 = zv::Val::copyOf(zv::Ref(&pg_lit[10]));
+					{ zval v = o40.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr35.raw()), &v); }
+					zval av41[3];
+					ZVAL_COPY_VALUE(&av41[0], l_parentStmtType);
+					ZVAL_COPY_VALUE(&av41[1], arr35.raw());
+					zval z42;
+					ZVAL_BOOL(&z42, true);
+					ZVAL_COPY_VALUE(&av41[2], &z42);
+					zv::Val r43;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_8, "in_array", 8, pt_ce_continue_break_in_loop_rule, 3, av41, r43.raw(), NULL))) return false;
+					if (Z_TYPE_P(r43.raw()) == IS_TRUE) {
 						 {
-							zend_long old47 = l_value;
-							if (UNEXPECTED(!pgrt::subLong(old47, 1, &l_value))) return false;
+							zend_long old44 = l_value;
+							if (UNEXPECTED(!pgrt::subLong(old44, 1, &l_value))) return false;
 						}
 					}
 				}
@@ -217,60 +203,54 @@ namespace pgen::ContinueBreakInLoopRule {
 	 {
 		if (l_value > 0) {
 			 {
-				zv::Val arr48 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-				zv::Val q49;
+				zv::Val arr45 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+				zv::Val q46;
 				if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt\\Continue_", 29))) {
-					zv::Val o50 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
-					q49 = std::move(o50);
+					zv::Val o47 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
+					q46 = std::move(o47);
 				} else {
 				 {
-					zv::Val o51 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
-					q49 = std::move(o51);
+					zv::Val o48 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
+					q46 = std::move(o48);
 				}
 				}
-				pgrt::StringBuilder sb52;
-				sb52.appendLiteral("Keyword ", 8);
-				if (UNEXPECTED(!sb52.append(q49.raw()))) return false;
-				sb52.appendLiteral(" used outside of a loop or a switch statement.", 46);
-				zv::Val r53 = sb52.finish();
-				zval av54[1];
-				ZVAL_COPY_VALUE(&av54[0], r53.raw());
-				zend_class_entry *ce55 = pgrt::lookupClass(pg_site_8, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-				if (UNEXPECTED(ce55 == NULL)) return false;
-				zv::Val r56;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_9, ce55, "message", 7, 1, av54, r56.raw(), NULL))) return false;
-				zv::Val r57;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r56.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r57.raw(), NULL))) return false;
-				zv::Val q58;
+				pgrt::StringBuilder sb49;
+				sb49.appendLiteral("Keyword ", 8);
+				if (UNEXPECTED(!sb49.append(q46.raw()))) return false;
+				sb49.appendLiteral(" used outside of a loop or a switch statement.", 46);
+				zv::Val r50 = sb49.finish();
+				zv::Val r51;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r50.raw(), r51.raw()))) return false;
+				zv::Val r52;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(r51.raw()), r52.raw()))) return false;
+				zv::Val q53;
 				if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt\\Continue_", 29))) {
-					zv::Val o59 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
-					q58 = std::move(o59);
+					zv::Val o54 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
+					q53 = std::move(o54);
 				} else {
 				 {
-					zv::Val o60 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
-					q58 = std::move(o60);
+					zv::Val o55 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
+					q53 = std::move(o55);
 				}
 				}
-				pgrt::StringBuilder sb61;
-				if (UNEXPECTED(!sb61.append(q58.raw()))) return false;
-				sb61.appendLiteral(".outOfLoop", 10);
-				zv::Val r62 = sb61.finish();
-				zval av63[1];
-				ZVAL_COPY_VALUE(&av63[0], r62.raw());
-				zv::Val r64;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r57.raw(), "identifier", "identifier", 10, 1, av63, r64.raw(), NULL))) return false;
-				zv::Val r65;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_16, r64.raw(), "build", "build", 5, 0, NULL, r65.raw(), NULL))) return false;
-				{ zval v = r65.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr48.raw()), &v); }
-				*ret = arr48.take();
+				pgrt::StringBuilder sb56;
+				if (UNEXPECTED(!sb56.append(q53.raw()))) return false;
+				sb56.appendLiteral(".outOfLoop", 10);
+				zv::Val r57 = sb56.finish();
+				zv::Val r58;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r52.raw()), r57.raw(), r58.raw()))) return false;
+				zv::Val r59;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r58.raw()), r59.raw()))) return false;
+				{ zval v = r59.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr45.raw()), &v); }
+				*ret = arr45.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval arr66_raw;
-		ZVAL_EMPTY_ARRAY(&arr66_raw);
-		ZVAL_COPY(ret, &arr66_raw);
+		zval arr60_raw;
+		ZVAL_EMPTY_ARRAY(&arr60_raw);
+		ZVAL_COPY(ret, &arr60_raw);
 		return true;
 	}
 }
@@ -308,8 +288,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ContinueBreakInLoopRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_17, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ContinueBreakInLoopRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

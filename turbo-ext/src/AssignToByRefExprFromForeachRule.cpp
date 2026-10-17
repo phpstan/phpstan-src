@@ -16,14 +16,9 @@ static pt_method_site pg_site_3; /* method_getPropertyFetch_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Node\Expr\ForeachValueByRefExpr */
 static pt_method_site pg_site_5; /* method_hasExpressionType_5 */
 static pt_method_site pg_site_6; /* method_printExpr_6 */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_8; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_9; /* method_identifier_9 */
-static pt_method_site pg_site_10; /* method_tip_10 */
-static pt_method_site pg_site_11; /* method_build_11 */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Node\Printer\ExprPrinter */
-static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Node\Printer\ExprPrinter */
+static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::AssignToByRefExprFromForeachRule {
 
@@ -147,23 +142,15 @@ namespace pgen::AssignToByRefExprFromForeachRule {
 		if (UNEXPECTED(!sb16.append(r15.raw()))) return false;
 		sb16.appendLiteral(" overwrites the last element from array.", 40);
 		zv::Val r17 = sb16.finish();
-		zval av18[1];
-		ZVAL_COPY_VALUE(&av18[0], r17.raw());
-		zend_class_entry *ce19 = pgrt::lookupClass(pg_site_7, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce19 == NULL)) return false;
+		zv::Val r18;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r17.raw(), r18.raw()))) return false;
+		zv::Val r19;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r18.raw()), &pg_lit[3], r19.raw()))) return false;
 		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_8, ce19, "message", 7, 1, av18, r20.raw(), NULL))) return false;
-		zval av21[1];
-		ZVAL_COPY_VALUE(&av21[0], &pg_lit[3]);
-		zv::Val r22;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r20.raw(), "identifier", "identifier", 10, 1, av21, r22.raw(), NULL))) return false;
-		zval av23[1];
-		ZVAL_COPY_VALUE(&av23[0], &pg_lit[4]);
-		zv::Val r24;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r22.raw(), "tip", "tip", 3, 1, av23, r24.raw(), NULL))) return false;
-		zv::Val r25;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, r24.raw(), "build", "build", 5, 0, NULL, r25.raw(), NULL))) return false;
-		{ zval v = r25.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr12.raw()), &v); }
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_tip(Z_OBJ_P(r19.raw()), &pg_lit[4], r20.raw()))) return false;
+		zv::Val r21;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r20.raw()), r21.raw()))) return false;
+		{ zval v = r21.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr12.raw()), &v); }
 		*ret = arr12.take();
 		return true;
 	}
@@ -189,7 +176,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssignToByRefExprFromForeachRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_printer)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_printer != NULL && UNEXPECTED(Z_TYPE_P(p_printer) != IS_OBJECT || !(pgrt::instanceOfClass(p_printer, pt_ce_expr_printer) || pgrt::instanceOfClass(p_printer, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Node\\Printer\\ExprPrinter", 32))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Printer\\ExprPrinter", zend_zval_value_name(p_printer)); RETURN_THROWS(); }
+		if (p_printer != NULL && UNEXPECTED(Z_TYPE_P(p_printer) != IS_OBJECT || !(pgrt::instanceOfClass(p_printer, pt_ce_expr_printer) || pgrt::instanceOfClass(p_printer, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Node\\Printer\\ExprPrinter", 32))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Printer\\ExprPrinter", zend_zval_value_name(p_printer)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::AssignToByRefExprFromForeachRule::m___construct(Z_OBJ_P(ZEND_THIS), p_printer))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\AssignToByRefExprFromForeachRule::getNodeTypes() */
@@ -209,8 +196,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssignToByRefExprFromForeachRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_13, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssignToByRefExprFromForeachRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

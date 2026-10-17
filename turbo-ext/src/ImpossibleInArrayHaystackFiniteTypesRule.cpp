@@ -56,16 +56,11 @@ static pgrt::PropSite pg_site_43; /* prop_reasons_43 */
 static pt_method_site pg_site_44; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
 static pt_method_site pg_site_45; /* method_describe_45 */
 static pt_method_site pg_site_46; /* method_describe_46 */
-static pgrt::ClassSite pg_site_47; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_48; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_49; /* method_identifier_49 */
-static pt_method_site pg_site_50; /* method_acceptsReasonsTip_50 */
-static pt_method_site pg_site_51; /* method_build_51 */
-static pgrt::ClassSite pg_site_52; /* cls_PHPStan\Rules\IdentifierRuleError */
-static pgrt::ClassSite pg_site_53; /* cls_PHPStan\Reflection\InitializerExprTypeResolver */
-static pgrt::ClassSite pg_site_54; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_55; /* cls_PHPStan\Analyser\Scope */
-static pgrt::ClassSite pg_site_56; /* cls_PHPStan\TrinaryLogic */
+static pgrt::ClassSite pg_site_47; /* cls_PHPStan\Rules\IdentifierRuleError */
+static pgrt::ClassSite pg_site_48; /* cls_PHPStan\Reflection\InitializerExprTypeResolver */
+static pgrt::ClassSite pg_site_49; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_50; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_51; /* cls_PHPStan\TrinaryLogic */
 
 static void pg_const_FUNCTIONS(zval *out)
 {
@@ -1039,24 +1034,16 @@ namespace pgen::ImpossibleInArrayHaystackFiniteTypesRule {
 		if (UNEXPECTED(!sb11.append(r10.raw()))) return false;
 		sb11.appendLiteral(".", 1);
 		zv::Val r12 = sb11.finish();
-		zval av13[1];
-		ZVAL_COPY_VALUE(&av13[0], r12.raw());
-		zend_class_entry *ce14 = pgrt::lookupClass(pg_site_47, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce14 == NULL)) return false;
+		zv::Val r13;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r12.raw(), r13.raw()))) return false;
+		zv::Val r14;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r13.raw()), &pg_lit[7], r14.raw()))) return false;
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_48, ce14, "message", 7, 1, av13, r15.raw(), NULL))) return false;
-		zval av16[1];
-		ZVAL_COPY_VALUE(&av16[0], &pg_lit[7]);
-		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_49, r15.raw(), "identifier", "identifier", 10, 1, av16, r17.raw(), NULL))) return false;
-		zval av18[1];
-		ZVAL_COPY_VALUE(&av18[0], p_reasons);
-		zv::Val r19;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_50, r17.raw(), "acceptsReasonsTip", "acceptsreasonstip", 17, 1, av18, r19.raw(), NULL))) return false;
-		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_51, r19.raw(), "build", "build", 5, 0, NULL, r20.raw(), NULL))) return false;
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r20.raw(), pgrt::lookupClassQuiet(pg_site_52, "PHPStan\\Rules\\IdentifierRuleError", 33))))) { pgrt::throwReturnType("PHPStan\\Rules\\Comparison\\ImpossibleInArrayHaystackFiniteTypesRule::buildError", "PHPStan\\Rules\\IdentifierRuleError", r20.raw()); return false; }
-		*ret = r20.take();
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_acceptsReasonsTip(Z_OBJ_P(r14.raw()), p_reasons, r15.raw()))) return false;
+		zv::Val r16;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r15.raw()), r16.raw()))) return false;
+		if (UNEXPECTED(!(pgrt::instanceOfClass(r16.raw(), pgrt::lookupClassQuiet(pg_site_47, "PHPStan\\Rules\\IdentifierRuleError", 33))))) { pgrt::throwReturnType("PHPStan\\Rules\\Comparison\\ImpossibleInArrayHaystackFiniteTypesRule::buildError", "PHPStan\\Rules\\IdentifierRuleError", r16.raw()); return false; }
+		*ret = r16.take();
 		return true;
 	}
 }
@@ -1087,7 +1074,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 			Z_PARAM_ZVAL(p_initializerExprTypeResolver)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_initializerExprTypeResolver != NULL && UNEXPECTED(Z_TYPE_P(p_initializerExprTypeResolver) != IS_OBJECT || !(pgrt::instanceOfClass(p_initializerExprTypeResolver, pt_ce_initializer_expr_type_resolver) || pgrt::instanceOfClass(p_initializerExprTypeResolver, pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\InitializerExprTypeResolver", 46))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\InitializerExprTypeResolver", zend_zval_value_name(p_initializerExprTypeResolver)); RETURN_THROWS(); }
+		if (p_initializerExprTypeResolver != NULL && UNEXPECTED(Z_TYPE_P(p_initializerExprTypeResolver) != IS_OBJECT || !(pgrt::instanceOfClass(p_initializerExprTypeResolver, pt_ce_initializer_expr_type_resolver) || pgrt::instanceOfClass(p_initializerExprTypeResolver, pgrt::lookupClassQuiet(pg_site_48, "PHPStan\\Reflection\\InitializerExprTypeResolver", 46))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\InitializerExprTypeResolver", zend_zval_value_name(p_initializerExprTypeResolver)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m___construct(Z_OBJ_P(ZEND_THIS), p_initializerExprTypeResolver, p_treatPhpDocTypesAsCertain))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleInArrayHaystackFiniteTypesRule::getNodeType() */
@@ -1102,8 +1089,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_54, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_55, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_49, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1131,7 +1118,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_needleType != NULL && UNEXPECTED(Z_TYPE_P(p_needleType) != IS_OBJECT || !pgrt::instanceOfClass(p_needleType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_needleType)); RETURN_THROWS(); }
 		if (p_valueType != NULL && UNEXPECTED(Z_TYPE_P(p_valueType) != IS_OBJECT || !pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
-		if (p_isStrict != NULL && UNEXPECTED(Z_TYPE_P(p_isStrict) != IS_OBJECT || !((Z_TYPE_P(p_isStrict) == IS_OBJECT && Z_OBJCE_P(p_isStrict) == pt_ce_trinary) || pgrt::instanceOfClass(p_isStrict, pgrt::lookupClassQuiet(pg_site_56, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_isStrict)); RETURN_THROWS(); }
+		if (p_isStrict != NULL && UNEXPECTED(Z_TYPE_P(p_isStrict) != IS_OBJECT || !((Z_TYPE_P(p_isStrict) == IS_OBJECT && Z_OBJCE_P(p_isStrict) == pt_ce_trinary) || pgrt::instanceOfClass(p_isStrict, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_isStrict)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m_findCanNeverMatchReasons(Z_OBJ_P(ZEND_THIS), p_needleType, p_valueType, p_isStrict, return_value))) RETURN_THROWS();
 	});

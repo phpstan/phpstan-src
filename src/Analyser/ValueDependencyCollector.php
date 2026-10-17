@@ -20,6 +20,7 @@ use function array_values;
 use function rtrim;
 use function sprintf;
 use function strtolower;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * Collects the values declared through DependencyTracker::trackValueDependency() while a file is being
@@ -54,6 +55,7 @@ use function strtolower;
  * }
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ValueDependencyCollector.cpp')]
 final class ValueDependencyCollector
 {
 

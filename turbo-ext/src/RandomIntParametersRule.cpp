@@ -35,14 +35,10 @@ static pt_method_site pg_site_22; /* method_getMax_22 */
 static pt_method_site pg_site_23; /* method_describe_23 */
 static pt_method_site pg_site_24; /* method_describe_24 */
 static pgrt::FunctionSite pg_site_25; /* function_sprintf */
-static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_27; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_28; /* method_identifier_28 */
-static pt_method_site pg_site_29; /* method_build_29 */
-static pgrt::ClassSite pg_site_30; /* cls_PHPStan\Reflection\ReflectionProvider */
-static pgrt::ClassSite pg_site_31; /* cls_PHPStan\Php\PhpVersion */
-static pgrt::ClassSite pg_site_32; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_33; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Reflection\ReflectionProvider */
+static pgrt::ClassSite pg_site_27; /* cls_PHPStan\Php\PhpVersion */
+static pgrt::ClassSite pg_site_28; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_29; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::RandomIntParametersRule {
 
@@ -417,28 +413,22 @@ namespace pgen::RandomIntParametersRule {
 				ZVAL_COPY_VALUE(&av78[2], r77.raw());
 				zv::Val r79;
 				if (UNEXPECTED(!pgrt::callFunction(pg_site_25, "sprintf", 7, pt_ce_random_int_parameters_rule, 3, av78, r79.raw(), NULL))) return false;
-				zval av80[1];
-				ZVAL_COPY_VALUE(&av80[0], r79.raw());
-				zend_class_entry *ce81 = pgrt::lookupClass(pg_site_26, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-				if (UNEXPECTED(ce81 == NULL)) return false;
+				zv::Val r80;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r79.raw(), r80.raw()))) return false;
+				zv::Val r81;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r80.raw()), &pg_lit[3], r81.raw()))) return false;
 				zv::Val r82;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_27, ce81, "message", 7, 1, av80, r82.raw(), NULL))) return false;
-				zval av83[1];
-				ZVAL_COPY_VALUE(&av83[0], &pg_lit[3]);
-				zv::Val r84;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_28, r82.raw(), "identifier", "identifier", 10, 1, av83, r84.raw(), NULL))) return false;
-				zv::Val r85;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_29, r84.raw(), "build", "build", 5, 0, NULL, r85.raw(), NULL))) return false;
-				{ zval v = r85.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr68.raw()), &v); }
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r81.raw()), r82.raw()))) return false;
+				{ zval v = r82.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr68.raw()), &v); }
 				*ret = arr68.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval arr86_raw;
-		ZVAL_EMPTY_ARRAY(&arr86_raw);
-		ZVAL_COPY(ret, &arr86_raw);
+		zval arr83_raw;
+		ZVAL_EMPTY_ARRAY(&arr83_raw);
+		ZVAL_COPY(ret, &arr83_raw);
 		return true;
 	}
 }
@@ -466,8 +456,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RandomIntParametersRule)
 			Z_PARAM_ZVAL(p_phpVersion)
 			Z_PARAM_BOOL(p_reportMaybes)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_reflectionProvider != NULL && UNEXPECTED(Z_TYPE_P(p_reflectionProvider) != IS_OBJECT || !pgrt::instanceOfClass(p_reflectionProvider, pgrt::lookupClassQuiet(pg_site_30, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_reflectionProvider)); RETURN_THROWS(); }
-		if (p_phpVersion != NULL && UNEXPECTED(Z_TYPE_P(p_phpVersion) != IS_OBJECT || !((Z_TYPE_P(p_phpVersion) == IS_OBJECT && Z_OBJCE_P(p_phpVersion) == pt_ce_php_version) || pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\Php\\PhpVersion", 22))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
+		if (p_reflectionProvider != NULL && UNEXPECTED(Z_TYPE_P(p_reflectionProvider) != IS_OBJECT || !pgrt::instanceOfClass(p_reflectionProvider, pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_reflectionProvider)); RETURN_THROWS(); }
+		if (p_phpVersion != NULL && UNEXPECTED(Z_TYPE_P(p_phpVersion) != IS_OBJECT || !((Z_TYPE_P(p_phpVersion) == IS_OBJECT && Z_OBJCE_P(p_phpVersion) == pt_ce_php_version) || pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_27, "PHPStan\\Php\\PhpVersion", 22))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::RandomIntParametersRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_phpVersion, p_reportMaybes))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\RandomIntParametersRule::getNodeType() */
@@ -482,8 +472,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RandomIntParametersRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_32, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_33, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_28, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RandomIntParametersRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

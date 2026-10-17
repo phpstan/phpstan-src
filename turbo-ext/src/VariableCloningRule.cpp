@@ -22,16 +22,10 @@ static pgrt::PropSite pg_site_9; /* prop_name_9 */
 static pgrt::PropSite pg_site_10; /* prop_expr_10 */
 static pgrt::PropSite pg_site_11; /* prop_name_11 */
 static pt_method_site pg_site_12; /* method_describe_12 */
-static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_14; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_15; /* method_identifier_15 */
-static pt_method_site pg_site_16; /* method_build_16 */
-static pt_method_site pg_site_17; /* method_describe_17 */
-static pt_method_site pg_site_18; /* method_identifier_18 */
-static pt_method_site pg_site_19; /* method_build_19 */
-static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Rules\RuleLevelHelper */
-static pgrt::ClassSite pg_site_21; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_13; /* method_describe_13 */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Rules\RuleLevelHelper */
+static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -217,60 +211,48 @@ namespace pgen::VariableCloningRule {
 				if (UNEXPECTED(!sb32.append(r31.raw()))) return false;
 				sb32.appendLiteral(".", 1);
 				zv::Val r33 = sb32.finish();
-				zval av34[1];
-				ZVAL_COPY_VALUE(&av34[0], r33.raw());
-				zend_class_entry *ce35 = pgrt::lookupClass(pg_site_13, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-				if (UNEXPECTED(ce35 == NULL)) return false;
+				zv::Val r34;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r33.raw(), r34.raw()))) return false;
+				zv::Val r35;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r34.raw()), &pg_lit[2], r35.raw()))) return false;
 				zv::Val r36;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_14, ce35, "message", 7, 1, av34, r36.raw(), NULL))) return false;
-				zval av37[1];
-				ZVAL_COPY_VALUE(&av37[0], &pg_lit[2]);
-				zv::Val r38;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r36.raw(), "identifier", "identifier", 10, 1, av37, r38.raw(), NULL))) return false;
-				zv::Val r39;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_16, r38.raw(), "build", "build", 5, 0, NULL, r39.raw(), NULL))) return false;
-				{ zval v = r39.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr22.raw()), &v); }
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r35.raw()), r36.raw()))) return false;
+				{ zval v = r36.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr22.raw()), &v); }
 				*ret = arr22.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val arr40 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val o41 = zv::Val::copyOf(zv::Ref(l_type.raw()));
-		zval *vl42_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_TYPE_ONLY);
-		if (UNEXPECTED(vl42_p == NULL)) return false;
-		zv::Val vl42 = zv::Val::copyOf(zv::Ref(vl42_p));
-		zval av43[1];
-		ZVAL_COPY_VALUE(&av43[0], vl42.raw());
-		zv::Val r44;
-		if (EXPECTED(Z_TYPE_P(o41.raw()) == IS_OBJECT)) {
-			r44 = pt_type_op(Z_OBJ_P(o41.raw()), PT_OP_DESCRIBE, 1, av43);
-			if (UNEXPECTED(r44.isUndef())) return false;
+		zv::Val arr37 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zv::Val o38 = zv::Val::copyOf(zv::Ref(l_type.raw()));
+		zval *vl39_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_TYPE_ONLY);
+		if (UNEXPECTED(vl39_p == NULL)) return false;
+		zv::Val vl39 = zv::Val::copyOf(zv::Ref(vl39_p));
+		zval av40[1];
+		ZVAL_COPY_VALUE(&av40[0], vl39.raw());
+		zv::Val r41;
+		if (EXPECTED(Z_TYPE_P(o38.raw()) == IS_OBJECT)) {
+			r41 = pt_type_op(Z_OBJ_P(o38.raw()), PT_OP_DESCRIBE, 1, av40);
+			if (UNEXPECTED(r41.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, o41.raw(), "describe", "describe", 8, 1, av43, r44.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, o38.raw(), "describe", "describe", 8, 1, av40, r41.raw(), NULL))) return false;
 		}
 		}
-		pgrt::StringBuilder sb45;
-		sb45.appendLiteral("Cannot clone ", 13);
-		if (UNEXPECTED(!sb45.append(r44.raw()))) return false;
-		sb45.appendLiteral(".", 1);
-		zv::Val r46 = sb45.finish();
-		zval av47[1];
-		ZVAL_COPY_VALUE(&av47[0], r46.raw());
-		zend_class_entry *ce48 = pgrt::lookupClass(pg_site_13, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce48 == NULL)) return false;
-		zv::Val r49;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_14, ce48, "message", 7, 1, av47, r49.raw(), NULL))) return false;
-		zval av50[1];
-		ZVAL_COPY_VALUE(&av50[0], &pg_lit[2]);
-		zv::Val r51;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_18, r49.raw(), "identifier", "identifier", 10, 1, av50, r51.raw(), NULL))) return false;
-		zv::Val r52;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_19, r51.raw(), "build", "build", 5, 0, NULL, r52.raw(), NULL))) return false;
-		{ zval v = r52.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr40.raw()), &v); }
-		*ret = arr40.take();
+		pgrt::StringBuilder sb42;
+		sb42.appendLiteral("Cannot clone ", 13);
+		if (UNEXPECTED(!sb42.append(r41.raw()))) return false;
+		sb42.appendLiteral(".", 1);
+		zv::Val r43 = sb42.finish();
+		zv::Val r44;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r43.raw(), r44.raw()))) return false;
+		zv::Val r45;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r44.raw()), &pg_lit[2], r45.raw()))) return false;
+		zv::Val r46;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r45.raw()), r46.raw()))) return false;
+		{ zval v = r46.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr37.raw()), &v); }
+		*ret = arr37.take();
 		return true;
 	}
 }
@@ -293,7 +275,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableCloningRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_ruleLevelHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_ruleLevelHelper != NULL && UNEXPECTED(Z_TYPE_P(p_ruleLevelHelper) != IS_OBJECT || !((Z_TYPE_P(p_ruleLevelHelper) == IS_OBJECT && Z_OBJCE_P(p_ruleLevelHelper) == pt_ce_rule_level_helper) || pgrt::instanceOfClass(p_ruleLevelHelper, pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Rules\\RuleLevelHelper", 29))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\RuleLevelHelper", zend_zval_value_name(p_ruleLevelHelper)); RETURN_THROWS(); }
+		if (p_ruleLevelHelper != NULL && UNEXPECTED(Z_TYPE_P(p_ruleLevelHelper) != IS_OBJECT || !((Z_TYPE_P(p_ruleLevelHelper) == IS_OBJECT && Z_OBJCE_P(p_ruleLevelHelper) == pt_ce_rule_level_helper) || pgrt::instanceOfClass(p_ruleLevelHelper, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\RuleLevelHelper", 29))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\RuleLevelHelper", zend_zval_value_name(p_ruleLevelHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::VariableCloningRule::m___construct(Z_OBJ_P(ZEND_THIS), p_ruleLevelHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\VariableCloningRule::getNodeType() */
@@ -308,8 +290,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableCloningRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VariableCloningRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

@@ -12,14 +12,9 @@ static zval pg_lit[3];
 static pgrt::PropSite pg_site_0; /* prop_byRef_0 */
 static pgrt::PropSite pg_site_1; /* prop_expr_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Expr */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_4; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_5; /* method_nonIgnorable_5 */
-static pt_method_site pg_site_6; /* method_identifier_6 */
-static pt_method_site pg_site_7; /* method_build_7 */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\NullsafeCheck */
-static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\NullsafeCheck */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ArrowFunctionReturnNullsafeByRefRule {
 
@@ -92,21 +87,15 @@ namespace pgen::ArrowFunctionReturnNullsafeByRefRule {
 	}
 	 {
 		zv::Val arr9 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zval av10[1];
-		ZVAL_COPY_VALUE(&av10[0], &pg_lit[1]);
-		zend_class_entry *ce11 = pgrt::lookupClass(pg_site_3, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce11 == NULL)) return false;
+		zv::Val r10;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r10.raw()))) return false;
+		zv::Val r11;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(r10.raw()), r11.raw()))) return false;
 		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_4, ce11, "message", 7, 1, av10, r12.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r11.raw()), &pg_lit[2], r12.raw()))) return false;
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r12.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r13.raw(), NULL))) return false;
-		zval av14[1];
-		ZVAL_COPY_VALUE(&av14[0], &pg_lit[2]);
-		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r13.raw(), "identifier", "identifier", 10, 1, av14, r15.raw(), NULL))) return false;
-		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r15.raw(), "build", "build", 5, 0, NULL, r16.raw(), NULL))) return false;
-		{ zval v = r16.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr9.raw()), &v); }
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r12.raw()), r13.raw()))) return false;
+		{ zval v = r13.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr9.raw()), &v); }
 		*ret = arr9.take();
 		return true;
 	}
@@ -130,7 +119,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrowFunctionReturnNullsafeByRefRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_nullsafeCheck)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_nullsafeCheck != NULL && UNEXPECTED(Z_TYPE_P(p_nullsafeCheck) != IS_OBJECT || !((Z_TYPE_P(p_nullsafeCheck) == IS_OBJECT && Z_OBJCE_P(p_nullsafeCheck) == pt_ce_nullsafe_check) || pgrt::instanceOfClass(p_nullsafeCheck, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Rules\\NullsafeCheck", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\NullsafeCheck", zend_zval_value_name(p_nullsafeCheck)); RETURN_THROWS(); }
+		if (p_nullsafeCheck != NULL && UNEXPECTED(Z_TYPE_P(p_nullsafeCheck) != IS_OBJECT || !((Z_TYPE_P(p_nullsafeCheck) == IS_OBJECT && Z_OBJCE_P(p_nullsafeCheck) == pt_ce_nullsafe_check) || pgrt::instanceOfClass(p_nullsafeCheck, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Rules\\NullsafeCheck", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\NullsafeCheck", zend_zval_value_name(p_nullsafeCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ArrowFunctionReturnNullsafeByRefRule::m___construct(Z_OBJ_P(ZEND_THIS), p_nullsafeCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule::getNodeType() */
@@ -145,8 +134,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrowFunctionReturnNullsafeByRefRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrowFunctionReturnNullsafeByRefRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

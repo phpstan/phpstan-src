@@ -92,9 +92,9 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 							zv::Val vd17;
 							zend_class_entry *vd17_ce = Z_TYPE_P(l_extension) == IS_OBJECT ? Z_OBJCE_P(l_extension) : NULL;
 							bool vd17_done = false;
-							static zend_class_entry **const vd17_table[] = { &pt_ce_reflection_get_attributes_method_return_type_extension, &pt_ce_xmlreader_open_return_type_extension, &pt_ce_randomizer_method_return_type_extension, &pt_ce_stat_dynamic_return_type_extension, &pt_ce_date_interval_format_dynamic_return_type_extension, &pt_ce_throwable_return_type_extension, &pt_ce_closure_bind_to_dynamic_return_type_extension, &pt_ce_simple_xmlelement_as_xmlmethod_return_type_extension, &pt_ce_dom_document_create_element_dynamic_return_type_extension, &pt_ce_date_format_method_return_type_extension, &pt_ce_ds_map_dynamic_return_type_extension };
-							static const uint16_t vd17_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
-							switch (pgrt::dispatchCase(pg_site_1, vd17_ce, vd17_table, vd17_cases, 11)) {
+							static zend_class_entry **const vd17_table[] = { &pt_ce_reflection_get_attributes_method_return_type_extension, &pt_ce_xmlreader_open_return_type_extension, &pt_ce_randomizer_method_return_type_extension, &pt_ce_stat_dynamic_return_type_extension, &pt_ce_date_interval_format_dynamic_return_type_extension, &pt_ce_throwable_return_type_extension, &pt_ce_closure_bind_to_dynamic_return_type_extension, &pt_ce_simple_xmlelement_as_xmlmethod_return_type_extension, &pt_ce_dom_document_create_element_dynamic_return_type_extension, &pt_ce_date_format_method_return_type_extension, &pt_ce_ds_map_dynamic_return_type_extension, &pt_ce_date_time_modify_return_type_extension, &pt_ce_simple_xmlelement_xpath_method_return_type_extension };
+							static const uint16_t vd17_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 };
+							switch (pgrt::dispatchCase(pg_site_1, vd17_ce, vd17_table, vd17_cases, 13)) {
 								case 1: {
 									zv::Val r18;
 									if (UNEXPECTED(!pgen::ReflectionGetAttributesMethodReturnTypeExtension::m_getClass(Z_OBJ_P(l_extension), r18.raw()))) return false;
@@ -172,21 +172,35 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 									vd17_done = true;
 								}
 								break;
+								case 12: {
+									zv::Val r29;
+									if (UNEXPECTED(!pgen::DateTimeModifyReturnTypeExtension::m_getClass(Z_OBJ_P(l_extension), r29.raw()))) return false;
+									vd17 = std::move(r29);
+									vd17_done = true;
+								}
+								break;
+								case 13: {
+									zv::Val r30;
+									if (UNEXPECTED(!pgen::SimpleXMLElementXpathMethodReturnTypeExtension::m_getClass(Z_OBJ_P(l_extension), r30.raw()))) return false;
+									vd17 = std::move(r30);
+									vd17_done = true;
+								}
+								break;
 								default:
 								break;
 							}
 							if (!vd17_done) {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_extension, "getClass", "getclass", 8, 0, NULL, vd17.raw()))) return false;
 							}
-							zval av29[1];
-							ZVAL_COPY_VALUE(&av29[0], vd17.raw());
-							zv::Val r30;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, av29, r30.raw(), NULL))) return false;
-							zval *w31 = zv::Ref(l_byClass.raw()).deref().raw();
-							if (Z_TYPE_P(w31) <= IS_NULL) { zval_ptr_dtor(w31); array_init(w31); } else if (UNEXPECTED(Z_TYPE_P(w31) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-							SEPARATE_ARRAY(w31);
+							zval av31[1];
+							ZVAL_COPY_VALUE(&av31[0], vd17.raw());
+							zv::Val r32;
+							if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, av31, r32.raw(), NULL))) return false;
+							zval *w33 = zv::Ref(l_byClass.raw()).deref().raw();
+							if (Z_TYPE_P(w33) <= IS_NULL) { zval_ptr_dtor(w33); array_init(w33); } else if (UNEXPECTED(Z_TYPE_P(w33) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+							SEPARATE_ARRAY(w33);
 							zval *w16;
-							w16 = pgrt::dimWrite(w31, r30.raw());
+							w16 = pgrt::dimWrite(w33, r32.raw());
 							if (UNEXPECTED(w16 == NULL)) return false;
 							ZVAL_DEREF(w16);
 							if (Z_TYPE_P(w16) <= IS_NULL) { zval_ptr_dtor(w16); array_init(w16); } else if (UNEXPECTED(Z_TYPE_P(w16) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -198,19 +212,19 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 				ZEND_HASH_FOREACH_END();
 			}
 			 {
-				zv::Val o32 = zv::Val::copyOf(zv::Ref(l_byClass.raw()));
-				zval o33;
-				ZVAL_COPY(&o33, o32.raw());
-				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicMethodReturnTypeExtensionsByClass, &o33);
+				zv::Val o34 = zv::Val::copyOf(zv::Ref(l_byClass.raw()));
+				zval o35;
+				ZVAL_COPY(&o35, o34.raw());
+				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicMethodReturnTypeExtensionsByClass, &o35);
 			}
 		}
 	}
 	 {
-		zval *p34 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicMethodReturnTypeExtensionsByClass, "dynamicMethodReturnTypeExtensionsByClass");
-		if (UNEXPECTED(p34 == NULL)) return false;
-		zv::Val r35;
-		if (UNEXPECTED(!pgen::DynamicReturnTypeExtensionRegistry::m_getDynamicExtensionsForType(Z_OBJ_P(&this_zv), p34, p_className, r35.raw()))) return false;
-		*ret = r35.take();
+		zval *p36 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicMethodReturnTypeExtensionsByClass, "dynamicMethodReturnTypeExtensionsByClass");
+		if (UNEXPECTED(p36 == NULL)) return false;
+		zv::Val r37;
+		if (UNEXPECTED(!pgen::DynamicReturnTypeExtensionRegistry::m_getDynamicExtensionsForType(Z_OBJ_P(&this_zv), p36, p_className, r37.raw()))) return false;
+		*ret = r37.take();
 		return true;
 	}
 }
@@ -263,9 +277,9 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 							zv::Val vd17;
 							zend_class_entry *vd17_ce = Z_TYPE_P(l_extension) == IS_OBJECT ? Z_OBJCE_P(l_extension) : NULL;
 							bool vd17_done = false;
-							static zend_class_entry **const vd17_table[] = { &pt_ce_closure_get_current_dynamic_return_type_extension, &pt_ce_xmlreader_open_return_type_extension, &pt_ce_closure_from_callable_dynamic_return_type_extension, &pt_ce_backed_enum_from_method_dynamic_return_type_extension, &pt_ce_pdoconnect_return_type_extension, &pt_ce_date_period_constructor_return_type_extension, &pt_ce_closure_bind_dynamic_return_type_extension, &pt_ce_array_object_constructor_return_type_extension };
-							static const uint16_t vd17_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
-							switch (pgrt::dispatchCase(pg_site_5, vd17_ce, vd17_table, vd17_cases, 8)) {
+							static zend_class_entry **const vd17_table[] = { &pt_ce_closure_get_current_dynamic_return_type_extension, &pt_ce_xmlreader_open_return_type_extension, &pt_ce_closure_from_callable_dynamic_return_type_extension, &pt_ce_backed_enum_from_method_dynamic_return_type_extension, &pt_ce_pdoconnect_return_type_extension, &pt_ce_date_period_constructor_return_type_extension, &pt_ce_closure_bind_dynamic_return_type_extension, &pt_ce_array_object_constructor_return_type_extension, &pt_ce_date_interval_dynamic_return_type_extension };
+							static const uint16_t vd17_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+							switch (pgrt::dispatchCase(pg_site_5, vd17_ce, vd17_table, vd17_cases, 9)) {
 								case 1: {
 									zv::Val r18;
 									if (UNEXPECTED(!pgen::ClosureGetCurrentDynamicReturnTypeExtension::m_getClass(Z_OBJ_P(l_extension), r18.raw()))) return false;
@@ -322,21 +336,28 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 									vd17_done = true;
 								}
 								break;
+								case 9: {
+									zv::Val r26;
+									if (UNEXPECTED(!pgen::DateIntervalDynamicReturnTypeExtension::m_getClass(Z_OBJ_P(l_extension), r26.raw()))) return false;
+									vd17 = std::move(r26);
+									vd17_done = true;
+								}
+								break;
 								default:
 								break;
 							}
 							if (!vd17_done) {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_extension, "getClass", "getclass", 8, 0, NULL, vd17.raw()))) return false;
 							}
-							zval av26[1];
-							ZVAL_COPY_VALUE(&av26[0], vd17.raw());
-							zv::Val r27;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, av26, r27.raw(), NULL))) return false;
-							zval *w28 = zv::Ref(l_byClass.raw()).deref().raw();
-							if (Z_TYPE_P(w28) <= IS_NULL) { zval_ptr_dtor(w28); array_init(w28); } else if (UNEXPECTED(Z_TYPE_P(w28) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-							SEPARATE_ARRAY(w28);
+							zval av27[1];
+							ZVAL_COPY_VALUE(&av27[0], vd17.raw());
+							zv::Val r28;
+							if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, av27, r28.raw(), NULL))) return false;
+							zval *w29 = zv::Ref(l_byClass.raw()).deref().raw();
+							if (Z_TYPE_P(w29) <= IS_NULL) { zval_ptr_dtor(w29); array_init(w29); } else if (UNEXPECTED(Z_TYPE_P(w29) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+							SEPARATE_ARRAY(w29);
 							zval *w16;
-							w16 = pgrt::dimWrite(w28, r27.raw());
+							w16 = pgrt::dimWrite(w29, r28.raw());
 							if (UNEXPECTED(w16 == NULL)) return false;
 							ZVAL_DEREF(w16);
 							if (Z_TYPE_P(w16) <= IS_NULL) { zval_ptr_dtor(w16); array_init(w16); } else if (UNEXPECTED(Z_TYPE_P(w16) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -348,19 +369,19 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 				ZEND_HASH_FOREACH_END();
 			}
 			 {
-				zv::Val o29 = zv::Val::copyOf(zv::Ref(l_byClass.raw()));
-				zval o30;
-				ZVAL_COPY(&o30, o29.raw());
-				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicStaticMethodReturnTypeExtensionsByClass, &o30);
+				zv::Val o30 = zv::Val::copyOf(zv::Ref(l_byClass.raw()));
+				zval o31;
+				ZVAL_COPY(&o31, o30.raw());
+				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicStaticMethodReturnTypeExtensionsByClass, &o31);
 			}
 		}
 	}
 	 {
-		zval *p31 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicStaticMethodReturnTypeExtensionsByClass, "dynamicStaticMethodReturnTypeExtensionsByClass");
-		if (UNEXPECTED(p31 == NULL)) return false;
-		zv::Val r32;
-		if (UNEXPECTED(!pgen::DynamicReturnTypeExtensionRegistry::m_getDynamicExtensionsForType(Z_OBJ_P(&this_zv), p31, p_className, r32.raw()))) return false;
-		*ret = r32.take();
+		zval *p32 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicStaticMethodReturnTypeExtensionsByClass, "dynamicStaticMethodReturnTypeExtensionsByClass");
+		if (UNEXPECTED(p32 == NULL)) return false;
+		zv::Val r33;
+		if (UNEXPECTED(!pgen::DynamicReturnTypeExtensionRegistry::m_getDynamicExtensionsForType(Z_OBJ_P(&this_zv), p32, p_className, r33.raw()))) return false;
+		*ret = r33.take();
 		return true;
 	}
 }
@@ -548,9 +569,9 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 					zv::Val vd21;
 					zend_class_entry *vd21_ce = Z_TYPE_P(l_dynamicFunctionReturnTypeExtension) == IS_OBJECT ? Z_OBJCE_P(l_dynamicFunctionReturnTypeExtension) : NULL;
 					bool vd21_done = false;
-					static zend_class_entry **const vd21_table[] = { &pt_ce_gettype_function_return_type_extension, &pt_ce_array_replace_function_return_type_extension, &pt_ce_date_interval_format_function_return_type_extension, &pt_ce_array_combine_function_return_type_extension, &pt_ce_array_find_key_function_return_type_extension, &pt_ce_trigger_error_dynamic_return_type_extension, &pt_ce_clamp_function_return_type_extension, &pt_ce_pathinfo_function_dynamic_return_type_extension, &pt_ce_str_pad_function_return_type_extension, &pt_ce_stat_dynamic_return_type_extension, &pt_ce_array_first_last_dynamic_return_type_extension, &pt_ce_abs_function_dynamic_return_type_extension, &pt_ce_constant_function_return_type_extension, &pt_ce_array_keys_function_dynamic_return_type_extension, &pt_ce_filter_input_dynamic_return_type_extension, &pt_ce_argument_based_function_return_type_extension, &pt_ce_non_empty_string_functions_return_type_extension, &pt_ce_str_shuffle_function_return_type_extension, &pt_ce_array_next_dynamic_return_type_extension, &pt_ce_highlight_string_dynamic_return_type_extension, &pt_ce_pg_result_status_dynamic_return_type_extension, &pt_ce_substr_dynamic_return_type_extension, &pt_ce_array_change_key_case_function_return_type_extension, &pt_ce_array_shift_function_return_type_extension, &pt_ce_implode_function_return_type_extension, &pt_ce_openssl_cipher_functions_return_type_extension, &pt_ce_explode_function_dynamic_return_type_extension, &pt_ce_array_count_values_dynamic_return_type_extension, &pt_ce_array_filter_function_return_type_extension, &pt_ce_trim_function_dynamic_return_type_extension, &pt_ce_preg_filter_function_return_type_extension, &pt_ce_pow_function_return_type_extension, &pt_ce_array_fill_function_return_type_extension, &pt_ce_array_merge_function_dynamic_return_type_extension, &pt_ce_get_called_class_dynamic_return_type_extension, &pt_ce_localtime_function_dynamic_return_type_extension, &pt_ce_array_reduce_function_return_type_extension, &pt_ce_array_map_function_return_type_extension, &pt_ce_curl_getinfo_function_dynamic_return_type_extension, &pt_ce_array_values_function_dynamic_return_type_extension, &pt_ce_date_time_dynamic_return_type_extension, &pt_ce_date_time_create_dynamic_return_type_extension, &pt_ce_array_find_function_return_type_extension, &pt_ce_pg_last_notice_dynamic_return_type_extension, &pt_ce_filter_var_dynamic_return_type_extension, &pt_ce_get_defined_vars_function_return_type_extension, &pt_ce_mb_substitute_character_dynamic_return_type_extension, &pt_ce_array_fill_keys_function_return_type_extension, &pt_ce_array_key_dynamic_return_type_extension, &pt_ce_class_implements_function_return_type_extension, &pt_ce_min_max_function_return_type_extension, &pt_ce_base64_decode_dynamic_function_return_type_extension, &pt_ce_str_increment_decrement_function_return_type_extension, &pt_ce_ltrim_function_return_type_extension, &pt_ce_gettimeofday_dynamic_function_return_type_extension, &pt_ce_array_pad_dynamic_return_type_extension, &pt_ce_round_function_return_type_extension, &pt_ce_array_column_function_return_type_extension, &pt_ce_output_buffering_dynamic_return_type_extension, &pt_ce_ini_get_return_type_extension, &pt_ce_str_case_functions_return_type_extension, &pt_ce_replace_functions_dynamic_return_type_extension, &pt_ce_array_search_function_dynamic_return_type_extension, &pt_ce_filter_var_array_dynamic_return_type_extension, &pt_ce_str_tok_function_return_type_extension, &pt_ce_str_word_count_function_dynamic_return_type_extension, &pt_ce_strlen_function_return_type_extension, &pt_ce_array_sum_function_dynamic_return_type_extension, &pt_ce_hash_functions_return_type_extension, &pt_ce_microtime_function_return_type_extension, &pt_ce_dio_stat_dynamic_function_return_type_extension, &pt_ce_strrev_function_return_type_extension, &pt_ce_array_rand_function_return_type_extension, &pt_ce_date_function_return_type_extension, &pt_ce_idate_function_return_type_extension, &pt_ce_get_parent_class_dynamic_function_return_type_extension, &pt_ce_strval_family_function_return_type_extension, &pt_ce_array_reverse_function_return_type_extension, &pt_ce_random_int_function_return_type_extension, &pt_ce_version_compare_function_dynamic_return_type_extension, &pt_ce_array_slice_function_return_type_extension, &pt_ce_array_chunk_function_return_type_extension, &pt_ce_array_pop_function_return_type_extension, &pt_ce_count_chars_function_dynamic_return_type_extension, &pt_ce_array_intersect_key_function_return_type_extension, &pt_ce_array_flip_function_return_type_extension, &pt_ce_bc_math_string_or_null_return_type_extension, &pt_ce_array_splice_function_return_type_extension, &pt_ce_str_repeat_function_return_type_extension, &pt_ce_iterator_to_array_function_return_type_extension, &pt_ce_get_class_dynamic_return_type_extension, &pt_ce_hrtime_function_return_type_extension, &pt_ce_date_format_function_return_type_extension, &pt_ce_mb_convert_encoding_function_return_type_extension, &pt_ce_compact_function_return_type_extension, &pt_ce_get_debug_type_function_return_type_extension, &pt_ce_count_function_return_type_extension, &pt_ce_number_format_function_dynamic_return_type_extension, &pt_ce_array_current_dynamic_return_type_extension };
-					static const uint16_t vd21_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99 };
-					switch (pgrt::dispatchCase(pg_site_10, vd21_ce, vd21_table, vd21_cases, 99)) {
+					static zend_class_entry **const vd21_table[] = { &pt_ce_gettype_function_return_type_extension, &pt_ce_array_replace_function_return_type_extension, &pt_ce_date_interval_format_function_return_type_extension, &pt_ce_array_combine_function_return_type_extension, &pt_ce_array_find_key_function_return_type_extension, &pt_ce_trigger_error_dynamic_return_type_extension, &pt_ce_clamp_function_return_type_extension, &pt_ce_pathinfo_function_dynamic_return_type_extension, &pt_ce_str_pad_function_return_type_extension, &pt_ce_stat_dynamic_return_type_extension, &pt_ce_array_first_last_dynamic_return_type_extension, &pt_ce_abs_function_dynamic_return_type_extension, &pt_ce_constant_function_return_type_extension, &pt_ce_array_keys_function_dynamic_return_type_extension, &pt_ce_filter_input_dynamic_return_type_extension, &pt_ce_argument_based_function_return_type_extension, &pt_ce_non_empty_string_functions_return_type_extension, &pt_ce_str_shuffle_function_return_type_extension, &pt_ce_array_next_dynamic_return_type_extension, &pt_ce_highlight_string_dynamic_return_type_extension, &pt_ce_pg_result_status_dynamic_return_type_extension, &pt_ce_substr_dynamic_return_type_extension, &pt_ce_array_change_key_case_function_return_type_extension, &pt_ce_array_shift_function_return_type_extension, &pt_ce_implode_function_return_type_extension, &pt_ce_openssl_cipher_functions_return_type_extension, &pt_ce_explode_function_dynamic_return_type_extension, &pt_ce_array_count_values_dynamic_return_type_extension, &pt_ce_array_filter_function_return_type_extension, &pt_ce_trim_function_dynamic_return_type_extension, &pt_ce_preg_filter_function_return_type_extension, &pt_ce_pow_function_return_type_extension, &pt_ce_array_fill_function_return_type_extension, &pt_ce_array_merge_function_dynamic_return_type_extension, &pt_ce_get_called_class_dynamic_return_type_extension, &pt_ce_localtime_function_dynamic_return_type_extension, &pt_ce_array_reduce_function_return_type_extension, &pt_ce_array_map_function_return_type_extension, &pt_ce_curl_getinfo_function_dynamic_return_type_extension, &pt_ce_array_values_function_dynamic_return_type_extension, &pt_ce_date_time_dynamic_return_type_extension, &pt_ce_date_time_create_dynamic_return_type_extension, &pt_ce_array_find_function_return_type_extension, &pt_ce_pg_last_notice_dynamic_return_type_extension, &pt_ce_filter_var_dynamic_return_type_extension, &pt_ce_get_defined_vars_function_return_type_extension, &pt_ce_mb_substitute_character_dynamic_return_type_extension, &pt_ce_array_fill_keys_function_return_type_extension, &pt_ce_array_key_dynamic_return_type_extension, &pt_ce_class_implements_function_return_type_extension, &pt_ce_min_max_function_return_type_extension, &pt_ce_base64_decode_dynamic_function_return_type_extension, &pt_ce_str_increment_decrement_function_return_type_extension, &pt_ce_ltrim_function_return_type_extension, &pt_ce_gettimeofday_dynamic_function_return_type_extension, &pt_ce_array_pad_dynamic_return_type_extension, &pt_ce_round_function_return_type_extension, &pt_ce_array_column_function_return_type_extension, &pt_ce_output_buffering_dynamic_return_type_extension, &pt_ce_ini_get_return_type_extension, &pt_ce_str_case_functions_return_type_extension, &pt_ce_replace_functions_dynamic_return_type_extension, &pt_ce_array_search_function_dynamic_return_type_extension, &pt_ce_filter_var_array_dynamic_return_type_extension, &pt_ce_str_tok_function_return_type_extension, &pt_ce_str_word_count_function_dynamic_return_type_extension, &pt_ce_strlen_function_return_type_extension, &pt_ce_array_sum_function_dynamic_return_type_extension, &pt_ce_hash_functions_return_type_extension, &pt_ce_microtime_function_return_type_extension, &pt_ce_dio_stat_dynamic_function_return_type_extension, &pt_ce_strrev_function_return_type_extension, &pt_ce_array_rand_function_return_type_extension, &pt_ce_date_function_return_type_extension, &pt_ce_idate_function_return_type_extension, &pt_ce_get_parent_class_dynamic_function_return_type_extension, &pt_ce_strval_family_function_return_type_extension, &pt_ce_array_reverse_function_return_type_extension, &pt_ce_random_int_function_return_type_extension, &pt_ce_version_compare_function_dynamic_return_type_extension, &pt_ce_array_slice_function_return_type_extension, &pt_ce_array_chunk_function_return_type_extension, &pt_ce_array_pop_function_return_type_extension, &pt_ce_count_chars_function_dynamic_return_type_extension, &pt_ce_array_intersect_key_function_return_type_extension, &pt_ce_array_flip_function_return_type_extension, &pt_ce_bc_math_string_or_null_return_type_extension, &pt_ce_array_splice_function_return_type_extension, &pt_ce_str_repeat_function_return_type_extension, &pt_ce_iterator_to_array_function_return_type_extension, &pt_ce_get_class_dynamic_return_type_extension, &pt_ce_hrtime_function_return_type_extension, &pt_ce_date_format_function_return_type_extension, &pt_ce_mb_convert_encoding_function_return_type_extension, &pt_ce_compact_function_return_type_extension, &pt_ce_get_debug_type_function_return_type_extension, &pt_ce_count_function_return_type_extension, &pt_ce_number_format_function_dynamic_return_type_extension, &pt_ce_array_current_dynamic_return_type_extension, &pt_ce_parse_url_function_dynamic_return_type_extension, &pt_ce_preg_split_dynamic_return_type_extension, &pt_ce_sprintf_function_dynamic_return_type_extension, &pt_ce_sscanf_function_dynamic_return_type_extension };
+					static const uint16_t vd21_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103 };
+					switch (pgrt::dispatchCase(pg_site_10, vd21_ce, vd21_table, vd21_cases, 103)) {
 						case 1: {
 							bool r22;
 							if (UNEXPECTED(!pgen::GettypeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r22))) return false;
@@ -1343,25 +1364,57 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 							vd21_done = true;
 						}
 						break;
+						case 100: {
+							bool r220;
+							if (UNEXPECTED(!pgen::ParseUrlFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r220))) return false;
+							zv::Val o221 = zv::Val::boolean(r220);
+							vd21 = std::move(o221);
+							vd21_done = true;
+						}
+						break;
+						case 101: {
+							bool r222;
+							if (UNEXPECTED(!pgen::PregSplitDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r222))) return false;
+							zv::Val o223 = zv::Val::boolean(r222);
+							vd21 = std::move(o223);
+							vd21_done = true;
+						}
+						break;
+						case 102: {
+							bool r224;
+							if (UNEXPECTED(!pgen::SprintfFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r224))) return false;
+							zv::Val o225 = zv::Val::boolean(r224);
+							vd21 = std::move(o225);
+							vd21_done = true;
+						}
+						break;
+						case 103: {
+							bool r226;
+							if (UNEXPECTED(!pgen::SscanfFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r226))) return false;
+							zv::Val o227 = zv::Val::boolean(r226);
+							vd21 = std::move(o227);
+							vd21_done = true;
+						}
+						break;
 						default:
 						break;
 					}
 					if (!vd21_done) {
-						zval av220[1];
-						ZVAL_COPY_VALUE(&av220[0], p_functionReflection);
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_dynamicFunctionReturnTypeExtension, "isFunctionSupported", "isfunctionsupported", 19, 1, av220, vd21.raw()))) return false;
+						zval av228[1];
+						ZVAL_COPY_VALUE(&av228[0], p_functionReflection);
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_dynamicFunctionReturnTypeExtension, "isFunctionSupported", "isfunctionsupported", 19, 1, av228, vd21.raw()))) return false;
 					}
 					if (!(zend_is_true(vd21.raw()))) {
 						goto cont20;
 					}
 				}
 				 {
-					zv::Val o221 = zv::Val::copyOf(zv::Ref(l_dynamicFunctionReturnTypeExtension));
-					zv::Val o222 = zv::Val::copyOf(zv::Ref(o221.raw()));
-					zval *w223 = zv::Ref(l_supportedFunctions.raw()).deref().raw();
-					if (Z_TYPE_P(w223) <= IS_NULL) { zval_ptr_dtor(w223); array_init(w223); } else if (UNEXPECTED(Z_TYPE_P(w223) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w223);
-					{ zval v = o222.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w223), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zv::Val o229 = zv::Val::copyOf(zv::Ref(l_dynamicFunctionReturnTypeExtension));
+					zv::Val o230 = zv::Val::copyOf(zv::Ref(o229.raw()));
+					zval *w231 = zv::Ref(l_supportedFunctions.raw()).deref().raw();
+					if (Z_TYPE_P(w231) <= IS_NULL) { zval_ptr_dtor(w231); array_init(w231); } else if (UNEXPECTED(Z_TYPE_P(w231) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w231);
+					{ zval v = o230.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w231), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 			cont20:;
@@ -1369,16 +1422,16 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val o224 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
-		zv::Val o225 = zv::Val::copyOf(zv::Ref(l_supportedFunctions.raw()));
-		zv::Val o226 = zv::Val::copyOf(zv::Ref(o225.raw()));
-		zval *w227 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicReturnTypeExtensionsByFunction)).deref().raw();
-		if (Z_TYPE_P(w227) <= IS_NULL) { zval_ptr_dtor(w227); array_init(w227); } else if (UNEXPECTED(Z_TYPE_P(w227) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-		SEPARATE_ARRAY(w227);
-		zval *e228 = pgrt::dimWrite(w227, o224.raw());
-		if (UNEXPECTED(e228 == NULL)) return false;
-		zv::Ref(e228).assign(std::move(o226));
-		*ret = o225.take();
+		zv::Val o232 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
+		zv::Val o233 = zv::Val::copyOf(zv::Ref(l_supportedFunctions.raw()));
+		zv::Val o234 = zv::Val::copyOf(zv::Ref(o233.raw()));
+		zval *w235 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicReturnTypeExtensionsByFunction)).deref().raw();
+		if (Z_TYPE_P(w235) <= IS_NULL) { zval_ptr_dtor(w235); array_init(w235); } else if (UNEXPECTED(Z_TYPE_P(w235) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+		SEPARATE_ARRAY(w235);
+		zval *e236 = pgrt::dimWrite(w235, o232.raw());
+		if (UNEXPECTED(e236 == NULL)) return false;
+		zv::Ref(e236).assign(std::move(o234));
+		*ret = o233.take();
 		return true;
 	}
 }

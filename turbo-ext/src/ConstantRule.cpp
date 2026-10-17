@@ -12,13 +12,8 @@ static zval pg_lit[2];
 static pgrt::PropSite pg_site_0; /* prop_name_0 */
 static pt_method_site pg_site_1; /* method_hasConstant_1 */
 static pgrt::PropSite pg_site_2; /* prop_name_2 */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_4; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_5; /* method_identifier_5 */
-static pt_method_site pg_site_6; /* method_discoveringSymbolsTip_6 */
-static pt_method_site pg_site_7; /* method_build_7 */
-static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ConstantRule {
 
@@ -80,42 +75,36 @@ namespace pgen::ConstantRule {
 				if (UNEXPECTED(!sb8.append(cv7.raw()))) return false;
 				sb8.appendLiteral(" not found.", 11);
 				zv::Val r9 = sb8.finish();
-				zval av10[1];
-				ZVAL_COPY_VALUE(&av10[0], r9.raw());
-				zend_class_entry *ce11 = pgrt::lookupClass(pg_site_3, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-				if (UNEXPECTED(ce11 == NULL)) return false;
-				zv::Val r12;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_4, ce11, "message", 7, 1, av10, r12.raw(), NULL))) return false;
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], &pg_lit[1]);
-				zv::Val r14;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r12.raw(), "identifier", "identifier", 10, 1, av13, r14.raw(), NULL))) return false;
-				l_errorBuilder = std::move(r14);
+				zv::Val r10;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r9.raw(), r10.raw()))) return false;
+				zv::Val r11;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r10.raw()), &pg_lit[1], r11.raw()))) return false;
+				l_errorBuilder = std::move(r11);
 			}
 			 {
-				zval *p15 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ConstantRule::slot::discoveringSymbolsTip, "discoveringSymbolsTip");
-				if (UNEXPECTED(p15 == NULL)) return false;
-				if (Z_TYPE_P(p15) == IS_TRUE) {
+				zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ConstantRule::slot::discoveringSymbolsTip, "discoveringSymbolsTip");
+				if (UNEXPECTED(p12 == NULL)) return false;
+				if (Z_TYPE_P(p12) == IS_TRUE) {
 					 {
-						zv::Val r16;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_errorBuilder.raw(), "discoveringSymbolsTip", "discoveringsymbolstip", 21, 0, NULL, r16.raw(), NULL))) return false;
+						zv::Val r13;
+						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_discoveringSymbolsTip(Z_OBJ_P(l_errorBuilder.raw()), r13.raw()))) return false;
 					}
 				}
 			}
 			 {
-				zv::Val arr17 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-				zv::Val r18;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_errorBuilder.raw(), "build", "build", 5, 0, NULL, r18.raw(), NULL))) return false;
-				{ zval v = r18.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr17.raw()), &v); }
-				*ret = arr17.take();
+				zv::Val arr14 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+				zv::Val r15;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(l_errorBuilder.raw()), r15.raw()))) return false;
+				{ zval v = r15.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr14.raw()), &v); }
+				*ret = arr14.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval arr19_raw;
-		ZVAL_EMPTY_ARRAY(&arr19_raw);
-		ZVAL_COPY(ret, &arr19_raw);
+		zval arr16_raw;
+		ZVAL_EMPTY_ARRAY(&arr16_raw);
+		ZVAL_COPY(ret, &arr16_raw);
 		return true;
 	}
 }
@@ -151,8 +140,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConstantRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

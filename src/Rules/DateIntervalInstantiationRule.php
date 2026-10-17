@@ -10,10 +10,12 @@ use Throwable;
 use function count;
 use function sprintf;
 use function strtolower;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Expr\New_>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DateIntervalInstantiationRule.cpp')]
 final class DateIntervalInstantiationRule implements Rule
 {
 

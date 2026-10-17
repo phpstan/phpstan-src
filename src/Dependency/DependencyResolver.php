@@ -18,8 +18,10 @@ use function get_class;
 use function is_string;
 use function spl_object_id;
 use function str_starts_with;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DependencyResolver.cpp')]
 final class DependencyResolver
 {
 

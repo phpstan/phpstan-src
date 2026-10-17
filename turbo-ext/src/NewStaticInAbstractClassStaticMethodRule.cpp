@@ -19,14 +19,9 @@ static pt_method_site pg_site_6; /* method_isAbstract_6 */
 static pt_method_site pg_site_7; /* method_getFunction_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection */
 static pt_method_site pg_site_9; /* method_getDisplayName_9 */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_11; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_12; /* method_identifier_12 */
-static pt_method_site pg_site_13; /* method_getName_13 */
-static pt_method_site pg_site_14; /* method_tip_14 */
-static pt_method_site pg_site_15; /* method_build_15 */
-static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::NewStaticInAbstractClassStaticMethodRule {
 
@@ -192,41 +187,33 @@ namespace pgen::NewStaticInAbstractClassStaticMethodRule {
 		if (UNEXPECTED(!sb25.append(r24.raw()))) return false;
 		sb25.appendLiteral("().", 3);
 		zv::Val r26 = sb25.finish();
-		zval av27[1];
-		ZVAL_COPY_VALUE(&av27[0], r26.raw());
-		zend_class_entry *ce28 = pgrt::lookupClass(pg_site_10, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce28 == NULL)) return false;
+		zv::Val r27;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r26.raw(), r27.raw()))) return false;
+		zv::Val r28;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r27.raw()), &pg_lit[2], r28.raw()))) return false;
 		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_11, ce28, "message", 7, 1, av27, r29.raw(), NULL))) return false;
-		zval av30[1];
-		ZVAL_COPY_VALUE(&av30[0], &pg_lit[2]);
-		zv::Val r31;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r29.raw(), "identifier", "identifier", 10, 1, av30, r31.raw(), NULL))) return false;
-		zv::Val r32;
 		if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-			r32 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r32.isUndef())) return false;
+			r29 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r29.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r32.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r29.raw(), NULL))) return false;
 		}
 		}
+		zv::Val r30;
+		if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getName(Z_OBJ_P(l_inMethod.raw()), r30.raw()))) return false;
+		pgrt::StringBuilder sb31;
+		sb31.appendLiteral("Direct call to ", 15);
+		if (UNEXPECTED(!sb31.append(r29.raw()))) return false;
+		sb31.appendLiteral("::", 2);
+		if (UNEXPECTED(!sb31.append(r30.raw()))) return false;
+		sb31.appendLiteral("() would crash because an abstract class cannot be instantiated.", 64);
+		zv::Val r32 = sb31.finish();
 		zv::Val r33;
-		if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getName(Z_OBJ_P(l_inMethod.raw()), r33.raw()))) return false;
-		pgrt::StringBuilder sb34;
-		sb34.appendLiteral("Direct call to ", 15);
-		if (UNEXPECTED(!sb34.append(r32.raw()))) return false;
-		sb34.appendLiteral("::", 2);
-		if (UNEXPECTED(!sb34.append(r33.raw()))) return false;
-		sb34.appendLiteral("() would crash because an abstract class cannot be instantiated.", 64);
-		zv::Val r35 = sb34.finish();
-		zval av36[1];
-		ZVAL_COPY_VALUE(&av36[0], r35.raw());
-		zv::Val r37;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r31.raw(), "tip", "tip", 3, 1, av36, r37.raw(), NULL))) return false;
-		zv::Val r38;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r37.raw(), "build", "build", 5, 0, NULL, r38.raw(), NULL))) return false;
-		{ zval v = r38.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr22.raw()), &v); }
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_tip(Z_OBJ_P(r28.raw()), r32.raw(), r33.raw()))) return false;
+		zv::Val r34;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r33.raw()), r34.raw()))) return false;
+		{ zval v = r34.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr22.raw()), &v); }
 		*ret = arr22.take();
 		return true;
 	}
@@ -257,8 +244,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NewStaticInAbstractClassStaticMethodRu
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NewStaticInAbstractClassStaticMethodRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

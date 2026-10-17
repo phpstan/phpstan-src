@@ -13,15 +13,9 @@ static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\CollectedDataNode */
 static pt_method_site pg_site_1; /* method_get_1 */
 static pgrt::FunctionSite pg_site_2; /* function_strtolower */
 static pt_method_site pg_site_3; /* method_get_3 */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_5; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_6; /* method_file_6 */
-static pt_method_site pg_site_7; /* method_line_7 */
-static pt_method_site pg_site_8; /* method_identifier_8 */
-static pt_method_site pg_site_9; /* method_build_9 */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Rules\DeadCode\PossiblyPureCallTransitivePurityResolver */
-static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Rules\DeadCode\PossiblyPureCallTransitivePurityResolver */
+static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::CallToFunctionStatementWithoutImpurePointsRule {
 
@@ -199,31 +193,25 @@ namespace pgen::CallToFunctionStatementWithoutImpurePointsRule {
 								if (UNEXPECTED(!sb49.append(l_originalFunctionName.raw()))) return false;
 								sb49.appendLiteral("() on a separate line has no effect.", 36);
 								zv::Val r50 = sb49.finish();
-								zval av51[1];
-								ZVAL_COPY_VALUE(&av51[0], r50.raw());
-								zend_class_entry *ce52 = pgrt::lookupClass(pg_site_4, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-								if (UNEXPECTED(ce52 == NULL)) return false;
+								zv::Val r51;
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r50.raw(), r51.raw()))) return false;
+								if (UNEXPECTED(!(Z_TYPE_P(l_filePath.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::file", 1, "file", "string", l_filePath.raw()); return false; }
+								zval d52;
+								ZVAL_NULL(&d52);
 								zv::Val r53;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_5, ce52, "message", 7, 1, av51, r53.raw(), NULL))) return false;
-								zval av54[1];
-								ZVAL_COPY_VALUE(&av54[0], l_filePath.raw());
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_file(Z_OBJ_P(r51.raw()), l_filePath.raw(), &d52, r53.raw()))) return false;
+								if (UNEXPECTED(Z_TYPE_P(l_line.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", l_line.raw()); return false; }
+								zv::Val r54;
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r53.raw()), Z_LVAL_P(l_line.raw()), r54.raw()))) return false;
 								zv::Val r55;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r53.raw(), "file", "file", 4, 1, av54, r55.raw(), NULL))) return false;
-								zval av56[1];
-								ZVAL_COPY_VALUE(&av56[0], l_line.raw());
-								zv::Val r57;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r55.raw(), "line", "line", 4, 1, av56, r57.raw(), NULL))) return false;
-								zval av58[1];
-								ZVAL_COPY_VALUE(&av58[0], &pg_lit[3]);
-								zv::Val r59;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r57.raw(), "identifier", "identifier", 10, 1, av58, r59.raw(), NULL))) return false;
-								zv::Val r60;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r59.raw(), "build", "build", 5, 0, NULL, r60.raw(), NULL))) return false;
-								zv::Val o61 = zv::Val::copyOf(zv::Ref(r60.raw()));
-								zval *w62 = zv::Ref(l_errors.raw()).deref().raw();
-								if (Z_TYPE_P(w62) <= IS_NULL) { zval_ptr_dtor(w62); array_init(w62); } else if (UNEXPECTED(Z_TYPE_P(w62) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w62);
-								{ zval v = o61.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w62), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r54.raw()), &pg_lit[3], r55.raw()))) return false;
+								zv::Val r56;
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r55.raw()), r56.raw()))) return false;
+								zv::Val o57 = zv::Val::copyOf(zv::Ref(r56.raw()));
+								zval *w58 = zv::Ref(l_errors.raw()).deref().raw();
+								if (Z_TYPE_P(w58) <= IS_NULL) { zval_ptr_dtor(w58); array_init(w58); } else if (UNEXPECTED(Z_TYPE_P(w58) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w58);
+								{ zval v = o57.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w58), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 						cont42:;
@@ -261,7 +249,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToFunctionStatementWithoutImpurePo
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_purityResolver)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_purityResolver != NULL && UNEXPECTED(Z_TYPE_P(p_purityResolver) != IS_OBJECT || !((Z_TYPE_P(p_purityResolver) == IS_OBJECT && Z_OBJCE_P(p_purityResolver) == pt_ce_possibly_pure_call_transitive_purity_resolver) || pgrt::instanceOfClass(p_purityResolver, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Rules\\DeadCode\\PossiblyPureCallTransitivePurityResolver", 63))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\DeadCode\\PossiblyPureCallTransitivePurityResolver", zend_zval_value_name(p_purityResolver)); RETURN_THROWS(); }
+		if (p_purityResolver != NULL && UNEXPECTED(Z_TYPE_P(p_purityResolver) != IS_OBJECT || !((Z_TYPE_P(p_purityResolver) == IS_OBJECT && Z_OBJCE_P(p_purityResolver) == pt_ce_possibly_pure_call_transitive_purity_resolver) || pgrt::instanceOfClass(p_purityResolver, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Rules\\DeadCode\\PossiblyPureCallTransitivePurityResolver", 63))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\DeadCode\\PossiblyPureCallTransitivePurityResolver", zend_zval_value_name(p_purityResolver)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::CallToFunctionStatementWithoutImpurePointsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_purityResolver))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\CallToFunctionStatementWithoutImpurePointsRule::getNodeType() */
@@ -276,8 +264,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToFunctionStatementWithoutImpurePo
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::CallToFunctionStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

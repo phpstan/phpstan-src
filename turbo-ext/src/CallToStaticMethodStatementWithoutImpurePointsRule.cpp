@@ -14,15 +14,9 @@ static pt_method_site pg_site_1; /* method_get_1 */
 static pgrt::FunctionSite pg_site_2; /* function_strtolower */
 static pt_method_site pg_site_3; /* method_get_3 */
 static pgrt::FunctionSite pg_site_4; /* function_array_key_exists */
-static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_6; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_7; /* method_file_7 */
-static pt_method_site pg_site_8; /* method_line_8 */
-static pt_method_site pg_site_9; /* method_identifier_9 */
-static pt_method_site pg_site_10; /* method_build_10 */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\DeadCode\PossiblyPureCallTransitivePurityResolver */
-static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Rules\DeadCode\PossiblyPureCallTransitivePurityResolver */
+static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::CallToStaticMethodStatementWithoutImpurePointsRule {
 
@@ -255,31 +249,25 @@ namespace pgen::CallToStaticMethodStatementWithoutImpurePointsRule {
 								if (UNEXPECTED(!sb64.append(l_originalMethodName.raw()))) return false;
 								sb64.appendLiteral("() on a separate line has no effect.", 36);
 								zv::Val r65 = sb64.finish();
-								zval av66[1];
-								ZVAL_COPY_VALUE(&av66[0], r65.raw());
-								zend_class_entry *ce67 = pgrt::lookupClass(pg_site_5, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-								if (UNEXPECTED(ce67 == NULL)) return false;
+								zv::Val r66;
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r65.raw(), r66.raw()))) return false;
+								if (UNEXPECTED(!(Z_TYPE_P(l_filePath.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::file", 1, "file", "string", l_filePath.raw()); return false; }
+								zval d67;
+								ZVAL_NULL(&d67);
 								zv::Val r68;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_6, ce67, "message", 7, 1, av66, r68.raw(), NULL))) return false;
-								zval av69[1];
-								ZVAL_COPY_VALUE(&av69[0], l_filePath.raw());
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_file(Z_OBJ_P(r66.raw()), l_filePath.raw(), &d67, r68.raw()))) return false;
+								if (UNEXPECTED(Z_TYPE_P(l_line.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", l_line.raw()); return false; }
+								zv::Val r69;
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r68.raw()), Z_LVAL_P(l_line.raw()), r69.raw()))) return false;
 								zv::Val r70;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r68.raw(), "file", "file", 4, 1, av69, r70.raw(), NULL))) return false;
-								zval av71[1];
-								ZVAL_COPY_VALUE(&av71[0], l_line.raw());
-								zv::Val r72;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r70.raw(), "line", "line", 4, 1, av71, r72.raw(), NULL))) return false;
-								zval av73[1];
-								ZVAL_COPY_VALUE(&av73[0], &pg_lit[4]);
-								zv::Val r74;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r72.raw(), "identifier", "identifier", 10, 1, av73, r74.raw(), NULL))) return false;
-								zv::Val r75;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r74.raw(), "build", "build", 5, 0, NULL, r75.raw(), NULL))) return false;
-								zv::Val o76 = zv::Val::copyOf(zv::Ref(r75.raw()));
-								zval *w77 = zv::Ref(l_errors.raw()).deref().raw();
-								if (Z_TYPE_P(w77) <= IS_NULL) { zval_ptr_dtor(w77); array_init(w77); } else if (UNEXPECTED(Z_TYPE_P(w77) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w77);
-								{ zval v = o76.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w77), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r69.raw()), &pg_lit[4], r70.raw()))) return false;
+								zv::Val r71;
+								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r70.raw()), r71.raw()))) return false;
+								zv::Val o72 = zv::Val::copyOf(zv::Ref(r71.raw()));
+								zval *w73 = zv::Ref(l_errors.raw()).deref().raw();
+								if (Z_TYPE_P(w73) <= IS_NULL) { zval_ptr_dtor(w73); array_init(w73); } else if (UNEXPECTED(Z_TYPE_P(w73) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w73);
+								{ zval v = o72.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w73), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 						cont49:;
@@ -318,7 +306,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToStaticMethodStatementWithoutImpu
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_purityResolver)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_purityResolver != NULL && UNEXPECTED(Z_TYPE_P(p_purityResolver) != IS_OBJECT || !((Z_TYPE_P(p_purityResolver) == IS_OBJECT && Z_OBJCE_P(p_purityResolver) == pt_ce_possibly_pure_call_transitive_purity_resolver) || pgrt::instanceOfClass(p_purityResolver, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Rules\\DeadCode\\PossiblyPureCallTransitivePurityResolver", 63))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\DeadCode\\PossiblyPureCallTransitivePurityResolver", zend_zval_value_name(p_purityResolver)); RETURN_THROWS(); }
+		if (p_purityResolver != NULL && UNEXPECTED(Z_TYPE_P(p_purityResolver) != IS_OBJECT || !((Z_TYPE_P(p_purityResolver) == IS_OBJECT && Z_OBJCE_P(p_purityResolver) == pt_ce_possibly_pure_call_transitive_purity_resolver) || pgrt::instanceOfClass(p_purityResolver, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Rules\\DeadCode\\PossiblyPureCallTransitivePurityResolver", 63))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\DeadCode\\PossiblyPureCallTransitivePurityResolver", zend_zval_value_name(p_purityResolver)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::CallToStaticMethodStatementWithoutImpurePointsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_purityResolver))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\CallToStaticMethodStatementWithoutImpurePointsRule::getNodeType() */
@@ -333,8 +321,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToStaticMethodStatementWithoutImpu
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::CallToStaticMethodStatementWithoutImpurePointsRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

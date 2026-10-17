@@ -16,12 +16,8 @@ static pt_method_site pg_site_3; /* method_getClassReflection_3 */
 static pt_method_site pg_site_4; /* method_hasConsistentConstructor_4 */
 static pt_method_site pg_site_5; /* method_isFinal_5 */
 static pt_method_site pg_site_6; /* method_isPrivate_6 */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_8; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_9; /* method_identifier_9 */
-static pt_method_site pg_site_10; /* method_build_10 */
-static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ConsistentConstructorDeclarationRule {
 
@@ -157,19 +153,13 @@ namespace pgen::ConsistentConstructorDeclarationRule {
 	}
 	 {
 		zv::Val arr17 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zval av18[1];
-		ZVAL_COPY_VALUE(&av18[0], &pg_lit[2]);
-		zend_class_entry *ce19 = pgrt::lookupClass(pg_site_7, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce19 == NULL)) return false;
+		zv::Val r18;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[2], r18.raw()))) return false;
+		zv::Val r19;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r18.raw()), &pg_lit[3], r19.raw()))) return false;
 		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_8, ce19, "message", 7, 1, av18, r20.raw(), NULL))) return false;
-		zval av21[1];
-		ZVAL_COPY_VALUE(&av21[0], &pg_lit[3]);
-		zv::Val r22;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r20.raw(), "identifier", "identifier", 10, 1, av21, r22.raw(), NULL))) return false;
-		zv::Val r23;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r22.raw(), "build", "build", 5, 0, NULL, r23.raw(), NULL))) return false;
-		{ zval v = r23.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr17.raw()), &v); }
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r19.raw()), r20.raw()))) return false;
+		{ zval v = r20.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr17.raw()), &v); }
 		*ret = arr17.take();
 		return true;
 	}
@@ -201,8 +191,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConsistentConstructorDeclarationRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConsistentConstructorDeclarationRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

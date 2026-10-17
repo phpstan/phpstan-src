@@ -96,15 +96,13 @@ static pt_method_site pg_site_83; /* method_withIdentifier_83 */
 static pt_method_site pg_site_84; /* method_getTraceAsString_84 */
 static pt_method_site pg_site_85; /* method_withMetadata_85 */
 static pt_method_site pg_site_86; /* method_getFile_86 */
-static pt_method_site pg_site_87; /* method_canExportNode_87 */
-static pt_method_site pg_site_88; /* method_resolveExportedNode_88 */
-static pt_method_site pg_site_89; /* method_getAttribute_89 */
-static pgrt::ClassSite pg_site_90; /* cls_PHPStan\Rules\Registry */
-static pgrt::ClassSite pg_site_91; /* cls_PHPStan\Collectors\Registry */
-static pgrt::ClassSite pg_site_92; /* cls_PHPStan\Parser\Parser */
-static pgrt::ClassSite pg_site_93; /* cls_PHPStan\Analyser\RuleErrorTransformer */
-static pgrt::ClassSite pg_site_94; /* cls_PHPStan\Dependency\DependencyResolver */
-static pgrt::ClassSite pg_site_95; /* cls_PhpParser\Node */
+static pt_method_site pg_site_87; /* method_getAttribute_87 */
+static pgrt::ClassSite pg_site_88; /* cls_PHPStan\Rules\Registry */
+static pgrt::ClassSite pg_site_89; /* cls_PHPStan\Collectors\Registry */
+static pgrt::ClassSite pg_site_90; /* cls_PHPStan\Parser\Parser */
+static pgrt::ClassSite pg_site_91; /* cls_PHPStan\Analyser\RuleErrorTransformer */
+static pgrt::ClassSite pg_site_92; /* cls_PHPStan\Dependency\DependencyResolver */
+static pgrt::ClassSite pg_site_93; /* cls_PhpParser\Node */
 
 namespace pgen::FileAnalyserCallback {
 
@@ -625,9 +623,9 @@ namespace pgen::FileAnalyserCallback {
 							zv::Val vd119;
 							zend_class_entry *vd119_ce = Z_TYPE_P(l_rule) == IS_OBJECT ? Z_OBJCE_P(l_rule) : NULL;
 							bool vd119_done = false;
-							static zend_class_entry **const vd119_table[] = { &pt_ce_defined_variable_rule, &pt_ce_call_methods_rule, &pt_ce_access_properties_rule, &pt_ce_call_to_function_parameters_rule, &pt_ce_class_template_type_rule, &pt_ce_trait_template_type_rule, &pt_ce_interface_template_type_rule, &pt_ce_class_ancestors_rule, &pt_ce_method_signature_variance_rule, &pt_ce_used_traits_rule, &pt_ce_interface_ancestors_rule, &pt_ce_enum_ancestors_rule, &pt_ce_property_variance_rule, &pt_ce_function_signature_variance_rule, &pt_ce_method_tag_template_type_rule, &pt_ce_function_template_type_rule, &pt_ce_method_tag_template_type_trait_rule, &pt_ce_method_template_type_rule, &pt_ce_enum_template_type_rule, &pt_ce_incompatible_property_hook_php_doc_type_rule, &pt_ce_sealed_definition_trait_rule, &pt_ce_incompatible_self_out_type_rule, &pt_ce_require_extends_definition_trait_rule, &pt_ce_invalid_phpstan_doc_tag_rule, &pt_ce_require_implements_definition_class_rule, &pt_ce_incompatible_php_doc_type_rule, &pt_ce_method_assert_rule, &pt_ce_invalid_php_doc_var_tag_type_rule, &pt_ce_function_assert_rule, &pt_ce_incompatible_class_constant_php_doc_type_rule, &pt_ce_incompatible_param_immediately_invoked_callable_rule, &pt_ce_function_conditional_return_type_rule, &pt_ce_require_implements_definition_trait_rule, &pt_ce_wrong_variable_name_in_var_tag_rule, &pt_ce_incompatible_property_php_doc_type_rule, &pt_ce_invalid_throws_php_doc_value_rule, &pt_ce_sealed_definition_class_rule, &pt_ce_invalid_php_doc_tag_value_rule, &pt_ce_method_conditional_return_type_rule, &pt_ce_var_tag_changed_expression_type_rule, &pt_ce_require_extends_definition_class_rule, &pt_ce_invalid_types_in_union_rule, &pt_ce_call_to_method_statement_with_no_discard_rule, &pt_ce_method_callable_rule, &pt_ce_abstract_method_in_non_abstract_class_rule, &pt_ce_call_to_constructor_statement_without_side_effects_rule, &pt_ce_static_method_callable_rule, &pt_ce_missing_method_self_out_type_rule, &pt_ce_constructor_return_type_rule, &pt_ce_missing_method_return_typehint_rule, &pt_ce_missing_method_implementation_rule, &pt_ce_existing_classes_in_typehints_rule, &pt_ce_method_attributes_rule, &pt_ce_nullsafe_method_call_rule, &pt_ce_return_type_rule, &pt_ce_abstract_private_method_rule, &pt_ce_consistent_constructor_declaration_rule, &pt_ce_unused_method_parameters_rule, &pt_ce_method_call_with_possibly_renamed_named_argument_rule, &pt_ce_method_signature_rule, &pt_ce_call_to_static_method_statement_with_no_discard_rule, &pt_ce_call_private_method_through_static_rule, &pt_ce_call_to_static_method_statement_without_side_effects_rule, &pt_ce_call_static_methods_rule, &pt_ce_final_private_method_rule, &pt_ce_consistent_constructor_rule, &pt_ce_missing_magic_serialization_methods_rule, &pt_ce_missing_method_parameter_typehint_rule, &pt_ce_method_visibility_in_interface_rule, &pt_ce_call_to_method_statement_without_side_effects_rule, &pt_ce_incompatible_default_parameter_type_rule, &pt_ce_used_names_rule, &pt_ce_regular_expression_quoting_rule, &pt_ce_phpdoc_comment_rule, &pt_ce_function_never_rule, &pt_ce_promote_parameter_rule, &pt_ce_method_never_rule, &pt_ce_no_php_code_rule, &pt_ce_array_dim_cast_rule, &pt_ce_literal_array_key_cast_rule, &pt_ce_not_analysed_trait_rule, &pt_ce_invalid_inc_dec_operation_rule, &pt_ce_invalid_assign_var_rule, &pt_ce_invalid_unary_operation_rule, &pt_ce_backtick_rule, &pt_ce_pipe_operator_rule, &pt_ce_invalid_comparison_operation_rule, &pt_ce_invalid_binary_operation_rule, &pt_ce_constants_in_traits_rule, &pt_ce_conflicting_trait_constants_rule, &pt_ce_trait_attributes_rule, &pt_ce_impossible_instance_of_rule, &pt_ce_duplicate_trait_declaration_rule, &pt_ce_allowed_sub_types_rule, &pt_ce_local_type_aliases_rule, &pt_ce_existing_class_in_trait_use_rule, &pt_ce_existing_class_in_instance_of_rule, &pt_ce_class_constant_rule, &pt_ce_invalid_promoted_properties_rule, &pt_ce_non_class_attribute_class_rule, &pt_ce_existing_classes_in_interface_extends_rule, &pt_ce_access_private_constant_through_static_rule, &pt_ce_existing_classes_in_class_implements_rule, &pt_ce_method_tag_rule, &pt_ce_existing_classes_in_enum_implements_rule, &pt_ce_method_tag_trait_use_rule, &pt_ce_trait_attribute_class_rule, &pt_ce_instantiation_rule, &pt_ce_read_only_class_rule, &pt_ce_existing_class_in_class_extends_rule, &pt_ce_mixin_trait_rule, &pt_ce_property_tag_trait_use_rule, &pt_ce_local_type_trait_aliases_rule, &pt_ce_unused_constructor_parameters_rule, &pt_ce_enum_sanity_rule, &pt_ce_require_implements_rule, &pt_ce_class_attributes_rule, &pt_ce_duplicate_class_declaration_rule, &pt_ce_mixin_trait_use_rule, &pt_ce_instantiation_callable_rule, &pt_ce_mixin_rule, &pt_ce_method_tag_trait_rule, &pt_ce_new_static_rule, &pt_ce_duplicate_declaration_rule, &pt_ce_require_extends_rule, &pt_ce_class_constant_attributes_rule, &pt_ce_local_type_trait_use_aliases_rule, &pt_ce_new_static_in_abstract_class_static_method_rule, &pt_ce_property_tag_rule, &pt_ce_property_tag_trait_rule, &pt_ce_void_cast_rule, &pt_ce_deprecated_cast_rule, &pt_ce_print_rule, &pt_ce_unset_cast_rule, &pt_ce_invalid_part_of_encapsed_string_rule, &pt_ce_invalid_cast_rule, &pt_ce_echo_rule, &pt_ce_ignore_parse_error_rule, &pt_ce_date_time_instantiation_rule, &pt_ce_magic_constant_context_rule, &pt_ce_constant_attributes_rule, &pt_ce_dynamic_class_constant_fetch_rule, &pt_ce_value_assigned_to_define_rule, &pt_ce_overriding_constant_rule, &pt_ce_final_private_constant_rule, &pt_ce_constant_rule, &pt_ce_final_constant_rule, &pt_ce_class_as_class_constant_rule, &pt_ce_missing_class_constant_typehint_rule, &pt_ce_value_assigned_to_class_constant_rule, &pt_ce_native_typed_class_constant_rule, &pt_ce_value_assigned_to_global_constant_rule, &pt_ce_too_wide_function_return_typehint_rule, &pt_ce_too_wide_method_return_typehint_rule, &pt_ce_too_wide_closure_return_typehint_rule, &pt_ce_too_wide_function_parameter_out_type_rule, &pt_ce_too_wide_method_parameter_out_type_rule, &pt_ce_too_wide_property_type_rule, &pt_ce_too_wide_arrow_function_return_typehint_rule, &pt_ce_missing_return_rule, &pt_ce_missing_checked_exception_in_method_throws_rule, &pt_ce_too_wide_property_hook_throw_type_rule, &pt_ce_throws_void_method_with_explicit_throw_point_rule, &pt_ce_overwritten_exit_point_by_finally_rule, &pt_ce_too_wide_method_throw_type_rule, &pt_ce_method_throw_type_covariance_rule, &pt_ce_caught_exception_existence_rule, &pt_ce_throws_void_property_hook_with_explicit_throw_point_rule, &pt_ce_missing_checked_exception_in_function_throws_rule, &pt_ce_missing_checked_exception_in_property_hook_throws_rule, &pt_ce_throw_expr_type_rule, &pt_ce_throw_expression_rule, &pt_ce_catch_with_unthrown_exception_rule, &pt_ce_noncapturing_catch_rule, &pt_ce_throws_void_function_with_explicit_throw_point_rule, &pt_ce_too_wide_function_throw_type_rule, &pt_ce_restricted_static_method_callable_usage_rule, &pt_ce_restricted_function_usage_rule, &pt_ce_restricted_static_property_usage_rule, &pt_ce_restricted_method_usage_rule, &pt_ce_restricted_function_callable_usage_rule, &pt_ce_restricted_static_method_usage_rule, &pt_ce_restricted_method_callable_usage_rule, &pt_ce_restricted_usage_of_deprecated_string_cast_rule, &pt_ce_restricted_property_usage_rule, &pt_ce_restricted_class_constant_usage_rule, &pt_ce_existing_names_in_use_rule, &pt_ce_existing_names_in_group_use_rule, &pt_ce_read_only_by_php_doc_property_rule, &pt_ce_set_property_hook_parameter_rule, &pt_ce_existing_classes_in_properties_rule, &pt_ce_existing_classes_in_property_hook_typehints_rule, &pt_ce_reading_write_only_properties_rule, &pt_ce_types_assigned_to_properties_rule, &pt_ce_get_non_virtual_property_hook_read_rule, &pt_ce_default_value_types_assigned_to_properties_rule, &pt_ce_set_non_virtual_property_hook_assign_rule, &pt_ce_access_static_properties_rule, &pt_ce_access_properties_in_assign_rule, &pt_ce_writing_to_read_only_properties_rule, &pt_ce_missing_property_typehint_rule, &pt_ce_property_in_class_rule, &pt_ce_nullsafe_property_fetch_rule, &pt_ce_read_only_by_php_doc_property_assign_rule, &pt_ce_access_static_properties_in_assign_rule, &pt_ce_read_only_property_assign_ref_rule, &pt_ce_missing_read_only_property_assign_rule, &pt_ce_property_hook_attributes_rule, &pt_ce_access_private_property_through_static_rule, &pt_ce_read_only_property_assign_rule, &pt_ce_missing_read_only_by_php_doc_property_assign_rule, &pt_ce_properties_in_interface_rule, &pt_ce_invalid_callable_property_type_rule, &pt_ce_uninitialized_property_rule, &pt_ce_property_attributes_rule, &pt_ce_read_only_by_php_doc_property_assign_ref_rule, &pt_ce_read_only_property_rule, &pt_ce_property_assign_ref_rule, &pt_ce_call_to_static_method_statement_without_impure_points_rule, &pt_ce_unused_private_method_rule, &pt_ce_unreachable_statement_rule, &pt_ce_noop_rule, &pt_ce_call_to_function_statement_without_impure_points_rule, &pt_ce_call_to_constructor_statement_without_impure_points_rule, &pt_ce_call_to_method_statement_without_impure_points_rule, &pt_ce_unused_private_property_rule, &pt_ce_unused_variable_rule, &pt_ce_unused_private_constant_rule, &pt_ce_isset_rule, &pt_ce_this_in_static_statement_rule, &pt_ce_parameter_out_execution_end_type_rule, &pt_ce_this_in_global_statement_rule, &pt_ce_compact_variables_rule, &pt_ce_null_coalesce_rule, &pt_ce_parameter_out_assigned_type_rule, &pt_ce_invalid_variable_assign_rule, &pt_ce_variable_cloning_rule, &pt_ce_assign_to_by_ref_expr_from_foreach_rule, &pt_ce_unset_rule, &pt_ce_empty_rule, &pt_ce_invalid_key_in_array_item_rule, &pt_ce_invalid_key_in_array_dim_fetch_rule, &pt_ce_offset_access_value_assignment_rule, &pt_ce_offset_access_without_dim_for_reading_rule, &pt_ce_offset_access_assign_op_rule, &pt_ce_array_unpacking_rule, &pt_ce_offset_access_assignment_rule, &pt_ce_array_destructuring_rule, &pt_ce_unpack_iterable_in_array_rule, &pt_ce_duplicate_keys_in_literal_arrays_rule, &pt_ce_nonexistent_offset_in_array_dim_fetch_rule, &pt_ce_dead_foreach_rule, &pt_ce_iterable_in_foreach_rule, &pt_ce_api_static_call_rule, &pt_ce_old_php_parser4_class_rule, &pt_ce_api_class_const_fetch_rule, &pt_ce_runtime_reflection_function_rule, &pt_ce_api_method_call_rule, &pt_ce_get_template_type_rule, &pt_ce_api_trait_use_rule, &pt_ce_api_class_extends_rule, &pt_ce_api_class_implements_rule, &pt_ce_runtime_reflection_instantiation_rule, &pt_ce_php_stan_namespace_in3rd_party_package_rule, &pt_ce_node_connecting_visitor_attributes_rule, &pt_ce_api_instantiation_rule, &pt_ce_api_instanceof_rule, &pt_ce_api_interface_extends_rule, &pt_ce_call_to_function_statement_with_no_discard_rule, &pt_ce_unused_function_parameters_rule, &pt_ce_useless_function_return_value_rule, &pt_ce_array_filter_rule, &pt_ce_parameter_castable_to_number_rule, &pt_ce_missing_function_return_typehint_rule, &pt_ce_existing_classes_in_arrow_function_typehints_rule, &pt_ce_inner_function_rule, &pt_ce_arrow_function_attributes_rule, &pt_ce_array_values_rule, &pt_ce_call_user_func_rule, &pt_ce_sort_without_effect_rule, &pt_ce_arrow_function_return_type_rule, &pt_ce_arrow_function_return_nullsafe_by_ref_rule, &pt_ce_define_parameters_rule, &pt_ce_function_attributes_rule, &pt_ce_unused_closure_uses_rule, &pt_ce_param_attributes_rule, &pt_ce_invalid_lexical_variables_in_closure_use_rule, &pt_ce_printf_parameter_type_rule, &pt_ce_duplicate_function_declaration_rule, &pt_ce_random_int_parameters_rule, &pt_ce_incompatible_arrow_function_default_parameter_type_rule, &pt_ce_call_callables_rule, &pt_ce_return_type_after_finally_rule, &pt_ce_missing_function_parameter_typehint_rule, &pt_ce_redefined_parameters_rule, &pt_ce_closure_return_type_rule, &pt_ce_incompatible_closure_default_parameter_type_rule, &pt_ce_existing_classes_in_closure_typehints_rule, &pt_ce_variadic_parameters_declaration_rule, &pt_ce_implode_parameter_castable_to_string_rule, &pt_ce_closure_attributes_rule, &pt_ce_parameter_castable_to_string_rule, &pt_ce_filter_var_rule, &pt_ce_invalid_parameter_name_rule, &pt_ce_call_to_non_existent_function_rule, &pt_ce_printf_array_parameters_rule, &pt_ce_function_callable_rule, &pt_ce_return_nullsafe_by_ref_rule, &pt_ce_call_to_function_statement_without_side_effects_rule, &pt_ce_impossible_in_array_haystack_finite_types_rule, &pt_ce_impossible_check_type_static_method_call_rule, &pt_ce_logical_xor_constant_condition_rule, &pt_ce_while_loop_always_false_condition_rule, &pt_ce_usage_of_void_match_expression_rule, &pt_ce_switch_condition_rule, &pt_ce_impossible_check_type_method_call_rule, &pt_ce_number_comparison_operators_constant_condition_rule, &pt_ce_constant_loose_comparison_rule, &pt_ce_strict_comparison_of_different_types_rule, &pt_ce_if_constant_condition_rule, &pt_ce_match_expression_rule, &pt_ce_function_call_constant_condition_rule, &pt_ce_boolean_and_constant_condition_rule, &pt_ce_else_if_constant_condition_rule, &pt_ce_boolean_not_constant_condition_rule, &pt_ce_do_while_loop_constant_condition_rule, &pt_ce_boolean_or_constant_condition_rule, &pt_ce_ternary_operator_constant_condition_rule, &pt_ce_while_loop_always_true_condition_rule, &pt_ce_constant_condition_in_trait_rule, &pt_ce_yield_type_rule, &pt_ce_yield_from_type_rule, &pt_ce_yield_in_generator_rule, &pt_ce_enum_case_outside_enum_rule, &pt_ce_enum_case_attributes_rule, &pt_ce_declare_strict_types_rule, &pt_ce_require_file_exists_rule, &pt_ce_unused_label_rule, &pt_ce_goto_undefined_label_rule, &pt_ce_continue_break_in_loop_rule, &pt_ce_pure_function_rule, &pt_ce_pure_property_hook_rule, &pt_ce_pure_method_rule, &pt_ce_dump_php_doc_type_rule, &pt_ce_dump_native_type_rule, &pt_ce_debug_scope_rule, &pt_ce_dump_type_rule, &pt_ce_traits_not_analysed_trait_rule, &pt_ce_functions_existing_classes_in_typehints_rule, &pt_ce_functions_return_type_rule, &pt_ce_functions_incompatible_default_parameter_type_rule, &pt_ce_impossible_check_type_function_call_rule };
-							static const uint16_t vd119_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352 };
-							switch (pgrt::dispatchCase(pg_site_23, vd119_ce, vd119_table, vd119_cases, 352)) {
+							static zend_class_entry **const vd119_table[] = { &pt_ce_defined_variable_rule, &pt_ce_call_methods_rule, &pt_ce_access_properties_rule, &pt_ce_call_to_function_parameters_rule, &pt_ce_class_template_type_rule, &pt_ce_trait_template_type_rule, &pt_ce_interface_template_type_rule, &pt_ce_class_ancestors_rule, &pt_ce_method_signature_variance_rule, &pt_ce_used_traits_rule, &pt_ce_interface_ancestors_rule, &pt_ce_enum_ancestors_rule, &pt_ce_property_variance_rule, &pt_ce_function_signature_variance_rule, &pt_ce_method_tag_template_type_rule, &pt_ce_function_template_type_rule, &pt_ce_method_tag_template_type_trait_rule, &pt_ce_method_template_type_rule, &pt_ce_enum_template_type_rule, &pt_ce_incompatible_property_hook_php_doc_type_rule, &pt_ce_sealed_definition_trait_rule, &pt_ce_incompatible_self_out_type_rule, &pt_ce_require_extends_definition_trait_rule, &pt_ce_invalid_phpstan_doc_tag_rule, &pt_ce_require_implements_definition_class_rule, &pt_ce_incompatible_php_doc_type_rule, &pt_ce_method_assert_rule, &pt_ce_invalid_php_doc_var_tag_type_rule, &pt_ce_function_assert_rule, &pt_ce_incompatible_class_constant_php_doc_type_rule, &pt_ce_incompatible_param_immediately_invoked_callable_rule, &pt_ce_function_conditional_return_type_rule, &pt_ce_require_implements_definition_trait_rule, &pt_ce_wrong_variable_name_in_var_tag_rule, &pt_ce_incompatible_property_php_doc_type_rule, &pt_ce_invalid_throws_php_doc_value_rule, &pt_ce_sealed_definition_class_rule, &pt_ce_invalid_php_doc_tag_value_rule, &pt_ce_method_conditional_return_type_rule, &pt_ce_var_tag_changed_expression_type_rule, &pt_ce_require_extends_definition_class_rule, &pt_ce_invalid_types_in_union_rule, &pt_ce_call_to_method_statement_with_no_discard_rule, &pt_ce_method_callable_rule, &pt_ce_abstract_method_in_non_abstract_class_rule, &pt_ce_call_to_constructor_statement_without_side_effects_rule, &pt_ce_static_method_callable_rule, &pt_ce_missing_method_self_out_type_rule, &pt_ce_constructor_return_type_rule, &pt_ce_missing_method_return_typehint_rule, &pt_ce_missing_method_implementation_rule, &pt_ce_existing_classes_in_typehints_rule, &pt_ce_method_attributes_rule, &pt_ce_nullsafe_method_call_rule, &pt_ce_return_type_rule, &pt_ce_abstract_private_method_rule, &pt_ce_consistent_constructor_declaration_rule, &pt_ce_unused_method_parameters_rule, &pt_ce_method_call_with_possibly_renamed_named_argument_rule, &pt_ce_method_signature_rule, &pt_ce_call_to_static_method_statement_with_no_discard_rule, &pt_ce_call_private_method_through_static_rule, &pt_ce_call_to_static_method_statement_without_side_effects_rule, &pt_ce_call_static_methods_rule, &pt_ce_final_private_method_rule, &pt_ce_consistent_constructor_rule, &pt_ce_missing_magic_serialization_methods_rule, &pt_ce_missing_method_parameter_typehint_rule, &pt_ce_method_visibility_in_interface_rule, &pt_ce_call_to_method_statement_without_side_effects_rule, &pt_ce_incompatible_default_parameter_type_rule, &pt_ce_used_names_rule, &pt_ce_regular_expression_quoting_rule, &pt_ce_phpdoc_comment_rule, &pt_ce_function_never_rule, &pt_ce_promote_parameter_rule, &pt_ce_method_never_rule, &pt_ce_no_php_code_rule, &pt_ce_array_dim_cast_rule, &pt_ce_literal_array_key_cast_rule, &pt_ce_not_analysed_trait_rule, &pt_ce_invalid_inc_dec_operation_rule, &pt_ce_invalid_assign_var_rule, &pt_ce_invalid_unary_operation_rule, &pt_ce_backtick_rule, &pt_ce_pipe_operator_rule, &pt_ce_invalid_comparison_operation_rule, &pt_ce_invalid_binary_operation_rule, &pt_ce_constants_in_traits_rule, &pt_ce_conflicting_trait_constants_rule, &pt_ce_trait_attributes_rule, &pt_ce_impossible_instance_of_rule, &pt_ce_duplicate_trait_declaration_rule, &pt_ce_allowed_sub_types_rule, &pt_ce_local_type_aliases_rule, &pt_ce_existing_class_in_trait_use_rule, &pt_ce_existing_class_in_instance_of_rule, &pt_ce_class_constant_rule, &pt_ce_invalid_promoted_properties_rule, &pt_ce_non_class_attribute_class_rule, &pt_ce_existing_classes_in_interface_extends_rule, &pt_ce_access_private_constant_through_static_rule, &pt_ce_existing_classes_in_class_implements_rule, &pt_ce_method_tag_rule, &pt_ce_existing_classes_in_enum_implements_rule, &pt_ce_method_tag_trait_use_rule, &pt_ce_trait_attribute_class_rule, &pt_ce_instantiation_rule, &pt_ce_read_only_class_rule, &pt_ce_existing_class_in_class_extends_rule, &pt_ce_mixin_trait_rule, &pt_ce_property_tag_trait_use_rule, &pt_ce_local_type_trait_aliases_rule, &pt_ce_unused_constructor_parameters_rule, &pt_ce_enum_sanity_rule, &pt_ce_require_implements_rule, &pt_ce_class_attributes_rule, &pt_ce_duplicate_class_declaration_rule, &pt_ce_mixin_trait_use_rule, &pt_ce_instantiation_callable_rule, &pt_ce_mixin_rule, &pt_ce_method_tag_trait_rule, &pt_ce_new_static_rule, &pt_ce_duplicate_declaration_rule, &pt_ce_require_extends_rule, &pt_ce_class_constant_attributes_rule, &pt_ce_local_type_trait_use_aliases_rule, &pt_ce_new_static_in_abstract_class_static_method_rule, &pt_ce_property_tag_rule, &pt_ce_property_tag_trait_rule, &pt_ce_void_cast_rule, &pt_ce_deprecated_cast_rule, &pt_ce_print_rule, &pt_ce_unset_cast_rule, &pt_ce_invalid_part_of_encapsed_string_rule, &pt_ce_invalid_cast_rule, &pt_ce_echo_rule, &pt_ce_ignore_parse_error_rule, &pt_ce_date_time_instantiation_rule, &pt_ce_magic_constant_context_rule, &pt_ce_constant_attributes_rule, &pt_ce_dynamic_class_constant_fetch_rule, &pt_ce_value_assigned_to_define_rule, &pt_ce_overriding_constant_rule, &pt_ce_final_private_constant_rule, &pt_ce_constant_rule, &pt_ce_final_constant_rule, &pt_ce_class_as_class_constant_rule, &pt_ce_missing_class_constant_typehint_rule, &pt_ce_value_assigned_to_class_constant_rule, &pt_ce_native_typed_class_constant_rule, &pt_ce_value_assigned_to_global_constant_rule, &pt_ce_too_wide_function_return_typehint_rule, &pt_ce_too_wide_method_return_typehint_rule, &pt_ce_too_wide_closure_return_typehint_rule, &pt_ce_too_wide_function_parameter_out_type_rule, &pt_ce_too_wide_method_parameter_out_type_rule, &pt_ce_too_wide_property_type_rule, &pt_ce_too_wide_arrow_function_return_typehint_rule, &pt_ce_missing_return_rule, &pt_ce_missing_checked_exception_in_method_throws_rule, &pt_ce_too_wide_property_hook_throw_type_rule, &pt_ce_throws_void_method_with_explicit_throw_point_rule, &pt_ce_overwritten_exit_point_by_finally_rule, &pt_ce_too_wide_method_throw_type_rule, &pt_ce_method_throw_type_covariance_rule, &pt_ce_caught_exception_existence_rule, &pt_ce_throws_void_property_hook_with_explicit_throw_point_rule, &pt_ce_missing_checked_exception_in_function_throws_rule, &pt_ce_missing_checked_exception_in_property_hook_throws_rule, &pt_ce_throw_expr_type_rule, &pt_ce_throw_expression_rule, &pt_ce_catch_with_unthrown_exception_rule, &pt_ce_noncapturing_catch_rule, &pt_ce_throws_void_function_with_explicit_throw_point_rule, &pt_ce_too_wide_function_throw_type_rule, &pt_ce_restricted_static_method_callable_usage_rule, &pt_ce_restricted_function_usage_rule, &pt_ce_restricted_static_property_usage_rule, &pt_ce_restricted_method_usage_rule, &pt_ce_restricted_function_callable_usage_rule, &pt_ce_restricted_static_method_usage_rule, &pt_ce_restricted_method_callable_usage_rule, &pt_ce_restricted_usage_of_deprecated_string_cast_rule, &pt_ce_restricted_property_usage_rule, &pt_ce_restricted_class_constant_usage_rule, &pt_ce_existing_names_in_use_rule, &pt_ce_existing_names_in_group_use_rule, &pt_ce_read_only_by_php_doc_property_rule, &pt_ce_set_property_hook_parameter_rule, &pt_ce_existing_classes_in_properties_rule, &pt_ce_existing_classes_in_property_hook_typehints_rule, &pt_ce_reading_write_only_properties_rule, &pt_ce_types_assigned_to_properties_rule, &pt_ce_get_non_virtual_property_hook_read_rule, &pt_ce_default_value_types_assigned_to_properties_rule, &pt_ce_set_non_virtual_property_hook_assign_rule, &pt_ce_access_static_properties_rule, &pt_ce_access_properties_in_assign_rule, &pt_ce_writing_to_read_only_properties_rule, &pt_ce_missing_property_typehint_rule, &pt_ce_property_in_class_rule, &pt_ce_nullsafe_property_fetch_rule, &pt_ce_read_only_by_php_doc_property_assign_rule, &pt_ce_access_static_properties_in_assign_rule, &pt_ce_read_only_property_assign_ref_rule, &pt_ce_missing_read_only_property_assign_rule, &pt_ce_property_hook_attributes_rule, &pt_ce_access_private_property_through_static_rule, &pt_ce_read_only_property_assign_rule, &pt_ce_missing_read_only_by_php_doc_property_assign_rule, &pt_ce_properties_in_interface_rule, &pt_ce_invalid_callable_property_type_rule, &pt_ce_uninitialized_property_rule, &pt_ce_property_attributes_rule, &pt_ce_read_only_by_php_doc_property_assign_ref_rule, &pt_ce_read_only_property_rule, &pt_ce_property_assign_ref_rule, &pt_ce_call_to_static_method_statement_without_impure_points_rule, &pt_ce_unused_private_method_rule, &pt_ce_unreachable_statement_rule, &pt_ce_noop_rule, &pt_ce_call_to_function_statement_without_impure_points_rule, &pt_ce_call_to_constructor_statement_without_impure_points_rule, &pt_ce_call_to_method_statement_without_impure_points_rule, &pt_ce_unused_private_property_rule, &pt_ce_unused_variable_rule, &pt_ce_unused_private_constant_rule, &pt_ce_isset_rule, &pt_ce_this_in_static_statement_rule, &pt_ce_parameter_out_execution_end_type_rule, &pt_ce_this_in_global_statement_rule, &pt_ce_compact_variables_rule, &pt_ce_null_coalesce_rule, &pt_ce_parameter_out_assigned_type_rule, &pt_ce_invalid_variable_assign_rule, &pt_ce_variable_cloning_rule, &pt_ce_assign_to_by_ref_expr_from_foreach_rule, &pt_ce_unset_rule, &pt_ce_empty_rule, &pt_ce_invalid_key_in_array_item_rule, &pt_ce_invalid_key_in_array_dim_fetch_rule, &pt_ce_offset_access_value_assignment_rule, &pt_ce_offset_access_without_dim_for_reading_rule, &pt_ce_offset_access_assign_op_rule, &pt_ce_array_unpacking_rule, &pt_ce_offset_access_assignment_rule, &pt_ce_array_destructuring_rule, &pt_ce_unpack_iterable_in_array_rule, &pt_ce_duplicate_keys_in_literal_arrays_rule, &pt_ce_nonexistent_offset_in_array_dim_fetch_rule, &pt_ce_dead_foreach_rule, &pt_ce_iterable_in_foreach_rule, &pt_ce_api_static_call_rule, &pt_ce_old_php_parser4_class_rule, &pt_ce_api_class_const_fetch_rule, &pt_ce_runtime_reflection_function_rule, &pt_ce_api_method_call_rule, &pt_ce_get_template_type_rule, &pt_ce_api_trait_use_rule, &pt_ce_api_class_extends_rule, &pt_ce_api_class_implements_rule, &pt_ce_runtime_reflection_instantiation_rule, &pt_ce_php_stan_namespace_in3rd_party_package_rule, &pt_ce_node_connecting_visitor_attributes_rule, &pt_ce_api_instantiation_rule, &pt_ce_api_instanceof_rule, &pt_ce_api_interface_extends_rule, &pt_ce_call_to_function_statement_with_no_discard_rule, &pt_ce_unused_function_parameters_rule, &pt_ce_useless_function_return_value_rule, &pt_ce_array_filter_rule, &pt_ce_parameter_castable_to_number_rule, &pt_ce_missing_function_return_typehint_rule, &pt_ce_existing_classes_in_arrow_function_typehints_rule, &pt_ce_inner_function_rule, &pt_ce_arrow_function_attributes_rule, &pt_ce_array_values_rule, &pt_ce_call_user_func_rule, &pt_ce_sort_without_effect_rule, &pt_ce_arrow_function_return_type_rule, &pt_ce_arrow_function_return_nullsafe_by_ref_rule, &pt_ce_define_parameters_rule, &pt_ce_function_attributes_rule, &pt_ce_unused_closure_uses_rule, &pt_ce_param_attributes_rule, &pt_ce_invalid_lexical_variables_in_closure_use_rule, &pt_ce_printf_parameter_type_rule, &pt_ce_duplicate_function_declaration_rule, &pt_ce_random_int_parameters_rule, &pt_ce_incompatible_arrow_function_default_parameter_type_rule, &pt_ce_call_callables_rule, &pt_ce_return_type_after_finally_rule, &pt_ce_missing_function_parameter_typehint_rule, &pt_ce_redefined_parameters_rule, &pt_ce_closure_return_type_rule, &pt_ce_incompatible_closure_default_parameter_type_rule, &pt_ce_existing_classes_in_closure_typehints_rule, &pt_ce_variadic_parameters_declaration_rule, &pt_ce_implode_parameter_castable_to_string_rule, &pt_ce_closure_attributes_rule, &pt_ce_parameter_castable_to_string_rule, &pt_ce_filter_var_rule, &pt_ce_invalid_parameter_name_rule, &pt_ce_call_to_non_existent_function_rule, &pt_ce_printf_array_parameters_rule, &pt_ce_function_callable_rule, &pt_ce_return_nullsafe_by_ref_rule, &pt_ce_call_to_function_statement_without_side_effects_rule, &pt_ce_impossible_in_array_haystack_finite_types_rule, &pt_ce_impossible_check_type_static_method_call_rule, &pt_ce_logical_xor_constant_condition_rule, &pt_ce_while_loop_always_false_condition_rule, &pt_ce_usage_of_void_match_expression_rule, &pt_ce_switch_condition_rule, &pt_ce_impossible_check_type_method_call_rule, &pt_ce_number_comparison_operators_constant_condition_rule, &pt_ce_constant_loose_comparison_rule, &pt_ce_strict_comparison_of_different_types_rule, &pt_ce_if_constant_condition_rule, &pt_ce_match_expression_rule, &pt_ce_function_call_constant_condition_rule, &pt_ce_boolean_and_constant_condition_rule, &pt_ce_else_if_constant_condition_rule, &pt_ce_boolean_not_constant_condition_rule, &pt_ce_do_while_loop_constant_condition_rule, &pt_ce_boolean_or_constant_condition_rule, &pt_ce_ternary_operator_constant_condition_rule, &pt_ce_while_loop_always_true_condition_rule, &pt_ce_constant_condition_in_trait_rule, &pt_ce_yield_type_rule, &pt_ce_yield_from_type_rule, &pt_ce_yield_in_generator_rule, &pt_ce_enum_case_outside_enum_rule, &pt_ce_enum_case_attributes_rule, &pt_ce_declare_strict_types_rule, &pt_ce_require_file_exists_rule, &pt_ce_unused_label_rule, &pt_ce_goto_undefined_label_rule, &pt_ce_continue_break_in_loop_rule, &pt_ce_pure_function_rule, &pt_ce_pure_property_hook_rule, &pt_ce_pure_method_rule, &pt_ce_dump_php_doc_type_rule, &pt_ce_dump_native_type_rule, &pt_ce_debug_scope_rule, &pt_ce_dump_type_rule, &pt_ce_traits_not_analysed_trait_rule, &pt_ce_functions_existing_classes_in_typehints_rule, &pt_ce_functions_return_type_rule, &pt_ce_functions_incompatible_default_parameter_type_rule, &pt_ce_impossible_check_type_function_call_rule, &pt_ce_date_interval_instantiation_rule, &pt_ce_printf_parameters_rule, &pt_ce_sort_parameter_castable_to_string_rule, &pt_ce_regular_expression_pattern_rule };
+							static const uint16_t vd119_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356 };
+							switch (pgrt::dispatchCase(pg_site_23, vd119_ce, vd119_table, vd119_cases, 356)) {
 								case 1: {
 									zv::Val r120;
 									if (UNEXPECTED(!pgen::DefinedVariableRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r120.raw()))) goto catch_c116;
@@ -3136,14 +3134,42 @@ namespace pgen::FileAnalyserCallback {
 									vd119_done = true;
 								}
 								break;
+								case 353: {
+									zv::Val r472;
+									if (UNEXPECTED(!pgen::DateIntervalInstantiationRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r472.raw()))) goto catch_c116;
+									vd119 = std::move(r472);
+									vd119_done = true;
+								}
+								break;
+								case 354: {
+									zv::Val r473;
+									if (UNEXPECTED(!pgen::PrintfParametersRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r473.raw()))) goto catch_c116;
+									vd119 = std::move(r473);
+									vd119_done = true;
+								}
+								break;
+								case 355: {
+									zv::Val r474;
+									if (UNEXPECTED(!pgen::SortParameterCastableToStringRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r474.raw()))) goto catch_c116;
+									vd119 = std::move(r474);
+									vd119_done = true;
+								}
+								break;
+								case 356: {
+									zv::Val r475;
+									if (UNEXPECTED(!pgen::RegularExpressionPatternRule::m_processNode(Z_OBJ_P(l_rule), o117.raw(), o118.raw(), r475.raw()))) goto catch_c116;
+									vd119 = std::move(r475);
+									vd119_done = true;
+								}
+								break;
 								default:
 								break;
 							}
 							if (!vd119_done) {
-								zval av472[2];
-								ZVAL_COPY_VALUE(&av472[0], o117.raw());
-								ZVAL_COPY_VALUE(&av472[1], o118.raw());
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_rule, "processNode", "processnode", 11, 2, av472, vd119.raw()))) goto catch_c116;
+								zval av476[2];
+								ZVAL_COPY_VALUE(&av476[0], o117.raw());
+								ZVAL_COPY_VALUE(&av476[1], o118.raw());
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_rule, "processNode", "processnode", 11, 2, av476, vd119.raw()))) goto catch_c116;
 							}
 							l_ruleErrors = std::move(vd119);
 						}
@@ -3152,1159 +3178,1159 @@ namespace pgen::FileAnalyserCallback {
 					catch_c116:
 					 {
 						zend_object *thrown = EG(exception);
-						bool caught473 = false;
-						if (!caught473 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
-							caught473 = true;
+						bool caught477 = false;
+						if (!caught477 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
+							caught477 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zval *is475 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
-								zv::Val r476;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r476.raw(), NULL))) return false;
-								zv::Val ist477;
-								zval *is474 = is475 == NULL ? NULL : pgrt::dimIs(is475, r476.raw(), ist477.raw());
+								zval *is479 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
+								zv::Val r480;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r480.raw(), NULL))) return false;
+								zv::Val ist481;
+								zval *is478 = is479 == NULL ? NULL : pgrt::dimIs(is479, r480.raw(), ist481.raw());
 								if (UNEXPECTED(EG(exception))) return false;
-								if (is474 != NULL && Z_TYPE_P(is474) > IS_NULL) {
+								if (is478 != NULL && Z_TYPE_P(is478) > IS_NULL) {
 									goto cont115;
 								}
 							}
 							 {
-								zv::Val r478;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r478.raw(), NULL))) return false;
-								bool k479 = true;
-								zval z481;
-								ZVAL_BOOL(&z481, k479);
-								zv::Val o480 = zv::Val::copyOf(zv::Ref(&z481));
-								zval *w482 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
-								if (Z_TYPE_P(w482) <= IS_NULL) { zval_ptr_dtor(w482); array_init(w482); } else if (UNEXPECTED(Z_TYPE_P(w482) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w482);
-								zval *e483 = pgrt::dimWrite(w482, r478.raw());
-								if (UNEXPECTED(e483 == NULL)) return false;
-								zv::Ref(e483).assign(std::move(o480));
+								zv::Val r482;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r482.raw(), NULL))) return false;
+								bool k483 = true;
+								zval z485;
+								ZVAL_BOOL(&z485, k483);
+								zv::Val o484 = zv::Val::copyOf(zv::Ref(&z485));
+								zval *w486 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
+								if (Z_TYPE_P(w486) <= IS_NULL) { zval_ptr_dtor(w486); array_init(w486); } else if (UNEXPECTED(Z_TYPE_P(w486) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w486);
+								zval *e487 = pgrt::dimWrite(w486, r482.raw());
+								if (UNEXPECTED(e487 == NULL)) return false;
+								zv::Ref(e487).assign(std::move(o484));
 							}
 							 {
-								zv::Val r485;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r485.raw(), NULL))) return false;
-								zval *p486 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p486 == NULL)) return false;
-								zv::Val o487 = zv::Val::copyOf(zv::Ref(p486));
-								zv::Val r488;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_node, "getStartLine", "getstartline", 12, 0, NULL, r488.raw(), NULL))) return false;
-								zend_long k489 = Z_LVAL_P(r488.raw());
-								zv::Val o490 = zv::Val::copyOf(zv::Ref(l_e.raw()));
-								zv::Val r491;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r491.raw(), NULL))) return false;
-								zval av492[4];
-								ZVAL_COPY_VALUE(&av492[0], r485.raw());
-								ZVAL_COPY_VALUE(&av492[1], o487.raw());
-								zval z493;
-								ZVAL_LONG(&z493, k489);
-								ZVAL_COPY_VALUE(&av492[2], &z493);
-								ZVAL_COPY_VALUE(&av492[3], o490.raw());
-								zv::Arr na494 = zv::Arr::create(1);
-								{ zval v; ZVAL_COPY(&v, r491.raw()); zend_hash_str_add_new(na494.table(), "tip", 3, &v); }
-								zend_class_entry *ce495 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce495 == NULL)) return false;
-								zv::Val n484;
-								if (UNEXPECTED(!pgrt::newObject(ce495, 4, av492, n484.raw(), na494.table()))) return false;
-								zval av496[1];
-								ZVAL_COPY_VALUE(&av496[0], &pg_lit[0]);
-								zv::Val r497;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_36, n484.raw(), "withIdentifier", "withidentifier", 14, 1, av496, r497.raw(), NULL))) return false;
-								zv::Val arr498 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av499[1];
-								ZVAL_COPY_VALUE(&av499[0], l_e.raw());
-								zend_class_entry *ce500 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce500 == NULL)) return false;
+								zv::Val r489;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r489.raw(), NULL))) return false;
+								zval *p490 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p490 == NULL)) return false;
+								zv::Val o491 = zv::Val::copyOf(zv::Ref(p490));
+								zv::Val r492;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_node, "getStartLine", "getstartline", 12, 0, NULL, r492.raw(), NULL))) return false;
+								zend_long k493 = Z_LVAL_P(r492.raw());
+								zv::Val o494 = zv::Val::copyOf(zv::Ref(l_e.raw()));
+								zv::Val r495;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r495.raw(), NULL))) return false;
+								zval av496[4];
+								ZVAL_COPY_VALUE(&av496[0], r489.raw());
+								ZVAL_COPY_VALUE(&av496[1], o491.raw());
+								zval z497;
+								ZVAL_LONG(&z497, k493);
+								ZVAL_COPY_VALUE(&av496[2], &z497);
+								ZVAL_COPY_VALUE(&av496[3], o494.raw());
+								zv::Arr na498 = zv::Arr::create(1);
+								{ zval v; ZVAL_COPY(&v, r495.raw()); zend_hash_str_add_new(na498.table(), "tip", 3, &v); }
+								zend_class_entry *ce499 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce499 == NULL)) return false;
+								zv::Val n488;
+								if (UNEXPECTED(!pgrt::newObject(ce499, 4, av496, n488.raw(), na498.table()))) return false;
+								zval av500[1];
+								ZVAL_COPY_VALUE(&av500[0], &pg_lit[0]);
 								zv::Val r501;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce500, "preparetrace", 12, 1, av499, r501.raw(), NULL))) return false;
-								{ zval v = r501.take(); zend_symtable_update(Z_ARRVAL_P(arr498.raw()), Z_STR_P(&pg_lit[1]), &v); }
-								zv::Val r502;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_39, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r502.raw(), NULL))) return false;
-								{ zval v = r502.take(); zend_symtable_update(Z_ARRVAL_P(arr498.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_36, n488.raw(), "withIdentifier", "withidentifier", 14, 1, av500, r501.raw(), NULL))) return false;
+								zv::Val arr502 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
 								zval av503[1];
-								ZVAL_COPY_VALUE(&av503[0], arr498.raw());
-								zv::Val r504;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_40, r497.raw(), "withMetadata", "withmetadata", 12, 1, av503, r504.raw(), NULL))) return false;
-								zv::Val o505 = zv::Val::copyOf(zv::Ref(r504.raw()));
-								zval *w506 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w506) <= IS_NULL) { zval_ptr_dtor(w506); array_init(w506); } else if (UNEXPECTED(Z_TYPE_P(w506) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w506);
-								{ zval v = o505.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w506), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								ZVAL_COPY_VALUE(&av503[0], l_e.raw());
+								zend_class_entry *ce504 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce504 == NULL)) return false;
+								zv::Val r505;
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce504, "preparetrace", 12, 1, av503, r505.raw(), NULL))) return false;
+								{ zval v = r505.take(); zend_symtable_update(Z_ARRVAL_P(arr502.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r506;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_39, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r506.raw(), NULL))) return false;
+								{ zval v = r506.take(); zend_symtable_update(Z_ARRVAL_P(arr502.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av507[1];
+								ZVAL_COPY_VALUE(&av507[0], arr502.raw());
+								zv::Val r508;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_40, r501.raw(), "withMetadata", "withmetadata", 12, 1, av507, r508.raw(), NULL))) return false;
+								zv::Val o509 = zv::Val::copyOf(zv::Ref(r508.raw()));
+								zval *w510 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w510) <= IS_NULL) { zval_ptr_dtor(w510); array_init(w510); } else if (UNEXPECTED(Z_TYPE_P(w510) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w510);
+								{ zval v = o509.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w510), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 							goto cont115;
 						}
-						if (!caught473 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-							caught473 = true;
+						if (!caught477 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+							caught477 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zval *gs508 = Z_TYPE_P(l_e.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_42, Z_OBJ_P(l_e.raw()), pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63), "getidentifier", 13, "identifier", 10) : NULL;
-								zv::Val r509;
-								if (EXPECTED(gs508 != NULL)) {
-									ZVAL_COPY(r509.raw(), gs508);
+								zval *gs512 = Z_TYPE_P(l_e.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_42, Z_OBJ_P(l_e.raw()), pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63), "getidentifier", 13, "identifier", 10) : NULL;
+								zv::Val r513;
+								if (EXPECTED(gs512 != NULL)) {
+									ZVAL_COPY(r513.raw(), gs512);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r509.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r513.raw()))) return false;
 								}
 								}
-								zv::Val r510;
-								if (EXPECTED(Z_TYPE_P(r509.raw()) == IS_OBJECT)) {
-									r510 = pt_type_op(Z_OBJ_P(r509.raw()), PT_OP_GET_NAME, 0, NULL);
-									if (UNEXPECTED(r510.isUndef())) return false;
+								zv::Val r514;
+								if (EXPECTED(Z_TYPE_P(r513.raw()) == IS_OBJECT)) {
+									r514 = pt_type_op(Z_OBJ_P(r513.raw()), PT_OP_GET_NAME, 0, NULL);
+									if (UNEXPECTED(r514.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_44, r509.raw(), "getName", "getname", 7, 0, NULL, r510.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_44, r513.raw(), "getName", "getname", 7, 0, NULL, r514.raw(), NULL))) return false;
 								}
 								}
-								pgrt::StringBuilder sb511;
-								sb511.appendLiteral("Reflection error: ", 18);
-								if (UNEXPECTED(!sb511.append(r510.raw()))) return false;
-								sb511.appendLiteral(" not found.", 11);
-								zv::Val r512 = sb511.finish();
-								zval *p513 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p513 == NULL)) return false;
-								zv::Val o514 = zv::Val::copyOf(zv::Ref(p513));
-								zv::Val r515;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_45, p_node, "getStartLine", "getstartline", 12, 0, NULL, r515.raw(), NULL))) return false;
-								zval av516[4];
-								ZVAL_COPY_VALUE(&av516[0], r512.raw());
-								ZVAL_COPY_VALUE(&av516[1], o514.raw());
-								zval z517;
-								ZVAL_LONG(&z517, Z_LVAL_P(r515.raw()));
-								ZVAL_COPY_VALUE(&av516[2], &z517);
-								ZVAL_COPY_VALUE(&av516[3], l_e.raw());
-								zv::Arr na518 = zv::Arr::create(1);
-								{ zval v; ZVAL_COPY(&v, &pg_lit[3]); zend_hash_str_add_new(na518.table(), "tip", 3, &v); }
-								zend_class_entry *ce519 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce519 == NULL)) return false;
-								zv::Val n507;
-								if (UNEXPECTED(!pgrt::newObject(ce519, 4, av516, n507.raw(), na518.table()))) return false;
-								zval av520[1];
-								ZVAL_COPY_VALUE(&av520[0], &pg_lit[4]);
-								zv::Val r521;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_46, n507.raw(), "withIdentifier", "withidentifier", 14, 1, av520, r521.raw(), NULL))) return false;
-								zv::Val arr522 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av523[1];
-								ZVAL_COPY_VALUE(&av523[0], l_e.raw());
-								zend_class_entry *ce524 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce524 == NULL)) return false;
+								pgrt::StringBuilder sb515;
+								sb515.appendLiteral("Reflection error: ", 18);
+								if (UNEXPECTED(!sb515.append(r514.raw()))) return false;
+								sb515.appendLiteral(" not found.", 11);
+								zv::Val r516 = sb515.finish();
+								zval *p517 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p517 == NULL)) return false;
+								zv::Val o518 = zv::Val::copyOf(zv::Ref(p517));
+								zv::Val r519;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_45, p_node, "getStartLine", "getstartline", 12, 0, NULL, r519.raw(), NULL))) return false;
+								zval av520[4];
+								ZVAL_COPY_VALUE(&av520[0], r516.raw());
+								ZVAL_COPY_VALUE(&av520[1], o518.raw());
+								zval z521;
+								ZVAL_LONG(&z521, Z_LVAL_P(r519.raw()));
+								ZVAL_COPY_VALUE(&av520[2], &z521);
+								ZVAL_COPY_VALUE(&av520[3], l_e.raw());
+								zv::Arr na522 = zv::Arr::create(1);
+								{ zval v; ZVAL_COPY(&v, &pg_lit[3]); zend_hash_str_add_new(na522.table(), "tip", 3, &v); }
+								zend_class_entry *ce523 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce523 == NULL)) return false;
+								zv::Val n511;
+								if (UNEXPECTED(!pgrt::newObject(ce523, 4, av520, n511.raw(), na522.table()))) return false;
+								zval av524[1];
+								ZVAL_COPY_VALUE(&av524[0], &pg_lit[4]);
 								zv::Val r525;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce524, "preparetrace", 12, 1, av523, r525.raw(), NULL))) return false;
-								{ zval v = r525.take(); zend_symtable_update(Z_ARRVAL_P(arr522.raw()), Z_STR_P(&pg_lit[1]), &v); }
-								zv::Val r526;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_47, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r526.raw(), NULL))) return false;
-								{ zval v = r526.take(); zend_symtable_update(Z_ARRVAL_P(arr522.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_46, n511.raw(), "withIdentifier", "withidentifier", 14, 1, av524, r525.raw(), NULL))) return false;
+								zv::Val arr526 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
 								zval av527[1];
-								ZVAL_COPY_VALUE(&av527[0], arr522.raw());
-								zv::Val r528;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_48, r521.raw(), "withMetadata", "withmetadata", 12, 1, av527, r528.raw(), NULL))) return false;
-								zv::Val o529 = zv::Val::copyOf(zv::Ref(r528.raw()));
-								zval *w530 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w530) <= IS_NULL) { zval_ptr_dtor(w530); array_init(w530); } else if (UNEXPECTED(Z_TYPE_P(w530) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w530);
-								{ zval v = o529.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w530), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								ZVAL_COPY_VALUE(&av527[0], l_e.raw());
+								zend_class_entry *ce528 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce528 == NULL)) return false;
+								zv::Val r529;
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce528, "preparetrace", 12, 1, av527, r529.raw(), NULL))) return false;
+								{ zval v = r529.take(); zend_symtable_update(Z_ARRVAL_P(arr526.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r530;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_47, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r530.raw(), NULL))) return false;
+								{ zval v = r530.take(); zend_symtable_update(Z_ARRVAL_P(arr526.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av531[1];
+								ZVAL_COPY_VALUE(&av531[0], arr526.raw());
+								zv::Val r532;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_48, r525.raw(), "withMetadata", "withmetadata", 12, 1, av531, r532.raw(), NULL))) return false;
+								zv::Val o533 = zv::Val::copyOf(zv::Ref(r532.raw()));
+								zval *w534 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w534) <= IS_NULL) { zval_ptr_dtor(w534); array_init(w534); } else if (UNEXPECTED(Z_TYPE_P(w534) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w534);
+								{ zval v = o533.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w534), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 							goto cont115;
 						}
-						if (!caught473 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)) || pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference", 63)))) {
-							caught473 = true;
+						if (!caught477 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)) || pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference", 63)))) {
+							caught477 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zv::Val r532;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_51, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r532.raw(), NULL))) return false;
-								pgrt::StringBuilder sb533;
-								sb533.appendLiteral("Reflection error: ", 18);
-								if (UNEXPECTED(!sb533.append(r532.raw()))) return false;
-								zv::Val r534 = sb533.finish();
-								zval *p535 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p535 == NULL)) return false;
-								zv::Val o536 = zv::Val::copyOf(zv::Ref(p535));
-								zv::Val r537;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_52, p_node, "getStartLine", "getstartline", 12, 0, NULL, r537.raw(), NULL))) return false;
-								zval av538[4];
-								ZVAL_COPY_VALUE(&av538[0], r534.raw());
-								ZVAL_COPY_VALUE(&av538[1], o536.raw());
-								zval z539;
-								ZVAL_LONG(&z539, Z_LVAL_P(r537.raw()));
-								ZVAL_COPY_VALUE(&av538[2], &z539);
-								ZVAL_COPY_VALUE(&av538[3], l_e.raw());
-								zend_class_entry *ce540 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce540 == NULL)) return false;
-								zv::Val n531;
-								if (UNEXPECTED(!pgrt::newObject(ce540, 4, av538, n531.raw(), NULL))) return false;
-								zval av541[1];
-								ZVAL_COPY_VALUE(&av541[0], &pg_lit[4]);
-								zv::Val r542;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_53, n531.raw(), "withIdentifier", "withidentifier", 14, 1, av541, r542.raw(), NULL))) return false;
-								zv::Val arr543 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av544[1];
-								ZVAL_COPY_VALUE(&av544[0], l_e.raw());
-								zend_class_entry *ce545 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce545 == NULL)) return false;
+								zv::Val r536;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_51, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r536.raw(), NULL))) return false;
+								pgrt::StringBuilder sb537;
+								sb537.appendLiteral("Reflection error: ", 18);
+								if (UNEXPECTED(!sb537.append(r536.raw()))) return false;
+								zv::Val r538 = sb537.finish();
+								zval *p539 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p539 == NULL)) return false;
+								zv::Val o540 = zv::Val::copyOf(zv::Ref(p539));
+								zv::Val r541;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_52, p_node, "getStartLine", "getstartline", 12, 0, NULL, r541.raw(), NULL))) return false;
+								zval av542[4];
+								ZVAL_COPY_VALUE(&av542[0], r538.raw());
+								ZVAL_COPY_VALUE(&av542[1], o540.raw());
+								zval z543;
+								ZVAL_LONG(&z543, Z_LVAL_P(r541.raw()));
+								ZVAL_COPY_VALUE(&av542[2], &z543);
+								ZVAL_COPY_VALUE(&av542[3], l_e.raw());
+								zend_class_entry *ce544 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce544 == NULL)) return false;
+								zv::Val n535;
+								if (UNEXPECTED(!pgrt::newObject(ce544, 4, av542, n535.raw(), NULL))) return false;
+								zval av545[1];
+								ZVAL_COPY_VALUE(&av545[0], &pg_lit[4]);
 								zv::Val r546;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce545, "preparetrace", 12, 1, av544, r546.raw(), NULL))) return false;
-								{ zval v = r546.take(); zend_symtable_update(Z_ARRVAL_P(arr543.raw()), Z_STR_P(&pg_lit[1]), &v); }
-								zv::Val r547;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_54, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r547.raw(), NULL))) return false;
-								{ zval v = r547.take(); zend_symtable_update(Z_ARRVAL_P(arr543.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_53, n535.raw(), "withIdentifier", "withidentifier", 14, 1, av545, r546.raw(), NULL))) return false;
+								zv::Val arr547 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
 								zval av548[1];
-								ZVAL_COPY_VALUE(&av548[0], arr543.raw());
-								zv::Val r549;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_55, r542.raw(), "withMetadata", "withmetadata", 12, 1, av548, r549.raw(), NULL))) return false;
-								zv::Val o550 = zv::Val::copyOf(zv::Ref(r549.raw()));
-								zval *w551 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w551) <= IS_NULL) { zval_ptr_dtor(w551); array_init(w551); } else if (UNEXPECTED(Z_TYPE_P(w551) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w551);
-								{ zval v = o550.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w551), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								ZVAL_COPY_VALUE(&av548[0], l_e.raw());
+								zend_class_entry *ce549 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce549 == NULL)) return false;
+								zv::Val r550;
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce549, "preparetrace", 12, 1, av548, r550.raw(), NULL))) return false;
+								{ zval v = r550.take(); zend_symtable_update(Z_ARRVAL_P(arr547.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r551;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_54, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r551.raw(), NULL))) return false;
+								{ zval v = r551.take(); zend_symtable_update(Z_ARRVAL_P(arr547.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av552[1];
+								ZVAL_COPY_VALUE(&av552[0], arr547.raw());
+								zv::Val r553;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_55, r546.raw(), "withMetadata", "withmetadata", 12, 1, av552, r553.raw(), NULL))) return false;
+								zv::Val o554 = zv::Val::copyOf(zv::Ref(r553.raw()));
+								zval *w555 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w555) <= IS_NULL) { zval_ptr_dtor(w555); array_init(w555); } else if (UNEXPECTED(Z_TYPE_P(w555) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w555);
+								{ zval v = o554.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w555), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 							goto cont115;
 						}
-						if (!caught473) return false;
+						if (!caught477) return false;
 					}
 					}
 				}
 				 {
-					pgrt::ForeachIter it553;
-					if (UNEXPECTED(!it553.begin(l_ruleErrors.raw()))) return false;
-					while (it553.valid()) {
-						l_ruleError = zv::Ref(it553.current()).deref().raw();
+					pgrt::ForeachIter it557;
+					if (UNEXPECTED(!it557.begin(l_ruleErrors.raw()))) return false;
+					while (it557.valid()) {
+						l_ruleError = zv::Ref(it557.current()).deref().raw();
 						 {
 							 {
 								if (pgrt::instanceOfClass(l_ruleError, pgrt::lookupClassQuiet(pg_site_56, "PHPStan\\Rules\\FileDependenciesRuleError", 39))) {
 									 {
-										zv::Val vd557;
-										zend_class_entry *vd557_ce = Z_TYPE_P(l_ruleError) == IS_OBJECT ? Z_OBJCE_P(l_ruleError) : NULL;
-										bool vd557_done = false;
-										static zend_class_entry **const vd557_table[] = { &pt_ce_rule_error381, &pt_ce_rule_error395, &pt_ce_rule_error419, &pt_ce_rule_error431, &pt_ce_rule_error357, &pt_ce_rule_error343, &pt_ce_rule_error425, &pt_ce_rule_error355, &pt_ce_rule_error433, &pt_ce_rule_error427, &pt_ce_rule_error341, &pt_ce_rule_error369, &pt_ce_rule_error383, &pt_ce_rule_error397, &pt_ce_rule_error393, &pt_ce_rule_error387, &pt_ce_rule_error345, &pt_ce_rule_error423, &pt_ce_rule_error437, &pt_ce_rule_error351, &pt_ce_rule_error379, &pt_ce_rule_error409, &pt_ce_rule_error421, &pt_ce_rule_error347, &pt_ce_rule_error353, &pt_ce_rule_error435, &pt_ce_rule_error391, &pt_ce_rule_error385, &pt_ce_rule_error269, &pt_ce_rule_error447, &pt_ce_rule_error321, &pt_ce_rule_error335, &pt_ce_rule_error453, &pt_ce_rule_error309, &pt_ce_rule_error491, &pt_ce_rule_error485, &pt_ce_rule_error283, &pt_ce_rule_error297, &pt_ce_rule_error281, &pt_ce_rule_error295, &pt_ce_rule_error493, &pt_ce_rule_error487, &pt_ce_rule_error479, &pt_ce_rule_error323, &pt_ce_rule_error445, &pt_ce_rule_error451, &pt_ce_rule_error337, &pt_ce_rule_error257, &pt_ce_rule_error509, &pt_ce_rule_error469, &pt_ce_rule_error333, &pt_ce_rule_error455, &pt_ce_rule_error441, &pt_ce_rule_error327, &pt_ce_rule_error483, &pt_ce_rule_error497, &pt_ce_rule_error291, &pt_ce_rule_error285, &pt_ce_rule_error293, &pt_ce_rule_error287, &pt_ce_rule_error481, &pt_ce_rule_error495, &pt_ce_rule_error457, &pt_ce_rule_error331, &pt_ce_rule_error325, &pt_ce_rule_error443, &pt_ce_rule_error319, &pt_ce_rule_error279, &pt_ce_rule_error499, &pt_ce_rule_error329, &pt_ce_rule_error315, &pt_ce_rule_error473, &pt_ce_rule_error467, &pt_ce_rule_error301, &pt_ce_rule_error261, &pt_ce_rule_error507, &pt_ce_rule_error275, &pt_ce_rule_error505, &pt_ce_rule_error263, &pt_ce_rule_error277, &pt_ce_rule_error511, &pt_ce_rule_error471, &pt_ce_rule_error317, &pt_ce_rule_error303, &pt_ce_rule_error465, &pt_ce_rule_error459, &pt_ce_rule_error289, &pt_ce_rule_error299, &pt_ce_rule_error461, &pt_ce_rule_error307, &pt_ce_rule_error313, &pt_ce_rule_error475, &pt_ce_rule_error449, &pt_ce_rule_error273, &pt_ce_rule_error267, &pt_ce_rule_error501, &pt_ce_rule_error259, &pt_ce_rule_error271, &pt_ce_rule_error503, &pt_ce_rule_error265, &pt_ce_rule_error339, &pt_ce_rule_error305, &pt_ce_rule_error463, &pt_ce_rule_error477, &pt_ce_rule_error311, &pt_ce_rule_error489, &pt_ce_rule_error363, &pt_ce_rule_error405, &pt_ce_rule_error411, &pt_ce_rule_error377, &pt_ce_rule_error439, &pt_ce_rule_error389, &pt_ce_rule_error349, &pt_ce_rule_error407, &pt_ce_rule_error361, &pt_ce_rule_error375, &pt_ce_rule_error413, &pt_ce_rule_error359, &pt_ce_rule_error417, &pt_ce_rule_error371, &pt_ce_rule_error365, &pt_ce_rule_error403, &pt_ce_rule_error399, &pt_ce_rule_error373, &pt_ce_rule_error415, &pt_ce_rule_error401, &pt_ce_rule_error367, &pt_ce_rule_error429 };
-										static const uint16_t vd557_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128 };
-										switch (pgrt::dispatchCase(pg_site_57, vd557_ce, vd557_table, vd557_cases, 128)) {
+										zv::Val vd561;
+										zend_class_entry *vd561_ce = Z_TYPE_P(l_ruleError) == IS_OBJECT ? Z_OBJCE_P(l_ruleError) : NULL;
+										bool vd561_done = false;
+										static zend_class_entry **const vd561_table[] = { &pt_ce_rule_error381, &pt_ce_rule_error395, &pt_ce_rule_error419, &pt_ce_rule_error431, &pt_ce_rule_error357, &pt_ce_rule_error343, &pt_ce_rule_error425, &pt_ce_rule_error355, &pt_ce_rule_error433, &pt_ce_rule_error427, &pt_ce_rule_error341, &pt_ce_rule_error369, &pt_ce_rule_error383, &pt_ce_rule_error397, &pt_ce_rule_error393, &pt_ce_rule_error387, &pt_ce_rule_error345, &pt_ce_rule_error423, &pt_ce_rule_error437, &pt_ce_rule_error351, &pt_ce_rule_error379, &pt_ce_rule_error409, &pt_ce_rule_error421, &pt_ce_rule_error347, &pt_ce_rule_error353, &pt_ce_rule_error435, &pt_ce_rule_error391, &pt_ce_rule_error385, &pt_ce_rule_error269, &pt_ce_rule_error447, &pt_ce_rule_error321, &pt_ce_rule_error335, &pt_ce_rule_error453, &pt_ce_rule_error309, &pt_ce_rule_error491, &pt_ce_rule_error485, &pt_ce_rule_error283, &pt_ce_rule_error297, &pt_ce_rule_error281, &pt_ce_rule_error295, &pt_ce_rule_error493, &pt_ce_rule_error487, &pt_ce_rule_error479, &pt_ce_rule_error323, &pt_ce_rule_error445, &pt_ce_rule_error451, &pt_ce_rule_error337, &pt_ce_rule_error257, &pt_ce_rule_error509, &pt_ce_rule_error469, &pt_ce_rule_error333, &pt_ce_rule_error455, &pt_ce_rule_error441, &pt_ce_rule_error327, &pt_ce_rule_error483, &pt_ce_rule_error497, &pt_ce_rule_error291, &pt_ce_rule_error285, &pt_ce_rule_error293, &pt_ce_rule_error287, &pt_ce_rule_error481, &pt_ce_rule_error495, &pt_ce_rule_error457, &pt_ce_rule_error331, &pt_ce_rule_error325, &pt_ce_rule_error443, &pt_ce_rule_error319, &pt_ce_rule_error279, &pt_ce_rule_error499, &pt_ce_rule_error329, &pt_ce_rule_error315, &pt_ce_rule_error473, &pt_ce_rule_error467, &pt_ce_rule_error301, &pt_ce_rule_error261, &pt_ce_rule_error507, &pt_ce_rule_error275, &pt_ce_rule_error505, &pt_ce_rule_error263, &pt_ce_rule_error277, &pt_ce_rule_error511, &pt_ce_rule_error471, &pt_ce_rule_error317, &pt_ce_rule_error303, &pt_ce_rule_error465, &pt_ce_rule_error459, &pt_ce_rule_error289, &pt_ce_rule_error299, &pt_ce_rule_error461, &pt_ce_rule_error307, &pt_ce_rule_error313, &pt_ce_rule_error475, &pt_ce_rule_error449, &pt_ce_rule_error273, &pt_ce_rule_error267, &pt_ce_rule_error501, &pt_ce_rule_error259, &pt_ce_rule_error271, &pt_ce_rule_error503, &pt_ce_rule_error265, &pt_ce_rule_error339, &pt_ce_rule_error305, &pt_ce_rule_error463, &pt_ce_rule_error477, &pt_ce_rule_error311, &pt_ce_rule_error489, &pt_ce_rule_error363, &pt_ce_rule_error405, &pt_ce_rule_error411, &pt_ce_rule_error377, &pt_ce_rule_error439, &pt_ce_rule_error389, &pt_ce_rule_error349, &pt_ce_rule_error407, &pt_ce_rule_error361, &pt_ce_rule_error375, &pt_ce_rule_error413, &pt_ce_rule_error359, &pt_ce_rule_error417, &pt_ce_rule_error371, &pt_ce_rule_error365, &pt_ce_rule_error403, &pt_ce_rule_error399, &pt_ce_rule_error373, &pt_ce_rule_error415, &pt_ce_rule_error401, &pt_ce_rule_error367, &pt_ce_rule_error429 };
+										static const uint16_t vd561_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128 };
+										switch (pgrt::dispatchCase(pg_site_57, vd561_ce, vd561_table, vd561_cases, 128)) {
 											case 1: {
-												zv::Val r558;
-												if (UNEXPECTED(!pgen::RuleError381::m_getFileDependencies(Z_OBJ_P(l_ruleError), r558.raw()))) return false;
-												vd557 = std::move(r558);
-												vd557_done = true;
+												zv::Val r562;
+												if (UNEXPECTED(!pgen::RuleError381::m_getFileDependencies(Z_OBJ_P(l_ruleError), r562.raw()))) return false;
+												vd561 = std::move(r562);
+												vd561_done = true;
 											}
 											break;
 											case 2: {
-												zv::Val r559;
-												if (UNEXPECTED(!pgen::RuleError395::m_getFileDependencies(Z_OBJ_P(l_ruleError), r559.raw()))) return false;
-												vd557 = std::move(r559);
-												vd557_done = true;
+												zv::Val r563;
+												if (UNEXPECTED(!pgen::RuleError395::m_getFileDependencies(Z_OBJ_P(l_ruleError), r563.raw()))) return false;
+												vd561 = std::move(r563);
+												vd561_done = true;
 											}
 											break;
 											case 3: {
-												zv::Val r560;
-												if (UNEXPECTED(!pgen::RuleError419::m_getFileDependencies(Z_OBJ_P(l_ruleError), r560.raw()))) return false;
-												vd557 = std::move(r560);
-												vd557_done = true;
+												zv::Val r564;
+												if (UNEXPECTED(!pgen::RuleError419::m_getFileDependencies(Z_OBJ_P(l_ruleError), r564.raw()))) return false;
+												vd561 = std::move(r564);
+												vd561_done = true;
 											}
 											break;
 											case 4: {
-												zv::Val r561;
-												if (UNEXPECTED(!pgen::RuleError431::m_getFileDependencies(Z_OBJ_P(l_ruleError), r561.raw()))) return false;
-												vd557 = std::move(r561);
-												vd557_done = true;
+												zv::Val r565;
+												if (UNEXPECTED(!pgen::RuleError431::m_getFileDependencies(Z_OBJ_P(l_ruleError), r565.raw()))) return false;
+												vd561 = std::move(r565);
+												vd561_done = true;
 											}
 											break;
 											case 5: {
-												zv::Val r562;
-												if (UNEXPECTED(!pgen::RuleError357::m_getFileDependencies(Z_OBJ_P(l_ruleError), r562.raw()))) return false;
-												vd557 = std::move(r562);
-												vd557_done = true;
+												zv::Val r566;
+												if (UNEXPECTED(!pgen::RuleError357::m_getFileDependencies(Z_OBJ_P(l_ruleError), r566.raw()))) return false;
+												vd561 = std::move(r566);
+												vd561_done = true;
 											}
 											break;
 											case 6: {
-												zv::Val r563;
-												if (UNEXPECTED(!pgen::RuleError343::m_getFileDependencies(Z_OBJ_P(l_ruleError), r563.raw()))) return false;
-												vd557 = std::move(r563);
-												vd557_done = true;
+												zv::Val r567;
+												if (UNEXPECTED(!pgen::RuleError343::m_getFileDependencies(Z_OBJ_P(l_ruleError), r567.raw()))) return false;
+												vd561 = std::move(r567);
+												vd561_done = true;
 											}
 											break;
 											case 7: {
-												zv::Val r564;
-												if (UNEXPECTED(!pgen::RuleError425::m_getFileDependencies(Z_OBJ_P(l_ruleError), r564.raw()))) return false;
-												vd557 = std::move(r564);
-												vd557_done = true;
+												zv::Val r568;
+												if (UNEXPECTED(!pgen::RuleError425::m_getFileDependencies(Z_OBJ_P(l_ruleError), r568.raw()))) return false;
+												vd561 = std::move(r568);
+												vd561_done = true;
 											}
 											break;
 											case 8: {
-												zv::Val r565;
-												if (UNEXPECTED(!pgen::RuleError355::m_getFileDependencies(Z_OBJ_P(l_ruleError), r565.raw()))) return false;
-												vd557 = std::move(r565);
-												vd557_done = true;
+												zv::Val r569;
+												if (UNEXPECTED(!pgen::RuleError355::m_getFileDependencies(Z_OBJ_P(l_ruleError), r569.raw()))) return false;
+												vd561 = std::move(r569);
+												vd561_done = true;
 											}
 											break;
 											case 9: {
-												zv::Val r566;
-												if (UNEXPECTED(!pgen::RuleError433::m_getFileDependencies(Z_OBJ_P(l_ruleError), r566.raw()))) return false;
-												vd557 = std::move(r566);
-												vd557_done = true;
+												zv::Val r570;
+												if (UNEXPECTED(!pgen::RuleError433::m_getFileDependencies(Z_OBJ_P(l_ruleError), r570.raw()))) return false;
+												vd561 = std::move(r570);
+												vd561_done = true;
 											}
 											break;
 											case 10: {
-												zv::Val r567;
-												if (UNEXPECTED(!pgen::RuleError427::m_getFileDependencies(Z_OBJ_P(l_ruleError), r567.raw()))) return false;
-												vd557 = std::move(r567);
-												vd557_done = true;
+												zv::Val r571;
+												if (UNEXPECTED(!pgen::RuleError427::m_getFileDependencies(Z_OBJ_P(l_ruleError), r571.raw()))) return false;
+												vd561 = std::move(r571);
+												vd561_done = true;
 											}
 											break;
 											case 11: {
-												zv::Val r568;
-												if (UNEXPECTED(!pgen::RuleError341::m_getFileDependencies(Z_OBJ_P(l_ruleError), r568.raw()))) return false;
-												vd557 = std::move(r568);
-												vd557_done = true;
+												zv::Val r572;
+												if (UNEXPECTED(!pgen::RuleError341::m_getFileDependencies(Z_OBJ_P(l_ruleError), r572.raw()))) return false;
+												vd561 = std::move(r572);
+												vd561_done = true;
 											}
 											break;
 											case 12: {
-												zv::Val r569;
-												if (UNEXPECTED(!pgen::RuleError369::m_getFileDependencies(Z_OBJ_P(l_ruleError), r569.raw()))) return false;
-												vd557 = std::move(r569);
-												vd557_done = true;
+												zv::Val r573;
+												if (UNEXPECTED(!pgen::RuleError369::m_getFileDependencies(Z_OBJ_P(l_ruleError), r573.raw()))) return false;
+												vd561 = std::move(r573);
+												vd561_done = true;
 											}
 											break;
 											case 13: {
-												zv::Val r570;
-												if (UNEXPECTED(!pgen::RuleError383::m_getFileDependencies(Z_OBJ_P(l_ruleError), r570.raw()))) return false;
-												vd557 = std::move(r570);
-												vd557_done = true;
+												zv::Val r574;
+												if (UNEXPECTED(!pgen::RuleError383::m_getFileDependencies(Z_OBJ_P(l_ruleError), r574.raw()))) return false;
+												vd561 = std::move(r574);
+												vd561_done = true;
 											}
 											break;
 											case 14: {
-												zv::Val r571;
-												if (UNEXPECTED(!pgen::RuleError397::m_getFileDependencies(Z_OBJ_P(l_ruleError), r571.raw()))) return false;
-												vd557 = std::move(r571);
-												vd557_done = true;
+												zv::Val r575;
+												if (UNEXPECTED(!pgen::RuleError397::m_getFileDependencies(Z_OBJ_P(l_ruleError), r575.raw()))) return false;
+												vd561 = std::move(r575);
+												vd561_done = true;
 											}
 											break;
 											case 15: {
-												zv::Val r572;
-												if (UNEXPECTED(!pgen::RuleError393::m_getFileDependencies(Z_OBJ_P(l_ruleError), r572.raw()))) return false;
-												vd557 = std::move(r572);
-												vd557_done = true;
+												zv::Val r576;
+												if (UNEXPECTED(!pgen::RuleError393::m_getFileDependencies(Z_OBJ_P(l_ruleError), r576.raw()))) return false;
+												vd561 = std::move(r576);
+												vd561_done = true;
 											}
 											break;
 											case 16: {
-												zv::Val r573;
-												if (UNEXPECTED(!pgen::RuleError387::m_getFileDependencies(Z_OBJ_P(l_ruleError), r573.raw()))) return false;
-												vd557 = std::move(r573);
-												vd557_done = true;
+												zv::Val r577;
+												if (UNEXPECTED(!pgen::RuleError387::m_getFileDependencies(Z_OBJ_P(l_ruleError), r577.raw()))) return false;
+												vd561 = std::move(r577);
+												vd561_done = true;
 											}
 											break;
 											case 17: {
-												zv::Val r574;
-												if (UNEXPECTED(!pgen::RuleError345::m_getFileDependencies(Z_OBJ_P(l_ruleError), r574.raw()))) return false;
-												vd557 = std::move(r574);
-												vd557_done = true;
+												zv::Val r578;
+												if (UNEXPECTED(!pgen::RuleError345::m_getFileDependencies(Z_OBJ_P(l_ruleError), r578.raw()))) return false;
+												vd561 = std::move(r578);
+												vd561_done = true;
 											}
 											break;
 											case 18: {
-												zv::Val r575;
-												if (UNEXPECTED(!pgen::RuleError423::m_getFileDependencies(Z_OBJ_P(l_ruleError), r575.raw()))) return false;
-												vd557 = std::move(r575);
-												vd557_done = true;
+												zv::Val r579;
+												if (UNEXPECTED(!pgen::RuleError423::m_getFileDependencies(Z_OBJ_P(l_ruleError), r579.raw()))) return false;
+												vd561 = std::move(r579);
+												vd561_done = true;
 											}
 											break;
 											case 19: {
-												zv::Val r576;
-												if (UNEXPECTED(!pgen::RuleError437::m_getFileDependencies(Z_OBJ_P(l_ruleError), r576.raw()))) return false;
-												vd557 = std::move(r576);
-												vd557_done = true;
+												zv::Val r580;
+												if (UNEXPECTED(!pgen::RuleError437::m_getFileDependencies(Z_OBJ_P(l_ruleError), r580.raw()))) return false;
+												vd561 = std::move(r580);
+												vd561_done = true;
 											}
 											break;
 											case 20: {
-												zv::Val r577;
-												if (UNEXPECTED(!pgen::RuleError351::m_getFileDependencies(Z_OBJ_P(l_ruleError), r577.raw()))) return false;
-												vd557 = std::move(r577);
-												vd557_done = true;
+												zv::Val r581;
+												if (UNEXPECTED(!pgen::RuleError351::m_getFileDependencies(Z_OBJ_P(l_ruleError), r581.raw()))) return false;
+												vd561 = std::move(r581);
+												vd561_done = true;
 											}
 											break;
 											case 21: {
-												zv::Val r578;
-												if (UNEXPECTED(!pgen::RuleError379::m_getFileDependencies(Z_OBJ_P(l_ruleError), r578.raw()))) return false;
-												vd557 = std::move(r578);
-												vd557_done = true;
+												zv::Val r582;
+												if (UNEXPECTED(!pgen::RuleError379::m_getFileDependencies(Z_OBJ_P(l_ruleError), r582.raw()))) return false;
+												vd561 = std::move(r582);
+												vd561_done = true;
 											}
 											break;
 											case 22: {
-												zv::Val r579;
-												if (UNEXPECTED(!pgen::RuleError409::m_getFileDependencies(Z_OBJ_P(l_ruleError), r579.raw()))) return false;
-												vd557 = std::move(r579);
-												vd557_done = true;
+												zv::Val r583;
+												if (UNEXPECTED(!pgen::RuleError409::m_getFileDependencies(Z_OBJ_P(l_ruleError), r583.raw()))) return false;
+												vd561 = std::move(r583);
+												vd561_done = true;
 											}
 											break;
 											case 23: {
-												zv::Val r580;
-												if (UNEXPECTED(!pgen::RuleError421::m_getFileDependencies(Z_OBJ_P(l_ruleError), r580.raw()))) return false;
-												vd557 = std::move(r580);
-												vd557_done = true;
+												zv::Val r584;
+												if (UNEXPECTED(!pgen::RuleError421::m_getFileDependencies(Z_OBJ_P(l_ruleError), r584.raw()))) return false;
+												vd561 = std::move(r584);
+												vd561_done = true;
 											}
 											break;
 											case 24: {
-												zv::Val r581;
-												if (UNEXPECTED(!pgen::RuleError347::m_getFileDependencies(Z_OBJ_P(l_ruleError), r581.raw()))) return false;
-												vd557 = std::move(r581);
-												vd557_done = true;
+												zv::Val r585;
+												if (UNEXPECTED(!pgen::RuleError347::m_getFileDependencies(Z_OBJ_P(l_ruleError), r585.raw()))) return false;
+												vd561 = std::move(r585);
+												vd561_done = true;
 											}
 											break;
 											case 25: {
-												zv::Val r582;
-												if (UNEXPECTED(!pgen::RuleError353::m_getFileDependencies(Z_OBJ_P(l_ruleError), r582.raw()))) return false;
-												vd557 = std::move(r582);
-												vd557_done = true;
+												zv::Val r586;
+												if (UNEXPECTED(!pgen::RuleError353::m_getFileDependencies(Z_OBJ_P(l_ruleError), r586.raw()))) return false;
+												vd561 = std::move(r586);
+												vd561_done = true;
 											}
 											break;
 											case 26: {
-												zv::Val r583;
-												if (UNEXPECTED(!pgen::RuleError435::m_getFileDependencies(Z_OBJ_P(l_ruleError), r583.raw()))) return false;
-												vd557 = std::move(r583);
-												vd557_done = true;
+												zv::Val r587;
+												if (UNEXPECTED(!pgen::RuleError435::m_getFileDependencies(Z_OBJ_P(l_ruleError), r587.raw()))) return false;
+												vd561 = std::move(r587);
+												vd561_done = true;
 											}
 											break;
 											case 27: {
-												zv::Val r584;
-												if (UNEXPECTED(!pgen::RuleError391::m_getFileDependencies(Z_OBJ_P(l_ruleError), r584.raw()))) return false;
-												vd557 = std::move(r584);
-												vd557_done = true;
+												zv::Val r588;
+												if (UNEXPECTED(!pgen::RuleError391::m_getFileDependencies(Z_OBJ_P(l_ruleError), r588.raw()))) return false;
+												vd561 = std::move(r588);
+												vd561_done = true;
 											}
 											break;
 											case 28: {
-												zv::Val r585;
-												if (UNEXPECTED(!pgen::RuleError385::m_getFileDependencies(Z_OBJ_P(l_ruleError), r585.raw()))) return false;
-												vd557 = std::move(r585);
-												vd557_done = true;
+												zv::Val r589;
+												if (UNEXPECTED(!pgen::RuleError385::m_getFileDependencies(Z_OBJ_P(l_ruleError), r589.raw()))) return false;
+												vd561 = std::move(r589);
+												vd561_done = true;
 											}
 											break;
 											case 29: {
-												zv::Val r586;
-												if (UNEXPECTED(!pgen::RuleError269::m_getFileDependencies(Z_OBJ_P(l_ruleError), r586.raw()))) return false;
-												vd557 = std::move(r586);
-												vd557_done = true;
+												zv::Val r590;
+												if (UNEXPECTED(!pgen::RuleError269::m_getFileDependencies(Z_OBJ_P(l_ruleError), r590.raw()))) return false;
+												vd561 = std::move(r590);
+												vd561_done = true;
 											}
 											break;
 											case 30: {
-												zv::Val r587;
-												if (UNEXPECTED(!pgen::RuleError447::m_getFileDependencies(Z_OBJ_P(l_ruleError), r587.raw()))) return false;
-												vd557 = std::move(r587);
-												vd557_done = true;
+												zv::Val r591;
+												if (UNEXPECTED(!pgen::RuleError447::m_getFileDependencies(Z_OBJ_P(l_ruleError), r591.raw()))) return false;
+												vd561 = std::move(r591);
+												vd561_done = true;
 											}
 											break;
 											case 31: {
-												zv::Val r588;
-												if (UNEXPECTED(!pgen::RuleError321::m_getFileDependencies(Z_OBJ_P(l_ruleError), r588.raw()))) return false;
-												vd557 = std::move(r588);
-												vd557_done = true;
+												zv::Val r592;
+												if (UNEXPECTED(!pgen::RuleError321::m_getFileDependencies(Z_OBJ_P(l_ruleError), r592.raw()))) return false;
+												vd561 = std::move(r592);
+												vd561_done = true;
 											}
 											break;
 											case 32: {
-												zv::Val r589;
-												if (UNEXPECTED(!pgen::RuleError335::m_getFileDependencies(Z_OBJ_P(l_ruleError), r589.raw()))) return false;
-												vd557 = std::move(r589);
-												vd557_done = true;
+												zv::Val r593;
+												if (UNEXPECTED(!pgen::RuleError335::m_getFileDependencies(Z_OBJ_P(l_ruleError), r593.raw()))) return false;
+												vd561 = std::move(r593);
+												vd561_done = true;
 											}
 											break;
 											case 33: {
-												zv::Val r590;
-												if (UNEXPECTED(!pgen::RuleError453::m_getFileDependencies(Z_OBJ_P(l_ruleError), r590.raw()))) return false;
-												vd557 = std::move(r590);
-												vd557_done = true;
+												zv::Val r594;
+												if (UNEXPECTED(!pgen::RuleError453::m_getFileDependencies(Z_OBJ_P(l_ruleError), r594.raw()))) return false;
+												vd561 = std::move(r594);
+												vd561_done = true;
 											}
 											break;
 											case 34: {
-												zv::Val r591;
-												if (UNEXPECTED(!pgen::RuleError309::m_getFileDependencies(Z_OBJ_P(l_ruleError), r591.raw()))) return false;
-												vd557 = std::move(r591);
-												vd557_done = true;
+												zv::Val r595;
+												if (UNEXPECTED(!pgen::RuleError309::m_getFileDependencies(Z_OBJ_P(l_ruleError), r595.raw()))) return false;
+												vd561 = std::move(r595);
+												vd561_done = true;
 											}
 											break;
 											case 35: {
-												zv::Val r592;
-												if (UNEXPECTED(!pgen::RuleError491::m_getFileDependencies(Z_OBJ_P(l_ruleError), r592.raw()))) return false;
-												vd557 = std::move(r592);
-												vd557_done = true;
+												zv::Val r596;
+												if (UNEXPECTED(!pgen::RuleError491::m_getFileDependencies(Z_OBJ_P(l_ruleError), r596.raw()))) return false;
+												vd561 = std::move(r596);
+												vd561_done = true;
 											}
 											break;
 											case 36: {
-												zv::Val r593;
-												if (UNEXPECTED(!pgen::RuleError485::m_getFileDependencies(Z_OBJ_P(l_ruleError), r593.raw()))) return false;
-												vd557 = std::move(r593);
-												vd557_done = true;
+												zv::Val r597;
+												if (UNEXPECTED(!pgen::RuleError485::m_getFileDependencies(Z_OBJ_P(l_ruleError), r597.raw()))) return false;
+												vd561 = std::move(r597);
+												vd561_done = true;
 											}
 											break;
 											case 37: {
-												zv::Val r594;
-												if (UNEXPECTED(!pgen::RuleError283::m_getFileDependencies(Z_OBJ_P(l_ruleError), r594.raw()))) return false;
-												vd557 = std::move(r594);
-												vd557_done = true;
+												zv::Val r598;
+												if (UNEXPECTED(!pgen::RuleError283::m_getFileDependencies(Z_OBJ_P(l_ruleError), r598.raw()))) return false;
+												vd561 = std::move(r598);
+												vd561_done = true;
 											}
 											break;
 											case 38: {
-												zv::Val r595;
-												if (UNEXPECTED(!pgen::RuleError297::m_getFileDependencies(Z_OBJ_P(l_ruleError), r595.raw()))) return false;
-												vd557 = std::move(r595);
-												vd557_done = true;
+												zv::Val r599;
+												if (UNEXPECTED(!pgen::RuleError297::m_getFileDependencies(Z_OBJ_P(l_ruleError), r599.raw()))) return false;
+												vd561 = std::move(r599);
+												vd561_done = true;
 											}
 											break;
 											case 39: {
-												zv::Val r596;
-												if (UNEXPECTED(!pgen::RuleError281::m_getFileDependencies(Z_OBJ_P(l_ruleError), r596.raw()))) return false;
-												vd557 = std::move(r596);
-												vd557_done = true;
+												zv::Val r600;
+												if (UNEXPECTED(!pgen::RuleError281::m_getFileDependencies(Z_OBJ_P(l_ruleError), r600.raw()))) return false;
+												vd561 = std::move(r600);
+												vd561_done = true;
 											}
 											break;
 											case 40: {
-												zv::Val r597;
-												if (UNEXPECTED(!pgen::RuleError295::m_getFileDependencies(Z_OBJ_P(l_ruleError), r597.raw()))) return false;
-												vd557 = std::move(r597);
-												vd557_done = true;
+												zv::Val r601;
+												if (UNEXPECTED(!pgen::RuleError295::m_getFileDependencies(Z_OBJ_P(l_ruleError), r601.raw()))) return false;
+												vd561 = std::move(r601);
+												vd561_done = true;
 											}
 											break;
 											case 41: {
-												zv::Val r598;
-												if (UNEXPECTED(!pgen::RuleError493::m_getFileDependencies(Z_OBJ_P(l_ruleError), r598.raw()))) return false;
-												vd557 = std::move(r598);
-												vd557_done = true;
+												zv::Val r602;
+												if (UNEXPECTED(!pgen::RuleError493::m_getFileDependencies(Z_OBJ_P(l_ruleError), r602.raw()))) return false;
+												vd561 = std::move(r602);
+												vd561_done = true;
 											}
 											break;
 											case 42: {
-												zv::Val r599;
-												if (UNEXPECTED(!pgen::RuleError487::m_getFileDependencies(Z_OBJ_P(l_ruleError), r599.raw()))) return false;
-												vd557 = std::move(r599);
-												vd557_done = true;
+												zv::Val r603;
+												if (UNEXPECTED(!pgen::RuleError487::m_getFileDependencies(Z_OBJ_P(l_ruleError), r603.raw()))) return false;
+												vd561 = std::move(r603);
+												vd561_done = true;
 											}
 											break;
 											case 43: {
-												zv::Val r600;
-												if (UNEXPECTED(!pgen::RuleError479::m_getFileDependencies(Z_OBJ_P(l_ruleError), r600.raw()))) return false;
-												vd557 = std::move(r600);
-												vd557_done = true;
+												zv::Val r604;
+												if (UNEXPECTED(!pgen::RuleError479::m_getFileDependencies(Z_OBJ_P(l_ruleError), r604.raw()))) return false;
+												vd561 = std::move(r604);
+												vd561_done = true;
 											}
 											break;
 											case 44: {
-												zv::Val r601;
-												if (UNEXPECTED(!pgen::RuleError323::m_getFileDependencies(Z_OBJ_P(l_ruleError), r601.raw()))) return false;
-												vd557 = std::move(r601);
-												vd557_done = true;
+												zv::Val r605;
+												if (UNEXPECTED(!pgen::RuleError323::m_getFileDependencies(Z_OBJ_P(l_ruleError), r605.raw()))) return false;
+												vd561 = std::move(r605);
+												vd561_done = true;
 											}
 											break;
 											case 45: {
-												zv::Val r602;
-												if (UNEXPECTED(!pgen::RuleError445::m_getFileDependencies(Z_OBJ_P(l_ruleError), r602.raw()))) return false;
-												vd557 = std::move(r602);
-												vd557_done = true;
+												zv::Val r606;
+												if (UNEXPECTED(!pgen::RuleError445::m_getFileDependencies(Z_OBJ_P(l_ruleError), r606.raw()))) return false;
+												vd561 = std::move(r606);
+												vd561_done = true;
 											}
 											break;
 											case 46: {
-												zv::Val r603;
-												if (UNEXPECTED(!pgen::RuleError451::m_getFileDependencies(Z_OBJ_P(l_ruleError), r603.raw()))) return false;
-												vd557 = std::move(r603);
-												vd557_done = true;
+												zv::Val r607;
+												if (UNEXPECTED(!pgen::RuleError451::m_getFileDependencies(Z_OBJ_P(l_ruleError), r607.raw()))) return false;
+												vd561 = std::move(r607);
+												vd561_done = true;
 											}
 											break;
 											case 47: {
-												zv::Val r604;
-												if (UNEXPECTED(!pgen::RuleError337::m_getFileDependencies(Z_OBJ_P(l_ruleError), r604.raw()))) return false;
-												vd557 = std::move(r604);
-												vd557_done = true;
+												zv::Val r608;
+												if (UNEXPECTED(!pgen::RuleError337::m_getFileDependencies(Z_OBJ_P(l_ruleError), r608.raw()))) return false;
+												vd561 = std::move(r608);
+												vd561_done = true;
 											}
 											break;
 											case 48: {
-												zv::Val r605;
-												if (UNEXPECTED(!pgen::RuleError257::m_getFileDependencies(Z_OBJ_P(l_ruleError), r605.raw()))) return false;
-												vd557 = std::move(r605);
-												vd557_done = true;
+												zv::Val r609;
+												if (UNEXPECTED(!pgen::RuleError257::m_getFileDependencies(Z_OBJ_P(l_ruleError), r609.raw()))) return false;
+												vd561 = std::move(r609);
+												vd561_done = true;
 											}
 											break;
 											case 49: {
-												zv::Val r606;
-												if (UNEXPECTED(!pgen::RuleError509::m_getFileDependencies(Z_OBJ_P(l_ruleError), r606.raw()))) return false;
-												vd557 = std::move(r606);
-												vd557_done = true;
+												zv::Val r610;
+												if (UNEXPECTED(!pgen::RuleError509::m_getFileDependencies(Z_OBJ_P(l_ruleError), r610.raw()))) return false;
+												vd561 = std::move(r610);
+												vd561_done = true;
 											}
 											break;
 											case 50: {
-												zv::Val r607;
-												if (UNEXPECTED(!pgen::RuleError469::m_getFileDependencies(Z_OBJ_P(l_ruleError), r607.raw()))) return false;
-												vd557 = std::move(r607);
-												vd557_done = true;
+												zv::Val r611;
+												if (UNEXPECTED(!pgen::RuleError469::m_getFileDependencies(Z_OBJ_P(l_ruleError), r611.raw()))) return false;
+												vd561 = std::move(r611);
+												vd561_done = true;
 											}
 											break;
 											case 51: {
-												zv::Val r608;
-												if (UNEXPECTED(!pgen::RuleError333::m_getFileDependencies(Z_OBJ_P(l_ruleError), r608.raw()))) return false;
-												vd557 = std::move(r608);
-												vd557_done = true;
+												zv::Val r612;
+												if (UNEXPECTED(!pgen::RuleError333::m_getFileDependencies(Z_OBJ_P(l_ruleError), r612.raw()))) return false;
+												vd561 = std::move(r612);
+												vd561_done = true;
 											}
 											break;
 											case 52: {
-												zv::Val r609;
-												if (UNEXPECTED(!pgen::RuleError455::m_getFileDependencies(Z_OBJ_P(l_ruleError), r609.raw()))) return false;
-												vd557 = std::move(r609);
-												vd557_done = true;
+												zv::Val r613;
+												if (UNEXPECTED(!pgen::RuleError455::m_getFileDependencies(Z_OBJ_P(l_ruleError), r613.raw()))) return false;
+												vd561 = std::move(r613);
+												vd561_done = true;
 											}
 											break;
 											case 53: {
-												zv::Val r610;
-												if (UNEXPECTED(!pgen::RuleError441::m_getFileDependencies(Z_OBJ_P(l_ruleError), r610.raw()))) return false;
-												vd557 = std::move(r610);
-												vd557_done = true;
+												zv::Val r614;
+												if (UNEXPECTED(!pgen::RuleError441::m_getFileDependencies(Z_OBJ_P(l_ruleError), r614.raw()))) return false;
+												vd561 = std::move(r614);
+												vd561_done = true;
 											}
 											break;
 											case 54: {
-												zv::Val r611;
-												if (UNEXPECTED(!pgen::RuleError327::m_getFileDependencies(Z_OBJ_P(l_ruleError), r611.raw()))) return false;
-												vd557 = std::move(r611);
-												vd557_done = true;
+												zv::Val r615;
+												if (UNEXPECTED(!pgen::RuleError327::m_getFileDependencies(Z_OBJ_P(l_ruleError), r615.raw()))) return false;
+												vd561 = std::move(r615);
+												vd561_done = true;
 											}
 											break;
 											case 55: {
-												zv::Val r612;
-												if (UNEXPECTED(!pgen::RuleError483::m_getFileDependencies(Z_OBJ_P(l_ruleError), r612.raw()))) return false;
-												vd557 = std::move(r612);
-												vd557_done = true;
+												zv::Val r616;
+												if (UNEXPECTED(!pgen::RuleError483::m_getFileDependencies(Z_OBJ_P(l_ruleError), r616.raw()))) return false;
+												vd561 = std::move(r616);
+												vd561_done = true;
 											}
 											break;
 											case 56: {
-												zv::Val r613;
-												if (UNEXPECTED(!pgen::RuleError497::m_getFileDependencies(Z_OBJ_P(l_ruleError), r613.raw()))) return false;
-												vd557 = std::move(r613);
-												vd557_done = true;
+												zv::Val r617;
+												if (UNEXPECTED(!pgen::RuleError497::m_getFileDependencies(Z_OBJ_P(l_ruleError), r617.raw()))) return false;
+												vd561 = std::move(r617);
+												vd561_done = true;
 											}
 											break;
 											case 57: {
-												zv::Val r614;
-												if (UNEXPECTED(!pgen::RuleError291::m_getFileDependencies(Z_OBJ_P(l_ruleError), r614.raw()))) return false;
-												vd557 = std::move(r614);
-												vd557_done = true;
+												zv::Val r618;
+												if (UNEXPECTED(!pgen::RuleError291::m_getFileDependencies(Z_OBJ_P(l_ruleError), r618.raw()))) return false;
+												vd561 = std::move(r618);
+												vd561_done = true;
 											}
 											break;
 											case 58: {
-												zv::Val r615;
-												if (UNEXPECTED(!pgen::RuleError285::m_getFileDependencies(Z_OBJ_P(l_ruleError), r615.raw()))) return false;
-												vd557 = std::move(r615);
-												vd557_done = true;
+												zv::Val r619;
+												if (UNEXPECTED(!pgen::RuleError285::m_getFileDependencies(Z_OBJ_P(l_ruleError), r619.raw()))) return false;
+												vd561 = std::move(r619);
+												vd561_done = true;
 											}
 											break;
 											case 59: {
-												zv::Val r616;
-												if (UNEXPECTED(!pgen::RuleError293::m_getFileDependencies(Z_OBJ_P(l_ruleError), r616.raw()))) return false;
-												vd557 = std::move(r616);
-												vd557_done = true;
+												zv::Val r620;
+												if (UNEXPECTED(!pgen::RuleError293::m_getFileDependencies(Z_OBJ_P(l_ruleError), r620.raw()))) return false;
+												vd561 = std::move(r620);
+												vd561_done = true;
 											}
 											break;
 											case 60: {
-												zv::Val r617;
-												if (UNEXPECTED(!pgen::RuleError287::m_getFileDependencies(Z_OBJ_P(l_ruleError), r617.raw()))) return false;
-												vd557 = std::move(r617);
-												vd557_done = true;
+												zv::Val r621;
+												if (UNEXPECTED(!pgen::RuleError287::m_getFileDependencies(Z_OBJ_P(l_ruleError), r621.raw()))) return false;
+												vd561 = std::move(r621);
+												vd561_done = true;
 											}
 											break;
 											case 61: {
-												zv::Val r618;
-												if (UNEXPECTED(!pgen::RuleError481::m_getFileDependencies(Z_OBJ_P(l_ruleError), r618.raw()))) return false;
-												vd557 = std::move(r618);
-												vd557_done = true;
+												zv::Val r622;
+												if (UNEXPECTED(!pgen::RuleError481::m_getFileDependencies(Z_OBJ_P(l_ruleError), r622.raw()))) return false;
+												vd561 = std::move(r622);
+												vd561_done = true;
 											}
 											break;
 											case 62: {
-												zv::Val r619;
-												if (UNEXPECTED(!pgen::RuleError495::m_getFileDependencies(Z_OBJ_P(l_ruleError), r619.raw()))) return false;
-												vd557 = std::move(r619);
-												vd557_done = true;
+												zv::Val r623;
+												if (UNEXPECTED(!pgen::RuleError495::m_getFileDependencies(Z_OBJ_P(l_ruleError), r623.raw()))) return false;
+												vd561 = std::move(r623);
+												vd561_done = true;
 											}
 											break;
 											case 63: {
-												zv::Val r620;
-												if (UNEXPECTED(!pgen::RuleError457::m_getFileDependencies(Z_OBJ_P(l_ruleError), r620.raw()))) return false;
-												vd557 = std::move(r620);
-												vd557_done = true;
+												zv::Val r624;
+												if (UNEXPECTED(!pgen::RuleError457::m_getFileDependencies(Z_OBJ_P(l_ruleError), r624.raw()))) return false;
+												vd561 = std::move(r624);
+												vd561_done = true;
 											}
 											break;
 											case 64: {
-												zv::Val r621;
-												if (UNEXPECTED(!pgen::RuleError331::m_getFileDependencies(Z_OBJ_P(l_ruleError), r621.raw()))) return false;
-												vd557 = std::move(r621);
-												vd557_done = true;
+												zv::Val r625;
+												if (UNEXPECTED(!pgen::RuleError331::m_getFileDependencies(Z_OBJ_P(l_ruleError), r625.raw()))) return false;
+												vd561 = std::move(r625);
+												vd561_done = true;
 											}
 											break;
 											case 65: {
-												zv::Val r622;
-												if (UNEXPECTED(!pgen::RuleError325::m_getFileDependencies(Z_OBJ_P(l_ruleError), r622.raw()))) return false;
-												vd557 = std::move(r622);
-												vd557_done = true;
+												zv::Val r626;
+												if (UNEXPECTED(!pgen::RuleError325::m_getFileDependencies(Z_OBJ_P(l_ruleError), r626.raw()))) return false;
+												vd561 = std::move(r626);
+												vd561_done = true;
 											}
 											break;
 											case 66: {
-												zv::Val r623;
-												if (UNEXPECTED(!pgen::RuleError443::m_getFileDependencies(Z_OBJ_P(l_ruleError), r623.raw()))) return false;
-												vd557 = std::move(r623);
-												vd557_done = true;
+												zv::Val r627;
+												if (UNEXPECTED(!pgen::RuleError443::m_getFileDependencies(Z_OBJ_P(l_ruleError), r627.raw()))) return false;
+												vd561 = std::move(r627);
+												vd561_done = true;
 											}
 											break;
 											case 67: {
-												zv::Val r624;
-												if (UNEXPECTED(!pgen::RuleError319::m_getFileDependencies(Z_OBJ_P(l_ruleError), r624.raw()))) return false;
-												vd557 = std::move(r624);
-												vd557_done = true;
+												zv::Val r628;
+												if (UNEXPECTED(!pgen::RuleError319::m_getFileDependencies(Z_OBJ_P(l_ruleError), r628.raw()))) return false;
+												vd561 = std::move(r628);
+												vd561_done = true;
 											}
 											break;
 											case 68: {
-												zv::Val r625;
-												if (UNEXPECTED(!pgen::RuleError279::m_getFileDependencies(Z_OBJ_P(l_ruleError), r625.raw()))) return false;
-												vd557 = std::move(r625);
-												vd557_done = true;
+												zv::Val r629;
+												if (UNEXPECTED(!pgen::RuleError279::m_getFileDependencies(Z_OBJ_P(l_ruleError), r629.raw()))) return false;
+												vd561 = std::move(r629);
+												vd561_done = true;
 											}
 											break;
 											case 69: {
-												zv::Val r626;
-												if (UNEXPECTED(!pgen::RuleError499::m_getFileDependencies(Z_OBJ_P(l_ruleError), r626.raw()))) return false;
-												vd557 = std::move(r626);
-												vd557_done = true;
+												zv::Val r630;
+												if (UNEXPECTED(!pgen::RuleError499::m_getFileDependencies(Z_OBJ_P(l_ruleError), r630.raw()))) return false;
+												vd561 = std::move(r630);
+												vd561_done = true;
 											}
 											break;
 											case 70: {
-												zv::Val r627;
-												if (UNEXPECTED(!pgen::RuleError329::m_getFileDependencies(Z_OBJ_P(l_ruleError), r627.raw()))) return false;
-												vd557 = std::move(r627);
-												vd557_done = true;
+												zv::Val r631;
+												if (UNEXPECTED(!pgen::RuleError329::m_getFileDependencies(Z_OBJ_P(l_ruleError), r631.raw()))) return false;
+												vd561 = std::move(r631);
+												vd561_done = true;
 											}
 											break;
 											case 71: {
-												zv::Val r628;
-												if (UNEXPECTED(!pgen::RuleError315::m_getFileDependencies(Z_OBJ_P(l_ruleError), r628.raw()))) return false;
-												vd557 = std::move(r628);
-												vd557_done = true;
+												zv::Val r632;
+												if (UNEXPECTED(!pgen::RuleError315::m_getFileDependencies(Z_OBJ_P(l_ruleError), r632.raw()))) return false;
+												vd561 = std::move(r632);
+												vd561_done = true;
 											}
 											break;
 											case 72: {
-												zv::Val r629;
-												if (UNEXPECTED(!pgen::RuleError473::m_getFileDependencies(Z_OBJ_P(l_ruleError), r629.raw()))) return false;
-												vd557 = std::move(r629);
-												vd557_done = true;
+												zv::Val r633;
+												if (UNEXPECTED(!pgen::RuleError473::m_getFileDependencies(Z_OBJ_P(l_ruleError), r633.raw()))) return false;
+												vd561 = std::move(r633);
+												vd561_done = true;
 											}
 											break;
 											case 73: {
-												zv::Val r630;
-												if (UNEXPECTED(!pgen::RuleError467::m_getFileDependencies(Z_OBJ_P(l_ruleError), r630.raw()))) return false;
-												vd557 = std::move(r630);
-												vd557_done = true;
+												zv::Val r634;
+												if (UNEXPECTED(!pgen::RuleError467::m_getFileDependencies(Z_OBJ_P(l_ruleError), r634.raw()))) return false;
+												vd561 = std::move(r634);
+												vd561_done = true;
 											}
 											break;
 											case 74: {
-												zv::Val r631;
-												if (UNEXPECTED(!pgen::RuleError301::m_getFileDependencies(Z_OBJ_P(l_ruleError), r631.raw()))) return false;
-												vd557 = std::move(r631);
-												vd557_done = true;
+												zv::Val r635;
+												if (UNEXPECTED(!pgen::RuleError301::m_getFileDependencies(Z_OBJ_P(l_ruleError), r635.raw()))) return false;
+												vd561 = std::move(r635);
+												vd561_done = true;
 											}
 											break;
 											case 75: {
-												zv::Val r632;
-												if (UNEXPECTED(!pgen::RuleError261::m_getFileDependencies(Z_OBJ_P(l_ruleError), r632.raw()))) return false;
-												vd557 = std::move(r632);
-												vd557_done = true;
+												zv::Val r636;
+												if (UNEXPECTED(!pgen::RuleError261::m_getFileDependencies(Z_OBJ_P(l_ruleError), r636.raw()))) return false;
+												vd561 = std::move(r636);
+												vd561_done = true;
 											}
 											break;
 											case 76: {
-												zv::Val r633;
-												if (UNEXPECTED(!pgen::RuleError507::m_getFileDependencies(Z_OBJ_P(l_ruleError), r633.raw()))) return false;
-												vd557 = std::move(r633);
-												vd557_done = true;
+												zv::Val r637;
+												if (UNEXPECTED(!pgen::RuleError507::m_getFileDependencies(Z_OBJ_P(l_ruleError), r637.raw()))) return false;
+												vd561 = std::move(r637);
+												vd561_done = true;
 											}
 											break;
 											case 77: {
-												zv::Val r634;
-												if (UNEXPECTED(!pgen::RuleError275::m_getFileDependencies(Z_OBJ_P(l_ruleError), r634.raw()))) return false;
-												vd557 = std::move(r634);
-												vd557_done = true;
+												zv::Val r638;
+												if (UNEXPECTED(!pgen::RuleError275::m_getFileDependencies(Z_OBJ_P(l_ruleError), r638.raw()))) return false;
+												vd561 = std::move(r638);
+												vd561_done = true;
 											}
 											break;
 											case 78: {
-												zv::Val r635;
-												if (UNEXPECTED(!pgen::RuleError505::m_getFileDependencies(Z_OBJ_P(l_ruleError), r635.raw()))) return false;
-												vd557 = std::move(r635);
-												vd557_done = true;
+												zv::Val r639;
+												if (UNEXPECTED(!pgen::RuleError505::m_getFileDependencies(Z_OBJ_P(l_ruleError), r639.raw()))) return false;
+												vd561 = std::move(r639);
+												vd561_done = true;
 											}
 											break;
 											case 79: {
-												zv::Val r636;
-												if (UNEXPECTED(!pgen::RuleError263::m_getFileDependencies(Z_OBJ_P(l_ruleError), r636.raw()))) return false;
-												vd557 = std::move(r636);
-												vd557_done = true;
+												zv::Val r640;
+												if (UNEXPECTED(!pgen::RuleError263::m_getFileDependencies(Z_OBJ_P(l_ruleError), r640.raw()))) return false;
+												vd561 = std::move(r640);
+												vd561_done = true;
 											}
 											break;
 											case 80: {
-												zv::Val r637;
-												if (UNEXPECTED(!pgen::RuleError277::m_getFileDependencies(Z_OBJ_P(l_ruleError), r637.raw()))) return false;
-												vd557 = std::move(r637);
-												vd557_done = true;
+												zv::Val r641;
+												if (UNEXPECTED(!pgen::RuleError277::m_getFileDependencies(Z_OBJ_P(l_ruleError), r641.raw()))) return false;
+												vd561 = std::move(r641);
+												vd561_done = true;
 											}
 											break;
 											case 81: {
-												zv::Val r638;
-												if (UNEXPECTED(!pgen::RuleError511::m_getFileDependencies(Z_OBJ_P(l_ruleError), r638.raw()))) return false;
-												vd557 = std::move(r638);
-												vd557_done = true;
+												zv::Val r642;
+												if (UNEXPECTED(!pgen::RuleError511::m_getFileDependencies(Z_OBJ_P(l_ruleError), r642.raw()))) return false;
+												vd561 = std::move(r642);
+												vd561_done = true;
 											}
 											break;
 											case 82: {
-												zv::Val r639;
-												if (UNEXPECTED(!pgen::RuleError471::m_getFileDependencies(Z_OBJ_P(l_ruleError), r639.raw()))) return false;
-												vd557 = std::move(r639);
-												vd557_done = true;
+												zv::Val r643;
+												if (UNEXPECTED(!pgen::RuleError471::m_getFileDependencies(Z_OBJ_P(l_ruleError), r643.raw()))) return false;
+												vd561 = std::move(r643);
+												vd561_done = true;
 											}
 											break;
 											case 83: {
-												zv::Val r640;
-												if (UNEXPECTED(!pgen::RuleError317::m_getFileDependencies(Z_OBJ_P(l_ruleError), r640.raw()))) return false;
-												vd557 = std::move(r640);
-												vd557_done = true;
+												zv::Val r644;
+												if (UNEXPECTED(!pgen::RuleError317::m_getFileDependencies(Z_OBJ_P(l_ruleError), r644.raw()))) return false;
+												vd561 = std::move(r644);
+												vd561_done = true;
 											}
 											break;
 											case 84: {
-												zv::Val r641;
-												if (UNEXPECTED(!pgen::RuleError303::m_getFileDependencies(Z_OBJ_P(l_ruleError), r641.raw()))) return false;
-												vd557 = std::move(r641);
-												vd557_done = true;
+												zv::Val r645;
+												if (UNEXPECTED(!pgen::RuleError303::m_getFileDependencies(Z_OBJ_P(l_ruleError), r645.raw()))) return false;
+												vd561 = std::move(r645);
+												vd561_done = true;
 											}
 											break;
 											case 85: {
-												zv::Val r642;
-												if (UNEXPECTED(!pgen::RuleError465::m_getFileDependencies(Z_OBJ_P(l_ruleError), r642.raw()))) return false;
-												vd557 = std::move(r642);
-												vd557_done = true;
+												zv::Val r646;
+												if (UNEXPECTED(!pgen::RuleError465::m_getFileDependencies(Z_OBJ_P(l_ruleError), r646.raw()))) return false;
+												vd561 = std::move(r646);
+												vd561_done = true;
 											}
 											break;
 											case 86: {
-												zv::Val r643;
-												if (UNEXPECTED(!pgen::RuleError459::m_getFileDependencies(Z_OBJ_P(l_ruleError), r643.raw()))) return false;
-												vd557 = std::move(r643);
-												vd557_done = true;
+												zv::Val r647;
+												if (UNEXPECTED(!pgen::RuleError459::m_getFileDependencies(Z_OBJ_P(l_ruleError), r647.raw()))) return false;
+												vd561 = std::move(r647);
+												vd561_done = true;
 											}
 											break;
 											case 87: {
-												zv::Val r644;
-												if (UNEXPECTED(!pgen::RuleError289::m_getFileDependencies(Z_OBJ_P(l_ruleError), r644.raw()))) return false;
-												vd557 = std::move(r644);
-												vd557_done = true;
+												zv::Val r648;
+												if (UNEXPECTED(!pgen::RuleError289::m_getFileDependencies(Z_OBJ_P(l_ruleError), r648.raw()))) return false;
+												vd561 = std::move(r648);
+												vd561_done = true;
 											}
 											break;
 											case 88: {
-												zv::Val r645;
-												if (UNEXPECTED(!pgen::RuleError299::m_getFileDependencies(Z_OBJ_P(l_ruleError), r645.raw()))) return false;
-												vd557 = std::move(r645);
-												vd557_done = true;
+												zv::Val r649;
+												if (UNEXPECTED(!pgen::RuleError299::m_getFileDependencies(Z_OBJ_P(l_ruleError), r649.raw()))) return false;
+												vd561 = std::move(r649);
+												vd561_done = true;
 											}
 											break;
 											case 89: {
-												zv::Val r646;
-												if (UNEXPECTED(!pgen::RuleError461::m_getFileDependencies(Z_OBJ_P(l_ruleError), r646.raw()))) return false;
-												vd557 = std::move(r646);
-												vd557_done = true;
+												zv::Val r650;
+												if (UNEXPECTED(!pgen::RuleError461::m_getFileDependencies(Z_OBJ_P(l_ruleError), r650.raw()))) return false;
+												vd561 = std::move(r650);
+												vd561_done = true;
 											}
 											break;
 											case 90: {
-												zv::Val r647;
-												if (UNEXPECTED(!pgen::RuleError307::m_getFileDependencies(Z_OBJ_P(l_ruleError), r647.raw()))) return false;
-												vd557 = std::move(r647);
-												vd557_done = true;
+												zv::Val r651;
+												if (UNEXPECTED(!pgen::RuleError307::m_getFileDependencies(Z_OBJ_P(l_ruleError), r651.raw()))) return false;
+												vd561 = std::move(r651);
+												vd561_done = true;
 											}
 											break;
 											case 91: {
-												zv::Val r648;
-												if (UNEXPECTED(!pgen::RuleError313::m_getFileDependencies(Z_OBJ_P(l_ruleError), r648.raw()))) return false;
-												vd557 = std::move(r648);
-												vd557_done = true;
+												zv::Val r652;
+												if (UNEXPECTED(!pgen::RuleError313::m_getFileDependencies(Z_OBJ_P(l_ruleError), r652.raw()))) return false;
+												vd561 = std::move(r652);
+												vd561_done = true;
 											}
 											break;
 											case 92: {
-												zv::Val r649;
-												if (UNEXPECTED(!pgen::RuleError475::m_getFileDependencies(Z_OBJ_P(l_ruleError), r649.raw()))) return false;
-												vd557 = std::move(r649);
-												vd557_done = true;
+												zv::Val r653;
+												if (UNEXPECTED(!pgen::RuleError475::m_getFileDependencies(Z_OBJ_P(l_ruleError), r653.raw()))) return false;
+												vd561 = std::move(r653);
+												vd561_done = true;
 											}
 											break;
 											case 93: {
-												zv::Val r650;
-												if (UNEXPECTED(!pgen::RuleError449::m_getFileDependencies(Z_OBJ_P(l_ruleError), r650.raw()))) return false;
-												vd557 = std::move(r650);
-												vd557_done = true;
+												zv::Val r654;
+												if (UNEXPECTED(!pgen::RuleError449::m_getFileDependencies(Z_OBJ_P(l_ruleError), r654.raw()))) return false;
+												vd561 = std::move(r654);
+												vd561_done = true;
 											}
 											break;
 											case 94: {
-												zv::Val r651;
-												if (UNEXPECTED(!pgen::RuleError273::m_getFileDependencies(Z_OBJ_P(l_ruleError), r651.raw()))) return false;
-												vd557 = std::move(r651);
-												vd557_done = true;
+												zv::Val r655;
+												if (UNEXPECTED(!pgen::RuleError273::m_getFileDependencies(Z_OBJ_P(l_ruleError), r655.raw()))) return false;
+												vd561 = std::move(r655);
+												vd561_done = true;
 											}
 											break;
 											case 95: {
-												zv::Val r652;
-												if (UNEXPECTED(!pgen::RuleError267::m_getFileDependencies(Z_OBJ_P(l_ruleError), r652.raw()))) return false;
-												vd557 = std::move(r652);
-												vd557_done = true;
+												zv::Val r656;
+												if (UNEXPECTED(!pgen::RuleError267::m_getFileDependencies(Z_OBJ_P(l_ruleError), r656.raw()))) return false;
+												vd561 = std::move(r656);
+												vd561_done = true;
 											}
 											break;
 											case 96: {
-												zv::Val r653;
-												if (UNEXPECTED(!pgen::RuleError501::m_getFileDependencies(Z_OBJ_P(l_ruleError), r653.raw()))) return false;
-												vd557 = std::move(r653);
-												vd557_done = true;
+												zv::Val r657;
+												if (UNEXPECTED(!pgen::RuleError501::m_getFileDependencies(Z_OBJ_P(l_ruleError), r657.raw()))) return false;
+												vd561 = std::move(r657);
+												vd561_done = true;
 											}
 											break;
 											case 97: {
-												zv::Val r654;
-												if (UNEXPECTED(!pgen::RuleError259::m_getFileDependencies(Z_OBJ_P(l_ruleError), r654.raw()))) return false;
-												vd557 = std::move(r654);
-												vd557_done = true;
+												zv::Val r658;
+												if (UNEXPECTED(!pgen::RuleError259::m_getFileDependencies(Z_OBJ_P(l_ruleError), r658.raw()))) return false;
+												vd561 = std::move(r658);
+												vd561_done = true;
 											}
 											break;
 											case 98: {
-												zv::Val r655;
-												if (UNEXPECTED(!pgen::RuleError271::m_getFileDependencies(Z_OBJ_P(l_ruleError), r655.raw()))) return false;
-												vd557 = std::move(r655);
-												vd557_done = true;
+												zv::Val r659;
+												if (UNEXPECTED(!pgen::RuleError271::m_getFileDependencies(Z_OBJ_P(l_ruleError), r659.raw()))) return false;
+												vd561 = std::move(r659);
+												vd561_done = true;
 											}
 											break;
 											case 99: {
-												zv::Val r656;
-												if (UNEXPECTED(!pgen::RuleError503::m_getFileDependencies(Z_OBJ_P(l_ruleError), r656.raw()))) return false;
-												vd557 = std::move(r656);
-												vd557_done = true;
+												zv::Val r660;
+												if (UNEXPECTED(!pgen::RuleError503::m_getFileDependencies(Z_OBJ_P(l_ruleError), r660.raw()))) return false;
+												vd561 = std::move(r660);
+												vd561_done = true;
 											}
 											break;
 											case 100: {
-												zv::Val r657;
-												if (UNEXPECTED(!pgen::RuleError265::m_getFileDependencies(Z_OBJ_P(l_ruleError), r657.raw()))) return false;
-												vd557 = std::move(r657);
-												vd557_done = true;
+												zv::Val r661;
+												if (UNEXPECTED(!pgen::RuleError265::m_getFileDependencies(Z_OBJ_P(l_ruleError), r661.raw()))) return false;
+												vd561 = std::move(r661);
+												vd561_done = true;
 											}
 											break;
 											case 101: {
-												zv::Val r658;
-												if (UNEXPECTED(!pgen::RuleError339::m_getFileDependencies(Z_OBJ_P(l_ruleError), r658.raw()))) return false;
-												vd557 = std::move(r658);
-												vd557_done = true;
+												zv::Val r662;
+												if (UNEXPECTED(!pgen::RuleError339::m_getFileDependencies(Z_OBJ_P(l_ruleError), r662.raw()))) return false;
+												vd561 = std::move(r662);
+												vd561_done = true;
 											}
 											break;
 											case 102: {
-												zv::Val r659;
-												if (UNEXPECTED(!pgen::RuleError305::m_getFileDependencies(Z_OBJ_P(l_ruleError), r659.raw()))) return false;
-												vd557 = std::move(r659);
-												vd557_done = true;
+												zv::Val r663;
+												if (UNEXPECTED(!pgen::RuleError305::m_getFileDependencies(Z_OBJ_P(l_ruleError), r663.raw()))) return false;
+												vd561 = std::move(r663);
+												vd561_done = true;
 											}
 											break;
 											case 103: {
-												zv::Val r660;
-												if (UNEXPECTED(!pgen::RuleError463::m_getFileDependencies(Z_OBJ_P(l_ruleError), r660.raw()))) return false;
-												vd557 = std::move(r660);
-												vd557_done = true;
+												zv::Val r664;
+												if (UNEXPECTED(!pgen::RuleError463::m_getFileDependencies(Z_OBJ_P(l_ruleError), r664.raw()))) return false;
+												vd561 = std::move(r664);
+												vd561_done = true;
 											}
 											break;
 											case 104: {
-												zv::Val r661;
-												if (UNEXPECTED(!pgen::RuleError477::m_getFileDependencies(Z_OBJ_P(l_ruleError), r661.raw()))) return false;
-												vd557 = std::move(r661);
-												vd557_done = true;
+												zv::Val r665;
+												if (UNEXPECTED(!pgen::RuleError477::m_getFileDependencies(Z_OBJ_P(l_ruleError), r665.raw()))) return false;
+												vd561 = std::move(r665);
+												vd561_done = true;
 											}
 											break;
 											case 105: {
-												zv::Val r662;
-												if (UNEXPECTED(!pgen::RuleError311::m_getFileDependencies(Z_OBJ_P(l_ruleError), r662.raw()))) return false;
-												vd557 = std::move(r662);
-												vd557_done = true;
+												zv::Val r666;
+												if (UNEXPECTED(!pgen::RuleError311::m_getFileDependencies(Z_OBJ_P(l_ruleError), r666.raw()))) return false;
+												vd561 = std::move(r666);
+												vd561_done = true;
 											}
 											break;
 											case 106: {
-												zv::Val r663;
-												if (UNEXPECTED(!pgen::RuleError489::m_getFileDependencies(Z_OBJ_P(l_ruleError), r663.raw()))) return false;
-												vd557 = std::move(r663);
-												vd557_done = true;
+												zv::Val r667;
+												if (UNEXPECTED(!pgen::RuleError489::m_getFileDependencies(Z_OBJ_P(l_ruleError), r667.raw()))) return false;
+												vd561 = std::move(r667);
+												vd561_done = true;
 											}
 											break;
 											case 107: {
-												zv::Val r664;
-												if (UNEXPECTED(!pgen::RuleError363::m_getFileDependencies(Z_OBJ_P(l_ruleError), r664.raw()))) return false;
-												vd557 = std::move(r664);
-												vd557_done = true;
+												zv::Val r668;
+												if (UNEXPECTED(!pgen::RuleError363::m_getFileDependencies(Z_OBJ_P(l_ruleError), r668.raw()))) return false;
+												vd561 = std::move(r668);
+												vd561_done = true;
 											}
 											break;
 											case 108: {
-												zv::Val r665;
-												if (UNEXPECTED(!pgen::RuleError405::m_getFileDependencies(Z_OBJ_P(l_ruleError), r665.raw()))) return false;
-												vd557 = std::move(r665);
-												vd557_done = true;
+												zv::Val r669;
+												if (UNEXPECTED(!pgen::RuleError405::m_getFileDependencies(Z_OBJ_P(l_ruleError), r669.raw()))) return false;
+												vd561 = std::move(r669);
+												vd561_done = true;
 											}
 											break;
 											case 109: {
-												zv::Val r666;
-												if (UNEXPECTED(!pgen::RuleError411::m_getFileDependencies(Z_OBJ_P(l_ruleError), r666.raw()))) return false;
-												vd557 = std::move(r666);
-												vd557_done = true;
+												zv::Val r670;
+												if (UNEXPECTED(!pgen::RuleError411::m_getFileDependencies(Z_OBJ_P(l_ruleError), r670.raw()))) return false;
+												vd561 = std::move(r670);
+												vd561_done = true;
 											}
 											break;
 											case 110: {
-												zv::Val r667;
-												if (UNEXPECTED(!pgen::RuleError377::m_getFileDependencies(Z_OBJ_P(l_ruleError), r667.raw()))) return false;
-												vd557 = std::move(r667);
-												vd557_done = true;
+												zv::Val r671;
+												if (UNEXPECTED(!pgen::RuleError377::m_getFileDependencies(Z_OBJ_P(l_ruleError), r671.raw()))) return false;
+												vd561 = std::move(r671);
+												vd561_done = true;
 											}
 											break;
 											case 111: {
-												zv::Val r668;
-												if (UNEXPECTED(!pgen::RuleError439::m_getFileDependencies(Z_OBJ_P(l_ruleError), r668.raw()))) return false;
-												vd557 = std::move(r668);
-												vd557_done = true;
+												zv::Val r672;
+												if (UNEXPECTED(!pgen::RuleError439::m_getFileDependencies(Z_OBJ_P(l_ruleError), r672.raw()))) return false;
+												vd561 = std::move(r672);
+												vd561_done = true;
 											}
 											break;
 											case 112: {
-												zv::Val r669;
-												if (UNEXPECTED(!pgen::RuleError389::m_getFileDependencies(Z_OBJ_P(l_ruleError), r669.raw()))) return false;
-												vd557 = std::move(r669);
-												vd557_done = true;
+												zv::Val r673;
+												if (UNEXPECTED(!pgen::RuleError389::m_getFileDependencies(Z_OBJ_P(l_ruleError), r673.raw()))) return false;
+												vd561 = std::move(r673);
+												vd561_done = true;
 											}
 											break;
 											case 113: {
-												zv::Val r670;
-												if (UNEXPECTED(!pgen::RuleError349::m_getFileDependencies(Z_OBJ_P(l_ruleError), r670.raw()))) return false;
-												vd557 = std::move(r670);
-												vd557_done = true;
+												zv::Val r674;
+												if (UNEXPECTED(!pgen::RuleError349::m_getFileDependencies(Z_OBJ_P(l_ruleError), r674.raw()))) return false;
+												vd561 = std::move(r674);
+												vd561_done = true;
 											}
 											break;
 											case 114: {
-												zv::Val r671;
-												if (UNEXPECTED(!pgen::RuleError407::m_getFileDependencies(Z_OBJ_P(l_ruleError), r671.raw()))) return false;
-												vd557 = std::move(r671);
-												vd557_done = true;
+												zv::Val r675;
+												if (UNEXPECTED(!pgen::RuleError407::m_getFileDependencies(Z_OBJ_P(l_ruleError), r675.raw()))) return false;
+												vd561 = std::move(r675);
+												vd561_done = true;
 											}
 											break;
 											case 115: {
-												zv::Val r672;
-												if (UNEXPECTED(!pgen::RuleError361::m_getFileDependencies(Z_OBJ_P(l_ruleError), r672.raw()))) return false;
-												vd557 = std::move(r672);
-												vd557_done = true;
+												zv::Val r676;
+												if (UNEXPECTED(!pgen::RuleError361::m_getFileDependencies(Z_OBJ_P(l_ruleError), r676.raw()))) return false;
+												vd561 = std::move(r676);
+												vd561_done = true;
 											}
 											break;
 											case 116: {
-												zv::Val r673;
-												if (UNEXPECTED(!pgen::RuleError375::m_getFileDependencies(Z_OBJ_P(l_ruleError), r673.raw()))) return false;
-												vd557 = std::move(r673);
-												vd557_done = true;
+												zv::Val r677;
+												if (UNEXPECTED(!pgen::RuleError375::m_getFileDependencies(Z_OBJ_P(l_ruleError), r677.raw()))) return false;
+												vd561 = std::move(r677);
+												vd561_done = true;
 											}
 											break;
 											case 117: {
-												zv::Val r674;
-												if (UNEXPECTED(!pgen::RuleError413::m_getFileDependencies(Z_OBJ_P(l_ruleError), r674.raw()))) return false;
-												vd557 = std::move(r674);
-												vd557_done = true;
+												zv::Val r678;
+												if (UNEXPECTED(!pgen::RuleError413::m_getFileDependencies(Z_OBJ_P(l_ruleError), r678.raw()))) return false;
+												vd561 = std::move(r678);
+												vd561_done = true;
 											}
 											break;
 											case 118: {
-												zv::Val r675;
-												if (UNEXPECTED(!pgen::RuleError359::m_getFileDependencies(Z_OBJ_P(l_ruleError), r675.raw()))) return false;
-												vd557 = std::move(r675);
-												vd557_done = true;
+												zv::Val r679;
+												if (UNEXPECTED(!pgen::RuleError359::m_getFileDependencies(Z_OBJ_P(l_ruleError), r679.raw()))) return false;
+												vd561 = std::move(r679);
+												vd561_done = true;
 											}
 											break;
 											case 119: {
-												zv::Val r676;
-												if (UNEXPECTED(!pgen::RuleError417::m_getFileDependencies(Z_OBJ_P(l_ruleError), r676.raw()))) return false;
-												vd557 = std::move(r676);
-												vd557_done = true;
+												zv::Val r680;
+												if (UNEXPECTED(!pgen::RuleError417::m_getFileDependencies(Z_OBJ_P(l_ruleError), r680.raw()))) return false;
+												vd561 = std::move(r680);
+												vd561_done = true;
 											}
 											break;
 											case 120: {
-												zv::Val r677;
-												if (UNEXPECTED(!pgen::RuleError371::m_getFileDependencies(Z_OBJ_P(l_ruleError), r677.raw()))) return false;
-												vd557 = std::move(r677);
-												vd557_done = true;
+												zv::Val r681;
+												if (UNEXPECTED(!pgen::RuleError371::m_getFileDependencies(Z_OBJ_P(l_ruleError), r681.raw()))) return false;
+												vd561 = std::move(r681);
+												vd561_done = true;
 											}
 											break;
 											case 121: {
-												zv::Val r678;
-												if (UNEXPECTED(!pgen::RuleError365::m_getFileDependencies(Z_OBJ_P(l_ruleError), r678.raw()))) return false;
-												vd557 = std::move(r678);
-												vd557_done = true;
+												zv::Val r682;
+												if (UNEXPECTED(!pgen::RuleError365::m_getFileDependencies(Z_OBJ_P(l_ruleError), r682.raw()))) return false;
+												vd561 = std::move(r682);
+												vd561_done = true;
 											}
 											break;
 											case 122: {
-												zv::Val r679;
-												if (UNEXPECTED(!pgen::RuleError403::m_getFileDependencies(Z_OBJ_P(l_ruleError), r679.raw()))) return false;
-												vd557 = std::move(r679);
-												vd557_done = true;
+												zv::Val r683;
+												if (UNEXPECTED(!pgen::RuleError403::m_getFileDependencies(Z_OBJ_P(l_ruleError), r683.raw()))) return false;
+												vd561 = std::move(r683);
+												vd561_done = true;
 											}
 											break;
 											case 123: {
-												zv::Val r680;
-												if (UNEXPECTED(!pgen::RuleError399::m_getFileDependencies(Z_OBJ_P(l_ruleError), r680.raw()))) return false;
-												vd557 = std::move(r680);
-												vd557_done = true;
+												zv::Val r684;
+												if (UNEXPECTED(!pgen::RuleError399::m_getFileDependencies(Z_OBJ_P(l_ruleError), r684.raw()))) return false;
+												vd561 = std::move(r684);
+												vd561_done = true;
 											}
 											break;
 											case 124: {
-												zv::Val r681;
-												if (UNEXPECTED(!pgen::RuleError373::m_getFileDependencies(Z_OBJ_P(l_ruleError), r681.raw()))) return false;
-												vd557 = std::move(r681);
-												vd557_done = true;
+												zv::Val r685;
+												if (UNEXPECTED(!pgen::RuleError373::m_getFileDependencies(Z_OBJ_P(l_ruleError), r685.raw()))) return false;
+												vd561 = std::move(r685);
+												vd561_done = true;
 											}
 											break;
 											case 125: {
-												zv::Val r682;
-												if (UNEXPECTED(!pgen::RuleError415::m_getFileDependencies(Z_OBJ_P(l_ruleError), r682.raw()))) return false;
-												vd557 = std::move(r682);
-												vd557_done = true;
+												zv::Val r686;
+												if (UNEXPECTED(!pgen::RuleError415::m_getFileDependencies(Z_OBJ_P(l_ruleError), r686.raw()))) return false;
+												vd561 = std::move(r686);
+												vd561_done = true;
 											}
 											break;
 											case 126: {
-												zv::Val r683;
-												if (UNEXPECTED(!pgen::RuleError401::m_getFileDependencies(Z_OBJ_P(l_ruleError), r683.raw()))) return false;
-												vd557 = std::move(r683);
-												vd557_done = true;
+												zv::Val r687;
+												if (UNEXPECTED(!pgen::RuleError401::m_getFileDependencies(Z_OBJ_P(l_ruleError), r687.raw()))) return false;
+												vd561 = std::move(r687);
+												vd561_done = true;
 											}
 											break;
 											case 127: {
-												zv::Val r684;
-												if (UNEXPECTED(!pgen::RuleError367::m_getFileDependencies(Z_OBJ_P(l_ruleError), r684.raw()))) return false;
-												vd557 = std::move(r684);
-												vd557_done = true;
+												zv::Val r688;
+												if (UNEXPECTED(!pgen::RuleError367::m_getFileDependencies(Z_OBJ_P(l_ruleError), r688.raw()))) return false;
+												vd561 = std::move(r688);
+												vd561_done = true;
 											}
 											break;
 											case 128: {
-												zv::Val r685;
-												if (UNEXPECTED(!pgen::RuleError429::m_getFileDependencies(Z_OBJ_P(l_ruleError), r685.raw()))) return false;
-												vd557 = std::move(r685);
-												vd557_done = true;
+												zv::Val r689;
+												if (UNEXPECTED(!pgen::RuleError429::m_getFileDependencies(Z_OBJ_P(l_ruleError), r689.raw()))) return false;
+												vd561 = std::move(r689);
+												vd561_done = true;
 											}
 											break;
 											default:
 											break;
 										}
-										if (!vd557_done) {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_58, l_ruleError, "getFileDependencies", "getfiledependencies", 19, 0, NULL, vd557.raw()))) return false;
+										if (!vd561_done) {
+											if (UNEXPECTED(!pgrt::callMethod(pg_site_58, l_ruleError, "getFileDependencies", "getfiledependencies", 19, 0, NULL, vd561.raw()))) return false;
 										}
-										zv::Val a686 = zv::Val::copyOf(zv::Ref(vd557.raw()).deref());
-										HashTable *ht556 = Z_ARRVAL_P(a686.raw());
-										zval *v687;
-										zend_ulong n688;
-										zend_string *s689;
-										ZEND_HASH_FOREACH_KEY_VAL(ht556, n688, s689, v687) {
-											(void) n688; (void) s689;
-											l_fileDependency = zv::Ref(v687).deref().raw();
+										zv::Val a690 = zv::Val::copyOf(zv::Ref(vd561.raw()).deref());
+										HashTable *ht560 = Z_ARRVAL_P(a690.raw());
+										zval *v691;
+										zend_ulong n692;
+										zend_string *s693;
+										ZEND_HASH_FOREACH_KEY_VAL(ht560, n692, s693, v691) {
+											(void) n692; (void) s693;
+											l_fileDependency = zv::Ref(v691).deref().raw();
 											 {
 												 {
-													zval av692[1];
-													ZVAL_COPY_VALUE(&av692[0], l_fileDependency);
-													zv::Val r693;
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "trackFileDependency", "trackfiledependency", 19, 1, av692, r693.raw(), NULL))) return false;
+													zval av696[1];
+													ZVAL_COPY_VALUE(&av696[0], l_fileDependency);
+													zv::Val r697;
+													if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "trackFileDependency", "trackfiledependency", 19, 1, av696, r697.raw(), NULL))) return false;
 												}
 											}
 										}
@@ -4313,42 +4339,42 @@ namespace pgen::FileAnalyserCallback {
 								}
 							}
 							 {
-								zval *p694 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ruleErrorTransformer, "ruleErrorTransformer");
-								if (UNEXPECTED(p694 == NULL)) return false;
-								zval av695[4];
-								ZVAL_COPY_VALUE(&av695[0], l_ruleError);
-								ZVAL_COPY_VALUE(&av695[1], p_scope);
-								ZVAL_COPY_VALUE(&av695[2], l_parserNodes.raw());
-								ZVAL_COPY_VALUE(&av695[3], p_node);
-								zv::Val r696;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_60, p694, "transform", "transform", 9, 4, av695, r696.raw(), NULL))) return false;
-								l_error = std::move(r696);
+								zval *p698 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ruleErrorTransformer, "ruleErrorTransformer");
+								if (UNEXPECTED(p698 == NULL)) return false;
+								zval av699[4];
+								ZVAL_COPY_VALUE(&av699[0], l_ruleError);
+								ZVAL_COPY_VALUE(&av699[1], p_scope);
+								ZVAL_COPY_VALUE(&av699[2], l_parserNodes.raw());
+								ZVAL_COPY_VALUE(&av699[3], p_node);
+								zv::Val r700;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_60, p698, "transform", "transform", 9, 4, av699, r700.raw(), NULL))) return false;
+								l_error = std::move(r700);
 							}
 							 {
-								zv::Val r697;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_61, l_error.raw(), "canBeIgnored", "canbeignored", 12, 0, NULL, r697.raw(), NULL))) return false;
-								if (Z_TYPE_P(r697.raw()) == IS_TRUE) {
+								zv::Val r701;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_61, l_error.raw(), "canBeIgnored", "canbeignored", 12, 0, NULL, r701.raw(), NULL))) return false;
+								if (Z_TYPE_P(r701.raw()) == IS_TRUE) {
 									 {
-										zval *p699 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ignoreErrorExtensions, "ignoreErrorExtensions");
-										if (UNEXPECTED(p699 == NULL)) return false;
-										zv::Val a700 = zv::Val::copyOf(zv::Ref(p699).deref());
-										HashTable *ht698 = Z_ARRVAL_P(a700.raw());
-										zval *v701;
-										zend_ulong n702;
-										zend_string *s703;
-										ZEND_HASH_FOREACH_KEY_VAL(ht698, n702, s703, v701) {
-											(void) n702; (void) s703;
-											l_ignoreErrorExtension = zv::Ref(v701).deref().raw();
+										zval *p703 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ignoreErrorExtensions, "ignoreErrorExtensions");
+										if (UNEXPECTED(p703 == NULL)) return false;
+										zv::Val a704 = zv::Val::copyOf(zv::Ref(p703).deref());
+										HashTable *ht702 = Z_ARRVAL_P(a704.raw());
+										zval *v705;
+										zend_ulong n706;
+										zend_string *s707;
+										ZEND_HASH_FOREACH_KEY_VAL(ht702, n706, s707, v705) {
+											(void) n706; (void) s707;
+											l_ignoreErrorExtension = zv::Ref(v705).deref().raw();
 											 {
 												 {
-													zval av706[3];
-													ZVAL_COPY_VALUE(&av706[0], l_error.raw());
-													ZVAL_COPY_VALUE(&av706[1], p_node);
-													ZVAL_COPY_VALUE(&av706[2], p_scope);
-													zv::Val r707;
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_62, l_ignoreErrorExtension, "shouldIgnore", "shouldignore", 12, 3, av706, r707.raw(), NULL))) return false;
-													if (zend_is_true(r707.raw())) {
-														goto cont555;
+													zval av710[3];
+													ZVAL_COPY_VALUE(&av710[0], l_error.raw());
+													ZVAL_COPY_VALUE(&av710[1], p_node);
+													ZVAL_COPY_VALUE(&av710[2], p_scope);
+													zv::Val r711;
+													if (UNEXPECTED(!pgrt::callMethod(pg_site_62, l_ignoreErrorExtension, "shouldIgnore", "shouldignore", 12, 3, av710, r711.raw(), NULL))) return false;
+													if (zend_is_true(r711.raw())) {
+														goto cont559;
 													}
 												}
 											}
@@ -4358,16 +4384,16 @@ namespace pgen::FileAnalyserCallback {
 								}
 							}
 							 {
-								zv::Val o708 = zv::Val::copyOf(zv::Ref(l_error.raw()));
-								zv::Val o709 = zv::Val::copyOf(zv::Ref(o708.raw()));
-								zval *w710 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::temporaryFileErrors)).deref().raw();
-								if (Z_TYPE_P(w710) <= IS_NULL) { zval_ptr_dtor(w710); array_init(w710); } else if (UNEXPECTED(Z_TYPE_P(w710) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w710);
-								{ zval v = o709.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w710), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val o712 = zv::Val::copyOf(zv::Ref(l_error.raw()));
+								zv::Val o713 = zv::Val::copyOf(zv::Ref(o712.raw()));
+								zval *w714 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::temporaryFileErrors)).deref().raw();
+								if (Z_TYPE_P(w714) <= IS_NULL) { zval_ptr_dtor(w714); array_init(w714); } else if (UNEXPECTED(Z_TYPE_P(w714) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w714);
+								{ zval v = o713.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w714), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
-						cont555:;
-						if (UNEXPECTED(!it553.next())) return false;
+						cont559:;
+						if (UNEXPECTED(!it557.next())) return false;
 					}
 					if (UNEXPECTED(EG(exception))) return false;
 				}
@@ -4378,413 +4404,470 @@ namespace pgen::FileAnalyserCallback {
 		if (UNEXPECTED(EG(exception))) return false;
 	}
 	 {
-		zval *is712 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::collectorsByNodeType)).deref().raw();
-		if (Z_ISUNDEF_P(is712)) is712 = NULL;
-		zv::Val o713 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-		zv::Val ist714;
-		zval *is711 = is712 == NULL ? NULL : pgrt::dimIs(is712, o713.raw(), ist714.raw());
+		zval *is716 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::collectorsByNodeType)).deref().raw();
+		if (Z_ISUNDEF_P(is716)) is716 = NULL;
+		zv::Val o717 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+		zv::Val ist718;
+		zval *is715 = is716 == NULL ? NULL : pgrt::dimIs(is716, o717.raw(), ist718.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q715;
-		if (is711 != NULL && Z_TYPE_P(is711) > IS_NULL) {
-			q715 = zv::Val::copyOf(zv::Ref(is711));
+		zv::Val q719;
+		if (is715 != NULL && Z_TYPE_P(is715) > IS_NULL) {
+			q719 = zv::Val::copyOf(zv::Ref(is715));
 		} else {
 		 {
-			zv::Val o716 = zv::Val::null();
-			q715 = std::move(o716);
+			zv::Val o720 = zv::Val::null();
+			q719 = std::move(o720);
 		}
 		}
-		l_collectors = std::move(q715);
+		l_collectors = std::move(q719);
 	}
 	 {
 		if (Z_TYPE_P(l_collectors.raw()) == IS_NULL) {
 			 {
-				zval *p717 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::collectorRegistry, "collectorRegistry");
-				if (UNEXPECTED(p717 == NULL)) return false;
-				zval av718[1];
-				ZVAL_COPY_VALUE(&av718[0], l_nodeType.raw());
-				zv::Val r719;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_63, p717, "getCollectors", "getcollectors", 13, 1, av718, r719.raw(), NULL))) return false;
-				l_collectors = std::move(r719);
+				zval *p721 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::collectorRegistry, "collectorRegistry");
+				if (UNEXPECTED(p721 == NULL)) return false;
+				zval av722[1];
+				ZVAL_COPY_VALUE(&av722[0], l_nodeType.raw());
+				zv::Val r723;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_63, p721, "getCollectors", "getcollectors", 13, 1, av722, r723.raw(), NULL))) return false;
+				l_collectors = std::move(r723);
 			}
 			 {
-				zv::Val o720 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-				zv::Val o721 = zv::Val::copyOf(zv::Ref(l_collectors.raw()));
-				zv::Val o722 = zv::Val::copyOf(zv::Ref(o721.raw()));
-				zval *w723 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::collectorsByNodeType)).deref().raw();
-				if (Z_TYPE_P(w723) <= IS_NULL) { zval_ptr_dtor(w723); array_init(w723); } else if (UNEXPECTED(Z_TYPE_P(w723) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w723);
-				zval *e724 = pgrt::dimWrite(w723, o720.raw());
-				if (UNEXPECTED(e724 == NULL)) return false;
-				zv::Ref(e724).assign(std::move(o722));
+				zv::Val o724 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+				zv::Val o725 = zv::Val::copyOf(zv::Ref(l_collectors.raw()));
+				zv::Val o726 = zv::Val::copyOf(zv::Ref(o725.raw()));
+				zval *w727 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::collectorsByNodeType)).deref().raw();
+				if (Z_TYPE_P(w727) <= IS_NULL) { zval_ptr_dtor(w727); array_init(w727); } else if (UNEXPECTED(Z_TYPE_P(w727) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w727);
+				zval *e728 = pgrt::dimWrite(w727, o724.raw());
+				if (UNEXPECTED(e728 == NULL)) return false;
+				zv::Ref(e728).assign(std::move(o726));
 			}
 		}
 	}
 	 {
-		pgrt::ForeachIter it726;
-		if (UNEXPECTED(!it726.begin(l_collectors.raw()))) return false;
-		while (it726.valid()) {
-			l_collector = zv::Ref(it726.current()).deref().raw();
+		pgrt::ForeachIter it730;
+		if (UNEXPECTED(!it730.begin(l_collectors.raw()))) return false;
+		while (it730.valid()) {
+			l_collector = zv::Ref(it730.current()).deref().raw();
 			 {
 				 {
 					 {
 						 {
-							zv::Val o730 = zv::Val::copyOf(zv::Ref(p_node));
-							zv::Val o731 = zv::Val::copyOf(zv::Ref(p_scope));
-							zv::Val vd732;
-							zend_class_entry *vd732_ce = Z_TYPE_P(l_collector) == IS_OBJECT ? Z_OBJCE_P(l_collector) : NULL;
-							bool vd732_done = false;
-							static zend_class_entry **const vd732_table[] = { &pt_ce_overriding_method_renames_parameter_collector, &pt_ce_named_argument_parameter_method_calls_collector, &pt_ce_trait_use_collector, &pt_ce_impossible_check_type_reported_collector, &pt_ce_method_without_impure_points_collector };
-							static const uint16_t vd732_cases[] = { 1, 2, 3, 4, 5 };
-							switch (pgrt::dispatchCase(pg_site_64, vd732_ce, vd732_table, vd732_cases, 5)) {
+							zv::Val o734 = zv::Val::copyOf(zv::Ref(p_node));
+							zv::Val o735 = zv::Val::copyOf(zv::Ref(p_scope));
+							zv::Val vd736;
+							zend_class_entry *vd736_ce = Z_TYPE_P(l_collector) == IS_OBJECT ? Z_OBJCE_P(l_collector) : NULL;
+							bool vd736_done = false;
+							static zend_class_entry **const vd736_table[] = { &pt_ce_overriding_method_renames_parameter_collector, &pt_ce_named_argument_parameter_method_calls_collector, &pt_ce_trait_use_collector, &pt_ce_impossible_check_type_reported_collector, &pt_ce_method_without_impure_points_collector, &pt_ce_constant_condition_in_trait_collector, &pt_ce_function_call_constant_condition_collector, &pt_ce_constructor_without_impure_points_collector, &pt_ce_function_without_impure_points_collector, &pt_ce_possibly_pure_func_call_collector, &pt_ce_possibly_pure_method_call_collector, &pt_ce_possibly_pure_new_collector, &pt_ce_possibly_pure_static_call_collector, &pt_ce_trait_declaration_collector };
+							static const uint16_t vd736_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
+							switch (pgrt::dispatchCase(pg_site_64, vd736_ce, vd736_table, vd736_cases, 14)) {
 								case 1: {
-									if (UNEXPECTED(!pgen::OverridingMethodRenamesParameterCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw()))) goto catch_c729;
-									vd732_done = true;
+									if (UNEXPECTED(!pgen::OverridingMethodRenamesParameterCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw()))) goto catch_c733;
+									vd736_done = true;
 								}
 								break;
 								case 2: {
-									if (UNEXPECTED(!pgen::NamedArgumentParameterMethodCallsCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw()))) goto catch_c729;
-									vd732_done = true;
+									if (UNEXPECTED(!pgen::NamedArgumentParameterMethodCallsCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw()))) goto catch_c733;
+									vd736_done = true;
 								}
 								break;
 								case 3: {
-									zv::Val r735;
-									if (UNEXPECTED(!pgen::TraitUseCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw(), r735.raw()))) goto catch_c729;
-									vd732 = std::move(r735);
-									vd732_done = true;
+									zv::Val r739;
+									if (UNEXPECTED(!pgen::TraitUseCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw(), r739.raw()))) goto catch_c733;
+									vd736 = std::move(r739);
+									vd736_done = true;
 								}
 								break;
 								case 4: {
-									if (UNEXPECTED(!pgen::ImpossibleCheckTypeReportedCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw()))) goto catch_c729;
-									vd732_done = true;
+									if (UNEXPECTED(!pgen::ImpossibleCheckTypeReportedCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw()))) goto catch_c733;
+									vd736_done = true;
 								}
 								break;
 								case 5: {
-									zv::Val r737;
-									if (UNEXPECTED(!pgen::MethodWithoutImpurePointsCollector::m_processNode(Z_OBJ_P(l_collector), o730.raw(), o731.raw(), r737.raw()))) goto catch_c729;
-									vd732 = std::move(r737);
-									vd732_done = true;
+									zv::Val r741;
+									if (UNEXPECTED(!pgen::MethodWithoutImpurePointsCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw(), r741.raw()))) goto catch_c733;
+									vd736 = std::move(r741);
+									vd736_done = true;
+								}
+								break;
+								case 6: {
+									if (UNEXPECTED(!pgen::ConstantConditionInTraitCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw()))) goto catch_c733;
+									vd736_done = true;
+								}
+								break;
+								case 7: {
+									if (UNEXPECTED(!pgen::FunctionCallConstantConditionCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw()))) goto catch_c733;
+									vd736_done = true;
+								}
+								break;
+								case 8: {
+									zv::Val r744;
+									if (UNEXPECTED(!pgen::ConstructorWithoutImpurePointsCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw(), r744.raw()))) goto catch_c733;
+									vd736 = std::move(r744);
+									vd736_done = true;
+								}
+								break;
+								case 9: {
+									zv::Val r745;
+									if (UNEXPECTED(!pgen::FunctionWithoutImpurePointsCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw(), r745.raw()))) goto catch_c733;
+									vd736 = std::move(r745);
+									vd736_done = true;
+								}
+								break;
+								case 10: {
+									zv::Val r746;
+									if (UNEXPECTED(!pgen::PossiblyPureFuncCallCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw(), r746.raw()))) goto catch_c733;
+									vd736 = std::move(r746);
+									vd736_done = true;
+								}
+								break;
+								case 11: {
+									zv::Val r747;
+									if (UNEXPECTED(!pgen::PossiblyPureMethodCallCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw(), r747.raw()))) goto catch_c733;
+									vd736 = std::move(r747);
+									vd736_done = true;
+								}
+								break;
+								case 12: {
+									zv::Val r748;
+									if (UNEXPECTED(!pgen::PossiblyPureNewCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw(), r748.raw()))) goto catch_c733;
+									vd736 = std::move(r748);
+									vd736_done = true;
+								}
+								break;
+								case 13: {
+									zv::Val r749;
+									if (UNEXPECTED(!pgen::PossiblyPureStaticCallCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw(), r749.raw()))) goto catch_c733;
+									vd736 = std::move(r749);
+									vd736_done = true;
+								}
+								break;
+								case 14: {
+									zv::Val r750;
+									if (UNEXPECTED(!pgen::TraitDeclarationCollector::m_processNode(Z_OBJ_P(l_collector), o734.raw(), o735.raw(), r750.raw()))) goto catch_c733;
+									vd736 = std::move(r750);
+									vd736_done = true;
 								}
 								break;
 								default:
 								break;
 							}
-							if (!vd732_done) {
-								zval av738[2];
-								ZVAL_COPY_VALUE(&av738[0], o730.raw());
-								ZVAL_COPY_VALUE(&av738[1], o731.raw());
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_65, l_collector, "processNode", "processnode", 11, 2, av738, vd732.raw()))) goto catch_c729;
+							if (!vd736_done) {
+								zval av751[2];
+								ZVAL_COPY_VALUE(&av751[0], o734.raw());
+								ZVAL_COPY_VALUE(&av751[1], o735.raw());
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_65, l_collector, "processNode", "processnode", 11, 2, av751, vd736.raw()))) goto catch_c733;
 							}
-							l_collectedData = std::move(vd732);
+							l_collectedData = std::move(vd736);
 						}
 					}
 					if (false) {
-					catch_c729:
+					catch_c733:
 					 {
 						zend_object *thrown = EG(exception);
-						bool caught739 = false;
-						if (!caught739 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
-							caught739 = true;
+						bool caught752 = false;
+						if (!caught752 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
+							caught752 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zval *is741 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
-								zv::Val r742;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_66, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r742.raw(), NULL))) return false;
-								zv::Val ist743;
-								zval *is740 = is741 == NULL ? NULL : pgrt::dimIs(is741, r742.raw(), ist743.raw());
+								zval *is754 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
+								zv::Val r755;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_66, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r755.raw(), NULL))) return false;
+								zv::Val ist756;
+								zval *is753 = is754 == NULL ? NULL : pgrt::dimIs(is754, r755.raw(), ist756.raw());
 								if (UNEXPECTED(EG(exception))) return false;
-								if (is740 != NULL && Z_TYPE_P(is740) > IS_NULL) {
-									goto cont728;
+								if (is753 != NULL && Z_TYPE_P(is753) > IS_NULL) {
+									goto cont732;
 								}
 							}
 							 {
-								zv::Val r744;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_67, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r744.raw(), NULL))) return false;
-								bool k745 = true;
-								zval z747;
-								ZVAL_BOOL(&z747, k745);
-								zv::Val o746 = zv::Val::copyOf(zv::Ref(&z747));
-								zval *w748 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
-								if (Z_TYPE_P(w748) <= IS_NULL) { zval_ptr_dtor(w748); array_init(w748); } else if (UNEXPECTED(Z_TYPE_P(w748) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w748);
-								zval *e749 = pgrt::dimWrite(w748, r744.raw());
-								if (UNEXPECTED(e749 == NULL)) return false;
-								zv::Ref(e749).assign(std::move(o746));
-							}
-							 {
-								zv::Val r751;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_68, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r751.raw(), NULL))) return false;
-								zval *p752 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p752 == NULL)) return false;
-								zv::Val o753 = zv::Val::copyOf(zv::Ref(p752));
-								zv::Val r754;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_69, p_node, "getStartLine", "getstartline", 12, 0, NULL, r754.raw(), NULL))) return false;
-								zend_long k755 = Z_LVAL_P(r754.raw());
-								zv::Val o756 = zv::Val::copyOf(zv::Ref(l_e.raw()));
 								zv::Val r757;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_70, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r757.raw(), NULL))) return false;
-								zval av758[4];
-								ZVAL_COPY_VALUE(&av758[0], r751.raw());
-								ZVAL_COPY_VALUE(&av758[1], o753.raw());
-								zval z759;
-								ZVAL_LONG(&z759, k755);
-								ZVAL_COPY_VALUE(&av758[2], &z759);
-								ZVAL_COPY_VALUE(&av758[3], o756.raw());
-								zv::Arr na760 = zv::Arr::create(1);
-								{ zval v; ZVAL_COPY(&v, r757.raw()); zend_hash_str_add_new(na760.table(), "tip", 3, &v); }
-								zend_class_entry *ce761 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce761 == NULL)) return false;
-								zv::Val n750;
-								if (UNEXPECTED(!pgrt::newObject(ce761, 4, av758, n750.raw(), na760.table()))) return false;
-								zval av762[1];
-								ZVAL_COPY_VALUE(&av762[0], &pg_lit[0]);
-								zv::Val r763;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_71, n750.raw(), "withIdentifier", "withidentifier", 14, 1, av762, r763.raw(), NULL))) return false;
-								zv::Val arr764 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av765[1];
-								ZVAL_COPY_VALUE(&av765[0], l_e.raw());
-								zend_class_entry *ce766 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce766 == NULL)) return false;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_67, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r757.raw(), NULL))) return false;
+								bool k758 = true;
+								zval z760;
+								ZVAL_BOOL(&z760, k758);
+								zv::Val o759 = zv::Val::copyOf(zv::Ref(&z760));
+								zval *w761 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
+								if (Z_TYPE_P(w761) <= IS_NULL) { zval_ptr_dtor(w761); array_init(w761); } else if (UNEXPECTED(Z_TYPE_P(w761) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w761);
+								zval *e762 = pgrt::dimWrite(w761, r757.raw());
+								if (UNEXPECTED(e762 == NULL)) return false;
+								zv::Ref(e762).assign(std::move(o759));
+							}
+							 {
+								zv::Val r764;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_68, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r764.raw(), NULL))) return false;
+								zval *p765 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p765 == NULL)) return false;
+								zv::Val o766 = zv::Val::copyOf(zv::Ref(p765));
 								zv::Val r767;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce766, "preparetrace", 12, 1, av765, r767.raw(), NULL))) return false;
-								{ zval v = r767.take(); zend_symtable_update(Z_ARRVAL_P(arr764.raw()), Z_STR_P(&pg_lit[1]), &v); }
-								zv::Val r768;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_72, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r768.raw(), NULL))) return false;
-								{ zval v = r768.take(); zend_symtable_update(Z_ARRVAL_P(arr764.raw()), Z_STR_P(&pg_lit[2]), &v); }
-								zval av769[1];
-								ZVAL_COPY_VALUE(&av769[0], arr764.raw());
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_69, p_node, "getStartLine", "getstartline", 12, 0, NULL, r767.raw(), NULL))) return false;
+								zend_long k768 = Z_LVAL_P(r767.raw());
+								zv::Val o769 = zv::Val::copyOf(zv::Ref(l_e.raw()));
 								zv::Val r770;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_73, r763.raw(), "withMetadata", "withmetadata", 12, 1, av769, r770.raw(), NULL))) return false;
-								zv::Val o771 = zv::Val::copyOf(zv::Ref(r770.raw()));
-								zval *w772 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w772) <= IS_NULL) { zval_ptr_dtor(w772); array_init(w772); } else if (UNEXPECTED(Z_TYPE_P(w772) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w772);
-								{ zval v = o771.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w772), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
-							}
-							goto cont728;
-						}
-						if (!caught739 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-							caught739 = true;
-							zval exception;
-							ZVAL_OBJ_COPY(&exception, thrown);
-							zend_clear_exception();
-							l_e = zv::Val::copyOf(zv::Ref(&exception));
-							zval_ptr_dtor(&exception);
-							 {
-								zval *gs774 = Z_TYPE_P(l_e.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_74, Z_OBJ_P(l_e.raw()), pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63), "getidentifier", 13, "identifier", 10) : NULL;
-								zv::Val r775;
-								if (EXPECTED(gs774 != NULL)) {
-									ZVAL_COPY(r775.raw(), gs774);
-								} else {
-								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_75, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r775.raw()))) return false;
-								}
-								}
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_70, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r770.raw(), NULL))) return false;
+								zval av771[4];
+								ZVAL_COPY_VALUE(&av771[0], r764.raw());
+								ZVAL_COPY_VALUE(&av771[1], o766.raw());
+								zval z772;
+								ZVAL_LONG(&z772, k768);
+								ZVAL_COPY_VALUE(&av771[2], &z772);
+								ZVAL_COPY_VALUE(&av771[3], o769.raw());
+								zv::Arr na773 = zv::Arr::create(1);
+								{ zval v; ZVAL_COPY(&v, r770.raw()); zend_hash_str_add_new(na773.table(), "tip", 3, &v); }
+								zend_class_entry *ce774 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce774 == NULL)) return false;
+								zv::Val n763;
+								if (UNEXPECTED(!pgrt::newObject(ce774, 4, av771, n763.raw(), na773.table()))) return false;
+								zval av775[1];
+								ZVAL_COPY_VALUE(&av775[0], &pg_lit[0]);
 								zv::Val r776;
-								if (EXPECTED(Z_TYPE_P(r775.raw()) == IS_OBJECT)) {
-									r776 = pt_type_op(Z_OBJ_P(r775.raw()), PT_OP_GET_NAME, 0, NULL);
-									if (UNEXPECTED(r776.isUndef())) return false;
-								} else {
-								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_76, r775.raw(), "getName", "getname", 7, 0, NULL, r776.raw(), NULL))) return false;
-								}
-								}
-								pgrt::StringBuilder sb777;
-								sb777.appendLiteral("Reflection error: ", 18);
-								if (UNEXPECTED(!sb777.append(r776.raw()))) return false;
-								sb777.appendLiteral(" not found.", 11);
-								zv::Val r778 = sb777.finish();
-								zval *p779 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p779 == NULL)) return false;
-								zv::Val o780 = zv::Val::copyOf(zv::Ref(p779));
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_71, n763.raw(), "withIdentifier", "withidentifier", 14, 1, av775, r776.raw(), NULL))) return false;
+								zv::Val arr777 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+								zval av778[1];
+								ZVAL_COPY_VALUE(&av778[0], l_e.raw());
+								zend_class_entry *ce779 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce779 == NULL)) return false;
+								zv::Val r780;
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce779, "preparetrace", 12, 1, av778, r780.raw(), NULL))) return false;
+								{ zval v = r780.take(); zend_symtable_update(Z_ARRVAL_P(arr777.raw()), Z_STR_P(&pg_lit[1]), &v); }
 								zv::Val r781;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_77, p_node, "getStartLine", "getstartline", 12, 0, NULL, r781.raw(), NULL))) return false;
-								zval av782[4];
-								ZVAL_COPY_VALUE(&av782[0], r778.raw());
-								ZVAL_COPY_VALUE(&av782[1], o780.raw());
-								zval z783;
-								ZVAL_LONG(&z783, Z_LVAL_P(r781.raw()));
-								ZVAL_COPY_VALUE(&av782[2], &z783);
-								ZVAL_COPY_VALUE(&av782[3], l_e.raw());
-								zv::Arr na784 = zv::Arr::create(1);
-								{ zval v; ZVAL_COPY(&v, &pg_lit[3]); zend_hash_str_add_new(na784.table(), "tip", 3, &v); }
-								zend_class_entry *ce785 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce785 == NULL)) return false;
-								zv::Val n773;
-								if (UNEXPECTED(!pgrt::newObject(ce785, 4, av782, n773.raw(), na784.table()))) return false;
-								zval av786[1];
-								ZVAL_COPY_VALUE(&av786[0], &pg_lit[4]);
-								zv::Val r787;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_78, n773.raw(), "withIdentifier", "withidentifier", 14, 1, av786, r787.raw(), NULL))) return false;
-								zv::Val arr788 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av789[1];
-								ZVAL_COPY_VALUE(&av789[0], l_e.raw());
-								zend_class_entry *ce790 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce790 == NULL)) return false;
-								zv::Val r791;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce790, "preparetrace", 12, 1, av789, r791.raw(), NULL))) return false;
-								{ zval v = r791.take(); zend_symtable_update(Z_ARRVAL_P(arr788.raw()), Z_STR_P(&pg_lit[1]), &v); }
-								zv::Val r792;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_79, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r792.raw(), NULL))) return false;
-								{ zval v = r792.take(); zend_symtable_update(Z_ARRVAL_P(arr788.raw()), Z_STR_P(&pg_lit[2]), &v); }
-								zval av793[1];
-								ZVAL_COPY_VALUE(&av793[0], arr788.raw());
-								zv::Val r794;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_80, r787.raw(), "withMetadata", "withmetadata", 12, 1, av793, r794.raw(), NULL))) return false;
-								zv::Val o795 = zv::Val::copyOf(zv::Ref(r794.raw()));
-								zval *w796 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w796) <= IS_NULL) { zval_ptr_dtor(w796); array_init(w796); } else if (UNEXPECTED(Z_TYPE_P(w796) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w796);
-								{ zval v = o795.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w796), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_72, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r781.raw(), NULL))) return false;
+								{ zval v = r781.take(); zend_symtable_update(Z_ARRVAL_P(arr777.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av782[1];
+								ZVAL_COPY_VALUE(&av782[0], arr777.raw());
+								zv::Val r783;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_73, r776.raw(), "withMetadata", "withmetadata", 12, 1, av782, r783.raw(), NULL))) return false;
+								zv::Val o784 = zv::Val::copyOf(zv::Ref(r783.raw()));
+								zval *w785 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w785) <= IS_NULL) { zval_ptr_dtor(w785); array_init(w785); } else if (UNEXPECTED(Z_TYPE_P(w785) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w785);
+								{ zval v = o784.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w785), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
-							goto cont728;
+							goto cont732;
 						}
-						if (!caught739 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)) || pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference", 63)))) {
-							caught739 = true;
+						if (!caught752 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+							caught752 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_e = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 							 {
-								zv::Val r798;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_81, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r798.raw(), NULL))) return false;
-								pgrt::StringBuilder sb799;
-								sb799.appendLiteral("Reflection error: ", 18);
-								if (UNEXPECTED(!sb799.append(r798.raw()))) return false;
-								zv::Val r800 = sb799.finish();
-								zval *p801 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
-								if (UNEXPECTED(p801 == NULL)) return false;
-								zv::Val o802 = zv::Val::copyOf(zv::Ref(p801));
-								zv::Val r803;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_82, p_node, "getStartLine", "getstartline", 12, 0, NULL, r803.raw(), NULL))) return false;
-								zval av804[4];
-								ZVAL_COPY_VALUE(&av804[0], r800.raw());
-								ZVAL_COPY_VALUE(&av804[1], o802.raw());
-								zval z805;
-								ZVAL_LONG(&z805, Z_LVAL_P(r803.raw()));
-								ZVAL_COPY_VALUE(&av804[2], &z805);
-								ZVAL_COPY_VALUE(&av804[3], l_e.raw());
-								zend_class_entry *ce806 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
-								if (UNEXPECTED(ce806 == NULL)) return false;
-								zv::Val n797;
-								if (UNEXPECTED(!pgrt::newObject(ce806, 4, av804, n797.raw(), NULL))) return false;
-								zval av807[1];
-								ZVAL_COPY_VALUE(&av807[0], &pg_lit[4]);
-								zv::Val r808;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_83, n797.raw(), "withIdentifier", "withidentifier", 14, 1, av807, r808.raw(), NULL))) return false;
-								zv::Val arr809 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-								zval av810[1];
-								ZVAL_COPY_VALUE(&av810[0], l_e.raw());
-								zend_class_entry *ce811 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
-								if (UNEXPECTED(ce811 == NULL)) return false;
-								zv::Val r812;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce811, "preparetrace", 12, 1, av810, r812.raw(), NULL))) return false;
-								{ zval v = r812.take(); zend_symtable_update(Z_ARRVAL_P(arr809.raw()), Z_STR_P(&pg_lit[1]), &v); }
-								zv::Val r813;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_84, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r813.raw(), NULL))) return false;
-								{ zval v = r813.take(); zend_symtable_update(Z_ARRVAL_P(arr809.raw()), Z_STR_P(&pg_lit[2]), &v); }
-								zval av814[1];
-								ZVAL_COPY_VALUE(&av814[0], arr809.raw());
-								zv::Val r815;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_85, r808.raw(), "withMetadata", "withmetadata", 12, 1, av814, r815.raw(), NULL))) return false;
-								zv::Val o816 = zv::Val::copyOf(zv::Ref(r815.raw()));
-								zval *w817 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
-								if (Z_TYPE_P(w817) <= IS_NULL) { zval_ptr_dtor(w817); array_init(w817); } else if (UNEXPECTED(Z_TYPE_P(w817) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w817);
-								{ zval v = o816.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w817), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zval *gs787 = Z_TYPE_P(l_e.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_74, Z_OBJ_P(l_e.raw()), pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63), "getidentifier", 13, "identifier", 10) : NULL;
+								zv::Val r788;
+								if (EXPECTED(gs787 != NULL)) {
+									ZVAL_COPY(r788.raw(), gs787);
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_75, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r788.raw()))) return false;
+								}
+								}
+								zv::Val r789;
+								if (EXPECTED(Z_TYPE_P(r788.raw()) == IS_OBJECT)) {
+									r789 = pt_type_op(Z_OBJ_P(r788.raw()), PT_OP_GET_NAME, 0, NULL);
+									if (UNEXPECTED(r789.isUndef())) return false;
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_76, r788.raw(), "getName", "getname", 7, 0, NULL, r789.raw(), NULL))) return false;
+								}
+								}
+								pgrt::StringBuilder sb790;
+								sb790.appendLiteral("Reflection error: ", 18);
+								if (UNEXPECTED(!sb790.append(r789.raw()))) return false;
+								sb790.appendLiteral(" not found.", 11);
+								zv::Val r791 = sb790.finish();
+								zval *p792 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p792 == NULL)) return false;
+								zv::Val o793 = zv::Val::copyOf(zv::Ref(p792));
+								zv::Val r794;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_77, p_node, "getStartLine", "getstartline", 12, 0, NULL, r794.raw(), NULL))) return false;
+								zval av795[4];
+								ZVAL_COPY_VALUE(&av795[0], r791.raw());
+								ZVAL_COPY_VALUE(&av795[1], o793.raw());
+								zval z796;
+								ZVAL_LONG(&z796, Z_LVAL_P(r794.raw()));
+								ZVAL_COPY_VALUE(&av795[2], &z796);
+								ZVAL_COPY_VALUE(&av795[3], l_e.raw());
+								zv::Arr na797 = zv::Arr::create(1);
+								{ zval v; ZVAL_COPY(&v, &pg_lit[3]); zend_hash_str_add_new(na797.table(), "tip", 3, &v); }
+								zend_class_entry *ce798 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce798 == NULL)) return false;
+								zv::Val n786;
+								if (UNEXPECTED(!pgrt::newObject(ce798, 4, av795, n786.raw(), na797.table()))) return false;
+								zval av799[1];
+								ZVAL_COPY_VALUE(&av799[0], &pg_lit[4]);
+								zv::Val r800;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_78, n786.raw(), "withIdentifier", "withidentifier", 14, 1, av799, r800.raw(), NULL))) return false;
+								zv::Val arr801 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+								zval av802[1];
+								ZVAL_COPY_VALUE(&av802[0], l_e.raw());
+								zend_class_entry *ce803 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce803 == NULL)) return false;
+								zv::Val r804;
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce803, "preparetrace", 12, 1, av802, r804.raw(), NULL))) return false;
+								{ zval v = r804.take(); zend_symtable_update(Z_ARRVAL_P(arr801.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r805;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_79, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r805.raw(), NULL))) return false;
+								{ zval v = r805.take(); zend_symtable_update(Z_ARRVAL_P(arr801.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av806[1];
+								ZVAL_COPY_VALUE(&av806[0], arr801.raw());
+								zv::Val r807;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_80, r800.raw(), "withMetadata", "withmetadata", 12, 1, av806, r807.raw(), NULL))) return false;
+								zv::Val o808 = zv::Val::copyOf(zv::Ref(r807.raw()));
+								zval *w809 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w809) <= IS_NULL) { zval_ptr_dtor(w809); array_init(w809); } else if (UNEXPECTED(Z_TYPE_P(w809) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w809);
+								{ zval v = o808.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w809), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
-							goto cont728;
+							goto cont732;
 						}
-						if (!caught739) return false;
+						if (!caught752 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)) || pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference", 63)))) {
+							caught752 = true;
+							zval exception;
+							ZVAL_OBJ_COPY(&exception, thrown);
+							zend_clear_exception();
+							l_e = zv::Val::copyOf(zv::Ref(&exception));
+							zval_ptr_dtor(&exception);
+							 {
+								zv::Val r811;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_81, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r811.raw(), NULL))) return false;
+								pgrt::StringBuilder sb812;
+								sb812.appendLiteral("Reflection error: ", 18);
+								if (UNEXPECTED(!sb812.append(r811.raw()))) return false;
+								zv::Val r813 = sb812.finish();
+								zval *p814 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
+								if (UNEXPECTED(p814 == NULL)) return false;
+								zv::Val o815 = zv::Val::copyOf(zv::Ref(p814));
+								zv::Val r816;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_82, p_node, "getStartLine", "getstartline", 12, 0, NULL, r816.raw(), NULL))) return false;
+								zval av817[4];
+								ZVAL_COPY_VALUE(&av817[0], r813.raw());
+								ZVAL_COPY_VALUE(&av817[1], o815.raw());
+								zval z818;
+								ZVAL_LONG(&z818, Z_LVAL_P(r816.raw()));
+								ZVAL_COPY_VALUE(&av817[2], &z818);
+								ZVAL_COPY_VALUE(&av817[3], l_e.raw());
+								zend_class_entry *ce819 = pgrt::lookupClass(pg_site_35, "PHPStan\\Analyser\\Error", 22);
+								if (UNEXPECTED(ce819 == NULL)) return false;
+								zv::Val n810;
+								if (UNEXPECTED(!pgrt::newObject(ce819, 4, av817, n810.raw(), NULL))) return false;
+								zval av820[1];
+								ZVAL_COPY_VALUE(&av820[0], &pg_lit[4]);
+								zv::Val r821;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_83, n810.raw(), "withIdentifier", "withidentifier", 14, 1, av820, r821.raw(), NULL))) return false;
+								zv::Val arr822 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+								zval av823[1];
+								ZVAL_COPY_VALUE(&av823[0], l_e.raw());
+								zend_class_entry *ce824 = pgrt::lookupClass(pg_site_37, "PHPStan\\Analyser\\InternalError", 30);
+								if (UNEXPECTED(ce824 == NULL)) return false;
+								zv::Val r825;
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce824, "preparetrace", 12, 1, av823, r825.raw(), NULL))) return false;
+								{ zval v = r825.take(); zend_symtable_update(Z_ARRVAL_P(arr822.raw()), Z_STR_P(&pg_lit[1]), &v); }
+								zv::Val r826;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_84, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r826.raw(), NULL))) return false;
+								{ zval v = r826.take(); zend_symtable_update(Z_ARRVAL_P(arr822.raw()), Z_STR_P(&pg_lit[2]), &v); }
+								zval av827[1];
+								ZVAL_COPY_VALUE(&av827[0], arr822.raw());
+								zv::Val r828;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_85, r821.raw(), "withMetadata", "withmetadata", 12, 1, av827, r828.raw(), NULL))) return false;
+								zv::Val o829 = zv::Val::copyOf(zv::Ref(r828.raw()));
+								zval *w830 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileErrors)).deref().raw();
+								if (Z_TYPE_P(w830) <= IS_NULL) { zval_ptr_dtor(w830); array_init(w830); } else if (UNEXPECTED(Z_TYPE_P(w830) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w830);
+								{ zval v = o829.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w830), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+							}
+							goto cont732;
+						}
+						if (!caught752) return false;
 					}
 					}
 				}
 				 {
 					if (Z_TYPE_P(l_collectedData.raw()) == IS_NULL) {
-						goto cont728;
+						goto cont732;
 					}
 				}
 				 {
-					zv::Val o818 = zv::Val::copyOf(zv::Ref(l_collectedData.raw()));
-					zv::Val o819 = zv::Val::copyOf(zv::Ref(o818.raw()));
-					zv::Val r821;
-					if (UNEXPECTED(!pgrt::getClass(l_collector, r821.raw()))) return false;
-					zv::Val o823 = zv::Val::copyOf(zv::Ref(p_scope));
-					zv::Val r824;
-					zend_class_entry *rc825 = Z_TYPE_P(o823.raw()) == IS_OBJECT ? Z_OBJCE_P(o823.raw()) : NULL;
-					if (rc825 == pt_ce_mutating_scope) {
-						r824 = pt_mutating_scope_get_file(Z_OBJ_P(o823.raw()));
-						if (UNEXPECTED(r824.isUndef())) return false;
+					zv::Val o831 = zv::Val::copyOf(zv::Ref(l_collectedData.raw()));
+					zv::Val o832 = zv::Val::copyOf(zv::Ref(o831.raw()));
+					zv::Val r834;
+					if (UNEXPECTED(!pgrt::getClass(l_collector, r834.raw()))) return false;
+					zv::Val o836 = zv::Val::copyOf(zv::Ref(p_scope));
+					zv::Val r837;
+					zend_class_entry *rc838 = Z_TYPE_P(o836.raw()) == IS_OBJECT ? Z_OBJCE_P(o836.raw()) : NULL;
+					if (rc838 == pt_ce_mutating_scope) {
+						r837 = pt_mutating_scope_get_file(Z_OBJ_P(o836.raw()));
+						if (UNEXPECTED(r837.isUndef())) return false;
 					}
-					else if (rc825 == pt_ce_node_callback_scope) {
-						r824 = pt_mutating_scope_get_file(Z_OBJ_P(o823.raw()));
-						if (UNEXPECTED(r824.isUndef())) return false;
+					else if (rc838 == pt_ce_node_callback_scope) {
+						r837 = pt_mutating_scope_get_file(Z_OBJ_P(o836.raw()));
+						if (UNEXPECTED(r837.isUndef())) return false;
 					}
 					else {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_86, o823.raw(), "getFile", "getfile", 7, 0, NULL, r824.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_86, o836.raw(), "getFile", "getfile", 7, 0, NULL, r837.raw()))) return false;
 					}
-					zval *w826 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileCollectedData)).deref().raw();
-					if (Z_TYPE_P(w826) <= IS_NULL) { zval_ptr_dtor(w826); array_init(w826); } else if (UNEXPECTED(Z_TYPE_P(w826) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w826);
-					zval *w822;
-					w822 = pgrt::dimWrite(w826, r824.raw());
-					if (UNEXPECTED(w822 == NULL)) return false;
-					ZVAL_DEREF(w822);
-					if (Z_TYPE_P(w822) <= IS_NULL) { zval_ptr_dtor(w822); array_init(w822); } else if (UNEXPECTED(Z_TYPE_P(w822) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w822);
-					zval *w820;
-					w820 = pgrt::dimWrite(w822, r821.raw());
-					if (UNEXPECTED(w820 == NULL)) return false;
-					ZVAL_DEREF(w820);
-					if (Z_TYPE_P(w820) <= IS_NULL) { zval_ptr_dtor(w820); array_init(w820); } else if (UNEXPECTED(Z_TYPE_P(w820) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w820);
-					{ zval v = o819.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w820), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zval *w839 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::fileCollectedData)).deref().raw();
+					if (Z_TYPE_P(w839) <= IS_NULL) { zval_ptr_dtor(w839); array_init(w839); } else if (UNEXPECTED(Z_TYPE_P(w839) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w839);
+					zval *w835;
+					w835 = pgrt::dimWrite(w839, r837.raw());
+					if (UNEXPECTED(w835 == NULL)) return false;
+					ZVAL_DEREF(w835);
+					if (Z_TYPE_P(w835) <= IS_NULL) { zval_ptr_dtor(w835); array_init(w835); } else if (UNEXPECTED(Z_TYPE_P(w835) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w835);
+					zval *w833;
+					w833 = pgrt::dimWrite(w835, r834.raw());
+					if (UNEXPECTED(w833 == NULL)) return false;
+					ZVAL_DEREF(w833);
+					if (Z_TYPE_P(w833) <= IS_NULL) { zval_ptr_dtor(w833); array_init(w833); } else if (UNEXPECTED(Z_TYPE_P(w833) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w833);
+					{ zval v = o832.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w833), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
-			cont728:;
-			if (UNEXPECTED(!it726.next())) return false;
+			cont732:;
+			if (UNEXPECTED(!it730.next())) return false;
 		}
 		if (UNEXPECTED(EG(exception))) return false;
 	}
 	 {
-		zval *is828 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::exportableByNodeType)).deref().raw();
-		if (Z_ISUNDEF_P(is828)) is828 = NULL;
-		zv::Val o829 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-		zv::Val ist830;
-		zval *is827 = is828 == NULL ? NULL : pgrt::dimIs(is828, o829.raw(), ist830.raw());
+		zval *is841 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileAnalyserCallback::slot::exportableByNodeType)).deref().raw();
+		if (Z_ISUNDEF_P(is841)) is841 = NULL;
+		zv::Val o842 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+		zv::Val ist843;
+		zval *is840 = is841 == NULL ? NULL : pgrt::dimIs(is841, o842.raw(), ist843.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca831;
-		if (is827 != NULL && Z_TYPE_P(is827) > IS_NULL) {
-			ca831 = zv::Val::copyOf(zv::Ref(is827));
+		zv::Val ca844;
+		if (is840 != NULL && Z_TYPE_P(is840) > IS_NULL) {
+			ca844 = zv::Val::copyOf(zv::Ref(is840));
 		} else {
 		 {
-			zv::Val o832 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
-			zval *p833 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::dependencyResolver, "dependencyResolver");
-			if (UNEXPECTED(p833 == NULL)) return false;
-			zval av834[1];
-			ZVAL_COPY_VALUE(&av834[0], p_node);
-			zv::Val r835;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_87, p833, "canExportNode", "canexportnode", 13, 1, av834, r835.raw(), NULL))) return false;
-			bool k836 = (Z_TYPE_P(r835.raw()) == IS_TRUE);
-			zval z838;
-			ZVAL_BOOL(&z838, k836);
-			zv::Val o837 = zv::Val::copyOf(zv::Ref(&z838));
-			zval *w839 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::exportableByNodeType)).deref().raw();
-			if (Z_TYPE_P(w839) <= IS_NULL) { zval_ptr_dtor(w839); array_init(w839); } else if (UNEXPECTED(Z_TYPE_P(w839) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w839);
-			zval *e840 = pgrt::dimWrite(w839, o832.raw());
-			if (UNEXPECTED(e840 == NULL)) return false;
-			zv::Ref(e840).assign(std::move(o837));
-			zval z841;
-			ZVAL_BOOL(&z841, k836);
-			ca831 = zv::Val::copyOf(zv::Ref(&z841));
+			zv::Val o845 = zv::Val::copyOf(zv::Ref(l_nodeType.raw()));
+			zval *p846 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::dependencyResolver, "dependencyResolver");
+			if (UNEXPECTED(p846 == NULL)) return false;
+			bool r847;
+			if (UNEXPECTED(!pgen::DependencyResolver::m_canExportNode(Z_OBJ_P(p846), p_node, &r847))) return false;
+			bool k848 = r847;
+			zval z850;
+			ZVAL_BOOL(&z850, k848);
+			zv::Val o849 = zv::Val::copyOf(zv::Ref(&z850));
+			zval *w851 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::exportableByNodeType)).deref().raw();
+			if (Z_TYPE_P(w851) <= IS_NULL) { zval_ptr_dtor(w851); array_init(w851); } else if (UNEXPECTED(Z_TYPE_P(w851) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w851);
+			zval *e852 = pgrt::dimWrite(w851, o845.raw());
+			if (UNEXPECTED(e852 == NULL)) return false;
+			zv::Ref(e852).assign(std::move(o849));
+			zval z853;
+			ZVAL_BOOL(&z853, k848);
+			ca844 = zv::Val::copyOf(zv::Ref(&z853));
 		}
 		}
-		if (!(zend_is_true(ca831.raw()))) {
+		if (!(zend_is_true(ca844.raw()))) {
 			 {
 				return true;
 			}
@@ -4793,55 +4876,52 @@ namespace pgen::FileAnalyserCallback {
 	 {
 		 {
 			 {
-				zval *p843 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::dependencyResolver, "dependencyResolver");
-				if (UNEXPECTED(p843 == NULL)) goto catch_c842;
-				zval av844[2];
-				ZVAL_COPY_VALUE(&av844[0], p_node);
-				ZVAL_COPY_VALUE(&av844[1], p_scope);
-				zv::Val r845;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_88, p843, "resolveExportedNode", "resolveexportednode", 19, 2, av844, r845.raw(), NULL))) goto catch_c842;
-				l_exportedNode = std::move(r845);
+				zval *p855 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::dependencyResolver, "dependencyResolver");
+				if (UNEXPECTED(p855 == NULL)) goto catch_c854;
+				zv::Val r856;
+				if (UNEXPECTED(!pgen::DependencyResolver::m_resolveExportedNode(Z_OBJ_P(p855), p_node, p_scope, r856.raw()))) goto catch_c854;
+				l_exportedNode = std::move(r856);
 			}
 			 {
 				if (!(Z_TYPE_P(l_exportedNode.raw()) == IS_NULL)) {
 					 {
-						zv::Val o846 = zv::Val::copyOf(zv::Ref(l_exportedNode.raw()));
-						zv::Val o847 = zv::Val::copyOf(zv::Ref(o846.raw()));
-						zval *w848 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::exportedNodes)).deref().raw();
-						if (Z_TYPE_P(w848) <= IS_NULL) { zval_ptr_dtor(w848); array_init(w848); } else if (UNEXPECTED(Z_TYPE_P(w848) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c842; }
-						SEPARATE_ARRAY(w848);
-						{ zval v = o847.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w848), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); goto catch_c842; } }
+						zv::Val o857 = zv::Val::copyOf(zv::Ref(l_exportedNode.raw()));
+						zv::Val o858 = zv::Val::copyOf(zv::Ref(o857.raw()));
+						zval *w859 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::exportedNodes)).deref().raw();
+						if (Z_TYPE_P(w859) <= IS_NULL) { zval_ptr_dtor(w859); array_init(w859); } else if (UNEXPECTED(Z_TYPE_P(w859) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c854; }
+						SEPARATE_ARRAY(w859);
+						{ zval v = o858.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w859), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); goto catch_c854; } }
 					}
 				}
 			}
 		}
 		if (false) {
-		catch_c842:
+		catch_c854:
 		 {
 			zend_object *thrown = EG(exception);
-			bool caught849 = false;
-			if (!caught849 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
-				caught849 = true;
+			bool caught860 = false;
+			if (!caught860 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\AnalysedCodeException", 29)))) {
+				caught860 = true;
 				zval exception;
 				ZVAL_OBJ_COPY(&exception, thrown);
 				zend_clear_exception();
 				zval_ptr_dtor(&exception);
 			}
-			if (!caught849 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-				caught849 = true;
+			if (!caught860 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+				caught860 = true;
 				zval exception;
 				ZVAL_OBJ_COPY(&exception, thrown);
 				zend_clear_exception();
 				zval_ptr_dtor(&exception);
 			}
-			if (!caught849 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)))) {
-				caught849 = true;
+			if (!caught860 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_49, "PHPStan\\BetterReflection\\NodeCompiler\\Exception\\UnableToCompileNode", 67)))) {
+				caught860 = true;
 				zval exception;
 				ZVAL_OBJ_COPY(&exception, thrown);
 				zend_clear_exception();
 				zval_ptr_dtor(&exception);
 			}
-			if (!caught849) return false;
+			if (!caught860) return false;
 		}
 		}
 	}
@@ -4881,7 +4961,7 @@ namespace pgen::FileAnalyserCallback {
 		zval arr9_raw;
 		ZVAL_EMPTY_ARRAY(&arr9_raw);
 		zv::Val r10;
-		if (UNEXPECTED(!pgrt::nodeGetAttribute(pg_site_89, zv::Ref(e6).deref().raw(), &pg_lit[5], &arr9_raw, r10.raw()))) return false;
+		if (UNEXPECTED(!pgrt::nodeGetAttribute(pg_site_87, zv::Ref(e6).deref().raw(), &pg_lit[5], &arr9_raw, r10.raw()))) return false;
 		if (UNEXPECTED(!(Z_TYPE_P(r10.raw()) == IS_ARRAY))) { pgrt::throwReturnType("PHPStan\\Analyser\\FileAnalyserCallback::getLinesToIgnoreFromTokens", "array", r10.raw()); return false; }
 		*ret = r10.take();
 		return true;
@@ -5028,11 +5108,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileAnalyserCallback)
 			Z_PARAM_ZVAL(p_dependencyResolver)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
-		if (p_ruleRegistry != NULL && UNEXPECTED(Z_TYPE_P(p_ruleRegistry) != IS_OBJECT || !pgrt::instanceOfClass(p_ruleRegistry, pgrt::lookupClassQuiet(pg_site_90, "PHPStan\\Rules\\Registry", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Registry", zend_zval_value_name(p_ruleRegistry)); RETURN_THROWS(); }
-		if (p_collectorRegistry != NULL && UNEXPECTED(Z_TYPE_P(p_collectorRegistry) != IS_OBJECT || !pgrt::instanceOfClass(p_collectorRegistry, pgrt::lookupClassQuiet(pg_site_91, "PHPStan\\Collectors\\Registry", 27)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Collectors\\Registry", zend_zval_value_name(p_collectorRegistry)); RETURN_THROWS(); }
-		if (p_parser != NULL && UNEXPECTED(Z_TYPE_P(p_parser) != IS_OBJECT || !pgrt::instanceOfClass(p_parser, pgrt::lookupClassQuiet(pg_site_92, "PHPStan\\Parser\\Parser", 21)))) { zend_argument_type_error(7, "must be of type %s, %s given", "PHPStan\\Parser\\Parser", zend_zval_value_name(p_parser)); RETURN_THROWS(); }
-		if (p_ruleErrorTransformer != NULL && UNEXPECTED(Z_TYPE_P(p_ruleErrorTransformer) != IS_OBJECT || !pgrt::instanceOfClass(p_ruleErrorTransformer, pgrt::lookupClassQuiet(pg_site_93, "PHPStan\\Analyser\\RuleErrorTransformer", 37)))) { zend_argument_type_error(8, "must be of type %s, %s given", "PHPStan\\Analyser\\RuleErrorTransformer", zend_zval_value_name(p_ruleErrorTransformer)); RETURN_THROWS(); }
-		if (p_dependencyResolver != NULL && UNEXPECTED(Z_TYPE_P(p_dependencyResolver) != IS_OBJECT || !pgrt::instanceOfClass(p_dependencyResolver, pgrt::lookupClassQuiet(pg_site_94, "PHPStan\\Dependency\\DependencyResolver", 37)))) { zend_argument_type_error(10, "must be of type %s, %s given", "PHPStan\\Dependency\\DependencyResolver", zend_zval_value_name(p_dependencyResolver)); RETURN_THROWS(); }
+		if (p_ruleRegistry != NULL && UNEXPECTED(Z_TYPE_P(p_ruleRegistry) != IS_OBJECT || !pgrt::instanceOfClass(p_ruleRegistry, pgrt::lookupClassQuiet(pg_site_88, "PHPStan\\Rules\\Registry", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Registry", zend_zval_value_name(p_ruleRegistry)); RETURN_THROWS(); }
+		if (p_collectorRegistry != NULL && UNEXPECTED(Z_TYPE_P(p_collectorRegistry) != IS_OBJECT || !pgrt::instanceOfClass(p_collectorRegistry, pgrt::lookupClassQuiet(pg_site_89, "PHPStan\\Collectors\\Registry", 27)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Collectors\\Registry", zend_zval_value_name(p_collectorRegistry)); RETURN_THROWS(); }
+		if (p_parser != NULL && UNEXPECTED(Z_TYPE_P(p_parser) != IS_OBJECT || !pgrt::instanceOfClass(p_parser, pgrt::lookupClassQuiet(pg_site_90, "PHPStan\\Parser\\Parser", 21)))) { zend_argument_type_error(7, "must be of type %s, %s given", "PHPStan\\Parser\\Parser", zend_zval_value_name(p_parser)); RETURN_THROWS(); }
+		if (p_ruleErrorTransformer != NULL && UNEXPECTED(Z_TYPE_P(p_ruleErrorTransformer) != IS_OBJECT || !pgrt::instanceOfClass(p_ruleErrorTransformer, pgrt::lookupClassQuiet(pg_site_91, "PHPStan\\Analyser\\RuleErrorTransformer", 37)))) { zend_argument_type_error(8, "must be of type %s, %s given", "PHPStan\\Analyser\\RuleErrorTransformer", zend_zval_value_name(p_ruleErrorTransformer)); RETURN_THROWS(); }
+		if (p_dependencyResolver != NULL && UNEXPECTED(Z_TYPE_P(p_dependencyResolver) != IS_OBJECT || !((Z_TYPE_P(p_dependencyResolver) == IS_OBJECT && Z_OBJCE_P(p_dependencyResolver) == pt_ce_dependency_resolver) || pgrt::instanceOfClass(p_dependencyResolver, pgrt::lookupClassQuiet(pg_site_92, "PHPStan\\Dependency\\DependencyResolver", 37))))) { zend_argument_type_error(10, "must be of type %s, %s given", "PHPStan\\Dependency\\DependencyResolver", zend_zval_value_name(p_dependencyResolver)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m___construct(Z_OBJ_P(ZEND_THIS), p_file, p_ruleRegistry, p_collectorRegistry, p_outerNodeCallback, p_parserNodes, p_ignoreErrorExtensions, p_parser, p_ruleErrorTransformer, p_processedFiles, p_dependencyResolver))) RETURN_THROWS();
 	});
 	cls.method(sigs::__invoke, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::__invoke() */
@@ -5042,7 +5122,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileAnalyserCallback)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_95, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_93, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m___invoke(Z_OBJ_P(ZEND_THIS), p_node, p_scope))) RETURN_THROWS();
 	});

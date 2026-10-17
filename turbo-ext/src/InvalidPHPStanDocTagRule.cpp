@@ -31,16 +31,11 @@ static pgrt::PropSite pg_site_18; /* prop_name_18 */
 static pgrt::FunctionSite pg_site_19; /* function_str_starts_with */
 static pgrt::PropSite pg_site_20; /* prop_name_20 */
 static pgrt::PropSite pg_site_21; /* prop_name_21 */
-static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_23; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pgrt::ClassSite pg_site_24; /* cls_PHPStan\PhpDocParser\Ast\Node */
-static pt_method_site pg_site_25; /* method_line_25 */
-static pt_method_site pg_site_26; /* method_identifier_26 */
-static pt_method_site pg_site_27; /* method_build_27 */
-static pgrt::ClassSite pg_site_28; /* cls_PHPStan\PhpDocParser\Lexer\Lexer */
-static pgrt::ClassSite pg_site_29; /* cls_PHPStan\PhpDocParser\Parser\PhpDocParser */
-static pgrt::ClassSite pg_site_30; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_31; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_22; /* cls_PHPStan\PhpDocParser\Ast\Node */
+static pgrt::ClassSite pg_site_23; /* cls_PHPStan\PhpDocParser\Lexer\Lexer */
+static pgrt::ClassSite pg_site_24; /* cls_PHPStan\PhpDocParser\Parser\PhpDocParser */
+static pgrt::ClassSite pg_site_25; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Analyser\Scope */
 
 static void pg_const_POSSIBLE_PHPSTAN_TAGS(zval *out)
 {
@@ -403,32 +398,22 @@ namespace pgen::InvalidPHPStanDocTagRule {
 					sb47.appendLiteral("Unknown PHPDoc tag: ", 20);
 					if (UNEXPECTED(!sb47.append(zv::Ref(p45).deref().raw()))) return false;
 					zv::Val r48 = sb47.finish();
-					zval av49[1];
-					ZVAL_COPY_VALUE(&av49[0], r48.raw());
-					zend_class_entry *ce50 = pgrt::lookupClass(pg_site_22, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-					if (UNEXPECTED(ce50 == NULL)) return false;
+					zv::Val r49;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r48.raw(), r49.raw()))) return false;
+					if (UNEXPECTED(!(pgrt::instanceOfClass(l_phpDocTag, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\PhpDocParser\\Ast\\Node", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\PhpDocLineHelper::detectLine", 2, "phpDocNode", "PHPStan\\PhpDocParser\\Ast\\Node", l_phpDocTag); return false; }
+					zend_long r50;
+					if (UNEXPECTED(!pgen::PhpDocLineHelper::m_detectLine(p_node, l_phpDocTag, &r50))) return false;
 					zv::Val r51;
-					if (UNEXPECTED(!pgrt::callStatic(pg_site_23, ce50, "message", 7, 1, av49, r51.raw(), NULL))) return false;
-					if (UNEXPECTED(!(pgrt::instanceOfClass(l_phpDocTag, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\PhpDocParser\\Ast\\Node", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\PhpDocLineHelper::detectLine", 2, "phpDocNode", "PHPStan\\PhpDocParser\\Ast\\Node", l_phpDocTag); return false; }
-					zend_long r52;
-					if (UNEXPECTED(!pgen::PhpDocLineHelper::m_detectLine(p_node, l_phpDocTag, &r52))) return false;
-					zval av53[1];
-					zval z54;
-					ZVAL_LONG(&z54, r52);
-					ZVAL_COPY_VALUE(&av53[0], &z54);
-					zv::Val r55;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_25, r51.raw(), "line", "line", 4, 1, av53, r55.raw(), NULL))) return false;
-					zval av56[1];
-					ZVAL_COPY_VALUE(&av56[0], &pg_lit[5]);
-					zv::Val r57;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_26, r55.raw(), "identifier", "identifier", 10, 1, av56, r57.raw(), NULL))) return false;
-					zv::Val r58;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_27, r57.raw(), "build", "build", 5, 0, NULL, r58.raw(), NULL))) return false;
-					zv::Val o59 = zv::Val::copyOf(zv::Ref(r58.raw()));
-					zval *w60 = zv::Ref(l_errors.raw()).deref().raw();
-					if (Z_TYPE_P(w60) <= IS_NULL) { zval_ptr_dtor(w60); array_init(w60); } else if (UNEXPECTED(Z_TYPE_P(w60) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w60);
-					{ zval v = o59.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w60), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r49.raw()), r50, r51.raw()))) return false;
+					zv::Val r52;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r51.raw()), &pg_lit[5], r52.raw()))) return false;
+					zv::Val r53;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r52.raw()), r53.raw()))) return false;
+					zv::Val o54 = zv::Val::copyOf(zv::Ref(r53.raw()));
+					zval *w55 = zv::Ref(l_errors.raw()).deref().raw();
+					if (Z_TYPE_P(w55) <= IS_NULL) { zval_ptr_dtor(w55); array_init(w55); } else if (UNEXPECTED(Z_TYPE_P(w55) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w55);
+					{ zval v = o54.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w55), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 			cont35:;
@@ -465,8 +450,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidPHPStanDocTagRule)
 			Z_PARAM_ZVAL(p_phpDocLexer)
 			Z_PARAM_ZVAL(p_phpDocParser)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_phpDocLexer != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocLexer) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocLexer, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\PhpDocParser\\Lexer\\Lexer", 32)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Lexer\\Lexer", zend_zval_value_name(p_phpDocLexer)); RETURN_THROWS(); }
-		if (p_phpDocParser != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocParser) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocParser, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\PhpDocParser\\Parser\\PhpDocParser", 40)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Parser\\PhpDocParser", zend_zval_value_name(p_phpDocParser)); RETURN_THROWS(); }
+		if (p_phpDocLexer != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocLexer) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocLexer, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\PhpDocParser\\Lexer\\Lexer", 32)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Lexer\\Lexer", zend_zval_value_name(p_phpDocLexer)); RETURN_THROWS(); }
+		if (p_phpDocParser != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocParser) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocParser, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\PhpDocParser\\Parser\\PhpDocParser", 40)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Parser\\PhpDocParser", zend_zval_value_name(p_phpDocParser)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::InvalidPHPStanDocTagRule::m___construct(Z_OBJ_P(ZEND_THIS), p_phpDocLexer, p_phpDocParser))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule::getNodeTypes() */
@@ -486,8 +471,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidPHPStanDocTagRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_25, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidPHPStanDocTagRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

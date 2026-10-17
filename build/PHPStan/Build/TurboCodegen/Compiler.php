@@ -595,6 +595,11 @@ final class Compiler
 		$this->closures = [];
 		$this->closureCount = 0;
 
+		if ($unit->reflection->getTraitNames() !== [] && !str_contains($this->generatedHeader($unit->stem), 'inline void registerTraits(')) {
+			// the methods a trait adds are not compiled into the class
+			throw new CompileError(sprintf('%s uses a trait without a hand-written registrar', $unit->className));
+		}
+
 		$bodies = [];
 		foreach ($unit->methods as $method) {
 			if ($method->node->isAbstract()) {
@@ -2856,7 +2861,7 @@ final class Compiler
 			$ptr = $this->issetPtr($f, $expr->left);
 			$t = $f->temp('q');
 			$f->line(sprintf('zv::Val %s;', $t));
-			$f->open(sprintf('if (%s != NULL && Z_TYPE_P(%s) > IS_NULL)', $ptr, $ptr));
+			$f->open(sprintf('if (%s)', $this->setCheck($ptr)));
 			$f->line(sprintf('%s = zv::Val::copyOf(zv::Ref(%s));', $t, $ptr));
 			$f->close(' else {');
 			$f->open('');
@@ -2907,7 +2912,7 @@ final class Compiler
 			$checks = [];
 			foreach ($expr->vars as $var) {
 				$ptr = $this->issetPtr($f, $var);
-				$checks[] = sprintf('(%s != NULL && Z_TYPE_P(%s) > IS_NULL)', $ptr, $ptr);
+				$checks[] = sprintf('(%s)', $this->setCheck($ptr));
 			}
 			return Value::bool(implode(' && ', $checks));
 		}
@@ -3570,7 +3575,7 @@ final class Compiler
 		$ptr = $this->issetPtr($f, $target);
 		$t = $f->temp('ca');
 		$f->line(sprintf('zv::Val %s;', $t));
-		$f->open(sprintf('if (%s != NULL && Z_TYPE_P(%s) > IS_NULL)', $ptr, $ptr));
+		$f->open(sprintf('if (%s)', $this->setCheck($ptr)));
 		$f->line(sprintf('%s = zv::Val::copyOf(zv::Ref(%s));', $t, $ptr));
 		$f->close(' else {');
 		$f->open('');
@@ -3947,6 +3952,16 @@ final class Compiler
 		// any other expression is evaluated: it is set when it is not null
 		$value = $this->stabilize($f, $this->expr($f, $expr));
 		return $this->asZval($f, $value);
+	}
+
+	/** isset() of an issetPtr(): set and not null (the address of a temporary is never NULL) */
+	private function setCheck(string $ptr): string
+	{
+		if (str_starts_with($ptr, '&')) {
+			return sprintf('Z_TYPE_P(%s) > IS_NULL', $ptr);
+		}
+
+		return sprintf('%s != NULL && Z_TYPE_P(%s) > IS_NULL', $ptr, $ptr);
 	}
 
 	private function identical(FunctionContext $f, Value $left, Value $right, Expr $leftExpr, Expr $rightExpr): string

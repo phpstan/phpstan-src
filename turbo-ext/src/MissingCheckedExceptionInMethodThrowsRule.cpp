@@ -17,15 +17,10 @@ static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_5; /* method_getDeclaringClass_5 */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
 static pt_method_site pg_site_7; /* method_getName_7 */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_9; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_10; /* method_getStartLine_10 */
-static pt_method_site pg_site_11; /* method_line_11 */
-static pt_method_site pg_site_12; /* method_identifier_12 */
-static pt_method_site pg_site_13; /* method_build_13 */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Rules\Exceptions\MissingCheckedExceptionInThrowsCheck */
-static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_8; /* method_getStartLine_8 */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\Exceptions\MissingCheckedExceptionInThrowsCheck */
+static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::MissingCheckedExceptionInMethodThrowsRule {
 
@@ -202,29 +197,22 @@ namespace pgen::MissingCheckedExceptionInMethodThrowsRule {
 					if (UNEXPECTED(!sb30.append(l_className.raw()))) return false;
 					sb30.appendLiteral(" but it's missing from the PHPDoc @throws tag.", 46);
 					zv::Val r31 = sb30.finish();
-					zval av32[1];
-					ZVAL_COPY_VALUE(&av32[0], r31.raw());
-					zend_class_entry *ce33 = pgrt::lookupClass(pg_site_8, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-					if (UNEXPECTED(ce33 == NULL)) return false;
+					zv::Val r32;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r31.raw(), r32.raw()))) return false;
+					zv::Val r33;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_throwPointNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r33.raw(), NULL))) return false;
+					if (UNEXPECTED(Z_TYPE_P(r33.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r33.raw()); return false; }
 					zv::Val r34;
-					if (UNEXPECTED(!pgrt::callStatic(pg_site_9, ce33, "message", 7, 1, av32, r34.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r32.raw()), Z_LVAL_P(r33.raw()), r34.raw()))) return false;
 					zv::Val r35;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_throwPointNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r35.raw(), NULL))) return false;
-					zval av36[1];
-					ZVAL_COPY_VALUE(&av36[0], r35.raw());
-					zv::Val r37;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, r34.raw(), "line", "line", 4, 1, av36, r37.raw(), NULL))) return false;
-					zval av38[1];
-					ZVAL_COPY_VALUE(&av38[0], &pg_lit[1]);
-					zv::Val r39;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r37.raw(), "identifier", "identifier", 10, 1, av38, r39.raw(), NULL))) return false;
-					zv::Val r40;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r39.raw(), "build", "build", 5, 0, NULL, r40.raw(), NULL))) return false;
-					zv::Val o41 = zv::Val::copyOf(zv::Ref(r40.raw()));
-					zval *w42 = zv::Ref(l_errors.raw()).deref().raw();
-					if (Z_TYPE_P(w42) <= IS_NULL) { zval_ptr_dtor(w42); array_init(w42); } else if (UNEXPECTED(Z_TYPE_P(w42) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w42);
-					{ zval v = o41.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w42), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r34.raw()), &pg_lit[1], r35.raw()))) return false;
+					zv::Val r36;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r35.raw()), r36.raw()))) return false;
+					zv::Val o37 = zv::Val::copyOf(zv::Ref(r36.raw()));
+					zval *w38 = zv::Ref(l_errors.raw()).deref().raw();
+					if (Z_TYPE_P(w38) <= IS_NULL) { zval_ptr_dtor(w38); array_init(w38); } else if (UNEXPECTED(Z_TYPE_P(w38) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w38);
+					{ zval v = o37.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w38), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 		}
@@ -253,7 +241,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingCheckedExceptionInMethodThrowsR
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_check)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_check != NULL && UNEXPECTED(Z_TYPE_P(p_check) != IS_OBJECT || !((Z_TYPE_P(p_check) == IS_OBJECT && Z_OBJCE_P(p_check) == pt_ce_missing_checked_exception_in_throws_check) || pgrt::instanceOfClass(p_check, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\Exceptions\\MissingCheckedExceptionInThrowsCheck", 61))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Exceptions\\MissingCheckedExceptionInThrowsCheck", zend_zval_value_name(p_check)); RETURN_THROWS(); }
+		if (p_check != NULL && UNEXPECTED(Z_TYPE_P(p_check) != IS_OBJECT || !((Z_TYPE_P(p_check) == IS_OBJECT && Z_OBJCE_P(p_check) == pt_ce_missing_checked_exception_in_throws_check) || pgrt::instanceOfClass(p_check, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Rules\\Exceptions\\MissingCheckedExceptionInThrowsCheck", 61))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Exceptions\\MissingCheckedExceptionInThrowsCheck", zend_zval_value_name(p_check)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::MissingCheckedExceptionInMethodThrowsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_check))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule::getNodeType() */
@@ -268,8 +256,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingCheckedExceptionInMethodThrowsR
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MissingCheckedExceptionInMethodThrowsRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

@@ -14,12 +14,8 @@ static pt_method_site pg_site_1; /* method_isEnum_1 */
 static pt_method_site pg_site_2; /* method_getTemplateTags_2 */
 static pgrt::FunctionSite pg_site_3; /* function_count */
 static pt_method_site pg_site_4; /* method_getDisplayName_4 */
-static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_6; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_7; /* method_identifier_7 */
-static pt_method_site pg_site_8; /* method_build_8 */
-static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::EnumTemplateTypeRule {
 
@@ -127,19 +123,13 @@ namespace pgen::EnumTemplateTypeRule {
 		if (UNEXPECTED(!sb15.append(q12.raw()))) return false;
 		sb15.appendLiteral(" but enums cannot be generic.", 29);
 		zv::Val r16 = sb15.finish();
-		zval av17[1];
-		ZVAL_COPY_VALUE(&av17[0], r16.raw());
-		zend_class_entry *ce18 = pgrt::lookupClass(pg_site_5, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce18 == NULL)) return false;
+		zv::Val r17;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r16.raw(), r17.raw()))) return false;
+		zv::Val r18;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r17.raw()), &pg_lit[3], r18.raw()))) return false;
 		zv::Val r19;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_6, ce18, "message", 7, 1, av17, r19.raw(), NULL))) return false;
-		zval av20[1];
-		ZVAL_COPY_VALUE(&av20[0], &pg_lit[3]);
-		zv::Val r21;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r19.raw(), "identifier", "identifier", 10, 1, av20, r21.raw(), NULL))) return false;
-		zv::Val r22;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r21.raw(), "build", "build", 5, 0, NULL, r22.raw(), NULL))) return false;
-		{ zval v = r22.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr10.raw()), &v); }
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r18.raw()), r19.raw()))) return false;
+		{ zval v = r19.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr10.raw()), &v); }
 		*ret = arr10.take();
 		return true;
 	}
@@ -171,8 +161,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_EnumTemplateTypeRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::EnumTemplateTypeRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

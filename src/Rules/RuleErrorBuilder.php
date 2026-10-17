@@ -11,11 +11,13 @@ use function count;
 use function implode;
 use function is_file;
 use function sprintf;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @api
  * @template-covariant T of RuleError
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/RuleErrorBuilder.cpp')]
 final class RuleErrorBuilder
 {
 

@@ -19,14 +19,10 @@ static pt_method_site pg_site_6; /* method_getFileName_6 */
 static pt_method_site pg_site_7; /* method_getRelativePath_7 */
 static pt_method_site pg_site_8; /* method_getStartLine_8 */
 static pgrt::FunctionSite pg_site_9; /* function_array_map */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_11; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_12; /* method_identifier_12 */
-static pt_method_site pg_site_13; /* method_build_13 */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\BetterReflection\Reflector\Reflector */
-static pgrt::ClassSite pg_site_15; /* cls_PHPStan\File\RelativePathHelper */
-static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\BetterReflection\Reflector\Reflector */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\File\RelativePathHelper */
+static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\Scope */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -282,19 +278,13 @@ namespace pgen::DuplicateFunctionDeclarationRule {
 		sb50.appendLiteral(" declared multiple times:\012", 26);
 		if (UNEXPECTED(!sb50.append(r49.raw()))) return false;
 		zv::Val r51 = sb50.finish();
-		zval av52[1];
-		ZVAL_COPY_VALUE(&av52[0], r51.raw());
-		zend_class_entry *ce53 = pgrt::lookupClass(pg_site_10, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce53 == NULL)) return false;
+		zv::Val r52;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r51.raw(), r52.raw()))) return false;
+		zv::Val r53;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r52.raw()), &pg_lit[3], r53.raw()))) return false;
 		zv::Val r54;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_11, ce53, "message", 7, 1, av52, r54.raw(), NULL))) return false;
-		zval av55[1];
-		ZVAL_COPY_VALUE(&av55[0], &pg_lit[3]);
-		zv::Val r56;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r54.raw(), "identifier", "identifier", 10, 1, av55, r56.raw(), NULL))) return false;
-		zv::Val r57;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r56.raw(), "build", "build", 5, 0, NULL, r57.raw(), NULL))) return false;
-		{ zval v = r57.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr40.raw()), &v); }
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r53.raw()), r54.raw()))) return false;
+		{ zval v = r54.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr40.raw()), &v); }
 		*ret = arr40.take();
 		return true;
 	}
@@ -321,8 +311,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DuplicateFunctionDeclarationRule)
 			Z_PARAM_ZVAL(p_reflector)
 			Z_PARAM_ZVAL(p_relativePathHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_reflector != NULL && UNEXPECTED(Z_TYPE_P(p_reflector) != IS_OBJECT || !pgrt::instanceOfClass(p_reflector, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\BetterReflection\\Reflector\\Reflector", 44)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\BetterReflection\\Reflector\\Reflector", zend_zval_value_name(p_reflector)); RETURN_THROWS(); }
-		if (p_relativePathHelper != NULL && UNEXPECTED(Z_TYPE_P(p_relativePathHelper) != IS_OBJECT || !pgrt::instanceOfClass(p_relativePathHelper, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\File\\RelativePathHelper", 31)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\File\\RelativePathHelper", zend_zval_value_name(p_relativePathHelper)); RETURN_THROWS(); }
+		if (p_reflector != NULL && UNEXPECTED(Z_TYPE_P(p_reflector) != IS_OBJECT || !pgrt::instanceOfClass(p_reflector, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\BetterReflection\\Reflector\\Reflector", 44)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\BetterReflection\\Reflector\\Reflector", zend_zval_value_name(p_reflector)); RETURN_THROWS(); }
+		if (p_relativePathHelper != NULL && UNEXPECTED(Z_TYPE_P(p_relativePathHelper) != IS_OBJECT || !pgrt::instanceOfClass(p_relativePathHelper, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\File\\RelativePathHelper", 31)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\File\\RelativePathHelper", zend_zval_value_name(p_relativePathHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::DuplicateFunctionDeclarationRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflector, p_relativePathHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\DuplicateFunctionDeclarationRule::getNodeType() */
@@ -337,8 +327,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DuplicateFunctionDeclarationRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DuplicateFunctionDeclarationRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

@@ -20,13 +20,8 @@ static pt_method_site pg_site_7; /* method_isInterface_7 */
 static pt_method_site pg_site_8; /* method_getDeclaringClass_8 */
 static pt_method_site pg_site_9; /* method_getDisplayName_9 */
 static pt_method_site pg_site_10; /* method_getName_10 */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_12; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_13; /* method_identifier_13 */
-static pt_method_site pg_site_14; /* method_nonIgnorable_14 */
-static pt_method_site pg_site_15; /* method_build_15 */
-static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::AbstractPrivateMethodRule {
 
@@ -240,21 +235,15 @@ namespace pgen::AbstractPrivateMethodRule {
 		if (UNEXPECTED(!sb30.append(r29.raw()))) return false;
 		sb30.appendLiteral("() cannot be abstract.", 22);
 		zv::Val r31 = sb30.finish();
-		zval av32[1];
-		ZVAL_COPY_VALUE(&av32[0], r31.raw());
-		zend_class_entry *ce33 = pgrt::lookupClass(pg_site_11, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce33 == NULL)) return false;
+		zv::Val r32;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r31.raw(), r32.raw()))) return false;
+		zv::Val r33;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r32.raw()), &pg_lit[1], r33.raw()))) return false;
 		zv::Val r34;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_12, ce33, "message", 7, 1, av32, r34.raw(), NULL))) return false;
-		zval av35[1];
-		ZVAL_COPY_VALUE(&av35[0], &pg_lit[1]);
-		zv::Val r36;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r34.raw(), "identifier", "identifier", 10, 1, av35, r36.raw(), NULL))) return false;
-		zv::Val r37;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r36.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r37.raw(), NULL))) return false;
-		zv::Val r38;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r37.raw(), "build", "build", 5, 0, NULL, r38.raw(), NULL))) return false;
-		{ zval v = r38.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr25.raw()), &v); }
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(r33.raw()), r34.raw()))) return false;
+		zv::Val r35;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r34.raw()), r35.raw()))) return false;
+		{ zval v = r35.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr25.raw()), &v); }
 		*ret = arr25.take();
 		return true;
 	}
@@ -284,8 +273,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AbstractPrivateMethodRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AbstractPrivateMethodRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

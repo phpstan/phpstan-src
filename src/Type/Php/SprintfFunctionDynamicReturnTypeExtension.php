@@ -36,8 +36,10 @@ use function preg_match;
 use function sprintf;
 use function substr;
 use function vsprintf;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SprintfFunctionDynamicReturnTypeExtension.cpp')]
 final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

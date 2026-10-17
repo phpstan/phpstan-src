@@ -16,8 +16,10 @@ use PHPStan\Type\TypeCombinator;
 use Throwable;
 use function count;
 use function in_array;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DateTimeModifyMethodThrowTypeExtension.cpp')]
 final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
 {
 

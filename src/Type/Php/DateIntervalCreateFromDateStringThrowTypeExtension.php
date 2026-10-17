@@ -13,8 +13,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use Throwable;
 use function count;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DateIntervalCreateFromDateStringThrowTypeExtension.cpp')]
 final class DateIntervalCreateFromDateStringThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

@@ -32,8 +32,10 @@ use function is_int;
 use function is_numeric;
 use function preg_split;
 use function strtolower;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PregSplitDynamicReturnTypeExtension.cpp')]
 final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

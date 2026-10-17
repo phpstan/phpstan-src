@@ -51,8 +51,10 @@ use function md5;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileTypeMapper.cpp')]
 final class FileTypeMapper
 {
 

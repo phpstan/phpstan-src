@@ -9,11 +9,13 @@ use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\RegisteredCollector;
 use PHPStan\Reflection\ReflectionProvider;
 use function strtolower;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Collector<Expression, array{string, int}>
  */
 #[RegisteredCollector(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PossiblyPureNewCollector.cpp')]
 final class PossiblyPureNewCollector implements Collector
 {
 

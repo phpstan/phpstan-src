@@ -20,12 +20,8 @@ static pt_method_site pg_site_7; /* method_getObjectClassNames_7 */
 static pt_method_site pg_site_8; /* method_getClassTypeDescription_8 */
 static pgrt::FunctionSite pg_site_9; /* function_strtolower */
 static pt_method_site pg_site_10; /* method_getName_10 */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_12; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_13; /* method_identifier_13 */
-static pt_method_site pg_site_14; /* method_build_14 */
-static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::AllowedSubTypesRule {
 
@@ -223,27 +219,21 @@ namespace pgen::AllowedSubTypesRule {
 					if (UNEXPECTED(!sb36.append(r35.raw()))) return false;
 					sb36.appendLiteral(".", 1);
 					zv::Val r37 = sb36.finish();
-					zval av38[1];
-					ZVAL_COPY_VALUE(&av38[0], r37.raw());
-					zend_class_entry *ce39 = pgrt::lookupClass(pg_site_11, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-					if (UNEXPECTED(ce39 == NULL)) return false;
-					zv::Val r40;
-					if (UNEXPECTED(!pgrt::callStatic(pg_site_12, ce39, "message", 7, 1, av38, r40.raw(), NULL))) return false;
-					pgrt::StringBuilder sb41;
-					if (UNEXPECTED(!sb41.append(l_identifierType.raw()))) return false;
-					sb41.appendLiteral(".disallowedSubtype", 18);
-					zv::Val r42 = sb41.finish();
-					zval av43[1];
-					ZVAL_COPY_VALUE(&av43[0], r42.raw());
-					zv::Val r44;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r40.raw(), "identifier", "identifier", 10, 1, av43, r44.raw(), NULL))) return false;
-					zv::Val r45;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r44.raw(), "build", "build", 5, 0, NULL, r45.raw(), NULL))) return false;
-					zv::Val o46 = zv::Val::copyOf(zv::Ref(r45.raw()));
-					zval *w47 = zv::Ref(l_messages.raw()).deref().raw();
-					if (Z_TYPE_P(w47) <= IS_NULL) { zval_ptr_dtor(w47); array_init(w47); } else if (UNEXPECTED(Z_TYPE_P(w47) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w47);
-					{ zval v = o46.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w47), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zv::Val r38;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r37.raw(), r38.raw()))) return false;
+					pgrt::StringBuilder sb39;
+					if (UNEXPECTED(!sb39.append(l_identifierType.raw()))) return false;
+					sb39.appendLiteral(".disallowedSubtype", 18);
+					zv::Val r40 = sb39.finish();
+					zv::Val r41;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r38.raw()), r40.raw(), r41.raw()))) return false;
+					zv::Val r42;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r41.raw()), r42.raw()))) return false;
+					zv::Val o43 = zv::Val::copyOf(zv::Ref(r42.raw()));
+					zval *w44 = zv::Ref(l_messages.raw()).deref().raw();
+					if (Z_TYPE_P(w44) <= IS_NULL) { zval_ptr_dtor(w44); array_init(w44); } else if (UNEXPECTED(Z_TYPE_P(w44) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w44);
+					{ zval v = o43.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w44), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 			cont17:;
@@ -279,8 +269,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AllowedSubTypesRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AllowedSubTypesRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

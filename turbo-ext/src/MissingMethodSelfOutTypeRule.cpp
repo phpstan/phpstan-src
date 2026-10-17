@@ -15,23 +15,14 @@ static pt_method_site pg_site_2; /* method_getDeclaringClass_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_4; /* method_getDisplayName_4 */
 static pt_method_site pg_site_5; /* method_getName_5 */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_7; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_8; /* method_tip_8 */
-static pt_method_site pg_site_9; /* method_identifier_9 */
-static pt_method_site pg_site_10; /* method_build_10 */
-static pt_method_site pg_site_11; /* method_getDisplayName_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
-static pt_method_site pg_site_13; /* method_identifier_13 */
-static pt_method_site pg_site_14; /* method_build_14 */
-static pt_method_site pg_site_15; /* method_getDisplayName_15 */
-static pt_method_site pg_site_16; /* method_getName_16 */
-static pt_method_site pg_site_17; /* method_describe_17 */
-static pt_method_site pg_site_18; /* method_identifier_18 */
-static pt_method_site pg_site_19; /* method_build_19 */
-static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Rules\MissingTypehintCheck */
-static pgrt::ClassSite pg_site_21; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_6; /* method_getDisplayName_6 */
+static pt_method_site pg_site_7; /* method_getName_7 */
+static pt_method_site pg_site_8; /* method_getDisplayName_8 */
+static pt_method_site pg_site_9; /* method_getName_9 */
+static pt_method_site pg_site_10; /* method_describe_10 */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\MissingTypehintCheck */
+static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::MissingMethodSelfOutTypeRule {
 
@@ -191,190 +182,170 @@ namespace pgen::MissingMethodSelfOutTypeRule {
 					if (UNEXPECTED(!sb24.append(l_iterableTypeDescription))) return false;
 					sb24.appendLiteral(".", 1);
 					zv::Val r25 = sb24.finish();
-					zval av26[1];
-					ZVAL_COPY_VALUE(&av26[0], r25.raw());
-					zend_class_entry *ce27 = pgrt::lookupClass(pg_site_6, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-					if (UNEXPECTED(ce27 == NULL)) return false;
+					zv::Val r26;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r25.raw(), r26.raw()))) return false;
+					zv::Val r27;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_tip(Z_OBJ_P(r26.raw()), &pg_lit[2], r27.raw()))) return false;
 					zv::Val r28;
-					if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce27, "message", 7, 1, av26, r28.raw(), NULL))) return false;
-					zval av29[1];
-					ZVAL_COPY_VALUE(&av29[0], &pg_lit[2]);
-					zv::Val r30;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r28.raw(), "tip", "tip", 3, 1, av29, r30.raw(), NULL))) return false;
-					zval av31[1];
-					ZVAL_COPY_VALUE(&av31[0], &pg_lit[3]);
-					zv::Val r32;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r30.raw(), "identifier", "identifier", 10, 1, av31, r32.raw(), NULL))) return false;
-					zv::Val r33;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r32.raw(), "build", "build", 5, 0, NULL, r33.raw(), NULL))) return false;
-					zv::Val o34 = zv::Val::copyOf(zv::Ref(r33.raw()));
-					zval *w35 = zv::Ref(l_messages.raw()).deref().raw();
-					if (Z_TYPE_P(w35) <= IS_NULL) { zval_ptr_dtor(w35); array_init(w35); } else if (UNEXPECTED(Z_TYPE_P(w35) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w35);
-					{ zval v = o34.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w35), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r27.raw()), &pg_lit[3], r28.raw()))) return false;
+					zv::Val r29;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r28.raw()), r29.raw()))) return false;
+					zv::Val o30 = zv::Val::copyOf(zv::Ref(r29.raw()));
+					zval *w31 = zv::Ref(l_messages.raw()).deref().raw();
+					if (Z_TYPE_P(w31) <= IS_NULL) { zval_ptr_dtor(w31); array_init(w31); } else if (UNEXPECTED(Z_TYPE_P(w31) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w31);
+					{ zval v = o30.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w31), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval *p37 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MissingMethodSelfOutTypeRule::slot::missingTypehintCheck, "missingTypehintCheck");
-		if (UNEXPECTED(p37 == NULL)) return false;
+		zval *p33 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MissingMethodSelfOutTypeRule::slot::missingTypehintCheck, "missingTypehintCheck");
+		if (UNEXPECTED(p33 == NULL)) return false;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(l_selfOutType.raw(), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\MissingTypehintCheck::getNonGenericObjectTypesWithGenericClass", 1, "type", "PHPStan\\Type\\Type", l_selfOutType.raw()); return false; }
-		zv::Val r38;
-		if (UNEXPECTED(!pgen::MissingTypehintCheck::m_getNonGenericObjectTypesWithGenericClass(Z_OBJ_P(p37), l_selfOutType.raw(), r38.raw()))) return false;
-		zv::Val a39 = zv::Val::copyOf(zv::Ref(r38.raw()).deref());
-		HashTable *ht36 = Z_ARRVAL_P(a39.raw());
-		zval *v40;
-		zend_ulong n41;
-		zend_string *s42;
-		ZEND_HASH_FOREACH_KEY_VAL(ht36, n41, s42, v40) {
-			(void) n41; (void) s42;
-			zval *la43 = zv::Ref(v40).deref().raw();
-			zval *le44 = NULL;
-			if (Z_TYPE_P(la43) == IS_ARRAY) { le44 = zend_hash_index_find(Z_ARRVAL_P(la43), 0); if (le44 == NULL) { pgrt::warnUndefinedIndex(0); } }
+		zv::Val r34;
+		if (UNEXPECTED(!pgen::MissingTypehintCheck::m_getNonGenericObjectTypesWithGenericClass(Z_OBJ_P(p33), l_selfOutType.raw(), r34.raw()))) return false;
+		zv::Val a35 = zv::Val::copyOf(zv::Ref(r34.raw()).deref());
+		HashTable *ht32 = Z_ARRVAL_P(a35.raw());
+		zval *v36;
+		zend_ulong n37;
+		zend_string *s38;
+		ZEND_HASH_FOREACH_KEY_VAL(ht32, n37, s38, v36) {
+			(void) n37; (void) s38;
+			zval *la39 = zv::Ref(v36).deref().raw();
+			zval *le40 = NULL;
+			if (Z_TYPE_P(la39) == IS_ARRAY) { le40 = zend_hash_index_find(Z_ARRVAL_P(la39), 0); if (le40 == NULL) { pgrt::warnUndefinedIndex(0); } }
 			if (UNEXPECTED(EG(exception))) return false;
-			if (le44 == NULL) le44 = &EG(uninitialized_zval);
-			l_name = zv::Val::copyOf(zv::Ref(zv::Ref(le44).deref().raw()));
-			zval *le45 = NULL;
-			if (Z_TYPE_P(la43) == IS_ARRAY) { le45 = zend_hash_index_find(Z_ARRVAL_P(la43), 1); if (le45 == NULL) { pgrt::warnUndefinedIndex(1); } }
+			if (le40 == NULL) le40 = &EG(uninitialized_zval);
+			l_name = zv::Val::copyOf(zv::Ref(zv::Ref(le40).deref().raw()));
+			zval *le41 = NULL;
+			if (Z_TYPE_P(la39) == IS_ARRAY) { le41 = zend_hash_index_find(Z_ARRVAL_P(la39), 1); if (le41 == NULL) { pgrt::warnUndefinedIndex(1); } }
 			if (UNEXPECTED(EG(exception))) return false;
-			if (le45 == NULL) le45 = &EG(uninitialized_zval);
-			l_genericTypeNames = zv::Val::copyOf(zv::Ref(zv::Ref(le45).deref().raw()));
+			if (le41 == NULL) le41 = &EG(uninitialized_zval);
+			l_genericTypeNames = zv::Val::copyOf(zv::Ref(zv::Ref(le41).deref().raw()));
 			 {
 				 {
-					zv::Val r48;
+					zv::Val r44;
 					if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT && Z_OBJCE_P(l_classReflection.raw()) == pt_ce_class_reflection)) {
-						r48 = pt_class_reflection_get_display_name(Z_OBJ_P(l_classReflection.raw()));
-						if (UNEXPECTED(r48.isUndef())) return false;
+						r44 = pt_class_reflection_get_display_name(Z_OBJ_P(l_classReflection.raw()));
+						if (UNEXPECTED(r44.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r48.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r44.raw()))) return false;
 					}
 					}
-					zv::Val r49;
+					zv::Val r45;
 					if (EXPECTED(Z_TYPE_P(l_methodReflection.raw()) == IS_OBJECT)) {
-						r49 = pt_type_op(Z_OBJ_P(l_methodReflection.raw()), PT_OP_GET_NAME, 0, NULL);
-						if (UNEXPECTED(r49.isUndef())) return false;
+						r45 = pt_type_op(Z_OBJ_P(l_methodReflection.raw()), PT_OP_GET_NAME, 0, NULL);
+						if (UNEXPECTED(r45.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r49.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r45.raw(), NULL))) return false;
 					}
 					}
-					zv::Val o50 = zv::Val::copyOf(zv::Ref(l_phpDocTagMessage.raw()));
-					zv::Val o51 = zv::Val::copyOf(zv::Ref(l_name.raw()));
-					pgrt::StringBuilder sb52;
-					sb52.appendLiteral("Method ", 7);
-					if (UNEXPECTED(!sb52.append(r48.raw()))) return false;
-					sb52.appendLiteral("::", 2);
-					if (UNEXPECTED(!sb52.append(r49.raw()))) return false;
-					sb52.appendLiteral("() has ", 7);
-					if (UNEXPECTED(!sb52.append(o50.raw()))) return false;
-					sb52.appendLiteral(" with generic ", 14);
-					if (UNEXPECTED(!sb52.append(o51.raw()))) return false;
-					sb52.appendLiteral(" but does not specify its types: ", 33);
-					if (UNEXPECTED(!sb52.append(l_genericTypeNames.raw()))) return false;
-					zv::Val r53 = sb52.finish();
-					zval av54[1];
-					ZVAL_COPY_VALUE(&av54[0], r53.raw());
-					zend_class_entry *ce55 = pgrt::lookupClass(pg_site_6, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-					if (UNEXPECTED(ce55 == NULL)) return false;
-					zv::Val r56;
-					if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce55, "message", 7, 1, av54, r56.raw(), NULL))) return false;
-					zval av57[1];
-					ZVAL_COPY_VALUE(&av57[0], &pg_lit[4]);
-					zv::Val r58;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r56.raw(), "identifier", "identifier", 10, 1, av57, r58.raw(), NULL))) return false;
-					zv::Val r59;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r58.raw(), "build", "build", 5, 0, NULL, r59.raw(), NULL))) return false;
-					zv::Val o60 = zv::Val::copyOf(zv::Ref(r59.raw()));
-					zval *w61 = zv::Ref(l_messages.raw()).deref().raw();
-					if (Z_TYPE_P(w61) <= IS_NULL) { zval_ptr_dtor(w61); array_init(w61); } else if (UNEXPECTED(Z_TYPE_P(w61) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w61);
-					{ zval v = o60.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w61), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zv::Val o46 = zv::Val::copyOf(zv::Ref(l_phpDocTagMessage.raw()));
+					zv::Val o47 = zv::Val::copyOf(zv::Ref(l_name.raw()));
+					pgrt::StringBuilder sb48;
+					sb48.appendLiteral("Method ", 7);
+					if (UNEXPECTED(!sb48.append(r44.raw()))) return false;
+					sb48.appendLiteral("::", 2);
+					if (UNEXPECTED(!sb48.append(r45.raw()))) return false;
+					sb48.appendLiteral("() has ", 7);
+					if (UNEXPECTED(!sb48.append(o46.raw()))) return false;
+					sb48.appendLiteral(" with generic ", 14);
+					if (UNEXPECTED(!sb48.append(o47.raw()))) return false;
+					sb48.appendLiteral(" but does not specify its types: ", 33);
+					if (UNEXPECTED(!sb48.append(l_genericTypeNames.raw()))) return false;
+					zv::Val r49 = sb48.finish();
+					zv::Val r50;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r49.raw(), r50.raw()))) return false;
+					zv::Val r51;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r50.raw()), &pg_lit[4], r51.raw()))) return false;
+					zv::Val r52;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r51.raw()), r52.raw()))) return false;
+					zv::Val o53 = zv::Val::copyOf(zv::Ref(r52.raw()));
+					zval *w54 = zv::Ref(l_messages.raw()).deref().raw();
+					if (Z_TYPE_P(w54) <= IS_NULL) { zval_ptr_dtor(w54); array_init(w54); } else if (UNEXPECTED(Z_TYPE_P(w54) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w54);
+					{ zval v = o53.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w54), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval *p63 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MissingMethodSelfOutTypeRule::slot::missingTypehintCheck, "missingTypehintCheck");
-		if (UNEXPECTED(p63 == NULL)) return false;
+		zval *p56 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MissingMethodSelfOutTypeRule::slot::missingTypehintCheck, "missingTypehintCheck");
+		if (UNEXPECTED(p56 == NULL)) return false;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(l_selfOutType.raw(), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\MissingTypehintCheck::getCallablesWithMissingSignature", 1, "type", "PHPStan\\Type\\Type", l_selfOutType.raw()); return false; }
-		zv::Val r64;
-		if (UNEXPECTED(!pgen::MissingTypehintCheck::m_getCallablesWithMissingSignature(Z_OBJ_P(p63), l_selfOutType.raw(), r64.raw()))) return false;
-		zv::Val a65 = zv::Val::copyOf(zv::Ref(r64.raw()).deref());
-		HashTable *ht62 = Z_ARRVAL_P(a65.raw());
-		zval *v66;
-		zend_ulong n67;
-		zend_string *s68;
-		ZEND_HASH_FOREACH_KEY_VAL(ht62, n67, s68, v66) {
-			(void) n67; (void) s68;
-			l_callableType = zv::Ref(v66).deref().raw();
+		zv::Val r57;
+		if (UNEXPECTED(!pgen::MissingTypehintCheck::m_getCallablesWithMissingSignature(Z_OBJ_P(p56), l_selfOutType.raw(), r57.raw()))) return false;
+		zv::Val a58 = zv::Val::copyOf(zv::Ref(r57.raw()).deref());
+		HashTable *ht55 = Z_ARRVAL_P(a58.raw());
+		zval *v59;
+		zend_ulong n60;
+		zend_string *s61;
+		ZEND_HASH_FOREACH_KEY_VAL(ht55, n60, s61, v59) {
+			(void) n60; (void) s61;
+			l_callableType = zv::Ref(v59).deref().raw();
 			 {
 				 {
-					zv::Val r71;
+					zv::Val r64;
 					if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT && Z_OBJCE_P(l_classReflection.raw()) == pt_ce_class_reflection)) {
-						r71 = pt_class_reflection_get_display_name(Z_OBJ_P(l_classReflection.raw()));
-						if (UNEXPECTED(r71.isUndef())) return false;
+						r64 = pt_class_reflection_get_display_name(Z_OBJ_P(l_classReflection.raw()));
+						if (UNEXPECTED(r64.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r71.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r64.raw()))) return false;
 					}
 					}
-					zv::Val r72;
+					zv::Val r65;
 					if (EXPECTED(Z_TYPE_P(l_methodReflection.raw()) == IS_OBJECT)) {
-						r72 = pt_type_op(Z_OBJ_P(l_methodReflection.raw()), PT_OP_GET_NAME, 0, NULL);
-						if (UNEXPECTED(r72.isUndef())) return false;
+						r65 = pt_type_op(Z_OBJ_P(l_methodReflection.raw()), PT_OP_GET_NAME, 0, NULL);
+						if (UNEXPECTED(r65.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r72.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r65.raw(), NULL))) return false;
 					}
 					}
-					zv::Val o73 = zv::Val::copyOf(zv::Ref(l_phpDocTagMessage.raw()));
-					zv::Val o74 = zv::Val::copyOf(zv::Ref(l_callableType));
-					zval *vl75_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_TYPE_ONLY);
-					if (UNEXPECTED(vl75_p == NULL)) return false;
-					zv::Val vl75 = zv::Val::copyOf(zv::Ref(vl75_p));
-					zval av76[1];
-					ZVAL_COPY_VALUE(&av76[0], vl75.raw());
-					zv::Val r77;
-					if (EXPECTED(Z_TYPE_P(o74.raw()) == IS_OBJECT)) {
-						r77 = pt_type_op(Z_OBJ_P(o74.raw()), PT_OP_DESCRIBE, 1, av76);
-						if (UNEXPECTED(r77.isUndef())) return false;
+					zv::Val o66 = zv::Val::copyOf(zv::Ref(l_phpDocTagMessage.raw()));
+					zv::Val o67 = zv::Val::copyOf(zv::Ref(l_callableType));
+					zval *vl68_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_TYPE_ONLY);
+					if (UNEXPECTED(vl68_p == NULL)) return false;
+					zv::Val vl68 = zv::Val::copyOf(zv::Ref(vl68_p));
+					zval av69[1];
+					ZVAL_COPY_VALUE(&av69[0], vl68.raw());
+					zv::Val r70;
+					if (EXPECTED(Z_TYPE_P(o67.raw()) == IS_OBJECT)) {
+						r70 = pt_type_op(Z_OBJ_P(o67.raw()), PT_OP_DESCRIBE, 1, av69);
+						if (UNEXPECTED(r70.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_17, o74.raw(), "describe", "describe", 8, 1, av76, r77.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, o67.raw(), "describe", "describe", 8, 1, av69, r70.raw(), NULL))) return false;
 					}
 					}
-					pgrt::StringBuilder sb78;
-					sb78.appendLiteral("Method ", 7);
-					if (UNEXPECTED(!sb78.append(r71.raw()))) return false;
-					sb78.appendLiteral("::", 2);
-					if (UNEXPECTED(!sb78.append(r72.raw()))) return false;
-					sb78.appendLiteral("() has ", 7);
-					if (UNEXPECTED(!sb78.append(o73.raw()))) return false;
-					sb78.appendLiteral(" with no signature specified for ", 33);
-					if (UNEXPECTED(!sb78.append(r77.raw()))) return false;
-					sb78.appendLiteral(".", 1);
-					zv::Val r79 = sb78.finish();
-					zval av80[1];
-					ZVAL_COPY_VALUE(&av80[0], r79.raw());
-					zend_class_entry *ce81 = pgrt::lookupClass(pg_site_6, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-					if (UNEXPECTED(ce81 == NULL)) return false;
-					zv::Val r82;
-					if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce81, "message", 7, 1, av80, r82.raw(), NULL))) return false;
-					zval av83[1];
-					ZVAL_COPY_VALUE(&av83[0], &pg_lit[5]);
-					zv::Val r84;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, r82.raw(), "identifier", "identifier", 10, 1, av83, r84.raw(), NULL))) return false;
-					zv::Val r85;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, r84.raw(), "build", "build", 5, 0, NULL, r85.raw(), NULL))) return false;
-					zv::Val o86 = zv::Val::copyOf(zv::Ref(r85.raw()));
-					zval *w87 = zv::Ref(l_messages.raw()).deref().raw();
-					if (Z_TYPE_P(w87) <= IS_NULL) { zval_ptr_dtor(w87); array_init(w87); } else if (UNEXPECTED(Z_TYPE_P(w87) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w87);
-					{ zval v = o86.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w87), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					pgrt::StringBuilder sb71;
+					sb71.appendLiteral("Method ", 7);
+					if (UNEXPECTED(!sb71.append(r64.raw()))) return false;
+					sb71.appendLiteral("::", 2);
+					if (UNEXPECTED(!sb71.append(r65.raw()))) return false;
+					sb71.appendLiteral("() has ", 7);
+					if (UNEXPECTED(!sb71.append(o66.raw()))) return false;
+					sb71.appendLiteral(" with no signature specified for ", 33);
+					if (UNEXPECTED(!sb71.append(r70.raw()))) return false;
+					sb71.appendLiteral(".", 1);
+					zv::Val r72 = sb71.finish();
+					zv::Val r73;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r72.raw(), r73.raw()))) return false;
+					zv::Val r74;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r73.raw()), &pg_lit[5], r74.raw()))) return false;
+					zv::Val r75;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r74.raw()), r75.raw()))) return false;
+					zv::Val o76 = zv::Val::copyOf(zv::Ref(r75.raw()));
+					zval *w77 = zv::Ref(l_messages.raw()).deref().raw();
+					if (Z_TYPE_P(w77) <= IS_NULL) { zval_ptr_dtor(w77); array_init(w77); } else if (UNEXPECTED(Z_TYPE_P(w77) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w77);
+					{ zval v = o76.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w77), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 		}
@@ -407,7 +378,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingMethodSelfOutTypeRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_missingTypehintCheck)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_missingTypehintCheck != NULL && UNEXPECTED(Z_TYPE_P(p_missingTypehintCheck) != IS_OBJECT || !((Z_TYPE_P(p_missingTypehintCheck) == IS_OBJECT && Z_OBJCE_P(p_missingTypehintCheck) == pt_ce_missing_typehint_check) || pgrt::instanceOfClass(p_missingTypehintCheck, pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Rules\\MissingTypehintCheck", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\MissingTypehintCheck", zend_zval_value_name(p_missingTypehintCheck)); RETURN_THROWS(); }
+		if (p_missingTypehintCheck != NULL && UNEXPECTED(Z_TYPE_P(p_missingTypehintCheck) != IS_OBJECT || !((Z_TYPE_P(p_missingTypehintCheck) == IS_OBJECT && Z_OBJCE_P(p_missingTypehintCheck) == pt_ce_missing_typehint_check) || pgrt::instanceOfClass(p_missingTypehintCheck, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Rules\\MissingTypehintCheck", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\MissingTypehintCheck", zend_zval_value_name(p_missingTypehintCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::MissingMethodSelfOutTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_missingTypehintCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\MissingMethodSelfOutTypeRule::getNodeType() */
@@ -422,8 +393,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingMethodSelfOutTypeRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MissingMethodSelfOutTypeRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

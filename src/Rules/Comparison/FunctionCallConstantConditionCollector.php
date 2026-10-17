@@ -9,10 +9,12 @@ use PHPStan\Collectors\CollectorWithPaths;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements CollectorWithPaths<never, array{class-string<Rule<covariant Node>>, trait-string|null, string, null}|array{class-string<Rule<covariant Node>>, trait-string|null, string, bool, Error|array<mixed>}>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FunctionCallConstantConditionCollector.cpp')]
 final class FunctionCallConstantConditionCollector implements CollectorWithPaths
 {
 

@@ -23,11 +23,13 @@ use const SORT_NATURAL;
 use const SORT_NUMERIC;
 use const SORT_REGULAR;
 use const SORT_STRING;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 5)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SortParameterCastableToStringRule.cpp')]
 final class SortParameterCastableToStringRule implements Rule
 {
 

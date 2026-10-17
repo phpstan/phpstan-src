@@ -13,15 +13,8 @@ static pt_method_site pg_site_0; /* method_isOnlyFilesAnalysis_0 */
 static pt_method_site pg_site_1; /* method_get_1 */
 static pt_method_site pg_site_2; /* method_get_2 */
 static pgrt::FunctionSite pg_site_3; /* function_strtolower */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_5; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_6; /* method_file_6 */
-static pt_method_site pg_site_7; /* method_line_7 */
-static pt_method_site pg_site_8; /* method_identifier_8 */
-static pt_method_site pg_site_9; /* method_tip_9 */
-static pt_method_site pg_site_10; /* method_build_10 */
-static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::TraitsNotAnalysedTraitRule {
 
@@ -222,35 +215,27 @@ namespace pgen::TraitsNotAnalysedTraitRule {
 					if (UNEXPECTED(!sb58.append(l_name.raw()))) return false;
 					sb58.appendLiteral(" is used zero times and is not analysed.", 40);
 					zv::Val r59 = sb58.finish();
-					zval av60[1];
-					ZVAL_COPY_VALUE(&av60[0], r59.raw());
-					zend_class_entry *ce61 = pgrt::lookupClass(pg_site_4, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-					if (UNEXPECTED(ce61 == NULL)) return false;
+					zv::Val r60;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r59.raw(), r60.raw()))) return false;
+					if (UNEXPECTED(!(Z_TYPE_P(l_file.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::file", 1, "file", "string", l_file.raw()); return false; }
+					zval d61;
+					ZVAL_NULL(&d61);
 					zv::Val r62;
-					if (UNEXPECTED(!pgrt::callStatic(pg_site_5, ce61, "message", 7, 1, av60, r62.raw(), NULL))) return false;
-					zval av63[1];
-					ZVAL_COPY_VALUE(&av63[0], l_file.raw());
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_file(Z_OBJ_P(r60.raw()), l_file.raw(), &d61, r62.raw()))) return false;
+					if (UNEXPECTED(Z_TYPE_P(l_line.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", l_line.raw()); return false; }
+					zv::Val r63;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r62.raw()), Z_LVAL_P(l_line.raw()), r63.raw()))) return false;
 					zv::Val r64;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r62.raw(), "file", "file", 4, 1, av63, r64.raw(), NULL))) return false;
-					zval av65[1];
-					ZVAL_COPY_VALUE(&av65[0], l_line.raw());
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r63.raw()), &pg_lit[3], r64.raw()))) return false;
+					zv::Val r65;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_tip(Z_OBJ_P(r64.raw()), &pg_lit[4], r65.raw()))) return false;
 					zv::Val r66;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r64.raw(), "line", "line", 4, 1, av65, r66.raw(), NULL))) return false;
-					zval av67[1];
-					ZVAL_COPY_VALUE(&av67[0], &pg_lit[3]);
-					zv::Val r68;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r66.raw(), "identifier", "identifier", 10, 1, av67, r68.raw(), NULL))) return false;
-					zval av69[1];
-					ZVAL_COPY_VALUE(&av69[0], &pg_lit[4]);
-					zv::Val r70;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r68.raw(), "tip", "tip", 3, 1, av69, r70.raw(), NULL))) return false;
-					zv::Val r71;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r70.raw(), "build", "build", 5, 0, NULL, r71.raw(), NULL))) return false;
-					zv::Val o72 = zv::Val::copyOf(zv::Ref(r71.raw()));
-					zval *w73 = zv::Ref(l_errors.raw()).deref().raw();
-					if (Z_TYPE_P(w73) <= IS_NULL) { zval_ptr_dtor(w73); array_init(w73); } else if (UNEXPECTED(Z_TYPE_P(w73) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w73);
-					{ zval v = o72.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w73), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r65.raw()), r66.raw()))) return false;
+					zv::Val o67 = zv::Val::copyOf(zv::Ref(r66.raw()));
+					zval *w68 = zv::Ref(l_errors.raw()).deref().raw();
+					if (Z_TYPE_P(w68) <= IS_NULL) { zval_ptr_dtor(w68); array_init(w68); } else if (UNEXPECTED(Z_TYPE_P(w68) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w68);
+					{ zval v = o67.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w68), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 		}
@@ -289,8 +274,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TraitsNotAnalysedTraitRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TraitsNotAnalysedTraitRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

@@ -12,8 +12,10 @@ use function array_pop;
 use function count;
 use function is_array;
 use function spl_object_id;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/GotoLabelVisitor.cpp')]
 final class GotoLabelVisitor extends NodeVisitorAbstract
 {
 

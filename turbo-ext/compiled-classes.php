@@ -882,4 +882,5 @@ return [
 	'PHPStan\\Node\\ExecutionEndNode' => ['ce' => 'pt_ce_execution_end_node', 'defineCe' => true],
 	'PHPStan\\Node\\ClassPropertyNode' => ['ce' => 'pt_ce_class_property_node', 'defineCe' => true],
 	'PHPStan\\Node\\InClassNode' => ['ce' => 'pt_ce_in_class_node', 'defineCe' => true],
+	'PHPStan\\Rules\\Comparison\\ImpossibleCheckTypeHelper' => ['ce' => 'pt_ce_impossible_check_type_helper', 'defineCe' => true],
 ];

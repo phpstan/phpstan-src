@@ -4670,6 +4670,7 @@ $coveredElsewhere = [
 	\PHPStan\Rules\Properties\AccessPropertiesCheck::class => 'make tests',
 	\PHPStan\Rules\Functions\CallToFunctionParametersRule::class => 'make tests',
 	\PHPStan\Rules\FunctionCallParametersCheck::class => 'make tests',
+	\PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper::class => 'make tests',
 	\PHPStan\Node\InClassMethodNode::class => 'walk-trace.php',
 	\PHPStan\Node\VariableWritesNode::class => 'walk-trace.php',
 	\PHPStan\Node\MethodReturnStatementsNode::class => 'walk-trace.php',

@@ -1299,15 +1299,19 @@ final class Compiler
 				$optionalStarted = true;
 			}
 			if ($param->byRef) {
-				if ($param->default !== null) {
-					throw new CompileError('optional by-reference parameters are not supported');
+				if ($param->default === null) {
+					$required++;
 				}
-				$required++;
 				if ($max >= 0) {
 					$max++;
 				}
 				$lines[] = sprintf('zval *%s = NULL;', $name);
 				$parse[] = sprintf('Z_PARAM_ZVAL(%s)', $name);
+				if ($param->default !== null) {
+					// omitted: a fresh reference to the default, dropped after the call
+					$lines[] = sprintf('zv::Val %s_omitted;', $name);
+					$after[] = sprintf('if (%s == NULL) { zval d; %s zval r; ZVAL_NEW_REF(&r, &d); %s_omitted = zv::Val::adopt(r); %s = %s_omitted.raw(); }', $name, $this->constantZvalInit('d', $param->default), $name, $name, $name);
+				}
 				$check = $this->typeCheck(sprintf('zv::Ref(%s).deref().raw()', $name), $param->declared, $param->describe);
 				if ($check !== null) {
 					$after[] = sprintf('if (UNEXPECTED(!%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(zv::Ref(%s).deref().raw())); RETURN_THROWS(); }', $check, $param->position + 1, addcslashes($param->describe, '\\"'), $name);
@@ -6317,6 +6321,11 @@ final class Compiler
 		$t = $f->temp('d');
 		$f->line(sprintf('zval %s;', $t));
 		$f->line($this->constantZvalInit($t, $default));
+		if ($param->byRef) {
+			// an omitted by-reference parameter binds a fresh reference to its default
+			$f->line(sprintf('zv::Val %s_ref = zv::Val::adopt([&]() { zval r; ZVAL_NEW_REF(&r, &%s); return r; }());', $t, $t));
+			return $t . '_ref.raw()';
+		}
 		return '&' . $t;
 	}
 

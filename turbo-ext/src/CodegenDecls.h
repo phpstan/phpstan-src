@@ -862,6 +862,7 @@ extern zend_class_entry *pt_ce_noop_expression_node;
 extern zend_class_entry *pt_ce_execution_end_node;
 extern zend_class_entry *pt_ce_class_property_node;
 extern zend_class_entry *pt_ce_in_class_node;
+extern zend_class_entry *pt_ce_impossible_check_type_helper;
 
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
@@ -7473,5 +7474,16 @@ namespace pgen::InClassNode {
 [[nodiscard]] bool m_getType(zend_object *self, zval *ret);
 [[nodiscard]] bool m_getSubNodeNames(zend_object *self, zval *ret);
 } // namespace pgen::InClassNode
+
+namespace pgen::ImpossibleCheckTypeHelper {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider, bool p_treatPhpDocTypesAsCertain);
+[[nodiscard]] bool m_findSpecifiedType(zend_object *self, zval *p_scope, zval *p_node, zval *p_nodeResult, zval *p_argsResult, zval *p_reasons, zval *ret);
+[[nodiscard]] bool m_getArgumentType(zend_object *self, zval *p_scope, zval *p_argsResult, zval *p_expr, bool p_phpDocFlavour, zval *ret);
+[[nodiscard]] bool m_getSpecifiedType(zend_object *self, zval *p_scope, zval *p_node, zval *p_reasons, zval *p_nodeResult, zval *p_argsResult, zval *ret);
+[[nodiscard]] bool m_isSpecified(zval *p_scope, zval *p_node, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_getArgumentsDescription(zend_object *self, zval *p_scope, zval *p_args, zval *ret);
+[[nodiscard]] bool m_doNotTreatPhpDocTypesAsCertain(zend_object *self, zval *ret);
+[[nodiscard]] bool m_determineContext(zend_object *self, zval *p_scope, zval *p_node, zval *ret);
+} // namespace pgen::ImpossibleCheckTypeHelper
 
 #endif

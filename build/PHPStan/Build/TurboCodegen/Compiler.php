@@ -585,12 +585,6 @@ final class Compiler
 			}
 			$out[] = sprintf('#include "generated/%s.h"', $stem);
 		}
-		foreach ($this->units as $other) {
-			if ($other === $unit) {
-				continue;
-			}
-			$out[] = sprintf('#include "generated/%s.h"', $other->stem);
-		}
 		$out[] = '';
 		if ($unit->defineCe) {
 			$out[] = sprintf('zend_class_entry *%s = nullptr;', $unit->ce);
@@ -650,10 +644,20 @@ final class Compiler
 			$value = $constant->getValue();
 			if (is_int($value)) {
 				$out[] = sprintf("\tcls.%s(\"%s\", %d);", $constant->isPrivate() ? 'privateClassConstantLong' : 'classConstantLong', $constant->getName(), $value);
+			} elseif (is_string($value) && (str_contains($value, "\0") || $constant->isProtected())) {
+				// a C string cannot hold the NUL: built with its length
+				$builder = sprintf('pg_const_%s', $constant->getName());
+				$this->closures[] = sprintf("static void %s(zval *out)\n{\n\tZVAL_INTERNED_STR(out, pgrt::internLiteral(\"%s\", %d));\n}", $builder, self::cString($value), strlen($value));
+				$out[] = sprintf("\tcls.%s(\"%s\", %s);", $constant->isPrivate() ? 'privateClassConstantValue' : 'classConstantValue', $constant->getName(), $builder);
 			} elseif (is_string($value)) {
-				$out[] = sprintf("\tcls.%s(\"%s\", \"%s\");", $constant->isPrivate() ? 'privateClassConstantString' : 'publicClassConstantString', $constant->getName(), addcslashes($value, '"\\'));
+				$out[] = sprintf("\tcls.%s(\"%s\", \"%s\");", $constant->isPrivate() ? 'privateClassConstantString' : 'publicClassConstantString', $constant->getName(), self::cString($value));
+			} elseif (is_array($value) && !$constant->isProtected()) {
+				// a persistent immutable array built at declaration
+				$builder = sprintf('pg_const_%s', $constant->getName());
+				$this->closures[] = $this->renderConstantBuilder($builder, $value);
+				$out[] = sprintf("\tcls.%s(\"%s\", %s);", $constant->isPrivate() ? 'privateClassConstantValue' : 'classConstantValue', $constant->getName(), $builder);
 			} else {
-				throw new CompileError(sprintf('%s::%s: only int/string constants are supported', $unit->className, $constant->getName()));
+				throw new CompileError(sprintf('%s::%s: only int/string/array constants are supported', $unit->className, $constant->getName()));
 			}
 		}
 		foreach ($unit->methods as $method) {
@@ -681,9 +685,59 @@ final class Compiler
 		// the literals the bodies and the glue (defaults) use, interned first
 		$literals = [];
 		foreach ($this->literals as $literal => $index) {
-			$literals[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(\"%s\", %d));", $index, addcslashes($literal, "\"\\\n\r\t?"), strlen($literal));
+			$literals[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(\"%s\", %d));", $index, self::cString($literal), strlen($literal));
 		}
 		return str_replace("/*LITERALS*/\n", $literals === [] ? '' : implode("\n", $literals) . "\n", implode("\n", $out));
+	}
+
+	/**
+	 * The builder of an array class constant: a persistent, immutable array
+	 * of the twin's value (the engine references it for the process
+	 * lifetime), nested arrays included.
+	 *
+	 * @param array<mixed> $value
+	 */
+	private function renderConstantBuilder(string $name, array $value): string
+	{
+		$lines = [];
+		$counter = 0;
+		$build = function (array $array) use (&$build, &$lines, &$counter): string {
+			$table = 't' . $counter++;
+			$lines[] = sprintf("\tHashTable *%s = pgrt::constArrayNew(%d);", $table, count($array));
+			foreach ($array as $key => $item) {
+				$z = 'v' . $counter++;
+				$lines[] = sprintf("\tzval %s;", $z);
+				if (is_int($item)) {
+					$lines[] = sprintf("\tZVAL_LONG(&%s, %d);", $z, $item);
+				} elseif (is_bool($item)) {
+					$lines[] = sprintf("\tZVAL_BOOL(&%s, %s);", $z, $item ? 'true' : 'false');
+				} elseif ($item === null) {
+					$lines[] = sprintf("\tZVAL_NULL(&%s);", $z);
+				} elseif (is_float($item)) {
+					$lines[] = sprintf("\tZVAL_DOUBLE(&%s, %s);", $z, var_export($item, true));
+				} elseif (is_string($item)) {
+					$lines[] = sprintf("\tZVAL_INTERNED_STR(&%s, pgrt::internLiteral(\"%s\", %d));", $z, self::cString($item), strlen($item));
+				} elseif (is_array($item)) {
+					$lines[] = sprintf("\tpgrt::constArrayFinish(%s, &%s);", $build($item), $z);
+				} else {
+					throw new CompileError('an array constant holding an object or an enum');
+				}
+				if (is_int($key)) {
+					$lines[] = sprintf("\tzend_hash_index_update(%s, %d, &%s);", $table, $key, $z);
+				} else {
+					$lines[] = sprintf("\tzend_hash_update(%s, pgrt::internLiteral(\"%s\", %d), &%s);", $table, self::cString($key), strlen($key), $z);
+				}
+			}
+			return $table;
+		};
+		$root = $build($value);
+		return implode("\n", [
+			sprintf('static void %s(zval *out)', $name),
+			'{',
+			...$lines,
+			sprintf("\tpgrt::constArrayFinish(%s, out);", $root),
+			'}',
+		]);
 	}
 
 	/**
@@ -993,6 +1047,29 @@ final class Compiler
 			return $members;
 		}
 		throw new CompileError(sprintf('enum %s not found', $enum));
+	}
+
+	/**
+	 * The body of a C string literal of bytes: quotes, backslashes, `?`
+	 * (trigraphs) and every non-printable byte escaped — three-digit octal,
+	 * so a following digit cannot extend the escape.
+	 */
+	private static function cString(string $bytes): string
+	{
+		$out = '';
+		$length = strlen($bytes);
+		for ($i = 0; $i < $length; $i++) {
+			$c = $bytes[$i];
+			$o = ord($c);
+			if ($c === '"' || $c === '\\' || $c === '?') {
+				$out .= '\\' . $c;
+			} elseif ($o < 0x20 || $o === 0x7F) {
+				$out .= sprintf('\\%03o', $o);
+			} else {
+				$out .= $c;
+			}
+		}
+		return $out;
 	}
 
 	/** drops one pair of enclosing parentheses (`if ((a == b))` warns) */
@@ -2026,7 +2103,7 @@ final class Compiler
 			}
 			$f->open(sprintf('if (%s == -1)', $index));
 			$value = $this->expr($f, $case->cond);
-			$f->line(sprintf('if (%s) %s = %d;', $this->looseEquals($f, $subject, $value), $index, $i));
+			$f->line(sprintf('if (%s) %s = %d;', self::unparen($this->looseEquals($f, $subject, $value)), $index, $i));
 			$f->close();
 		}
 		if ($default !== null) {
@@ -3443,7 +3520,7 @@ final class Compiler
 		if ($left->kind === 'bool' && $right->kind === 'bool') {
 			return sprintf('(%s == %s)', $left->code, $right->code);
 		}
-		return sprintf('zend_is_equal(%s, %s)', $this->asZval($f, $left), $this->asZval($f, $right));
+		return sprintf('(zend_compare(%s, %s) == 0)', $this->asZval($f, $left), $this->asZval($f, $right));
 	}
 
 	/** a binary operator through the engine's operator function (any operand types, PHP's coercions and errors) */
@@ -5197,7 +5274,7 @@ final class Compiler
 				$value = $values[$next++];
 				$f->line(sprintf('%s.appendLong(%s);', $builder, $value->kind === 'long' ? $value->code : sprintf('zval_get_long(%s)', $this->asZval($f, $value))));
 			} else {
-				$f->line(sprintf('%s.appendLiteral("%s", %d);', $builder, addcslashes($piece, "\"\\\n\r\t?"), strlen($piece)));
+				$f->line(sprintf('%s.appendLiteral("%s", %d);', $builder, self::cString($piece), strlen($piece)));
 			}
 		}
 		$t = $f->temp('r');
@@ -5947,7 +6024,12 @@ final class Compiler
 		}
 		$current = $this->issetPtr($f, $target);
 		$ref = $f->temp('ref');
-		$f->line(sprintf('zv::Val %s = zv::Val::adopt([&]() { zval inner; if (%s != NULL) { ZVAL_COPY(&inner, %s); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());', $ref, $current, $current));
+		if (str_starts_with($current, '&')) {
+			// the address of a temporary: never NULL
+			$f->line(sprintf('zv::Val %s = zv::Val::adopt([&]() { zval inner; ZVAL_COPY(&inner, %s); zval r; ZVAL_NEW_REF(&r, &inner); return r; }());', $ref, $current));
+		} else {
+			$f->line(sprintf('zv::Val %s = zv::Val::adopt([&]() { zval inner; if (%s != NULL) { ZVAL_COPY(&inner, %s); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());', $ref, $current, $current));
+		}
 		$f->writeBacks[] = function () use ($f, $target, $ref): void {
 			$f->open('');
 			if ($target instanceof Expr\Variable) {

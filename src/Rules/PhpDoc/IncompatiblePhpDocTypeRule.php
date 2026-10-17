@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use function is_string;
@@ -19,6 +20,7 @@ use function trim;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncompatiblePhpDocTypeRule.cpp')]
 final class IncompatiblePhpDocTypeRule implements Rule
 {
 

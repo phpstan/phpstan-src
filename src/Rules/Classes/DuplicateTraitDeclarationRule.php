@@ -7,11 +7,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<InTraitNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DuplicateTraitDeclarationRule.cpp')]
 final class DuplicateTraitDeclarationRule implements Rule
 {
 

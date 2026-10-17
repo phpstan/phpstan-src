@@ -8,11 +8,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function str_starts_with;
 
 /**
  * @implements Rule<Node\Stmt>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PhpdocCommentRule.cpp')]
 final class PhpdocCommentRule implements Rule
 {
 

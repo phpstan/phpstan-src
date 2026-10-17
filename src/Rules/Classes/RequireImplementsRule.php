@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -16,6 +17,7 @@ use function sprintf;
  * @implements Rule<InClassNode>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RequireImplementsRule.cpp')]
 final class RequireImplementsRule implements Rule
 {
 

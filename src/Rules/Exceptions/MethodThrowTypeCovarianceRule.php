@@ -8,6 +8,7 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Methods\ParentMethodHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
@@ -17,6 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodThrowTypeCovarianceRule.cpp')]
 final class MethodThrowTypeCovarianceRule implements Rule
 {
 

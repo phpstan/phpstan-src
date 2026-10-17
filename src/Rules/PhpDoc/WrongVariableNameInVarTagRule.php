@@ -17,6 +17,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use function array_keys;
 use function array_map;
@@ -32,6 +33,7 @@ use function sprintf;
  * @implements Rule<Node\Stmt>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/WrongVariableNameInVarTagRule.cpp')]
 final class WrongVariableNameInVarTagRule implements Rule
 {
 

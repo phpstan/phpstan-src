@@ -13,6 +13,7 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
@@ -24,6 +25,7 @@ use function strtolower;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RequireImplementsDefinitionTraitRule.cpp')]
 final class RequireImplementsDefinitionTraitRule implements Rule
 {
 

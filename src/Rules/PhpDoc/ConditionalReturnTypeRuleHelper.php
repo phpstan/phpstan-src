@@ -6,6 +6,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
@@ -19,6 +20,7 @@ use function sprintf;
 use function substr;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConditionalReturnTypeRuleHelper.cpp')]
 final class ConditionalReturnTypeRuleHelper
 {
 

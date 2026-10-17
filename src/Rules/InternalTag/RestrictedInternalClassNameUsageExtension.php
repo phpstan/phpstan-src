@@ -7,9 +7,11 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\RestrictedUsage\RestrictedUsage;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function strtolower;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedInternalClassNameUsageExtension.cpp')]
 final class RestrictedInternalClassNameUsageExtension implements RestrictedClassNameUsageExtension
 {
 

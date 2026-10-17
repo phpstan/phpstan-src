@@ -10,6 +10,7 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedParametersCheck;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 
@@ -17,6 +18,7 @@ use function sprintf;
  * @implements Rule<VariableWritesNode>
  */
 #[RegisteredRule(level: 1)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnusedConstructorParametersRule.cpp')]
 final class UnusedConstructorParametersRule implements Rule
 {
 

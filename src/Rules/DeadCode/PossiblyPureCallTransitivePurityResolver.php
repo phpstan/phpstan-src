@@ -9,6 +9,7 @@ use PHPStan\Analyser\ThrowPoint;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_keys;
 use function count;
 use function strtolower;
@@ -25,6 +26,7 @@ use function strtolower;
  * a declaration with no dependencies (no impure points at all).
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PossiblyPureCallTransitivePurityResolver.cpp')]
 final class PossiblyPureCallTransitivePurityResolver
 {
 

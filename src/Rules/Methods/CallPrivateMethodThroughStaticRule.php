@@ -9,12 +9,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements Rule<StaticCall>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallPrivateMethodThroughStaticRule.cpp')]
 final class CallPrivateMethodThroughStaticRule implements Rule
 {
 

@@ -8,12 +8,14 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TooWideMethodReturnTypehintRule.cpp')]
 final class TooWideMethodReturnTypehintRule implements Rule
 {
 

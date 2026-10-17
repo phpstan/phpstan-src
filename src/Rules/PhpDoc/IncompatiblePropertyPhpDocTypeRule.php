@@ -11,6 +11,7 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ClassConstantAccessType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\VerbosityLevel;
@@ -22,6 +23,7 @@ use function sprintf;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncompatiblePropertyPhpDocTypeRule.cpp')]
 final class IncompatiblePropertyPhpDocTypeRule implements Rule
 {
 

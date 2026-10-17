@@ -11,11 +11,13 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedFunctionUsageRule.cpp')]
 final class RestrictedFunctionUsageRule implements Rule
 {
 

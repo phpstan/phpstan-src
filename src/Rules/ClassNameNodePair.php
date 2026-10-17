@@ -3,7 +3,9 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassNameNodePair.cpp')]
 final class ClassNameNodePair
 {
 

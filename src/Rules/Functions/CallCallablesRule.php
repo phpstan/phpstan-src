@@ -17,6 +17,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
@@ -30,6 +31,7 @@ use function ucfirst;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallCallablesRule.cpp')]
 final class CallCallablesRule implements Rule
 {
 

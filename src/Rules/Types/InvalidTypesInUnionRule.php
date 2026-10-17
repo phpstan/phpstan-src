@@ -9,6 +9,7 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 use function in_array;
 use function sprintf;
@@ -17,6 +18,7 @@ use function sprintf;
  * @implements MultipleNodeTypesRule<Node>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidTypesInUnionRule.cpp')]
 final class InvalidTypesInUnionRule implements MultipleNodeTypesRule
 {
 

@@ -5,10 +5,12 @@ namespace PHPStan\Rules\RuleErrors;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError21.cpp')]
 final class RuleError21 implements RuleError, FileRuleError, IdentifierRuleError
 {
 

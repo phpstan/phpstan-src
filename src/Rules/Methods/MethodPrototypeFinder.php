@@ -10,10 +10,12 @@ use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpMethodReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_bool;
 use function strtolower;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodPrototypeFinder.cpp')]
 final class MethodPrototypeFinder
 {
 

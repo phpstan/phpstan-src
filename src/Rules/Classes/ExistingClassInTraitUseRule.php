@@ -14,6 +14,7 @@ use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_map;
 use function sprintf;
 
@@ -22,6 +23,7 @@ use function sprintf;
  */
 #[RegisteredRule(level: 0)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExistingClassInTraitUseRule.cpp')]
 final class ExistingClassInTraitUseRule implements Rule
 {
 

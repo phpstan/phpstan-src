@@ -10,6 +10,7 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\VerbosityLevel;
@@ -21,6 +22,7 @@ use function sprintf;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodTemplateTypeRule.cpp')]
 final class MethodTemplateTypeRule implements Rule
 {
 

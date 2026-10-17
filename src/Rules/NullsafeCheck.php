@@ -4,8 +4,10 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NullsafeCheck.cpp')]
 final class NullsafeCheck
 {
 

@@ -19,12 +19,14 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PropertyTagCheck.cpp')]
 final class PropertyTagCheck
 {
 

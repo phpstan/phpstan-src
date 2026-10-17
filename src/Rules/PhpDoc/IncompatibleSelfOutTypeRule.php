@@ -11,6 +11,7 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
@@ -21,6 +22,7 @@ use function sprintf;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncompatibleSelfOutTypeRule.cpp')]
 final class IncompatibleSelfOutTypeRule implements Rule
 {
 

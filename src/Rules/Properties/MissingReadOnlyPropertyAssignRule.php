@@ -9,12 +9,14 @@ use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements Rule<ClassPropertiesNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MissingReadOnlyPropertyAssignRule.cpp')]
 final class MissingReadOnlyPropertyAssignRule implements Rule
 {
 

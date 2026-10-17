@@ -25,6 +25,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\StringType;
@@ -41,6 +42,7 @@ use function sprintf;
 use function strtolower;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AccessStaticPropertiesCheck.cpp')]
 final class AccessStaticPropertiesCheck
 {
 

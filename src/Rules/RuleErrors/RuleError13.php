@@ -5,10 +5,12 @@ namespace PHPStan\Rules\RuleErrors;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError13.cpp')]
 final class RuleError13 implements RuleError, FileRuleError, TipRuleError
 {
 

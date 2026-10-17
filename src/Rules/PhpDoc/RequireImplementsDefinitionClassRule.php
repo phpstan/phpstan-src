@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 
@@ -17,6 +18,7 @@ use function sprintf;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RequireImplementsDefinitionClassRule.cpp')]
 final class RequireImplementsDefinitionClassRule implements Rule
 {
 

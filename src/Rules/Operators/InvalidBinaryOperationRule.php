@@ -11,6 +11,7 @@ use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -23,6 +24,7 @@ use function substr;
  * @implements MultipleNodeTypesRule<Node\Expr>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidBinaryOperationRule.cpp')]
 final class InvalidBinaryOperationRule implements MultipleNodeTypesRule
 {
 

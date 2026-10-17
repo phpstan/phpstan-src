@@ -9,10 +9,12 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\MagicConstantParamDefaultVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /** @implements Rule<MagicConst> */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MagicConstantContextRule.cpp')]
 final class MagicConstantContextRule implements Rule
 {
 

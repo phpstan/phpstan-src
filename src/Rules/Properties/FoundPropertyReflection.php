@@ -9,8 +9,10 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\WrapperPropertyReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FoundPropertyReflection.cpp')]
 final class FoundPropertyReflection implements ExtendedPropertyReflection
 {
 

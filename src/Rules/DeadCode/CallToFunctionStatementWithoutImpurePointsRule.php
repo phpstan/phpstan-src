@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function sprintf;
 use function strtolower;
@@ -16,6 +17,7 @@ use function strtolower;
  * @implements Rule<CollectedDataNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallToFunctionStatementWithoutImpurePointsRule.cpp')]
 final class CallToFunctionStatementWithoutImpurePointsRule implements Rule
 {
 

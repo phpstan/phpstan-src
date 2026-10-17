@@ -7,11 +7,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MissingCheckedExceptionInMethodThrowsRule.cpp')]
 final class MissingCheckedExceptionInMethodThrowsRule implements Rule
 {
 

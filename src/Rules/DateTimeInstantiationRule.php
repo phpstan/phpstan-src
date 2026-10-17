@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use Throwable;
 use function count;
 use function in_array;
@@ -17,6 +18,7 @@ use function strtolower;
  * @implements Rule<Node\Expr\New_>
  */
 #[RegisteredRule(level: 5)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DateTimeInstantiationRule.cpp')]
 final class DateTimeInstantiationRule implements Rule
 {
 

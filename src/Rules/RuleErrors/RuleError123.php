@@ -8,10 +8,12 @@ use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError123.cpp')]
 final class RuleError123 implements RuleError, LineRuleError, TipRuleError, IdentifierRuleError, MetadataRuleError, NonIgnorableRuleError
 {
 

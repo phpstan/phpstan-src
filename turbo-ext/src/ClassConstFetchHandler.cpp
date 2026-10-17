@@ -3,158 +3,6 @@
 #include "CodegenDecls.h"
 #include "TypeTraits.h"
 #include "generated/ClassConstFetchHandler.h"
-#include "generated/TrinaryLogic.h"
-#include "generated/AcceptsResult.h"
-#include "generated/IsSuperTypeOfResult.h"
-#include "generated/AssignTargetWalkMode.h"
-#include "generated/EndStatementResult.h"
-#include "generated/EnsuredNonNullabilityResult.h"
-#include "generated/EnsuredNonNullabilityResultExpression.h"
-#include "generated/ExpressionTypeHolder.h"
-#include "generated/InternalEndStatementResult.h"
-#include "generated/InternalStatementExitPoint.h"
-#include "generated/PreparedAssignTarget.h"
-#include "generated/ProcessArrowFunctionResult.h"
-#include "generated/ProcessClosureResult.h"
-#include "generated/StatementExitPoint.h"
-#include "generated/ParametersProcessor.h"
-#include "generated/TemplateTypeReference.h"
-#include "generated/TemplateTypeScope.h"
-#include "generated/TypeProjectionHelper.h"
-#include "generated/CircularTypeAliasErrorType.h"
-#include "generated/NativeParameterReflection.h"
-#include "generated/TrivialParametersAcceptor.h"
-#include "generated/ChangedTypeMethodReflection.h"
-#include "generated/ChangedTypePropertyReflection.h"
-#include "generated/ArrayFilterArgVisitor.h"
-#include "generated/ArrayFindArgVisitor.h"
-#include "generated/ArrayMapArgVisitor.h"
-#include "generated/ArrayOffsetNormalizingVisitor.h"
-#include "generated/ArrayWalkArgVisitor.h"
-#include "generated/ArrowFunctionArgVisitor.h"
-#include "generated/ClosureArgVisitor.h"
-#include "generated/ClosureBindArgVisitor.h"
-#include "generated/ClosureBindToVarVisitor.h"
-#include "generated/CurlSetOptArgVisitor.h"
-#include "generated/CurlSetOptArrayArgVisitor.h"
-#include "generated/DeclarePositionVisitor.h"
-#include "generated/ImmediatelyInvokedClosureVisitor.h"
-#include "generated/ImplodeArgVisitor.h"
-#include "generated/MagicConstantParamDefaultVisitor.h"
-#include "generated/NewAssignedToPropertyVisitor.h"
-#include "generated/ParentStmtTypesVisitor.h"
-#include "generated/TraitCollectingVisitor.h"
-#include "generated/TryCatchTypeVisitor.h"
-#include "generated/TypeTraverserInstanceofVisitor.h"
-#include "generated/HasMethodType.h"
-#include "generated/ClassConstantAccessType.h"
-#include "generated/TemplateBenevolentUnionType.h"
-#include "generated/TemplateBooleanType.h"
-#include "generated/TemplateConstantArrayType.h"
-#include "generated/TemplateConstantIntegerType.h"
-#include "generated/TemplateConstantStringType.h"
-#include "generated/TemplateFloatType.h"
-#include "generated/TemplateGenericObjectType.h"
-#include "generated/TemplateIntegerType.h"
-#include "generated/TemplateIntersectionType.h"
-#include "generated/TemplateIterableType.h"
-#include "generated/TemplateKeyOfType.h"
-#include "generated/TemplateMixedType.h"
-#include "generated/TemplateNullType.h"
-#include "generated/TemplateObjectShapeType.h"
-#include "generated/TemplateObjectType.h"
-#include "generated/TemplateObjectWithoutClassType.h"
-#include "generated/TemplateStringType.h"
-#include "generated/GetTemplateTypeType.h"
-#include "generated/KeyOfType.h"
-#include "generated/NewObjectType.h"
-#include "generated/OffsetAccessType.h"
-#include "generated/StrictMixedType.h"
-#include "generated/StringAlwaysAcceptingObjectWithToStringType.h"
-#include "generated/StringNeverAcceptingObjectWithToStringType.h"
-#include "generated/ValueOfType.h"
-#include "generated/PhpParameterReflection.h"
-#include "generated/UnresolvableTypeHelper.h"
-#include "generated/ScalarHandler.h"
-#include "generated/EvalHandler.h"
-#include "generated/ExitHandler.h"
-#include "generated/PrintHandler.h"
-#include "generated/ThrowHandler.h"
-#include "generated/ShellExecHandler.h"
-#include "generated/IncludeHandler.h"
-#include "generated/ErrorSuppressHandler.h"
-#include "generated/ExistingArrayDimFetchHandler.h"
-#include "generated/IssetExprHandler.h"
-#include "generated/NativeTypeExprHandler.h"
-#include "generated/TypeExprHandler.h"
-#include "generated/UnsetOffsetExprHandler.h"
-#include "generated/AlwaysRememberedExprHandler.h"
-#include "generated/BlockHandler.h"
-#include "generated/BreakContinueHandler.h"
-#include "generated/EchoHandler.h"
-#include "generated/EnumCaseHandler.h"
-#include "generated/GotoHandler.h"
-#include "generated/GroupUseHandler.h"
-#include "generated/InlineHtmlHandler.h"
-#include "generated/LabelHandler.h"
-#include "generated/NamespaceHandler.h"
-#include "generated/NopHandler.h"
-#include "generated/UseHandler.h"
-#include "generated/ReturnHandler.h"
-#include "generated/GlobalHandler.h"
-#include "generated/DeclareHandler.h"
-#include "generated/ConstHandler.h"
-#include "generated/ConditionalExpressionHolder.h"
-#include "generated/ArrayHandler.h"
-#include "generated/CoalesceHandler.h"
-#include "generated/ConstFetchHandler.h"
-#include "generated/EmptyHandler.h"
-#include "generated/InstanceofHandler.h"
-#include "generated/IssetHandler.h"
-#include "generated/NullsafeMethodCallHandler.h"
-#include "generated/NullsafePropertyFetchHandler.h"
-#include "generated/PipeHandler.h"
-#include "generated/PostDecHandler.h"
-#include "generated/PostIncHandler.h"
-#include "generated/PreDecHandler.h"
-#include "generated/PreIncHandler.h"
-#include "generated/ClassConstHandler.h"
-#include "generated/ClassLikeHandler.h"
-#include "generated/IfHandler.h"
-#include "generated/PropertyHandler.h"
-#include "generated/StaticVariableHandler.h"
-#include "generated/SwitchHandler.h"
-#include "generated/TraitHandler.h"
-#include "generated/TryCatchHandler.h"
-#include "generated/AssignOpHandler.h"
-#include "generated/BinaryOpHandler.h"
-#include "generated/BitwiseNotHandler.h"
-#include "generated/BooleanAndHandler.h"
-#include "generated/BooleanNotHandler.h"
-#include "generated/BooleanOrHandler.h"
-#include "generated/CastHandler.h"
-#include "generated/CastStringHandler.h"
-#include "generated/InterpolatedStringHandler.h"
-#include "generated/UnaryMinusHandler.h"
-#include "generated/UnaryPlusHandler.h"
-#include "generated/FunctionCallableNodeHandler.h"
-#include "generated/InstantiationCallableNodeHandler.h"
-#include "generated/MethodCallableNodeHandler.h"
-#include "generated/SetExistingOffsetValueTypeExprHandler.h"
-#include "generated/SetOffsetValueTypeExprHandler.h"
-#include "generated/StaticMethodCallableNodeHandler.h"
-#include "generated/YieldFromHandler.h"
-#include "generated/YieldHandler.h"
-#include "generated/ExpressionHandler.h"
-#include "generated/UnsetHandler.h"
-#include "generated/DefinedVariableRule.h"
-#include "generated/CallMethodsRule.h"
-#include "generated/MethodCallCheck.h"
-#include "generated/RuleLevelHelper.h"
-#include "generated/AccessPropertiesRule.h"
-#include "generated/AccessPropertiesCheck.h"
-#include "generated/CallToFunctionParametersRule.h"
-#include "generated/FunctionCallParametersCheck.h"
 
 zend_class_entry *pt_ce_class_const_fetch_handler = nullptr;
 
@@ -1088,106 +936,112 @@ namespace pgen::ClassConstFetchHandler {
 					 {
 						if (!(Z_TYPE_P(l_constantReflection.raw()) == IS_NULL)) {
 							 {
-								zv::Val r28;
-								if (EXPECTED(Z_TYPE_P(l_constantReflection.raw()) == IS_OBJECT)) {
-									r28 = pt_class_member_reflection_call(l_constantReflection.raw(), PT_CMR_GET_DECLARING_CLASS);
-									if (UNEXPECTED(r28.isUndef())) return false;
+								zv::Val vd28;
+								zend_class_entry *vd28_ce = Z_TYPE_P(l_constantReflection.raw()) == IS_OBJECT ? Z_OBJCE_P(l_constantReflection.raw()) : NULL;
+								bool vd28_done = false;
+								if (vd28_ce == pt_ce_rewritten_declaring_class_class_constant_reflection) {
+									zv::Val r29;
+									if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getDeclaringClass(Z_OBJ_P(l_constantReflection.raw()), r29.raw()))) return false;
+									vd28 = std::move(r29);
+									vd28_done = true;
+								}
+								if (!vd28_done) {
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_55, l_constantReflection.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd28.raw()))) return false;
+								}
+								zv::Val r30;
+								if (EXPECTED(Z_TYPE_P(vd28.raw()) == IS_OBJECT)) {
+									r30 = pt_type_op(Z_OBJ_P(vd28.raw()), PT_OP_GET_NAME, 0, NULL);
+									if (UNEXPECTED(r30.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_55, l_constantReflection.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, r28.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_56, vd28.raw(), "getName", "getname", 7, 0, NULL, r30.raw(), NULL))) return false;
 								}
 								}
-								zv::Val r29;
-								if (EXPECTED(Z_TYPE_P(r28.raw()) == IS_OBJECT)) {
-									r29 = pt_type_op(Z_OBJ_P(r28.raw()), PT_OP_GET_NAME, 0, NULL);
-									if (UNEXPECTED(r29.isUndef())) return false;
-								} else {
-								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_56, r28.raw(), "getName", "getname", 7, 0, NULL, r29.raw(), NULL))) return false;
-								}
-								}
-								zv::Val o30 = zv::Val::copyOf(zv::Ref(r29.raw()));
-								zval *w31 = zv::Ref(l_classNames.raw()).deref().raw();
-								if (Z_TYPE_P(w31) <= IS_NULL) { zval_ptr_dtor(w31); array_init(w31); } else if (UNEXPECTED(Z_TYPE_P(w31) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w31);
-								{ zval v = o30.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w31), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val o31 = zv::Val::copyOf(zv::Ref(r30.raw()));
+								zval *w32 = zv::Ref(l_classNames.raw()).deref().raw();
+								if (Z_TYPE_P(w32) <= IS_NULL) { zval_ptr_dtor(w32); array_init(w32); } else if (UNEXPECTED(Z_TYPE_P(w32) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w32);
+								{ zval v = o31.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w32), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 					}
 				} else {
 				 {
 					 {
-						zv::Val o33;
-						zval *p32 = Z_TYPE_P(p_expr) == IS_OBJECT ? pgrt::propCached(pg_site_57, Z_OBJ_P(p_expr), "class", 5) : NULL;
-						if (UNEXPECTED(p32 == NULL || Z_ISUNDEF_P(p32))) {
-							if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_class_const_fetch_handler, "class", 5, o33.raw()))) return false;
-							p32 = o33.raw();
+						zv::Val o34;
+						zval *p33 = Z_TYPE_P(p_expr) == IS_OBJECT ? pgrt::propCached(pg_site_57, Z_OBJ_P(p_expr), "class", 5) : NULL;
+						if (UNEXPECTED(p33 == NULL || Z_ISUNDEF_P(p33))) {
+							if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_class_const_fetch_handler, "class", 5, o34.raw()))) return false;
+							p33 = o34.raw();
 						}
-						if (pgrt::instanceOfClass(zv::Ref(p32).deref().raw(), pgrt::lookupClassQuiet(pg_site_45, "PhpParser\\Node\\Name", 19))) {
+						if (pgrt::instanceOfClass(zv::Ref(p33).deref().raw(), pgrt::lookupClassQuiet(pg_site_45, "PhpParser\\Node\\Name", 19))) {
 							 {
-								zv::Val o35;
-								zval *p34 = Z_TYPE_P(p_expr) == IS_OBJECT ? pgrt::propCached(pg_site_58, Z_OBJ_P(p_expr), "class", 5) : NULL;
-								if (UNEXPECTED(p34 == NULL || Z_ISUNDEF_P(p34))) {
-									if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_class_const_fetch_handler, "class", 5, o35.raw()))) return false;
-									p34 = o35.raw();
+								zv::Val o36;
+								zval *p35 = Z_TYPE_P(p_expr) == IS_OBJECT ? pgrt::propCached(pg_site_58, Z_OBJ_P(p_expr), "class", 5) : NULL;
+								if (UNEXPECTED(p35 == NULL || Z_ISUNDEF_P(p35))) {
+									if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_class_const_fetch_handler, "class", 5, o36.raw()))) return false;
+									p35 = o36.raw();
 								}
-								zval av36[1];
-								ZVAL_COPY_VALUE(&av36[0], zv::Ref(p34).deref().raw());
-								zv::Val r37;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "resolveName", "resolvename", 11, 1, av36, r37.raw(), NULL))) return false;
-								l_className = std::move(r37);
+								zval av37[1];
+								ZVAL_COPY_VALUE(&av37[0], zv::Ref(p35).deref().raw());
+								zv::Val r38;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "resolveName", "resolvename", 11, 1, av37, r38.raw(), NULL))) return false;
+								l_className = std::move(r38);
 							}
 							 {
-								zval *p38 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstFetchHandler::slot::reflectionProvider, "reflectionProvider");
-								if (UNEXPECTED(p38 == NULL)) return false;
-								zval av39[1];
-								ZVAL_COPY_VALUE(&av39[0], l_className.raw());
-								zv::Val r40;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_60, p38, "hasClass", "hasclass", 8, 1, av39, r40.raw(), NULL))) return false;
-								if (Z_TYPE_P(r40.raw()) == IS_TRUE) {
+								zval *p39 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstFetchHandler::slot::reflectionProvider, "reflectionProvider");
+								if (UNEXPECTED(p39 == NULL)) return false;
+								zval av40[1];
+								ZVAL_COPY_VALUE(&av40[0], l_className.raw());
+								zv::Val r41;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_60, p39, "hasClass", "hasclass", 8, 1, av40, r41.raw(), NULL))) return false;
+								if (Z_TYPE_P(r41.raw()) == IS_TRUE) {
 									 {
-										zval *p41 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstFetchHandler::slot::reflectionProvider, "reflectionProvider");
-										if (UNEXPECTED(p41 == NULL)) return false;
-										zval av42[1];
-										ZVAL_COPY_VALUE(&av42[0], l_className.raw());
-										zv::Val r43;
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_61, p41, "getClass", "getclass", 8, 1, av42, r43.raw(), NULL))) return false;
-										l_constantClassReflection = std::move(r43);
+										zval *p42 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstFetchHandler::slot::reflectionProvider, "reflectionProvider");
+										if (UNEXPECTED(p42 == NULL)) return false;
+										zval av43[1];
+										ZVAL_COPY_VALUE(&av43[0], l_className.raw());
+										zv::Val r44;
+										if (UNEXPECTED(!pgrt::callMethod(pg_site_61, p42, "getClass", "getclass", 8, 1, av43, r44.raw(), NULL))) return false;
+										l_constantClassReflection = std::move(r44);
 									}
 									 {
-										zval av44[1];
-										ZVAL_COPY_VALUE(&av44[0], l_constantName.raw());
-										zv::Val r45;
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_62, l_constantClassReflection.raw(), "hasConstant", "hasconstant", 11, 1, av44, r45.raw(), NULL))) return false;
-										if (Z_TYPE_P(r45.raw()) == IS_TRUE) {
+										zval av45[1];
+										ZVAL_COPY_VALUE(&av45[0], l_constantName.raw());
+										zv::Val r46;
+										if (UNEXPECTED(!pgrt::callMethod(pg_site_62, l_constantClassReflection.raw(), "hasConstant", "hasconstant", 11, 1, av45, r46.raw(), NULL))) return false;
+										if (Z_TYPE_P(r46.raw()) == IS_TRUE) {
 											 {
-												zval av46[1];
-												ZVAL_COPY_VALUE(&av46[0], l_constantName.raw());
-												zv::Val r47;
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_63, l_constantClassReflection.raw(), "getConstant", "getconstant", 11, 1, av46, r47.raw(), NULL))) return false;
+												zval av47[1];
+												ZVAL_COPY_VALUE(&av47[0], l_constantName.raw());
 												zv::Val r48;
-												if (EXPECTED(Z_TYPE_P(r47.raw()) == IS_OBJECT)) {
-													r48 = pt_class_member_reflection_call(r47.raw(), PT_CMR_GET_DECLARING_CLASS);
-													if (UNEXPECTED(r48.isUndef())) return false;
+												if (UNEXPECTED(!pgrt::callMethod(pg_site_63, l_constantClassReflection.raw(), "getConstant", "getconstant", 11, 1, av47, r48.raw(), NULL))) return false;
+												zv::Val vd49;
+												zend_class_entry *vd49_ce = Z_TYPE_P(r48.raw()) == IS_OBJECT ? Z_OBJCE_P(r48.raw()) : NULL;
+												bool vd49_done = false;
+												if (vd49_ce == pt_ce_rewritten_declaring_class_class_constant_reflection) {
+													zv::Val r50;
+													if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getDeclaringClass(Z_OBJ_P(r48.raw()), r50.raw()))) return false;
+													vd49 = std::move(r50);
+													vd49_done = true;
+												}
+												if (!vd49_done) {
+													if (UNEXPECTED(!pgrt::callMethod(pg_site_64, r48.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd49.raw()))) return false;
+												}
+												zv::Val r51;
+												if (EXPECTED(Z_TYPE_P(vd49.raw()) == IS_OBJECT)) {
+													r51 = pt_type_op(Z_OBJ_P(vd49.raw()), PT_OP_GET_NAME, 0, NULL);
+													if (UNEXPECTED(r51.isUndef())) return false;
 												} else {
 												 {
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_64, r47.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, r48.raw()))) return false;
+													if (UNEXPECTED(!pgrt::callMethod(pg_site_65, vd49.raw(), "getName", "getname", 7, 0, NULL, r51.raw(), NULL))) return false;
 												}
 												}
-												zv::Val r49;
-												if (EXPECTED(Z_TYPE_P(r48.raw()) == IS_OBJECT)) {
-													r49 = pt_type_op(Z_OBJ_P(r48.raw()), PT_OP_GET_NAME, 0, NULL);
-													if (UNEXPECTED(r49.isUndef())) return false;
-												} else {
-												 {
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_65, r48.raw(), "getName", "getname", 7, 0, NULL, r49.raw(), NULL))) return false;
-												}
-												}
-												zv::Val o50 = zv::Val::copyOf(zv::Ref(r49.raw()));
-												zval *w51 = zv::Ref(l_classNames.raw()).deref().raw();
-												if (Z_TYPE_P(w51) <= IS_NULL) { zval_ptr_dtor(w51); array_init(w51); } else if (UNEXPECTED(Z_TYPE_P(w51) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-												SEPARATE_ARRAY(w51);
-												{ zval v = o50.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w51), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+												zv::Val o52 = zv::Val::copyOf(zv::Ref(r51.raw()));
+												zval *w53 = zv::Ref(l_classNames.raw()).deref().raw();
+												if (Z_TYPE_P(w53) <= IS_NULL) { zval_ptr_dtor(w53); array_init(w53); } else if (UNEXPECTED(Z_TYPE_P(w53) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+												SEPARATE_ARRAY(w53);
+												{ zval v = o52.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w53), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 											}
 										}
 									}
@@ -1201,23 +1055,23 @@ namespace pgen::ClassConstFetchHandler {
 		}
 	}
 	 {
-		zv::Val r52;
+		zv::Val r54;
 		if (EXPECTED(Z_TYPE_P(p_scope) == IS_OBJECT && Z_OBJCE_P(p_scope) == pt_ce_mutating_scope)) {
-			r52 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
-			if (UNEXPECTED(r52.isUndef())) return false;
+			r54 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r54.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_66, p_scope, "getFile", "getfile", 7, 0, NULL, r52.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_66, p_scope, "getFile", "getfile", 7, 0, NULL, r54.raw()))) return false;
 		}
 		}
-		zv::Val o53 = zv::Val::copyOf(zv::Ref(l_types.raw()));
-		zv::Val o54 = zv::Val::copyOf(zv::Ref(l_classNames.raw()));
-		zv::Val r55;
+		zv::Val o55 = zv::Val::copyOf(zv::Ref(l_types.raw()));
+		zv::Val o56 = zv::Val::copyOf(zv::Ref(l_classNames.raw()));
+		zv::Val r57;
 		 {
-			r55 = pt_dependencies_create(r52.raw(), o53.raw(), o54.raw());
-			if (UNEXPECTED(r55.isUndef())) return false;
+			r57 = pt_dependencies_create(r54.raw(), o55.raw(), o56.raw());
+			if (UNEXPECTED(r57.isUndef())) return false;
 		}
-		*ret = r55.take();
+		*ret = r57.take();
 		return true;
 	}
 }

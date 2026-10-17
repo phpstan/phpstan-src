@@ -11,11 +11,13 @@ use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements MultipleNodeTypesRule<NodeAbstract>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AssignToByRefExprFromForeachRule.cpp')]
 final class AssignToByRefExprFromForeachRule implements MultipleNodeTypesRule
 {
 

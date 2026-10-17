@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -28,6 +29,7 @@ use function str_starts_with;
  * predate the value-flow analysis report it only under bleeding edge.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/UnusedParametersCheck.cpp')]
 final class UnusedParametersCheck
 {
 

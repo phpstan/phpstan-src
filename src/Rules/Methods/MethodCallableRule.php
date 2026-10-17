@@ -8,11 +8,13 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<MethodCallableNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodCallableRule.cpp')]
 final class MethodCallableRule implements Rule
 {
 

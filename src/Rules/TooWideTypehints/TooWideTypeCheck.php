@@ -14,6 +14,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -32,6 +33,7 @@ use function sprintf;
 use function strtolower;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TooWideTypeCheck.cpp')]
 final class TooWideTypeCheck
 {
 

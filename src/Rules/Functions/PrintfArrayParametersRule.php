@@ -10,6 +10,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -25,6 +26,7 @@ use function sprintf;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PrintfArrayParametersRule.cpp')]
 final class PrintfArrayParametersRule implements Rule
 {
 

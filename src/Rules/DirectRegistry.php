@@ -3,11 +3,13 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_values;
 use function class_implements;
 use function class_parents;
 use function spl_object_id;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DirectRegistry.cpp')]
 final class DirectRegistry implements Registry
 {
 

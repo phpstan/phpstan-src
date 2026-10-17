@@ -10,6 +10,7 @@ use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -18,6 +19,7 @@ use function sprintf;
  * @implements Rule<FunctionReturnStatementsNode>
  */
 #[RegisteredRule(level: 3)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ThrowsVoidFunctionWithExplicitThrowPointRule.cpp')]
 final class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 {
 

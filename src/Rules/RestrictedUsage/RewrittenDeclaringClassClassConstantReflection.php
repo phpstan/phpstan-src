@@ -7,9 +7,11 @@ use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use function sprintf;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RewrittenDeclaringClassClassConstantReflection.cpp')]
 final class RewrittenDeclaringClassClassConstantReflection implements ClassConstantReflection
 {
 

@@ -10,12 +10,14 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\New_>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NewStaticRule.cpp')]
 final class NewStaticRule implements Rule
 {
 

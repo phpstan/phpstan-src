@@ -5,10 +5,12 @@ namespace PHPStan\Rules\RuleErrors;
 use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\RuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError259.cpp')]
 final class RuleError259 implements RuleError, LineRuleError, FileDependenciesRuleError
 {
 

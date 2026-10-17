@@ -6,10 +6,12 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Collector<never, array{string}>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ImpossibleCheckTypeReportedCollector.cpp')]
 final class ImpossibleCheckTypeReportedCollector implements Collector
 {
 

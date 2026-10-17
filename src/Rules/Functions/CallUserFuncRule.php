@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 use function ucfirst;
@@ -20,6 +21,7 @@ use function ucfirst;
  * @implements Rule<FuncCall>
  */
 #[RegisteredRule(level: 5)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallUserFuncRule.cpp')]
 final class CallUserFuncRule implements Rule
 {
 

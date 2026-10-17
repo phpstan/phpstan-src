@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
@@ -15,6 +16,7 @@ use function count;
  * @implements Rule<ClosureReturnStatementsNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TooWideClosureReturnTypehintRule.cpp')]
 final class TooWideClosureReturnTypehintRule implements Rule
 {
 

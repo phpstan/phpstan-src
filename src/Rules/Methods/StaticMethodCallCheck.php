@@ -24,6 +24,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\StaticType;
@@ -37,6 +38,7 @@ use function sprintf;
 use function strtolower;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/StaticMethodCallCheck.cpp')]
 final class StaticMethodCallCheck
 {
 

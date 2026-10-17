@@ -13,6 +13,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 
@@ -20,6 +21,7 @@ use PHPStan\Type\Type;
  * @implements Rule<Node\Expr\ClassConstFetch>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedClassConstantUsageRule.cpp')]
 final class RestrictedClassConstantUsageRule implements Rule
 {
 

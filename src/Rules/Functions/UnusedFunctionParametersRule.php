@@ -8,12 +8,14 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedParametersCheck;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 
 /**
  * @implements Rule<VariableWritesNode>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnusedFunctionParametersRule.cpp')]
 final class UnusedFunctionParametersRule implements Rule
 {
 

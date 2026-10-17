@@ -7,11 +7,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\FileNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
  * @implements Rule<FileNode>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NoPhpCodeRule.cpp')]
 final class NoPhpCodeRule implements Rule
 {
 

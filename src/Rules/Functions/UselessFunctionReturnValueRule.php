@@ -11,6 +11,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function count;
 use function sprintf;
@@ -19,6 +20,7 @@ use function sprintf;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UselessFunctionReturnValueRule.cpp')]
 final class UselessFunctionReturnValueRule implements Rule
 {
 

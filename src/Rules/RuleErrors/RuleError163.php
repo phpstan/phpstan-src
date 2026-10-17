@@ -7,10 +7,12 @@ use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\RuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError163.cpp')]
 final class RuleError163 implements RuleError, LineRuleError, MetadataRuleError, FixableNodeRuleError
 {
 

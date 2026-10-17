@@ -13,6 +13,7 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ClassConstantAccessType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\TemplateType;
@@ -23,6 +24,7 @@ use function in_array;
 use function sprintf;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncompatiblePhpDocTypeCheck.cpp')]
 final class IncompatiblePhpDocTypeCheck
 {
 

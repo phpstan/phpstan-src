@@ -16,6 +16,7 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 use function sprintf;
 
@@ -23,6 +24,7 @@ use function sprintf;
  * @implements Rule<Node\Expr\StaticCall>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallStaticMethodsRule.cpp')]
 final class CallStaticMethodsRule implements Rule
 {
 

@@ -10,6 +10,7 @@ use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
@@ -30,6 +31,7 @@ use function sprintf;
  * @implements MultipleNodeTypesRule<Node\Expr>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidIncDecOperationRule.cpp')]
 final class InvalidIncDecOperationRule implements MultipleNodeTypesRule
 {
 

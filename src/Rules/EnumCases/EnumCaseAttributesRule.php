@@ -10,11 +10,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Stmt\EnumCase>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/EnumCaseAttributesRule.cpp')]
 final class EnumCaseAttributesRule implements Rule
 {
 

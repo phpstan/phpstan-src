@@ -11,11 +11,13 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<InClassMethodNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodAttributesRule.cpp')]
 final class MethodAttributesRule implements Rule
 {
 

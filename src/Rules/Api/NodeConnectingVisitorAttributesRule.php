@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use function array_keys;
 use function in_array;
@@ -18,6 +19,7 @@ use function str_starts_with;
  * @implements Rule<MethodCall>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NodeConnectingVisitorAttributesRule.cpp')]
 final class NodeConnectingVisitorAttributesRule implements Rule
 {
 

@@ -11,6 +11,7 @@ use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function ucfirst;
 
@@ -18,6 +19,7 @@ use function ucfirst;
  * @implements Rule<InPropertyHookNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExistingClassesInPropertyHookTypehintsRule.cpp')]
 final class ExistingClassesInPropertyHookTypehintsRule implements Rule
 {
 

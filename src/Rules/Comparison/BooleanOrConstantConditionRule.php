@@ -13,6 +13,7 @@ use PHPStan\Node\BooleanOrNode;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use function count;
 use function sprintf;
@@ -21,6 +22,7 @@ use function sprintf;
  * @implements Rule<BooleanOrNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BooleanOrConstantConditionRule.cpp')]
 final class BooleanOrConstantConditionRule implements Rule
 {
 

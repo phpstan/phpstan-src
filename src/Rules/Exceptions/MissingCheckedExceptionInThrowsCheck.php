@@ -8,6 +8,7 @@ use PHPStan\Analyser\ThrowPoint;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -16,6 +17,7 @@ use PHPStan\Type\VerbosityLevel;
 use Throwable;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MissingCheckedExceptionInThrowsCheck.cpp')]
 final class MissingCheckedExceptionInThrowsCheck
 {
 

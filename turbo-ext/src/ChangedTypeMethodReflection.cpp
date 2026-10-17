@@ -3,158 +3,6 @@
 #include "CodegenDecls.h"
 #include "TypeTraits.h"
 #include "generated/ChangedTypeMethodReflection.h"
-#include "generated/TrinaryLogic.h"
-#include "generated/AcceptsResult.h"
-#include "generated/IsSuperTypeOfResult.h"
-#include "generated/AssignTargetWalkMode.h"
-#include "generated/EndStatementResult.h"
-#include "generated/EnsuredNonNullabilityResult.h"
-#include "generated/EnsuredNonNullabilityResultExpression.h"
-#include "generated/ExpressionTypeHolder.h"
-#include "generated/InternalEndStatementResult.h"
-#include "generated/InternalStatementExitPoint.h"
-#include "generated/PreparedAssignTarget.h"
-#include "generated/ProcessArrowFunctionResult.h"
-#include "generated/ProcessClosureResult.h"
-#include "generated/StatementExitPoint.h"
-#include "generated/ParametersProcessor.h"
-#include "generated/TemplateTypeReference.h"
-#include "generated/TemplateTypeScope.h"
-#include "generated/TypeProjectionHelper.h"
-#include "generated/CircularTypeAliasErrorType.h"
-#include "generated/NativeParameterReflection.h"
-#include "generated/TrivialParametersAcceptor.h"
-#include "generated/ChangedTypePropertyReflection.h"
-#include "generated/ArrayFilterArgVisitor.h"
-#include "generated/ArrayFindArgVisitor.h"
-#include "generated/ArrayMapArgVisitor.h"
-#include "generated/ArrayOffsetNormalizingVisitor.h"
-#include "generated/ArrayWalkArgVisitor.h"
-#include "generated/ArrowFunctionArgVisitor.h"
-#include "generated/ClosureArgVisitor.h"
-#include "generated/ClosureBindArgVisitor.h"
-#include "generated/ClosureBindToVarVisitor.h"
-#include "generated/CurlSetOptArgVisitor.h"
-#include "generated/CurlSetOptArrayArgVisitor.h"
-#include "generated/DeclarePositionVisitor.h"
-#include "generated/ImmediatelyInvokedClosureVisitor.h"
-#include "generated/ImplodeArgVisitor.h"
-#include "generated/MagicConstantParamDefaultVisitor.h"
-#include "generated/NewAssignedToPropertyVisitor.h"
-#include "generated/ParentStmtTypesVisitor.h"
-#include "generated/TraitCollectingVisitor.h"
-#include "generated/TryCatchTypeVisitor.h"
-#include "generated/TypeTraverserInstanceofVisitor.h"
-#include "generated/HasMethodType.h"
-#include "generated/ClassConstantAccessType.h"
-#include "generated/TemplateBenevolentUnionType.h"
-#include "generated/TemplateBooleanType.h"
-#include "generated/TemplateConstantArrayType.h"
-#include "generated/TemplateConstantIntegerType.h"
-#include "generated/TemplateConstantStringType.h"
-#include "generated/TemplateFloatType.h"
-#include "generated/TemplateGenericObjectType.h"
-#include "generated/TemplateIntegerType.h"
-#include "generated/TemplateIntersectionType.h"
-#include "generated/TemplateIterableType.h"
-#include "generated/TemplateKeyOfType.h"
-#include "generated/TemplateMixedType.h"
-#include "generated/TemplateNullType.h"
-#include "generated/TemplateObjectShapeType.h"
-#include "generated/TemplateObjectType.h"
-#include "generated/TemplateObjectWithoutClassType.h"
-#include "generated/TemplateStringType.h"
-#include "generated/GetTemplateTypeType.h"
-#include "generated/KeyOfType.h"
-#include "generated/NewObjectType.h"
-#include "generated/OffsetAccessType.h"
-#include "generated/StrictMixedType.h"
-#include "generated/StringAlwaysAcceptingObjectWithToStringType.h"
-#include "generated/StringNeverAcceptingObjectWithToStringType.h"
-#include "generated/ValueOfType.h"
-#include "generated/PhpParameterReflection.h"
-#include "generated/UnresolvableTypeHelper.h"
-#include "generated/ScalarHandler.h"
-#include "generated/EvalHandler.h"
-#include "generated/ExitHandler.h"
-#include "generated/PrintHandler.h"
-#include "generated/ThrowHandler.h"
-#include "generated/ShellExecHandler.h"
-#include "generated/IncludeHandler.h"
-#include "generated/ErrorSuppressHandler.h"
-#include "generated/ExistingArrayDimFetchHandler.h"
-#include "generated/IssetExprHandler.h"
-#include "generated/NativeTypeExprHandler.h"
-#include "generated/TypeExprHandler.h"
-#include "generated/UnsetOffsetExprHandler.h"
-#include "generated/AlwaysRememberedExprHandler.h"
-#include "generated/BlockHandler.h"
-#include "generated/BreakContinueHandler.h"
-#include "generated/EchoHandler.h"
-#include "generated/EnumCaseHandler.h"
-#include "generated/GotoHandler.h"
-#include "generated/GroupUseHandler.h"
-#include "generated/InlineHtmlHandler.h"
-#include "generated/LabelHandler.h"
-#include "generated/NamespaceHandler.h"
-#include "generated/NopHandler.h"
-#include "generated/UseHandler.h"
-#include "generated/ReturnHandler.h"
-#include "generated/GlobalHandler.h"
-#include "generated/DeclareHandler.h"
-#include "generated/ConstHandler.h"
-#include "generated/ConditionalExpressionHolder.h"
-#include "generated/ArrayHandler.h"
-#include "generated/ClassConstFetchHandler.h"
-#include "generated/CoalesceHandler.h"
-#include "generated/ConstFetchHandler.h"
-#include "generated/EmptyHandler.h"
-#include "generated/InstanceofHandler.h"
-#include "generated/IssetHandler.h"
-#include "generated/NullsafeMethodCallHandler.h"
-#include "generated/NullsafePropertyFetchHandler.h"
-#include "generated/PipeHandler.h"
-#include "generated/PostDecHandler.h"
-#include "generated/PostIncHandler.h"
-#include "generated/PreDecHandler.h"
-#include "generated/PreIncHandler.h"
-#include "generated/ClassConstHandler.h"
-#include "generated/ClassLikeHandler.h"
-#include "generated/IfHandler.h"
-#include "generated/PropertyHandler.h"
-#include "generated/StaticVariableHandler.h"
-#include "generated/SwitchHandler.h"
-#include "generated/TraitHandler.h"
-#include "generated/TryCatchHandler.h"
-#include "generated/AssignOpHandler.h"
-#include "generated/BinaryOpHandler.h"
-#include "generated/BitwiseNotHandler.h"
-#include "generated/BooleanAndHandler.h"
-#include "generated/BooleanNotHandler.h"
-#include "generated/BooleanOrHandler.h"
-#include "generated/CastHandler.h"
-#include "generated/CastStringHandler.h"
-#include "generated/InterpolatedStringHandler.h"
-#include "generated/UnaryMinusHandler.h"
-#include "generated/UnaryPlusHandler.h"
-#include "generated/FunctionCallableNodeHandler.h"
-#include "generated/InstantiationCallableNodeHandler.h"
-#include "generated/MethodCallableNodeHandler.h"
-#include "generated/SetExistingOffsetValueTypeExprHandler.h"
-#include "generated/SetOffsetValueTypeExprHandler.h"
-#include "generated/StaticMethodCallableNodeHandler.h"
-#include "generated/YieldFromHandler.h"
-#include "generated/YieldHandler.h"
-#include "generated/ExpressionHandler.h"
-#include "generated/UnsetHandler.h"
-#include "generated/DefinedVariableRule.h"
-#include "generated/CallMethodsRule.h"
-#include "generated/MethodCallCheck.h"
-#include "generated/RuleLevelHelper.h"
-#include "generated/AccessPropertiesRule.h"
-#include "generated/AccessPropertiesCheck.h"
-#include "generated/CallToFunctionParametersRule.h"
-#include "generated/FunctionCallParametersCheck.h"
 
 zend_class_entry *pt_ce_changed_type_method_reflection = nullptr;
 
@@ -253,6 +101,13 @@ namespace pgen::ChangedTypeMethodReflection {
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			bool r5;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_isStatic(Z_OBJ_P(p1), &r5))) return false;
+			zv::Val o6 = zv::Val::boolean(r5);
+			vd2 = std::move(o6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "isStatic", "isstatic", 8, 0, NULL, vd2.raw()))) return false;
 		}
@@ -278,6 +133,13 @@ namespace pgen::ChangedTypeMethodReflection {
 			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_isPrivate(Z_OBJ_P(p1), &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);
 			vd2 = std::move(o4);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			bool r5;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_isPrivate(Z_OBJ_P(p1), &r5))) return false;
+			zv::Val o6 = zv::Val::boolean(r5);
+			vd2 = std::move(o6);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -329,6 +191,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDocComment(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p1, "getDocComment", "getdoccomment", 13, 0, NULL, vd2.raw()))) return false;
 		}
@@ -376,6 +244,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getPrototype(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getPrototype(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -471,6 +345,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_isDeprecated(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p1, "isDeprecated", "isdeprecated", 12, 0, NULL, vd2.raw()))) return false;
 		}
@@ -495,6 +375,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeprecatedDescription(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDeprecatedDescription(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -567,6 +453,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_isInternal(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_isInternal(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -647,6 +539,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_hasSideEffects(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p1, "hasSideEffects", "hassideeffects", 14, 0, NULL, vd2.raw()))) return false;
 		}
@@ -685,6 +583,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_acceptsNamedArguments(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_acceptsNamedArguments(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -727,6 +631,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_returnsByReference(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p1, "returnsByReference", "returnsbyreference", 18, 0, NULL, vd2.raw()))) return false;
 		}
@@ -754,18 +664,24 @@ namespace pgen::ChangedTypeMethodReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_isAbstract(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p1, "isAbstract", "isabstract", 10, 0, NULL, vd2.raw()))) return false;
 		}
 		l_abstract = std::move(vd2);
 	}
 	 {
-		uint8_t ty4 = Z_TYPE_P(zv::Ref(l_abstract.raw()).deref().raw());
-		if ((ty4 == IS_TRUE || ty4 == IS_FALSE)) {
+		uint8_t ty5 = Z_TYPE_P(zv::Ref(l_abstract.raw()).deref().raw());
+		if ((ty5 == IS_TRUE || ty5 == IS_FALSE)) {
 			 {
-				zv::Val r5;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_createFromBoolean((Z_TYPE_P(l_abstract.raw()) == IS_TRUE), r5.raw()))) return false;
-				*ret = r5.take();
+				zv::Val r6;
+				if (UNEXPECTED(!pgen::TrinaryLogic::m_createFromBoolean((Z_TYPE_P(l_abstract.raw()) == IS_TRUE), r6.raw()))) return false;
+				*ret = r6.take();
 				return true;
 			}
 		}
@@ -794,6 +710,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_isPure(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p1, "isPure", "ispure", 6, 0, NULL, vd2.raw()))) return false;
 		}
@@ -818,6 +740,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getPureUnlessCallableIsImpureParameters(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getPureUnlessCallableIsImpureParameters(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -846,6 +774,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getPureUnlessParameterPassedParameters(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p1, "getPureUnlessParameterPassedParameters", "getpureunlessparameterpassedparameters", 38, 0, NULL, vd2.raw()))) return false;
 		}
@@ -872,6 +806,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getAttributes(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, p1, "getAttributes", "getattributes", 13, 0, NULL, vd2.raw()))) return false;
 		}
@@ -896,6 +836,12 @@ namespace pgen::ChangedTypeMethodReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_mustUseReturnValue(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_mustUseReturnValue(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
 			vd2_done = true;
 		}
 		if (!vd2_done) {

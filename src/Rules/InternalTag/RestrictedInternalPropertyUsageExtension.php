@@ -6,9 +6,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Rules\RestrictedUsage\RestrictedPropertyUsageExtension;
 use PHPStan\Rules\RestrictedUsage\RestrictedUsage;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function strtolower;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedInternalPropertyUsageExtension.cpp')]
 final class RestrictedInternalPropertyUsageExtension implements RestrictedPropertyUsageExtension
 {
 

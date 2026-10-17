@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function strtolower;
 
 /**
@@ -15,6 +16,7 @@ use function strtolower;
  */
 #[RegisteredRule(level: 0)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DuplicateDeclarationRule.cpp')]
 final class DuplicateDeclarationRule implements Rule
 {
 

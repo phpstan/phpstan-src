@@ -13,6 +13,7 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use Throwable;
 use function array_merge;
 use function sprintf;
@@ -21,6 +22,7 @@ use function sprintf;
  * @implements Rule<Node\Stmt\Catch_>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CaughtExceptionExistenceRule.cpp')]
 final class CaughtExceptionExistenceRule implements Rule
 {
 

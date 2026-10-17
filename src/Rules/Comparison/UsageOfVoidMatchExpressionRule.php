@@ -7,11 +7,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Expr\Match_>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UsageOfVoidMatchExpressionRule.cpp')]
 final class UsageOfVoidMatchExpressionRule implements Rule
 {
 

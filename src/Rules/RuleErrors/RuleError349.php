@@ -8,10 +8,12 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError349.cpp')]
 final class RuleError349 implements RuleError, FileRuleError, TipRuleError, IdentifierRuleError, NonIgnorableRuleError, FileDependenciesRuleError
 {
 

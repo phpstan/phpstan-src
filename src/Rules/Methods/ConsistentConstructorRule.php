@@ -10,11 +10,13 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Classes\ConsistentConstructorHelper;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 use function strtolower;
 
 /** @implements Rule<InClassMethodNode> */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConsistentConstructorRule.cpp')]
 final class ConsistentConstructorRule implements Rule
 {
 

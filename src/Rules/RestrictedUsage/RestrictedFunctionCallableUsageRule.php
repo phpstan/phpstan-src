@@ -12,11 +12,13 @@ use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<FunctionCallableNode>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedFunctionCallableUsageRule.cpp')]
 final class RestrictedFunctionCallableUsageRule implements Rule
 {
 

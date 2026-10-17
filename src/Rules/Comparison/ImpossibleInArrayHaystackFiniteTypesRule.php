@@ -10,6 +10,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -30,6 +31,7 @@ use function strtolower;
  *
  * @implements Rule<FuncCall>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ImpossibleInArrayHaystackFiniteTypesRule.cpp')]
 final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 {
 

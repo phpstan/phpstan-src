@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function in_array;
 use function sprintf;
 
@@ -15,6 +16,7 @@ use function sprintf;
  * @implements Rule<Node\Stmt\ClassMethod>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AbstractMethodInNonAbstractClassRule.cpp')]
 final class AbstractMethodInNonAbstractClassRule implements Rule
 {
 

@@ -11,11 +11,13 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClosureNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<InClosureNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClosureAttributesRule.cpp')]
 final class ClosureAttributesRule implements Rule
 {
 

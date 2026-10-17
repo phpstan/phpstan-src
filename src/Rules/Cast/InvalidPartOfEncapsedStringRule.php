@@ -9,6 +9,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -18,6 +19,7 @@ use function sprintf;
  * @implements Rule<Node\Scalar\InterpolatedString>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidPartOfEncapsedStringRule.cpp')]
 final class InvalidPartOfEncapsedStringRule implements Rule
 {
 

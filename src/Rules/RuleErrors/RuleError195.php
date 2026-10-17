@@ -7,10 +7,12 @@ use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError195.cpp')]
 final class RuleError195 implements RuleError, LineRuleError, NonIgnorableRuleError, FixableNodeRuleError
 {
 

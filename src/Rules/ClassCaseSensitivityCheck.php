@@ -7,12 +7,14 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Parser\UseAliasVisitor;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function implode;
 use function sprintf;
 use function strtolower;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassCaseSensitivityCheck.cpp')]
 final class ClassCaseSensitivityCheck
 {
 

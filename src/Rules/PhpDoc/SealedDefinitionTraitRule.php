@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
@@ -16,6 +17,7 @@ use function count;
  */
 #[RegisteredRule(level: 0)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SealedDefinitionTraitRule.cpp')]
 final class SealedDefinitionTraitRule implements Rule
 {
 

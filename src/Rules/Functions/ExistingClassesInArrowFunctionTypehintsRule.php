@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use function array_merge;
@@ -16,6 +17,7 @@ use function array_merge;
  * @implements Rule<Node\Expr\ArrowFunction>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExistingClassesInArrowFunctionTypehintsRule.cpp')]
 final class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 {
 

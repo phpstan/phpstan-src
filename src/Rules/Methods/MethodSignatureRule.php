@@ -15,6 +15,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Generic\GenericStaticType;
@@ -38,6 +39,7 @@ use function strtolower;
  */
 // autoTag: false - not registered as a rule, checked as part of OverridingMethodRule
 #[AutowiredService(autoTag: false)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodSignatureRule.cpp')]
 final class MethodSignatureRule implements Rule
 {
 

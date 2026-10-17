@@ -9,10 +9,12 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError215.cpp')]
 final class RuleError215 implements RuleError, LineRuleError, FileRuleError, IdentifierRuleError, NonIgnorableRuleError, FixableNodeRuleError
 {
 

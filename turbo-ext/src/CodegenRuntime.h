@@ -645,6 +645,13 @@ void arrayPop(zval *array, zval *ret);
 
 /* }}} */
 
+/* {{{ array class constants: persistent, immutable, built at declaration */
+
+HashTable *constArrayNew(uint32_t size);
+void constArrayFinish(HashTable *table, zval *out);
+
+/* }}} */
+
 /* {{{ literals: interned at module startup, never refcounted */
 
 zend_string *internLiteral(const char *s, size_t len);

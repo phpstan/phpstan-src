@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 
@@ -15,6 +16,7 @@ use PHPStan\Type\Type;
  * @implements Rule<InPropertyHookNode>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncompatiblePropertyHookPhpDocTypeRule.cpp')]
 final class IncompatiblePropertyHookPhpDocTypeRule implements Rule
 {
 

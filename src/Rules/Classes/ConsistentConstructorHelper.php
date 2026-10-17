@@ -6,8 +6,10 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConsistentConstructorHelper.cpp')]
 final class ConsistentConstructorHelper
 {
 

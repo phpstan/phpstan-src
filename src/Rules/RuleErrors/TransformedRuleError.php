@@ -5,10 +5,12 @@ namespace PHPStan\Rules\RuleErrors;
 use PHPStan\Analyser\Error;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TransformedRuleError.cpp')]
 final class TransformedRuleError implements IdentifierRuleError
 {
 

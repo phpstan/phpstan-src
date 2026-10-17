@@ -20,6 +20,7 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
@@ -29,6 +30,7 @@ use function sprintf;
 use function substr;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AssertRuleHelper.cpp')]
 final class AssertRuleHelper
 {
 

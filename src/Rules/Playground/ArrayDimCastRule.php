@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -14,6 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<ArrayDimFetch>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayDimCastRule.cpp')]
 final class ArrayDimCastRule implements Rule
 {
 

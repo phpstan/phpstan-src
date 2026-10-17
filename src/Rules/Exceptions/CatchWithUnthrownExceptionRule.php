@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -17,6 +18,7 @@ use function sprintf;
  * @implements Rule<CatchWithUnthrownExceptionNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CatchWithUnthrownExceptionRule.cpp')]
 final class CatchWithUnthrownExceptionRule implements Rule
 {
 

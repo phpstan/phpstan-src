@@ -9,6 +9,7 @@ use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ArrayUnpackingHelper;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Type;
@@ -32,6 +33,7 @@ use const PHP_INT_MAX;
  * @implements Rule<LiteralArrayNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DuplicateKeysInLiteralArraysRule.cpp')]
 final class DuplicateKeysInLiteralArraysRule implements Rule
 {
 

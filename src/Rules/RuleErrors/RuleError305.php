@@ -6,10 +6,12 @@ use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\RuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError305.cpp')]
 final class RuleError305 implements RuleError, IdentifierRuleError, MetadataRuleError, FileDependenciesRuleError
 {
 

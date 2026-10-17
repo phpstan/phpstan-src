@@ -13,6 +13,7 @@ use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Parser\TryCatchTypeVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -28,6 +29,7 @@ use function sprintf;
  * @implements Rule<MatchExpressionNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MatchExpressionRule.cpp')]
 final class MatchExpressionRule implements Rule
 {
 

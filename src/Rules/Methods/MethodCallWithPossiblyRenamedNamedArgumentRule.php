@@ -10,6 +10,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function sprintf;
 
@@ -17,6 +18,7 @@ use function sprintf;
  * @implements Rule<CollectedDataNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodCallWithPossiblyRenamedNamedArgumentRule.cpp')]
 final class MethodCallWithPossiblyRenamedNamedArgumentRule implements Rule
 {
 

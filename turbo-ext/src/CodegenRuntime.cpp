@@ -1101,6 +1101,23 @@ bool callGetArgs(pt_method_site &site, zval *node, zval *ret)
 
 /* }}} */
 
+HashTable *constArrayNew(uint32_t size)
+{
+	HashTable *table = (HashTable *) pemalloc(sizeof(HashTable), 1);
+	zend_hash_init(table, size, NULL, NULL, 1);
+	return table;
+}
+
+void constArrayFinish(HashTable *table, zval *out)
+{
+	/* the engine references it for the process lifetime, as the hand
+	 * ports' constant lists */
+	GC_ADD_FLAGS(table, IS_ARRAY_IMMUTABLE);
+	GC_SET_REFCOUNT(table, 2);
+	ZVAL_ARR(out, table);
+	Z_TYPE_INFO_P(out) = IS_ARRAY;
+}
+
 zend_string *internLiteral(const char *s, size_t len)
 {
 	return zend_string_init_interned(s, len, 1);

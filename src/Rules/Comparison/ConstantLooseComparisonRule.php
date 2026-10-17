@@ -11,6 +11,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -18,6 +19,7 @@ use function sprintf;
  * @implements Rule<Node\Expr\BinaryOp>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConstantLooseComparisonRule.cpp')]
 final class ConstantLooseComparisonRule implements Rule
 {
 

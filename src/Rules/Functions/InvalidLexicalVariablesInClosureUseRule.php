@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_filter;
 use function array_map;
 use function in_array;
@@ -17,6 +18,7 @@ use function sprintf;
  * @implements Rule<Node\Expr\Closure>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidLexicalVariablesInClosureUseRule.cpp')]
 final class InvalidLexicalVariablesInClosureUseRule implements Rule
 {
 

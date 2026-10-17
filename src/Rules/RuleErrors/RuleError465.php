@@ -8,10 +8,12 @@ use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError465.cpp')]
 final class RuleError465 implements RuleError, IdentifierRuleError, NonIgnorableRuleError, FixableNodeRuleError, FileDependenciesRuleError
 {
 

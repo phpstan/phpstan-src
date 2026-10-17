@@ -7,12 +7,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodNeverRule.cpp')]
 final class MethodNeverRule implements Rule
 {
 

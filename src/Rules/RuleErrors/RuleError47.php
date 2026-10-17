@@ -7,10 +7,12 @@ use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError47.cpp')]
 final class RuleError47 implements RuleError, LineRuleError, FileRuleError, TipRuleError, MetadataRuleError
 {
 

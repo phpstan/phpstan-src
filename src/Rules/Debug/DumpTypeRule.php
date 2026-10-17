@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
@@ -17,6 +18,7 @@ use function strtolower;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DumpTypeRule.cpp')]
 final class DumpTypeRule implements Rule
 {
 

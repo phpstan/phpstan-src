@@ -190,7 +190,15 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
 		}
 	}
 	plan.ops = ops;
-	pt_type_ops_attach(linked, ops);
+	/* only a class with an op takes a table slot: an absent entry falls back
+	 * to the engine like an empty one (a thousand rule and helper classes
+	 * have none) */
+	for (int op = 0; op < PT_OP_COUNT; op++) {
+		if (ops->entries[op].fn != NULL) {
+			pt_type_ops_attach(linked, ops);
+			break;
+		}
+	}
 	return true;
 }
 

@@ -11,12 +11,14 @@ use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements Rule<ClassPropertiesNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TooWidePropertyTypeRule.cpp')]
 final class TooWidePropertyTypeRule implements Rule
 {
 

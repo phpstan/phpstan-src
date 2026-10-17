@@ -12,6 +12,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\TypeUtils;
 use function in_array;
 use function sprintf;
@@ -21,6 +22,7 @@ use function strtolower;
  * @implements Rule<PropertyAssignNode>
  */
 #[RegisteredRule(level: 3)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ReadOnlyByPhpDocPropertyAssignRule.cpp')]
 final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 {
 

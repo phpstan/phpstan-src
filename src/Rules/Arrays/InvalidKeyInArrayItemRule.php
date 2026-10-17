@@ -10,6 +10,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -19,6 +20,7 @@ use function sprintf;
  * @implements Rule<Node\ArrayItem>
  */
 #[RegisteredRule(level: 3)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidKeyInArrayItemRule.cpp')]
 final class InvalidKeyInArrayItemRule implements Rule
 {
 

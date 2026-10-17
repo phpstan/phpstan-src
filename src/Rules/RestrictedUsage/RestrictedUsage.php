@@ -2,9 +2,12 @@
 
 namespace PHPStan\Rules\RestrictedUsage;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
+
 /**
  * @api
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedUsage.cpp')]
 final class RestrictedUsage
 {
 

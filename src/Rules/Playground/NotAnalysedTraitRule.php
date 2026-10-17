@@ -9,12 +9,14 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\Traits\TraitDeclarationCollector;
 use PHPStan\Rules\Traits\TraitUseCollector;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function strtolower;
 
 /**
  * @implements Rule<CollectedDataNode>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NotAnalysedTraitRule.cpp')]
 final class NotAnalysedTraitRule implements Rule
 {
 

@@ -12,6 +12,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use function array_key_exists;
 use function in_array;
@@ -21,6 +22,7 @@ use function sprintf;
  * @implements Rule<ClassConstantsNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnusedPrivateConstantRule.cpp')]
 final class UnusedPrivateConstantRule implements Rule
 {
 

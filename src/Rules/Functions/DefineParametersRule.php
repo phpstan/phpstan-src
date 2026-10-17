@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function strtolower;
 
@@ -16,6 +17,7 @@ use function strtolower;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DefineParametersRule.cpp')]
 final class DefineParametersRule implements Rule
 {
 

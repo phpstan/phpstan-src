@@ -14,6 +14,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function is_string;
@@ -23,6 +24,7 @@ use function sprintf;
  * @implements Rule<PropertyAssignNode>
  */
 #[RegisteredRule(level: 3)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TypesAssignedToPropertiesRule.cpp')]
 final class TypesAssignedToPropertiesRule implements Rule
 {
 

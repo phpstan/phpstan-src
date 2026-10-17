@@ -13,6 +13,7 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
@@ -20,6 +21,7 @@ use function sprintf;
 use function strtolower;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RequireExtendsCheck.cpp')]
 final class RequireExtendsCheck
 {
 

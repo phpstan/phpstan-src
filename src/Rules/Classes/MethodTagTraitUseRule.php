@@ -8,12 +8,14 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<InTraitNode>
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodTagTraitUseRule.cpp')]
 final class MethodTagTraitUseRule implements Rule
 {
 

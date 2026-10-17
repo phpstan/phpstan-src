@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function in_array;
 use function is_string;
 use function sprintf;
@@ -15,6 +16,7 @@ use function sprintf;
  * @implements Rule<Node\Param>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidParameterNameRule.cpp')]
 final class InvalidParameterNameRule implements Rule
 {
 

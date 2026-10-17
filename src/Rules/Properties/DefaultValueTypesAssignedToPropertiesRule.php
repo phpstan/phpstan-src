@@ -9,6 +9,7 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -16,6 +17,7 @@ use function sprintf;
  * @implements Rule<ClassPropertyNode>
  */
 #[RegisteredRule(level: 3)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DefaultValueTypesAssignedToPropertiesRule.cpp')]
 final class DefaultValueTypesAssignedToPropertiesRule implements Rule
 {
 

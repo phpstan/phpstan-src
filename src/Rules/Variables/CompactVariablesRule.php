@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -19,6 +20,7 @@ use function strtolower;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CompactVariablesRule.cpp')]
 final class CompactVariablesRule implements Rule
 {
 

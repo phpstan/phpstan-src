@@ -3,158 +3,6 @@
 #include "CodegenDecls.h"
 #include "TypeTraits.h"
 #include "generated/DefinedVariableRule.h"
-#include "generated/TrinaryLogic.h"
-#include "generated/AcceptsResult.h"
-#include "generated/IsSuperTypeOfResult.h"
-#include "generated/AssignTargetWalkMode.h"
-#include "generated/EndStatementResult.h"
-#include "generated/EnsuredNonNullabilityResult.h"
-#include "generated/EnsuredNonNullabilityResultExpression.h"
-#include "generated/ExpressionTypeHolder.h"
-#include "generated/InternalEndStatementResult.h"
-#include "generated/InternalStatementExitPoint.h"
-#include "generated/PreparedAssignTarget.h"
-#include "generated/ProcessArrowFunctionResult.h"
-#include "generated/ProcessClosureResult.h"
-#include "generated/StatementExitPoint.h"
-#include "generated/ParametersProcessor.h"
-#include "generated/TemplateTypeReference.h"
-#include "generated/TemplateTypeScope.h"
-#include "generated/TypeProjectionHelper.h"
-#include "generated/CircularTypeAliasErrorType.h"
-#include "generated/NativeParameterReflection.h"
-#include "generated/TrivialParametersAcceptor.h"
-#include "generated/ChangedTypeMethodReflection.h"
-#include "generated/ChangedTypePropertyReflection.h"
-#include "generated/ArrayFilterArgVisitor.h"
-#include "generated/ArrayFindArgVisitor.h"
-#include "generated/ArrayMapArgVisitor.h"
-#include "generated/ArrayOffsetNormalizingVisitor.h"
-#include "generated/ArrayWalkArgVisitor.h"
-#include "generated/ArrowFunctionArgVisitor.h"
-#include "generated/ClosureArgVisitor.h"
-#include "generated/ClosureBindArgVisitor.h"
-#include "generated/ClosureBindToVarVisitor.h"
-#include "generated/CurlSetOptArgVisitor.h"
-#include "generated/CurlSetOptArrayArgVisitor.h"
-#include "generated/DeclarePositionVisitor.h"
-#include "generated/ImmediatelyInvokedClosureVisitor.h"
-#include "generated/ImplodeArgVisitor.h"
-#include "generated/MagicConstantParamDefaultVisitor.h"
-#include "generated/NewAssignedToPropertyVisitor.h"
-#include "generated/ParentStmtTypesVisitor.h"
-#include "generated/TraitCollectingVisitor.h"
-#include "generated/TryCatchTypeVisitor.h"
-#include "generated/TypeTraverserInstanceofVisitor.h"
-#include "generated/HasMethodType.h"
-#include "generated/ClassConstantAccessType.h"
-#include "generated/TemplateBenevolentUnionType.h"
-#include "generated/TemplateBooleanType.h"
-#include "generated/TemplateConstantArrayType.h"
-#include "generated/TemplateConstantIntegerType.h"
-#include "generated/TemplateConstantStringType.h"
-#include "generated/TemplateFloatType.h"
-#include "generated/TemplateGenericObjectType.h"
-#include "generated/TemplateIntegerType.h"
-#include "generated/TemplateIntersectionType.h"
-#include "generated/TemplateIterableType.h"
-#include "generated/TemplateKeyOfType.h"
-#include "generated/TemplateMixedType.h"
-#include "generated/TemplateNullType.h"
-#include "generated/TemplateObjectShapeType.h"
-#include "generated/TemplateObjectType.h"
-#include "generated/TemplateObjectWithoutClassType.h"
-#include "generated/TemplateStringType.h"
-#include "generated/GetTemplateTypeType.h"
-#include "generated/KeyOfType.h"
-#include "generated/NewObjectType.h"
-#include "generated/OffsetAccessType.h"
-#include "generated/StrictMixedType.h"
-#include "generated/StringAlwaysAcceptingObjectWithToStringType.h"
-#include "generated/StringNeverAcceptingObjectWithToStringType.h"
-#include "generated/ValueOfType.h"
-#include "generated/PhpParameterReflection.h"
-#include "generated/UnresolvableTypeHelper.h"
-#include "generated/ScalarHandler.h"
-#include "generated/EvalHandler.h"
-#include "generated/ExitHandler.h"
-#include "generated/PrintHandler.h"
-#include "generated/ThrowHandler.h"
-#include "generated/ShellExecHandler.h"
-#include "generated/IncludeHandler.h"
-#include "generated/ErrorSuppressHandler.h"
-#include "generated/ExistingArrayDimFetchHandler.h"
-#include "generated/IssetExprHandler.h"
-#include "generated/NativeTypeExprHandler.h"
-#include "generated/TypeExprHandler.h"
-#include "generated/UnsetOffsetExprHandler.h"
-#include "generated/AlwaysRememberedExprHandler.h"
-#include "generated/BlockHandler.h"
-#include "generated/BreakContinueHandler.h"
-#include "generated/EchoHandler.h"
-#include "generated/EnumCaseHandler.h"
-#include "generated/GotoHandler.h"
-#include "generated/GroupUseHandler.h"
-#include "generated/InlineHtmlHandler.h"
-#include "generated/LabelHandler.h"
-#include "generated/NamespaceHandler.h"
-#include "generated/NopHandler.h"
-#include "generated/UseHandler.h"
-#include "generated/ReturnHandler.h"
-#include "generated/GlobalHandler.h"
-#include "generated/DeclareHandler.h"
-#include "generated/ConstHandler.h"
-#include "generated/ConditionalExpressionHolder.h"
-#include "generated/ArrayHandler.h"
-#include "generated/ClassConstFetchHandler.h"
-#include "generated/CoalesceHandler.h"
-#include "generated/ConstFetchHandler.h"
-#include "generated/EmptyHandler.h"
-#include "generated/InstanceofHandler.h"
-#include "generated/IssetHandler.h"
-#include "generated/NullsafeMethodCallHandler.h"
-#include "generated/NullsafePropertyFetchHandler.h"
-#include "generated/PipeHandler.h"
-#include "generated/PostDecHandler.h"
-#include "generated/PostIncHandler.h"
-#include "generated/PreDecHandler.h"
-#include "generated/PreIncHandler.h"
-#include "generated/ClassConstHandler.h"
-#include "generated/ClassLikeHandler.h"
-#include "generated/IfHandler.h"
-#include "generated/PropertyHandler.h"
-#include "generated/StaticVariableHandler.h"
-#include "generated/SwitchHandler.h"
-#include "generated/TraitHandler.h"
-#include "generated/TryCatchHandler.h"
-#include "generated/AssignOpHandler.h"
-#include "generated/BinaryOpHandler.h"
-#include "generated/BitwiseNotHandler.h"
-#include "generated/BooleanAndHandler.h"
-#include "generated/BooleanNotHandler.h"
-#include "generated/BooleanOrHandler.h"
-#include "generated/CastHandler.h"
-#include "generated/CastStringHandler.h"
-#include "generated/InterpolatedStringHandler.h"
-#include "generated/UnaryMinusHandler.h"
-#include "generated/UnaryPlusHandler.h"
-#include "generated/FunctionCallableNodeHandler.h"
-#include "generated/InstantiationCallableNodeHandler.h"
-#include "generated/MethodCallableNodeHandler.h"
-#include "generated/SetExistingOffsetValueTypeExprHandler.h"
-#include "generated/SetOffsetValueTypeExprHandler.h"
-#include "generated/StaticMethodCallableNodeHandler.h"
-#include "generated/YieldFromHandler.h"
-#include "generated/YieldHandler.h"
-#include "generated/ExpressionHandler.h"
-#include "generated/UnsetHandler.h"
-#include "generated/CallMethodsRule.h"
-#include "generated/MethodCallCheck.h"
-#include "generated/RuleLevelHelper.h"
-#include "generated/AccessPropertiesRule.h"
-#include "generated/AccessPropertiesCheck.h"
-#include "generated/CallToFunctionParametersRule.h"
-#include "generated/FunctionCallParametersCheck.h"
 
 zend_class_entry *pt_ce_defined_variable_rule = nullptr;
 
@@ -172,7 +20,7 @@ static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Scalar\String_ */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Expr\BinaryOp\Identical */
 static pt_method_site pg_site_9; /* method_filterByTruthyValue_9 */
 static pgrt::PropSite pg_site_10; /* prop_name_10 */
-static pt_method_site pg_site_11; /* method_checkStringCastableName_11 */
+static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Expr\Variable */
 static pt_method_site pg_site_13; /* method_isInClass_13 */
 static pt_method_site pg_site_14; /* method_isInAnonymousFunction_14 */
@@ -365,53 +213,48 @@ namespace pgen::DefinedVariableRule {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_defined_variable_rule, "name", 4, o44.raw()))) return false;
 					p43 = o44.raw();
 				}
-				zval av45[5];
-				ZVAL_COPY_VALUE(&av45[0], p_scope);
-				ZVAL_COPY_VALUE(&av45[1], zv::Ref(p43).deref().raw());
-				ZVAL_COPY_VALUE(&av45[2], &pg_lit[1]);
-				zval z46;
-				ZVAL_NULL(&z46);
-				ZVAL_COPY_VALUE(&av45[3], &z46);
-				ZVAL_COPY_VALUE(&av45[4], &pg_lit[2]);
-				zv::Val r47;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p42, "checkStringCastableName", "checkstringcastablename", 23, 5, av45, r47.raw(), NULL))) return false;
-				zval av48[2];
-				ZVAL_COPY_VALUE(&av48[0], o41.raw());
-				ZVAL_COPY_VALUE(&av48[1], r47.raw());
-				zv::Val r49;
-				if (UNEXPECTED(!pgrt::arrayMerge(2, av48, r49.raw()))) return false;
-				l_errors = std::move(r49);
+				if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p43).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\NonStringableDynamicAccessCheck::checkStringCastableName", 2, "name", "PhpParser\\Node\\Expr", zv::Ref(p43).deref().raw()); return false; }
+				zval z45;
+				ZVAL_NULL(&z45);
+				zv::Val r46;
+				if (UNEXPECTED(!pgen::NonStringableDynamicAccessCheck::m_checkStringCastableName(Z_OBJ_P(p42), p_scope, zv::Ref(p43).deref().raw(), &pg_lit[1], &z45, &pg_lit[2], r46.raw()))) return false;
+				zval av47[2];
+				ZVAL_COPY_VALUE(&av47[0], o41.raw());
+				ZVAL_COPY_VALUE(&av47[1], r46.raw());
+				zv::Val r48;
+				if (UNEXPECTED(!pgrt::arrayMerge(2, av47, r48.raw()))) return false;
+				l_errors = std::move(r48);
 			}
 		}
 		}
 	}
 	 {
-		zv::Val a51 = zv::Val::copyOf(zv::Ref(l_variableNameScopes.raw()).deref());
-		HashTable *ht50 = Z_ARRVAL_P(a51.raw());
-		zval *v52;
-		zend_ulong n53;
-		zend_string *s54;
-		ZEND_HASH_FOREACH_KEY_VAL(ht50, n53, s54, v52) {
-			(void) n53; (void) s54;
-			zval k55;
-			if (s54 != NULL) { ZVAL_STR(&k55, s54); } else { ZVAL_LONG(&k55, (zend_long) n53); }
-			l_name = zv::Val::copyOf(zv::Ref(&k55));
-			l_variableScope = zv::Ref(v52).deref().raw();
+		zv::Val a50 = zv::Val::copyOf(zv::Ref(l_variableNameScopes.raw()).deref());
+		HashTable *ht49 = Z_ARRVAL_P(a50.raw());
+		zval *v51;
+		zend_ulong n52;
+		zend_string *s53;
+		ZEND_HASH_FOREACH_KEY_VAL(ht49, n52, s53, v51) {
+			(void) n52; (void) s53;
+			zval k54;
+			if (s53 != NULL) { ZVAL_STR(&k54, s53); } else { ZVAL_LONG(&k54, (zend_long) n52); }
+			l_name = zv::Val::copyOf(zv::Ref(&k54));
+			l_variableScope = zv::Ref(v51).deref().raw();
 			 {
 				 {
-					zv::Val o58 = zv::Val::copyOf(zv::Ref(l_errors.raw()));
-					zv::Val cv59 = zv::Val::copyOf(zv::Ref(l_name.raw()));
-					if (UNEXPECTED(!pgrt::castString(cv59.raw()))) return false;
+					zv::Val o57 = zv::Val::copyOf(zv::Ref(l_errors.raw()));
+					zv::Val cv58 = zv::Val::copyOf(zv::Ref(l_name.raw()));
+					if (UNEXPECTED(!pgrt::castString(cv58.raw()))) return false;
 					if (UNEXPECTED(EG(exception))) return false;
 					if (UNEXPECTED(!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node\\Expr\\Variable", 28))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Variables\\DefinedVariableRule::processSingleVariable", 2, "node", "PhpParser\\Node\\Expr\\Variable", p_node); return false; }
-					zv::Val r60;
-					if (UNEXPECTED(!pgen::DefinedVariableRule::m_processSingleVariable(Z_OBJ_P(&this_zv), l_variableScope, p_node, cv59.raw(), r60.raw()))) return false;
-					zval av61[2];
-					ZVAL_COPY_VALUE(&av61[0], o58.raw());
-					ZVAL_COPY_VALUE(&av61[1], r60.raw());
-					zv::Val r62;
-					if (UNEXPECTED(!pgrt::arrayMerge(2, av61, r62.raw()))) return false;
-					l_errors = std::move(r62);
+					zv::Val r59;
+					if (UNEXPECTED(!pgen::DefinedVariableRule::m_processSingleVariable(Z_OBJ_P(&this_zv), l_variableScope, p_node, cv58.raw(), r59.raw()))) return false;
+					zval av60[2];
+					ZVAL_COPY_VALUE(&av60[0], o57.raw());
+					ZVAL_COPY_VALUE(&av60[1], r59.raw());
+					zv::Val r61;
+					if (UNEXPECTED(!pgrt::arrayMerge(2, av60, r61.raw()))) return false;
+					l_errors = std::move(r61);
 				}
 			}
 		}
@@ -598,7 +441,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DefinedVariableRule)
 			Z_PARAM_BOOL(p_cliArgumentsVariablesRegistered)
 			Z_PARAM_BOOL(p_checkMaybeUndefinedVariables)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_nonStringableDynamicAccessCheck != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_nonStringableDynamicAccessCheck, pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Rules\\NonStringableDynamicAccessCheck", 45)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\NonStringableDynamicAccessCheck", zend_zval_value_name(p_nonStringableDynamicAccessCheck)); RETURN_THROWS(); }
+		if (p_nonStringableDynamicAccessCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_nonStringableDynamicAccessCheck) == IS_OBJECT && Z_OBJCE_P(p_nonStringableDynamicAccessCheck) == pt_ce_non_stringable_dynamic_access_check) || pgrt::instanceOfClass(p_nonStringableDynamicAccessCheck, pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Rules\\NonStringableDynamicAccessCheck", 45))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\NonStringableDynamicAccessCheck", zend_zval_value_name(p_nonStringableDynamicAccessCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::DefinedVariableRule::m___construct(Z_OBJ_P(ZEND_THIS), p_nonStringableDynamicAccessCheck, p_cliArgumentsVariablesRegistered, p_checkMaybeUndefinedVariables))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\DefinedVariableRule::getNodeType() */

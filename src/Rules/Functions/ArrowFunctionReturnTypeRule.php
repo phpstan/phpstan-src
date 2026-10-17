@@ -10,6 +10,7 @@ use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 
@@ -17,6 +18,7 @@ use PHPStan\Type\ObjectType;
  * @implements Rule<InArrowFunctionNode>
  */
 #[RegisteredRule(level: 3)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrowFunctionReturnTypeRule.cpp')]
 final class ArrowFunctionReturnTypeRule implements Rule
 {
 

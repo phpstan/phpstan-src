@@ -7,12 +7,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\New_>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NewStaticInAbstractClassStaticMethodRule.cpp')]
 final class NewStaticInAbstractClassStaticMethodRule implements Rule
 {
 

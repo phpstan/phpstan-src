@@ -6,10 +6,12 @@ use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError269.cpp')]
 final class RuleError269 implements RuleError, FileRuleError, TipRuleError, FileDependenciesRuleError
 {
 

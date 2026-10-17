@@ -11,6 +11,7 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
@@ -19,6 +20,7 @@ use function sprintf;
  * @implements Rule<Node\Stmt\ClassConst>
  */
 #[RegisteredRule(level: 6)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MissingClassConstantTypehintRule.cpp')]
 final class MissingClassConstantTypehintRule implements Rule
 {
 

@@ -10,6 +10,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 use function count;
 use function sprintf;
@@ -18,6 +19,7 @@ use function sprintf;
  * @implements Rule<Interface_>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ApiInterfaceExtendsRule.cpp')]
 final class ApiInterfaceExtendsRule implements Rule
 {
 

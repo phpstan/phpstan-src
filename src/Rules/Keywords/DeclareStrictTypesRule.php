@@ -10,6 +10,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\DeclarePositionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function in_array;
 use function sprintf;
 
@@ -17,6 +18,7 @@ use function sprintf;
  * @implements Rule<Stmt\Declare_>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DeclareStrictTypesRule.cpp')]
 final class DeclareStrictTypesRule implements Rule
 {
 

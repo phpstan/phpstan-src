@@ -11,6 +11,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_map;
 use function count;
 use function implode;
@@ -20,6 +21,7 @@ use function sprintf;
  * @implements Rule<InFunctionNode>
  */
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DuplicateFunctionDeclarationRule.cpp')]
 final class DuplicateFunctionDeclarationRule implements Rule
 {
 

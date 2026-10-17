@@ -13,6 +13,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -24,6 +25,7 @@ use function sprintf;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncompatibleClassConstantPhpDocTypeRule.cpp')]
 final class IncompatibleClassConstantPhpDocTypeRule implements Rule
 {
 

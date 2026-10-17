@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\RegisteredCollector;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_map;
 use function array_values;
 
@@ -13,6 +14,7 @@ use function array_values;
  * @implements Collector<Node\Stmt\TraitUse, list<string>>
  */
 #[RegisteredCollector(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TraitUseCollector.cpp')]
 final class TraitUseCollector implements Collector
 {
 

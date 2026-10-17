@@ -9,6 +9,7 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\VerbosityLevel;
@@ -17,6 +18,7 @@ use function array_merge;
 use function sprintf;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodTagTemplateTypeCheck.cpp')]
 final class MethodTagTemplateTypeCheck
 {
 

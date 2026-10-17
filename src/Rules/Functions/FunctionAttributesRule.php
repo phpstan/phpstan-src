@@ -11,11 +11,13 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<InFunctionNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FunctionAttributesRule.cpp')]
 final class FunctionAttributesRule implements Rule
 {
 

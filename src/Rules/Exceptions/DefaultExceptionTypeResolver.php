@@ -7,12 +7,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
  * @api
  */
 #[AutowiredService(as: DefaultExceptionTypeResolver::class)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DefaultExceptionTypeResolver.cpp')]
 final class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 {
 

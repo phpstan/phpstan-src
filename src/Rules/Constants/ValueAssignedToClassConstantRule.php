@@ -12,6 +12,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -22,6 +23,7 @@ use function sprintf;
  * @implements Rule<Node\Stmt\ClassConst>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ValueAssignedToClassConstantRule.cpp')]
 final class ValueAssignedToClassConstantRule implements Rule
 {
 

@@ -15,6 +15,7 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
 use function array_merge;
@@ -25,6 +26,7 @@ use function sprintf;
  * @implements Rule<Node\Stmt>
  */
 #[RegisteredRule(level: 2)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidPhpDocVarTagTypeRule.cpp')]
 final class InvalidPhpDocVarTagTypeRule implements Rule
 {
 

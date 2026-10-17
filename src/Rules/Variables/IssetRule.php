@@ -11,12 +11,14 @@ use PHPStan\Node\IssetExpressionNode;
 use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @implements Rule<IssetExpressionNode>
  */
 #[RegisteredRule(level: 1)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IssetRule.cpp')]
 final class IssetRule implements Rule
 {
 

@@ -16,6 +16,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use function array_filter;
 use function sprintf;
@@ -24,6 +25,7 @@ use function sprintf;
  * @implements Rule<CoalesceExpressionNode>
  */
 #[RegisteredRule(level: 1)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NullCoalesceRule.cpp')]
 final class NullCoalesceRule implements Rule
 {
 

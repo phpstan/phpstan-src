@@ -10,10 +10,12 @@ use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError505.cpp')]
 final class RuleError505 implements RuleError, TipRuleError, IdentifierRuleError, MetadataRuleError, NonIgnorableRuleError, FixableNodeRuleError, FileDependenciesRuleError
 {
 

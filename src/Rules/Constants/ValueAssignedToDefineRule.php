@@ -8,6 +8,7 @@ use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
@@ -16,6 +17,7 @@ use function strtolower;
 /**
  * @implements Rule<FuncCall>
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ValueAssignedToDefineRule.cpp')]
 final class ValueAssignedToDefineRule implements Rule
 {
 

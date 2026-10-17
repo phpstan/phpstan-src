@@ -11,6 +11,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\VerbosityLevel;
@@ -27,6 +28,7 @@ use function sprintf;
  * @implements Rule<InClassNode>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/EnumSanityRule.cpp')]
 final class EnumSanityRule implements Rule
 {
 

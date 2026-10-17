@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\NullsafeMethodCallExpressionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -16,6 +17,7 @@ use function sprintf;
  * @implements Rule<NullsafeMethodCallExpressionNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NullsafeMethodCallRule.cpp')]
 final class NullsafeMethodCallRule implements Rule
 {
 

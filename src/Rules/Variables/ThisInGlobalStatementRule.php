@@ -8,12 +8,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_string;
 
 /**
  * @implements Rule<Node\Stmt\Global_>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ThisInGlobalStatementRule.cpp')]
 final class ThisInGlobalStatementRule implements Rule
 {
 

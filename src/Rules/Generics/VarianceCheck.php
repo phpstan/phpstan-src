@@ -6,12 +6,14 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 use function sprintf;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/VarianceCheck.cpp')]
 final class VarianceCheck
 {
 

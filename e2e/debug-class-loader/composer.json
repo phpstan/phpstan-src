@@ -1,0 +1,10 @@
+{
+	"require": {
+		"symfony/error-handler": "^7.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"DebugClassLoaderE2e\\": "src/"
+		}
+	}
+}

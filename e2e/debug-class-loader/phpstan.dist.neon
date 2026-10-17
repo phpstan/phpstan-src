@@ -1,0 +1,12 @@
+parameters:
+	level: 6
+	bootstrapFiles:
+		- bootstrap.php
+	paths:
+		- test.php
+	ignoreErrors:
+		# The point of this project is that analysis completes and reports the unknown class
+		# instead of dying inside the autoloader.
+		-
+			message: '#^Parameter \$widget of method DebugClassLoaderE2e\\Consumer\:\:doFoo\(\) has invalid type DebugClassLoaderE2e\\Widget\.$#'
+			path: test.php

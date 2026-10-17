@@ -16,12 +16,14 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 
 /**
  * @implements Rule<Node\Expr\MethodCall>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallMethodsRule.cpp')]
 final class CallMethodsRule implements Rule
 {
 

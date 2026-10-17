@@ -780,6 +780,25 @@ bool getClass(zval *object, zval *ret)
 	return false;
 }
 
+void listReverse(zval *list, zval *ret)
+{
+	HashTable *table = Z_ARRVAL_P(list);
+	uint32_t count = zend_hash_num_elements(table);
+	if (count == 0) {
+		ZVAL_EMPTY_ARRAY(ret);
+		return;
+	}
+	array_init_size(ret, count);
+	zend_hash_real_init_packed(Z_ARRVAL_P(ret));
+	zval *value;
+	ZEND_HASH_REVERSE_FOREACH_VAL(table, value) {
+		/* a reference nothing else holds is copied as its value, like the builtin */
+		if (Z_ISREF_P(value) && Z_REFCOUNT_P(value) == 1) value = Z_REFVAL_P(value);
+		Z_TRY_ADDREF_P(value);
+		zend_hash_next_index_insert_new(Z_ARRVAL_P(ret), value);
+	} ZEND_HASH_FOREACH_END();
+}
+
 bool implode(zval *glue, zval *pieces, zval *ret)
 {
 	StringBuilder builder;

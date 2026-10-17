@@ -557,7 +557,14 @@ final class TurboDeclarationGenerator
 			return ['0', null];
 		}
 		if ($type instanceof ReflectionIntersectionType) {
-			throw new RuntimeException('an intersection type');
+			// arginfo cannot spell an intersection: its first member, a
+			// contravariant widening of the declaration (the compiled glue
+			// checks every member at run time)
+			$first = $type->getTypes()[0];
+			if (!$first instanceof ReflectionNamedType) {
+				throw new RuntimeException('an intersection type');
+			}
+			return ['0', $first->getName()];
 		}
 		$builtin = [
 			'int' => 'MAY_BE_LONG', 'float' => 'MAY_BE_DOUBLE', 'string' => 'MAY_BE_STRING', 'bool' => 'MAY_BE_BOOL',

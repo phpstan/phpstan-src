@@ -147,6 +147,14 @@
 #include "generated/YieldHandler.h"
 #include "generated/ExpressionHandler.h"
 #include "generated/UnsetHandler.h"
+#include "generated/DefinedVariableRule.h"
+#include "generated/CallMethodsRule.h"
+#include "generated/MethodCallCheck.h"
+#include "generated/RuleLevelHelper.h"
+#include "generated/AccessPropertiesRule.h"
+#include "generated/AccessPropertiesCheck.h"
+#include "generated/CallToFunctionParametersRule.h"
+#include "generated/FunctionCallParametersCheck.h"
 
 zend_class_entry *pt_ce_declare_handler = nullptr;
 

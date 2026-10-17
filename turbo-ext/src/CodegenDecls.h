@@ -151,6 +151,14 @@ extern zend_class_entry *pt_ce_yield_from_handler;
 extern zend_class_entry *pt_ce_yield_handler;
 extern zend_class_entry *pt_ce_expression_handler;
 extern zend_class_entry *pt_ce_unset_handler;
+extern zend_class_entry *pt_ce_defined_variable_rule;
+extern zend_class_entry *pt_ce_call_methods_rule;
+extern zend_class_entry *pt_ce_method_call_check;
+extern zend_class_entry *pt_ce_rule_level_helper;
+extern zend_class_entry *pt_ce_access_properties_rule;
+extern zend_class_entry *pt_ce_access_properties_check;
+extern zend_class_entry *pt_ce_call_to_function_parameters_rule;
+extern zend_class_entry *pt_ce_function_call_parameters_check;
 
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
@@ -1344,5 +1352,68 @@ namespace pgen::UnsetHandler {
 [[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
 [[nodiscard]] bool m_hasDestructionSideEffects(zend_object *self, zval *p_type, bool *ret);
 } // namespace pgen::UnsetHandler
+
+namespace pgen::DefinedVariableRule {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_nonStringableDynamicAccessCheck, bool p_cliArgumentsVariablesRegistered, bool p_checkMaybeUndefinedVariables);
+[[nodiscard]] bool m_getNodeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_processNode(zend_object *self, zval *p_node, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_processSingleVariable(zend_object *self, zval *p_scope, zval *p_node, zval *p_variableName, zval *ret);
+} // namespace pgen::DefinedVariableRule
+
+namespace pgen::CallMethodsRule {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_methodCallCheck, zval *p_parametersCheck, zval *p_nonStringableDynamicAccessCheck);
+[[nodiscard]] bool m_getNodeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_processNode(zend_object *self, zval *p_node, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_processSingleMethodCall(zend_object *self, zval *p_scope, zval *p_node, zval *p_methodName, zval *ret);
+} // namespace pgen::CallMethodsRule
+
+namespace pgen::MethodCallCheck {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider, zval *p_ruleLevelHelper, bool p_checkFunctionNameCase, bool p_reportMagicMethods);
+[[nodiscard]] bool m_check(zend_object *self, zval *p_scope, zval *p_methodName, zval *p_var, zval *p_astName, zval *ret);
+} // namespace pgen::MethodCallCheck
+
+namespace pgen::RuleLevelHelper {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider, bool p_checkNullables, bool p_checkThisOnly, bool p_checkUnionTypes, bool p_checkExplicitMixed, bool p_checkImplicitMixed, bool p_checkBenevolentUnionTypes, bool p_discoveringSymbolsTip);
+[[nodiscard]] bool m_traverseWithoutMapping(zend_object *self, zval *p_type, zval *p_acceptingType, zval *p_traverse, zval *ret);
+[[nodiscard]] bool m_isThis(zend_object *self, zval *p_expression, bool *ret);
+[[nodiscard]] bool m_transformCommonType(zend_object *self, zval *p_type, zval *ret);
+[[nodiscard]] bool m_transformMixedType(zend_object *self, zval *p_type, zval *ret);
+[[nodiscard]] bool m_transformGenericObjectTypeArguments(zend_object *self, zval *p_type, zval *p_traverse, zval *ret);
+[[nodiscard]] bool m_transformAcceptedType(zend_object *self, zval *p_acceptingType, zval *p_acceptedType, zval *ret);
+[[nodiscard]] bool m_accepts(zend_object *self, zval *p_acceptingType, zval *p_acceptedType, bool p_strictTypes, zval *ret);
+[[nodiscard]] bool m_findTypeToCheck(zend_object *self, zval *p_scope, zval *p_var, zval *p_unknownClassErrorPattern, zval *p_unionTypeCriteriaCallback, zval *ret);
+[[nodiscard]] bool m_findTypeToCheckImplementation(zend_object *self, zval *p_scope, zval *p_var, zval *p_type, zval *p_unknownClassErrorPattern, zval *p_unionTypeCriteriaCallback, bool p_isTopLevel, zval *ret);
+} // namespace pgen::RuleLevelHelper
+
+namespace pgen::AccessPropertiesRule {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_check);
+[[nodiscard]] bool m_getNodeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_processNode(zend_object *self, zval *p_node, zval *p_scope, zval *ret);
+} // namespace pgen::AccessPropertiesRule
+
+namespace pgen::AccessPropertiesCheck {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider, zval *p_ruleLevelHelper, zval *p_phpVersion, zval *p_nonStringableDynamicAccessCheck, bool p_reportMagicProperties, bool p_checkDynamicProperties);
+[[nodiscard]] bool m_check(zend_object *self, zval *p_node, zval *p_scope, bool p_write, zval *ret);
+[[nodiscard]] bool m_processSingleProperty(zend_object *self, zval *p_scope, zval *p_node, zval *p_name, bool p_write, zval *ret);
+[[nodiscard]] bool m_pickProperty(zend_object *self, zval *p_scope, zval *p_type, zval *p_name, zval *ret);
+} // namespace pgen::AccessPropertiesCheck
+
+namespace pgen::CallToFunctionParametersRule {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider, zval *p_check);
+[[nodiscard]] bool m_getNodeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_processNode(zend_object *self, zval *p_node, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getVariantForArgumentsCount(zval *p_args, zval *p_variants, zval *p_selectedParametersAcceptor, zval *ret);
+[[nodiscard]] bool m_acceptsArgumentsCount(zval *p_parametersAcceptor, zend_long p_argsCount, bool *ret);
+[[nodiscard]] bool m_getArgumentsCountRange(zval *p_parametersAcceptor, zval *ret);
+} // namespace pgen::CallToFunctionParametersRule
+
+namespace pgen::FunctionCallParametersCheck {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_ruleLevelHelper, zval *p_nullsafeCheck, zval *p_unresolvableTypeHelper, zval *p_propertyReflectionFinder, zval *p_reflectionProvider, bool p_checkArgumentTypes, bool p_checkArgumentsPassedByReference, bool p_checkExtraArguments, bool p_checkMissingTypehints);
+[[nodiscard]] bool m_check(zend_object *self, zval *p_parametersAcceptor, zval *p_scope, bool p_isBuiltin, zval *p_funcCall, zval *p_nodeType, zval *p_acceptsNamedArguments, zval *p_singleInsufficientParameterMessage, zval *p_pluralInsufficientParametersMessage, zval *p_singleInsufficientParameterInVariadicFunctionMessage, zval *p_pluralInsufficientParametersInVariadicFunctionMessage, zval *p_singleInsufficientParameterWithOptionalParametersMessage, zval *p_pluralInsufficientParametersWithOptionalParametersMessage, zval *p_wrongArgumentTypeMessage, zval *p_voidReturnTypeUsed, zval *p_parameterPassedByReferenceMessage, zval *p_unresolvableTemplateTypeMessage, zval *p_missingParameterMessage, zval *p_unknownParameterMessage, zval *p_unresolvableReturnTypeMessage, zval *p_unresolvableParameterTypeMessage, zval *p_namedArgumentMessage, zval *p_invalidConstantMessage, zval *p_exclusiveConstantsMessage, zval *p_bitmaskNotAllowedMessage, zval *p_renamedNamedArgumentParameterData, zval *ret);
+[[nodiscard]] bool m_processArguments(zend_object *self, zval *p_parametersAcceptor, zend_long p_line, bool p_isBuiltin, zval *p_arguments, bool p_hasNamedArguments, zval *p_missingParameterMessage, zval *p_unknownParameterMessage, zval *ret);
+[[nodiscard]] bool m_describeParameter(zend_object *self, zval *p_parameter, zval *p_positionOrNamed, zval *ret);
+[[nodiscard]] bool m_resolveConstantReflections(zend_object *self, zval *p_expr, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_callReturnsByReference(zend_object *self, zval *p_expr, zval *p_scope, bool *ret);
+} // namespace pgen::FunctionCallParametersCheck
 
 #endif

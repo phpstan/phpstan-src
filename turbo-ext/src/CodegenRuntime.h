@@ -616,6 +616,10 @@ bool inArrayStrict(zval *needle, zval *array);
 enum class StrMatch : uint8_t { STARTS, ENDS, CONTAINS };
 [[nodiscard]] bool strMatch(FunctionSite &site, const char *name, size_t len, StrMatch kind, zval *haystack, zval *needle, zval *ret);
 
+/* array_reverse($list) of a list (keys renumbered, as the builtin does for
+ * integer keys) */
+void listReverse(zval *list, zval *ret);
+
 /* implode($glue, $pieces) of a string and an array; false = pending exception */
 [[nodiscard]] bool implode(zval *glue, zval *pieces, zval *ret);
 

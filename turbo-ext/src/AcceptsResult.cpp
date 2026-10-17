@@ -147,6 +147,14 @@
 #include "generated/YieldHandler.h"
 #include "generated/ExpressionHandler.h"
 #include "generated/UnsetHandler.h"
+#include "generated/DefinedVariableRule.h"
+#include "generated/CallMethodsRule.h"
+#include "generated/MethodCallCheck.h"
+#include "generated/RuleLevelHelper.h"
+#include "generated/AccessPropertiesRule.h"
+#include "generated/AccessPropertiesCheck.h"
+#include "generated/CallToFunctionParametersRule.h"
+#include "generated/FunctionCallParametersCheck.h"
 
 
 static pgrt::StaticSite pg_site_0; /* static_PHPStan\Type\AcceptsResult::YES */

@@ -36,6 +36,7 @@ use ReflectionClass;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
+use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionType;
@@ -315,10 +316,21 @@ final class Compiler
 			$union = TypeCombinator::union(...$members);
 			return ['zval', $union, (string) $type, null, $type->allowsNull(), false];
 		}
-		if (!$type instanceof ReflectionNamedType) {
-			throw new CompileError(sprintf('%s: intersection declared types are not supported', $unit->className));
+		if ($type instanceof ReflectionIntersectionType) {
+			// an object of every member class (Scope&NodeCallbackInvoker&CollectedDataEmitter)
+			$members = [];
+			foreach ($type->getTypes() as $member) {
+				if (!$member instanceof ReflectionNamedType || $member->isBuiltin()) {
+					throw new CompileError(sprintf('%s: unsupported intersection member', $unit->className));
+				}
+				$members[] = new ObjectType($member->getName());
+			}
+			return ['zval', TypeCombinator::intersect(...$members), (string) $type, null, false, false];
 		}
-		return $this->lowerNamedType($type->getName(), $type->allowsNull(), $unit, $isParameter);
+		if (!$type instanceof ReflectionNamedType) {
+			throw new CompileError(sprintf('%s: unsupported declared type %s', $unit->className, (string) $type));
+		}
+		return $this->lowerNamedType($type->getName(), $type->allowsNull(), $unit);
 	}
 
 	/**
@@ -327,13 +339,13 @@ final class Compiler
 	 *
 	 * @return array{'long'|'bool'|'zval'|'callable'|'void', Type, string, string|null, bool, bool}
 	 */
-	private function lowerAstType(?Node $type, bool $isParameter): array
+	private function lowerAstType(?Node $type): array
 	{
 		if ($type === null) {
 			return ['zval', new MixedType(), 'mixed', null, true, false];
 		}
 		if ($type instanceof Node\NullableType) {
-			return $this->lowerNamedType($this->astTypeName($type->type), true, $this->unit(), $isParameter);
+			return $this->lowerNamedType($this->astTypeName($type->type), true, $this->unit());
 		}
 		if ($type instanceof Node\UnionType) {
 			$members = [];
@@ -345,7 +357,7 @@ final class Compiler
 				}
 				$name = $this->astTypeName($member);
 				$nullable = $nullable || strtolower($name) === 'null';
-				[, $memberType] = $this->lowerNamedType($name, false, $this->unit(), $isParameter);
+				[, $memberType] = $this->lowerNamedType($name, false, $this->unit());
 				$members[] = $memberType;
 				$described[] = $name;
 			}
@@ -353,7 +365,7 @@ final class Compiler
 		}
 		if ($type instanceof Node\Identifier || $type instanceof Node\Name) {
 			$name = $this->astTypeName($type);
-			return $this->lowerNamedType($name, strtolower($name) === 'mixed' || strtolower($name) === 'null', $this->unit(), $isParameter);
+			return $this->lowerNamedType($name, strtolower($name) === 'mixed' || strtolower($name) === 'null', $this->unit());
 		}
 		throw new CompileError('intersection closure types are not supported');
 	}
@@ -376,7 +388,7 @@ final class Compiler
 	/**
 	 * @return array{'long'|'bool'|'zval'|'callable'|'void', Type, string, string|null, bool, bool}
 	 */
-	private function lowerNamedType(string $name, bool $allowsNull, ClassUnit $unit, bool $isParameter): array
+	private function lowerNamedType(string $name, bool $allowsNull, ClassUnit $unit): array
 	{
 		$nullable = $allowsNull && $name !== 'mixed' && $name !== 'null';
 		$describe = ($nullable ? '?' : '') . $name;
@@ -415,9 +427,6 @@ final class Compiler
 				$t = new StringType();
 				return ['zval', $nullable ? TypeCombinator::addNull($t) : $t, $describe, null, $nullable, false];
 			case 'callable':
-				if (!$isParameter) {
-					throw new CompileError('callable is a parameter-only type');
-				}
 				// a callable value, invoked through pt_type_call_callable()
 				return ['zval', $nullable ? TypeCombinator::addNull(new CallableType()) : new CallableType(), $describe, null, $nullable, false];
 			case 'mixed':
@@ -1316,6 +1325,18 @@ final class Compiler
 			}
 			return;
 		}
+		if ($declared->isObject()->yes()) {
+			// an intersection or union of classes: any object, then checked
+			$parse[] = sprintf('Z_PARAM_OBJECT%s(%s)', $orNull, $name);
+			$check = $this->typeCheck($name, $declared, $param->describe);
+			if ($check !== null) {
+				$after[] = sprintf('if (%s != NULL && UNEXPECTED(!%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(%s)); RETURN_THROWS(); }', $name, $check, $param->position + 1, addcslashes($param->describe, '\\"'), $name);
+			}
+			if ($param->nullable) {
+				$nullNormalize();
+			}
+			return;
+		}
 		if ($declared->isArray()->yes()) {
 			$parse[] = sprintf('Z_PARAM_ARRAY%s(%s)', $orNull, $name);
 			if ($param->nullable) {
@@ -1349,7 +1370,13 @@ final class Compiler
 			$after[] = sprintf('if (ZEND_NUM_ARGS() > %d) { ZVAL_DOUBLE(&%s_zv, %s_raw); %s = &%s_zv; }', $param->position, $name, $name, $name, $name);
 			return;
 		}
-		throw new CompileError(sprintf('parameter $%s of type %s has no argument parsing yet', $param->name, $param->describe));
+		// any other union (string|int|null): taken as it is and checked the
+		// strict way — PHPStan's own callers are strict_types files
+		$check = $this->typeCheck($name, $param->declared, $param->describe);
+		$parse[] = sprintf('Z_PARAM_ZVAL(%s)', $name);
+		if ($check !== null) {
+			$after[] = sprintf('if (%s != NULL && UNEXPECTED(!%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(%s)); RETURN_THROWS(); }', $name, $check, $param->position + 1, addcslashes($param->describe, '\\"'), $name);
+		}
 	}
 
 	private function label(MethodInfo $method): string
@@ -4975,6 +5002,46 @@ final class Compiler
 				return Value::bool('(' . sprintf($checks[$name], $z) . ')');
 			case 'in_array':
 				return $this->inArrayIntrinsic($f, $expr);
+			case 'strtolower':
+				if (!$single || !$this->unit()->oracle->nativeType($expr->args[0]->value)->isString()->yes()) {
+					return null;
+				}
+				$string = $this->asZval($f, $this->expr($f, $expr->args[0]->value));
+				$t = $f->temp('r');
+				// the ASCII fold strtolower() is since PHP 8.2; an already lowercase string comes back addref'd
+				$f->line(sprintf('zv::Val %s = zv::Val::adoptString(zend_string_tolower(Z_STR_P(%s)));', $t, $string));
+				return new Value('zval', $t . '.raw()', $t);
+			case 'spl_object_id':
+				if (!$single || !$this->unit()->oracle->nativeType($expr->args[0]->value)->isObject()->yes()) {
+					return null;
+				}
+				$object = $this->asZval($f, $this->expr($f, $expr->args[0]->value));
+				return Value::long(sprintf('(zend_long) Z_OBJ_HANDLE_P(%s)', $object));
+			case 'array_key_exists':
+				$args = $this->plainArgs($expr->args);
+				if ($args === null || count($args) !== 2 || !$this->unit()->oracle->nativeType($args[1]->value)->isArray()->yes()) {
+					return null;
+				}
+				$keyType = $this->unit()->oracle->nativeType($args[0]->value);
+				if (!$keyType->isString()->yes() && !$keyType->isInteger()->yes()) {
+					return null;
+				}
+				$key = $this->stabilize($f, $this->expr($f, $args[0]->value));
+				$array = $this->asZval($f, $this->expr($f, $args[1]->value));
+				if ($key->kind === 'long' || $keyType->isInteger()->yes()) {
+					$code = $key->kind === 'long' ? $key->code : sprintf('Z_LVAL_P(%s)', $this->asZval($f, $key));
+					return Value::bool(sprintf('zend_hash_index_exists(Z_ARRVAL_P(%s), (zend_ulong) %s)', $array, $code));
+				}
+				return Value::bool(sprintf('zend_symtable_exists(Z_ARRVAL_P(%s), Z_STR_P(%s))', $array, $this->asZval($f, $key)));
+			case 'array_reverse':
+				if (!$single || !$this->unit()->oracle->nativeType($expr->args[0]->value)->isList()->yes()) {
+					return null;
+				}
+				$array = $this->asZval($f, $this->expr($f, $expr->args[0]->value));
+				$t = $f->temp('r');
+				$f->line(sprintf('zv::Val %s;', $t));
+				$f->line(sprintf('pgrt::listReverse(%s, %s.raw());', $array, $t));
+				return new Value('zval', $t . '.raw()', $t, isArray: true);
 			case 'implode':
 				$args = $this->plainArgs($expr->args);
 				if ($args === null || count($args) !== 2 || !$this->unit()->oracle->nativeType($args[0]->value)->isString()->yes() || !$this->unit()->oracle->nativeType($args[1]->value)->isArray()->yes()) {
@@ -5999,7 +6066,7 @@ final class Compiler
 			if ($param->byRef || $param->variadic) {
 				throw new CompileError('by-reference and variadic closure parameters are not supported');
 			}
-			[$kind, $declared, $describe, $class, $nullable, $isArray] = $this->lowerAstType($param->type, true);
+			[$kind, $declared, $describe, $class, $nullable, $isArray] = $this->lowerAstType($param->type);
 			if (in_array($kind, ['callable', 'void'], true)) {
 				$kind = 'zval';
 			}
@@ -6031,7 +6098,7 @@ final class Compiler
 		}
 
 		if ($expr->returnType !== null) {
-			[$returnKind, $returnDeclared, $returnDescribe, $returnClass, $returnNullable] = $this->lowerAstType($expr->returnType, false);
+			[$returnKind, $returnDeclared, $returnDescribe, $returnClass, $returnNullable] = $this->lowerAstType($expr->returnType);
 			$return = $returnKind === 'void'
 				? new ReturnInfo('void', $returnDeclared, 'void')
 				: new ReturnInfo('zval', $returnDeclared, $returnDescribe, $returnClass, $returnNullable);
@@ -6329,7 +6396,11 @@ final class Compiler
 		$atoms = $declared instanceof UnionType ? $declared->getTypes() : [$declared];
 		$checks = [];
 		foreach ($atoms as $atom) {
-			if ($atom->isNull()->yes()) {
+			if ($atom->isObject()->yes() && count($atom->getObjectClassNames()) > 1) {
+				// an intersection (the union's members are its atoms): an object of every class
+				$members = array_map(fn (string $name): string => $this->instanceCheck($z, $name, false), $atom->getObjectClassNames());
+				$checks[] = '(' . implode(' && ', $members) . ')';
+			} elseif ($atom->isNull()->yes()) {
 				$checks[] = sprintf('Z_TYPE_P(%s) == IS_NULL', $z);
 			} elseif ($atom->isTrue()->yes()) {
 				$checks[] = sprintf('Z_TYPE_P(%s) == IS_TRUE', $z);

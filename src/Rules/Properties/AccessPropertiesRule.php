@@ -7,11 +7,13 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Expr\PropertyFetch>
  */
 #[RegisteredRule(level: 0)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AccessPropertiesRule.cpp')]
 final class AccessPropertiesRule implements Rule
 {
 

@@ -167,4 +167,13 @@ return [
 	'PHPStan\\Analyser\\ExprHandler\\YieldHandler' => ['ce' => 'pt_ce_yield_handler', 'defineCe' => true],
 	'PHPStan\\Analyser\\StmtHandler\\ExpressionHandler' => ['ce' => 'pt_ce_expression_handler', 'defineCe' => true],
 	'PHPStan\\Analyser\\StmtHandler\\UnsetHandler' => ['ce' => 'pt_ce_unset_handler', 'defineCe' => true],
+	// rules: the first rules and the checks they call
+	'PHPStan\\Rules\\Variables\\DefinedVariableRule' => ['ce' => 'pt_ce_defined_variable_rule', 'defineCe' => true],
+	'PHPStan\\Rules\\Methods\\CallMethodsRule' => ['ce' => 'pt_ce_call_methods_rule', 'defineCe' => true],
+	'PHPStan\\Rules\\Methods\\MethodCallCheck' => ['ce' => 'pt_ce_method_call_check', 'defineCe' => true],
+	'PHPStan\\Rules\\RuleLevelHelper' => ['ce' => 'pt_ce_rule_level_helper', 'defineCe' => true],
+	'PHPStan\\Rules\\Properties\\AccessPropertiesRule' => ['ce' => 'pt_ce_access_properties_rule', 'defineCe' => true],
+	'PHPStan\\Rules\\Properties\\AccessPropertiesCheck' => ['ce' => 'pt_ce_access_properties_check', 'defineCe' => true],
+	'PHPStan\\Rules\\Functions\\CallToFunctionParametersRule' => ['ce' => 'pt_ce_call_to_function_parameters_rule', 'defineCe' => true],
+	'PHPStan\\Rules\\FunctionCallParametersCheck' => ['ce' => 'pt_ce_function_call_parameters_check', 'defineCe' => true],
 ];

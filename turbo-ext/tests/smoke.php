@@ -4656,6 +4656,16 @@ foreach ($lemEngineProbes['php'] as $lemLabel => $lemPhp) {
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.
 $coveredElsewhere = [
+	// rules and their checks compiled from the twins: the rule tests
+	// (RuleTestCase) run with the extension loaded and without
+	\PHPStan\Rules\Variables\DefinedVariableRule::class => 'make tests',
+	\PHPStan\Rules\Methods\CallMethodsRule::class => 'make tests',
+	\PHPStan\Rules\Methods\MethodCallCheck::class => 'make tests',
+	\PHPStan\Rules\RuleLevelHelper::class => 'make tests',
+	\PHPStan\Rules\Properties\AccessPropertiesRule::class => 'make tests',
+	\PHPStan\Rules\Properties\AccessPropertiesCheck::class => 'make tests',
+	\PHPStan\Rules\Functions\CallToFunctionParametersRule::class => 'make tests',
+	\PHPStan\Rules\FunctionCallParametersCheck::class => 'make tests',
 	\PHPStan\Cache\ArenaCache::class => 'arena-smoke.php',
 	\PHPStan\Parser\ParserRunner::class => 'parser-corpus.php',
 	\PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner::class => 'php-file-cleaner-corpus.php',

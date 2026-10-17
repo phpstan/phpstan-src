@@ -118,10 +118,11 @@ public:
 
 	void release()
 	{
-		if (!Z_ISUNDEF(z)) {
+		/* a scalar, an interned string or an immutable array needs no call */
+		if (Z_REFCOUNTED(z)) {
 			zval_ptr_dtor(&z);
-			ZVAL_UNDEF(&z);
 		}
+		ZVAL_UNDEF(&z);
 	}
 
 	/* takes over a raw zval the caller owns */

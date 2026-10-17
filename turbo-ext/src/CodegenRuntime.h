@@ -749,28 +749,45 @@ private:
 
 /* {{{ virtual dispatch over many compiled implementations: a call site's
  * receiver class mapped to the case of its implementation (0 = none: the
- * engine call), in a direct-mapped cache in front of a scan of the site's
- * table of class entries */
+ * engine call), in an open-addressing cache in front of a scan of the
+ * site's table of class entries; it grows with the classes the site sees
+ * (a rule registry's site sees every rule class) */
 struct DispatchCache
 {
-	static constexpr uint32_t SIZE_LIMIT = 128;
-	const zend_class_entry *ces[SIZE_LIMIT];
-	uint16_t cases[SIZE_LIMIT];
+	static constexpr uint32_t INITIAL_SIZE_LIMIT = 64;
+	const zend_class_entry **ces = nullptr;
+	uint16_t *cases = nullptr;
+	uint32_t mask = 0;
+	uint32_t used = 0;
+
+	DispatchCache() = default;
+	DispatchCache(const DispatchCache &) = delete;
+	DispatchCache &operator=(const DispatchCache &) = delete;
+	~DispatchCache()
+	{
+		free(ces);
+		free(cases);
+	}
 };
 
 uint16_t dispatchCaseSlow(DispatchCache &cache, const zend_class_entry *ce, zend_class_entry **const *table, const uint16_t *cases, uint32_t count);
 
-static zend_always_inline uint32_t dispatchSlot(const zend_class_entry *ce)
+static zend_always_inline uint32_t dispatchHash(const zend_class_entry *ce)
 {
 	uintptr_t p = (uintptr_t) ce;
-	return (uint32_t) ((p >> 4) ^ (p >> 11)) & (DispatchCache::SIZE_LIMIT - 1);
+	return (uint32_t) ((p >> 4) ^ (p >> 13));
 }
 
 static zend_always_inline uint16_t dispatchCase(DispatchCache &cache, const zend_class_entry *ce, zend_class_entry **const *table, const uint16_t *cases, uint32_t count)
 {
 	if (UNEXPECTED(ce == NULL)) return 0;
-	uint32_t slot = dispatchSlot(ce);
-	if (EXPECTED(cache.ces[slot] == ce)) return cache.cases[slot];
+	if (EXPECTED(cache.ces != nullptr)) {
+		for (uint32_t slot = dispatchHash(ce) & cache.mask;; slot = (slot + 1) & cache.mask) {
+			const zend_class_entry *at = cache.ces[slot];
+			if (EXPECTED(at == ce)) return cache.cases[slot];
+			if (at == nullptr) break;
+		}
+	}
 	return dispatchCaseSlow(cache, ce, table, cases, count);
 }
 

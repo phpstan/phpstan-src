@@ -673,6 +673,17 @@ bool insertKeyed(zval *array, zval *key, zval *value)
 	}
 }
 
+static void dispatchInsert(DispatchCache &cache, const zend_class_entry *ce, uint16_t found)
+{
+	uint32_t slot = dispatchHash(ce) & cache.mask;
+	while (cache.ces[slot] != nullptr) {
+		slot = (slot + 1) & cache.mask;
+	}
+	cache.ces[slot] = ce;
+	cache.cases[slot] = found;
+	cache.used++;
+}
+
 uint16_t dispatchCaseSlow(DispatchCache &cache, const zend_class_entry *ce, zend_class_entry **const *table, const uint16_t *cases, uint32_t count)
 {
 	uint16_t found = 0;
@@ -682,9 +693,28 @@ uint16_t dispatchCaseSlow(DispatchCache &cache, const zend_class_entry *ce, zend
 			break;
 		}
 	}
-	uint32_t slot = dispatchSlot(ce);
-	cache.ces[slot] = ce;
-	cache.cases[slot] = found;
+	if (cache.ces == nullptr || (cache.used + 1) * 2 > cache.mask + 1) {
+		/* at most half full: rehash into twice the size */
+		const zend_class_entry **oldCes = cache.ces;
+		uint16_t *oldCases = cache.cases;
+		uint32_t oldSize = oldCes == nullptr ? 0 : cache.mask + 1;
+		uint32_t size = oldSize == 0 ? DispatchCache::INITIAL_SIZE_LIMIT : oldSize * 2;
+		cache.ces = (const zend_class_entry **) calloc(size, sizeof(*cache.ces));
+		cache.cases = (uint16_t *) calloc(size, sizeof(*cache.cases));
+		if (UNEXPECTED(cache.ces == nullptr || cache.cases == nullptr)) {
+			zend_error_noreturn(E_ERROR, "phpstan_turbo: out of memory");
+		}
+		cache.mask = size - 1;
+		cache.used = 0;
+		for (uint32_t i = 0; i < oldSize; i++) {
+			if (oldCes[i] != nullptr) {
+				dispatchInsert(cache, oldCes[i], oldCases[i]);
+			}
+		}
+		free(oldCes);
+		free(oldCases);
+	}
+	dispatchInsert(cache, ce, found);
 	return found;
 }
 

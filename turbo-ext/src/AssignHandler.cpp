@@ -4034,6 +4034,9 @@ private:
 		}
 		AH_OKB(pt_expression_result_is_always_terminating(result, isAlwaysTerminating));
 		AH_SETB(scope, ahResultScope(result));
+		AH_VALB(assignedExprType, readAssignedValueType(nsr, assignedValueResult, assignedExpr, scope.raw()));
+		AH_VALB(nativeScope, pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope.raw())));
+		AH_VALB(assignedExprNativeType, readAssignedValueType(nsr, assignedValueResult, assignedExpr, nativeScope.raw()));
 		zval *items = AH_PROP(var, items);
 		if (Z_TYPE_P(items) != IS_ARRAY) return true;
 		zv::Val itemsHolder = zv::Val::copyOf(zv::Ref(items));
@@ -4081,11 +4084,8 @@ private:
 				AH_SETB(dimType, newConstantIntegerType((zend_long) entry.indexKey()));
 				nativeDimType = zv::Val::copyOf(dimType.ref());
 			}
-			AH_VALB(valueType, readAssignedValueType(nsr, assignedValueResult, assignedExpr, scope.raw()));
-			AH_VALB(offsetValueType, ahTypeOp(valueType.raw(), PT_OP_GET_OFFSET_VALUE_TYPE, 1, dimType.raw()));
-			AH_VALB(nativeItemScope, pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope.raw())));
-			AH_VALB(nativeValueType, readAssignedValueType(nsr, assignedValueResult, assignedExpr, nativeItemScope.raw()));
-			AH_VALB(nativeOffsetValueType, ahTypeOp(nativeValueType.raw(), PT_OP_GET_OFFSET_VALUE_TYPE, 1, nativeDimType.raw()));
+			AH_VALB(offsetValueType, ahTypeOp(assignedExprType.raw(), PT_OP_GET_OFFSET_VALUE_TYPE, 1, dimType.raw()));
+			AH_VALB(nativeOffsetValueType, ahTypeOp(assignedExprNativeType.raw(), PT_OP_GET_OFFSET_VALUE_TYPE, 1, nativeDimType.raw()));
 			AH_VALB(getOffsetValueTypeExpr, newNativeTypeExpr(offsetValueType.raw(), nativeOffsetValueType.raw()));
 			// store the fabricated result so narrowing walks over the item value
 			// compose from it instead of falling back to on-demand pricing

@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -13,18 +14,29 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
+use Throwable;
 use TypeError;
 use function count;
 use function preg_match;
 
 /**
- * unserialize() throws TypeError and ValueError for invalid $options, and
- * TypeError when the data does not fit a typed property. Objects of classes
- * that are not allowed are unserialized as __PHP_Incomplete_Class.
+ * unserialize() can propagate throwables from __wakeup() or __unserialize()
+ * methods of classes instantiated during deserialization.
+ *
+ * It also throws TypeError and ValueError for invalid $options, and TypeError
+ * when the data does not fit a typed property. Objects of classes that are not
+ * allowed are unserialized as __PHP_Incomplete_Class.
  */
 #[AutowiredService]
 final class UnserializeFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
+
+	public function __construct(
+		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
+		private bool $implicitThrows,
+	)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -33,30 +45,56 @@ final class UnserializeFunctionThrowTypeExtension implements DynamicFunctionThro
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
-			return new VoidType();
-		}
+		$throwsValueErrorForInternalFunctions = !$scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no();
 
 		$args = $funcCall->getArgs();
 		foreach ($args as $arg) {
 			if ($arg->unpack || $arg->name !== null) {
+				if ($this->implicitThrows) {
+					return new ObjectType(Throwable::class);
+				}
+
+				if (!$throwsValueErrorForInternalFunctions) {
+					return new VoidType();
+				}
+
 				return $functionReflection->getThrowType();
 			}
 		}
 
 		if (count($args) < 2) {
+			if ($this->implicitThrows) {
+				return new ObjectType(Throwable::class);
+			}
+
+			if (!$throwsValueErrorForInternalFunctions) {
+				return new VoidType();
+			}
+
 			return new ObjectType(TypeError::class);
 		}
 
 		$optionsType = $scope->getNativeType($args[1]->value);
 		$constantArrays = $optionsType->getConstantArrays();
 		if (!$optionsType->isArray()->yes() || count($constantArrays) === 0) {
+			if ($this->implicitThrows) {
+				return new ObjectType(Throwable::class);
+			}
+
+			if (!$throwsValueErrorForInternalFunctions) {
+				return new VoidType();
+			}
+
 			return $functionReflection->getThrowType();
 		}
 
 		$allowsNoClasses = true;
 		foreach ($constantArrays as $constantArray) {
 			if (!$this->areOptionsValid($constantArray)) {
+				if (!$throwsValueErrorForInternalFunctions) {
+					return new VoidType();
+				}
+
 				return $functionReflection->getThrowType();
 			}
 
@@ -68,6 +106,14 @@ final class UnserializeFunctionThrowTypeExtension implements DynamicFunctionThro
 		}
 
 		if ($allowsNoClasses) {
+			return new VoidType();
+		}
+
+		if ($this->implicitThrows) {
+			return new ObjectType(Throwable::class);
+		}
+
+		if (!$throwsValueErrorForInternalFunctions) {
 			return new VoidType();
 		}
 

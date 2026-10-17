@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_template_constant_array_type = nullptr;
 
@@ -207,21 +236,14 @@ namespace pgen::TemplateConstantArrayType {
 		zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::name, "name");
 		if (UNEXPECTED(p8 == NULL)) return false;
 		zv::Val o9 = zv::Val::copyOf(zv::Ref(p8));
-		zval av11[6];
-		ZVAL_COPY_VALUE(&av11[0], p_keyTypes);
-		ZVAL_COPY_VALUE(&av11[1], p_valueTypes);
-		ZVAL_COPY_VALUE(&av11[2], p_nextAutoIndexes);
-		ZVAL_COPY_VALUE(&av11[3], p_optionalKeys);
-		ZVAL_COPY_VALUE(&av11[4], p_isList);
-		ZVAL_COPY_VALUE(&av11[5], p_unsealed);
 		zv::Val n10;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_constant_array_type, 6, av11, n10.raw(), NULL))) return false;
-		zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_7, Z_OBJ_P(&this_zv), "default", 7), "default");
-		if (UNEXPECTED(p12 == NULL)) return false;
+		if (UNEXPECTED(!pt_constant_array_type_new(n10.raw(), p_keyTypes, p_valueTypes, p_nextAutoIndexes, p_optionalKeys, p_isList, p_unsealed))) return false;
+		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_7, Z_OBJ_P(&this_zv), "default", 7), "default");
+		if (UNEXPECTED(p11 == NULL)) return false;
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_template_constant_array_type) != SUCCESS)) return false;
 		zv::Val n1 = zv::Val::adopt(n1_raw);
-		if (UNEXPECTED(!pgen::TemplateConstantArrayType::m___construct(Z_OBJ_P(n1.raw()), o3.raw(), o5.raw(), o7.raw(), o9.raw(), n10.raw(), p12))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
+		if (UNEXPECTED(!pgen::TemplateConstantArrayType::m___construct(Z_OBJ_P(n1.raw()), o3.raw(), o5.raw(), o7.raw(), o9.raw(), n10.raw(), p11))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
 		*ret = n1.take();
 		return true;
 	}

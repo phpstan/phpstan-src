@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
@@ -321,7 +350,7 @@ namespace pgen::TrinaryLogic {
 		if (Z_LVAL_P(p1) == 1) {
 			 {
 				zv::Val n2;
-				if (UNEXPECTED(!pgrt::newObject(pt_ce_boolean_type, 0, NULL, n2.raw(), NULL))) return false;
+				if (UNEXPECTED(!pt_boolean_type_new(n2.raw()))) return false;
 				*ret = n2.take();
 				return true;
 			}
@@ -330,12 +359,8 @@ namespace pgen::TrinaryLogic {
 	 {
 		zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TrinaryLogic::slot::value, "value");
 		if (UNEXPECTED(p4 == NULL)) return false;
-		zval av5[1];
-		zval z6;
-		ZVAL_BOOL(&z6, (Z_LVAL_P(p4) == 3));
-		ZVAL_COPY_VALUE(&av5[0], &z6);
 		zv::Val n3;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_constant_boolean_type, 1, av5, n3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_constant_boolean_type_new(n3.raw(), (Z_LVAL_P(p4) == 3)))) return false;
 		*ret = n3.take();
 		return true;
 	}
@@ -749,31 +774,25 @@ namespace pgen::TrinaryLogic {
 					}
 				}
 				 {
-					zv::Val o16 = zv::Val::copyOf(zv::Ref(l_result.raw()));
-					zv::Val vd17;
-					zend_class_entry *vd17_ce = Z_TYPE_P(l_lastResult.raw()) == IS_OBJECT ? Z_OBJCE_P(l_lastResult.raw()) : NULL;
-					bool vd17_done = false;
-					if (vd17_ce == pt_ce_trinary) {
-						if (UNEXPECTED(!((Z_TYPE_P(o16.raw()) == IS_OBJECT && Z_OBJCE_P(o16.raw()) == pt_ce_trinary) || pgrt::instanceOfClass(o16.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::equals", 1, "other", "PHPStan\\TrinaryLogic", o16.raw()); return false; }
-						bool r18;
-						if (UNEXPECTED(!pgen::TrinaryLogic::m_equals(Z_OBJ_P(l_lastResult.raw()), o16.raw(), &r18))) return false;
-						zv::Val o19 = zv::Val::boolean(r18);
-						vd17 = std::move(o19);
-						vd17_done = true;
+					zval av16[1];
+					ZVAL_COPY_VALUE(&av16[0], l_result.raw());
+					zv::Val r17;
+					if (EXPECTED(Z_TYPE_P(l_lastResult.raw()) == IS_OBJECT)) {
+						r17 = pt_type_op(Z_OBJ_P(l_lastResult.raw()), PT_OP_EQUALS, 1, av16);
+						if (UNEXPECTED(r17.isUndef())) return false;
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_lastResult.raw(), "equals", "equals", 6, 1, av16, r17.raw(), NULL))) return false;
 					}
-					if (!vd17_done) {
-						zval av20[1];
-						ZVAL_COPY_VALUE(&av20[0], o16.raw());
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_lastResult.raw(), "equals", "equals", 6, 1, av20, vd17.raw()))) return false;
 					}
-					if (zend_is_true(vd17.raw())) {
+					if (zend_is_true(r17.raw())) {
 						goto cont11;
 					}
 				}
 				 {
-					zv::Val r21;
-					if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r21.raw()))) return false;
-					*ret = r21.take();
+					zv::Val r18;
+					if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r18.raw()))) return false;
+					*ret = r18.take();
 					return true;
 				}
 			}

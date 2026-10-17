@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_changed_type_method_reflection = nullptr;
 
@@ -216,20 +245,16 @@ namespace pgen::ChangedTypeMethodReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypeMethodReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_method_reflection) {
-			bool r3;
-			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_isPublic(Z_OBJ_P(p1), &r3))) return false;
-			zv::Val o4 = zv::Val::boolean(r3);
-			vd2 = std::move(o4);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_IS_PUBLIC, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p1, "isPublic", "ispublic", 8, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p1, "isPublic", "ispublic", 8, 0, NULL, vd2.raw()))) return false;
 		}
-		*ret = (Z_TYPE_P(vd2.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -269,19 +294,16 @@ namespace pgen::ChangedTypeMethodReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypeMethodReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_method_reflection) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getName(Z_OBJ_P(p1), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "getName", "getname", 7, 0, NULL, vd2.raw()))) return false;
 		}
-		*ret = vd2.take();
+		*ret = r2.take();
 		return true;
 	}
 }
@@ -440,19 +462,16 @@ namespace pgen::ChangedTypeMethodReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypeMethodReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_method_reflection) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_isFinal(Z_OBJ_P(p1), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_IS_FINAL, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p1, "isFinal", "isfinal", 7, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p1, "isFinal", "isfinal", 7, 0, NULL, vd2.raw()))) return false;
 		}
-		*ret = vd2.take();
+		*ret = r2.take();
 		return true;
 	}
 }
@@ -466,19 +485,16 @@ namespace pgen::ChangedTypeMethodReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypeMethodReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_method_reflection) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_isFinalByKeyword(Z_OBJ_P(p1), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_IS_FINAL_BY_KEYWORD, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p1, "isFinalByKeyword", "isfinalbykeyword", 16, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p1, "isFinalByKeyword", "isfinalbykeyword", 16, 0, NULL, vd2.raw()))) return false;
 		}
-		*ret = vd2.take();
+		*ret = r2.take();
 		return true;
 	}
 }
@@ -519,27 +535,24 @@ namespace pgen::ChangedTypeMethodReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypeMethodReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_method_reflection) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_isBuiltin(Z_OBJ_P(p1), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_IS_BUILTIN, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p1, "isBuiltin", "isbuiltin", 9, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p1, "isBuiltin", "isbuiltin", 9, 0, NULL, vd2.raw()))) return false;
 		}
-		l_builtin = std::move(vd2);
+		l_builtin = std::move(r2);
 	}
 	 {
-		uint8_t ty4 = Z_TYPE_P(zv::Ref(l_builtin.raw()).deref().raw());
-		if ((ty4 == IS_TRUE || ty4 == IS_FALSE)) {
+		uint8_t ty3 = Z_TYPE_P(zv::Ref(l_builtin.raw()).deref().raw());
+		if ((ty3 == IS_TRUE || ty3 == IS_FALSE)) {
 			 {
-				zv::Val r5;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_createFromBoolean((Z_TYPE_P(l_builtin.raw()) == IS_TRUE), r5.raw()))) return false;
-				*ret = r5.take();
+				zv::Val r4;
+				if (UNEXPECTED(!pgen::TrinaryLogic::m_createFromBoolean((Z_TYPE_P(l_builtin.raw()) == IS_TRUE), r4.raw()))) return false;
+				*ret = r4.take();
 				return true;
 			}
 		}
@@ -850,19 +863,16 @@ namespace pgen::ChangedTypeMethodReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypeMethodReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_method_reflection) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getResolvedPhpDoc(Z_OBJ_P(p1), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_GET_RESOLVED_PHP_DOC, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p1, "getResolvedPhpDoc", "getresolvedphpdoc", 17, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p1, "getResolvedPhpDoc", "getresolvedphpdoc", 17, 0, NULL, vd2.raw()))) return false;
 		}
-		*ret = vd2.take();
+		*ret = r2.take();
 		return true;
 	}
 }

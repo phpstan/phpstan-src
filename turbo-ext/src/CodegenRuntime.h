@@ -362,6 +362,42 @@ private:
 
 /* A local list the compiler proved never escapes (only `[]`, `$x[] = ...`
  * and `...$x`): owned values in a native vector instead of a PHP array. */
+/* borrowed zval pointers, for a native entry taking `zval *const *argv` */
+class PtrVec
+{
+public:
+	PtrVec() : items(inlineData), count(0), capacity(INLINE) {}
+	PtrVec(const PtrVec &) = delete;
+	PtrVec &operator=(const PtrVec &) = delete;
+	~PtrVec()
+	{
+		if (items != inlineData) efree(items);
+	}
+
+	void push(zval *borrowed)
+	{
+		if (UNEXPECTED(count == capacity)) {
+			uint32_t grown = capacity * 2;
+			zval **bigger = (zval **) emalloc(sizeof(zval *) * grown);
+			memcpy(bigger, items, sizeof(zval *) * count);
+			if (items != inlineData) efree(items);
+			items = bigger;
+			capacity = grown;
+		}
+		items[count++] = borrowed;
+	}
+
+	zval *const *data() const { return items; }
+	uint32_t size() const { return count; }
+
+private:
+	static constexpr uint32_t INLINE = 8;
+	zval *inlineData[INLINE];
+	zval **items;
+	uint32_t count;
+	uint32_t capacity;
+};
+
 class ValVec
 {
 public:

@@ -74,15 +74,43 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_native_parameter_reflection = nullptr;
 
 
-static pt_method_site pg_site_0; /* static_PHPStan\Type\TypeCombinator::union */
-static pt_method_site pg_site_1; /* method_combine_1 */
-static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Type */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\PassedByReference */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Reflection\Native\NativeParameterReflection */
+static pt_method_site pg_site_0; /* method_combine_0 */
+static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\Type */
+static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Reflection\PassedByReference */
+static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\Native\NativeParameterReflection */
 
 namespace pgen::NativeParameterReflection {
 
@@ -256,59 +284,61 @@ namespace pgen::NativeParameterReflection {
 		if (UNEXPECTED(p8 == NULL)) return false;
 		zval *p9 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::type, "type");
 		if (UNEXPECTED(p9 == NULL)) return false;
-		zval av10[2];
-		ZVAL_COPY_VALUE(&av10[0], p8);
-		ZVAL_COPY_VALUE(&av10[1], p9);
+		zval vv10[2];
+		ZVAL_COPY_VALUE(&vv10[0], p8);
+		ZVAL_COPY_VALUE(&vv10[1], p9);
 		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_0, pt_ce_type_combinator, "union", 5, 2, av10, r11.raw(), NULL))) return false;
+		 {
+			r11 = pt_type_combinator_union(2, vv10);
+			if (UNEXPECTED(r11.isUndef())) return false;
+		}
 		zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::passedByReference, "passedByReference");
 		if (UNEXPECTED(p12 == NULL)) return false;
 		zval *p13 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::passedByReference, "passedByReference");
 		if (UNEXPECTED(p13 == NULL)) return false;
-		zv::Val o14 = zv::Val::copyOf(zv::Ref(p13));
-		zv::Val r15;
+		zv::Val r14;
 		if (EXPECTED(Z_TYPE_P(p12) == IS_OBJECT)) {
-			r15 = pt_passed_by_reference_combine(p12, o14.raw());
-			if (UNEXPECTED(r15.isUndef())) return false;
+			r14 = pt_passed_by_reference_combine(p12, p13);
+			if (UNEXPECTED(r14.isUndef())) return false;
 		} else {
 		 {
-			zval av16[1];
-			ZVAL_COPY_VALUE(&av16[0], o14.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p12, "combine", "combine", 7, 1, av16, r15.raw()))) return false;
+			zval av15[1];
+			ZVAL_COPY_VALUE(&av15[0], p13);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p12, "combine", "combine", 7, 1, av15, r14.raw()))) return false;
 		}
 		}
-		zval *p18 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::variadic, "variadic");
-		if (UNEXPECTED(p18 == NULL)) return false;
-		bool b17 = (Z_TYPE_P(p18) == IS_TRUE);
-		if (b17) {
-			zval *p19 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::variadic, "variadic");
-			if (UNEXPECTED(p19 == NULL)) return false;
-			b17 = (Z_TYPE_P(p19) == IS_TRUE);
+		zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::variadic, "variadic");
+		if (UNEXPECTED(p17 == NULL)) return false;
+		bool b16 = (Z_TYPE_P(p17) == IS_TRUE);
+		if (b16) {
+			zval *p18 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::variadic, "variadic");
+			if (UNEXPECTED(p18 == NULL)) return false;
+			b16 = (Z_TYPE_P(p18) == IS_TRUE);
 		}
-		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::optional, "optional");
-		if (UNEXPECTED(p21 == NULL)) return false;
-		bool b20 = (Z_TYPE_P(p21) == IS_TRUE);
-		if (b20) {
-			zval *p22 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::optional, "optional");
-			if (UNEXPECTED(p22 == NULL)) return false;
-			b20 = (Z_TYPE_P(p22) == IS_TRUE);
+		zval *p20 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::optional, "optional");
+		if (UNEXPECTED(p20 == NULL)) return false;
+		bool b19 = (Z_TYPE_P(p20) == IS_TRUE);
+		if (b19) {
+			zval *p21 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::optional, "optional");
+			if (UNEXPECTED(p21 == NULL)) return false;
+			b19 = (Z_TYPE_P(p21) == IS_TRUE);
 		}
-		zv::Val q23;
-		if (b20) {
-			zval *p24 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::defaultValue, "defaultValue");
-			if (UNEXPECTED(p24 == NULL)) return false;
-			zv::Val o25 = zv::Val::copyOf(zv::Ref(p24));
-			q23 = std::move(o25);
+		zv::Val q22;
+		if (b19) {
+			zval *p23 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::defaultValue, "defaultValue");
+			if (UNEXPECTED(p23 == NULL)) return false;
+			zv::Val o24 = zv::Val::copyOf(zv::Ref(p23));
+			q22 = std::move(o24);
 		} else {
 		 {
-			zv::Val o26 = zv::Val::null();
-			q23 = std::move(o26);
+			zv::Val o25 = zv::Val::null();
+			q22 = std::move(o25);
 		}
 		}
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_native_parameter_reflection) != SUCCESS)) return false;
 		zv::Val n1 = zv::Val::adopt(n1_raw);
-		if (UNEXPECTED(!pgen::NativeParameterReflection::m___construct(Z_OBJ_P(n1.raw()), o3.raw(), k7, r11.raw(), r15.raw(), b17, q23.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
+		if (UNEXPECTED(!pgen::NativeParameterReflection::m___construct(Z_OBJ_P(n1.raw()), o3.raw(), k7, r11.raw(), r14.raw(), b16, q22.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
 		*ret = n1.take();
 		return true;
 	}
@@ -342,7 +372,7 @@ zv::Val pt_native_parameter_reflection_new(uint32_t argc, zval *argv)
 	zval *pa3;
 	if (argc > 2) {
 		pa3 = zv::Ref(&argv[2]).deref().raw();
-		if (UNEXPECTED(!(pgrt::instanceOfClass(pa3, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\Native\\NativeParameterReflection::__construct", 3, "type", "PHPStan\\Type\\Type", pa3); return zv::Val(); }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(pa3, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\Native\\NativeParameterReflection::__construct", 3, "type", "PHPStan\\Type\\Type", pa3); return zv::Val(); }
 	} else {
 	 {
 		pgrt::throwTooFewArguments("PHPStan\\Reflection\\Native\\NativeParameterReflection::__construct", argc, 3);
@@ -352,7 +382,7 @@ zv::Val pt_native_parameter_reflection_new(uint32_t argc, zval *argv)
 	zval *pa4;
 	if (argc > 3) {
 		pa4 = zv::Ref(&argv[3]).deref().raw();
-		if (UNEXPECTED(!(pgrt::instanceOfClass(pa4, pt_ce_passed_by_reference) || pgrt::instanceOfClass(pa4, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\PassedByReference", 36))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\Native\\NativeParameterReflection::__construct", 4, "passedByReference", "PHPStan\\Reflection\\PassedByReference", pa4); return zv::Val(); }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(pa4, pt_ce_passed_by_reference) || pgrt::instanceOfClass(pa4, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Reflection\\PassedByReference", 36))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\Native\\NativeParameterReflection::__construct", 4, "passedByReference", "PHPStan\\Reflection\\PassedByReference", pa4); return zv::Val(); }
 	} else {
 	 {
 		pgrt::throwTooFewArguments("PHPStan\\Reflection\\Native\\NativeParameterReflection::__construct", argc, 4);
@@ -372,7 +402,7 @@ zv::Val pt_native_parameter_reflection_new(uint32_t argc, zval *argv)
 	zval *pa6;
 	if (argc > 5) {
 		pa6 = zv::Ref(&argv[5]).deref().raw();
-		if (UNEXPECTED(!(pgrt::instanceOfClass(pa6, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Type", 17)) || Z_TYPE_P(pa6) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Reflection\\Native\\NativeParameterReflection::__construct", 6, "defaultValue", "?PHPStan\\Type\\Type", pa6); return zv::Val(); }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(pa6, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)) || Z_TYPE_P(pa6) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Reflection\\Native\\NativeParameterReflection::__construct", 6, "defaultValue", "?PHPStan\\Type\\Type", pa6); return zv::Val(); }
 	} else {
 	 {
 		pgrt::throwTooFewArguments("PHPStan\\Reflection\\Native\\NativeParameterReflection::__construct", argc, 6);
@@ -417,9 +447,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 			Z_PARAM_OBJECT_OR_NULL(p_defaultValue)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name_str != NULL) { ZVAL_STR(&p_name_zv, p_name_str); p_name = &p_name_zv; }
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
-		if (p_passedByReference != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_passedByReference, pt_ce_passed_by_reference) || pgrt::instanceOfClass(p_passedByReference, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\PassedByReference", 36))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Reflection\\PassedByReference", zend_zval_value_name(p_passedByReference)); RETURN_THROWS(); }
-		if (p_defaultValue != NULL && UNEXPECTED(!(Z_TYPE_P(p_defaultValue) == IS_NULL || pgrt::instanceOfClass(p_defaultValue, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_defaultValue)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_passedByReference != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_passedByReference, pt_ce_passed_by_reference) || pgrt::instanceOfClass(p_passedByReference, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Reflection\\PassedByReference", 36))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Reflection\\PassedByReference", zend_zval_value_name(p_passedByReference)); RETURN_THROWS(); }
+		if (p_defaultValue != NULL && UNEXPECTED(!(Z_TYPE_P(p_defaultValue) == IS_NULL || pgrt::instanceOfClass(p_defaultValue, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_defaultValue)); RETURN_THROWS(); }
 		if (p_defaultValue == NULL) p_defaultValue = &p_defaultValue_null;
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_optional, p_type, p_passedByReference, p_variadic, p_defaultValue))) RETURN_THROWS();
 	});
@@ -501,7 +531,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_other)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_native_parameter_reflection) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Reflection\\Native\\NativeParameterReflection", 51))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\Native\\NativeParameterReflection", zend_zval_value_name(p_other)); RETURN_THROWS(); }
+		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_native_parameter_reflection) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\Native\\NativeParameterReflection", 51))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\Native\\NativeParameterReflection", zend_zval_value_name(p_other)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m_union(Z_OBJ_P(ZEND_THIS), p_other, return_value))) RETURN_THROWS();
 	});

@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_changed_type_property_reflection = nullptr;
 
@@ -143,19 +172,16 @@ namespace pgen::ChangedTypePropertyReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypePropertyReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_property_reflection) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_getName(Z_OBJ_P(p1), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getName", "getname", 7, 0, NULL, vd2.raw()))) return false;
 		}
-		*ret = vd2.take();
+		*ret = r2.take();
 		return true;
 	}
 }
@@ -237,20 +263,16 @@ namespace pgen::ChangedTypePropertyReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypePropertyReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_property_reflection) {
-			bool r3;
-			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isPublic(Z_OBJ_P(p1), &r3))) return false;
-			zv::Val o4 = zv::Val::boolean(r3);
-			vd2 = std::move(o4);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_IS_PUBLIC, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p1, "isPublic", "ispublic", 8, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p1, "isPublic", "ispublic", 8, 0, NULL, vd2.raw()))) return false;
 		}
-		*ret = (Z_TYPE_P(vd2.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -599,19 +621,16 @@ namespace pgen::ChangedTypePropertyReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypePropertyReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_property_reflection) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isFinalByKeyword(Z_OBJ_P(p1), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_IS_FINAL_BY_KEYWORD, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p1, "isFinalByKeyword", "isfinalbykeyword", 16, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p1, "isFinalByKeyword", "isfinalbykeyword", 16, 0, NULL, vd2.raw()))) return false;
 		}
-		*ret = vd2.take();
+		*ret = r2.take();
 		return true;
 	}
 }
@@ -625,19 +644,16 @@ namespace pgen::ChangedTypePropertyReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypePropertyReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_changed_type_property_reflection) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isFinal(Z_OBJ_P(p1), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_IS_FINAL, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p1, "isFinal", "isfinal", 7, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p1, "isFinal", "isfinal", 7, 0, NULL, vd2.raw()))) return false;
 		}
-		*ret = vd2.take();
+		*ret = r2.take();
 		return true;
 	}
 }

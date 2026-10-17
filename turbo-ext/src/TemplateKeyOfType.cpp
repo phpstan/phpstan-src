@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_template_key_of_type = nullptr;
 
@@ -103,55 +132,52 @@ namespace pgen::TemplateKeyOfType {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zv::Val vd1;
-		zend_class_entry *vd1_ce = Z_TYPE_P(p_bound) == IS_OBJECT ? Z_OBJCE_P(p_bound) : NULL;
-		bool vd1_done = false;
-		if (vd1_ce == pt_ce_template_key_of_type || vd1_ce == pt_ce_key_of_type) {
-			zv::Val r2;
-			if (UNEXPECTED(!pgen::KeyOfType::m_getType(Z_OBJ_P(p_bound), r2.raw()))) return false;
-			vd1 = std::move(r2);
-			vd1_done = true;
+		zv::Val r1;
+		if (EXPECTED(Z_TYPE_P(p_bound) == IS_OBJECT)) {
+			r1 = pt_type_op(Z_OBJ_P(p_bound), PT_OP_GET_TYPE, 0, NULL);
+			if (UNEXPECTED(r1.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_bound, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return false;
 		}
-		if (!vd1_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_bound, "getType", "gettype", 7, 0, NULL, vd1.raw()))) return false;
 		}
-		if (UNEXPECTED(!pgen::KeyOfType::m___construct(self, vd1.raw()))) return false;
+		if (UNEXPECTED(!pgen::KeyOfType::m___construct(self, r1.raw()))) return false;
 	}
 	 {
-		zv::Val o4 = zv::Val::copyOf(zv::Ref(p_scope));
-		zval o5;
-		ZVAL_COPY(&o5, o4.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::scope, &o5);
+		zv::Val o3 = zv::Val::copyOf(zv::Ref(p_scope));
+		zval o4;
+		ZVAL_COPY(&o4, o3.raw());
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::scope, &o4);
 	}
 	 {
-		zv::Val o6 = zv::Val::copyOf(zv::Ref(p_templateTypeStrategy));
-		zval o7;
-		ZVAL_COPY(&o7, o6.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::strategy, &o7);
+		zv::Val o5 = zv::Val::copyOf(zv::Ref(p_templateTypeStrategy));
+		zval o6;
+		ZVAL_COPY(&o6, o5.raw());
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::strategy, &o6);
 	}
 	 {
-		zv::Val o8 = zv::Val::copyOf(zv::Ref(p_templateTypeVariance));
-		zval o9;
-		ZVAL_COPY(&o9, o8.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::variance, &o9);
+		zv::Val o7 = zv::Val::copyOf(zv::Ref(p_templateTypeVariance));
+		zval o8;
+		ZVAL_COPY(&o8, o7.raw());
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::variance, &o8);
 	}
 	 {
-		zv::Val o10 = zv::Val::copyOf(zv::Ref(p_name));
-		zval o11;
-		ZVAL_COPY(&o11, o10.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::name, &o11);
+		zv::Val o9 = zv::Val::copyOf(zv::Ref(p_name));
+		zval o10;
+		ZVAL_COPY(&o10, o9.raw());
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::name, &o10);
 	}
 	 {
-		zv::Val o12 = zv::Val::copyOf(zv::Ref(p_bound));
-		zval o13;
-		ZVAL_COPY(&o13, o12.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::bound, &o13);
+		zv::Val o11 = zv::Val::copyOf(zv::Ref(p_bound));
+		zval o12;
+		ZVAL_COPY(&o12, o11.raw());
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateKeyOfType::slot::bound, &o12);
 	}
 	 {
-		zv::Val o14 = zv::Val::copyOf(zv::Ref(p_default));
-		zval o15;
-		ZVAL_COPY(&o15, o14.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_1, Z_OBJ_P(&this_zv), "default", 7), &o15);
+		zv::Val o13 = zv::Val::copyOf(zv::Ref(p_default));
+		zval o14;
+		ZVAL_COPY(&o14, o13.raw());
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_1, Z_OBJ_P(&this_zv), "default", 7), &o14);
 	}
 	return true;
 }

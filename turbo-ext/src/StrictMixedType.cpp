@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_strict_mixed_type = nullptr;
 
@@ -352,7 +381,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -380,7 +409,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -982,7 +1011,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -996,7 +1025,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1038,7 +1067,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_boolean_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_boolean_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1094,7 +1123,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1108,7 +1137,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1122,7 +1151,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1136,7 +1165,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1192,7 +1221,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_boolean_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_boolean_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1206,7 +1235,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1220,7 +1249,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1233,12 +1262,8 @@ namespace pgen::StrictMixedType {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval av2[1];
-		zval z3;
-		ZVAL_BOOL(&z3, false);
-		ZVAL_COPY_VALUE(&av2[0], &z3);
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_constant_boolean_type, 1, av2, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_constant_boolean_type_new(n1.raw(), false))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1252,7 +1277,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1266,7 +1291,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n2;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_mixed_type, 0, NULL, n2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_mixed_type_new(n2.raw()))) return false;
 		zval av3[2];
 		ZVAL_COPY_VALUE(&av3[0], n2.raw());
 		zval z4;
@@ -1292,42 +1317,40 @@ namespace pgen::StrictMixedType {
 			 {
 				zv::Val arr3 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
 				zv::Val n4;
-				if (UNEXPECTED(!pgrt::newObject(pt_ce_object_without_class_type, 0, NULL, n4.raw(), NULL))) return false;
+				if (UNEXPECTED(!pt_object_without_class_type_new(n4.raw()))) return false;
 				{ zval v = n4.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr3.raw()), &v); }
 				zv::Val n5;
-				if (UNEXPECTED(!pgrt::newObject(pt_ce_class_string_type, 0, NULL, n5.raw(), NULL))) return false;
+				if (UNEXPECTED(!pt_class_string_type_new(n5.raw()))) return false;
 				{ zval v = n5.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr3.raw()), &v); }
-				zval av6[1];
-				ZVAL_COPY_VALUE(&av6[0], arr3.raw());
 				zv::Val n2;
-				if (UNEXPECTED(!pgrt::newObject(pt_ce_union_type, 1, av6, n2.raw(), NULL))) return false;
-				zval av7[2];
-				ZVAL_COPY_VALUE(&av7[0], n2.raw());
-				zval z8;
-				ZVAL_BOOL(&z8, false);
-				ZVAL_COPY_VALUE(&av7[1], &z8);
-				zend_class_entry *ce9 = pgrt::lookupClass(pg_site_5, "PHPStan\\Type\\ClassNameToObjectTypeResult", 40);
-				if (UNEXPECTED(ce9 == NULL)) return false;
+				if (UNEXPECTED(!pt_union_type_new(n2.raw(), arr3.raw()))) return false;
+				zval av6[2];
+				ZVAL_COPY_VALUE(&av6[0], n2.raw());
+				zval z7;
+				ZVAL_BOOL(&z7, false);
+				ZVAL_COPY_VALUE(&av6[1], &z7);
+				zend_class_entry *ce8 = pgrt::lookupClass(pg_site_5, "PHPStan\\Type\\ClassNameToObjectTypeResult", 40);
+				if (UNEXPECTED(ce8 == NULL)) return false;
 				zv::Val n1;
-				if (UNEXPECTED(!pgrt::newObject(ce9, 2, av7, n1.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::newObject(ce8, 2, av6, n1.raw(), NULL))) return false;
 				*ret = n1.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val n11;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_object_without_class_type, 0, NULL, n11.raw(), NULL))) return false;
-		zval av12[2];
-		ZVAL_COPY_VALUE(&av12[0], n11.raw());
-		zval z13;
-		ZVAL_BOOL(&z13, false);
-		ZVAL_COPY_VALUE(&av12[1], &z13);
-		zend_class_entry *ce14 = pgrt::lookupClass(pg_site_5, "PHPStan\\Type\\ClassNameToObjectTypeResult", 40);
-		if (UNEXPECTED(ce14 == NULL)) return false;
 		zv::Val n10;
-		if (UNEXPECTED(!pgrt::newObject(ce14, 2, av12, n10.raw(), NULL))) return false;
-		*ret = n10.take();
+		if (UNEXPECTED(!pt_object_without_class_type_new(n10.raw()))) return false;
+		zval av11[2];
+		ZVAL_COPY_VALUE(&av11[0], n10.raw());
+		zval z12;
+		ZVAL_BOOL(&z12, false);
+		ZVAL_COPY_VALUE(&av11[1], &z12);
+		zend_class_entry *ce13 = pgrt::lookupClass(pg_site_5, "PHPStan\\Type\\ClassNameToObjectTypeResult", 40);
+		if (UNEXPECTED(ce13 == NULL)) return false;
+		zv::Val n9;
+		if (UNEXPECTED(!pgrt::newObject(ce13, 2, av11, n9.raw(), NULL))) return false;
+		*ret = n9.take();
 		return true;
 	}
 }
@@ -1340,7 +1363,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1354,7 +1377,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1368,7 +1391,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1382,7 +1405,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1396,7 +1419,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1410,7 +1433,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1516,7 +1539,7 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_error_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_error_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}

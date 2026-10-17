@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_get_template_type_type = nullptr;
 
@@ -126,61 +155,16 @@ namespace pgen::GetTemplateTypeType {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_has_method_type) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::HasMethodType::m_getReferencedClasses(Z_OBJ_P(p1), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p1), PT_OP_GET_REFERENCED_CLASSES, 0, NULL);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r2.raw(), NULL))) return false;
 		}
-		if (vd2_ce == pt_ce_class_constant_access_type) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::ClassConstantAccessType::m_getReferencedClasses(Z_OBJ_P(p1), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_template_key_of_type || vd2_ce == pt_ce_key_of_type) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::KeyOfType::m_getReferencedClasses(Z_OBJ_P(p1), r5.raw()))) return false;
-			vd2 = std::move(r5);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_get_template_type_type) {
-			zv::Val r6;
-			if (UNEXPECTED(!pgen::GetTemplateTypeType::m_getReferencedClasses(Z_OBJ_P(p1), r6.raw()))) return false;
-			vd2 = std::move(r6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_new_object_type) {
-			zv::Val r7;
-			if (UNEXPECTED(!pgen::NewObjectType::m_getReferencedClasses(Z_OBJ_P(p1), r7.raw()))) return false;
-			vd2 = std::move(r7);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_offset_access_type) {
-			zv::Val r8;
-			if (UNEXPECTED(!pgen::OffsetAccessType::m_getReferencedClasses(Z_OBJ_P(p1), r8.raw()))) return false;
-			vd2 = std::move(r8);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_strict_mixed_type) {
-			zv::Val r9;
-			if (UNEXPECTED(!pgen::StrictMixedType::m_getReferencedClasses(Z_OBJ_P(p1), r9.raw()))) return false;
-			vd2 = std::move(r9);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_value_of_type) {
-			zv::Val r10;
-			if (UNEXPECTED(!pgen::ValueOfType::m_getReferencedClasses(Z_OBJ_P(p1), r10.raw()))) return false;
-			vd2 = std::move(r10);
-			vd2_done = true;
-		}
-		if (!vd2_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, vd2.raw()))) return false;
-		}
-		*ret = vd2.take();
+		*ret = r2.take();
 		return true;
 	}
 }
@@ -194,58 +178,18 @@ namespace pgen::GetTemplateTypeType {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val o2 = zv::Val::copyOf(zv::Ref(p_positionVariance));
-		zv::Val vd3;
-		zend_class_entry *vd3_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd3_done = false;
-		if (vd3_ce == pt_ce_class_constant_access_type) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::ClassConstantAccessType::m_getReferencedTemplateTypes(Z_OBJ_P(p1), o2.raw(), r4.raw()))) return false;
-			vd3 = std::move(r4);
-			vd3_done = true;
+		zval av2[1];
+		ZVAL_COPY_VALUE(&av2[0], p_positionVariance);
+		zv::Val r3;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r3 = pt_type_op(Z_OBJ_P(p1), PT_OP_GET_REFERENCED_TEMPLATE_TYPES, 1, av2);
+			if (UNEXPECTED(r3.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p1, "getReferencedTemplateTypes", "getreferencedtemplatetypes", 26, 1, av2, r3.raw(), NULL))) return false;
 		}
-		if (vd3_ce == pt_ce_get_template_type_type) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::GetTemplateTypeType::m_getReferencedTemplateTypes(Z_OBJ_P(p1), o2.raw(), r5.raw()))) return false;
-			vd3 = std::move(r5);
-			vd3_done = true;
 		}
-		if (vd3_ce == pt_ce_key_of_type) {
-			zv::Val r6;
-			if (UNEXPECTED(!pgen::KeyOfType::m_getReferencedTemplateTypes(Z_OBJ_P(p1), o2.raw(), r6.raw()))) return false;
-			vd3 = std::move(r6);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_new_object_type) {
-			zv::Val r7;
-			if (UNEXPECTED(!pgen::NewObjectType::m_getReferencedTemplateTypes(Z_OBJ_P(p1), o2.raw(), r7.raw()))) return false;
-			vd3 = std::move(r7);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_offset_access_type) {
-			zv::Val r8;
-			if (UNEXPECTED(!pgen::OffsetAccessType::m_getReferencedTemplateTypes(Z_OBJ_P(p1), o2.raw(), r8.raw()))) return false;
-			vd3 = std::move(r8);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_strict_mixed_type) {
-			zv::Val r9;
-			if (UNEXPECTED(!pgen::StrictMixedType::m_getReferencedTemplateTypes(Z_OBJ_P(p1), o2.raw(), r9.raw()))) return false;
-			vd3 = std::move(r9);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_value_of_type) {
-			zv::Val r10;
-			if (UNEXPECTED(!pgen::ValueOfType::m_getReferencedTemplateTypes(Z_OBJ_P(p1), o2.raw(), r10.raw()))) return false;
-			vd3 = std::move(r10);
-			vd3_done = true;
-		}
-		if (!vd3_done) {
-			zval av11[1];
-			ZVAL_COPY_VALUE(&av11[0], o2.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p1, "getReferencedTemplateTypes", "getreferencedtemplatetypes", 26, 1, av11, vd3.raw()))) return false;
-		}
-		*ret = vd3.take();
+		*ret = r3.take();
 		return true;
 	}
 }
@@ -263,72 +207,18 @@ namespace pgen::GetTemplateTypeType {
 			if (UNEXPECTED(p2 == NULL)) return false;
 			zval *p3 = pgrt::readSlot(Z_OBJ_P(p_type), ptdecl::GetTemplateTypeType::slot::type, "type");
 			if (UNEXPECTED(p3 == NULL)) return false;
-			zv::Val o4 = zv::Val::copyOf(zv::Ref(p3));
-			zv::Val vd5;
-			zend_class_entry *vd5_ce = Z_TYPE_P(p2) == IS_OBJECT ? Z_OBJCE_P(p2) : NULL;
-			bool vd5_done = false;
-			if (vd5_ce == pt_ce_has_method_type) {
-				bool r6;
-				if (UNEXPECTED(!pgen::HasMethodType::m_equals(Z_OBJ_P(p2), o4.raw(), &r6))) return false;
-				zv::Val o7 = zv::Val::boolean(r6);
-				vd5 = std::move(o7);
-				vd5_done = true;
+			zval av4[1];
+			ZVAL_COPY_VALUE(&av4[0], p3);
+			zv::Val r5;
+			if (EXPECTED(Z_TYPE_P(p2) == IS_OBJECT)) {
+				r5 = pt_type_op(Z_OBJ_P(p2), PT_OP_EQUALS, 1, av4);
+				if (UNEXPECTED(r5.isUndef())) return false;
+			} else {
+			 {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p2, "equals", "equals", 6, 1, av4, r5.raw(), NULL))) return false;
 			}
-			if (vd5_ce == pt_ce_class_constant_access_type) {
-				bool r8;
-				if (UNEXPECTED(!pgen::ClassConstantAccessType::m_equals(Z_OBJ_P(p2), o4.raw(), &r8))) return false;
-				zv::Val o9 = zv::Val::boolean(r8);
-				vd5 = std::move(o9);
-				vd5_done = true;
 			}
-			if (vd5_ce == pt_ce_get_template_type_type) {
-				bool r10;
-				if (UNEXPECTED(!pgen::GetTemplateTypeType::m_equals(Z_OBJ_P(p2), o4.raw(), &r10))) return false;
-				zv::Val o11 = zv::Val::boolean(r10);
-				vd5 = std::move(o11);
-				vd5_done = true;
-			}
-			if (vd5_ce == pt_ce_key_of_type) {
-				bool r12;
-				if (UNEXPECTED(!pgen::KeyOfType::m_equals(Z_OBJ_P(p2), o4.raw(), &r12))) return false;
-				zv::Val o13 = zv::Val::boolean(r12);
-				vd5 = std::move(o13);
-				vd5_done = true;
-			}
-			if (vd5_ce == pt_ce_new_object_type) {
-				bool r14;
-				if (UNEXPECTED(!pgen::NewObjectType::m_equals(Z_OBJ_P(p2), o4.raw(), &r14))) return false;
-				zv::Val o15 = zv::Val::boolean(r14);
-				vd5 = std::move(o15);
-				vd5_done = true;
-			}
-			if (vd5_ce == pt_ce_offset_access_type) {
-				bool r16;
-				if (UNEXPECTED(!pgen::OffsetAccessType::m_equals(Z_OBJ_P(p2), o4.raw(), &r16))) return false;
-				zv::Val o17 = zv::Val::boolean(r16);
-				vd5 = std::move(o17);
-				vd5_done = true;
-			}
-			if (vd5_ce == pt_ce_strict_mixed_type) {
-				bool r18;
-				if (UNEXPECTED(!pgen::StrictMixedType::m_equals(Z_OBJ_P(p2), o4.raw(), &r18))) return false;
-				zv::Val o19 = zv::Val::boolean(r18);
-				vd5 = std::move(o19);
-				vd5_done = true;
-			}
-			if (vd5_ce == pt_ce_value_of_type) {
-				bool r20;
-				if (UNEXPECTED(!pgen::ValueOfType::m_equals(Z_OBJ_P(p2), o4.raw(), &r20))) return false;
-				zv::Val o21 = zv::Val::boolean(r20);
-				vd5 = std::move(o21);
-				vd5_done = true;
-			}
-			if (!vd5_done) {
-				zval av22[1];
-				ZVAL_COPY_VALUE(&av22[0], o4.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p2, "equals", "equals", 6, 1, av22, vd5.raw()))) return false;
-			}
-			b1 = (Z_TYPE_P(vd5.raw()) == IS_TRUE);
+			b1 = (Z_TYPE_P(r5.raw()) == IS_TRUE);
 		}
 		*ret = b1;
 		return true;
@@ -344,75 +234,29 @@ namespace pgen::GetTemplateTypeType {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val o2 = zv::Val::copyOf(zv::Ref(p_level));
-		zv::Val vd3;
-		zend_class_entry *vd3_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd3_done = false;
-		if (vd3_ce == pt_ce_has_method_type) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::HasMethodType::m_describe(Z_OBJ_P(p1), o2.raw(), r4.raw()))) return false;
-			vd3 = std::move(r4);
-			vd3_done = true;
+		zval av2[1];
+		ZVAL_COPY_VALUE(&av2[0], p_level);
+		zv::Val r3;
+		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
+			r3 = pt_type_op(Z_OBJ_P(p1), PT_OP_DESCRIBE, 1, av2);
+			if (UNEXPECTED(r3.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "describe", "describe", 8, 1, av2, r3.raw(), NULL))) return false;
 		}
-		if (vd3_ce == pt_ce_class_constant_access_type) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::ClassConstantAccessType::m_describe(Z_OBJ_P(p1), o2.raw(), r5.raw()))) return false;
-			vd3 = std::move(r5);
-			vd3_done = true;
 		}
-		if (vd3_ce == pt_ce_get_template_type_type) {
-			zv::Val r6;
-			if (UNEXPECTED(!pgen::GetTemplateTypeType::m_describe(Z_OBJ_P(p1), o2.raw(), r6.raw()))) return false;
-			vd3 = std::move(r6);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_key_of_type) {
-			zv::Val r7;
-			if (UNEXPECTED(!pgen::KeyOfType::m_describe(Z_OBJ_P(p1), o2.raw(), r7.raw()))) return false;
-			vd3 = std::move(r7);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_new_object_type) {
-			zv::Val r8;
-			if (UNEXPECTED(!pgen::NewObjectType::m_describe(Z_OBJ_P(p1), o2.raw(), r8.raw()))) return false;
-			vd3 = std::move(r8);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_offset_access_type) {
-			zv::Val r9;
-			if (UNEXPECTED(!pgen::OffsetAccessType::m_describe(Z_OBJ_P(p1), o2.raw(), r9.raw()))) return false;
-			vd3 = std::move(r9);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_strict_mixed_type) {
-			zv::Val r10;
-			if (UNEXPECTED(!pgen::StrictMixedType::m_describe(Z_OBJ_P(p1), o2.raw(), r10.raw()))) return false;
-			vd3 = std::move(r10);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_value_of_type) {
-			zv::Val r11;
-			if (UNEXPECTED(!pgen::ValueOfType::m_describe(Z_OBJ_P(p1), o2.raw(), r11.raw()))) return false;
-			vd3 = std::move(r11);
-			vd3_done = true;
-		}
-		if (!vd3_done) {
-			zval av12[1];
-			ZVAL_COPY_VALUE(&av12[0], o2.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "describe", "describe", 8, 1, av12, vd3.raw()))) return false;
-		}
-		zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::ancestorClassName, "ancestorClassName");
-		if (UNEXPECTED(p13 == NULL)) return false;
-		zval *p14 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::templateTypeName, "templateTypeName");
-		if (UNEXPECTED(p14 == NULL)) return false;
-		zval av15[4];
-		ZVAL_COPY_VALUE(&av15[0], &pg_lit[0]);
-		ZVAL_COPY_VALUE(&av15[1], vd3.raw());
-		ZVAL_COPY_VALUE(&av15[2], p13);
-		ZVAL_COPY_VALUE(&av15[3], p14);
-		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "sprintf", 7, pt_ce_get_template_type_type, 4, av15, r16.raw(), NULL))) return false;
-		*ret = r16.take();
+		zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::ancestorClassName, "ancestorClassName");
+		if (UNEXPECTED(p4 == NULL)) return false;
+		zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::templateTypeName, "templateTypeName");
+		if (UNEXPECTED(p5 == NULL)) return false;
+		zval av6[4];
+		ZVAL_COPY_VALUE(&av6[0], &pg_lit[0]);
+		ZVAL_COPY_VALUE(&av6[1], r3.raw());
+		ZVAL_COPY_VALUE(&av6[2], p4);
+		ZVAL_COPY_VALUE(&av6[3], p5);
+		zv::Val r7;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "sprintf", 7, pt_ce_get_template_type_type, 4, av6, r7.raw(), NULL))) return false;
+		*ret = r7.take();
 		return true;
 	}
 }

@@ -74,6 +74,35 @@
 #include "generated/StringNeverAcceptingObjectWithToStringType.h"
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_unresolvable_type_helper = nullptr;
 
@@ -95,10 +124,12 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	a_type = zv::Ref(&argv[0]).deref().raw();
 	if (UNEXPECTED(!(pgrt::instanceOfClass(a_type, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper::{closure}", 1, "type", "PHPStan\\Type\\Type", a_type); return; }
 	zval *p_type = a_type;
+	(void) p_type;
 	zval *a_traverse;
 	a_traverse = zv::Ref(&argv[1]).deref().raw();
 	if (UNEXPECTED(!(zend_is_callable(a_traverse, 0, NULL)))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper::{closure}", 2, "traverse", "callable", a_traverse); return; }
 	zval *p_traverse = a_traverse;
+	(void) p_traverse;
 	zv::Val l_reason;
 	 {
 		zv::Val o1 = zv::Val::null();

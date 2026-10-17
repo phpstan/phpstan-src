@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 
 static pgrt::FunctionSite pg_site_0; /* function_array_map */
@@ -95,6 +124,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	a_cb = zv::Ref(&argv[0]).deref().raw();
 	if (UNEXPECTED(!(Z_TYPE_P(a_cb) == IS_OBJECT && Z_OBJCE_P(a_cb) == zend_ce_closure))) { pgrt::throwArgumentType("PHPStan\\Type\\IsSuperTypeOfResult::{closure}", 1, "cb", "Closure", a_cb); return; }
 	zval *p_cb = a_cb;
+	(void) p_cb;
 	 {
 		zv::Val o1 = zv::Val::copyOf(zv::Ref(p_cb));
 		zv::Val r2;

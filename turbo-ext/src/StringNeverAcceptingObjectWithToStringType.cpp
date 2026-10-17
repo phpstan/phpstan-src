@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_string_never_accepting_object_with_to_string_type = nullptr;
 
@@ -97,49 +126,40 @@ namespace pgen::StringNeverAcceptingObjectWithToStringType {
 	 {
 		if (pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\CompoundType", 25))) {
 			 {
-				zv::Val vd1;
-				zend_class_entry *vd1_ce = Z_TYPE_P(p_type) == IS_OBJECT ? Z_OBJCE_P(p_type) : NULL;
-				bool vd1_done = false;
-				if (vd1_ce == pt_ce_has_method_type) {
-					zv::Val r2;
-					if (UNEXPECTED(!pgen::HasMethodType::m_isSubTypeOf(Z_OBJ_P(p_type), &this_zv, r2.raw()))) return false;
-					vd1 = std::move(r2);
-					vd1_done = true;
+				zval av1[1];
+				ZVAL_COPY_VALUE(&av1[0], &this_zv);
+				zv::Val r2;
+				if (EXPECTED(Z_TYPE_P(p_type) == IS_OBJECT)) {
+					r2 = pt_type_op(Z_OBJ_P(p_type), PT_OP_IS_SUB_TYPE_OF, 1, av1);
+					if (UNEXPECTED(r2.isUndef())) return false;
+				} else {
+				 {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_type, "isSubTypeOf", "issubtypeof", 11, 1, av1, r2.raw(), NULL))) return false;
 				}
-				if (vd1_ce == pt_ce_strict_mixed_type) {
-					zv::Val r3;
-					if (UNEXPECTED(!pgen::StrictMixedType::m_isSubTypeOf(Z_OBJ_P(p_type), &this_zv, r3.raw()))) return false;
-					vd1 = std::move(r3);
-					vd1_done = true;
 				}
-				if (!vd1_done) {
-					zval av4[1];
-					ZVAL_COPY_VALUE(&av4[0], &this_zv);
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_type, "isSubTypeOf", "issubtypeof", 11, 1, av4, vd1.raw()))) return false;
-				}
-				*ret = vd1.take();
+				*ret = r2.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval av5[1];
-		ZVAL_COPY_VALUE(&av5[0], p_type);
-		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callBound(pg_site_2, pt_ce_string_type, self, "issupertypeof", 13, 1, av5, r6.raw(), NULL))) return false;
-		l_result = std::move(r6);
+		zval av3[1];
+		ZVAL_COPY_VALUE(&av3[0], p_type);
+		zv::Val r4;
+		if (UNEXPECTED(!pgrt::callBound(pg_site_2, pt_ce_string_type, self, "issupertypeof", 13, 1, av3, r4.raw(), NULL))) return false;
+		l_result = std::move(r4);
 	}
 	 {
 		if (!((pgrt::instanceOfClass(p_type, pt_ce_string_never_accepting_object_with_to_string_type) || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\StringNeverAcceptingObjectWithToStringType", 55))))) {
 			 {
-				zv::Val o7 = zv::Val::copyOf(zv::Ref(l_result.raw()));
+				zv::Val o5 = zv::Val::copyOf(zv::Ref(l_result.raw()));
+				zv::Val r6;
+				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_createMaybe(r6.raw()))) return false;
+				zval va7[1];
+				ZVAL_COPY_VALUE(&va7[0], r6.raw());
 				zv::Val r8;
-				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_createMaybe(r8.raw()))) return false;
-				zval va9[1];
-				ZVAL_COPY_VALUE(&va9[0], r8.raw());
-				zv::Val r10;
-				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_and(Z_OBJ_P(o7.raw()), va9, 1, r10.raw()))) return false;
-				l_result = std::move(r10);
+				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_and(Z_OBJ_P(o5.raw()), va7, 1, r8.raw()))) return false;
+				l_result = std::move(r8);
 			}
 		}
 	}

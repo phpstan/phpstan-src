@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_type_projection_helper = nullptr;
 
@@ -96,73 +125,27 @@ namespace pgen::TypeProjectionHelper {
 {
 	zv::Val l_describedType;
 	 {
-		zv::Val o1 = zv::Val::copyOf(zv::Ref(p_level));
-		zv::Val vd2;
-		zend_class_entry *vd2_ce = Z_TYPE_P(p_type) == IS_OBJECT ? Z_OBJCE_P(p_type) : NULL;
-		bool vd2_done = false;
-		if (vd2_ce == pt_ce_has_method_type) {
-			zv::Val r3;
-			if (UNEXPECTED(!pgen::HasMethodType::m_describe(Z_OBJ_P(p_type), o1.raw(), r3.raw()))) return false;
-			vd2 = std::move(r3);
-			vd2_done = true;
+		zval av1[1];
+		ZVAL_COPY_VALUE(&av1[0], p_level);
+		zv::Val r2;
+		if (EXPECTED(Z_TYPE_P(p_type) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p_type), PT_OP_DESCRIBE, 1, av1);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_type, "describe", "describe", 8, 1, av1, r2.raw(), NULL))) return false;
 		}
-		if (vd2_ce == pt_ce_class_constant_access_type) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::ClassConstantAccessType::m_describe(Z_OBJ_P(p_type), o1.raw(), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_get_template_type_type) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::GetTemplateTypeType::m_describe(Z_OBJ_P(p_type), o1.raw(), r5.raw()))) return false;
-			vd2 = std::move(r5);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_key_of_type) {
-			zv::Val r6;
-			if (UNEXPECTED(!pgen::KeyOfType::m_describe(Z_OBJ_P(p_type), o1.raw(), r6.raw()))) return false;
-			vd2 = std::move(r6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_new_object_type) {
-			zv::Val r7;
-			if (UNEXPECTED(!pgen::NewObjectType::m_describe(Z_OBJ_P(p_type), o1.raw(), r7.raw()))) return false;
-			vd2 = std::move(r7);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_offset_access_type) {
-			zv::Val r8;
-			if (UNEXPECTED(!pgen::OffsetAccessType::m_describe(Z_OBJ_P(p_type), o1.raw(), r8.raw()))) return false;
-			vd2 = std::move(r8);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_strict_mixed_type) {
-			zv::Val r9;
-			if (UNEXPECTED(!pgen::StrictMixedType::m_describe(Z_OBJ_P(p_type), o1.raw(), r9.raw()))) return false;
-			vd2 = std::move(r9);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_value_of_type) {
-			zv::Val r10;
-			if (UNEXPECTED(!pgen::ValueOfType::m_describe(Z_OBJ_P(p_type), o1.raw(), r10.raw()))) return false;
-			vd2 = std::move(r10);
-			vd2_done = true;
-		}
-		if (!vd2_done) {
-			zval av11[1];
-			ZVAL_COPY_VALUE(&av11[0], o1.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_type, "describe", "describe", 8, 1, av11, vd2.raw()))) return false;
-		}
-		l_describedType = std::move(vd2);
+		l_describedType = std::move(r2);
 	}
 	 {
-		bool b12 = (Z_TYPE_P(p_variance) == IS_NULL);
-		if (!b12) {
-			zv::Val r13;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_variance, "invariant", "invariant", 9, 0, NULL, r13.raw(), NULL))) return false;
-			b12 = (Z_TYPE_P(r13.raw()) == IS_TRUE);
+		bool b3 = (Z_TYPE_P(p_variance) == IS_NULL);
+		if (!b3) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_variance, "invariant", "invariant", 9, 0, NULL, r4.raw(), NULL))) return false;
+			b3 = (Z_TYPE_P(r4.raw()) == IS_TRUE);
 		}
-		if (b12) {
+		if (b3) {
 			 {
 				ZVAL_COPY(ret, l_describedType.raw());
 				return true;
@@ -170,9 +153,9 @@ namespace pgen::TypeProjectionHelper {
 		}
 	}
 	 {
-		zv::Val r14;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_variance, "bivariant", "bivariant", 9, 0, NULL, r14.raw(), NULL))) return false;
-		if (Z_TYPE_P(r14.raw()) == IS_TRUE) {
+		zv::Val r5;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_variance, "bivariant", "bivariant", 9, 0, NULL, r5.raw(), NULL))) return false;
+		if (Z_TYPE_P(r5.raw()) == IS_TRUE) {
 			 {
 				ZVAL_COPY(ret, &pg_lit[0]);
 				return true;
@@ -180,15 +163,15 @@ namespace pgen::TypeProjectionHelper {
 		}
 	}
 	 {
-		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_variance, "describe", "describe", 8, 0, NULL, r15.raw(), NULL))) return false;
-		zval av16[3];
-		ZVAL_COPY_VALUE(&av16[0], &pg_lit[1]);
-		ZVAL_COPY_VALUE(&av16[1], r15.raw());
-		ZVAL_COPY_VALUE(&av16[2], l_describedType.raw());
-		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "sprintf", 7, pt_ce_type_projection_helper, 3, av16, r17.raw(), NULL))) return false;
-		*ret = r17.take();
+		zv::Val r6;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_variance, "describe", "describe", 8, 0, NULL, r6.raw(), NULL))) return false;
+		zval av7[3];
+		ZVAL_COPY_VALUE(&av7[0], &pg_lit[1]);
+		ZVAL_COPY_VALUE(&av7[1], r6.raw());
+		ZVAL_COPY_VALUE(&av7[2], l_describedType.raw());
+		zv::Val r8;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "sprintf", 7, pt_ce_type_projection_helper, 3, av7, r8.raw(), NULL))) return false;
+		*ret = r8.take();
 		return true;
 	}
 }

@@ -74,16 +74,44 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 
 static pt_method_site pg_site_0; /* method_equals_0 */
 static pt_method_site pg_site_1; /* method_equals_1 */
 static pt_method_site pg_site_2; /* method_equals_2 */
-static pt_method_site pg_site_3; /* static_PHPStan\Type\TypeCombinator::union */
-static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr */
-static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Type */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\TrinaryLogic */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Analyser\ExpressionTypeHolder */
+static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Type */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\TrinaryLogic */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\ExpressionTypeHolder */
 
 namespace pgen::ExpressionTypeHolder {
 
@@ -164,72 +192,18 @@ namespace pgen::ExpressionTypeHolder {
 			if (UNEXPECTED(p4 == NULL)) return false;
 			zval *p5 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::ExpressionTypeHolder::slot::type, "type");
 			if (UNEXPECTED(p5 == NULL)) return false;
-			zv::Val o6 = zv::Val::copyOf(zv::Ref(p5));
-			zv::Val vd7;
-			zend_class_entry *vd7_ce = Z_TYPE_P(p4) == IS_OBJECT ? Z_OBJCE_P(p4) : NULL;
-			bool vd7_done = false;
-			if (vd7_ce == pt_ce_has_method_type) {
-				bool r8;
-				if (UNEXPECTED(!pgen::HasMethodType::m_equals(Z_OBJ_P(p4), o6.raw(), &r8))) return false;
-				zv::Val o9 = zv::Val::boolean(r8);
-				vd7 = std::move(o9);
-				vd7_done = true;
+			zval av6[1];
+			ZVAL_COPY_VALUE(&av6[0], p5);
+			zv::Val r7;
+			if (EXPECTED(Z_TYPE_P(p4) == IS_OBJECT)) {
+				r7 = pt_type_op(Z_OBJ_P(p4), PT_OP_EQUALS, 1, av6);
+				if (UNEXPECTED(r7.isUndef())) return false;
+			} else {
+			 {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p4, "equals", "equals", 6, 1, av6, r7.raw(), NULL))) return false;
 			}
-			if (vd7_ce == pt_ce_class_constant_access_type) {
-				bool r10;
-				if (UNEXPECTED(!pgen::ClassConstantAccessType::m_equals(Z_OBJ_P(p4), o6.raw(), &r10))) return false;
-				zv::Val o11 = zv::Val::boolean(r10);
-				vd7 = std::move(o11);
-				vd7_done = true;
 			}
-			if (vd7_ce == pt_ce_get_template_type_type) {
-				bool r12;
-				if (UNEXPECTED(!pgen::GetTemplateTypeType::m_equals(Z_OBJ_P(p4), o6.raw(), &r12))) return false;
-				zv::Val o13 = zv::Val::boolean(r12);
-				vd7 = std::move(o13);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_key_of_type) {
-				bool r14;
-				if (UNEXPECTED(!pgen::KeyOfType::m_equals(Z_OBJ_P(p4), o6.raw(), &r14))) return false;
-				zv::Val o15 = zv::Val::boolean(r14);
-				vd7 = std::move(o15);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_new_object_type) {
-				bool r16;
-				if (UNEXPECTED(!pgen::NewObjectType::m_equals(Z_OBJ_P(p4), o6.raw(), &r16))) return false;
-				zv::Val o17 = zv::Val::boolean(r16);
-				vd7 = std::move(o17);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_offset_access_type) {
-				bool r18;
-				if (UNEXPECTED(!pgen::OffsetAccessType::m_equals(Z_OBJ_P(p4), o6.raw(), &r18))) return false;
-				zv::Val o19 = zv::Val::boolean(r18);
-				vd7 = std::move(o19);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_strict_mixed_type) {
-				bool r20;
-				if (UNEXPECTED(!pgen::StrictMixedType::m_equals(Z_OBJ_P(p4), o6.raw(), &r20))) return false;
-				zv::Val o21 = zv::Val::boolean(r20);
-				vd7 = std::move(o21);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_value_of_type) {
-				bool r22;
-				if (UNEXPECTED(!pgen::ValueOfType::m_equals(Z_OBJ_P(p4), o6.raw(), &r22))) return false;
-				zv::Val o23 = zv::Val::boolean(r22);
-				vd7 = std::move(o23);
-				vd7_done = true;
-			}
-			if (!vd7_done) {
-				zval av24[1];
-				ZVAL_COPY_VALUE(&av24[0], o6.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p4, "equals", "equals", 6, 1, av24, vd7.raw()))) return false;
-			}
-			b1 = (Z_TYPE_P(vd7.raw()) == IS_TRUE);
+			b1 = (Z_TYPE_P(r7.raw()) == IS_TRUE);
 		}
 		*ret = b1;
 		return true;
@@ -275,72 +249,18 @@ namespace pgen::ExpressionTypeHolder {
 			if (UNEXPECTED(p7 == NULL)) return false;
 			zval *p8 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::ExpressionTypeHolder::slot::type, "type");
 			if (UNEXPECTED(p8 == NULL)) return false;
-			zv::Val o9 = zv::Val::copyOf(zv::Ref(p8));
-			zv::Val vd10;
-			zend_class_entry *vd10_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
-			bool vd10_done = false;
-			if (vd10_ce == pt_ce_has_method_type) {
-				bool r11;
-				if (UNEXPECTED(!pgen::HasMethodType::m_equals(Z_OBJ_P(p7), o9.raw(), &r11))) return false;
-				zv::Val o12 = zv::Val::boolean(r11);
-				vd10 = std::move(o12);
-				vd10_done = true;
+			zval av9[1];
+			ZVAL_COPY_VALUE(&av9[0], p8);
+			zv::Val r10;
+			if (EXPECTED(Z_TYPE_P(p7) == IS_OBJECT)) {
+				r10 = pt_type_op(Z_OBJ_P(p7), PT_OP_EQUALS, 1, av9);
+				if (UNEXPECTED(r10.isUndef())) return false;
+			} else {
+			 {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p7, "equals", "equals", 6, 1, av9, r10.raw(), NULL))) return false;
 			}
-			if (vd10_ce == pt_ce_class_constant_access_type) {
-				bool r13;
-				if (UNEXPECTED(!pgen::ClassConstantAccessType::m_equals(Z_OBJ_P(p7), o9.raw(), &r13))) return false;
-				zv::Val o14 = zv::Val::boolean(r13);
-				vd10 = std::move(o14);
-				vd10_done = true;
 			}
-			if (vd10_ce == pt_ce_get_template_type_type) {
-				bool r15;
-				if (UNEXPECTED(!pgen::GetTemplateTypeType::m_equals(Z_OBJ_P(p7), o9.raw(), &r15))) return false;
-				zv::Val o16 = zv::Val::boolean(r15);
-				vd10 = std::move(o16);
-				vd10_done = true;
-			}
-			if (vd10_ce == pt_ce_key_of_type) {
-				bool r17;
-				if (UNEXPECTED(!pgen::KeyOfType::m_equals(Z_OBJ_P(p7), o9.raw(), &r17))) return false;
-				zv::Val o18 = zv::Val::boolean(r17);
-				vd10 = std::move(o18);
-				vd10_done = true;
-			}
-			if (vd10_ce == pt_ce_new_object_type) {
-				bool r19;
-				if (UNEXPECTED(!pgen::NewObjectType::m_equals(Z_OBJ_P(p7), o9.raw(), &r19))) return false;
-				zv::Val o20 = zv::Val::boolean(r19);
-				vd10 = std::move(o20);
-				vd10_done = true;
-			}
-			if (vd10_ce == pt_ce_offset_access_type) {
-				bool r21;
-				if (UNEXPECTED(!pgen::OffsetAccessType::m_equals(Z_OBJ_P(p7), o9.raw(), &r21))) return false;
-				zv::Val o22 = zv::Val::boolean(r21);
-				vd10 = std::move(o22);
-				vd10_done = true;
-			}
-			if (vd10_ce == pt_ce_strict_mixed_type) {
-				bool r23;
-				if (UNEXPECTED(!pgen::StrictMixedType::m_equals(Z_OBJ_P(p7), o9.raw(), &r23))) return false;
-				zv::Val o24 = zv::Val::boolean(r23);
-				vd10 = std::move(o24);
-				vd10_done = true;
-			}
-			if (vd10_ce == pt_ce_value_of_type) {
-				bool r25;
-				if (UNEXPECTED(!pgen::ValueOfType::m_equals(Z_OBJ_P(p7), o9.raw(), &r25))) return false;
-				zv::Val o26 = zv::Val::boolean(r25);
-				vd10 = std::move(o26);
-				vd10_done = true;
-			}
-			if (!vd10_done) {
-				zval av27[1];
-				ZVAL_COPY_VALUE(&av27[0], o9.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p7, "equals", "equals", 6, 1, av27, vd10.raw()))) return false;
-			}
-			b4 = (Z_TYPE_P(vd10.raw()) == IS_TRUE);
+			b4 = (Z_TYPE_P(r10.raw()) == IS_TRUE);
 		}
 		*ret = b4;
 		return true;
@@ -364,84 +284,30 @@ namespace pgen::ExpressionTypeHolder {
 			if (UNEXPECTED(p4 == NULL)) return false;
 			zval *p5 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::ExpressionTypeHolder::slot::type, "type");
 			if (UNEXPECTED(p5 == NULL)) return false;
-			zv::Val o6 = zv::Val::copyOf(zv::Ref(p5));
-			zv::Val vd7;
-			zend_class_entry *vd7_ce = Z_TYPE_P(p4) == IS_OBJECT ? Z_OBJCE_P(p4) : NULL;
-			bool vd7_done = false;
-			if (vd7_ce == pt_ce_has_method_type) {
-				bool r8;
-				if (UNEXPECTED(!pgen::HasMethodType::m_equals(Z_OBJ_P(p4), o6.raw(), &r8))) return false;
-				zv::Val o9 = zv::Val::boolean(r8);
-				vd7 = std::move(o9);
-				vd7_done = true;
+			zval av6[1];
+			ZVAL_COPY_VALUE(&av6[0], p5);
+			zv::Val r7;
+			if (EXPECTED(Z_TYPE_P(p4) == IS_OBJECT)) {
+				r7 = pt_type_op(Z_OBJ_P(p4), PT_OP_EQUALS, 1, av6);
+				if (UNEXPECTED(r7.isUndef())) return false;
+			} else {
+			 {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p4, "equals", "equals", 6, 1, av6, r7.raw(), NULL))) return false;
 			}
-			if (vd7_ce == pt_ce_class_constant_access_type) {
-				bool r10;
-				if (UNEXPECTED(!pgen::ClassConstantAccessType::m_equals(Z_OBJ_P(p4), o6.raw(), &r10))) return false;
-				zv::Val o11 = zv::Val::boolean(r10);
-				vd7 = std::move(o11);
-				vd7_done = true;
 			}
-			if (vd7_ce == pt_ce_get_template_type_type) {
-				bool r12;
-				if (UNEXPECTED(!pgen::GetTemplateTypeType::m_equals(Z_OBJ_P(p4), o6.raw(), &r12))) return false;
-				zv::Val o13 = zv::Val::boolean(r12);
-				vd7 = std::move(o13);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_key_of_type) {
-				bool r14;
-				if (UNEXPECTED(!pgen::KeyOfType::m_equals(Z_OBJ_P(p4), o6.raw(), &r14))) return false;
-				zv::Val o15 = zv::Val::boolean(r14);
-				vd7 = std::move(o15);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_new_object_type) {
-				bool r16;
-				if (UNEXPECTED(!pgen::NewObjectType::m_equals(Z_OBJ_P(p4), o6.raw(), &r16))) return false;
-				zv::Val o17 = zv::Val::boolean(r16);
-				vd7 = std::move(o17);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_offset_access_type) {
-				bool r18;
-				if (UNEXPECTED(!pgen::OffsetAccessType::m_equals(Z_OBJ_P(p4), o6.raw(), &r18))) return false;
-				zv::Val o19 = zv::Val::boolean(r18);
-				vd7 = std::move(o19);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_strict_mixed_type) {
-				bool r20;
-				if (UNEXPECTED(!pgen::StrictMixedType::m_equals(Z_OBJ_P(p4), o6.raw(), &r20))) return false;
-				zv::Val o21 = zv::Val::boolean(r20);
-				vd7 = std::move(o21);
-				vd7_done = true;
-			}
-			if (vd7_ce == pt_ce_value_of_type) {
-				bool r22;
-				if (UNEXPECTED(!pgen::ValueOfType::m_equals(Z_OBJ_P(p4), o6.raw(), &r22))) return false;
-				zv::Val o23 = zv::Val::boolean(r22);
-				vd7 = std::move(o23);
-				vd7_done = true;
-			}
-			if (!vd7_done) {
-				zval av24[1];
-				ZVAL_COPY_VALUE(&av24[0], o6.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p4, "equals", "equals", 6, 1, av24, vd7.raw()))) return false;
-			}
-			b1 = (Z_TYPE_P(vd7.raw()) == IS_TRUE);
+			b1 = (Z_TYPE_P(r7.raw()) == IS_TRUE);
 		}
 		if (b1) {
 			 {
-				zval *p25 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
-				if (UNEXPECTED(p25 == NULL)) return false;
-				zval *p26 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
-				if (UNEXPECTED(p26 == NULL)) return false;
-				zv::Val r27;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_and(Z_OBJ_P(p25), p26, NULL, 0, r27.raw()))) return false;
-				bool r28;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r27.raw()), &r28))) return false;
-				if (r28) {
+				zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
+				if (UNEXPECTED(p8 == NULL)) return false;
+				zval *p9 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
+				if (UNEXPECTED(p9 == NULL)) return false;
+				zv::Val r10;
+				if (UNEXPECTED(!pgen::TrinaryLogic::m_and(Z_OBJ_P(p8), p9, NULL, 0, r10.raw()))) return false;
+				bool r11;
+				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r10.raw()), &r11))) return false;
+				if (r11) {
 					 {
 						ZVAL_COPY(ret, &this_zv);
 						return true;
@@ -449,11 +315,11 @@ namespace pgen::ExpressionTypeHolder {
 				}
 			}
 			 {
-				zval *p29 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
-				if (UNEXPECTED(p29 == NULL)) return false;
-				bool r30;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_maybe(Z_OBJ_P(p29), &r30))) return false;
-				if (r30) {
+				zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
+				if (UNEXPECTED(p12 == NULL)) return false;
+				bool r13;
+				if (UNEXPECTED(!pgen::TrinaryLogic::m_maybe(Z_OBJ_P(p12), &r13))) return false;
+				if (r13) {
 					 {
 						ZVAL_COPY(ret, &this_zv);
 						return true;
@@ -467,29 +333,32 @@ namespace pgen::ExpressionTypeHolder {
 		}
 	}
 	 {
-		zval *p32 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::expr, "expr");
-		if (UNEXPECTED(p32 == NULL)) return false;
-		zv::Val o33 = zv::Val::copyOf(zv::Ref(p32));
-		zval *p34 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::type, "type");
-		if (UNEXPECTED(p34 == NULL)) return false;
-		zval *p35 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::ExpressionTypeHolder::slot::type, "type");
-		if (UNEXPECTED(p35 == NULL)) return false;
-		zval av36[2];
-		ZVAL_COPY_VALUE(&av36[0], p34);
-		ZVAL_COPY_VALUE(&av36[1], p35);
-		zv::Val r37;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, pt_ce_type_combinator, "union", 5, 2, av36, r37.raw(), NULL))) return false;
-		zval *p38 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
-		if (UNEXPECTED(p38 == NULL)) return false;
-		zval *p39 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
-		if (UNEXPECTED(p39 == NULL)) return false;
-		zv::Val r40;
-		if (UNEXPECTED(!pgen::TrinaryLogic::m_and(Z_OBJ_P(p38), p39, NULL, 0, r40.raw()))) return false;
-		zval n31_raw;
-		if (UNEXPECTED(object_init_ex(&n31_raw, pt_ce_expr_type_holder) != SUCCESS)) return false;
-		zv::Val n31 = zv::Val::adopt(n31_raw);
-		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m___construct(Z_OBJ_P(n31.raw()), o33.raw(), r37.raw(), r40.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n31.raw())); return false; }
-		*ret = n31.take();
+		zval *p15 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::expr, "expr");
+		if (UNEXPECTED(p15 == NULL)) return false;
+		zv::Val o16 = zv::Val::copyOf(zv::Ref(p15));
+		zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::type, "type");
+		if (UNEXPECTED(p17 == NULL)) return false;
+		zval *p18 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::ExpressionTypeHolder::slot::type, "type");
+		if (UNEXPECTED(p18 == NULL)) return false;
+		zval vv19[2];
+		ZVAL_COPY_VALUE(&vv19[0], p17);
+		ZVAL_COPY_VALUE(&vv19[1], p18);
+		zv::Val r20;
+		 {
+			r20 = pt_type_combinator_union(2, vv19);
+			if (UNEXPECTED(r20.isUndef())) return false;
+		}
+		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
+		if (UNEXPECTED(p21 == NULL)) return false;
+		zval *p22 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::ExpressionTypeHolder::slot::certainty, "certainty");
+		if (UNEXPECTED(p22 == NULL)) return false;
+		zv::Val r23;
+		if (UNEXPECTED(!pgen::TrinaryLogic::m_and(Z_OBJ_P(p21), p22, NULL, 0, r23.raw()))) return false;
+		zval n14_raw;
+		if (UNEXPECTED(object_init_ex(&n14_raw, pt_ce_expr_type_holder) != SUCCESS)) return false;
+		zv::Val n14 = zv::Val::adopt(n14_raw);
+		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m___construct(Z_OBJ_P(n14.raw()), o16.raw(), r20.raw(), r23.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n14.raw())); return false; }
+		*ret = n14.take();
 		return true;
 	}
 }
@@ -555,9 +424,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 			Z_PARAM_OBJECT(p_type)
 			Z_PARAM_OBJECT(p_certainty)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
-		if (p_certainty != NULL && UNEXPECTED(!((Z_TYPE_P(p_certainty) == IS_OBJECT && Z_OBJCE_P(p_certainty) == pt_ce_trinary) || pgrt::instanceOfClass(p_certainty, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_certainty)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_certainty != NULL && UNEXPECTED(!((Z_TYPE_P(p_certainty) == IS_OBJECT && Z_OBJCE_P(p_certainty) == pt_ce_trinary) || pgrt::instanceOfClass(p_certainty, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_certainty)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m___construct(Z_OBJ_P(ZEND_THIS), p_expr, p_type, p_certainty))) RETURN_THROWS();
 	});
 	cls.method(sigs::createYes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExpressionTypeHolder::createYes() */
@@ -567,8 +436,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 			Z_PARAM_OBJECT(p_expr)
 			Z_PARAM_OBJECT(p_type)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m_createYes(p_expr, p_type, return_value))) RETURN_THROWS();
 	});
@@ -579,8 +448,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 			Z_PARAM_OBJECT(p_expr)
 			Z_PARAM_OBJECT(p_type)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m_createMaybe(p_expr, p_type, return_value))) RETURN_THROWS();
 	});
@@ -589,7 +458,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_other)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_other)); RETURN_THROWS(); }
+		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_other)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m_equalTypes(Z_OBJ_P(ZEND_THIS), p_other, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -599,7 +468,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_other)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_other)); RETURN_THROWS(); }
+		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_other)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m_equals(Z_OBJ_P(ZEND_THIS), p_other, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -609,7 +478,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 		zval *pa1;
 		if (argc > 0) {
 			pa1 = zv::Ref(&argv[0]).deref().raw();
-			if (UNEXPECTED(!((Z_TYPE_P(pa1) == IS_OBJECT && Z_OBJCE_P(pa1) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { pgrt::throwArgumentType("PHPStan\\Analyser\\ExpressionTypeHolder::equals", 1, "other", "PHPStan\\Analyser\\ExpressionTypeHolder", pa1); return zv::Val(); }
+			if (UNEXPECTED(!((Z_TYPE_P(pa1) == IS_OBJECT && Z_OBJCE_P(pa1) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { pgrt::throwArgumentType("PHPStan\\Analyser\\ExpressionTypeHolder::equals", 1, "other", "PHPStan\\Analyser\\ExpressionTypeHolder", pa1); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExpressionTypeHolder::equals", argc, 1);
@@ -625,7 +494,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_other)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_other)); RETURN_THROWS(); }
+		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_other)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m_and(Z_OBJ_P(ZEND_THIS), p_other, return_value))) RETURN_THROWS();
 	});
@@ -634,7 +503,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 		zval *pa1;
 		if (argc > 0) {
 			pa1 = zv::Ref(&argv[0]).deref().raw();
-			if (UNEXPECTED(!((Z_TYPE_P(pa1) == IS_OBJECT && Z_OBJCE_P(pa1) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { pgrt::throwArgumentType("PHPStan\\Analyser\\ExpressionTypeHolder::and", 1, "other", "PHPStan\\Analyser\\ExpressionTypeHolder", pa1); return zv::Val(); }
+			if (UNEXPECTED(!((Z_TYPE_P(pa1) == IS_OBJECT && Z_OBJCE_P(pa1) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { pgrt::throwArgumentType("PHPStan\\Analyser\\ExpressionTypeHolder::and", 1, "other", "PHPStan\\Analyser\\ExpressionTypeHolder", pa1); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExpressionTypeHolder::and", argc, 1);

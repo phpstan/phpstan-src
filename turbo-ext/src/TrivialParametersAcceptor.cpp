@@ -74,6 +74,35 @@
 #include "generated/ValueOfType.h"
 #include "generated/PhpParameterReflection.h"
 #include "generated/UnresolvableTypeHelper.h"
+#include "generated/ScalarHandler.h"
+#include "generated/EvalHandler.h"
+#include "generated/ExitHandler.h"
+#include "generated/PrintHandler.h"
+#include "generated/ThrowHandler.h"
+#include "generated/ShellExecHandler.h"
+#include "generated/IncludeHandler.h"
+#include "generated/ErrorSuppressHandler.h"
+#include "generated/ExistingArrayDimFetchHandler.h"
+#include "generated/IssetExprHandler.h"
+#include "generated/NativeTypeExprHandler.h"
+#include "generated/TypeExprHandler.h"
+#include "generated/UnsetOffsetExprHandler.h"
+#include "generated/AlwaysRememberedExprHandler.h"
+#include "generated/BlockHandler.h"
+#include "generated/BreakContinueHandler.h"
+#include "generated/EchoHandler.h"
+#include "generated/EnumCaseHandler.h"
+#include "generated/GotoHandler.h"
+#include "generated/GroupUseHandler.h"
+#include "generated/InlineHtmlHandler.h"
+#include "generated/LabelHandler.h"
+#include "generated/NamespaceHandler.h"
+#include "generated/NopHandler.h"
+#include "generated/UseHandler.h"
+#include "generated/ReturnHandler.h"
+#include "generated/GlobalHandler.h"
+#include "generated/DeclareHandler.h"
+#include "generated/ConstHandler.h"
 
 zend_class_entry *pt_ce_trivial_parameters_acceptor = nullptr;
 
@@ -174,7 +203,7 @@ namespace pgen::TrivialParametersAcceptor {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_mixed_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_mixed_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -188,7 +217,7 @@ namespace pgen::TrivialParametersAcceptor {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_mixed_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_mixed_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -202,7 +231,7 @@ namespace pgen::TrivialParametersAcceptor {
 	(void) this_zv;
 	 {
 		zv::Val n1;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_mixed_type, 0, NULL, n1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pt_mixed_type_new(n1.raw()))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -251,14 +280,9 @@ namespace pgen::TrivialParametersAcceptor {
 		ZVAL_COPY_VALUE(&av4[1], p3);
 		zv::Val r5;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "sprintf", 7, pt_ce_trivial_parameters_acceptor, 2, av4, r5.raw(), NULL))) return false;
-		zval av6[3];
-		ZVAL_COPY_VALUE(&av6[0], &pg_lit[0]);
-		ZVAL_COPY_VALUE(&av6[1], r5.raw());
-		zval z7;
-		ZVAL_BOOL(&z7, false);
-		ZVAL_COPY_VALUE(&av6[2], &z7);
-		zv::Val n2;
-		if (UNEXPECTED(!pgrt::newObject(pt_ce_simple_impure_point, 3, av6, n2.raw(), NULL))) return false;
+		bool k6 = false;
+		zv::Val n2 = pt_simple_impure_point_new(Z_STR_P(&pg_lit[0]), Z_STR_P(r5.raw()), k6);
+		if (UNEXPECTED(n2.isUndef())) return false;
 		{ zval v = n2.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr1.raw()), &v); }
 		*ret = arr1.take();
 		return true;

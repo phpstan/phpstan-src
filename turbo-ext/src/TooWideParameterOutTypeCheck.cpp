@@ -326,171 +326,182 @@ namespace pgen::TooWideParameterOutTypeCheck {
 		l_variableExpr = std::move(n5);
 	}
 	 {
-		zval av9[1];
-		ZVAL_COPY_VALUE(&av9[0], l_variableExpr.raw());
-		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_scope, "getType", "gettype", 7, 1, av9, r10.raw(), NULL))) return false;
-		l_variableType = std::move(r10);
+		zv::Val r9;
+		zend_class_entry *rc10 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+		if (rc10 == pt_ce_mutating_scope) {
+			r9 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_variableExpr.raw());
+			if (UNEXPECTED(r9.isUndef())) return false;
+		}
+		else if (rc10 == pt_ce_node_callback_scope) {
+			r9 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(l_variableExpr.raw()));
+			if (UNEXPECTED(r9.isUndef())) return false;
+		}
+		else {
+			zval av11[1];
+			ZVAL_COPY_VALUE(&av11[0], l_variableExpr.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_scope, "getType", "gettype", 7, 1, av11, r9.raw()))) return false;
+		}
+		l_variableType = std::move(r9);
 	}
 	 {
-		zv::Val r11;
+		zv::Val r12;
 		if (EXPECTED(Z_TYPE_P(p_parameter) == IS_OBJECT)) {
-			r11 = pt_type_op(Z_OBJ_P(p_parameter), PT_OP_IS_VARIADIC, 0, NULL);
-			if (UNEXPECTED(r11.isUndef())) return false;
+			r12 = pt_type_op(Z_OBJ_P(p_parameter), PT_OP_IS_VARIADIC, 0, NULL);
+			if (UNEXPECTED(r12.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_parameter, "isVariadic", "isvariadic", 10, 0, NULL, r11.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_parameter, "isVariadic", "isvariadic", 10, 0, NULL, r12.raw(), NULL))) return false;
 		}
 		}
-		if (Z_TYPE_P(r11.raw()) == IS_TRUE) {
+		if (Z_TYPE_P(r12.raw()) == IS_TRUE) {
 			 {
-				zv::Val r12;
+				zv::Val r13;
 				if (EXPECTED(Z_TYPE_P(l_variableType.raw()) == IS_OBJECT)) {
-					r12 = pt_type_op(Z_OBJ_P(l_variableType.raw()), PT_OP_IS_ARRAY, 0, NULL);
-					if (UNEXPECTED(r12.isUndef())) return false;
+					r13 = pt_type_op(Z_OBJ_P(l_variableType.raw()), PT_OP_IS_ARRAY, 0, NULL);
+					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_variableType.raw(), "isArray", "isarray", 7, 0, NULL, r12.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_variableType.raw(), "isArray", "isarray", 7, 0, NULL, r13.raw(), NULL))) return false;
 				}
 				}
-				bool r13;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r12.raw()), &r13))) return false;
-				if (!(r13)) {
+				bool r14;
+				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r13.raw()), &r14))) return false;
+				if (!(r14)) {
 					 {
-						zval arr14_raw;
-						ZVAL_EMPTY_ARRAY(&arr14_raw);
-						ZVAL_COPY(ret, &arr14_raw);
+						zval arr15_raw;
+						ZVAL_EMPTY_ARRAY(&arr15_raw);
+						ZVAL_COPY(ret, &arr15_raw);
 						return true;
 					}
 				}
 			}
 			 {
-				zv::Val r15;
+				zv::Val r16;
 				if (EXPECTED(Z_TYPE_P(l_variableType.raw()) == IS_OBJECT)) {
-					r15 = pt_type_op(Z_OBJ_P(l_variableType.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
-					if (UNEXPECTED(r15.isUndef())) return false;
+					r16 = pt_type_op(Z_OBJ_P(l_variableType.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
+					if (UNEXPECTED(r16.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_variableType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r15.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_variableType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r16.raw(), NULL))) return false;
 				}
 				}
-				l_variableType = std::move(r15);
+				l_variableType = std::move(r16);
 			}
 		}
 	}
 	 {
-		zval *p16 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TooWideParameterOutTypeCheck::slot::tooWideTypeCheck, "tooWideTypeCheck");
-		if (UNEXPECTED(p16 == NULL)) return false;
-		zv::Val o17 = zv::Val::copyOf(zv::Ref(p16));
-		zv::Val o18 = zv::Val::copyOf(zv::Ref(l_outType.raw()));
-		zv::Val o19 = zv::Val::copyOf(zv::Ref(l_variableType.raw()));
-		zv::Val r20;
+		zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TooWideParameterOutTypeCheck::slot::tooWideTypeCheck, "tooWideTypeCheck");
+		if (UNEXPECTED(p17 == NULL)) return false;
+		zv::Val o18 = zv::Val::copyOf(zv::Ref(p17));
+		zv::Val o19 = zv::Val::copyOf(zv::Ref(l_outType.raw()));
+		zv::Val o20 = zv::Val::copyOf(zv::Ref(l_variableType.raw()));
+		zv::Val r21;
 		if (EXPECTED(Z_TYPE_P(p_parameter) == IS_OBJECT)) {
-			r20 = pt_type_op(Z_OBJ_P(p_parameter), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r20.isUndef())) return false;
+			r21 = pt_type_op(Z_OBJ_P(p_parameter), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r21.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_parameter, "getName", "getname", 7, 0, NULL, r20.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_parameter, "getName", "getname", 7, 0, NULL, r21.raw(), NULL))) return false;
 		}
 		}
-		zv::Val q21;
+		zv::Val q22;
 		if (l_isParamOutType) {
-			zv::Val o22 = zv::Val::copyOf(zv::Ref(&pg_lit[0]));
-			q21 = std::move(o22);
+			zv::Val o23 = zv::Val::copyOf(zv::Ref(&pg_lit[0]));
+			q22 = std::move(o23);
 		} else {
 		 {
-			zv::Val o23 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
-			q21 = std::move(o23);
+			zv::Val o24 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
+			q22 = std::move(o24);
 		}
 		}
-		pgrt::StringBuilder sb24;
-		if (UNEXPECTED(!sb24.append(p_functionDescription))) return false;
-		sb24.appendLiteral(" never assigns ", 15);
-		sb24.appendLiteral("%", 1);
-		sb24.appendLiteral("s to &$", 7);
-		if (UNEXPECTED(!sb24.append(r20.raw()))) return false;
-		sb24.appendLiteral(" so it can be removed from the ", 31);
-		if (UNEXPECTED(!sb24.append(q21.raw()))) return false;
-		sb24.appendLiteral(".", 1);
-		zv::Val r25 = sb24.finish();
-		zv::Val r26;
+		pgrt::StringBuilder sb25;
+		if (UNEXPECTED(!sb25.append(p_functionDescription))) return false;
+		sb25.appendLiteral(" never assigns ", 15);
+		sb25.appendLiteral("%", 1);
+		sb25.appendLiteral("s to &$", 7);
+		if (UNEXPECTED(!sb25.append(r21.raw()))) return false;
+		sb25.appendLiteral(" so it can be removed from the ", 31);
+		if (UNEXPECTED(!sb25.append(q22.raw()))) return false;
+		sb25.appendLiteral(".", 1);
+		zv::Val r26 = sb25.finish();
+		zv::Val r27;
 		if (EXPECTED(Z_TYPE_P(p_parameter) == IS_OBJECT)) {
-			r26 = pt_type_op(Z_OBJ_P(p_parameter), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r26.isUndef())) return false;
+			r27 = pt_type_op(Z_OBJ_P(p_parameter), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r27.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_parameter, "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_parameter, "getName", "getname", 7, 0, NULL, r27.raw(), NULL))) return false;
 		}
 		}
-		zv::Val q27;
+		zv::Val q28;
 		if (l_isParamOutType) {
-			zv::Val o28 = zv::Val::copyOf(zv::Ref(&pg_lit[0]));
-			q27 = std::move(o28);
+			zv::Val o29 = zv::Val::copyOf(zv::Ref(&pg_lit[0]));
+			q28 = std::move(o29);
 		} else {
 		 {
-			zv::Val o29 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
-			q27 = std::move(o29);
+			zv::Val o30 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
+			q28 = std::move(o30);
 		}
 		}
-		pgrt::StringBuilder sb30;
-		if (UNEXPECTED(!sb30.append(p_functionDescription))) return false;
-		sb30.appendLiteral(" never assigns ", 15);
-		sb30.appendLiteral("%", 1);
-		sb30.appendLiteral("s to &$", 7);
-		if (UNEXPECTED(!sb30.append(r26.raw()))) return false;
-		sb30.appendLiteral(" so the ", 8);
-		if (UNEXPECTED(!sb30.append(q27.raw()))) return false;
-		sb30.appendLiteral(" can be changed to ", 19);
-		sb30.appendLiteral("%", 1);
-		sb30.appendLiteral("s.", 2);
-		zv::Val r31 = sb30.finish();
-		zv::Val q32;
+		pgrt::StringBuilder sb31;
+		if (UNEXPECTED(!sb31.append(p_functionDescription))) return false;
+		sb31.appendLiteral(" never assigns ", 15);
+		sb31.appendLiteral("%", 1);
+		sb31.appendLiteral("s to &$", 7);
+		if (UNEXPECTED(!sb31.append(r27.raw()))) return false;
+		sb31.appendLiteral(" so the ", 8);
+		if (UNEXPECTED(!sb31.append(q28.raw()))) return false;
+		sb31.appendLiteral(" can be changed to ", 19);
+		sb31.appendLiteral("%", 1);
+		sb31.appendLiteral("s.", 2);
+		zv::Val r32 = sb31.finish();
+		zv::Val q33;
 		if (l_isParamOutType) {
-			zv::Val o33 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
-			q32 = std::move(o33);
+			zv::Val o34 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
+			q33 = std::move(o34);
 		} else {
 		 {
-			zv::Val o34 = zv::Val::copyOf(zv::Ref(&pg_lit[3]));
-			q32 = std::move(o34);
+			zv::Val o35 = zv::Val::copyOf(zv::Ref(&pg_lit[3]));
+			q33 = std::move(o35);
 		}
 		}
-		zval av35[1];
-		ZVAL_COPY_VALUE(&av35[0], p_functionDescription);
-		zv::Val r36;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_20, "lcfirst", 7, pt_ce_too_wide_parameter_out_type_check, 1, av35, r36.raw(), NULL))) return false;
-		pgrt::StringBuilder sb37;
-		if (UNEXPECTED(!sb37.append(q32.raw()))) return false;
-		sb37.appendLiteral(" ", 1);
-		sb37.appendLiteral("%", 1);
-		sb37.appendLiteral("s of ", 5);
-		if (UNEXPECTED(!sb37.append(r36.raw()))) return false;
-		sb37.appendLiteral(" can be narrowed to ", 20);
-		sb37.appendLiteral("%", 1);
-		sb37.appendLiteral("s.", 2);
-		zv::Val r38 = sb37.finish();
-		zv::Val q39;
+		zval av36[1];
+		ZVAL_COPY_VALUE(&av36[0], p_functionDescription);
+		zv::Val r37;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_20, "lcfirst", 7, pt_ce_too_wide_parameter_out_type_check, 1, av36, r37.raw(), NULL))) return false;
+		pgrt::StringBuilder sb38;
+		if (UNEXPECTED(!sb38.append(q33.raw()))) return false;
+		sb38.appendLiteral(" ", 1);
+		sb38.appendLiteral("%", 1);
+		sb38.appendLiteral("s of ", 5);
+		if (UNEXPECTED(!sb38.append(r37.raw()))) return false;
+		sb38.appendLiteral(" can be narrowed to ", 20);
+		sb38.appendLiteral("%", 1);
+		sb38.appendLiteral("s.", 2);
+		zv::Val r39 = sb38.finish();
+		zv::Val q40;
 		if (l_isParamOutType) {
-			zv::Val o40 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
-			q39 = std::move(o40);
+			zv::Val o41 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
+			q40 = std::move(o41);
 		} else {
 		 {
-			zv::Val o41 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
-			q39 = std::move(o41);
+			zv::Val o42 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
+			q40 = std::move(o42);
 		}
 		}
-		zv::Val q42;
+		zv::Val q43;
 		if (l_isParamOutType) {
-			zv::Val o43 = zv::Val::null();
-			q42 = std::move(o43);
+			zv::Val o44 = zv::Val::null();
+			q43 = std::move(o44);
 		} else {
 		 {
-			zv::Val o44 = zv::Val::copyOf(zv::Ref(&pg_lit[6]));
-			q42 = std::move(o44);
+			zv::Val o45 = zv::Val::copyOf(zv::Ref(&pg_lit[6]));
+			q43 = std::move(o45);
 		}
 		}
-		zv::Val r45;
-		if (UNEXPECTED(!pgen::TooWideTypeCheck::m_checkParameterOutType(Z_OBJ_P(o17.raw()), o18.raw(), o19.raw(), r25.raw(), r31.raw(), r38.raw(), p_scope, p_startLine, q39.raw(), q42.raw(), r45.raw()))) return false;
-		*ret = r45.take();
+		zv::Val r46;
+		if (UNEXPECTED(!pgen::TooWideTypeCheck::m_checkParameterOutType(Z_OBJ_P(o18.raw()), o19.raw(), o20.raw(), r26.raw(), r32.raw(), r39.raw(), p_scope, p_startLine, q40.raw(), q43.raw(), r46.raw()))) return false;
+		*ret = r46.take();
 		return true;
 	}
 }

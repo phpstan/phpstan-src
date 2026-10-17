@@ -1168,11 +1168,18 @@ namespace pgen::InstanceofHandler {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_instanceof_handler, "class", 5, o73.raw()))) return false;
 					p72 = o73.raw();
 				}
-				zval av74[1];
-				ZVAL_COPY_VALUE(&av74[0], zv::Ref(p72).deref().raw());
-				zv::Val r75;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_beforeScope.raw(), "resolveName", "resolvename", 11, 1, av74, r75.raw(), NULL))) return false;
-				{ zval v = r75.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr71.raw()), &v); }
+				zv::Val r74;
+				if (EXPECTED(Z_TYPE_P(l_beforeScope.raw()) == IS_OBJECT && Z_OBJCE_P(l_beforeScope.raw()) == pt_ce_mutating_scope)) {
+					r74 = pt_mutating_scope_resolve_name(Z_OBJ_P(l_beforeScope.raw()), Z_OBJ_P(zv::Ref(p72).deref().raw()));
+					if (UNEXPECTED(r74.isUndef())) return false;
+				} else {
+				 {
+					zval av75[1];
+					ZVAL_COPY_VALUE(&av75[0], zv::Ref(p72).deref().raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_beforeScope.raw(), "resolveName", "resolvename", 11, 1, av75, r74.raw()))) return false;
+				}
+				}
+				{ zval v = r74.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr71.raw()), &v); }
 				zval av76[1];
 				ZVAL_COPY_VALUE(&av76[0], r70.raw());
 				zv::Arr na77 = zv::Arr::create(1);
@@ -1267,12 +1274,19 @@ namespace pgen::InstanceofHandler {
 							if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_instanceof_handler, "class", 5, o98.raw()))) return false;
 							p97 = o98.raw();
 						}
-						zval av99[1];
-						ZVAL_COPY_VALUE(&av99[0], zv::Ref(p97).deref().raw());
-						zv::Val r100;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_beforeScope.raw(), "resolveName", "resolvename", 11, 1, av99, r100.raw(), NULL))) return false;
+						zv::Val r99;
+						if (EXPECTED(Z_TYPE_P(l_beforeScope.raw()) == IS_OBJECT && Z_OBJCE_P(l_beforeScope.raw()) == pt_ce_mutating_scope)) {
+							r99 = pt_mutating_scope_resolve_name(Z_OBJ_P(l_beforeScope.raw()), Z_OBJ_P(zv::Ref(p97).deref().raw()));
+							if (UNEXPECTED(r99.isUndef())) return false;
+						} else {
+						 {
+							zval av100[1];
+							ZVAL_COPY_VALUE(&av100[0], zv::Ref(p97).deref().raw());
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_beforeScope.raw(), "resolveName", "resolvename", 11, 1, av100, r99.raw()))) return false;
+						}
+						}
 						zv::Val n96;
-						if (UNEXPECTED(!pt_object_type_new(n96.raw(), Z_STR_P(r100.raw())))) return false;
+						if (UNEXPECTED(!pt_object_type_new(n96.raw(), Z_STR_P(r99.raw())))) return false;
 						l_nameClassType = std::move(n96);
 					}
 				}

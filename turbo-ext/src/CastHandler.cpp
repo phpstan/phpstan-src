@@ -397,22 +397,29 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(ce48 == NULL)) return;
 				zv::Val n37;
 				if (UNEXPECTED(!pgrt::newObject(ce48, 2, av47, n37.raw(), NULL))) return;
-				zval av49[1];
-				ZVAL_COPY_VALUE(&av49[0], n37.raw());
-				zv::Val r50;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_37, o36.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av49, r50.raw(), NULL))) return;
+				zv::Val r49;
+				if (EXPECTED(Z_TYPE_P(o36.raw()) == IS_OBJECT && Z_OBJCE_P(o36.raw()) == pt_ce_mutating_scope)) {
+					r49 = pt_mutating_scope_obtain_result_for_node(Z_OBJ_P(o36.raw()), Z_OBJ_P(n37.raw()));
+					if (UNEXPECTED(r49.isUndef())) return;
+				} else {
+				 {
+					zval av50[1];
+					ZVAL_COPY_VALUE(&av50[0], n37.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_37, o36.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av50, r49.raw()))) return;
+				}
+				}
 				zval z51;
 				ZVAL_BOOL(&z51, p_nativeTypesPromoted);
 				zv::Val r52;
-				if (EXPECTED(Z_TYPE_P(r50.raw()) == IS_OBJECT)) {
-					r52 = pt_expression_result_get_specified_types(r50.raw(), p_context, p_nativeTypesPromoted);
+				if (EXPECTED(Z_TYPE_P(r49.raw()) == IS_OBJECT)) {
+					r52 = pt_expression_result_get_specified_types(r49.raw(), p_context, p_nativeTypesPromoted);
 					if (UNEXPECTED(r52.isUndef())) return;
 				} else {
 				 {
 					zval av53[2];
 					ZVAL_COPY_VALUE(&av53[0], p_context);
 					ZVAL_COPY_VALUE(&av53[1], &z51);
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_38, r50.raw(), "getSpecifiedTypes", "getspecifiedtypes", 17, 2, av53, r52.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_38, r49.raw(), "getSpecifiedTypes", "getspecifiedtypes", 17, 2, av53, r52.raw()))) return;
 				}
 				}
 				zv::Val r54;
@@ -457,22 +464,29 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(ce66 == NULL)) return;
 				zv::Val n57;
 				if (UNEXPECTED(!pgrt::newObject(ce66, 2, av65, n57.raw(), NULL))) return;
-				zval av67[1];
-				ZVAL_COPY_VALUE(&av67[0], n57.raw());
-				zv::Val r68;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_42, o56.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av67, r68.raw(), NULL))) return;
+				zv::Val r67;
+				if (EXPECTED(Z_TYPE_P(o56.raw()) == IS_OBJECT && Z_OBJCE_P(o56.raw()) == pt_ce_mutating_scope)) {
+					r67 = pt_mutating_scope_obtain_result_for_node(Z_OBJ_P(o56.raw()), Z_OBJ_P(n57.raw()));
+					if (UNEXPECTED(r67.isUndef())) return;
+				} else {
+				 {
+					zval av68[1];
+					ZVAL_COPY_VALUE(&av68[0], n57.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_42, o56.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av68, r67.raw()))) return;
+				}
+				}
 				zval z69;
 				ZVAL_BOOL(&z69, p_nativeTypesPromoted);
 				zv::Val r70;
-				if (EXPECTED(Z_TYPE_P(r68.raw()) == IS_OBJECT)) {
-					r70 = pt_expression_result_get_specified_types(r68.raw(), p_context, p_nativeTypesPromoted);
+				if (EXPECTED(Z_TYPE_P(r67.raw()) == IS_OBJECT)) {
+					r70 = pt_expression_result_get_specified_types(r67.raw(), p_context, p_nativeTypesPromoted);
 					if (UNEXPECTED(r70.isUndef())) return;
 				} else {
 				 {
 					zval av71[2];
 					ZVAL_COPY_VALUE(&av71[0], p_context);
 					ZVAL_COPY_VALUE(&av71[1], &z69);
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_43, r68.raw(), "getSpecifiedTypes", "getspecifiedtypes", 17, 2, av71, r70.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_43, r67.raw(), "getSpecifiedTypes", "getspecifiedtypes", 17, 2, av71, r70.raw()))) return;
 				}
 				}
 				zv::Val r72;
@@ -517,22 +531,29 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(ce84 == NULL)) return;
 				zv::Val n75;
 				if (UNEXPECTED(!pgrt::newObject(ce84, 2, av83, n75.raw(), NULL))) return;
-				zval av85[1];
-				ZVAL_COPY_VALUE(&av85[0], n75.raw());
-				zv::Val r86;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_46, o74.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av85, r86.raw(), NULL))) return;
+				zv::Val r85;
+				if (EXPECTED(Z_TYPE_P(o74.raw()) == IS_OBJECT && Z_OBJCE_P(o74.raw()) == pt_ce_mutating_scope)) {
+					r85 = pt_mutating_scope_obtain_result_for_node(Z_OBJ_P(o74.raw()), Z_OBJ_P(n75.raw()));
+					if (UNEXPECTED(r85.isUndef())) return;
+				} else {
+				 {
+					zval av86[1];
+					ZVAL_COPY_VALUE(&av86[0], n75.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_46, o74.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av86, r85.raw()))) return;
+				}
+				}
 				zval z87;
 				ZVAL_BOOL(&z87, p_nativeTypesPromoted);
 				zv::Val r88;
-				if (EXPECTED(Z_TYPE_P(r86.raw()) == IS_OBJECT)) {
-					r88 = pt_expression_result_get_specified_types(r86.raw(), p_context, p_nativeTypesPromoted);
+				if (EXPECTED(Z_TYPE_P(r85.raw()) == IS_OBJECT)) {
+					r88 = pt_expression_result_get_specified_types(r85.raw(), p_context, p_nativeTypesPromoted);
 					if (UNEXPECTED(r88.isUndef())) return;
 				} else {
 				 {
 					zval av89[2];
 					ZVAL_COPY_VALUE(&av89[0], p_context);
 					ZVAL_COPY_VALUE(&av89[1], &z87);
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_47, r86.raw(), "getSpecifiedTypes", "getspecifiedtypes", 17, 2, av89, r88.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_47, r85.raw(), "getSpecifiedTypes", "getspecifiedtypes", 17, 2, av89, r88.raw()))) return;
 				}
 				}
 				zv::Val r90;

@@ -12,12 +12,14 @@ static zval pg_lit[1];
 static pt_method_site pg_site_0; /* method_getDocComment_0 */
 static pt_method_site pg_site_1; /* method_getClassReflection_1 */
 static pt_method_site pg_site_2; /* method_getOriginalNode_2 */
-static pt_method_site pg_site_3; /* method_getText_3 */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Reflection\ClassReflection */
-static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Stmt\ClassLike */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\Generics\MethodTagTemplateTypeCheck */
-static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
+static pgrt::GetterSite pg_site_3; /* getter_getText_3 */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Comment */
+static pt_method_site pg_site_5; /* method_getText_5 */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Reflection\ClassReflection */
+static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Stmt\ClassLike */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\Generics\MethodTagTemplateTypeCheck */
+static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::MethodTagTemplateTypeRule {
 
@@ -110,13 +112,20 @@ namespace pgen::MethodTagTemplateTypeRule {
 		if (!vd6_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd6.raw()))) return false;
 		}
-		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r11.raw(), NULL))) return false;
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r5.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(r5.raw(), pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 1, "classReflection", "PHPStan\\Reflection\\ClassReflection", r5.raw()); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(vd6.raw(), pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 3, "node", "PhpParser\\Node\\Stmt\\ClassLike", vd6.raw()); return false; }
+		zval *gs11 = Z_TYPE_P(l_docComment.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_3, Z_OBJ_P(l_docComment.raw()), pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Comment", 17), "gettext", 7, "text", 4) : NULL;
 		zv::Val r12;
-		if (UNEXPECTED(!pgen::MethodTagTemplateTypeCheck::m_check(Z_OBJ_P(o4.raw()), r5.raw(), p_scope, vd6.raw(), r11.raw(), r12.raw()))) return false;
-		*ret = r12.take();
+		if (EXPECTED(gs11 != NULL)) {
+			ZVAL_COPY(r12.raw(), gs11);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r12.raw()))) return false;
+		}
+		}
+		if (UNEXPECTED(!(pgrt::instanceOfClass(r5.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(r5.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 1, "classReflection", "PHPStan\\Reflection\\ClassReflection", r5.raw()); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd6.raw(), pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 3, "node", "PhpParser\\Node\\Stmt\\ClassLike", vd6.raw()); return false; }
+		zv::Val r13;
+		if (UNEXPECTED(!pgen::MethodTagTemplateTypeCheck::m_check(Z_OBJ_P(o4.raw()), r5.raw(), p_scope, vd6.raw(), r12.raw(), r13.raw()))) return false;
+		*ret = r13.take();
 		return true;
 	}
 }
@@ -137,7 +146,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodTagTemplateTypeRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_check)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_check != NULL && UNEXPECTED(!((Z_TYPE_P(p_check) == IS_OBJECT && Z_OBJCE_P(p_check) == pt_ce_method_tag_template_type_check) || pgrt::instanceOfClass(p_check, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck", 49))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck", zend_zval_value_name(p_check)); RETURN_THROWS(); }
+		if (p_check != NULL && UNEXPECTED(!((Z_TYPE_P(p_check) == IS_OBJECT && Z_OBJCE_P(p_check) == pt_ce_method_tag_template_type_check) || pgrt::instanceOfClass(p_check, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck", 49))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck", zend_zval_value_name(p_check)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::MethodTagTemplateTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_check))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\MethodTagTemplateTypeRule::getNodeType() */
@@ -152,8 +161,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodTagTemplateTypeRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodTagTemplateTypeRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

@@ -13,13 +13,17 @@ static pt_method_site pg_site_0; /* method_getDocComment_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::PropSite pg_site_2; /* prop_namespacedName_2 */
 static pt_method_site pg_site_3; /* method_getFile_3 */
-static pt_method_site pg_site_4; /* method_getText_4 */
-static pt_method_site pg_site_5; /* method_getResolvedPhpDoc_5 */
-static pt_method_site pg_site_6; /* method_getTemplateTags_6 */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\FileTypeMapper */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\Generics\TemplateTypeCheck */
-static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
+static pgrt::GetterSite pg_site_4; /* getter_getText_4 */
+static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Comment */
+static pt_method_site pg_site_6; /* method_getText_6 */
+static pt_method_site pg_site_7; /* method_getResolvedPhpDoc_7 */
+static pgrt::GetterSite pg_site_8; /* getter_getTemplateTags_8 */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\PhpDoc\ResolvedPhpDocBlock */
+static pt_method_site pg_site_10; /* method_getTemplateTags_10 */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\FileTypeMapper */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Rules\Generics\TemplateTypeCheck */
+static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::TraitTemplateTypeRule {
 
@@ -107,101 +111,122 @@ namespace pgen::TraitTemplateTypeRule {
 		if (UNEXPECTED(p11 == NULL)) return false;
 		zv::Val o12 = zv::Val::copyOf(zv::Ref(p11));
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "getFile", "getfile", 7, 0, NULL, r13.raw(), NULL))) return false;
-		zv::Val o14 = zv::Val::copyOf(zv::Ref(l_traitName.raw()));
-		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r15.raw(), NULL))) return false;
-		zval av16[5];
-		ZVAL_COPY_VALUE(&av16[0], r13.raw());
-		ZVAL_COPY_VALUE(&av16[1], o14.raw());
-		zval z17;
-		ZVAL_NULL(&z17);
-		ZVAL_COPY_VALUE(&av16[2], &z17);
-		zval z18;
-		ZVAL_NULL(&z18);
-		ZVAL_COPY_VALUE(&av16[3], &z18);
-		ZVAL_COPY_VALUE(&av16[4], r15.raw());
-		zv::Val r19;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, o12.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, 5, av16, r19.raw(), NULL))) return false;
-		l_resolvedPhpDoc = std::move(r19);
+		zend_class_entry *rc14 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+		if (rc14 == pt_ce_mutating_scope) {
+			r13 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r13.isUndef())) return false;
+		}
+		else {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "getFile", "getfile", 7, 0, NULL, r13.raw()))) return false;
+		}
+		zv::Val o15 = zv::Val::copyOf(zv::Ref(l_traitName.raw()));
+		zval *gs16 = Z_TYPE_P(l_docComment.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_4, Z_OBJ_P(l_docComment.raw()), pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Comment", 17), "gettext", 7, "text", 4) : NULL;
+		zv::Val r17;
+		if (EXPECTED(gs16 != NULL)) {
+			ZVAL_COPY(r17.raw(), gs16);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r17.raw()))) return false;
+		}
+		}
+		zval av18[5];
+		ZVAL_COPY_VALUE(&av18[0], r13.raw());
+		ZVAL_COPY_VALUE(&av18[1], o15.raw());
+		zval z19;
+		ZVAL_NULL(&z19);
+		ZVAL_COPY_VALUE(&av18[2], &z19);
+		zval z20;
+		ZVAL_NULL(&z20);
+		ZVAL_COPY_VALUE(&av18[3], &z20);
+		ZVAL_COPY_VALUE(&av18[4], r17.raw());
+		zv::Val r21;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, o12.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, 5, av18, r21.raw(), NULL))) return false;
+		l_resolvedPhpDoc = std::move(r21);
 	}
 	 {
-		zv::Val r20;
-		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(l_traitName.raw(), r20.raw()))) return false;
-		l_escapedTraitName = std::move(r20);
+		zv::Val r22;
+		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(l_traitName.raw(), r22.raw()))) return false;
+		l_escapedTraitName = std::move(r22);
 	}
 	 {
-		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TraitTemplateTypeRule::slot::templateTypeCheck, "templateTypeCheck");
-		if (UNEXPECTED(p21 == NULL)) return false;
-		zv::Val o22 = zv::Val::copyOf(zv::Ref(p21));
-		zv::Val r23;
-		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithClass(l_traitName.raw(), r23.raw()))) return false;
-		zv::Val r24;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_resolvedPhpDoc.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r24.raw(), NULL))) return false;
-		pgrt::StringBuilder sb25;
-		sb25.appendLiteral("PHPDoc tag @template for trait ", 31);
-		if (UNEXPECTED(!sb25.append(l_escapedTraitName.raw()))) return false;
-		sb25.appendLiteral(" cannot have existing class ", 28);
-		sb25.appendLiteral("%", 1);
-		sb25.appendLiteral("s as its name.", 14);
-		zv::Val r26 = sb25.finish();
-		pgrt::StringBuilder sb27;
-		sb27.appendLiteral("PHPDoc tag @template for trait ", 31);
-		if (UNEXPECTED(!sb27.append(l_escapedTraitName.raw()))) return false;
-		sb27.appendLiteral(" cannot have existing type alias ", 33);
-		sb27.appendLiteral("%", 1);
-		sb27.appendLiteral("s as its name.", 14);
-		zv::Val r28 = sb27.finish();
-		pgrt::StringBuilder sb29;
-		sb29.appendLiteral("PHPDoc tag @template ", 21);
-		sb29.appendLiteral("%", 1);
-		sb29.appendLiteral("s for trait ", 12);
-		if (UNEXPECTED(!sb29.append(l_escapedTraitName.raw()))) return false;
-		sb29.appendLiteral(" has invalid bound type ", 24);
-		sb29.appendLiteral("%", 1);
-		sb29.appendLiteral("s.", 2);
-		zv::Val r30 = sb29.finish();
-		pgrt::StringBuilder sb31;
-		sb31.appendLiteral("PHPDoc tag @template ", 21);
-		sb31.appendLiteral("%", 1);
-		sb31.appendLiteral("s for trait ", 12);
-		if (UNEXPECTED(!sb31.append(l_escapedTraitName.raw()))) return false;
-		sb31.appendLiteral(" with bound type ", 17);
-		sb31.appendLiteral("%", 1);
-		sb31.appendLiteral("s is not supported.", 19);
-		zv::Val r32 = sb31.finish();
-		pgrt::StringBuilder sb33;
-		sb33.appendLiteral("PHPDoc tag @template ", 21);
-		sb33.appendLiteral("%", 1);
-		sb33.appendLiteral("s for trait ", 12);
-		if (UNEXPECTED(!sb33.append(l_escapedTraitName.raw()))) return false;
-		sb33.appendLiteral(" has invalid default type ", 26);
-		sb33.appendLiteral("%", 1);
-		sb33.appendLiteral("s.", 2);
-		zv::Val r34 = sb33.finish();
-		pgrt::StringBuilder sb35;
-		sb35.appendLiteral("Default type ", 13);
-		sb35.appendLiteral("%", 1);
-		sb35.appendLiteral("s in PHPDoc tag @template ", 26);
-		sb35.appendLiteral("%", 1);
-		sb35.appendLiteral("s for trait ", 12);
-		if (UNEXPECTED(!sb35.append(l_escapedTraitName.raw()))) return false;
-		sb35.appendLiteral(" is not subtype of bound type ", 30);
-		sb35.appendLiteral("%", 1);
-		sb35.appendLiteral("s.", 2);
-		zv::Val r36 = sb35.finish();
-		pgrt::StringBuilder sb37;
-		sb37.appendLiteral("PHPDoc tag @template ", 21);
-		sb37.appendLiteral("%", 1);
-		sb37.appendLiteral("s for trait ", 12);
-		if (UNEXPECTED(!sb37.append(l_escapedTraitName.raw()))) return false;
-		sb37.appendLiteral(" does not have a default type but follows an optional @template ", 64);
-		sb37.appendLiteral("%", 1);
-		sb37.appendLiteral("s.", 2);
-		zv::Val r38 = sb37.finish();
-		zv::Val r39;
-		if (UNEXPECTED(!pgen::TemplateTypeCheck::m_check(Z_OBJ_P(o22.raw()), p_scope, p_node, r23.raw(), r24.raw(), r26.raw(), r28.raw(), r30.raw(), r32.raw(), r34.raw(), r36.raw(), r38.raw(), r39.raw()))) return false;
-		*ret = r39.take();
+		zval *p23 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TraitTemplateTypeRule::slot::templateTypeCheck, "templateTypeCheck");
+		if (UNEXPECTED(p23 == NULL)) return false;
+		zv::Val o24 = zv::Val::copyOf(zv::Ref(p23));
+		zv::Val r25;
+		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithClass(l_traitName.raw(), r25.raw()))) return false;
+		zval *gs26 = Z_TYPE_P(l_resolvedPhpDoc.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_8, Z_OBJ_P(l_resolvedPhpDoc.raw()), pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\PhpDoc\\ResolvedPhpDocBlock", 34), "gettemplatetags", 15, "templateTags", 12) : NULL;
+		zv::Val r27;
+		if (EXPECTED(gs26 != NULL)) {
+			ZVAL_COPY(r27.raw(), gs26);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_resolvedPhpDoc.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r27.raw()))) return false;
+		}
+		}
+		pgrt::StringBuilder sb28;
+		sb28.appendLiteral("PHPDoc tag @template for trait ", 31);
+		if (UNEXPECTED(!sb28.append(l_escapedTraitName.raw()))) return false;
+		sb28.appendLiteral(" cannot have existing class ", 28);
+		sb28.appendLiteral("%", 1);
+		sb28.appendLiteral("s as its name.", 14);
+		zv::Val r29 = sb28.finish();
+		pgrt::StringBuilder sb30;
+		sb30.appendLiteral("PHPDoc tag @template for trait ", 31);
+		if (UNEXPECTED(!sb30.append(l_escapedTraitName.raw()))) return false;
+		sb30.appendLiteral(" cannot have existing type alias ", 33);
+		sb30.appendLiteral("%", 1);
+		sb30.appendLiteral("s as its name.", 14);
+		zv::Val r31 = sb30.finish();
+		pgrt::StringBuilder sb32;
+		sb32.appendLiteral("PHPDoc tag @template ", 21);
+		sb32.appendLiteral("%", 1);
+		sb32.appendLiteral("s for trait ", 12);
+		if (UNEXPECTED(!sb32.append(l_escapedTraitName.raw()))) return false;
+		sb32.appendLiteral(" has invalid bound type ", 24);
+		sb32.appendLiteral("%", 1);
+		sb32.appendLiteral("s.", 2);
+		zv::Val r33 = sb32.finish();
+		pgrt::StringBuilder sb34;
+		sb34.appendLiteral("PHPDoc tag @template ", 21);
+		sb34.appendLiteral("%", 1);
+		sb34.appendLiteral("s for trait ", 12);
+		if (UNEXPECTED(!sb34.append(l_escapedTraitName.raw()))) return false;
+		sb34.appendLiteral(" with bound type ", 17);
+		sb34.appendLiteral("%", 1);
+		sb34.appendLiteral("s is not supported.", 19);
+		zv::Val r35 = sb34.finish();
+		pgrt::StringBuilder sb36;
+		sb36.appendLiteral("PHPDoc tag @template ", 21);
+		sb36.appendLiteral("%", 1);
+		sb36.appendLiteral("s for trait ", 12);
+		if (UNEXPECTED(!sb36.append(l_escapedTraitName.raw()))) return false;
+		sb36.appendLiteral(" has invalid default type ", 26);
+		sb36.appendLiteral("%", 1);
+		sb36.appendLiteral("s.", 2);
+		zv::Val r37 = sb36.finish();
+		pgrt::StringBuilder sb38;
+		sb38.appendLiteral("Default type ", 13);
+		sb38.appendLiteral("%", 1);
+		sb38.appendLiteral("s in PHPDoc tag @template ", 26);
+		sb38.appendLiteral("%", 1);
+		sb38.appendLiteral("s for trait ", 12);
+		if (UNEXPECTED(!sb38.append(l_escapedTraitName.raw()))) return false;
+		sb38.appendLiteral(" is not subtype of bound type ", 30);
+		sb38.appendLiteral("%", 1);
+		sb38.appendLiteral("s.", 2);
+		zv::Val r39 = sb38.finish();
+		pgrt::StringBuilder sb40;
+		sb40.appendLiteral("PHPDoc tag @template ", 21);
+		sb40.appendLiteral("%", 1);
+		sb40.appendLiteral("s for trait ", 12);
+		if (UNEXPECTED(!sb40.append(l_escapedTraitName.raw()))) return false;
+		sb40.appendLiteral(" does not have a default type but follows an optional @template ", 64);
+		sb40.appendLiteral("%", 1);
+		sb40.appendLiteral("s.", 2);
+		zv::Val r41 = sb40.finish();
+		zv::Val r42;
+		if (UNEXPECTED(!pgen::TemplateTypeCheck::m_check(Z_OBJ_P(o24.raw()), p_scope, p_node, r25.raw(), r27.raw(), r29.raw(), r31.raw(), r33.raw(), r35.raw(), r37.raw(), r39.raw(), r41.raw(), r42.raw()))) return false;
+		*ret = r42.take();
 		return true;
 	}
 }
@@ -225,8 +250,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TraitTemplateTypeRule)
 			Z_PARAM_OBJECT(p_fileTypeMapper)
 			Z_PARAM_OBJECT(p_templateTypeCheck)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_fileTypeMapper != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_fileTypeMapper, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\FileTypeMapper", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\FileTypeMapper", zend_zval_value_name(p_fileTypeMapper)); RETURN_THROWS(); }
-		if (p_templateTypeCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_templateTypeCheck) == IS_OBJECT && Z_OBJCE_P(p_templateTypeCheck) == pt_ce_template_type_check) || pgrt::instanceOfClass(p_templateTypeCheck, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Rules\\Generics\\TemplateTypeCheck", 40))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\TemplateTypeCheck", zend_zval_value_name(p_templateTypeCheck)); RETURN_THROWS(); }
+		if (p_fileTypeMapper != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_fileTypeMapper, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\FileTypeMapper", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\FileTypeMapper", zend_zval_value_name(p_fileTypeMapper)); RETURN_THROWS(); }
+		if (p_templateTypeCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_templateTypeCheck) == IS_OBJECT && Z_OBJCE_P(p_templateTypeCheck) == pt_ce_template_type_check) || pgrt::instanceOfClass(p_templateTypeCheck, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Rules\\Generics\\TemplateTypeCheck", 40))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\TemplateTypeCheck", zend_zval_value_name(p_templateTypeCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::TraitTemplateTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_fileTypeMapper, p_templateTypeCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\TraitTemplateTypeRule::getNodeType() */
@@ -241,8 +266,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TraitTemplateTypeRule)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_13, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TraitTemplateTypeRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

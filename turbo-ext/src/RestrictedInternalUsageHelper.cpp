@@ -123,22 +123,29 @@ namespace pgen::RestrictedInternalUsageHelper {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getNamespace", "getnamespace", 12, 0, NULL, r1.raw(), NULL))) return false;
+		zend_class_entry *rc2 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+		if (rc2 == pt_ce_mutating_scope) {
+			r1 = pt_mutating_scope_get_namespace(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r1.isUndef())) return false;
+		}
+		else {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getNamespace", "getnamespace", 12, 0, NULL, r1.raw()))) return false;
+		}
 		l_currentNamespace = std::move(r1);
 	}
 	 {
 		if (Z_TYPE_P(l_currentNamespace.raw()) == IS_NULL) {
 			 {
-				zv::Val r2;
+				zv::Val r3;
 				if (EXPECTED(Z_TYPE_P(p_scope) == IS_OBJECT)) {
-					r2 = pt_type_op(Z_OBJ_P(p_scope), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
-					if (UNEXPECTED(r2.isUndef())) return false;
+					r3 = pt_type_op(Z_OBJ_P(p_scope), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
+					if (UNEXPECTED(r3.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r2.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r3.raw(), NULL))) return false;
 				}
 				}
-				l_classReflection = std::move(r2);
+				l_classReflection = std::move(r3);
 			}
 			 {
 				if (Z_TYPE_P(l_classReflection.raw()) == IS_NULL) {
@@ -149,50 +156,50 @@ namespace pgen::RestrictedInternalUsageHelper {
 				}
 			}
 			 {
-				zv::Val r3;
+				zv::Val r4;
 				if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-					r3 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_NAME, 0, NULL);
-					if (UNEXPECTED(r3.isUndef())) return false;
+					r4 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_NAME, 0, NULL);
+					if (UNEXPECTED(r4.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
 				}
 				}
-				*ret = !zend_is_identical(r3.raw(), p_name);
+				*ret = !zend_is_identical(r4.raw(), p_name);
 				return true;
 			}
 		}
 	}
 	 {
-		zval av4[2];
-		ZVAL_COPY_VALUE(&av4[0], &pg_lit[0]);
-		ZVAL_COPY_VALUE(&av4[1], l_currentNamespace.raw());
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "explode", 7, pt_ce_restricted_internal_usage_helper, 2, av4, r5.raw(), NULL))) return false;
-		zv::Val et7;
-		zval *e6 = Z_TYPE_P(r5.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(r5.raw()), 0) : NULL;
-		if (UNEXPECTED(e6 == NULL)) {
-			zval z8;
-			ZVAL_LONG(&z8, 0);
-			e6 = pgrt::dimRead(r5.raw(), &z8, et7.raw());
-			if (UNEXPECTED(e6 == NULL)) return false;
+		zval av5[2];
+		ZVAL_COPY_VALUE(&av5[0], &pg_lit[0]);
+		ZVAL_COPY_VALUE(&av5[1], l_currentNamespace.raw());
+		zv::Val r6;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "explode", 7, pt_ce_restricted_internal_usage_helper, 2, av5, r6.raw(), NULL))) return false;
+		zv::Val et8;
+		zval *e7 = Z_TYPE_P(r6.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(r6.raw()), 0) : NULL;
+		if (UNEXPECTED(e7 == NULL)) {
+			zval z9;
+			ZVAL_LONG(&z9, 0);
+			e7 = pgrt::dimRead(r6.raw(), &z9, et8.raw());
+			if (UNEXPECTED(e7 == NULL)) return false;
 		}
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(zv::Ref(e6).deref().raw()));
-		l_currentNamespace = std::move(o9);
+		zv::Val o10 = zv::Val::copyOf(zv::Ref(zv::Ref(e7).deref().raw()));
+		l_currentNamespace = std::move(o10);
 	}
 	 {
-		zv::Val r10;
-		if (UNEXPECTED(!pgen::RestrictedInternalUsageHelper::m_getRootNamespaceFromName(Z_OBJ_P(&this_zv), p_name, r10.raw()))) return false;
-		l_namespace = std::move(r10);
+		zv::Val r11;
+		if (UNEXPECTED(!pgen::RestrictedInternalUsageHelper::m_getRootNamespaceFromName(Z_OBJ_P(&this_zv), p_name, r11.raw()))) return false;
+		l_namespace = std::move(r11);
 	}
 	 {
-		zv::Val cat11;
-		if (UNEXPECTED(!pgrt::concat(l_namespace.raw(), &pg_lit[0], cat11.raw()))) return false;
 		zv::Val cat12;
-		if (UNEXPECTED(!pgrt::concat(l_currentNamespace.raw(), &pg_lit[0], cat12.raw()))) return false;
-		zv::Val r13;
-		if (UNEXPECTED(!pgrt::strMatch(pg_site_8, "str_starts_with", 15, pgrt::StrMatch::STARTS, cat11.raw(), cat12.raw(), r13.raw()))) return false;
-		*ret = !((Z_TYPE_P(r13.raw()) == IS_TRUE));
+		if (UNEXPECTED(!pgrt::concat(l_namespace.raw(), &pg_lit[0], cat12.raw()))) return false;
+		zv::Val cat13;
+		if (UNEXPECTED(!pgrt::concat(l_currentNamespace.raw(), &pg_lit[0], cat13.raw()))) return false;
+		zv::Val r14;
+		if (UNEXPECTED(!pgrt::strMatch(pg_site_8, "str_starts_with", 15, pgrt::StrMatch::STARTS, cat12.raw(), cat13.raw(), r14.raw()))) return false;
+		*ret = !((Z_TYPE_P(r14.raw()) == IS_TRUE));
 		return true;
 	}
 }

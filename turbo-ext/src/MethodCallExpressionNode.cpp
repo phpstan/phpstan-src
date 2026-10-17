@@ -9,12 +9,13 @@ zend_class_entry *pt_ce_method_call_expression_node = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getAttributes_0 */
+static pgrt::GetterSite pg_site_0; /* getter_getAttributes_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_2; /* bound_PhpParser\NodeAbstract::__construct */
-static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr\MethodCall */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Analyser\ExpressionResult */
-static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\ArgsResult */
+static pt_method_site pg_site_2; /* method_getAttributes_2 */
+static pt_method_site pg_site_3; /* bound_PhpParser\NodeAbstract::__construct */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr\MethodCall */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\ExpressionResult */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\ArgsResult */
 
 namespace pgen::MethodCallExpressionNode {
 
@@ -34,14 +35,21 @@ namespace pgen::MethodCallExpressionNode {
 	zval o3_raw = o3.take();
 	pgrt::writeSlot(self, ptdecl::MethodCallExpressionNode::slot::argsResult, &o3_raw);
 	 {
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_originalNode, "getAttributes", "getattributes", 13, 0, NULL, r4.raw(), NULL))) return false;
-		zval av5[1];
-		ZVAL_COPY_VALUE(&av5[0], r4.raw());
-		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_1, "PhpParser\\NodeAbstract", 22);
-		if (UNEXPECTED(ce6 == NULL)) return false;
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callBound(pg_site_2, ce6, self, "__construct", 11, 1, av5, r7.raw(), NULL))) return false;
+		zval *gs4 = Z_TYPE_P(p_originalNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_0, Z_OBJ_P(p_originalNode), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\NodeAbstract", 22), "getattributes", 13, "attributes", 10) : NULL;
+		zv::Val r5;
+		if (EXPECTED(gs4 != NULL)) {
+			ZVAL_COPY(r5.raw(), gs4);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_originalNode, "getAttributes", "getattributes", 13, 0, NULL, r5.raw()))) return false;
+		}
+		}
+		zval av6[1];
+		ZVAL_COPY_VALUE(&av6[0], r5.raw());
+		zend_class_entry *ce7 = pgrt::lookupClass(pg_site_1, "PhpParser\\NodeAbstract", 22);
+		if (UNEXPECTED(ce7 == NULL)) return false;
+		zv::Val r8;
+		if (UNEXPECTED(!pgrt::callBound(pg_site_3, ce7, self, "__construct", 11, 1, av6, r8.raw(), NULL))) return false;
 	}
 	return true;
 }
@@ -140,9 +148,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodCallExpressionNode)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(p_argsResult)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_originalNode != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr\\MethodCall", 30)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\MethodCall", zend_zval_value_name(p_originalNode)); RETURN_THROWS(); }
-		if (p_result != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_result, pt_ce_expression_result) || pgrt::instanceOfClass(p_result, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Analyser\\ExpressionResult", 33))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_result)); RETURN_THROWS(); }
-		if (p_argsResult != NULL && UNEXPECTED(!(Z_TYPE_P(p_argsResult) == IS_NULL || (pgrt::instanceOfClass(p_argsResult, pt_ce_args_result) || pgrt::instanceOfClass(p_argsResult, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Analyser\\ArgsResult", 27)))))) { zend_argument_type_error(3, "must be of type %s, %s given", "?PHPStan\\Analyser\\ArgsResult", zend_zval_value_name(p_argsResult)); RETURN_THROWS(); }
+		if (p_originalNode != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr\\MethodCall", 30)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\MethodCall", zend_zval_value_name(p_originalNode)); RETURN_THROWS(); }
+		if (p_result != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_result, pt_ce_expression_result) || pgrt::instanceOfClass(p_result, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Analyser\\ExpressionResult", 33))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_result)); RETURN_THROWS(); }
+		if (p_argsResult != NULL && UNEXPECTED(!(Z_TYPE_P(p_argsResult) == IS_NULL || (pgrt::instanceOfClass(p_argsResult, pt_ce_args_result) || pgrt::instanceOfClass(p_argsResult, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ArgsResult", 27)))))) { zend_argument_type_error(3, "must be of type %s, %s given", "?PHPStan\\Analyser\\ArgsResult", zend_zval_value_name(p_argsResult)); RETURN_THROWS(); }
 		if (p_argsResult == NULL) p_argsResult = &p_argsResult_null;
 		if (UNEXPECTED(!pgen::MethodCallExpressionNode::m___construct(Z_OBJ_P(ZEND_THIS), p_originalNode, p_result, p_argsResult))) RETURN_THROWS();
 	});

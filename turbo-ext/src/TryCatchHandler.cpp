@@ -2317,12 +2317,19 @@ namespace pgen::TryCatchHandler {
 					q530 = std::move(o531);
 				} else {
 				 {
-					zval av532[2];
-					ZVAL_COPY_VALUE(&av532[0], l_finallyScope.raw());
-					ZVAL_COPY_VALUE(&av532[1], l_originalFinallyScope.raw());
-					zv::Val r533;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_111, l_finalScope.raw(), "processFinallyScope", "processfinallyscope", 19, 2, av532, r533.raw(), NULL))) return false;
-					q530 = std::move(r533);
+					zv::Val r532;
+					if (EXPECTED(Z_TYPE_P(l_finalScope.raw()) == IS_OBJECT && Z_OBJCE_P(l_finalScope.raw()) == pt_ce_mutating_scope)) {
+						r532 = pt_mutating_scope_process_finally_scope(Z_OBJ_P(l_finalScope.raw()), Z_OBJ_P(l_finallyScope.raw()), Z_OBJ_P(l_originalFinallyScope.raw()));
+						if (UNEXPECTED(r532.isUndef())) return false;
+					} else {
+					 {
+						zval av533[2];
+						ZVAL_COPY_VALUE(&av533[0], l_finallyScope.raw());
+						ZVAL_COPY_VALUE(&av533[1], l_originalFinallyScope.raw());
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_111, l_finalScope.raw(), "processFinallyScope", "processfinallyscope", 19, 2, av533, r532.raw()))) return false;
+					}
+					}
+					q530 = std::move(r532);
 				}
 				}
 				l_finalScope = std::move(q530);
@@ -2383,12 +2390,19 @@ namespace pgen::TryCatchHandler {
 									if (!vd547_done) {
 										if (UNEXPECTED(!pgrt::callMethod(pg_site_114, l_exitPoint, "getScope", "getscope", 8, 0, NULL, vd547.raw()))) return false;
 									}
-									zval av549[2];
-									ZVAL_COPY_VALUE(&av549[0], l_finallyScope.raw());
-									ZVAL_COPY_VALUE(&av549[1], l_originalFinallyScope.raw());
-									zv::Val r550;
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_115, vd547.raw(), "processFinallyScope", "processfinallyscope", 19, 2, av549, r550.raw(), NULL))) return false;
-									l_exitPointScope = std::move(r550);
+									zv::Val r549;
+									if (EXPECTED(Z_TYPE_P(vd547.raw()) == IS_OBJECT && Z_OBJCE_P(vd547.raw()) == pt_ce_mutating_scope)) {
+										r549 = pt_mutating_scope_process_finally_scope(Z_OBJ_P(vd547.raw()), Z_OBJ_P(l_finallyScope.raw()), Z_OBJ_P(l_originalFinallyScope.raw()));
+										if (UNEXPECTED(r549.isUndef())) return false;
+									} else {
+									 {
+										zval av550[2];
+										ZVAL_COPY_VALUE(&av550[0], l_finallyScope.raw());
+										ZVAL_COPY_VALUE(&av550[1], l_originalFinallyScope.raw());
+										if (UNEXPECTED(!pgrt::callMethod(pg_site_115, vd547.raw(), "processFinallyScope", "processfinallyscope", 19, 2, av550, r549.raw()))) return false;
+									}
+									}
+									l_exitPointScope = std::move(r549);
 								}
 								 {
 									if (UNEXPECTED(!(pgrt::instanceOfClass(l_exitStatement.raw(), pgrt::lookupClassQuiet(pg_site_116, "PhpParser\\Node\\Stmt", 19))))) { pgrt::throwArgumentType("PHPStan\\Analyser\\InternalStatementExitPoint::__construct", 1, "statement", "PhpParser\\Node\\Stmt", l_exitStatement.raw()); return false; }

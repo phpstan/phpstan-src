@@ -46,120 +46,131 @@ namespace pgen::PropertyDescriptor {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_propertyFetch, pt_ce_property_descriptor, "var", 3, o2.raw()))) return false;
 					p1 = o2.raw();
 				}
-				zval av3[1];
-				ZVAL_COPY_VALUE(&av3[0], zv::Ref(p1).deref().raw());
-				zv::Val r4;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getType", "gettype", 7, 1, av3, r4.raw(), NULL))) return false;
-				l_fetchedOnType = std::move(r4);
+				zv::Val r3;
+				zend_class_entry *rc4 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+				if (rc4 == pt_ce_mutating_scope) {
+					r3 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p1).deref().raw());
+					if (UNEXPECTED(r3.isUndef())) return false;
+				}
+				else if (rc4 == pt_ce_node_callback_scope) {
+					r3 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p1).deref().raw()));
+					if (UNEXPECTED(r3.isUndef())) return false;
+				}
+				else {
+					zval av5[1];
+					ZVAL_COPY_VALUE(&av5[0], zv::Ref(p1).deref().raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getType", "gettype", 7, 1, av5, r3.raw()))) return false;
+				}
+				l_fetchedOnType = std::move(r3);
 			}
 			 {
-				zv::Val vd6;
-				zend_class_entry *vd6_ce = Z_TYPE_P(p_property) == IS_OBJECT ? Z_OBJCE_P(p_property) : NULL;
-				bool vd6_done = false;
-				if (vd6_ce == pt_ce_changed_type_property_reflection) {
-					zv::Val r7;
-					if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r7.raw()))) return false;
-					vd6 = std::move(r7);
-					vd6_done = true;
-				}
-				if (vd6_ce == pt_ce_rewritten_declaring_class_property_reflection) {
+				zv::Val vd7;
+				zend_class_entry *vd7_ce = Z_TYPE_P(p_property) == IS_OBJECT ? Z_OBJCE_P(p_property) : NULL;
+				bool vd7_done = false;
+				if (vd7_ce == pt_ce_changed_type_property_reflection) {
 					zv::Val r8;
-					if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r8.raw()))) return false;
-					vd6 = std::move(r8);
-					vd6_done = true;
+					if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r8.raw()))) return false;
+					vd7 = std::move(r8);
+					vd7_done = true;
 				}
-				if (vd6_ce == pt_ce_found_property_reflection) {
+				if (vd7_ce == pt_ce_rewritten_declaring_class_property_reflection) {
 					zv::Val r9;
-					if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r9.raw()))) return false;
-					vd6 = std::move(r9);
-					vd6_done = true;
+					if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r9.raw()))) return false;
+					vd7 = std::move(r9);
+					vd7_done = true;
 				}
-				if (!vd6_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_property, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd6.raw()))) return false;
+				if (vd7_ce == pt_ce_found_property_reflection) {
+					zv::Val r10;
+					if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r10.raw()))) return false;
+					vd7 = std::move(r10);
+					vd7_done = true;
 				}
-				zv::Val r10;
-				if (EXPECTED(Z_TYPE_P(vd6.raw()) == IS_OBJECT)) {
-					r10 = pt_type_op(Z_OBJ_P(vd6.raw()), PT_OP_GET_NAME, 0, NULL);
-					if (UNEXPECTED(r10.isUndef())) return false;
+				if (!vd7_done) {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_property, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd7.raw()))) return false;
+				}
+				zv::Val r11;
+				if (EXPECTED(Z_TYPE_P(vd7.raw()) == IS_OBJECT)) {
+					r11 = pt_type_op(Z_OBJ_P(vd7.raw()), PT_OP_GET_NAME, 0, NULL);
+					if (UNEXPECTED(r11.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd6.raw(), "getName", "getname", 7, 0, NULL, r10.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd7.raw(), "getName", "getname", 7, 0, NULL, r11.raw(), NULL))) return false;
 				}
 				}
-				zv::Val n5;
-				if (UNEXPECTED(!pt_object_type_new(n5.raw(), Z_STR_P(r10.raw())))) return false;
-				l_declaringClassType = std::move(n5);
+				zv::Val n6;
+				if (UNEXPECTED(!pt_object_type_new(n6.raw(), Z_STR_P(r11.raw())))) return false;
+				l_declaringClassType = std::move(n6);
 			}
 			 {
-				zval av11[1];
-				ZVAL_COPY_VALUE(&av11[0], l_fetchedOnType.raw());
-				zv::Val r12;
+				zval av12[1];
+				ZVAL_COPY_VALUE(&av12[0], l_fetchedOnType.raw());
+				zv::Val r13;
 				if (EXPECTED(Z_TYPE_P(l_declaringClassType.raw()) == IS_OBJECT)) {
-					r12 = pt_type_op(Z_OBJ_P(l_declaringClassType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av11);
-					if (UNEXPECTED(r12.isUndef())) return false;
+					r13 = pt_type_op(Z_OBJ_P(l_declaringClassType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av12);
+					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_declaringClassType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av11, r12.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_declaringClassType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av12, r13.raw(), NULL))) return false;
 				}
 				}
-				bool r13;
-				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r12.raw()), &r13))) return false;
-				if (r13) {
+				bool r14;
+				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r13.raw()), &r14))) return false;
+				if (r14) {
 					 {
-						zv::Val vd14;
-						zend_class_entry *vd14_ce = Z_TYPE_P(p_property) == IS_OBJECT ? Z_OBJCE_P(p_property) : NULL;
-						bool vd14_done = false;
-						if (vd14_ce == pt_ce_changed_type_property_reflection) {
-							zv::Val r15;
-							if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r15.raw()))) return false;
-							vd14 = std::move(r15);
-							vd14_done = true;
-						}
-						if (vd14_ce == pt_ce_rewritten_declaring_class_property_reflection) {
+						zv::Val vd15;
+						zend_class_entry *vd15_ce = Z_TYPE_P(p_property) == IS_OBJECT ? Z_OBJCE_P(p_property) : NULL;
+						bool vd15_done = false;
+						if (vd15_ce == pt_ce_changed_type_property_reflection) {
 							zv::Val r16;
-							if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r16.raw()))) return false;
-							vd14 = std::move(r16);
-							vd14_done = true;
+							if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r16.raw()))) return false;
+							vd15 = std::move(r16);
+							vd15_done = true;
 						}
-						if (vd14_ce == pt_ce_found_property_reflection) {
+						if (vd15_ce == pt_ce_rewritten_declaring_class_property_reflection) {
 							zv::Val r17;
-							if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r17.raw()))) return false;
-							vd14 = std::move(r17);
-							vd14_done = true;
+							if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r17.raw()))) return false;
+							vd15 = std::move(r17);
+							vd15_done = true;
 						}
-						if (!vd14_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_property, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd14.raw()))) return false;
+						if (vd15_ce == pt_ce_found_property_reflection) {
+							zv::Val r18;
+							if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r18.raw()))) return false;
+							vd15 = std::move(r18);
+							vd15_done = true;
 						}
-						zv::Val r18;
-						if (EXPECTED(Z_TYPE_P(vd14.raw()) == IS_OBJECT && Z_OBJCE_P(vd14.raw()) == pt_ce_class_reflection)) {
-							r18 = pt_class_reflection_get_display_name(Z_OBJ_P(vd14.raw()));
-							if (UNEXPECTED(r18.isUndef())) return false;
+						if (!vd15_done) {
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_property, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd15.raw()))) return false;
+						}
+						zv::Val r19;
+						if (EXPECTED(Z_TYPE_P(vd15.raw()) == IS_OBJECT && Z_OBJCE_P(vd15.raw()) == pt_ce_class_reflection)) {
+							r19 = pt_class_reflection_get_display_name(Z_OBJ_P(vd15.raw()));
+							if (UNEXPECTED(r19.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_7, vd14.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r18.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_7, vd15.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r19.raw()))) return false;
 						}
 						}
-						l_classDescription = std::move(r18);
+						l_classDescription = std::move(r19);
 					}
 				} else {
 				 {
 					 {
-						zv::Val o19 = zv::Val::copyOf(zv::Ref(l_fetchedOnType.raw()));
-						zval *vl20_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_TYPE_ONLY);
-						if (UNEXPECTED(vl20_p == NULL)) return false;
-						zv::Val vl20 = zv::Val::copyOf(zv::Ref(vl20_p));
-						zval av21[1];
-						ZVAL_COPY_VALUE(&av21[0], vl20.raw());
-						zv::Val r22;
-						if (EXPECTED(Z_TYPE_P(o19.raw()) == IS_OBJECT)) {
-							r22 = pt_type_op(Z_OBJ_P(o19.raw()), PT_OP_DESCRIBE, 1, av21);
-							if (UNEXPECTED(r22.isUndef())) return false;
+						zv::Val o20 = zv::Val::copyOf(zv::Ref(l_fetchedOnType.raw()));
+						zval *vl21_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_TYPE_ONLY);
+						if (UNEXPECTED(vl21_p == NULL)) return false;
+						zv::Val vl21 = zv::Val::copyOf(zv::Ref(vl21_p));
+						zval av22[1];
+						ZVAL_COPY_VALUE(&av22[0], vl21.raw());
+						zv::Val r23;
+						if (EXPECTED(Z_TYPE_P(o20.raw()) == IS_OBJECT)) {
+							r23 = pt_type_op(Z_OBJ_P(o20.raw()), PT_OP_DESCRIBE, 1, av22);
+							if (UNEXPECTED(r23.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, o19.raw(), "describe", "describe", 8, 1, av21, r22.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, o20.raw(), "describe", "describe", 8, 1, av22, r23.raw(), NULL))) return false;
 						}
 						}
-						l_classDescription = std::move(r22);
+						l_classDescription = std::move(r23);
 					}
 				}
 				}
@@ -167,117 +178,117 @@ namespace pgen::PropertyDescriptor {
 		} else {
 		 {
 			 {
-				zv::Val vd23;
-				zend_class_entry *vd23_ce = Z_TYPE_P(p_property) == IS_OBJECT ? Z_OBJCE_P(p_property) : NULL;
-				bool vd23_done = false;
-				if (vd23_ce == pt_ce_changed_type_property_reflection) {
-					zv::Val r24;
-					if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r24.raw()))) return false;
-					vd23 = std::move(r24);
-					vd23_done = true;
-				}
-				if (vd23_ce == pt_ce_rewritten_declaring_class_property_reflection) {
+				zv::Val vd24;
+				zend_class_entry *vd24_ce = Z_TYPE_P(p_property) == IS_OBJECT ? Z_OBJCE_P(p_property) : NULL;
+				bool vd24_done = false;
+				if (vd24_ce == pt_ce_changed_type_property_reflection) {
 					zv::Val r25;
-					if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r25.raw()))) return false;
-					vd23 = std::move(r25);
-					vd23_done = true;
+					if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r25.raw()))) return false;
+					vd24 = std::move(r25);
+					vd24_done = true;
 				}
-				if (vd23_ce == pt_ce_found_property_reflection) {
+				if (vd24_ce == pt_ce_rewritten_declaring_class_property_reflection) {
 					zv::Val r26;
-					if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r26.raw()))) return false;
-					vd23 = std::move(r26);
-					vd23_done = true;
+					if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r26.raw()))) return false;
+					vd24 = std::move(r26);
+					vd24_done = true;
 				}
-				if (!vd23_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_property, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd23.raw()))) return false;
+				if (vd24_ce == pt_ce_found_property_reflection) {
+					zv::Val r27;
+					if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDeclaringClass(Z_OBJ_P(p_property), r27.raw()))) return false;
+					vd24 = std::move(r27);
+					vd24_done = true;
 				}
-				zv::Val r27;
-				if (EXPECTED(Z_TYPE_P(vd23.raw()) == IS_OBJECT && Z_OBJCE_P(vd23.raw()) == pt_ce_class_reflection)) {
-					r27 = pt_class_reflection_get_display_name(Z_OBJ_P(vd23.raw()));
-					if (UNEXPECTED(r27.isUndef())) return false;
+				if (!vd24_done) {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_property, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd24.raw()))) return false;
+				}
+				zv::Val r28;
+				if (EXPECTED(Z_TYPE_P(vd24.raw()) == IS_OBJECT && Z_OBJCE_P(vd24.raw()) == pt_ce_class_reflection)) {
+					r28 = pt_class_reflection_get_display_name(Z_OBJ_P(vd24.raw()));
+					if (UNEXPECTED(r28.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, vd23.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r27.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, vd24.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r28.raw()))) return false;
 				}
 				}
-				l_classDescription = std::move(r27);
+				l_classDescription = std::move(r28);
 			}
 		}
 		}
 	}
 	 {
-		zv::Val o29;
-		zval *p28 = Z_TYPE_P(p_propertyFetch) == IS_OBJECT ? pgrt::propCached(pg_site_11, Z_OBJ_P(p_propertyFetch), "name", 4) : NULL;
-		if (UNEXPECTED(p28 == NULL || Z_ISUNDEF_P(p28))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_propertyFetch, pt_ce_property_descriptor, "name", 4, o29.raw()))) return false;
-			p28 = o29.raw();
+		zv::Val o30;
+		zval *p29 = Z_TYPE_P(p_propertyFetch) == IS_OBJECT ? pgrt::propCached(pg_site_11, Z_OBJ_P(p_propertyFetch), "name", 4) : NULL;
+		if (UNEXPECTED(p29 == NULL || Z_ISUNDEF_P(p29))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_propertyFetch, pt_ce_property_descriptor, "name", 4, o30.raw()))) return false;
+			p29 = o30.raw();
 		}
-		zv::Val o30 = zv::Val::copyOf(zv::Ref(zv::Ref(p28).deref().raw()));
-		l_name = std::move(o30);
+		zv::Val o31 = zv::Val::copyOf(zv::Ref(zv::Ref(p29).deref().raw()));
+		l_name = std::move(o31);
 	}
 	 {
-		zv::Val vd31;
-		zend_class_entry *vd31_ce = Z_TYPE_P(p_property) == IS_OBJECT ? Z_OBJCE_P(p_property) : NULL;
-		bool vd31_done = false;
-		if (vd31_ce == pt_ce_changed_type_property_reflection) {
-			bool r32;
-			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isStatic(Z_OBJ_P(p_property), &r32))) return false;
-			zv::Val o33 = zv::Val::boolean(r32);
-			vd31 = std::move(o33);
-			vd31_done = true;
+		zv::Val vd32;
+		zend_class_entry *vd32_ce = Z_TYPE_P(p_property) == IS_OBJECT ? Z_OBJCE_P(p_property) : NULL;
+		bool vd32_done = false;
+		if (vd32_ce == pt_ce_changed_type_property_reflection) {
+			bool r33;
+			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isStatic(Z_OBJ_P(p_property), &r33))) return false;
+			zv::Val o34 = zv::Val::boolean(r33);
+			vd32 = std::move(o34);
+			vd32_done = true;
 		}
-		if (vd31_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r34;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isStatic(Z_OBJ_P(p_property), &r34))) return false;
-			zv::Val o35 = zv::Val::boolean(r34);
-			vd31 = std::move(o35);
-			vd31_done = true;
+		if (vd32_ce == pt_ce_rewritten_declaring_class_property_reflection) {
+			bool r35;
+			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isStatic(Z_OBJ_P(p_property), &r35))) return false;
+			zv::Val o36 = zv::Val::boolean(r35);
+			vd32 = std::move(o36);
+			vd32_done = true;
 		}
-		if (vd31_ce == pt_ce_found_property_reflection) {
-			bool r36;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isStatic(Z_OBJ_P(p_property), &r36))) return false;
-			zv::Val o37 = zv::Val::boolean(r36);
-			vd31 = std::move(o37);
-			vd31_done = true;
+		if (vd32_ce == pt_ce_found_property_reflection) {
+			bool r37;
+			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isStatic(Z_OBJ_P(p_property), &r37))) return false;
+			zv::Val o38 = zv::Val::boolean(r37);
+			vd32 = std::move(o38);
+			vd32_done = true;
 		}
-		if (!vd31_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_property, "isStatic", "isstatic", 8, 0, NULL, vd31.raw()))) return false;
+		if (!vd32_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_property, "isStatic", "isstatic", 8, 0, NULL, vd32.raw()))) return false;
 		}
-		if (!((Z_TYPE_P(vd31.raw()) == IS_TRUE))) {
+		if (!((Z_TYPE_P(vd32.raw()) == IS_TRUE))) {
 			 {
-				zv::Val o38 = zv::Val::copyOf(zv::Ref(l_classDescription.raw()));
-				zv::Val o40;
-				zval *p39 = Z_TYPE_P(l_name.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_13, Z_OBJ_P(l_name.raw()), "name", 4) : NULL;
-				if (UNEXPECTED(p39 == NULL || Z_ISUNDEF_P(p39))) {
-					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_name.raw(), pt_ce_property_descriptor, "name", 4, o40.raw()))) return false;
-					p39 = o40.raw();
+				zv::Val o39 = zv::Val::copyOf(zv::Ref(l_classDescription.raw()));
+				zv::Val o41;
+				zval *p40 = Z_TYPE_P(l_name.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_13, Z_OBJ_P(l_name.raw()), "name", 4) : NULL;
+				if (UNEXPECTED(p40 == NULL || Z_ISUNDEF_P(p40))) {
+					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_name.raw(), pt_ce_property_descriptor, "name", 4, o41.raw()))) return false;
+					p40 = o41.raw();
 				}
-				pgrt::StringBuilder sb41;
-				sb41.appendLiteral("Property ", 9);
-				if (UNEXPECTED(!sb41.append(o38.raw()))) return false;
-				sb41.appendLiteral("::$", 3);
-				if (UNEXPECTED(!sb41.append(zv::Ref(p39).deref().raw()))) return false;
-				zv::Val r42 = sb41.finish();
-				*ret = r42.take();
+				pgrt::StringBuilder sb42;
+				sb42.appendLiteral("Property ", 9);
+				if (UNEXPECTED(!sb42.append(o39.raw()))) return false;
+				sb42.appendLiteral("::$", 3);
+				if (UNEXPECTED(!sb42.append(zv::Ref(p40).deref().raw()))) return false;
+				zv::Val r43 = sb42.finish();
+				*ret = r43.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val o43 = zv::Val::copyOf(zv::Ref(l_classDescription.raw()));
-		zv::Val o45;
-		zval *p44 = Z_TYPE_P(l_name.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_14, Z_OBJ_P(l_name.raw()), "name", 4) : NULL;
-		if (UNEXPECTED(p44 == NULL || Z_ISUNDEF_P(p44))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_name.raw(), pt_ce_property_descriptor, "name", 4, o45.raw()))) return false;
-			p44 = o45.raw();
+		zv::Val o44 = zv::Val::copyOf(zv::Ref(l_classDescription.raw()));
+		zv::Val o46;
+		zval *p45 = Z_TYPE_P(l_name.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_14, Z_OBJ_P(l_name.raw()), "name", 4) : NULL;
+		if (UNEXPECTED(p45 == NULL || Z_ISUNDEF_P(p45))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_name.raw(), pt_ce_property_descriptor, "name", 4, o46.raw()))) return false;
+			p45 = o46.raw();
 		}
-		pgrt::StringBuilder sb46;
-		sb46.appendLiteral("Static property ", 16);
-		if (UNEXPECTED(!sb46.append(o43.raw()))) return false;
-		sb46.appendLiteral("::$", 3);
-		if (UNEXPECTED(!sb46.append(zv::Ref(p44).deref().raw()))) return false;
-		zv::Val r47 = sb46.finish();
-		*ret = r47.take();
+		pgrt::StringBuilder sb47;
+		sb47.appendLiteral("Static property ", 16);
+		if (UNEXPECTED(!sb47.append(o44.raw()))) return false;
+		sb47.appendLiteral("::$", 3);
+		if (UNEXPECTED(!sb47.append(zv::Ref(p45).deref().raw()))) return false;
+		zv::Val r48 = sb47.finish();
+		*ret = r48.take();
 		return true;
 	}
 }

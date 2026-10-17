@@ -265,13 +265,20 @@ namespace pgen::ConstHandler {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_constResult.raw(), "getNativeType", "getnativetype", 13, 0, NULL, r53.raw()))) return false;
 					}
 					}
-					zval av54[3];
-					ZVAL_COPY_VALUE(&av54[0], n49.raw());
-					ZVAL_COPY_VALUE(&av54[1], r52.raw());
-					ZVAL_COPY_VALUE(&av54[2], r53.raw());
-					zv::Val r55;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, o48.raw(), "assignExpression", "assignexpression", 16, 3, av54, r55.raw(), NULL))) return false;
-					l_scope = std::move(r55);
+					zv::Val r54;
+					if (EXPECTED(Z_TYPE_P(o48.raw()) == IS_OBJECT && Z_OBJCE_P(o48.raw()) == pt_ce_mutating_scope)) {
+						r54 = pt_mutating_scope_assign_expression(Z_OBJ_P(o48.raw()), Z_OBJ_P(n49.raw()), r52.raw(), r53.raw());
+						if (UNEXPECTED(r54.isUndef())) return false;
+					} else {
+					 {
+						zval av55[3];
+						ZVAL_COPY_VALUE(&av55[0], n49.raw());
+						ZVAL_COPY_VALUE(&av55[1], r52.raw());
+						ZVAL_COPY_VALUE(&av55[2], r53.raw());
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_17, o48.raw(), "assignExpression", "assignexpression", 16, 3, av55, r54.raw()))) return false;
+					}
+					}
+					l_scope = std::move(r54);
 				}
 			}
 		}

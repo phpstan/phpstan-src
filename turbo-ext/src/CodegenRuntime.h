@@ -150,12 +150,48 @@ static zend_always_inline uint32_t propIndex(PropIndexSite &site, zend_object *o
 	return propIndexSlow(site, object, name, len);
 }
 
+/* the ways of the polymorphic inline caches below */
+constexpr uint32_t PROP_SITE_WAYS = 4;
+
+/* $object->getter() of a method whose whole body is `return $this->prop;`
+ * (a class the compiler does not compile): the property's slot when the
+ * object's class still resolves the method to that declaration — checked
+ * once per class, PROP_SITE_WAYS classes per site — NULL for the engine
+ * (another implementation, an unset or uninitialized slot) */
+struct GetterSite
+{
+	zend_class_entry *ce[PROP_SITE_WAYS];
+	int32_t offset[PROP_SITE_WAYS];
+	uint32_t generation;
+	uint32_t next;
+};
+
+int32_t getterOffsetSlow(GetterSite &site, zend_object *object, zend_class_entry *declaring, const char *lcname, size_t len, const char *prop, size_t propLen);
+
+static zend_always_inline zval *trivialGetter(GetterSite &site, zend_object *object, zend_class_entry *declaring, const char *lcname, size_t len, const char *prop, size_t propLen)
+{
+	int32_t offset = -1;
+	bool found = false;
+	if (EXPECTED(site.generation == pt_engine_generation)) {
+		for (uint32_t i = 0; i < PROP_SITE_WAYS; i++) {
+			if (site.ce[i] == object->ce) {
+				offset = site.offset[i];
+				found = true;
+				break;
+			}
+		}
+	}
+	if (UNEXPECTED(!found)) offset = getterOffsetSlow(site, object, declaring, lcname, len, prop, propLen);
+	if (offset < 0) return NULL;
+	zval *slot = OBJ_PROP(object, offset);
+	ZVAL_DEREF(slot);
+	return Z_TYPE_P(slot) != IS_UNDEF ? slot : NULL;
+}
+
 /* the slot of a public declared property of a class the compiler does not
  * compile (a php-parser node), per receiver class — a polymorphic inline
  * cache of PROP_SITE_WAYS classes; NULL when the object's class does not
  * declare it publicly. The slot is not dereferenced and may be UNDEF. */
-constexpr uint32_t PROP_SITE_WAYS = 4;
-
 struct PropSite
 {
 	zend_class_entry *ce[PROP_SITE_WAYS];

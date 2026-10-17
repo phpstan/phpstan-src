@@ -9,12 +9,14 @@ zend_class_entry *pt_ce_in_class_method_node = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getAttributes_0 */
-static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Stmt */
-static pt_method_site pg_site_2; /* bound_PhpParser\Node\Stmt::__construct */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\ClassReflection */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection */
-static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Stmt\ClassMethod */
+static pgrt::GetterSite pg_site_0; /* getter_getAttributes_0 */
+static pgrt::ClassSite pg_site_1; /* cls_PhpParser\NodeAbstract */
+static pt_method_site pg_site_2; /* method_getAttributes_2 */
+static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Stmt */
+static pt_method_site pg_site_4; /* bound_PhpParser\Node\Stmt::__construct */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Reflection\ClassReflection */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection */
+static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Stmt\ClassMethod */
 
 namespace pgen::InClassMethodNode {
 
@@ -34,14 +36,21 @@ namespace pgen::InClassMethodNode {
 	zval o3_raw = o3.take();
 	pgrt::writeSlot(self, ptdecl::InClassMethodNode::slot::originalNode, &o3_raw);
 	 {
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_originalNode, "getAttributes", "getattributes", 13, 0, NULL, r4.raw(), NULL))) return false;
-		zval av5[1];
-		ZVAL_COPY_VALUE(&av5[0], r4.raw());
-		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_1, "PhpParser\\Node\\Stmt", 19);
-		if (UNEXPECTED(ce6 == NULL)) return false;
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callBound(pg_site_2, ce6, self, "__construct", 11, 1, av5, r7.raw(), NULL))) return false;
+		zval *gs4 = Z_TYPE_P(p_originalNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_0, Z_OBJ_P(p_originalNode), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\NodeAbstract", 22), "getattributes", 13, "attributes", 10) : NULL;
+		zv::Val r5;
+		if (EXPECTED(gs4 != NULL)) {
+			ZVAL_COPY(r5.raw(), gs4);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_originalNode, "getAttributes", "getattributes", 13, 0, NULL, r5.raw()))) return false;
+		}
+		}
+		zval av6[1];
+		ZVAL_COPY_VALUE(&av6[0], r5.raw());
+		zend_class_entry *ce7 = pgrt::lookupClass(pg_site_3, "PhpParser\\Node\\Stmt", 19);
+		if (UNEXPECTED(ce7 == NULL)) return false;
+		zv::Val r8;
+		if (UNEXPECTED(!pgrt::callBound(pg_site_4, ce7, self, "__construct", 11, 1, av6, r8.raw(), NULL))) return false;
 	}
 	return true;
 }
@@ -134,9 +143,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InClassMethodNode)
 			Z_PARAM_OBJECT(p_methodReflection)
 			Z_PARAM_OBJECT(p_originalNode)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_classReflection != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
-		if (p_methodReflection != NULL && UNEXPECTED(!((Z_TYPE_P(p_methodReflection) == IS_OBJECT && Z_OBJCE_P(p_methodReflection) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
-		if (p_originalNode != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Stmt\\ClassMethod", 31)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassMethod", zend_zval_value_name(p_originalNode)); RETURN_THROWS(); }
+		if (p_classReflection != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
+		if (p_methodReflection != NULL && UNEXPECTED(!((Z_TYPE_P(p_methodReflection) == IS_OBJECT && Z_OBJCE_P(p_methodReflection) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
+		if (p_originalNode != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Stmt\\ClassMethod", 31)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassMethod", zend_zval_value_name(p_originalNode)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::InClassMethodNode::m___construct(Z_OBJ_P(ZEND_THIS), p_classReflection, p_methodReflection, p_originalNode))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\InClassMethodNode::getClassReflection() */

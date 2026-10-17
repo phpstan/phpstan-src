@@ -34,27 +34,34 @@ namespace pgen::ApiRuleHelper {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getNamespace", "getnamespace", 12, 0, NULL, r1.raw(), NULL))) return false;
+		zend_class_entry *rc2 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+		if (rc2 == pt_ce_mutating_scope) {
+			r1 = pt_mutating_scope_get_namespace(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r1.isUndef())) return false;
+		}
+		else {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getNamespace", "getnamespace", 12, 0, NULL, r1.raw()))) return false;
+		}
 		l_scopeNamespace = std::move(r1);
 	}
 	 {
 		if (Z_TYPE_P(l_scopeNamespace.raw()) == IS_NULL) {
 			 {
-				bool r2;
-				if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), p_namespace, &r2))) return false;
-				*ret = r2;
+				bool r3;
+				if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), p_namespace, &r3))) return false;
+				*ret = r3;
 				return true;
 			}
 		}
 	}
 	 {
-		bool r3;
-		if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), l_scopeNamespace.raw(), &r3))) return false;
-		if (r3) {
+		bool r4;
+		if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), l_scopeNamespace.raw(), &r4))) return false;
+		if (r4) {
 			 {
-				bool r4;
-				if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), p_namespace, &r4))) return false;
-				if (!(r4)) {
+				bool r5;
+				if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), p_namespace, &r5))) return false;
+				if (!(r5)) {
 					 {
 						*ret = false;
 						return true;
@@ -64,53 +71,60 @@ namespace pgen::ApiRuleHelper {
 			 {
 				if (!(Z_TYPE_P(p_declaringFile) == IS_NULL)) {
 					 {
-						zv::Val r5;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getFile", "getfile", 7, 0, NULL, r5.raw(), NULL))) return false;
-						l_scopeFile = std::move(r5);
+						zv::Val r6;
+						zend_class_entry *rc7 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+						if (rc7 == pt_ce_mutating_scope) {
+							r6 = pt_mutating_scope_get_file(Z_OBJ_P(p_scope));
+							if (UNEXPECTED(r6.isUndef())) return false;
+						}
+						else {
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getFile", "getfile", 7, 0, NULL, r6.raw()))) return false;
+						}
+						l_scopeFile = std::move(r6);
 					}
 					 {
-						zval av6[1];
-						ZVAL_COPY_VALUE(&av6[0], l_scopeFile.raw());
-						zv::Val r7;
-						if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "dirname", 7, pt_ce_api_rule_helper, 1, av6, r7.raw(), NULL))) return false;
-						l_dir = std::move(r7);
-					}
-					 {
-						zval n8_raw;
-						if (UNEXPECTED(object_init_ex(&n8_raw, pt_ce_parent_directory_relative_path_helper) != SUCCESS)) return false;
-						zv::Val n8 = zv::Val::adopt(n8_raw);
-						if (UNEXPECTED(!pgen::ParentDirectoryRelativePathHelper::m___construct(Z_OBJ_P(n8.raw()), l_dir.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n8.raw())); return false; }
-						l_helper = std::move(n8);
-					}
-					 {
+						zval av8[1];
+						ZVAL_COPY_VALUE(&av8[0], l_scopeFile.raw());
 						zv::Val r9;
-						if (UNEXPECTED(!pgen::ParentDirectoryRelativePathHelper::m_getFilenameParts(Z_OBJ_P(l_helper.raw()), p_declaringFile, r9.raw()))) return false;
-						l_pathParts = std::move(r9);
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "dirname", 7, pt_ce_api_rule_helper, 1, av8, r9.raw(), NULL))) return false;
+						l_dir = std::move(r9);
 					}
 					 {
-						zv::Val r10;
-						if (UNEXPECTED(!pgen::ApiRuleHelper::m_createAbsoluteDirectories(Z_OBJ_P(&this_zv), l_dir.raw(), l_pathParts.raw(), r10.raw()))) return false;
-						l_directories = std::move(r10);
+						zval n10_raw;
+						if (UNEXPECTED(object_init_ex(&n10_raw, pt_ce_parent_directory_relative_path_helper) != SUCCESS)) return false;
+						zv::Val n10 = zv::Val::adopt(n10_raw);
+						if (UNEXPECTED(!pgen::ParentDirectoryRelativePathHelper::m___construct(Z_OBJ_P(n10.raw()), l_dir.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n10.raw())); return false; }
+						l_helper = std::move(n10);
 					}
 					 {
-						zv::Val a12 = zv::Val::copyOf(zv::Ref(l_directories.raw()).deref());
-						HashTable *ht11 = Z_ARRVAL_P(a12.raw());
-						zval *v13;
-						zend_ulong n14;
-						zend_string *s15;
-						ZEND_HASH_FOREACH_KEY_VAL(ht11, n14, s15, v13) {
-							(void) n14; (void) s15;
-							l_directory = zv::Ref(v13).deref().raw();
+						zv::Val r11;
+						if (UNEXPECTED(!pgen::ParentDirectoryRelativePathHelper::m_getFilenameParts(Z_OBJ_P(l_helper.raw()), p_declaringFile, r11.raw()))) return false;
+						l_pathParts = std::move(r11);
+					}
+					 {
+						zv::Val r12;
+						if (UNEXPECTED(!pgen::ApiRuleHelper::m_createAbsoluteDirectories(Z_OBJ_P(&this_zv), l_dir.raw(), l_pathParts.raw(), r12.raw()))) return false;
+						l_directories = std::move(r12);
+					}
+					 {
+						zv::Val a14 = zv::Val::copyOf(zv::Ref(l_directories.raw()).deref());
+						HashTable *ht13 = Z_ARRVAL_P(a14.raw());
+						zval *v15;
+						zend_ulong n16;
+						zend_string *s17;
+						ZEND_HASH_FOREACH_KEY_VAL(ht13, n16, s17, v15) {
+							(void) n16; (void) s17;
+							l_directory = zv::Ref(v15).deref().raw();
 							 {
 								 {
-									zval av18[2];
-									ZVAL_COPY_VALUE(&av18[0], l_directory);
-									zval z19;
-									ZVAL_LONG(&z19, 2);
-									ZVAL_COPY_VALUE(&av18[1], &z19);
-									zv::Val r20;
-									if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "pathinfo", 8, pt_ce_api_rule_helper, 2, av18, r20.raw(), NULL))) return false;
-									if (zend_is_identical(r20.raw(), &pg_lit[0])) {
+									zval av20[2];
+									ZVAL_COPY_VALUE(&av20[0], l_directory);
+									zval z21;
+									ZVAL_LONG(&z21, 2);
+									ZVAL_COPY_VALUE(&av20[1], &z21);
+									zv::Val r22;
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "pathinfo", 8, pt_ce_api_rule_helper, 2, av20, r22.raw(), NULL))) return false;
+									if (zend_is_identical(r22.raw(), &pg_lit[0])) {
 										 {
 											*ret = true;
 											return true;
@@ -130,9 +144,9 @@ namespace pgen::ApiRuleHelper {
 		}
 	}
 	 {
-		bool r21;
-		if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), p_namespace, &r21))) return false;
-		*ret = r21;
+		bool r23;
+		if (UNEXPECTED(!pgen::ApiRuleHelper::m_isPhpStanName(Z_OBJ_P(&this_zv), p_namespace, &r23))) return false;
+		*ret = r23;
 		return true;
 	}
 }

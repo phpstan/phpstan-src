@@ -868,11 +868,18 @@ namespace pgen::ClassConstFetchHandler {
 							if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_class_const_fetch_handler, "class", 5, o11.raw()))) return false;
 							p10 = o11.raw();
 						}
-						zval av12[1];
-						ZVAL_COPY_VALUE(&av12[0], zv::Ref(p10).deref().raw());
-						zv::Val r13;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_47, p_scope, "resolveName", "resolvename", 11, 1, av12, r13.raw(), NULL))) return false;
-						zv::Val o14 = zv::Val::copyOf(zv::Ref(r13.raw()));
+						zv::Val r12;
+						if (EXPECTED(Z_TYPE_P(p_scope) == IS_OBJECT && Z_OBJCE_P(p_scope) == pt_ce_mutating_scope)) {
+							r12 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p10).deref().raw()));
+							if (UNEXPECTED(r12.isUndef())) return false;
+						} else {
+						 {
+							zval av13[1];
+							ZVAL_COPY_VALUE(&av13[0], zv::Ref(p10).deref().raw());
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_47, p_scope, "resolveName", "resolvename", 11, 1, av13, r12.raw()))) return false;
+						}
+						}
+						zv::Val o14 = zv::Val::copyOf(zv::Ref(r12.raw()));
 						zval *w15 = zv::Ref(l_classNames.raw()).deref().raw();
 						if (Z_TYPE_P(w15) <= IS_NULL) { zval_ptr_dtor(w15); array_init(w15); } else if (UNEXPECTED(Z_TYPE_P(w15) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 						SEPARATE_ARRAY(w15);
@@ -982,11 +989,18 @@ namespace pgen::ClassConstFetchHandler {
 									if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_class_const_fetch_handler, "class", 5, o36.raw()))) return false;
 									p35 = o36.raw();
 								}
-								zval av37[1];
-								ZVAL_COPY_VALUE(&av37[0], zv::Ref(p35).deref().raw());
-								zv::Val r38;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "resolveName", "resolvename", 11, 1, av37, r38.raw(), NULL))) return false;
-								l_className = std::move(r38);
+								zv::Val r37;
+								if (EXPECTED(Z_TYPE_P(p_scope) == IS_OBJECT && Z_OBJCE_P(p_scope) == pt_ce_mutating_scope)) {
+									r37 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p35).deref().raw()));
+									if (UNEXPECTED(r37.isUndef())) return false;
+								} else {
+								 {
+									zval av38[1];
+									ZVAL_COPY_VALUE(&av38[0], zv::Ref(p35).deref().raw());
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_scope, "resolveName", "resolvename", 11, 1, av38, r37.raw()))) return false;
+								}
+								}
+								l_className = std::move(r37);
 							}
 							 {
 								zval *p39 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstFetchHandler::slot::reflectionProvider, "reflectionProvider");

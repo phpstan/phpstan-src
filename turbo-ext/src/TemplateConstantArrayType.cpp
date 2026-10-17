@@ -9,18 +9,19 @@ zend_class_entry *pt_ce_template_constant_array_type = nullptr;
 
 static pt_method_site pg_site_0; /* method_getKeyTypes_0 */
 static pt_method_site pg_site_1; /* method_getValueTypes_1 */
-static pt_method_site pg_site_2; /* method_getNextAutoIndexes_2 */
-static pt_method_site pg_site_3; /* method_getOptionalKeys_3 */
-static pt_method_site pg_site_4; /* method_isList_4 */
-static pt_method_site pg_site_5; /* bound_PHPStan\Type\Constant\ConstantArrayType::__construct */
-static pgrt::PropIndexSite pg_site_6; /* slot_default_6 */
-static pgrt::PropIndexSite pg_site_7; /* slot_default_7 */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Type\Generic\TemplateTypeStrategy */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Constant\ConstantArrayType */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Type */
-static pgrt::ClassSite pg_site_13; /* cls_PHPStan\TrinaryLogic */
+static pgrt::GetterSite pg_site_2; /* getter_getNextAutoIndexes_2 */
+static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\Constant\ConstantArrayType */
+static pt_method_site pg_site_4; /* method_getNextAutoIndexes_4 */
+static pt_method_site pg_site_5; /* method_getOptionalKeys_5 */
+static pt_method_site pg_site_6; /* method_isList_6 */
+static pt_method_site pg_site_7; /* bound_PHPStan\Type\Constant\ConstantArrayType::__construct */
+static pgrt::PropIndexSite pg_site_8; /* slot_default_8 */
+static pgrt::PropIndexSite pg_site_9; /* slot_default_9 */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Generic\TemplateTypeStrategy */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Type\Type */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\TrinaryLogic */
 
 namespace pgen::TemplateConstantArrayType {
 
@@ -49,64 +50,71 @@ namespace pgen::TemplateConstantArrayType {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_bound, "getValueTypes", "getvaluetypes", 13, 0, NULL, r2.raw(), NULL))) return false;
 		}
 		}
-		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_bound, "getNextAutoIndexes", "getnextautoindexes", 18, 0, NULL, r3.raw(), NULL))) return false;
+		zval *gs3 = Z_TYPE_P(p_bound) == IS_OBJECT ? pgrt::trivialGetter(pg_site_2, Z_OBJ_P(p_bound), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\Constant\\ConstantArrayType", 39), "getnextautoindexes", 18, "nextAutoIndexes", 15) : NULL;
 		zv::Val r4;
-		if (EXPECTED(Z_TYPE_P(p_bound) == IS_OBJECT)) {
-			r4 = pt_type_op(Z_OBJ_P(p_bound), PT_OP_GET_OPTIONAL_KEYS, 0, NULL);
-			if (UNEXPECTED(r4.isUndef())) return false;
+		if (EXPECTED(gs3 != NULL)) {
+			ZVAL_COPY(r4.raw(), gs3);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_bound, "getOptionalKeys", "getoptionalkeys", 15, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_bound, "getNextAutoIndexes", "getnextautoindexes", 18, 0, NULL, r4.raw()))) return false;
 		}
 		}
 		zv::Val r5;
 		if (EXPECTED(Z_TYPE_P(p_bound) == IS_OBJECT)) {
-			r5 = pt_type_op(Z_OBJ_P(p_bound), PT_OP_IS_LIST, 0, NULL);
+			r5 = pt_type_op(Z_OBJ_P(p_bound), PT_OP_GET_OPTIONAL_KEYS, 0, NULL);
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_bound, "isList", "islist", 6, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_bound, "getOptionalKeys", "getoptionalkeys", 15, 0, NULL, r5.raw(), NULL))) return false;
 		}
 		}
-		zval av6[5];
-		ZVAL_COPY_VALUE(&av6[0], r1.raw());
-		ZVAL_COPY_VALUE(&av6[1], r2.raw());
-		ZVAL_COPY_VALUE(&av6[2], r3.raw());
-		ZVAL_COPY_VALUE(&av6[3], r4.raw());
-		ZVAL_COPY_VALUE(&av6[4], r5.raw());
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callBound(pg_site_5, pt_ce_constant_array_type, self, "__construct", 11, 5, av6, r7.raw(), NULL))) return false;
-	}
-	 {
-		zval o8;
-		ZVAL_COPY(&o8, p_scope);
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::scope, &o8);
+		zv::Val r6;
+		if (EXPECTED(Z_TYPE_P(p_bound) == IS_OBJECT)) {
+			r6 = pt_type_op(Z_OBJ_P(p_bound), PT_OP_IS_LIST, 0, NULL);
+			if (UNEXPECTED(r6.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_bound, "isList", "islist", 6, 0, NULL, r6.raw(), NULL))) return false;
+		}
+		}
+		zval av7[5];
+		ZVAL_COPY_VALUE(&av7[0], r1.raw());
+		ZVAL_COPY_VALUE(&av7[1], r2.raw());
+		ZVAL_COPY_VALUE(&av7[2], r4.raw());
+		ZVAL_COPY_VALUE(&av7[3], r5.raw());
+		ZVAL_COPY_VALUE(&av7[4], r6.raw());
+		zv::Val r8;
+		if (UNEXPECTED(!pgrt::callBound(pg_site_7, pt_ce_constant_array_type, self, "__construct", 11, 5, av7, r8.raw(), NULL))) return false;
 	}
 	 {
 		zval o9;
-		ZVAL_COPY(&o9, p_templateTypeStrategy);
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::strategy, &o9);
+		ZVAL_COPY(&o9, p_scope);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::scope, &o9);
 	}
 	 {
 		zval o10;
-		ZVAL_COPY(&o10, p_templateTypeVariance);
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::variance, &o10);
+		ZVAL_COPY(&o10, p_templateTypeStrategy);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::strategy, &o10);
 	}
 	 {
 		zval o11;
-		ZVAL_COPY(&o11, p_name);
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::name, &o11);
+		ZVAL_COPY(&o11, p_templateTypeVariance);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::variance, &o11);
 	}
 	 {
 		zval o12;
-		ZVAL_COPY(&o12, p_bound);
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::bound, &o12);
+		ZVAL_COPY(&o12, p_name);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::name, &o12);
 	}
 	 {
 		zval o13;
-		ZVAL_COPY(&o13, p_default);
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_6, Z_OBJ_P(&this_zv), "default", 7), &o13);
+		ZVAL_COPY(&o13, p_bound);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantArrayType::slot::bound, &o13);
+	}
+	 {
+		zval o14;
+		ZVAL_COPY(&o14, p_default);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_8, Z_OBJ_P(&this_zv), "default", 7), &o14);
 	}
 	return true;
 }
@@ -132,7 +140,7 @@ namespace pgen::TemplateConstantArrayType {
 		zv::Val o9 = zv::Val::copyOf(zv::Ref(p8));
 		zv::Val n10;
 		if (UNEXPECTED(!pt_constant_array_type_new(n10.raw(), p_keyTypes, p_valueTypes, p_nextAutoIndexes, p_optionalKeys, (Z_TYPE_P(p_isList) == IS_NULL ? NULL : p_isList), (Z_TYPE_P(p_unsealed) == IS_NULL ? NULL : p_unsealed)))) return false;
-		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_7, Z_OBJ_P(&this_zv), "default", 7), "default");
+		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_9, Z_OBJ_P(&this_zv), "default", 7), "default");
 		if (UNEXPECTED(p11 == NULL)) return false;
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_template_constant_array_type) != SUCCESS)) return false;
@@ -203,12 +211,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateConstantArrayType)
 			Z_PARAM_OBJECT(p_bound)
 			Z_PARAM_OBJECT_OR_NULL(p_default)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!((Z_TYPE_P(p_scope) == IS_OBJECT && Z_OBJCE_P(p_scope) == pt_ce_template_type_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Generic\\TemplateTypeScope", 38))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_templateTypeStrategy != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_templateTypeStrategy, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\Generic\\TemplateTypeStrategy", 41)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeStrategy", zend_zval_value_name(p_templateTypeStrategy)); RETURN_THROWS(); }
-		if (p_templateTypeVariance != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_templateTypeVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_templateTypeVariance, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_templateTypeVariance)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!((Z_TYPE_P(p_scope) == IS_OBJECT && Z_OBJCE_P(p_scope) == pt_ce_template_type_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Type\\Generic\\TemplateTypeScope", 38))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_templateTypeStrategy != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_templateTypeStrategy, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Generic\\TemplateTypeStrategy", 41)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeStrategy", zend_zval_value_name(p_templateTypeStrategy)); RETURN_THROWS(); }
+		if (p_templateTypeVariance != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_templateTypeVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_templateTypeVariance, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_templateTypeVariance)); RETURN_THROWS(); }
 		if (p_name_str != NULL) { ZVAL_STR(&p_name_zv, p_name_str); p_name = &p_name_zv; }
-		if (p_bound != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_bound, pt_ce_constant_array_type) || pgrt::instanceOfClass(p_bound, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Constant\\ConstantArrayType", 39))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Type\\Constant\\ConstantArrayType", zend_zval_value_name(p_bound)); RETURN_THROWS(); }
-		if (p_default != NULL && UNEXPECTED(!(Z_TYPE_P(p_default) == IS_NULL || pgrt::instanceOfClass(p_default, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_default)); RETURN_THROWS(); }
+		if (p_bound != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_bound, pt_ce_constant_array_type) || pgrt::instanceOfClass(p_bound, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\Constant\\ConstantArrayType", 39))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Type\\Constant\\ConstantArrayType", zend_zval_value_name(p_bound)); RETURN_THROWS(); }
+		if (p_default != NULL && UNEXPECTED(!(Z_TYPE_P(p_default) == IS_NULL || pgrt::instanceOfClass(p_default, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_default)); RETURN_THROWS(); }
 		if (p_default == NULL) p_default = &p_default_null;
 		if (UNEXPECTED(!pgen::TemplateConstantArrayType::m___construct(Z_OBJ_P(ZEND_THIS), p_scope, p_templateTypeStrategy, p_templateTypeVariance, p_name, p_bound, p_default))) RETURN_THROWS();
 	});
@@ -231,7 +239,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateConstantArrayType)
 			Z_PARAM_OBJECT_OR_NULL(p_isList)
 			Z_PARAM_ARRAY_OR_NULL(p_unsealed)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_isList != NULL && UNEXPECTED(!(Z_TYPE_P(p_isList) == IS_NULL || ((Z_TYPE_P(p_isList) == IS_OBJECT && Z_OBJCE_P(p_isList) == pt_ce_trinary) || pgrt::instanceOfClass(p_isList, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\TrinaryLogic", 20)))))) { zend_argument_type_error(5, "must be of type %s, %s given", "?PHPStan\\TrinaryLogic", zend_zval_value_name(p_isList)); RETURN_THROWS(); }
+		if (p_isList != NULL && UNEXPECTED(!(Z_TYPE_P(p_isList) == IS_NULL || ((Z_TYPE_P(p_isList) == IS_OBJECT && Z_OBJCE_P(p_isList) == pt_ce_trinary) || pgrt::instanceOfClass(p_isList, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\TrinaryLogic", 20)))))) { zend_argument_type_error(5, "must be of type %s, %s given", "?PHPStan\\TrinaryLogic", zend_zval_value_name(p_isList)); RETURN_THROWS(); }
 		if (p_isList == NULL) p_isList = &p_isList_null;
 		if (p_unsealed == NULL) p_unsealed = &p_unsealed_null;
 		ZVAL_UNDEF(return_value);

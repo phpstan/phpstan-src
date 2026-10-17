@@ -9,10 +9,11 @@ zend_class_entry *pt_ce_noop_expression_node = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getAttributes_0 */
+static pgrt::GetterSite pg_site_0; /* getter_getAttributes_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_2; /* bound_PhpParser\NodeAbstract::__construct */
-static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr */
+static pt_method_site pg_site_2; /* method_getAttributes_2 */
+static pt_method_site pg_site_3; /* bound_PhpParser\NodeAbstract::__construct */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr */
 
 namespace pgen::NoopExpressionNode {
 
@@ -31,14 +32,21 @@ namespace pgen::NoopExpressionNode {
 	 {
 		zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NoopExpressionNode::slot::originalExpr, "originalExpr");
 		if (UNEXPECTED(p3 == NULL)) return false;
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p3, "getAttributes", "getattributes", 13, 0, NULL, r4.raw(), NULL))) return false;
-		zval av5[1];
-		ZVAL_COPY_VALUE(&av5[0], r4.raw());
-		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_1, "PhpParser\\NodeAbstract", 22);
-		if (UNEXPECTED(ce6 == NULL)) return false;
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callBound(pg_site_2, ce6, self, "__construct", 11, 1, av5, r7.raw(), NULL))) return false;
+		zval *gs4 = Z_TYPE_P(p3) == IS_OBJECT ? pgrt::trivialGetter(pg_site_0, Z_OBJ_P(p3), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\NodeAbstract", 22), "getattributes", 13, "attributes", 10) : NULL;
+		zv::Val r5;
+		if (EXPECTED(gs4 != NULL)) {
+			ZVAL_COPY(r5.raw(), gs4);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p3, "getAttributes", "getattributes", 13, 0, NULL, r5.raw()))) return false;
+		}
+		}
+		zval av6[1];
+		ZVAL_COPY_VALUE(&av6[0], r5.raw());
+		zend_class_entry *ce7 = pgrt::lookupClass(pg_site_1, "PhpParser\\NodeAbstract", 22);
+		if (UNEXPECTED(ce7 == NULL)) return false;
+		zv::Val r8;
+		if (UNEXPECTED(!pgrt::callBound(pg_site_3, ce7, self, "__construct", 11, 1, av6, r8.raw(), NULL))) return false;
 	}
 	return true;
 }
@@ -115,7 +123,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NoopExpressionNode)
 			Z_PARAM_OBJECT(p_originalExpr)
 			Z_PARAM_BOOL(p_hasAssign)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_originalExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalExpr, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_originalExpr)); RETURN_THROWS(); }
+		if (p_originalExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalExpr, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_originalExpr)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::NoopExpressionNode::m___construct(Z_OBJ_P(ZEND_THIS), p_originalExpr, p_hasAssign))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\NoopExpressionNode::getOriginalExpr() */

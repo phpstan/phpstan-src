@@ -416,65 +416,72 @@ namespace pgen::InvalidCastRule {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_invalid_cast_rule, "expr", 4, o37.raw()))) return false;
 					p36 = o37.raw();
 				}
-				zval av38[1];
-				ZVAL_COPY_VALUE(&av38[0], zv::Ref(p36).deref().raw());
-				zv::Val r39;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_scope, "getType", "gettype", 7, 1, av38, r39.raw(), NULL))) return false;
-				zval *vl40_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_VALUE);
-				if (UNEXPECTED(vl40_p == NULL)) return false;
-				zv::Val vl40 = zv::Val::copyOf(zv::Ref(vl40_p));
-				zval av41[1];
-				ZVAL_COPY_VALUE(&av41[0], vl40.raw());
-				zv::Val r42;
-				if (EXPECTED(Z_TYPE_P(r39.raw()) == IS_OBJECT)) {
-					r42 = pt_type_op(Z_OBJ_P(r39.raw()), PT_OP_DESCRIBE, 1, av41);
-					if (UNEXPECTED(r42.isUndef())) return false;
+				zv::Val r38;
+				zend_class_entry *rc39 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+				if (rc39 == pt_ce_mutating_scope) {
+					r38 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p36).deref().raw());
+					if (UNEXPECTED(r38.isUndef())) return false;
+				}
+				else {
+					zval av40[1];
+					ZVAL_COPY_VALUE(&av40[0], zv::Ref(p36).deref().raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_scope, "getType", "gettype", 7, 1, av40, r38.raw()))) return false;
+				}
+				zval *vl41_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_VALUE);
+				if (UNEXPECTED(vl41_p == NULL)) return false;
+				zv::Val vl41 = zv::Val::copyOf(zv::Ref(vl41_p));
+				zval av42[1];
+				ZVAL_COPY_VALUE(&av42[0], vl41.raw());
+				zv::Val r43;
+				if (EXPECTED(Z_TYPE_P(r38.raw()) == IS_OBJECT)) {
+					r43 = pt_type_op(Z_OBJ_P(r38.raw()), PT_OP_DESCRIBE, 1, av42);
+					if (UNEXPECTED(r43.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, r39.raw(), "describe", "describe", 8, 1, av41, r42.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, r38.raw(), "describe", "describe", 8, 1, av42, r43.raw(), NULL))) return false;
 				}
 				}
-				pgrt::StringBuilder sb43;
-				sb43.appendLiteral("Cannot cast ", 12);
-				if (UNEXPECTED(!sb43.append(r42.raw()))) return false;
-				sb43.appendLiteral(" to ", 4);
-				if (UNEXPECTED(!sb43.append(l_shortName.raw()))) return false;
-				sb43.appendLiteral(".", 1);
-				zv::Val r44 = sb43.finish();
-				zval av45[1];
-				ZVAL_COPY_VALUE(&av45[0], r44.raw());
-				zend_class_entry *ce46 = pgrt::lookupClass(pg_site_19, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-				if (UNEXPECTED(ce46 == NULL)) return false;
-				zv::Val r47;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_20, ce46, "message", 7, 1, av45, r47.raw(), NULL))) return false;
-				pgrt::StringBuilder sb48;
-				sb48.appendLiteral("cast.", 5);
-				if (UNEXPECTED(!sb48.append(l_castIdentifier.raw()))) return false;
-				zv::Val r49 = sb48.finish();
-				zval av50[1];
-				ZVAL_COPY_VALUE(&av50[0], r49.raw());
-				zv::Val r51;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_21, r47.raw(), "identifier", "identifier", 10, 1, av50, r51.raw(), NULL))) return false;
+				pgrt::StringBuilder sb44;
+				sb44.appendLiteral("Cannot cast ", 12);
+				if (UNEXPECTED(!sb44.append(r43.raw()))) return false;
+				sb44.appendLiteral(" to ", 4);
+				if (UNEXPECTED(!sb44.append(l_shortName.raw()))) return false;
+				sb44.appendLiteral(".", 1);
+				zv::Val r45 = sb44.finish();
+				zval av46[1];
+				ZVAL_COPY_VALUE(&av46[0], r45.raw());
+				zend_class_entry *ce47 = pgrt::lookupClass(pg_site_19, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+				if (UNEXPECTED(ce47 == NULL)) return false;
+				zv::Val r48;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_20, ce47, "message", 7, 1, av46, r48.raw(), NULL))) return false;
+				pgrt::StringBuilder sb49;
+				sb49.appendLiteral("cast.", 5);
+				if (UNEXPECTED(!sb49.append(l_castIdentifier.raw()))) return false;
+				zv::Val r50 = sb49.finish();
+				zval av51[1];
+				ZVAL_COPY_VALUE(&av51[0], r50.raw());
 				zv::Val r52;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_22, p_node, "getStartLine", "getstartline", 12, 0, NULL, r52.raw(), NULL))) return false;
-				zval av53[1];
-				zval z54;
-				ZVAL_LONG(&z54, Z_LVAL_P(r52.raw()));
-				ZVAL_COPY_VALUE(&av53[0], &z54);
-				zv::Val r55;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_23, r51.raw(), "line", "line", 4, 1, av53, r55.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_21, r48.raw(), "identifier", "identifier", 10, 1, av51, r52.raw(), NULL))) return false;
+				zv::Val r53;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_22, p_node, "getStartLine", "getstartline", 12, 0, NULL, r53.raw(), NULL))) return false;
+				zval av54[1];
+				zval z55;
+				ZVAL_LONG(&z55, Z_LVAL_P(r53.raw()));
+				ZVAL_COPY_VALUE(&av54[0], &z55);
 				zv::Val r56;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_24, r55.raw(), "build", "build", 5, 0, NULL, r56.raw(), NULL))) return false;
-				{ zval v = r56.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr35.raw()), &v); }
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_23, r52.raw(), "line", "line", 4, 1, av54, r56.raw(), NULL))) return false;
+				zv::Val r57;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_24, r56.raw(), "build", "build", 5, 0, NULL, r57.raw(), NULL))) return false;
+				{ zval v = r57.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr35.raw()), &v); }
 				*ret = arr35.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval arr57_raw;
-		ZVAL_EMPTY_ARRAY(&arr57_raw);
-		ZVAL_COPY(ret, &arr57_raw);
+		zval arr58_raw;
+		ZVAL_EMPTY_ARRAY(&arr58_raw);
+		ZVAL_COPY(ret, &arr58_raw);
 		return true;
 	}
 }

@@ -119,72 +119,79 @@ namespace pgen::UnusedFunctionParametersRule {
 	}
 	 {
 		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getFunction", "getfunction", 11, 0, NULL, r12.raw(), NULL))) return false;
+		zend_class_entry *rc13 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+		if (rc13 == pt_ce_mutating_scope) {
+			r12 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r12.isUndef())) return false;
+		}
+		else {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getFunction", "getfunction", 11, 0, NULL, r12.raw()))) return false;
+		}
 		l_function = std::move(r12);
 	}
 	 {
 		if (Z_TYPE_P(l_function.raw()) == IS_NULL) {
 			 {
-				zval arr13_raw;
-				ZVAL_EMPTY_ARRAY(&arr13_raw);
-				ZVAL_COPY(ret, &arr13_raw);
+				zval arr14_raw;
+				ZVAL_EMPTY_ARRAY(&arr14_raw);
+				ZVAL_COPY(ret, &arr14_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p14 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::UnusedFunctionParametersRule::slot::check, "check");
-		if (UNEXPECTED(p14 == NULL)) return false;
-		zv::Val o15 = zv::Val::copyOf(zv::Ref(p14));
-		zv::Val o16 = zv::Val::copyOf(zv::Ref(l_function.raw()));
-		zv::Val o18;
-		zval *p17 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_5, Z_OBJ_P(l_originalNode.raw()), "params", 6) : NULL;
-		if (UNEXPECTED(p17 == NULL || Z_ISUNDEF_P(p17))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_unused_function_parameters_rule, "params", 6, o18.raw()))) return false;
-			p17 = o18.raw();
+		zval *p15 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::UnusedFunctionParametersRule::slot::check, "check");
+		if (UNEXPECTED(p15 == NULL)) return false;
+		zv::Val o16 = zv::Val::copyOf(zv::Ref(p15));
+		zv::Val o17 = zv::Val::copyOf(zv::Ref(l_function.raw()));
+		zv::Val o19;
+		zval *p18 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_5, Z_OBJ_P(l_originalNode.raw()), "params", 6) : NULL;
+		if (UNEXPECTED(p18 == NULL || Z_ISUNDEF_P(p18))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_unused_function_parameters_rule, "params", 6, o19.raw()))) return false;
+			p18 = o19.raw();
 		}
-		zv::Val o19 = zv::Val::copyOf(zv::Ref(zv::Ref(p17).deref().raw()));
-		zv::Val r20;
-		if (EXPECTED(Z_TYPE_P(l_function.raw()) == IS_OBJECT)) {
-			r20 = pt_type_op(Z_OBJ_P(l_function.raw()), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r20.isUndef())) return false;
-		} else {
-		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_function.raw(), "getName", "getname", 7, 0, NULL, r20.raw(), NULL))) return false;
-		}
-		}
+		zv::Val o20 = zv::Val::copyOf(zv::Ref(zv::Ref(p18).deref().raw()));
 		zv::Val r21;
-		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(r20.raw(), r21.raw()))) return false;
-		pgrt::StringBuilder sb22;
-		sb22.appendLiteral("Function ", 9);
-		if (UNEXPECTED(!sb22.append(r21.raw()))) return false;
-		sb22.appendLiteral("() has an unused parameter $", 28);
-		sb22.appendLiteral("%", 1);
-		sb22.appendLiteral("s.", 2);
-		zv::Val r23 = sb22.finish();
-		bool k24 = true;
-		zv::Val r25;
 		if (EXPECTED(Z_TYPE_P(l_function.raw()) == IS_OBJECT)) {
-			r25 = pt_type_op(Z_OBJ_P(l_function.raw()), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r25.isUndef())) return false;
+			r21 = pt_type_op(Z_OBJ_P(l_function.raw()), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r21.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_function.raw(), "getName", "getname", 7, 0, NULL, r25.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_function.raw(), "getName", "getname", 7, 0, NULL, r21.raw(), NULL))) return false;
 		}
 		}
+		zv::Val r22;
+		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(r21.raw(), r22.raw()))) return false;
+		pgrt::StringBuilder sb23;
+		sb23.appendLiteral("Function ", 9);
+		if (UNEXPECTED(!sb23.append(r22.raw()))) return false;
+		sb23.appendLiteral("() has an unused parameter $", 28);
+		sb23.appendLiteral("%", 1);
+		sb23.appendLiteral("s.", 2);
+		zv::Val r24 = sb23.finish();
+		bool k25 = true;
 		zv::Val r26;
-		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(r25.raw(), r26.raw()))) return false;
-		pgrt::StringBuilder sb27;
-		sb27.appendLiteral("Function ", 9);
-		if (UNEXPECTED(!sb27.append(r26.raw()))) return false;
-		sb27.appendLiteral("() has a parameter $", 20);
-		sb27.appendLiteral("%", 1);
-		sb27.appendLiteral("s that only flows into values that are never used.", 50);
-		zv::Val r28 = sb27.finish();
+		if (EXPECTED(Z_TYPE_P(l_function.raw()) == IS_OBJECT)) {
+			r26 = pt_type_op(Z_OBJ_P(l_function.raw()), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r26.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_function.raw(), "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+		}
+		}
+		zv::Val r27;
+		if (UNEXPECTED(!pgen::SprintfHelper::m_escapeFormatString(r26.raw(), r27.raw()))) return false;
+		pgrt::StringBuilder sb28;
+		sb28.appendLiteral("Function ", 9);
+		if (UNEXPECTED(!sb28.append(r27.raw()))) return false;
+		sb28.appendLiteral("() has a parameter $", 20);
+		sb28.appendLiteral("%", 1);
+		sb28.appendLiteral("s that only flows into values that are never used.", 50);
+		zv::Val r29 = sb28.finish();
 		if (UNEXPECTED(!((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_variable_writes_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Node\\VariableWritesNode", 31))))) { pgrt::throwArgumentType("PHPStan\\Rules\\UnusedParametersCheck::getUnusedParameterErrors", 1, "node", "PHPStan\\Node\\VariableWritesNode", p_node); return false; }
-		zv::Val r29;
-		if (UNEXPECTED(!pgen::UnusedParametersCheck::m_getUnusedParameterErrors(Z_OBJ_P(o15.raw()), p_node, o16.raw(), o19.raw(), r23.raw(), &pg_lit[1], k24, r28.raw(), &pg_lit[2], r29.raw()))) return false;
-		*ret = r29.take();
+		zv::Val r30;
+		if (UNEXPECTED(!pgen::UnusedParametersCheck::m_getUnusedParameterErrors(Z_OBJ_P(o16.raw()), p_node, o17.raw(), o20.raw(), r24.raw(), &pg_lit[1], k25, r29.raw(), &pg_lit[2], r30.raw()))) return false;
+		*ret = r30.take();
 		return true;
 	}
 }

@@ -9,10 +9,13 @@ zend_class_entry *pt_ce_unresolvable_type_helper = nullptr;
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_2; /* method_getReason_2 */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\NeverType */
-static pt_method_site pg_site_4; /* method_isExplicit_4 */
-static pt_method_site pg_site_5; /* method_getReason_5 */
+static pgrt::GetterSite pg_site_2; /* getter_getReason_2 */
+static pt_method_site pg_site_3; /* method_getReason_3 */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\NeverType */
+static pgrt::GetterSite pg_site_5; /* getter_isExplicit_5 */
+static pt_method_site pg_site_6; /* method_isExplicit_6 */
+static pgrt::GetterSite pg_site_7; /* getter_getReason_7 */
+static pt_method_site pg_site_8; /* method_getReason_8 */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -41,62 +44,83 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				zv::Ref(zv::Ref(&captures[0]).deref().raw()).assign(std::move(o2));
 			}
 			 {
-				zv::Val r3;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_type, "getReason", "getreason", 9, 0, NULL, r3.raw(), NULL))) return;
-				l_reason = std::move(r3);
+				zval *gs3 = Z_TYPE_P(p_type) == IS_OBJECT ? pgrt::trivialGetter(pg_site_2, Z_OBJ_P(p_type), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\ErrorType", 22), "getreason", 9, "reason", 6) : NULL;
+				zv::Val r4;
+				if (EXPECTED(gs3 != NULL)) {
+					ZVAL_COPY(r4.raw(), gs3);
+				} else {
+				 {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_type, "getReason", "getreason", 9, 0, NULL, r4.raw()))) return;
+				}
+				}
+				l_reason = std::move(r4);
 			}
 		}
 	}
 	 {
-		bool b4 = (pgrt::instanceOfClass(p_type, pt_ce_never_type) || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\NeverType", 22)));
-		if (b4) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_type, "isExplicit", "isexplicit", 10, 0, NULL, r5.raw(), NULL))) return;
-			b4 = !((Z_TYPE_P(r5.raw()) == IS_TRUE));
-		}
-		if (b4) {
+		bool b5 = (pgrt::instanceOfClass(p_type, pt_ce_never_type) || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\NeverType", 22)));
+		if (b5) {
+			zval *gs6 = Z_TYPE_P(p_type) == IS_OBJECT ? pgrt::trivialGetter(pg_site_5, Z_OBJ_P(p_type), pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\NeverType", 22), "isexplicit", 10, "isExplicit", 10) : NULL;
+			zv::Val r7;
+			if (EXPECTED(gs6 != NULL)) {
+				ZVAL_COPY(r7.raw(), gs6);
+			} else {
 			 {
-				zv::Val o6 = zv::Val::boolean(true);
-				zv::Ref(zv::Ref(&captures[0]).deref().raw()).assign(std::move(o6));
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_type, "isExplicit", "isexplicit", 10, 0, NULL, r7.raw()))) return;
+			}
+			}
+			b5 = !((Z_TYPE_P(r7.raw()) == IS_TRUE));
+		}
+		if (b5) {
+			 {
+				zv::Val o8 = zv::Val::boolean(true);
+				zv::Ref(zv::Ref(&captures[0]).deref().raw()).assign(std::move(o8));
 			}
 			 {
-				zv::Val r7;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_type, "getReason", "getreason", 9, 0, NULL, r7.raw(), NULL))) return;
-				l_reason = std::move(r7);
+				zval *gs9 = Z_TYPE_P(p_type) == IS_OBJECT ? pgrt::trivialGetter(pg_site_7, Z_OBJ_P(p_type), pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\NeverType", 22), "getreason", 9, "reason", 6) : NULL;
+				zv::Val r10;
+				if (EXPECTED(gs9 != NULL)) {
+					ZVAL_COPY(r10.raw(), gs9);
+				} else {
+				 {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_type, "getReason", "getreason", 9, 0, NULL, r10.raw()))) return;
+				}
+				}
+				l_reason = std::move(r10);
 			}
 		}
 	}
 	 {
 		if (!(Z_TYPE_P(l_reason.raw()) == IS_NULL)) {
 			 {
-				zv::Val o8 = zv::Val::copyOf(zv::Ref(l_reason.raw()));
-				zv::Val o9 = zv::Val::copyOf(zv::Ref(l_reason.raw()));
-				zv::Val o10 = zv::Val::copyOf(zv::Ref(o9.raw()));
-				zval *w11 = zv::Ref(&captures[1]).deref().raw();
-				if (Z_TYPE_P(w11) <= IS_NULL) { zval_ptr_dtor(w11); array_init(w11); } else if (UNEXPECTED(Z_TYPE_P(w11) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return; }
-				SEPARATE_ARRAY(w11);
-				zval *e12 = pgrt::dimWrite(w11, o8.raw());
-				if (UNEXPECTED(e12 == NULL)) return;
-				zv::Ref(e12).assign(std::move(o10));
+				zv::Val o11 = zv::Val::copyOf(zv::Ref(l_reason.raw()));
+				zv::Val o12 = zv::Val::copyOf(zv::Ref(l_reason.raw()));
+				zv::Val o13 = zv::Val::copyOf(zv::Ref(o12.raw()));
+				zval *w14 = zv::Ref(&captures[1]).deref().raw();
+				if (Z_TYPE_P(w14) <= IS_NULL) { zval_ptr_dtor(w14); array_init(w14); } else if (UNEXPECTED(Z_TYPE_P(w14) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return; }
+				SEPARATE_ARRAY(w14);
+				zval *e15 = pgrt::dimWrite(w14, o11.raw());
+				if (UNEXPECTED(e15 == NULL)) return;
+				zv::Ref(e15).assign(std::move(o13));
 			}
 		}
 	}
 	 {
-		zv::Val q13;
+		zv::Val q16;
 		if (zend_is_true(zv::Ref(&captures[0]).deref().raw())) {
-			zv::Val o14 = zv::Val::copyOf(zv::Ref(p_type));
-			q13 = std::move(o14);
+			zv::Val o17 = zv::Val::copyOf(zv::Ref(p_type));
+			q16 = std::move(o17);
 		} else {
 		 {
-			zval av15[1];
-			ZVAL_COPY_VALUE(&av15[0], p_type);
-			zv::Val r16;
-			if (UNEXPECTED(!pgrt::callValue(p_traverse, 1, av15, r16.raw(), NULL))) return;
-			q13 = std::move(r16);
+			zval av18[1];
+			ZVAL_COPY_VALUE(&av18[0], p_type);
+			zv::Val r19;
+			if (UNEXPECTED(!pgrt::callValue(p_traverse, 1, av18, r19.raw(), NULL))) return;
+			q16 = std::move(r19);
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(q13.raw(), pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Type", 17))))) { pgrt::throwReturnType("PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper::{closure}", "PHPStan\\Type\\Type", q13.raw()); return; }
-		*return_value = q13.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(q16.raw(), pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Type", 17))))) { pgrt::throwReturnType("PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper::{closure}", "PHPStan\\Type\\Type", q16.raw()); return; }
+		*return_value = q16.take();
 		return;
 	}
 }

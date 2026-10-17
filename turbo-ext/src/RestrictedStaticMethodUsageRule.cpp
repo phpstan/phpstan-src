@@ -222,313 +222,320 @@ namespace pgen::RestrictedStaticMethodUsageRule {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_restricted_static_method_usage_rule, "class", 5, o19.raw()))) return false;
 					p18 = o19.raw();
 				}
-				zval av20[1];
-				ZVAL_COPY_VALUE(&av20[0], zv::Ref(p18).deref().raw());
-				zv::Val r21;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_scope, "resolveName", "resolvename", 11, 1, av20, r21.raw(), NULL))) return false;
-				zv::Val o22 = zv::Val::copyOf(zv::Ref(r21.raw()));
-				zval *w23 = zv::Ref(l_referencedClasses.raw()).deref().raw();
-				if (Z_TYPE_P(w23) <= IS_NULL) { zval_ptr_dtor(w23); array_init(w23); } else if (UNEXPECTED(Z_TYPE_P(w23) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w23);
-				{ zval v = o22.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w23), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+				zv::Val r20;
+				zend_class_entry *rc21 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+				if (rc21 == pt_ce_mutating_scope) {
+					r20 = pt_mutating_scope_resolve_name(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p18).deref().raw()));
+					if (UNEXPECTED(r20.isUndef())) return false;
+				}
+				else {
+					zval av22[1];
+					ZVAL_COPY_VALUE(&av22[0], zv::Ref(p18).deref().raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_scope, "resolveName", "resolvename", 11, 1, av22, r20.raw()))) return false;
+				}
+				zv::Val o23 = zv::Val::copyOf(zv::Ref(r20.raw()));
+				zval *w24 = zv::Ref(l_referencedClasses.raw()).deref().raw();
+				if (Z_TYPE_P(w24) <= IS_NULL) { zval_ptr_dtor(w24); array_init(w24); } else if (UNEXPECTED(Z_TYPE_P(w24) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w24);
+				{ zval v = o23.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w24), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 			}
 		} else {
 		 {
 			 {
-				zval *p24 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RestrictedStaticMethodUsageRule::slot::ruleLevelHelper, "ruleLevelHelper");
-				if (UNEXPECTED(p24 == NULL)) return false;
-				zv::Val o25 = zv::Val::copyOf(zv::Ref(p24));
-				zv::Val o27;
-				zval *p26 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_9, Z_OBJ_P(p_node), "class", 5) : NULL;
-				if (UNEXPECTED(p26 == NULL || Z_ISUNDEF_P(p26))) {
-					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_restricted_static_method_usage_rule, "class", 5, o27.raw()))) return false;
-					p26 = o27.raw();
+				zval *p25 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RestrictedStaticMethodUsageRule::slot::ruleLevelHelper, "ruleLevelHelper");
+				if (UNEXPECTED(p25 == NULL)) return false;
+				zv::Val o26 = zv::Val::copyOf(zv::Ref(p25));
+				zv::Val o28;
+				zval *p27 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_9, Z_OBJ_P(p_node), "class", 5) : NULL;
+				if (UNEXPECTED(p27 == NULL || Z_ISUNDEF_P(p27))) {
+					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_restricted_static_method_usage_rule, "class", 5, o28.raw()))) return false;
+					p27 = o28.raw();
 				}
-				zv::Val o28 = zv::Val::copyOf(zv::Ref(zv::Ref(p26).deref().raw()));
-				zval cap29[1];
-				ZVAL_COPY_VALUE(&cap29[0], l_methodName.raw());
-				zv::Val h30 = pt_native_closure_new(&pg_closure_1, 1, cap29, 0u);
-				if (UNEXPECTED(!(pgrt::instanceOfClass(o28.raw(), pgrt::lookupClassQuiet(pg_site_13, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleLevelHelper::findTypeToCheck", 2, "var", "PhpParser\\Node\\Expr", o28.raw()); return false; }
-				zv::Val r31;
-				if (UNEXPECTED(!pgen::RuleLevelHelper::m_findTypeToCheck(Z_OBJ_P(o25.raw()), p_scope, o28.raw(), &pg_lit[1], h30.raw(), r31.raw()))) return false;
-				l_classTypeResult = std::move(r31);
+				zv::Val o29 = zv::Val::copyOf(zv::Ref(zv::Ref(p27).deref().raw()));
+				zval cap30[1];
+				ZVAL_COPY_VALUE(&cap30[0], l_methodName.raw());
+				zv::Val h31 = pt_native_closure_new(&pg_closure_1, 1, cap30, 0u);
+				if (UNEXPECTED(!(pgrt::instanceOfClass(o29.raw(), pgrt::lookupClassQuiet(pg_site_13, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleLevelHelper::findTypeToCheck", 2, "var", "PhpParser\\Node\\Expr", o29.raw()); return false; }
+				zv::Val r32;
+				if (UNEXPECTED(!pgen::RuleLevelHelper::m_findTypeToCheck(Z_OBJ_P(o26.raw()), p_scope, o29.raw(), &pg_lit[1], h31.raw(), r32.raw()))) return false;
+				l_classTypeResult = std::move(r32);
 			}
 			 {
-				zv::Val r32;
-				if (UNEXPECTED(!pgen::FoundTypeResult::m_getType(Z_OBJ_P(l_classTypeResult.raw()), r32.raw()))) return false;
-				if (pgrt::instanceOfClass(r32.raw(), pt_ce_error_type) || pgrt::instanceOfClass(r32.raw(), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\ErrorType", 22))) {
+				zv::Val r33;
+				if (UNEXPECTED(!pgen::FoundTypeResult::m_getType(Z_OBJ_P(l_classTypeResult.raw()), r33.raw()))) return false;
+				if (pgrt::instanceOfClass(r33.raw(), pt_ce_error_type) || pgrt::instanceOfClass(r33.raw(), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\ErrorType", 22))) {
 					 {
-						zval arr33_raw;
-						ZVAL_EMPTY_ARRAY(&arr33_raw);
-						ZVAL_COPY(ret, &arr33_raw);
+						zval arr34_raw;
+						ZVAL_EMPTY_ARRAY(&arr34_raw);
+						ZVAL_COPY(ret, &arr34_raw);
 						return true;
 					}
 				}
 			}
 			 {
-				zv::Val r34;
-				if (UNEXPECTED(!pgen::FoundTypeResult::m_getReferencedClasses(Z_OBJ_P(l_classTypeResult.raw()), r34.raw()))) return false;
-				l_referencedClasses = std::move(r34);
+				zv::Val r35;
+				if (UNEXPECTED(!pgen::FoundTypeResult::m_getReferencedClasses(Z_OBJ_P(l_classTypeResult.raw()), r35.raw()))) return false;
+				l_referencedClasses = std::move(r35);
 			}
 		}
 		}
 	}
 	 {
-		zval arr35_raw;
-		ZVAL_EMPTY_ARRAY(&arr35_raw);
-		zv::Val o36 = zv::Val::copyOf(zv::Ref(&arr35_raw));
-		l_errors = std::move(o36);
+		zval arr36_raw;
+		ZVAL_EMPTY_ARRAY(&arr36_raw);
+		zv::Val o37 = zv::Val::copyOf(zv::Ref(&arr36_raw));
+		l_errors = std::move(o37);
 	}
 	 {
-		zv::Val a38 = zv::Val::copyOf(zv::Ref(l_referencedClasses.raw()).deref());
-		HashTable *ht37 = Z_ARRVAL_P(a38.raw());
-		zval *v39;
-		zend_ulong n40;
-		zend_string *s41;
-		ZEND_HASH_FOREACH_KEY_VAL(ht37, n40, s41, v39) {
-			(void) n40; (void) s41;
-			l_referencedClass = zv::Ref(v39).deref().raw();
+		zv::Val a39 = zv::Val::copyOf(zv::Ref(l_referencedClasses.raw()).deref());
+		HashTable *ht38 = Z_ARRVAL_P(a39.raw());
+		zval *v40;
+		zend_ulong n41;
+		zend_string *s42;
+		ZEND_HASH_FOREACH_KEY_VAL(ht38, n41, s42, v40) {
+			(void) n41; (void) s42;
+			l_referencedClass = zv::Ref(v40).deref().raw();
 			 {
 				 {
-					zval *p44 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RestrictedStaticMethodUsageRule::slot::reflectionProvider, "reflectionProvider");
-					if (UNEXPECTED(p44 == NULL)) return false;
-					zv::Val o45 = zv::Val::copyOf(zv::Ref(l_referencedClass));
-					zv::Val vd46;
-					zend_class_entry *vd46_ce = Z_TYPE_P(p44) == IS_OBJECT ? Z_OBJCE_P(p44) : NULL;
-					bool vd46_done = false;
-					if (vd46_ce == pt_ce_memoizing_reflection_provider) {
-						if (UNEXPECTED(!(Z_TYPE_P(o45.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", o45.raw()); return false; }
-						bool r47;
-						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p44), o45.raw(), &r47))) return false;
-						zv::Val o48 = zv::Val::boolean(r47);
-						vd46 = std::move(o48);
-						vd46_done = true;
+					zval *p45 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RestrictedStaticMethodUsageRule::slot::reflectionProvider, "reflectionProvider");
+					if (UNEXPECTED(p45 == NULL)) return false;
+					zv::Val o46 = zv::Val::copyOf(zv::Ref(l_referencedClass));
+					zv::Val vd47;
+					zend_class_entry *vd47_ce = Z_TYPE_P(p45) == IS_OBJECT ? Z_OBJCE_P(p45) : NULL;
+					bool vd47_done = false;
+					if (vd47_ce == pt_ce_memoizing_reflection_provider) {
+						if (UNEXPECTED(!(Z_TYPE_P(o46.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", o46.raw()); return false; }
+						bool r48;
+						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p45), o46.raw(), &r48))) return false;
+						zv::Val o49 = zv::Val::boolean(r48);
+						vd47 = std::move(o49);
+						vd47_done = true;
 					}
-					if (!vd46_done) {
-						zval av49[1];
-						ZVAL_COPY_VALUE(&av49[0], o45.raw());
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p44, "hasClass", "hasclass", 8, 1, av49, vd46.raw()))) return false;
+					if (!vd47_done) {
+						zval av50[1];
+						ZVAL_COPY_VALUE(&av50[0], o46.raw());
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p45, "hasClass", "hasclass", 8, 1, av50, vd47.raw()))) return false;
 					}
-					if (!((Z_TYPE_P(vd46.raw()) == IS_TRUE))) {
-						goto cont43;
+					if (!((Z_TYPE_P(vd47.raw()) == IS_TRUE))) {
+						goto cont44;
 					}
 				}
 				 {
-					zval *p50 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RestrictedStaticMethodUsageRule::slot::reflectionProvider, "reflectionProvider");
-					if (UNEXPECTED(p50 == NULL)) return false;
-					zv::Val o51 = zv::Val::copyOf(zv::Ref(l_referencedClass));
-					zv::Val vd52;
-					zend_class_entry *vd52_ce = Z_TYPE_P(p50) == IS_OBJECT ? Z_OBJCE_P(p50) : NULL;
-					bool vd52_done = false;
-					if (vd52_ce == pt_ce_memoizing_reflection_provider) {
-						zv::Val r53;
-						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p50), o51.raw(), r53.raw()))) return false;
-						vd52 = std::move(r53);
-						vd52_done = true;
+					zval *p51 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RestrictedStaticMethodUsageRule::slot::reflectionProvider, "reflectionProvider");
+					if (UNEXPECTED(p51 == NULL)) return false;
+					zv::Val o52 = zv::Val::copyOf(zv::Ref(l_referencedClass));
+					zv::Val vd53;
+					zend_class_entry *vd53_ce = Z_TYPE_P(p51) == IS_OBJECT ? Z_OBJCE_P(p51) : NULL;
+					bool vd53_done = false;
+					if (vd53_ce == pt_ce_memoizing_reflection_provider) {
+						zv::Val r54;
+						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p51), o52.raw(), r54.raw()))) return false;
+						vd53 = std::move(r54);
+						vd53_done = true;
 					}
-					if (!vd52_done) {
-						zval av54[1];
-						ZVAL_COPY_VALUE(&av54[0], o51.raw());
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p50, "getClass", "getclass", 8, 1, av54, vd52.raw()))) return false;
+					if (!vd53_done) {
+						zval av55[1];
+						ZVAL_COPY_VALUE(&av55[0], o52.raw());
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p51, "getClass", "getclass", 8, 1, av55, vd53.raw()))) return false;
 					}
-					l_classReflection = std::move(vd52);
+					l_classReflection = std::move(vd53);
 				}
 				 {
-					zval av55[1];
-					ZVAL_COPY_VALUE(&av55[0], l_methodName.raw());
-					zv::Val r56;
+					zval av56[1];
+					ZVAL_COPY_VALUE(&av56[0], l_methodName.raw());
+					zv::Val r57;
 					if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-						r56 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_HAS_METHOD, 1, av55);
-						if (UNEXPECTED(r56.isUndef())) return false;
+						r57 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_HAS_METHOD, 1, av56);
+						if (UNEXPECTED(r57.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_classReflection.raw(), "hasMethod", "hasmethod", 9, 1, av55, r56.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_classReflection.raw(), "hasMethod", "hasmethod", 9, 1, av56, r57.raw(), NULL))) return false;
 					}
 					}
-					if (!((Z_TYPE_P(r56.raw()) == IS_TRUE))) {
-						goto cont43;
+					if (!((Z_TYPE_P(r57.raw()) == IS_TRUE))) {
+						goto cont44;
 					}
 				}
 				 {
-					zval av57[2];
-					ZVAL_COPY_VALUE(&av57[0], l_methodName.raw());
-					ZVAL_COPY_VALUE(&av57[1], p_scope);
-					zv::Val r58;
+					zval av58[2];
+					ZVAL_COPY_VALUE(&av58[0], l_methodName.raw());
+					ZVAL_COPY_VALUE(&av58[1], p_scope);
+					zv::Val r59;
 					if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-						r58 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_METHOD, 2, av57);
-						if (UNEXPECTED(r58.isUndef())) return false;
+						r59 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_METHOD, 2, av58);
+						if (UNEXPECTED(r59.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_classReflection.raw(), "getMethod", "getmethod", 9, 2, av57, r58.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_classReflection.raw(), "getMethod", "getmethod", 9, 2, av58, r59.raw(), NULL))) return false;
 					}
 					}
-					l_methodReflection = std::move(r58);
+					l_methodReflection = std::move(r59);
 				}
 				 {
-					zv::Val a60 = zv::Val::copyOf(zv::Ref(l_extensions.raw()).deref());
-					HashTable *ht59 = Z_ARRVAL_P(a60.raw());
-					zval *v61;
-					zend_ulong n62;
-					zend_string *s63;
-					ZEND_HASH_FOREACH_KEY_VAL(ht59, n62, s63, v61) {
-						(void) n62; (void) s63;
-						l_extension = zv::Ref(v61).deref().raw();
+					zv::Val a61 = zv::Val::copyOf(zv::Ref(l_extensions.raw()).deref());
+					HashTable *ht60 = Z_ARRVAL_P(a61.raw());
+					zval *v62;
+					zend_ulong n63;
+					zend_string *s64;
+					ZEND_HASH_FOREACH_KEY_VAL(ht60, n63, s64, v62) {
+						(void) n63; (void) s64;
+						l_extension = zv::Ref(v62).deref().raw();
 						 {
 							 {
-								zv::Val o66 = zv::Val::copyOf(zv::Ref(l_methodReflection.raw()));
-								zv::Val vd67;
-								zend_class_entry *vd67_ce = Z_TYPE_P(l_extension) == IS_OBJECT ? Z_OBJCE_P(l_extension) : NULL;
-								bool vd67_done = false;
-								if (vd67_ce == pt_ce_restricted_internal_method_usage_extension) {
-									zv::Val r68;
-									if (UNEXPECTED(!pgen::RestrictedInternalMethodUsageExtension::m_isRestrictedMethodUsage(Z_OBJ_P(l_extension), o66.raw(), p_scope, r68.raw()))) return false;
-									vd67 = std::move(r68);
-									vd67_done = true;
+								zv::Val o67 = zv::Val::copyOf(zv::Ref(l_methodReflection.raw()));
+								zv::Val vd68;
+								zend_class_entry *vd68_ce = Z_TYPE_P(l_extension) == IS_OBJECT ? Z_OBJCE_P(l_extension) : NULL;
+								bool vd68_done = false;
+								if (vd68_ce == pt_ce_restricted_internal_method_usage_extension) {
+									zv::Val r69;
+									if (UNEXPECTED(!pgen::RestrictedInternalMethodUsageExtension::m_isRestrictedMethodUsage(Z_OBJ_P(l_extension), o67.raw(), p_scope, r69.raw()))) return false;
+									vd68 = std::move(r69);
+									vd68_done = true;
 								}
-								if (!vd67_done) {
-									zval av69[2];
-									ZVAL_COPY_VALUE(&av69[0], o66.raw());
-									ZVAL_COPY_VALUE(&av69[1], p_scope);
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_extension, "isRestrictedMethodUsage", "isrestrictedmethodusage", 23, 2, av69, vd67.raw()))) return false;
+								if (!vd68_done) {
+									zval av70[2];
+									ZVAL_COPY_VALUE(&av70[0], o67.raw());
+									ZVAL_COPY_VALUE(&av70[1], p_scope);
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_extension, "isRestrictedMethodUsage", "isrestrictedmethodusage", 23, 2, av70, vd68.raw()))) return false;
 								}
-								l_restrictedUsage = std::move(vd67);
+								l_restrictedUsage = std::move(vd68);
 							}
 							 {
 								if (Z_TYPE_P(l_restrictedUsage.raw()) == IS_NULL) {
-									goto cont65;
+									goto cont66;
 								}
 							}
 							 {
-								zv::Val r70;
+								zv::Val r71;
 								if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-									r70 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_NAME, 0, NULL);
-									if (UNEXPECTED(r70.isUndef())) return false;
+									r71 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_GET_NAME, 0, NULL);
+									if (UNEXPECTED(r71.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r70.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r71.raw(), NULL))) return false;
 								}
 								}
-								zv::Val vd71;
-								zend_class_entry *vd71_ce = Z_TYPE_P(l_methodReflection.raw()) == IS_OBJECT ? Z_OBJCE_P(l_methodReflection.raw()) : NULL;
-								bool vd71_done = false;
-								if (vd71_ce == pt_ce_changed_type_method_reflection) {
-									zv::Val r72;
-									if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r72.raw()))) return false;
-									vd71 = std::move(r72);
-									vd71_done = true;
-								}
-								if (vd71_ce == pt_ce_rewritten_declaring_class_method_reflection) {
+								zv::Val vd72;
+								zend_class_entry *vd72_ce = Z_TYPE_P(l_methodReflection.raw()) == IS_OBJECT ? Z_OBJCE_P(l_methodReflection.raw()) : NULL;
+								bool vd72_done = false;
+								if (vd72_ce == pt_ce_changed_type_method_reflection) {
 									zv::Val r73;
-									if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r73.raw()))) return false;
-									vd71 = std::move(r73);
-									vd71_done = true;
+									if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r73.raw()))) return false;
+									vd72 = std::move(r73);
+									vd72_done = true;
 								}
-								if (vd71_ce == pt_ce_php_method_reflection) {
+								if (vd72_ce == pt_ce_rewritten_declaring_class_method_reflection) {
 									zv::Val r74;
-									if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r74.raw()))) return false;
-									vd71 = std::move(r74);
-									vd71_done = true;
+									if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r74.raw()))) return false;
+									vd72 = std::move(r74);
+									vd72_done = true;
 								}
-								if (vd71_ce == pt_ce_php_method_from_parser_node_reflection) {
+								if (vd72_ce == pt_ce_php_method_reflection) {
 									zv::Val r75;
-									if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r75.raw()))) return false;
-									vd71 = std::move(r75);
-									vd71_done = true;
+									if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r75.raw()))) return false;
+									vd72 = std::move(r75);
+									vd72_done = true;
 								}
-								if (!vd71_done) {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_methodReflection.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd71.raw()))) return false;
+								if (vd72_ce == pt_ce_php_method_from_parser_node_reflection) {
+									zv::Val r76;
+									if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r76.raw()))) return false;
+									vd72 = std::move(r76);
+									vd72_done = true;
 								}
-								zv::Val r76;
-								if (EXPECTED(Z_TYPE_P(vd71.raw()) == IS_OBJECT)) {
-									r76 = pt_type_op(Z_OBJ_P(vd71.raw()), PT_OP_GET_NAME, 0, NULL);
-									if (UNEXPECTED(r76.isUndef())) return false;
+								if (!vd72_done) {
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_methodReflection.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd72.raw()))) return false;
+								}
+								zv::Val r77;
+								if (EXPECTED(Z_TYPE_P(vd72.raw()) == IS_OBJECT)) {
+									r77 = pt_type_op(Z_OBJ_P(vd72.raw()), PT_OP_GET_NAME, 0, NULL);
+									if (UNEXPECTED(r77.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_22, vd71.raw(), "getName", "getname", 7, 0, NULL, r76.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_22, vd72.raw(), "getName", "getname", 7, 0, NULL, r77.raw(), NULL))) return false;
 								}
 								}
-								if (!zend_is_identical(r70.raw(), r76.raw())) {
+								if (!zend_is_identical(r71.raw(), r77.raw())) {
 									 {
-										zval n77_raw;
-										if (UNEXPECTED(object_init_ex(&n77_raw, pt_ce_rewritten_declaring_class_method_reflection) != SUCCESS)) return false;
-										zv::Val n77 = zv::Val::adopt(n77_raw);
-										if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m___construct(Z_OBJ_P(n77.raw()), l_classReflection.raw(), l_methodReflection.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n77.raw())); return false; }
-										l_rewrittenMethodReflection = std::move(n77);
+										zval n78_raw;
+										if (UNEXPECTED(object_init_ex(&n78_raw, pt_ce_rewritten_declaring_class_method_reflection) != SUCCESS)) return false;
+										zv::Val n78 = zv::Val::adopt(n78_raw);
+										if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m___construct(Z_OBJ_P(n78.raw()), l_classReflection.raw(), l_methodReflection.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n78.raw())); return false; }
+										l_rewrittenMethodReflection = std::move(n78);
 									}
 									 {
-										zv::Val o78 = zv::Val::copyOf(zv::Ref(l_rewrittenMethodReflection.raw()));
-										zv::Val vd79;
-										zend_class_entry *vd79_ce = Z_TYPE_P(l_extension) == IS_OBJECT ? Z_OBJCE_P(l_extension) : NULL;
-										bool vd79_done = false;
-										if (vd79_ce == pt_ce_restricted_internal_method_usage_extension) {
-											zv::Val r80;
-											if (UNEXPECTED(!pgen::RestrictedInternalMethodUsageExtension::m_isRestrictedMethodUsage(Z_OBJ_P(l_extension), o78.raw(), p_scope, r80.raw()))) return false;
-											vd79 = std::move(r80);
-											vd79_done = true;
+										zv::Val o79 = zv::Val::copyOf(zv::Ref(l_rewrittenMethodReflection.raw()));
+										zv::Val vd80;
+										zend_class_entry *vd80_ce = Z_TYPE_P(l_extension) == IS_OBJECT ? Z_OBJCE_P(l_extension) : NULL;
+										bool vd80_done = false;
+										if (vd80_ce == pt_ce_restricted_internal_method_usage_extension) {
+											zv::Val r81;
+											if (UNEXPECTED(!pgen::RestrictedInternalMethodUsageExtension::m_isRestrictedMethodUsage(Z_OBJ_P(l_extension), o79.raw(), p_scope, r81.raw()))) return false;
+											vd80 = std::move(r81);
+											vd80_done = true;
 										}
-										if (!vd79_done) {
-											zval av81[2];
-											ZVAL_COPY_VALUE(&av81[0], o78.raw());
-											ZVAL_COPY_VALUE(&av81[1], p_scope);
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_extension, "isRestrictedMethodUsage", "isrestrictedmethodusage", 23, 2, av81, vd79.raw()))) return false;
+										if (!vd80_done) {
+											zval av82[2];
+											ZVAL_COPY_VALUE(&av82[0], o79.raw());
+											ZVAL_COPY_VALUE(&av82[1], p_scope);
+											if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_extension, "isRestrictedMethodUsage", "isrestrictedmethodusage", 23, 2, av82, vd80.raw()))) return false;
 										}
-										l_rewrittenRestrictedUsage = std::move(vd79);
+										l_rewrittenRestrictedUsage = std::move(vd80);
 									}
 									 {
 										if (Z_TYPE_P(l_rewrittenRestrictedUsage.raw()) == IS_NULL) {
-											goto cont65;
+											goto cont66;
 										}
 									}
 								}
 							}
 							 {
-								zval *p82;
-								zv::Val o83;
+								zval *p83;
+								zv::Val o84;
 								if (EXPECTED(Z_TYPE_P(l_restrictedUsage.raw()) == IS_OBJECT && Z_OBJCE_P(l_restrictedUsage.raw()) == pt_ce_restricted_usage)) {
-									p82 = pgrt::readSlot(Z_OBJ_P(l_restrictedUsage.raw()), ptdecl::RestrictedUsage::slot::errorMessage, "errorMessage");
-									if (UNEXPECTED(p82 == NULL)) return false;
+									p83 = pgrt::readSlot(Z_OBJ_P(l_restrictedUsage.raw()), ptdecl::RestrictedUsage::slot::errorMessage, "errorMessage");
+									if (UNEXPECTED(p83 == NULL)) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_restrictedUsage.raw(), pt_ce_restricted_static_method_usage_rule, "errorMessage", 12, o83.raw()))) return false;
-									p82 = o83.raw();
+									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_restrictedUsage.raw(), pt_ce_restricted_static_method_usage_rule, "errorMessage", 12, o84.raw()))) return false;
+									p83 = o84.raw();
 								}
 								}
-								zval av84[1];
-								ZVAL_COPY_VALUE(&av84[0], p82);
-								zend_class_entry *ce85 = pgrt::lookupClass(pg_site_24, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-								if (UNEXPECTED(ce85 == NULL)) return false;
-								zv::Val r86;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_25, ce85, "message", 7, 1, av84, r86.raw(), NULL))) return false;
-								zval *p87;
-								zv::Val o88;
+								zval av85[1];
+								ZVAL_COPY_VALUE(&av85[0], p83);
+								zend_class_entry *ce86 = pgrt::lookupClass(pg_site_24, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+								if (UNEXPECTED(ce86 == NULL)) return false;
+								zv::Val r87;
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_25, ce86, "message", 7, 1, av85, r87.raw(), NULL))) return false;
+								zval *p88;
+								zv::Val o89;
 								if (EXPECTED(Z_TYPE_P(l_restrictedUsage.raw()) == IS_OBJECT && Z_OBJCE_P(l_restrictedUsage.raw()) == pt_ce_restricted_usage)) {
-									p87 = pgrt::readSlot(Z_OBJ_P(l_restrictedUsage.raw()), ptdecl::RestrictedUsage::slot::identifier, "identifier");
-									if (UNEXPECTED(p87 == NULL)) return false;
+									p88 = pgrt::readSlot(Z_OBJ_P(l_restrictedUsage.raw()), ptdecl::RestrictedUsage::slot::identifier, "identifier");
+									if (UNEXPECTED(p88 == NULL)) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_restrictedUsage.raw(), pt_ce_restricted_static_method_usage_rule, "identifier", 10, o88.raw()))) return false;
-									p87 = o88.raw();
+									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_restrictedUsage.raw(), pt_ce_restricted_static_method_usage_rule, "identifier", 10, o89.raw()))) return false;
+									p88 = o89.raw();
 								}
 								}
-								zval av89[1];
-								ZVAL_COPY_VALUE(&av89[0], p87);
-								zv::Val r90;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_26, r86.raw(), "identifier", "identifier", 10, 1, av89, r90.raw(), NULL))) return false;
+								zval av90[1];
+								ZVAL_COPY_VALUE(&av90[0], p88);
 								zv::Val r91;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_27, r90.raw(), "build", "build", 5, 0, NULL, r91.raw(), NULL))) return false;
-								zv::Val o92 = zv::Val::copyOf(zv::Ref(r91.raw()));
-								zval *w93 = zv::Ref(l_errors.raw()).deref().raw();
-								if (Z_TYPE_P(w93) <= IS_NULL) { zval_ptr_dtor(w93); array_init(w93); } else if (UNEXPECTED(Z_TYPE_P(w93) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w93);
-								{ zval v = o92.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w93), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_26, r87.raw(), "identifier", "identifier", 10, 1, av90, r91.raw(), NULL))) return false;
+								zv::Val r92;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_27, r91.raw(), "build", "build", 5, 0, NULL, r92.raw(), NULL))) return false;
+								zv::Val o93 = zv::Val::copyOf(zv::Ref(r92.raw()));
+								zval *w94 = zv::Ref(l_errors.raw()).deref().raw();
+								if (Z_TYPE_P(w94) <= IS_NULL) { zval_ptr_dtor(w94); array_init(w94); } else if (UNEXPECTED(Z_TYPE_P(w94) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w94);
+								{ zval v = o93.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w94), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
-						cont65:;
+						cont66:;
 					}
 					ZEND_HASH_FOREACH_END();
 				}
 			}
-			cont43:;
+			cont44:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}

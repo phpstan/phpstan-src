@@ -7,10 +7,12 @@
 zend_class_entry *pt_ce_transformed_rule_error = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_getIdentifier_0 */
-static pgrt::ClassSite pg_site_1; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_2; /* method_getMessage_2 */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Analyser\Error */
+static pgrt::GetterSite pg_site_0; /* getter_getIdentifier_0 */
+static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Analyser\Error */
+static pt_method_site pg_site_2; /* method_getIdentifier_2 */
+static pgrt::ClassSite pg_site_3; /* cls_PHPStan\ShouldNotHappenException */
+static pgrt::GetterSite pg_site_4; /* getter_getMessage_4 */
+static pt_method_site pg_site_5; /* method_getMessage_5 */
 
 namespace pgen::TransformedRuleError {
 
@@ -50,18 +52,25 @@ namespace pgen::TransformedRuleError {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TransformedRuleError::slot::error, "error");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getIdentifier", "getidentifier", 13, 0, NULL, r2.raw(), NULL))) return false;
-		l_identifier = std::move(r2);
+		zval *gs2 = Z_TYPE_P(p1) == IS_OBJECT ? pgrt::trivialGetter(pg_site_0, Z_OBJ_P(p1), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\Error", 22), "getidentifier", 13, "identifier", 10) : NULL;
+		zv::Val r3;
+		if (EXPECTED(gs2 != NULL)) {
+			ZVAL_COPY(r3.raw(), gs2);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p1, "getIdentifier", "getidentifier", 13, 0, NULL, r3.raw()))) return false;
+		}
+		}
+		l_identifier = std::move(r3);
 	}
 	 {
 		if (Z_TYPE_P(l_identifier.raw()) == IS_NULL) {
 			 {
-				zend_class_entry *ce4 = pgrt::lookupClass(pg_site_1, "PHPStan\\ShouldNotHappenException", 32);
-				if (UNEXPECTED(ce4 == NULL)) return false;
-				zv::Val n3;
-				if (UNEXPECTED(!pgrt::newObject(ce4, 0, NULL, n3.raw(), NULL))) return false;
-				zend_throw_exception_object(n3.raw()); ZVAL_UNDEF(n3.raw());
+				zend_class_entry *ce5 = pgrt::lookupClass(pg_site_3, "PHPStan\\ShouldNotHappenException", 32);
+				if (UNEXPECTED(ce5 == NULL)) return false;
+				zv::Val n4;
+				if (UNEXPECTED(!pgrt::newObject(ce5, 0, NULL, n4.raw(), NULL))) return false;
+				zend_throw_exception_object(n4.raw()); ZVAL_UNDEF(n4.raw());
 				return false;
 			}
 		}
@@ -81,9 +90,16 @@ namespace pgen::TransformedRuleError {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TransformedRuleError::slot::error, "error");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p1, "getMessage", "getmessage", 10, 0, NULL, r2.raw(), NULL))) return false;
-		*ret = r2.take();
+		zval *gs2 = Z_TYPE_P(p1) == IS_OBJECT ? pgrt::trivialGetter(pg_site_4, Z_OBJ_P(p1), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\Error", 22), "getmessage", 10, "message", 7) : NULL;
+		zv::Val r3;
+		if (EXPECTED(gs2 != NULL)) {
+			ZVAL_COPY(r3.raw(), gs2);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p1, "getMessage", "getmessage", 10, 0, NULL, r3.raw()))) return false;
+		}
+		}
+		*ret = r3.take();
 		return true;
 	}
 }
@@ -103,7 +119,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TransformedRuleError)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_error)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_error != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_error, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\Error", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Error", zend_zval_value_name(p_error)); RETURN_THROWS(); }
+		if (p_error != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_error, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\Error", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Error", zend_zval_value_name(p_error)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::TransformedRuleError::m___construct(Z_OBJ_P(ZEND_THIS), p_error))) RETURN_THROWS();
 	});
 	cls.method(sigs::getError, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\TransformedRuleError::getError() */

@@ -63,6 +63,24 @@ uint32_t propIndexSlow(PropIndexSite &site, zend_object *object, const char *nam
 	return site.index;
 }
 
+int32_t getterOffsetSlow(GetterSite &site, zend_object *object, zend_class_entry *declaring, const char *lcname, size_t len, const char *prop, size_t propLen)
+{
+	int32_t offset = -1;
+	zend_function *fn = declaring != NULL ? (zend_function *) zend_hash_str_find_ptr(&PT_CE(object->ce, function_table), lcname, len) : NULL;
+	if (fn != NULL && fn->type == ZEND_USER_FUNCTION && fn->common.scope == declaring) {
+		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(object->ce, properties_info), prop, propLen);
+		if (info != NULL && (info->flags & ZEND_ACC_STATIC) == 0) offset = (int32_t) info->offset;
+	}
+	if (site.generation != pt_engine_generation) {
+		site = {};
+		site.generation = pt_engine_generation;
+	}
+	uint32_t way = site.next++ % PROP_SITE_WAYS;
+	site.ce[way] = object->ce;
+	site.offset[way] = offset;
+	return offset;
+}
+
 zval *propCachedSlow(PropSite &site, zend_object *object, const char *name, size_t len)
 {
 	/* public declared instance properties only: the compiler may speculate

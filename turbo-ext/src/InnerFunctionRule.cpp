@@ -39,32 +39,39 @@ namespace pgen::InnerFunctionRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getFunction", "getfunction", 11, 0, NULL, r1.raw(), NULL))) return false;
+		zend_class_entry *rc2 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+		if (rc2 == pt_ce_mutating_scope) {
+			r1 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+			if (UNEXPECTED(r1.isUndef())) return false;
+		}
+		else {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getFunction", "getfunction", 11, 0, NULL, r1.raw()))) return false;
+		}
 		if (Z_TYPE_P(r1.raw()) == IS_NULL) {
 			 {
-				zval arr2_raw;
-				ZVAL_EMPTY_ARRAY(&arr2_raw);
-				ZVAL_COPY(ret, &arr2_raw);
+				zval arr3_raw;
+				ZVAL_EMPTY_ARRAY(&arr3_raw);
+				ZVAL_COPY(ret, &arr3_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val arr3 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zval av4[1];
-		ZVAL_COPY_VALUE(&av4[0], &pg_lit[1]);
-		zend_class_entry *ce5 = pgrt::lookupClass(pg_site_1, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce5 == NULL)) return false;
-		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_2, ce5, "message", 7, 1, av4, r6.raw(), NULL))) return false;
-		zval av7[1];
-		ZVAL_COPY_VALUE(&av7[0], &pg_lit[2]);
-		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, r6.raw(), "identifier", "identifier", 10, 1, av7, r8.raw(), NULL))) return false;
+		zv::Val arr4 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zval av5[1];
+		ZVAL_COPY_VALUE(&av5[0], &pg_lit[1]);
+		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_1, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+		if (UNEXPECTED(ce6 == NULL)) return false;
+		zv::Val r7;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_2, ce6, "message", 7, 1, av5, r7.raw(), NULL))) return false;
+		zval av8[1];
+		ZVAL_COPY_VALUE(&av8[0], &pg_lit[2]);
 		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r8.raw(), "build", "build", 5, 0, NULL, r9.raw(), NULL))) return false;
-		{ zval v = r9.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr3.raw()), &v); }
-		*ret = arr3.take();
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, r7.raw(), "identifier", "identifier", 10, 1, av8, r9.raw(), NULL))) return false;
+		zv::Val r10;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r9.raw(), "build", "build", 5, 0, NULL, r10.raw(), NULL))) return false;
+		{ zval v = r10.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr4.raw()), &v); }
+		*ret = arr4.take();
 		return true;
 	}
 }

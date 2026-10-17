@@ -394,157 +394,179 @@ namespace pgen::WhileLoopAlwaysTrueConditionRule {
 			}
 			 {
 				zv::Val r48;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_scope, "getFunction", "getfunction", 11, 0, NULL, r48.raw(), NULL))) return false;
-				zv::Val q49;
+				zend_class_entry *rc49 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+				if (rc49 == pt_ce_mutating_scope) {
+					r48 = pt_mutating_scope_get_function(Z_OBJ_P(p_scope));
+					if (UNEXPECTED(r48.isUndef())) return false;
+				}
+				else {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_scope, "getFunction", "getfunction", 11, 0, NULL, r48.raw()))) return false;
+				}
+				zv::Val q50;
 				if (r48.raw() != NULL && Z_TYPE_P(r48.raw()) > IS_NULL) {
-					q49 = zv::Val::copyOf(zv::Ref(r48.raw()));
+					q50 = zv::Val::copyOf(zv::Ref(r48.raw()));
 				} else {
 				 {
-					zv::Val r50;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_scope, "getAnonymousFunctionReflection", "getanonymousfunctionreflection", 30, 0, NULL, r50.raw(), NULL))) return false;
-					q49 = std::move(r50);
+					zv::Val r51;
+					zend_class_entry *rc52 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+					if (rc52 == pt_ce_mutating_scope) {
+						r51 = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(p_scope));
+						if (UNEXPECTED(r51.isUndef())) return false;
+					}
+					else {
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_scope, "getAnonymousFunctionReflection", "getanonymousfunctionreflection", 30, 0, NULL, r51.raw()))) return false;
+					}
+					q50 = std::move(r51);
 				}
 				}
-				l_ref = std::move(q49);
+				l_ref = std::move(q50);
 			}
 			 {
-				bool b51 = !(Z_TYPE_P(l_ref.raw()) == IS_NULL);
-				if (b51) {
-					zv::Val r52;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_ref.raw(), "getReturnType", "getreturntype", 13, 0, NULL, r52.raw(), NULL))) return false;
-					b51 = (pgrt::instanceOfClass(r52.raw(), pt_ce_never_type) || pgrt::instanceOfClass(r52.raw(), pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Type\\NeverType", 22)));
+				bool b53 = !(Z_TYPE_P(l_ref.raw()) == IS_NULL);
+				if (b53) {
+					zv::Val r54;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_ref.raw(), "getReturnType", "getreturntype", 13, 0, NULL, r54.raw(), NULL))) return false;
+					b53 = (pgrt::instanceOfClass(r54.raw(), pt_ce_never_type) || pgrt::instanceOfClass(r54.raw(), pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Type\\NeverType", 22)));
 				}
-				if (b51) {
+				if (b53) {
 					 {
 						if (l_isTypeCheckCandidate) {
 							 {
-								zval *p53 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::functionCallConstantConditionHelper, "functionCallConstantConditionHelper");
-								if (UNEXPECTED(p53 == NULL)) return false;
-								zv::Val o55;
-								zval *p54 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_21, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
-								if (UNEXPECTED(p54 == NULL || Z_ISUNDEF_P(p54))) {
-									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o55.raw()))) return false;
-									p54 = o55.raw();
+								zval *p55 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::functionCallConstantConditionHelper, "functionCallConstantConditionHelper");
+								if (UNEXPECTED(p55 == NULL)) return false;
+								zv::Val o57;
+								zval *p56 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_21, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
+								if (UNEXPECTED(p56 == NULL || Z_ISUNDEF_P(p56))) {
+									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o57.raw()))) return false;
+									p56 = o57.raw();
 								}
-								if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p54).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::emitFunctionCallNoError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p54).deref().raw()); return false; }
-								if (UNEXPECTED(!pgen::FunctionCallConstantConditionHelper::m_emitFunctionCallNoError(Z_OBJ_P(p53), &pg_lit[1], p_scope, zv::Ref(p54).deref().raw()))) return false;
+								if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p56).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::emitFunctionCallNoError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p56).deref().raw()); return false; }
+								if (UNEXPECTED(!pgen::FunctionCallConstantConditionHelper::m_emitFunctionCallNoError(Z_OBJ_P(p55), &pg_lit[1], p_scope, zv::Ref(p56).deref().raw()))) return false;
 							}
 						} else {
 						 {
 							 {
-								zval *p57 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
-								if (UNEXPECTED(p57 == NULL)) return false;
-								zv::Val o59;
-								zval *p58 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_22, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
-								if (UNEXPECTED(p58 == NULL || Z_ISUNDEF_P(p58))) {
-									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o59.raw()))) return false;
-									p58 = o59.raw();
+								zval *p59 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
+								if (UNEXPECTED(p59 == NULL)) return false;
+								zv::Val o61;
+								zval *p60 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_22, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
+								if (UNEXPECTED(p60 == NULL || Z_ISUNDEF_P(p60))) {
+									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o61.raw()))) return false;
+									p60 = o61.raw();
 								}
-								if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p58).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitNoError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p58).deref().raw()); return false; }
-								if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitNoError(Z_OBJ_P(p57), &pg_lit[1], p_scope, zv::Ref(p58).deref().raw()))) return false;
+								if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p60).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitNoError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p60).deref().raw()); return false; }
+								if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitNoError(Z_OBJ_P(p59), &pg_lit[1], p_scope, zv::Ref(p60).deref().raw()))) return false;
 							}
 						}
 						}
 					}
 					 {
-						zval arr61_raw;
-						ZVAL_EMPTY_ARRAY(&arr61_raw);
-						ZVAL_COPY(ret, &arr61_raw);
+						zval arr63_raw;
+						ZVAL_EMPTY_ARRAY(&arr63_raw);
+						ZVAL_COPY(ret, &arr63_raw);
 						return true;
 					}
 				}
 			}
 			 {
-				zval cap62[3];
-				ZVAL_COPY_VALUE(&cap62[0], p_scope);
-				ZVAL_COPY_VALUE(&cap62[1], l_originalNode.raw());
-				ZVAL_COPY_VALUE(&cap62[2], &this_zv);
-				zv::Val h63 = pt_native_closure_new(&pg_closure_1, 3, cap62, 0u);
-				l_addTip = std::move(h63);
+				zval cap64[3];
+				ZVAL_COPY_VALUE(&cap64[0], p_scope);
+				ZVAL_COPY_VALUE(&cap64[1], l_originalNode.raw());
+				ZVAL_COPY_VALUE(&cap64[2], &this_zv);
+				zv::Val h65 = pt_native_closure_new(&pg_closure_1, 3, cap64, 0u);
+				l_addTip = std::move(h65);
 			}
 			 {
-				zv::Val o64 = zv::Val::copyOf(zv::Ref(l_addTip.raw()));
-				zval av65[1];
-				ZVAL_COPY_VALUE(&av65[0], &pg_lit[2]);
-				zend_class_entry *ce66 = pgrt::lookupClass(pg_site_23, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-				if (UNEXPECTED(ce66 == NULL)) return false;
-				zv::Val r67;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_27, ce66, "message", 7, 1, av65, r67.raw(), NULL))) return false;
-				zval av68[1];
-				ZVAL_COPY_VALUE(&av68[0], r67.raw());
+				zv::Val o66 = zv::Val::copyOf(zv::Ref(l_addTip.raw()));
+				zval av67[1];
+				ZVAL_COPY_VALUE(&av67[0], &pg_lit[2]);
+				zend_class_entry *ce68 = pgrt::lookupClass(pg_site_23, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+				if (UNEXPECTED(ce68 == NULL)) return false;
 				zv::Val r69;
-				if (UNEXPECTED(!pgrt::callValue(o64.raw(), 1, av68, r69.raw(), NULL))) return false;
-				zv::Val o71;
-				zval *p70 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_28, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
-				if (UNEXPECTED(p70 == NULL || Z_ISUNDEF_P(p70))) {
-					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o71.raw()))) return false;
-					p70 = o71.raw();
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_27, ce68, "message", 7, 1, av67, r69.raw(), NULL))) return false;
+				zval av70[1];
+				ZVAL_COPY_VALUE(&av70[0], r69.raw());
+				zv::Val r71;
+				if (UNEXPECTED(!pgrt::callValue(o66.raw(), 1, av70, r71.raw(), NULL))) return false;
+				zv::Val o73;
+				zval *p72 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_28, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
+				if (UNEXPECTED(p72 == NULL || Z_ISUNDEF_P(p72))) {
+					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o73.raw()))) return false;
+					p72 = o73.raw();
 				}
-				zv::Val r72;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_29, zv::Ref(p70).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r72.raw(), NULL))) return false;
-				zval av73[1];
-				ZVAL_COPY_VALUE(&av73[0], r72.raw());
 				zv::Val r74;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_30, r69.raw(), "line", "line", 4, 1, av73, r74.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_29, zv::Ref(p72).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r74.raw(), NULL))) return false;
 				zval av75[1];
-				ZVAL_COPY_VALUE(&av75[0], &pg_lit[3]);
+				ZVAL_COPY_VALUE(&av75[0], r74.raw());
 				zv::Val r76;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_31, r74.raw(), "identifier", "identifier", 10, 1, av75, r76.raw(), NULL))) return false;
-				zv::Val r77;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_32, r76.raw(), "build", "build", 5, 0, NULL, r77.raw(), NULL))) return false;
-				l_ruleError = std::move(r77);
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_30, r71.raw(), "line", "line", 4, 1, av75, r76.raw(), NULL))) return false;
+				zval av77[1];
+				ZVAL_COPY_VALUE(&av77[0], &pg_lit[3]);
+				zv::Val r78;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_31, r76.raw(), "identifier", "identifier", 10, 1, av77, r78.raw(), NULL))) return false;
+				zv::Val r79;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_32, r78.raw(), "build", "build", 5, 0, NULL, r79.raw(), NULL))) return false;
+				l_ruleError = std::move(r79);
 			}
 			 {
 				if (l_isTypeCheckCandidate) {
 					 {
-						zval *p78 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::functionCallConstantConditionHelper, "functionCallConstantConditionHelper");
-						if (UNEXPECTED(p78 == NULL)) return false;
-						zv::Val o80;
-						zval *p79 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_33, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
-						if (UNEXPECTED(p79 == NULL || Z_ISUNDEF_P(p79))) {
-							if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o80.raw()))) return false;
-							p79 = o80.raw();
+						zval *p80 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::functionCallConstantConditionHelper, "functionCallConstantConditionHelper");
+						if (UNEXPECTED(p80 == NULL)) return false;
+						zv::Val o82;
+						zval *p81 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_33, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
+						if (UNEXPECTED(p81 == NULL || Z_ISUNDEF_P(p81))) {
+							if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o82.raw()))) return false;
+							p81 = o82.raw();
 						}
-						if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p79).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::emitFunctionCallError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p79).deref().raw()); return false; }
-						if (UNEXPECTED(!pgen::FunctionCallConstantConditionHelper::m_emitFunctionCallError(Z_OBJ_P(p78), &pg_lit[1], p_scope, zv::Ref(p79).deref().raw(), true, l_ruleError.raw()))) return false;
+						if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p81).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::emitFunctionCallError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p81).deref().raw()); return false; }
+						if (UNEXPECTED(!pgen::FunctionCallConstantConditionHelper::m_emitFunctionCallError(Z_OBJ_P(p80), &pg_lit[1], p_scope, zv::Ref(p81).deref().raw(), true, l_ruleError.raw()))) return false;
 					}
 					 {
-						zval arr82_raw;
-						ZVAL_EMPTY_ARRAY(&arr82_raw);
-						ZVAL_COPY(ret, &arr82_raw);
+						zval arr84_raw;
+						ZVAL_EMPTY_ARRAY(&arr84_raw);
+						ZVAL_COPY(ret, &arr84_raw);
 						return true;
 					}
 				}
 			}
 			 {
-				zv::Val r83;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_34, p_scope, "isInTrait", "isintrait", 9, 0, NULL, r83.raw(), NULL))) return false;
-				if (Z_TYPE_P(r83.raw()) == IS_TRUE) {
+				zv::Val r85;
+				zend_class_entry *rc86 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+				if (rc86 == pt_ce_mutating_scope) {
+					bool bo87 = false;
+					if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo87))) return false;
+					ZVAL_BOOL(r85.raw(), bo87);
+				}
+				else {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_34, p_scope, "isInTrait", "isintrait", 9, 0, NULL, r85.raw()))) return false;
+				}
+				if (Z_TYPE_P(r85.raw()) == IS_TRUE) {
 					 {
-						zval *p84 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
-						if (UNEXPECTED(p84 == NULL)) return false;
-						zv::Val o86;
-						zval *p85 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_35, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
-						if (UNEXPECTED(p85 == NULL || Z_ISUNDEF_P(p85))) {
-							if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o86.raw()))) return false;
-							p85 = o86.raw();
+						zval *p88 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
+						if (UNEXPECTED(p88 == NULL)) return false;
+						zv::Val o90;
+						zval *p89 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_35, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
+						if (UNEXPECTED(p89 == NULL || Z_ISUNDEF_P(p89))) {
+							if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o90.raw()))) return false;
+							p89 = o90.raw();
 						}
-						if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p85).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p85).deref().raw()); return false; }
-						if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitError(Z_OBJ_P(p84), &pg_lit[1], p_scope, zv::Ref(p85).deref().raw(), true, l_ruleError.raw()))) return false;
+						if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p89).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p89).deref().raw()); return false; }
+						if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitError(Z_OBJ_P(p88), &pg_lit[1], p_scope, zv::Ref(p89).deref().raw(), true, l_ruleError.raw()))) return false;
 					}
 					 {
-						zval arr88_raw;
-						ZVAL_EMPTY_ARRAY(&arr88_raw);
-						ZVAL_COPY(ret, &arr88_raw);
+						zval arr92_raw;
+						ZVAL_EMPTY_ARRAY(&arr92_raw);
+						ZVAL_COPY(ret, &arr92_raw);
 						return true;
 					}
 				}
 			}
 			 {
-				zv::Val arr89 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-				zv::Val o90 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
-				{ zval v = o90.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr89.raw()), &v); }
-				*ret = arr89.take();
+				zv::Val arr93 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+				zv::Val o94 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
+				{ zval v = o94.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr93.raw()), &v); }
+				*ret = arr93.take();
 				return true;
 			}
 		}
@@ -552,38 +574,38 @@ namespace pgen::WhileLoopAlwaysTrueConditionRule {
 	 {
 		if (l_isTypeCheckCandidate) {
 			 {
-				zval *p91 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::functionCallConstantConditionHelper, "functionCallConstantConditionHelper");
-				if (UNEXPECTED(p91 == NULL)) return false;
-				zv::Val o93;
-				zval *p92 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_36, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
-				if (UNEXPECTED(p92 == NULL || Z_ISUNDEF_P(p92))) {
-					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o93.raw()))) return false;
-					p92 = o93.raw();
-				}
-				if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p92).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::emitFunctionCallNoError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p92).deref().raw()); return false; }
-				if (UNEXPECTED(!pgen::FunctionCallConstantConditionHelper::m_emitFunctionCallNoError(Z_OBJ_P(p91), &pg_lit[1], p_scope, zv::Ref(p92).deref().raw()))) return false;
-			}
-		} else {
-		 {
-			 {
-				zval *p95 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
+				zval *p95 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::functionCallConstantConditionHelper, "functionCallConstantConditionHelper");
 				if (UNEXPECTED(p95 == NULL)) return false;
 				zv::Val o97;
-				zval *p96 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_37, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
+				zval *p96 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_36, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
 				if (UNEXPECTED(p96 == NULL || Z_ISUNDEF_P(p96))) {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o97.raw()))) return false;
 					p96 = o97.raw();
 				}
-				if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p96).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitNoError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p96).deref().raw()); return false; }
-				if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitNoError(Z_OBJ_P(p95), &pg_lit[1], p_scope, zv::Ref(p96).deref().raw()))) return false;
+				if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p96).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::emitFunctionCallNoError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p96).deref().raw()); return false; }
+				if (UNEXPECTED(!pgen::FunctionCallConstantConditionHelper::m_emitFunctionCallNoError(Z_OBJ_P(p95), &pg_lit[1], p_scope, zv::Ref(p96).deref().raw()))) return false;
+			}
+		} else {
+		 {
+			 {
+				zval *p99 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::WhileLoopAlwaysTrueConditionRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
+				if (UNEXPECTED(p99 == NULL)) return false;
+				zv::Val o101;
+				zval *p100 = Z_TYPE_P(l_originalNode.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_37, Z_OBJ_P(l_originalNode.raw()), "cond", 4) : NULL;
+				if (UNEXPECTED(p100 == NULL || Z_ISUNDEF_P(p100))) {
+					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_while_loop_always_true_condition_rule, "cond", 4, o101.raw()))) return false;
+					p100 = o101.raw();
+				}
+				if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p100).deref().raw(), pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitNoError", 3, "expr", "PhpParser\\Node\\Expr", zv::Ref(p100).deref().raw()); return false; }
+				if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitNoError(Z_OBJ_P(p99), &pg_lit[1], p_scope, zv::Ref(p100).deref().raw()))) return false;
 			}
 		}
 		}
 	}
 	 {
-		zval arr99_raw;
-		ZVAL_EMPTY_ARRAY(&arr99_raw);
-		ZVAL_COPY(ret, &arr99_raw);
+		zval arr103_raw;
+		ZVAL_EMPTY_ARRAY(&arr103_raw);
+		ZVAL_COPY(ret, &arr103_raw);
 		return true;
 	}
 }

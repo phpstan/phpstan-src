@@ -9,11 +9,12 @@ zend_class_entry *pt_ce_variable_assign_node = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getAttributes_0 */
+static pgrt::GetterSite pg_site_0; /* getter_getAttributes_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_2; /* bound_PhpParser\NodeAbstract::__construct */
-static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr\Variable */
-static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr */
+static pt_method_site pg_site_2; /* method_getAttributes_2 */
+static pt_method_site pg_site_3; /* bound_PhpParser\NodeAbstract::__construct */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr\Variable */
+static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Expr */
 
 namespace pgen::VariableAssignNode {
 
@@ -30,14 +31,21 @@ namespace pgen::VariableAssignNode {
 	zval o2_raw = o2.take();
 	pgrt::writeSlot(self, ptdecl::VariableAssignNode::slot::assignedExpr, &o2_raw);
 	 {
-		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_variable, "getAttributes", "getattributes", 13, 0, NULL, r3.raw(), NULL))) return false;
-		zval av4[1];
-		ZVAL_COPY_VALUE(&av4[0], r3.raw());
-		zend_class_entry *ce5 = pgrt::lookupClass(pg_site_1, "PhpParser\\NodeAbstract", 22);
-		if (UNEXPECTED(ce5 == NULL)) return false;
-		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callBound(pg_site_2, ce5, self, "__construct", 11, 1, av4, r6.raw(), NULL))) return false;
+		zval *gs3 = Z_TYPE_P(p_variable) == IS_OBJECT ? pgrt::trivialGetter(pg_site_0, Z_OBJ_P(p_variable), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\NodeAbstract", 22), "getattributes", 13, "attributes", 10) : NULL;
+		zv::Val r4;
+		if (EXPECTED(gs3 != NULL)) {
+			ZVAL_COPY(r4.raw(), gs3);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_variable, "getAttributes", "getattributes", 13, 0, NULL, r4.raw()))) return false;
+		}
+		}
+		zval av5[1];
+		ZVAL_COPY_VALUE(&av5[0], r4.raw());
+		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_1, "PhpParser\\NodeAbstract", 22);
+		if (UNEXPECTED(ce6 == NULL)) return false;
+		zv::Val r7;
+		if (UNEXPECTED(!pgrt::callBound(pg_site_3, ce6, self, "__construct", 11, 1, av5, r7.raw(), NULL))) return false;
 	}
 	return true;
 }
@@ -114,8 +122,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableAssignNode)
 			Z_PARAM_OBJECT(p_variable)
 			Z_PARAM_OBJECT(p_assignedExpr)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_variable != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_variable, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr\\Variable", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Variable", zend_zval_value_name(p_variable)); RETURN_THROWS(); }
-		if (p_assignedExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_assignedExpr, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_assignedExpr)); RETURN_THROWS(); }
+		if (p_variable != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_variable, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr\\Variable", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Variable", zend_zval_value_name(p_variable)); RETURN_THROWS(); }
+		if (p_assignedExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_assignedExpr, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_assignedExpr)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::VariableAssignNode::m___construct(Z_OBJ_P(ZEND_THIS), p_variable, p_assignedExpr))) RETURN_THROWS();
 	});
 	cls.method(sigs::getVariable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableAssignNode::getVariable() */

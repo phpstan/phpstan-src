@@ -45,41 +45,52 @@ namespace pgen::UsageOfVoidMatchExpressionRule {
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, 0, NULL, r1.raw(), NULL))) return false;
 		if (!((Z_TYPE_P(r1.raw()) == IS_TRUE))) {
 			 {
-				zval av2[1];
-				ZVAL_COPY_VALUE(&av2[0], p_node);
-				zv::Val r3;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getKeepVoidType", "getkeepvoidtype", 15, 1, av2, r3.raw(), NULL))) return false;
-				l_matchResultType = std::move(r3);
+				zv::Val r2;
+				zend_class_entry *rc3 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+				if (rc3 == pt_ce_mutating_scope) {
+					r2 = pt_mutating_scope_get_keep_void_type(Z_OBJ_P(p_scope), p_node);
+					if (UNEXPECTED(r2.isUndef())) return false;
+				}
+				else if (rc3 == pt_ce_node_callback_scope) {
+					r2 = pt_node_callback_scope_get_keep_void_type(Z_OBJ_P(p_scope), Z_OBJ_P(p_node));
+					if (UNEXPECTED(r2.isUndef())) return false;
+				}
+				else {
+					zval av4[1];
+					ZVAL_COPY_VALUE(&av4[0], p_node);
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getKeepVoidType", "getkeepvoidtype", 15, 1, av4, r2.raw()))) return false;
+				}
+				l_matchResultType = std::move(r2);
 			}
 			 {
-				zv::Val r4;
+				zv::Val r5;
 				if (EXPECTED(Z_TYPE_P(l_matchResultType.raw()) == IS_OBJECT)) {
-					r4 = pt_type_op(Z_OBJ_P(l_matchResultType.raw()), PT_OP_IS_VOID, 0, NULL);
-					if (UNEXPECTED(r4.isUndef())) return false;
+					r5 = pt_type_op(Z_OBJ_P(l_matchResultType.raw()), PT_OP_IS_VOID, 0, NULL);
+					if (UNEXPECTED(r5.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_matchResultType.raw(), "isVoid", "isvoid", 6, 0, NULL, r4.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_matchResultType.raw(), "isVoid", "isvoid", 6, 0, NULL, r5.raw(), NULL))) return false;
 				}
 				}
-				bool r5;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r4.raw()), &r5))) return false;
-				if (r5) {
+				bool r6;
+				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r5.raw()), &r6))) return false;
+				if (r6) {
 					 {
-						zv::Val arr6 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-						zval av7[1];
-						ZVAL_COPY_VALUE(&av7[0], &pg_lit[1]);
-						zend_class_entry *ce8 = pgrt::lookupClass(pg_site_3, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-						if (UNEXPECTED(ce8 == NULL)) return false;
-						zv::Val r9;
-						if (UNEXPECTED(!pgrt::callStatic(pg_site_4, ce8, "message", 7, 1, av7, r9.raw(), NULL))) return false;
-						zval av10[1];
-						ZVAL_COPY_VALUE(&av10[0], &pg_lit[2]);
-						zv::Val r11;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r9.raw(), "identifier", "identifier", 10, 1, av10, r11.raw(), NULL))) return false;
+						zv::Val arr7 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+						zval av8[1];
+						ZVAL_COPY_VALUE(&av8[0], &pg_lit[1]);
+						zend_class_entry *ce9 = pgrt::lookupClass(pg_site_3, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+						if (UNEXPECTED(ce9 == NULL)) return false;
+						zv::Val r10;
+						if (UNEXPECTED(!pgrt::callStatic(pg_site_4, ce9, "message", 7, 1, av8, r10.raw(), NULL))) return false;
+						zval av11[1];
+						ZVAL_COPY_VALUE(&av11[0], &pg_lit[2]);
 						zv::Val r12;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r11.raw(), "build", "build", 5, 0, NULL, r12.raw(), NULL))) return false;
-						{ zval v = r12.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr6.raw()), &v); }
-						*ret = arr6.take();
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r10.raw(), "identifier", "identifier", 10, 1, av11, r12.raw(), NULL))) return false;
+						zv::Val r13;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r12.raw(), "build", "build", 5, 0, NULL, r13.raw(), NULL))) return false;
+						{ zval v = r13.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr7.raw()), &v); }
+						*ret = arr7.take();
 						return true;
 					}
 				}
@@ -87,9 +98,9 @@ namespace pgen::UsageOfVoidMatchExpressionRule {
 		}
 	}
 	 {
-		zval arr13_raw;
-		ZVAL_EMPTY_ARRAY(&arr13_raw);
-		ZVAL_COPY(ret, &arr13_raw);
+		zval arr14_raw;
+		ZVAL_EMPTY_ARRAY(&arr14_raw);
+		ZVAL_COPY(ret, &arr14_raw);
 		return true;
 	}
 }

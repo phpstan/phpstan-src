@@ -173,36 +173,44 @@ namespace pgen::IssetRule {
 				}
 				 {
 					zv::Val r21;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "isInTrait", "isintrait", 9, 0, NULL, r21.raw(), NULL))) return false;
+					zend_class_entry *rc22 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
+					if (rc22 == pt_ce_mutating_scope) {
+						bool bo23 = false;
+						if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(p_scope), bo23))) return false;
+						ZVAL_BOOL(r21.raw(), bo23);
+					}
+					else {
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "isInTrait", "isintrait", 9, 0, NULL, r21.raw()))) return false;
+					}
 					if (Z_TYPE_P(r21.raw()) == IS_TRUE) {
 						 {
-							zval *p22 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::IssetRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
-							if (UNEXPECTED(p22 == NULL)) return false;
-							zv::Val o23 = zv::Val::copyOf(zv::Ref(p22));
-							zv::Val h24;
-							zval *p25;
+							zval *p24 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::IssetRule::slot::constantConditionInTraitHelper, "constantConditionInTraitHelper");
+							if (UNEXPECTED(p24 == NULL)) return false;
+							zv::Val o25 = zv::Val::copyOf(zv::Ref(p24));
+							zv::Val h26;
+							zval *p27;
 							if (EXPECTED(Z_TYPE_P(l_varResult) == IS_OBJECT)) {
-								p25 = pt_expression_result_expr(l_varResult, h24);
-								if (UNEXPECTED(p25 == NULL)) return false;
+								p27 = pt_expression_result_expr(l_varResult, h26);
+								if (UNEXPECTED(p27 == NULL)) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_varResult, "getExpr", "getexpr", 7, 0, NULL, h24.raw()))) return false;
-								p25 = h24.raw();
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_varResult, "getExpr", "getexpr", 7, 0, NULL, h26.raw()))) return false;
+								p27 = h26.raw();
 							}
 							}
-							if (UNEXPECTED(!(pgrt::instanceOfClass(p25, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitError", 3, "expr", "PhpParser\\Node\\Expr", p25); return false; }
-							if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitError(Z_OBJ_P(o23.raw()), &pg_lit[5], p_scope, p25, true, l_error.raw()))) return false;
+							if (UNEXPECTED(!(pgrt::instanceOfClass(p27, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitError", 3, "expr", "PhpParser\\Node\\Expr", p27); return false; }
+							if (UNEXPECTED(!pgen::ConstantConditionInTraitHelper::m_emitError(Z_OBJ_P(o25.raw()), &pg_lit[5], p_scope, p27, true, l_error.raw()))) return false;
 						}
 						goto cont10;
 					}
 				}
 				 {
-					zv::Val o27 = zv::Val::copyOf(zv::Ref(l_error.raw()));
-					zv::Val o28 = zv::Val::copyOf(zv::Ref(o27.raw()));
-					zval *w29 = zv::Ref(l_messages.raw()).deref().raw();
-					if (Z_TYPE_P(w29) <= IS_NULL) { zval_ptr_dtor(w29); array_init(w29); } else if (UNEXPECTED(Z_TYPE_P(w29) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w29);
-					{ zval v = o28.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w29), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zv::Val o29 = zv::Val::copyOf(zv::Ref(l_error.raw()));
+					zv::Val o30 = zv::Val::copyOf(zv::Ref(o29.raw()));
+					zval *w31 = zv::Ref(l_messages.raw()).deref().raw();
+					if (Z_TYPE_P(w31) <= IS_NULL) { zval_ptr_dtor(w31); array_init(w31); } else if (UNEXPECTED(Z_TYPE_P(w31) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w31);
+					{ zval v = o30.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w31), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
 			cont10:;

@@ -12,9 +12,11 @@ static zval pg_lit[1];
 static pt_method_site pg_site_0; /* method_getAttribute_0 */
 static pt_method_site pg_site_1; /* method_getDocComment_1 */
 static pt_method_site pg_site_2; /* method_getStartLine_2 */
-static pt_method_site pg_site_3; /* method_getStartLine_3 */
-static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_5; /* cls_PHPStan\PhpDocParser\Ast\Node */
+static pgrt::GetterSite pg_site_3; /* getter_getStartLine_3 */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Comment */
+static pt_method_site pg_site_5; /* method_getStartLine_5 */
+static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\PhpDocParser\Ast\Node */
 
 namespace pgen::PhpDocLineHelper {
 
@@ -50,18 +52,25 @@ namespace pgen::PhpDocLineHelper {
 		}
 	}
 	 {
-		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_phpDoc.raw(), "getStartLine", "getstartline", 12, 0, NULL, r6.raw(), NULL))) return false;
-		zv::Val ar7;
-		zval z8;
-		ZVAL_LONG(&z8, Z_LVAL_P(r6.raw()));
-		if (UNEXPECTED(add_function(ar7.raw(), &z8, l_phpDocTagLine.raw()) != SUCCESS || EG(exception))) return false;
-		zv::Val ar9;
-		zval z10;
-		ZVAL_LONG(&z10, 1);
-		if (UNEXPECTED(sub_function(ar9.raw(), ar7.raw(), &z10) != SUCCESS || EG(exception))) return false;
-		if (UNEXPECTED(Z_TYPE_P(ar9.raw()) != IS_LONG)) { zend_type_error("PHPStan\\Rules\\PhpDoc\\PhpDocLineHelper::detectLine: int expected, %s given", zend_zval_value_name(ar9.raw())); return false; }
-		*ret = Z_LVAL_P(ar9.raw());
+		zval *gs6 = Z_TYPE_P(l_phpDoc.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_3, Z_OBJ_P(l_phpDoc.raw()), pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Comment", 17), "getstartline", 12, "startLine", 9) : NULL;
+		zv::Val r7;
+		if (EXPECTED(gs6 != NULL)) {
+			ZVAL_COPY(r7.raw(), gs6);
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_phpDoc.raw(), "getStartLine", "getstartline", 12, 0, NULL, r7.raw()))) return false;
+		}
+		}
+		zv::Val ar8;
+		zval z9;
+		ZVAL_LONG(&z9, Z_LVAL_P(r7.raw()));
+		if (UNEXPECTED(add_function(ar8.raw(), &z9, l_phpDocTagLine.raw()) != SUCCESS || EG(exception))) return false;
+		zv::Val ar10;
+		zval z11;
+		ZVAL_LONG(&z11, 1);
+		if (UNEXPECTED(sub_function(ar10.raw(), ar8.raw(), &z11) != SUCCESS || EG(exception))) return false;
+		if (UNEXPECTED(Z_TYPE_P(ar10.raw()) != IS_LONG)) { zend_type_error("PHPStan\\Rules\\PhpDoc\\PhpDocLineHelper::detectLine: int expected, %s given", zend_zval_value_name(ar10.raw())); return false; }
+		*ret = Z_LVAL_P(ar10.raw());
 		return true;
 	}
 }
@@ -84,8 +93,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocLineHelper)
 			Z_PARAM_OBJECT(p_node)
 			Z_PARAM_OBJECT(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_phpDocNode != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\PhpDocParser\\Ast\\Node", 29)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\Node", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_phpDocNode != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\PhpDocParser\\Ast\\Node", 29)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\Node", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
 		zend_long r;
 		if (UNEXPECTED(!pgen::PhpDocLineHelper::m_detectLine(p_node, p_phpDocNode, &r))) RETURN_THROWS();
 		RETURN_LONG(r);

@@ -1721,6 +1721,8 @@ final class AssignHandler implements ExprHandler
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$scope = $result->getScope();
+			$assignedExprType = $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope);
+			$assignedExprNativeType = $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain());
 			foreach ($var->items as $i => $arrayItem) {
 				if ($arrayItem === null) {
 					continue;
@@ -1753,8 +1755,8 @@ final class AssignHandler implements ExprHandler
 					$nativeDimType = $dimType;
 				}
 				$getOffsetValueTypeExpr = new NativeTypeExpr(
-					$this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope)->getOffsetValueType($dimType),
-					$this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain())->getOffsetValueType($nativeDimType),
+					$assignedExprType->getOffsetValueType($dimType),
+					$assignedExprNativeType->getOffsetValueType($nativeDimType),
 				);
 				// store the fabricated result so narrowing walks over the item value
 				// compose from it instead of falling back to on-demand pricing

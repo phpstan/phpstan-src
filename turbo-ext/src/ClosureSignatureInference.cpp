@@ -574,7 +574,7 @@ zv::Val anonymousMarker(zval *site, zend_string *name, zend_long variance, zval 
 }
 
 /* Mirrors the private bodyYieldsOrInvokes(); false = pending exception */
-[[nodiscard]] bool bodyYieldsOrInvokes(zval *stmts, zval *names, bool &out)
+[[nodiscard]] bool bodyYieldsOrInvokes(zval *stmts, zval *names, bool &out, bool checkYield = true)
 {
 	out = false;
 	zv::Arr stack = zv::Arr::create(0);
@@ -588,13 +588,70 @@ zv::Val anonymousMarker(zval *site, zend_string *name, zend_long variance, zval 
 		if (node.isUndef()) break;
 		zval *n = node.raw();
 		bool is;
+		if (UNEXPECTED(!isA(n, PT_CLASS_CLOSURE_EXPR, is))) return false;
+		if (is) {
+			zv::Arr captured = zv::Arr::create(0);
+			zval *uses = read(pt_csi_by_ref_uses_site, n, PT_LC("uses"));
+			if (UNEXPECTED(uses == NULL)) return false;
+			zv::Val usesHold = zv::Val::copyOf(zv::Ref(uses));
+			for (auto entry : zv::ArrRef(usesHold.raw())) {
+				zval *var = read(pt_csi_by_ref_use_var_site, entry.value().deref().raw(), PT_LC("var"));
+				if (UNEXPECTED(var == NULL)) return false;
+				zend_string *name;
+				if (UNEXPECTED(!variableStringName(pt_csi_by_ref_variable_name_site, var, name))) return false;
+				if (name == NULL) continue;
+				for (auto candidate : zv::ArrRef(names)) {
+					zval *value = candidate.value().deref().raw();
+					if (Z_TYPE_P(value) == IS_STRING && zend_string_equals(Z_STR_P(value), name)) captured.push(zv::Ref(value));
+				}
+			}
+			if (zend_hash_num_elements(Z_ARRVAL_P(captured.raw())) > 0) {
+				zval *body = read(pt_csi_stmts_site, n, PT_LC("stmts"));
+				if (UNEXPECTED(body == NULL)) return false;
+				zv::Val bodyHold = zv::Val::copyOf(zv::Ref(body));
+				if (UNEXPECTED(!bodyYieldsOrInvokes(bodyHold.raw(), captured.raw(), out, false))) return false;
+				if (out) return true;
+			}
+			continue;
+		}
+		if (UNEXPECTED(!isA(n, PT_CLASS_ARROW_FUNCTION, is))) return false;
+		if (is) {
+			zv::ScratchTable parameters(8);
+			zval *params = read(pt_csi_params_site, n, PT_LC("params"));
+			if (UNEXPECTED(params == NULL)) return false;
+			zv::Val paramsHold = zv::Val::copyOf(zv::Ref(params));
+			for (auto entry : zv::ArrRef(paramsHold.raw())) {
+				zval *var = read(pt_csi_by_ref_param_var_site, entry.value().deref().raw(), PT_LC("var"));
+				if (UNEXPECTED(var == NULL)) return false;
+				zend_string *name;
+				if (UNEXPECTED(!variableStringName(pt_csi_by_ref_variable_name_site, var, name))) return false;
+				if (name == NULL) continue;
+				zval marked;
+				ZVAL_TRUE(&marked);
+				zend_symtable_update(parameters.table(), name, &marked);
+			}
+			zv::Arr captured = zv::Arr::create(0);
+			for (auto candidate : zv::ArrRef(names)) {
+				zval *value = candidate.value().deref().raw();
+				if (Z_TYPE_P(value) == IS_STRING && !zend_symtable_exists(parameters.table(), Z_STR_P(value))) captured.push(zv::Ref(value));
+			}
+			if (zend_hash_num_elements(Z_ARRVAL_P(captured.raw())) > 0) {
+				zval *body = read(pt_csi_arrow_expr_site, n, PT_LC("expr"));
+				if (UNEXPECTED(body == NULL)) return false;
+				zv::Arr bodyHold = zv::Arr::create(1);
+				bodyHold.push(zv::Ref(body));
+				if (UNEXPECTED(!bodyYieldsOrInvokes(bodyHold.raw(), captured.raw(), out, false))) return false;
+				if (out) return true;
+			}
+			continue;
+		}
 		if (UNEXPECTED(!isA(n, PT_CLASS_FUNCTION_LIKE, is))) return false;
 		if (is) continue;
 		if (UNEXPECTED(!isA(n, PT_CLASS_CLASS_LIKE_STMT, is))) return false;
 		if (is) continue;
 		if (UNEXPECTED(!isA(n, PT_CLASS_YIELD, is))) return false;
 		if (!is && UNEXPECTED(!isA(n, PT_CLASS_YIELD_FROM, is))) return false;
-		if (is) {
+		if (checkYield && is) {
 			out = true;
 			return true;
 		}

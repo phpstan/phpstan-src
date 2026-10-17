@@ -48,14 +48,12 @@
 zend_class_entry *pt_ce_parent_stmt_types_visitor = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[2];
+static zval pg_lit[1];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Stmt */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr\Closure */
 static pt_method_site pg_site_2; /* method_setAttribute_2 */
-static pgrt::FunctionSite pg_site_3; /* function_get_class */
-static pgrt::FunctionSite pg_site_4; /* function_array_pop */
-static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node */
 
 namespace pgen::ParentStmtTypesVisitor {
 
@@ -108,29 +106,24 @@ namespace pgen::ParentStmtTypesVisitor {
 			 {
 				zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ParentStmtTypesVisitor::slot::typeStack, "typeStack");
 				if (UNEXPECTED(p4 == NULL)) return false;
-				zval av5[2];
-				ZVAL_COPY_VALUE(&av5[0], &pg_lit[0]);
-				ZVAL_COPY_VALUE(&av5[1], p4);
-				zv::Val r6;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "setAttribute", "setattribute", 12, 2, av5, r6.raw(), NULL))) return false;
+				zv::Val r5;
+				if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_2, p_node, &pg_lit[0], p4, r5.raw()))) return false;
 			}
 		}
 	}
 	 {
-		zval av7[1];
-		ZVAL_COPY_VALUE(&av7[0], p_node);
-		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "get_class", 9, pt_ce_parent_stmt_types_visitor, 1, av7, r8.raw(), NULL))) return false;
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(r8.raw()));
-		zval *w10 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::ParentStmtTypesVisitor::slot::typeStack)).deref().raw();
-		if (Z_TYPE_P(w10) <= IS_NULL) { zval_ptr_dtor(w10); array_init(w10); } else if (UNEXPECTED(Z_TYPE_P(w10) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-		SEPARATE_ARRAY(w10);
-		{ zval v = o9.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w10), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+		zv::Val r6;
+		if (UNEXPECTED(!pgrt::getClass(p_node, r6.raw()))) return false;
+		zv::Val o7 = zv::Val::copyOf(zv::Ref(r6.raw()));
+		zval *w8 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::ParentStmtTypesVisitor::slot::typeStack)).deref().raw();
+		if (Z_TYPE_P(w8) <= IS_NULL) { zval_ptr_dtor(w8); array_init(w8); } else if (UNEXPECTED(Z_TYPE_P(w8) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+		SEPARATE_ARRAY(w8);
+		{ zval v = o7.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w8), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 	}
 	 {
-		zval z11;
-		ZVAL_NULL(&z11);
-		ZVAL_COPY_VALUE(ret, &z11);
+		zval z9;
+		ZVAL_NULL(&z9);
+		ZVAL_COPY_VALUE(ret, &z9);
 		return true;
 	}
 }
@@ -156,26 +149,16 @@ namespace pgen::ParentStmtTypesVisitor {
 		}
 	}
 	 {
-		zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ParentStmtTypesVisitor::slot::typeStack, "typeStack");
-		if (UNEXPECTED(p3 == NULL)) return false;
-		zval *is5 = &this_zv;
-		zv::Val ist6;
-		zval *is4 = is5 == NULL ? NULL : pgrt::propIs(is5, pt_ce_parent_stmt_types_visitor, &pg_lit[1], ist6.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ref7 = zv::Val::adopt([&]() { zval inner; if (is4 != NULL) { ZVAL_COPY(&inner, is4); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
-		zval av8[1];
-		ZVAL_COPY_VALUE(&av8[0], ref7.raw());
-		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "array_pop", 9, pt_ce_parent_stmt_types_visitor, 1, av8, r9.raw(), NULL))) return false;
-		 {
-			zval *w10 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::ParentStmtTypesVisitor::slot::typeStack)).deref().raw();
-			zv::Ref(w10).assign(zv::Val::copyOf(zv::Ref(Z_REFVAL_P(ref7.raw()))));
-		}
+		zval *w3 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::ParentStmtTypesVisitor::slot::typeStack)).deref().raw();
+		if (Z_TYPE_P(w3) <= IS_NULL) { zval_ptr_dtor(w3); array_init(w3); } else if (UNEXPECTED(Z_TYPE_P(w3) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+		SEPARATE_ARRAY(w3);
+		zv::Val r4;
+		pgrt::arrayPop(w3, r4.raw());
 	}
 	 {
-		zval z11;
-		ZVAL_NULL(&z11);
-		ZVAL_COPY_VALUE(ret, &z11);
+		zval z5;
+		ZVAL_NULL(&z5);
+		ZVAL_COPY_VALUE(ret, &z5);
 		return true;
 	}
 }
@@ -188,7 +171,6 @@ namespace sigs = ptdecl::ParentStmtTypesVisitor::sig;
 PT_MINIT_REGISTRATION(pt_register_codegen_ParentStmtTypesVisitor)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("parentStmtTypes", 15));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("typeStack", 9));
 	reg::Class cls("PHPStan\\Parser\\ParentStmtTypesVisitor");
 	ptdecl::ParentStmtTypesVisitor::declareClass(cls);
 	ptdecl::ParentStmtTypesVisitor::declareProperties(cls);
@@ -206,7 +188,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParentStmtTypesVisitor)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ParentStmtTypesVisitor::m_enterNode(Z_OBJ_P(ZEND_THIS), p_node, return_value))) RETURN_THROWS();
 	});
@@ -215,7 +197,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParentStmtTypesVisitor)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ParentStmtTypesVisitor::m_leaveNode(Z_OBJ_P(ZEND_THIS), p_node, return_value))) RETURN_THROWS();
 	});

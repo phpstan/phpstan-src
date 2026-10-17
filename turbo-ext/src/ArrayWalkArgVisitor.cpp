@@ -51,12 +51,14 @@ zend_class_entry *pt_ce_array_walk_arg_visitor = nullptr;
 static zval pg_lit[2];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Expr\FuncCall */
-static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name */
-static pt_method_site pg_site_2; /* method_isFirstClassCallable_2 */
-static pt_method_site pg_site_3; /* method_toLowerString_3 */
-static pt_method_site pg_site_4; /* method_getArgs_4 */
-static pt_method_site pg_site_5; /* method_setAttribute_5 */
-static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
+static pgrt::PropSite pg_site_1; /* prop_name_1 */
+static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Name */
+static pt_method_site pg_site_3; /* method_isFirstClassCallable_3 */
+static pgrt::PropSite pg_site_4; /* prop_name_4 */
+static pt_method_site pg_site_5; /* method_toLowerString_5 */
+static pt_method_site pg_site_6; /* method_getArgs_6 */
+static pt_method_site pg_site_7; /* method_setAttribute_7 */
+static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
 
 namespace pgen::ArrayWalkArgVisitor {
 
@@ -71,37 +73,37 @@ namespace pgen::ArrayWalkArgVisitor {
 	 {
 		bool b2 = pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\FuncCall", 28));
 		if (b2) {
-			zval *p3;
 			zv::Val o4;
-			 {
+			zval *p3 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(p_node), "name", 4) : NULL;
+			if (UNEXPECTED(p3 == NULL || Z_ISUNDEF_P(p3))) {
 				if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_array_walk_arg_visitor, "name", 4, o4.raw()))) return false;
 				p3 = o4.raw();
 			}
-			b2 = pgrt::instanceOfClass(p3, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Name", 19));
+			b2 = pgrt::instanceOfClass(zv::Ref(p3).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Name", 19));
 		}
 		bool b1 = b2;
 		if (b1) {
 			zv::Val r5;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "isFirstClassCallable", "isfirstclasscallable", 20, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callIsFirstClassCallable(pg_site_3, p_node, r5.raw()))) return false;
 			b1 = !((Z_TYPE_P(r5.raw()) == IS_TRUE));
 		}
 		if (b1) {
 			 {
-				zval *p6;
 				zv::Val o7;
-				 {
+				zval *p6 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_4, Z_OBJ_P(p_node), "name", 4) : NULL;
+				if (UNEXPECTED(p6 == NULL || Z_ISUNDEF_P(p6))) {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_array_walk_arg_visitor, "name", 4, o7.raw()))) return false;
 					p6 = o7.raw();
 				}
 				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p6, "toLowerString", "tolowerstring", 13, 0, NULL, r8.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::nameToLowerString(pg_site_5, zv::Ref(p6).deref().raw(), r8.raw()))) return false;
 				l_functionName = std::move(r8);
 			}
 			 {
 				if (zend_is_identical(l_functionName.raw(), &pg_lit[0])) {
 					 {
 						zv::Val r9;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_node, "getArgs", "getargs", 7, 0, NULL, r9.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callGetArgs(pg_site_6, p_node, r9.raw()))) return false;
 						l_args = std::move(r9);
 					}
 					 {
@@ -121,13 +123,10 @@ namespace pgen::ArrayWalkArgVisitor {
 									e14 = pgrt::dimRead(l_args.raw(), &z16, et15.raw());
 									if (UNEXPECTED(e14 == NULL)) return false;
 								}
-								zval av17[2];
-								ZVAL_COPY_VALUE(&av17[0], &pg_lit[1]);
-								zval z18;
-								ZVAL_BOOL(&z18, true);
-								ZVAL_COPY_VALUE(&av17[1], &z18);
-								zv::Val r19;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_5, zv::Ref(e14).deref().raw(), "setAttribute", "setattribute", 12, 2, av17, r19.raw(), NULL))) return false;
+								zval z17;
+								ZVAL_BOOL(&z17, true);
+								zv::Val r18;
+								if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_7, zv::Ref(e14).deref().raw(), &pg_lit[1], &z17, r18.raw()))) return false;
 							}
 						}
 					}
@@ -136,9 +135,9 @@ namespace pgen::ArrayWalkArgVisitor {
 		}
 	}
 	 {
-		zval z20;
-		ZVAL_NULL(&z20);
-		ZVAL_COPY_VALUE(ret, &z20);
+		zval z19;
+		ZVAL_NULL(&z19);
+		ZVAL_COPY_VALUE(ret, &z19);
 		return true;
 	}
 }
@@ -161,7 +160,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayWalkArgVisitor)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayWalkArgVisitor::m_enterNode(Z_OBJ_P(ZEND_THIS), p_node, return_value))) RETURN_THROWS();
 	});

@@ -17,7 +17,7 @@ zend_class_entry *lookupClassSlow(ClassSite &site, const char *name, size_t len)
 		if (!EG(exception)) zend_throw_error(NULL, "Class \"%s\" not found", name);
 		return NULL;
 	}
-	site = { ce, pt_engine_generation };
+	site = { ce, pt_engine_generation, 0 };
 	return ce;
 }
 
@@ -26,10 +26,30 @@ zend_class_entry *lookupClassQuietSlow(ClassSite &site, const char *name, size_t
 	zend_string *str = zend_string_init(name, len, 0);
 	zend_class_entry *ce = zend_lookup_class_ex(str, NULL, ZEND_FETCH_CLASS_NO_AUTOLOAD);
 	zend_string_release(str);
-	if (ce != NULL) {
-		site = { ce, pt_engine_generation };
-	}
+	site = { ce, pt_engine_generation, ce == NULL ? zend_hash_num_elements(EG(class_table)) : 0 };
 	return ce;
+}
+
+uint32_t propIndexSlow(PropIndexSite &site, zend_object *object, const char *name, size_t len)
+{
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(object->ce, properties_info), name, len);
+	ZEND_ASSERT(info != NULL && (info->flags & ZEND_ACC_STATIC) == 0);
+	site = { object->ce, (uint32_t) OBJ_PROP_TO_NUM(info->offset), pt_engine_generation };
+	return site.index;
+}
+
+zval *propCachedSlow(PropSite &site, zend_object *object, const char *name, size_t len)
+{
+	int32_t offset = pt_instance_prop_offset(object->ce, name, len);
+	if (UNEXPECTED(offset < 0)) return NULL;
+	if (site.generation != pt_engine_generation) {
+		site = {};
+		site.generation = pt_engine_generation;
+	}
+	uint32_t way = site.next++ % PROP_SITE_WAYS;
+	site.ce[way] = object->ce;
+	site.offset[way] = (uint32_t) offset;
+	return OBJ_PROP(object, offset);
 }
 
 zval *staticSlotSlow(StaticSite &site, zend_class_entry *ce, const char *name, size_t len)
@@ -701,6 +721,303 @@ bool throwIntegerOverflow()
 	zend_throw_error(NULL, "phpstan_turbo codegen: integer overflow of an int-typed value");
 	return false;
 }
+
+bool getClass(zval *object, zval *ret)
+{
+	zval *value = object;
+	ZVAL_DEREF(value);
+	if (EXPECTED(Z_TYPE_P(value) == IS_OBJECT)) {
+		ZVAL_STR_COPY(ret, Z_OBJCE_P(value)->name);
+		return true;
+	}
+	zend_type_error("get_class(): Argument #1 ($object) must be of type object, %s given", zend_zval_value_name(value));
+	ZVAL_UNDEF(ret);
+	return false;
+}
+
+bool inArrayStrict(zval *needle, zval *array)
+{
+	for (auto entry : zv::ArrRef(array)) {
+		if (zend_is_identical(needle, entry.value().deref().raw())) return true;
+	}
+	return false;
+}
+
+bool arrayEdge(FunctionSite &site, const char *name, size_t len, bool last, zval *array, zval *ret)
+{
+	zval *value = array;
+	ZVAL_DEREF(value);
+	if (UNEXPECTED(Z_TYPE_P(value) != IS_ARRAY)) {
+		return callFunction(site, name, len, NULL, 1, array, ret);
+	}
+	HashTable *table = Z_ARRVAL_P(value);
+	if (zend_hash_num_elements(table) == 0) {
+		ZVAL_NULL(ret);
+		return true;
+	}
+	HashPosition position;
+	if (last) {
+		zend_hash_internal_pointer_end_ex(table, &position);
+	} else {
+		zend_hash_internal_pointer_reset_ex(table, &position);
+	}
+	ZVAL_COPY_DEREF(ret, zend_hash_get_current_data_ex(table, &position));
+	return true;
+}
+
+bool strMatch(FunctionSite &site, const char *name, size_t len, StrMatch kind, zval *haystack, zval *needle, zval *ret)
+{
+	if (UNEXPECTED(Z_TYPE_P(haystack) != IS_STRING || Z_TYPE_P(needle) != IS_STRING)) {
+		zval argv[2];
+		ZVAL_COPY_VALUE(&argv[0], haystack);
+		ZVAL_COPY_VALUE(&argv[1], needle);
+		return callFunction(site, name, len, NULL, 2, argv, ret);
+	}
+	zend_string *h = Z_STR_P(haystack);
+	zend_string *n = Z_STR_P(needle);
+	bool result;
+	switch (kind) {
+		case StrMatch::STARTS:
+			result = ZSTR_LEN(n) <= ZSTR_LEN(h) && memcmp(ZSTR_VAL(h), ZSTR_VAL(n), ZSTR_LEN(n)) == 0;
+			break;
+		case StrMatch::ENDS:
+			result = ZSTR_LEN(n) <= ZSTR_LEN(h) && memcmp(ZSTR_VAL(h) + ZSTR_LEN(h) - ZSTR_LEN(n), ZSTR_VAL(n), ZSTR_LEN(n)) == 0;
+			break;
+		default:
+			result = ZSTR_LEN(n) == 0 || zend_memnstr(ZSTR_VAL(h), ZSTR_VAL(n), ZSTR_LEN(n), ZSTR_VAL(h) + ZSTR_LEN(h)) != NULL;
+			break;
+	}
+	ZVAL_BOOL(ret, result);
+	return true;
+}
+
+void arrayPop(zval *array, zval *ret)
+{
+	HashTable *table = Z_ARRVAL_P(array);
+	if (zend_hash_num_elements(table) == 0) {
+		ZVAL_NULL(ret);
+		return;
+	}
+	HashPosition position;
+	zend_hash_internal_pointer_end_ex(table, &position);
+	zval *value = zend_hash_get_current_data_ex(table, &position);
+	zend_string *key;
+	zend_ulong index;
+	int type = zend_hash_get_current_key_ex(table, &key, &index, &position);
+	ZVAL_COPY_DEREF(ret, value);
+	if (type == HASH_KEY_IS_STRING) {
+		zend_hash_del(table, key);
+	} else {
+		if ((zend_long) index == table->nNextFreeElement - 1) {
+			table->nNextFreeElement = table->nNextFreeElement - 1;
+		}
+		zend_hash_index_del(table, index);
+	}
+	zend_hash_internal_pointer_reset(table);
+}
+
+/* {{{ php-parser node methods */
+
+namespace {
+
+enum class NodeShape : uint8_t { NAME, CALL, ATTRIBUTES };
+
+/* per (class, shape): the slot the intrinsic reads, -1 when the class does
+ * not keep php-parser's implementation */
+struct NodeShapeEntry
+{
+	zend_class_entry *ce;
+	uint32_t generation;
+	NodeShape shape;
+	int32_t offset;
+};
+
+constexpr unsigned NODE_SHAPE_CACHE_BITS = 9;
+NodeShapeEntry nodeShapeCache[1u << NODE_SHAPE_CACHE_BITS];
+
+zend_class_entry *methodScope(zend_class_entry *ce, const char *lcname, size_t len)
+{
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(ce, function_table), lcname, len);
+	return fn != NULL ? fn->common.scope : NULL;
+}
+
+int32_t publicOffset(zend_class_entry *ce, const char *name, size_t len)
+{
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), name, len);
+	if (info == NULL || (info->flags & (ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)) != ZEND_ACC_PUBLIC) return -1;
+	return (int32_t) info->offset;
+}
+
+int32_t nodeShapeSlow(zend_class_entry *ce, NodeShape shape)
+{
+	switch (shape) {
+		case NodeShape::NAME: {
+			zend_class_entry *name = pt_class(PT_CLASS_NAME);
+			zend_class_entry *identifier = pt_class(PT_CLASS_IDENTIFIER);
+			zend_class_entry *own = name != NULL && instanceof_function(ce, name) ? name
+				: (identifier != NULL && instanceof_function(ce, identifier) ? identifier : NULL);
+			if (own == NULL || methodScope(ce, PT_LC("tostring")) != own || methodScope(ce, PT_LC("tolowerstring")) != own) return -1;
+			return publicOffset(ce, PT_LC("name"));
+		}
+		case NodeShape::CALL: {
+			zend_class_entry *callLike = pt_class(PT_CLASS_CALL_LIKE);
+			if (callLike == NULL || !instanceof_function(ce, callLike)) return -1;
+			if (methodScope(ce, PT_LC("isfirstclasscallable")) != callLike || methodScope(ce, PT_LC("getargs")) != callLike) return -1;
+			zend_class_entry *raw = methodScope(ce, PT_LC("getrawargs"));
+			if (raw == NULL || (raw != pt_class(PT_CLASS_FUNC_CALL) && raw != pt_class(PT_CLASS_METHOD_CALL) && raw != pt_class(PT_CLASS_STATIC_CALL)
+				&& raw != pt_class(PT_CLASS_NULLSAFE_METHOD_CALL) && raw != pt_class(PT_CLASS_NEW))) return -1;
+			return publicOffset(ce, PT_LC("args"));
+		}
+		case NodeShape::ATTRIBUTES: {
+			zend_class_entry *nodeAbstract = pt_class(PT_CLASS_NODE_ABSTRACT);
+			if (nodeAbstract == NULL || !instanceof_function(ce, nodeAbstract)) return -1;
+			if (methodScope(ce, PT_LC("setattribute")) != nodeAbstract || methodScope(ce, PT_LC("getattribute")) != nodeAbstract || methodScope(ce, PT_LC("hasattribute")) != nodeAbstract) return -1;
+			zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(ce, properties_info), PT_LC("attributes"));
+			if (info == NULL || (info->flags & ZEND_ACC_STATIC) != 0) return -1;
+			return (int32_t) info->offset;
+		}
+	}
+	return -1;
+}
+
+zend_always_inline int32_t nodeShape(zend_class_entry *ce, NodeShape shape)
+{
+	uintptr_t h = (((uintptr_t) ce >> 4) ^ (uintptr_t) shape) * (uintptr_t) 0x9E3779B97F4A7C15ull;
+	NodeShapeEntry &entry = nodeShapeCache[(size_t) (h >> (sizeof(uintptr_t) * 8 - NODE_SHAPE_CACHE_BITS))];
+	if (EXPECTED(entry.ce == ce && entry.shape == shape && entry.generation == pt_engine_generation)) return entry.offset;
+	int32_t offset = nodeShapeSlow(ce, shape);
+	entry = { ce, pt_engine_generation, shape, offset };
+	return offset;
+}
+
+/* the slot of `node` for the shape, dereferenced; NULL for the engine path */
+zend_always_inline zval *shapeSlot(zval *node, NodeShape shape, uint8_t wantedType)
+{
+	if (UNEXPECTED(Z_TYPE_P(node) != IS_OBJECT)) return NULL;
+	int32_t offset = nodeShape(Z_OBJCE_P(node), shape);
+	if (UNEXPECTED(offset < 0)) return NULL;
+	zval *slot = OBJ_PROP(Z_OBJ_P(node), offset);
+	ZVAL_DEREF(slot);
+	return EXPECTED(Z_TYPE_P(slot) == wantedType) ? slot : NULL;
+}
+
+bool viaEngine(pt_method_site &site, zval *node, const char *name, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret)
+{
+	return callMethod(site, node, name, lcname, len, argc, argv, ret, NULL);
+}
+
+} // namespace
+
+bool nodeSetAttribute(pt_method_site &site, zval *node, zval *key, zval *value, zval *ret)
+{
+	zval *attributes = Z_TYPE_P(key) == IS_STRING ? shapeSlot(node, NodeShape::ATTRIBUTES, IS_ARRAY) : NULL;
+	if (EXPECTED(attributes != NULL)) {
+		SEPARATE_ARRAY(attributes);
+		Z_TRY_ADDREF_P(value);
+		zend_symtable_update(Z_ARRVAL_P(attributes), Z_STR_P(key), value);
+		ZVAL_NULL(ret);
+		return true;
+	}
+	zval argv[2];
+	ZVAL_COPY_VALUE(&argv[0], key);
+	ZVAL_COPY_VALUE(&argv[1], value);
+	return viaEngine(site, node, "setAttribute", "setattribute", 12, 2, argv, ret);
+}
+
+bool nodeGetAttribute(pt_method_site &site, zval *node, zval *key, zval *defaultValue, zval *ret)
+{
+	zval *attributes = Z_TYPE_P(key) == IS_STRING ? shapeSlot(node, NodeShape::ATTRIBUTES, IS_ARRAY) : NULL;
+	if (EXPECTED(attributes != NULL)) {
+		zval *found = zend_symtable_find(Z_ARRVAL_P(attributes), Z_STR_P(key));
+		if (found != NULL) {
+			ZVAL_COPY_DEREF(ret, found);
+		} else if (defaultValue != NULL) {
+			ZVAL_COPY(ret, defaultValue);
+		} else {
+			ZVAL_NULL(ret);
+		}
+		return true;
+	}
+	zval argv[2];
+	ZVAL_COPY_VALUE(&argv[0], key);
+	if (defaultValue != NULL) ZVAL_COPY_VALUE(&argv[1], defaultValue);
+	return viaEngine(site, node, "getAttribute", "getattribute", 12, defaultValue != NULL ? 2 : 1, argv, ret);
+}
+
+bool nodeHasAttribute(pt_method_site &site, zval *node, zval *key, zval *ret)
+{
+	zval *attributes = Z_TYPE_P(key) == IS_STRING ? shapeSlot(node, NodeShape::ATTRIBUTES, IS_ARRAY) : NULL;
+	if (EXPECTED(attributes != NULL)) {
+		ZVAL_BOOL(ret, zend_symtable_exists(Z_ARRVAL_P(attributes), Z_STR_P(key)));
+		return true;
+	}
+	return viaEngine(site, node, "hasAttribute", "hasattribute", 12, 1, key, ret);
+}
+
+bool nameToString(pt_method_site &site, zval *node, zval *ret)
+{
+	zval *name = shapeSlot(node, NodeShape::NAME, IS_STRING);
+	if (EXPECTED(name != NULL)) {
+		ZVAL_COPY(ret, name);
+		return true;
+	}
+	return viaEngine(site, node, "toString", "tostring", 8, 0, NULL, ret);
+}
+
+bool nameToLowerString(pt_method_site &site, zval *node, zval *ret)
+{
+	zval *name = shapeSlot(node, NodeShape::NAME, IS_STRING);
+	if (EXPECTED(name != NULL)) {
+		/* strtolower() is the ASCII fold since PHP 8.2; an already
+		 * lowercase string comes back with its refcount bumped */
+		ZVAL_STR(ret, zend_string_tolower(Z_STR_P(name)));
+		return true;
+	}
+	return viaEngine(site, node, "toLowerString", "tolowerstring", 13, 0, NULL, ret);
+}
+
+bool callIsFirstClassCallable(pt_method_site &site, zval *node, zval *ret)
+{
+	zval *args = shapeSlot(node, NodeShape::CALL, IS_ARRAY);
+	if (EXPECTED(args != NULL)) {
+		bool result = false;
+		if (zend_hash_num_elements(Z_ARRVAL_P(args)) == 1) {
+			zend_class_entry *placeholder = pt_class(PT_CLASS_VARIADIC_PLACEHOLDER);
+			for (auto entry : zv::ArrRef(args)) {
+				result = placeholder != NULL && entry.value().deref().instanceOf(placeholder);
+				break;
+			}
+		}
+		ZVAL_BOOL(ret, result);
+		return true;
+	}
+	return viaEngine(site, node, "isFirstClassCallable", "isfirstclasscallable", 20, 0, NULL, ret);
+}
+
+bool callGetArgs(pt_method_site &site, zval *node, zval *ret)
+{
+	zval *args = shapeSlot(node, NodeShape::CALL, IS_ARRAY);
+	if (EXPECTED(args != NULL)) {
+		/* only plain Args: anything else is a partial application, whose
+		 * assertion the method itself raises */
+		zend_class_entry *arg = pt_class(PT_CLASS_ARG);
+		bool plain = arg != NULL;
+		for (auto entry : zv::ArrRef(args)) {
+			zv::Ref value = entry.value().deref();
+			if (!value.isObject() || Z_OBJCE_P(value.raw()) != arg) {
+				plain = false;
+				break;
+			}
+		}
+		if (EXPECTED(plain)) {
+			ZVAL_COPY(ret, args);
+			return true;
+		}
+	}
+	return viaEngine(site, node, "getArgs", "getargs", 7, 0, NULL, ret);
+}
+
+/* }}} */
 
 zend_string *internLiteral(const char *s, size_t len)
 {

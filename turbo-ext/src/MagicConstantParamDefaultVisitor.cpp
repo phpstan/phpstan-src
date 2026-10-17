@@ -51,9 +51,11 @@ zend_class_entry *pt_ce_magic_constant_param_default_visitor = nullptr;
 static zval pg_lit[1];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Param */
-static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Scalar\MagicConst */
-static pt_method_site pg_site_2; /* method_setAttribute_2 */
-static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node */
+static pgrt::PropSite pg_site_1; /* prop_default_1 */
+static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Scalar\MagicConst */
+static pgrt::PropSite pg_site_3; /* prop_default_3 */
+static pt_method_site pg_site_4; /* method_setAttribute_4 */
+static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
 
 namespace pgen::MagicConstantParamDefaultVisitor {
 
@@ -66,36 +68,33 @@ namespace pgen::MagicConstantParamDefaultVisitor {
 	 {
 		bool b1 = pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Param", 20));
 		if (b1) {
-			zval *p2;
 			zv::Val o3;
-			 {
+			zval *p2 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(p_node), "default", 7) : NULL;
+			if (UNEXPECTED(p2 == NULL || Z_ISUNDEF_P(p2))) {
 				if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_magic_constant_param_default_visitor, "default", 7, o3.raw()))) return false;
 				p2 = o3.raw();
 			}
-			b1 = pgrt::instanceOfClass(p2, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Scalar\\MagicConst", 32));
+			b1 = pgrt::instanceOfClass(zv::Ref(p2).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Scalar\\MagicConst", 32));
 		}
 		if (b1) {
 			 {
-				zval *p4;
 				zv::Val o5;
-				 {
+				zval *p4 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_3, Z_OBJ_P(p_node), "default", 7) : NULL;
+				if (UNEXPECTED(p4 == NULL || Z_ISUNDEF_P(p4))) {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_magic_constant_param_default_visitor, "default", 7, o5.raw()))) return false;
 					p4 = o5.raw();
 				}
-				zval av6[2];
-				ZVAL_COPY_VALUE(&av6[0], &pg_lit[0]);
-				zval z7;
-				ZVAL_BOOL(&z7, true);
-				ZVAL_COPY_VALUE(&av6[1], &z7);
-				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p4, "setAttribute", "setattribute", 12, 2, av6, r8.raw(), NULL))) return false;
+				zval z6;
+				ZVAL_BOOL(&z6, true);
+				zv::Val r7;
+				if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_4, zv::Ref(p4).deref().raw(), &pg_lit[0], &z6, r7.raw()))) return false;
 			}
 		}
 	}
 	 {
-		zval z9;
-		ZVAL_NULL(&z9);
-		ZVAL_COPY_VALUE(ret, &z9);
+		zval z8;
+		ZVAL_NULL(&z8);
+		ZVAL_COPY_VALUE(ret, &z8);
 		return true;
 	}
 }
@@ -117,7 +116,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MagicConstantParamDefaultVisitor)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MagicConstantParamDefaultVisitor::m_enterNode(Z_OBJ_P(ZEND_THIS), p_node, return_value))) RETURN_THROWS();
 	});

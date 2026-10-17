@@ -51,12 +51,15 @@ zend_class_entry *pt_ce_closure_bind_to_var_visitor = nullptr;
 static zval pg_lit[2];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Expr\MethodCall */
-static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Identifier */
-static pt_method_site pg_site_2; /* method_toLowerString_2 */
-static pt_method_site pg_site_3; /* method_isFirstClassCallable_3 */
-static pt_method_site pg_site_4; /* method_getArgs_4 */
-static pt_method_site pg_site_5; /* method_setAttribute_5 */
-static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
+static pgrt::PropSite pg_site_1; /* prop_name_1 */
+static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Identifier */
+static pgrt::PropSite pg_site_3; /* prop_name_3 */
+static pt_method_site pg_site_4; /* method_toLowerString_4 */
+static pt_method_site pg_site_5; /* method_isFirstClassCallable_5 */
+static pt_method_site pg_site_6; /* method_getArgs_6 */
+static pgrt::PropSite pg_site_7; /* prop_var_7 */
+static pt_method_site pg_site_8; /* method_setAttribute_8 */
+static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
 
 namespace pgen::ClosureBindToVarVisitor {
 
@@ -70,36 +73,36 @@ namespace pgen::ClosureBindToVarVisitor {
 	 {
 		bool b3 = pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\MethodCall", 30));
 		if (b3) {
-			zval *p4;
 			zv::Val o5;
-			 {
+			zval *p4 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(p_node), "name", 4) : NULL;
+			if (UNEXPECTED(p4 == NULL || Z_ISUNDEF_P(p4))) {
 				if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_closure_bind_to_var_visitor, "name", 4, o5.raw()))) return false;
 				p4 = o5.raw();
 			}
-			b3 = pgrt::instanceOfClass(p4, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Identifier", 25));
+			b3 = pgrt::instanceOfClass(zv::Ref(p4).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Identifier", 25));
 		}
 		bool b2 = b3;
 		if (b2) {
-			zval *p6;
 			zv::Val o7;
-			 {
+			zval *p6 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_3, Z_OBJ_P(p_node), "name", 4) : NULL;
+			if (UNEXPECTED(p6 == NULL || Z_ISUNDEF_P(p6))) {
 				if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_closure_bind_to_var_visitor, "name", 4, o7.raw()))) return false;
 				p6 = o7.raw();
 			}
 			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p6, "toLowerString", "tolowerstring", 13, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::nameToLowerString(pg_site_4, zv::Ref(p6).deref().raw(), r8.raw()))) return false;
 			b2 = zend_is_identical(r8.raw(), &pg_lit[0]);
 		}
 		bool b1 = b2;
 		if (b1) {
 			zv::Val r9;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "isFirstClassCallable", "isfirstclasscallable", 20, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callIsFirstClassCallable(pg_site_5, p_node, r9.raw()))) return false;
 			b1 = !((Z_TYPE_P(r9.raw()) == IS_TRUE));
 		}
 		if (b1) {
 			 {
 				zv::Val r10;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_node, "getArgs", "getargs", 7, 0, NULL, r10.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callGetArgs(pg_site_6, p_node, r10.raw()))) return false;
 				l_args = std::move(r10);
 			}
 			 {
@@ -119,26 +122,23 @@ namespace pgen::ClosureBindToVarVisitor {
 							e15 = pgrt::dimRead(l_args.raw(), &z17, et16.raw());
 							if (UNEXPECTED(e15 == NULL)) return false;
 						}
-						zval *p18;
 						zv::Val o19;
-						 {
+						zval *p18 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_7, Z_OBJ_P(p_node), "var", 3) : NULL;
+						if (UNEXPECTED(p18 == NULL || Z_ISUNDEF_P(p18))) {
 							if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_closure_bind_to_var_visitor, "var", 3, o19.raw()))) return false;
 							p18 = o19.raw();
 						}
-						zval av20[2];
-						ZVAL_COPY_VALUE(&av20[0], &pg_lit[1]);
-						ZVAL_COPY_VALUE(&av20[1], p18);
-						zv::Val r21;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, zv::Ref(e15).deref().raw(), "setAttribute", "setattribute", 12, 2, av20, r21.raw(), NULL))) return false;
+						zv::Val r20;
+						if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_8, zv::Ref(e15).deref().raw(), &pg_lit[1], zv::Ref(p18).deref().raw(), r20.raw()))) return false;
 					}
 				}
 			}
 		}
 	}
 	 {
-		zval z22;
-		ZVAL_NULL(&z22);
-		ZVAL_COPY_VALUE(ret, &z22);
+		zval z21;
+		ZVAL_NULL(&z21);
+		ZVAL_COPY_VALUE(ret, &z21);
 		return true;
 	}
 }
@@ -161,7 +161,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClosureBindToVarVisitor)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClosureBindToVarVisitor::m_enterNode(Z_OBJ_P(ZEND_THIS), p_node, return_value))) RETURN_THROWS();
 	});

@@ -51,14 +51,17 @@ zend_class_entry *pt_ce_array_offset_normalizing_visitor = nullptr;
 static zval pg_lit[2];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Expr\ArrayDimFetch */
-static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Scalar\String_ */
-static pgrt::FunctionSite pg_site_2; /* function_preg_match */
-static pt_method_site pg_site_3; /* method_setAttribute_3 */
-static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Scalar\InterpolatedString */
-static pt_method_site pg_site_5; /* method_setAttribute_5 */
-static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Scalar\Int_ */
-static pt_method_site pg_site_7; /* method_setAttribute_7 */
-static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
+static pgrt::PropSite pg_site_1; /* prop_dim_1 */
+static pgrt::PropSite pg_site_2; /* prop_dim_2 */
+static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Scalar\String_ */
+static pgrt::PropSite pg_site_4; /* prop_value_4 */
+static pgrt::FunctionSite pg_site_5; /* function_preg_match */
+static pt_method_site pg_site_6; /* method_setAttribute_6 */
+static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Scalar\InterpolatedString */
+static pt_method_site pg_site_8; /* method_setAttribute_8 */
+static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Scalar\Int_ */
+static pt_method_site pg_site_10; /* method_setAttribute_10 */
+static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
 
 namespace pgen::ArrayOffsetNormalizingVisitor {
 
@@ -72,13 +75,13 @@ namespace pgen::ArrayOffsetNormalizingVisitor {
 	 {
 		bool b1 = !(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\ArrayDimFetch", 33)));
 		if (!b1) {
-			zval *p2;
 			zv::Val o3;
-			 {
+			zval *p2 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(p_node), "dim", 3) : NULL;
+			if (UNEXPECTED(p2 == NULL || Z_ISUNDEF_P(p2))) {
 				if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_array_offset_normalizing_visitor, "dim", 3, o3.raw()))) return false;
 				p2 = o3.raw();
 			}
-			b1 = (Z_TYPE_P(p2) == IS_NULL);
+			b1 = (Z_TYPE_P(zv::Ref(p2).deref().raw()) == IS_NULL);
 		}
 		if (b1) {
 			 {
@@ -90,63 +93,55 @@ namespace pgen::ArrayOffsetNormalizingVisitor {
 		}
 	}
 	 {
-		zval *p5;
 		zv::Val o6;
-		 {
+		zval *p5 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_2, Z_OBJ_P(p_node), "dim", 3) : NULL;
+		if (UNEXPECTED(p5 == NULL || Z_ISUNDEF_P(p5))) {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_array_offset_normalizing_visitor, "dim", 3, o6.raw()))) return false;
 			p5 = o6.raw();
 		}
-		zv::Val o7 = zv::Val::copyOf(zv::Ref(p5));
+		zv::Val o7 = zv::Val::copyOf(zv::Ref(zv::Ref(p5).deref().raw()));
 		l_dim = std::move(o7);
 	}
 	 {
-		if (pgrt::instanceOfClass(l_dim.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Scalar\\String_", 29))) {
+		if (pgrt::instanceOfClass(l_dim.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Scalar\\String_", 29))) {
 			 {
 				zv::Val o8 = zv::Val::copyOf(zv::Ref(l_dim.raw()));
-				zval *p9;
 				zv::Val o10;
-				 {
+				zval *p9 = Z_TYPE_P(l_dim.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_4, Z_OBJ_P(l_dim.raw()), "value", 5) : NULL;
+				if (UNEXPECTED(p9 == NULL || Z_ISUNDEF_P(p9))) {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_dim.raw(), pt_ce_array_offset_normalizing_visitor, "value", 5, o10.raw()))) return false;
 					p9 = o10.raw();
 				}
 				zval av11[2];
 				ZVAL_COPY_VALUE(&av11[0], &pg_lit[1]);
-				ZVAL_COPY_VALUE(&av11[1], p9);
+				ZVAL_COPY_VALUE(&av11[1], zv::Ref(p9).deref().raw());
 				zv::Val r12;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "preg_match", 10, pt_ce_array_offset_normalizing_visitor, 2, av11, r12.raw(), NULL))) return false;
-				zval av13[2];
-				ZVAL_COPY_VALUE(&av13[0], &pg_lit[0]);
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "preg_match", 10, pt_ce_array_offset_normalizing_visitor, 2, av11, r12.raw(), NULL))) return false;
+				zend_long k13 = ((Z_TYPE_P(r12.raw()) == IS_LONG && Z_LVAL_P(r12.raw()) == 1) ? 2 : 1);
 				zval z14;
-				ZVAL_LONG(&z14, ((Z_TYPE_P(r12.raw()) == IS_LONG && Z_LVAL_P(r12.raw()) == 1) ? 2 : 1));
-				ZVAL_COPY_VALUE(&av13[1], &z14);
+				ZVAL_LONG(&z14, k13);
 				zv::Val r15;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, o8.raw(), "setAttribute", "setattribute", 12, 2, av13, r15.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_6, o8.raw(), &pg_lit[0], &z14, r15.raw()))) return false;
 			}
 		} else {
 		 {
 			 {
-				if (pgrt::instanceOfClass(l_dim.raw(), pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Scalar\\InterpolatedString", 40))) {
+				if (pgrt::instanceOfClass(l_dim.raw(), pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Scalar\\InterpolatedString", 40))) {
 					 {
-						zval av16[2];
-						ZVAL_COPY_VALUE(&av16[0], &pg_lit[0]);
-						zval z17;
-						ZVAL_LONG(&z17, 2);
-						ZVAL_COPY_VALUE(&av16[1], &z17);
-						zv::Val r18;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_dim.raw(), "setAttribute", "setattribute", 12, 2, av16, r18.raw(), NULL))) return false;
+						zval z16;
+						ZVAL_LONG(&z16, 2);
+						zv::Val r17;
+						if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_8, l_dim.raw(), &pg_lit[0], &z16, r17.raw()))) return false;
 					}
 				} else {
 				 {
 					 {
-						if (pgrt::instanceOfClass(l_dim.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Scalar\\Int_", 26))) {
+						if (pgrt::instanceOfClass(l_dim.raw(), pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node\\Scalar\\Int_", 26))) {
 							 {
-								zval av19[2];
-								ZVAL_COPY_VALUE(&av19[0], &pg_lit[0]);
-								zval z20;
-								ZVAL_LONG(&z20, 10);
-								ZVAL_COPY_VALUE(&av19[1], &z20);
-								zv::Val r21;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_dim.raw(), "setAttribute", "setattribute", 12, 2, av19, r21.raw(), NULL))) return false;
+								zval z18;
+								ZVAL_LONG(&z18, 10);
+								zv::Val r19;
+								if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_10, l_dim.raw(), &pg_lit[0], &z18, r19.raw()))) return false;
 							}
 						}
 					}
@@ -157,9 +152,9 @@ namespace pgen::ArrayOffsetNormalizingVisitor {
 		}
 	}
 	 {
-		zval z22;
-		ZVAL_NULL(&z22);
-		ZVAL_COPY_VALUE(ret, &z22);
+		zval z20;
+		ZVAL_NULL(&z20);
+		ZVAL_COPY_VALUE(ret, &z20);
 		return true;
 	}
 }
@@ -181,7 +176,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayOffsetNormalizingVisitor)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayOffsetNormalizingVisitor::m_enterNode(Z_OBJ_P(ZEND_THIS), p_node, return_value))) RETURN_THROWS();
 	});

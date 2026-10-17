@@ -6,6 +6,7 @@ use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PhpParser\NodeAbstract;
 use PhpParser\NodeFinder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -51,6 +52,7 @@ use function glob;
 use function implode;
 use function in_array;
 use function interface_exists;
+use function is_a;
 use function is_array;
 use function is_bool;
 use function is_file;
@@ -983,7 +985,7 @@ final class Compiler
 	 * (a trait's property, a class that is not shadowed). The header is
 	 * included by the file being compiled.
 	 */
-	private function slotExpr(string $class, string $property): ?string
+	private function slotExpr(string $class, string $property, string $object): ?string
 	{
 		if (!class_exists($class)) {
 			return null;
@@ -995,7 +997,10 @@ final class Compiler
 		$declaring = $reflection->getProperty($property)->getDeclaringClass()->getName();
 		$stem = $this->stemOf($declaring);
 		if ($stem === null || preg_match('/inline constexpr uint32_t ' . preg_quote($property, '/') . ' = /', $this->generatedHeader($stem)) !== 1) {
-			return null;
+			// declared, but by a trait or a class without a generated header:
+			// the slot looked up once per receiver class
+			$site = $this->site('pgrt::PropIndexSite', sprintf('slot_%s_%d', $property, count($this->siteNames)));
+			return sprintf('pgrt::propIndex(%s, %s, "%s", %d)', $site, $object, $property, strlen($property));
 		}
 		$this->extraIncludes[$stem] = true;
 		return sprintf('ptdecl::%s::slot::%s', $stem, $property);
@@ -1007,6 +1012,31 @@ final class Compiler
 	 * cannot narrow its visibility; any other case the cache misses falls
 	 * back to the handlers).
 	 */
+	/**
+	 * Whether every class the receiver can be declares the property publicly
+	 * (a subclass cannot narrow it): the receiver's one class, or each class
+	 * of an object union like Assign|AssignRef|AssignOp.
+	 */
+	private function isCacheablePropertyOf(?string $class, Type $native, string $name): bool
+	{
+		if ($class !== null) {
+			return $this->isCacheableProperty($class, $name);
+		}
+		if (!$native->isObject()->yes()) {
+			return false;
+		}
+		$names = $native->getObjectClassNames();
+		if ($names === []) {
+			return false;
+		}
+		foreach ($names as $candidate) {
+			if (!$this->isCacheableProperty($candidate, $name)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private function isCacheableProperty(string $class, string $name): bool
 	{
 		if (!class_exists($class) && !interface_exists($class)) {
@@ -1360,7 +1390,7 @@ final class Compiler
 				}
 				$value = $this->readLocal($f, $param->name);
 				$owned = $this->own($f, $value);
-				$slot = $this->slotExpr($this->unit()->className, $param->name) ?? throw new CompileError(sprintf('promoted $%s has no slot constant', $param->name));
+				$slot = $this->slotExpr($this->unit()->className, $param->name, 'self') ?? throw new CompileError(sprintf('promoted $%s has no slot', $param->name));
 				if ($param->promotedReadonly) {
 					$f->line(sprintf('zval %s_raw = %s.take();', $owned, $owned));
 					$f->failIf(sprintf('!pgrt::initReadonly(self, %s, "%s", &%s_raw)', $slot, $param->name, $owned));
@@ -1730,6 +1760,23 @@ final class Compiler
 			$lists[$name] = true;
 		}
 		return $lists;
+	}
+
+	/**
+	 * The class a receiver is proven to be: the narrowed native type of the
+	 * expression when it is more specific than what the value carries (a
+	 * `Node $node` parameter after `$node instanceof FuncCall`).
+	 */
+	private function receiverClass(Value $receiver, Type $native): ?string
+	{
+		$narrowed = $this->knownClass($native);
+		if ($receiver->class === null) {
+			return $narrowed;
+		}
+		if ($narrowed !== null && is_a($narrowed, $receiver->class, true)) {
+			return $narrowed;
+		}
+		return $receiver->class;
 	}
 
 	private function knownClass(Type $type): ?string
@@ -2672,11 +2719,11 @@ final class Compiler
 		$name = $expr->name->toString();
 		$receiverNative = $this->unit()->oracle->nativeType($expr->var);
 		$receiver = $this->expr($f, $expr->var);
-		$class = $receiver->class ?? $this->knownClass($receiverNative);
+		$class = $this->receiverClass($receiver, $receiverNative);
 		$native = $this->unit()->oracle->nativeType($expr);
 
 		$unit = $class !== null ? ($this->units[strtolower($class)] ?? null) : null;
-		$slotConstant = $unit !== null && $receiver->kind === 'zval' ? $this->slotExpr($unit->className, $name) : null;
+		$slotConstant = $unit !== null && $receiver->kind === 'zval' ? $this->slotExpr($unit->className, $name, sprintf('Z_OBJ_P(%s)', $receiver->code)) : null;
 		if ($slotConstant !== null) {
 			$slot = $f->temp('p');
 			$f->line(sprintf('zval *%s = pgrt::readSlot(Z_OBJ_P(%s), %s, "%s");', $slot, $receiver->code, $slotConstant, $name));
@@ -2687,13 +2734,13 @@ final class Compiler
 		// a public declared property of any other class: an inline cache of
 		// its slot per receiver class, the handlers for anything else
 		// (an unset slot, a magic __get, another class)
-		if ($class !== null && $receiver->kind === 'zval' && $this->isCacheableProperty($class, $name)) {
+		if ($receiver->kind === 'zval' && $this->isCacheablePropertyOf($class, $receiverNative, $name)) {
 			$z = $this->asZval($f, $receiver);
-			$site = $this->site('pt_property_site', sprintf('prop_%s_%d', $name, count($this->siteNames)));
+			$site = $this->site('pgrt::PropSite', sprintf('prop_%s_%d', $name, count($this->siteNames)));
 			$p = $f->temp('p');
 			$owned = $f->temp('o');
 			$f->line(sprintf('zv::Val %s;', $owned));
-			$f->line(sprintf('zval *%s = Z_TYPE_P(%s) == IS_OBJECT ? pt_property_cached(%s, Z_OBJ_P(%s), "%s", %d) : NULL;', $p, $z, $site, $z, $name, strlen($name)));
+			$f->line(sprintf('zval *%s = Z_TYPE_P(%s) == IS_OBJECT ? pgrt::propCached(%s, Z_OBJ_P(%s), "%s", %d) : NULL;', $p, $z, $site, $z, $name, strlen($name)));
 			$f->open(sprintf('if (UNEXPECTED(%s == NULL || Z_ISUNDEF_P(%s)))', $p, $p));
 			$f->failIf(sprintf('!pgrt::readPropertyGeneric(%s, %s, "%s", %d, %s.raw())', $z, $this->unit()->ce, $name, strlen($name), $owned));
 			$f->line(sprintf('%s = %s.raw();', $p, $owned));
@@ -2709,7 +2756,7 @@ final class Compiler
 		$f->line(sprintf('zval *%s;', $out));
 		$f->line(sprintf('zv::Val %s;', $owned));
 		$specUnit = $speculated !== null ? ($this->units[strtolower($speculated)] ?? null) : null;
-		$specSlot = $specUnit !== null && $specUnit->reflection->isFinal() ? $this->slotExpr($specUnit->className, $name) : null;
+		$specSlot = $specUnit !== null && $specUnit->reflection->isFinal() ? $this->slotExpr($specUnit->className, $name, sprintf('Z_OBJ_P(%s)', $z)) : null;
 		if ($specUnit !== null && $specSlot !== null) {
 			$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT && Z_OBJCE_P(%s) == %s))', $z, $z, $specUnit->ce));
 			$f->line(sprintf('%s = pgrt::readSlot(Z_OBJ_P(%s), %s, "%s");', $out, $z, $specSlot, $name));
@@ -2968,7 +3015,7 @@ final class Compiler
 		}
 		$name = $fetch->name->toString();
 		$receiver = $this->stabilize($f, $this->expr($f, $fetch->var));
-		$class = $receiver->class ?? $this->knownClass($this->unit()->oracle->nativeType($fetch->var));
+		$class = $this->receiverClass($receiver, $this->unit()->oracle->nativeType($fetch->var));
 		$unit = $class !== null ? ($this->units[strtolower($class)] ?? null) : null;
 		if ($unit === null || !$unit->reflection->hasProperty($name)) {
 			throw new CompileError(sprintf('writing into ->%s of a value not proven to be a compiled class', $name));
@@ -2977,9 +3024,9 @@ final class Compiler
 		if ($property->isReadOnly() || $property->isStatic()) {
 			throw new CompileError(sprintf('->%s is readonly or static', $name));
 		}
-		$slot = $this->slotExpr($unit->className, $name);
+		$slot = $this->slotExpr($unit->className, $name, sprintf('Z_OBJ_P(%s)', $receiver->code));
 		if ($slot === null) {
-			throw new CompileError(sprintf('->%s has no slot constant', $name));
+			throw new CompileError(sprintf('->%s has no slot', $name));
 		}
 		return sprintf('OBJ_PROP_NUM(Z_OBJ_P(%s), %s)', $receiver->code, $slot);
 	}
@@ -2998,9 +3045,9 @@ final class Compiler
 		$receiver = $this->stabilize($f, $this->expr($f, $target->var));
 		$value = $this->stabilize($f, $this->expr($f, $valueExpr));
 		$z = $this->asZval($f, $value);
-		$class = $receiver->class ?? $this->knownClass($this->unit()->oracle->nativeType($target->var));
+		$class = $this->receiverClass($receiver, $this->unit()->oracle->nativeType($target->var));
 		$unit = $class !== null ? ($this->units[strtolower($class)] ?? null) : null;
-		$slot = $unit !== null ? $this->slotExpr($unit->className, $name) : null;
+		$slot = $unit !== null ? $this->slotExpr($unit->className, $name, sprintf('Z_OBJ_P(%s)', $receiver->code)) : null;
 		if ($unit !== null && $slot !== null) {
 			$property = $unit->reflection->getProperty($name);
 			$owned = $f->temp('o');
@@ -3605,7 +3652,7 @@ final class Compiler
 		}
 		$name = $expr->name->toString();
 		$receiver = $this->expr($f, $expr->var);
-		$class = $receiver->class ?? $this->knownClass($this->unit()->oracle->nativeType($expr->var));
+		$class = $this->receiverClass($receiver, $this->unit()->oracle->nativeType($expr->var));
 		$unit = $class !== null ? ($this->units[strtolower($class)] ?? null) : null;
 		$method = $unit?->methods[strtolower($name)] ?? null;
 		if ($method !== null && !$method->isStatic && $method->direct) {
@@ -3623,6 +3670,10 @@ final class Compiler
 			if ($dispatched !== null) {
 				return $dispatched;
 			}
+		}
+		$intrinsic = $this->nodeIntrinsic($f, $class, $name, $receiver, $expr);
+		if ($intrinsic !== null) {
+			return $intrinsic;
 		}
 		$key = ($class ?? '?') . '->' . $name;
 		$this->engineCalls[$key] = ($this->engineCalls[$key] ?? 0) + 1;
@@ -3647,6 +3698,69 @@ final class Compiler
 			$f->line('}');
 		}
 		$this->flushWriteBacks($f);
+		return $this->fromEngineResult($t, $this->unit()->oracle->nativeType($expr));
+	}
+
+	/**
+	 * A php-parser node method the parser visitors call per node, done by
+	 * the runtime on the node's slots (pgrt::node*, guarded per class
+	 * against overrides, the engine otherwise). Applies to receivers of an
+	 * unknown class too — the guard decides at run time.
+	 */
+	private function nodeIntrinsic(FunctionContext $f, ?string $class, string $name, Value $receiver, Expr\MethodCall $expr): ?Value
+	{
+		$table = [
+			'setattribute' => [NodeAbstract::class, 'nodeSetAttribute', 2, 2],
+			'getattribute' => [NodeAbstract::class, 'nodeGetAttribute', 1, 2],
+			'hasattribute' => [NodeAbstract::class, 'nodeHasAttribute', 1, 1],
+			'tostring' => [[Node\Name::class, Node\Identifier::class], 'nameToString', 0, 0],
+			'tolowerstring' => [[Node\Name::class, Node\Identifier::class], 'nameToLowerString', 0, 0],
+			'isfirstclasscallable' => [Expr\CallLike::class, 'callIsFirstClassCallable', 0, 0],
+			'getargs' => [Expr\CallLike::class, 'callGetArgs', 0, 0],
+		];
+		$entry = $table[strtolower($name)] ?? null;
+		if ($entry === null) {
+			return null;
+		}
+		[$declaring, $helper, $min, $max] = $entry;
+		if ($class !== null) {
+			$matches = false;
+			foreach ((array) $declaring as $candidate) {
+				if (!is_a($class, $candidate, true) && !is_a($candidate, $class, true)) {
+					continue;
+				}
+
+				$matches = true;
+			}
+			if (!$matches) {
+				return null;
+			}
+		}
+		$count = count($expr->args);
+		if ($count < $min || $count > $max) {
+			return null;
+		}
+		foreach ($expr->args as $arg) {
+			if (!$arg instanceof Node\Arg || $arg->unpack || $arg->name !== null || $arg->byRef) {
+				return null;
+			}
+		}
+		$sideEffects = $this->callHasSideEffects($expr->args);
+		if ($sideEffects) {
+			$receiver = $this->stabilize($f, $receiver);
+		}
+		$args = [];
+		foreach ($expr->args as $arg) {
+			$value = $this->expr($f, $arg->value);
+			$args[] = $this->asZval($f, $sideEffects ? $this->stabilize($f, $value) : $value);
+		}
+		if ($helper === 'nodeGetAttribute' && count($args) === 1) {
+			$args[] = 'NULL';
+		}
+		$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
+		$t = $f->temp('r');
+		$f->line(sprintf('zv::Val %s;', $t));
+		$f->failIf(sprintf('!pgrt::%s(%s)', $helper, implode(', ', array_merge([$site, $this->asZval($f, $receiver)], $args, [$t . '.raw()']))));
 		return $this->fromEngineResult($t, $this->unit()->oracle->nativeType($expr));
 	}
 
@@ -3907,6 +4021,94 @@ final class Compiler
 				$f->line(sprintf('zv::Val %s;', $t));
 				$f->failIf(sprintf('!pgrt::%s(%s, %s.raw())', $name === 'array_unique' ? 'arrayUnique' : 'arrayValues', $array, $t));
 				return new Value('zval', $t . '.raw()', $t, isArray: true);
+			case 'is_bool':
+			case 'is_int':
+			case 'is_string':
+			case 'is_array':
+			case 'is_object':
+			case 'is_null':
+			case 'is_float':
+			case 'is_scalar':
+				if (!$single) {
+					return null;
+				}
+				$value = $this->expr($f, $expr->args[0]->value);
+				if (in_array($value->kind, ['long', 'bool'], true)) {
+					$is = $value->kind === 'long' ? ['is_int', 'is_scalar'] : ['is_bool', 'is_scalar'];
+					return Value::bool(in_array($name, $is, true) ? 'true' : 'false');
+				}
+				$z = $f->temp('ty');
+				$f->line(sprintf('uint8_t %s = Z_TYPE_P(zv::Ref(%s).deref().raw());', $z, $this->asZval($f, $value)));
+				$checks = [
+					'is_bool' => '(%1$s == IS_TRUE || %1$s == IS_FALSE)',
+					'is_int' => '%1$s == IS_LONG',
+					'is_string' => '%1$s == IS_STRING',
+					'is_array' => '%1$s == IS_ARRAY',
+					'is_object' => '%1$s == IS_OBJECT',
+					'is_null' => '%1$s <= IS_NULL',
+					'is_float' => '%1$s == IS_DOUBLE',
+					'is_scalar' => '(%1$s >= IS_FALSE && %1$s <= IS_STRING)',
+				];
+				return Value::bool('(' . sprintf($checks[$name], $z) . ')');
+			case 'in_array':
+				return $this->inArrayIntrinsic($f, $expr);
+			case 'array_last':
+			case 'array_first':
+				if (!$single) {
+					return null;
+				}
+				$array = $this->asZval($f, $this->expr($f, $expr->args[0]->value));
+				$site = $this->site('pgrt::FunctionSite', 'function_' . $name);
+				$t = $f->temp('r');
+				$f->line(sprintf('zv::Val %s;', $t));
+				$f->failIf(sprintf('!pgrt::arrayEdge(%s, "%s", %d, %s, %s, %s.raw())', $site, $name, strlen($name), $name === 'array_last' ? 'true' : 'false', $array, $t));
+				return $this->fromEngineResult($t, $native);
+			case 'str_starts_with':
+			case 'str_ends_with':
+			case 'str_contains':
+				if (count($expr->args) !== 2) {
+					return null;
+				}
+				$args = $this->plainArgs($expr->args);
+				if ($args === null) {
+					return null;
+				}
+				$haystack = $this->asZval($f, $this->stabilize($f, $this->expr($f, $args[0]->value)));
+				$needle = $this->asZval($f, $this->expr($f, $args[1]->value));
+				$site = $this->site('pgrt::FunctionSite', 'function_' . $name);
+				$t = $f->temp('r');
+				$f->line(sprintf('zv::Val %s;', $t));
+				$kinds = ['str_starts_with' => 'pgrt::StrMatch::STARTS', 'str_ends_with' => 'pgrt::StrMatch::ENDS', 'str_contains' => 'pgrt::StrMatch::CONTAINS'];
+				$f->failIf(sprintf('!pgrt::strMatch(%s, "%s", %d, %s, %s, %s, %s.raw())', $site, $name, strlen($name), $kinds[$name], $haystack, $needle, $t));
+				return Value::bool(sprintf('(Z_TYPE_P(%s.raw()) == IS_TRUE)', $t));
+			case 'get_class':
+				if (!$single) {
+					return null;
+				}
+				$object = $this->asZval($f, $this->expr($f, $expr->args[0]->value));
+				$t = $f->temp('r');
+				$f->line(sprintf('zv::Val %s;', $t));
+				$f->failIf(sprintf('!pgrt::getClass(%s, %s.raw())', $object, $t));
+				return new Value('zval', $t . '.raw()', $t);
+			case 'array_pop':
+				// on the variable or property itself: the by-reference
+				// argument's temporary would share the array and the pop
+				// would separate (copy) it
+				if (!$single) {
+					return null;
+				}
+				$target = $expr->args[0]->value;
+				if (!$this->unit()->oracle->nativeType($target)->isArray()->yes() || $this->hasSideEffects($target)) {
+					return null;
+				}
+				if (!$target instanceof Expr\PropertyFetch && !($target instanceof Expr\Variable && is_string($target->name) && in_array(($f->locals[$target->name] ?? null)?->kind, ['zval', 'ref'], true))) {
+					return null;
+				}
+				$array = $this->writablePtr($f, $target, true);
+				$t = $f->temp('r');
+				$f->line(sprintf('zv::Val %s;', $t));
+				$f->line(sprintf('pgrt::arrayPop(%s, %s.raw());', $array, $t));
+				return $this->fromEngineResult($t, $native);
 			case 'min':
 			case 'max':
 				if (!$single) {
@@ -3920,6 +4122,65 @@ final class Compiler
 				return $this->fromEngineResult($t, $native);
 		}
 		return null;
+	}
+
+	/**
+	 * The arguments when each is positional and not unpacked.
+	 *
+	 * @param array<Node\Arg|Node\VariadicPlaceholder> $args
+	 * @return list<Node\Arg>|null
+	 */
+	private function plainArgs(array $args): ?array
+	{
+		$plain = [];
+		foreach ($args as $arg) {
+			if (!$arg instanceof Node\Arg || $arg->unpack || $arg->name !== null) {
+				return null;
+			}
+			$plain[] = $arg;
+		}
+		return $plain;
+	}
+
+	/**
+	 * in_array($needle, $haystack, true): identity against each element,
+	 * unrolled for a literal list of scalars.
+	 */
+	private function inArrayIntrinsic(FunctionContext $f, Expr\FuncCall $expr): ?Value
+	{
+		if (count($expr->args) !== 3) {
+			return null;
+		}
+		$args = $this->plainArgs($expr->args);
+		if ($args === null) {
+			return null;
+		}
+		$strict = $args[2]->value;
+		if (!$strict instanceof Expr\ConstFetch || $strict->name->toLowerString() !== 'true') {
+			return null;
+		}
+		$haystack = $args[1]->value;
+		$needle = $this->asZval($f, $this->stabilize($f, $this->expr($f, $args[0]->value)));
+		if ($haystack instanceof Expr\Array_) {
+			$items = [];
+			foreach ($haystack->items as $item) {
+				if ($item->key !== null || $item->byRef || $item->unpack || !$item->value instanceof Node\Scalar\String_) {
+					return null;
+				}
+				$items[] = $this->asZval($f, $this->literal($item->value->value));
+			}
+			$t = $f->temp('ia');
+			$f->line(sprintf('bool %s = false;', $t));
+			if ($items !== []) {
+				$f->line(sprintf('if (Z_TYPE_P(%s) == IS_STRING) %s = %s;', $needle, $t, implode(' || ', array_map(static fn (string $item): string => sprintf('zend_string_equals(Z_STR_P(%s), Z_STR_P(%s))', $needle, $item), $items))));
+			}
+			return Value::bool($t);
+		}
+		if (!$this->unit()->oracle->nativeType($haystack)->isArray()->yes()) {
+			return null;
+		}
+		$array = $this->asZval($f, $this->expr($f, $haystack));
+		return Value::bool(sprintf('pgrt::inArrayStrict(%s, %s)', $needle, $array));
 	}
 
 	/** a callback-taking builtin is scope-independent when the callable it receives is a closure */
@@ -3961,12 +4222,13 @@ final class Compiler
 		$t = $f->temp('col');
 		$f->line(sprintf('zv::Val %s = zv::Val::adopt([]() { zval a; array_init(&a); return a; }());', $t));
 		$element = $f->temp('el');
-		$slot = $this->slotExpr($unit->className, $property);
-		if ($slot === null) {
+		$className = $unit->className;
+		if ($this->slotExpr($className, $property, 'NULL') === null) {
 			return null;
 		}
-		$body = static function (string $z) use ($f, $t, $slot, $property): void {
+		$body = function (string $z) use ($f, $t, $className, $property): void {
 			$p = $f->temp('p');
+			$slot = $this->slotExpr($className, $property, sprintf('Z_OBJ_P(%s)', $z));
 			$f->line(sprintf('zval *%s = pgrt::readSlot(Z_OBJ_P(%s), %s, "%s");', $p, $z, $slot, $property));
 			$f->failIf(sprintf('%s == NULL', $p));
 			$f->line(sprintf('Z_TRY_ADDREF_P(%s);', $p));

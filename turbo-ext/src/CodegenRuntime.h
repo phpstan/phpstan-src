@@ -41,6 +41,10 @@ struct ClassSite
 {
 	zend_class_entry *ce;
 	uint32_t generation;
+	/* lookupClassQuiet() of a class not loaded yet: the class table's size
+	 * then — it only grows within a request, so an unchanged size means the
+	 * class is still not there */
+	uint32_t missedAt;
 };
 
 /* the class of a name (autoloading it); NULL with an Error pending */
@@ -58,7 +62,10 @@ zend_class_entry *lookupClassQuietSlow(ClassSite &site, const char *name, size_t
 
 static zend_always_inline zend_class_entry *lookupClassQuiet(ClassSite &site, const char *name, size_t len)
 {
-	if (EXPECTED(site.ce != NULL && site.generation == pt_engine_generation)) return site.ce;
+	if (EXPECTED(site.generation == pt_engine_generation)) {
+		if (EXPECTED(site.ce != NULL)) return site.ce;
+		if (site.missedAt == zend_hash_num_elements(EG(class_table))) return NULL;
+	}
 	return lookupClassQuietSlow(site, name, len);
 }
 
@@ -119,6 +126,50 @@ struct FunctionSite
 /* new ce(...$argv) through the engine's constructor; false = pending
  * exception (*out is then UNDEF) */
 [[nodiscard]] bool newObject(zend_class_entry *ce, uint32_t argc, zval *argv, zval *out, HashTable *named = NULL);
+
+/* the OBJ_PROP_NUM slot of a declared instance property that has no
+ * generated slot constant (a trait's), looked up once per receiver class;
+ * compiled code is the declaring class's own, so any visibility applies */
+struct PropIndexSite
+{
+	zend_class_entry *ce;
+	uint32_t index;
+	uint32_t generation;
+};
+
+uint32_t propIndexSlow(PropIndexSite &site, zend_object *object, const char *name, size_t len);
+
+static zend_always_inline uint32_t propIndex(PropIndexSite &site, zend_object *object, const char *name, size_t len)
+{
+	if (EXPECTED(site.ce == object->ce && site.generation == pt_engine_generation)) return site.index;
+	return propIndexSlow(site, object, name, len);
+}
+
+/* the slot of a public declared property of a class the compiler does not
+ * compile (a php-parser node), per receiver class — a polymorphic inline
+ * cache of PROP_SITE_WAYS classes; NULL when the object's class does not
+ * declare it. The slot is not dereferenced and may be UNDEF. */
+constexpr uint32_t PROP_SITE_WAYS = 4;
+
+struct PropSite
+{
+	zend_class_entry *ce[PROP_SITE_WAYS];
+	uint32_t offset[PROP_SITE_WAYS];
+	uint32_t generation;
+	uint32_t next;
+};
+
+zval *propCachedSlow(PropSite &site, zend_object *object, const char *name, size_t len);
+
+static zend_always_inline zval *propCached(PropSite &site, zend_object *object, const char *name, size_t len)
+{
+	if (EXPECTED(site.generation == pt_engine_generation)) {
+		for (uint32_t i = 0; i < PROP_SITE_WAYS; i++) {
+			if (site.ce[i] == object->ce) return OBJ_PROP(object, site.offset[i]);
+		}
+	}
+	return propCachedSlow(site, object, name, len);
+}
 
 /* a declared property's slot of an object known to be ce or a subclass,
  * checked to be initialized; NULL with an Error pending */
@@ -504,6 +555,42 @@ static zend_always_inline bool modLong(zend_long a, zend_long b, zend_long *out)
 	*out = b == -1 ? 0 : a % b;
 	return true;
 }
+
+/* }}} */
+
+/* get_class($object) of one argument; false = pending TypeError */
+[[nodiscard]] bool getClass(zval *object, zval *ret);
+
+/* in_array($needle, $array, true) */
+bool inArrayStrict(zval *needle, zval *array);
+
+/* array_last() / array_first(): the engine for a non-array (its TypeError) */
+[[nodiscard]] bool arrayEdge(FunctionSite &site, const char *name, size_t len, bool last, zval *array, zval *ret);
+
+/* str_starts_with() / str_ends_with() / str_contains() on two strings, the
+ * engine for anything else (coercion, TypeError) */
+enum class StrMatch : uint8_t { STARTS, ENDS, CONTAINS };
+[[nodiscard]] bool strMatch(FunctionSite &site, const char *name, size_t len, StrMatch kind, zval *haystack, zval *needle, zval *ret);
+
+/* array_pop() on a separated array in place */
+void arrayPop(zval *array, zval *ret);
+
+/* {{{ php-parser node methods
+ *
+ * The node methods the parser visitors call per node, done on the node's
+ * slots when the receiver's class keeps php-parser's own implementation
+ * (checked once per class); any other class goes through the engine like
+ * a plain method call. Each returns false with an exception pending. */
+
+[[nodiscard]] bool nodeSetAttribute(pt_method_site &site, zval *node, zval *key, zval *value, zval *ret);
+[[nodiscard]] bool nodeGetAttribute(pt_method_site &site, zval *node, zval *key, zval *defaultValue, zval *ret);
+[[nodiscard]] bool nodeHasAttribute(pt_method_site &site, zval *node, zval *key, zval *ret);
+/* Name/Identifier::toString(), ::toLowerString() */
+[[nodiscard]] bool nameToString(pt_method_site &site, zval *node, zval *ret);
+[[nodiscard]] bool nameToLowerString(pt_method_site &site, zval *node, zval *ret);
+/* CallLike::isFirstClassCallable(), ::getArgs() */
+[[nodiscard]] bool callIsFirstClassCallable(pt_method_site &site, zval *node, zval *ret);
+[[nodiscard]] bool callGetArgs(pt_method_site &site, zval *node, zval *ret);
 
 /* }}} */
 

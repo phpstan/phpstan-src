@@ -118,20 +118,17 @@ namespace pgen::NewAssignedToPropertyVisitor {
 							if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_new_assigned_to_property_visitor, "var", 3, o14.raw()))) return false;
 							p13 = o14.raw();
 						}
-						zval av15[2];
-						ZVAL_COPY_VALUE(&av15[0], &pg_lit[0]);
-						ZVAL_COPY_VALUE(&av15[1], p13);
-						zv::Val r16;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p11, "setAttribute", "setattribute", 12, 2, av15, r16.raw(), NULL))) return false;
+						zv::Val r15;
+						if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_6, p11, &pg_lit[0], p13, r15.raw()))) return false;
 					}
 				}
 			}
 		}
 	}
 	 {
-		zval z17;
-		ZVAL_NULL(&z17);
-		ZVAL_COPY_VALUE(ret, &z17);
+		zval z16;
+		ZVAL_NULL(&z16);
+		ZVAL_COPY_VALUE(ret, &z16);
 		return true;
 	}
 }

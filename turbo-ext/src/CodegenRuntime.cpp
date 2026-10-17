@@ -6,6 +6,31 @@
 #include "CodegenRuntime.h"
 #include "TypeTraits.h"
 
+
+#ifdef PGRT_COUNT
+#include <map>
+#include <string>
+#include <cstdio>
+#include <cstdlib>
+#include <vector>
+#include <algorithm>
+namespace {
+std::map<std::string, unsigned long> *pgrtCounts;
+void pgrtDump()
+{
+	std::vector<std::pair<unsigned long, std::string>> rows;
+	for (auto &e : *pgrtCounts) rows.emplace_back(e.second, e.first);
+	std::sort(rows.rbegin(), rows.rend());
+	FILE *out = fopen(getenv("PGRT_COUNT_OUT") ? getenv("PGRT_COUNT_OUT") : "/dev/stderr", "a");
+	for (size_t i = 0; i < rows.size() && i < 200; i++) fprintf(out, "%10lu %s\n", rows[i].first, rows[i].second.c_str());
+	fclose(out);
+}
+}
+#define PGRT_COUNT_HIT(kind, cls, name) do { if (pgrtCounts == nullptr) { pgrtCounts = new std::map<std::string, unsigned long>(); atexit(pgrtDump); } (*pgrtCounts)[std::string(kind) + " " + (cls) + "::" + (name)]++; } while (0)
+#else
+#define PGRT_COUNT_HIT(kind, cls, name) do { } while (0)
+#endif
+
 namespace pgrt {
 
 zend_class_entry *lookupClassSlow(ClassSite &site, const char *name, size_t len)
@@ -40,8 +65,12 @@ uint32_t propIndexSlow(PropIndexSite &site, zend_object *object, const char *nam
 
 zval *propCachedSlow(PropSite &site, zend_object *object, const char *name, size_t len)
 {
-	int32_t offset = pt_instance_prop_offset(object->ce, name, len);
-	if (UNEXPECTED(offset < 0)) return NULL;
+	/* public declared instance properties only: the compiler may speculate
+	 * on a PHPDoc class, and another class's private property of the same
+	 * name must go through the handlers (and their visibility check) */
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(object->ce, properties_info), name, len);
+	if (info == NULL || (info->flags & (ZEND_ACC_STATIC | ZEND_ACC_PUBLIC)) != ZEND_ACC_PUBLIC) return NULL;
+	int32_t offset = (int32_t) info->offset;
 	if (site.generation != pt_engine_generation) {
 		site = {};
 		site.generation = pt_engine_generation;
@@ -65,6 +94,7 @@ zval *staticSlotSlow(StaticSite &site, zend_class_entry *ce, const char *name, s
 
 bool callFunction(FunctionSite &site, const char *lcname, size_t len, zend_class_entry *scope, uint32_t argc, zval *argv, zval *ret, HashTable *named)
 {
+	PGRT_COUNT_HIT("F", "", lcname);
 	if (UNEXPECTED(site.fn == NULL || site.generation != pt_engine_generation)) {
 		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(EG(function_table), lcname, len);
 		if (UNEXPECTED(fn == NULL)) {
@@ -88,6 +118,7 @@ bool callFunction(FunctionSite &site, const char *lcname, size_t len, zend_class
 
 bool callStatic(pt_method_site &site, zend_class_entry *ce, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret, HashTable *named)
 {
+	PGRT_COUNT_HIT("S", ZSTR_VAL(ce->name), lcname);
 	if (UNEXPECTED(site.ce != ce || site.generation != pt_engine_generation || site.fn == NULL)) {
 		zend_function *fn = pt_find_method(ce, lcname, len);
 		if (UNEXPECTED(fn == NULL)) {
@@ -107,6 +138,7 @@ bool callStatic(pt_method_site &site, zend_class_entry *ce, const char *lcname, 
 
 bool callMethod(pt_method_site &site, zval *object, const char *name, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret, HashTable *named)
 {
+	PGRT_COUNT_HIT("M", Z_TYPE_P(object) == IS_OBJECT ? ZSTR_VAL(Z_OBJCE_P(object)->name) : "?", lcname);
 	if (UNEXPECTED(Z_TYPE_P(object) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function %s() on %s", name, zend_zval_value_name(object));
 		ZVAL_UNDEF(ret);
@@ -137,6 +169,7 @@ bool callMethod(pt_method_site &site, zval *object, const char *name, const char
 
 bool callBound(pt_method_site &site, zend_class_entry *ce, zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret, HashTable *named)
 {
+	PGRT_COUNT_HIT("B", ZSTR_VAL(ce->name), lcname);
 	if (UNEXPECTED(site.ce != ce || site.generation != pt_engine_generation || site.fn == NULL)) {
 		zend_function *fn = pt_find_method(ce, lcname, len);
 		if (UNEXPECTED(fn == NULL)) {
@@ -191,6 +224,7 @@ void throwUninitializedProperty(zend_object *object, const char *name)
 
 bool readPropertyGeneric(zval *value, zend_class_entry *scope, const char *name, size_t len, zval *rv)
 {
+	PGRT_COUNT_HIT("P", Z_TYPE_P(value) == IS_OBJECT ? ZSTR_VAL(Z_OBJCE_P(value)->name) : "?", name);
 	ZVAL_DEREF(value);
 	if (UNEXPECTED(Z_TYPE_P(value) != IS_OBJECT)) {
 		zend_error(E_WARNING, "Attempt to read property \"%s\" on %s", name, zend_zval_value_name(value));

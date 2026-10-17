@@ -674,7 +674,14 @@ namespace pgen::HasMethodType {
 	 {
 		zv::Val o6 = zv::Val::copyOf(zv::Ref(l_method.raw()));
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_method.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, r7.raw(), NULL))) return false;
+		if (EXPECTED(Z_TYPE_P(l_method.raw()) == IS_OBJECT)) {
+			r7 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(r7.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_method.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, r7.raw()))) return false;
+		}
+		}
 		zv::Val h8 = pt_native_closure_new(&pg_closure_1, 0, NULL, 0u);
 		zv::Val cl9 = pt_native_closure_to_closure(h8.raw());
 		if (UNEXPECTED(cl9.isUndef())) return false;

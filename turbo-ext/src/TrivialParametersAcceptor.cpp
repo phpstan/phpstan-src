@@ -83,7 +83,6 @@ static zval pg_lit[3];
 static pt_method_site pg_site_0; /* static_PHPStan\Type\Generic\TemplateTypeMap::createEmpty */
 static pt_method_site pg_site_1; /* static_PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty */
 static pgrt::FunctionSite pg_site_2; /* function_sprintf */
-static pt_method_site pg_site_3; /* static_PHPStan\Reflection\Assertions::createEmpty */
 
 namespace pgen::TrivialParametersAcceptor {
 
@@ -330,7 +329,10 @@ namespace pgen::TrivialParametersAcceptor {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, pt_ce_assertions, "createempty", 11, 0, NULL, r1.raw(), NULL))) return false;
+		 {
+			r1 = pt_assertions_create_empty();
+			if (UNEXPECTED(r1.isUndef())) return false;
+		}
 		*ret = r1.take();
 		return true;
 	}

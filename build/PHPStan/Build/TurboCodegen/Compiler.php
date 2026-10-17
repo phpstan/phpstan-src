@@ -8,6 +8,10 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PhpParser\NodeAbstract;
 use PhpParser\NodeFinder;
+use PHPStan\Reflection\ClassMemberReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
@@ -33,6 +37,7 @@ use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
 use function addcslashes;
+use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -132,6 +137,9 @@ final class Compiler
 
 	/** @var array<string, string>|null lowercase FQCN => generated-header stem of every shadowed class */
 	private ?array $manifest = null;
+
+	/** @var array<string, array{string, int, int}>|null the hand-written direct entries (nativeEntries()) */
+	private ?array $nativeEntries = null;
 
 	/** @var array<string, true> generated headers the file being compiled reads slots from */
 	private array $extraIncludes = [];
@@ -1040,6 +1048,17 @@ final class Compiler
 			}
 		}
 		return true;
+	}
+
+	/** whether one of the object classes of a type is compiled (its reads have the slot-speculation path) */
+	private function isCompiledPropertyOf(Type $type): bool
+	{
+		foreach ($type->getObjectClassNames() as $candidate) {
+			if (isset($this->units[strtolower($candidate)])) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private function isCacheableProperty(string $class, string $name): bool
@@ -2739,7 +2758,10 @@ final class Compiler
 		// a public declared property of any other class: an inline cache of
 		// its slot per receiver class, the handlers for anything else
 		// (an unset slot, a magic __get, another class)
-		if ($receiver->kind === 'zval' && $this->isCacheablePropertyOf($class, $receiverNative, $name)) {
+		// (the PHPDoc type is only a guess, but the cache takes public
+		// declared properties of whatever class the object has, and the
+		// handlers anything else)
+		if ($receiver->kind === 'zval' && ($this->isCacheablePropertyOf($class, $receiverNative, $name) || ($class === null && $this->isCacheablePropertyOf(null, $this->unit()->oracle->phpDocType($expr->var), $name) && !$this->isCompiledPropertyOf($this->unit()->oracle->phpDocType($expr->var))))) {
 			$z = $this->asZval($f, $receiver);
 			$site = $this->site('pgrt::PropSite', sprintf('prop_%s_%d', $name, count($this->siteNames)));
 			$p = $f->temp('p');
@@ -3670,8 +3692,12 @@ final class Compiler
 		if ($this->callHasSideEffects($expr->args)) {
 			$receiver = $this->stabilize($f, $receiver);
 		}
-		if ($class !== null) {
-			$dispatched = $this->virtualDispatch($f, $class, $name, $receiver, $expr);
+		// without a native class, speculate on the PHPDoc one: compiled
+		// implementations are entered by the receiver's exact class and the
+		// direct entries dispatch on it themselves, so either is guarded
+		$dispatchClass = $class ?? $this->knownClass($this->unit()->oracle->phpDocType($expr->var));
+		if ($dispatchClass !== null) {
+			$dispatched = $this->virtualDispatch($f, $dispatchClass, $name, $receiver, $expr);
 			if ($dispatched !== null) {
 				return $dispatched;
 			}
@@ -3679,6 +3705,13 @@ final class Compiler
 		$intrinsic = $this->nodeIntrinsic($f, $class, $name, $receiver, $expr);
 		if ($intrinsic !== null) {
 			return $intrinsic;
+		}
+		if ($dispatchClass !== null) {
+			$native = $this->unit()->oracle->nativeType($expr);
+			$entry = $this->nativeEntryCall($f, $dispatchClass, $name, $receiver, $expr->args, $native);
+			if ($entry !== null) {
+				return $entry;
+			}
 		}
 		$key = ($class ?? '?') . '->' . $name;
 		$this->engineCalls[$key] = ($this->engineCalls[$key] ?? 0) + 1;
@@ -3767,6 +3800,274 @@ final class Compiler
 		$f->line(sprintf('zv::Val %s;', $t));
 		$f->failIf(sprintf('!pgrt::%s(%s)', $helper, implode(', ', array_merge([$site, $this->asZval($f, $receiver)], $args, [$t . '.raw()']))));
 		return $this->fromEngineResult($t, $this->unit()->oracle->nativeType($expr));
+	}
+
+	/**
+	 * A call of a hand-written port's direct entry instead of the method:
+	 * `pt_<class>_<method>(zval *receiver, zval *arg...)` (support.h and the
+	 * other headers) is the native body for the native class and the method
+	 * by name for any other — the convention every engine-port entry
+	 * follows. The shapes recognised are nativeEntries()'s. Looked up for the
+	 * receiver's class and its ancestors (the same virtual method), only for
+	 * positional arguments and no by-reference parameter. A static method's
+	 * entry takes no receiver. A non-object receiver goes through the engine
+	 * (its Error).
+	 *
+	 * @param array<Node\Arg|Node\VariadicPlaceholder> $callArgs
+	 */
+	private function nativeEntryCall(FunctionContext $f, string $class, string $name, ?Value $receiver, array $callArgs, Type $native): ?Value
+	{
+		$args = $this->plainArgs($callArgs);
+		if ($args === null || (!class_exists($class) && !interface_exists($class))) {
+			return null;
+		}
+		$reflection = $this->methodReflection($class, $name);
+		if ($reflection === null || $reflection->isStatic() !== ($receiver === null)) {
+			return null;
+		}
+		foreach ($reflection->getParameters() as $parameter) {
+			if ($parameter->isPassedByReference() || $parameter->isVariadic()) {
+				return null;
+			}
+		}
+		$returnsVoid = (string) $reflection->getReturnType() === 'void';
+		$entries = $this->nativeEntries();
+		$receiverCount = $receiver !== null ? 1 : 0;
+		$found = null;
+		$classReflection = new ReflectionClass($class);
+		$candidates = [$classReflection, ...array_values($classReflection->getInterfaces())];
+		for ($parent = $classReflection->getParentClass(); $parent !== false; $parent = $parent->getParentClass()) {
+			$candidates[] = $parent;
+		}
+		foreach ($candidates as $candidate) {
+			if (!$candidate->hasMethod($name)) {
+				continue;
+			}
+			$snake = 'pt_' . self::snake($candidate->getShortName()) . '_' . self::snake($name);
+			$entry = $entries[$snake] ?? null;
+			if ($entry === null && str_starts_with($name, 'get') && strlen($name) > 3) {
+				// the borrowed slot readers drop the getter's prefix
+				$snake = 'pt_' . self::snake($candidate->getShortName()) . '_' . self::snake(lcfirst(substr($name, 3)));
+				$entry = $entries[$snake] ?? null;
+				if ($entry !== null && $entry[0] !== 'hold') {
+					$entry = null;
+				}
+			}
+			if ($entry === null) {
+				continue;
+			}
+			[$kind, $total, $required] = $entry;
+			$arity = count($args) + $receiverCount;
+			if ($arity < $required || $arity > $total || ($kind === 'status' && !$returnsVoid)) {
+				continue;
+			}
+			$found = [$snake, $kind, $total];
+			break;
+		}
+		if ($found === null) {
+			return $receiver !== null && $args === [] ? $this->memberDispatchCall($f, $classReflection, $name, $receiver, $native, $returnsVoid) : null;
+		}
+		[$function, $kind, $total] = $found;
+		$values = [];
+		foreach ($args as $arg) {
+			$values[] = $this->asZval($f, $this->stabilize($f, $this->expr($f, $arg->value)));
+		}
+		$z = $receiver !== null ? $this->asZval($f, $receiver) : null;
+		$callArgs = [...($z !== null ? [$z] : []), ...$values];
+		while (count($callArgs) < $total) {
+			$callArgs[] = 'NULL';
+		}
+		if (in_array($kind, ['hold', 'boolout'], true)) {
+			return $this->readerEntryCall($f, $function, $kind, $name, (string) $z, $native);
+		}
+		$t = $f->temp('r');
+		$f->line(sprintf('zv::Val %s;', $t));
+		if ($z !== null) {
+			$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT))', $z));
+		} else {
+			$f->open('');
+		}
+		switch ($kind) {
+			case 'val':
+				$f->line(sprintf('%s = %s(%s);', $t, $function, implode(', ', $callArgs)));
+				$f->failIf(sprintf('%s.isUndef()', $t));
+				break;
+			case 'out':
+				$f->failIf(sprintf('!%s(%s)', $function, implode(', ', [$t . '.raw()', ...$callArgs])));
+				break;
+			case 'status':
+				$f->failIf(sprintf('!%s(%s)', $function, implode(', ', $callArgs)));
+				$f->line(sprintf('ZVAL_NULL(%s.raw());', $t));
+				break;
+			default:
+				// a borrowed object (a singleton)
+				$o = $f->temp('bo');
+				$f->line(sprintf('zend_object *%s = %s(%s);', $o, $function, implode(', ', $callArgs)));
+				$f->failIf(sprintf('%s == NULL', $o));
+				$f->line(sprintf('GC_ADDREF(%s);', $o));
+				$f->line(sprintf('ZVAL_OBJ(%s.raw(), %s);', $t, $o));
+		}
+		if ($z !== null) {
+			$f->close(' else {');
+			$f->open('');
+			$argv = 'NULL';
+			if ($values !== []) {
+				$argv = $f->temp('av');
+				$f->line(sprintf('zval %s[%d];', $argv, count($values)));
+				foreach ($values as $i => $value) {
+					$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $i, $value));
+				}
+			}
+			$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
+			$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, %d, %s, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), count($values), $argv, $t));
+			$f->close();
+			$f->line('}');
+		} else {
+			$f->close();
+		}
+		if ($returnsVoid) {
+			return Value::void();
+		}
+		return $this->fromEngineResult($t, $native);
+	}
+
+	/**
+	 * A borrowed slot reader of AnalyserValues.h: the slot of the native
+	 * value class, the getter's result (held) for any other object.
+	 */
+	private function readerEntryCall(FunctionContext $f, string $function, string $kind, string $name, string $z, Type $native): Value
+	{
+		if ($kind === 'boolout') {
+			$out = $f->temp('bo');
+			$f->line(sprintf('bool %s = false;', $out));
+			$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT))', $z));
+			$f->failIf(sprintf('!%s(%s, %s)', $function, $z, $out));
+			$f->close(' else {');
+			$f->open('');
+			$t = $f->temp('r');
+			$f->line(sprintf('zv::Val %s;', $t));
+			$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
+			$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, 0, NULL, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), $t));
+			$f->line(sprintf('%s = zend_is_true(%s.raw());', $out, $t));
+			$f->close();
+			$f->line('}');
+			return Value::bool($out);
+		}
+		$hold = $f->temp('h');
+		$p = $f->temp('p');
+		$f->line(sprintf('zv::Val %s;', $hold));
+		$f->line(sprintf('zval *%s;', $p));
+		$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT))', $z));
+		$f->line(sprintf('%s = %s(%s, %s);', $p, $function, $z, $hold));
+		$f->failIf(sprintf('%s == NULL', $p));
+		$f->close(' else {');
+		$f->open('');
+		$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
+		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, 0, NULL, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), $hold));
+		$f->line(sprintf('%s = %s.raw();', $p, $hold));
+		$f->close();
+		$f->line('}');
+		return $this->fromSlot($p, $native);
+	}
+
+	/**
+	 * $reflection->member() of a reflection family the hand-written ports
+	 * dispatch by member constant (`zv::Val f(zval *, enum member)`: the
+	 * native body of the classes it knows, a cached method site otherwise).
+	 *
+	 * @param ReflectionClass<object> $class
+	 */
+	private function memberDispatchCall(FunctionContext $f, ReflectionClass $class, string $name, Value $receiver, Type $native, bool $returnsVoid): ?Value
+	{
+		$families = [
+			ExtendedMethodReflection::class => ['pt_extended_method_reflection_call', 'pt_method_reflection_member', 'PT_MR_'],
+			ExtendedPropertyReflection::class => ['pt_extended_property_reflection_call', 'pt_property_reflection_member', 'PT_PROP_'],
+			ParameterReflection::class => ['pt_parameter_reflection_call', 'pt_parameter_reflection_member', 'PT_PR_'],
+			ClassMemberReflection::class => ['pt_class_member_reflection_call', 'pt_class_member_reflection_member', 'PT_CMR_'],
+		];
+		foreach ($families as $interface => [$function, $enum, $prefix]) {
+			if (!$class->implementsInterface($interface) && $class->getName() !== $interface) {
+				continue;
+			}
+			if (!(new ReflectionClass($interface))->hasMethod($name)) {
+				continue;
+			}
+			$constant = $prefix . strtoupper((string) preg_replace('/(?<=[a-z0-9])(?=[A-Z])/', '_', $name));
+			if (!array_key_exists($constant, $this->enumMembers($enum, $prefix))) {
+				continue;
+			}
+			$z = $this->asZval($f, $receiver);
+			$t = $f->temp('r');
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT))', $z));
+			$f->line(sprintf('%s = %s(%s, %s);', $t, $function, $z, $constant));
+			$f->failIf(sprintf('%s.isUndef()', $t));
+			$f->close(' else {');
+			$f->open('');
+			$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
+			$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, 0, NULL, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), $t));
+			$f->close();
+			$f->line('}');
+			return $returnsVoid ? Value::void() : $this->fromEngineResult($t, $native);
+		}
+		return null;
+	}
+
+	/**
+	 * The direct entries of the hand-written headers, by function: [kind,
+	 * parameter count, required parameter count] — every parameter a
+	 * `zval *` (trailing ones may default to NULL, the ports' "default"):
+	 *
+	 * - val: `zv::Val f(...)`, UNDEF = pending exception
+	 * - out: `bool f(zval *out, ...)` (the out parameter not counted)
+	 * - status: `bool f(...)` of a void method, false = pending exception
+	 * - borrowed: `zend_object *f(...)` documented as borrowed, NULL = pending exception
+	 * - hold / boolout: AnalyserValues.h's slot readers, `zval *f(zval *, zv::Val &hold)`
+	 *   (NULL = pending exception) and `bool f(zval *, bool &out)`
+	 *
+	 * @return array<string, array{string, int, int}>
+	 */
+	private function nativeEntries(): array
+	{
+		if ($this->nativeEntries !== null) {
+			return $this->nativeEntries;
+		}
+		$this->nativeEntries = [];
+		// the headers CodegenRuntime.h includes
+		foreach (['support.h', 'Engine.h', 'TypeOps.h', 'ParameterValues.h', 'AnalyserValues.h'] as $header) {
+			$code = (string) file_get_contents(__DIR__ . '/../../../../turbo-ext/src/' . $header);
+			preg_match_all('~^inline (?:zval \*|bool) (pt_\w+)\(zval \*\w+, (zv::Val &hold|bool &out)\)$~m', $code, $readers, PREG_SET_ORDER);
+			foreach ($readers as [, $function, $tail]) {
+				$this->nativeEntries[$function] = [$tail === 'bool &out' ? 'boolout' : 'hold', 1, 1];
+			}
+			preg_match_all('~(/\*(?:(?!\*/).)*\*/\s*)?^(?:\[\[nodiscard\]\] )?(zv::Val|bool|zend_object \*)\s*(pt_\w+)\(((?:zval \*\w+(?: = NULL)?(?:, )?)*)\);~ms', $code, $matches, PREG_SET_ORDER);
+			foreach ($matches as $match) {
+				[, $comment, $return, $function, $parameters] = $match;
+				$list = $parameters === '' ? [] : explode(', ', $parameters);
+				$total = count($list);
+				$required = count(array_filter($list, static fn (string $p): bool => !str_contains($p, '= NULL')));
+				if ($return === 'zv::Val') {
+					$kind = 'val';
+				} elseif ($return === 'bool' && $list !== [] && $list[0] === 'zval *out') {
+					$kind = 'out';
+					$total--;
+					$required--;
+				} elseif ($return === 'bool') {
+					$kind = 'status';
+				} elseif (str_contains($comment, 'borrowed')) {
+					$kind = 'borrowed';
+				} else {
+					continue;
+				}
+				$this->nativeEntries[$function] = [$kind, $total, $required];
+			}
+		}
+		return $this->nativeEntries;
+	}
+
+	private static function snake(string $name): string
+	{
+		return strtolower((string) preg_replace('/(?<=[a-z0-9])(?=[A-Z])/', '_', $name));
 	}
 
 	/** @return ReflectionMethod|null the method a class has under the name (any visibility) */
@@ -3869,6 +4170,10 @@ final class Compiler
 		if ($method !== null && $method->isStatic) {
 			$args = $this->directArgs($f, $method, $expr->args);
 			return $this->emitDirectCall($f, $method, null, $args);
+		}
+		$entry = $this->nativeEntryCall($f, $className, $name, null, $expr->args, $this->unit()->oracle->nativeType($expr));
+		if ($entry !== null) {
+			return $entry;
 		}
 		$key = $className . '::' . $name;
 		$this->engineCalls[$key] = ($this->engineCalls[$key] ?? 0) + 1;

@@ -749,25 +749,31 @@ namespace pgen::TrinaryLogic {
 					}
 				}
 				 {
-					zval av16[1];
-					ZVAL_COPY_VALUE(&av16[0], l_result.raw());
-					zv::Val r17;
-					if (EXPECTED(Z_TYPE_P(l_lastResult.raw()) == IS_OBJECT)) {
-						r17 = pt_type_op(Z_OBJ_P(l_lastResult.raw()), PT_OP_EQUALS, 1, av16);
-						if (UNEXPECTED(r17.isUndef())) return false;
-					} else {
-					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_lastResult.raw(), "equals", "equals", 6, 1, av16, r17.raw(), NULL))) return false;
+					zv::Val o16 = zv::Val::copyOf(zv::Ref(l_result.raw()));
+					zv::Val vd17;
+					zend_class_entry *vd17_ce = Z_TYPE_P(l_lastResult.raw()) == IS_OBJECT ? Z_OBJCE_P(l_lastResult.raw()) : NULL;
+					bool vd17_done = false;
+					if (vd17_ce == pt_ce_trinary) {
+						if (UNEXPECTED(!((Z_TYPE_P(o16.raw()) == IS_OBJECT && Z_OBJCE_P(o16.raw()) == pt_ce_trinary) || pgrt::instanceOfClass(o16.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::equals", 1, "other", "PHPStan\\TrinaryLogic", o16.raw()); return false; }
+						bool r18;
+						if (UNEXPECTED(!pgen::TrinaryLogic::m_equals(Z_OBJ_P(l_lastResult.raw()), o16.raw(), &r18))) return false;
+						zv::Val o19 = zv::Val::boolean(r18);
+						vd17 = std::move(o19);
+						vd17_done = true;
 					}
+					if (!vd17_done) {
+						zval av20[1];
+						ZVAL_COPY_VALUE(&av20[0], o16.raw());
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_lastResult.raw(), "equals", "equals", 6, 1, av20, vd17.raw()))) return false;
 					}
-					if (zend_is_true(r17.raw())) {
+					if (zend_is_true(vd17.raw())) {
 						goto cont11;
 					}
 				}
 				 {
-					zv::Val r18;
-					if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r18.raw()))) return false;
-					*ret = r18.take();
+					zv::Val r21;
+					if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r21.raw()))) return false;
+					*ret = r21.take();
 					return true;
 				}
 			}

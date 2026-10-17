@@ -84,8 +84,7 @@ static pt_method_site pg_site_2; /* method_getReason_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\NeverType */
 static pt_method_site pg_site_4; /* method_isExplicit_4 */
 static pt_method_site pg_site_5; /* method_getReason_5 */
-static pt_method_site pg_site_6; /* static_PHPStan\Type\TypeTraverser::mapMemoized */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\PhpDoc\UnresolvableTypeResult */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\PhpDoc\UnresolvableTypeResult */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -203,32 +202,31 @@ namespace pgen::UnresolvableTypeHelper {
 		zv::Val h6 = pt_native_closure_new(&pg_closure_1, 2, cap5, 3u);
 		zv::Val cl7 = pt_native_closure_to_closure(h6.raw());
 		if (UNEXPECTED(cl7.isUndef())) return false;
-		zval av8[2];
-		ZVAL_COPY_VALUE(&av8[0], o4.raw());
-		ZVAL_COPY_VALUE(&av8[1], cl7.raw());
-		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_6, pt_ce_type_traverser, "mapmemoized", 11, 2, av8, r9.raw(), NULL))) return false;
+		zv::Val r8;
+		 {
+			if (UNEXPECTED(!pt_type_traverser_map_memoized(r8.raw(), o4.raw(), cl7.raw()))) return false;
+		}
 	}
 	 {
 		if (!(zend_is_true(zv::Ref(l_containsUnresolvable.raw()).deref().raw()))) {
 			 {
-				zval z10;
-				ZVAL_NULL(&z10);
-				ZVAL_COPY_VALUE(ret, &z10);
+				zval z9;
+				ZVAL_NULL(&z9);
+				ZVAL_COPY_VALUE(ret, &z9);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val r12;
-		if (UNEXPECTED(!pgrt::arrayValues(zv::Ref(l_reasons.raw()).deref().raw(), r12.raw()))) return false;
-		zval av13[1];
-		ZVAL_COPY_VALUE(&av13[0], r12.raw());
-		zend_class_entry *ce14 = pgrt::lookupClass(pg_site_7, "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeResult", 43);
-		if (UNEXPECTED(ce14 == NULL)) return false;
-		zv::Val n11;
-		if (UNEXPECTED(!pgrt::newObject(ce14, 1, av13, n11.raw(), NULL))) return false;
-		*ret = n11.take();
+		zv::Val r11;
+		if (UNEXPECTED(!pgrt::arrayValues(zv::Ref(l_reasons.raw()).deref().raw(), r11.raw()))) return false;
+		zval av12[1];
+		ZVAL_COPY_VALUE(&av12[0], r11.raw());
+		zend_class_entry *ce13 = pgrt::lookupClass(pg_site_6, "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeResult", 43);
+		if (UNEXPECTED(ce13 == NULL)) return false;
+		zv::Val n10;
+		if (UNEXPECTED(!pgrt::newObject(ce13, 1, av12, n10.raw(), NULL))) return false;
+		*ret = n10.take();
 		return true;
 	}
 }

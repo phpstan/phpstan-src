@@ -265,42 +265,50 @@ namespace pgen::NativeParameterReflection {
 		if (UNEXPECTED(p12 == NULL)) return false;
 		zval *p13 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::passedByReference, "passedByReference");
 		if (UNEXPECTED(p13 == NULL)) return false;
-		zval av14[1];
-		ZVAL_COPY_VALUE(&av14[0], p13);
+		zv::Val o14 = zv::Val::copyOf(zv::Ref(p13));
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p12, "combine", "combine", 7, 1, av14, r15.raw(), NULL))) return false;
-		zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::variadic, "variadic");
-		if (UNEXPECTED(p17 == NULL)) return false;
-		bool b16 = (Z_TYPE_P(p17) == IS_TRUE);
-		if (b16) {
-			zval *p18 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::variadic, "variadic");
-			if (UNEXPECTED(p18 == NULL)) return false;
-			b16 = (Z_TYPE_P(p18) == IS_TRUE);
-		}
-		zval *p20 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::optional, "optional");
-		if (UNEXPECTED(p20 == NULL)) return false;
-		bool b19 = (Z_TYPE_P(p20) == IS_TRUE);
-		if (b19) {
-			zval *p21 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::optional, "optional");
-			if (UNEXPECTED(p21 == NULL)) return false;
-			b19 = (Z_TYPE_P(p21) == IS_TRUE);
-		}
-		zv::Val q22;
-		if (b19) {
-			zval *p23 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::defaultValue, "defaultValue");
-			if (UNEXPECTED(p23 == NULL)) return false;
-			zv::Val o24 = zv::Val::copyOf(zv::Ref(p23));
-			q22 = std::move(o24);
+		if (EXPECTED(Z_TYPE_P(p12) == IS_OBJECT)) {
+			r15 = pt_passed_by_reference_combine(p12, o14.raw());
+			if (UNEXPECTED(r15.isUndef())) return false;
 		} else {
 		 {
-			zv::Val o25 = zv::Val::null();
-			q22 = std::move(o25);
+			zval av16[1];
+			ZVAL_COPY_VALUE(&av16[0], o14.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p12, "combine", "combine", 7, 1, av16, r15.raw()))) return false;
+		}
+		}
+		zval *p18 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::variadic, "variadic");
+		if (UNEXPECTED(p18 == NULL)) return false;
+		bool b17 = (Z_TYPE_P(p18) == IS_TRUE);
+		if (b17) {
+			zval *p19 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::variadic, "variadic");
+			if (UNEXPECTED(p19 == NULL)) return false;
+			b17 = (Z_TYPE_P(p19) == IS_TRUE);
+		}
+		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::optional, "optional");
+		if (UNEXPECTED(p21 == NULL)) return false;
+		bool b20 = (Z_TYPE_P(p21) == IS_TRUE);
+		if (b20) {
+			zval *p22 = pgrt::readSlot(Z_OBJ_P(p_other), ptdecl::NativeParameterReflection::slot::optional, "optional");
+			if (UNEXPECTED(p22 == NULL)) return false;
+			b20 = (Z_TYPE_P(p22) == IS_TRUE);
+		}
+		zv::Val q23;
+		if (b20) {
+			zval *p24 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NativeParameterReflection::slot::defaultValue, "defaultValue");
+			if (UNEXPECTED(p24 == NULL)) return false;
+			zv::Val o25 = zv::Val::copyOf(zv::Ref(p24));
+			q23 = std::move(o25);
+		} else {
+		 {
+			zv::Val o26 = zv::Val::null();
+			q23 = std::move(o26);
 		}
 		}
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_native_parameter_reflection) != SUCCESS)) return false;
 		zv::Val n1 = zv::Val::adopt(n1_raw);
-		if (UNEXPECTED(!pgen::NativeParameterReflection::m___construct(Z_OBJ_P(n1.raw()), o3.raw(), k7, r11.raw(), r15.raw(), b16, q22.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
+		if (UNEXPECTED(!pgen::NativeParameterReflection::m___construct(Z_OBJ_P(n1.raw()), o3.raw(), k7, r11.raw(), r15.raw(), b17, q23.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
 		*ret = n1.take();
 		return true;
 	}

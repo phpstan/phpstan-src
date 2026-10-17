@@ -112,7 +112,14 @@ namespace pgen::InternalEndStatementResult {
 		zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::InternalEndStatementResult::slot::result, "result");
 		if (UNEXPECTED(p4 == NULL)) return false;
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p4, "toPublic", "topublic", 8, 0, NULL, r5.raw(), NULL))) return false;
+		if (EXPECTED(Z_TYPE_P(p4) == IS_OBJECT)) {
+			r5 = pt_internal_statement_result_to_public(p4);
+			if (UNEXPECTED(r5.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p4, "toPublic", "topublic", 8, 0, NULL, r5.raw()))) return false;
+		}
+		}
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_end_statement_result) != SUCCESS)) return false;
 		zv::Val n1 = zv::Val::adopt(n1_raw);

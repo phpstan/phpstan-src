@@ -88,8 +88,9 @@ static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\FunctionLike */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Stmt\TryCatch */
 static pgrt::FunctionSite pg_site_6; /* function_array_reverse */
 static pgrt::PropSite pg_site_7; /* prop_catches_7 */
-static pt_method_site pg_site_8; /* method_toString_8 */
-static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
+static pgrt::PropSite pg_site_8; /* prop_types_8 */
+static pt_method_site pg_site_9; /* method_toString_9 */
+static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
 
 namespace pgen::TryCatchTypeVisitor {
 
@@ -240,13 +241,13 @@ namespace pgen::TryCatchTypeVisitor {
 					l_catch = zv::Ref(v36).deref().raw();
 					 {
 						 {
-							zval *p42;
 							zv::Val o43;
-							 {
+							zval *p42 = Z_TYPE_P(l_catch) == IS_OBJECT ? pgrt::propCached(pg_site_8, Z_OBJ_P(l_catch), "types", 5) : NULL;
+							if (UNEXPECTED(p42 == NULL || Z_ISUNDEF_P(p42))) {
 								if (UNEXPECTED(!pgrt::readPropertyGeneric(l_catch, pt_ce_try_catch_type_visitor, "types", 5, o43.raw()))) return false;
 								p42 = o43.raw();
 							}
-							zv::Val a44 = zv::Val::copyOf(zv::Ref(p42).deref());
+							zv::Val a44 = zv::Val::copyOf(zv::Ref(zv::Ref(p42).deref().raw()).deref());
 							if (UNEXPECTED(Z_TYPE_P(a44.raw()) != IS_ARRAY)) {
 								if (Z_TYPE_P(a44.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
 								zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a44.raw()));
@@ -263,7 +264,7 @@ namespace pgen::TryCatchTypeVisitor {
 								 {
 									 {
 										zv::Val r50;
-										if (UNEXPECTED(!pgrt::nameToString(pg_site_8, l_type, r50.raw()))) return false;
+										if (UNEXPECTED(!pgrt::nameToString(pg_site_9, l_type, r50.raw()))) return false;
 										zv::Val o51 = zv::Val::copyOf(zv::Ref(r50.raw()));
 										zval *w52 = zv::Ref(l_types.raw()).deref().raw();
 										if (Z_TYPE_P(w52) <= IS_NULL) { zval_ptr_dtor(w52); array_init(w52); } else if (UNEXPECTED(Z_TYPE_P(w52) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -356,7 +357,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TryCatchTypeVisitor)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TryCatchTypeVisitor::m_enterNode(Z_OBJ_P(ZEND_THIS), p_node, return_value))) RETURN_THROWS();
 	});
@@ -365,7 +366,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TryCatchTypeVisitor)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TryCatchTypeVisitor::m_leaveNode(Z_OBJ_P(ZEND_THIS), p_node, return_value))) RETURN_THROWS();
 	});

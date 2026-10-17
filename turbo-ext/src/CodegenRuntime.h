@@ -18,6 +18,7 @@
 #include "zv.h"
 #include "Engine.h"
 #include "TypeOps.h"
+#include "ParameterValues.h"
 #include "zend_smart_str.h"
 
 #pragma GCC diagnostic push
@@ -152,7 +153,7 @@ static zend_always_inline uint32_t propIndex(PropIndexSite &site, zend_object *o
 /* the slot of a public declared property of a class the compiler does not
  * compile (a php-parser node), per receiver class — a polymorphic inline
  * cache of PROP_SITE_WAYS classes; NULL when the object's class does not
- * declare it. The slot is not dereferenced and may be UNDEF. */
+ * declare it publicly. The slot is not dereferenced and may be UNDEF. */
 constexpr uint32_t PROP_SITE_WAYS = 4;
 
 struct PropSite

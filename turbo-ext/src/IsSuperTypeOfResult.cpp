@@ -1197,9 +1197,20 @@ namespace pgen::IsSuperTypeOfResult {
 						p15 = o16.raw();
 					}
 					}
-					zv::Val r17;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p15, "yes", "yes", 3, 0, NULL, r17.raw(), NULL))) return false;
-					if (zend_is_true(r17.raw())) {
+					zv::Val vd17;
+					zend_class_entry *vd17_ce = Z_TYPE_P(p15) == IS_OBJECT ? Z_OBJCE_P(p15) : NULL;
+					bool vd17_done = false;
+					if (vd17_ce == pt_ce_trinary) {
+						bool r18;
+						if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(p15), &r18))) return false;
+						zv::Val o19 = zv::Val::boolean(r18);
+						vd17 = std::move(o19);
+						vd17_done = true;
+					}
+					if (!vd17_done) {
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p15, "yes", "yes", 3, 0, NULL, vd17.raw()))) return false;
+					}
+					if (zend_is_true(vd17.raw())) {
 						 {
 							if (UNEXPECTED(!((Z_TYPE_P(l_isSuperTypeOf.raw()) == IS_OBJECT && Z_OBJCE_P(l_isSuperTypeOf.raw()) == pt_ce_is_super_type_of_result) || pgrt::instanceOfClass(l_isSuperTypeOf.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\IsSuperTypeOfResult", 32))))) { pgrt::throwReturnType("PHPStan\\Type\\IsSuperTypeOfResult::lazyMaxMin", "PHPStan\\Type\\IsSuperTypeOfResult", l_isSuperTypeOf.raw()); return false; }
 							ZVAL_COPY(ret, l_isSuperTypeOf.raw());
@@ -1208,20 +1219,31 @@ namespace pgen::IsSuperTypeOfResult {
 					} else {
 					 {
 						 {
-							zval *p18;
-							zv::Val o19;
+							zval *p20;
+							zv::Val o21;
 							if (EXPECTED(Z_TYPE_P(l_isSuperTypeOf.raw()) == IS_OBJECT && Z_OBJCE_P(l_isSuperTypeOf.raw()) == pt_ce_is_super_type_of_result)) {
-								p18 = pgrt::readSlot(Z_OBJ_P(l_isSuperTypeOf.raw()), ptdecl::IsSuperTypeOfResult::slot::result, "result");
-								if (UNEXPECTED(p18 == NULL)) return false;
+								p20 = pgrt::readSlot(Z_OBJ_P(l_isSuperTypeOf.raw()), ptdecl::IsSuperTypeOfResult::slot::result, "result");
+								if (UNEXPECTED(p20 == NULL)) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::readPropertyGeneric(l_isSuperTypeOf.raw(), pt_ce_is_super_type_of_result, "result", 6, o19.raw()))) return false;
-								p18 = o19.raw();
+								if (UNEXPECTED(!pgrt::readPropertyGeneric(l_isSuperTypeOf.raw(), pt_ce_is_super_type_of_result, "result", 6, o21.raw()))) return false;
+								p20 = o21.raw();
 							}
 							}
-							zv::Val r20;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p18, "no", "no", 2, 0, NULL, r20.raw(), NULL))) return false;
-							if (zend_is_true(r20.raw())) {
+							zv::Val vd22;
+							zend_class_entry *vd22_ce = Z_TYPE_P(p20) == IS_OBJECT ? Z_OBJCE_P(p20) : NULL;
+							bool vd22_done = false;
+							if (vd22_ce == pt_ce_trinary) {
+								bool r23;
+								if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(p20), &r23))) return false;
+								zv::Val o24 = zv::Val::boolean(r23);
+								vd22 = std::move(o24);
+								vd22_done = true;
+							}
+							if (!vd22_done) {
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p20, "no", "no", 2, 0, NULL, vd22.raw()))) return false;
+							}
+							if (zend_is_true(vd22.raw())) {
 								 {
 									l_hasNo = true;
 								}
@@ -1231,78 +1253,78 @@ namespace pgen::IsSuperTypeOfResult {
 					}
 				}
 				 {
-					zval *p22;
-					zv::Val o23;
+					zval *p26;
+					zv::Val o27;
 					if (EXPECTED(Z_TYPE_P(l_isSuperTypeOf.raw()) == IS_OBJECT && Z_OBJCE_P(l_isSuperTypeOf.raw()) == pt_ce_is_super_type_of_result)) {
-						p22 = pgrt::readSlot(Z_OBJ_P(l_isSuperTypeOf.raw()), ptdecl::IsSuperTypeOfResult::slot::reasons, "reasons");
-						if (UNEXPECTED(p22 == NULL)) return false;
+						p26 = pgrt::readSlot(Z_OBJ_P(l_isSuperTypeOf.raw()), ptdecl::IsSuperTypeOfResult::slot::reasons, "reasons");
+						if (UNEXPECTED(p26 == NULL)) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_isSuperTypeOf.raw(), pt_ce_is_super_type_of_result, "reasons", 7, o23.raw()))) return false;
-						p22 = o23.raw();
+						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_isSuperTypeOf.raw(), pt_ce_is_super_type_of_result, "reasons", 7, o27.raw()))) return false;
+						p26 = o27.raw();
 					}
 					}
-					zv::Val a24 = zv::Val::copyOf(zv::Ref(p22).deref());
-					if (UNEXPECTED(Z_TYPE_P(a24.raw()) != IS_ARRAY)) {
-						if (Z_TYPE_P(a24.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a24.raw()));
+					zv::Val a28 = zv::Val::copyOf(zv::Ref(p26).deref());
+					if (UNEXPECTED(Z_TYPE_P(a28.raw()) != IS_ARRAY)) {
+						if (Z_TYPE_P(a28.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
+						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a28.raw()));
 						if (UNEXPECTED(EG(exception))) return false;
-						a24 = zv::Val(zv::Arr::empty());
+						a28 = zv::Val(zv::Arr::empty());
 					}
-					HashTable *ht21 = Z_ARRVAL_P(a24.raw());
-					zval *v25;
-					zend_ulong n26;
-					zend_string *s27;
-					ZEND_HASH_FOREACH_KEY_VAL(ht21, n26, s27, v25) {
-						(void) n26; (void) s27;
-						l_reason = zv::Ref(v25).deref().raw();
+					HashTable *ht25 = Z_ARRVAL_P(a28.raw());
+					zval *v29;
+					zend_ulong n30;
+					zend_string *s31;
+					ZEND_HASH_FOREACH_KEY_VAL(ht25, n30, s31, v29) {
+						(void) n30; (void) s31;
+						l_reason = zv::Ref(v29).deref().raw();
 						 {
 							 {
-								zv::Val o30 = zv::Val::copyOf(zv::Ref(l_reason));
-								zv::Val o31 = zv::Val::copyOf(zv::Ref(o30.raw()));
-								zval *w32 = zv::Ref(l_reasons.raw()).deref().raw();
-								if (Z_TYPE_P(w32) <= IS_NULL) { zval_ptr_dtor(w32); array_init(w32); } else if (UNEXPECTED(Z_TYPE_P(w32) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w32);
-								{ zval v = o31.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w32), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val o34 = zv::Val::copyOf(zv::Ref(l_reason));
+								zv::Val o35 = zv::Val::copyOf(zv::Ref(o34.raw()));
+								zval *w36 = zv::Ref(l_reasons.raw()).deref().raw();
+								if (Z_TYPE_P(w36) <= IS_NULL) { zval_ptr_dtor(w36); array_init(w36); } else if (UNEXPECTED(Z_TYPE_P(w36) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w36);
+								{ zval v = o35.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w36), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 					}
 					ZEND_HASH_FOREACH_END();
 				}
 				 {
-					zval *p34;
-					zv::Val o35;
+					zval *p38;
+					zv::Val o39;
 					if (EXPECTED(Z_TYPE_P(l_isSuperTypeOf.raw()) == IS_OBJECT && Z_OBJCE_P(l_isSuperTypeOf.raw()) == pt_ce_is_super_type_of_result)) {
-						p34 = pgrt::readSlot(Z_OBJ_P(l_isSuperTypeOf.raw()), ptdecl::IsSuperTypeOfResult::slot::lazyReasons, "lazyReasons");
-						if (UNEXPECTED(p34 == NULL)) return false;
+						p38 = pgrt::readSlot(Z_OBJ_P(l_isSuperTypeOf.raw()), ptdecl::IsSuperTypeOfResult::slot::lazyReasons, "lazyReasons");
+						if (UNEXPECTED(p38 == NULL)) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_isSuperTypeOf.raw(), pt_ce_is_super_type_of_result, "lazyReasons", 11, o35.raw()))) return false;
-						p34 = o35.raw();
+						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_isSuperTypeOf.raw(), pt_ce_is_super_type_of_result, "lazyReasons", 11, o39.raw()))) return false;
+						p38 = o39.raw();
 					}
 					}
-					zv::Val a36 = zv::Val::copyOf(zv::Ref(p34).deref());
-					if (UNEXPECTED(Z_TYPE_P(a36.raw()) != IS_ARRAY)) {
-						if (Z_TYPE_P(a36.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a36.raw()));
+					zv::Val a40 = zv::Val::copyOf(zv::Ref(p38).deref());
+					if (UNEXPECTED(Z_TYPE_P(a40.raw()) != IS_ARRAY)) {
+						if (Z_TYPE_P(a40.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
+						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a40.raw()));
 						if (UNEXPECTED(EG(exception))) return false;
-						a36 = zv::Val(zv::Arr::empty());
+						a40 = zv::Val(zv::Arr::empty());
 					}
-					HashTable *ht33 = Z_ARRVAL_P(a36.raw());
-					zval *v37;
-					zend_ulong n38;
-					zend_string *s39;
-					ZEND_HASH_FOREACH_KEY_VAL(ht33, n38, s39, v37) {
-						(void) n38; (void) s39;
-						l_lazyReason = zv::Ref(v37).deref().raw();
+					HashTable *ht37 = Z_ARRVAL_P(a40.raw());
+					zval *v41;
+					zend_ulong n42;
+					zend_string *s43;
+					ZEND_HASH_FOREACH_KEY_VAL(ht37, n42, s43, v41) {
+						(void) n42; (void) s43;
+						l_lazyReason = zv::Ref(v41).deref().raw();
 						 {
 							 {
-								zv::Val o42 = zv::Val::copyOf(zv::Ref(l_lazyReason));
-								zv::Val o43 = zv::Val::copyOf(zv::Ref(o42.raw()));
-								zval *w44 = zv::Ref(l_lazyReasons.raw()).deref().raw();
-								if (Z_TYPE_P(w44) <= IS_NULL) { zval_ptr_dtor(w44); array_init(w44); } else if (UNEXPECTED(Z_TYPE_P(w44) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w44);
-								{ zval v = o43.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w44), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val o46 = zv::Val::copyOf(zv::Ref(l_lazyReason));
+								zv::Val o47 = zv::Val::copyOf(zv::Ref(o46.raw()));
+								zval *w48 = zv::Ref(l_lazyReasons.raw()).deref().raw();
+								if (Z_TYPE_P(w48) <= IS_NULL) { zval_ptr_dtor(w48); array_init(w48); } else if (UNEXPECTED(Z_TYPE_P(w48) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w48);
+								{ zval v = o47.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w48), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 					}
@@ -1313,25 +1335,25 @@ namespace pgen::IsSuperTypeOfResult {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val q45;
+		zv::Val q49;
 		if (l_hasNo) {
-			zv::Val r46;
-			if (UNEXPECTED(!pgen::TrinaryLogic::m_createNo(r46.raw()))) return false;
-			q45 = std::move(r46);
+			zv::Val r50;
+			if (UNEXPECTED(!pgen::TrinaryLogic::m_createNo(r50.raw()))) return false;
+			q49 = std::move(r50);
 		} else {
 		 {
-			zv::Val r47;
-			if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r47.raw()))) return false;
-			q45 = std::move(r47);
+			zv::Val r51;
+			if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r51.raw()))) return false;
+			q49 = std::move(r51);
 		}
 		}
-		zv::Val r48;
-		if (UNEXPECTED(!pgrt::arrayUnique(l_reasons.raw(), r48.raw()))) return false;
-		zv::Val r49;
-		if (UNEXPECTED(!pgrt::arrayValues(r48.raw(), r49.raw()))) return false;
-		zv::Val r50;
-		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_create(q45.raw(), r49.raw(), l_lazyReasons.raw(), r50.raw()))) return false;
-		*ret = r50.take();
+		zv::Val r52;
+		if (UNEXPECTED(!pgrt::arrayUnique(l_reasons.raw(), r52.raw()))) return false;
+		zv::Val r53;
+		if (UNEXPECTED(!pgrt::arrayValues(r52.raw(), r53.raw()))) return false;
+		zv::Val r54;
+		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_create(q49.raw(), r53.raw(), l_lazyReasons.raw(), r54.raw()))) return false;
+		*ret = r54.take();
 		return true;
 	}
 }

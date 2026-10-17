@@ -56,11 +56,32 @@ static const char *pt_short_name(const char *fqcn)
 	return slash != NULL ? slash + 1 : fqcn;
 }
 
-/* the declared name: the twin's real name, or the prefixed short name */
+/* whether another shadowing class has the same short name */
+static bool pt_shadow_short_name_shared(const char *realName);
+
+/* the declared name: the twin's real name, or under the prefix its short
+ * name — the real name past the first namespace segment when another
+ * shadowing class shares that short name (the manifest's turboClass,
+ * TurboAttributeCollector) */
 static std::string pt_shadow_declared_name(const char *realName, zend_string *prefix)
 {
 	if (prefix == NULL) return realName;
-	return std::string(ZSTR_VAL(prefix), ZSTR_LEN(prefix)) + pt_short_name(realName);
+	const char *name = pt_short_name(realName);
+	if (pt_shadow_short_name_shared(realName)) {
+		const char *firstSlash = strchr(realName, '\\');
+		name = firstSlash != NULL ? firstSlash + 1 : realName;
+	}
+	return std::string(ZSTR_VAL(prefix), ZSTR_LEN(prefix)) + name;
+}
+
+static bool pt_shadow_short_name_shared(const char *realName)
+{
+	const char *shortName = pt_short_name(realName);
+	int count = 0;
+	for (reg::ShadowPlan &plan : pt_shadow_plans()) {
+		if (strcmp(pt_short_name(plan.name), shortName) == 0 && ++count > 1) return true;
+	}
+	return false;
 }
 
 static reg::ShadowPlan *pt_shadow_plan_by_name(const char *realName)
@@ -205,7 +226,8 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
 /*
  * Declares every shadowing class. twinFiles maps each real class name to
  * its PHP twin's source file (may be empty); prefix, when given, declares
- * the classes as "<prefix><short name>" instead of the real names. Returns
+ * the classes as "<prefix><short name>" instead of the real names (see
+ * pt_shadow_declared_name() for short names two classes share). Returns
  * false with an exception pending when a class could not be declared.
  */
 [[nodiscard]] bool pt_shadow_activate(HashTable *twinFiles, zend_string *prefix)

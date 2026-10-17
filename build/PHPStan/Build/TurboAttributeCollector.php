@@ -543,8 +543,14 @@ final class TurboAttributeCollector
 		ksort($classMap);
 		ksort($referenced);
 
+		// how many shadowed classes have each short name
+		$shortNameCounts = [];
+		foreach (array_keys($pairs) as $className) {
+			$shortName = substr($className, (int) strrpos('\\' . $className, '\\'));
+			$shortNameCounts[$shortName] = ($shortNameCounts[$shortName] ?? 0) + 1;
+		}
+
 		$manifest = [];
-		$byShortName = [];
 		foreach ($pairs as $className => $cppFile) {
 			$reflection = new ReflectionClass($className);
 			$fileName = $reflection->getFileName();
@@ -553,15 +559,12 @@ final class TurboAttributeCollector
 			}
 
 			// The name the differential tests declare the native class under
-			// next to its twin, derived the way the extension derives it -
-			// so two shadowed classes sharing a short name would arrive at
-			// one native name and silently shadow each other there.
+			// next to its twin, derived the way the extension derives it
+			// (Shadow.cpp, pt_shadow_declared_name()): the short name, or —
+			// when another shadowed class has the same one — the real name
+			// past its first namespace segment, so the two stay apart.
 			$shortName = $reflection->getShortName();
-			if (isset($byShortName[$shortName])) {
-				throw new RuntimeException(sprintf('%s and %s share the short name %s, so both would be declared as PHPStanTurbo\\%s next to their twins', $byShortName[$shortName], $className, $shortName, $shortName));
-			}
-			$byShortName[$shortName] = $className;
-			$turboClass = 'PHPStanTurbo\\' . $shortName;
+			$turboClass = 'PHPStanTurbo\\' . ($shortNameCounts[$shortName] > 1 ? substr($className, (int) strpos($className, '\\') + 1) : $shortName);
 
 			$parent = $reflection->getParentClass();
 			$phpFile = $this->relativize($fileName);

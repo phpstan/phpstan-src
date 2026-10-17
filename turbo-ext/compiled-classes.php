@@ -1070,4 +1070,9 @@ return [
 	'PHPStan\\Type\\Php\\ClassExistsFunctionTypeSpecifyingExtension' => ['ce' => 'pt_ce_class_exists_function_type_specifying_extension', 'defineCe' => true],
 	'PHPStan\\Type\\Php\\ArrayFindParameterClosureTypeExtension' => ['ce' => 'pt_ce_array_find_parameter_closure_type_extension', 'defineCe' => true],
 	'PHPStan\\Type\\Php\\DateFunctionReturnTypeHelper' => ['ce' => 'pt_ce_date_function_return_type_helper', 'defineCe' => true],
+	// rules whose short name another shadowed class has
+	'PHPStan\\Rules\\Traits\\NotAnalysedTraitRule' => ['ce' => 'pt_ce_traits_not_analysed_trait_rule', 'defineCe' => true],
+	'PHPStan\\Rules\\Functions\\ExistingClassesInTypehintsRule' => ['ce' => 'pt_ce_functions_existing_classes_in_typehints_rule', 'defineCe' => true],
+	'PHPStan\\Rules\\Functions\\ReturnTypeRule' => ['ce' => 'pt_ce_functions_return_type_rule', 'defineCe' => true],
+	'PHPStan\\Rules\\Functions\\IncompatibleDefaultParameterTypeRule' => ['ce' => 'pt_ce_functions_incompatible_default_parameter_type_rule', 'defineCe' => true],
 ];

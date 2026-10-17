@@ -1049,6 +1049,10 @@ extern zend_class_entry *pt_ce_array_current_dynamic_return_type_extension;
 extern zend_class_entry *pt_ce_class_exists_function_type_specifying_extension;
 extern zend_class_entry *pt_ce_array_find_parameter_closure_type_extension;
 extern zend_class_entry *pt_ce_date_function_return_type_helper;
+extern zend_class_entry *pt_ce_traits_not_analysed_trait_rule;
+extern zend_class_entry *pt_ce_functions_existing_classes_in_typehints_rule;
+extern zend_class_entry *pt_ce_functions_return_type_rule;
+extern zend_class_entry *pt_ce_functions_incompatible_default_parameter_type_rule;
 
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
@@ -8782,5 +8786,27 @@ namespace pgen::DateFunctionReturnTypeHelper {
 [[nodiscard]] bool m_buildReturnTypeFromFormat(zend_object *self, zval *p_formatString, bool p_useMicrosec, zval *ret);
 [[nodiscard]] bool m_buildNumericRangeType(zend_object *self, zend_long p_min, zend_long p_max, bool p_zeroPad, zval *ret);
 } // namespace pgen::DateFunctionReturnTypeHelper
+
+namespace pgen::TraitsNotAnalysedTraitRule {
+[[nodiscard]] bool m_getNodeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_processNode(zend_object *self, zval *p_node, zval *p_scope, zval *ret);
+} // namespace pgen::TraitsNotAnalysedTraitRule
+
+namespace pgen::FunctionsExistingClassesInTypehintsRule {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_check);
+[[nodiscard]] bool m_getNodeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_processNode(zend_object *self, zval *p_node, zval *p_scope, zval *ret);
+} // namespace pgen::FunctionsExistingClassesInTypehintsRule
+
+namespace pgen::FunctionsReturnTypeRule {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_returnTypeCheck);
+[[nodiscard]] bool m_getNodeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_processNode(zend_object *self, zval *p_node, zval *p_scope, zval *ret);
+} // namespace pgen::FunctionsReturnTypeRule
+
+namespace pgen::FunctionsIncompatibleDefaultParameterTypeRule {
+[[nodiscard]] bool m_getNodeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_processNode(zend_object *self, zval *p_node, zval *p_scope, zval *ret);
+} // namespace pgen::FunctionsIncompatibleDefaultParameterTypeRule
 
 #endif

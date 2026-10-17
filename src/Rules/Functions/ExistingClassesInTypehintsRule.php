@@ -10,6 +10,7 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
@@ -17,6 +18,7 @@ use function sprintf;
  */
 #[RegisteredRule(level: 0)]
 #[ValidatesStubFiles]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FunctionsExistingClassesInTypehintsRule.cpp')]
 final class ExistingClassesInTypehintsRule implements Rule
 {
 

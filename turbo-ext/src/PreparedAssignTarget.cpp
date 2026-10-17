@@ -1080,10 +1080,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PreparedAssignTarget)
 		ZVAL_NULL(&p_dependencies_null);
 		ZEND_PARSE_PARAMETERS_START(11, 27)
 			Z_PARAM_STR(p_kind_str)
-			Z_PARAM_OBJECT(p_var)
-			Z_PARAM_OBJECT(p_assignedExpr)
-			Z_PARAM_OBJECT(p_beforeScope)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_var)
+			Z_PARAM_ZVAL(p_assignedExpr)
+			Z_PARAM_ZVAL(p_beforeScope)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_BOOL(p_enterExpressionAssign)
 			Z_PARAM_BOOL(p_isAssignOp)
 			Z_PARAM_BOOL(p_hasYield)
@@ -1091,52 +1091,52 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PreparedAssignTarget)
 			Z_PARAM_ARRAY(p_impurePoints)
 			Z_PARAM_BOOL(p_isAlwaysTerminating)
 			Z_PARAM_OPTIONAL
-			Z_PARAM_OBJECT_OR_NULL(p_rootVar)
-			Z_PARAM_OBJECT_OR_NULL(p_varResult)
+			Z_PARAM_ZVAL_OR_NULL(p_rootVar)
+			Z_PARAM_ZVAL_OR_NULL(p_varResult)
 			Z_PARAM_ARRAY_OR_NULL(p_dimFetchStack)
-			Z_PARAM_OBJECT_OR_NULL(p_assignedPropertyExpr)
+			Z_PARAM_ZVAL_OR_NULL(p_assignedPropertyExpr)
 			Z_PARAM_ARRAY_OR_NULL(p_offsetTypes)
 			Z_PARAM_ARRAY_OR_NULL(p_offsetNativeTypes)
 			Z_PARAM_ARRAY_OR_NULL(p_existingOffsetTypes)
 			Z_PARAM_ARRAY_OR_NULL(p_existingOffsetNativeTypes)
-			Z_PARAM_OBJECT_OR_NULL(p_offsetSetTargetResult)
-			Z_PARAM_OBJECT_OR_NULL(p_objectResult)
+			Z_PARAM_ZVAL_OR_NULL(p_offsetSetTargetResult)
+			Z_PARAM_ZVAL_OR_NULL(p_objectResult)
 			Z_PARAM_STR_OR_NULL(p_propertyName_str)
-			Z_PARAM_OBJECT_OR_NULL(p_propertyHolderType)
-			Z_PARAM_OBJECT_OR_NULL(p_targetReadResult)
+			Z_PARAM_ZVAL_OR_NULL(p_propertyHolderType)
+			Z_PARAM_ZVAL_OR_NULL(p_targetReadResult)
 			Z_PARAM_ARRAY(p_targetChainResults)
-			Z_PARAM_OBJECT_OR_NULL(p_variableNameResult)
-			Z_PARAM_OBJECT_OR_NULL(p_dependencies)
+			Z_PARAM_ZVAL_OR_NULL(p_variableNameResult)
+			Z_PARAM_ZVAL_OR_NULL(p_dependencies)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_kind_str != NULL) { ZVAL_STR(&p_kind_zv, p_kind_str); p_kind = &p_kind_zv; }
-		if (p_var != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_var, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_var)); RETURN_THROWS(); }
-		if (p_assignedExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_assignedExpr, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_assignedExpr)); RETURN_THROWS(); }
-		if (p_beforeScope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_beforeScope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_beforeScope, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_beforeScope)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_rootVar != NULL && UNEXPECTED(!(Z_TYPE_P(p_rootVar) == IS_NULL || pgrt::instanceOfClass(p_rootVar, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { zend_argument_type_error(12, "must be of type %s, %s given", "?PhpParser\\Node\\Expr", zend_zval_value_name(p_rootVar)); RETURN_THROWS(); }
+		if (p_var != NULL && UNEXPECTED(Z_TYPE_P(p_var) != IS_OBJECT || !pgrt::instanceOfClass(p_var, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_var)); RETURN_THROWS(); }
+		if (p_assignedExpr != NULL && UNEXPECTED(Z_TYPE_P(p_assignedExpr) != IS_OBJECT || !pgrt::instanceOfClass(p_assignedExpr, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_assignedExpr)); RETURN_THROWS(); }
+		if (p_beforeScope != NULL && UNEXPECTED(Z_TYPE_P(p_beforeScope) != IS_OBJECT || !(pgrt::instanceOfClass(p_beforeScope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_beforeScope, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_beforeScope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_rootVar != NULL && UNEXPECTED((Z_TYPE_P(p_rootVar) != IS_OBJECT && Z_TYPE_P(p_rootVar) != IS_NULL) || !(Z_TYPE_P(p_rootVar) == IS_NULL || pgrt::instanceOfClass(p_rootVar, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { zend_argument_type_error(12, "must be of type %s, %s given", "?PhpParser\\Node\\Expr", zend_zval_value_name(p_rootVar)); RETURN_THROWS(); }
 		if (p_rootVar == NULL) p_rootVar = &p_rootVar_null;
-		if (p_varResult != NULL && UNEXPECTED(!(Z_TYPE_P(p_varResult) == IS_NULL || (pgrt::instanceOfClass(p_varResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_varResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(13, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_varResult)); RETURN_THROWS(); }
+		if (p_varResult != NULL && UNEXPECTED((Z_TYPE_P(p_varResult) != IS_OBJECT && Z_TYPE_P(p_varResult) != IS_NULL) || !(Z_TYPE_P(p_varResult) == IS_NULL || (pgrt::instanceOfClass(p_varResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_varResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(13, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_varResult)); RETURN_THROWS(); }
 		if (p_varResult == NULL) p_varResult = &p_varResult_null;
 		if (p_dimFetchStack == NULL) p_dimFetchStack = &p_dimFetchStack_null;
-		if (p_assignedPropertyExpr != NULL && UNEXPECTED(!(Z_TYPE_P(p_assignedPropertyExpr) == IS_NULL || pgrt::instanceOfClass(p_assignedPropertyExpr, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { zend_argument_type_error(15, "must be of type %s, %s given", "?PhpParser\\Node\\Expr", zend_zval_value_name(p_assignedPropertyExpr)); RETURN_THROWS(); }
+		if (p_assignedPropertyExpr != NULL && UNEXPECTED((Z_TYPE_P(p_assignedPropertyExpr) != IS_OBJECT && Z_TYPE_P(p_assignedPropertyExpr) != IS_NULL) || !(Z_TYPE_P(p_assignedPropertyExpr) == IS_NULL || pgrt::instanceOfClass(p_assignedPropertyExpr, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { zend_argument_type_error(15, "must be of type %s, %s given", "?PhpParser\\Node\\Expr", zend_zval_value_name(p_assignedPropertyExpr)); RETURN_THROWS(); }
 		if (p_assignedPropertyExpr == NULL) p_assignedPropertyExpr = &p_assignedPropertyExpr_null;
 		if (p_offsetTypes == NULL) p_offsetTypes = &p_offsetTypes_null;
 		if (p_offsetNativeTypes == NULL) p_offsetNativeTypes = &p_offsetNativeTypes_null;
 		if (p_existingOffsetTypes == NULL) p_existingOffsetTypes = &p_existingOffsetTypes_null;
 		if (p_existingOffsetNativeTypes == NULL) p_existingOffsetNativeTypes = &p_existingOffsetNativeTypes_null;
-		if (p_offsetSetTargetResult != NULL && UNEXPECTED(!(Z_TYPE_P(p_offsetSetTargetResult) == IS_NULL || (pgrt::instanceOfClass(p_offsetSetTargetResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_offsetSetTargetResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(20, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_offsetSetTargetResult)); RETURN_THROWS(); }
+		if (p_offsetSetTargetResult != NULL && UNEXPECTED((Z_TYPE_P(p_offsetSetTargetResult) != IS_OBJECT && Z_TYPE_P(p_offsetSetTargetResult) != IS_NULL) || !(Z_TYPE_P(p_offsetSetTargetResult) == IS_NULL || (pgrt::instanceOfClass(p_offsetSetTargetResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_offsetSetTargetResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(20, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_offsetSetTargetResult)); RETURN_THROWS(); }
 		if (p_offsetSetTargetResult == NULL) p_offsetSetTargetResult = &p_offsetSetTargetResult_null;
-		if (p_objectResult != NULL && UNEXPECTED(!(Z_TYPE_P(p_objectResult) == IS_NULL || (pgrt::instanceOfClass(p_objectResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_objectResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(21, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_objectResult)); RETURN_THROWS(); }
+		if (p_objectResult != NULL && UNEXPECTED((Z_TYPE_P(p_objectResult) != IS_OBJECT && Z_TYPE_P(p_objectResult) != IS_NULL) || !(Z_TYPE_P(p_objectResult) == IS_NULL || (pgrt::instanceOfClass(p_objectResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_objectResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(21, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_objectResult)); RETURN_THROWS(); }
 		if (p_objectResult == NULL) p_objectResult = &p_objectResult_null;
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
 		if (p_propertyName == NULL) p_propertyName = &p_propertyName_null;
-		if (p_propertyHolderType != NULL && UNEXPECTED(!(Z_TYPE_P(p_propertyHolderType) == IS_NULL || pgrt::instanceOfClass(p_propertyHolderType, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(23, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_propertyHolderType)); RETURN_THROWS(); }
+		if (p_propertyHolderType != NULL && UNEXPECTED((Z_TYPE_P(p_propertyHolderType) != IS_OBJECT && Z_TYPE_P(p_propertyHolderType) != IS_NULL) || !(Z_TYPE_P(p_propertyHolderType) == IS_NULL || pgrt::instanceOfClass(p_propertyHolderType, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(23, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_propertyHolderType)); RETURN_THROWS(); }
 		if (p_propertyHolderType == NULL) p_propertyHolderType = &p_propertyHolderType_null;
-		if (p_targetReadResult != NULL && UNEXPECTED(!(Z_TYPE_P(p_targetReadResult) == IS_NULL || (pgrt::instanceOfClass(p_targetReadResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_targetReadResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(24, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_targetReadResult)); RETURN_THROWS(); }
+		if (p_targetReadResult != NULL && UNEXPECTED((Z_TYPE_P(p_targetReadResult) != IS_OBJECT && Z_TYPE_P(p_targetReadResult) != IS_NULL) || !(Z_TYPE_P(p_targetReadResult) == IS_NULL || (pgrt::instanceOfClass(p_targetReadResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_targetReadResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(24, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_targetReadResult)); RETURN_THROWS(); }
 		if (p_targetReadResult == NULL) p_targetReadResult = &p_targetReadResult_null;
-		if (p_variableNameResult != NULL && UNEXPECTED(!(Z_TYPE_P(p_variableNameResult) == IS_NULL || (pgrt::instanceOfClass(p_variableNameResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_variableNameResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(26, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_variableNameResult)); RETURN_THROWS(); }
+		if (p_variableNameResult != NULL && UNEXPECTED((Z_TYPE_P(p_variableNameResult) != IS_OBJECT && Z_TYPE_P(p_variableNameResult) != IS_NULL) || !(Z_TYPE_P(p_variableNameResult) == IS_NULL || (pgrt::instanceOfClass(p_variableNameResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_variableNameResult, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Analyser\\ExpressionResult", 33)))))) { zend_argument_type_error(26, "must be of type %s, %s given", "?PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_variableNameResult)); RETURN_THROWS(); }
 		if (p_variableNameResult == NULL) p_variableNameResult = &p_variableNameResult_null;
-		if (p_dependencies != NULL && UNEXPECTED(!(Z_TYPE_P(p_dependencies) == IS_NULL || (pgrt::instanceOfClass(p_dependencies, pt_ce_dependencies) || pgrt::instanceOfClass(p_dependencies, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Dependency\\Dependencies", 31)))))) { zend_argument_type_error(27, "must be of type %s, %s given", "?PHPStan\\Dependency\\Dependencies", zend_zval_value_name(p_dependencies)); RETURN_THROWS(); }
+		if (p_dependencies != NULL && UNEXPECTED((Z_TYPE_P(p_dependencies) != IS_OBJECT && Z_TYPE_P(p_dependencies) != IS_NULL) || !(Z_TYPE_P(p_dependencies) == IS_NULL || (pgrt::instanceOfClass(p_dependencies, pt_ce_dependencies) || pgrt::instanceOfClass(p_dependencies, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Dependency\\Dependencies", 31)))))) { zend_argument_type_error(27, "must be of type %s, %s given", "?PHPStan\\Dependency\\Dependencies", zend_zval_value_name(p_dependencies)); RETURN_THROWS(); }
 		if (p_dependencies == NULL) p_dependencies = &p_dependencies_null;
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m___construct(Z_OBJ_P(ZEND_THIS), p_kind, p_var, p_assignedExpr, p_beforeScope, p_scope, p_enterExpressionAssign, p_isAssignOp, p_hasYield, p_throwPoints, p_impurePoints, p_isAlwaysTerminating, p_rootVar, p_varResult, p_dimFetchStack, p_assignedPropertyExpr, p_offsetTypes, p_offsetNativeTypes, p_existingOffsetTypes, p_existingOffsetNativeTypes, p_offsetSetTargetResult, p_objectResult, p_propertyName, p_propertyHolderType, p_targetReadResult, p_targetChainResults, p_variableNameResult, p_dependencies))) RETURN_THROWS();
 	});

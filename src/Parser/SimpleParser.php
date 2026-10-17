@@ -9,7 +9,9 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/SimpleParser.cpp')]
 final class SimpleParser implements Parser
 {
 

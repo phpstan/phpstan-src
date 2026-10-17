@@ -460,23 +460,23 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassConstantAccessType)
 		zval p_nativeType_null;
 		ZVAL_NULL(&p_nativeType_null);
 		ZEND_PARSE_PARAMETERS_START(2, 3)
-			Z_PARAM_OBJECT(p_type)
+			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_STR(p_constantName_str)
 			Z_PARAM_OPTIONAL
-			Z_PARAM_OBJECT_OR_NULL(p_nativeType)
+			Z_PARAM_ZVAL_OR_NULL(p_nativeType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		if (p_constantName_str != NULL) { ZVAL_STR(&p_constantName_zv, p_constantName_str); p_constantName = &p_constantName_zv; }
-		if (p_nativeType != NULL && UNEXPECTED(!(Z_TYPE_P(p_nativeType) == IS_NULL || pgrt::instanceOfClass(p_nativeType, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(3, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_nativeType)); RETURN_THROWS(); }
+		if (p_nativeType != NULL && UNEXPECTED((Z_TYPE_P(p_nativeType) != IS_OBJECT && Z_TYPE_P(p_nativeType) != IS_NULL) || !(Z_TYPE_P(p_nativeType) == IS_NULL || pgrt::instanceOfClass(p_nativeType, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(3, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_nativeType)); RETURN_THROWS(); }
 		if (p_nativeType == NULL) p_nativeType = &p_nativeType_null;
 		if (UNEXPECTED(!pgen::ClassConstantAccessType::m___construct(Z_OBJ_P(ZEND_THIS), p_type, p_constantName, p_nativeType))) RETURN_THROWS();
 	});
 	cls.method(sigs::withNativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\ClassConstantAccessType::withNativeType() */
 		zval *p_nativeType = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_nativeType)
+			Z_PARAM_ZVAL(p_nativeType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_nativeType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_nativeType, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_nativeType)); RETURN_THROWS(); }
+		if (p_nativeType != NULL && UNEXPECTED(Z_TYPE_P(p_nativeType) != IS_OBJECT || !pgrt::instanceOfClass(p_nativeType, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_nativeType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassConstantAccessType::m_withNativeType(Z_OBJ_P(ZEND_THIS), p_nativeType, return_value))) RETURN_THROWS();
 	});
@@ -494,9 +494,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassConstantAccessType)
 	cls.method(sigs::getReferencedTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\ClassConstantAccessType::getReferencedTemplateTypes() */
 		zval *p_positionVariance = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_positionVariance)
+			Z_PARAM_ZVAL(p_positionVariance)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_positionVariance != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
+		if (p_positionVariance != NULL && UNEXPECTED(Z_TYPE_P(p_positionVariance) != IS_OBJECT || !(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassConstantAccessType::m_getReferencedTemplateTypes(Z_OBJ_P(ZEND_THIS), p_positionVariance, return_value))) RETURN_THROWS();
 	});
@@ -519,9 +519,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassConstantAccessType)
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\ClassConstantAccessType::equals() */
 		zval *p_type = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_type)
+			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::ClassConstantAccessType::m_equals(Z_OBJ_P(ZEND_THIS), p_type, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -545,9 +545,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassConstantAccessType)
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\ClassConstantAccessType::describe() */
 		zval *p_level = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_level)
+			Z_PARAM_ZVAL(p_level)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_level != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
+		if (p_level != NULL && UNEXPECTED(Z_TYPE_P(p_level) != IS_OBJECT || !(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassConstantAccessType::m_describe(Z_OBJ_P(ZEND_THIS), p_level, return_value))) RETURN_THROWS();
 	});
@@ -607,10 +607,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassConstantAccessType)
 		zval *p_right = NULL;
 		zval *p_cb = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_right)
+			Z_PARAM_ZVAL(p_right)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_right != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_right)); RETURN_THROWS(); }
+		if (p_right != NULL && UNEXPECTED(Z_TYPE_P(p_right) != IS_OBJECT || !pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_right)); RETURN_THROWS(); }
 		if (p_cb != NULL && UNEXPECTED(!zend_is_callable(p_cb, 0, NULL))) { zend_argument_type_error(2, "must be a valid callback, %s given", zend_zval_value_name(p_cb)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassConstantAccessType::m_traverseSimultaneously(Z_OBJ_P(ZEND_THIS), p_right, p_cb, return_value))) RETURN_THROWS();

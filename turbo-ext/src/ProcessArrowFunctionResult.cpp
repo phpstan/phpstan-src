@@ -151,14 +151,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ProcessArrowFunctionResult)
 		zval *p_closureTypeImpurePoints = NULL;
 		zval *p_invalidateExpressions = NULL;
 		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_OBJECT(p_expressionResult)
-			Z_PARAM_OBJECT(p_arrowFunctionScope)
+			Z_PARAM_ZVAL(p_expressionResult)
+			Z_PARAM_ZVAL(p_arrowFunctionScope)
 			Z_PARAM_ARRAY(p_closureTypeThrowPoints)
 			Z_PARAM_ARRAY(p_closureTypeImpurePoints)
 			Z_PARAM_ARRAY(p_invalidateExpressions)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_expressionResult != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_expressionResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_expressionResult, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Analyser\\ExpressionResult", 33))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_expressionResult)); RETURN_THROWS(); }
-		if (p_arrowFunctionScope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_arrowFunctionScope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_arrowFunctionScope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_arrowFunctionScope)); RETURN_THROWS(); }
+		if (p_expressionResult != NULL && UNEXPECTED(Z_TYPE_P(p_expressionResult) != IS_OBJECT || !(pgrt::instanceOfClass(p_expressionResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_expressionResult, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Analyser\\ExpressionResult", 33))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_expressionResult)); RETURN_THROWS(); }
+		if (p_arrowFunctionScope != NULL && UNEXPECTED(Z_TYPE_P(p_arrowFunctionScope) != IS_OBJECT || !(pgrt::instanceOfClass(p_arrowFunctionScope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_arrowFunctionScope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_arrowFunctionScope)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ProcessArrowFunctionResult::m___construct(Z_OBJ_P(ZEND_THIS), p_expressionResult, p_arrowFunctionScope, p_closureTypeThrowPoints, p_closureTypeImpurePoints, p_invalidateExpressions))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExpressionResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessArrowFunctionResult::getExpressionResult() */

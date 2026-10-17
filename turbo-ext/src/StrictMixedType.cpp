@@ -1535,10 +1535,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_type = NULL;
 		bool p_strictTypes = false;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_type)
+			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_BOOL(p_strictTypes)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_accepts(Z_OBJ_P(ZEND_THIS), p_type, p_strictTypes, return_value))) RETURN_THROWS();
 	});
@@ -1572,19 +1572,19 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_acceptingType = NULL;
 		bool p_strictTypes = false;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_acceptingType)
+			Z_PARAM_ZVAL(p_acceptingType)
 			Z_PARAM_BOOL(p_strictTypes)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_acceptingType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_acceptingType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_acceptingType)); RETURN_THROWS(); }
+		if (p_acceptingType != NULL && UNEXPECTED(Z_TYPE_P(p_acceptingType) != IS_OBJECT || !pgrt::instanceOfClass(p_acceptingType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_acceptingType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isAcceptedBy(Z_OBJ_P(ZEND_THIS), p_acceptingType, p_strictTypes, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isSuperTypeOf() */
 		zval *p_type = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_type)
+			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isSuperTypeOf(Z_OBJ_P(ZEND_THIS), p_type, return_value))) RETURN_THROWS();
 	});
@@ -1607,9 +1607,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isSubTypeOf() */
 		zval *p_otherType = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_otherType)
+			Z_PARAM_ZVAL(p_otherType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_otherType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_otherType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_otherType)); RETURN_THROWS(); }
+		if (p_otherType != NULL && UNEXPECTED(Z_TYPE_P(p_otherType) != IS_OBJECT || !pgrt::instanceOfClass(p_otherType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_otherType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isSubTypeOf(Z_OBJ_P(ZEND_THIS), p_otherType, return_value))) RETURN_THROWS();
 	});
@@ -1632,9 +1632,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::equals() */
 		zval *p_type = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_type)
+			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::StrictMixedType::m_equals(Z_OBJ_P(ZEND_THIS), p_type, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -1658,9 +1658,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::describe() */
 		zval *p_level = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_level)
+			Z_PARAM_ZVAL(p_level)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_level != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
+		if (p_level != NULL && UNEXPECTED(Z_TYPE_P(p_level) != IS_OBJECT || !(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_describe(Z_OBJ_P(ZEND_THIS), p_level, return_value))) RETURN_THROWS();
 	});
@@ -1734,10 +1734,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_propertyName_str)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getProperty(Z_OBJ_P(ZEND_THIS), p_propertyName, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1748,10 +1748,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_propertyName_str)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getUnresolvedPropertyPrototype(Z_OBJ_P(ZEND_THIS), p_propertyName, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1789,10 +1789,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_propertyName_str)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getInstanceProperty(Z_OBJ_P(ZEND_THIS), p_propertyName, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1829,10 +1829,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_propertyName_str)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getUnresolvedInstancePropertyPrototype(Z_OBJ_P(ZEND_THIS), p_propertyName, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1880,10 +1880,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_propertyName_str)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getStaticProperty(Z_OBJ_P(ZEND_THIS), p_propertyName, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1894,10 +1894,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_propertyName_str)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getUnresolvedStaticPropertyPrototype(Z_OBJ_P(ZEND_THIS), p_propertyName, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1940,10 +1940,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_methodName_str)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_methodName_str != NULL) { ZVAL_STR(&p_methodName_zv, p_methodName_str); p_methodName = &p_methodName_zv; }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getMethod(Z_OBJ_P(ZEND_THIS), p_methodName, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1980,10 +1980,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_methodName_str)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_methodName_str != NULL) { ZVAL_STR(&p_methodName_zv, p_methodName_str); p_methodName = &p_methodName_zv; }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getUnresolvedMethodPrototype(Z_OBJ_P(ZEND_THIS), p_methodName, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -2245,11 +2245,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_type = NULL;
 		zval *p_phpVersion = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_type)
-			Z_PARAM_OBJECT(p_phpVersion)
+			Z_PARAM_ZVAL(p_type)
+			Z_PARAM_ZVAL(p_phpVersion)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
-		if (p_phpVersion != NULL && UNEXPECTED(!((Z_TYPE_P(p_phpVersion) == IS_OBJECT && Z_OBJCE_P(p_phpVersion) == pt_ce_php_version) || pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Php\\PhpVersion", 22))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_phpVersion != NULL && UNEXPECTED(Z_TYPE_P(p_phpVersion) != IS_OBJECT || !((Z_TYPE_P(p_phpVersion) == IS_OBJECT && Z_OBJCE_P(p_phpVersion) == pt_ce_php_version) || pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Php\\PhpVersion", 22))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_looseCompare(Z_OBJ_P(ZEND_THIS), p_type, p_phpVersion, return_value))) RETURN_THROWS();
 	});
@@ -2266,9 +2266,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::hasOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::hasOffsetValueType() */
 		zval *p_offsetType = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_offsetType)
+			Z_PARAM_ZVAL(p_offsetType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_offsetType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
+		if (p_offsetType != NULL && UNEXPECTED(Z_TYPE_P(p_offsetType) != IS_OBJECT || !pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_hasOffsetValueType(Z_OBJ_P(ZEND_THIS), p_offsetType, return_value))) RETURN_THROWS();
 	});
@@ -2291,9 +2291,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getOffsetValueType() */
 		zval *p_offsetType = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_offsetType)
+			Z_PARAM_ZVAL(p_offsetType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_offsetType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
+		if (p_offsetType != NULL && UNEXPECTED(Z_TYPE_P(p_offsetType) != IS_OBJECT || !pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getOffsetValueType(Z_OBJ_P(ZEND_THIS), p_offsetType, return_value))) RETURN_THROWS();
 	});
@@ -2320,14 +2320,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_valueType = NULL;
 		bool p_unionValues = true;
 		ZEND_PARSE_PARAMETERS_START(2, 3)
-			Z_PARAM_OBJECT_OR_NULL(p_offsetType)
-			Z_PARAM_OBJECT(p_valueType)
+			Z_PARAM_ZVAL_OR_NULL(p_offsetType)
+			Z_PARAM_ZVAL(p_valueType)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(p_unionValues)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_offsetType != NULL && UNEXPECTED(!(Z_TYPE_P(p_offsetType) == IS_NULL || pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
+		if (p_offsetType != NULL && UNEXPECTED((Z_TYPE_P(p_offsetType) != IS_OBJECT && Z_TYPE_P(p_offsetType) != IS_NULL) || !(Z_TYPE_P(p_offsetType) == IS_NULL || pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
 		if (p_offsetType == NULL) p_offsetType = &p_offsetType_null;
-		if (p_valueType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
+		if (p_valueType != NULL && UNEXPECTED(Z_TYPE_P(p_valueType) != IS_OBJECT || !pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_setOffsetValueType(Z_OBJ_P(ZEND_THIS), p_offsetType, p_valueType, p_unionValues, return_value))) RETURN_THROWS();
 	});
@@ -2335,20 +2335,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_offsetType = NULL;
 		zval *p_valueType = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_offsetType)
-			Z_PARAM_OBJECT(p_valueType)
+			Z_PARAM_ZVAL(p_offsetType)
+			Z_PARAM_ZVAL(p_valueType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_offsetType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
-		if (p_valueType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
+		if (p_offsetType != NULL && UNEXPECTED(Z_TYPE_P(p_offsetType) != IS_OBJECT || !pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
+		if (p_valueType != NULL && UNEXPECTED(Z_TYPE_P(p_valueType) != IS_OBJECT || !pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_setExistingOffsetValueType(Z_OBJ_P(ZEND_THIS), p_offsetType, p_valueType, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::unsetOffset, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::unsetOffset() */
 		zval *p_offsetType = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_offsetType)
+			Z_PARAM_ZVAL(p_offsetType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_offsetType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
+		if (p_offsetType != NULL && UNEXPECTED(Z_TYPE_P(p_offsetType) != IS_OBJECT || !pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_unsetOffset(Z_OBJ_P(ZEND_THIS), p_offsetType, return_value))) RETURN_THROWS();
 	});
@@ -2366,9 +2366,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getCallableParametersAcceptors() */
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getCallableParametersAcceptors(Z_OBJ_P(ZEND_THIS), p_scope, return_value))) RETURN_THROWS();
 	});
@@ -2400,9 +2400,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::toClassConstantType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toClassConstantType() */
 		zval *p_reflectionProvider = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_reflectionProvider)
+			Z_PARAM_ZVAL(p_reflectionProvider)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_reflectionProvider != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_reflectionProvider, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_reflectionProvider)); RETURN_THROWS(); }
+		if (p_reflectionProvider != NULL && UNEXPECTED(Z_TYPE_P(p_reflectionProvider) != IS_OBJECT || !pgrt::instanceOfClass(p_reflectionProvider, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_reflectionProvider)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toClassConstantType(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, return_value))) RETURN_THROWS();
 	});
@@ -2416,11 +2416,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		bool p_allowString = false;
 		bool p_allowSameClass = false;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_objectOrClassType)
+			Z_PARAM_ZVAL(p_objectOrClassType)
 			Z_PARAM_BOOL(p_allowString)
 			Z_PARAM_BOOL(p_allowSameClass)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_objectOrClassType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_objectOrClassType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_objectOrClassType)); RETURN_THROWS(); }
+		if (p_objectOrClassType != NULL && UNEXPECTED(Z_TYPE_P(p_objectOrClassType) != IS_OBJECT || !pgrt::instanceOfClass(p_objectOrClassType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_objectOrClassType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toObjectTypeForIsACheck(Z_OBJ_P(ZEND_THIS), p_objectOrClassType, p_allowString, p_allowSameClass, return_value))) RETURN_THROWS();
 	});
@@ -2471,18 +2471,18 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::inferTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::inferTemplateTypes() */
 		zval *p_receivedType = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_receivedType)
+			Z_PARAM_ZVAL(p_receivedType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_receivedType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_receivedType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_receivedType)); RETURN_THROWS(); }
+		if (p_receivedType != NULL && UNEXPECTED(Z_TYPE_P(p_receivedType) != IS_OBJECT || !pgrt::instanceOfClass(p_receivedType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_receivedType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_inferTemplateTypes(Z_OBJ_P(ZEND_THIS), p_receivedType, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReferencedTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getReferencedTemplateTypes() */
 		zval *p_positionVariance = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_positionVariance)
+			Z_PARAM_ZVAL(p_positionVariance)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_positionVariance != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
+		if (p_positionVariance != NULL && UNEXPECTED(Z_TYPE_P(p_positionVariance) != IS_OBJECT || !(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getReferencedTemplateTypes(Z_OBJ_P(ZEND_THIS), p_positionVariance, return_value))) RETURN_THROWS();
 	});
@@ -2547,10 +2547,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_right = NULL;
 		zval *p_cb = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_right)
+			Z_PARAM_ZVAL(p_right)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_right != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_right)); RETURN_THROWS(); }
+		if (p_right != NULL && UNEXPECTED(Z_TYPE_P(p_right) != IS_OBJECT || !pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_right)); RETURN_THROWS(); }
 		if (p_cb != NULL && UNEXPECTED(!zend_is_callable(p_cb, 0, NULL))) { zend_argument_type_error(2, "must be a valid callback, %s given", zend_zval_value_name(p_cb)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_traverseSimultaneously(Z_OBJ_P(ZEND_THIS), p_right, p_cb, return_value))) RETURN_THROWS();
@@ -2558,9 +2558,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::exponentiate() */
 		zval *p_exponent = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_exponent)
+			Z_PARAM_ZVAL(p_exponent)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_exponent != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_exponent, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_exponent)); RETURN_THROWS(); }
+		if (p_exponent != NULL && UNEXPECTED(Z_TYPE_P(p_exponent) != IS_OBJECT || !pgrt::instanceOfClass(p_exponent, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_exponent)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_exponentiate(Z_OBJ_P(ZEND_THIS), p_exponent, return_value))) RETURN_THROWS();
 	});

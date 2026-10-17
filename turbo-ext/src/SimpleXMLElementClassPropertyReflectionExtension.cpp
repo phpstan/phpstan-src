@@ -94,10 +94,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SimpleXMLElementClassPropertyReflectio
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_classReflection)
+			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_STR(p_propertyName_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_classReflection != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
+		if (p_classReflection != NULL && UNEXPECTED(Z_TYPE_P(p_classReflection) != IS_OBJECT || !(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
 		bool r;
 		if (UNEXPECTED(!pgen::SimpleXMLElementClassPropertyReflectionExtension::m_hasProperty(Z_OBJ_P(ZEND_THIS), p_classReflection, p_propertyName, &r))) RETURN_THROWS();
@@ -109,10 +109,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SimpleXMLElementClassPropertyReflectio
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_classReflection)
+			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_STR(p_propertyName_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_classReflection != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
+		if (p_classReflection != NULL && UNEXPECTED(Z_TYPE_P(p_classReflection) != IS_OBJECT || !(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::SimpleXMLElementClassPropertyReflectionExtension::m_getProperty(Z_OBJ_P(ZEND_THIS), p_classReflection, p_propertyName, return_value))) RETURN_THROWS();

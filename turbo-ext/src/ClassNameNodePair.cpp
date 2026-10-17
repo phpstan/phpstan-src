@@ -71,10 +71,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameNodePair)
 		zval *p_node = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_className_str)
-			Z_PARAM_OBJECT(p_node)
+			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node", 14)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node", 14)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ClassNameNodePair::m___construct(Z_OBJ_P(ZEND_THIS), p_className, p_node))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameNodePair::getClassName() */

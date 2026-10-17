@@ -478,14 +478,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonStringableDynamicAccessCheck)
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
 		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_OBJECT(p_scope)
-			Z_PARAM_OBJECT(p_name)
+			Z_PARAM_ZVAL(p_scope)
+			Z_PARAM_ZVAL(p_name)
 			Z_PARAM_STR(p_messageFormat_str)
 			Z_PARAM_ZVAL(p_classNode)
 			Z_PARAM_STR(p_identifier_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_name != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_name, pgrt::lookupClassQuiet(pg_site_25, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_name)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_name != NULL && UNEXPECTED(Z_TYPE_P(p_name) != IS_OBJECT || !pgrt::instanceOfClass(p_name, pgrt::lookupClassQuiet(pg_site_25, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_name)); RETURN_THROWS(); }
 		if (p_messageFormat_str != NULL) { ZVAL_STR(&p_messageFormat_zv, p_messageFormat_str); p_messageFormat = &p_messageFormat_zv; }
 		if (p_identifier_str != NULL) { ZVAL_STR(&p_identifier_zv, p_identifier_str); p_identifier = &p_identifier_zv; }
 		ZVAL_UNDEF(return_value);
@@ -502,14 +502,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonStringableDynamicAccessCheck)
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
 		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_OBJECT(p_scope)
-			Z_PARAM_OBJECT(p_name)
+			Z_PARAM_ZVAL(p_scope)
+			Z_PARAM_ZVAL(p_name)
 			Z_PARAM_STR(p_messageFormat_str)
 			Z_PARAM_ZVAL(p_classNode)
 			Z_PARAM_STR(p_identifier_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_name != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_name, pgrt::lookupClassQuiet(pg_site_25, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_name)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_name != NULL && UNEXPECTED(Z_TYPE_P(p_name) != IS_OBJECT || !pgrt::instanceOfClass(p_name, pgrt::lookupClassQuiet(pg_site_25, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_name)); RETURN_THROWS(); }
 		if (p_messageFormat_str != NULL) { ZVAL_STR(&p_messageFormat_zv, p_messageFormat_str); p_messageFormat = &p_messageFormat_zv; }
 		if (p_identifier_str != NULL) { ZVAL_STR(&p_identifier_zv, p_identifier_str); p_identifier = &p_identifier_zv; }
 		ZVAL_UNDEF(return_value);
@@ -527,16 +527,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonStringableDynamicAccessCheck)
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
 		ZEND_PARSE_PARAMETERS_START(6, 6)
-			Z_PARAM_OBJECT(p_scope)
-			Z_PARAM_OBJECT(p_name)
-			Z_PARAM_OBJECT(p_nameType)
+			Z_PARAM_ZVAL(p_scope)
+			Z_PARAM_ZVAL(p_name)
+			Z_PARAM_ZVAL(p_nameType)
 			Z_PARAM_STR(p_messageFormat_str)
 			Z_PARAM_ZVAL(p_classNode)
 			Z_PARAM_STR(p_identifier_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_name != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_name, pgrt::lookupClassQuiet(pg_site_25, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_name)); RETURN_THROWS(); }
-		if (p_nameType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_nameType, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_nameType)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_name != NULL && UNEXPECTED(Z_TYPE_P(p_name) != IS_OBJECT || !pgrt::instanceOfClass(p_name, pgrt::lookupClassQuiet(pg_site_25, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_name)); RETURN_THROWS(); }
+		if (p_nameType != NULL && UNEXPECTED(Z_TYPE_P(p_nameType) != IS_OBJECT || !pgrt::instanceOfClass(p_nameType, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_nameType)); RETURN_THROWS(); }
 		if (p_messageFormat_str != NULL) { ZVAL_STR(&p_messageFormat_zv, p_messageFormat_str); p_messageFormat = &p_messageFormat_zv; }
 		if (p_identifier_str != NULL) { ZVAL_STR(&p_identifier_zv, p_identifier_str); p_identifier = &p_identifier_zv; }
 		ZVAL_UNDEF(return_value);

@@ -223,9 +223,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateTimeCreateDynamicReturnTypeExtensi
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\DateTimeCreateDynamicReturnTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_functionReflection)
+			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::DateTimeCreateDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(ZEND_THIS), p_functionReflection, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -235,13 +235,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateTimeCreateDynamicReturnTypeExtensi
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_functionReflection)
-			Z_PARAM_OBJECT(p_functionCall)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_functionReflection)
+			Z_PARAM_ZVAL(p_functionCall)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
-		if (p_functionCall != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionCall, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_functionCall)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_functionCall != NULL && UNEXPECTED(Z_TYPE_P(p_functionCall) != IS_OBJECT || !pgrt::instanceOfClass(p_functionCall, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_functionCall)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DateTimeCreateDynamicReturnTypeExtension::m_getTypeFromFunctionCall(Z_OBJ_P(ZEND_THIS), p_functionReflection, p_functionCall, p_scope, return_value))) RETURN_THROWS();
 	});

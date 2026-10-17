@@ -131,15 +131,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_EnsuredNonNullabilityResultExpression)
 		zval *p_originalNativeType = NULL;
 		zval *p_certainty = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_expression)
-			Z_PARAM_OBJECT(p_originalType)
-			Z_PARAM_OBJECT(p_originalNativeType)
-			Z_PARAM_OBJECT(p_certainty)
+			Z_PARAM_ZVAL(p_expression)
+			Z_PARAM_ZVAL(p_originalType)
+			Z_PARAM_ZVAL(p_originalNativeType)
+			Z_PARAM_ZVAL(p_certainty)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_expression != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expression, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expression)); RETURN_THROWS(); }
-		if (p_originalType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalType, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_originalType)); RETURN_THROWS(); }
-		if (p_originalNativeType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalNativeType, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_originalNativeType)); RETURN_THROWS(); }
-		if (p_certainty != NULL && UNEXPECTED(!((Z_TYPE_P(p_certainty) == IS_OBJECT && Z_OBJCE_P(p_certainty) == pt_ce_trinary) || pgrt::instanceOfClass(p_certainty, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_certainty)); RETURN_THROWS(); }
+		if (p_expression != NULL && UNEXPECTED(Z_TYPE_P(p_expression) != IS_OBJECT || !pgrt::instanceOfClass(p_expression, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expression)); RETURN_THROWS(); }
+		if (p_originalType != NULL && UNEXPECTED(Z_TYPE_P(p_originalType) != IS_OBJECT || !pgrt::instanceOfClass(p_originalType, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_originalType)); RETURN_THROWS(); }
+		if (p_originalNativeType != NULL && UNEXPECTED(Z_TYPE_P(p_originalNativeType) != IS_OBJECT || !pgrt::instanceOfClass(p_originalNativeType, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_originalNativeType)); RETURN_THROWS(); }
+		if (p_certainty != NULL && UNEXPECTED(Z_TYPE_P(p_certainty) != IS_OBJECT || !((Z_TYPE_P(p_certainty) == IS_OBJECT && Z_OBJCE_P(p_certainty) == pt_ce_trinary) || pgrt::instanceOfClass(p_certainty, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_certainty)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResultExpression::m___construct(Z_OBJ_P(ZEND_THIS), p_expression, p_originalType, p_originalNativeType, p_certainty))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExpression, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\EnsuredNonNullabilityResultExpression::getExpression() */

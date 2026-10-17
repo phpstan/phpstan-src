@@ -3,6 +3,7 @@
 namespace PHPStan\Parser;
 
 use PHPStan\File\FileHelper;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_fill_keys;
 use function array_slice;
 use function count;
@@ -13,6 +14,7 @@ use function realpath;
 use function str_contains;
 use const DIRECTORY_SEPARATOR;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PathRoutingParser.cpp')]
 final class PathRoutingParser implements Parser
 {
 

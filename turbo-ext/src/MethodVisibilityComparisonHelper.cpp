@@ -279,15 +279,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodVisibilityComparisonHelper)
 		zval *p_method = NULL;
 		zval *p_node = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_prototype)
-			Z_PARAM_OBJECT(p_prototypeDeclaringClass)
-			Z_PARAM_OBJECT(p_method)
-			Z_PARAM_OBJECT(p_node)
+			Z_PARAM_ZVAL(p_prototype)
+			Z_PARAM_ZVAL(p_prototypeDeclaringClass)
+			Z_PARAM_ZVAL(p_method)
+			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_prototype != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_prototype, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Reflection\\ExtendedMethodReflection", 43)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ExtendedMethodReflection", zend_zval_value_name(p_prototype)); RETURN_THROWS(); }
-		if (p_prototypeDeclaringClass != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_prototypeDeclaringClass, pt_ce_class_reflection) || pgrt::instanceOfClass(p_prototypeDeclaringClass, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_prototypeDeclaringClass)); RETURN_THROWS(); }
-		if (p_method != NULL && UNEXPECTED(!((Z_TYPE_P(p_method) == IS_OBJECT && Z_OBJCE_P(p_method) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(p_method, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", zend_zval_value_name(p_method)); RETURN_THROWS(); }
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_24, "PhpParser\\Node\\Stmt\\ClassMethod", 31)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassMethod", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_prototype != NULL && UNEXPECTED(Z_TYPE_P(p_prototype) != IS_OBJECT || !pgrt::instanceOfClass(p_prototype, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Reflection\\ExtendedMethodReflection", 43)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ExtendedMethodReflection", zend_zval_value_name(p_prototype)); RETURN_THROWS(); }
+		if (p_prototypeDeclaringClass != NULL && UNEXPECTED(Z_TYPE_P(p_prototypeDeclaringClass) != IS_OBJECT || !(pgrt::instanceOfClass(p_prototypeDeclaringClass, pt_ce_class_reflection) || pgrt::instanceOfClass(p_prototypeDeclaringClass, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_prototypeDeclaringClass)); RETURN_THROWS(); }
+		if (p_method != NULL && UNEXPECTED(Z_TYPE_P(p_method) != IS_OBJECT || !((Z_TYPE_P(p_method) == IS_OBJECT && Z_OBJCE_P(p_method) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(p_method, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", zend_zval_value_name(p_method)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_24, "PhpParser\\Node\\Stmt\\ClassMethod", 31)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassMethod", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodVisibilityComparisonHelper::m_compare(Z_OBJ_P(ZEND_THIS), p_prototype, p_prototypeDeclaringClass, p_method, p_node, return_value))) RETURN_THROWS();
 	});

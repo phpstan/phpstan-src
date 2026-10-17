@@ -679,30 +679,30 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassPropertyNode)
 		ZEND_PARSE_PARAMETERS_START(14, 14)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_LONG(p_flags)
-			Z_PARAM_OBJECT_OR_NULL(p_type)
-			Z_PARAM_OBJECT_OR_NULL(p_default)
+			Z_PARAM_ZVAL_OR_NULL(p_type)
+			Z_PARAM_ZVAL_OR_NULL(p_default)
 			Z_PARAM_STR_OR_NULL(p_phpDoc_str)
-			Z_PARAM_OBJECT_OR_NULL(p_phpDocType)
+			Z_PARAM_ZVAL_OR_NULL(p_phpDocType)
 			Z_PARAM_BOOL(p_isPromoted)
 			Z_PARAM_BOOL(p_isPromotedFromTrait)
-			Z_PARAM_OBJECT(p_originalNode)
+			Z_PARAM_ZVAL(p_originalNode)
 			Z_PARAM_BOOL(p_isReadonlyByPhpDoc)
 			Z_PARAM_BOOL(p_isDeclaredInTrait)
 			Z_PARAM_BOOL(p_isReadonlyClass)
 			Z_PARAM_BOOL(p_isAllowedPrivateMutation)
-			Z_PARAM_OBJECT(p_classReflection)
+			Z_PARAM_ZVAL(p_classReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name_str != NULL) { ZVAL_STR(&p_name_zv, p_name_str); p_name = &p_name_zv; }
-		if (p_type != NULL && UNEXPECTED(!(Z_TYPE_P(p_type) == IS_NULL || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(3, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED((Z_TYPE_P(p_type) != IS_OBJECT && Z_TYPE_P(p_type) != IS_NULL) || !(Z_TYPE_P(p_type) == IS_NULL || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(3, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		if (p_type == NULL) p_type = &p_type_null;
-		if (p_default != NULL && UNEXPECTED(!(Z_TYPE_P(p_default) == IS_NULL || pgrt::instanceOfClass(p_default, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node\\Expr", 19))))) { zend_argument_type_error(4, "must be of type %s, %s given", "?PhpParser\\Node\\Expr", zend_zval_value_name(p_default)); RETURN_THROWS(); }
+		if (p_default != NULL && UNEXPECTED((Z_TYPE_P(p_default) != IS_OBJECT && Z_TYPE_P(p_default) != IS_NULL) || !(Z_TYPE_P(p_default) == IS_NULL || pgrt::instanceOfClass(p_default, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node\\Expr", 19))))) { zend_argument_type_error(4, "must be of type %s, %s given", "?PhpParser\\Node\\Expr", zend_zval_value_name(p_default)); RETURN_THROWS(); }
 		if (p_default == NULL) p_default = &p_default_null;
 		if (p_phpDoc_str != NULL) { ZVAL_STR(&p_phpDoc_zv, p_phpDoc_str); p_phpDoc = &p_phpDoc_zv; }
 		if (p_phpDoc == NULL) p_phpDoc = &p_phpDoc_null;
-		if (p_phpDocType != NULL && UNEXPECTED(!(Z_TYPE_P(p_phpDocType) == IS_NULL || pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
+		if (p_phpDocType != NULL && UNEXPECTED((Z_TYPE_P(p_phpDocType) != IS_OBJECT && Z_TYPE_P(p_phpDocType) != IS_NULL) || !(Z_TYPE_P(p_phpDocType) == IS_NULL || pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
 		if (p_phpDocType == NULL) p_phpDocType = &p_phpDocType_null;
-		if (p_originalNode != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node\\Stmt\\Property", 28)) || pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_17, "PhpParser\\Node\\Param", 20))))) { zend_argument_type_error(9, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\Property|PhpParser\\Node\\Param", zend_zval_value_name(p_originalNode)); RETURN_THROWS(); }
-		if (p_classReflection != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(14, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
+		if (p_originalNode != NULL && UNEXPECTED(Z_TYPE_P(p_originalNode) != IS_OBJECT || !(pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node\\Stmt\\Property", 28)) || pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_17, "PhpParser\\Node\\Param", 20))))) { zend_argument_type_error(9, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\Property|PhpParser\\Node\\Param", zend_zval_value_name(p_originalNode)); RETURN_THROWS(); }
+		if (p_classReflection != NULL && UNEXPECTED(Z_TYPE_P(p_classReflection) != IS_OBJECT || !(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(14, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_flags, p_type, p_default, p_phpDoc, p_phpDocType, p_isPromoted, p_isPromotedFromTrait, p_originalNode, p_isReadonlyByPhpDoc, p_isDeclaredInTrait, p_isReadonlyClass, p_isAllowedPrivateMutation, p_classReflection))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getName() */

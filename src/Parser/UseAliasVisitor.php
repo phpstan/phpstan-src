@@ -9,10 +9,12 @@ use PhpParser\Node\Stmt\GroupUse;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function strtolower;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/UseAliasVisitor.cpp')]
 final class UseAliasVisitor extends NodeVisitorAbstract
 {
 

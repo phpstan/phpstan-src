@@ -747,13 +747,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatiblePropertyPhpDocTypeRule)
 		zval *p_unresolvableTypeHelper = NULL;
 		zval *p_genericCallableRuleHelper = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_genericObjectTypeCheck)
-			Z_PARAM_OBJECT(p_unresolvableTypeHelper)
-			Z_PARAM_OBJECT(p_genericCallableRuleHelper)
+			Z_PARAM_ZVAL(p_genericObjectTypeCheck)
+			Z_PARAM_ZVAL(p_unresolvableTypeHelper)
+			Z_PARAM_ZVAL(p_genericCallableRuleHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_genericObjectTypeCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_genericObjectTypeCheck) == IS_OBJECT && Z_OBJCE_P(p_genericObjectTypeCheck) == pt_ce_generic_object_type_check) || pgrt::instanceOfClass(p_genericObjectTypeCheck, pgrt::lookupClassQuiet(pg_site_33, "PHPStan\\Rules\\Generics\\GenericObjectTypeCheck", 45))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\GenericObjectTypeCheck", zend_zval_value_name(p_genericObjectTypeCheck)); RETURN_THROWS(); }
-		if (p_unresolvableTypeHelper != NULL && UNEXPECTED(!((Z_TYPE_P(p_unresolvableTypeHelper) == IS_OBJECT && Z_OBJCE_P(p_unresolvableTypeHelper) == pt_ce_unresolvable_type_helper) || pgrt::instanceOfClass(p_unresolvableTypeHelper, pgrt::lookupClassQuiet(pg_site_34, "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper", 43))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper", zend_zval_value_name(p_unresolvableTypeHelper)); RETURN_THROWS(); }
-		if (p_genericCallableRuleHelper != NULL && UNEXPECTED(!((Z_TYPE_P(p_genericCallableRuleHelper) == IS_OBJECT && Z_OBJCE_P(p_genericCallableRuleHelper) == pt_ce_generic_callable_rule_helper) || pgrt::instanceOfClass(p_genericCallableRuleHelper, pgrt::lookupClassQuiet(pg_site_35, "PHPStan\\Rules\\PhpDoc\\GenericCallableRuleHelper", 46))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Rules\\PhpDoc\\GenericCallableRuleHelper", zend_zval_value_name(p_genericCallableRuleHelper)); RETURN_THROWS(); }
+		if (p_genericObjectTypeCheck != NULL && UNEXPECTED(Z_TYPE_P(p_genericObjectTypeCheck) != IS_OBJECT || !((Z_TYPE_P(p_genericObjectTypeCheck) == IS_OBJECT && Z_OBJCE_P(p_genericObjectTypeCheck) == pt_ce_generic_object_type_check) || pgrt::instanceOfClass(p_genericObjectTypeCheck, pgrt::lookupClassQuiet(pg_site_33, "PHPStan\\Rules\\Generics\\GenericObjectTypeCheck", 45))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\GenericObjectTypeCheck", zend_zval_value_name(p_genericObjectTypeCheck)); RETURN_THROWS(); }
+		if (p_unresolvableTypeHelper != NULL && UNEXPECTED(Z_TYPE_P(p_unresolvableTypeHelper) != IS_OBJECT || !((Z_TYPE_P(p_unresolvableTypeHelper) == IS_OBJECT && Z_OBJCE_P(p_unresolvableTypeHelper) == pt_ce_unresolvable_type_helper) || pgrt::instanceOfClass(p_unresolvableTypeHelper, pgrt::lookupClassQuiet(pg_site_34, "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper", 43))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper", zend_zval_value_name(p_unresolvableTypeHelper)); RETURN_THROWS(); }
+		if (p_genericCallableRuleHelper != NULL && UNEXPECTED(Z_TYPE_P(p_genericCallableRuleHelper) != IS_OBJECT || !((Z_TYPE_P(p_genericCallableRuleHelper) == IS_OBJECT && Z_OBJCE_P(p_genericCallableRuleHelper) == pt_ce_generic_callable_rule_helper) || pgrt::instanceOfClass(p_genericCallableRuleHelper, pgrt::lookupClassQuiet(pg_site_35, "PHPStan\\Rules\\PhpDoc\\GenericCallableRuleHelper", 46))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Rules\\PhpDoc\\GenericCallableRuleHelper", zend_zval_value_name(p_genericCallableRuleHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::IncompatiblePropertyPhpDocTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_genericObjectTypeCheck, p_unresolvableTypeHelper, p_genericCallableRuleHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule::getNodeType() */
@@ -765,11 +765,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatiblePropertyPhpDocTypeRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_36, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_37, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_36, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_37, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IncompatiblePropertyPhpDocTypeRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

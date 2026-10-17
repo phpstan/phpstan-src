@@ -2404,6 +2404,12 @@ namespace pgen::LazyRegistry {
 							vd31 = std::move(r382);
 							vd31_done = true;
 						}
+						if (vd31_ce == pt_ce_impossible_check_type_function_call_rule) {
+							zv::Val r383;
+							if (UNEXPECTED(!pgen::ImpossibleCheckTypeFunctionCallRule::m_getNodeType(Z_OBJ_P(l_rule), r383.raw()))) return false;
+							vd31 = std::move(r383);
+							vd31_done = true;
+						}
 						if (!vd31_done) {
 							if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_rule, "getNodeType", "getnodetype", 11, 0, NULL, vd31.raw()))) return false;
 						}
@@ -2411,29 +2417,29 @@ namespace pgen::LazyRegistry {
 						q16 = std::move(arr30);
 					}
 					}
-					zv::Val a383 = zv::Val::copyOf(zv::Ref(q16.raw()).deref());
-					HashTable *ht15 = Z_ARRVAL_P(a383.raw());
-					zval *v384;
-					zend_ulong n385;
-					zend_string *s386;
-					ZEND_HASH_FOREACH_KEY_VAL(ht15, n385, s386, v384) {
-						(void) n385; (void) s386;
-						l_nodeType = zv::Ref(v384).deref().raw();
+					zv::Val a384 = zv::Val::copyOf(zv::Ref(q16.raw()).deref());
+					HashTable *ht15 = Z_ARRVAL_P(a384.raw());
+					zval *v385;
+					zend_ulong n386;
+					zend_string *s387;
+					ZEND_HASH_FOREACH_KEY_VAL(ht15, n386, s387, v385) {
+						(void) n386; (void) s387;
+						l_nodeType = zv::Ref(v385).deref().raw();
 						 {
 							 {
-								zv::Val o389 = zv::Val::copyOf(zv::Ref(l_rule));
-								zv::Val o390 = zv::Val::copyOf(zv::Ref(o389.raw()));
-								zv::Val o392 = zv::Val::copyOf(zv::Ref(l_nodeType));
-								zval *w393 = zv::Ref(l_rules.raw()).deref().raw();
-								if (Z_TYPE_P(w393) <= IS_NULL) { zval_ptr_dtor(w393); array_init(w393); } else if (UNEXPECTED(Z_TYPE_P(w393) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w393);
-								zval *w391;
-								w391 = pgrt::dimWrite(w393, o392.raw());
-								if (UNEXPECTED(w391 == NULL)) return false;
-								ZVAL_DEREF(w391);
-								if (Z_TYPE_P(w391) <= IS_NULL) { zval_ptr_dtor(w391); array_init(w391); } else if (UNEXPECTED(Z_TYPE_P(w391) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w391);
-								{ zval v = o390.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w391), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val o390 = zv::Val::copyOf(zv::Ref(l_rule));
+								zv::Val o391 = zv::Val::copyOf(zv::Ref(o390.raw()));
+								zv::Val o393 = zv::Val::copyOf(zv::Ref(l_nodeType));
+								zval *w394 = zv::Ref(l_rules.raw()).deref().raw();
+								if (Z_TYPE_P(w394) <= IS_NULL) { zval_ptr_dtor(w394); array_init(w394); } else if (UNEXPECTED(Z_TYPE_P(w394) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w394);
+								zval *w392;
+								w392 = pgrt::dimWrite(w394, o393.raw());
+								if (UNEXPECTED(w392 == NULL)) return false;
+								ZVAL_DEREF(w392);
+								if (Z_TYPE_P(w392) <= IS_NULL) { zval_ptr_dtor(w392); array_init(w392); } else if (UNEXPECTED(Z_TYPE_P(w392) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w392);
+								{ zval v = o391.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w392), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 					}
@@ -2444,11 +2450,11 @@ namespace pgen::LazyRegistry {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val o394 = zv::Val::copyOf(zv::Ref(l_rules.raw()));
-		zval o395;
-		ZVAL_COPY(&o395, o394.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::LazyRegistry::slot::rulesByNodeType, &o395);
-		*ret = o394.take();
+		zv::Val o395 = zv::Val::copyOf(zv::Ref(l_rules.raw()));
+		zval o396;
+		ZVAL_COPY(&o396, o395.raw());
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::LazyRegistry::slot::rulesByNodeType, &o396);
+		*ret = o395.take();
 		return true;
 	}
 }

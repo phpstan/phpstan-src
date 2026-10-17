@@ -92,14 +92,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeProjectionHelper)
 		ZVAL_NULL(&p_variance_null);
 		zval *p_level = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_type)
-			Z_PARAM_OBJECT_OR_NULL(p_variance)
-			Z_PARAM_OBJECT(p_level)
+			Z_PARAM_ZVAL(p_type)
+			Z_PARAM_ZVAL_OR_NULL(p_variance)
+			Z_PARAM_ZVAL(p_level)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
-		if (p_variance != NULL && UNEXPECTED(!(Z_TYPE_P(p_variance) == IS_NULL || (pgrt::instanceOfClass(p_variance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_variance, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41)))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_variance)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_variance != NULL && UNEXPECTED((Z_TYPE_P(p_variance) != IS_OBJECT && Z_TYPE_P(p_variance) != IS_NULL) || !(Z_TYPE_P(p_variance) == IS_NULL || (pgrt::instanceOfClass(p_variance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_variance, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41)))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_variance)); RETURN_THROWS(); }
 		if (p_variance == NULL) p_variance = &p_variance_null;
-		if (p_level != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
+		if (p_level != NULL && UNEXPECTED(Z_TYPE_P(p_level) != IS_OBJECT || !(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TypeProjectionHelper::m_describe(p_type, p_variance, p_level, return_value))) RETURN_THROWS();
 	});

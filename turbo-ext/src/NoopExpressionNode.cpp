@@ -120,10 +120,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NoopExpressionNode)
 		zval *p_originalExpr = NULL;
 		bool p_hasAssign = false;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_originalExpr)
+			Z_PARAM_ZVAL(p_originalExpr)
 			Z_PARAM_BOOL(p_hasAssign)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_originalExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalExpr, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_originalExpr)); RETURN_THROWS(); }
+		if (p_originalExpr != NULL && UNEXPECTED(Z_TYPE_P(p_originalExpr) != IS_OBJECT || !pgrt::instanceOfClass(p_originalExpr, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_originalExpr)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::NoopExpressionNode::m___construct(Z_OBJ_P(ZEND_THIS), p_originalExpr, p_hasAssign))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\NoopExpressionNode::getOriginalExpr() */

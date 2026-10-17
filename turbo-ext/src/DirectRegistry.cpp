@@ -2230,6 +2230,12 @@ namespace pgen::DirectRegistry {
 							vd24 = std::move(r375);
 							vd24_done = true;
 						}
+						if (vd24_ce == pt_ce_impossible_check_type_function_call_rule) {
+							zv::Val r376;
+							if (UNEXPECTED(!pgen::ImpossibleCheckTypeFunctionCallRule::m_getNodeType(Z_OBJ_P(l_rule), r376.raw()))) return false;
+							vd24 = std::move(r376);
+							vd24_done = true;
+						}
 						if (!vd24_done) {
 							if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_rule, "getNodeType", "getnodetype", 11, 0, NULL, vd24.raw()))) return false;
 						}
@@ -2237,29 +2243,29 @@ namespace pgen::DirectRegistry {
 						q9 = std::move(arr23);
 					}
 					}
-					zv::Val a376 = zv::Val::copyOf(zv::Ref(q9.raw()).deref());
-					HashTable *ht8 = Z_ARRVAL_P(a376.raw());
-					zval *v377;
-					zend_ulong n378;
-					zend_string *s379;
-					ZEND_HASH_FOREACH_KEY_VAL(ht8, n378, s379, v377) {
-						(void) n378; (void) s379;
-						l_nodeType = zv::Ref(v377).deref().raw();
+					zv::Val a377 = zv::Val::copyOf(zv::Ref(q9.raw()).deref());
+					HashTable *ht8 = Z_ARRVAL_P(a377.raw());
+					zval *v378;
+					zend_ulong n379;
+					zend_string *s380;
+					ZEND_HASH_FOREACH_KEY_VAL(ht8, n379, s380, v378) {
+						(void) n379; (void) s380;
+						l_nodeType = zv::Ref(v378).deref().raw();
 						 {
 							 {
-								zv::Val o382 = zv::Val::copyOf(zv::Ref(l_rule));
-								zv::Val o383 = zv::Val::copyOf(zv::Ref(o382.raw()));
-								zv::Val o385 = zv::Val::copyOf(zv::Ref(l_nodeType));
-								zval *w386 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::rules)).deref().raw();
-								if (Z_TYPE_P(w386) <= IS_NULL) { zval_ptr_dtor(w386); array_init(w386); } else if (UNEXPECTED(Z_TYPE_P(w386) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w386);
-								zval *w384;
-								w384 = pgrt::dimWrite(w386, o385.raw());
-								if (UNEXPECTED(w384 == NULL)) return false;
-								ZVAL_DEREF(w384);
-								if (Z_TYPE_P(w384) <= IS_NULL) { zval_ptr_dtor(w384); array_init(w384); } else if (UNEXPECTED(Z_TYPE_P(w384) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w384);
-								{ zval v = o383.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w384), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val o383 = zv::Val::copyOf(zv::Ref(l_rule));
+								zv::Val o384 = zv::Val::copyOf(zv::Ref(o383.raw()));
+								zv::Val o386 = zv::Val::copyOf(zv::Ref(l_nodeType));
+								zval *w387 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::rules)).deref().raw();
+								if (Z_TYPE_P(w387) <= IS_NULL) { zval_ptr_dtor(w387); array_init(w387); } else if (UNEXPECTED(Z_TYPE_P(w387) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w387);
+								zval *w385;
+								w385 = pgrt::dimWrite(w387, o386.raw());
+								if (UNEXPECTED(w385 == NULL)) return false;
+								ZVAL_DEREF(w385);
+								if (Z_TYPE_P(w385) <= IS_NULL) { zval_ptr_dtor(w385); array_init(w385); } else if (UNEXPECTED(Z_TYPE_P(w385) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w385);
+								{ zval v = o384.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w385), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 					}

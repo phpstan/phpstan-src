@@ -18,6 +18,7 @@ use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Rules\Registry as RuleRegistry;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_unique;
 use function array_values;
 use function count;
@@ -43,6 +44,7 @@ use const E_WARNING;
  * @phpstan-import-type CollectorData from CollectedData
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileAnalyser.cpp')]
 final class FileAnalyser
 {
 

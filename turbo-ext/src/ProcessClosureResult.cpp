@@ -309,7 +309,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ProcessClosureResult)
 		zval p_dependencies_null;
 		ZVAL_NULL(&p_dependencies_null);
 		ZEND_PARSE_PARAMETERS_START(8, 11)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_throwPoints)
 			Z_PARAM_ARRAY(p_impurePoints)
 			Z_PARAM_ARRAY(p_invalidateExpressions)
@@ -318,14 +318,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ProcessClosureResult)
 			Z_PARAM_ARRAY(p_executionEnds)
 			Z_PARAM_ARRAY(p_closureTypeImpurePoints)
 			Z_PARAM_OPTIONAL
-			Z_PARAM_OBJECT_OR_NULL(p_byRefClosureResultScope)
+			Z_PARAM_ZVAL_OR_NULL(p_byRefClosureResultScope)
 			Z_PARAM_ARRAY(p_byRefUses)
-			Z_PARAM_OBJECT_OR_NULL(p_dependencies)
+			Z_PARAM_ZVAL_OR_NULL(p_dependencies)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_byRefClosureResultScope != NULL && UNEXPECTED(!(Z_TYPE_P(p_byRefClosureResultScope) == IS_NULL || (pgrt::instanceOfClass(p_byRefClosureResultScope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_byRefClosureResultScope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30)))))) { zend_argument_type_error(9, "must be of type %s, %s given", "?PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_byRefClosureResultScope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_byRefClosureResultScope != NULL && UNEXPECTED((Z_TYPE_P(p_byRefClosureResultScope) != IS_OBJECT && Z_TYPE_P(p_byRefClosureResultScope) != IS_NULL) || !(Z_TYPE_P(p_byRefClosureResultScope) == IS_NULL || (pgrt::instanceOfClass(p_byRefClosureResultScope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_byRefClosureResultScope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30)))))) { zend_argument_type_error(9, "must be of type %s, %s given", "?PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_byRefClosureResultScope)); RETURN_THROWS(); }
 		if (p_byRefClosureResultScope == NULL) p_byRefClosureResultScope = &p_byRefClosureResultScope_null;
-		if (p_dependencies != NULL && UNEXPECTED(!(Z_TYPE_P(p_dependencies) == IS_NULL || (pgrt::instanceOfClass(p_dependencies, pt_ce_dependencies) || pgrt::instanceOfClass(p_dependencies, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Dependency\\Dependencies", 31)))))) { zend_argument_type_error(11, "must be of type %s, %s given", "?PHPStan\\Dependency\\Dependencies", zend_zval_value_name(p_dependencies)); RETURN_THROWS(); }
+		if (p_dependencies != NULL && UNEXPECTED((Z_TYPE_P(p_dependencies) != IS_OBJECT && Z_TYPE_P(p_dependencies) != IS_NULL) || !(Z_TYPE_P(p_dependencies) == IS_NULL || (pgrt::instanceOfClass(p_dependencies, pt_ce_dependencies) || pgrt::instanceOfClass(p_dependencies, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Dependency\\Dependencies", 31)))))) { zend_argument_type_error(11, "must be of type %s, %s given", "?PHPStan\\Dependency\\Dependencies", zend_zval_value_name(p_dependencies)); RETURN_THROWS(); }
 		if (p_dependencies == NULL) p_dependencies = &p_dependencies_null;
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m___construct(Z_OBJ_P(ZEND_THIS), p_scope, p_throwPoints, p_impurePoints, p_invalidateExpressions, p_gatheredReturnStatements, p_gatheredYieldStatements, p_executionEnds, p_closureTypeImpurePoints, p_byRefClosureResultScope, p_byRefUses, p_dependencies))) RETURN_THROWS();
 	});
@@ -342,9 +342,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ProcessClosureResult)
 	cls.method(sigs::applyByRefUseScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::applyByRefUseScope() */
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_applyByRefUseScope(Z_OBJ_P(ZEND_THIS), p_scope, return_value))) RETURN_THROWS();
 	});

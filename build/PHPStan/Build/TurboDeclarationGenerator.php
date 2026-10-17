@@ -732,6 +732,9 @@ final class TurboDeclarationGenerator
 		if (is_string($default) && $classes === [] && $masks === ['MAY_BE_STRING']) {
 			return sprintf('cls.typedStringProperty(%s, %s, %s);', $name, $flags, $this->cString($default));
 		}
+		if (is_string($default) && $classes === [] && in_array('MAY_BE_STRING', $masks, true)) {
+			return sprintf('cls.typedStringProperty(%s, %s, %s, %s);', $name, $flags, $this->cString($default), $mask);
+		}
 
 		throw new RuntimeException('a typed default reg::Class cannot declare');
 	}

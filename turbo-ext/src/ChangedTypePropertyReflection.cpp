@@ -1080,19 +1080,19 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ChangedTypePropertyReflection)
 		zval *p_phpDocType = NULL;
 		zval *p_nativeType = NULL;
 		ZEND_PARSE_PARAMETERS_START(6, 6)
-			Z_PARAM_OBJECT(p_declaringClass)
-			Z_PARAM_OBJECT(p_reflection)
-			Z_PARAM_OBJECT(p_readableType)
-			Z_PARAM_OBJECT(p_writableType)
-			Z_PARAM_OBJECT(p_phpDocType)
-			Z_PARAM_OBJECT(p_nativeType)
+			Z_PARAM_ZVAL(p_declaringClass)
+			Z_PARAM_ZVAL(p_reflection)
+			Z_PARAM_ZVAL(p_readableType)
+			Z_PARAM_ZVAL(p_writableType)
+			Z_PARAM_ZVAL(p_phpDocType)
+			Z_PARAM_ZVAL(p_nativeType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_declaringClass != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_declaringClass, pt_ce_class_reflection) || pgrt::instanceOfClass(p_declaringClass, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_declaringClass)); RETURN_THROWS(); }
-		if (p_reflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_reflection, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Reflection\\ExtendedPropertyReflection", 45)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ExtendedPropertyReflection", zend_zval_value_name(p_reflection)); RETURN_THROWS(); }
-		if (p_readableType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_readableType, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_readableType)); RETURN_THROWS(); }
-		if (p_writableType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_writableType, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_writableType)); RETURN_THROWS(); }
-		if (p_phpDocType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
-		if (p_nativeType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_nativeType, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(6, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_nativeType)); RETURN_THROWS(); }
+		if (p_declaringClass != NULL && UNEXPECTED(Z_TYPE_P(p_declaringClass) != IS_OBJECT || !(pgrt::instanceOfClass(p_declaringClass, pt_ce_class_reflection) || pgrt::instanceOfClass(p_declaringClass, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_declaringClass)); RETURN_THROWS(); }
+		if (p_reflection != NULL && UNEXPECTED(Z_TYPE_P(p_reflection) != IS_OBJECT || !pgrt::instanceOfClass(p_reflection, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Reflection\\ExtendedPropertyReflection", 45)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ExtendedPropertyReflection", zend_zval_value_name(p_reflection)); RETURN_THROWS(); }
+		if (p_readableType != NULL && UNEXPECTED(Z_TYPE_P(p_readableType) != IS_OBJECT || !pgrt::instanceOfClass(p_readableType, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_readableType)); RETURN_THROWS(); }
+		if (p_writableType != NULL && UNEXPECTED(Z_TYPE_P(p_writableType) != IS_OBJECT || !pgrt::instanceOfClass(p_writableType, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_writableType)); RETURN_THROWS(); }
+		if (p_phpDocType != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocType) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
+		if (p_nativeType != NULL && UNEXPECTED(Z_TYPE_P(p_nativeType) != IS_OBJECT || !pgrt::instanceOfClass(p_nativeType, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(6, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_nativeType)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_declaringClass, p_reflection, p_readableType, p_writableType, p_phpDocType, p_nativeType))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Dummy\ChangedTypePropertyReflection::getName() */

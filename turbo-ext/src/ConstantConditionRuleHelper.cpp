@@ -284,9 +284,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantConditionRuleHelper)
 	cls.method(sigs::shouldSkip, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantConditionRuleHelper::shouldSkip() */
 		zval *p_expr = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_expr)
+			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::ConstantConditionRuleHelper::m_shouldSkip(Z_OBJ_P(ZEND_THIS), p_expr, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -295,11 +295,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantConditionRuleHelper)
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_scope)
-			Z_PARAM_OBJECT(p_expr)
+			Z_PARAM_ZVAL(p_scope)
+			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConstantConditionRuleHelper::m_getBooleanType(Z_OBJ_P(ZEND_THIS), p_scope, p_expr, return_value))) RETURN_THROWS();
 	});
@@ -307,11 +307,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantConditionRuleHelper)
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_scope)
-			Z_PARAM_OBJECT(p_expr)
+			Z_PARAM_ZVAL(p_scope)
+			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConstantConditionRuleHelper::m_getNativeBooleanType(Z_OBJ_P(ZEND_THIS), p_scope, p_expr, return_value))) RETURN_THROWS();
 	});

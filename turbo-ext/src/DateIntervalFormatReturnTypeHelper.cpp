@@ -386,13 +386,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateIntervalFormatReturnTypeHelper)
 		zval *p_intervalType = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_formatType)
-			Z_PARAM_OBJECT(p_intervalType)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_formatType)
+			Z_PARAM_ZVAL(p_intervalType)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_formatType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_formatType, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_formatType)); RETURN_THROWS(); }
-		if (p_intervalType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_intervalType, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_intervalType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_formatType != NULL && UNEXPECTED(Z_TYPE_P(p_formatType) != IS_OBJECT || !pgrt::instanceOfClass(p_formatType, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_formatType)); RETURN_THROWS(); }
+		if (p_intervalType != NULL && UNEXPECTED(Z_TYPE_P(p_intervalType) != IS_OBJECT || !pgrt::instanceOfClass(p_intervalType, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_intervalType)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DateIntervalFormatReturnTypeHelper::m_getType(Z_OBJ_P(ZEND_THIS), p_formatType, p_intervalType, p_scope, return_value))) RETURN_THROWS();
 	});

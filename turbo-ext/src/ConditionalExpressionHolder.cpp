@@ -195,9 +195,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConditionalExpressionHolder)
 		zval *p_typeHolder = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_ARRAY(p_conditionExpressionTypeHolders)
-			Z_PARAM_OBJECT(p_typeHolder)
+			Z_PARAM_ZVAL(p_typeHolder)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_typeHolder != NULL && UNEXPECTED(!((Z_TYPE_P(p_typeHolder) == IS_OBJECT && Z_OBJCE_P(p_typeHolder) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_typeHolder, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_typeHolder)); RETURN_THROWS(); }
+		if (p_typeHolder != NULL && UNEXPECTED(Z_TYPE_P(p_typeHolder) != IS_OBJECT || !((Z_TYPE_P(p_typeHolder) == IS_OBJECT && Z_OBJCE_P(p_typeHolder) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_typeHolder, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_typeHolder)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ConditionalExpressionHolder::m___construct(Z_OBJ_P(ZEND_THIS), p_conditionExpressionTypeHolders, p_typeHolder))) RETURN_THROWS();
 	});
 	cls.method(sigs::getConditionExpressionTypeHolders, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ConditionalExpressionHolder::getConditionExpressionTypeHolders() */

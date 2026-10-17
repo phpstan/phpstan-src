@@ -1127,50 +1127,62 @@ namespace pgen::RegularExpressionQuotingRule {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_native_function_reflection) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getVariants(Z_OBJ_P(p_functionReflection), r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_66, p_functionReflection, "getVariants", "getvariants", 11, 0, NULL, vd2.raw()))) return false;
 		}
-		zv::Val vd4;
-		zend_class_entry *vd4_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
-		bool vd4_done = false;
-		if (vd4_ce == pt_ce_php_function_from_parser_node_reflection || vd4_ce == pt_ce_php_method_from_parser_node_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getNamedArgumentsVariants(Z_OBJ_P(p_functionReflection), r5.raw()))) return false;
-			vd4 = std::move(r5);
-			vd4_done = true;
+		zv::Val vd5;
+		zend_class_entry *vd5_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
+		bool vd5_done = false;
+		if (vd5_ce == pt_ce_php_function_from_parser_node_reflection || vd5_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r6;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getNamedArgumentsVariants(Z_OBJ_P(p_functionReflection), r6.raw()))) return false;
+			vd5 = std::move(r6);
+			vd5_done = true;
 		}
-		if (!vd4_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_67, p_functionReflection, "getNamedArgumentsVariants", "getnamedargumentsvariants", 25, 0, NULL, vd4.raw()))) return false;
+		if (vd5_ce == pt_ce_native_function_reflection) {
+			zv::Val r7;
+			if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getNamedArgumentsVariants(Z_OBJ_P(p_functionReflection), r7.raw()))) return false;
+			vd5 = std::move(r7);
+			vd5_done = true;
 		}
-		zv::Val r6;
+		if (!vd5_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_67, p_functionReflection, "getNamedArgumentsVariants", "getnamedargumentsvariants", 25, 0, NULL, vd5.raw()))) return false;
+		}
+		zv::Val r8;
 		 {
-			r6 = pt_parameters_acceptor_selector_select_from_args(p_scope, r1.raw(), vd2.raw(), vd4.raw());
-			if (UNEXPECTED(r6.isUndef())) return false;
+			r8 = pt_parameters_acceptor_selector_select_from_args(p_scope, r1.raw(), vd2.raw(), vd5.raw());
+			if (UNEXPECTED(r8.isUndef())) return false;
 		}
-		l_parametersAcceptor = std::move(r6);
+		l_parametersAcceptor = std::move(r8);
 	}
 	 {
-		zv::Val r7;
+		zv::Val r9;
 		 {
-			r7 = pt_arguments_normalizer_reorder_func_arguments(l_parametersAcceptor.raw(), p_functionCall);
-			if (UNEXPECTED(r7.isUndef())) return false;
+			r9 = pt_arguments_normalizer_reorder_func_arguments(l_parametersAcceptor.raw(), p_functionCall);
+			if (UNEXPECTED(r9.isUndef())) return false;
 		}
-		l_normalizedFuncCall = std::move(r7);
+		l_normalizedFuncCall = std::move(r9);
 	}
 	 {
 		if (Z_TYPE_P(l_normalizedFuncCall.raw()) == IS_NULL) {
 			 {
-				zval z8;
-				ZVAL_NULL(&z8);
-				ZVAL_COPY_VALUE(ret, &z8);
+				zval z10;
+				ZVAL_NULL(&z10);
+				ZVAL_COPY_VALUE(ret, &z10);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_68, l_normalizedFuncCall.raw(), r9.raw()))) return false;
-		*ret = r9.take();
+		zv::Val r11;
+		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_68, l_normalizedFuncCall.raw(), r11.raw()))) return false;
+		*ret = r11.take();
 		return true;
 	}
 }
@@ -1221,11 +1233,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		zval *p_reflectionProvider = NULL;
 		zval *p_regexExpressionHelper = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_reflectionProvider)
-			Z_PARAM_OBJECT(p_regexExpressionHelper)
+			Z_PARAM_ZVAL(p_reflectionProvider)
+			Z_PARAM_ZVAL(p_regexExpressionHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_reflectionProvider != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_reflectionProvider, pgrt::lookupClassQuiet(pg_site_69, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_reflectionProvider)); RETURN_THROWS(); }
-		if (p_regexExpressionHelper != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_regexExpressionHelper, pgrt::lookupClassQuiet(pg_site_70, "PHPStan\\Type\\Regex\\RegexExpressionHelper", 40)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Regex\\RegexExpressionHelper", zend_zval_value_name(p_regexExpressionHelper)); RETURN_THROWS(); }
+		if (p_reflectionProvider != NULL && UNEXPECTED(Z_TYPE_P(p_reflectionProvider) != IS_OBJECT || !pgrt::instanceOfClass(p_reflectionProvider, pgrt::lookupClassQuiet(pg_site_69, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_reflectionProvider)); RETURN_THROWS(); }
+		if (p_regexExpressionHelper != NULL && UNEXPECTED(Z_TYPE_P(p_regexExpressionHelper) != IS_OBJECT || !pgrt::instanceOfClass(p_regexExpressionHelper, pgrt::lookupClassQuiet(pg_site_70, "PHPStan\\Type\\Regex\\RegexExpressionHelper", 40)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Regex\\RegexExpressionHelper", zend_zval_value_name(p_regexExpressionHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::RegularExpressionQuotingRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_regexExpressionHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Regexp\RegularExpressionQuotingRule::getNodeType() */
@@ -1237,11 +1249,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_71, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_72, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_71, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_72, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegularExpressionQuotingRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1250,12 +1262,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		zval *p_scope = NULL;
 		zval *p_patternDelimiters = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_concat)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_concat)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_patternDelimiters)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_concat != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_concat, pgrt::lookupClassQuiet(pg_site_13, "PhpParser\\Node\\Expr\\BinaryOp\\Concat", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\BinaryOp\\Concat", zend_zval_value_name(p_concat)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_72, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_concat != NULL && UNEXPECTED(Z_TYPE_P(p_concat) != IS_OBJECT || !pgrt::instanceOfClass(p_concat, pgrt::lookupClassQuiet(pg_site_13, "PhpParser\\Node\\Expr\\BinaryOp\\Concat", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\BinaryOp\\Concat", zend_zval_value_name(p_concat)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_72, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegularExpressionQuotingRule::m_validateQuoteDelimiters(Z_OBJ_P(ZEND_THIS), p_concat, p_scope, p_patternDelimiters, return_value))) RETURN_THROWS();
 	});
@@ -1264,12 +1276,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		zval *p_scope = NULL;
 		zval *p_patternDelimiters = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_pregQuote)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_pregQuote)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_patternDelimiters)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_pregQuote != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_pregQuote, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_pregQuote)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_72, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_pregQuote != NULL && UNEXPECTED(Z_TYPE_P(p_pregQuote) != IS_OBJECT || !pgrt::instanceOfClass(p_pregQuote, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_pregQuote)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_72, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegularExpressionQuotingRule::m_validatePregQuote(Z_OBJ_P(ZEND_THIS), p_pregQuote, p_scope, p_patternDelimiters, return_value))) RETURN_THROWS();
 	});
@@ -1298,13 +1310,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		zval *p_scope = NULL;
 		zval *p_functionReflection = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_functionCall)
-			Z_PARAM_OBJECT(p_scope)
-			Z_PARAM_OBJECT(p_functionReflection)
+			Z_PARAM_ZVAL(p_functionCall)
+			Z_PARAM_ZVAL(p_scope)
+			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionCall != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionCall, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_functionCall)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_72, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_functionReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_73, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_functionCall != NULL && UNEXPECTED(Z_TYPE_P(p_functionCall) != IS_OBJECT || !pgrt::instanceOfClass(p_functionCall, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_functionCall)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_72, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_73, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegularExpressionQuotingRule::m_getNormalizedArgs(Z_OBJ_P(ZEND_THIS), p_functionCall, p_scope, p_functionReflection, return_value))) RETURN_THROWS();
 	});

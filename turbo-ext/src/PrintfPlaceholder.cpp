@@ -332,10 +332,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfPlaceholder)
 		zval *p_argumentType = NULL;
 		bool p_strictPlaceholderTypes = false;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_argumentType)
+			Z_PARAM_ZVAL(p_argumentType)
 			Z_PARAM_BOOL(p_strictPlaceholderTypes)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_argumentType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_argumentType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_argumentType)); RETURN_THROWS(); }
+		if (p_argumentType != NULL && UNEXPECTED(Z_TYPE_P(p_argumentType) != IS_OBJECT || !pgrt::instanceOfClass(p_argumentType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_argumentType)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::PrintfPlaceholder::m_doesArgumentTypeMatchPlaceholder(Z_OBJ_P(ZEND_THIS), p_argumentType, p_strictPlaceholderTypes, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

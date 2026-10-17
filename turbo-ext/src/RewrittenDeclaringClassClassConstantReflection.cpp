@@ -611,11 +611,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 		zval *p_declaringClass = NULL;
 		zval *p_constantReflection = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_declaringClass)
-			Z_PARAM_OBJECT(p_constantReflection)
+			Z_PARAM_ZVAL(p_declaringClass)
+			Z_PARAM_ZVAL(p_constantReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_declaringClass != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_declaringClass, pt_ce_class_reflection) || pgrt::instanceOfClass(p_declaringClass, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_declaringClass)); RETURN_THROWS(); }
-		if (p_constantReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_constantReflection, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Reflection\\ClassConstantReflection", 42)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassConstantReflection", zend_zval_value_name(p_constantReflection)); RETURN_THROWS(); }
+		if (p_declaringClass != NULL && UNEXPECTED(Z_TYPE_P(p_declaringClass) != IS_OBJECT || !(pgrt::instanceOfClass(p_declaringClass, pt_ce_class_reflection) || pgrt::instanceOfClass(p_declaringClass, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_declaringClass)); RETURN_THROWS(); }
+		if (p_constantReflection != NULL && UNEXPECTED(Z_TYPE_P(p_constantReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_constantReflection, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Reflection\\ClassConstantReflection", 42)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassConstantReflection", zend_zval_value_name(p_constantReflection)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_declaringClass, p_constantReflection))) RETURN_THROWS();
 	});
 	cls.method(sigs::getValueExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getValueExpr() */

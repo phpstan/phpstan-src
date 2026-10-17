@@ -1084,10 +1084,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 		zval *p_initializerExprTypeResolver = NULL;
 		bool p_treatPhpDocTypesAsCertain = false;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_initializerExprTypeResolver)
+			Z_PARAM_ZVAL(p_initializerExprTypeResolver)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_initializerExprTypeResolver != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_initializerExprTypeResolver, pt_ce_initializer_expr_type_resolver) || pgrt::instanceOfClass(p_initializerExprTypeResolver, pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\InitializerExprTypeResolver", 46))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\InitializerExprTypeResolver", zend_zval_value_name(p_initializerExprTypeResolver)); RETURN_THROWS(); }
+		if (p_initializerExprTypeResolver != NULL && UNEXPECTED(Z_TYPE_P(p_initializerExprTypeResolver) != IS_OBJECT || !(pgrt::instanceOfClass(p_initializerExprTypeResolver, pt_ce_initializer_expr_type_resolver) || pgrt::instanceOfClass(p_initializerExprTypeResolver, pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\InitializerExprTypeResolver", 46))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\InitializerExprTypeResolver", zend_zval_value_name(p_initializerExprTypeResolver)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m___construct(Z_OBJ_P(ZEND_THIS), p_initializerExprTypeResolver, p_treatPhpDocTypesAsCertain))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleInArrayHaystackFiniteTypesRule::getNodeType() */
@@ -1099,11 +1099,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_54, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_55, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_54, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_55, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1111,11 +1111,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 		zval *p_needleType = NULL;
 		zval *p_valueType = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_needleType)
-			Z_PARAM_OBJECT(p_valueType)
+			Z_PARAM_ZVAL(p_needleType)
+			Z_PARAM_ZVAL(p_valueType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_needleType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_needleType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_needleType)); RETURN_THROWS(); }
-		if (p_valueType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
+		if (p_needleType != NULL && UNEXPECTED(Z_TYPE_P(p_needleType) != IS_OBJECT || !pgrt::instanceOfClass(p_needleType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_needleType)); RETURN_THROWS(); }
+		if (p_valueType != NULL && UNEXPECTED(Z_TYPE_P(p_valueType) != IS_OBJECT || !pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m_isAnotherValueOfNeedleType(Z_OBJ_P(ZEND_THIS), p_needleType, p_valueType, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -1125,13 +1125,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 		zval *p_valueType = NULL;
 		zval *p_isStrict = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_needleType)
-			Z_PARAM_OBJECT(p_valueType)
-			Z_PARAM_OBJECT(p_isStrict)
+			Z_PARAM_ZVAL(p_needleType)
+			Z_PARAM_ZVAL(p_valueType)
+			Z_PARAM_ZVAL(p_isStrict)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_needleType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_needleType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_needleType)); RETURN_THROWS(); }
-		if (p_valueType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
-		if (p_isStrict != NULL && UNEXPECTED(!((Z_TYPE_P(p_isStrict) == IS_OBJECT && Z_OBJCE_P(p_isStrict) == pt_ce_trinary) || pgrt::instanceOfClass(p_isStrict, pgrt::lookupClassQuiet(pg_site_56, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_isStrict)); RETURN_THROWS(); }
+		if (p_needleType != NULL && UNEXPECTED(Z_TYPE_P(p_needleType) != IS_OBJECT || !pgrt::instanceOfClass(p_needleType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_needleType)); RETURN_THROWS(); }
+		if (p_valueType != NULL && UNEXPECTED(Z_TYPE_P(p_valueType) != IS_OBJECT || !pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
+		if (p_isStrict != NULL && UNEXPECTED(Z_TYPE_P(p_isStrict) != IS_OBJECT || !((Z_TYPE_P(p_isStrict) == IS_OBJECT && Z_OBJCE_P(p_isStrict) == pt_ce_trinary) || pgrt::instanceOfClass(p_isStrict, pgrt::lookupClassQuiet(pg_site_56, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_isStrict)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m_findCanNeverMatchReasons(Z_OBJ_P(ZEND_THIS), p_needleType, p_valueType, p_isStrict, return_value))) RETURN_THROWS();
 	});
@@ -1146,14 +1146,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 		zval p_verb_zv;
 		zval *p_reasons = NULL;
 		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_OBJECT(p_valueType)
-			Z_PARAM_OBJECT(p_needleType)
+			Z_PARAM_ZVAL(p_valueType)
+			Z_PARAM_ZVAL(p_needleType)
 			Z_PARAM_STR(p_functionName_str)
 			Z_PARAM_STR(p_verb_str)
 			Z_PARAM_ARRAY(p_reasons)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_valueType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
-		if (p_needleType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_needleType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_needleType)); RETURN_THROWS(); }
+		if (p_valueType != NULL && UNEXPECTED(Z_TYPE_P(p_valueType) != IS_OBJECT || !pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
+		if (p_needleType != NULL && UNEXPECTED(Z_TYPE_P(p_needleType) != IS_OBJECT || !pgrt::instanceOfClass(p_needleType, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_needleType)); RETURN_THROWS(); }
 		if (p_functionName_str != NULL) { ZVAL_STR(&p_functionName_zv, p_functionName_str); p_functionName = &p_functionName_zv; }
 		if (p_verb_str != NULL) { ZVAL_STR(&p_verb_zv, p_verb_str); p_verb = &p_verb_zv; }
 		ZVAL_UNDEF(return_value);

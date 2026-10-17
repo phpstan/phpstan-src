@@ -88,11 +88,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_EndStatementResult)
 		zval *p_statement = NULL;
 		zval *p_result = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_statement)
-			Z_PARAM_OBJECT(p_result)
+			Z_PARAM_ZVAL(p_statement)
+			Z_PARAM_ZVAL(p_result)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_statement != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_statement, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt", zend_zval_value_name(p_statement)); RETURN_THROWS(); }
-		if (p_result != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_result, pt_ce_statement_result) || pgrt::instanceOfClass(p_result, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\StatementResult", 32))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\StatementResult", zend_zval_value_name(p_result)); RETURN_THROWS(); }
+		if (p_statement != NULL && UNEXPECTED(Z_TYPE_P(p_statement) != IS_OBJECT || !pgrt::instanceOfClass(p_statement, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt", zend_zval_value_name(p_statement)); RETURN_THROWS(); }
+		if (p_result != NULL && UNEXPECTED(Z_TYPE_P(p_result) != IS_OBJECT || !(pgrt::instanceOfClass(p_result, pt_ce_statement_result) || pgrt::instanceOfClass(p_result, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\StatementResult", 32))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\StatementResult", zend_zval_value_name(p_result)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::EndStatementResult::m___construct(Z_OBJ_P(ZEND_THIS), p_statement, p_result))) RETURN_THROWS();
 	});
 	cls.method(sigs::getStatement, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\EndStatementResult::getStatement() */

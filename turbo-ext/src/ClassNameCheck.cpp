@@ -380,14 +380,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameCheck)
 		ZVAL_NULL(&p_location_null);
 		bool p_checkClassCaseSensitivity = true;
 		ZEND_PARSE_PARAMETERS_START(3, 4)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_pairs)
-			Z_PARAM_OBJECT_OR_NULL(p_location)
+			Z_PARAM_ZVAL_OR_NULL(p_location)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(p_checkClassCaseSensitivity)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_location != NULL && UNEXPECTED(!(Z_TYPE_P(p_location) == IS_NULL || ((Z_TYPE_P(p_location) == IS_OBJECT && Z_OBJCE_P(p_location) == pt_ce_class_name_usage_location) || pgrt::instanceOfClass(p_location, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\ClassNameUsageLocation", 36)))))) { zend_argument_type_error(3, "must be of type %s, %s given", "?PHPStan\\Rules\\ClassNameUsageLocation", zend_zval_value_name(p_location)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_location != NULL && UNEXPECTED((Z_TYPE_P(p_location) != IS_OBJECT && Z_TYPE_P(p_location) != IS_NULL) || !(Z_TYPE_P(p_location) == IS_NULL || ((Z_TYPE_P(p_location) == IS_OBJECT && Z_OBJCE_P(p_location) == pt_ce_class_name_usage_location) || pgrt::instanceOfClass(p_location, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\ClassNameUsageLocation", 36)))))) { zend_argument_type_error(3, "must be of type %s, %s given", "?PHPStan\\Rules\\ClassNameUsageLocation", zend_zval_value_name(p_location)); RETURN_THROWS(); }
 		if (p_location == NULL) p_location = &p_location_null;
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameCheck::m_checkClassNames(Z_OBJ_P(ZEND_THIS), p_scope, p_pairs, p_location, p_checkClassCaseSensitivity, return_value))) RETURN_THROWS();

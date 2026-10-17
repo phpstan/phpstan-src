@@ -2040,16 +2040,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval *p_wasMatched = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_patternExpr)
-			Z_PARAM_OBJECT_OR_NULL(p_flagsType)
-			Z_PARAM_OBJECT(p_wasMatched)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_patternExpr)
+			Z_PARAM_ZVAL_OR_NULL(p_flagsType)
+			Z_PARAM_ZVAL(p_wasMatched)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_patternExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_patternExpr, pgrt::lookupClassQuiet(pg_site_76, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_patternExpr)); RETURN_THROWS(); }
-		if (p_flagsType != NULL && UNEXPECTED(!(Z_TYPE_P(p_flagsType) == IS_NULL || pgrt::instanceOfClass(p_flagsType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_flagsType)); RETURN_THROWS(); }
+		if (p_patternExpr != NULL && UNEXPECTED(Z_TYPE_P(p_patternExpr) != IS_OBJECT || !pgrt::instanceOfClass(p_patternExpr, pgrt::lookupClassQuiet(pg_site_76, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_patternExpr)); RETURN_THROWS(); }
+		if (p_flagsType != NULL && UNEXPECTED((Z_TYPE_P(p_flagsType) != IS_OBJECT && Z_TYPE_P(p_flagsType) != IS_NULL) || !(Z_TYPE_P(p_flagsType) == IS_NULL || pgrt::instanceOfClass(p_flagsType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_flagsType)); RETURN_THROWS(); }
 		if (p_flagsType == NULL) p_flagsType = &p_flagsType_null;
-		if (p_wasMatched != NULL && UNEXPECTED(!((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_78, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_wasMatched != NULL && UNEXPECTED(Z_TYPE_P(p_wasMatched) != IS_OBJECT || !((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_78, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_matchAllExpr(Z_OBJ_P(ZEND_THIS), p_patternExpr, p_flagsType, p_wasMatched, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -2061,16 +2061,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval *p_wasMatched = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_patternExpr)
-			Z_PARAM_OBJECT_OR_NULL(p_flagsType)
-			Z_PARAM_OBJECT(p_wasMatched)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_patternExpr)
+			Z_PARAM_ZVAL_OR_NULL(p_flagsType)
+			Z_PARAM_ZVAL(p_wasMatched)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_patternExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_patternExpr, pgrt::lookupClassQuiet(pg_site_76, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_patternExpr)); RETURN_THROWS(); }
-		if (p_flagsType != NULL && UNEXPECTED(!(Z_TYPE_P(p_flagsType) == IS_NULL || pgrt::instanceOfClass(p_flagsType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_flagsType)); RETURN_THROWS(); }
+		if (p_patternExpr != NULL && UNEXPECTED(Z_TYPE_P(p_patternExpr) != IS_OBJECT || !pgrt::instanceOfClass(p_patternExpr, pgrt::lookupClassQuiet(pg_site_76, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_patternExpr)); RETURN_THROWS(); }
+		if (p_flagsType != NULL && UNEXPECTED((Z_TYPE_P(p_flagsType) != IS_OBJECT && Z_TYPE_P(p_flagsType) != IS_NULL) || !(Z_TYPE_P(p_flagsType) == IS_NULL || pgrt::instanceOfClass(p_flagsType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_flagsType)); RETURN_THROWS(); }
 		if (p_flagsType == NULL) p_flagsType = &p_flagsType_null;
-		if (p_wasMatched != NULL && UNEXPECTED(!((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_78, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_wasMatched != NULL && UNEXPECTED(Z_TYPE_P(p_wasMatched) != IS_OBJECT || !((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_78, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_matchExpr(Z_OBJ_P(ZEND_THIS), p_patternExpr, p_flagsType, p_wasMatched, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -2078,11 +2078,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval *p_patternExpr = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_patternExpr)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_patternExpr)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_patternExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_patternExpr, pgrt::lookupClassQuiet(pg_site_76, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_patternExpr)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_78, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_patternExpr != NULL && UNEXPECTED(Z_TYPE_P(p_patternExpr) != IS_OBJECT || !pgrt::instanceOfClass(p_patternExpr, pgrt::lookupClassQuiet(pg_site_76, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_patternExpr)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_78, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_matchSubjectExpr(Z_OBJ_P(ZEND_THIS), p_patternExpr, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -2094,15 +2094,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval *p_wasMatched = NULL;
 		bool p_matchesAll = false;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_patternType)
-			Z_PARAM_OBJECT_OR_NULL(p_flagsType)
-			Z_PARAM_OBJECT(p_wasMatched)
+			Z_PARAM_ZVAL(p_patternType)
+			Z_PARAM_ZVAL_OR_NULL(p_flagsType)
+			Z_PARAM_ZVAL(p_wasMatched)
 			Z_PARAM_BOOL(p_matchesAll)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_patternType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_patternType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_patternType)); RETURN_THROWS(); }
-		if (p_flagsType != NULL && UNEXPECTED(!(Z_TYPE_P(p_flagsType) == IS_NULL || pgrt::instanceOfClass(p_flagsType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_flagsType)); RETURN_THROWS(); }
+		if (p_patternType != NULL && UNEXPECTED(Z_TYPE_P(p_patternType) != IS_OBJECT || !pgrt::instanceOfClass(p_patternType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_patternType)); RETURN_THROWS(); }
+		if (p_flagsType != NULL && UNEXPECTED((Z_TYPE_P(p_flagsType) != IS_OBJECT && Z_TYPE_P(p_flagsType) != IS_NULL) || !(Z_TYPE_P(p_flagsType) == IS_NULL || pgrt::instanceOfClass(p_flagsType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_flagsType)); RETURN_THROWS(); }
 		if (p_flagsType == NULL) p_flagsType = &p_flagsType_null;
-		if (p_wasMatched != NULL && UNEXPECTED(!((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
+		if (p_wasMatched != NULL && UNEXPECTED(Z_TYPE_P(p_wasMatched) != IS_OBJECT || !((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_matchPatternType(Z_OBJ_P(ZEND_THIS), p_patternType, p_flagsType, p_wasMatched, p_matchesAll, return_value))) RETURN_THROWS();
 	});
@@ -2119,12 +2119,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		ZEND_PARSE_PARAMETERS_START(4, 4)
 			Z_PARAM_STR(p_regex_str)
 			Z_PARAM_LONG_OR_NULL(p_flags_raw, p_flags_isNull)
-			Z_PARAM_OBJECT(p_wasMatched)
+			Z_PARAM_ZVAL(p_wasMatched)
 			Z_PARAM_BOOL(p_matchesAll)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_regex_str != NULL) { ZVAL_STR(&p_regex_zv, p_regex_str); p_regex = &p_regex_zv; }
 		if (p_flags != NULL || ZEND_NUM_ARGS() > 1) { if (p_flags_isNull) { ZVAL_NULL(&p_flags_zv); } else { ZVAL_LONG(&p_flags_zv, p_flags_raw); } p_flags = &p_flags_zv; }
-		if (p_wasMatched != NULL && UNEXPECTED(!((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
+		if (p_wasMatched != NULL && UNEXPECTED(Z_TYPE_P(p_wasMatched) != IS_OBJECT || !((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_matchRegex(Z_OBJ_P(ZEND_THIS), p_regex, p_flags, p_wasMatched, p_matchesAll, return_value))) RETURN_THROWS();
 	});
@@ -2137,17 +2137,17 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval *p_markVerbs = NULL;
 		bool p_matchesAll = false;
 		ZEND_PARSE_PARAMETERS_START(7, 7)
-			Z_PARAM_OBJECT(p_subjectBaseType)
-			Z_PARAM_OBJECT(p_captureGroups)
-			Z_PARAM_OBJECT(p_wasMatched)
+			Z_PARAM_ZVAL(p_subjectBaseType)
+			Z_PARAM_ZVAL(p_captureGroups)
+			Z_PARAM_ZVAL(p_wasMatched)
 			Z_PARAM_LONG(p_trailingOptionals)
 			Z_PARAM_LONG(p_flags)
 			Z_PARAM_ARRAY(p_markVerbs)
 			Z_PARAM_BOOL(p_matchesAll)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_subjectBaseType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_subjectBaseType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_subjectBaseType)); RETURN_THROWS(); }
-		if (p_captureGroups != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_captureGroups, pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Type\\Regex\\RegexGroupList", 33)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Regex\\RegexGroupList", zend_zval_value_name(p_captureGroups)); RETURN_THROWS(); }
-		if (p_wasMatched != NULL && UNEXPECTED(!((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
+		if (p_subjectBaseType != NULL && UNEXPECTED(Z_TYPE_P(p_subjectBaseType) != IS_OBJECT || !pgrt::instanceOfClass(p_subjectBaseType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_subjectBaseType)); RETURN_THROWS(); }
+		if (p_captureGroups != NULL && UNEXPECTED(Z_TYPE_P(p_captureGroups) != IS_OBJECT || !pgrt::instanceOfClass(p_captureGroups, pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Type\\Regex\\RegexGroupList", 33)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Regex\\RegexGroupList", zend_zval_value_name(p_captureGroups)); RETURN_THROWS(); }
+		if (p_wasMatched != NULL && UNEXPECTED(Z_TYPE_P(p_wasMatched) != IS_OBJECT || !((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_buildArrayType(Z_OBJ_P(ZEND_THIS), p_subjectBaseType, p_captureGroups, p_wasMatched, p_trailingOptionals, p_flags, p_markVerbs, p_matchesAll, return_value))) RETURN_THROWS();
 	});
@@ -2155,10 +2155,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval *p_wasMatched = NULL;
 		bool p_matchesAll = false;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_wasMatched)
+			Z_PARAM_ZVAL(p_wasMatched)
 			Z_PARAM_BOOL(p_matchesAll)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_wasMatched != NULL && UNEXPECTED(!((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
+		if (p_wasMatched != NULL && UNEXPECTED(Z_TYPE_P(p_wasMatched) != IS_OBJECT || !((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_isSubjectOptional(Z_OBJ_P(ZEND_THIS), p_wasMatched, p_matchesAll, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -2169,13 +2169,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		bool p_matchesAll = false;
 		zval *p_wasMatched = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_baseType)
+			Z_PARAM_ZVAL(p_baseType)
 			Z_PARAM_LONG(p_flags)
 			Z_PARAM_BOOL(p_matchesAll)
-			Z_PARAM_OBJECT(p_wasMatched)
+			Z_PARAM_ZVAL(p_wasMatched)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_baseType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_baseType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_baseType)); RETURN_THROWS(); }
-		if (p_wasMatched != NULL && UNEXPECTED(!((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
+		if (p_baseType != NULL && UNEXPECTED(Z_TYPE_P(p_baseType) != IS_OBJECT || !pgrt::instanceOfClass(p_baseType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_baseType)); RETURN_THROWS(); }
+		if (p_wasMatched != NULL && UNEXPECTED(Z_TYPE_P(p_wasMatched) != IS_OBJECT || !((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_createSubjectValueType(Z_OBJ_P(ZEND_THIS), p_baseType, p_flags, p_matchesAll, p_wasMatched, return_value))) RETURN_THROWS();
 	});
@@ -2186,14 +2186,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		bool p_isTrailingOptional = false;
 		bool p_matchesAll = false;
 		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_OBJECT(p_captureGroup)
-			Z_PARAM_OBJECT(p_wasMatched)
+			Z_PARAM_ZVAL(p_captureGroup)
+			Z_PARAM_ZVAL(p_wasMatched)
 			Z_PARAM_LONG(p_flags)
 			Z_PARAM_BOOL(p_isTrailingOptional)
 			Z_PARAM_BOOL(p_matchesAll)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_captureGroup != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_captureGroup, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\Type\\Regex\\RegexCapturingGroup", 38)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Regex\\RegexCapturingGroup", zend_zval_value_name(p_captureGroup)); RETURN_THROWS(); }
-		if (p_wasMatched != NULL && UNEXPECTED(!((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
+		if (p_captureGroup != NULL && UNEXPECTED(Z_TYPE_P(p_captureGroup) != IS_OBJECT || !pgrt::instanceOfClass(p_captureGroup, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\Type\\Regex\\RegexCapturingGroup", 38)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Regex\\RegexCapturingGroup", zend_zval_value_name(p_captureGroup)); RETURN_THROWS(); }
+		if (p_wasMatched != NULL && UNEXPECTED(Z_TYPE_P(p_wasMatched) != IS_OBJECT || !((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_isGroupOptional(Z_OBJ_P(ZEND_THIS), p_captureGroup, p_wasMatched, p_flags, p_isTrailingOptional, p_matchesAll, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -2206,15 +2206,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		bool p_isLastGroup = false;
 		bool p_matchesAll = false;
 		ZEND_PARSE_PARAMETERS_START(6, 6)
-			Z_PARAM_OBJECT(p_captureGroup)
-			Z_PARAM_OBJECT(p_wasMatched)
+			Z_PARAM_ZVAL(p_captureGroup)
+			Z_PARAM_ZVAL(p_wasMatched)
 			Z_PARAM_LONG(p_flags)
 			Z_PARAM_BOOL(p_isTrailingOptional)
 			Z_PARAM_BOOL(p_isLastGroup)
 			Z_PARAM_BOOL(p_matchesAll)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_captureGroup != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_captureGroup, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\Type\\Regex\\RegexCapturingGroup", 38)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Regex\\RegexCapturingGroup", zend_zval_value_name(p_captureGroup)); RETURN_THROWS(); }
-		if (p_wasMatched != NULL && UNEXPECTED(!((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
+		if (p_captureGroup != NULL && UNEXPECTED(Z_TYPE_P(p_captureGroup) != IS_OBJECT || !pgrt::instanceOfClass(p_captureGroup, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\Type\\Regex\\RegexCapturingGroup", 38)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Regex\\RegexCapturingGroup", zend_zval_value_name(p_captureGroup)); RETURN_THROWS(); }
+		if (p_wasMatched != NULL && UNEXPECTED(Z_TYPE_P(p_wasMatched) != IS_OBJECT || !((Z_TYPE_P(p_wasMatched) == IS_OBJECT && Z_OBJCE_P(p_wasMatched) == pt_ce_trinary) || pgrt::instanceOfClass(p_wasMatched, pgrt::lookupClassQuiet(pg_site_77, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_wasMatched)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_createGroupValueType(Z_OBJ_P(ZEND_THIS), p_captureGroup, p_wasMatched, p_flags, p_isTrailingOptional, p_isLastGroup, p_matchesAll, return_value))) RETURN_THROWS();
 	});
@@ -2278,11 +2278,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zend_long p_flags = 0;
 		bool p_matchesAll = false;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_baseType)
+			Z_PARAM_ZVAL(p_baseType)
 			Z_PARAM_LONG(p_flags)
 			Z_PARAM_BOOL(p_matchesAll)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_baseType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_baseType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_baseType)); RETURN_THROWS(); }
+		if (p_baseType != NULL && UNEXPECTED(Z_TYPE_P(p_baseType) != IS_OBJECT || !pgrt::instanceOfClass(p_baseType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_baseType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_getValueType(Z_OBJ_P(ZEND_THIS), p_baseType, p_flags, p_matchesAll, return_value))) RETURN_THROWS();
 	});
@@ -2290,11 +2290,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval *p_patternExpr = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_patternExpr)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_patternExpr)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_patternExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_patternExpr, pgrt::lookupClassQuiet(pg_site_76, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_patternExpr)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_78, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_patternExpr != NULL && UNEXPECTED(Z_TYPE_P(p_patternExpr) != IS_OBJECT || !pgrt::instanceOfClass(p_patternExpr, pgrt::lookupClassQuiet(pg_site_76, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_patternExpr)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_78, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_getPatternType(Z_OBJ_P(ZEND_THIS), p_patternExpr, p_scope, return_value))) RETURN_THROWS();
 	});

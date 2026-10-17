@@ -1902,9 +1902,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpVersions)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::__construct() */
 		zval *p_phpVersions = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_phpVersions)
+			Z_PARAM_ZVAL(p_phpVersions)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_phpVersions != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_phpVersions, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpVersions)); RETURN_THROWS(); }
+		if (p_phpVersions != NULL && UNEXPECTED(Z_TYPE_P(p_phpVersions) != IS_OBJECT || !pgrt::instanceOfClass(p_phpVersions, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpVersions)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::PhpVersions::m___construct(Z_OBJ_P(ZEND_THIS), p_phpVersions))) RETURN_THROWS();
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::getType() */

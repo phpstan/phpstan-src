@@ -475,7 +475,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWritesNode)
 		bool p_opaque = false;
 		bool p_allVariableNamesReferenced = false;
 		ZEND_PARSE_PARAMETERS_START(13, 13)
-			Z_PARAM_OBJECT(p_functionLike)
+			Z_PARAM_ZVAL(p_functionLike)
 			Z_PARAM_ARRAY(p_writes)
 			Z_PARAM_ARRAY(p_readWriteIds)
 			Z_PARAM_ARRAY(p_usedWriteIds)
@@ -489,7 +489,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWritesNode)
 			Z_PARAM_BOOL(p_opaque)
 			Z_PARAM_BOOL(p_allVariableNamesReferenced)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionLike != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionLike, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\FunctionLike", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\FunctionLike", zend_zval_value_name(p_functionLike)); RETURN_THROWS(); }
+		if (p_functionLike != NULL && UNEXPECTED(Z_TYPE_P(p_functionLike) != IS_OBJECT || !pgrt::instanceOfClass(p_functionLike, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\FunctionLike", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\FunctionLike", zend_zval_value_name(p_functionLike)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::VariableWritesNode::m___construct(Z_OBJ_P(ZEND_THIS), p_functionLike, p_writes, p_readWriteIds, p_usedWriteIds, p_coveredWriteIds, p_overwrittenWriteIds, p_readVariableNames, p_redundantWriteTypes, p_referencedVariableNames, p_untrackedVariableNames, p_variableOverwritingLoops, p_opaque, p_allVariableNamesReferenced))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFunctionLike, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableWritesNode::getFunctionLike() */
@@ -505,9 +505,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWritesNode)
 	cls.method(sigs::getWriteForNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableWritesNode::getWriteForNode() */
 		zval *p_variable = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_variable)
+			Z_PARAM_ZVAL(p_variable)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_variable != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_variable, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node\\Expr\\Variable", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Variable", zend_zval_value_name(p_variable)); RETURN_THROWS(); }
+		if (p_variable != NULL && UNEXPECTED(Z_TYPE_P(p_variable) != IS_OBJECT || !pgrt::instanceOfClass(p_variable, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node\\Expr\\Variable", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Variable", zend_zval_value_name(p_variable)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VariableWritesNode::m_getWriteForNode(Z_OBJ_P(ZEND_THIS), p_variable, return_value))) RETURN_THROWS();
 	});
@@ -520,9 +520,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWritesNode)
 	cls.method(sigs::isUsed, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableWritesNode::isUsed() */
 		zval *p_write = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_write)
+			Z_PARAM_ZVAL(p_write)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_write != NULL && UNEXPECTED(!((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
+		if (p_write != NULL && UNEXPECTED(Z_TYPE_P(p_write) != IS_OBJECT || !((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::VariableWritesNode::m_isUsed(Z_OBJ_P(ZEND_THIS), p_write, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -530,9 +530,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWritesNode)
 	cls.method(sigs::flowsIntoNeverReadWrite, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableWritesNode::flowsIntoNeverReadWrite() */
 		zval *p_write = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_write)
+			Z_PARAM_ZVAL(p_write)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_write != NULL && UNEXPECTED(!((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
+		if (p_write != NULL && UNEXPECTED(Z_TYPE_P(p_write) != IS_OBJECT || !((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::VariableWritesNode::m_flowsIntoNeverReadWrite(Z_OBJ_P(ZEND_THIS), p_write, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -540,9 +540,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWritesNode)
 	cls.method(sigs::isOverwritten, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableWritesNode::isOverwritten() */
 		zval *p_write = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_write)
+			Z_PARAM_ZVAL(p_write)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_write != NULL && UNEXPECTED(!((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
+		if (p_write != NULL && UNEXPECTED(Z_TYPE_P(p_write) != IS_OBJECT || !((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::VariableWritesNode::m_isOverwritten(Z_OBJ_P(ZEND_THIS), p_write, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -550,9 +550,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWritesNode)
 	cls.method(sigs::isRead, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableWritesNode::isRead() */
 		zval *p_write = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_write)
+			Z_PARAM_ZVAL(p_write)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_write != NULL && UNEXPECTED(!((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
+		if (p_write != NULL && UNEXPECTED(Z_TYPE_P(p_write) != IS_OBJECT || !((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::VariableWritesNode::m_isRead(Z_OBJ_P(ZEND_THIS), p_write, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -572,18 +572,18 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWritesNode)
 	cls.method(sigs::getRedundantType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableWritesNode::getRedundantType() */
 		zval *p_write = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_write)
+			Z_PARAM_ZVAL(p_write)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_write != NULL && UNEXPECTED(!((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
+		if (p_write != NULL && UNEXPECTED(Z_TYPE_P(p_write) != IS_OBJECT || !((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VariableWritesNode::m_getRedundantType(Z_OBJ_P(ZEND_THIS), p_write, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getVariableOverwritingLoop, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableWritesNode::getVariableOverwritingLoop() */
 		zval *p_write = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_write)
+			Z_PARAM_ZVAL(p_write)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_write != NULL && UNEXPECTED(!((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
+		if (p_write != NULL && UNEXPECTED(Z_TYPE_P(p_write) != IS_OBJECT || !((Z_TYPE_P(p_write) == IS_OBJECT && Z_OBJCE_P(p_write) == pt_ce_variable_write) || pgrt::instanceOfClass(p_write, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Node\\Variable\\VariableWrite", 35))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Variable\\VariableWrite", zend_zval_value_name(p_write)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VariableWritesNode::m_getVariableOverwritingLoop(Z_OBJ_P(ZEND_THIS), p_write, return_value))) RETURN_THROWS();
 	});

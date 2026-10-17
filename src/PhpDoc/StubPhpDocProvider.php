@@ -11,12 +11,14 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Parser\Parser;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use function array_key_exists;
 use function array_map;
 use function is_string;
 
 #[AutowiredService(name: 'stubPhpDocProvider')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StubPhpDocProvider.cpp')]
 final class StubPhpDocProvider
 {
 

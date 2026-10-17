@@ -459,38 +459,38 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidTypesInUnionRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_31, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_32, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_31, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_32, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidTypesInUnionRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processFunctionLikeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Types\InvalidTypesInUnionRule::processFunctionLikeNode() */
 		zval *p_functionLike = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_functionLike)
+			Z_PARAM_ZVAL(p_functionLike)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionLike != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionLike, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\FunctionLike", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\FunctionLike", zend_zval_value_name(p_functionLike)); RETURN_THROWS(); }
+		if (p_functionLike != NULL && UNEXPECTED(Z_TYPE_P(p_functionLike) != IS_OBJECT || !pgrt::instanceOfClass(p_functionLike, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\FunctionLike", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\FunctionLike", zend_zval_value_name(p_functionLike)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidTypesInUnionRule::m_processFunctionLikeNode(Z_OBJ_P(ZEND_THIS), p_functionLike, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processClassPropertyNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Types\InvalidTypesInUnionRule::processClassPropertyNode() */
 		zval *p_classPropertyNode = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_classPropertyNode)
+			Z_PARAM_ZVAL(p_classPropertyNode)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_classPropertyNode != NULL && UNEXPECTED(!((Z_TYPE_P(p_classPropertyNode) == IS_OBJECT && Z_OBJCE_P(p_classPropertyNode) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_classPropertyNode, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_classPropertyNode)); RETURN_THROWS(); }
+		if (p_classPropertyNode != NULL && UNEXPECTED(Z_TYPE_P(p_classPropertyNode) != IS_OBJECT || !((Z_TYPE_P(p_classPropertyNode) == IS_OBJECT && Z_OBJCE_P(p_classPropertyNode) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_classPropertyNode, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_classPropertyNode)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidTypesInUnionRule::m_processClassPropertyNode(Z_OBJ_P(ZEND_THIS), p_classPropertyNode, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processComplexType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Types\InvalidTypesInUnionRule::processComplexType() */
 		zval *p_complexType = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_complexType)
+			Z_PARAM_ZVAL(p_complexType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_complexType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_complexType, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\ComplexType", 26)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\ComplexType", zend_zval_value_name(p_complexType)); RETURN_THROWS(); }
+		if (p_complexType != NULL && UNEXPECTED(Z_TYPE_P(p_complexType) != IS_OBJECT || !pgrt::instanceOfClass(p_complexType, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\ComplexType", 26)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\ComplexType", zend_zval_value_name(p_complexType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidTypesInUnionRule::m_processComplexType(Z_OBJ_P(ZEND_THIS), p_complexType, return_value))) RETURN_THROWS();
 	});

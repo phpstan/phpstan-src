@@ -220,63 +220,69 @@ namespace pgen::OpensslCipherFunctionsReturnTypeExtension {
 			vd26 = std::move(r27);
 			vd26_done = true;
 		}
+		if (vd26_ce == pt_ce_native_function_reflection) {
+			zv::Val r28;
+			if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getVariants(Z_OBJ_P(p_functionReflection), r28.raw()))) return false;
+			vd26 = std::move(r28);
+			vd26_done = true;
+		}
 		if (!vd26_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_functionReflection, "getVariants", "getvariants", 11, 0, NULL, vd26.raw()))) return false;
 		}
-		zval av28[3];
-		ZVAL_COPY_VALUE(&av28[0], p_scope);
-		ZVAL_COPY_VALUE(&av28[1], r25.raw());
-		ZVAL_COPY_VALUE(&av28[2], vd26.raw());
-		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_13, pt_ce_parameters_acceptor_selector, "selectfromargs", 14, 3, av28, r29.raw(), NULL))) return false;
-		zv::Val vd30;
-		zend_class_entry *vd30_ce = Z_TYPE_P(r29.raw()) == IS_OBJECT ? Z_OBJCE_P(r29.raw()) : NULL;
-		bool vd30_done = false;
-		if (vd30_ce == pt_ce_trivial_parameters_acceptor) {
-			zv::Val r31;
-			if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getReturnType(Z_OBJ_P(r29.raw()), r31.raw()))) return false;
-			vd30 = std::move(r31);
-			vd30_done = true;
-		}
-		if (vd30_ce == pt_ce_php_function_from_parser_node_reflection || vd30_ce == pt_ce_php_method_from_parser_node_reflection) {
+		zval av29[3];
+		ZVAL_COPY_VALUE(&av29[0], p_scope);
+		ZVAL_COPY_VALUE(&av29[1], r25.raw());
+		ZVAL_COPY_VALUE(&av29[2], vd26.raw());
+		zv::Val r30;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_13, pt_ce_parameters_acceptor_selector, "selectfromargs", 14, 3, av29, r30.raw(), NULL))) return false;
+		zv::Val vd31;
+		zend_class_entry *vd31_ce = Z_TYPE_P(r30.raw()) == IS_OBJECT ? Z_OBJCE_P(r30.raw()) : NULL;
+		bool vd31_done = false;
+		if (vd31_ce == pt_ce_trivial_parameters_acceptor) {
 			zv::Val r32;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getReturnType(Z_OBJ_P(r29.raw()), r32.raw()))) return false;
-			vd30 = std::move(r32);
-			vd30_done = true;
+			if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getReturnType(Z_OBJ_P(r30.raw()), r32.raw()))) return false;
+			vd31 = std::move(r32);
+			vd31_done = true;
 		}
-		if (!vd30_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r29.raw(), "getReturnType", "getreturntype", 13, 0, NULL, vd30.raw()))) return false;
+		if (vd31_ce == pt_ce_php_function_from_parser_node_reflection || vd31_ce == pt_ce_php_method_from_parser_node_reflection) {
+			zv::Val r33;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getReturnType(Z_OBJ_P(r30.raw()), r33.raw()))) return false;
+			vd31 = std::move(r33);
+			vd31_done = true;
 		}
-		l_returnType = std::move(vd30);
+		if (!vd31_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r30.raw(), "getReturnType", "getreturntype", 13, 0, NULL, vd31.raw()))) return false;
+		}
+		l_returnType = std::move(vd31);
 	}
 	 {
-		zv::Val et34;
-		zval *e33 = Z_TYPE_P(l_results.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_results.raw()), 0) : NULL;
-		if (UNEXPECTED(e33 == NULL)) {
-			zval z35;
-			ZVAL_LONG(&z35, 0);
-			e33 = pgrt::dimRead(l_results.raw(), &z35, et34.raw());
-			if (UNEXPECTED(e33 == NULL)) return false;
+		zv::Val et35;
+		zval *e34 = Z_TYPE_P(l_results.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_results.raw()), 0) : NULL;
+		if (UNEXPECTED(e34 == NULL)) {
+			zval z36;
+			ZVAL_LONG(&z36, 0);
+			e34 = pgrt::dimRead(l_results.raw(), &z36, et35.raw());
+			if (UNEXPECTED(e34 == NULL)) return false;
 		}
-		zv::Val q36;
-		if (zend_is_true(zv::Ref(e33).deref().raw())) {
-			zv::Val o37 = zv::Val::copyOf(zv::Ref(l_returnType.raw()));
-			zv::Val n38;
-			if (UNEXPECTED(!pt_constant_boolean_type_new(n38.raw(), false))) return false;
-			zv::Val r39;
+		zv::Val q37;
+		if (zend_is_true(zv::Ref(e34).deref().raw())) {
+			zv::Val o38 = zv::Val::copyOf(zv::Ref(l_returnType.raw()));
+			zv::Val n39;
+			if (UNEXPECTED(!pt_constant_boolean_type_new(n39.raw(), false))) return false;
+			zv::Val r40;
 			 {
-				r39 = pt_type_combinator_remove(o37.raw(), n38.raw());
-				if (UNEXPECTED(r39.isUndef())) return false;
+				r40 = pt_type_combinator_remove(o38.raw(), n39.raw());
+				if (UNEXPECTED(r40.isUndef())) return false;
 			}
-			q36 = std::move(r39);
+			q37 = std::move(r40);
 		} else {
 		 {
-			zv::Val n40;
-			if (UNEXPECTED(!pt_constant_boolean_type_new(n40.raw(), false))) return false;
-			q36 = std::move(n40);
+			zv::Val n41;
+			if (UNEXPECTED(!pt_constant_boolean_type_new(n41.raw(), false))) return false;
+			q37 = std::move(n41);
 		}
 		}
-		*ret = q36.take();
+		*ret = q37.take();
 		return true;
 	}
 }
@@ -304,9 +310,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OpensslCipherFunctionsReturnTypeExtens
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\OpensslCipherFunctionsReturnTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_functionReflection)
+			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::OpensslCipherFunctionsReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(ZEND_THIS), p_functionReflection, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -316,13 +322,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OpensslCipherFunctionsReturnTypeExtens
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_functionReflection)
-			Z_PARAM_OBJECT(p_functionCall)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_functionReflection)
+			Z_PARAM_ZVAL(p_functionCall)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
-		if (p_functionCall != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionCall, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_functionCall)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Analyser\\DependencyTracker", 34))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\DependencyTracker", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_functionCall != NULL && UNEXPECTED(Z_TYPE_P(p_functionCall) != IS_OBJECT || !pgrt::instanceOfClass(p_functionCall, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_functionCall)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Analyser\\DependencyTracker", 34))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\DependencyTracker", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::OpensslCipherFunctionsReturnTypeExtension::m_getTypeFromFunctionCall(Z_OBJ_P(ZEND_THIS), p_functionReflection, p_functionCall, p_scope, return_value))) RETURN_THROWS();
 	});

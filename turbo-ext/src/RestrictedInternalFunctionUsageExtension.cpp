@@ -50,121 +50,127 @@ namespace pgen::RestrictedInternalFunctionUsageExtension {
 			vd1 = std::move(r2);
 			vd1_done = true;
 		}
+		if (vd1_ce == pt_ce_native_function_reflection) {
+			zv::Val r3;
+			if (UNEXPECTED(!pgen::NativeFunctionReflection::m_isInternal(Z_OBJ_P(p_functionReflection), r3.raw()))) return false;
+			vd1 = std::move(r3);
+			vd1_done = true;
+		}
 		if (!vd1_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "isInternal", "isinternal", 10, 0, NULL, vd1.raw()))) return false;
 		}
-		bool r3;
-		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(vd1.raw()), &r3))) return false;
-		if (!(r3)) {
+		bool r4;
+		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(vd1.raw()), &r4))) return false;
+		if (!(r4)) {
 			 {
-				zval z4;
-				ZVAL_NULL(&z4);
-				ZVAL_COPY_VALUE(ret, &z4);
+				zval z5;
+				ZVAL_NULL(&z5);
+				ZVAL_COPY_VALUE(ret, &z5);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RestrictedInternalFunctionUsageExtension::slot::helper, "helper");
-		if (UNEXPECTED(p5 == NULL)) return false;
-		bool r6;
-		if (UNEXPECTED(!pgen::RestrictedInternalUsageHelper::m_shouldFunctionBeReported(Z_OBJ_P(p5), p_scope, p_functionReflection, &r6))) return false;
-		if (!(r6)) {
+		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RestrictedInternalFunctionUsageExtension::slot::helper, "helper");
+		if (UNEXPECTED(p6 == NULL)) return false;
+		bool r7;
+		if (UNEXPECTED(!pgen::RestrictedInternalUsageHelper::m_shouldFunctionBeReported(Z_OBJ_P(p6), p_scope, p_functionReflection, &r7))) return false;
+		if (!(r7)) {
 			 {
-				zval z7;
-				ZVAL_NULL(&z7);
-				ZVAL_COPY_VALUE(ret, &z7);
+				zval z8;
+				ZVAL_NULL(&z8);
+				ZVAL_COPY_VALUE(ret, &z8);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val r10;
+		zv::Val r11;
 		if (EXPECTED(Z_TYPE_P(p_functionReflection) == IS_OBJECT)) {
-			r10 = pt_type_op(Z_OBJ_P(p_functionReflection), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r10.isUndef())) return false;
+			r11 = pt_type_op(Z_OBJ_P(p_functionReflection), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r11.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_functionReflection, "getName", "getname", 7, 0, NULL, r10.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_functionReflection, "getName", "getname", 7, 0, NULL, r11.raw(), NULL))) return false;
 		}
 		}
-		zval av11[2];
-		ZVAL_COPY_VALUE(&av11[0], &pg_lit[0]);
-		ZVAL_COPY_VALUE(&av11[1], r10.raw());
-		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "explode", 7, pt_ce_restricted_internal_function_usage_extension, 2, av11, r12.raw(), NULL))) return false;
-		zend_long neg13;
-		if (UNEXPECTED(!pgrt::negateLong(1, &neg13))) return false;
-		zval av14[3];
-		ZVAL_COPY_VALUE(&av14[0], r12.raw());
-		zval z15;
-		ZVAL_LONG(&z15, 0);
-		ZVAL_COPY_VALUE(&av14[1], &z15);
+		zval av12[2];
+		ZVAL_COPY_VALUE(&av12[0], &pg_lit[0]);
+		ZVAL_COPY_VALUE(&av12[1], r11.raw());
+		zv::Val r13;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "explode", 7, pt_ce_restricted_internal_function_usage_extension, 2, av12, r13.raw(), NULL))) return false;
+		zend_long neg14;
+		if (UNEXPECTED(!pgrt::negateLong(1, &neg14))) return false;
+		zval av15[3];
+		ZVAL_COPY_VALUE(&av15[0], r13.raw());
 		zval z16;
-		ZVAL_LONG(&z16, neg13);
-		ZVAL_COPY_VALUE(&av14[2], &z16);
-		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "array_slice", 11, pt_ce_restricted_internal_function_usage_extension, 3, av14, r17.raw(), NULL))) return false;
-		zval z18;
-		ZVAL_LONG(&z18, 0);
-		zv::Val ist19;
-		zval *is8 = r17.raw() == NULL ? NULL : pgrt::dimIs(r17.raw(), &z18, ist19.raw());
+		ZVAL_LONG(&z16, 0);
+		ZVAL_COPY_VALUE(&av15[1], &z16);
+		zval z17;
+		ZVAL_LONG(&z17, neg14);
+		ZVAL_COPY_VALUE(&av15[2], &z17);
+		zv::Val r18;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "array_slice", 11, pt_ce_restricted_internal_function_usage_extension, 3, av15, r18.raw(), NULL))) return false;
+		zval z19;
+		ZVAL_LONG(&z19, 0);
+		zv::Val ist20;
+		zval *is9 = r18.raw() == NULL ? NULL : pgrt::dimIs(r18.raw(), &z19, ist20.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q20;
-		if (is8 != NULL && Z_TYPE_P(is8) > IS_NULL) {
-			q20 = zv::Val::copyOf(zv::Ref(is8));
+		zv::Val q21;
+		if (is9 != NULL && Z_TYPE_P(is9) > IS_NULL) {
+			q21 = zv::Val::copyOf(zv::Ref(is9));
 		} else {
 		 {
-			zv::Val o21 = zv::Val::null();
-			q20 = std::move(o21);
+			zv::Val o22 = zv::Val::null();
+			q21 = std::move(o22);
 		}
 		}
-		l_namespace = std::move(q20);
+		l_namespace = std::move(q21);
 	}
 	 {
 		if (Z_TYPE_P(l_namespace.raw()) == IS_NULL) {
 			 {
-				zv::Val r22;
+				zv::Val r23;
 				if (EXPECTED(Z_TYPE_P(p_functionReflection) == IS_OBJECT)) {
-					r22 = pt_type_op(Z_OBJ_P(p_functionReflection), PT_OP_GET_NAME, 0, NULL);
-					if (UNEXPECTED(r22.isUndef())) return false;
+					r23 = pt_type_op(Z_OBJ_P(p_functionReflection), PT_OP_GET_NAME, 0, NULL);
+					if (UNEXPECTED(r23.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_functionReflection, "getName", "getname", 7, 0, NULL, r22.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_functionReflection, "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
 				}
 				}
-				pgrt::StringBuilder sb23;
-				sb23.appendLiteral("Call to internal function ", 26);
-				if (UNEXPECTED(!sb23.append(r22.raw()))) return false;
-				sb23.appendLiteral("().", 3);
-				zv::Val r24 = sb23.finish();
-				zv::Val r25;
-				if (UNEXPECTED(!pgen::RestrictedUsage::m_create(r24.raw(), &pg_lit[1], r25.raw()))) return false;
-				*ret = r25.take();
+				pgrt::StringBuilder sb24;
+				sb24.appendLiteral("Call to internal function ", 26);
+				if (UNEXPECTED(!sb24.append(r23.raw()))) return false;
+				sb24.appendLiteral("().", 3);
+				zv::Val r25 = sb24.finish();
+				zv::Val r26;
+				if (UNEXPECTED(!pgen::RestrictedUsage::m_create(r25.raw(), &pg_lit[1], r26.raw()))) return false;
+				*ret = r26.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val r26;
+		zv::Val r27;
 		if (EXPECTED(Z_TYPE_P(p_functionReflection) == IS_OBJECT)) {
-			r26 = pt_type_op(Z_OBJ_P(p_functionReflection), PT_OP_GET_NAME, 0, NULL);
-			if (UNEXPECTED(r26.isUndef())) return false;
+			r27 = pt_type_op(Z_OBJ_P(p_functionReflection), PT_OP_GET_NAME, 0, NULL);
+			if (UNEXPECTED(r27.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_functionReflection, "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_functionReflection, "getName", "getname", 7, 0, NULL, r27.raw(), NULL))) return false;
 		}
 		}
-		pgrt::StringBuilder sb27;
-		sb27.appendLiteral("Call to internal function ", 26);
-		if (UNEXPECTED(!sb27.append(r26.raw()))) return false;
-		sb27.appendLiteral("() from outside its root namespace ", 35);
-		if (UNEXPECTED(!sb27.append(l_namespace.raw()))) return false;
-		sb27.appendLiteral(".", 1);
-		zv::Val r28 = sb27.finish();
-		zv::Val r29;
-		if (UNEXPECTED(!pgen::RestrictedUsage::m_create(r28.raw(), &pg_lit[1], r29.raw()))) return false;
-		*ret = r29.take();
+		pgrt::StringBuilder sb28;
+		sb28.appendLiteral("Call to internal function ", 26);
+		if (UNEXPECTED(!sb28.append(r27.raw()))) return false;
+		sb28.appendLiteral("() from outside its root namespace ", 35);
+		if (UNEXPECTED(!sb28.append(l_namespace.raw()))) return false;
+		sb28.appendLiteral(".", 1);
+		zv::Val r29 = sb28.finish();
+		zv::Val r30;
+		if (UNEXPECTED(!pgen::RestrictedUsage::m_create(r29.raw(), &pg_lit[1], r30.raw()))) return false;
+		*ret = r30.take();
 		return true;
 	}
 }
@@ -184,20 +190,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedInternalFunctionUsageExtensi
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\InternalTag\RestrictedInternalFunctionUsageExtension::__construct() */
 		zval *p_helper = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_helper)
+			Z_PARAM_ZVAL(p_helper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_helper != NULL && UNEXPECTED(!((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_restricted_internal_usage_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", 55))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
+		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_restricted_internal_usage_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", 55))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::RestrictedInternalFunctionUsageExtension::m___construct(Z_OBJ_P(ZEND_THIS), p_helper))) RETURN_THROWS();
 	});
 	cls.method(sigs::isRestrictedFunctionUsage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\InternalTag\RestrictedInternalFunctionUsageExtension::isRestrictedFunctionUsage() */
 		zval *p_functionReflection = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_functionReflection)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_functionReflection)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RestrictedInternalFunctionUsageExtension::m_isRestrictedFunctionUsage(Z_OBJ_P(ZEND_THIS), p_functionReflection, p_scope, return_value))) RETURN_THROWS();
 	});

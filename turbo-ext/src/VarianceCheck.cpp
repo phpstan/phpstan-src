@@ -602,7 +602,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarianceCheck)
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
 		ZEND_PARSE_PARAMETERS_START(8, 8)
-			Z_PARAM_OBJECT(p_parametersAcceptor)
+			Z_PARAM_ZVAL(p_parametersAcceptor)
 			Z_PARAM_STR(p_parameterTypeMessage_str)
 			Z_PARAM_STR(p_parameterOutTypeMessage_str)
 			Z_PARAM_STR(p_returnTypeMessage_str)
@@ -611,7 +611,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarianceCheck)
 			Z_PARAM_BOOL(p_isPrivate)
 			Z_PARAM_STR(p_identifier_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_parametersAcceptor != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_parametersAcceptor, pgrt::lookupClassQuiet(pg_site_38, "PHPStan\\Reflection\\ExtendedParametersAcceptor", 45)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ExtendedParametersAcceptor", zend_zval_value_name(p_parametersAcceptor)); RETURN_THROWS(); }
+		if (p_parametersAcceptor != NULL && UNEXPECTED(Z_TYPE_P(p_parametersAcceptor) != IS_OBJECT || !pgrt::instanceOfClass(p_parametersAcceptor, pgrt::lookupClassQuiet(pg_site_38, "PHPStan\\Reflection\\ExtendedParametersAcceptor", 45)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ExtendedParametersAcceptor", zend_zval_value_name(p_parametersAcceptor)); RETURN_THROWS(); }
 		if (p_parameterTypeMessage_str != NULL) { ZVAL_STR(&p_parameterTypeMessage_zv, p_parameterTypeMessage_str); p_parameterTypeMessage = &p_parameterTypeMessage_zv; }
 		if (p_parameterOutTypeMessage_str != NULL) { ZVAL_STR(&p_parameterOutTypeMessage_zv, p_parameterOutTypeMessage_str); p_parameterOutTypeMessage = &p_parameterOutTypeMessage_zv; }
 		if (p_returnTypeMessage_str != NULL) { ZVAL_STR(&p_returnTypeMessage_zv, p_returnTypeMessage_str); p_returnTypeMessage = &p_returnTypeMessage_zv; }
@@ -627,12 +627,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarianceCheck)
 		zend_string *p_messageContext_str = NULL;
 		zval p_messageContext_zv;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_positionVariance)
-			Z_PARAM_OBJECT(p_type)
+			Z_PARAM_ZVAL(p_positionVariance)
+			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_STR(p_messageContext_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_positionVariance != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_positionVariance != NULL && UNEXPECTED(Z_TYPE_P(p_positionVariance) != IS_OBJECT || !(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		if (p_messageContext_str != NULL) { ZVAL_STR(&p_messageContext_zv, p_messageContext_str); p_messageContext = &p_messageContext_zv; }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VarianceCheck::m_check(Z_OBJ_P(ZEND_THIS), p_positionVariance, p_type, p_messageContext, return_value))) RETURN_THROWS();
@@ -641,11 +641,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarianceCheck)
 		zval *p_positionVariance = NULL;
 		zval *p_type = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_positionVariance)
-			Z_PARAM_OBJECT(p_type)
+			Z_PARAM_ZVAL(p_positionVariance)
+			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_positionVariance != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Generic\\TemplateType", 33)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateType", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_positionVariance != NULL && UNEXPECTED(Z_TYPE_P(p_positionVariance) != IS_OBJECT || !(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Generic\\TemplateType", 33)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateType", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::VarianceCheck::m_isTemplateTypeVarianceValid(Z_OBJ_P(ZEND_THIS), p_positionVariance, p_type, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

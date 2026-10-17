@@ -11,6 +11,7 @@ use PHPStan\File\FileWriter;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use function array_keys;
@@ -44,6 +45,7 @@ use const DIRECTORY_SEPARATOR;
  * The separate extension keeps an older PHPStan sharing the directory from
  * including a payload that is not PHP.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileCacheStorage.cpp')]
 final class FileCacheStorage implements CacheStorage
 {
 

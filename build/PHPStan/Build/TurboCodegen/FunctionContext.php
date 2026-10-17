@@ -95,6 +95,15 @@ final class FunctionContext
 		return sprintf('goto %s;', $this->loops[$index]['break']);
 	}
 
+	/**
+	 * The try blocks with a finally a `return` is inside, innermost last: the
+	 * label of the finally block, the flag that a return is passing through
+	 * it and the slot holding the zval return value meanwhile.
+	 *
+	 * @var list<array{label: string, flag: string, slot: string}>
+	 */
+	public array $finally = [];
+
 	/** @var list<callable(): void> write-backs of by-reference arguments, run after the call they belong to */
 	public array $writeBacks = [];
 

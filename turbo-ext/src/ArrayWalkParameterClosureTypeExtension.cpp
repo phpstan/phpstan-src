@@ -255,11 +255,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayWalkParameterClosureTypeExtension
 		zval *p_functionReflection = NULL;
 		zval *p_parameter = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_functionReflection)
-			Z_PARAM_OBJECT(p_parameter)
+			Z_PARAM_ZVAL(p_functionReflection)
+			Z_PARAM_ZVAL(p_parameter)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
-		if (p_parameter != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_parameter, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Reflection\\ParameterReflection", 38)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ParameterReflection", zend_zval_value_name(p_parameter)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_parameter != NULL && UNEXPECTED(Z_TYPE_P(p_parameter) != IS_OBJECT || !pgrt::instanceOfClass(p_parameter, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Reflection\\ParameterReflection", 38)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ParameterReflection", zend_zval_value_name(p_parameter)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::ArrayWalkParameterClosureTypeExtension::m_isFunctionSupported(Z_OBJ_P(ZEND_THIS), p_functionReflection, p_parameter, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -270,15 +270,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayWalkParameterClosureTypeExtension
 		zval *p_parameter = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_functionReflection)
-			Z_PARAM_OBJECT(p_functionCall)
-			Z_PARAM_OBJECT(p_parameter)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_functionReflection)
+			Z_PARAM_ZVAL(p_functionCall)
+			Z_PARAM_ZVAL(p_parameter)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
-		if (p_functionCall != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionCall, pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_functionCall)); RETURN_THROWS(); }
-		if (p_parameter != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_parameter, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Reflection\\ParameterReflection", 38)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Reflection\\ParameterReflection", zend_zval_value_name(p_parameter)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_functionCall != NULL && UNEXPECTED(Z_TYPE_P(p_functionCall) != IS_OBJECT || !pgrt::instanceOfClass(p_functionCall, pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_functionCall)); RETURN_THROWS(); }
+		if (p_parameter != NULL && UNEXPECTED(Z_TYPE_P(p_parameter) != IS_OBJECT || !pgrt::instanceOfClass(p_parameter, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Reflection\\ParameterReflection", 38)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Reflection\\ParameterReflection", zend_zval_value_name(p_parameter)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayWalkParameterClosureTypeExtension::m_getTypeFromFunctionCall(Z_OBJ_P(ZEND_THIS), p_functionReflection, p_functionCall, p_parameter, p_scope, return_value))) RETURN_THROWS();
 	});

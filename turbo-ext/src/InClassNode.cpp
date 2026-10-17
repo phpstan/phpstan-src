@@ -120,11 +120,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InClassNode)
 		zval *p_originalNode = NULL;
 		zval *p_classReflection = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_originalNode)
-			Z_PARAM_OBJECT(p_classReflection)
+			Z_PARAM_ZVAL(p_originalNode)
+			Z_PARAM_ZVAL(p_classReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_originalNode != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Stmt\\ClassLike", 29)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassLike", zend_zval_value_name(p_originalNode)); RETURN_THROWS(); }
-		if (p_classReflection != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
+		if (p_originalNode != NULL && UNEXPECTED(Z_TYPE_P(p_originalNode) != IS_OBJECT || !pgrt::instanceOfClass(p_originalNode, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Stmt\\ClassLike", 29)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassLike", zend_zval_value_name(p_originalNode)); RETURN_THROWS(); }
+		if (p_classReflection != NULL && UNEXPECTED(Z_TYPE_P(p_classReflection) != IS_OBJECT || !(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::InClassNode::m___construct(Z_OBJ_P(ZEND_THIS), p_originalNode, p_classReflection))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\InClassNode::getOriginalNode() */

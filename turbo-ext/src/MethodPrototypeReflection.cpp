@@ -214,18 +214,18 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodPrototypeReflection)
 		ZVAL_NULL(&p_tentativeReturnType_null);
 		ZEND_PARSE_PARAMETERS_START(9, 9)
 			Z_PARAM_STR(p_name_str)
-			Z_PARAM_OBJECT(p_declaringClass)
+			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_BOOL(p_isStatic)
 			Z_PARAM_BOOL(p_isPrivate)
 			Z_PARAM_BOOL(p_isPublic)
 			Z_PARAM_BOOL(p_isAbstract)
 			Z_PARAM_BOOL(p_isInternal)
 			Z_PARAM_ARRAY(p_variants)
-			Z_PARAM_OBJECT_OR_NULL(p_tentativeReturnType)
+			Z_PARAM_ZVAL_OR_NULL(p_tentativeReturnType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name_str != NULL) { ZVAL_STR(&p_name_zv, p_name_str); p_name = &p_name_zv; }
-		if (p_declaringClass != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_declaringClass, pt_ce_class_reflection) || pgrt::instanceOfClass(p_declaringClass, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_declaringClass)); RETURN_THROWS(); }
-		if (p_tentativeReturnType != NULL && UNEXPECTED(!(Z_TYPE_P(p_tentativeReturnType) == IS_NULL || pgrt::instanceOfClass(p_tentativeReturnType, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(9, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_tentativeReturnType)); RETURN_THROWS(); }
+		if (p_declaringClass != NULL && UNEXPECTED(Z_TYPE_P(p_declaringClass) != IS_OBJECT || !(pgrt::instanceOfClass(p_declaringClass, pt_ce_class_reflection) || pgrt::instanceOfClass(p_declaringClass, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_declaringClass)); RETURN_THROWS(); }
+		if (p_tentativeReturnType != NULL && UNEXPECTED((Z_TYPE_P(p_tentativeReturnType) != IS_OBJECT && Z_TYPE_P(p_tentativeReturnType) != IS_NULL) || !(Z_TYPE_P(p_tentativeReturnType) == IS_NULL || pgrt::instanceOfClass(p_tentativeReturnType, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(9, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_tentativeReturnType)); RETURN_THROWS(); }
 		if (p_tentativeReturnType == NULL) p_tentativeReturnType = &p_tentativeReturnType_null;
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_declaringClass, p_isStatic, p_isPrivate, p_isPublic, p_isAbstract, p_isInternal, p_variants, p_tentativeReturnType))) RETURN_THROWS();
 	});

@@ -445,11 +445,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayDestructuringRule)
 		zval *p_ruleLevelHelper = NULL;
 		zval *p_nonexistentOffsetInArrayDimFetchCheck = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_ruleLevelHelper)
-			Z_PARAM_OBJECT(p_nonexistentOffsetInArrayDimFetchCheck)
+			Z_PARAM_ZVAL(p_ruleLevelHelper)
+			Z_PARAM_ZVAL(p_nonexistentOffsetInArrayDimFetchCheck)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_ruleLevelHelper != NULL && UNEXPECTED(!((Z_TYPE_P(p_ruleLevelHelper) == IS_OBJECT && Z_OBJCE_P(p_ruleLevelHelper) == pt_ce_rule_level_helper) || pgrt::instanceOfClass(p_ruleLevelHelper, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Rules\\RuleLevelHelper", 29))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\RuleLevelHelper", zend_zval_value_name(p_ruleLevelHelper)); RETURN_THROWS(); }
-		if (p_nonexistentOffsetInArrayDimFetchCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_nonexistentOffsetInArrayDimFetchCheck) == IS_OBJECT && Z_OBJCE_P(p_nonexistentOffsetInArrayDimFetchCheck) == pt_ce_nonexistent_offset_in_array_dim_fetch_check) || pgrt::instanceOfClass(p_nonexistentOffsetInArrayDimFetchCheck, pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Rules\\Arrays\\NonexistentOffsetInArrayDimFetchCheck", 58))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Arrays\\NonexistentOffsetInArrayDimFetchCheck", zend_zval_value_name(p_nonexistentOffsetInArrayDimFetchCheck)); RETURN_THROWS(); }
+		if (p_ruleLevelHelper != NULL && UNEXPECTED(Z_TYPE_P(p_ruleLevelHelper) != IS_OBJECT || !((Z_TYPE_P(p_ruleLevelHelper) == IS_OBJECT && Z_OBJCE_P(p_ruleLevelHelper) == pt_ce_rule_level_helper) || pgrt::instanceOfClass(p_ruleLevelHelper, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Rules\\RuleLevelHelper", 29))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\RuleLevelHelper", zend_zval_value_name(p_ruleLevelHelper)); RETURN_THROWS(); }
+		if (p_nonexistentOffsetInArrayDimFetchCheck != NULL && UNEXPECTED(Z_TYPE_P(p_nonexistentOffsetInArrayDimFetchCheck) != IS_OBJECT || !((Z_TYPE_P(p_nonexistentOffsetInArrayDimFetchCheck) == IS_OBJECT && Z_OBJCE_P(p_nonexistentOffsetInArrayDimFetchCheck) == pt_ce_nonexistent_offset_in_array_dim_fetch_check) || pgrt::instanceOfClass(p_nonexistentOffsetInArrayDimFetchCheck, pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Rules\\Arrays\\NonexistentOffsetInArrayDimFetchCheck", 58))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Arrays\\NonexistentOffsetInArrayDimFetchCheck", zend_zval_value_name(p_nonexistentOffsetInArrayDimFetchCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ArrayDestructuringRule::m___construct(Z_OBJ_P(ZEND_THIS), p_ruleLevelHelper, p_nonexistentOffsetInArrayDimFetchCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\ArrayDestructuringRule::getNodeType() */
@@ -461,11 +461,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayDestructuringRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_27, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_27, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayDestructuringRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -474,13 +474,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayDestructuringRule)
 		zval *p_var = NULL;
 		zval *p_expr = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_scope)
-			Z_PARAM_OBJECT(p_var)
-			Z_PARAM_OBJECT(p_expr)
+			Z_PARAM_ZVAL(p_scope)
+			Z_PARAM_ZVAL(p_var)
+			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_var != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_var, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr\\List_", 25)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\List_", zend_zval_value_name(p_var)); RETURN_THROWS(); }
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_var != NULL && UNEXPECTED(Z_TYPE_P(p_var) != IS_OBJECT || !pgrt::instanceOfClass(p_var, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr\\List_", 25)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\List_", zend_zval_value_name(p_var)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayDestructuringRule::m_getErrors(Z_OBJ_P(ZEND_THIS), p_scope, p_var, p_expr, return_value))) RETURN_THROWS();
 	});

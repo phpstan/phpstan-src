@@ -1349,14 +1349,16 @@ final class Compiler
 						$lines[] = sprintf('%s = &%s_default;', $name, $name);
 					}
 					if ($param->class !== null) {
-						// parsed as any object, then checked against the class
-						// (instanceCheck() accepts the native class and the twin)
-						$parse[] = sprintf('Z_PARAM_OBJECT%s(%s)', $param->nullable ? '_OR_NULL' : '', $name);
+						// parsed as any value, then checked against the class
+						// (instanceCheck() accepts the native class and the
+						// twin), so a non-object is reported with the class
+						// name like the twin does
 						// (a DI service's constructor takes any object, like the
 						// hand ports: the container wires the right ones, and the
 						// differential tests hand in recording doubles)
 						$serviceConstructor = $method->name === '__construct' && $method->unit->reflection->getAttributes(AutowiredService::class) !== [];
-						$after[] = $serviceConstructor ? '' : sprintf('if (%s != NULL && UNEXPECTED(!%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(%s)); RETURN_THROWS(); }', $name, $this->instanceCheck($name, $param->class, $param->nullable), $param->position + 1, addcslashes($param->describe, '\\"'), $name);
+						$parse[] = sprintf('Z_PARAM_%s%s(%s)', $serviceConstructor ? 'OBJECT' : 'ZVAL', $param->nullable ? '_OR_NULL' : '', $name);
+						$after[] = $serviceConstructor ? '' : sprintf('if (%s != NULL && UNEXPECTED(%s || !%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(%s)); RETURN_THROWS(); }', $name, $this->nonObjectCheck($name, $param->nullable), $this->instanceCheck($name, $param->class, $param->nullable), $param->position + 1, addcslashes($param->describe, '\\"'), $name);
 						if ($param->nullable) {
 							$lines[] = sprintf('zval %s_null;', $name);
 							$lines[] = sprintf('ZVAL_NULL(&%s_null);', $name);
@@ -1421,6 +1423,16 @@ final class Compiler
 		return implode("\n", $out);
 	}
 
+	/** The glue's test for a value a class-typed parameter rejects before its class is checked. */
+	private function nonObjectCheck(string $name, bool $nullable): string
+	{
+		if ($nullable) {
+			return sprintf('(Z_TYPE_P(%s) != IS_OBJECT && Z_TYPE_P(%s) != IS_NULL)', $name, $name);
+		}
+
+		return sprintf('Z_TYPE_P(%s) != IS_OBJECT', $name);
+	}
+
 	/**
 	 * The ZPP of a zval-lowered parameter that is not an object: the engine's
 	 * own macro for its type, so a weak-mode caller gets the same coercions a
@@ -1452,11 +1464,11 @@ final class Compiler
 			return;
 		}
 		if ($declared->isObject()->yes()) {
-			// an intersection or union of classes: any object, then checked
-			$parse[] = sprintf('Z_PARAM_OBJECT%s(%s)', $orNull, $name);
+			// an intersection or union of classes: any value, then checked
 			$check = $this->typeCheck($name, $declared, $param->describe);
+			$parse[] = sprintf('Z_PARAM_%s%s(%s)', $check !== null ? 'ZVAL' : 'OBJECT', $orNull, $name);
 			if ($check !== null) {
-				$after[] = sprintf('if (%s != NULL && UNEXPECTED(!%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(%s)); RETURN_THROWS(); }', $name, $check, $param->position + 1, addcslashes($param->describe, '\\"'), $name);
+				$after[] = sprintf('if (%s != NULL && UNEXPECTED(%s || !%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(%s)); RETURN_THROWS(); }', $name, $this->nonObjectCheck($name, $param->nullable), $check, $param->position + 1, addcslashes($param->describe, '\\"'), $name);
 			}
 			if ($param->nullable) {
 				$nullNormalize();
@@ -1696,6 +1708,26 @@ final class Compiler
 						$assigned[$item->name][] = new MixedType();
 					}
 				}
+			}
+			if ($node instanceof Expr\CallLike && !$node->isFirstClassCallable()) {
+				// a variable a by-reference parameter of the callee may create (preg_match()'s $matches)
+				$callee = $this->calleeReflection($node);
+				if ($callee !== null) {
+					foreach ($node->getArgs() as $i => $arg) {
+						if ($arg->name !== null || $arg->unpack || !$arg->value instanceof Expr\Variable || !is_string($arg->value->name)) {
+							continue;
+						}
+						$parameter = $callee->getParameters()[$i] ?? null;
+						if ($parameter === null || !$parameter->isPassedByReference()) {
+							continue;
+						}
+
+						$assigned[$arg->value->name][] = new MixedType();
+					}
+				}
+			}
+			if ($node instanceof Stmt\Catch_ && $node->var !== null && is_string($node->var->name)) {
+				$assigned[$node->var->name][] = TypeCombinator::union(...array_map(static fn (Node\Name $type): Type => new ObjectType($type->toString()), $node->types));
 			}
 			if ($node instanceof Stmt\Foreach_) {
 				$iterable = $this->unit()->oracle->nativeType($node->expr);
@@ -2184,13 +2216,20 @@ final class Compiler
 	 */
 	private function tryStatement(FunctionContext $f, Stmt\TryCatch $stmt): void
 	{
+		$returnThrough = null;
 		if ($stmt->finally !== null) {
-			$escapes = $this->finder->findFirst([...$stmt->stmts, ...array_merge(...array_map(static fn (Stmt\Catch_ $c): array => $c->stmts, $stmt->catches))], static fn (Node $n): bool => $n instanceof Stmt\Return_ || $n instanceof Stmt\Break_ || $n instanceof Stmt\Continue_);
-			if ($escapes !== null) {
-				throw new CompileError('return/break/continue out of a try with finally is not supported');
+			$guarded = [...$stmt->stmts, ...array_merge(...array_map(static fn (Stmt\Catch_ $c): array => $c->stmts, $stmt->catches))];
+			if ($this->escapingJumps($guarded, false) !== []) {
+				throw new CompileError('break/continue out of a try with finally is not supported');
 			}
-			if ($this->finder->findFirst($stmt->finally->stmts, static fn (Node $n): bool => $n instanceof Stmt\Return_) !== null) {
-				throw new CompileError('return inside finally is not supported');
+			if ($this->escapingJumps($stmt->finally->stmts, true) !== []) {
+				throw new CompileError('return/break/continue out of a finally block is not supported');
+			}
+			if ($this->escapingJumps($guarded, true) !== []) {
+				if ($f->isClosure) {
+					throw new CompileError('return out of a try with finally in a closure is not supported');
+				}
+				$returnThrough = ['label' => '', 'flag' => $f->temp('returning'), 'slot' => $f->temp('returned')];
 			}
 		}
 		$outerFail = $f->fail;
@@ -2198,6 +2237,13 @@ final class Compiler
 		$afterTry = $finallyLabel !== null ? sprintf('goto %s;', $finallyLabel) : $outerFail;
 		$catchLabel = sprintf('catch_%s', $f->temp('c'));
 		$f->open('');
+		if ($returnThrough !== null) {
+			// a return in the try or a catch runs the finally block first
+			$returnThrough['label'] = $finallyLabel;
+			$f->line(sprintf('bool %s = false;', $returnThrough['flag']));
+			$f->line(sprintf('zv::Val %s;', $returnThrough['slot']));
+			$f->finally[] = $returnThrough;
+		}
 		$f->fail = $stmt->catches !== [] ? sprintf('goto %s;', $catchLabel) : $afterTry;
 		$f->open('');
 		$this->statements($f, $stmt->stmts);
@@ -2232,6 +2278,9 @@ final class Compiler
 			$f->line('}');
 		}
 		$f->fail = $outerFail;
+		if ($returnThrough !== null) {
+			array_pop($f->finally);
+		}
 		if ($finallyLabel !== null) {
 			// reached normally, after a handled exception, or with one pending:
 			// the block runs with it set aside, then it continues (chained to
@@ -2245,8 +2294,70 @@ final class Compiler
 			$f->line('});');
 			$f->fail = $outerFail;
 			$f->failIf('EG(exception)');
+			if ($returnThrough !== null) {
+				$f->open(sprintf('if (%s)', $returnThrough['flag']));
+				$this->completeReturn($f, $returnThrough['slot']);
+				$f->close();
+			}
 		}
 		$f->close();
+	}
+
+	/**
+	 * The end of a return whose value (a zval one in $slot) is set: through
+	 * the next enclosing finally block, or out of the function.
+	 */
+	private function completeReturn(FunctionContext $f, ?string $slot): void
+	{
+		$outer = $f->finally[count($f->finally) - 1] ?? null;
+		if ($outer !== null) {
+			if ($slot !== null) {
+				$f->line(sprintf('%s = std::move(%s);', $outer['slot'], $slot));
+			}
+			$f->line(sprintf('%s = true;', $outer['flag']));
+			$f->line(sprintf('goto %s;', $outer['label']));
+			return;
+		}
+		if ($slot !== null && $f->return?->kind === 'zval') {
+			$f->line(sprintf('*ret = %s.take();', $slot));
+		}
+		$f->line('return true;');
+	}
+
+	/**
+	 * The return statements (with $returns) or the break/continue statements
+	 * that leave these statements: the ones of a nested function or
+	 * closure, and the jumps a nested loop or switch takes, stay inside.
+	 *
+	 * @param array<Node> $stmts
+	 * @return list<Stmt>
+	 */
+	private function escapingJumps(array $stmts, bool $returns, int $depth = 0): array
+	{
+		$found = [];
+		foreach ($stmts as $node) {
+			if (!$node instanceof Node) {
+				continue;
+			}
+			if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction || $node instanceof Stmt\Function_ || $node instanceof Stmt\Class_ || $node instanceof Expr\New_ && $node->class instanceof Stmt\Class_) {
+				continue;
+			}
+			if ($returns && $node instanceof Stmt\Return_) {
+				$found[] = $node;
+			}
+			if (!$returns && ($node instanceof Stmt\Break_ || $node instanceof Stmt\Continue_)) {
+				$levels = $node->num instanceof Node\Scalar\Int_ ? $node->num->value : 1;
+				if ($levels > $depth) {
+					$found[] = $node;
+				}
+			}
+			$loop = $node instanceof Stmt\For_ || $node instanceof Stmt\Foreach_ || $node instanceof Stmt\While_ || $node instanceof Stmt\Do_ || $node instanceof Stmt\Switch_;
+			foreach ($node->getSubNodeNames() as $name) {
+				$sub = $node->$name;
+				$found = [...$found, ...$this->escapingJumps(is_array($sub) ? $sub : [$sub], $returns, $depth + ($loop ? 1 : 0))];
+			}
+		}
+		return $found;
 	}
 
 	private function catchCheck(string $class): string
@@ -2300,8 +2411,14 @@ final class Compiler
 			throw new CompileError('return outside a function');
 		}
 		$f->open('');
+		$through = $f->finally[count($f->finally) - 1] ?? null;
 		if ($expr === null) {
-			$f->line($f->isClosure ? 'return;' : 'return true;');
+			if ($through !== null) {
+				$f->line(sprintf('%s = true;', $through['flag']));
+				$f->line(sprintf('goto %s;', $through['label']));
+			} else {
+				$f->line($f->isClosure ? 'return;' : 'return true;');
+			}
 			$f->close();
 			return;
 		}
@@ -2333,7 +2450,16 @@ final class Compiler
 				if (!$proven) {
 					$this->emitTypeCheck($f, $z, $return->describe, $return->declared, sprintf('pgrt::throwReturnType("%s", "%s", %s); return false;', addcslashes($f->label, '\\'), addcslashes($return->describe, '\\'), $z));
 				}
-				if ($value->temp !== null) {
+				if ($through !== null) {
+					// held until the finally blocks ran
+					if ($value->temp !== null) {
+						$f->line(sprintf('%s = std::move(%s);', $through['slot'], $value->temp));
+					} elseif ($value->kind === 'zval') {
+						$f->line(sprintf('%s = zv::Val::copyOf(zv::Ref(%s));', $through['slot'], $z));
+					} else {
+						$f->line(sprintf('{ zval c; ZVAL_COPY_VALUE(&c, %s); %s = zv::Val::adopt(c); }', $z, $through['slot']));
+					}
+				} elseif ($value->temp !== null) {
 					$f->line(sprintf('*ret = %s.take();', $value->temp));
 				} elseif ($value->kind === 'zval') {
 					$f->line(sprintf('ZVAL_COPY(ret, %s);', $z));
@@ -2344,7 +2470,12 @@ final class Compiler
 			default:
 				throw new CompileError('return with a value from a void function');
 		}
-		$f->line('return true;');
+		if ($through !== null) {
+			$f->line(sprintf('%s = true;', $through['flag']));
+			$f->line(sprintf('goto %s;', $through['label']));
+		} else {
+			$f->line('return true;');
+		}
 		$f->close();
 	}
 
@@ -2597,6 +2728,20 @@ final class Compiler
 	{
 		$oracle = $this->unit()->oracle;
 		$native = $oracle->nativeType($expr);
+
+		if ($expr instanceof Expr\ErrorSuppress) {
+			// evaluated, and owned, before error_reporting is restored
+			$silence = $f->temp('silence');
+			$f->line(sprintf('pgrt::Silence %s;', $silence));
+			$inner = $this->expr($f, $expr->expr);
+			if ($inner->kind === 'void') {
+				$f->line(sprintf('%s.end();', $silence));
+				return $inner;
+			}
+			$t = $this->own($f, $inner);
+			$f->line(sprintf('%s.end();', $silence));
+			return new Value('zval', $t . '.raw()', $t, $inner->class, $inner->isArray);
+		}
 
 		if ($expr instanceof Expr\Variable) {
 			if (!is_string($expr->name)) {
@@ -2893,8 +3038,10 @@ final class Compiler
 			$key = $this->expr($f, $item->key);
 			if ($key->kind === 'long') {
 				$f->line(sprintf('{ zval v = %s.take(); zend_hash_index_update(Z_ARRVAL_P(%s.raw()), %s, &v); }', $value, $t, $key->code));
-			} else {
+			} elseif ($this->unit()->oracle->nativeType($item->key)->isString()->yes()) {
 				$f->line(sprintf('{ zval v = %s.take(); zend_symtable_update(Z_ARRVAL_P(%s.raw()), Z_STR_P(%s), &v); }', $value, $t, $this->asZval($f, $key)));
+			} else {
+				$f->failIf(sprintf('!([&]() { zval v = %s.take(); return pgrt::insertKeyed(%s.raw(), %s, &v); }())', $value, $t, $this->asZval($f, $key)));
 			}
 		}
 		return new Value('zval', $t . '.raw()', $t, isArray: true);
@@ -3522,7 +3669,13 @@ final class Compiler
 		];
 		if (isset($bit[$expr::class])) {
 			if (!$longs) {
-				throw new CompileError(sprintf('bitwise operators on non-int operands are not supported (line %d)', $expr->getStartLine()));
+				// the engine's operator: string operands, the TypeError of an array
+				$generic = [
+					Expr\BinaryOp\BitwiseAnd::class => 'bitwise_and_function',
+					Expr\BinaryOp\BitwiseOr::class => 'bitwise_or_function',
+					Expr\BinaryOp\BitwiseXor::class => 'bitwise_xor_function',
+				];
+				return $this->arithmetic($f, $generic[$expr::class], $left, $right, $native);
 			}
 			return Value::long(sprintf('(%s %s %s)', $left->code, $bit[$expr::class], $right->code));
 		}
@@ -3791,7 +3944,14 @@ final class Compiler
 	private function ternary(FunctionContext $f, Expr\Ternary $expr): Value
 	{
 		if ($expr->if === null) {
-			throw new CompileError('?: is not supported');
+			// `$a ?: $b`: $a evaluated once, kept when truthy
+			$native = $this->unit()->oracle->nativeType($expr);
+			$t = $f->temp('q');
+			$f->line(sprintf('zv::Val %s = std::move(%s);', $t, $this->own($f, $this->expr($f, $expr->cond))));
+			$f->open(sprintf('if (!zend_is_true(%s.raw()))', $t));
+			$f->line(sprintf('%s = std::move(%s);', $t, $this->own($f, $this->expr($f, $expr->else))));
+			$f->close();
+			return new Value('zval', $t . '.raw()', $t, $this->knownClass($native), $native->isArray()->yes());
 		}
 		$cond = $this->condition($f, $expr->cond);
 		$native = $this->unit()->oracle->nativeType($expr);

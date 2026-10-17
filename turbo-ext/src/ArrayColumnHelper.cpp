@@ -1467,13 +1467,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_columnType = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_arrayType)
-			Z_PARAM_OBJECT(p_columnType)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_arrayType)
+			Z_PARAM_ZVAL(p_columnType)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_arrayType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
-		if (p_columnType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_columnType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_columnType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_arrayType != NULL && UNEXPECTED(Z_TYPE_P(p_arrayType) != IS_OBJECT || !pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
+		if (p_columnType != NULL && UNEXPECTED(Z_TYPE_P(p_columnType) != IS_OBJECT || !pgrt::instanceOfClass(p_columnType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_columnType)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_getReturnValueType(Z_OBJ_P(ZEND_THIS), p_arrayType, p_columnType, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1482,13 +1482,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_indexType = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_arrayType)
-			Z_PARAM_OBJECT(p_indexType)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_arrayType)
+			Z_PARAM_ZVAL(p_indexType)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_arrayType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
-		if (p_indexType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_indexType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_indexType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_arrayType != NULL && UNEXPECTED(Z_TYPE_P(p_arrayType) != IS_OBJECT || !pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
+		if (p_indexType != NULL && UNEXPECTED(Z_TYPE_P(p_indexType) != IS_OBJECT || !pgrt::instanceOfClass(p_indexType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_indexType)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_getReturnIndexType(Z_OBJ_P(ZEND_THIS), p_arrayType, p_indexType, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1498,15 +1498,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_indexType = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_arrayType)
-			Z_PARAM_OBJECT(p_columnType)
-			Z_PARAM_OBJECT(p_indexType)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_arrayType)
+			Z_PARAM_ZVAL(p_columnType)
+			Z_PARAM_ZVAL(p_indexType)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_arrayType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
-		if (p_columnType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_columnType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_columnType)); RETURN_THROWS(); }
-		if (p_indexType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_indexType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_indexType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_arrayType != NULL && UNEXPECTED(Z_TYPE_P(p_arrayType) != IS_OBJECT || !pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
+		if (p_columnType != NULL && UNEXPECTED(Z_TYPE_P(p_columnType) != IS_OBJECT || !pgrt::instanceOfClass(p_columnType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_columnType)); RETURN_THROWS(); }
+		if (p_indexType != NULL && UNEXPECTED(Z_TYPE_P(p_indexType) != IS_OBJECT || !pgrt::instanceOfClass(p_indexType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_indexType)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_handleAnyArray(Z_OBJ_P(ZEND_THIS), p_arrayType, p_columnType, p_indexType, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1516,15 +1516,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_indexType = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_arrayType)
-			Z_PARAM_OBJECT(p_columnType)
-			Z_PARAM_OBJECT(p_indexType)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_arrayType)
+			Z_PARAM_ZVAL(p_columnType)
+			Z_PARAM_ZVAL(p_indexType)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_arrayType != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_arrayType, pt_ce_constant_array_type) || pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\Constant\\ConstantArrayType", 39))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Constant\\ConstantArrayType", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
-		if (p_columnType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_columnType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_columnType)); RETURN_THROWS(); }
-		if (p_indexType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_indexType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_indexType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_arrayType != NULL && UNEXPECTED(Z_TYPE_P(p_arrayType) != IS_OBJECT || !(pgrt::instanceOfClass(p_arrayType, pt_ce_constant_array_type) || pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\Constant\\ConstantArrayType", 39))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Constant\\ConstantArrayType", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
+		if (p_columnType != NULL && UNEXPECTED(Z_TYPE_P(p_columnType) != IS_OBJECT || !pgrt::instanceOfClass(p_columnType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_columnType)); RETURN_THROWS(); }
+		if (p_indexType != NULL && UNEXPECTED(Z_TYPE_P(p_indexType) != IS_OBJECT || !pgrt::instanceOfClass(p_indexType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_indexType)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_handleConstantArray(Z_OBJ_P(ZEND_THIS), p_arrayType, p_columnType, p_indexType, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1533,13 +1533,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_offsetOrProperty = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_type)
-			Z_PARAM_OBJECT(p_offsetOrProperty)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_type)
+			Z_PARAM_ZVAL(p_offsetOrProperty)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
-		if (p_offsetOrProperty != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_offsetOrProperty, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetOrProperty)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_offsetOrProperty != NULL && UNEXPECTED(Z_TYPE_P(p_offsetOrProperty) != IS_OBJECT || !pgrt::instanceOfClass(p_offsetOrProperty, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetOrProperty)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_getOffsetOrProperty(Z_OBJ_P(ZEND_THIS), p_type, p_offsetOrProperty, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1547,11 +1547,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_type = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_type)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_type)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_castToArrayKeyType(Z_OBJ_P(ZEND_THIS), p_type, p_scope, return_value))) RETURN_THROWS();
 	});

@@ -243,10 +243,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideThrowTypeCheck)
 		zval *p_throwType = NULL;
 		zval *p_throwPoints = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_throwType)
+			Z_PARAM_ZVAL(p_throwType)
 			Z_PARAM_ARRAY(p_throwPoints)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_throwType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_throwType, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_throwType)); RETURN_THROWS(); }
+		if (p_throwType != NULL && UNEXPECTED(Z_TYPE_P(p_throwType) != IS_OBJECT || !pgrt::instanceOfClass(p_throwType, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_throwType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TooWideThrowTypeCheck::m_check(Z_OBJ_P(ZEND_THIS), p_throwType, p_throwPoints, return_value))) RETURN_THROWS();
 	});

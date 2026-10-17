@@ -295,11 +295,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ApiRuleHelper)
 		zval p_declaringFile_null;
 		ZVAL_NULL(&p_declaringFile_null);
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_namespace_str)
 			Z_PARAM_STR_OR_NULL(p_declaringFile_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		if (p_namespace_str != NULL) { ZVAL_STR(&p_namespace_zv, p_namespace_str); p_namespace = &p_namespace_zv; }
 		if (p_declaringFile_str != NULL) { ZVAL_STR(&p_declaringFile_zv, p_declaringFile_str); p_declaringFile = &p_declaringFile_zv; }
 		if (p_declaringFile == NULL) p_declaringFile = &p_declaringFile_null;

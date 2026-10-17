@@ -70,11 +70,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyRead)
 		zval *p_fetch = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_fetch)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_fetch)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_fetch != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_fetch, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\PropertyFetch", 33)) || pgrt::instanceOfClass(p_fetch, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr\\StaticPropertyFetch", 39))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\PropertyFetch|PhpParser\\Node\\Expr\\StaticPropertyFetch", zend_zval_value_name(p_fetch)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_fetch != NULL && UNEXPECTED(Z_TYPE_P(p_fetch) != IS_OBJECT || !(pgrt::instanceOfClass(p_fetch, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\PropertyFetch", 33)) || pgrt::instanceOfClass(p_fetch, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr\\StaticPropertyFetch", 39))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\PropertyFetch|PhpParser\\Node\\Expr\\StaticPropertyFetch", zend_zval_value_name(p_fetch)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::PropertyRead::m___construct(Z_OBJ_P(ZEND_THIS), p_fetch, p_scope))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFetch, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\Property\PropertyRead::getFetch() */

@@ -12,12 +12,14 @@ use PHPStan\Node\FunctionCallExpressionNode;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements Rule<FunctionCallExpressionNode>
  */
 #[RegisteredRule(level: 4)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ImpossibleCheckTypeFunctionCallRule.cpp')]
 final class ImpossibleCheckTypeFunctionCallRule implements Rule
 {
 

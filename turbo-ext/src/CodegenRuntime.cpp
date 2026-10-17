@@ -654,6 +654,25 @@ bool cloneObject(zval *value, zval *out)
 	return true;
 }
 
+bool insertKeyed(zval *array, zval *key, zval *value)
+{
+	HashTable *ht = Z_ARRVAL_P(array);
+	switch (Z_TYPE_P(key)) {
+		case IS_STRING:
+			zend_symtable_update(ht, Z_STR_P(key), value);
+			return true;
+		case IS_LONG:
+			zend_hash_index_update(ht, Z_LVAL_P(key), value);
+			return true;
+		default: {
+			/* array_set_zval_key() adds its own reference */
+			zend_result result = array_set_zval_key(ht, key, value);
+			zval_ptr_dtor(value);
+			return result == SUCCESS && !EG(exception);
+		}
+	}
+}
+
 bool spreadInto(zval *array, zval *value)
 {
 	ZVAL_DEREF(value);

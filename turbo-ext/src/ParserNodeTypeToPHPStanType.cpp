@@ -551,9 +551,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParserNodeTypeToPHPStanType)
 		ZVAL_NULL(&p_classReflection_null);
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_ZVAL(p_type)
-			Z_PARAM_OBJECT_OR_NULL(p_classReflection)
+			Z_PARAM_ZVAL_OR_NULL(p_classReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_classReflection != NULL && UNEXPECTED(!(Z_TYPE_P(p_classReflection) == IS_NULL || (pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Reflection\\ClassReflection", 34)))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
+		if (p_classReflection != NULL && UNEXPECTED((Z_TYPE_P(p_classReflection) != IS_OBJECT && Z_TYPE_P(p_classReflection) != IS_NULL) || !(Z_TYPE_P(p_classReflection) == IS_NULL || (pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Reflection\\ClassReflection", 34)))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
 		if (p_classReflection == NULL) p_classReflection = &p_classReflection_null;
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ParserNodeTypeToPHPStanType::m_resolve(p_type, p_classReflection, return_value))) RETURN_THROWS();

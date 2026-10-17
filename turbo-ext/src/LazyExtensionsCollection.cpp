@@ -49,16 +49,27 @@ namespace pgen::LazyExtensionsCollection {
 			if (UNEXPECTED(p5 == NULL)) return false;
 			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::LazyExtensionsCollection::slot::tagName, "tagName");
 			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p5, "getServicesByTag", "getservicesbytag", 16, 1, av7, r8.raw(), NULL))) return false;
-			zv::Val r9;
-			if (UNEXPECTED(!pgrt::arrayValues(r8.raw(), r9.raw()))) return false;
-			zval o10;
-			ZVAL_COPY(&o10, r9.raw());
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::LazyExtensionsCollection::slot::extensions, &o10);
-			ca4 = zv::Val::copyOf(zv::Ref(r9.raw()));
+			zv::Val o7 = zv::Val::copyOf(zv::Ref(p6));
+			zv::Val vd8;
+			zend_class_entry *vd8_ce = Z_TYPE_P(p5) == IS_OBJECT ? Z_OBJCE_P(p5) : NULL;
+			bool vd8_done = false;
+			if (vd8_ce == pt_ce_memoizing_container) {
+				zv::Val r9;
+				if (UNEXPECTED(!pgen::MemoizingContainer::m_getServicesByTag(Z_OBJ_P(p5), o7.raw(), r9.raw()))) return false;
+				vd8 = std::move(r9);
+				vd8_done = true;
+			}
+			if (!vd8_done) {
+				zval av10[1];
+				ZVAL_COPY_VALUE(&av10[0], o7.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p5, "getServicesByTag", "getservicesbytag", 16, 1, av10, vd8.raw()))) return false;
+			}
+			zv::Val r11;
+			if (UNEXPECTED(!pgrt::arrayValues(vd8.raw(), r11.raw()))) return false;
+			zval o12;
+			ZVAL_COPY(&o12, r11.raw());
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::LazyExtensionsCollection::slot::extensions, &o12);
+			ca4 = zv::Val::copyOf(zv::Ref(r11.raw()));
 		}
 		}
 		*ret = ca4.take();
@@ -83,10 +94,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LazyExtensionsCollection)
 		zend_string *p_tagName_str = NULL;
 		zval p_tagName_zv;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_container)
+			Z_PARAM_ZVAL(p_container)
 			Z_PARAM_STR(p_tagName_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_container != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_container, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\DependencyInjection\\Container", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\DependencyInjection\\Container", zend_zval_value_name(p_container)); RETURN_THROWS(); }
+		if (p_container != NULL && UNEXPECTED(Z_TYPE_P(p_container) != IS_OBJECT || !pgrt::instanceOfClass(p_container, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\DependencyInjection\\Container", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\DependencyInjection\\Container", zend_zval_value_name(p_container)); RETURN_THROWS(); }
 		if (p_tagName_str != NULL) { ZVAL_STR(&p_tagName_zv, p_tagName_str); p_tagName = &p_tagName_zv; }
 		if (UNEXPECTED(!pgen::LazyExtensionsCollection::m___construct(Z_OBJ_P(ZEND_THIS), p_container, p_tagName))) RETURN_THROWS();
 	});

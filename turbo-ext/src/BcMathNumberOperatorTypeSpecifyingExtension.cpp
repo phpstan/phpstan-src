@@ -306,12 +306,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BcMathNumberOperatorTypeSpecifyingExte
 		zval *p_rightSide = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
 			Z_PARAM_STR(p_operatorSigil_str)
-			Z_PARAM_OBJECT(p_leftSide)
-			Z_PARAM_OBJECT(p_rightSide)
+			Z_PARAM_ZVAL(p_leftSide)
+			Z_PARAM_ZVAL(p_rightSide)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_operatorSigil_str != NULL) { ZVAL_STR(&p_operatorSigil_zv, p_operatorSigil_str); p_operatorSigil = &p_operatorSigil_zv; }
-		if (p_leftSide != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_leftSide, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_leftSide)); RETURN_THROWS(); }
-		if (p_rightSide != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_rightSide, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_rightSide)); RETURN_THROWS(); }
+		if (p_leftSide != NULL && UNEXPECTED(Z_TYPE_P(p_leftSide) != IS_OBJECT || !pgrt::instanceOfClass(p_leftSide, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_leftSide)); RETURN_THROWS(); }
+		if (p_rightSide != NULL && UNEXPECTED(Z_TYPE_P(p_rightSide) != IS_OBJECT || !pgrt::instanceOfClass(p_rightSide, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_rightSide)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::BcMathNumberOperatorTypeSpecifyingExtension::m_isOperatorSupported(Z_OBJ_P(ZEND_THIS), p_operatorSigil, p_leftSide, p_rightSide, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -324,12 +324,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BcMathNumberOperatorTypeSpecifyingExte
 		zval *p_rightSide = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
 			Z_PARAM_STR(p_operatorSigil_str)
-			Z_PARAM_OBJECT(p_leftSide)
-			Z_PARAM_OBJECT(p_rightSide)
+			Z_PARAM_ZVAL(p_leftSide)
+			Z_PARAM_ZVAL(p_rightSide)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_operatorSigil_str != NULL) { ZVAL_STR(&p_operatorSigil_zv, p_operatorSigil_str); p_operatorSigil = &p_operatorSigil_zv; }
-		if (p_leftSide != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_leftSide, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_leftSide)); RETURN_THROWS(); }
-		if (p_rightSide != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_rightSide, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_rightSide)); RETURN_THROWS(); }
+		if (p_leftSide != NULL && UNEXPECTED(Z_TYPE_P(p_leftSide) != IS_OBJECT || !pgrt::instanceOfClass(p_leftSide, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_leftSide)); RETURN_THROWS(); }
+		if (p_rightSide != NULL && UNEXPECTED(Z_TYPE_P(p_rightSide) != IS_OBJECT || !pgrt::instanceOfClass(p_rightSide, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_rightSide)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BcMathNumberOperatorTypeSpecifyingExtension::m_specifyType(Z_OBJ_P(ZEND_THIS), p_operatorSigil, p_leftSide, p_rightSide, return_value))) RETURN_THROWS();
 	});

@@ -736,11 +736,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UsedNamesRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_47, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_47, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::UsedNamesRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -752,12 +752,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UsedNamesRule)
 		zval *p_declaredNames = NULL;
 		zval *p_currentScopeNames = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_node)
+			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_STR(p_namespace_str)
 			Z_PARAM_ZVAL(p_declaredNames)
 			Z_PARAM_ZVAL(p_currentScopeNames)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		if (p_namespace_str != NULL) { ZVAL_STR(&p_namespace_zv, p_namespace_str); p_namespace = &p_namespace_zv; }
 		if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(p_declaredNames).deref().raw()) == IS_ARRAY))) { zend_argument_type_error(3, "must be of type %s, %s given", "array", zend_zval_value_name(zv::Ref(p_declaredNames).deref().raw())); RETURN_THROWS(); }
 		if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(p_currentScopeNames).deref().raw()) == IS_ARRAY))) { zend_argument_type_error(4, "must be of type %s, %s given", "array", zend_zval_value_name(zv::Ref(p_currentScopeNames).deref().raw())); RETURN_THROWS(); }
@@ -783,9 +783,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UsedNamesRule)
 	cls.method(sigs::shouldBeIgnored, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Names\UsedNamesRule::shouldBeIgnored() */
 		zval *p_use = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_use)
+			Z_PARAM_ZVAL(p_use)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_use != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_use, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Stmt\\Use_", 24)) || pgrt::instanceOfClass(p_use, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node\\Stmt\\GroupUse", 28)) || pgrt::instanceOfClass(p_use, pgrt::lookupClassQuiet(pg_site_32, "PhpParser\\Node\\UseItem", 22))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\Use_|PhpParser\\Node\\Stmt\\GroupUse|PhpParser\\Node\\UseItem", zend_zval_value_name(p_use)); RETURN_THROWS(); }
+		if (p_use != NULL && UNEXPECTED(Z_TYPE_P(p_use) != IS_OBJECT || !(pgrt::instanceOfClass(p_use, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Stmt\\Use_", 24)) || pgrt::instanceOfClass(p_use, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node\\Stmt\\GroupUse", 28)) || pgrt::instanceOfClass(p_use, pgrt::lookupClassQuiet(pg_site_32, "PhpParser\\Node\\UseItem", 22))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\Use_|PhpParser\\Node\\Stmt\\GroupUse|PhpParser\\Node\\UseItem", zend_zval_value_name(p_use)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::UsedNamesRule::m_shouldBeIgnored(Z_OBJ_P(ZEND_THIS), p_use, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

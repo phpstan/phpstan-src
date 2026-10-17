@@ -90,11 +90,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocLineHelper)
 		zval *p_node = NULL;
 		zval *p_phpDocNode = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_phpDocNode)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_phpDocNode != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\PhpDocParser\\Ast\\Node", 29)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\Node", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\PhpDocParser\\Ast\\Node", 29)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\Node", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
 		zend_long r;
 		if (UNEXPECTED(!pgen::PhpDocLineHelper::m_detectLine(p_node, p_phpDocNode, &r))) RETURN_THROWS();
 		RETURN_LONG(r);

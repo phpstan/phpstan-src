@@ -7,6 +7,7 @@ use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\CallableAssertionsHelper;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
@@ -27,6 +28,7 @@ use function count;
 use function is_int;
 
 #[ReferencedByTurboExtension(key: 'genericParametersAcceptorResolver')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/GenericParametersAcceptorResolver.cpp')]
 final class GenericParametersAcceptorResolver
 {
 

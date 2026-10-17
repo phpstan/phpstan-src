@@ -1555,22 +1555,22 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpFunctionFromParserNodeReflection)
 		zval *p_pureUnlessCallableIsImpureParameters = NULL;
 		zval *p_pureUnlessParameterPassedParameters = NULL;
 		ZEND_PARSE_PARAMETERS_START(23, 23)
-			Z_PARAM_OBJECT(p_functionLike)
+			Z_PARAM_ZVAL(p_functionLike)
 			Z_PARAM_STR(p_fileName_str)
-			Z_PARAM_OBJECT(p_templateTypeMap)
+			Z_PARAM_ZVAL(p_templateTypeMap)
 			Z_PARAM_ARRAY(p_realParameterTypes)
 			Z_PARAM_ARRAY(p_phpDocParameterTypes)
 			Z_PARAM_ARRAY(p_realParameterDefaultValues)
 			Z_PARAM_ARRAY(p_parameterAttributes)
-			Z_PARAM_OBJECT(p_realReturnType)
-			Z_PARAM_OBJECT_OR_NULL(p_phpDocReturnType)
-			Z_PARAM_OBJECT_OR_NULL(p_throwType)
+			Z_PARAM_ZVAL(p_realReturnType)
+			Z_PARAM_ZVAL_OR_NULL(p_phpDocReturnType)
+			Z_PARAM_ZVAL_OR_NULL(p_throwType)
 			Z_PARAM_STR_OR_NULL(p_deprecatedDescription_str)
 			Z_PARAM_BOOL(p_isDeprecated)
 			Z_PARAM_BOOL(p_isInternal)
 			Z_PARAM_BOOL_OR_NULL(p_isPure_raw, p_isPure_isNull)
 			Z_PARAM_BOOL(p_acceptsNamedArguments)
-			Z_PARAM_OBJECT(p_assertions)
+			Z_PARAM_ZVAL(p_assertions)
 			Z_PARAM_STR_OR_NULL(p_phpDocComment_str)
 			Z_PARAM_ARRAY(p_parameterOutTypes)
 			Z_PARAM_ARRAY(p_immediatelyInvokedCallableParameters)
@@ -1579,18 +1579,18 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpFunctionFromParserNodeReflection)
 			Z_PARAM_ARRAY(p_pureUnlessCallableIsImpureParameters)
 			Z_PARAM_ARRAY(p_pureUnlessParameterPassedParameters)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionLike != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_functionLike, pgrt::lookupClassQuiet(pg_site_65, "PhpParser\\Node\\FunctionLike", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\FunctionLike", zend_zval_value_name(p_functionLike)); RETURN_THROWS(); }
+		if (p_functionLike != NULL && UNEXPECTED(Z_TYPE_P(p_functionLike) != IS_OBJECT || !pgrt::instanceOfClass(p_functionLike, pgrt::lookupClassQuiet(pg_site_65, "PhpParser\\Node\\FunctionLike", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\FunctionLike", zend_zval_value_name(p_functionLike)); RETURN_THROWS(); }
 		if (p_fileName_str != NULL) { ZVAL_STR(&p_fileName_zv, p_fileName_str); p_fileName = &p_fileName_zv; }
-		if (p_templateTypeMap != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_templateTypeMap, pt_ce_template_type_map) || pgrt::instanceOfClass(p_templateTypeMap, pgrt::lookupClassQuiet(pg_site_66, "PHPStan\\Type\\Generic\\TemplateTypeMap", 36))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeMap", zend_zval_value_name(p_templateTypeMap)); RETURN_THROWS(); }
-		if (p_realReturnType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_realReturnType, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(8, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_realReturnType)); RETURN_THROWS(); }
-		if (p_phpDocReturnType != NULL && UNEXPECTED(!(Z_TYPE_P(p_phpDocReturnType) == IS_NULL || pgrt::instanceOfClass(p_phpDocReturnType, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(9, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocReturnType)); RETURN_THROWS(); }
+		if (p_templateTypeMap != NULL && UNEXPECTED(Z_TYPE_P(p_templateTypeMap) != IS_OBJECT || !(pgrt::instanceOfClass(p_templateTypeMap, pt_ce_template_type_map) || pgrt::instanceOfClass(p_templateTypeMap, pgrt::lookupClassQuiet(pg_site_66, "PHPStan\\Type\\Generic\\TemplateTypeMap", 36))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeMap", zend_zval_value_name(p_templateTypeMap)); RETURN_THROWS(); }
+		if (p_realReturnType != NULL && UNEXPECTED(Z_TYPE_P(p_realReturnType) != IS_OBJECT || !pgrt::instanceOfClass(p_realReturnType, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(8, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_realReturnType)); RETURN_THROWS(); }
+		if (p_phpDocReturnType != NULL && UNEXPECTED((Z_TYPE_P(p_phpDocReturnType) != IS_OBJECT && Z_TYPE_P(p_phpDocReturnType) != IS_NULL) || !(Z_TYPE_P(p_phpDocReturnType) == IS_NULL || pgrt::instanceOfClass(p_phpDocReturnType, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(9, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocReturnType)); RETURN_THROWS(); }
 		if (p_phpDocReturnType == NULL) p_phpDocReturnType = &p_phpDocReturnType_null;
-		if (p_throwType != NULL && UNEXPECTED(!(Z_TYPE_P(p_throwType) == IS_NULL || pgrt::instanceOfClass(p_throwType, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(10, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_throwType)); RETURN_THROWS(); }
+		if (p_throwType != NULL && UNEXPECTED((Z_TYPE_P(p_throwType) != IS_OBJECT && Z_TYPE_P(p_throwType) != IS_NULL) || !(Z_TYPE_P(p_throwType) == IS_NULL || pgrt::instanceOfClass(p_throwType, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(10, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_throwType)); RETURN_THROWS(); }
 		if (p_throwType == NULL) p_throwType = &p_throwType_null;
 		if (p_deprecatedDescription_str != NULL) { ZVAL_STR(&p_deprecatedDescription_zv, p_deprecatedDescription_str); p_deprecatedDescription = &p_deprecatedDescription_zv; }
 		if (p_deprecatedDescription == NULL) p_deprecatedDescription = &p_deprecatedDescription_null;
 		if (p_isPure != NULL || ZEND_NUM_ARGS() > 13) { if (p_isPure_isNull) { ZVAL_NULL(&p_isPure_zv); } else { ZVAL_BOOL(&p_isPure_zv, p_isPure_raw); } p_isPure = &p_isPure_zv; }
-		if (p_assertions != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_assertions, pt_ce_assertions) || pgrt::instanceOfClass(p_assertions, pgrt::lookupClassQuiet(pg_site_67, "PHPStan\\Reflection\\Assertions", 29))))) { zend_argument_type_error(16, "must be of type %s, %s given", "PHPStan\\Reflection\\Assertions", zend_zval_value_name(p_assertions)); RETURN_THROWS(); }
+		if (p_assertions != NULL && UNEXPECTED(Z_TYPE_P(p_assertions) != IS_OBJECT || !(pgrt::instanceOfClass(p_assertions, pt_ce_assertions) || pgrt::instanceOfClass(p_assertions, pgrt::lookupClassQuiet(pg_site_67, "PHPStan\\Reflection\\Assertions", 29))))) { zend_argument_type_error(16, "must be of type %s, %s given", "PHPStan\\Reflection\\Assertions", zend_zval_value_name(p_assertions)); RETURN_THROWS(); }
 		if (p_phpDocComment_str != NULL) { ZVAL_STR(&p_phpDocComment_zv, p_phpDocComment_str); p_phpDocComment = &p_phpDocComment_zv; }
 		if (p_phpDocComment == NULL) p_phpDocComment = &p_phpDocComment_null;
 		if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_functionLike, p_fileName, p_templateTypeMap, p_realParameterTypes, p_phpDocParameterTypes, p_realParameterDefaultValues, p_parameterAttributes, p_realReturnType, p_phpDocReturnType, p_throwType, p_deprecatedDescription, p_isDeprecated, p_isInternal, p_isPure, p_acceptsNamedArguments, p_assertions, p_phpDocComment, p_parameterOutTypes, p_immediatelyInvokedCallableParameters, p_phpDocClosureThisTypeParameters, p_attributes, p_pureUnlessCallableIsImpureParameters, p_pureUnlessParameterPassedParameters))) RETURN_THROWS();

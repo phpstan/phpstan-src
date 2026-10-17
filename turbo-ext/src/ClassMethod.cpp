@@ -68,10 +68,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassMethod)
 		zval *p_node = NULL;
 		bool p_isDeclaredInTrait = false;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
+			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_BOOL(p_isDeclaredInTrait)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt\\ClassMethod", 31)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassMethod", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt\\ClassMethod", 31)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassMethod", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ClassMethod::m___construct(Z_OBJ_P(ZEND_THIS), p_node, p_isDeclaredInTrait))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassMethod::getNode() */

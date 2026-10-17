@@ -406,20 +406,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedInternalClassConstantUsageEx
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\InternalTag\RestrictedInternalClassConstantUsageExtension::__construct() */
 		zval *p_helper = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_helper)
+			Z_PARAM_ZVAL(p_helper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_helper != NULL && UNEXPECTED(!((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_restricted_internal_usage_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", 55))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
+		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_restricted_internal_usage_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", 55))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::RestrictedInternalClassConstantUsageExtension::m___construct(Z_OBJ_P(ZEND_THIS), p_helper))) RETURN_THROWS();
 	});
 	cls.method(sigs::isRestrictedClassConstantUsage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\InternalTag\RestrictedInternalClassConstantUsageExtension::isRestrictedClassConstantUsage() */
 		zval *p_constantReflection = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_constantReflection)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_constantReflection)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_constantReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_constantReflection, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Reflection\\ClassConstantReflection", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassConstantReflection", zend_zval_value_name(p_constantReflection)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_constantReflection != NULL && UNEXPECTED(Z_TYPE_P(p_constantReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_constantReflection, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Reflection\\ClassConstantReflection", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassConstantReflection", zend_zval_value_name(p_constantReflection)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RestrictedInternalClassConstantUsageExtension::m_isRestrictedClassConstantUsage(Z_OBJ_P(ZEND_THIS), p_constantReflection, p_scope, return_value))) RETURN_THROWS();
 	});

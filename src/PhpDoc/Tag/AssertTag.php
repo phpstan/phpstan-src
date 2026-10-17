@@ -4,10 +4,12 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /** @api */
 #[ReferencedByTurboExtension(key: 'assertTag')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AssertTag.cpp')]
 final class AssertTag implements TypedTag
 {
 

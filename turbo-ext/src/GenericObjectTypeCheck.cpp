@@ -1171,7 +1171,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericObjectTypeCheck)
 		zend_string *p_typeProjectionIsRedundantMessage_str = NULL;
 		zval p_typeProjectionIsRedundantMessage_zv;
 		ZEND_PARSE_PARAMETERS_START(7, 7)
-			Z_PARAM_OBJECT(p_phpDocType)
+			Z_PARAM_ZVAL(p_phpDocType)
 			Z_PARAM_STR(p_classNotGenericMessage_str)
 			Z_PARAM_STR(p_notEnoughTypesMessage_str)
 			Z_PARAM_STR(p_extraTypesMessage_str)
@@ -1179,7 +1179,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericObjectTypeCheck)
 			Z_PARAM_STR(p_typeProjectionHasConflictingVarianceMessage_str)
 			Z_PARAM_STR(p_typeProjectionIsRedundantMessage_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_phpDocType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
+		if (p_phpDocType != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocType) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
 		if (p_classNotGenericMessage_str != NULL) { ZVAL_STR(&p_classNotGenericMessage_zv, p_classNotGenericMessage_str); p_classNotGenericMessage = &p_classNotGenericMessage_zv; }
 		if (p_notEnoughTypesMessage_str != NULL) { ZVAL_STR(&p_notEnoughTypesMessage_zv, p_notEnoughTypesMessage_str); p_notEnoughTypesMessage = &p_notEnoughTypesMessage_zv; }
 		if (p_extraTypesMessage_str != NULL) { ZVAL_STR(&p_extraTypesMessage_zv, p_extraTypesMessage_str); p_extraTypesMessage = &p_extraTypesMessage_zv; }
@@ -1192,9 +1192,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericObjectTypeCheck)
 	cls.method(sigs::getGenericTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\GenericObjectTypeCheck::getGenericTypes() */
 		zval *p_phpDocType = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_phpDocType)
+			Z_PARAM_ZVAL(p_phpDocType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_phpDocType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
+		if (p_phpDocType != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocType) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::GenericObjectTypeCheck::m_getGenericTypes(Z_OBJ_P(ZEND_THIS), p_phpDocType, return_value))) RETURN_THROWS();
 	});

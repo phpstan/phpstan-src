@@ -345,13 +345,15 @@ public:
 		ZVAL_BOOL(&data[count++], value);
 	}
 
-	/* ...$array: the array's values in order (a list is spread as is) */
+	/* ...$array: the array's values in order (a list is spread as is), a
+	 * reference element (left by a by-reference foreach) as its value, like
+	 * the engine's unpacking for a by-value parameter */
 	void spread(zval *array)
 	{
 		ZEND_ASSERT(Z_TYPE_P(array) == IS_ARRAY);
 		zval *value;
 		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(array), value) {
-			push(value);
+			push(Z_ISREF_P(value) ? Z_REFVAL_P(value) : value);
 		}
 		ZEND_HASH_FOREACH_END();
 	}
@@ -538,6 +540,11 @@ zval *dimRead(zval *base, zval *key, zval *tmp);
 /* [...$value] into an array literal under construction */
 [[nodiscard]] bool spreadInto(zval *array, zval *value);
 
+/* `[$key => $value]` with a key not proven to be a string or an int: the
+ * engine's own key conversion (null, bool, float and resource keys, the
+ * TypeError of an illegal offset); takes ownership of value */
+[[nodiscard]] bool insertKeyed(zval *array, zval *key, zval *value);
+
 /* the value isset($base[$key]) / ?? reads, NULL when there is none; *tmp
  * holds a value read from an object */
 zval *dimIs(zval *base, zval *key, zval *tmp);
@@ -680,6 +687,43 @@ void arrayPop(zval *array, zval *ret);
 [[nodiscard]] bool callGetArgs(pt_method_site &site, zval *node, zval *ret);
 
 /* }}} */
+
+/* `@expr`: error_reporting lowered to the fatal errors while the expression
+ * is evaluated, and restored after it like ZEND_END_SILENCE does — only when
+ * the expression did not set error_reporting itself (end() or the scope's
+ * exit, whichever comes first) */
+class Silence
+{
+public:
+	Silence()
+	{
+		saved = EG(error_reporting);
+		if (saved & ~E_FATAL_ERRORS) {
+			EG(error_reporting) = saved & E_FATAL_ERRORS;
+		}
+	}
+	Silence(const Silence &) = delete;
+	Silence &operator=(const Silence &) = delete;
+	~Silence()
+	{
+		end();
+	}
+
+	void end()
+	{
+		if (!active) {
+			return;
+		}
+		active = false;
+		if (E_HAS_ONLY_FATAL_ERRORS(EG(error_reporting)) && !E_HAS_ONLY_FATAL_ERRORS(saved)) {
+			EG(error_reporting) = saved;
+		}
+	}
+
+private:
+	int saved;
+	bool active = true;
+};
 
 /* {{{ foreach over a value not proven to be an array: an array (by
  * position, over a held copy), a Traversable (the engine's iterator — a

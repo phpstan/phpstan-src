@@ -931,13 +931,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayCombineHelper)
 		zval *p_secondArg = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_firstArg)
-			Z_PARAM_OBJECT(p_secondArg)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_firstArg)
+			Z_PARAM_ZVAL(p_secondArg)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_firstArg != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_firstArg, pgrt::lookupClassQuiet(pg_site_42, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_firstArg)); RETURN_THROWS(); }
-		if (p_secondArg != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_secondArg, pgrt::lookupClassQuiet(pg_site_42, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_secondArg)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_firstArg != NULL && UNEXPECTED(Z_TYPE_P(p_firstArg) != IS_OBJECT || !pgrt::instanceOfClass(p_firstArg, pgrt::lookupClassQuiet(pg_site_42, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_firstArg)); RETURN_THROWS(); }
+		if (p_secondArg != NULL && UNEXPECTED(Z_TYPE_P(p_secondArg) != IS_OBJECT || !pgrt::instanceOfClass(p_secondArg, pgrt::lookupClassQuiet(pg_site_42, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_secondArg)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayCombineHelper::m_getReturnAndThrowType(Z_OBJ_P(ZEND_THIS), p_firstArg, p_secondArg, p_scope, return_value))) RETURN_THROWS();
 	});

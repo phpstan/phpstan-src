@@ -1018,20 +1018,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyInClassRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_79, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_80, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_79, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_80, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PropertyInClassRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::doAllHooksHaveBody, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\PropertyInClassRule::doAllHooksHaveBody() */
 		zval *p_node = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_node)
+			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::PropertyInClassRule::m_doAllHooksHaveBody(Z_OBJ_P(ZEND_THIS), p_node, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -1039,9 +1039,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyInClassRule)
 	cls.method(sigs::isAtLeastOneHookBodyEmpty, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\PropertyInClassRule::isAtLeastOneHookBodyEmpty() */
 		zval *p_node = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_node)
+			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::PropertyInClassRule::m_isAtLeastOneHookBodyEmpty(Z_OBJ_P(ZEND_THIS), p_node, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

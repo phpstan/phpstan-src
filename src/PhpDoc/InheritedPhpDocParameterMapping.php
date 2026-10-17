@@ -3,12 +3,14 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\PhpDoc\Tag\AssertTagParameter;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
 use function substr;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/InheritedPhpDocParameterMapping.cpp')]
 final class InheritedPhpDocParameterMapping
 {
 

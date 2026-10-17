@@ -40,18 +40,17 @@ static pgrt::PropSite pg_site_27; /* prop_name_27 */
 static pgrt::PropSite pg_site_28; /* prop_type_28 */
 static pt_method_site pg_site_29; /* method_isParameterValueNullable_29 */
 static pt_method_site pg_site_30; /* method_getFunctionType_30 */
-static pt_method_site pg_site_31; /* method_getParamsImmediatelyInvokedCallable_31 */
-static pgrt::ClassSite pg_site_32; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_33; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_34; /* method_identifier_34 */
-static pt_method_site pg_site_35; /* method_build_35 */
-static pt_method_site pg_site_36; /* method_isCallable_36 */
-static pt_method_site pg_site_37; /* method_describe_37 */
-static pt_method_site pg_site_38; /* method_identifier_38 */
-static pt_method_site pg_site_39; /* method_build_39 */
-static pgrt::ClassSite pg_site_40; /* cls_PHPStan\Type\FileTypeMapper */
-static pgrt::ClassSite pg_site_41; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_42; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_31; /* cls_PHPStan\Rules\RuleErrorBuilder */
+static pt_method_site pg_site_32; /* static_PHPStan\Rules\RuleErrorBuilder::message */
+static pt_method_site pg_site_33; /* method_identifier_33 */
+static pt_method_site pg_site_34; /* method_build_34 */
+static pt_method_site pg_site_35; /* method_isCallable_35 */
+static pt_method_site pg_site_36; /* method_describe_36 */
+static pt_method_site pg_site_37; /* method_identifier_37 */
+static pt_method_site pg_site_38; /* method_build_38 */
+static pgrt::ClassSite pg_site_39; /* cls_PHPStan\Type\FileTypeMapper */
+static pgrt::ClassSite pg_site_40; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_41; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 
@@ -402,7 +401,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 	}
 	 {
 		zv::Val r86;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_resolvedPhpDoc.raw(), "getParamsImmediatelyInvokedCallable", "getparamsimmediatelyinvokedcallable", 35, 0, NULL, r86.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getParamsImmediatelyInvokedCallable(Z_OBJ_P(l_resolvedPhpDoc.raw()), r86.raw()))) return false;
 		zv::Val a87 = zv::Val::copyOf(zv::Ref(r86.raw()).deref());
 		HashTable *ht85 = Z_ARRVAL_P(a87.raw());
 		zval *v88;
@@ -445,16 +444,16 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 							zv::Val r103 = sb102.finish();
 							zval av104[1];
 							ZVAL_COPY_VALUE(&av104[0], r103.raw());
-							zend_class_entry *ce105 = pgrt::lookupClass(pg_site_32, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+							zend_class_entry *ce105 = pgrt::lookupClass(pg_site_31, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 							if (UNEXPECTED(ce105 == NULL)) return false;
 							zv::Val r106;
-							if (UNEXPECTED(!pgrt::callStatic(pg_site_33, ce105, "message", 7, 1, av104, r106.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callStatic(pg_site_32, ce105, "message", 7, 1, av104, r106.raw(), NULL))) return false;
 							zval av107[1];
 							ZVAL_COPY_VALUE(&av107[0], &pg_lit[4]);
 							zv::Val r108;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_34, r106.raw(), "identifier", "identifier", 10, 1, av107, r108.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_33, r106.raw(), "identifier", "identifier", 10, 1, av107, r108.raw(), NULL))) return false;
 							zv::Val r109;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_35, r108.raw(), "build", "build", 5, 0, NULL, r109.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_34, r108.raw(), "build", "build", 5, 0, NULL, r109.raw(), NULL))) return false;
 							zv::Val o110 = zv::Val::copyOf(zv::Ref(r109.raw()));
 							zval *w111 = zv::Ref(l_errors.raw()).deref().raw();
 							if (Z_TYPE_P(w111) <= IS_NULL) { zval_ptr_dtor(w111); array_init(w111); } else if (UNEXPECTED(Z_TYPE_P(w111) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -473,7 +472,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 								if (UNEXPECTED(r114.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_36, zv::Ref(e112).deref().raw(), "isCallable", "iscallable", 10, 0, NULL, r114.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_35, zv::Ref(e112).deref().raw(), "isCallable", "iscallable", 10, 0, NULL, r114.raw(), NULL))) return false;
 							}
 							}
 							bool r115;
@@ -497,7 +496,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 										if (UNEXPECTED(r123.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_37, o120.raw(), "describe", "describe", 8, 1, av122, r123.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod(pg_site_36, o120.raw(), "describe", "describe", 8, 1, av122, r123.raw(), NULL))) return false;
 									}
 									}
 									pgrt::StringBuilder sb124;
@@ -511,10 +510,10 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 									zv::Val r125 = sb124.finish();
 									zval av126[1];
 									ZVAL_COPY_VALUE(&av126[0], r125.raw());
-									zend_class_entry *ce127 = pgrt::lookupClass(pg_site_32, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+									zend_class_entry *ce127 = pgrt::lookupClass(pg_site_31, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 									if (UNEXPECTED(ce127 == NULL)) return false;
 									zv::Val r128;
-									if (UNEXPECTED(!pgrt::callStatic(pg_site_33, ce127, "message", 7, 1, av126, r128.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callStatic(pg_site_32, ce127, "message", 7, 1, av126, r128.raw(), NULL))) return false;
 									zv::Val q129;
 									if (zend_is_true(l_immediately)) {
 										zv::Val o130 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
@@ -532,9 +531,9 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 									zval av134[1];
 									ZVAL_COPY_VALUE(&av134[0], r133.raw());
 									zv::Val r135;
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_38, r128.raw(), "identifier", "identifier", 10, 1, av134, r135.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_37, r128.raw(), "identifier", "identifier", 10, 1, av134, r135.raw(), NULL))) return false;
 									zv::Val r136;
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_39, r135.raw(), "build", "build", 5, 0, NULL, r136.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_38, r135.raw(), "build", "build", 5, 0, NULL, r136.raw(), NULL))) return false;
 									zv::Val o137 = zv::Val::copyOf(zv::Ref(r136.raw()));
 									zval *w138 = zv::Ref(l_errors.raw()).deref().raw();
 									if (Z_TYPE_P(w138) <= IS_NULL) { zval_ptr_dtor(w138); array_init(w138); } else if (UNEXPECTED(Z_TYPE_P(w138) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -576,9 +575,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatibleParamImmediatelyInvokedCal
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatibleParamImmediatelyInvokedCallableRule::__construct() */
 		zval *p_fileTypeMapper = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_fileTypeMapper)
+			Z_PARAM_ZVAL(p_fileTypeMapper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_fileTypeMapper != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_fileTypeMapper, pgrt::lookupClassQuiet(pg_site_40, "PHPStan\\Type\\FileTypeMapper", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\FileTypeMapper", zend_zval_value_name(p_fileTypeMapper)); RETURN_THROWS(); }
+		if (p_fileTypeMapper != NULL && UNEXPECTED(Z_TYPE_P(p_fileTypeMapper) != IS_OBJECT || !pgrt::instanceOfClass(p_fileTypeMapper, pgrt::lookupClassQuiet(pg_site_39, "PHPStan\\Type\\FileTypeMapper", 27)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\FileTypeMapper", zend_zval_value_name(p_fileTypeMapper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::IncompatibleParamImmediatelyInvokedCallableRule::m___construct(Z_OBJ_P(ZEND_THIS), p_fileTypeMapper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatibleParamImmediatelyInvokedCallableRule::getNodeType() */
@@ -590,11 +589,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatibleParamImmediatelyInvokedCal
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_41, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_42, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_40, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IncompatibleParamImmediatelyInvokedCallableRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

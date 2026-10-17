@@ -591,10 +591,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateFunctionReturnTypeHelper)
 		zval *p_formatType = NULL;
 		bool p_useMicrosec = false;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_formatType)
+			Z_PARAM_ZVAL(p_formatType)
 			Z_PARAM_BOOL(p_useMicrosec)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_formatType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_formatType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_formatType)); RETURN_THROWS(); }
+		if (p_formatType != NULL && UNEXPECTED(Z_TYPE_P(p_formatType) != IS_OBJECT || !pgrt::instanceOfClass(p_formatType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_formatType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DateFunctionReturnTypeHelper::m_getTypeFromFormatType(Z_OBJ_P(ZEND_THIS), p_formatType, p_useMicrosec, return_value))) RETURN_THROWS();
 	});

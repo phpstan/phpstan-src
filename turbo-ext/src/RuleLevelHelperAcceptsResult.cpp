@@ -134,9 +134,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelperAcceptsResult)
 	cls.method(sigs::and_, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleLevelHelperAcceptsResult::and() */
 		zval *p_other = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_other)
+			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_rule_level_helper_accepts_result) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Rules\\RuleLevelHelperAcceptsResult", 42))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\RuleLevelHelperAcceptsResult", zend_zval_value_name(p_other)); RETURN_THROWS(); }
+		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_rule_level_helper_accepts_result) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Rules\\RuleLevelHelperAcceptsResult", 42))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\RuleLevelHelperAcceptsResult", zend_zval_value_name(p_other)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleLevelHelperAcceptsResult::m_and(Z_OBJ_P(ZEND_THIS), p_other, return_value))) RETURN_THROWS();
 	});

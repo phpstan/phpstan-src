@@ -472,32 +472,32 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 		ZEND_PARSE_PARAMETERS_START(13, 13)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_BOOL(p_optional)
-			Z_PARAM_OBJECT(p_realType)
-			Z_PARAM_OBJECT_OR_NULL(p_phpDocType)
-			Z_PARAM_OBJECT(p_passedByReference)
-			Z_PARAM_OBJECT_OR_NULL(p_defaultValue)
+			Z_PARAM_ZVAL(p_realType)
+			Z_PARAM_ZVAL_OR_NULL(p_phpDocType)
+			Z_PARAM_ZVAL(p_passedByReference)
+			Z_PARAM_ZVAL_OR_NULL(p_defaultValue)
 			Z_PARAM_BOOL(p_variadic)
-			Z_PARAM_OBJECT_OR_NULL(p_outType)
-			Z_PARAM_OBJECT(p_immediatelyInvokedCallable)
-			Z_PARAM_OBJECT_OR_NULL(p_closureThisType)
+			Z_PARAM_ZVAL_OR_NULL(p_outType)
+			Z_PARAM_ZVAL(p_immediatelyInvokedCallable)
+			Z_PARAM_ZVAL_OR_NULL(p_closureThisType)
 			Z_PARAM_ARRAY(p_attributes)
-			Z_PARAM_OBJECT(p_pureUnlessCallableIsImpureParameter)
-			Z_PARAM_OBJECT(p_pureUnlessParameterPassedParameter)
+			Z_PARAM_ZVAL(p_pureUnlessCallableIsImpureParameter)
+			Z_PARAM_ZVAL(p_pureUnlessParameterPassedParameter)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name_str != NULL) { ZVAL_STR(&p_name_zv, p_name_str); p_name = &p_name_zv; }
-		if (p_realType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_realType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_realType)); RETURN_THROWS(); }
-		if (p_phpDocType != NULL && UNEXPECTED(!(Z_TYPE_P(p_phpDocType) == IS_NULL || pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(4, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
+		if (p_realType != NULL && UNEXPECTED(Z_TYPE_P(p_realType) != IS_OBJECT || !pgrt::instanceOfClass(p_realType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_realType)); RETURN_THROWS(); }
+		if (p_phpDocType != NULL && UNEXPECTED((Z_TYPE_P(p_phpDocType) != IS_OBJECT && Z_TYPE_P(p_phpDocType) != IS_NULL) || !(Z_TYPE_P(p_phpDocType) == IS_NULL || pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(4, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }
 		if (p_phpDocType == NULL) p_phpDocType = &p_phpDocType_null;
-		if (p_passedByReference != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_passedByReference, pt_ce_passed_by_reference) || pgrt::instanceOfClass(p_passedByReference, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Reflection\\PassedByReference", 36))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Reflection\\PassedByReference", zend_zval_value_name(p_passedByReference)); RETURN_THROWS(); }
-		if (p_defaultValue != NULL && UNEXPECTED(!(Z_TYPE_P(p_defaultValue) == IS_NULL || pgrt::instanceOfClass(p_defaultValue, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_defaultValue)); RETURN_THROWS(); }
+		if (p_passedByReference != NULL && UNEXPECTED(Z_TYPE_P(p_passedByReference) != IS_OBJECT || !(pgrt::instanceOfClass(p_passedByReference, pt_ce_passed_by_reference) || pgrt::instanceOfClass(p_passedByReference, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Reflection\\PassedByReference", 36))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Reflection\\PassedByReference", zend_zval_value_name(p_passedByReference)); RETURN_THROWS(); }
+		if (p_defaultValue != NULL && UNEXPECTED((Z_TYPE_P(p_defaultValue) != IS_OBJECT && Z_TYPE_P(p_defaultValue) != IS_NULL) || !(Z_TYPE_P(p_defaultValue) == IS_NULL || pgrt::instanceOfClass(p_defaultValue, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_defaultValue)); RETURN_THROWS(); }
 		if (p_defaultValue == NULL) p_defaultValue = &p_defaultValue_null;
-		if (p_outType != NULL && UNEXPECTED(!(Z_TYPE_P(p_outType) == IS_NULL || pgrt::instanceOfClass(p_outType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(8, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_outType)); RETURN_THROWS(); }
+		if (p_outType != NULL && UNEXPECTED((Z_TYPE_P(p_outType) != IS_OBJECT && Z_TYPE_P(p_outType) != IS_NULL) || !(Z_TYPE_P(p_outType) == IS_NULL || pgrt::instanceOfClass(p_outType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(8, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_outType)); RETURN_THROWS(); }
 		if (p_outType == NULL) p_outType = &p_outType_null;
-		if (p_immediatelyInvokedCallable != NULL && UNEXPECTED(!((Z_TYPE_P(p_immediatelyInvokedCallable) == IS_OBJECT && Z_OBJCE_P(p_immediatelyInvokedCallable) == pt_ce_trinary) || pgrt::instanceOfClass(p_immediatelyInvokedCallable, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(9, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_immediatelyInvokedCallable)); RETURN_THROWS(); }
-		if (p_closureThisType != NULL && UNEXPECTED(!(Z_TYPE_P(p_closureThisType) == IS_NULL || pgrt::instanceOfClass(p_closureThisType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(10, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_closureThisType)); RETURN_THROWS(); }
+		if (p_immediatelyInvokedCallable != NULL && UNEXPECTED(Z_TYPE_P(p_immediatelyInvokedCallable) != IS_OBJECT || !((Z_TYPE_P(p_immediatelyInvokedCallable) == IS_OBJECT && Z_OBJCE_P(p_immediatelyInvokedCallable) == pt_ce_trinary) || pgrt::instanceOfClass(p_immediatelyInvokedCallable, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(9, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_immediatelyInvokedCallable)); RETURN_THROWS(); }
+		if (p_closureThisType != NULL && UNEXPECTED((Z_TYPE_P(p_closureThisType) != IS_OBJECT && Z_TYPE_P(p_closureThisType) != IS_NULL) || !(Z_TYPE_P(p_closureThisType) == IS_NULL || pgrt::instanceOfClass(p_closureThisType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(10, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_closureThisType)); RETURN_THROWS(); }
 		if (p_closureThisType == NULL) p_closureThisType = &p_closureThisType_null;
-		if (p_pureUnlessCallableIsImpureParameter != NULL && UNEXPECTED(!((Z_TYPE_P(p_pureUnlessCallableIsImpureParameter) == IS_OBJECT && Z_OBJCE_P(p_pureUnlessCallableIsImpureParameter) == pt_ce_trinary) || pgrt::instanceOfClass(p_pureUnlessCallableIsImpureParameter, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(12, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_pureUnlessCallableIsImpureParameter)); RETURN_THROWS(); }
-		if (p_pureUnlessParameterPassedParameter != NULL && UNEXPECTED(!((Z_TYPE_P(p_pureUnlessParameterPassedParameter) == IS_OBJECT && Z_OBJCE_P(p_pureUnlessParameterPassedParameter) == pt_ce_trinary) || pgrt::instanceOfClass(p_pureUnlessParameterPassedParameter, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(13, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_pureUnlessParameterPassedParameter)); RETURN_THROWS(); }
+		if (p_pureUnlessCallableIsImpureParameter != NULL && UNEXPECTED(Z_TYPE_P(p_pureUnlessCallableIsImpureParameter) != IS_OBJECT || !((Z_TYPE_P(p_pureUnlessCallableIsImpureParameter) == IS_OBJECT && Z_OBJCE_P(p_pureUnlessCallableIsImpureParameter) == pt_ce_trinary) || pgrt::instanceOfClass(p_pureUnlessCallableIsImpureParameter, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(12, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_pureUnlessCallableIsImpureParameter)); RETURN_THROWS(); }
+		if (p_pureUnlessParameterPassedParameter != NULL && UNEXPECTED(Z_TYPE_P(p_pureUnlessParameterPassedParameter) != IS_OBJECT || !((Z_TYPE_P(p_pureUnlessParameterPassedParameter) == IS_OBJECT && Z_OBJCE_P(p_pureUnlessParameterPassedParameter) == pt_ce_trinary) || pgrt::instanceOfClass(p_pureUnlessParameterPassedParameter, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(13, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_pureUnlessParameterPassedParameter)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_optional, p_realType, p_phpDocType, p_passedByReference, p_defaultValue, p_variadic, p_outType, p_immediatelyInvokedCallable, p_closureThisType, p_attributes, p_pureUnlessCallableIsImpureParameter, p_pureUnlessParameterPassedParameter))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getName() */

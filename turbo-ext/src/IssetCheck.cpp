@@ -1339,14 +1339,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetCheck)
 		zval p_identifier_zv;
 		zval *p_typeMessageCallback = NULL;
 		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_OBJECT(p_exprResult)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_exprResult)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_operatorDescription_str)
 			Z_PARAM_STR(p_identifier_str)
 			Z_PARAM_ZVAL(p_typeMessageCallback)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_exprResult != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_exprResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_exprResult, pgrt::lookupClassQuiet(pg_site_90, "PHPStan\\Analyser\\ExpressionResult", 33))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_exprResult)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_91, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_exprResult != NULL && UNEXPECTED(Z_TYPE_P(p_exprResult) != IS_OBJECT || !(pgrt::instanceOfClass(p_exprResult, pt_ce_expression_result) || pgrt::instanceOfClass(p_exprResult, pgrt::lookupClassQuiet(pg_site_90, "PHPStan\\Analyser\\ExpressionResult", 33))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionResult", zend_zval_value_name(p_exprResult)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_91, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		if (p_operatorDescription_str != NULL) { ZVAL_STR(&p_operatorDescription_zv, p_operatorDescription_str); p_operatorDescription = &p_operatorDescription_zv; }
 		if (p_identifier_str != NULL) { ZVAL_STR(&p_identifier_zv, p_identifier_str); p_identifier = &p_identifier_zv; }
 		if (p_typeMessageCallback != NULL && UNEXPECTED(!zend_is_callable(p_typeMessageCallback, 0, NULL))) { zend_argument_type_error(5, "must be a valid callback, %s given", zend_zval_value_name(p_typeMessageCallback)); RETURN_THROWS(); }
@@ -1367,19 +1367,19 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetCheck)
 		zval p_error_null;
 		ZVAL_NULL(&p_error_null);
 		ZEND_PARSE_PARAMETERS_START(6, 6)
-			Z_PARAM_OBJECT(p_resolution)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_resolution)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_operatorDescription_str)
 			Z_PARAM_STR(p_identifier_str)
 			Z_PARAM_ZVAL(p_typeMessageCallback)
-			Z_PARAM_OBJECT_OR_NULL(p_error)
+			Z_PARAM_ZVAL_OR_NULL(p_error)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_resolution != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_resolution, pt_ce_issetability_resolution) || pgrt::instanceOfClass(p_resolution, pgrt::lookupClassQuiet(pg_site_92, "PHPStan\\Analyser\\IssetabilityResolution", 39))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\IssetabilityResolution", zend_zval_value_name(p_resolution)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_93, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_resolution != NULL && UNEXPECTED(Z_TYPE_P(p_resolution) != IS_OBJECT || !(pgrt::instanceOfClass(p_resolution, pt_ce_issetability_resolution) || pgrt::instanceOfClass(p_resolution, pgrt::lookupClassQuiet(pg_site_92, "PHPStan\\Analyser\\IssetabilityResolution", 39))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\IssetabilityResolution", zend_zval_value_name(p_resolution)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_93, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		if (p_operatorDescription_str != NULL) { ZVAL_STR(&p_operatorDescription_zv, p_operatorDescription_str); p_operatorDescription = &p_operatorDescription_zv; }
 		if (p_identifier_str != NULL) { ZVAL_STR(&p_identifier_zv, p_identifier_str); p_identifier = &p_identifier_zv; }
 		if (p_typeMessageCallback != NULL && UNEXPECTED(!zend_is_callable(p_typeMessageCallback, 0, NULL))) { zend_argument_type_error(5, "must be a valid callback, %s given", zend_zval_value_name(p_typeMessageCallback)); RETURN_THROWS(); }
-		if (p_error != NULL && UNEXPECTED(!(Z_TYPE_P(p_error) == IS_NULL || pgrt::instanceOfClass(p_error, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Rules\\IdentifierRuleError", 33))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Rules\\IdentifierRuleError", zend_zval_value_name(p_error)); RETURN_THROWS(); }
+		if (p_error != NULL && UNEXPECTED((Z_TYPE_P(p_error) != IS_OBJECT && Z_TYPE_P(p_error) != IS_NULL) || !(Z_TYPE_P(p_error) == IS_NULL || pgrt::instanceOfClass(p_error, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Rules\\IdentifierRuleError", 33))))) { zend_argument_type_error(6, "must be of type %s, %s given", "?PHPStan\\Rules\\IdentifierRuleError", zend_zval_value_name(p_error)); RETURN_THROWS(); }
 		if (p_error == NULL) p_error = &p_error_null;
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IssetCheck::m_doCheck(Z_OBJ_P(ZEND_THIS), p_resolution, p_scope, p_operatorDescription, p_identifier, p_typeMessageCallback, p_error, return_value))) RETURN_THROWS();
@@ -1396,14 +1396,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetCheck)
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT_OR_NULL(p_resolution)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL_OR_NULL(p_resolution)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_operatorDescription_str)
 			Z_PARAM_STR(p_identifier_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_resolution != NULL && UNEXPECTED(!(Z_TYPE_P(p_resolution) == IS_NULL || (pgrt::instanceOfClass(p_resolution, pt_ce_issetability_resolution) || pgrt::instanceOfClass(p_resolution, pgrt::lookupClassQuiet(pg_site_92, "PHPStan\\Analyser\\IssetabilityResolution", 39)))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\Analyser\\IssetabilityResolution", zend_zval_value_name(p_resolution)); RETURN_THROWS(); }
+		if (p_resolution != NULL && UNEXPECTED((Z_TYPE_P(p_resolution) != IS_OBJECT && Z_TYPE_P(p_resolution) != IS_NULL) || !(Z_TYPE_P(p_resolution) == IS_NULL || (pgrt::instanceOfClass(p_resolution, pt_ce_issetability_resolution) || pgrt::instanceOfClass(p_resolution, pgrt::lookupClassQuiet(pg_site_92, "PHPStan\\Analyser\\IssetabilityResolution", 39)))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\Analyser\\IssetabilityResolution", zend_zval_value_name(p_resolution)); RETURN_THROWS(); }
 		if (p_resolution == NULL) p_resolution = &p_resolution_null;
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_93, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_93, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		if (p_operatorDescription_str != NULL) { ZVAL_STR(&p_operatorDescription_zv, p_operatorDescription_str); p_operatorDescription = &p_operatorDescription_zv; }
 		if (p_identifier_str != NULL) { ZVAL_STR(&p_identifier_zv, p_identifier_str); p_identifier = &p_identifier_zv; }
 		ZVAL_UNDEF(return_value);
@@ -1422,13 +1422,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetCheck)
 		zend_string *p_identifierSecondPart_str = NULL;
 		zval p_identifierSecondPart_zv;
 		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_OBJECT(p_type)
+			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_STR(p_message_str)
 			Z_PARAM_ZVAL(p_typeMessageCallback)
 			Z_PARAM_STR(p_identifier_str)
 			Z_PARAM_STR(p_identifierSecondPart_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		if (p_message_str != NULL) { ZVAL_STR(&p_message_zv, p_message_str); p_message = &p_message_zv; }
 		if (p_typeMessageCallback != NULL && UNEXPECTED(!zend_is_callable(p_typeMessageCallback, 0, NULL))) { zend_argument_type_error(3, "must be a valid callback, %s given", zend_zval_value_name(p_typeMessageCallback)); RETURN_THROWS(); }
 		if (p_identifier_str != NULL) { ZVAL_STR(&p_identifier_zv, p_identifier_str); p_identifier = &p_identifier_zv; }

@@ -16,6 +16,7 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_filter;
 use function array_key_last;
 use function array_map;
@@ -38,6 +39,7 @@ use const T_WHITESPACE;
 /**
  * @phpstan-import-type Identifier from FileAnalyserResult
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/RichParser.cpp')]
 final class RichParser implements Parser
 {
 

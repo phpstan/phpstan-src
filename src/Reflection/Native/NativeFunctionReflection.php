@@ -9,11 +9,13 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use function count;
 use function strtolower;
 
 #[ReferencedByTurboExtension(key: 'nativeFunctionReflection')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NativeFunctionReflection.cpp')]
 final class NativeFunctionReflection implements FunctionReflection
 {
 

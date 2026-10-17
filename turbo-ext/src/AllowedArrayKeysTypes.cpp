@@ -489,10 +489,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AllowedArrayKeysTypes)
 		bool p_reportNonIntStringArrayKey = false;
 		ZEND_PARSE_PARAMETERS_START(0, 2)
 			Z_PARAM_OPTIONAL
-			Z_PARAM_OBJECT_OR_NULL(p_phpVersion)
+			Z_PARAM_ZVAL_OR_NULL(p_phpVersion)
 			Z_PARAM_BOOL(p_reportNonIntStringArrayKey)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_phpVersion != NULL && UNEXPECTED(!(Z_TYPE_P(p_phpVersion) == IS_NULL || ((Z_TYPE_P(p_phpVersion) == IS_OBJECT && Z_OBJCE_P(p_phpVersion) == pt_ce_php_version) || pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Php\\PhpVersion", 22)))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
+		if (p_phpVersion != NULL && UNEXPECTED((Z_TYPE_P(p_phpVersion) != IS_OBJECT && Z_TYPE_P(p_phpVersion) != IS_NULL) || !(Z_TYPE_P(p_phpVersion) == IS_NULL || ((Z_TYPE_P(p_phpVersion) == IS_OBJECT && Z_OBJCE_P(p_phpVersion) == pt_ce_php_version) || pgrt::instanceOfClass(p_phpVersion, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Php\\PhpVersion", 22)))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\Php\\PhpVersion", zend_zval_value_name(p_phpVersion)); RETURN_THROWS(); }
 		if (p_phpVersion == NULL) p_phpVersion = &p_phpVersion_null;
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AllowedArrayKeysTypes::m_getType(p_phpVersion, p_reportNonIntStringArrayKey, return_value))) RETURN_THROWS();
@@ -501,11 +501,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AllowedArrayKeysTypes)
 		zval *p_varType = NULL;
 		zval *p_keyType = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_varType)
-			Z_PARAM_OBJECT(p_keyType)
+			Z_PARAM_ZVAL(p_varType)
+			Z_PARAM_ZVAL(p_keyType)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_varType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_varType, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_varType)); RETURN_THROWS(); }
-		if (p_keyType != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_keyType, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_keyType)); RETURN_THROWS(); }
+		if (p_varType != NULL && UNEXPECTED(Z_TYPE_P(p_varType) != IS_OBJECT || !pgrt::instanceOfClass(p_varType, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_varType)); RETURN_THROWS(); }
+		if (p_keyType != NULL && UNEXPECTED(Z_TYPE_P(p_keyType) != IS_OBJECT || !pgrt::instanceOfClass(p_keyType, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_keyType)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AllowedArrayKeysTypes::m_narrowOffsetKeyType(p_varType, p_keyType, return_value))) RETURN_THROWS();
 	});

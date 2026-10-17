@@ -2,7 +2,10 @@
 
 namespace PHPStan\DependencyInjection;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
+
 #[AutowiredService(as: Container::class)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MemoizingContainer.cpp')]
 final class MemoizingContainer implements Container
 {
 

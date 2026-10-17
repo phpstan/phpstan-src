@@ -126,11 +126,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InternalStatementExitPoint)
 		zval *p_statement = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_statement)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_statement)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_statement != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_statement, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt", zend_zval_value_name(p_statement)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_statement != NULL && UNEXPECTED(Z_TYPE_P(p_statement) != IS_OBJECT || !pgrt::instanceOfClass(p_statement, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt", zend_zval_value_name(p_statement)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::InternalStatementExitPoint::m___construct(Z_OBJ_P(ZEND_THIS), p_statement, p_scope))) RETURN_THROWS();
 	});
 	cls.method(sigs::toPublic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\InternalStatementExitPoint::toPublic() */
@@ -146,9 +146,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InternalStatementExitPoint)
 	cls.method(sigs::withScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\InternalStatementExitPoint::withScope() */
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InternalStatementExitPoint::m_withScope(Z_OBJ_P(ZEND_THIS), p_scope, return_value))) RETURN_THROWS();
 	});

@@ -1232,9 +1232,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeCheck)
 		zend_string *p_requiredTypeAfterOptionalMessage_str = NULL;
 		zval p_requiredTypeAfterOptionalMessage_zv;
 		ZEND_PARSE_PARAMETERS_START(11, 11)
-			Z_PARAM_OBJECT(p_scope)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_templateTypeScope)
+			Z_PARAM_ZVAL(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_templateTypeScope)
 			Z_PARAM_ARRAY(p_templateTags)
 			Z_PARAM_STR(p_sameTemplateTypeNameAsClassMessage_str)
 			Z_PARAM_STR(p_sameTemplateTypeNameAsTypeMessage_str)
@@ -1244,9 +1244,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeCheck)
 			Z_PARAM_STR(p_defaultNotSubtypeOfBoundMessage_str)
 			Z_PARAM_STR(p_requiredTypeAfterOptionalMessage_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_52, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_53, "PhpParser\\Node", 14)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_templateTypeScope != NULL && UNEXPECTED(!((Z_TYPE_P(p_templateTypeScope) == IS_OBJECT && Z_OBJCE_P(p_templateTypeScope) == pt_ce_template_type_scope) || pgrt::instanceOfClass(p_templateTypeScope, pgrt::lookupClassQuiet(pg_site_54, "PHPStan\\Type\\Generic\\TemplateTypeScope", 38))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeScope", zend_zval_value_name(p_templateTypeScope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_52, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_53, "PhpParser\\Node", 14)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_templateTypeScope != NULL && UNEXPECTED(Z_TYPE_P(p_templateTypeScope) != IS_OBJECT || !((Z_TYPE_P(p_templateTypeScope) == IS_OBJECT && Z_OBJCE_P(p_templateTypeScope) == pt_ce_template_type_scope) || pgrt::instanceOfClass(p_templateTypeScope, pgrt::lookupClassQuiet(pg_site_54, "PHPStan\\Type\\Generic\\TemplateTypeScope", 38))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeScope", zend_zval_value_name(p_templateTypeScope)); RETURN_THROWS(); }
 		if (p_sameTemplateTypeNameAsClassMessage_str != NULL) { ZVAL_STR(&p_sameTemplateTypeNameAsClassMessage_zv, p_sameTemplateTypeNameAsClassMessage_str); p_sameTemplateTypeNameAsClassMessage = &p_sameTemplateTypeNameAsClassMessage_zv; }
 		if (p_sameTemplateTypeNameAsTypeMessage_str != NULL) { ZVAL_STR(&p_sameTemplateTypeNameAsTypeMessage_zv, p_sameTemplateTypeNameAsTypeMessage_str); p_sameTemplateTypeNameAsTypeMessage = &p_sameTemplateTypeNameAsTypeMessage_zv; }
 		if (p_invalidBoundTypeMessage_str != NULL) { ZVAL_STR(&p_invalidBoundTypeMessage_zv, p_invalidBoundTypeMessage_str); p_invalidBoundTypeMessage = &p_invalidBoundTypeMessage_zv; }

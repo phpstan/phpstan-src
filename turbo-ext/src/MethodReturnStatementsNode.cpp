@@ -354,20 +354,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodReturnStatementsNode)
 		zval *p_classReflection = NULL;
 		zval *p_methodReflection = NULL;
 		ZEND_PARSE_PARAMETERS_START(9, 9)
-			Z_PARAM_OBJECT(p_method)
+			Z_PARAM_ZVAL(p_method)
 			Z_PARAM_ARRAY(p_returnStatements)
 			Z_PARAM_ARRAY(p_returnStatementsAfterFinally)
 			Z_PARAM_ARRAY(p_yieldStatements)
-			Z_PARAM_OBJECT(p_statementResult)
+			Z_PARAM_ZVAL(p_statementResult)
 			Z_PARAM_ARRAY(p_executionEnds)
 			Z_PARAM_ARRAY(p_impurePoints)
-			Z_PARAM_OBJECT(p_classReflection)
-			Z_PARAM_OBJECT(p_methodReflection)
+			Z_PARAM_ZVAL(p_classReflection)
+			Z_PARAM_ZVAL(p_methodReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_method != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_method, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node\\Stmt\\ClassMethod", 31)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassMethod", zend_zval_value_name(p_method)); RETURN_THROWS(); }
-		if (p_statementResult != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_statementResult, pt_ce_statement_result) || pgrt::instanceOfClass(p_statementResult, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\StatementResult", 32))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Analyser\\StatementResult", zend_zval_value_name(p_statementResult)); RETURN_THROWS(); }
-		if (p_classReflection != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(8, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
-		if (p_methodReflection != NULL && UNEXPECTED(!((Z_TYPE_P(p_methodReflection) == IS_OBJECT && Z_OBJCE_P(p_methodReflection) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { zend_argument_type_error(9, "must be of type %s, %s given", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
+		if (p_method != NULL && UNEXPECTED(Z_TYPE_P(p_method) != IS_OBJECT || !pgrt::instanceOfClass(p_method, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node\\Stmt\\ClassMethod", 31)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassMethod", zend_zval_value_name(p_method)); RETURN_THROWS(); }
+		if (p_statementResult != NULL && UNEXPECTED(Z_TYPE_P(p_statementResult) != IS_OBJECT || !(pgrt::instanceOfClass(p_statementResult, pt_ce_statement_result) || pgrt::instanceOfClass(p_statementResult, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\StatementResult", 32))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Analyser\\StatementResult", zend_zval_value_name(p_statementResult)); RETURN_THROWS(); }
+		if (p_classReflection != NULL && UNEXPECTED(Z_TYPE_P(p_classReflection) != IS_OBJECT || !(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(8, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
+		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !((Z_TYPE_P(p_methodReflection) == IS_OBJECT && Z_OBJCE_P(p_methodReflection) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { zend_argument_type_error(9, "must be of type %s, %s given", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m___construct(Z_OBJ_P(ZEND_THIS), p_method, p_returnStatements, p_returnStatementsAfterFinally, p_yieldStatements, p_statementResult, p_executionEnds, p_impurePoints, p_classReflection, p_methodReflection))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReturnStatements, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getReturnStatements() */

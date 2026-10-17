@@ -436,7 +436,7 @@ enum class PropertyKind
 	TypedBool, /* a `private bool $x = false` typed property with a bool default; defaultValue carries the default (0/1), the type is bool */
 	TypedLong, /* a `private int $x = 0` typed property with an int default; defaultValue carries the default, the type is int */
 	TypedFalse, /* a typed property defaulting to false (`private string|false|null $x = false`, `private Foo|false|null $x = false`); defaultValue carries the MAY_BE_* mask (the scalar members next to a class name), className as for Typed */
-	TypedString, /* a `private string $x = '...'` typed property with a string default; stringValue carries the default, the type is string */
+	TypedString, /* a `private string $x = '...'` typed property with a string default; stringValue carries the default, defaultValue the MAY_BE_* mask of the type (string, or a scalar union containing it) */
 };
 
 struct Property
@@ -604,7 +604,7 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 				zend_string *nameStr = zend_string_init(property.name, len, persistent);
 				zval defaultValue;
 				ZVAL_STR(&defaultValue, zend_string_init_interned(property.stringValue, strlen(property.stringValue), persistent));
-				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_STRING);
+				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK((uint32_t) property.defaultValue);
 				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
 				zend_string_release(nameStr);
 				break;
@@ -1258,10 +1258,11 @@ public:
 
 	/* a `private string $x = '...'` typed property with a string default of
 	 * any visibility (visibility as for property()); defaultValue is a
-	 * persistent literal */
-	Class &typedStringProperty(const char *propertyName, uint32_t visibility, const char *defaultValue)
+	 * persistent literal, mask the MAY_BE_* bits of a scalar union type
+	 * (`bool|string|null $x = '...'`) */
+	Class &typedStringProperty(const char *propertyName, uint32_t visibility, const char *defaultValue, uint32_t mask = MAY_BE_STRING)
 	{
-		properties.push_back({ propertyName, PropertyKind::TypedString, visibility, 0, nullptr, defaultValue });
+		properties.push_back({ propertyName, PropertyKind::TypedString, visibility, (zend_long) mask, nullptr, defaultValue });
 		return *this;
 	}
 

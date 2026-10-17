@@ -126,7 +126,7 @@ namespace pgen::RequireFileExistsRule {
 {
 	zval *l_candidatePath = NULL;
 	zv::Val l_errors;
-	bool l_usedMagicDirFallback = false;
+	zv::Val l_usedMagicDirFallback;
 	zv::Val l_paths;
 	zv::Val l_path;
 	zv::Val l_pathExpr;
@@ -153,24 +153,23 @@ namespace pgen::RequireFileExistsRule {
 		l_errors = std::move(o4);
 	}
 	 {
-		l_usedMagicDirFallback = false;
+		zv::Val o5 = zv::Val::boolean(false);
+		l_usedMagicDirFallback = std::move(o5);
 	}
 	 {
-		zv::Val o6;
-		zval *p5 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(p_node), "expr", 4) : NULL;
-		if (UNEXPECTED(p5 == NULL || Z_ISUNDEF_P(p5))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_require_file_exists_rule, "expr", 4, o6.raw()))) return false;
-			p5 = o6.raw();
+		zv::Val o7;
+		zval *p6 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_1, Z_OBJ_P(p_node), "expr", 4) : NULL;
+		if (UNEXPECTED(p6 == NULL || Z_ISUNDEF_P(p6))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_require_file_exists_rule, "expr", 4, o7.raw()))) return false;
+			p6 = o7.raw();
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p5).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Keywords\\RequireFileExistsRule::resolveFilePaths", 1, "expr", "PhpParser\\Node\\Expr", zv::Ref(p5).deref().raw()); return false; }
-		zval z8;
-		ZVAL_BOOL(&z8, l_usedMagicDirFallback);
-		zv::Val ref9 = zv::Val::adopt([&]() { zval inner; ZVAL_COPY(&inner, &z8); zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
+		if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(p6).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Keywords\\RequireFileExistsRule::resolveFilePaths", 1, "expr", "PhpParser\\Node\\Expr", zv::Ref(p6).deref().raw()); return false; }
+		zval *is8 = Z_ISUNDEF_P(l_usedMagicDirFallback.raw()) ? NULL : l_usedMagicDirFallback.raw();
+		zv::Val ref9 = zv::Val::adopt([&]() { zval inner; if (is8 != NULL) { ZVAL_COPY(&inner, is8); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
 		zv::Val r10;
-		if (UNEXPECTED(!pgen::RequireFileExistsRule::m_resolveFilePaths(Z_OBJ_P(&this_zv), zv::Ref(p5).deref().raw(), p_scope, ref9.raw(), r10.raw()))) return false;
+		if (UNEXPECTED(!pgen::RequireFileExistsRule::m_resolveFilePaths(Z_OBJ_P(&this_zv), zv::Ref(p6).deref().raw(), p_scope, ref9.raw(), r10.raw()))) return false;
 		 {
-			if (UNEXPECTED(Z_TYPE_P(Z_REFVAL_P(ref9.raw())) != IS_TRUE && Z_TYPE_P(Z_REFVAL_P(ref9.raw())) != IS_FALSE)) { zend_type_error("PHPStan\\Rules\\Keywords\\RequireFileExistsRule::processNode: bool expected, %s given", zend_zval_value_name(Z_REFVAL_P(ref9.raw()))); return false; }
-			l_usedMagicDirFallback = Z_TYPE_P(Z_REFVAL_P(ref9.raw())) == IS_TRUE;
+			l_usedMagicDirFallback = zv::Val::copyOf(zv::Ref(Z_REFVAL_P(ref9.raw())));
 		}
 		l_paths = std::move(r10);
 	}
@@ -205,7 +204,7 @@ namespace pgen::RequireFileExistsRule {
 					}
 				}
 				 {
-					if (l_usedMagicDirFallback) {
+					if (zend_is_true(l_usedMagicDirFallback.raw())) {
 						 {
 							zval *p20 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RequireFileExistsRule::slot::exprPrinter, "exprPrinter");
 							if (UNEXPECTED(p20 == NULL)) return false;
@@ -991,14 +990,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RequireFileExistsRule)
 		zval *p_fileHelper = NULL;
 		zval *p_includedFilePathResolver = NULL;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_exprPrinter)
+			Z_PARAM_ZVAL(p_exprPrinter)
 			Z_PARAM_BOOL(p_checkMagicDirInInclude)
-			Z_PARAM_OBJECT(p_fileHelper)
-			Z_PARAM_OBJECT(p_includedFilePathResolver)
+			Z_PARAM_ZVAL(p_fileHelper)
+			Z_PARAM_ZVAL(p_includedFilePathResolver)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_exprPrinter != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_exprPrinter, pt_ce_expr_printer) || pgrt::instanceOfClass(p_exprPrinter, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Node\\Printer\\ExprPrinter", 32))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Printer\\ExprPrinter", zend_zval_value_name(p_exprPrinter)); RETURN_THROWS(); }
-		if (p_fileHelper != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_47, "PHPStan\\File\\FileHelper", 23)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
-		if (p_includedFilePathResolver != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_includedFilePathResolver, pgrt::lookupClassQuiet(pg_site_48, "PHPStan\\File\\IncludedFilePathResolver", 37)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\File\\IncludedFilePathResolver", zend_zval_value_name(p_includedFilePathResolver)); RETURN_THROWS(); }
+		if (p_exprPrinter != NULL && UNEXPECTED(Z_TYPE_P(p_exprPrinter) != IS_OBJECT || !(pgrt::instanceOfClass(p_exprPrinter, pt_ce_expr_printer) || pgrt::instanceOfClass(p_exprPrinter, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Node\\Printer\\ExprPrinter", 32))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Printer\\ExprPrinter", zend_zval_value_name(p_exprPrinter)); RETURN_THROWS(); }
+		if (p_fileHelper != NULL && UNEXPECTED(Z_TYPE_P(p_fileHelper) != IS_OBJECT || !pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_47, "PHPStan\\File\\FileHelper", 23)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
+		if (p_includedFilePathResolver != NULL && UNEXPECTED(Z_TYPE_P(p_includedFilePathResolver) != IS_OBJECT || !pgrt::instanceOfClass(p_includedFilePathResolver, pgrt::lookupClassQuiet(pg_site_48, "PHPStan\\File\\IncludedFilePathResolver", 37)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\File\\IncludedFilePathResolver", zend_zval_value_name(p_includedFilePathResolver)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::RequireFileExistsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_exprPrinter, p_checkMagicDirInInclude, p_fileHelper, p_includedFilePathResolver))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Keywords\RequireFileExistsRule::getNodeType() */
@@ -1010,11 +1009,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RequireFileExistsRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_49, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Analyser\\DependencyTracker", 34))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\DependencyTracker", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_49, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Analyser\\DependencyTracker", 34))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\DependencyTracker", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RequireFileExistsRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1025,10 +1024,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RequireFileExistsRule)
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_path_str)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_path_str != NULL) { ZVAL_STR(&p_path_zv, p_path_str); p_path = &p_path_zv; }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::RequireFileExistsRule::m_doesFileExist(Z_OBJ_P(ZEND_THIS), p_path, p_scope, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -1036,9 +1035,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RequireFileExistsRule)
 	cls.method(sigs::getScopeFile, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Keywords\RequireFileExistsRule::getScopeFile() */
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RequireFileExistsRule::m_getScopeFile(Z_OBJ_P(ZEND_THIS), p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1048,10 +1047,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RequireFileExistsRule)
 		zend_string *p_filePath_str = NULL;
 		zval p_filePath_zv;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
+			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_STR(p_filePath_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\Include_", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Include_", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\Include_", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Include_", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		if (p_filePath_str != NULL) { ZVAL_STR(&p_filePath_zv, p_filePath_str); p_filePath = &p_filePath_zv; }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RequireFileExistsRule::m_getErrorMessage(Z_OBJ_P(ZEND_THIS), p_node, p_filePath, return_value))) RETURN_THROWS();
@@ -1061,12 +1060,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RequireFileExistsRule)
 		zval *p_scope = NULL;
 		zval *p_magicDirFallback = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_expr)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_expr)
+			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_magicDirFallback)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(p_magicDirFallback).deref().raw()) == IS_TRUE || Z_TYPE_P(zv::Ref(p_magicDirFallback).deref().raw()) == IS_FALSE))) { zend_argument_type_error(3, "must be of type %s, %s given", "bool", zend_zval_value_name(zv::Ref(p_magicDirFallback).deref().raw())); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RequireFileExistsRule::m_resolveFilePaths(Z_OBJ_P(ZEND_THIS), p_expr, p_scope, p_magicDirFallback, return_value))) RETURN_THROWS();
@@ -1075,11 +1074,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RequireFileExistsRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\Include_", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Include_", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\Include_", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Include_", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::RequireFileExistsRule::m_isInFileExists(Z_OBJ_P(ZEND_THIS), p_node, p_scope, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

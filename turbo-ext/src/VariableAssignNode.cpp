@@ -119,11 +119,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableAssignNode)
 		zval *p_variable = NULL;
 		zval *p_assignedExpr = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_variable)
-			Z_PARAM_OBJECT(p_assignedExpr)
+			Z_PARAM_ZVAL(p_variable)
+			Z_PARAM_ZVAL(p_assignedExpr)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_variable != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_variable, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr\\Variable", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Variable", zend_zval_value_name(p_variable)); RETURN_THROWS(); }
-		if (p_assignedExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_assignedExpr, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_assignedExpr)); RETURN_THROWS(); }
+		if (p_variable != NULL && UNEXPECTED(Z_TYPE_P(p_variable) != IS_OBJECT || !pgrt::instanceOfClass(p_variable, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr\\Variable", 28)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\Variable", zend_zval_value_name(p_variable)); RETURN_THROWS(); }
+		if (p_assignedExpr != NULL && UNEXPECTED(Z_TYPE_P(p_assignedExpr) != IS_OBJECT || !pgrt::instanceOfClass(p_assignedExpr, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_assignedExpr)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::VariableAssignNode::m___construct(Z_OBJ_P(ZEND_THIS), p_variable, p_assignedExpr))) RETURN_THROWS();
 	});
 	cls.method(sigs::getVariable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableAssignNode::getVariable() */

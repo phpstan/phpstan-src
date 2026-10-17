@@ -798,11 +798,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DuplicateDeclarationHelper)
 		zend_string *p_identifierType_str = NULL;
 		zval p_identifierType_zv;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_classLike)
+			Z_PARAM_ZVAL(p_classLike)
 			Z_PARAM_STR(p_displayName_str)
 			Z_PARAM_STR(p_identifierType_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_classLike != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_classLike, pgrt::lookupClassQuiet(pg_site_71, "PhpParser\\Node\\Stmt\\ClassLike", 29)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassLike", zend_zval_value_name(p_classLike)); RETURN_THROWS(); }
+		if (p_classLike != NULL && UNEXPECTED(Z_TYPE_P(p_classLike) != IS_OBJECT || !pgrt::instanceOfClass(p_classLike, pgrt::lookupClassQuiet(pg_site_71, "PhpParser\\Node\\Stmt\\ClassLike", 29)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\ClassLike", zend_zval_value_name(p_classLike)); RETURN_THROWS(); }
 		if (p_displayName_str != NULL) { ZVAL_STR(&p_displayName_zv, p_displayName_str); p_displayName = &p_displayName_zv; }
 		if (p_identifierType_str != NULL) { ZVAL_STR(&p_identifierType_zv, p_identifierType_str); p_identifierType = &p_identifierType_zv; }
 		ZVAL_UNDEF(return_value);

@@ -1101,14 +1101,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MatchExpressionRule)
 		zval *p_functionCallConstantConditionHelper = NULL;
 		bool p_treatPhpDocTypesAsCertain = false;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_constantConditionRuleHelper)
-			Z_PARAM_OBJECT(p_constantConditionInTraitHelper)
-			Z_PARAM_OBJECT(p_functionCallConstantConditionHelper)
+			Z_PARAM_ZVAL(p_constantConditionRuleHelper)
+			Z_PARAM_ZVAL(p_constantConditionInTraitHelper)
+			Z_PARAM_ZVAL(p_functionCallConstantConditionHelper)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_constantConditionRuleHelper != NULL && UNEXPECTED(!((Z_TYPE_P(p_constantConditionRuleHelper) == IS_OBJECT && Z_OBJCE_P(p_constantConditionRuleHelper) == pt_ce_constant_condition_rule_helper) || pgrt::instanceOfClass(p_constantConditionRuleHelper, pgrt::lookupClassQuiet(pg_site_59, "PHPStan\\Rules\\Comparison\\ConstantConditionRuleHelper", 52))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Comparison\\ConstantConditionRuleHelper", zend_zval_value_name(p_constantConditionRuleHelper)); RETURN_THROWS(); }
-		if (p_constantConditionInTraitHelper != NULL && UNEXPECTED(!((Z_TYPE_P(p_constantConditionInTraitHelper) == IS_OBJECT && Z_OBJCE_P(p_constantConditionInTraitHelper) == pt_ce_constant_condition_in_trait_helper) || pgrt::instanceOfClass(p_constantConditionInTraitHelper, pgrt::lookupClassQuiet(pg_site_60, "PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper", 55))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper", zend_zval_value_name(p_constantConditionInTraitHelper)); RETURN_THROWS(); }
-		if (p_functionCallConstantConditionHelper != NULL && UNEXPECTED(!((Z_TYPE_P(p_functionCallConstantConditionHelper) == IS_OBJECT && Z_OBJCE_P(p_functionCallConstantConditionHelper) == pt_ce_function_call_constant_condition_helper) || pgrt::instanceOfClass(p_functionCallConstantConditionHelper, pgrt::lookupClassQuiet(pg_site_61, "PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper", 60))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper", zend_zval_value_name(p_functionCallConstantConditionHelper)); RETURN_THROWS(); }
+		if (p_constantConditionRuleHelper != NULL && UNEXPECTED(Z_TYPE_P(p_constantConditionRuleHelper) != IS_OBJECT || !((Z_TYPE_P(p_constantConditionRuleHelper) == IS_OBJECT && Z_OBJCE_P(p_constantConditionRuleHelper) == pt_ce_constant_condition_rule_helper) || pgrt::instanceOfClass(p_constantConditionRuleHelper, pgrt::lookupClassQuiet(pg_site_59, "PHPStan\\Rules\\Comparison\\ConstantConditionRuleHelper", 52))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Comparison\\ConstantConditionRuleHelper", zend_zval_value_name(p_constantConditionRuleHelper)); RETURN_THROWS(); }
+		if (p_constantConditionInTraitHelper != NULL && UNEXPECTED(Z_TYPE_P(p_constantConditionInTraitHelper) != IS_OBJECT || !((Z_TYPE_P(p_constantConditionInTraitHelper) == IS_OBJECT && Z_OBJCE_P(p_constantConditionInTraitHelper) == pt_ce_constant_condition_in_trait_helper) || pgrt::instanceOfClass(p_constantConditionInTraitHelper, pgrt::lookupClassQuiet(pg_site_60, "PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper", 55))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper", zend_zval_value_name(p_constantConditionInTraitHelper)); RETURN_THROWS(); }
+		if (p_functionCallConstantConditionHelper != NULL && UNEXPECTED(Z_TYPE_P(p_functionCallConstantConditionHelper) != IS_OBJECT || !((Z_TYPE_P(p_functionCallConstantConditionHelper) == IS_OBJECT && Z_OBJCE_P(p_functionCallConstantConditionHelper) == pt_ce_function_call_constant_condition_helper) || pgrt::instanceOfClass(p_functionCallConstantConditionHelper, pgrt::lookupClassQuiet(pg_site_61, "PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper", 60))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper", zend_zval_value_name(p_functionCallConstantConditionHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::MatchExpressionRule::m___construct(Z_OBJ_P(ZEND_THIS), p_constantConditionRuleHelper, p_constantConditionInTraitHelper, p_functionCallConstantConditionHelper, p_treatPhpDocTypesAsCertain))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\MatchExpressionRule::getNodeType() */
@@ -1120,11 +1120,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MatchExpressionRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_62, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_63, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_64, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_62, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_63, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_64, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MatchExpressionRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1134,22 +1134,22 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MatchExpressionRule)
 		zval *p_rawCondition = NULL;
 		bool p_isTypeCheckCandidate = false;
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_scope)
-			Z_PARAM_OBJECT(p_armConditionExpr)
-			Z_PARAM_OBJECT(p_rawCondition)
+			Z_PARAM_ZVAL(p_scope)
+			Z_PARAM_ZVAL(p_armConditionExpr)
+			Z_PARAM_ZVAL(p_rawCondition)
 			Z_PARAM_BOOL(p_isTypeCheckCandidate)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_63, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_64, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_armConditionExpr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_armConditionExpr, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_armConditionExpr)); RETURN_THROWS(); }
-		if (p_rawCondition != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_rawCondition, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_rawCondition)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_63, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_64, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_armConditionExpr != NULL && UNEXPECTED(Z_TYPE_P(p_armConditionExpr) != IS_OBJECT || !pgrt::instanceOfClass(p_armConditionExpr, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_armConditionExpr)); RETURN_THROWS(); }
+		if (p_rawCondition != NULL && UNEXPECTED(Z_TYPE_P(p_rawCondition) != IS_OBJECT || !pgrt::instanceOfClass(p_rawCondition, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_rawCondition)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::MatchExpressionRule::m_emitNoError(Z_OBJ_P(ZEND_THIS), p_scope, p_armConditionExpr, p_rawCondition, p_isTypeCheckCandidate))) RETURN_THROWS();
 	});
 	cls.method(sigs::isUnhandledMatchErrorCaught, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\MatchExpressionRule::isUnhandledMatchErrorCaught() */
 		zval *p_node = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_node)
+			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_62, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_62, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::MatchExpressionRule::m_isUnhandledMatchErrorCaught(Z_OBJ_P(ZEND_THIS), p_node, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -1157,9 +1157,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MatchExpressionRule)
 	cls.method(sigs::hasUnhandledMatchErrorThrowsTag, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\MatchExpressionRule::hasUnhandledMatchErrorThrowsTag() */
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::MatchExpressionRule::m_hasUnhandledMatchErrorThrowsTag(Z_OBJ_P(ZEND_THIS), p_scope, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

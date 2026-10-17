@@ -1039,10 +1039,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 		uint32_t p_rest_count = 0;
 		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_OPTIONAL
-			Z_PARAM_OBJECT_OR_NULL(p_operand)
+			Z_PARAM_ZVAL_OR_NULL(p_operand)
 			Z_PARAM_VARIADIC('*', p_rest, p_rest_count)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_operand != NULL && UNEXPECTED(!(Z_TYPE_P(p_operand) == IS_NULL || ((Z_TYPE_P(p_operand) == IS_OBJECT && Z_OBJCE_P(p_operand) == pt_ce_trinary) || pgrt::instanceOfClass(p_operand, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20)))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\TrinaryLogic", zend_zval_value_name(p_operand)); RETURN_THROWS(); }
+		if (p_operand != NULL && UNEXPECTED((Z_TYPE_P(p_operand) != IS_OBJECT && Z_TYPE_P(p_operand) != IS_NULL) || !(Z_TYPE_P(p_operand) == IS_NULL || ((Z_TYPE_P(p_operand) == IS_OBJECT && Z_OBJCE_P(p_operand) == pt_ce_trinary) || pgrt::instanceOfClass(p_operand, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20)))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\TrinaryLogic", zend_zval_value_name(p_operand)); RETURN_THROWS(); }
 		if (p_operand == NULL) p_operand = &p_operand_null;
 		for (uint32_t i = 0; i < p_rest_count; i++) {
 			if (UNEXPECTED(!((Z_TYPE_P(zv::Ref(&p_rest[i]).deref().raw()) == IS_OBJECT && Z_OBJCE_P(zv::Ref(&p_rest[i]).deref().raw()) == pt_ce_trinary) || pgrt::instanceOfClass(zv::Ref(&p_rest[i]).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) {
@@ -1096,10 +1096,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 		uint32_t p_rest_count = 0;
 		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_OPTIONAL
-			Z_PARAM_OBJECT_OR_NULL(p_operand)
+			Z_PARAM_ZVAL_OR_NULL(p_operand)
 			Z_PARAM_VARIADIC('*', p_rest, p_rest_count)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_operand != NULL && UNEXPECTED(!(Z_TYPE_P(p_operand) == IS_NULL || ((Z_TYPE_P(p_operand) == IS_OBJECT && Z_OBJCE_P(p_operand) == pt_ce_trinary) || pgrt::instanceOfClass(p_operand, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20)))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\TrinaryLogic", zend_zval_value_name(p_operand)); RETURN_THROWS(); }
+		if (p_operand != NULL && UNEXPECTED((Z_TYPE_P(p_operand) != IS_OBJECT && Z_TYPE_P(p_operand) != IS_NULL) || !(Z_TYPE_P(p_operand) == IS_NULL || ((Z_TYPE_P(p_operand) == IS_OBJECT && Z_OBJCE_P(p_operand) == pt_ce_trinary) || pgrt::instanceOfClass(p_operand, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20)))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\TrinaryLogic", zend_zval_value_name(p_operand)); RETURN_THROWS(); }
 		if (p_operand == NULL) p_operand = &p_operand_null;
 		for (uint32_t i = 0; i < p_rest_count; i++) {
 			if (UNEXPECTED(!((Z_TYPE_P(zv::Ref(&p_rest[i]).deref().raw()) == IS_OBJECT && Z_OBJCE_P(zv::Ref(&p_rest[i]).deref().raw()) == pt_ce_trinary) || pgrt::instanceOfClass(zv::Ref(&p_rest[i]).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) {
@@ -1202,9 +1202,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::equals() */
 		zval *p_other = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_other)
+			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_trinary) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_other)); RETURN_THROWS(); }
+		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_trinary) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_other)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_equals(Z_OBJ_P(ZEND_THIS), p_other, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -1228,9 +1228,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	cls.method(sigs::compareTo, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::compareTo() */
 		zval *p_other = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_other)
+			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_trinary) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_other)); RETURN_THROWS(); }
+		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_trinary) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_other)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_compareTo(Z_OBJ_P(ZEND_THIS), p_other, return_value))) RETURN_THROWS();
 	});

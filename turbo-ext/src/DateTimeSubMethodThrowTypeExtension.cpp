@@ -66,32 +66,38 @@ namespace pgen::DateTimeSubMethodThrowTypeExtension {
 				vd3 = std::move(r7);
 				vd3_done = true;
 			}
+			if (vd3_ce == pt_ce_union_type_method_reflection) {
+				zv::Val r8;
+				if (UNEXPECTED(!pgen::UnionTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r8.raw()))) return false;
+				vd3 = std::move(r8);
+				vd3_done = true;
+			}
 			if (!vd3_done) {
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_methodReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd3.raw()))) return false;
 			}
-			zv::Val r8;
+			zv::Val r9;
 			if (EXPECTED(Z_TYPE_P(vd3.raw()) == IS_OBJECT)) {
-				r8 = pt_type_op(Z_OBJ_P(vd3.raw()), PT_OP_GET_NAME, 0, NULL);
-				if (UNEXPECTED(r8.isUndef())) return false;
+				r9 = pt_type_op(Z_OBJ_P(vd3.raw()), PT_OP_GET_NAME, 0, NULL);
+				if (UNEXPECTED(r9.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, vd3.raw(), "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, vd3.raw(), "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
 			}
 			}
-			zv::Val arr9 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-			zv::Val o10 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
-			{ zval v = o10.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr9.raw()), &v); }
-			zv::Val o11 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
-			{ zval v = o11.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr9.raw()), &v); }
-			zval av12[3];
-			ZVAL_COPY_VALUE(&av12[0], r8.raw());
-			ZVAL_COPY_VALUE(&av12[1], arr9.raw());
-			zval z13;
-			ZVAL_BOOL(&z13, true);
-			ZVAL_COPY_VALUE(&av12[2], &z13);
-			zv::Val r14;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "in_array", 8, pt_ce_date_time_sub_method_throw_type_extension, 3, av12, r14.raw(), NULL))) return false;
-			b1 = (Z_TYPE_P(r14.raw()) == IS_TRUE);
+			zv::Val arr10 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+			zv::Val o11 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
+			{ zval v = o11.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr10.raw()), &v); }
+			zv::Val o12 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
+			{ zval v = o12.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr10.raw()), &v); }
+			zval av13[3];
+			ZVAL_COPY_VALUE(&av13[0], r9.raw());
+			ZVAL_COPY_VALUE(&av13[1], arr10.raw());
+			zval z14;
+			ZVAL_BOOL(&z14, true);
+			ZVAL_COPY_VALUE(&av13[2], &z14);
+			zv::Val r15;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "in_array", 8, pt_ce_date_time_sub_method_throw_type_extension, 3, av13, r15.raw(), NULL))) return false;
+			b1 = (Z_TYPE_P(r15.raw()) == IS_TRUE);
 		}
 		*ret = b1;
 		return true;
@@ -157,9 +163,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateTimeSubMethodThrowTypeExtension)
 	cls.method(sigs::isMethodSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\DateTimeSubMethodThrowTypeExtension::isMethodSupported() */
 		zval *p_methodReflection = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_methodReflection)
+			Z_PARAM_ZVAL(p_methodReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_methodReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
+		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::DateTimeSubMethodThrowTypeExtension::m_isMethodSupported(Z_OBJ_P(ZEND_THIS), p_methodReflection, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -169,13 +175,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateTimeSubMethodThrowTypeExtension)
 		zval *p_methodCall = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(p_methodReflection)
-			Z_PARAM_OBJECT(p_methodCall)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_methodReflection)
+			Z_PARAM_ZVAL(p_methodCall)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_methodReflection != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
-		if (p_methodCall != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_methodCall, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Expr\\MethodCall", 30)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\MethodCall", zend_zval_value_name(p_methodCall)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
+		if (p_methodCall != NULL && UNEXPECTED(Z_TYPE_P(p_methodCall) != IS_OBJECT || !pgrt::instanceOfClass(p_methodCall, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Expr\\MethodCall", 30)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\MethodCall", zend_zval_value_name(p_methodCall)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DateTimeSubMethodThrowTypeExtension::m_getThrowTypeFromMethodCall(Z_OBJ_P(ZEND_THIS), p_methodReflection, p_methodCall, p_scope, return_value))) RETURN_THROWS();
 	});

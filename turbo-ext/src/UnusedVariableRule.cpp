@@ -1775,9 +1775,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedVariableRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\UnusedVariableRule::__construct() */
 		zval *p_exprPrinter = NULL;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(p_exprPrinter)
+			Z_PARAM_ZVAL(p_exprPrinter)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_exprPrinter != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_exprPrinter, pt_ce_expr_printer) || pgrt::instanceOfClass(p_exprPrinter, pgrt::lookupClassQuiet(pg_site_62, "PHPStan\\Node\\Printer\\ExprPrinter", 32))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Printer\\ExprPrinter", zend_zval_value_name(p_exprPrinter)); RETURN_THROWS(); }
+		if (p_exprPrinter != NULL && UNEXPECTED(Z_TYPE_P(p_exprPrinter) != IS_OBJECT || !(pgrt::instanceOfClass(p_exprPrinter, pt_ce_expr_printer) || pgrt::instanceOfClass(p_exprPrinter, pgrt::lookupClassQuiet(pg_site_62, "PHPStan\\Node\\Printer\\ExprPrinter", 32))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\Printer\\ExprPrinter", zend_zval_value_name(p_exprPrinter)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::UnusedVariableRule::m___construct(Z_OBJ_P(ZEND_THIS), p_exprPrinter))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\UnusedVariableRule::getNodeType() */
@@ -1789,11 +1789,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedVariableRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_63, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_64, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_63, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_64, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::UnusedVariableRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

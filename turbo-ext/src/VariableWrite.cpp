@@ -203,7 +203,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWrite)
 		bool p_replacesOffset = true;
 		ZEND_PARSE_PARAMETERS_START(4, 8)
 			Z_PARAM_STR(p_variableName_str)
-			Z_PARAM_OBJECT(p_node)
+			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_LONG(p_id)
 			Z_PARAM_LONG(p_kind)
 			Z_PARAM_OPTIONAL
@@ -213,7 +213,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableWrite)
 			Z_PARAM_BOOL(p_replacesOffset)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_variableName_str != NULL) { ZVAL_STR(&p_variableName_zv, p_variableName_str); p_variableName = &p_variableName_zv; }
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node", 14)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node", 14)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		if (p_parentId != NULL || ZEND_NUM_ARGS() > 6) { if (p_parentId_isNull) { ZVAL_NULL(&p_parentId_zv); } else { ZVAL_LONG(&p_parentId_zv, p_parentId_raw); } p_parentId = &p_parentId_zv; }
 		if (UNEXPECTED(!pgen::VariableWrite::m___construct(Z_OBJ_P(ZEND_THIS), p_variableName, p_node, p_id, p_kind, p_offsetWrite, p_offset, p_parentId, p_replacesOffset))) RETURN_THROWS();
 	});

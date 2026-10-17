@@ -115,10 +115,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GmpUnaryOperatorTypeSpecifyingExtensio
 		zval *p_operand = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_operatorSigil_str)
-			Z_PARAM_OBJECT(p_operand)
+			Z_PARAM_ZVAL(p_operand)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_operatorSigil_str != NULL) { ZVAL_STR(&p_operatorSigil_zv, p_operatorSigil_str); p_operatorSigil = &p_operatorSigil_zv; }
-		if (p_operand != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_operand, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_operand)); RETURN_THROWS(); }
+		if (p_operand != NULL && UNEXPECTED(Z_TYPE_P(p_operand) != IS_OBJECT || !pgrt::instanceOfClass(p_operand, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_operand)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::GmpUnaryOperatorTypeSpecifyingExtension::m_isOperatorSupported(Z_OBJ_P(ZEND_THIS), p_operatorSigil, p_operand, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -130,10 +130,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GmpUnaryOperatorTypeSpecifyingExtensio
 		zval *p_operand = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_STR(p_operatorSigil_str)
-			Z_PARAM_OBJECT(p_operand)
+			Z_PARAM_ZVAL(p_operand)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_operatorSigil_str != NULL) { ZVAL_STR(&p_operatorSigil_zv, p_operatorSigil_str); p_operatorSigil = &p_operatorSigil_zv; }
-		if (p_operand != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_operand, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_operand)); RETURN_THROWS(); }
+		if (p_operand != NULL && UNEXPECTED(Z_TYPE_P(p_operand) != IS_OBJECT || !pgrt::instanceOfClass(p_operand, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_operand)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::GmpUnaryOperatorTypeSpecifyingExtension::m_specifyType(Z_OBJ_P(ZEND_THIS), p_operatorSigil, p_operand, return_value))) RETURN_THROWS();
 	});

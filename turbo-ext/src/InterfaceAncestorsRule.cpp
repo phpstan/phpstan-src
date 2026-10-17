@@ -352,11 +352,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InterfaceAncestorsRule)
 		zval *p_genericAncestorsCheck = NULL;
 		zval *p_crossCheckInterfacesHelper = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_genericAncestorsCheck)
-			Z_PARAM_OBJECT(p_crossCheckInterfacesHelper)
+			Z_PARAM_ZVAL(p_genericAncestorsCheck)
+			Z_PARAM_ZVAL(p_crossCheckInterfacesHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_genericAncestorsCheck != NULL && UNEXPECTED(!((Z_TYPE_P(p_genericAncestorsCheck) == IS_OBJECT && Z_OBJCE_P(p_genericAncestorsCheck) == pt_ce_generic_ancestors_check) || pgrt::instanceOfClass(p_genericAncestorsCheck, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Rules\\Generics\\GenericAncestorsCheck", 44))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\GenericAncestorsCheck", zend_zval_value_name(p_genericAncestorsCheck)); RETURN_THROWS(); }
-		if (p_crossCheckInterfacesHelper != NULL && UNEXPECTED(!((Z_TYPE_P(p_crossCheckInterfacesHelper) == IS_OBJECT && Z_OBJCE_P(p_crossCheckInterfacesHelper) == pt_ce_cross_check_interfaces_helper) || pgrt::instanceOfClass(p_crossCheckInterfacesHelper, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper", 49))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper", zend_zval_value_name(p_crossCheckInterfacesHelper)); RETURN_THROWS(); }
+		if (p_genericAncestorsCheck != NULL && UNEXPECTED(Z_TYPE_P(p_genericAncestorsCheck) != IS_OBJECT || !((Z_TYPE_P(p_genericAncestorsCheck) == IS_OBJECT && Z_OBJCE_P(p_genericAncestorsCheck) == pt_ce_generic_ancestors_check) || pgrt::instanceOfClass(p_genericAncestorsCheck, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Rules\\Generics\\GenericAncestorsCheck", 44))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\GenericAncestorsCheck", zend_zval_value_name(p_genericAncestorsCheck)); RETURN_THROWS(); }
+		if (p_crossCheckInterfacesHelper != NULL && UNEXPECTED(Z_TYPE_P(p_crossCheckInterfacesHelper) != IS_OBJECT || !((Z_TYPE_P(p_crossCheckInterfacesHelper) == IS_OBJECT && Z_OBJCE_P(p_crossCheckInterfacesHelper) == pt_ce_cross_check_interfaces_helper) || pgrt::instanceOfClass(p_crossCheckInterfacesHelper, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper", 49))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\CrossCheckInterfacesHelper", zend_zval_value_name(p_crossCheckInterfacesHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::InterfaceAncestorsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_genericAncestorsCheck, p_crossCheckInterfacesHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\InterfaceAncestorsRule::getNodeType() */
@@ -368,11 +368,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InterfaceAncestorsRule)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(p_node)
-			Z_PARAM_OBJECT(p_scope)
+			Z_PARAM_ZVAL(p_node)
+			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InterfaceAncestorsRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

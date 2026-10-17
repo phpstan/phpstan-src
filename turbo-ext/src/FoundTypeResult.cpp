@@ -108,12 +108,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundTypeResult)
 		zval p_tip_null;
 		ZVAL_NULL(&p_tip_null);
 		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(p_type)
+			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ARRAY(p_referencedClasses)
 			Z_PARAM_ARRAY(p_unknownClassErrors)
 			Z_PARAM_STR_OR_NULL(p_tip_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		if (p_tip_str != NULL) { ZVAL_STR(&p_tip_zv, p_tip_str); p_tip = &p_tip_zv; }
 		if (p_tip == NULL) p_tip = &p_tip_null;
 		if (UNEXPECTED(!pgen::FoundTypeResult::m___construct(Z_OBJ_P(ZEND_THIS), p_type, p_referencedClasses, p_unknownClassErrors, p_tip))) RETURN_THROWS();

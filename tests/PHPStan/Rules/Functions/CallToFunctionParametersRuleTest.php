@@ -1230,6 +1230,21 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/first-class-callables.php'], []);
 	}
 
+	public function testBug15432(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15432.php'], []);
+	}
+
+	public function testBug15432Invalid(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15432-invalid.php'], [
+			[
+				'Parameter #1 $callbacks of function Bug15432Invalid\\consume expects array<\'closure\'|\'method\', callable(int): string>, array{method: Closure(string): int, closure: Closure(int): decimal-int-string} given.',
+				23,
+			],
+		]);
+	}
+
 	public function testBug4413(): void
 	{
 		require_once __DIR__ . '/data/bug-4413.php';

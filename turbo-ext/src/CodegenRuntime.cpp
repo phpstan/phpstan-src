@@ -673,6 +673,108 @@ bool insertKeyed(zval *array, zval *key, zval *value)
 	}
 }
 
+uint16_t dispatchCaseSlow(DispatchCache &cache, const zend_class_entry *ce, zend_class_entry **const *table, const uint16_t *cases, uint32_t count)
+{
+	uint16_t found = 0;
+	for (uint32_t i = 0; i < count; i++) {
+		if (*table[i] == ce) {
+			found = cases[i];
+			break;
+		}
+	}
+	uint32_t slot = dispatchSlot(ce);
+	cache.ces[slot] = ce;
+	cache.cases[slot] = found;
+	return found;
+}
+
+zend_class_entry *fetchClassDynamic(zval *cls)
+{
+	ZVAL_DEREF(cls);
+	if (Z_TYPE_P(cls) == IS_OBJECT) {
+		return Z_OBJCE_P(cls);
+	}
+	if (Z_TYPE_P(cls) == IS_STRING) {
+		return zend_fetch_class(Z_STR_P(cls), ZEND_FETCH_CLASS_DEFAULT | ZEND_FETCH_CLASS_EXCEPTION);
+	}
+	zend_throw_error(NULL, "Class name must be a valid object or a string");
+	return NULL;
+}
+
+bool callStaticDynamic(zval *cls, zend_class_entry *scope, zval *name, uint32_t argc, zval *argv, zval *ret, HashTable *named)
+{
+	zend_class_entry *ce = fetchClassDynamic(cls);
+	if (UNEXPECTED(ce == NULL)) {
+		return false;
+	}
+	const zend_class_entry *previousScope = EG(fake_scope);
+	EG(fake_scope) = scope;
+	zend_function *fn = zend_std_get_static_method(ce, Z_STR_P(name), NULL);
+	EG(fake_scope) = previousScope;
+	if (UNEXPECTED(fn == NULL)) {
+		if (!EG(exception)) {
+			zend_undefined_method(ce, Z_STR_P(name));
+		}
+		return false;
+	}
+	if (UNEXPECTED(!(fn->common.fn_flags & ZEND_ACC_STATIC))) {
+		zend_non_static_method_call(fn);
+		return false;
+	}
+	zend_call_known_function(fn, NULL, ce, ret, argc, argv, named);
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(ret);
+		ZVAL_UNDEF(ret);
+		return false;
+	}
+	return true;
+}
+
+bool unsetProperty(zval *object, zend_class_entry *scope, zval *name)
+{
+	ZVAL_DEREF(object);
+	if (Z_TYPE_P(object) != IS_OBJECT) {
+		return true;
+	}
+	const zend_class_entry *previousScope = EG(fake_scope);
+	EG(fake_scope) = scope;
+	PT_OBJ_HANDLER(Z_OBJ_P(object), unset_property)(Z_OBJ_P(object), Z_STR_P(name), NULL);
+	EG(fake_scope) = previousScope;
+	return !EG(exception);
+}
+
+bool propertyName(zval *name, zval *out)
+{
+	ZVAL_DEREF(name);
+	if (EXPECTED(Z_TYPE_P(name) == IS_STRING)) {
+		ZVAL_COPY(out, name);
+		return true;
+	}
+	zend_string *converted = zval_try_get_string(name);
+	if (UNEXPECTED(converted == NULL)) {
+		return false;
+	}
+	ZVAL_STR(out, converted);
+	return true;
+}
+
+bool instanceOfDynamic(zval *value, zval *cls, bool *out)
+{
+	ZVAL_DEREF(value);
+	ZVAL_DEREF(cls);
+	zend_class_entry *ce;
+	if (Z_TYPE_P(cls) == IS_OBJECT) {
+		ce = Z_OBJCE_P(cls);
+	} else if (Z_TYPE_P(cls) == IS_STRING) {
+		ce = zend_fetch_class(Z_STR_P(cls), ZEND_FETCH_CLASS_NO_AUTOLOAD | ZEND_FETCH_CLASS_SILENT);
+	} else {
+		zend_throw_error(NULL, "Class name must be a valid object or a string");
+		return false;
+	}
+	*out = ce != NULL && Z_TYPE_P(value) == IS_OBJECT && instanceof_function(Z_OBJCE_P(value), ce);
+	return true;
+}
+
 bool spreadInto(zval *array, zval *value)
 {
 	ZVAL_DEREF(value);

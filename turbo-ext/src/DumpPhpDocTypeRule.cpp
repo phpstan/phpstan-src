@@ -17,16 +17,17 @@ static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pt_method_site pg_site_5; /* method_resolveFunctionName_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
-static pt_method_site pg_site_8; /* method_toPhpDocNode_8 */
-static pt_method_site pg_site_9; /* method_print_9 */
-static pgrt::FunctionSite pg_site_10; /* function_sprintf */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_12; /* static_PHPStan\Rules\RuleErrorBuilder::message */
-static pt_method_site pg_site_13; /* method_nonIgnorable_13 */
-static pt_method_site pg_site_14; /* method_identifier_14 */
-static pt_method_site pg_site_15; /* method_build_15 */
-static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
+static pgrt::DispatchCache pg_site_8; /* dispatch_toPhpDocNode_8 */
+static pt_method_site pg_site_9; /* method_toPhpDocNode_9 */
+static pt_method_site pg_site_10; /* method_print_10 */
+static pgrt::FunctionSite pg_site_11; /* function_sprintf */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Rules\RuleErrorBuilder */
+static pt_method_site pg_site_13; /* static_PHPStan\Rules\RuleErrorBuilder::message */
+static pt_method_site pg_site_14; /* method_nonIgnorable_14 */
+static pt_method_site pg_site_15; /* method_identifier_15 */
+static pt_method_site pg_site_16; /* method_build_16 */
+static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::DumpPhpDocTypeRule {
 
@@ -212,81 +213,95 @@ namespace pgen::DumpPhpDocTypeRule {
 					zv::Val vd39;
 					zend_class_entry *vd39_ce = Z_TYPE_P(r36.raw()) == IS_OBJECT ? Z_OBJCE_P(r36.raw()) : NULL;
 					bool vd39_done = false;
-					if (vd39_ce == pt_ce_has_method_type) {
-						zv::Val r40;
-						if (UNEXPECTED(!pgen::HasMethodType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r40.raw()))) return false;
-						vd39 = std::move(r40);
-						vd39_done = true;
-					}
-					if (vd39_ce == pt_ce_class_constant_access_type) {
-						zv::Val r41;
-						if (UNEXPECTED(!pgen::ClassConstantAccessType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r41.raw()))) return false;
-						vd39 = std::move(r41);
-						vd39_done = true;
-					}
-					if (vd39_ce == pt_ce_get_template_type_type) {
-						zv::Val r42;
-						if (UNEXPECTED(!pgen::GetTemplateTypeType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r42.raw()))) return false;
-						vd39 = std::move(r42);
-						vd39_done = true;
-					}
-					if (vd39_ce == pt_ce_key_of_type) {
-						zv::Val r43;
-						if (UNEXPECTED(!pgen::KeyOfType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r43.raw()))) return false;
-						vd39 = std::move(r43);
-						vd39_done = true;
-					}
-					if (vd39_ce == pt_ce_new_object_type) {
-						zv::Val r44;
-						if (UNEXPECTED(!pgen::NewObjectType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r44.raw()))) return false;
-						vd39 = std::move(r44);
-						vd39_done = true;
-					}
-					if (vd39_ce == pt_ce_offset_access_type) {
-						zv::Val r45;
-						if (UNEXPECTED(!pgen::OffsetAccessType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r45.raw()))) return false;
-						vd39 = std::move(r45);
-						vd39_done = true;
-					}
-					if (vd39_ce == pt_ce_strict_mixed_type) {
-						zv::Val r46;
-						if (UNEXPECTED(!pgen::StrictMixedType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r46.raw()))) return false;
-						vd39 = std::move(r46);
-						vd39_done = true;
-					}
-					if (vd39_ce == pt_ce_value_of_type) {
-						zv::Val r47;
-						if (UNEXPECTED(!pgen::ValueOfType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r47.raw()))) return false;
-						vd39 = std::move(r47);
-						vd39_done = true;
+					static zend_class_entry **const vd39_table[] = { &pt_ce_has_method_type, &pt_ce_class_constant_access_type, &pt_ce_get_template_type_type, &pt_ce_key_of_type, &pt_ce_new_object_type, &pt_ce_offset_access_type, &pt_ce_strict_mixed_type, &pt_ce_value_of_type };
+					static const uint16_t vd39_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+					switch (pgrt::dispatchCase(pg_site_8, vd39_ce, vd39_table, vd39_cases, 8)) {
+						case 1: {
+							zv::Val r40;
+							if (UNEXPECTED(!pgen::HasMethodType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r40.raw()))) return false;
+							vd39 = std::move(r40);
+							vd39_done = true;
+						}
+						break;
+						case 2: {
+							zv::Val r41;
+							if (UNEXPECTED(!pgen::ClassConstantAccessType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r41.raw()))) return false;
+							vd39 = std::move(r41);
+							vd39_done = true;
+						}
+						break;
+						case 3: {
+							zv::Val r42;
+							if (UNEXPECTED(!pgen::GetTemplateTypeType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r42.raw()))) return false;
+							vd39 = std::move(r42);
+							vd39_done = true;
+						}
+						break;
+						case 4: {
+							zv::Val r43;
+							if (UNEXPECTED(!pgen::KeyOfType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r43.raw()))) return false;
+							vd39 = std::move(r43);
+							vd39_done = true;
+						}
+						break;
+						case 5: {
+							zv::Val r44;
+							if (UNEXPECTED(!pgen::NewObjectType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r44.raw()))) return false;
+							vd39 = std::move(r44);
+							vd39_done = true;
+						}
+						break;
+						case 6: {
+							zv::Val r45;
+							if (UNEXPECTED(!pgen::OffsetAccessType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r45.raw()))) return false;
+							vd39 = std::move(r45);
+							vd39_done = true;
+						}
+						break;
+						case 7: {
+							zv::Val r46;
+							if (UNEXPECTED(!pgen::StrictMixedType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r46.raw()))) return false;
+							vd39 = std::move(r46);
+							vd39_done = true;
+						}
+						break;
+						case 8: {
+							zv::Val r47;
+							if (UNEXPECTED(!pgen::ValueOfType::m_toPhpDocNode(Z_OBJ_P(r36.raw()), r47.raw()))) return false;
+							vd39 = std::move(r47);
+							vd39_done = true;
+						}
+						break;
+						default:
+						break;
 					}
 					if (!vd39_done) {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r36.raw(), "toPhpDocNode", "tophpdocnode", 12, 0, NULL, vd39.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r36.raw(), "toPhpDocNode", "tophpdocnode", 12, 0, NULL, vd39.raw()))) return false;
 					}
 					zval av48[1];
 					ZVAL_COPY_VALUE(&av48[0], vd39.raw());
 					zv::Val r49;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, o33.raw(), "print", "print", 5, 1, av48, r49.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, o33.raw(), "print", "print", 5, 1, av48, r49.raw(), NULL))) return false;
 					zval av50[3];
 					ZVAL_COPY_VALUE(&av50[0], q27.raw());
 					ZVAL_COPY_VALUE(&av50[1], ar30.raw());
 					ZVAL_COPY_VALUE(&av50[2], r49.raw());
 					zv::Val r51;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "sprintf", 7, pt_ce_dump_php_doc_type_rule, 3, av50, r51.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_11, "sprintf", 7, pt_ce_dump_php_doc_type_rule, 3, av50, r51.raw(), NULL))) return false;
 					zval av52[1];
 					ZVAL_COPY_VALUE(&av52[0], r51.raw());
-					zend_class_entry *ce53 = pgrt::lookupClass(pg_site_11, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+					zend_class_entry *ce53 = pgrt::lookupClass(pg_site_12, "PHPStan\\Rules\\RuleErrorBuilder", 30);
 					if (UNEXPECTED(ce53 == NULL)) return false;
 					zv::Val r54;
-					if (UNEXPECTED(!pgrt::callStatic(pg_site_12, ce53, "message", 7, 1, av52, r54.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callStatic(pg_site_13, ce53, "message", 7, 1, av52, r54.raw(), NULL))) return false;
 					zv::Val r55;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r54.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r55.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r54.raw(), "nonIgnorable", "nonignorable", 12, 0, NULL, r55.raw(), NULL))) return false;
 					zval av56[1];
 					ZVAL_COPY_VALUE(&av56[0], &pg_lit[4]);
 					zv::Val r57;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r55.raw(), "identifier", "identifier", 10, 1, av56, r57.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r55.raw(), "identifier", "identifier", 10, 1, av56, r57.raw(), NULL))) return false;
 					zv::Val r58;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r57.raw(), "build", "build", 5, 0, NULL, r58.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, r57.raw(), "build", "build", 5, 0, NULL, r58.raw(), NULL))) return false;
 					zv::Val o59 = zv::Val::copyOf(zv::Ref(r58.raw()));
 					zval *w60 = zv::Ref(l_errors.raw()).deref().raw();
 					if (Z_TYPE_P(w60) <= IS_NULL) { zval_ptr_dtor(w60); array_init(w60); } else if (UNEXPECTED(Z_TYPE_P(w60) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -342,8 +357,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DumpPhpDocTypeRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_17, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DumpPhpDocTypeRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

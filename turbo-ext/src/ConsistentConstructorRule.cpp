@@ -15,18 +15,20 @@ static pgrt::FunctionSite pg_site_2; /* function_strtolower */
 static pt_method_site pg_site_3; /* method_getDeclaringClass_3 */
 static pt_method_site pg_site_4; /* method_getParentClass_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Reflection\ClassReflection */
-static pt_method_site pg_site_6; /* method_getDeclaringClass_6 */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection */
-static pt_method_site pg_site_8; /* method_getDeclaringClass_8 */
-static pt_method_site pg_site_9; /* method_getOriginalNode_9 */
-static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Stmt\ClassMethod */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\Classes\ConsistentConstructorHelper */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Rules\Methods\MethodParameterComparisonHelper */
-static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Rules\Methods\MethodVisibilityComparisonHelper */
-static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
-static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\NodeCallbackInvoker */
-static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\CollectedDataEmitter */
+static pgrt::DispatchCache pg_site_6; /* dispatch_getDeclaringClass_6 */
+static pt_method_site pg_site_7; /* method_getDeclaringClass_7 */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection */
+static pgrt::DispatchCache pg_site_9; /* dispatch_getDeclaringClass_9 */
+static pt_method_site pg_site_10; /* method_getDeclaringClass_10 */
+static pt_method_site pg_site_11; /* method_getOriginalNode_11 */
+static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Stmt\ClassMethod */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Rules\Classes\ConsistentConstructorHelper */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Rules\Methods\MethodParameterComparisonHelper */
+static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Rules\Methods\MethodVisibilityComparisonHelper */
+static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Analyser\NodeCallbackInvoker */
+static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Analyser\CollectedDataEmitter */
 
 namespace pgen::ConsistentConstructorRule {
 
@@ -173,40 +175,51 @@ namespace pgen::ConsistentConstructorRule {
 		zv::Val vd18;
 		zend_class_entry *vd18_ce = Z_TYPE_P(l_parentConstructor.raw()) == IS_OBJECT ? Z_OBJCE_P(l_parentConstructor.raw()) : NULL;
 		bool vd18_done = false;
-		if (vd18_ce == pt_ce_changed_type_method_reflection) {
-			zv::Val r19;
-			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r19.raw()))) return false;
-			vd18 = std::move(r19);
-			vd18_done = true;
-		}
-		if (vd18_ce == pt_ce_rewritten_declaring_class_method_reflection) {
-			zv::Val r20;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r20.raw()))) return false;
-			vd18 = std::move(r20);
-			vd18_done = true;
-		}
-		if (vd18_ce == pt_ce_php_method_reflection) {
-			zv::Val r21;
-			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r21.raw()))) return false;
-			vd18 = std::move(r21);
-			vd18_done = true;
-		}
-		if (vd18_ce == pt_ce_php_method_from_parser_node_reflection) {
-			zv::Val r22;
-			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r22.raw()))) return false;
-			vd18 = std::move(r22);
-			vd18_done = true;
-		}
-		if (vd18_ce == pt_ce_union_type_method_reflection) {
-			zv::Val r23;
-			if (UNEXPECTED(!pgen::UnionTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r23.raw()))) return false;
-			vd18 = std::move(r23);
-			vd18_done = true;
+		static zend_class_entry **const vd18_table[] = { &pt_ce_changed_type_method_reflection, &pt_ce_rewritten_declaring_class_method_reflection, &pt_ce_php_method_reflection, &pt_ce_php_method_from_parser_node_reflection, &pt_ce_union_type_method_reflection };
+		static const uint16_t vd18_cases[] = { 1, 2, 3, 4, 5 };
+		switch (pgrt::dispatchCase(pg_site_6, vd18_ce, vd18_table, vd18_cases, 5)) {
+			case 1: {
+				zv::Val r19;
+				if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r19.raw()))) return false;
+				vd18 = std::move(r19);
+				vd18_done = true;
+			}
+			break;
+			case 2: {
+				zv::Val r20;
+				if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r20.raw()))) return false;
+				vd18 = std::move(r20);
+				vd18_done = true;
+			}
+			break;
+			case 3: {
+				zv::Val r21;
+				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r21.raw()))) return false;
+				vd18 = std::move(r21);
+				vd18_done = true;
+			}
+			break;
+			case 4: {
+				zv::Val r22;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r22.raw()))) return false;
+				vd18 = std::move(r22);
+				vd18_done = true;
+			}
+			break;
+			case 5: {
+				zv::Val r23;
+				if (UNEXPECTED(!pgen::UnionTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r23.raw()))) return false;
+				vd18 = std::move(r23);
+				vd18_done = true;
+			}
+			break;
+			default:
+			break;
 		}
 		if (!vd18_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_parentConstructor.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd18.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_parentConstructor.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd18.raw()))) return false;
 		}
-		if (UNEXPECTED(!((Z_TYPE_P(l_method.raw()) == IS_OBJECT && Z_OBJCE_P(l_method.raw()) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(l_method.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodParameterComparisonHelper::compare", 3, "method", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", l_method.raw()); return false; }
+		if (UNEXPECTED(!((Z_TYPE_P(l_method.raw()) == IS_OBJECT && Z_OBJCE_P(l_method.raw()) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(l_method.raw(), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodParameterComparisonHelper::compare", 3, "method", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", l_method.raw()); return false; }
 		zv::Val r24;
 		if (UNEXPECTED(!pgen::MethodParameterComparisonHelper::m_compare(Z_OBJ_P(o16.raw()), o17.raw(), vd18.raw(), l_method.raw(), p_scope, true, r24.raw()))) return false;
 		zval *p25 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ConsistentConstructorRule::slot::methodVisibilityComparisonHelper, "methodVisibilityComparisonHelper");
@@ -216,38 +229,49 @@ namespace pgen::ConsistentConstructorRule {
 		zv::Val vd28;
 		zend_class_entry *vd28_ce = Z_TYPE_P(l_parentConstructor.raw()) == IS_OBJECT ? Z_OBJCE_P(l_parentConstructor.raw()) : NULL;
 		bool vd28_done = false;
-		if (vd28_ce == pt_ce_changed_type_method_reflection) {
-			zv::Val r29;
-			if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r29.raw()))) return false;
-			vd28 = std::move(r29);
-			vd28_done = true;
-		}
-		if (vd28_ce == pt_ce_rewritten_declaring_class_method_reflection) {
-			zv::Val r30;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r30.raw()))) return false;
-			vd28 = std::move(r30);
-			vd28_done = true;
-		}
-		if (vd28_ce == pt_ce_php_method_reflection) {
-			zv::Val r31;
-			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r31.raw()))) return false;
-			vd28 = std::move(r31);
-			vd28_done = true;
-		}
-		if (vd28_ce == pt_ce_php_method_from_parser_node_reflection) {
-			zv::Val r32;
-			if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r32.raw()))) return false;
-			vd28 = std::move(r32);
-			vd28_done = true;
-		}
-		if (vd28_ce == pt_ce_union_type_method_reflection) {
-			zv::Val r33;
-			if (UNEXPECTED(!pgen::UnionTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r33.raw()))) return false;
-			vd28 = std::move(r33);
-			vd28_done = true;
+		static zend_class_entry **const vd28_table[] = { &pt_ce_changed_type_method_reflection, &pt_ce_rewritten_declaring_class_method_reflection, &pt_ce_php_method_reflection, &pt_ce_php_method_from_parser_node_reflection, &pt_ce_union_type_method_reflection };
+		static const uint16_t vd28_cases[] = { 1, 2, 3, 4, 5 };
+		switch (pgrt::dispatchCase(pg_site_9, vd28_ce, vd28_table, vd28_cases, 5)) {
+			case 1: {
+				zv::Val r29;
+				if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r29.raw()))) return false;
+				vd28 = std::move(r29);
+				vd28_done = true;
+			}
+			break;
+			case 2: {
+				zv::Val r30;
+				if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r30.raw()))) return false;
+				vd28 = std::move(r30);
+				vd28_done = true;
+			}
+			break;
+			case 3: {
+				zv::Val r31;
+				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r31.raw()))) return false;
+				vd28 = std::move(r31);
+				vd28_done = true;
+			}
+			break;
+			case 4: {
+				zv::Val r32;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r32.raw()))) return false;
+				vd28 = std::move(r32);
+				vd28_done = true;
+			}
+			break;
+			case 5: {
+				zv::Val r33;
+				if (UNEXPECTED(!pgen::UnionTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_parentConstructor.raw()), r33.raw()))) return false;
+				vd28 = std::move(r33);
+				vd28_done = true;
+			}
+			break;
+			default:
+			break;
 		}
 		if (!vd28_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_parentConstructor.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd28.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_parentConstructor.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd28.raw()))) return false;
 		}
 		zv::Val o34 = zv::Val::copyOf(zv::Ref(l_method.raw()));
 		zv::Val vd35;
@@ -278,10 +302,10 @@ namespace pgen::ConsistentConstructorRule {
 			vd35_done = true;
 		}
 		if (!vd35_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd35.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd35.raw()))) return false;
 		}
-		if (UNEXPECTED(!((Z_TYPE_P(o34.raw()) == IS_OBJECT && Z_OBJCE_P(o34.raw()) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(o34.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodVisibilityComparisonHelper::compare", 3, "method", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", o34.raw()); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(vd35.raw(), pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node\\Stmt\\ClassMethod", 31))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodVisibilityComparisonHelper::compare", 4, "node", "PhpParser\\Node\\Stmt\\ClassMethod", vd35.raw()); return false; }
+		if (UNEXPECTED(!((Z_TYPE_P(o34.raw()) == IS_OBJECT && Z_OBJCE_P(o34.raw()) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(o34.raw(), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodVisibilityComparisonHelper::compare", 3, "method", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", o34.raw()); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd35.raw(), pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node\\Stmt\\ClassMethod", 31))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MethodVisibilityComparisonHelper::compare", 4, "node", "PhpParser\\Node\\Stmt\\ClassMethod", vd35.raw()); return false; }
 		zv::Val r40;
 		if (UNEXPECTED(!pgen::MethodVisibilityComparisonHelper::m_compare(Z_OBJ_P(o26.raw()), o27.raw(), vd28.raw(), o34.raw(), vd35.raw(), r40.raw()))) return false;
 		zval av41[2];
@@ -315,9 +339,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConsistentConstructorRule)
 			Z_PARAM_ZVAL(p_methodParameterComparisonHelper)
 			Z_PARAM_ZVAL(p_methodVisibilityComparisonHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_consistentConstructorHelper != NULL && UNEXPECTED(Z_TYPE_P(p_consistentConstructorHelper) != IS_OBJECT || !((Z_TYPE_P(p_consistentConstructorHelper) == IS_OBJECT && Z_OBJCE_P(p_consistentConstructorHelper) == pt_ce_consistent_constructor_helper) || pgrt::instanceOfClass(p_consistentConstructorHelper, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Rules\\Classes\\ConsistentConstructorHelper", 49))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Classes\\ConsistentConstructorHelper", zend_zval_value_name(p_consistentConstructorHelper)); RETURN_THROWS(); }
-		if (p_methodParameterComparisonHelper != NULL && UNEXPECTED(Z_TYPE_P(p_methodParameterComparisonHelper) != IS_OBJECT || !((Z_TYPE_P(p_methodParameterComparisonHelper) == IS_OBJECT && Z_OBJCE_P(p_methodParameterComparisonHelper) == pt_ce_method_parameter_comparison_helper) || pgrt::instanceOfClass(p_methodParameterComparisonHelper, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Rules\\Methods\\MethodParameterComparisonHelper", 53))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Methods\\MethodParameterComparisonHelper", zend_zval_value_name(p_methodParameterComparisonHelper)); RETURN_THROWS(); }
-		if (p_methodVisibilityComparisonHelper != NULL && UNEXPECTED(Z_TYPE_P(p_methodVisibilityComparisonHelper) != IS_OBJECT || !((Z_TYPE_P(p_methodVisibilityComparisonHelper) == IS_OBJECT && Z_OBJCE_P(p_methodVisibilityComparisonHelper) == pt_ce_method_visibility_comparison_helper) || pgrt::instanceOfClass(p_methodVisibilityComparisonHelper, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Rules\\Methods\\MethodVisibilityComparisonHelper", 54))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Rules\\Methods\\MethodVisibilityComparisonHelper", zend_zval_value_name(p_methodVisibilityComparisonHelper)); RETURN_THROWS(); }
+		if (p_consistentConstructorHelper != NULL && UNEXPECTED(Z_TYPE_P(p_consistentConstructorHelper) != IS_OBJECT || !((Z_TYPE_P(p_consistentConstructorHelper) == IS_OBJECT && Z_OBJCE_P(p_consistentConstructorHelper) == pt_ce_consistent_constructor_helper) || pgrt::instanceOfClass(p_consistentConstructorHelper, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Rules\\Classes\\ConsistentConstructorHelper", 49))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Classes\\ConsistentConstructorHelper", zend_zval_value_name(p_consistentConstructorHelper)); RETURN_THROWS(); }
+		if (p_methodParameterComparisonHelper != NULL && UNEXPECTED(Z_TYPE_P(p_methodParameterComparisonHelper) != IS_OBJECT || !((Z_TYPE_P(p_methodParameterComparisonHelper) == IS_OBJECT && Z_OBJCE_P(p_methodParameterComparisonHelper) == pt_ce_method_parameter_comparison_helper) || pgrt::instanceOfClass(p_methodParameterComparisonHelper, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\Methods\\MethodParameterComparisonHelper", 53))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\Methods\\MethodParameterComparisonHelper", zend_zval_value_name(p_methodParameterComparisonHelper)); RETURN_THROWS(); }
+		if (p_methodVisibilityComparisonHelper != NULL && UNEXPECTED(Z_TYPE_P(p_methodVisibilityComparisonHelper) != IS_OBJECT || !((Z_TYPE_P(p_methodVisibilityComparisonHelper) == IS_OBJECT && Z_OBJCE_P(p_methodVisibilityComparisonHelper) == pt_ce_method_visibility_comparison_helper) || pgrt::instanceOfClass(p_methodVisibilityComparisonHelper, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Rules\\Methods\\MethodVisibilityComparisonHelper", 54))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Rules\\Methods\\MethodVisibilityComparisonHelper", zend_zval_value_name(p_methodVisibilityComparisonHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ConsistentConstructorRule::m___construct(Z_OBJ_P(ZEND_THIS), p_consistentConstructorHelper, p_methodParameterComparisonHelper, p_methodVisibilityComparisonHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\ConsistentConstructorRule::getNodeType() */
@@ -332,8 +356,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConsistentConstructorRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_14, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Analyser\\Scope", 22)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Analyser\\NodeCallbackInvoker", 36)) && pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_19, "PHPStan\\Analyser\\CollectedDataEmitter", 37))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope&PHPStan\\Analyser\\NodeCallbackInvoker&PHPStan\\Analyser\\CollectedDataEmitter", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConsistentConstructorRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

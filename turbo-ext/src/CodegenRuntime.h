@@ -540,6 +540,28 @@ zval *dimRead(zval *base, zval *key, zval *tmp);
 /* [...$value] into an array literal under construction */
 [[nodiscard]] bool spreadInto(zval *array, zval *value);
 
+/* `$value instanceof $class`: an object's class, or a class name looked up
+ * without autoloading like the engine (an unknown class matches nothing);
+ * the engine's Error for any other class operand */
+[[nodiscard]] bool instanceOfDynamic(zval *value, zval *cls, bool *out);
+
+/* the class of `new $class`: an object's class, or a class name (autoloaded,
+ * "Class not found" otherwise); NULL with the engine's Error pending */
+zend_class_entry *fetchClassDynamic(zval *cls);
+
+/* `$class::name(...)`: the class as for new $class, the method looked up
+ * like the VM (visibility from scope, __callStatic, the engine's Errors for
+ * an undefined or non-static method); false with an exception pending */
+[[nodiscard]] bool callStaticDynamic(zval *cls, zend_class_entry *scope, zval *name, uint32_t argc, zval *argv, zval *ret, HashTable *named);
+
+/* the name of `$object->{$name}` as a string in *out (the engine's string
+ * conversion); false with an exception pending */
+[[nodiscard]] bool propertyName(zval *name, zval *out);
+
+/* unset($object->name) with scope as the calling scope (nothing for a
+ * non-object, like the VM); false with an exception pending */
+[[nodiscard]] bool unsetProperty(zval *object, zend_class_entry *scope, zval *name);
+
 /* `[$key => $value]` with a key not proven to be a string or an int: the
  * engine's own key conversion (null, bool, float and resource keys, the
  * TypeError of an illegal offset); takes ownership of value */
@@ -724,6 +746,35 @@ private:
 	int saved;
 	bool active = true;
 };
+
+/* {{{ virtual dispatch over many compiled implementations: a call site's
+ * receiver class mapped to the case of its implementation (0 = none: the
+ * engine call), in a direct-mapped cache in front of a scan of the site's
+ * table of class entries */
+struct DispatchCache
+{
+	static constexpr uint32_t SIZE_LIMIT = 128;
+	const zend_class_entry *ces[SIZE_LIMIT];
+	uint16_t cases[SIZE_LIMIT];
+};
+
+uint16_t dispatchCaseSlow(DispatchCache &cache, const zend_class_entry *ce, zend_class_entry **const *table, const uint16_t *cases, uint32_t count);
+
+static zend_always_inline uint32_t dispatchSlot(const zend_class_entry *ce)
+{
+	uintptr_t p = (uintptr_t) ce;
+	return (uint32_t) ((p >> 4) ^ (p >> 11)) & (DispatchCache::SIZE_LIMIT - 1);
+}
+
+static zend_always_inline uint16_t dispatchCase(DispatchCache &cache, const zend_class_entry *ce, zend_class_entry **const *table, const uint16_t *cases, uint32_t count)
+{
+	if (UNEXPECTED(ce == NULL)) return 0;
+	uint32_t slot = dispatchSlot(ce);
+	if (EXPECTED(cache.ces[slot] == ce)) return cache.cases[slot];
+	return dispatchCaseSlow(cache, ce, table, cases, count);
+}
+
+/* }}} */
 
 /* {{{ foreach over a value not proven to be an array: an array (by
  * position, over a held copy), a Traversable (the engine's iterator — a

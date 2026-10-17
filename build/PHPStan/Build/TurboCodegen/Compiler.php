@@ -121,6 +121,9 @@ use const PREG_SPLIT_DELIM_CAPTURE;
 final class Compiler
 {
 
+	/** implementations a virtual call tests the receiver's class against one by one; more go through a cached switch */
+	private const VIRTUAL_DISPATCH_CHAIN_LIMIT = 4;
+
 	/** builtins whose result depends on the calling class (visibility checks, `self`/`static` callables) */
 	private const SCOPE_SENSITIVE_FUNCTIONS = ['array_column', 'get_object_vars', 'property_exists', 'method_exists', 'is_callable', 'call_user_func', 'call_user_func_array', 'array_map', 'array_filter', 'usort', 'uasort', 'uksort', 'array_walk', 'array_reduce', 'get_class_methods', 'get_called_class', 'func_get_args', 'compact', 'extract', 'get_defined_vars'];
 
@@ -2401,6 +2404,12 @@ final class Compiler
 			$f->close();
 			return;
 		}
+		if ($var instanceof Expr\PropertyFetch && $var->name instanceof Node\Identifier) {
+			// through the object handlers, with the class as calling scope
+			$object = $this->asZval($f, $this->stabilize($f, $this->expr($f, $var->var)));
+			$f->failIf(sprintf('!pgrt::unsetProperty(%s, %s, %s)', $object, $this->unit()->ce, $this->literal($var->name->toString())->code));
+			return;
+		}
 		throw new CompileError('unset() of this target is not supported');
 	}
 
@@ -2968,7 +2977,15 @@ final class Compiler
 		if ($expr instanceof Expr\Instanceof_) {
 			$value = $this->expr($f, $expr->expr);
 			if (!$expr->class instanceof Node\Name) {
-				throw new CompileError('dynamic instanceof is not supported');
+				if (!$expr->class instanceof Expr) {
+					throw new CompileError('instanceof an anonymous class is not supported');
+				}
+				$z = $this->asZval($f, $value);
+				$class = $this->asZval($f, $this->expr($f, $expr->class));
+				$t = $f->temp('io');
+				$f->line(sprintf('bool %s;', $t));
+				$f->failIf(sprintf('!pgrt::instanceOfDynamic(%s, %s, &%s)', $z, $class, $t));
+				return Value::bool($t);
 			}
 			$z = $this->asZval($f, $value);
 			return Value::bool($this->instanceCheck($z, $this->className($expr->class), false));
@@ -3099,7 +3116,13 @@ final class Compiler
 	private function propertyFetch(FunctionContext $f, Expr\PropertyFetch $expr): Value
 	{
 		if (!$expr->name instanceof Node\Identifier) {
-			throw new CompileError('dynamic property names are not supported');
+			// $object->{$name}: through the object handlers
+			$z = $this->asZval($f, $this->stabilize($f, $this->expr($f, $expr->var)));
+			$propertyName = $this->dynamicPropertyName($f, $expr->name);
+			$owned = $f->temp('o');
+			$f->line(sprintf('zv::Val %s;', $owned));
+			$f->failIf(sprintf('!pgrt::readPropertyGeneric(%s, %s, Z_STRVAL_P(%s), Z_STRLEN_P(%s), %s.raw())', $z, $this->unit()->ce, $propertyName, $propertyName, $owned));
+			return $this->narrowZval($owned . '.raw()', $owned, $this->unit()->oracle->nativeType($expr));
 		}
 		$name = $expr->name->toString();
 		$receiverNative = $this->unit()->oracle->nativeType($expr->var);
@@ -3397,6 +3420,15 @@ final class Compiler
 		$f->line(sprintf('zv::Ref(%s).assign(std::move(%s));', $e, $owned));
 	}
 
+	/** the name of `->{$expr}` as a string zval (the engine's conversion of a non-string) */
+	private function dynamicPropertyName(FunctionContext $f, Expr $name): string
+	{
+		$t = $f->temp('pn');
+		$f->line(sprintf('zv::Val %s;', $t));
+		$f->failIf(sprintf('!pgrt::propertyName(%s, %s.raw())', $this->asZval($f, $this->expr($f, $name)), $t));
+		return $t . '.raw()';
+	}
+
 	/** the slot of a declared property of a compiled class, for a write that is not a readonly initialization */
 	private function propertySlotForWrite(FunctionContext $f, Expr\PropertyFetch $fetch): string
 	{
@@ -3429,7 +3461,12 @@ final class Compiler
 	private function assignProperty(FunctionContext $f, Expr\PropertyFetch $target, Expr $valueExpr): Value
 	{
 		if (!$target->name instanceof Node\Identifier) {
-			throw new CompileError('dynamic property names are not supported');
+			// $object->{$name} = value: through the object handlers
+			$receiver = $this->stabilize($f, $this->expr($f, $target->var));
+			$propertyName = $this->dynamicPropertyName($f, $target->name);
+			$value = $this->stabilize($f, $this->expr($f, $valueExpr));
+			$f->failIf(sprintf('!pgrt::writePropertyGeneric(%s, %s, %s, %s)', $this->asZval($f, $receiver), $this->unit()->ce, $propertyName, $this->asZval($f, $value)));
+			return $value;
 		}
 		$name = $target->name->toString();
 		$receiver = $this->stabilize($f, $this->expr($f, $target->var));
@@ -4043,6 +4080,17 @@ final class Compiler
 
 	private function newExpr(FunctionContext $f, Expr\New_ $expr): Value
 	{
+		if ($expr->class instanceof Expr) {
+			// new $class(...): the class (an object's, or a name, autoloaded) before the arguments
+			$t = $f->temp('n');
+			$ce = $f->temp('nce');
+			$f->line(sprintf('zend_class_entry *%s = pgrt::fetchClassDynamic(%s);', $ce, $this->asZval($f, $this->expr($f, $expr->class))));
+			$f->failIf(sprintf('%s == NULL', $ce));
+			[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->failIf(sprintf('!pgrt::newObject(%s, %s, %s, %s.raw(), %s)', $ce, $argc, $argv, $t, $named));
+			return new Value('zval', $t . '.raw()', $t, $this->knownClass($this->unit()->oracle->nativeType($expr)));
+		}
 		$className = $this->className($expr->class);
 		$unit = $this->units[strtolower($className)] ?? null;
 		$t = $f->temp('n');
@@ -5333,6 +5381,41 @@ final class Compiler
 		$f->line(sprintf('zv::Val %s;', $t));
 		$f->line(sprintf('zend_class_entry *%s_ce = Z_TYPE_P(%s) == IS_OBJECT ? Z_OBJCE_P(%s) : NULL;', $t, $z, $z));
 		$f->line(sprintf('bool %s_done = false;', $t));
+		if (count($groups) > self::VIRTUAL_DISPATCH_CHAIN_LIMIT) {
+			// many implementations (a rule registry, a wrapped rule): the
+			// receiver's class picks its case from a cache, not a chain of tests
+			$tableCes = [];
+			$tableCases = [];
+			$case = 0;
+			foreach ($groups as $group) {
+				$case++;
+				foreach (array_unique($group['ces']) as $ce) {
+					$tableCes[] = '&' . $ce;
+					$tableCases[] = $case;
+				}
+			}
+			$cache = $this->site('pgrt::DispatchCache', sprintf('dispatch_%s_%d', $name, count($this->siteNames)));
+			$f->line(sprintf('static zend_class_entry **const %s_table[] = { %s };', $t, implode(', ', $tableCes)));
+			$f->line(sprintf('static const uint16_t %s_cases[] = { %s };', $t, implode(', ', $tableCases)));
+			$f->open(sprintf('switch (pgrt::dispatchCase(%s, %s_ce, %s_table, %s_cases, %d))', $cache, $t, $t, $t, count($tableCes)));
+			$case = 0;
+			foreach ($groups as $group) {
+				$case++;
+				$f->open(sprintf('case %d:', $case));
+				$callArgs = $this->arrangeArgs($f, $group['method'], $args, $values);
+				$result = $this->emitDirectCall($f, $group['method'], sprintf('Z_OBJ_P(%s)', $z), $callArgs);
+				if ($result->kind !== 'void') {
+					$f->line(sprintf('%s = std::move(%s);', $t, $this->own($f, $result)));
+				}
+				$f->line(sprintf('%s_done = true;', $t));
+				$f->close();
+				$f->line('break;');
+			}
+			$f->line('default:');
+			$f->line('break;');
+			$f->close();
+			$groups = [];
+		}
 		foreach ($groups as $group) {
 			$conditions = array_map(static fn (string $ce): string => sprintf('%s_ce == %s', $t, $ce), array_unique($group['ces']));
 			$f->open(sprintf('if (%s)', implode(' || ', $conditions)));
@@ -5365,6 +5448,15 @@ final class Compiler
 			throw new CompileError('dynamic static method names are not supported');
 		}
 		$name = $expr->name->toString();
+		if ($expr->class instanceof Expr) {
+			// $class::name(...): the class before the arguments, the method found at run time
+			$class = $this->asZval($f, $this->stabilize($f, $this->expr($f, $expr->class)));
+			[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
+			$t = $f->temp('r');
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->failIf(sprintf('!pgrt::callStaticDynamic(%s, %s, %s, %s, %s, %s.raw(), %s)', $class, $this->unit()->ce, $this->literal($name)->code, $argc, $argv, $t, $named));
+			return $this->narrowZval($t . '.raw()', $t, $this->unit()->oracle->nativeType($expr));
+		}
 		$lower = $expr->class instanceof Node\Name ? $expr->class->toLowerString() : '';
 		if ($lower === 'parent' || (in_array($lower, ['self', 'static'], true) && $f->self !== null && !($this->methodReflection($this->unit()->className, $name)?->isStatic() ?? true))) {
 			return $this->boundInstanceCall($f, $expr, $lower === 'parent');

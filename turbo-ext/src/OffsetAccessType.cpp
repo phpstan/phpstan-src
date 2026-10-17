@@ -19,11 +19,13 @@ static pt_method_site pg_site_8; /* method_print_8 */
 static pt_method_site pg_site_9; /* static_PHPStan\Type\TypeUtils::containsTemplateType */
 static pt_method_site pg_site_10; /* method_getOffsetValueType_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_12; /* method_toPhpDocNode_12 */
+static pgrt::DispatchCache pg_site_12; /* dispatch_toPhpDocNode_12 */
 static pt_method_site pg_site_13; /* method_toPhpDocNode_13 */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode */
-static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
-static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Type\VerbosityLevel */
+static pgrt::DispatchCache pg_site_14; /* dispatch_toPhpDocNode_14 */
+static pt_method_site pg_site_15; /* method_toPhpDocNode_15 */
+static pgrt::ClassSite pg_site_16; /* cls_PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode */
+static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
+static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Type\VerbosityLevel */
 
 namespace pgen::OffsetAccessType {
 
@@ -418,117 +420,145 @@ namespace pgen::OffsetAccessType {
 		zv::Val vd3;
 		zend_class_entry *vd3_ce = Z_TYPE_P(p2) == IS_OBJECT ? Z_OBJCE_P(p2) : NULL;
 		bool vd3_done = false;
-		if (vd3_ce == pt_ce_has_method_type) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::HasMethodType::m_toPhpDocNode(Z_OBJ_P(p2), r4.raw()))) return false;
-			vd3 = std::move(r4);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_class_constant_access_type) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::ClassConstantAccessType::m_toPhpDocNode(Z_OBJ_P(p2), r5.raw()))) return false;
-			vd3 = std::move(r5);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_get_template_type_type) {
-			zv::Val r6;
-			if (UNEXPECTED(!pgen::GetTemplateTypeType::m_toPhpDocNode(Z_OBJ_P(p2), r6.raw()))) return false;
-			vd3 = std::move(r6);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_key_of_type) {
-			zv::Val r7;
-			if (UNEXPECTED(!pgen::KeyOfType::m_toPhpDocNode(Z_OBJ_P(p2), r7.raw()))) return false;
-			vd3 = std::move(r7);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_new_object_type) {
-			zv::Val r8;
-			if (UNEXPECTED(!pgen::NewObjectType::m_toPhpDocNode(Z_OBJ_P(p2), r8.raw()))) return false;
-			vd3 = std::move(r8);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_offset_access_type) {
-			zv::Val r9;
-			if (UNEXPECTED(!pgen::OffsetAccessType::m_toPhpDocNode(Z_OBJ_P(p2), r9.raw()))) return false;
-			vd3 = std::move(r9);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_strict_mixed_type) {
-			zv::Val r10;
-			if (UNEXPECTED(!pgen::StrictMixedType::m_toPhpDocNode(Z_OBJ_P(p2), r10.raw()))) return false;
-			vd3 = std::move(r10);
-			vd3_done = true;
-		}
-		if (vd3_ce == pt_ce_value_of_type) {
-			zv::Val r11;
-			if (UNEXPECTED(!pgen::ValueOfType::m_toPhpDocNode(Z_OBJ_P(p2), r11.raw()))) return false;
-			vd3 = std::move(r11);
-			vd3_done = true;
+		static zend_class_entry **const vd3_table[] = { &pt_ce_has_method_type, &pt_ce_class_constant_access_type, &pt_ce_get_template_type_type, &pt_ce_key_of_type, &pt_ce_new_object_type, &pt_ce_offset_access_type, &pt_ce_strict_mixed_type, &pt_ce_value_of_type };
+		static const uint16_t vd3_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+		switch (pgrt::dispatchCase(pg_site_12, vd3_ce, vd3_table, vd3_cases, 8)) {
+			case 1: {
+				zv::Val r4;
+				if (UNEXPECTED(!pgen::HasMethodType::m_toPhpDocNode(Z_OBJ_P(p2), r4.raw()))) return false;
+				vd3 = std::move(r4);
+				vd3_done = true;
+			}
+			break;
+			case 2: {
+				zv::Val r5;
+				if (UNEXPECTED(!pgen::ClassConstantAccessType::m_toPhpDocNode(Z_OBJ_P(p2), r5.raw()))) return false;
+				vd3 = std::move(r5);
+				vd3_done = true;
+			}
+			break;
+			case 3: {
+				zv::Val r6;
+				if (UNEXPECTED(!pgen::GetTemplateTypeType::m_toPhpDocNode(Z_OBJ_P(p2), r6.raw()))) return false;
+				vd3 = std::move(r6);
+				vd3_done = true;
+			}
+			break;
+			case 4: {
+				zv::Val r7;
+				if (UNEXPECTED(!pgen::KeyOfType::m_toPhpDocNode(Z_OBJ_P(p2), r7.raw()))) return false;
+				vd3 = std::move(r7);
+				vd3_done = true;
+			}
+			break;
+			case 5: {
+				zv::Val r8;
+				if (UNEXPECTED(!pgen::NewObjectType::m_toPhpDocNode(Z_OBJ_P(p2), r8.raw()))) return false;
+				vd3 = std::move(r8);
+				vd3_done = true;
+			}
+			break;
+			case 6: {
+				zv::Val r9;
+				if (UNEXPECTED(!pgen::OffsetAccessType::m_toPhpDocNode(Z_OBJ_P(p2), r9.raw()))) return false;
+				vd3 = std::move(r9);
+				vd3_done = true;
+			}
+			break;
+			case 7: {
+				zv::Val r10;
+				if (UNEXPECTED(!pgen::StrictMixedType::m_toPhpDocNode(Z_OBJ_P(p2), r10.raw()))) return false;
+				vd3 = std::move(r10);
+				vd3_done = true;
+			}
+			break;
+			case 8: {
+				zv::Val r11;
+				if (UNEXPECTED(!pgen::ValueOfType::m_toPhpDocNode(Z_OBJ_P(p2), r11.raw()))) return false;
+				vd3 = std::move(r11);
+				vd3_done = true;
+			}
+			break;
+			default:
+			break;
 		}
 		if (!vd3_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p2, "toPhpDocNode", "tophpdocnode", 12, 0, NULL, vd3.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p2, "toPhpDocNode", "tophpdocnode", 12, 0, NULL, vd3.raw()))) return false;
 		}
 		zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::offset, "offset");
 		if (UNEXPECTED(p12 == NULL)) return false;
 		zv::Val vd13;
 		zend_class_entry *vd13_ce = Z_TYPE_P(p12) == IS_OBJECT ? Z_OBJCE_P(p12) : NULL;
 		bool vd13_done = false;
-		if (vd13_ce == pt_ce_has_method_type) {
-			zv::Val r14;
-			if (UNEXPECTED(!pgen::HasMethodType::m_toPhpDocNode(Z_OBJ_P(p12), r14.raw()))) return false;
-			vd13 = std::move(r14);
-			vd13_done = true;
-		}
-		if (vd13_ce == pt_ce_class_constant_access_type) {
-			zv::Val r15;
-			if (UNEXPECTED(!pgen::ClassConstantAccessType::m_toPhpDocNode(Z_OBJ_P(p12), r15.raw()))) return false;
-			vd13 = std::move(r15);
-			vd13_done = true;
-		}
-		if (vd13_ce == pt_ce_get_template_type_type) {
-			zv::Val r16;
-			if (UNEXPECTED(!pgen::GetTemplateTypeType::m_toPhpDocNode(Z_OBJ_P(p12), r16.raw()))) return false;
-			vd13 = std::move(r16);
-			vd13_done = true;
-		}
-		if (vd13_ce == pt_ce_key_of_type) {
-			zv::Val r17;
-			if (UNEXPECTED(!pgen::KeyOfType::m_toPhpDocNode(Z_OBJ_P(p12), r17.raw()))) return false;
-			vd13 = std::move(r17);
-			vd13_done = true;
-		}
-		if (vd13_ce == pt_ce_new_object_type) {
-			zv::Val r18;
-			if (UNEXPECTED(!pgen::NewObjectType::m_toPhpDocNode(Z_OBJ_P(p12), r18.raw()))) return false;
-			vd13 = std::move(r18);
-			vd13_done = true;
-		}
-		if (vd13_ce == pt_ce_offset_access_type) {
-			zv::Val r19;
-			if (UNEXPECTED(!pgen::OffsetAccessType::m_toPhpDocNode(Z_OBJ_P(p12), r19.raw()))) return false;
-			vd13 = std::move(r19);
-			vd13_done = true;
-		}
-		if (vd13_ce == pt_ce_strict_mixed_type) {
-			zv::Val r20;
-			if (UNEXPECTED(!pgen::StrictMixedType::m_toPhpDocNode(Z_OBJ_P(p12), r20.raw()))) return false;
-			vd13 = std::move(r20);
-			vd13_done = true;
-		}
-		if (vd13_ce == pt_ce_value_of_type) {
-			zv::Val r21;
-			if (UNEXPECTED(!pgen::ValueOfType::m_toPhpDocNode(Z_OBJ_P(p12), r21.raw()))) return false;
-			vd13 = std::move(r21);
-			vd13_done = true;
+		static zend_class_entry **const vd13_table[] = { &pt_ce_has_method_type, &pt_ce_class_constant_access_type, &pt_ce_get_template_type_type, &pt_ce_key_of_type, &pt_ce_new_object_type, &pt_ce_offset_access_type, &pt_ce_strict_mixed_type, &pt_ce_value_of_type };
+		static const uint16_t vd13_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+		switch (pgrt::dispatchCase(pg_site_14, vd13_ce, vd13_table, vd13_cases, 8)) {
+			case 1: {
+				zv::Val r14;
+				if (UNEXPECTED(!pgen::HasMethodType::m_toPhpDocNode(Z_OBJ_P(p12), r14.raw()))) return false;
+				vd13 = std::move(r14);
+				vd13_done = true;
+			}
+			break;
+			case 2: {
+				zv::Val r15;
+				if (UNEXPECTED(!pgen::ClassConstantAccessType::m_toPhpDocNode(Z_OBJ_P(p12), r15.raw()))) return false;
+				vd13 = std::move(r15);
+				vd13_done = true;
+			}
+			break;
+			case 3: {
+				zv::Val r16;
+				if (UNEXPECTED(!pgen::GetTemplateTypeType::m_toPhpDocNode(Z_OBJ_P(p12), r16.raw()))) return false;
+				vd13 = std::move(r16);
+				vd13_done = true;
+			}
+			break;
+			case 4: {
+				zv::Val r17;
+				if (UNEXPECTED(!pgen::KeyOfType::m_toPhpDocNode(Z_OBJ_P(p12), r17.raw()))) return false;
+				vd13 = std::move(r17);
+				vd13_done = true;
+			}
+			break;
+			case 5: {
+				zv::Val r18;
+				if (UNEXPECTED(!pgen::NewObjectType::m_toPhpDocNode(Z_OBJ_P(p12), r18.raw()))) return false;
+				vd13 = std::move(r18);
+				vd13_done = true;
+			}
+			break;
+			case 6: {
+				zv::Val r19;
+				if (UNEXPECTED(!pgen::OffsetAccessType::m_toPhpDocNode(Z_OBJ_P(p12), r19.raw()))) return false;
+				vd13 = std::move(r19);
+				vd13_done = true;
+			}
+			break;
+			case 7: {
+				zv::Val r20;
+				if (UNEXPECTED(!pgen::StrictMixedType::m_toPhpDocNode(Z_OBJ_P(p12), r20.raw()))) return false;
+				vd13 = std::move(r20);
+				vd13_done = true;
+			}
+			break;
+			case 8: {
+				zv::Val r21;
+				if (UNEXPECTED(!pgen::ValueOfType::m_toPhpDocNode(Z_OBJ_P(p12), r21.raw()))) return false;
+				vd13 = std::move(r21);
+				vd13_done = true;
+			}
+			break;
+			default:
+			break;
 		}
 		if (!vd13_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p12, "toPhpDocNode", "tophpdocnode", 12, 0, NULL, vd13.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p12, "toPhpDocNode", "tophpdocnode", 12, 0, NULL, vd13.raw()))) return false;
 		}
 		zval av22[2];
 		ZVAL_COPY_VALUE(&av22[0], vd3.raw());
 		ZVAL_COPY_VALUE(&av22[1], vd13.raw());
-		zend_class_entry *ce23 = pgrt::lookupClass(pg_site_14, "PHPStan\\PhpDocParser\\Ast\\Type\\OffsetAccessTypeNode", 50);
+		zend_class_entry *ce23 = pgrt::lookupClass(pg_site_16, "PHPStan\\PhpDocParser\\Ast\\Type\\OffsetAccessTypeNode", 50);
 		if (UNEXPECTED(ce23 == NULL)) return false;
 		zv::Val n1;
 		if (UNEXPECTED(!pgrt::newObject(ce23, 2, av22, n1.raw(), NULL))) return false;
@@ -616,7 +646,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OffsetAccessType)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_positionVariance)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_positionVariance != NULL && UNEXPECTED(Z_TYPE_P(p_positionVariance) != IS_OBJECT || !(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
+		if (p_positionVariance != NULL && UNEXPECTED(Z_TYPE_P(p_positionVariance) != IS_OBJECT || !(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::OffsetAccessType::m_getReferencedTemplateTypes(Z_OBJ_P(ZEND_THIS), p_positionVariance, return_value))) RETURN_THROWS();
 	});
@@ -625,7 +655,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OffsetAccessType)
 		zval *pa1;
 		if (argc > 0) {
 			pa1 = zv::Ref(&argv[0]).deref().raw();
-			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pt_ce_template_type_variance) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { pgrt::throwArgumentType("PHPStan\\Type\\OffsetAccessType::getReferencedTemplateTypes", 1, "positionVariance", "PHPStan\\Type\\Generic\\TemplateTypeVariance", pa1); return zv::Val(); }
+			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pt_ce_template_type_variance) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { pgrt::throwArgumentType("PHPStan\\Type\\OffsetAccessType::getReferencedTemplateTypes", 1, "positionVariance", "PHPStan\\Type\\Generic\\TemplateTypeVariance", pa1); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Type\\OffsetAccessType::getReferencedTemplateTypes", argc, 1);
@@ -667,7 +697,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OffsetAccessType)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_level)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_level != NULL && UNEXPECTED(Z_TYPE_P(p_level) != IS_OBJECT || !(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
+		if (p_level != NULL && UNEXPECTED(Z_TYPE_P(p_level) != IS_OBJECT || !(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::OffsetAccessType::m_describe(Z_OBJ_P(ZEND_THIS), p_level, return_value))) RETURN_THROWS();
 	});
@@ -676,7 +706,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OffsetAccessType)
 		zval *pa1;
 		if (argc > 0) {
 			pa1 = zv::Ref(&argv[0]).deref().raw();
-			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pt_ce_verbosity_level) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Type\\VerbosityLevel", 27))))) { pgrt::throwArgumentType("PHPStan\\Type\\OffsetAccessType::describe", 1, "level", "PHPStan\\Type\\VerbosityLevel", pa1); return zv::Val(); }
+			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pt_ce_verbosity_level) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\VerbosityLevel", 27))))) { pgrt::throwArgumentType("PHPStan\\Type\\OffsetAccessType::describe", 1, "level", "PHPStan\\Type\\VerbosityLevel", pa1); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Type\\OffsetAccessType::describe", argc, 1);

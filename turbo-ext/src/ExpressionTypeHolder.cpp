@@ -24,6 +24,26 @@
 #include "generated/TrivialParametersAcceptor.h"
 #include "generated/ChangedTypeMethodReflection.h"
 #include "generated/ChangedTypePropertyReflection.h"
+#include "generated/ArrayFilterArgVisitor.h"
+#include "generated/ArrayFindArgVisitor.h"
+#include "generated/ArrayMapArgVisitor.h"
+#include "generated/ArrayOffsetNormalizingVisitor.h"
+#include "generated/ArrayWalkArgVisitor.h"
+#include "generated/ArrowFunctionArgVisitor.h"
+#include "generated/ClosureArgVisitor.h"
+#include "generated/ClosureBindArgVisitor.h"
+#include "generated/ClosureBindToVarVisitor.h"
+#include "generated/CurlSetOptArgVisitor.h"
+#include "generated/CurlSetOptArrayArgVisitor.h"
+#include "generated/DeclarePositionVisitor.h"
+#include "generated/ImmediatelyInvokedClosureVisitor.h"
+#include "generated/ImplodeArgVisitor.h"
+#include "generated/MagicConstantParamDefaultVisitor.h"
+#include "generated/NewAssignedToPropertyVisitor.h"
+#include "generated/ParentStmtTypesVisitor.h"
+#include "generated/TraitCollectingVisitor.h"
+#include "generated/TryCatchTypeVisitor.h"
+#include "generated/TypeTraverserInstanceofVisitor.h"
 
 
 static pt_method_site pg_site_0; /* method_equals_0 */
@@ -117,7 +137,14 @@ namespace pgen::ExpressionTypeHolder {
 			zval av6[1];
 			ZVAL_COPY_VALUE(&av6[0], p5);
 			zv::Val r7;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p4, "equals", "equals", 6, 1, av6, r7.raw(), NULL))) return false;
+			if (EXPECTED(Z_TYPE_P(p4) == IS_OBJECT)) {
+				r7 = pt_type_op(Z_OBJ_P(p4), PT_OP_EQUALS, 1, av6);
+				if (UNEXPECTED(r7.isUndef())) return false;
+			} else {
+			 {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p4, "equals", "equals", 6, 1, av6, r7.raw(), NULL))) return false;
+			}
+			}
 			b1 = (Z_TYPE_P(r7.raw()) == IS_TRUE);
 		}
 		*ret = b1;
@@ -167,7 +194,14 @@ namespace pgen::ExpressionTypeHolder {
 			zval av9[1];
 			ZVAL_COPY_VALUE(&av9[0], p8);
 			zv::Val r10;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p7, "equals", "equals", 6, 1, av9, r10.raw(), NULL))) return false;
+			if (EXPECTED(Z_TYPE_P(p7) == IS_OBJECT)) {
+				r10 = pt_type_op(Z_OBJ_P(p7), PT_OP_EQUALS, 1, av9);
+				if (UNEXPECTED(r10.isUndef())) return false;
+			} else {
+			 {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p7, "equals", "equals", 6, 1, av9, r10.raw(), NULL))) return false;
+			}
+			}
 			b4 = (Z_TYPE_P(r10.raw()) == IS_TRUE);
 		}
 		*ret = b4;
@@ -195,7 +229,14 @@ namespace pgen::ExpressionTypeHolder {
 			zval av6[1];
 			ZVAL_COPY_VALUE(&av6[0], p5);
 			zv::Val r7;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p4, "equals", "equals", 6, 1, av6, r7.raw(), NULL))) return false;
+			if (EXPECTED(Z_TYPE_P(p4) == IS_OBJECT)) {
+				r7 = pt_type_op(Z_OBJ_P(p4), PT_OP_EQUALS, 1, av6);
+				if (UNEXPECTED(r7.isUndef())) return false;
+			} else {
+			 {
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p4, "equals", "equals", 6, 1, av6, r7.raw(), NULL))) return false;
+			}
+			}
 			b1 = (Z_TYPE_P(r7.raw()) == IS_TRUE);
 		}
 		if (b1) {

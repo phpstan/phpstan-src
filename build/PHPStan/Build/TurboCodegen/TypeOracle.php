@@ -28,12 +28,18 @@ final class TypeOracle
 	/** @var array<string, Node\Stmt\Class_> */
 	private array $classes = [];
 
+	/** @var array<string, array<string, array{Node\Stmt\ClassMethod, string}>> class => lowercase method => [the trait method as analysed in the class, the trait] */
+	private array $traitMethods = [];
+
 	public function __construct(string $file)
 	{
 		$this->types = new SplObjectStorage();
 		TypeInferenceTestCase::processFile($file, function (Node $node, Scope $scope): void {
 			if ($node instanceof Node\Stmt\Class_ && $node->namespacedName !== null) {
 				$this->classes[$node->namespacedName->toString()] = $node;
+			}
+			if ($node instanceof Node\Stmt\ClassMethod && $scope->isInTrait() && $scope->isInClass()) {
+				$this->traitMethods[$scope->getClassReflection()->getName()][$node->name->toLowerString()] = [$node, $scope->getTraitReflection()->getName()];
 			}
 			if (!($node instanceof Node\Expr)) {
 				return;
@@ -48,6 +54,12 @@ final class TypeOracle
 			throw new CompileError(sprintf('class %s not found in the analysed file', $name));
 		}
 		return $this->classes[$name];
+	}
+
+	/** @return array<string, array{Node\Stmt\ClassMethod, string}> */
+	public function getTraitMethods(string $class): array
+	{
+		return $this->traitMethods[$class] ?? [];
 	}
 
 	public function nativeType(Node\Expr $expr): Type

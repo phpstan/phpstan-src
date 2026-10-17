@@ -24,6 +24,28 @@
 #include "generated/TrivialParametersAcceptor.h"
 #include "generated/ChangedTypeMethodReflection.h"
 #include "generated/ChangedTypePropertyReflection.h"
+#include "generated/ArrayFilterArgVisitor.h"
+#include "generated/ArrayFindArgVisitor.h"
+#include "generated/ArrayMapArgVisitor.h"
+#include "generated/ArrayOffsetNormalizingVisitor.h"
+#include "generated/ArrayWalkArgVisitor.h"
+#include "generated/ArrowFunctionArgVisitor.h"
+#include "generated/ClosureArgVisitor.h"
+#include "generated/ClosureBindArgVisitor.h"
+#include "generated/ClosureBindToVarVisitor.h"
+#include "generated/CurlSetOptArgVisitor.h"
+#include "generated/CurlSetOptArrayArgVisitor.h"
+#include "generated/DeclarePositionVisitor.h"
+#include "generated/ImmediatelyInvokedClosureVisitor.h"
+#include "generated/ImplodeArgVisitor.h"
+#include "generated/MagicConstantParamDefaultVisitor.h"
+#include "generated/NewAssignedToPropertyVisitor.h"
+#include "generated/ParentStmtTypesVisitor.h"
+#include "generated/TraitCollectingVisitor.h"
+#include "generated/TryCatchTypeVisitor.h"
+#include "generated/TypeTraverserInstanceofVisitor.h"
+
+zend_class_entry *pt_ce_type_projection_helper = nullptr;
 
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
@@ -47,7 +69,14 @@ namespace pgen::TypeProjectionHelper {
 		zval av1[1];
 		ZVAL_COPY_VALUE(&av1[0], p_level);
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_type, "describe", "describe", 8, 1, av1, r2.raw(), NULL))) return false;
+		if (EXPECTED(Z_TYPE_P(p_type) == IS_OBJECT)) {
+			r2 = pt_type_op(Z_OBJ_P(p_type), PT_OP_DESCRIBE, 1, av1);
+			if (UNEXPECTED(r2.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_type, "describe", "describe", 8, 1, av1, r2.raw(), NULL))) return false;
+		}
+		}
 		l_describedType = std::move(r2);
 	}
 	 {
@@ -89,8 +118,6 @@ namespace pgen::TypeProjectionHelper {
 }
 
 } // namespace pgen::TypeProjectionHelper
-
-zend_class_entry *pt_ce_type_projection_helper = nullptr;
 
 
 namespace sigs = ptdecl::TypeProjectionHelper::sig;

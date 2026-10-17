@@ -24,6 +24,28 @@
 #include "generated/TrivialParametersAcceptor.h"
 #include "generated/ChangedTypeMethodReflection.h"
 #include "generated/ChangedTypePropertyReflection.h"
+#include "generated/ArrayFilterArgVisitor.h"
+#include "generated/ArrayFindArgVisitor.h"
+#include "generated/ArrayMapArgVisitor.h"
+#include "generated/ArrayOffsetNormalizingVisitor.h"
+#include "generated/ArrayWalkArgVisitor.h"
+#include "generated/ArrowFunctionArgVisitor.h"
+#include "generated/ClosureArgVisitor.h"
+#include "generated/ClosureBindArgVisitor.h"
+#include "generated/ClosureBindToVarVisitor.h"
+#include "generated/CurlSetOptArgVisitor.h"
+#include "generated/CurlSetOptArrayArgVisitor.h"
+#include "generated/DeclarePositionVisitor.h"
+#include "generated/ImmediatelyInvokedClosureVisitor.h"
+#include "generated/ImplodeArgVisitor.h"
+#include "generated/MagicConstantParamDefaultVisitor.h"
+#include "generated/NewAssignedToPropertyVisitor.h"
+#include "generated/ParentStmtTypesVisitor.h"
+#include "generated/TraitCollectingVisitor.h"
+#include "generated/TryCatchTypeVisitor.h"
+#include "generated/TypeTraverserInstanceofVisitor.h"
+
+zend_class_entry *pt_ce_template_type_scope = nullptr;
 
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
@@ -233,8 +255,6 @@ namespace pgen::TemplateTypeScope {
 }
 
 } // namespace pgen::TemplateTypeScope
-
-zend_class_entry *pt_ce_template_type_scope = nullptr;
 
 /* new PHPStan\Type\Generic\TemplateTypeScope(...) for native callers */
 bool pt_template_type_scope_new(zval *out, zend_string *className, zend_string *functionName)

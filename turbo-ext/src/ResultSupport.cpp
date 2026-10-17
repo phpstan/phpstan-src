@@ -482,13 +482,12 @@ zv::Val pt_accepts_result_extreme_identity(uint32_t count, zval *operands)
 
 zv::Val pt_accepts_result_lazy_max_min(zval *objects, zval *callback)
 {
-	pgrt::Callable callable;
-	if (UNEXPECTED(Z_TYPE_P(objects) != IS_ARRAY || !pt_op_parse_callable(callback, callable.fci, callable.fcc))) {
+	if (UNEXPECTED(Z_TYPE_P(objects) != IS_ARRAY || !zend_is_callable(callback, 0, NULL))) {
 		zv::Args args{objects, callback};
 		return pt_type_call_static_ce(pt_ce_accepts_result, "lazymaxmin", sizeof("lazymaxmin") - 1, 2, args);
 	}
 	zv::Val result;
-	if (UNEXPECTED(!pgen::AcceptsResult::m_lazyMaxMin(objects, callable, result.raw()))) return zv::Val();
+	if (UNEXPECTED(!pgen::AcceptsResult::m_lazyMaxMin(objects, callback, result.raw()))) return zv::Val();
 	return result;
 }
 
@@ -514,13 +513,12 @@ zv::Val pt_is_super_type_of_result_extreme_identity(uint32_t count, zval *operan
 
 zv::Val pt_is_super_type_of_result_lazy_max_min(zval *objects, zval *callback)
 {
-	pgrt::Callable callable;
-	if (UNEXPECTED(Z_TYPE_P(objects) != IS_ARRAY || !pt_op_parse_callable(callback, callable.fci, callable.fcc))) {
+	if (UNEXPECTED(Z_TYPE_P(objects) != IS_ARRAY || !zend_is_callable(callback, 0, NULL))) {
 		zv::Args args{objects, callback};
 		return pt_type_call_static_ce(pt_ce_is_super_type_of_result, "lazymaxmin", sizeof("lazymaxmin") - 1, 2, args);
 	}
 	zv::Val result;
-	if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_lazyMaxMin(objects, callable, result.raw()))) return zv::Val();
+	if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_lazyMaxMin(objects, callback, result.raw()))) return zv::Val();
 	return result;
 }
 

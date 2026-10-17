@@ -185,9 +185,7 @@ bool pt_circular_type_alias_error_type_new(zval *out, zend_string *reason)
 zv::Val pt_parameters_processor_process_params(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback)
 {
 	if (EXPECTED(Z_OBJCE_P(processor) == pt_ce_parameters_processor && Z_TYPE_P(params) == IS_ARRAY)) {
-		pgrt::Callable callback;
-		if (UNEXPECTED(!pgrt::callableOf(nodeCallback, callback))) return zv::Val();
-		return pt_compiled_val([&](zval *ret) { return pgen::ParametersProcessor::m_processParams(Z_OBJ_P(processor), nodeScopeResolver, stmt, params, scope, storage, callback, ret); });
+		return pt_compiled_val([&](zval *ret) { return pgen::ParametersProcessor::m_processParams(Z_OBJ_P(processor), nodeScopeResolver, stmt, params, scope, storage, nodeCallback, ret); });
 	}
 	zv::Args argv{nodeScopeResolver, stmt, params, scope, storage, nodeCallback};
 	return pt_type_call(Z_OBJ_P(processor), PT_LC("processparams"), 6, argv);

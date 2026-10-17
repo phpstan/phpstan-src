@@ -17,6 +17,7 @@
 #include "support.h"
 #include "zv.h"
 #include "Engine.h"
+#include "TypeOps.h"
 #include "zend_smart_str.h"
 
 #pragma GCC diagnostic push
@@ -106,6 +107,10 @@ struct FunctionSite
 
 /* $object->method(...$argv) through the engine; false = pending exception */
 [[nodiscard]] bool callMethod(pt_method_site &site, zval *object, const char *name, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret, HashTable *named = NULL);
+
+/* <ce>::name(...) of an instance method bound to $object (parent::/self::):
+ * that class's function, without virtual dispatch; false = pending exception */
+[[nodiscard]] bool callBound(pt_method_site &site, zend_class_entry *ce, zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret, HashTable *named = NULL);
 
 /* }}} */
 
@@ -393,6 +398,17 @@ static zend_always_inline zval *dimWriteLong(zval *array, zend_long key)
 /* $object->name = $value through the handlers, `scope` as the calling class;
  * false = pending exception */
 [[nodiscard]] bool writePropertyGeneric(zval *object, zend_class_entry *scope, zval *name, zval *value);
+
+/* $base[$key] read like the VM (BP_VAR_R): the element (borrowed, or in
+ * *tmp), &EG(uninitialized_zval) after the VM's warning for a missing key or
+ * an offset on a scalar; NULL with an exception pending */
+zval *dimRead(zval *base, zval *key, zval *tmp);
+
+/* clone $value; false = pending exception */
+[[nodiscard]] bool cloneObject(zval *value, zval *out);
+
+/* [...$value] into an array literal under construction */
+[[nodiscard]] bool spreadInto(zval *array, zval *value);
 
 /* the value isset($base[$key]) / ?? reads, NULL when there is none; *tmp
  * holds a value read from an object */

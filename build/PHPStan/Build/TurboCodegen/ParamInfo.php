@@ -26,6 +26,7 @@ final class ParamInfo
 		public readonly bool $isArray,
 		public readonly bool $promoted,
 		public readonly bool $promotedReadonly,
+		public readonly bool $byRef = false,
 	)
 	{
 	}

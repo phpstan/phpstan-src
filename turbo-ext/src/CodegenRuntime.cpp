@@ -4,6 +4,7 @@
  */
 
 #include "CodegenRuntime.h"
+#include "TypeTraits.h"
 
 namespace pgrt {
 
@@ -114,6 +115,25 @@ bool callMethod(pt_method_site &site, zval *object, const char *name, const char
 	return true;
 }
 
+bool callBound(pt_method_site &site, zend_class_entry *ce, zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret, HashTable *named)
+{
+	if (UNEXPECTED(site.ce != ce || site.generation != pt_engine_generation || site.fn == NULL)) {
+		zend_function *fn = pt_find_method(ce, lcname, len);
+		if (UNEXPECTED(fn == NULL)) {
+			ZVAL_UNDEF(ret);
+			return false;
+		}
+		site = { ce, fn, pt_engine_generation };
+	}
+	zend_call_known_function(site.fn, object, object->ce, ret, argc, argv, named);
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(ret);
+		ZVAL_UNDEF(ret);
+		return false;
+	}
+	return true;
+}
+
 bool newObject(zend_class_entry *ce, uint32_t argc, zval *argv, zval *out, HashTable *named)
 {
 	if (UNEXPECTED(object_init_ex(out, ce) != SUCCESS)) {
@@ -193,6 +213,17 @@ bool callableOf(zval *value, Callable &out)
 
 bool callValue(zval *value, uint32_t argc, zval *argv, zval *ret, HashTable *named)
 {
+	if (EXPECTED(named == NULL)) {
+		/* native closures, holders and bound internal closures are entered
+		 * directly; anything else goes through the engine */
+		zv::Val result = pt_type_call_callable(value, argc, argv);
+		if (UNEXPECTED(result.isUndef())) {
+			ZVAL_UNDEF(ret);
+			return false;
+		}
+		*ret = result.take();
+		return true;
+	}
 	zend_fcall_info fci;
 	zend_fcall_info_cache fcc;
 	char *error = NULL;
@@ -446,6 +477,126 @@ bool writePropertyGeneric(zval *object, zend_class_entry *scope, zval *name, zva
 	Z_OBJ_HT_P(object)->write_property(Z_OBJ_P(object), Z_STR_P(name), value, NULL);
 	EG(fake_scope) = previousScope;
 	return !EG(exception);
+}
+
+zval *dimRead(zval *base, zval *key, zval *tmp)
+{
+	ZVAL_DEREF(base);
+	ZVAL_DEREF(key);
+	if (EXPECTED(Z_TYPE_P(base) == IS_ARRAY)) {
+		HashTable *ht = Z_ARRVAL_P(base);
+		zval *found;
+		switch (Z_TYPE_P(key)) {
+			case IS_LONG:
+				found = zend_hash_index_find(ht, Z_LVAL_P(key));
+				if (found == NULL) {
+					zend_error(E_WARNING, "Undefined array key " ZEND_LONG_FMT, Z_LVAL_P(key));
+				}
+				break;
+			case IS_STRING:
+				found = zend_symtable_find(ht, Z_STR_P(key));
+				if (found == NULL) {
+					zend_error(E_WARNING, "Undefined array key \"%s\"", Z_STRVAL_P(key));
+				}
+				break;
+			case IS_NULL:
+				found = zend_hash_find(ht, ZSTR_EMPTY_ALLOC());
+				if (found == NULL) {
+					zend_error(E_WARNING, "Undefined array key \"\"");
+				}
+				break;
+			case IS_FALSE:
+			case IS_TRUE: {
+				zend_long index = Z_TYPE_P(key) == IS_TRUE ? 1 : 0;
+				found = zend_hash_index_find(ht, index);
+				if (found == NULL) {
+					zend_error(E_WARNING, "Undefined array key " ZEND_LONG_FMT, index);
+				}
+				break;
+			}
+			default:
+				zend_type_error("Cannot access offset of type %s on array", zend_zval_value_name(key));
+				return NULL;
+		}
+		if (UNEXPECTED(EG(exception))) return NULL;
+		return found != NULL ? found : &EG(uninitialized_zval);
+	}
+	if (Z_TYPE_P(base) == IS_OBJECT) {
+		zend_object *object = Z_OBJ_P(base);
+		zval *read = object->handlers->read_dimension(object, key, BP_VAR_R, tmp);
+		if (UNEXPECTED(EG(exception))) return NULL;
+		if (read == NULL) return &EG(uninitialized_zval);
+		if (read != tmp) {
+			ZVAL_COPY_DEREF(tmp, read);
+		}
+		return tmp;
+	}
+	if (Z_TYPE_P(base) == IS_STRING && Z_TYPE_P(key) == IS_LONG) {
+		zend_long offset = Z_LVAL_P(key);
+		if (offset < 0) offset += (zend_long) Z_STRLEN_P(base);
+		if (offset < 0 || (size_t) offset >= Z_STRLEN_P(base)) {
+			zend_error(E_WARNING, "Uninitialized string offset " ZEND_LONG_FMT, Z_LVAL_P(key));
+			ZVAL_EMPTY_STRING(tmp);
+			return EG(exception) ? NULL : tmp;
+		}
+		ZVAL_CHAR(tmp, Z_STRVAL_P(base)[offset]);
+		return tmp;
+	}
+	if (Z_TYPE_P(base) == IS_STRING) {
+		zend_throw_error(NULL, "phpstan_turbo codegen: this string offset is not compiled");
+		return NULL;
+	}
+	zend_error(E_WARNING, "Trying to access array offset on %s", zend_zval_value_name(base));
+	return EG(exception) ? NULL : &EG(uninitialized_zval);
+}
+
+bool cloneObject(zval *value, zval *out)
+{
+	ZVAL_DEREF(value);
+	if (UNEXPECTED(Z_TYPE_P(value) != IS_OBJECT)) {
+		zend_throw_error(NULL, "__clone method called on non-object");
+		return false;
+	}
+	zend_object *object = Z_OBJ_P(value);
+	if (UNEXPECTED(object->handlers->clone_obj == NULL)) {
+		zend_throw_error(NULL, "Trying to clone an uncloneable object of class %s", ZSTR_VAL(object->ce->name));
+		return false;
+	}
+	zend_object *clone = object->handlers->clone_obj(object);
+	if (UNEXPECTED(EG(exception))) {
+		if (clone != NULL) OBJ_RELEASE(clone);
+		return false;
+	}
+	ZVAL_OBJ(out, clone);
+	return true;
+}
+
+bool spreadInto(zval *array, zval *value)
+{
+	ZVAL_DEREF(value);
+	if (UNEXPECTED(Z_TYPE_P(value) != IS_ARRAY)) {
+		zend_throw_error(NULL, "Only arrays and Traversables can be unpacked");
+		return false;
+	}
+	zend_ulong index;
+	zend_string *key;
+	zval *entry;
+	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(value), index, key, entry) {
+		(void) index;
+		if (Z_ISREF_P(entry) && Z_REFCOUNT_P(entry) == 1) {
+			entry = Z_REFVAL_P(entry);
+		}
+		Z_TRY_ADDREF_P(entry);
+		if (key != NULL) {
+			zend_hash_update(Z_ARRVAL_P(array), key, entry);
+		} else if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(array), entry) == NULL)) {
+			zval_ptr_dtor(entry);
+			zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied");
+			return false;
+		}
+	}
+	ZEND_HASH_FOREACH_END();
+	return true;
 }
 
 zval *dimIs(zval *base, zval *key, zval *tmp)

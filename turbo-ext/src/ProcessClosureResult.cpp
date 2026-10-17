@@ -24,6 +24,28 @@
 #include "generated/TrivialParametersAcceptor.h"
 #include "generated/ChangedTypeMethodReflection.h"
 #include "generated/ChangedTypePropertyReflection.h"
+#include "generated/ArrayFilterArgVisitor.h"
+#include "generated/ArrayFindArgVisitor.h"
+#include "generated/ArrayMapArgVisitor.h"
+#include "generated/ArrayOffsetNormalizingVisitor.h"
+#include "generated/ArrayWalkArgVisitor.h"
+#include "generated/ArrowFunctionArgVisitor.h"
+#include "generated/ClosureArgVisitor.h"
+#include "generated/ClosureBindArgVisitor.h"
+#include "generated/ClosureBindToVarVisitor.h"
+#include "generated/CurlSetOptArgVisitor.h"
+#include "generated/CurlSetOptArrayArgVisitor.h"
+#include "generated/DeclarePositionVisitor.h"
+#include "generated/ImmediatelyInvokedClosureVisitor.h"
+#include "generated/ImplodeArgVisitor.h"
+#include "generated/MagicConstantParamDefaultVisitor.h"
+#include "generated/NewAssignedToPropertyVisitor.h"
+#include "generated/ParentStmtTypesVisitor.h"
+#include "generated/TraitCollectingVisitor.h"
+#include "generated/TryCatchTypeVisitor.h"
+#include "generated/TypeTraverserInstanceofVisitor.h"
+
+zend_class_entry *pt_ce_process_closure_result = nullptr;
 
 
 static pt_method_site pg_site_0; /* method_processClosureScope_0 */
@@ -235,8 +257,6 @@ namespace pgen::ProcessClosureResult {
 }
 
 } // namespace pgen::ProcessClosureResult
-
-zend_class_entry *pt_ce_process_closure_result = nullptr;
 
 /* new PHPStan\Analyser\ProcessClosureResult(...) for native callers */
 zv::Val pt_process_closure_result_new(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope, zval *byRefUses, zval *dependencies)

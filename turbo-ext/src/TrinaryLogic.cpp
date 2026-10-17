@@ -24,6 +24,26 @@
 #include "generated/TrivialParametersAcceptor.h"
 #include "generated/ChangedTypeMethodReflection.h"
 #include "generated/ChangedTypePropertyReflection.h"
+#include "generated/ArrayFilterArgVisitor.h"
+#include "generated/ArrayFindArgVisitor.h"
+#include "generated/ArrayMapArgVisitor.h"
+#include "generated/ArrayOffsetNormalizingVisitor.h"
+#include "generated/ArrayWalkArgVisitor.h"
+#include "generated/ArrowFunctionArgVisitor.h"
+#include "generated/ClosureArgVisitor.h"
+#include "generated/ClosureBindArgVisitor.h"
+#include "generated/ClosureBindToVarVisitor.h"
+#include "generated/CurlSetOptArgVisitor.h"
+#include "generated/CurlSetOptArrayArgVisitor.h"
+#include "generated/DeclarePositionVisitor.h"
+#include "generated/ImmediatelyInvokedClosureVisitor.h"
+#include "generated/ImplodeArgVisitor.h"
+#include "generated/MagicConstantParamDefaultVisitor.h"
+#include "generated/NewAssignedToPropertyVisitor.h"
+#include "generated/ParentStmtTypesVisitor.h"
+#include "generated/TraitCollectingVisitor.h"
+#include "generated/TryCatchTypeVisitor.h"
+#include "generated/TypeTraverserInstanceofVisitor.h"
 
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
@@ -318,36 +338,38 @@ namespace pgen::TrinaryLogic {
 		for (uint32_t i4 = 0; i4 < p_rest_count; i4++) {
 			l_restOperand = zv::Ref(&p_rest[i4]).deref().raw();
 			 {
-				zval *p5 = pgrt::readSlot(Z_OBJ_P(l_restOperand), ptdecl::TrinaryLogic::slot::value, "value");
-				if (UNEXPECTED(p5 == NULL)) return false;
-				l_min &= Z_LVAL_P(p5);
+				 {
+					zval *p7 = pgrt::readSlot(Z_OBJ_P(l_restOperand), ptdecl::TrinaryLogic::slot::value, "value");
+					if (UNEXPECTED(p7 == NULL)) return false;
+					l_min &= Z_LVAL_P(p7);
+				}
 			}
 		}
 	}
 	 {
-		zval *s6 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
-		ZVAL_DEREF(s6);
-		zval *e7 = Z_TYPE_P(s6) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(s6), l_min) : NULL;
-		if (e7 != NULL) ZVAL_DEREF(e7);
-		if (e7 == NULL || Z_TYPE_P(e7) == IS_NULL) {
-			zval n8_raw;
-			if (UNEXPECTED(object_init_ex(&n8_raw, pt_ce_trinary) != SUCCESS)) return false;
-			zv::Val n8 = zv::Val::adopt(n8_raw);
-			if (UNEXPECTED(!pgen::TrinaryLogic::m___construct(Z_OBJ_P(n8.raw()), l_min))) { zend_object_store_ctor_failed(Z_OBJ_P(n8.raw())); return false; }
-			zval *s9 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
-			ZVAL_DEREF(s9);
-			if (UNEXPECTED(Z_TYPE_P(s9) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			{ zval v = n8.take(); pgrt::setIndex(s9, l_min, &v); }
-			e7 = zend_hash_index_find(Z_ARRVAL_P(s9), l_min);
+		zval *s8 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
+		ZVAL_DEREF(s8);
+		zval *e9 = Z_TYPE_P(s8) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(s8), l_min) : NULL;
+		if (e9 != NULL) ZVAL_DEREF(e9);
+		if (e9 == NULL || Z_TYPE_P(e9) == IS_NULL) {
+			zval n10_raw;
+			if (UNEXPECTED(object_init_ex(&n10_raw, pt_ce_trinary) != SUCCESS)) return false;
+			zv::Val n10 = zv::Val::adopt(n10_raw);
+			if (UNEXPECTED(!pgen::TrinaryLogic::m___construct(Z_OBJ_P(n10.raw()), l_min))) { zend_object_store_ctor_failed(Z_OBJ_P(n10.raw())); return false; }
+			zval *s11 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
+			ZVAL_DEREF(s11);
+			if (UNEXPECTED(Z_TYPE_P(s11) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			{ zval v = n10.take(); pgrt::setIndex(s11, l_min, &v); }
+			e9 = zend_hash_index_find(Z_ARRVAL_P(s11), l_min);
 		}
-		if (UNEXPECTED(!((Z_TYPE_P(e7) == IS_OBJECT && Z_OBJCE_P(e7) == pt_ce_trinary) || pgrt::instanceOfClass(e7, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::and", "PHPStan\\TrinaryLogic", e7); return false; }
-		ZVAL_COPY(ret, e7);
+		if (UNEXPECTED(!((Z_TYPE_P(e9) == IS_OBJECT && Z_OBJCE_P(e9) == pt_ce_trinary) || pgrt::instanceOfClass(e9, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::and", "PHPStan\\TrinaryLogic", e9); return false; }
+		ZVAL_COPY(ret, e9);
 		return true;
 	}
 }
 
 /* PHPStan\TrinaryLogic::lazyAnd() */
-[[nodiscard]] bool m_lazyAnd(zend_object *self, zval *p_objects, pgrt::Callable &p_callback, zval *ret)
+[[nodiscard]] bool m_lazyAnd(zend_object *self, zval *p_objects, zval *p_callback, zval *ret)
 {
 	zval *l_object = NULL;
 	pgrt::ValVec l_results;
@@ -378,60 +400,63 @@ namespace pgen::TrinaryLogic {
 			(void) n5; (void) s6;
 			l_object = zv::Ref(v4).deref().raw();
 			 {
-				zval av7[1];
-				ZVAL_COPY_VALUE(&av7[0], l_object);
-				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callCallable(p_callback, 1, av7, r8.raw(), NULL))) return false;
-				l_result = std::move(r8);
-			}
-			 {
-				zval *p9;
-				zv::Val o10;
-				if (EXPECTED(Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary)) {
-					p9 = pgrt::readSlot(Z_OBJ_P(l_result.raw()), ptdecl::TrinaryLogic::slot::value, "value");
-					if (UNEXPECTED(p9 == NULL)) return false;
-				} else {
 				 {
-					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_result.raw(), pt_ce_trinary, "value", 5, o10.raw()))) return false;
-					p9 = o10.raw();
+					zv::Val o9 = zv::Val::copyOf(zv::Ref(p_callback));
+					zval av10[1];
+					ZVAL_COPY_VALUE(&av10[0], l_object);
+					zv::Val r11;
+					if (UNEXPECTED(!pgrt::callValue(o9.raw(), 1, av10, r11.raw(), NULL))) return false;
+					l_result = std::move(r11);
 				}
-				}
-				if (Z_TYPE_P(p9) == IS_LONG && Z_LVAL_P(p9) == 0) {
+				 {
+					zval *p12;
+					zv::Val o13;
+					if (EXPECTED(Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary)) {
+						p12 = pgrt::readSlot(Z_OBJ_P(l_result.raw()), ptdecl::TrinaryLogic::slot::value, "value");
+						if (UNEXPECTED(p12 == NULL)) return false;
+					} else {
 					 {
-						if (UNEXPECTED(!((Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary) || pgrt::instanceOfClass(l_result.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::lazyAnd", "PHPStan\\TrinaryLogic", l_result.raw()); return false; }
-						ZVAL_COPY(ret, l_result.raw());
-						return true;
+						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_result.raw(), pt_ce_trinary, "value", 5, o13.raw()))) return false;
+						p12 = o13.raw();
+					}
+					}
+					if (Z_TYPE_P(p12) == IS_LONG && Z_LVAL_P(p12) == 0) {
+						 {
+							if (UNEXPECTED(!((Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary) || pgrt::instanceOfClass(l_result.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::lazyAnd", "PHPStan\\TrinaryLogic", l_result.raw()); return false; }
+							ZVAL_COPY(ret, l_result.raw());
+							return true;
+						}
 					}
 				}
-			}
-			 {
-				zv::Val o11 = zv::Val::copyOf(zv::Ref(l_result.raw()));
-				{ zval v = o11.take(); l_results.pushOwned(&v); }
+				 {
+					zv::Val o14 = zv::Val::copyOf(zv::Ref(l_result.raw()));
+					{ zval v = o14.take(); l_results.pushOwned(&v); }
+				}
 			}
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		pgrt::ArgVec vec12;
-		for (uint32_t i = 0; i < l_results.size(); i++) vec12.push(&l_results.argv()[i]);
-		zval *pa13;
-		zval d14;
-		ZVAL_NULL(&d14);
-		if (vec12.size() > 0) {
-			pa13 = zv::Ref(&vec12.argv()[0]).deref().raw();
-			if (UNEXPECTED(!(((Z_TYPE_P(pa13) == IS_OBJECT && Z_OBJCE_P(pa13) == pt_ce_trinary) || pgrt::instanceOfClass(pa13, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))) || Z_TYPE_P(pa13) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::and", 1, "operand", "?PHPStan\\TrinaryLogic", pa13); return false; }
+		pgrt::ArgVec vec15;
+		for (uint32_t i = 0; i < l_results.size(); i++) vec15.push(&l_results.argv()[i]);
+		zval *pa16;
+		zval d17;
+		ZVAL_NULL(&d17);
+		if (vec15.size() > 0) {
+			pa16 = zv::Ref(&vec15.argv()[0]).deref().raw();
+			if (UNEXPECTED(!(((Z_TYPE_P(pa16) == IS_OBJECT && Z_OBJCE_P(pa16) == pt_ce_trinary) || pgrt::instanceOfClass(pa16, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))) || Z_TYPE_P(pa16) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::and", 1, "operand", "?PHPStan\\TrinaryLogic", pa16); return false; }
 		} else {
 		 {
-			pa13 = &d14;
+			pa16 = &d17;
 		}
 		}
-		uint32_t vn15 = vec12.size() > 1 ? vec12.size() - 1 : 0;
-		for (uint32_t i16 = 0; i16 < vn15; i16++) {
-			if (UNEXPECTED(!((Z_TYPE_P(zv::Ref(&vec12.argv()[1 + i16]).deref().raw()) == IS_OBJECT && Z_OBJCE_P(zv::Ref(&vec12.argv()[1 + i16]).deref().raw()) == pt_ce_trinary) || pgrt::instanceOfClass(zv::Ref(&vec12.argv()[1 + i16]).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::and", 1 + i16 + 1, "rest", "PHPStan\\TrinaryLogic", zv::Ref(&vec12.argv()[1 + i16]).deref().raw()); return false; }
+		uint32_t vn18 = vec15.size() > 1 ? vec15.size() - 1 : 0;
+		for (uint32_t i19 = 0; i19 < vn18; i19++) {
+			if (UNEXPECTED(!((Z_TYPE_P(zv::Ref(&vec15.argv()[1 + i19]).deref().raw()) == IS_OBJECT && Z_OBJCE_P(zv::Ref(&vec15.argv()[1 + i19]).deref().raw()) == pt_ce_trinary) || pgrt::instanceOfClass(zv::Ref(&vec15.argv()[1 + i19]).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::and", 1 + i19 + 1, "rest", "PHPStan\\TrinaryLogic", zv::Ref(&vec15.argv()[1 + i19]).deref().raw()); return false; }
 		}
-		zv::Val r17;
-		if (UNEXPECTED(!pgen::TrinaryLogic::m_and(Z_OBJ_P(&this_zv), pa13, vn15 > 0 ? &vec12.argv()[1] : NULL, vn15, r17.raw()))) return false;
-		*ret = r17.take();
+		zv::Val r20;
+		if (UNEXPECTED(!pgen::TrinaryLogic::m_and(Z_OBJ_P(&this_zv), pa16, vn18 > 0 ? &vec15.argv()[1] : NULL, vn18, r20.raw()))) return false;
+		*ret = r20.take();
 		return true;
 	}
 }
@@ -463,36 +488,38 @@ namespace pgen::TrinaryLogic {
 		for (uint32_t i4 = 0; i4 < p_rest_count; i4++) {
 			l_restOperand = zv::Ref(&p_rest[i4]).deref().raw();
 			 {
-				zval *p5 = pgrt::readSlot(Z_OBJ_P(l_restOperand), ptdecl::TrinaryLogic::slot::value, "value");
-				if (UNEXPECTED(p5 == NULL)) return false;
-				l_max |= Z_LVAL_P(p5);
+				 {
+					zval *p7 = pgrt::readSlot(Z_OBJ_P(l_restOperand), ptdecl::TrinaryLogic::slot::value, "value");
+					if (UNEXPECTED(p7 == NULL)) return false;
+					l_max |= Z_LVAL_P(p7);
+				}
 			}
 		}
 	}
 	 {
-		zval *s6 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
-		ZVAL_DEREF(s6);
-		zval *e7 = Z_TYPE_P(s6) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(s6), l_max) : NULL;
-		if (e7 != NULL) ZVAL_DEREF(e7);
-		if (e7 == NULL || Z_TYPE_P(e7) == IS_NULL) {
-			zval n8_raw;
-			if (UNEXPECTED(object_init_ex(&n8_raw, pt_ce_trinary) != SUCCESS)) return false;
-			zv::Val n8 = zv::Val::adopt(n8_raw);
-			if (UNEXPECTED(!pgen::TrinaryLogic::m___construct(Z_OBJ_P(n8.raw()), l_max))) { zend_object_store_ctor_failed(Z_OBJ_P(n8.raw())); return false; }
-			zval *s9 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
-			ZVAL_DEREF(s9);
-			if (UNEXPECTED(Z_TYPE_P(s9) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			{ zval v = n8.take(); pgrt::setIndex(s9, l_max, &v); }
-			e7 = zend_hash_index_find(Z_ARRVAL_P(s9), l_max);
+		zval *s8 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
+		ZVAL_DEREF(s8);
+		zval *e9 = Z_TYPE_P(s8) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(s8), l_max) : NULL;
+		if (e9 != NULL) ZVAL_DEREF(e9);
+		if (e9 == NULL || Z_TYPE_P(e9) == IS_NULL) {
+			zval n10_raw;
+			if (UNEXPECTED(object_init_ex(&n10_raw, pt_ce_trinary) != SUCCESS)) return false;
+			zv::Val n10 = zv::Val::adopt(n10_raw);
+			if (UNEXPECTED(!pgen::TrinaryLogic::m___construct(Z_OBJ_P(n10.raw()), l_max))) { zend_object_store_ctor_failed(Z_OBJ_P(n10.raw())); return false; }
+			zval *s11 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
+			ZVAL_DEREF(s11);
+			if (UNEXPECTED(Z_TYPE_P(s11) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			{ zval v = n10.take(); pgrt::setIndex(s11, l_max, &v); }
+			e9 = zend_hash_index_find(Z_ARRVAL_P(s11), l_max);
 		}
-		if (UNEXPECTED(!((Z_TYPE_P(e7) == IS_OBJECT && Z_OBJCE_P(e7) == pt_ce_trinary) || pgrt::instanceOfClass(e7, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::or", "PHPStan\\TrinaryLogic", e7); return false; }
-		ZVAL_COPY(ret, e7);
+		if (UNEXPECTED(!((Z_TYPE_P(e9) == IS_OBJECT && Z_OBJCE_P(e9) == pt_ce_trinary) || pgrt::instanceOfClass(e9, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::or", "PHPStan\\TrinaryLogic", e9); return false; }
+		ZVAL_COPY(ret, e9);
 		return true;
 	}
 }
 
 /* PHPStan\TrinaryLogic::lazyOr() */
-[[nodiscard]] bool m_lazyOr(zend_object *self, zval *p_objects, pgrt::Callable &p_callback, zval *ret)
+[[nodiscard]] bool m_lazyOr(zend_object *self, zval *p_objects, zval *p_callback, zval *ret)
 {
 	zval *l_object = NULL;
 	pgrt::ValVec l_results;
@@ -523,60 +550,63 @@ namespace pgen::TrinaryLogic {
 			(void) n5; (void) s6;
 			l_object = zv::Ref(v4).deref().raw();
 			 {
-				zval av7[1];
-				ZVAL_COPY_VALUE(&av7[0], l_object);
-				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callCallable(p_callback, 1, av7, r8.raw(), NULL))) return false;
-				l_result = std::move(r8);
-			}
-			 {
-				zval *p9;
-				zv::Val o10;
-				if (EXPECTED(Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary)) {
-					p9 = pgrt::readSlot(Z_OBJ_P(l_result.raw()), ptdecl::TrinaryLogic::slot::value, "value");
-					if (UNEXPECTED(p9 == NULL)) return false;
-				} else {
 				 {
-					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_result.raw(), pt_ce_trinary, "value", 5, o10.raw()))) return false;
-					p9 = o10.raw();
+					zv::Val o9 = zv::Val::copyOf(zv::Ref(p_callback));
+					zval av10[1];
+					ZVAL_COPY_VALUE(&av10[0], l_object);
+					zv::Val r11;
+					if (UNEXPECTED(!pgrt::callValue(o9.raw(), 1, av10, r11.raw(), NULL))) return false;
+					l_result = std::move(r11);
 				}
-				}
-				if (Z_TYPE_P(p9) == IS_LONG && Z_LVAL_P(p9) == 3) {
+				 {
+					zval *p12;
+					zv::Val o13;
+					if (EXPECTED(Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary)) {
+						p12 = pgrt::readSlot(Z_OBJ_P(l_result.raw()), ptdecl::TrinaryLogic::slot::value, "value");
+						if (UNEXPECTED(p12 == NULL)) return false;
+					} else {
 					 {
-						if (UNEXPECTED(!((Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary) || pgrt::instanceOfClass(l_result.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::lazyOr", "PHPStan\\TrinaryLogic", l_result.raw()); return false; }
-						ZVAL_COPY(ret, l_result.raw());
-						return true;
+						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_result.raw(), pt_ce_trinary, "value", 5, o13.raw()))) return false;
+						p12 = o13.raw();
+					}
+					}
+					if (Z_TYPE_P(p12) == IS_LONG && Z_LVAL_P(p12) == 3) {
+						 {
+							if (UNEXPECTED(!((Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary) || pgrt::instanceOfClass(l_result.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::lazyOr", "PHPStan\\TrinaryLogic", l_result.raw()); return false; }
+							ZVAL_COPY(ret, l_result.raw());
+							return true;
+						}
 					}
 				}
-			}
-			 {
-				zv::Val o11 = zv::Val::copyOf(zv::Ref(l_result.raw()));
-				{ zval v = o11.take(); l_results.pushOwned(&v); }
+				 {
+					zv::Val o14 = zv::Val::copyOf(zv::Ref(l_result.raw()));
+					{ zval v = o14.take(); l_results.pushOwned(&v); }
+				}
 			}
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		pgrt::ArgVec vec12;
-		for (uint32_t i = 0; i < l_results.size(); i++) vec12.push(&l_results.argv()[i]);
-		zval *pa13;
-		zval d14;
-		ZVAL_NULL(&d14);
-		if (vec12.size() > 0) {
-			pa13 = zv::Ref(&vec12.argv()[0]).deref().raw();
-			if (UNEXPECTED(!(((Z_TYPE_P(pa13) == IS_OBJECT && Z_OBJCE_P(pa13) == pt_ce_trinary) || pgrt::instanceOfClass(pa13, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))) || Z_TYPE_P(pa13) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::or", 1, "operand", "?PHPStan\\TrinaryLogic", pa13); return false; }
+		pgrt::ArgVec vec15;
+		for (uint32_t i = 0; i < l_results.size(); i++) vec15.push(&l_results.argv()[i]);
+		zval *pa16;
+		zval d17;
+		ZVAL_NULL(&d17);
+		if (vec15.size() > 0) {
+			pa16 = zv::Ref(&vec15.argv()[0]).deref().raw();
+			if (UNEXPECTED(!(((Z_TYPE_P(pa16) == IS_OBJECT && Z_OBJCE_P(pa16) == pt_ce_trinary) || pgrt::instanceOfClass(pa16, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))) || Z_TYPE_P(pa16) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::or", 1, "operand", "?PHPStan\\TrinaryLogic", pa16); return false; }
 		} else {
 		 {
-			pa13 = &d14;
+			pa16 = &d17;
 		}
 		}
-		uint32_t vn15 = vec12.size() > 1 ? vec12.size() - 1 : 0;
-		for (uint32_t i16 = 0; i16 < vn15; i16++) {
-			if (UNEXPECTED(!((Z_TYPE_P(zv::Ref(&vec12.argv()[1 + i16]).deref().raw()) == IS_OBJECT && Z_OBJCE_P(zv::Ref(&vec12.argv()[1 + i16]).deref().raw()) == pt_ce_trinary) || pgrt::instanceOfClass(zv::Ref(&vec12.argv()[1 + i16]).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::or", 1 + i16 + 1, "rest", "PHPStan\\TrinaryLogic", zv::Ref(&vec12.argv()[1 + i16]).deref().raw()); return false; }
+		uint32_t vn18 = vec15.size() > 1 ? vec15.size() - 1 : 0;
+		for (uint32_t i19 = 0; i19 < vn18; i19++) {
+			if (UNEXPECTED(!((Z_TYPE_P(zv::Ref(&vec15.argv()[1 + i19]).deref().raw()) == IS_OBJECT && Z_OBJCE_P(zv::Ref(&vec15.argv()[1 + i19]).deref().raw()) == pt_ce_trinary) || pgrt::instanceOfClass(zv::Ref(&vec15.argv()[1 + i19]).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwArgumentType("PHPStan\\TrinaryLogic::or", 1 + i19 + 1, "rest", "PHPStan\\TrinaryLogic", zv::Ref(&vec15.argv()[1 + i19]).deref().raw()); return false; }
 		}
-		zv::Val r17;
-		if (UNEXPECTED(!pgen::TrinaryLogic::m_or(Z_OBJ_P(&this_zv), pa13, vn15 > 0 ? &vec12.argv()[1] : NULL, vn15, r17.raw()))) return false;
-		*ret = r17.take();
+		zv::Val r20;
+		if (UNEXPECTED(!pgen::TrinaryLogic::m_or(Z_OBJ_P(&this_zv), pa16, vn18 > 0 ? &vec15.argv()[1] : NULL, vn18, r20.raw()))) return false;
+		*ret = r20.take();
 		return true;
 	}
 }
@@ -638,7 +668,7 @@ namespace pgen::TrinaryLogic {
 }
 
 /* PHPStan\TrinaryLogic::lazyExtremeIdentity() */
-[[nodiscard]] bool m_lazyExtremeIdentity(zval *p_objects, pgrt::Callable &p_callback, zval *ret)
+[[nodiscard]] bool m_lazyExtremeIdentity(zval *p_objects, zval *p_callback, zval *ret)
 {
 	zval *l_object = NULL;
 	zv::Val l_lastResult;
@@ -671,36 +701,47 @@ namespace pgen::TrinaryLogic {
 			(void) n8; (void) s9;
 			l_object = zv::Ref(v7).deref().raw();
 			 {
-				zval av10[1];
-				ZVAL_COPY_VALUE(&av10[0], l_object);
-				zv::Val r11;
-				if (UNEXPECTED(!pgrt::callCallable(p_callback, 1, av10, r11.raw(), NULL))) return false;
-				l_result = std::move(r11);
-			}
-			 {
-				if (Z_TYPE_P(l_lastResult.raw()) == IS_NULL) {
-					 {
-						zv::Val o12 = zv::Val::copyOf(zv::Ref(l_result.raw()));
-						l_lastResult = std::move(o12);
+				 {
+					zv::Val o12 = zv::Val::copyOf(zv::Ref(p_callback));
+					zval av13[1];
+					ZVAL_COPY_VALUE(&av13[0], l_object);
+					zv::Val r14;
+					if (UNEXPECTED(!pgrt::callValue(o12.raw(), 1, av13, r14.raw(), NULL))) return false;
+					l_result = std::move(r14);
+				}
+				 {
+					if (Z_TYPE_P(l_lastResult.raw()) == IS_NULL) {
+						 {
+							zv::Val o15 = zv::Val::copyOf(zv::Ref(l_result.raw()));
+							l_lastResult = std::move(o15);
+						}
+						goto cont11;
 					}
-					continue;
+				}
+				 {
+					zval av16[1];
+					ZVAL_COPY_VALUE(&av16[0], l_result.raw());
+					zv::Val r17;
+					if (EXPECTED(Z_TYPE_P(l_lastResult.raw()) == IS_OBJECT)) {
+						r17 = pt_type_op(Z_OBJ_P(l_lastResult.raw()), PT_OP_EQUALS, 1, av16);
+						if (UNEXPECTED(r17.isUndef())) return false;
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_lastResult.raw(), "equals", "equals", 6, 1, av16, r17.raw(), NULL))) return false;
+					}
+					}
+					if (zend_is_true(r17.raw())) {
+						goto cont11;
+					}
+				}
+				 {
+					zv::Val r18;
+					if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r18.raw()))) return false;
+					*ret = r18.take();
+					return true;
 				}
 			}
-			 {
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], l_result.raw());
-				zv::Val r14;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_lastResult.raw(), "equals", "equals", 6, 1, av13, r14.raw(), NULL))) return false;
-				if (zend_is_true(r14.raw())) {
-					continue;
-				}
-			}
-			 {
-				zv::Val r15;
-				if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r15.raw()))) return false;
-				*ret = r15.take();
-				return true;
-			}
+			cont11:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}
@@ -740,14 +781,16 @@ namespace pgen::TrinaryLogic {
 		for (uint32_t i3 = 0; i3 < p_operands_count; i3++) {
 			l_operand = zv::Ref(&p_operands[i3]).deref().raw();
 			 {
-				zval *p4 = pgrt::readSlot(Z_OBJ_P(l_operand), ptdecl::TrinaryLogic::slot::value, "value");
-				if (UNEXPECTED(p4 == NULL)) return false;
-				l_max |= Z_LVAL_P(p4);
-			}
-			 {
-				zval *p5 = pgrt::readSlot(Z_OBJ_P(l_operand), ptdecl::TrinaryLogic::slot::value, "value");
-				if (UNEXPECTED(p5 == NULL)) return false;
-				l_min &= Z_LVAL_P(p5);
+				 {
+					zval *p6 = pgrt::readSlot(Z_OBJ_P(l_operand), ptdecl::TrinaryLogic::slot::value, "value");
+					if (UNEXPECTED(p6 == NULL)) return false;
+					l_max |= Z_LVAL_P(p6);
+				}
+				 {
+					zval *p7 = pgrt::readSlot(Z_OBJ_P(l_operand), ptdecl::TrinaryLogic::slot::value, "value");
+					if (UNEXPECTED(p7 == NULL)) return false;
+					l_min &= Z_LVAL_P(p7);
+				}
 			}
 		}
 	}
@@ -755,29 +798,29 @@ namespace pgen::TrinaryLogic {
 		l_maxMin = ((l_max == 3) ? 3 : l_min);
 	}
 	 {
-		zval *s6 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
-		ZVAL_DEREF(s6);
-		zval *e7 = Z_TYPE_P(s6) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(s6), l_maxMin) : NULL;
-		if (e7 != NULL) ZVAL_DEREF(e7);
-		if (e7 == NULL || Z_TYPE_P(e7) == IS_NULL) {
-			zval n8_raw;
-			if (UNEXPECTED(object_init_ex(&n8_raw, pt_ce_trinary) != SUCCESS)) return false;
-			zv::Val n8 = zv::Val::adopt(n8_raw);
-			if (UNEXPECTED(!pgen::TrinaryLogic::m___construct(Z_OBJ_P(n8.raw()), l_maxMin))) { zend_object_store_ctor_failed(Z_OBJ_P(n8.raw())); return false; }
-			zval *s9 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
-			ZVAL_DEREF(s9);
-			if (UNEXPECTED(Z_TYPE_P(s9) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			{ zval v = n8.take(); pgrt::setIndex(s9, l_maxMin, &v); }
-			e7 = zend_hash_index_find(Z_ARRVAL_P(s9), l_maxMin);
+		zval *s8 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
+		ZVAL_DEREF(s8);
+		zval *e9 = Z_TYPE_P(s8) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(s8), l_maxMin) : NULL;
+		if (e9 != NULL) ZVAL_DEREF(e9);
+		if (e9 == NULL || Z_TYPE_P(e9) == IS_NULL) {
+			zval n10_raw;
+			if (UNEXPECTED(object_init_ex(&n10_raw, pt_ce_trinary) != SUCCESS)) return false;
+			zv::Val n10 = zv::Val::adopt(n10_raw);
+			if (UNEXPECTED(!pgen::TrinaryLogic::m___construct(Z_OBJ_P(n10.raw()), l_maxMin))) { zend_object_store_ctor_failed(Z_OBJ_P(n10.raw())); return false; }
+			zval *s11 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
+			ZVAL_DEREF(s11);
+			if (UNEXPECTED(Z_TYPE_P(s11) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			{ zval v = n10.take(); pgrt::setIndex(s11, l_maxMin, &v); }
+			e9 = zend_hash_index_find(Z_ARRVAL_P(s11), l_maxMin);
 		}
-		if (UNEXPECTED(!((Z_TYPE_P(e7) == IS_OBJECT && Z_OBJCE_P(e7) == pt_ce_trinary) || pgrt::instanceOfClass(e7, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::maxMin", "PHPStan\\TrinaryLogic", e7); return false; }
-		ZVAL_COPY(ret, e7);
+		if (UNEXPECTED(!((Z_TYPE_P(e9) == IS_OBJECT && Z_OBJCE_P(e9) == pt_ce_trinary) || pgrt::instanceOfClass(e9, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::maxMin", "PHPStan\\TrinaryLogic", e9); return false; }
+		ZVAL_COPY(ret, e9);
 		return true;
 	}
 }
 
 /* PHPStan\TrinaryLogic::lazyMaxMin() */
-[[nodiscard]] bool m_lazyMaxMin(zval *p_objects, pgrt::Callable &p_callback, zval *ret)
+[[nodiscard]] bool m_lazyMaxMin(zval *p_objects, zval *p_callback, zval *ret)
 {
 	zval *l_object = NULL;
 	zend_long l_min = 0;
@@ -795,68 +838,71 @@ namespace pgen::TrinaryLogic {
 			(void) n4; (void) s5;
 			l_object = zv::Ref(v3).deref().raw();
 			 {
-				zval av6[1];
-				ZVAL_COPY_VALUE(&av6[0], l_object);
-				zv::Val r7;
-				if (UNEXPECTED(!pgrt::callCallable(p_callback, 1, av6, r7.raw(), NULL))) return false;
-				l_result = std::move(r7);
-			}
-			 {
-				zval *p8;
-				zv::Val o9;
-				if (EXPECTED(Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary)) {
-					p8 = pgrt::readSlot(Z_OBJ_P(l_result.raw()), ptdecl::TrinaryLogic::slot::value, "value");
-					if (UNEXPECTED(p8 == NULL)) return false;
-				} else {
 				 {
-					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_result.raw(), pt_ce_trinary, "value", 5, o9.raw()))) return false;
-					p8 = o9.raw();
+					zv::Val o8 = zv::Val::copyOf(zv::Ref(p_callback));
+					zval av9[1];
+					ZVAL_COPY_VALUE(&av9[0], l_object);
+					zv::Val r10;
+					if (UNEXPECTED(!pgrt::callValue(o8.raw(), 1, av9, r10.raw(), NULL))) return false;
+					l_result = std::move(r10);
 				}
-				}
-				if (Z_TYPE_P(p8) == IS_LONG && Z_LVAL_P(p8) == 3) {
+				 {
+					zval *p11;
+					zv::Val o12;
+					if (EXPECTED(Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary)) {
+						p11 = pgrt::readSlot(Z_OBJ_P(l_result.raw()), ptdecl::TrinaryLogic::slot::value, "value");
+						if (UNEXPECTED(p11 == NULL)) return false;
+					} else {
 					 {
-						if (UNEXPECTED(!((Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary) || pgrt::instanceOfClass(l_result.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::lazyMaxMin", "PHPStan\\TrinaryLogic", l_result.raw()); return false; }
-						ZVAL_COPY(ret, l_result.raw());
-						return true;
+						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_result.raw(), pt_ce_trinary, "value", 5, o12.raw()))) return false;
+						p11 = o12.raw();
+					}
+					}
+					if (Z_TYPE_P(p11) == IS_LONG && Z_LVAL_P(p11) == 3) {
+						 {
+							if (UNEXPECTED(!((Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary) || pgrt::instanceOfClass(l_result.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::lazyMaxMin", "PHPStan\\TrinaryLogic", l_result.raw()); return false; }
+							ZVAL_COPY(ret, l_result.raw());
+							return true;
+						}
 					}
 				}
-			}
-			 {
-				zval *p10;
-				zv::Val o11;
-				if (EXPECTED(Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary)) {
-					p10 = pgrt::readSlot(Z_OBJ_P(l_result.raw()), ptdecl::TrinaryLogic::slot::value, "value");
-					if (UNEXPECTED(p10 == NULL)) return false;
-				} else {
 				 {
-					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_result.raw(), pt_ce_trinary, "value", 5, o11.raw()))) return false;
-					p10 = o11.raw();
+					zval *p13;
+					zv::Val o14;
+					if (EXPECTED(Z_TYPE_P(l_result.raw()) == IS_OBJECT && Z_OBJCE_P(l_result.raw()) == pt_ce_trinary)) {
+						p13 = pgrt::readSlot(Z_OBJ_P(l_result.raw()), ptdecl::TrinaryLogic::slot::value, "value");
+						if (UNEXPECTED(p13 == NULL)) return false;
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_result.raw(), pt_ce_trinary, "value", 5, o14.raw()))) return false;
+						p13 = o14.raw();
+					}
+					}
+					if (UNEXPECTED(Z_TYPE_P(p13) != IS_LONG)) { zend_type_error("PHPStan\\TrinaryLogic::lazyMaxMin: int expected, %s given", zend_zval_value_name(p13)); return false; }
+					l_min &= Z_LVAL_P(p13);
 				}
-				}
-				if (UNEXPECTED(Z_TYPE_P(p10) != IS_LONG)) { zend_type_error("PHPStan\\TrinaryLogic::lazyMaxMin: int expected, %s given", zend_zval_value_name(p10)); return false; }
-				l_min &= Z_LVAL_P(p10);
 			}
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval *s12 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
-		ZVAL_DEREF(s12);
-		zval *e13 = Z_TYPE_P(s12) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(s12), l_min) : NULL;
-		if (e13 != NULL) ZVAL_DEREF(e13);
-		if (e13 == NULL || Z_TYPE_P(e13) == IS_NULL) {
-			zval n14_raw;
-			if (UNEXPECTED(object_init_ex(&n14_raw, pt_ce_trinary) != SUCCESS)) return false;
-			zv::Val n14 = zv::Val::adopt(n14_raw);
-			if (UNEXPECTED(!pgen::TrinaryLogic::m___construct(Z_OBJ_P(n14.raw()), l_min))) { zend_object_store_ctor_failed(Z_OBJ_P(n14.raw())); return false; }
-			zval *s15 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
-			ZVAL_DEREF(s15);
-			if (UNEXPECTED(Z_TYPE_P(s15) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			{ zval v = n14.take(); pgrt::setIndex(s15, l_min, &v); }
-			e13 = zend_hash_index_find(Z_ARRVAL_P(s15), l_min);
+		zval *s15 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
+		ZVAL_DEREF(s15);
+		zval *e16 = Z_TYPE_P(s15) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(s15), l_min) : NULL;
+		if (e16 != NULL) ZVAL_DEREF(e16);
+		if (e16 == NULL || Z_TYPE_P(e16) == IS_NULL) {
+			zval n17_raw;
+			if (UNEXPECTED(object_init_ex(&n17_raw, pt_ce_trinary) != SUCCESS)) return false;
+			zv::Val n17 = zv::Val::adopt(n17_raw);
+			if (UNEXPECTED(!pgen::TrinaryLogic::m___construct(Z_OBJ_P(n17.raw()), l_min))) { zend_object_store_ctor_failed(Z_OBJ_P(n17.raw())); return false; }
+			zval *s18 = pgrt::staticSlot(pg_site_1, pt_ce_trinary, "registry", 8);
+			ZVAL_DEREF(s18);
+			if (UNEXPECTED(Z_TYPE_P(s18) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			{ zval v = n17.take(); pgrt::setIndex(s18, l_min, &v); }
+			e16 = zend_hash_index_find(Z_ARRVAL_P(s18), l_min);
 		}
-		if (UNEXPECTED(!((Z_TYPE_P(e13) == IS_OBJECT && Z_OBJCE_P(e13) == pt_ce_trinary) || pgrt::instanceOfClass(e13, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::lazyMaxMin", "PHPStan\\TrinaryLogic", e13); return false; }
-		ZVAL_COPY(ret, e13);
+		if (UNEXPECTED(!((Z_TYPE_P(e16) == IS_OBJECT && Z_OBJCE_P(e16) == pt_ce_trinary) || pgrt::instanceOfClass(e16, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { pgrt::throwReturnType("PHPStan\\TrinaryLogic::lazyMaxMin", "PHPStan\\TrinaryLogic", e16); return false; }
+		ZVAL_COPY(ret, e16);
 		return true;
 	}
 }
@@ -1079,11 +1125,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	});
 	cls.method(sigs::lazyAnd, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::lazyAnd() */
 		zval *p_objects = NULL;
-		pgrt::Callable p_callback;
+		zval *p_callback = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_ARRAY(p_objects)
-			Z_PARAM_FUNC(p_callback.fci, p_callback.fcc)
+			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();
+		if (p_callback != NULL && UNEXPECTED(!zend_is_callable(p_callback, 0, NULL))) { zend_argument_type_error(2, "must be a valid callback, %s given", zend_zval_value_name(p_callback)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_lazyAnd(Z_OBJ_P(ZEND_THIS), p_objects, p_callback, return_value))) RETURN_THROWS();
 	});
@@ -1135,11 +1182,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	});
 	cls.method(sigs::lazyOr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::lazyOr() */
 		zval *p_objects = NULL;
-		pgrt::Callable p_callback;
+		zval *p_callback = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_ARRAY(p_objects)
-			Z_PARAM_FUNC(p_callback.fci, p_callback.fcc)
+			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();
+		if (p_callback != NULL && UNEXPECTED(!zend_is_callable(p_callback, 0, NULL))) { zend_argument_type_error(2, "must be a valid callback, %s given", zend_zval_value_name(p_callback)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_lazyOr(Z_OBJ_P(ZEND_THIS), p_objects, p_callback, return_value))) RETURN_THROWS();
 	});
@@ -1160,11 +1208,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	});
 	cls.method(sigs::lazyExtremeIdentity, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::lazyExtremeIdentity() */
 		zval *p_objects = NULL;
-		pgrt::Callable p_callback;
+		zval *p_callback = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_ARRAY(p_objects)
-			Z_PARAM_FUNC(p_callback.fci, p_callback.fcc)
+			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();
+		if (p_callback != NULL && UNEXPECTED(!zend_is_callable(p_callback, 0, NULL))) { zend_argument_type_error(2, "must be a valid callback, %s given", zend_zval_value_name(p_callback)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_lazyExtremeIdentity(p_objects, p_callback, return_value))) RETURN_THROWS();
 	});
@@ -1185,11 +1234,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	});
 	cls.method(sigs::lazyMaxMin, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::lazyMaxMin() */
 		zval *p_objects = NULL;
-		pgrt::Callable p_callback;
+		zval *p_callback = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_ARRAY(p_objects)
-			Z_PARAM_FUNC(p_callback.fci, p_callback.fcc)
+			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();
+		if (p_callback != NULL && UNEXPECTED(!zend_is_callable(p_callback, 0, NULL))) { zend_argument_type_error(2, "must be a valid callback, %s given", zend_zval_value_name(p_callback)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_lazyMaxMin(p_objects, p_callback, return_value))) RETURN_THROWS();
 	});

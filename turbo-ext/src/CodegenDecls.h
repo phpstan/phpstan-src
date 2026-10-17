@@ -5,6 +5,51 @@
 
 #include "CodegenRuntime.h"
 
+/* the class entries of the compiled classes, set at activation */
+extern zend_class_entry *pt_ce_trinary;
+extern zend_class_entry *pt_ce_accepts_result;
+extern zend_class_entry *pt_ce_is_super_type_of_result;
+extern zend_class_entry *pt_ce_assign_target_walk_mode;
+extern zend_class_entry *pt_ce_end_statement_result;
+extern zend_class_entry *pt_ce_ensured_non_nullability_result;
+extern zend_class_entry *pt_ce_ensured_non_nullability_result_expression;
+extern zend_class_entry *pt_ce_expr_type_holder;
+extern zend_class_entry *pt_ce_internal_end_statement_result;
+extern zend_class_entry *pt_ce_internal_statement_exit_point;
+extern zend_class_entry *pt_ce_prepared_assign_target;
+extern zend_class_entry *pt_ce_process_arrow_function_result;
+extern zend_class_entry *pt_ce_process_closure_result;
+extern zend_class_entry *pt_ce_statement_exit_point;
+extern zend_class_entry *pt_ce_parameters_processor;
+extern zend_class_entry *pt_ce_template_type_reference;
+extern zend_class_entry *pt_ce_template_type_scope;
+extern zend_class_entry *pt_ce_type_projection_helper;
+extern zend_class_entry *pt_ce_circular_type_alias_error_type;
+extern zend_class_entry *pt_ce_native_parameter_reflection;
+extern zend_class_entry *pt_ce_trivial_parameters_acceptor;
+extern zend_class_entry *pt_ce_changed_type_method_reflection;
+extern zend_class_entry *pt_ce_changed_type_property_reflection;
+extern zend_class_entry *pt_ce_array_filter_arg_visitor;
+extern zend_class_entry *pt_ce_array_find_arg_visitor;
+extern zend_class_entry *pt_ce_array_map_arg_visitor;
+extern zend_class_entry *pt_ce_array_offset_normalizing_visitor;
+extern zend_class_entry *pt_ce_array_walk_arg_visitor;
+extern zend_class_entry *pt_ce_arrow_function_arg_visitor;
+extern zend_class_entry *pt_ce_closure_arg_visitor;
+extern zend_class_entry *pt_ce_closure_bind_arg_visitor;
+extern zend_class_entry *pt_ce_closure_bind_to_var_visitor;
+extern zend_class_entry *pt_ce_curl_set_opt_arg_visitor;
+extern zend_class_entry *pt_ce_curl_set_opt_array_arg_visitor;
+extern zend_class_entry *pt_ce_declare_position_visitor;
+extern zend_class_entry *pt_ce_immediately_invoked_closure_visitor;
+extern zend_class_entry *pt_ce_implode_arg_visitor;
+extern zend_class_entry *pt_ce_magic_constant_param_default_visitor;
+extern zend_class_entry *pt_ce_new_assigned_to_property_visitor;
+extern zend_class_entry *pt_ce_parent_stmt_types_visitor;
+extern zend_class_entry *pt_ce_trait_collecting_visitor;
+extern zend_class_entry *pt_ce_try_catch_type_visitor;
+extern zend_class_entry *pt_ce_type_traverser_instanceof_visitor;
+
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
 [[nodiscard]] bool m_createYes(zval *ret);
@@ -17,13 +62,13 @@ namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m_no(zend_object *self, bool *ret);
 [[nodiscard]] bool m_toBooleanType(zend_object *self, zval *ret);
 [[nodiscard]] bool m_and(zend_object *self, zval *p_operand, zval *p_rest, uint32_t p_rest_count, zval *ret);
-[[nodiscard]] bool m_lazyAnd(zend_object *self, zval *p_objects, pgrt::Callable &p_callback, zval *ret);
+[[nodiscard]] bool m_lazyAnd(zend_object *self, zval *p_objects, zval *p_callback, zval *ret);
 [[nodiscard]] bool m_or(zend_object *self, zval *p_operand, zval *p_rest, uint32_t p_rest_count, zval *ret);
-[[nodiscard]] bool m_lazyOr(zend_object *self, zval *p_objects, pgrt::Callable &p_callback, zval *ret);
+[[nodiscard]] bool m_lazyOr(zend_object *self, zval *p_objects, zval *p_callback, zval *ret);
 [[nodiscard]] bool m_extremeIdentity(zval *p_operands, uint32_t p_operands_count, zval *ret);
-[[nodiscard]] bool m_lazyExtremeIdentity(zval *p_objects, pgrt::Callable &p_callback, zval *ret);
+[[nodiscard]] bool m_lazyExtremeIdentity(zval *p_objects, zval *p_callback, zval *ret);
 [[nodiscard]] bool m_maxMin(zval *p_operands, uint32_t p_operands_count, zval *ret);
-[[nodiscard]] bool m_lazyMaxMin(zval *p_objects, pgrt::Callable &p_callback, zval *ret);
+[[nodiscard]] bool m_lazyMaxMin(zval *p_objects, zval *p_callback, zval *ret);
 [[nodiscard]] bool m_negate(zend_object *self, zval *ret);
 [[nodiscard]] bool m_equals(zend_object *self, zval *p_other, bool *ret);
 [[nodiscard]] bool m_compareTo(zend_object *self, zval *p_other, zval *ret);
@@ -41,10 +86,10 @@ namespace pgen::AcceptsResult {
 [[nodiscard]] bool m_createFromBoolean(bool p_value, zval *ret);
 [[nodiscard]] bool m_and(zend_object *self, zval *p_other, zval *ret);
 [[nodiscard]] bool m_or(zend_object *self, zval *p_other, zval *ret);
-[[nodiscard]] bool m_decorateReasons(zend_object *self, pgrt::Callable &p_cb, zval *ret);
+[[nodiscard]] bool m_decorateReasons(zend_object *self, zval *p_cb, zval *ret);
 [[nodiscard]] bool m_extremeIdentity(zval *p_operands, uint32_t p_operands_count, zval *ret);
 [[nodiscard]] bool m_maxMin(zval *p_operands, uint32_t p_operands_count, zval *ret);
-[[nodiscard]] bool m_lazyMaxMin(zval *p_objects, pgrt::Callable &p_callback, zval *ret);
+[[nodiscard]] bool m_lazyMaxMin(zval *p_objects, zval *p_callback, zval *ret);
 } // namespace pgen::AcceptsResult
 
 namespace pgen::IsSuperTypeOfResult {
@@ -62,10 +107,10 @@ namespace pgen::IsSuperTypeOfResult {
 [[nodiscard]] bool m_toAcceptsResult(zend_object *self, zval *ret);
 [[nodiscard]] bool m_and(zend_object *self, zval *p_others, uint32_t p_others_count, zval *ret);
 [[nodiscard]] bool m_or(zend_object *self, zval *p_others, uint32_t p_others_count, zval *ret);
-[[nodiscard]] bool m_decorateReasons(zend_object *self, pgrt::Callable &p_cb, zval *ret);
+[[nodiscard]] bool m_decorateReasons(zend_object *self, zval *p_cb, zval *ret);
 [[nodiscard]] bool m_extremeIdentity(zval *p_operands, uint32_t p_operands_count, zval *ret);
 [[nodiscard]] bool m_maxMin(zval *p_operands, uint32_t p_operands_count, zval *ret);
-[[nodiscard]] bool m_lazyMaxMin(zval *p_objects, pgrt::Callable &p_callback, zval *ret);
+[[nodiscard]] bool m_lazyMaxMin(zval *p_objects, zval *p_callback, zval *ret);
 [[nodiscard]] bool m_negate(zend_object *self, zval *ret);
 [[nodiscard]] bool m_describe(zend_object *self, zval *ret);
 } // namespace pgen::IsSuperTypeOfResult
@@ -190,7 +235,7 @@ namespace pgen::StatementExitPoint {
 
 namespace pgen::ParametersProcessor {
 [[nodiscard]] bool m___construct(zend_object *self, zval *p_attributesHandler);
-[[nodiscard]] bool m_processParams(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_params, zval *p_scope, zval *p_storage, pgrt::Callable &p_nodeCallback, zval *ret);
+[[nodiscard]] bool m_processParams(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_params, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *ret);
 } // namespace pgen::ParametersProcessor
 
 namespace pgen::TemplateTypeReference {
@@ -316,5 +361,92 @@ namespace pgen::ChangedTypePropertyReflection {
 [[nodiscard]] bool m_getAttributes(zend_object *self, zval *ret);
 [[nodiscard]] bool m_isDummy(zend_object *self, zval *ret);
 } // namespace pgen::ChangedTypePropertyReflection
+
+namespace pgen::ArrayFilterArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ArrayFilterArgVisitor
+
+namespace pgen::ArrayFindArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ArrayFindArgVisitor
+
+namespace pgen::ArrayMapArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ArrayMapArgVisitor
+
+namespace pgen::ArrayOffsetNormalizingVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ArrayOffsetNormalizingVisitor
+
+namespace pgen::ArrayWalkArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ArrayWalkArgVisitor
+
+namespace pgen::ArrowFunctionArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ArrowFunctionArgVisitor
+
+namespace pgen::ClosureArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ClosureArgVisitor
+
+namespace pgen::ClosureBindArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ClosureBindArgVisitor
+
+namespace pgen::ClosureBindToVarVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ClosureBindToVarVisitor
+
+namespace pgen::CurlSetOptArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::CurlSetOptArgVisitor
+
+namespace pgen::CurlSetOptArrayArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::CurlSetOptArrayArgVisitor
+
+namespace pgen::DeclarePositionVisitor {
+[[nodiscard]] bool m_beforeTraverse(zend_object *self, zval *p_nodes, zval *ret);
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::DeclarePositionVisitor
+
+namespace pgen::ImmediatelyInvokedClosureVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ImmediatelyInvokedClosureVisitor
+
+namespace pgen::ImplodeArgVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ImplodeArgVisitor
+
+namespace pgen::MagicConstantParamDefaultVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::MagicConstantParamDefaultVisitor
+
+namespace pgen::NewAssignedToPropertyVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::NewAssignedToPropertyVisitor
+
+namespace pgen::ParentStmtTypesVisitor {
+[[nodiscard]] bool m_beforeTraverse(zend_object *self, zval *p_nodes, zval *ret);
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+[[nodiscard]] bool m_leaveNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::ParentStmtTypesVisitor
+
+namespace pgen::TraitCollectingVisitor {
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::TraitCollectingVisitor
+
+namespace pgen::TryCatchTypeVisitor {
+[[nodiscard]] bool m_beforeTraverse(zend_object *self, zval *p_nodes, zval *ret);
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+[[nodiscard]] bool m_leaveNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::TryCatchTypeVisitor
+
+namespace pgen::TypeTraverserInstanceofVisitor {
+[[nodiscard]] bool m_beforeTraverse(zend_object *self, zval *p_nodes, zval *ret);
+[[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
+[[nodiscard]] bool m_leaveNode(zend_object *self, zval *p_node, zval *ret);
+} // namespace pgen::TypeTraverserInstanceofVisitor
 
 #endif

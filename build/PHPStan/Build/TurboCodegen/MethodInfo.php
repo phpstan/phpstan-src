@@ -11,6 +11,7 @@ final class MethodInfo
 	/**
 	 * @param bool $direct whether callers may bind it statically (final class, private or final method)
 	 * @param list<ParamInfo> $params
+	 * @param string|null $trait the trait the method comes from (compiled into the using class)
 	 */
 	public function __construct(
 		public readonly ClassUnit $unit,
@@ -20,6 +21,7 @@ final class MethodInfo
 		public readonly array $params,
 		public readonly ReturnInfo $return,
 		public readonly ClassMethod $node,
+		public readonly ?string $trait = null,
 	)
 	{
 	}

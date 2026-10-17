@@ -11,6 +11,7 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
@@ -200,7 +201,35 @@ final class ClassStatementsGatherer
 			return;
 		}
 		if ($node instanceof Array_ && count($node->items) === 2) {
-			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
+			$firstItem = $node->items[0];
+			if (!$firstItem->unpack) {
+				$firstExpr = $firstItem->value;
+				if ($firstExpr instanceof Expr\Variable && $firstExpr->name === 'this') {
+					$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
+					return;
+				}
+
+				if (
+					$firstExpr instanceof Expr\ClassConstFetch
+					&& $firstExpr->name instanceof Identifier
+					&& $firstExpr->name->toLowerString() === 'class'
+				) {
+					if ($firstExpr->class instanceof Name) {
+						$className = $firstExpr->class->toLowerString();
+						if (
+							$className === 'self'
+							|| $className === 'static'
+							|| $className === strtolower($this->classReflection->getName())
+						) {
+							$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
+							return;
+						}
+					} elseif ($firstExpr->class instanceof Expr\Variable && $firstExpr->class->name === 'this') {
+						$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
+						return;
+					}
+				}
+			}
 			return;
 		}
 		if ($node instanceof Expr\ClassConstFetch) {

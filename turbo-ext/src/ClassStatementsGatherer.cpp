@@ -80,6 +80,10 @@ static NodeProp pt_csg_class_method_stmt_name = PT_NODE_PROP(PT_CLASS_CLASS_METH
 static NodeProp pt_csg_class_method_stmt_params = PT_NODE_PROP(PT_CLASS_CLASS_METHOD_STMT, "params");
 static NodeProp pt_csg_func_call_name = PT_NODE_PROP(PT_CLASS_FUNC_CALL, "name");
 static NodeProp pt_csg_array_items = PT_NODE_PROP(PT_CLASS_ARRAY_EXPR, "items");
+static NodeProp pt_csg_array_item_value = PT_NODE_PROP(PT_CLASS_ARRAY_ITEM, "value");
+static NodeProp pt_csg_array_item_unpack = PT_NODE_PROP(PT_CLASS_ARRAY_ITEM, "unpack");
+static NodeProp pt_csg_class_const_fetch_class = PT_NODE_PROP(PT_CLASS_CLASS_CONST_FETCH, "class");
+static NodeProp pt_csg_class_const_fetch_name = PT_NODE_PROP(PT_CLASS_CLASS_CONST_FETCH, "name");
 static NodeProp pt_csg_property_assign_fetch = PT_NODE_PROP(PT_CLASS_PROPERTY_ASSIGN_NODE, "propertyFetch");
 static NodeProp pt_csg_property_assign_expr = PT_NODE_PROP(PT_CLASS_PROPERTY_ASSIGN_NODE, "assignedExpr");
 static NodeProp pt_csg_coalesce_var = PT_NODE_PROP(PT_CLASS_COALESCE_ASSIGN_OP_EXPR, "var");
@@ -235,6 +239,64 @@ private:
 		return pt_type_call_static_ce(typeUtils, PT_LC("findthistype"), 1, type);
 	}
 
+	static bool isCallableArrayCandidate(HashTable *items, zval *ownName)
+	{
+		zval *firstItem = zend_hash_index_find(items, 0);
+		if (firstItem == NULL || Z_TYPE_P(firstItem) != IS_OBJECT || !isInstanceOf(Z_OBJ_P(firstItem), PT_CLASS_ARRAY_ITEM)) {
+			return false;
+		}
+
+		zval *unpack = pt_csg_array_item_unpack.of(Z_OBJ_P(firstItem));
+		if (unpack != NULL && zend_is_true(unpack)) {
+			return false;
+		}
+
+		zval *itemValue = pt_csg_array_item_value.of(Z_OBJ_P(firstItem));
+		if (itemValue == NULL || Z_TYPE_P(itemValue) != IS_OBJECT) {
+			return false;
+		}
+
+		zend_object *valObj = Z_OBJ_P(itemValue);
+		if (isInstanceOf(valObj, PT_CLASS_VARIABLE)) {
+			zval *varName = pt_csg_variable_name.of(valObj);
+			return varName != NULL && Z_TYPE_P(varName) == IS_STRING && zend_string_equals_literal(Z_STR_P(varName), "this");
+		}
+
+		if (isInstanceOf(valObj, PT_CLASS_CLASS_CONST_FETCH)) {
+			zend_object *constName = pt_csg_class_const_fetch_name.objectOf(valObj, PT_CLASS_IDENTIFIER);
+			zend_string *constNameStr = constName != NULL ? visitors::nameString(constName, pt_csg_identifier_name) : NULL;
+			if (constNameStr == NULL || !visitors::lowerEquals(constNameStr, "class")) {
+				return false;
+			}
+
+			zend_object *classNode = pt_csg_class_const_fetch_class.objectOf(valObj, PT_CLASS_NAME);
+			if (classNode != NULL) {
+				zend_string *classNameStr = visitors::nameString(classNode, pt_csg_name_name);
+				if (classNameStr == NULL) {
+					return false;
+				}
+
+				if (visitors::lowerEquals(classNameStr, "self") || visitors::lowerEquals(classNameStr, "static")) {
+					return true;
+				}
+
+				if (Z_TYPE_P(ownName) == IS_STRING && zend_string_equals_ci(classNameStr, Z_STR_P(ownName))) {
+					return true;
+				}
+
+				return false;
+			}
+
+			zval *classExpr = pt_csg_class_const_fetch_class.of(valObj);
+			if (classExpr != NULL && Z_TYPE_P(classExpr) == IS_OBJECT && isInstanceOf(Z_OBJ_P(classExpr), PT_CLASS_VARIABLE)) {
+				zval *varName = pt_csg_variable_name.of(Z_OBJ_P(classExpr));
+				return varName != NULL && Z_TYPE_P(varName) == IS_STRING && zend_string_equals_literal(Z_STR_P(varName), "this");
+			}
+		}
+
+		return false;
+	}
+
 	bool gatherNodes(zend_object *node, zval *scope)
 	{
 		bool inClass;
@@ -304,7 +366,10 @@ private:
 		if (isInstanceOf(node, PT_CLASS_ARRAY_EXPR)) {
 			zval *items = pt_csg_array_items.of(node);
 			if (items != NULL && Z_TYPE_P(items) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(items)) == 2) {
-				return pushNodeScope(slots::methodCalls, PT_CLASS_GATHERED_METHOD_CALL, &nodeZv, scope);
+				if (isCallableArrayCandidate(Z_ARRVAL_P(items), ownName.raw())) {
+					return pushNodeScope(slots::methodCalls, PT_CLASS_GATHERED_METHOD_CALL, &nodeZv, scope);
+				}
+				return true;
 			}
 		}
 		if (isInstanceOf(node, PT_CLASS_CLASS_CONST_FETCH)) return pushNodeScope(slots::constantFetches, PT_CLASS_CLASS_CONSTANT_FETCH, &nodeZv, scope);

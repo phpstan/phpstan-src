@@ -2,7 +2,7 @@
 
 namespace UnusedFunctionParameters;
 
-function completelyUnused(int $used, int $unused): int
+function completelyUnused(int $used, int $unused, $_ignoredUnused): int
 {
 	return $used;
 }
@@ -35,7 +35,7 @@ function byRefWritten(int &$x): void
 	$x = 1;
 }
 
-function byRefUnused(int &$x): void
+function byRefUnused(int &$x, int &$_ignoredUnused): void
 {
 	echo 'no use of the reference';
 }
@@ -48,6 +48,11 @@ function observedByFuncGetArgs(int $x): array
 }
 
 function variadicUnused(int $used, int ...$rest): int
+{
+	return $used;
+}
+
+function variadicIgnoredUnused(int $used, int ...$_ignoredRest): int
 {
 	return $used;
 }
@@ -76,7 +81,7 @@ function usedViaCompact(string $key): array
 	return compact('key');
 }
 
-function usedViaResolvedVariableVariable(int $secret, int $other): int
+function usedViaResolvedVariableVariable(int $secret, int $other, int $_ignoredOther): int
 {
 	$name = 'secret';
 

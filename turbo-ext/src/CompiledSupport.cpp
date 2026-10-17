@@ -192,3 +192,58 @@ zv::Val pt_parameters_processor_process_params(zval *processor, zval *nodeScopeR
 }
 
 /* }}} */
+
+/* {{{ PhpParameterReflection: $parameter-><member>() of any ParameterReflection */
+
+namespace {
+
+/* the ParameterReflection / ExtendedParameterReflection methods by member,
+ * for the cached sites of any other implementation */
+struct MemberName
+{
+	const char *lcname;
+	size_t len;
+	const char *name;
+};
+
+#define PT_PPR_MEMBER(lc, name) { lc, sizeof(lc) - 1, name }
+
+const MemberName memberNames[PT_PR_MEMBER_COUNT] = {
+	/* PT_PR_GET_NAME */ PT_PPR_MEMBER("getname", "getName"),
+	/* PT_PR_IS_OPTIONAL */ PT_PPR_MEMBER("isoptional", "isOptional"),
+	/* PT_PR_GET_TYPE */ PT_PPR_MEMBER("gettype", "getType"),
+	/* PT_PR_PASSED_BY_REFERENCE */ PT_PPR_MEMBER("passedbyreference", "passedByReference"),
+	/* PT_PR_IS_VARIADIC */ PT_PPR_MEMBER("isvariadic", "isVariadic"),
+	/* PT_PR_GET_DEFAULT_VALUE */ PT_PPR_MEMBER("getdefaultvalue", "getDefaultValue"),
+	/* PT_PR_GET_PHPDOC_TYPE */ PT_PPR_MEMBER("getphpdoctype", "getPhpDocType"),
+	/* PT_PR_HAS_NATIVE_TYPE */ PT_PPR_MEMBER("hasnativetype", "hasNativeType"),
+	/* PT_PR_GET_NATIVE_TYPE */ PT_PPR_MEMBER("getnativetype", "getNativeType"),
+	/* PT_PR_GET_OUT_TYPE */ PT_PPR_MEMBER("getouttype", "getOutType"),
+	/* PT_PR_IS_IMMEDIATELY_INVOKED_CALLABLE */ PT_PPR_MEMBER("isimmediatelyinvokedcallable", "isImmediatelyInvokedCallable"),
+	/* PT_PR_GET_CLOSURE_THIS_TYPE */ PT_PPR_MEMBER("getclosurethistype", "getClosureThisType"),
+	/* PT_PR_GET_ATTRIBUTES */ PT_PPR_MEMBER("getattributes", "getAttributes"),
+	/* PT_PR_GET_ALLOWED_CONSTANTS */ PT_PPR_MEMBER("getallowedconstants", "getAllowedConstants"),
+	/* PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER */ PT_PPR_MEMBER("ispureunlesscallableisimpureparameter", "isPureUnlessCallableIsImpureParameter"),
+	/* PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER */ PT_PPR_MEMBER("ispureunlessparameterpassedparameter", "isPureUnlessParameterPassedParameter"),
+};
+
+#undef PT_PPR_MEMBER
+
+pt_method_site memberSites[PT_PR_MEMBER_COUNT];
+
+} // namespace
+
+zv::Val pt_parameter_reflection_call_slow(zval *parameter, pt_parameter_reflection_member member)
+{
+	const MemberName &name = memberNames[member];
+	if (UNEXPECTED(Z_TYPE_P(parameter) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function %s() on %s", name.name, zend_zval_value_name(parameter));
+		return zv::Val();
+	}
+	zend_object *object = Z_OBJ_P(parameter);
+	if (EXPECTED(object->ce == pt_ce_php_parameter_reflection)) return pt_php_parameter_reflection_call(object, member);
+	if (object->ce == pt_ce_extended_native_parameter_reflection) return pt_extended_native_parameter_reflection_call(object, member);
+	return pt_call_method_cached(memberSites[member], object, name.lcname, name.len, 0, NULL);
+}
+
+/* }}} */

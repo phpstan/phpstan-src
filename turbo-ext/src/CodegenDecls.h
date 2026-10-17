@@ -49,6 +49,35 @@ extern zend_class_entry *pt_ce_parent_stmt_types_visitor;
 extern zend_class_entry *pt_ce_trait_collecting_visitor;
 extern zend_class_entry *pt_ce_try_catch_type_visitor;
 extern zend_class_entry *pt_ce_type_traverser_instanceof_visitor;
+extern zend_class_entry *pt_ce_has_method_type;
+extern zend_class_entry *pt_ce_class_constant_access_type;
+extern zend_class_entry *pt_ce_template_benevolent_union_type;
+extern zend_class_entry *pt_ce_template_boolean_type;
+extern zend_class_entry *pt_ce_template_constant_array_type;
+extern zend_class_entry *pt_ce_template_constant_integer_type;
+extern zend_class_entry *pt_ce_template_constant_string_type;
+extern zend_class_entry *pt_ce_template_float_type;
+extern zend_class_entry *pt_ce_template_generic_object_type;
+extern zend_class_entry *pt_ce_template_integer_type;
+extern zend_class_entry *pt_ce_template_intersection_type;
+extern zend_class_entry *pt_ce_template_iterable_type;
+extern zend_class_entry *pt_ce_template_key_of_type;
+extern zend_class_entry *pt_ce_template_mixed_type;
+extern zend_class_entry *pt_ce_template_null_type;
+extern zend_class_entry *pt_ce_template_object_shape_type;
+extern zend_class_entry *pt_ce_template_object_type;
+extern zend_class_entry *pt_ce_template_object_without_class_type;
+extern zend_class_entry *pt_ce_template_string_type;
+extern zend_class_entry *pt_ce_get_template_type_type;
+extern zend_class_entry *pt_ce_key_of_type;
+extern zend_class_entry *pt_ce_new_object_type;
+extern zend_class_entry *pt_ce_offset_access_type;
+extern zend_class_entry *pt_ce_strict_mixed_type;
+extern zend_class_entry *pt_ce_string_always_accepting_object_with_to_string_type;
+extern zend_class_entry *pt_ce_string_never_accepting_object_with_to_string_type;
+extern zend_class_entry *pt_ce_value_of_type;
+extern zend_class_entry *pt_ce_php_parameter_reflection;
+extern zend_class_entry *pt_ce_unresolvable_type_helper;
 
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
@@ -448,5 +477,348 @@ namespace pgen::TypeTraverserInstanceofVisitor {
 [[nodiscard]] bool m_enterNode(zend_object *self, zval *p_node, zval *ret);
 [[nodiscard]] bool m_leaveNode(zend_object *self, zval *p_node, zval *ret);
 } // namespace pgen::TypeTraverserInstanceofVisitor
+
+namespace pgen::HasMethodType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_methodName);
+[[nodiscard]] bool m_getReferencedClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getObjectClassNames(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getObjectClassReflections(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getClassStringType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getCanonicalMethodName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_accepts(zend_object *self, zval *p_type, bool p_strictTypes, zval *ret);
+[[nodiscard]] bool m_isSuperTypeOf(zend_object *self, zval *p_type, zval *ret);
+[[nodiscard]] bool m_isSubTypeOf(zend_object *self, zval *p_otherType, zval *ret);
+[[nodiscard]] bool m_isAcceptedBy(zend_object *self, zval *p_acceptingType, bool p_strictTypes, zval *ret);
+[[nodiscard]] bool m_equals(zend_object *self, zval *p_type, bool *ret);
+[[nodiscard]] bool m_describe(zend_object *self, zval *p_level, zval *ret);
+[[nodiscard]] bool m_hasMethod(zend_object *self, zval *p_methodName, zval *ret);
+[[nodiscard]] bool m_getMethod(zend_object *self, zval *p_methodName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getUnresolvedMethodPrototype(zend_object *self, zval *p_methodName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_isCallable(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isNull(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isConstantValue(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isConstantScalarValue(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getConstantScalarTypes(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getConstantScalarValues(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isTrue(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isFalse(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isBoolean(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isFloat(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isInteger(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getClassStringObjectType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getObjectTypeOrClassStringObjectType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isVoid(zend_object *self, zval *ret);
+[[nodiscard]] bool m_looseCompare(zend_object *self, zval *p_type, zval *p_phpVersion, zval *ret);
+[[nodiscard]] bool m_toNumber(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toBitwiseNotType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toAbsoluteNumber(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toInteger(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toFloat(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toArray(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toArrayKey(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toCoercedArgumentType(zend_object *self, bool p_strictTypes, zval *ret);
+[[nodiscard]] bool m_getEnumCases(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getEnumCaseObject(zend_object *self, zval *ret);
+[[nodiscard]] bool m_traverse(zend_object *self, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_exponentiate(zend_object *self, zval *p_exponent, zval *ret);
+[[nodiscard]] bool m_getFiniteTypes(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getDefaultBaseType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toPhpDocNode(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasTemplateOrLateResolvableType(zend_object *self, bool *ret);
+} // namespace pgen::HasMethodType
+
+namespace pgen::ClassConstantAccessType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_type, zval *p_constantName, zval *p_nativeType);
+[[nodiscard]] bool m_withNativeType(zend_object *self, zval *p_nativeType, zval *ret);
+[[nodiscard]] bool m_getReferencedClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getReferencedTemplateTypes(zend_object *self, zval *p_positionVariance, zval *ret);
+[[nodiscard]] bool m_equals(zend_object *self, zval *p_type, bool *ret);
+[[nodiscard]] bool m_describe(zend_object *self, zval *p_level, zval *ret);
+[[nodiscard]] bool m_isResolvable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getResult(zend_object *self, zval *ret);
+[[nodiscard]] bool m_traverse(zend_object *self, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_toPhpDocNode(zend_object *self, zval *ret);
+} // namespace pgen::ClassConstantAccessType
+
+namespace pgen::TemplateBenevolentUnionType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+[[nodiscard]] bool m_withTypes(zend_object *self, zval *p_types, zval *ret);
+[[nodiscard]] bool m_filterTypes(zend_object *self, zval *p_filterCb, zval *ret);
+} // namespace pgen::TemplateBenevolentUnionType
+
+namespace pgen::TemplateBooleanType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateBooleanType
+
+namespace pgen::TemplateConstantArrayType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+[[nodiscard]] bool m_recreate(zend_object *self, zval *p_keyTypes, zval *p_valueTypes, zval *p_nextAutoIndexes, zval *p_optionalKeys, zval *p_isList, zval *p_unsealed, zval *ret);
+} // namespace pgen::TemplateConstantArrayType
+
+namespace pgen::TemplateConstantIntegerType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateConstantIntegerType
+
+namespace pgen::TemplateConstantStringType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateConstantStringType
+
+namespace pgen::TemplateFloatType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateFloatType
+
+namespace pgen::TemplateGenericObjectType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+[[nodiscard]] bool m_recreate(zend_object *self, zval *p_className, zval *p_types, zval *p_subtractedType, zval *p_variances, zval *ret);
+} // namespace pgen::TemplateGenericObjectType
+
+namespace pgen::TemplateIntegerType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateIntegerType
+
+namespace pgen::TemplateIntersectionType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateIntersectionType
+
+namespace pgen::TemplateIterableType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateIterableType
+
+namespace pgen::TemplateKeyOfType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+[[nodiscard]] bool m_getResult(zend_object *self, zval *ret);
+} // namespace pgen::TemplateKeyOfType
+
+namespace pgen::TemplateMixedType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+[[nodiscard]] bool m_isSuperTypeOfMixed(zend_object *self, zval *p_type, zval *ret);
+[[nodiscard]] bool m_isAcceptedBy(zend_object *self, zval *p_acceptingType, bool p_strictTypes, zval *ret);
+[[nodiscard]] bool m_toStrictMixedType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getClassStringType(zend_object *self, zval *ret);
+} // namespace pgen::TemplateMixedType
+
+namespace pgen::TemplateNullType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateNullType
+
+namespace pgen::TemplateObjectShapeType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateObjectShapeType
+
+namespace pgen::TemplateObjectType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateObjectType
+
+namespace pgen::TemplateObjectWithoutClassType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+[[nodiscard]] bool m_getClassStringType(zend_object *self, zval *ret);
+} // namespace pgen::TemplateObjectWithoutClassType
+
+namespace pgen::TemplateStringType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_scope, zval *p_templateTypeStrategy, zval *p_templateTypeVariance, zval *p_name, zval *p_bound, zval *p_default);
+} // namespace pgen::TemplateStringType
+
+namespace pgen::GetTemplateTypeType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_type, zval *p_ancestorClassName, zval *p_templateTypeName);
+[[nodiscard]] bool m_getReferencedClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getReferencedTemplateTypes(zend_object *self, zval *p_positionVariance, zval *ret);
+[[nodiscard]] bool m_equals(zend_object *self, zval *p_type, bool *ret);
+[[nodiscard]] bool m_describe(zend_object *self, zval *p_level, zval *ret);
+[[nodiscard]] bool m_isResolvable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getResult(zend_object *self, zval *ret);
+[[nodiscard]] bool m_traverse(zend_object *self, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_toPhpDocNode(zend_object *self, zval *ret);
+} // namespace pgen::GetTemplateTypeType
+
+namespace pgen::KeyOfType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_type);
+[[nodiscard]] bool m_getType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getReferencedClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getReferencedTemplateTypes(zend_object *self, zval *p_positionVariance, zval *ret);
+[[nodiscard]] bool m_equals(zend_object *self, zval *p_type, bool *ret);
+[[nodiscard]] bool m_describe(zend_object *self, zval *p_level, zval *ret);
+[[nodiscard]] bool m_isResolvable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getResult(zend_object *self, zval *ret);
+[[nodiscard]] bool m_traverse(zend_object *self, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_toPhpDocNode(zend_object *self, zval *ret);
+} // namespace pgen::KeyOfType
+
+namespace pgen::NewObjectType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_type);
+[[nodiscard]] bool m_getType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getReferencedClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getReferencedTemplateTypes(zend_object *self, zval *p_positionVariance, zval *ret);
+[[nodiscard]] bool m_equals(zend_object *self, zval *p_type, bool *ret);
+[[nodiscard]] bool m_describe(zend_object *self, zval *p_level, zval *ret);
+[[nodiscard]] bool m_isResolvable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getResult(zend_object *self, zval *ret);
+[[nodiscard]] bool m_traverse(zend_object *self, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_toPhpDocNode(zend_object *self, zval *ret);
+} // namespace pgen::NewObjectType
+
+namespace pgen::OffsetAccessType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_type, zval *p_offset);
+[[nodiscard]] bool m_getReferencedClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getObjectClassNames(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getObjectClassReflections(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getReferencedTemplateTypes(zend_object *self, zval *p_positionVariance, zval *ret);
+[[nodiscard]] bool m_equals(zend_object *self, zval *p_type, bool *ret);
+[[nodiscard]] bool m_describe(zend_object *self, zval *p_level, zval *ret);
+[[nodiscard]] bool m_isResolvable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getResult(zend_object *self, zval *ret);
+[[nodiscard]] bool m_traverse(zend_object *self, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_toPhpDocNode(zend_object *self, zval *ret);
+} // namespace pgen::OffsetAccessType
+
+namespace pgen::StrictMixedType {
+[[nodiscard]] bool m_getReferencedClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getObjectClassNames(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getObjectClassReflections(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getConstantStrings(zend_object *self, zval *ret);
+[[nodiscard]] bool m_accepts(zend_object *self, zval *p_type, bool p_strictTypes, zval *ret);
+[[nodiscard]] bool m_isAcceptedBy(zend_object *self, zval *p_acceptingType, bool p_strictTypes, zval *ret);
+[[nodiscard]] bool m_isSuperTypeOf(zend_object *self, zval *p_type, zval *ret);
+[[nodiscard]] bool m_isSubTypeOf(zend_object *self, zval *p_otherType, zval *ret);
+[[nodiscard]] bool m_equals(zend_object *self, zval *p_type, bool *ret);
+[[nodiscard]] bool m_describe(zend_object *self, zval *p_level, zval *ret);
+[[nodiscard]] bool m_getTemplateType(zend_object *self, zval *p_ancestorClassName, zval *p_templateTypeName, zval *ret);
+[[nodiscard]] bool m_isObject(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getClassStringType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isEnum(zend_object *self, zval *ret);
+[[nodiscard]] bool m_canAccessProperties(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasProperty(zend_object *self, zval *p_propertyName, zval *ret);
+[[nodiscard]] bool m_getProperty(zend_object *self, zval *p_propertyName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getUnresolvedPropertyPrototype(zend_object *self, zval *p_propertyName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_hasInstanceProperty(zend_object *self, zval *p_propertyName, zval *ret);
+[[nodiscard]] bool m_getInstanceProperty(zend_object *self, zval *p_propertyName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getUnresolvedInstancePropertyPrototype(zend_object *self, zval *p_propertyName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_hasStaticProperty(zend_object *self, zval *p_propertyName, zval *ret);
+[[nodiscard]] bool m_getStaticProperty(zend_object *self, zval *p_propertyName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getUnresolvedStaticPropertyPrototype(zend_object *self, zval *p_propertyName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_canCallMethods(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasMethod(zend_object *self, zval *p_methodName, zval *ret);
+[[nodiscard]] bool m_getMethod(zend_object *self, zval *p_methodName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getUnresolvedMethodPrototype(zend_object *self, zval *p_methodName, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_canAccessConstants(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasConstant(zend_object *self, zval *p_constantName, zval *ret);
+[[nodiscard]] bool m_getConstant(zend_object *self, zval *p_constantName, zval *ret);
+[[nodiscard]] bool m_isIterable(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isIterableAtLeastOnce(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getIterableKeyType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getIterableValueType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isNull(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isConstantValue(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isConstantScalarValue(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getConstantScalarTypes(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getConstantScalarValues(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isTrue(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isFalse(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isBoolean(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isFloat(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isInteger(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isNumericString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isDecimalIntegerString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isNonEmptyString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isNonFalsyString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isLiteralString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isLowercaseString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isUppercaseString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isClassString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getClassStringObjectType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getObjectTypeOrClassStringObjectType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isVoid(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isScalar(zend_object *self, zval *ret);
+[[nodiscard]] bool m_looseCompare(zend_object *self, zval *p_type, zval *p_phpVersion, zval *ret);
+[[nodiscard]] bool m_isOffsetAccessible(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isOffsetAccessLegal(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasOffsetValueType(zend_object *self, zval *p_offsetType, zval *ret);
+[[nodiscard]] bool m_getOffsetValueType(zend_object *self, zval *p_offsetType, zval *ret);
+[[nodiscard]] bool m_setOffsetValueType(zend_object *self, zval *p_offsetType, zval *p_valueType, bool p_unionValues, zval *ret);
+[[nodiscard]] bool m_setExistingOffsetValueType(zend_object *self, zval *p_offsetType, zval *p_valueType, zval *ret);
+[[nodiscard]] bool m_unsetOffset(zend_object *self, zval *p_offsetType, zval *ret);
+[[nodiscard]] bool m_isCallable(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getCallableParametersAcceptors(zend_object *self, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_isCloneable(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toBoolean(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toNumber(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toBitwiseNotType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toGetClassResultType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toClassConstantType(zend_object *self, zval *p_reflectionProvider, zval *ret);
+[[nodiscard]] bool m_toObjectTypeForInstanceofCheck(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toObjectTypeForIsACheck(zend_object *self, zval *p_objectOrClassType, bool p_allowString, bool p_allowSameClass, zval *ret);
+[[nodiscard]] bool m_toAbsoluteNumber(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toInteger(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toFloat(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toArray(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toArrayKey(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toCoercedArgumentType(zend_object *self, bool p_strictTypes, zval *ret);
+[[nodiscard]] bool m_inferTemplateTypes(zend_object *self, zval *p_receivedType, zval *ret);
+[[nodiscard]] bool m_getReferencedTemplateTypes(zend_object *self, zval *p_positionVariance, zval *ret);
+[[nodiscard]] bool m_getEnumCases(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getEnumCaseObject(zend_object *self, zval *ret);
+[[nodiscard]] bool m_traverse(zend_object *self, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_exponentiate(zend_object *self, zval *p_exponent, zval *ret);
+[[nodiscard]] bool m_getFiniteTypes(zend_object *self, zval *ret);
+[[nodiscard]] bool m_toPhpDocNode(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasTemplateOrLateResolvableType(zend_object *self, bool *ret);
+} // namespace pgen::StrictMixedType
+
+namespace pgen::StringAlwaysAcceptingObjectWithToStringType {
+[[nodiscard]] bool m_isSuperTypeOf(zend_object *self, zval *p_type, zval *ret);
+[[nodiscard]] bool m_accepts(zend_object *self, zval *p_type, bool p_strictTypes, zval *ret);
+} // namespace pgen::StringAlwaysAcceptingObjectWithToStringType
+
+namespace pgen::StringNeverAcceptingObjectWithToStringType {
+[[nodiscard]] bool m_isSuperTypeOf(zend_object *self, zval *p_type, zval *ret);
+[[nodiscard]] bool m_accepts(zend_object *self, zval *p_type, bool p_strictTypes, zval *ret);
+} // namespace pgen::StringNeverAcceptingObjectWithToStringType
+
+namespace pgen::ValueOfType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_type);
+[[nodiscard]] bool m_getReferencedClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getReferencedTemplateTypes(zend_object *self, zval *p_positionVariance, zval *ret);
+[[nodiscard]] bool m_equals(zend_object *self, zval *p_type, bool *ret);
+[[nodiscard]] bool m_describe(zend_object *self, zval *p_level, zval *ret);
+[[nodiscard]] bool m_isResolvable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getResult(zend_object *self, zval *ret);
+[[nodiscard]] bool m_traverse(zend_object *self, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret);
+[[nodiscard]] bool m_toPhpDocNode(zend_object *self, zval *ret);
+} // namespace pgen::ValueOfType
+
+namespace pgen::PhpParameterReflection {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_reflection, zval *p_phpDocType, zval *p_declaringClass, zval *p_outType, zval *p_immediatelyInvokedCallable, zval *p_closureThisType, zval *p_attributes, zval *p_allowedConstants, zval *p_pureUnlessCallableIsImpureParameter, zval *p_pureUnlessParameterPassedParameter);
+[[nodiscard]] bool m_isOptional(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_passedByReference(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isVariadic(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getPhpDocType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasNativeType(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getNativeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getDefaultValue(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getOutType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isImmediatelyInvokedCallable(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getClosureThisType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getAttributes(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getAllowedConstants(zend_object *self, zval *ret);
+[[nodiscard]] bool m_checkAllowedConstants(zend_object *self, zval *p_constants, zval *ret);
+[[nodiscard]] bool m_isPureUnlessCallableIsImpureParameter(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isPureUnlessParameterPassedParameter(zend_object *self, zval *ret);
+} // namespace pgen::PhpParameterReflection
+
+namespace pgen::UnresolvableTypeHelper {
+[[nodiscard]] bool m_getUnresolvableType(zend_object *self, zval *p_type, zval *ret);
+} // namespace pgen::UnresolvableTypeHelper
 
 #endif

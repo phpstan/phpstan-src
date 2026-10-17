@@ -123,6 +123,10 @@ struct FunctionSite
 
 /* {{{ objects */
 
+/* the parameterless constructor a class inherits (a hand-written parent's),
+ * through the engine; false = pending exception */
+[[nodiscard]] bool callInheritedConstructor(zend_object *object);
+
 /* new ce(...$argv) through the engine's constructor; false = pending
  * exception (*out is then UNDEF) */
 [[nodiscard]] bool newObject(zend_class_entry *ce, uint32_t argc, zval *argv, zval *out, HashTable *named = NULL);

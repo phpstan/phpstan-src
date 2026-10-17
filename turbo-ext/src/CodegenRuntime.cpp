@@ -154,6 +154,14 @@ bool callBound(pt_method_site &site, zend_class_entry *ce, zend_object *object, 
 	return true;
 }
 
+bool callInheritedConstructor(zend_object *object)
+{
+	zend_function *constructor = PT_CE(object->ce, constructor);
+	if (constructor == NULL) return true;
+	zend_call_known_function(constructor, object, object->ce, NULL, 0, NULL, NULL);
+	return !EG(exception);
+}
+
 bool newObject(zend_class_entry *ce, uint32_t argc, zval *argv, zval *out, HashTable *named)
 {
 	if (UNEXPECTED(object_init_ex(out, ce) != SUCCESS)) {
@@ -175,7 +183,10 @@ bool newObject(zend_class_entry *ce, uint32_t argc, zval *argv, zval *out, HashT
 
 void throwUninitializedProperty(zend_object *object, const char *name)
 {
-	zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization", ZSTR_VAL(object->ce->name), name);
+	/* the engine names the declaring class, not the object's */
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&PT_CE(object->ce, properties_info), name, strlen(name));
+	zend_class_entry *declaring = info != NULL ? info->ce : object->ce;
+	zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization", ZSTR_VAL(declaring->name), name);
 }
 
 bool readPropertyGeneric(zval *value, zend_class_entry *scope, const char *name, size_t len, zval *rv)

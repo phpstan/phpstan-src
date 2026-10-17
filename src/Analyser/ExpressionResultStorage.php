@@ -58,6 +58,11 @@ final class ExpressionResultStorage
 		return $this->exprResults[$expr] ?? ($this->fallback !== null ? $this->fallback->findExpressionResult($expr) : null);
 	}
 
+	public function removeExpressionResult(Expr $expr): void
+	{
+		unset($this->exprResults[$expr]);
+	}
+
 	/**
 	 * @param array{TemplateArgumentFrame|null, bool, bool, MutatingScope, MutatingScope, list<InternalThrowPoint>} $walk
 	 */

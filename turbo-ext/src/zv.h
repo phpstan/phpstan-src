@@ -389,6 +389,14 @@ public:
 		Z_TRY_ADDREF_P(borrowed.raw());
 		zend_hash_index_update(table(), index, borrowed.raw());
 	}
+
+	/* unset($a[$index]); separates a shared table first (writes through the
+	 * slot), releases a removed value */
+	void unsetIndex(zend_ulong index)
+	{
+		SEPARATE_ARRAY(z);
+		zend_hash_index_del(table(), index);
+	}
 };
 
 /* Owned PHP array under construction.

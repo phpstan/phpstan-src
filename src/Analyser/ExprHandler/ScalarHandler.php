@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ExprHandler;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar;
 use PhpParser\Node\Scalar\InterpolatedString;
@@ -18,6 +19,9 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 
 /**
  * @implements ExprHandler<Scalar>
@@ -41,9 +45,16 @@ final class ScalarHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		// a literal's type and its initializer context (file/namespace/class) are
-		// lexical - identical on every scope - so build the context once here.
-		$initializerExprContext = InitializerExprContext::fromScope($scope);
+		if ($expr instanceof Node\Scalar\String_) {
+			$type = new ConstantStringType($expr->value);
+		} elseif ($expr instanceof Node\Scalar\Int_) {
+			$type = new ConstantIntegerType($expr->value);
+		} elseif ($expr instanceof Node\Scalar\Float_) {
+			$type = new ConstantFloatType($expr->value);
+		} else {
+			$initializerExprContext = InitializerExprContext::fromScope($scope);
+			$type = $this->initializerExprTypeResolver->getType($expr, $initializerExprContext);
+		}
 
 		return $this->expressionResultFactory->create(
 			$scope,
@@ -53,8 +64,10 @@ final class ScalarHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
-			typeCallback: fn () => $this->initializerExprTypeResolver->getType($expr, $initializerExprContext),
+			typeCallback: null,
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			type: $type,
+			nativeType: $type,
 		);
 	}
 

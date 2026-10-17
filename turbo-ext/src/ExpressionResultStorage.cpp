@@ -83,6 +83,17 @@ public:
 		}
 	}
 
+	/* Mirrors removeExpressionResult(): unset($this->exprResults[$expr]) -
+	 * this storage's own entries only, the read-only fallback chain keeps
+	 * its copies (writes never reach it) */
+	void removeExpressionResult(zval *expr)
+	{
+		zend_ulong id = Z_OBJ_HANDLE_P(expr);
+		zv::ObjRef obj(self);
+		zv::ArrRef(obj.propAt(slots::exprResults).raw()).unsetIndex(id);
+		zv::ArrRef(obj.propAt(slots::fallback).raw()).unsetIndex(id);
+	}
+
 	/* Mirrors storeByRefInvocationWalk(): the walks keyed by the closure's
 	 * handle as [closure, list of walks] - the closure is pinned like the
 	 * stored Exprs */
@@ -214,6 +225,16 @@ PT_MINIT_REGISTRATION(pt_register_expression_result_storage)
 		ExpressionResultStorage(ZEND_THIS).findExpressionResult(expr).intoReturnValue(return_value);
 	});
 
+	cls.method(sigs::removeExpressionResult, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr;
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
+		ZEND_PARSE_PARAMETERS_END();
+		ExpressionResultStorage(ZEND_THIS).removeExpressionResult(expr);
+	});
+
 	cls.method(sigs::storeByRefInvocationWalk, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *closure, *walk;
 		zend_class_entry *closureCe = pt_class(PT_CLASS_CLOSURE_EXPR);
@@ -252,6 +273,15 @@ void pt_expression_result_storage_store(zval *storage, zval *expr, zval *express
 	}
 	zv::Args argv{expr, expressionResult};
 	(void) pt_type_call(Z_OBJ_P(storage), "storeexpressionresult", sizeof("storeexpressionresult") - 1, 2, argv);
+}
+
+bool pt_expression_result_storage_remove(zval *storage, zval *expr)
+{
+	if (EXPECTED(Z_OBJCE_P(storage) == pt_ce_expression_result_storage)) {
+		ExpressionResultStorage(storage).removeExpressionResult(expr);
+		return true;
+	}
+	return !pt_type_call(Z_OBJ_P(storage), "removeexpressionresult", sizeof("removeexpressionresult") - 1, 1, expr).isUndef();
 }
 
 zv::Val pt_expression_result_storage_new()

@@ -9,12 +9,14 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayWalkParameterClosureTypeExtension.cpp')]
 final class ArrayWalkParameterClosureTypeExtension implements FunctionParameterClosureTypeExtension
 {
 

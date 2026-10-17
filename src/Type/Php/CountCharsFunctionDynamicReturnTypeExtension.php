@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -19,6 +20,7 @@ use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CountCharsFunctionDynamicReturnTypeExtension.cpp')]
 final class CountCharsFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

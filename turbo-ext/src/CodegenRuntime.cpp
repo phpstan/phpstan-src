@@ -1119,6 +1119,88 @@ bool callGetArgs(pt_method_site &site, zval *node, zval *ret)
 
 /* }}} */
 
+ForeachIter::~ForeachIter()
+{
+	if (iterator != nullptr) zend_iterator_dtor(iterator);
+	zval_ptr_dtor(&held);
+}
+
+bool ForeachIter::begin(zval *subject)
+{
+	zval *value = subject;
+	ZVAL_DEREF(value);
+	if (Z_TYPE_P(value) == IS_ARRAY) {
+		ZVAL_COPY(&held, value);
+		zend_hash_internal_pointer_reset_ex(Z_ARRVAL(held), &position);
+		return true;
+	}
+	if (Z_TYPE_P(value) == IS_OBJECT && PT_CE(Z_OBJCE_P(value), get_iterator) != NULL) {
+		ZVAL_COPY(&held, value);
+		iterator = PT_CE(Z_OBJCE_P(value), get_iterator)(Z_OBJCE_P(value), value, 0);
+		if (UNEXPECTED(iterator == NULL || EG(exception))) {
+			if (!EG(exception)) zend_throw_exception_ex(NULL, 0, "Objects returned by %s::getIterator() must be traversable or implement interface Iterator", ZSTR_VAL(Z_OBJCE_P(value)->name));
+			iterator = nullptr;
+			return false;
+		}
+		iterator->index = 0;
+		if (iterator->funcs->rewind != NULL) {
+			iterator->funcs->rewind(iterator);
+		}
+		return !EG(exception);
+	}
+	if (Z_TYPE_P(value) == IS_OBJECT) {
+		zend_throw_error(NULL, "phpstan_turbo codegen: foreach over a non-Traversable object's properties is not compiled");
+		return false;
+	}
+	zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(value));
+	empty = true;
+	return !EG(exception);
+}
+
+bool ForeachIter::valid()
+{
+	if (empty) return false;
+	if (iterator != nullptr) {
+		return !EG(exception) && iterator->funcs->valid(iterator) == SUCCESS && !EG(exception);
+	}
+	return zend_hash_get_current_data_ex(Z_ARRVAL(held), &position) != NULL;
+}
+
+zval *ForeachIter::current()
+{
+	if (iterator != nullptr) {
+		zval *value = iterator->funcs->get_current_data(iterator);
+		if (value != NULL) return value;
+		ZVAL_NULL(&missing);
+		return &missing;
+	}
+	return zend_hash_get_current_data_ex(Z_ARRVAL(held), &position);
+}
+
+void ForeachIter::key(zval *out)
+{
+	if (iterator != nullptr) {
+		if (iterator->funcs->get_current_key != NULL) {
+			iterator->funcs->get_current_key(iterator, out);
+		} else {
+			ZVAL_LONG(out, (zend_long) iterator->index);
+		}
+		return;
+	}
+	zend_hash_get_current_key_zval_ex(Z_ARRVAL(held), out, &position);
+}
+
+bool ForeachIter::next()
+{
+	if (iterator != nullptr) {
+		iterator->index++;
+		iterator->funcs->move_forward(iterator);
+		return !EG(exception);
+	}
+	zend_hash_move_forward_ex(Z_ARRVAL(held), &position);
+	return true;
+}
+
 HashTable *constArrayNew(uint32_t size)
 {
 	HashTable *table = (HashTable *) pemalloc(sizeof(HashTable), 1);

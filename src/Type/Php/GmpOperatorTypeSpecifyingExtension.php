@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
@@ -13,6 +14,7 @@ use PHPStan\Type\Type;
 use function in_array;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GmpOperatorTypeSpecifyingExtension.cpp')]
 final class GmpOperatorTypeSpecifyingExtension implements OperatorTypeSpecifyingExtension
 {
 

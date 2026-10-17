@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -10,6 +11,7 @@ use PHPStan\Type\UnaryOperatorTypeSpecifyingExtension;
 use function in_array;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GmpUnaryOperatorTypeSpecifyingExtension.cpp')]
 final class GmpUnaryOperatorTypeSpecifyingExtension implements UnaryOperatorTypeSpecifyingExtension
 {
 

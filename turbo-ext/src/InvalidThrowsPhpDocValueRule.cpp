@@ -598,36 +598,27 @@ namespace pgen::InvalidThrowsPhpDocValueRule {
 				 {
 					zv::Val r42;
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_46, l_classReflection, "getRequireExtendsTags", "getrequireextendstags", 21, 0, NULL, r42.raw(), NULL))) return false;
-					zv::Val a43 = zv::Val::copyOf(zv::Ref(r42.raw()).deref());
-					if (UNEXPECTED(Z_TYPE_P(a43.raw()) != IS_ARRAY)) {
-						if (Z_TYPE_P(a43.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a43.raw()));
-						if (UNEXPECTED(EG(exception))) return false;
-						a43 = zv::Val(zv::Arr::empty());
-					}
-					HashTable *ht41 = Z_ARRVAL_P(a43.raw());
-					zval *v44;
-					zend_ulong n45;
-					zend_string *s46;
-					ZEND_HASH_FOREACH_KEY_VAL(ht41, n45, s46, v44) {
-						(void) n45; (void) s46;
-						l_requireExtendsTag = zv::Ref(v44).deref().raw();
+					pgrt::ForeachIter it43;
+					if (UNEXPECTED(!it43.begin(r42.raw()))) return false;
+					while (it43.valid()) {
+						l_requireExtendsTag = zv::Ref(it43.current()).deref().raw();
 						 {
 							 {
-								zv::Val r49;
+								zv::Val r46;
 								if (EXPECTED(Z_TYPE_P(l_requireExtendsTag) == IS_OBJECT)) {
-									r49 = pt_type_op(Z_OBJ_P(l_requireExtendsTag), PT_OP_GET_TYPE, 0, NULL);
-									if (UNEXPECTED(r49.isUndef())) return false;
+									r46 = pt_type_op(Z_OBJ_P(l_requireExtendsTag), PT_OP_GET_TYPE, 0, NULL);
+									if (UNEXPECTED(r46.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_47, l_requireExtendsTag, "getType", "gettype", 7, 0, NULL, r49.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod(pg_site_47, l_requireExtendsTag, "getType", "gettype", 7, 0, NULL, r46.raw(), NULL))) return false;
 								}
 								}
-								{ zval v = r49.take(); l_toIntersectWith.pushOwned(&v); }
+								{ zval v = r46.take(); l_toIntersectWith.pushOwned(&v); }
 							}
 						}
+						if (UNEXPECTED(!it43.next())) return false;
 					}
-					ZEND_HASH_FOREACH_END();
+					if (UNEXPECTED(EG(exception))) return false;
 				}
 			}
 			cont39:;
@@ -635,29 +626,29 @@ namespace pgen::InvalidThrowsPhpDocValueRule {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val o50 = zv::Val::copyOf(zv::Ref(l_throwType.raw()));
-		pgrt::ArgVec vec51;
-		vec51.push(p_phpDocThrowsType);
-		for (uint32_t i = 0; i < l_toIntersectWith.size(); i++) vec51.push(&l_toIntersectWith.argv()[i]);
-		zv::Val r52;
+		zv::Val o47 = zv::Val::copyOf(zv::Ref(l_throwType.raw()));
+		pgrt::ArgVec vec48;
+		vec48.push(p_phpDocThrowsType);
+		for (uint32_t i = 0; i < l_toIntersectWith.size(); i++) vec48.push(&l_toIntersectWith.argv()[i]);
+		zv::Val r49;
 		 {
-			r52 = pt_type_combinator_intersect(vec51.size(), vec51.argv());
-			if (UNEXPECTED(r52.isUndef())) return false;
+			r49 = pt_type_combinator_intersect(vec48.size(), vec48.argv());
+			if (UNEXPECTED(r49.isUndef())) return false;
 		}
-		zval av53[1];
-		ZVAL_COPY_VALUE(&av53[0], r52.raw());
-		zv::Val r54;
-		if (EXPECTED(Z_TYPE_P(o50.raw()) == IS_OBJECT)) {
-			r54 = pt_type_op(Z_OBJ_P(o50.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av53);
-			if (UNEXPECTED(r54.isUndef())) return false;
+		zval av50[1];
+		ZVAL_COPY_VALUE(&av50[0], r49.raw());
+		zv::Val r51;
+		if (EXPECTED(Z_TYPE_P(o47.raw()) == IS_OBJECT)) {
+			r51 = pt_type_op(Z_OBJ_P(o47.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, av50);
+			if (UNEXPECTED(r51.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_48, o50.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av53, r54.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_48, o47.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av50, r51.raw(), NULL))) return false;
 		}
 		}
-		bool r55;
-		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r54.raw()), &r55))) return false;
-		*ret = r55;
+		bool r52;
+		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r51.raw()), &r52))) return false;
+		*ret = r52;
 		return true;
 	}
 }

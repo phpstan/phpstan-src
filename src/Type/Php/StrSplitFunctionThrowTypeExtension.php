@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
@@ -16,6 +17,7 @@ use function count;
  * str_split() throws ValueError only when $length is less than 1.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/StrSplitFunctionThrowTypeExtension.cpp')]
 final class StrSplitFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

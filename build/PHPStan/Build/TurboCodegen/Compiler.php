@@ -132,7 +132,7 @@ final class Compiler
 	/** per-file state, set by compileClass() */
 	private ?ClassUnit $current = null;
 
-	/** @var array<string, int> */
+	/** @var array<array-key, int> literal => index (a numeric string literal is an int key) */
 	private array $literals = [];
 
 	/** @var list<string> */
@@ -730,7 +730,7 @@ final class Compiler
 		// the literals the bodies and the glue (defaults) use, interned first
 		$literals = [];
 		foreach ($this->literals as $literal => $index) {
-			$literals[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(\"%s\", %d));", $index, self::cString($literal), strlen($literal));
+			$literals[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(\"%s\", %d));", $index, self::cString((string) $literal), strlen((string) $literal));
 		}
 		return str_replace("/*LITERALS*/\n", $literals === [] ? '' : implode("\n", $literals) . "\n", implode("\n", $out));
 	}
@@ -2376,6 +2376,42 @@ final class Compiler
 		$f->close();
 	}
 
+	/**
+	 * foreach over a value not proven to be an array, through
+	 * pgrt::ForeachIter (an array by position, a Traversable through the
+	 * engine's iterator); `continue` lands before the iterator advances.
+	 * The caller's block is open and closed by the caller.
+	 */
+	private function iteratorForeach(FunctionContext $f, Stmt\Foreach_ $stmt, string $subject): void
+	{
+		$it = $f->temp('it');
+		$f->line(sprintf('pgrt::ForeachIter %s;', $it));
+		$f->failIf(sprintf('!%s.begin(%s)', $it, $subject));
+		$f->open(sprintf('while (%s.valid())', $it));
+		if ($stmt->keyVar !== null) {
+			$key = $f->temp('k');
+			$f->line(sprintf('zv::Val %s;', $key));
+			$f->line(sprintf('%s.key(%s.raw());', $it, $key));
+			$this->assignTo($f, $stmt->keyVar, $key . '.raw()', true);
+		}
+		$this->assignTo($f, $stmt->valueVar, sprintf('zv::Ref(%s.current()).deref().raw()', $it), true);
+		$f->pushLoop(false);
+		$f->open('');
+		$this->statements($f, $stmt->stmts);
+		$f->close();
+		$loop = $f->popLoop();
+		if ($loop['continueUsed']) {
+			$f->line($loop['continue'] . ':;');
+		}
+		$f->failIf(sprintf('!%s.next()', $it));
+		$f->close();
+		if ($loop['breakUsed']) {
+			$f->line($loop['break'] . ':;');
+		}
+		$f->failIf('EG(exception)');
+		$f->close();
+	}
+
 	private function foreachStatement(FunctionContext $f, Stmt\Foreach_ $stmt): void
 	{
 		$f->open('');
@@ -2417,18 +2453,13 @@ final class Compiler
 			if ($array->kind !== 'zval') {
 				throw new CompileError('foreach over a non-array');
 			}
+			if (!$array->isArray && !$this->unit()->oracle->nativeType($source)->isArray()->yes()) {
+				// not proven an array: an array, a Traversable or the VM's warning
+				$this->iteratorForeach($f, $stmt, $this->asZval($f, $array));
+				return;
+			}
 			$held = $f->temp('a');
 			$f->line(sprintf('zv::Val %s = zv::Val::copyOf(zv::Ref(%s).deref());', $held, $array->code));
-			if (!$array->isArray && !$this->unit()->oracle->nativeType($source)->isArray()->yes()) {
-				// not proven an array: the VM's warning for a scalar; iterating an
-				// object's properties is outside the compiled subset
-				$f->open(sprintf('if (UNEXPECTED(Z_TYPE_P(%s.raw()) != IS_ARRAY))', $held));
-				$f->line(sprintf('if (Z_TYPE_P(%s.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); %s }', $held, $f->fail));
-				$f->line(sprintf('zend_error(E_WARNING, "foreach() argument must be of type array|object, %%s given", zend_zval_value_name(%s.raw()));', $held));
-				$f->failIf('EG(exception)');
-				$f->line(sprintf('%s = zv::Val(zv::Arr::empty());', $held));
-				$f->close();
-			}
 			$f->line(sprintf('HashTable *%s = Z_ARRVAL_P(%s.raw());', $ht, $held));
 		}
 		$v = $f->temp('v');

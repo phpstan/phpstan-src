@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -28,6 +29,7 @@ use const E_USER_WARNING;
  * the same way never-returning calls are.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TriggerErrorFunctionThrowTypeExtension.cpp')]
 final class TriggerErrorFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

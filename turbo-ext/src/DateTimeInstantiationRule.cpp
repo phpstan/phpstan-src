@@ -221,76 +221,67 @@ namespace pgen::DateTimeInstantiationRule {
 					zv::Val et46;
 					zval *e45 = pgrt::dimRead(l_lastErrors.raw(), &pg_lit[3], et46.raw());
 					if (UNEXPECTED(e45 == NULL)) return false;
-					zv::Val a47 = zv::Val::copyOf(zv::Ref(zv::Ref(e45).deref().raw()).deref());
-					if (UNEXPECTED(Z_TYPE_P(a47.raw()) != IS_ARRAY)) {
-						if (Z_TYPE_P(a47.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a47.raw()));
-						if (UNEXPECTED(EG(exception))) return false;
-						a47 = zv::Val(zv::Arr::empty());
-					}
-					HashTable *ht44 = Z_ARRVAL_P(a47.raw());
-					zval *v48;
-					zend_ulong n49;
-					zend_string *s50;
-					ZEND_HASH_FOREACH_KEY_VAL(ht44, n49, s50, v48) {
-						(void) n49; (void) s50;
-						l_error = zv::Ref(v48).deref().raw();
+					pgrt::ForeachIter it47;
+					if (UNEXPECTED(!it47.begin(zv::Ref(e45).deref().raw()))) return false;
+					while (it47.valid()) {
+						l_error = zv::Ref(it47.current()).deref().raw();
 						 {
 							 {
-								zv::Val q53;
+								zv::Val q50;
 								if (zend_is_identical(l_lowerClassName.raw(), &pg_lit[1])) {
-									zv::Val o54 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
-									q53 = std::move(o54);
+									zv::Val o51 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
+									q50 = std::move(o51);
 								} else {
 								 {
-									zv::Val o55 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
-									q53 = std::move(o55);
+									zv::Val o52 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
+									q50 = std::move(o52);
 								}
 								}
-								zv::Val o56 = zv::Val::copyOf(zv::Ref(l_dateString.raw()));
-								pgrt::StringBuilder sb57;
-								sb57.appendLiteral("Instantiating ", 14);
-								if (UNEXPECTED(!sb57.append(q53.raw()))) return false;
-								sb57.appendLiteral(" with ", 6);
-								if (UNEXPECTED(!sb57.append(o56.raw()))) return false;
-								sb57.appendLiteral(" produces an error: ", 20);
-								if (UNEXPECTED(!sb57.append(l_error))) return false;
-								zv::Val r58 = sb57.finish();
-								zval av59[1];
-								ZVAL_COPY_VALUE(&av59[0], r58.raw());
-								zend_class_entry *ce60 = pgrt::lookupClass(pg_site_12, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-								if (UNEXPECTED(ce60 == NULL)) return false;
-								zv::Val r61;
-								if (UNEXPECTED(!pgrt::callStatic(pg_site_13, ce60, "message", 7, 1, av59, r61.raw(), NULL))) return false;
-								zv::Val q62;
+								zv::Val o53 = zv::Val::copyOf(zv::Ref(l_dateString.raw()));
+								pgrt::StringBuilder sb54;
+								sb54.appendLiteral("Instantiating ", 14);
+								if (UNEXPECTED(!sb54.append(q50.raw()))) return false;
+								sb54.appendLiteral(" with ", 6);
+								if (UNEXPECTED(!sb54.append(o53.raw()))) return false;
+								sb54.appendLiteral(" produces an error: ", 20);
+								if (UNEXPECTED(!sb54.append(l_error))) return false;
+								zv::Val r55 = sb54.finish();
+								zval av56[1];
+								ZVAL_COPY_VALUE(&av56[0], r55.raw());
+								zend_class_entry *ce57 = pgrt::lookupClass(pg_site_12, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+								if (UNEXPECTED(ce57 == NULL)) return false;
+								zv::Val r58;
+								if (UNEXPECTED(!pgrt::callStatic(pg_site_13, ce57, "message", 7, 1, av56, r58.raw(), NULL))) return false;
+								zv::Val q59;
 								if (zend_is_identical(l_lowerClassName.raw(), &pg_lit[1])) {
-									zv::Val o63 = zv::Val::copyOf(zv::Ref(&pg_lit[6]));
-									q62 = std::move(o63);
+									zv::Val o60 = zv::Val::copyOf(zv::Ref(&pg_lit[6]));
+									q59 = std::move(o60);
 								} else {
 								 {
-									zv::Val o64 = zv::Val::copyOf(zv::Ref(&pg_lit[7]));
-									q62 = std::move(o64);
+									zv::Val o61 = zv::Val::copyOf(zv::Ref(&pg_lit[7]));
+									q59 = std::move(o61);
 								}
 								}
-								pgrt::StringBuilder sb65;
-								sb65.appendLiteral("new.", 4);
-								if (UNEXPECTED(!sb65.append(q62.raw()))) return false;
-								zv::Val r66 = sb65.finish();
-								zval av67[1];
-								ZVAL_COPY_VALUE(&av67[0], r66.raw());
-								zv::Val r68;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r61.raw(), "identifier", "identifier", 10, 1, av67, r68.raw(), NULL))) return false;
-								zv::Val r69;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r68.raw(), "build", "build", 5, 0, NULL, r69.raw(), NULL))) return false;
-								zv::Val o70 = zv::Val::copyOf(zv::Ref(r69.raw()));
-								zval *w71 = zv::Ref(l_errors.raw()).deref().raw();
-								if (Z_TYPE_P(w71) <= IS_NULL) { zval_ptr_dtor(w71); array_init(w71); } else if (UNEXPECTED(Z_TYPE_P(w71) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w71);
-								{ zval v = o70.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w71), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								pgrt::StringBuilder sb62;
+								sb62.appendLiteral("new.", 4);
+								if (UNEXPECTED(!sb62.append(q59.raw()))) return false;
+								zv::Val r63 = sb62.finish();
+								zval av64[1];
+								ZVAL_COPY_VALUE(&av64[0], r63.raw());
+								zv::Val r65;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r58.raw(), "identifier", "identifier", 10, 1, av64, r65.raw(), NULL))) return false;
+								zv::Val r66;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r65.raw(), "build", "build", 5, 0, NULL, r66.raw(), NULL))) return false;
+								zv::Val o67 = zv::Val::copyOf(zv::Ref(r66.raw()));
+								zval *w68 = zv::Ref(l_errors.raw()).deref().raw();
+								if (Z_TYPE_P(w68) <= IS_NULL) { zval_ptr_dtor(w68); array_init(w68); } else if (UNEXPECTED(Z_TYPE_P(w68) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w68);
+								{ zval v = o67.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w68), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
+						if (UNEXPECTED(!it47.next())) return false;
 					}
-					ZEND_HASH_FOREACH_END();
+					if (UNEXPECTED(EG(exception))) return false;
 				}
 			}
 			cont35:;

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
@@ -18,6 +19,7 @@ use function in_array;
  * Multiple arguments are just compared with each other.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MinMaxFunctionThrowTypeExtension.cpp')]
 final class MinMaxFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

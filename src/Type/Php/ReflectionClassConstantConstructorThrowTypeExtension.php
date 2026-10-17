@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -15,6 +16,7 @@ use ReflectionClassConstant;
 use function count;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ReflectionClassConstantConstructorThrowTypeExtension.cpp')]
 final class ReflectionClassConstantConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

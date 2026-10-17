@@ -100,66 +100,57 @@ namespace pgen::LazyRegistry {
 								q25 = std::move(o27);
 							}
 							}
-							zv::Val a28 = zv::Val::copyOf(zv::Ref(q25.raw()).deref());
-							if (UNEXPECTED(Z_TYPE_P(a28.raw()) != IS_ARRAY)) {
-								if (Z_TYPE_P(a28.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-								zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a28.raw()));
-								if (UNEXPECTED(EG(exception))) return false;
-								a28 = zv::Val(zv::Arr::empty());
-							}
-							HashTable *ht20 = Z_ARRVAL_P(a28.raw());
-							zval *v29;
-							zend_ulong n30;
-							zend_string *s31;
-							ZEND_HASH_FOREACH_KEY_VAL(ht20, n30, s31, v29) {
-								(void) n30; (void) s31;
-								l_rule = zv::Ref(v29).deref().raw();
+							pgrt::ForeachIter it28;
+							if (UNEXPECTED(!it28.begin(q25.raw()))) return false;
+							while (it28.valid()) {
+								l_rule = zv::Ref(it28.current()).deref().raw();
 								 {
 									 {
-										zval av34[1];
-										ZVAL_COPY_VALUE(&av34[0], l_rule);
-										zv::Val r35;
-										if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "spl_object_id", 13, pt_ce_lazy_registry, 1, av34, r35.raw(), NULL))) return false;
-										zend_long k36 = Z_LVAL_P(r35.raw());
-										zv::Val o37 = zv::Val::copyOf(zv::Ref(l_rule));
-										zv::Val o38 = zv::Val::copyOf(zv::Ref(o37.raw()));
-										zval *w39 = zv::Ref(l_rules.raw()).deref().raw();
-										if (Z_TYPE_P(w39) <= IS_NULL) { zval_ptr_dtor(w39); array_init(w39); } else if (UNEXPECTED(Z_TYPE_P(w39) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-										SEPARATE_ARRAY(w39);
-										zval *e40 = pgrt::dimWriteLong(w39, k36);
-										if (UNEXPECTED(e40 == NULL)) return false;
-										zv::Ref(e40).assign(std::move(o38));
+										zval av31[1];
+										ZVAL_COPY_VALUE(&av31[0], l_rule);
+										zv::Val r32;
+										if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "spl_object_id", 13, pt_ce_lazy_registry, 1, av31, r32.raw(), NULL))) return false;
+										zend_long k33 = Z_LVAL_P(r32.raw());
+										zv::Val o34 = zv::Val::copyOf(zv::Ref(l_rule));
+										zv::Val o35 = zv::Val::copyOf(zv::Ref(o34.raw()));
+										zval *w36 = zv::Ref(l_rules.raw()).deref().raw();
+										if (Z_TYPE_P(w36) <= IS_NULL) { zval_ptr_dtor(w36); array_init(w36); } else if (UNEXPECTED(Z_TYPE_P(w36) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+										SEPARATE_ARRAY(w36);
+										zval *e37 = pgrt::dimWriteLong(w36, k33);
+										if (UNEXPECTED(e37 == NULL)) return false;
+										zv::Ref(e37).assign(std::move(o35));
 									}
 								}
+								if (UNEXPECTED(!it28.next())) return false;
 							}
-							ZEND_HASH_FOREACH_END();
+							if (UNEXPECTED(EG(exception))) return false;
 						}
 					}
 				}
 				ZEND_HASH_FOREACH_END();
 			}
 			 {
-				zv::Val o41 = zv::Val::copyOf(zv::Ref(p_nodeType));
-				zv::Val r42;
-				if (UNEXPECTED(!pgrt::arrayValues(l_rules.raw(), r42.raw()))) return false;
-				zv::Val o43 = zv::Val::copyOf(zv::Ref(r42.raw()));
-				zval *w44 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::LazyRegistry::slot::cache)).deref().raw();
-				if (Z_TYPE_P(w44) <= IS_NULL) { zval_ptr_dtor(w44); array_init(w44); } else if (UNEXPECTED(Z_TYPE_P(w44) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w44);
-				zval *e45 = pgrt::dimWrite(w44, o41.raw());
-				if (UNEXPECTED(e45 == NULL)) return false;
-				zv::Ref(e45).assign(std::move(o43));
+				zv::Val o38 = zv::Val::copyOf(zv::Ref(p_nodeType));
+				zv::Val r39;
+				if (UNEXPECTED(!pgrt::arrayValues(l_rules.raw(), r39.raw()))) return false;
+				zv::Val o40 = zv::Val::copyOf(zv::Ref(r39.raw()));
+				zval *w41 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::LazyRegistry::slot::cache)).deref().raw();
+				if (Z_TYPE_P(w41) <= IS_NULL) { zval_ptr_dtor(w41); array_init(w41); } else if (UNEXPECTED(Z_TYPE_P(w41) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w41);
+				zval *e42 = pgrt::dimWrite(w41, o38.raw());
+				if (UNEXPECTED(e42 == NULL)) return false;
+				zv::Ref(e42).assign(std::move(o40));
 			}
 		}
 	}
 	 {
-		zval *p46 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::LazyRegistry::slot::cache, "cache");
-		if (UNEXPECTED(p46 == NULL)) return false;
-		zv::Val et48;
-		zval *e47 = pgrt::dimRead(p46, p_nodeType, et48.raw());
-		if (UNEXPECTED(e47 == NULL)) return false;
-		zv::Val o49 = zv::Val::copyOf(zv::Ref(zv::Ref(e47).deref().raw()));
-		l_selectedRules = std::move(o49);
+		zval *p43 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::LazyRegistry::slot::cache, "cache");
+		if (UNEXPECTED(p43 == NULL)) return false;
+		zv::Val et45;
+		zval *e44 = pgrt::dimRead(p43, p_nodeType, et45.raw());
+		if (UNEXPECTED(e44 == NULL)) return false;
+		zv::Val o46 = zv::Val::copyOf(zv::Ref(zv::Ref(e44).deref().raw()));
+		l_selectedRules = std::move(o46);
 	}
 	 {
 		if (UNEXPECTED(!(Z_TYPE_P(l_selectedRules.raw()) == IS_ARRAY))) { pgrt::throwReturnType("PHPStan\\Rules\\LazyRegistry::getRules", "array", l_selectedRules.raw()); return false; }

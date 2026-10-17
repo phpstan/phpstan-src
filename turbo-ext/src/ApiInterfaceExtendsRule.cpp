@@ -85,36 +85,27 @@ namespace pgen::ApiInterfaceExtendsRule {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_api_interface_extends_rule, "extends", 7, o5.raw()))) return false;
 			p4 = o5.raw();
 		}
-		zv::Val a6 = zv::Val::copyOf(zv::Ref(zv::Ref(p4).deref().raw()).deref());
-		if (UNEXPECTED(Z_TYPE_P(a6.raw()) != IS_ARRAY)) {
-			if (Z_TYPE_P(a6.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a6.raw()));
-			if (UNEXPECTED(EG(exception))) return false;
-			a6 = zv::Val(zv::Arr::empty());
-		}
-		HashTable *ht3 = Z_ARRVAL_P(a6.raw());
-		zval *v7;
-		zend_ulong n8;
-		zend_string *s9;
-		ZEND_HASH_FOREACH_KEY_VAL(ht3, n8, s9, v7) {
-			(void) n8; (void) s9;
-			l_extends = zv::Ref(v7).deref().raw();
+		pgrt::ForeachIter it6;
+		if (UNEXPECTED(!it6.begin(zv::Ref(p4).deref().raw()))) return false;
+		while (it6.valid()) {
+			l_extends = zv::Ref(it6.current()).deref().raw();
 			 {
 				 {
-					zv::Val o12 = zv::Val::copyOf(zv::Ref(l_errors.raw()));
+					zv::Val o9 = zv::Val::copyOf(zv::Ref(l_errors.raw()));
 					if (UNEXPECTED(!(pgrt::instanceOfClass(l_extends, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Name", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Api\\ApiInterfaceExtendsRule::checkName", 2, "name", "PhpParser\\Node\\Name", l_extends); return false; }
-					zv::Val r13;
-					if (UNEXPECTED(!pgen::ApiInterfaceExtendsRule::m_checkName(Z_OBJ_P(&this_zv), p_scope, l_extends, r13.raw()))) return false;
-					zval av14[2];
-					ZVAL_COPY_VALUE(&av14[0], o12.raw());
-					ZVAL_COPY_VALUE(&av14[1], r13.raw());
-					zv::Val r15;
-					if (UNEXPECTED(!pgrt::arrayMerge(2, av14, r15.raw()))) return false;
-					l_errors = std::move(r15);
+					zv::Val r10;
+					if (UNEXPECTED(!pgen::ApiInterfaceExtendsRule::m_checkName(Z_OBJ_P(&this_zv), p_scope, l_extends, r10.raw()))) return false;
+					zval av11[2];
+					ZVAL_COPY_VALUE(&av11[0], o9.raw());
+					ZVAL_COPY_VALUE(&av11[1], r10.raw());
+					zv::Val r12;
+					if (UNEXPECTED(!pgrt::arrayMerge(2, av11, r12.raw()))) return false;
+					l_errors = std::move(r12);
 				}
 			}
+			if (UNEXPECTED(!it6.next())) return false;
 		}
-		ZEND_HASH_FOREACH_END();
+		if (UNEXPECTED(EG(exception))) return false;
 	}
 	 {
 		ZVAL_COPY(ret, l_errors.raw());

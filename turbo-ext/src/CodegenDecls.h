@@ -863,6 +863,192 @@ extern zend_class_entry *pt_ce_execution_end_node;
 extern zend_class_entry *pt_ce_class_property_node;
 extern zend_class_entry *pt_ce_in_class_node;
 extern zend_class_entry *pt_ce_impossible_check_type_helper;
+extern zend_class_entry *pt_ce_closure_get_current_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_reflection_get_attributes_method_return_type_extension;
+extern zend_class_entry *pt_ce_xmlreader_open_return_type_extension;
+extern zend_class_entry *pt_ce_gettype_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_replace_function_return_type_extension;
+extern zend_class_entry *pt_ce_date_interval_format_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_combine_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_find_key_function_return_type_extension;
+extern zend_class_entry *pt_ce_trigger_error_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_idate_function_return_type_helper;
+extern zend_class_entry *pt_ce_clamp_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_key_exists_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_defined_constant_type_specifying_extension;
+extern zend_class_entry *pt_ce_property_exists_type_specifying_extension;
+extern zend_class_entry *pt_ce_is_iterable_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_array_map_parameter_closure_type_extension;
+extern zend_class_entry *pt_ce_randomizer_method_return_type_extension;
+extern zend_class_entry *pt_ce_pathinfo_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_str_pad_function_return_type_extension;
+extern zend_class_entry *pt_ce_stat_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_chunk_function_throw_type_extension;
+extern zend_class_entry *pt_ce_min_max_function_throw_type_extension;
+extern zend_class_entry *pt_ce_array_first_last_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_abs_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_closure_from_callable_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_constant_function_return_type_extension;
+extern zend_class_entry *pt_ce_intdiv_throw_type_extension;
+extern zend_class_entry *pt_ce_define_constant_type_specifying_extension;
+extern zend_class_entry *pt_ce_array_keys_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_backed_enum_from_method_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_preg_match_type_specifying_extension;
+extern zend_class_entry *pt_ce_regex_array_shape_matcher;
+extern zend_class_entry *pt_ce_filter_input_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_dom_document_create_element_dynamic_throw_type_extension;
+extern zend_class_entry *pt_ce_array_combine_function_throw_type_extension;
+extern zend_class_entry *pt_ce_argument_based_function_return_type_extension;
+extern zend_class_entry *pt_ce_non_empty_string_functions_return_type_extension;
+extern zend_class_entry *pt_ce_str_shuffle_function_return_type_extension;
+extern zend_class_entry *pt_ce_date_time_constructor_throw_type_extension;
+extern zend_class_entry *pt_ce_array_next_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_get_class_function_throw_type_extension;
+extern zend_class_entry *pt_ce_highlight_string_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_pg_result_status_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_substr_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_change_key_case_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_shift_function_return_type_extension;
+extern zend_class_entry *pt_ce_version_compare_function_dynamic_throw_type_extension;
+extern zend_class_entry *pt_ce_implode_function_return_type_extension;
+extern zend_class_entry *pt_ce_function_exists_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_openssl_cipher_functions_return_type_extension;
+extern zend_class_entry *pt_ce_explode_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_count_values_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_filter_function_return_type_extension;
+extern zend_class_entry *pt_ce_trim_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_preg_filter_function_return_type_extension;
+extern zend_class_entry *pt_ce_pow_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_fill_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_merge_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_get_called_class_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_preg_replace_callback_closure_type_extension;
+extern zend_class_entry *pt_ce_localtime_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_reduce_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_map_function_return_type_extension;
+extern zend_class_entry *pt_ce_curl_getinfo_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_values_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_gmp_unary_operator_type_specifying_extension;
+extern zend_class_entry *pt_ce_date_time_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_pdoconnect_return_type_extension;
+extern zend_class_entry *pt_ce_date_time_create_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_walk_parameter_closure_type_extension;
+extern zend_class_entry *pt_ce_array_find_function_return_type_extension;
+extern zend_class_entry *pt_ce_round_function_throw_type_extension;
+extern zend_class_entry *pt_ce_pg_last_notice_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_filter_var_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_search_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_printf_format_parser;
+extern zend_class_entry *pt_ce_reflection_property_constructor_throw_type_extension;
+extern zend_class_entry *pt_ce_set_type_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_get_defined_vars_function_return_type_extension;
+extern zend_class_entry *pt_ce_date_interval_format_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_mb_substitute_character_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_fill_keys_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_key_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_column_helper;
+extern zend_class_entry *pt_ce_date_period_constructor_return_type_extension;
+extern zend_class_entry *pt_ce_throwable_return_type_extension;
+extern zend_class_entry *pt_ce_class_implements_function_return_type_extension;
+extern zend_class_entry *pt_ce_date_interval_format_return_type_helper;
+extern zend_class_entry *pt_ce_min_max_function_return_type_extension;
+extern zend_class_entry *pt_ce_closure_bind_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_base64_decode_dynamic_function_return_type_extension;
+extern zend_class_entry *pt_ce_str_increment_decrement_function_return_type_extension;
+extern zend_class_entry *pt_ce_ltrim_function_return_type_extension;
+extern zend_class_entry *pt_ce_gettimeofday_dynamic_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_pad_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_round_function_return_type_extension;
+extern zend_class_entry *pt_ce_open_ssl_encrypt_parameter_out_type_extension;
+extern zend_class_entry *pt_ce_array_column_function_return_type_extension;
+extern zend_class_entry *pt_ce_is_afunction_type_specifying_helper;
+extern zend_class_entry *pt_ce_output_buffering_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_closure_bind_to_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_ini_get_return_type_extension;
+extern zend_class_entry *pt_ce_printf_function_throw_type_extension;
+extern zend_class_entry *pt_ce_str_case_functions_return_type_extension;
+extern zend_class_entry *pt_ce_reflection_method_constructor_throw_type_extension;
+extern zend_class_entry *pt_ce_replace_functions_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_search_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_is_callable_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_filter_var_array_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_str_tok_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_object_constructor_return_type_extension;
+extern zend_class_entry *pt_ce_str_word_count_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_strlen_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_sum_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_date_interval_constructor_throw_type_extension;
+extern zend_class_entry *pt_ce_simple_xmlelement_as_xmlmethod_return_type_extension;
+extern zend_class_entry *pt_ce_unserialize_function_throw_type_extension;
+extern zend_class_entry *pt_ce_hash_functions_return_type_extension;
+extern zend_class_entry *pt_ce_preg_match_parameter_out_type_extension;
+extern zend_class_entry *pt_ce_microtime_function_return_type_extension;
+extern zend_class_entry *pt_ce_dio_stat_dynamic_function_return_type_extension;
+extern zend_class_entry *pt_ce_date_time_zone_constructor_throw_type_extension;
+extern zend_class_entry *pt_ce_reflection_class_constant_constructor_throw_type_extension;
+extern zend_class_entry *pt_ce_strrev_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_rand_function_return_type_extension;
+extern zend_class_entry *pt_ce_date_function_return_type_extension;
+extern zend_class_entry *pt_ce_idate_function_return_type_extension;
+extern zend_class_entry *pt_ce_get_parent_class_dynamic_function_return_type_extension;
+extern zend_class_entry *pt_ce_reflection_class_is_subclass_of_type_specifying_extension;
+extern zend_class_entry *pt_ce_simple_xmlelement_class_property_reflection_extension;
+extern zend_class_entry *pt_ce_strval_family_function_return_type_extension;
+extern zend_class_entry *pt_ce_strlen_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_ds_map_dynamic_method_throw_type_extension;
+extern zend_class_entry *pt_ce_assert_throw_type_extension;
+extern zend_class_entry *pt_ce_trigger_error_function_throw_type_extension;
+extern zend_class_entry *pt_ce_array_reverse_function_return_type_extension;
+extern zend_class_entry *pt_ce_random_int_function_return_type_extension;
+extern zend_class_entry *pt_ce_version_compare_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_bc_math_number_operator_type_specifying_extension;
+extern zend_class_entry *pt_ce_json_throw_type_extension;
+extern zend_class_entry *pt_ce_gmp_operator_type_specifying_extension;
+extern zend_class_entry *pt_ce_dom_document_create_element_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_array_slice_function_return_type_extension;
+extern zend_class_entry *pt_ce_parse_str_parameter_out_type_extension;
+extern zend_class_entry *pt_ce_constant_helper;
+extern zend_class_entry *pt_ce_count_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_str_containing_type_specifying_extension;
+extern zend_class_entry *pt_ce_array_chunk_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_pop_function_return_type_extension;
+extern zend_class_entry *pt_ce_date_time_sub_method_throw_type_extension;
+extern zend_class_entry *pt_ce_is_afunction_type_specifying_extension;
+extern zend_class_entry *pt_ce_count_chars_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_reflection_class_constructor_throw_type_extension;
+extern zend_class_entry *pt_ce_str_split_function_throw_type_extension;
+extern zend_class_entry *pt_ce_is_subclass_of_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_array_intersect_key_function_return_type_extension;
+extern zend_class_entry *pt_ce_assert_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_date_format_method_return_type_extension;
+extern zend_class_entry *pt_ce_array_flip_function_return_type_extension;
+extern zend_class_entry *pt_ce_bc_math_string_or_null_return_type_extension;
+extern zend_class_entry *pt_ce_filter_functions_throw_type_extension;
+extern zend_class_entry *pt_ce_array_splice_function_return_type_extension;
+extern zend_class_entry *pt_ce_str_repeat_function_return_type_extension;
+extern zend_class_entry *pt_ce_in_array_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_array_filter_parameter_closure_type_extension;
+extern zend_class_entry *pt_ce_iterator_to_array_function_return_type_extension;
+extern zend_class_entry *pt_ce_ctype_digit_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_bc_math_number_unary_operator_type_specifying_extension;
+extern zend_class_entry *pt_ce_get_class_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_hrtime_function_return_type_extension;
+extern zend_class_entry *pt_ce_array_combine_helper;
+extern zend_class_entry *pt_ce_filter_function_flags_helper;
+extern zend_class_entry *pt_ce_date_format_function_return_type_extension;
+extern zend_class_entry *pt_ce_method_exists_type_specifying_extension;
+extern zend_class_entry *pt_ce_mb_convert_encoding_function_return_type_extension;
+extern zend_class_entry *pt_ce_compact_function_return_type_extension;
+extern zend_class_entry *pt_ce_get_debug_type_function_return_type_extension;
+extern zend_class_entry *pt_ce_count_function_return_type_extension;
+extern zend_class_entry *pt_ce_number_format_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_ds_map_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_is_array_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_reflection_function_constructor_throw_type_extension;
+extern zend_class_entry *pt_ce_array_current_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_class_exists_function_type_specifying_extension;
+extern zend_class_entry *pt_ce_array_find_parameter_closure_type_extension;
+extern zend_class_entry *pt_ce_date_function_return_type_helper;
 
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
@@ -7485,5 +7671,1116 @@ namespace pgen::ImpossibleCheckTypeHelper {
 [[nodiscard]] bool m_doNotTreatPhpDocTypesAsCertain(zend_object *self, zval *ret);
 [[nodiscard]] bool m_determineContext(zend_object *self, zval *p_scope, zval *p_node, zval *ret);
 } // namespace pgen::ImpossibleCheckTypeHelper
+
+namespace pgen::ClosureGetCurrentDynamicReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ClosureGetCurrentDynamicReturnTypeExtension
+
+namespace pgen::ReflectionGetAttributesMethodReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_className);
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_resolveReflectionAttributeType(zend_object *self, zval *p_returnType, zval *p_classType, zval *ret);
+} // namespace pgen::ReflectionGetAttributesMethodReturnTypeExtension
+
+namespace pgen::XMLReaderOpenReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::XMLReaderOpenReturnTypeExtension
+
+namespace pgen::GettypeFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::GettypeFunctionReturnTypeExtension
+
+namespace pgen::ArrayReplaceFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayReplaceFunctionReturnTypeExtension
+
+namespace pgen::DateIntervalFormatFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_helper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::DateIntervalFormatFunctionReturnTypeExtension
+
+namespace pgen::ArrayCombineFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_arrayCombineHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayCombineFunctionReturnTypeExtension
+
+namespace pgen::ArrayFindKeyFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayFindKeyFunctionReturnTypeExtension
+
+namespace pgen::TriggerErrorDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::TriggerErrorDynamicReturnTypeExtension
+
+namespace pgen::IdateFunctionReturnTypeHelper {
+[[nodiscard]] bool m_getTypeFromFormatType(zend_object *self, zval *p_formatType, zval *ret);
+[[nodiscard]] bool m_buildReturnTypeFromFormat(zend_object *self, zval *p_formatString, zval *ret);
+} // namespace pgen::IdateFunctionReturnTypeHelper
+
+namespace pgen::ClampFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ClampFunctionReturnTypeExtension
+
+namespace pgen::ArrayKeyExistsFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+} // namespace pgen::ArrayKeyExistsFunctionTypeSpecifyingExtension
+
+namespace pgen::DefinedConstantTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_constantHelper);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+} // namespace pgen::DefinedConstantTypeSpecifyingExtension
+
+namespace pgen::PropertyExistsTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_propertyReflectionFinder);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_createFuncCallSpec(zend_object *self, zval *p_node, zval *p_context, zval *p_scope, zval *ret);
+} // namespace pgen::PropertyExistsTypeSpecifyingExtension
+
+namespace pgen::IsIterableFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::IsIterableFunctionTypeSpecifyingExtension
+
+namespace pgen::ArrayMapParameterClosureTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_parameter, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_parameter, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_createParameter(zend_object *self, zval *p_type, zval *ret);
+} // namespace pgen::ArrayMapParameterClosureTypeExtension
+
+namespace pgen::RandomizerMethodReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_createFuncCall(zend_object *self, zval *p_functionName, zval *p_argValues, zval *ret);
+} // namespace pgen::RandomizerMethodReturnTypeExtension
+
+namespace pgen::PathinfoFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getConstant(zend_object *self, zval *p_constantName, zval *ret);
+} // namespace pgen::PathinfoFunctionDynamicReturnTypeExtension
+
+namespace pgen::StrPadFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrPadFunctionReturnTypeExtension
+
+namespace pgen::StatDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getReturnType(zend_object *self, zval *ret);
+} // namespace pgen::StatDynamicReturnTypeExtension
+
+namespace pgen::ArrayChunkFunctionThrowTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayChunkFunctionThrowTypeExtension
+
+namespace pgen::MinMaxFunctionThrowTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::MinMaxFunctionThrowTypeExtension
+
+namespace pgen::ArrayFirstLastDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayFirstLastDynamicReturnTypeExtension
+
+namespace pgen::AbsFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::AbsFunctionDynamicReturnTypeExtension
+
+namespace pgen::ClosureFromCallableDynamicReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ClosureFromCallableDynamicReturnTypeExtension
+
+namespace pgen::ConstantFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_constantHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ConstantFunctionReturnTypeExtension
+
+namespace pgen::IntdivThrowTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::IntdivThrowTypeExtension
+
+namespace pgen::DefineConstantTypeSpecifyingExtension {
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+} // namespace pgen::DefineConstantTypeSpecifyingExtension
+
+namespace pgen::ArrayKeysFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayKeysFunctionDynamicReturnTypeExtension
+
+namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension
+
+namespace pgen::PregMatchTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_regexShapeMatcher);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_isSubExprOfMatchesArg(zend_object *self, zval *p_subject, zval *p_matchesVar, bool *ret);
+} // namespace pgen::PregMatchTypeSpecifyingExtension
+
+namespace pgen::RegexArrayShapeMatcher {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_regexGroupParser, zval *p_regexExpressionHelper, zval *p_phpVersion);
+[[nodiscard]] bool m_matchAllExpr(zend_object *self, zval *p_patternExpr, zval *p_flagsType, zval *p_wasMatched, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_matchExpr(zend_object *self, zval *p_patternExpr, zval *p_flagsType, zval *p_wasMatched, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_matchSubjectExpr(zend_object *self, zval *p_patternExpr, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_matchPatternType(zend_object *self, zval *p_patternType, zval *p_flagsType, zval *p_wasMatched, bool p_matchesAll, zval *ret);
+[[nodiscard]] bool m_matchRegex(zend_object *self, zval *p_regex, zval *p_flags, zval *p_wasMatched, bool p_matchesAll, zval *ret);
+[[nodiscard]] bool m_buildArrayType(zend_object *self, zval *p_subjectBaseType, zval *p_captureGroups, zval *p_wasMatched, zend_long p_trailingOptionals, zend_long p_flags, zval *p_markVerbs, bool p_matchesAll, zval *ret);
+[[nodiscard]] bool m_isSubjectOptional(zend_object *self, zval *p_wasMatched, bool p_matchesAll, bool *ret);
+[[nodiscard]] bool m_createSubjectValueType(zend_object *self, zval *p_baseType, zend_long p_flags, bool p_matchesAll, zval *p_wasMatched, zval *ret);
+[[nodiscard]] bool m_isGroupOptional(zend_object *self, zval *p_captureGroup, zval *p_wasMatched, zend_long p_flags, bool p_isTrailingOptional, bool p_matchesAll, bool *ret);
+[[nodiscard]] bool m_createGroupValueType(zend_object *self, zval *p_captureGroup, zval *p_wasMatched, zend_long p_flags, bool p_isTrailingOptional, bool p_isLastGroup, bool p_matchesAll, zval *ret);
+[[nodiscard]] bool m_containsOffsetCapture(zend_object *self, zend_long p_flags, bool *ret);
+[[nodiscard]] bool m_containsPatternOrder(zend_object *self, zend_long p_flags, bool *ret);
+[[nodiscard]] bool m_containsSetOrder(zend_object *self, zend_long p_flags, bool *ret);
+[[nodiscard]] bool m_containsUnmatchedAsNull(zend_object *self, zend_long p_flags, bool p_matchesAll, bool *ret);
+[[nodiscard]] bool m_getUnmatchedGroupType(zend_object *self, zend_long p_flags, zval *ret);
+[[nodiscard]] bool m_getKeyType(zend_object *self, zval *p_key, zval *ret);
+[[nodiscard]] bool m_getValueType(zend_object *self, zval *p_baseType, zend_long p_flags, bool p_matchesAll, zval *ret);
+[[nodiscard]] bool m_getPatternType(zend_object *self, zval *p_patternExpr, zval *p_scope, zval *ret);
+} // namespace pgen::RegexArrayShapeMatcher
+
+namespace pgen::FilterInputDynamicReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_filterFunctionReturnTypeHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::FilterInputDynamicReturnTypeExtension
+
+namespace pgen::DomDocumentCreateElementDynamicThrowTypeExtension {
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::DomDocumentCreateElementDynamicThrowTypeExtension
+
+namespace pgen::ArrayCombineFunctionThrowTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_arrayCombineHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayCombineFunctionThrowTypeExtension
+
+namespace pgen::ArgumentBasedFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArgumentBasedFunctionReturnTypeExtension
+
+namespace pgen::NonEmptyStringFunctionsReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_isSubstituteFlagSet(zend_object *self, zval *p_args, zval *p_scope, bool *ret);
+} // namespace pgen::NonEmptyStringFunctionsReturnTypeExtension
+
+namespace pgen::StrShuffleFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrShuffleFunctionReturnTypeExtension
+
+namespace pgen::DateTimeConstructorThrowTypeExtension {
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_exceptionType(zend_object *self, zval *p_scope, zval *ret);
+} // namespace pgen::DateTimeConstructorThrowTypeExtension
+
+namespace pgen::ArrayNextDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayNextDynamicReturnTypeExtension
+
+namespace pgen::GetClassFunctionThrowTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::GetClassFunctionThrowTypeExtension
+
+namespace pgen::HighlightStringDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::HighlightStringDynamicReturnTypeExtension
+
+namespace pgen::PgResultStatusDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::PgResultStatusDynamicReturnTypeExtension
+
+namespace pgen::SubstrDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_substrOrFalse(zend_object *self, zval *p_string, zend_long p_offset, zval *p_length, zval *ret);
+} // namespace pgen::SubstrDynamicReturnTypeExtension
+
+namespace pgen::ArrayChangeKeyCaseFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayChangeKeyCaseFunctionReturnTypeExtension
+
+namespace pgen::ArrayShiftFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayShiftFunctionReturnTypeExtension
+
+namespace pgen::VersionCompareFunctionDynamicThrowTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::VersionCompareFunctionDynamicThrowTypeExtension
+
+namespace pgen::ImplodeFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_implode(zend_object *self, zval *p_arrayType, zval *p_separatorType, zval *ret);
+[[nodiscard]] bool m_inferConstantType(zend_object *self, zval *p_arrayType, zval *p_separatorType, bool p_isNonEmpty, zval *ret);
+} // namespace pgen::ImplodeFunctionReturnTypeExtension
+
+namespace pgen::FunctionExistsFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::FunctionExistsFunctionTypeSpecifyingExtension
+
+namespace pgen::OpensslCipherFunctionsReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_cipherMethodsProvider);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::OpensslCipherFunctionsReturnTypeExtension
+
+namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_isDelimiterGuaranteedPresent(zend_object *self, zval *p_args, zval *p_scope, bool *ret);
+[[nodiscard]] bool m_createConstantSplitType(zend_object *self, zval *p_delimiterType, zval *p_stringType, zval *p_limitType, zval *p_phpVersions, zval *ret);
+[[nodiscard]] bool m_getDistinctLimits(zend_object *self, zval *p_limitType, zend_long p_partsCount, zval *ret);
+[[nodiscard]] bool m_isSingleElementLimit(zend_object *self, zval *p_limitType, bool *ret);
+[[nodiscard]] bool m_isMinusOneLimit(zend_object *self, zval *p_limitType, bool *ret);
+[[nodiscard]] bool m_createSingleElementSplitType(zend_object *self, zval *p_valueType, zval *ret);
+[[nodiscard]] bool m_createGuaranteedSplitType(zend_object *self, zval *p_valueType, zval *p_limitType, zval *ret);
+[[nodiscard]] bool m_getMaximumElementCount(zend_object *self, zval *p_limitType, zval *ret);
+} // namespace pgen::ExplodeFunctionDynamicReturnTypeExtension
+
+namespace pgen::ArrayCountValuesDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayCountValuesDynamicReturnTypeExtension
+
+namespace pgen::ArrayFilterFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_arrayFilterFunctionReturnTypeHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayFilterFunctionReturnTypeExtension
+
+namespace pgen::TrimFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::TrimFunctionDynamicReturnTypeExtension
+
+namespace pgen::PregFilterFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::PregFilterFunctionReturnTypeExtension
+
+namespace pgen::PowFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::PowFunctionReturnTypeExtension
+
+namespace pgen::ArrayFillFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayFillFunctionReturnTypeExtension
+
+namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension
+
+namespace pgen::GetCalledClassDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::GetCalledClassDynamicReturnTypeExtension
+
+namespace pgen::PregReplaceCallbackClosureTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_regexShapeMatcher);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_parameter, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_parameter, zval *p_scope, zval *ret);
+} // namespace pgen::PregReplaceCallbackClosureTypeExtension
+
+namespace pgen::LocaltimeFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_createListType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_createAssociativeType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_createFieldTypes(zend_object *self, zval *ret);
+} // namespace pgen::LocaltimeFunctionDynamicReturnTypeExtension
+
+namespace pgen::ArrayReduceFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayReduceFunctionReturnTypeExtension
+
+namespace pgen::ArrayMapFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_resolveCallbackReturnType(zval *p_scope, zval *p_callback, zval *p_argType, zval *ret);
+[[nodiscard]] bool m_getAccessoryTypes(zend_object *self, zval *p_arrayType, zval *p_valueType, zval *ret);
+} // namespace pgen::ArrayMapFunctionReturnTypeExtension
+
+namespace pgen::CurlGetinfoFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_createAllComponentsReturnType(zend_object *self, zval *ret);
+} // namespace pgen::CurlGetinfoFunctionDynamicReturnTypeExtension
+
+namespace pgen::ArrayValuesFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayValuesFunctionDynamicReturnTypeExtension
+
+namespace pgen::GmpUnaryOperatorTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self);
+[[nodiscard]] bool m_isOperatorSupported(zend_object *self, zval *p_operatorSigil, zval *p_operand, bool *ret);
+[[nodiscard]] bool m_specifyType(zend_object *self, zval *p_operatorSigil, zval *p_operand, zval *ret);
+} // namespace pgen::GmpUnaryOperatorTypeSpecifyingExtension
+
+namespace pgen::DateTimeDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::DateTimeDynamicReturnTypeExtension
+
+namespace pgen::PDOConnectReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_phpVersion);
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::PDOConnectReturnTypeExtension
+
+namespace pgen::DateTimeCreateDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::DateTimeCreateDynamicReturnTypeExtension
+
+namespace pgen::ArrayWalkParameterClosureTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_parameter, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_parameter, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayWalkParameterClosureTypeExtension
+
+namespace pgen::ArrayFindFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_arrayFilterFunctionReturnTypeHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayFindFunctionReturnTypeExtension
+
+namespace pgen::RoundFunctionThrowTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::RoundFunctionThrowTypeExtension
+
+namespace pgen::PgLastNoticeDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_createAllNoticesType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_createUnknownModeType(zend_object *self, zval *ret);
+} // namespace pgen::PgLastNoticeDynamicReturnTypeExtension
+
+namespace pgen::FilterVarDynamicReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_filterFunctionReturnTypeHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::FilterVarDynamicReturnTypeExtension
+
+namespace pgen::ArraySearchFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::ArraySearchFunctionTypeSpecifyingExtension
+
+namespace pgen::PrintfFormatParser {
+[[nodiscard]] bool m_parse(zend_object *self, zval *p_format, zval *p_phpVersions, zval *ret);
+[[nodiscard]] bool m_getRequiredArgumentsCount(zend_object *self, zval *p_uses, zend_long *ret);
+[[nodiscard]] bool m_parseArgumentNumber(zval *p_format, zend_long p_length, zval *p_i, zval *ret);
+[[nodiscard]] bool m_parseNumber(zval *p_format, zend_long p_length, zval *p_i, zend_long *ret);
+[[nodiscard]] bool m_isSpecifier(zval *p_char, zval *p_phpVersions, bool *ret);
+[[nodiscard]] bool m_isDigit(zval *p_char, bool *ret);
+[[nodiscard]] bool m_isAsciiLetter(zval *p_char, bool *ret);
+} // namespace pgen::PrintfFormatParser
+
+namespace pgen::ReflectionPropertyConstructorThrowTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ReflectionPropertyConstructorThrowTypeExtension
+
+namespace pgen::SetTypeFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::SetTypeFunctionTypeSpecifyingExtension
+
+namespace pgen::GetDefinedVarsFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::GetDefinedVarsFunctionReturnTypeExtension
+
+namespace pgen::DateIntervalFormatDynamicReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_helper);
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::DateIntervalFormatDynamicReturnTypeExtension
+
+namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension
+
+namespace pgen::ArrayFillKeysFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayFillKeysFunctionReturnTypeExtension
+
+namespace pgen::ArrayKeyDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayKeyDynamicReturnTypeExtension
+
+namespace pgen::ArrayColumnHelper {
+[[nodiscard]] bool m_getReturnValueType(zend_object *self, zval *p_arrayType, zval *p_columnType, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getReturnIndexType(zend_object *self, zval *p_arrayType, zval *p_indexType, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_handleAnyArray(zend_object *self, zval *p_arrayType, zval *p_columnType, zval *p_indexType, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_handleConstantArray(zend_object *self, zval *p_arrayType, zval *p_columnType, zval *p_indexType, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getOffsetOrProperty(zend_object *self, zval *p_type, zval *p_offsetOrProperty, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_castToArrayKeyType(zend_object *self, zval *p_type, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayColumnHelper
+
+namespace pgen::DatePeriodConstructorReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::DatePeriodConstructorReturnTypeExtension
+
+namespace pgen::ThrowableReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ThrowableReturnTypeExtension
+
+namespace pgen::ClassImplementsFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ClassImplementsFunctionReturnTypeExtension
+
+namespace pgen::DateIntervalFormatReturnTypeHelper {
+[[nodiscard]] bool m_getType(zend_object *self, zval *p_formatType, zval *p_intervalType, zval *p_scope, zval *ret);
+} // namespace pgen::DateIntervalFormatReturnTypeHelper
+
+namespace pgen::MinMaxFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_processArrayType(zend_object *self, zval *p_functionName, zval *p_argType, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_processType(zend_object *self, zval *p_functionName, zval *p_types, zval *ret);
+[[nodiscard]] bool m_compareTypes(zend_object *self, zval *p_firstType, zval *p_secondType, zval *ret);
+} // namespace pgen::MinMaxFunctionReturnTypeExtension
+
+namespace pgen::ClosureBindDynamicReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ClosureBindDynamicReturnTypeExtension
+
+namespace pgen::Base64DecodeDynamicFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::Base64DecodeDynamicFunctionReturnTypeExtension
+
+namespace pgen::StrIncrementDecrementFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_increment(zend_object *self, zval *p_s, zval *ret);
+[[nodiscard]] bool m_decrement(zend_object *self, zval *p_s, zval *ret);
+} // namespace pgen::StrIncrementDecrementFunctionReturnTypeExtension
+
+namespace pgen::LtrimFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::LtrimFunctionReturnTypeExtension
+
+namespace pgen::GettimeofdayDynamicFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::GettimeofdayDynamicFunctionReturnTypeExtension
+
+namespace pgen::ArrayPadDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayPadDynamicReturnTypeExtension
+
+namespace pgen::RoundFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::RoundFunctionReturnTypeExtension
+
+namespace pgen::OpenSslEncryptParameterOutTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_cipherMethodsProvider);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_parameter, bool *ret);
+[[nodiscard]] bool m_getParameterOutTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_parameter, zval *p_scope, zval *ret);
+} // namespace pgen::OpenSslEncryptParameterOutTypeExtension
+
+namespace pgen::ArrayColumnFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_arrayColumnHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayColumnFunctionReturnTypeExtension
+
+namespace pgen::IsAFunctionTypeSpecifyingHelper {
+[[nodiscard]] bool m_determineType(zend_object *self, zval *p_objectOrClassType, zval *p_classType, bool p_allowString, bool p_allowSameClass, zval *ret);
+} // namespace pgen::IsAFunctionTypeSpecifyingHelper
+
+namespace pgen::OutputBufferingDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::OutputBufferingDynamicReturnTypeExtension
+
+namespace pgen::ClosureBindToDynamicReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ClosureBindToDynamicReturnTypeExtension
+
+namespace pgen::IniGetReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::IniGetReturnTypeExtension
+
+namespace pgen::PrintfFunctionThrowTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_formatParser);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getVariadicArguments(zend_object *self, zval *p_args, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_hasEnoughValuesInArray(zend_object *self, zval *p_args, zend_long p_requiredCount, zval *p_scope, bool *ret);
+[[nodiscard]] bool m_areArrayStarArgumentsValid(zend_object *self, zval *p_args, zval *p_uses, zval *p_scope, bool *ret);
+[[nodiscard]] bool m_isStarArgumentValid(zend_object *self, zval *p_argumentType, zval *p_kind, zval *p_specifier, bool *ret);
+} // namespace pgen::PrintfFunctionThrowTypeExtension
+
+namespace pgen::StrCaseFunctionsReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrCaseFunctionsReturnTypeExtension
+
+namespace pgen::ReflectionMethodConstructorThrowTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ReflectionMethodConstructorThrowTypeExtension
+
+namespace pgen::ReplaceFunctionsDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getPreliminarilyResolvedTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getReplaceType(zend_object *self, zval *p_subjectArgumentType, zval *p_replaceArgumentType, zval *ret);
+[[nodiscard]] bool m_getSubjectType(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_canReturnNull(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, bool *ret);
+} // namespace pgen::ReplaceFunctionsDynamicReturnTypeExtension
+
+namespace pgen::ArraySearchFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArraySearchFunctionDynamicReturnTypeExtension
+
+namespace pgen::IsCallableFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_methodExistsExtension);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::IsCallableFunctionTypeSpecifyingExtension
+
+namespace pgen::FilterVarArrayDynamicReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_filterFunctionReturnTypeHelper, zval *p_reflectionProvider);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_fetchFilter(zend_object *self, zval *p_type, zval *ret);
+} // namespace pgen::FilterVarArrayDynamicReturnTypeExtension
+
+namespace pgen::StrTokFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrTokFunctionReturnTypeExtension
+
+namespace pgen::ArrayObjectConstructorReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayObjectConstructorReturnTypeExtension
+
+namespace pgen::StrWordCountFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrWordCountFunctionDynamicReturnTypeExtension
+
+namespace pgen::StrlenFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrlenFunctionReturnTypeExtension
+
+namespace pgen::ArraySumFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArraySumFunctionDynamicReturnTypeExtension
+
+namespace pgen::DateIntervalConstructorThrowTypeExtension {
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_exceptionType(zend_object *self, zval *p_scope, zval *ret);
+} // namespace pgen::DateIntervalConstructorThrowTypeExtension
+
+namespace pgen::SimpleXMLElementAsXMLMethodReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::SimpleXMLElementAsXMLMethodReturnTypeExtension
+
+namespace pgen::UnserializeFunctionThrowTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_areOptionsValid(zend_object *self, zval *p_options, bool *ret);
+[[nodiscard]] bool m_isListOfClassNames(zend_object *self, zval *p_type, bool *ret);
+[[nodiscard]] bool m_allowsNoClasses(zend_object *self, zval *p_options, bool *ret);
+} // namespace pgen::UnserializeFunctionThrowTypeExtension
+
+namespace pgen::HashFunctionsReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::HashFunctionsReturnTypeExtension
+
+namespace pgen::PregMatchParameterOutTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_regexShapeMatcher);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_parameter, bool *ret);
+[[nodiscard]] bool m_getParameterOutTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_parameter, zval *p_scope, zval *ret);
+} // namespace pgen::PregMatchParameterOutTypeExtension
+
+namespace pgen::MicrotimeFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::MicrotimeFunctionReturnTypeExtension
+
+namespace pgen::DioStatDynamicFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::DioStatDynamicFunctionReturnTypeExtension
+
+namespace pgen::DateTimeZoneConstructorThrowTypeExtension {
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_exceptionType(zend_object *self, zval *p_scope, zval *ret);
+} // namespace pgen::DateTimeZoneConstructorThrowTypeExtension
+
+namespace pgen::ReflectionClassConstantConstructorThrowTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ReflectionClassConstantConstructorThrowTypeExtension
+
+namespace pgen::StrrevFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrrevFunctionReturnTypeExtension
+
+namespace pgen::ArrayRandFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getPickedKeyType(zend_object *self, zval *p_arrayType, zval *ret);
+[[nodiscard]] bool m_getPickedKeysListType(zend_object *self, zval *p_arrayType, zval *ret);
+} // namespace pgen::ArrayRandFunctionReturnTypeExtension
+
+namespace pgen::DateFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_dateFunctionReturnTypeHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::DateFunctionReturnTypeExtension
+
+namespace pgen::IdateFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_idateFunctionReturnTypeHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::IdateFunctionReturnTypeExtension
+
+namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_findParentClassNameType(zend_object *self, zval *p_className, zval *ret);
+[[nodiscard]] bool m_findParentClassType(zend_object *self, zval *p_classReflection, zval *ret);
+} // namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension
+
+namespace pgen::ReflectionClassIsSubclassOfTypeSpecifyingExtension {
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_methodReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+} // namespace pgen::ReflectionClassIsSubclassOfTypeSpecifyingExtension
+
+namespace pgen::SimpleXMLElementClassPropertyReflectionExtension {
+[[nodiscard]] bool m_hasProperty(zend_object *self, zval *p_classReflection, zval *p_propertyName, bool *ret);
+[[nodiscard]] bool m_getProperty(zend_object *self, zval *p_classReflection, zval *p_propertyName, zval *ret);
+} // namespace pgen::SimpleXMLElementClassPropertyReflectionExtension
+
+namespace pgen::StrvalFamilyFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrvalFamilyFunctionReturnTypeExtension
+
+namespace pgen::StrlenFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::StrlenFunctionTypeSpecifyingExtension
+
+namespace pgen::DsMapDynamicMethodThrowTypeExtension {
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::DsMapDynamicMethodThrowTypeExtension
+
+namespace pgen::AssertThrowTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::AssertThrowTypeExtension
+
+namespace pgen::TriggerErrorFunctionThrowTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, bool p_implicitThrows);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getInvalidErrorLevelThrowType(zend_object *self, zval *p_scope, zval *ret);
+} // namespace pgen::TriggerErrorFunctionThrowTypeExtension
+
+namespace pgen::ArrayReverseFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayReverseFunctionReturnTypeExtension
+
+namespace pgen::RandomIntFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_createRange(zend_object *self, zval *p_minType, zval *p_maxType, zval *ret);
+} // namespace pgen::RandomIntFunctionReturnTypeExtension
+
+namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_phpVersionRangeHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_mightBeInvalidOperator(zval *p_operatorStrings, bool *ret);
+[[nodiscard]] bool m_getVersionStrings(zend_object *self, zval *p_expr, zval *p_scope, zval *ret);
+} // namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension
+
+namespace pgen::BcMathNumberOperatorTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_phpVersion);
+[[nodiscard]] bool m_isOperatorSupported(zend_object *self, zval *p_operatorSigil, zval *p_leftSide, zval *p_rightSide, bool *ret);
+[[nodiscard]] bool m_specifyType(zend_object *self, zval *p_operatorSigil, zval *p_leftSide, zval *p_rightSide, zval *ret);
+} // namespace pgen::BcMathNumberOperatorTypeSpecifyingExtension
+
+namespace pgen::JsonThrowTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider, zval *p_bitwiseFlagAnalyser);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::JsonThrowTypeExtension
+
+namespace pgen::GmpOperatorTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self);
+[[nodiscard]] bool m_isOperatorSupported(zend_object *self, zval *p_operatorSigil, zval *p_leftSide, zval *p_rightSide, bool *ret);
+[[nodiscard]] bool m_specifyType(zend_object *self, zval *p_operatorSigil, zval *p_leftSide, zval *p_rightSide, zval *ret);
+} // namespace pgen::GmpOperatorTypeSpecifyingExtension
+
+namespace pgen::DomDocumentCreateElementDynamicReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::DomDocumentCreateElementDynamicReturnTypeExtension
+
+namespace pgen::ArraySliceFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArraySliceFunctionReturnTypeExtension
+
+namespace pgen::ParseStrParameterOutTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_parameter, bool *ret);
+[[nodiscard]] bool m_getParameterOutTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_parameter, zval *p_scope, zval *ret);
+} // namespace pgen::ParseStrParameterOutTypeExtension
+
+namespace pgen::ConstantHelper {
+[[nodiscard]] bool m_createExprFromConstantName(zend_object *self, zval *p_constantName, zval *ret);
+} // namespace pgen::ConstantHelper
+
+namespace pgen::CountFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::CountFunctionTypeSpecifyingExtension
+
+namespace pgen::StrContainingTypeSpecifyingExtension {
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+} // namespace pgen::StrContainingTypeSpecifyingExtension
+
+namespace pgen::ArrayChunkFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayChunkFunctionReturnTypeExtension
+
+namespace pgen::ArrayPopFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayPopFunctionReturnTypeExtension
+
+namespace pgen::DateTimeSubMethodThrowTypeExtension {
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::DateTimeSubMethodThrowTypeExtension
+
+namespace pgen::IsAFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_isAFunctionTypeSpecifyingHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::IsAFunctionTypeSpecifyingExtension
+
+namespace pgen::CountCharsFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::CountCharsFunctionDynamicReturnTypeExtension
+
+namespace pgen::ReflectionClassConstructorThrowTypeExtension {
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ReflectionClassConstructorThrowTypeExtension
+
+namespace pgen::StrSplitFunctionThrowTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrSplitFunctionThrowTypeExtension
+
+namespace pgen::IsSubclassOfFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_isAFunctionTypeSpecifyingHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::IsSubclassOfFunctionTypeSpecifyingExtension
+
+namespace pgen::ArrayIntersectKeyFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayIntersectKeyFunctionReturnTypeExtension
+
+namespace pgen::AssertFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::AssertFunctionTypeSpecifyingExtension
+
+namespace pgen::DateFormatMethodReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_dateFunctionReturnTypeHelper);
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::DateFormatMethodReturnTypeExtension
+
+namespace pgen::ArrayFlipFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayFlipFunctionReturnTypeExtension
+
+namespace pgen::BcMathStringOrNullReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getTypeForBcSqrt(zend_object *self, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getTypeForBcPowMod(zend_object *self, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_isZero(zend_object *self, zval *p_value, bool *ret);
+} // namespace pgen::BcMathStringOrNullReturnTypeExtension
+
+namespace pgen::FilterFunctionsThrowTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider, zval *p_filterFunctionReturnTypeHelper, zval *p_filterFunctionFlagsHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::FilterFunctionsThrowTypeExtension
+
+namespace pgen::ArraySpliceFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArraySpliceFunctionReturnTypeExtension
+
+namespace pgen::StrRepeatFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::StrRepeatFunctionReturnTypeExtension
+
+namespace pgen::InArrayFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_computeNeedleNarrowingType(zend_object *self, zval *p_context, zval *p_needleType, zval *p_arrayType, zval *p_arrayValueType, zval *ret);
+} // namespace pgen::InArrayFunctionTypeSpecifyingExtension
+
+namespace pgen::ArrayFilterParameterClosureTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_parameter, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_parameter, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_createParameter(zend_object *self, zval *p_name, zval *p_type, zval *ret);
+} // namespace pgen::ArrayFilterParameterClosureTypeExtension
+
+namespace pgen::IteratorToArrayFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::IteratorToArrayFunctionReturnTypeExtension
+
+namespace pgen::CtypeDigitFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::CtypeDigitFunctionTypeSpecifyingExtension
+
+namespace pgen::BcMathNumberUnaryOperatorTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_phpVersion);
+[[nodiscard]] bool m_isOperatorSupported(zend_object *self, zval *p_operatorSigil, zval *p_operand, bool *ret);
+[[nodiscard]] bool m_specifyType(zend_object *self, zval *p_operatorSigil, zval *p_operand, zval *ret);
+} // namespace pgen::BcMathNumberUnaryOperatorTypeSpecifyingExtension
+
+namespace pgen::GetClassDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::GetClassDynamicReturnTypeExtension
+
+namespace pgen::HrtimeFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::HrtimeFunctionReturnTypeExtension
+
+namespace pgen::ArrayCombineHelper {
+[[nodiscard]] bool m_getReturnAndThrowType(zend_object *self, zval *p_firstArg, zval *p_secondArg, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_sanitizeConstantArrayKeyTypes(zend_object *self, zval *p_types, zval *ret);
+} // namespace pgen::ArrayCombineHelper
+
+namespace pgen::FilterFunctionFlagsHelper {
+[[nodiscard]] bool m_isSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getFlagsTypes(zend_object *self, zval *p_functionReflection, zval *p_funcCall, zval *p_scope, zval *ret);
+} // namespace pgen::FilterFunctionFlagsHelper
+
+namespace pgen::DateFormatFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_dateFunctionReturnTypeHelper);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::DateFormatFunctionReturnTypeExtension
+
+namespace pgen::MethodExistsTypeSpecifyingExtension {
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_createFuncCallSpec(zend_object *self, zval *p_node, zval *p_context, zval *p_scope, zval *ret);
+} // namespace pgen::MethodExistsTypeSpecifyingExtension
+
+namespace pgen::MbConvertEncodingFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_generalizeStringType(zend_object *self, zval *p_type, zval *ret);
+} // namespace pgen::MbConvertEncodingFunctionReturnTypeExtension
+
+namespace pgen::CompactFunctionReturnTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, bool p_checkMaybeUndefinedVariables);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_findConstantStrings(zend_object *self, zval *p_type, zval *ret);
+} // namespace pgen::CompactFunctionReturnTypeExtension
+
+namespace pgen::GetDebugTypeFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_resolveOneType(zval *p_type, zval *ret);
+} // namespace pgen::GetDebugTypeFunctionReturnTypeExtension
+
+namespace pgen::CountFunctionReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_isNormalCount(zend_object *self, zval *p_countFuncCall, zval *p_countedType, zval *p_scope, zval *ret);
+} // namespace pgen::CountFunctionReturnTypeExtension
+
+namespace pgen::NumberFormatFunctionDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::NumberFormatFunctionDynamicReturnTypeExtension
+
+namespace pgen::DsMapDynamicReturnTypeExtension {
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::DsMapDynamicReturnTypeExtension
+
+namespace pgen::IsArrayFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+} // namespace pgen::IsArrayFunctionTypeSpecifyingExtension
+
+namespace pgen::ReflectionFunctionConstructorThrowTypeExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider);
+[[nodiscard]] bool m_isStaticMethodSupported(zend_object *self, zval *p_methodReflection, bool *ret);
+[[nodiscard]] bool m_getThrowTypeFromStaticMethodCall(zend_object *self, zval *p_methodReflection, zval *p_methodCall, zval *p_scope, zval *ret);
+} // namespace pgen::ReflectionFunctionConstructorThrowTypeExtension
+
+namespace pgen::ArrayCurrentDynamicReturnTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayCurrentDynamicReturnTypeExtension
+
+namespace pgen::ClassExistsFunctionTypeSpecifyingExtension {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider);
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_context, bool *ret);
+[[nodiscard]] bool m_specifyTypes(zend_object *self, zval *p_functionReflection, zval *p_node, zval *p_scope, zval *p_context, zval *ret);
+[[nodiscard]] bool m_setTypeSpecifier(zend_object *self, zval *p_typeSpecifier);
+[[nodiscard]] bool m_isCallAlwaysFalse(zend_object *self, zval *p_functionName, zval *p_argType, bool *ret);
+[[nodiscard]] bool m_matchesFunctionKind(zend_object *self, zval *p_functionName, zval *p_reflection, bool *ret);
+} // namespace pgen::ClassExistsFunctionTypeSpecifyingExtension
+
+namespace pgen::ArrayFindParameterClosureTypeExtension {
+[[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, zval *p_parameter, bool *ret);
+[[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_parameter, zval *p_scope, zval *ret);
+} // namespace pgen::ArrayFindParameterClosureTypeExtension
+
+namespace pgen::DateFunctionReturnTypeHelper {
+[[nodiscard]] bool m_getTypeFromFormatType(zend_object *self, zval *p_formatType, bool p_useMicrosec, zval *ret);
+[[nodiscard]] bool m_buildReturnTypeFromFormat(zend_object *self, zval *p_formatString, bool p_useMicrosec, zval *ret);
+[[nodiscard]] bool m_buildNumericRangeType(zend_object *self, zend_long p_min, zend_long p_max, bool p_zeroPad, zval *ret);
+} // namespace pgen::DateFunctionReturnTypeHelper
 
 #endif

@@ -2323,66 +2323,57 @@ namespace pgen::DirectRegistry {
 								q31 = std::move(o33);
 							}
 							}
-							zv::Val a34 = zv::Val::copyOf(zv::Ref(q31.raw()).deref());
-							if (UNEXPECTED(Z_TYPE_P(a34.raw()) != IS_ARRAY)) {
-								if (Z_TYPE_P(a34.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-								zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a34.raw()));
-								if (UNEXPECTED(EG(exception))) return false;
-								a34 = zv::Val(zv::Arr::empty());
-							}
-							HashTable *ht24 = Z_ARRVAL_P(a34.raw());
-							zval *v35;
-							zend_ulong n36;
-							zend_string *s37;
-							ZEND_HASH_FOREACH_KEY_VAL(ht24, n36, s37, v35) {
-								(void) n36; (void) s37;
-								l_rule = zv::Ref(v35).deref().raw();
+							pgrt::ForeachIter it34;
+							if (UNEXPECTED(!it34.begin(q31.raw()))) return false;
+							while (it34.valid()) {
+								l_rule = zv::Ref(it34.current()).deref().raw();
 								 {
 									 {
-										zval av40[1];
-										ZVAL_COPY_VALUE(&av40[0], l_rule);
-										zv::Val r41;
-										if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "spl_object_id", 13, pt_ce_direct_registry, 1, av40, r41.raw(), NULL))) return false;
-										zend_long k42 = Z_LVAL_P(r41.raw());
-										zv::Val o43 = zv::Val::copyOf(zv::Ref(l_rule));
-										zv::Val o44 = zv::Val::copyOf(zv::Ref(o43.raw()));
-										zval *w45 = zv::Ref(l_rules.raw()).deref().raw();
-										if (Z_TYPE_P(w45) <= IS_NULL) { zval_ptr_dtor(w45); array_init(w45); } else if (UNEXPECTED(Z_TYPE_P(w45) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-										SEPARATE_ARRAY(w45);
-										zval *e46 = pgrt::dimWriteLong(w45, k42);
-										if (UNEXPECTED(e46 == NULL)) return false;
-										zv::Ref(e46).assign(std::move(o44));
+										zval av37[1];
+										ZVAL_COPY_VALUE(&av37[0], l_rule);
+										zv::Val r38;
+										if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "spl_object_id", 13, pt_ce_direct_registry, 1, av37, r38.raw(), NULL))) return false;
+										zend_long k39 = Z_LVAL_P(r38.raw());
+										zv::Val o40 = zv::Val::copyOf(zv::Ref(l_rule));
+										zv::Val o41 = zv::Val::copyOf(zv::Ref(o40.raw()));
+										zval *w42 = zv::Ref(l_rules.raw()).deref().raw();
+										if (Z_TYPE_P(w42) <= IS_NULL) { zval_ptr_dtor(w42); array_init(w42); } else if (UNEXPECTED(Z_TYPE_P(w42) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+										SEPARATE_ARRAY(w42);
+										zval *e43 = pgrt::dimWriteLong(w42, k39);
+										if (UNEXPECTED(e43 == NULL)) return false;
+										zv::Ref(e43).assign(std::move(o41));
 									}
 								}
+								if (UNEXPECTED(!it34.next())) return false;
 							}
-							ZEND_HASH_FOREACH_END();
+							if (UNEXPECTED(EG(exception))) return false;
 						}
 					}
 				}
 				ZEND_HASH_FOREACH_END();
 			}
 			 {
-				zv::Val o47 = zv::Val::copyOf(zv::Ref(p_nodeType));
-				zv::Val r48;
-				if (UNEXPECTED(!pgrt::arrayValues(l_rules.raw(), r48.raw()))) return false;
-				zv::Val o49 = zv::Val::copyOf(zv::Ref(r48.raw()));
-				zval *w50 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::cache)).deref().raw();
-				if (Z_TYPE_P(w50) <= IS_NULL) { zval_ptr_dtor(w50); array_init(w50); } else if (UNEXPECTED(Z_TYPE_P(w50) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w50);
-				zval *e51 = pgrt::dimWrite(w50, o47.raw());
-				if (UNEXPECTED(e51 == NULL)) return false;
-				zv::Ref(e51).assign(std::move(o49));
+				zv::Val o44 = zv::Val::copyOf(zv::Ref(p_nodeType));
+				zv::Val r45;
+				if (UNEXPECTED(!pgrt::arrayValues(l_rules.raw(), r45.raw()))) return false;
+				zv::Val o46 = zv::Val::copyOf(zv::Ref(r45.raw()));
+				zval *w47 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::cache)).deref().raw();
+				if (Z_TYPE_P(w47) <= IS_NULL) { zval_ptr_dtor(w47); array_init(w47); } else if (UNEXPECTED(Z_TYPE_P(w47) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w47);
+				zval *e48 = pgrt::dimWrite(w47, o44.raw());
+				if (UNEXPECTED(e48 == NULL)) return false;
+				zv::Ref(e48).assign(std::move(o46));
 			}
 		}
 	}
 	 {
-		zval *p52 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::cache, "cache");
-		if (UNEXPECTED(p52 == NULL)) return false;
-		zv::Val et54;
-		zval *e53 = pgrt::dimRead(p52, p_nodeType, et54.raw());
-		if (UNEXPECTED(e53 == NULL)) return false;
-		zv::Val o55 = zv::Val::copyOf(zv::Ref(zv::Ref(e53).deref().raw()));
-		l_selectedRules = std::move(o55);
+		zval *p49 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::cache, "cache");
+		if (UNEXPECTED(p49 == NULL)) return false;
+		zv::Val et51;
+		zval *e50 = pgrt::dimRead(p49, p_nodeType, et51.raw());
+		if (UNEXPECTED(e50 == NULL)) return false;
+		zv::Val o52 = zv::Val::copyOf(zv::Ref(zv::Ref(e50).deref().raw()));
+		l_selectedRules = std::move(o52);
 	}
 	 {
 		if (UNEXPECTED(!(Z_TYPE_P(l_selectedRules.raw()) == IS_ARRAY))) { pgrt::throwReturnType("PHPStan\\Rules\\DirectRegistry::getRules", "array", l_selectedRules.raw()); return false; }

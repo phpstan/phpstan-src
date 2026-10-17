@@ -101,76 +101,58 @@ namespace pgen::NonClassAttributeClassRule {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_originalNode.raw(), pt_ce_non_class_attribute_class_rule, "attrGroups", 10, o8.raw()))) return false;
 			p7 = o8.raw();
 		}
-		zv::Val a9 = zv::Val::copyOf(zv::Ref(zv::Ref(p7).deref().raw()).deref());
-		if (UNEXPECTED(Z_TYPE_P(a9.raw()) != IS_ARRAY)) {
-			if (Z_TYPE_P(a9.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a9.raw()));
-			if (UNEXPECTED(EG(exception))) return false;
-			a9 = zv::Val(zv::Arr::empty());
-		}
-		HashTable *ht6 = Z_ARRVAL_P(a9.raw());
-		zval *v10;
-		zend_ulong n11;
-		zend_string *s12;
-		ZEND_HASH_FOREACH_KEY_VAL(ht6, n11, s12, v10) {
-			(void) n11; (void) s12;
-			l_attrGroup = zv::Ref(v10).deref().raw();
+		pgrt::ForeachIter it9;
+		if (UNEXPECTED(!it9.begin(zv::Ref(p7).deref().raw()))) return false;
+		while (it9.valid()) {
+			l_attrGroup = zv::Ref(it9.current()).deref().raw();
 			 {
 				 {
-					zv::Val o17;
-					zval *p16 = Z_TYPE_P(l_attrGroup) == IS_OBJECT ? pgrt::propCached(pg_site_2, Z_OBJ_P(l_attrGroup), "attrs", 5) : NULL;
-					if (UNEXPECTED(p16 == NULL || Z_ISUNDEF_P(p16))) {
-						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_attrGroup, pt_ce_non_class_attribute_class_rule, "attrs", 5, o17.raw()))) return false;
-						p16 = o17.raw();
+					zv::Val o14;
+					zval *p13 = Z_TYPE_P(l_attrGroup) == IS_OBJECT ? pgrt::propCached(pg_site_2, Z_OBJ_P(l_attrGroup), "attrs", 5) : NULL;
+					if (UNEXPECTED(p13 == NULL || Z_ISUNDEF_P(p13))) {
+						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_attrGroup, pt_ce_non_class_attribute_class_rule, "attrs", 5, o14.raw()))) return false;
+						p13 = o14.raw();
 					}
-					zv::Val a18 = zv::Val::copyOf(zv::Ref(zv::Ref(p16).deref().raw()).deref());
-					if (UNEXPECTED(Z_TYPE_P(a18.raw()) != IS_ARRAY)) {
-						if (Z_TYPE_P(a18.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a18.raw()));
-						if (UNEXPECTED(EG(exception))) return false;
-						a18 = zv::Val(zv::Arr::empty());
-					}
-					HashTable *ht15 = Z_ARRVAL_P(a18.raw());
-					zval *v19;
-					zend_ulong n20;
-					zend_string *s21;
-					ZEND_HASH_FOREACH_KEY_VAL(ht15, n20, s21, v19) {
-						(void) n20; (void) s21;
-						l_attr = zv::Ref(v19).deref().raw();
+					pgrt::ForeachIter it15;
+					if (UNEXPECTED(!it15.begin(zv::Ref(p13).deref().raw()))) return false;
+					while (it15.valid()) {
+						l_attr = zv::Ref(it15.current()).deref().raw();
 						 {
 							 {
-								zv::Val o25;
-								zval *p24 = Z_TYPE_P(l_attr) == IS_OBJECT ? pgrt::propCached(pg_site_3, Z_OBJ_P(l_attr), "name", 4) : NULL;
-								if (UNEXPECTED(p24 == NULL || Z_ISUNDEF_P(p24))) {
-									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_attr, pt_ce_non_class_attribute_class_rule, "name", 4, o25.raw()))) return false;
-									p24 = o25.raw();
+								zv::Val o19;
+								zval *p18 = Z_TYPE_P(l_attr) == IS_OBJECT ? pgrt::propCached(pg_site_3, Z_OBJ_P(l_attr), "name", 4) : NULL;
+								if (UNEXPECTED(p18 == NULL || Z_ISUNDEF_P(p18))) {
+									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_attr, pt_ce_non_class_attribute_class_rule, "name", 4, o19.raw()))) return false;
+									p18 = o19.raw();
 								}
-								zv::Val r26;
-								if (UNEXPECTED(!pgrt::nameToLowerString(pg_site_4, zv::Ref(p24).deref().raw(), r26.raw()))) return false;
-								l_name = std::move(r26);
+								zv::Val r20;
+								if (UNEXPECTED(!pgrt::nameToLowerString(pg_site_4, zv::Ref(p18).deref().raw(), r20.raw()))) return false;
+								l_name = std::move(r20);
 							}
 							 {
 								if (zend_is_identical(l_name.raw(), &pg_lit[1])) {
 									 {
-										zv::Val r27;
-										if (UNEXPECTED(!pgen::NonClassAttributeClassRule::m_check(Z_OBJ_P(&this_zv), p_scope, r27.raw()))) return false;
-										*ret = r27.take();
+										zv::Val r21;
+										if (UNEXPECTED(!pgen::NonClassAttributeClassRule::m_check(Z_OBJ_P(&this_zv), p_scope, r21.raw()))) return false;
+										*ret = r21.take();
 										return true;
 									}
 								}
 							}
 						}
+						if (UNEXPECTED(!it15.next())) return false;
 					}
-					ZEND_HASH_FOREACH_END();
+					if (UNEXPECTED(EG(exception))) return false;
 				}
 			}
+			if (UNEXPECTED(!it9.next())) return false;
 		}
-		ZEND_HASH_FOREACH_END();
+		if (UNEXPECTED(EG(exception))) return false;
 	}
 	 {
-		zval arr28_raw;
-		ZVAL_EMPTY_ARRAY(&arr28_raw);
-		ZVAL_COPY(ret, &arr28_raw);
+		zval arr22_raw;
+		ZVAL_EMPTY_ARRAY(&arr22_raw);
+		ZVAL_COPY(ret, &arr22_raw);
 		return true;
 	}
 }

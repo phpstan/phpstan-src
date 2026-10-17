@@ -108,56 +108,47 @@ namespace pgen::MissingClassConstantTypehintRule {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_missing_class_constant_typehint_rule, "consts", 6, o10.raw()))) return false;
 			p9 = o10.raw();
 		}
-		zv::Val a11 = zv::Val::copyOf(zv::Ref(zv::Ref(p9).deref().raw()).deref());
-		if (UNEXPECTED(Z_TYPE_P(a11.raw()) != IS_ARRAY)) {
-			if (Z_TYPE_P(a11.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a11.raw()));
-			if (UNEXPECTED(EG(exception))) return false;
-			a11 = zv::Val(zv::Arr::empty());
-		}
-		HashTable *ht8 = Z_ARRVAL_P(a11.raw());
-		zval *v12;
-		zend_ulong n13;
-		zend_string *s14;
-		ZEND_HASH_FOREACH_KEY_VAL(ht8, n13, s14, v12) {
-			(void) n13; (void) s14;
-			l_const = zv::Ref(v12).deref().raw();
+		pgrt::ForeachIter it11;
+		if (UNEXPECTED(!it11.begin(zv::Ref(p9).deref().raw()))) return false;
+		while (it11.valid()) {
+			l_const = zv::Ref(it11.current()).deref().raw();
 			 {
 				 {
-					zv::Val o18;
-					zval *p17 = Z_TYPE_P(l_const) == IS_OBJECT ? pgrt::propCached(pg_site_3, Z_OBJ_P(l_const), "name", 4) : NULL;
-					if (UNEXPECTED(p17 == NULL || Z_ISUNDEF_P(p17))) {
-						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_const, pt_ce_missing_class_constant_typehint_rule, "name", 4, o18.raw()))) return false;
-						p17 = o18.raw();
+					zv::Val o15;
+					zval *p14 = Z_TYPE_P(l_const) == IS_OBJECT ? pgrt::propCached(pg_site_3, Z_OBJ_P(l_const), "name", 4) : NULL;
+					if (UNEXPECTED(p14 == NULL || Z_ISUNDEF_P(p14))) {
+						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_const, pt_ce_missing_class_constant_typehint_rule, "name", 4, o15.raw()))) return false;
+						p14 = o15.raw();
 					}
-					zv::Val r19;
-					if (UNEXPECTED(!pgrt::nameToString(pg_site_4, zv::Ref(p17).deref().raw(), r19.raw()))) return false;
-					l_constantName = std::move(r19);
+					zv::Val r16;
+					if (UNEXPECTED(!pgrt::nameToString(pg_site_4, zv::Ref(p14).deref().raw(), r16.raw()))) return false;
+					l_constantName = std::move(r16);
 				}
 				 {
-					zv::Val o20 = zv::Val::copyOf(zv::Ref(l_errors.raw()));
-					zv::Val r21;
+					zv::Val o17 = zv::Val::copyOf(zv::Ref(l_errors.raw()));
+					zv::Val r18;
 					if (EXPECTED(Z_TYPE_P(p_scope) == IS_OBJECT)) {
-						r21 = pt_type_op(Z_OBJ_P(p_scope), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
-						if (UNEXPECTED(r21.isUndef())) return false;
+						r18 = pt_type_op(Z_OBJ_P(p_scope), PT_OP_GET_CLASS_REFLECTION, 0, NULL);
+						if (UNEXPECTED(r18.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r21.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r18.raw(), NULL))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(l_constantName.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Constants\\MissingClassConstantTypehintRule::processSingleConstant", 2, "constantName", "string", l_constantName.raw()); return false; }
-					zv::Val r22;
-					if (UNEXPECTED(!pgen::MissingClassConstantTypehintRule::m_processSingleConstant(Z_OBJ_P(&this_zv), r21.raw(), l_constantName.raw(), r22.raw()))) return false;
-					zval av23[2];
-					ZVAL_COPY_VALUE(&av23[0], o20.raw());
-					ZVAL_COPY_VALUE(&av23[1], r22.raw());
-					zv::Val r24;
-					if (UNEXPECTED(!pgrt::arrayMerge(2, av23, r24.raw()))) return false;
-					l_errors = std::move(r24);
+					zv::Val r19;
+					if (UNEXPECTED(!pgen::MissingClassConstantTypehintRule::m_processSingleConstant(Z_OBJ_P(&this_zv), r18.raw(), l_constantName.raw(), r19.raw()))) return false;
+					zval av20[2];
+					ZVAL_COPY_VALUE(&av20[0], o17.raw());
+					ZVAL_COPY_VALUE(&av20[1], r19.raw());
+					zv::Val r21;
+					if (UNEXPECTED(!pgrt::arrayMerge(2, av20, r21.raw()))) return false;
+					l_errors = std::move(r21);
 				}
 			}
+			if (UNEXPECTED(!it11.next())) return false;
 		}
-		ZEND_HASH_FOREACH_END();
+		if (UNEXPECTED(EG(exception))) return false;
 	}
 	 {
 		ZVAL_COPY(ret, l_errors.raw());

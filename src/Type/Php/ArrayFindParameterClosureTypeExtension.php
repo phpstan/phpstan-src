@@ -9,6 +9,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
@@ -16,6 +17,7 @@ use PHPStan\Type\Type;
 use function in_array;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayFindParameterClosureTypeExtension.cpp')]
 final class ArrayFindParameterClosureTypeExtension implements FunctionParameterClosureTypeExtension
 {
 

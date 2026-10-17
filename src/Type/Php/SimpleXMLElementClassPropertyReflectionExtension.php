@@ -7,11 +7,13 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\SimpleXMLElementProperty;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SimpleXMLElementClassPropertyReflectionExtension.cpp')]
 final class SimpleXMLElementClassPropertyReflectionExtension implements PropertiesClassReflectionExtension
 {
 

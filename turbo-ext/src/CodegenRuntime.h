@@ -681,6 +681,37 @@ void arrayPop(zval *array, zval *ret);
 
 /* }}} */
 
+/* {{{ foreach over a value not proven to be an array: an array (by
+ * position, over a held copy), a Traversable (the engine's iterator — a
+ * generator stays lazy), the VM's warning for anything else (no
+ * iteration); iterating a plain object's properties is not compiled */
+class ForeachIter
+{
+public:
+	ForeachIter() { ZVAL_UNDEF(&held); }
+	ForeachIter(const ForeachIter &) = delete;
+	ForeachIter &operator=(const ForeachIter &) = delete;
+	~ForeachIter();
+
+	/* false = pending exception */
+	[[nodiscard]] bool begin(zval *subject);
+	/* false at the end or with an exception pending (check EG(exception)) */
+	bool valid();
+	zval *current();
+	void key(zval *out);
+	/* false = pending exception */
+	[[nodiscard]] bool next();
+
+private:
+	zval held;
+	zval missing;
+	HashPosition position = 0;
+	zend_object_iterator *iterator = nullptr;
+	bool empty = false;
+};
+
+/* }}} */
+
 /* {{{ array class constants: persistent, immutable, built at declaration */
 
 HashTable *constArrayNew(uint32_t size);

@@ -110,7 +110,8 @@ struct pt_abi_handlers
 	X(info) \
 	X(__tostring) \
 	X(__serialize) \
-	X(__unserialize)
+	X(__unserialize) \
+	X(get_iterator)
 
 struct pt_abi_globals
 {

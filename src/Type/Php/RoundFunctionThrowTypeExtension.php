@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\ObjectType;
@@ -19,6 +20,7 @@ use function count;
  * one of the eight rounding modes (1-8).
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RoundFunctionThrowTypeExtension.cpp')]
 final class RoundFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

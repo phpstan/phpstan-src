@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -16,6 +17,7 @@ use PHPStan\Type\TypeCombinator;
 use function extension_loaded;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DomDocumentCreateElementDynamicThrowTypeExtension.cpp')]
 final class DomDocumentCreateElementDynamicThrowTypeExtension implements DynamicMethodThrowTypeExtension
 {
 

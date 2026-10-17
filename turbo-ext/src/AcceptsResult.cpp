@@ -598,59 +598,50 @@ namespace pgen::AcceptsResult {
 						p23 = o24.raw();
 					}
 					}
-					zv::Val a25 = zv::Val::copyOf(zv::Ref(p23).deref());
-					if (UNEXPECTED(Z_TYPE_P(a25.raw()) != IS_ARRAY)) {
-						if (Z_TYPE_P(a25.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); return false; }
-						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(a25.raw()));
-						if (UNEXPECTED(EG(exception))) return false;
-						a25 = zv::Val(zv::Arr::empty());
-					}
-					HashTable *ht22 = Z_ARRVAL_P(a25.raw());
-					zval *v26;
-					zend_ulong n27;
-					zend_string *s28;
-					ZEND_HASH_FOREACH_KEY_VAL(ht22, n27, s28, v26) {
-						(void) n27; (void) s28;
-						l_reason = zv::Ref(v26).deref().raw();
+					pgrt::ForeachIter it25;
+					if (UNEXPECTED(!it25.begin(p23))) return false;
+					while (it25.valid()) {
+						l_reason = zv::Ref(it25.current()).deref().raw();
 						 {
 							 {
-								zv::Val o31 = zv::Val::copyOf(zv::Ref(l_reason));
-								zv::Val o32 = zv::Val::copyOf(zv::Ref(o31.raw()));
-								zval *w33 = zv::Ref(l_reasons.raw()).deref().raw();
-								if (Z_TYPE_P(w33) <= IS_NULL) { zval_ptr_dtor(w33); array_init(w33); } else if (UNEXPECTED(Z_TYPE_P(w33) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w33);
-								{ zval v = o32.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w33), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val o28 = zv::Val::copyOf(zv::Ref(l_reason));
+								zv::Val o29 = zv::Val::copyOf(zv::Ref(o28.raw()));
+								zval *w30 = zv::Ref(l_reasons.raw()).deref().raw();
+								if (Z_TYPE_P(w30) <= IS_NULL) { zval_ptr_dtor(w30); array_init(w30); } else if (UNEXPECTED(Z_TYPE_P(w30) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w30);
+								{ zval v = o29.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w30), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
+						if (UNEXPECTED(!it25.next())) return false;
 					}
-					ZEND_HASH_FOREACH_END();
+					if (UNEXPECTED(EG(exception))) return false;
 				}
 			}
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val q35;
+		zv::Val q32;
 		if (l_hasNo) {
-			zv::Val r36;
-			if (UNEXPECTED(!pgen::TrinaryLogic::m_createNo(r36.raw()))) return false;
-			q35 = std::move(r36);
+			zv::Val r33;
+			if (UNEXPECTED(!pgen::TrinaryLogic::m_createNo(r33.raw()))) return false;
+			q32 = std::move(r33);
 		} else {
 		 {
-			zv::Val r37;
-			if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r37.raw()))) return false;
-			q35 = std::move(r37);
+			zv::Val r34;
+			if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r34.raw()))) return false;
+			q32 = std::move(r34);
 		}
 		}
-		zv::Val r38;
-		if (UNEXPECTED(!pgrt::arrayUnique(l_reasons.raw(), r38.raw()))) return false;
-		zv::Val r39;
-		if (UNEXPECTED(!pgrt::arrayValues(r38.raw(), r39.raw()))) return false;
-		zval n34_raw;
-		if (UNEXPECTED(object_init_ex(&n34_raw, pt_ce_accepts_result) != SUCCESS)) return false;
-		zv::Val n34 = zv::Val::adopt(n34_raw);
-		if (UNEXPECTED(!pgen::AcceptsResult::m___construct(Z_OBJ_P(n34.raw()), q35.raw(), r39.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n34.raw())); return false; }
-		*ret = n34.take();
+		zv::Val r35;
+		if (UNEXPECTED(!pgrt::arrayUnique(l_reasons.raw(), r35.raw()))) return false;
+		zv::Val r36;
+		if (UNEXPECTED(!pgrt::arrayValues(r35.raw(), r36.raw()))) return false;
+		zval n31_raw;
+		if (UNEXPECTED(object_init_ex(&n31_raw, pt_ce_accepts_result) != SUCCESS)) return false;
+		zv::Val n31 = zv::Val::adopt(n31_raw);
+		if (UNEXPECTED(!pgen::AcceptsResult::m___construct(Z_OBJ_P(n31.raw()), q32.raw(), r36.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n31.raw())); return false; }
+		*ret = n31.take();
 		return true;
 	}
 }

@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -17,6 +18,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayColumnHelper.cpp')]
 final class ArrayColumnHelper
 {
 

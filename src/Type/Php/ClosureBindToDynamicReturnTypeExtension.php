@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -15,6 +16,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClosureBindToDynamicReturnTypeExtension.cpp')]
 final class ClosureBindToDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

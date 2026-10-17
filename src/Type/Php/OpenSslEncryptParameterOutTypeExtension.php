@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
 use PHPStan\Type\IntersectionType;
@@ -21,6 +22,7 @@ use function strtolower;
 use function substr;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/OpenSslEncryptParameterOutTypeExtension.cpp')]
 final class OpenSslEncryptParameterOutTypeExtension implements FunctionParameterOutTypeExtension
 {
 

@@ -631,10 +631,6 @@ bool pt_shadow_is_active();
 [[nodiscard]] bool pt_shadow_instanceof(zend_class_entry *ce, zend_class_entry *nativeCe, const char *realName, size_t realNameLen);
 
 void pt_integer_range_type_rinit();
-void pt_is_super_type_of_result_rinit();
-void pt_is_super_type_of_result_rshutdown();
-void pt_accepts_result_rinit();
-void pt_accepts_result_rshutdown();
 
 /* per-request hooks of individual classes */
 void pt_node_traverser_rinit();

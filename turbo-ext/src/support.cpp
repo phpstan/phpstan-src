@@ -1,4 +1,5 @@
 #include "support.h"
+#include "CodegenDecls.h"
 #include "zv.h"
 #include "TypeOps.h"
 #include "Engine.h"
@@ -581,16 +582,16 @@ zval *pt_trinary_singleton(zend_long value)
 {
 	if (UNEXPECTED(!PT_G(trinary_inited))) {
 		static const zend_long values[3] = {PT_TRI_YES, PT_TRI_MAYBE, PT_TRI_NO};
-		zend_class_entry *impl = pt_ce_trinary;
 		zval *slots[3];
 		slots[0] = &PT_G(trinary_yes);
 		slots[1] = &PT_G(trinary_maybe);
 		slots[2] = &PT_G(trinary_no);
 		for (int i = 0; i < 3; i++) {
-			object_init_ex(slots[i], impl);
-			zval *value = OBJ_PROP_NUM(Z_OBJ_P(slots[i]), PT_TRI_PROP_VALUE);
-			ZVAL_LONG(value, values[i]);
-			Z_PROP_FLAG_P(value) = 0; /* the typed `int $value` is initialized now */
+			/* the compiled class keeps its flyweights in the twin's
+			 * self::$registry; the native ones are those same objects */
+			if (UNEXPECTED(!pgen::TrinaryLogic::m_create(values[i], slots[i]))) {
+				zend_error_noreturn(E_CORE_ERROR, "phpstan_turbo: TrinaryLogic flyweight creation failed");
+			}
 		}
 		PT_G(trinary_inited) = true;
 	}

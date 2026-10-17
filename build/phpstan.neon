@@ -145,6 +145,11 @@ parameters:
 			path: ../src/Cache/ArenaCache.php
 			reportUnmatched: false
 		-
+			# called from turbo-ext/bin/compile-twins.php, outside the analysed paths
+			identifier: shipmonk.deadMethod
+			path: PHPStan/Build/TurboCodegen/Compiler.php
+			reportUnmatched: false
+		-
 			# called from build/generate-turbo-manifest.php and
 			# turbo-ext/bin/side-by-side.php, outside the analysed paths
 			identifier: shipmonk.deadMethod

@@ -238,6 +238,9 @@ jobs:
       - name: "Check the shadowed PHP and C++ implementations are in sync (method parity)"
         run: "php turbo-ext/bin/side-by-side.php"
 
+      - name: "Check the compiled shadows are generated from the current PHP twins"
+        run: "php turbo-ext/bin/compile-twins.php --check"
+
       - name: "Check the vendored php-parser matches the version the native parser engine was ported against"
         run: |
           INSTALLED="$(jq -r '.packages[] | select(.name == "nikic/php-parser") | .version' composer.lock)"

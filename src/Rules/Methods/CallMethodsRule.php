@@ -11,6 +11,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
@@ -118,6 +119,8 @@ final class CallMethodsRule implements Rule
 				$declaringClass->getName(),
 				$methodReflection->getName(),
 			] : null,
+			ArgumentsByNameTagResolver::resolveForMethod($methodReflection),
+			'Argument for %s of method ' . $messagesMethodName . ' must be passed by name.',
 		));
 	}
 

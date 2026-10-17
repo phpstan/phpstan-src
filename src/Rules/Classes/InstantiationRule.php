@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -338,6 +339,8 @@ final class InstantiationRule implements Rule
 			'Constants %s cannot be combined for %s of class ' . $classDisplayName . ' constructor.',
 			'Combining constants with | is not allowed for %s of class ' . $classDisplayName . ' constructor.',
 			null,
+			ArgumentsByNameTagResolver::resolveForMethod($constructorReflection),
+			'Argument for %s of class ' . $classDisplayName . ' constructor must be passed by name.',
 		));
 	}
 

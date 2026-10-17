@@ -9,6 +9,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -78,6 +79,8 @@ final class CallToFunctionParametersRule implements Rule
 			'Constants %s cannot be combined for %s of function ' . $functionName . '.',
 			'Combining constants with | is not allowed for %s of function ' . $functionName . '.',
 			null,
+			ArgumentsByNameTagResolver::resolveForFunction($function),
+			'Argument for %s of function ' . $functionName . ' must be passed by name.',
 		);
 	}
 

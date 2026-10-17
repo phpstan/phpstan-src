@@ -15,6 +15,7 @@ use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use function array_values;
 use function realpath;
@@ -114,6 +115,31 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertTrue($paramMultipleTypesWithExtraSpaces->getParameters()['object']->passedByReference()->no());
 		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['object']->isOptional());
 		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['object']->isVariadic());
+	}
+
+	public static function dataArgumentsByNameTags(): iterable
+	{
+		yield ['/** @param int $i */', false, false, false];
+		yield ['/** @arguments-by-name */', true, false, false];
+		yield ['/** @optional-arguments-by-name Optional parameters can be reordered. */', false, true, false];
+		yield ['/** @stable-parameter-names */', false, false, true];
+	}
+
+	#[DataProvider('dataArgumentsByNameTags')]
+	public function testArgumentsByNameTags(
+		string $phpDoc,
+		bool $requiresArgumentsByName,
+		bool $requiresOptionalArgumentsByName,
+		bool $hasStableParameterNames,
+	): void
+	{
+		/** @var FileTypeMapper $fileTypeMapper */
+		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
+
+		$resolved = $fileTypeMapper->getResolvedPhpDoc(null, null, null, null, $phpDoc);
+		$this->assertSame($requiresArgumentsByName, $resolved->requiresArgumentsByName());
+		$this->assertSame($requiresOptionalArgumentsByName, $resolved->requiresOptionalArgumentsByName());
+		$this->assertSame($hasStableParameterNames, $resolved->hasStableParameterNames());
 	}
 
 	public function testFileWithDependentPhpDocs(): void

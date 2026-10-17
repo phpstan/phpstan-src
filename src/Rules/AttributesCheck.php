@@ -11,6 +11,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_key_exists;
@@ -163,6 +164,8 @@ final class AttributesCheck
 					'Constants %s cannot be combined for %s of attribute class ' . $attributeClassName . ' constructor.',
 					'Combining constants with | is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
 					null,
+					ArgumentsByNameTagResolver::resolveForMethod($attributeConstructor),
+					'Argument for %s of attribute class ' . $attributeClassName . ' constructor must be passed by name.',
 				);
 
 				foreach ($parameterErrors as $error) {

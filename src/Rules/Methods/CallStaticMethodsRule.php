@@ -11,6 +11,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
@@ -124,6 +125,8 @@ final class CallStaticMethodsRule implements Rule
 			'Constants %s cannot be combined for %s of ' . $lowercasedMethodName . '.',
 			'Combining constants with | is not allowed for %s of ' . $lowercasedMethodName . '.',
 			null,
+			ArgumentsByNameTagResolver::resolveForMethod($method),
+			'Argument for %s of ' . $lowercasedMethodName . ' must be passed by name.',
 		));
 
 		return $errors;

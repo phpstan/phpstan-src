@@ -759,6 +759,21 @@ final class PhpDocNodeResolver
 		return count($phpDocNode->getTagsByName('@no-named-arguments')) === 0;
 	}
 
+	public function resolveRequiresArgumentsByName(PhpDocNode $phpDocNode): bool
+	{
+		return count($phpDocNode->getTagsByName('@arguments-by-name')) > 0;
+	}
+
+	public function resolveRequiresOptionalArgumentsByName(PhpDocNode $phpDocNode): bool
+	{
+		return count($phpDocNode->getTagsByName('@optional-arguments-by-name')) > 0;
+	}
+
+	public function resolveHasStableParameterNames(PhpDocNode $phpDocNode): bool
+	{
+		return count($phpDocNode->getTagsByName('@stable-parameter-names')) > 0;
+	}
+
 	private function shouldSkipType(string $tagName, Type $type): bool
 	{
 		if (!str_starts_with($tagName, '@psalm-')) {

@@ -882,6 +882,34 @@ class OverridingMethodRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testArgumentsByName(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/overriding-method-arguments-by-name.php'], [
+			[
+				'Parameter #1 $name of method OverridingMethodArgumentsByName\Bar::all() should be named $dialect like in method OverridingMethodArgumentsByName\Foo::all() because of @arguments-by-name.',
+				46,
+			],
+			[
+				'Parameter #2 $category of method OverridingMethodArgumentsByName\Bar::optional() should be named $group like in method OverridingMethodArgumentsByName\Foo::optional() because of @optional-arguments-by-name.',
+				50,
+			],
+			[
+				'Parameter #2 $category of method OverridingMethodArgumentsByName\Bar::stable() should be named $group like in method OverridingMethodArgumentsByName\Foo::stable() because of @stable-parameter-names.',
+				54,
+			],
+			[
+				'Parameter #2 $category of method OverridingMethodArgumentsByName\FooImplementation::doFoo() should be named $group like in method OverridingMethodArgumentsByName\FooInterface::doFoo() because of @optional-arguments-by-name.',
+				81,
+			],
+			[
+				'Parameter #1 $name of method OverridingMethodArgumentsByName\ChildOfClassLevel::doFoo() should be named $dialect like in method OverridingMethodArgumentsByName\ClassLevel::doFoo() because of @arguments-by-name.',
+				128,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14398(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;

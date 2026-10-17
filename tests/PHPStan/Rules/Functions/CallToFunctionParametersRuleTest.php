@@ -2242,6 +2242,57 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testArgumentsByName(): void
+	{
+		$this->analyse([__DIR__ . '/data/arguments-by-name.php'], [
+			[
+				'Argument for optional parameter $group of function ArgumentsByNameFunction\optional must be passed by name.',
+				42,
+			],
+			[
+				'Argument for optional parameter $group of function ArgumentsByNameFunction\optional must be passed by name.',
+				43,
+			],
+			[
+				'Argument for optional parameter $allowExtraAttributes of function ArgumentsByNameFunction\optional must be passed by name.',
+				43,
+			],
+			[
+				'Argument for parameter $dialect of function ArgumentsByNameFunction\all must be passed by name.',
+				46,
+			],
+			[
+				'Argument for parameter $dialect of function ArgumentsByNameFunction\all must be passed by name.',
+				47,
+			],
+			[
+				'Argument for parameter $group of function ArgumentsByNameFunction\all must be passed by name.',
+				47,
+			],
+			[
+				'Argument for optional parameter $group of function ArgumentsByNameFunction\optional must be passed by name.',
+				64,
+			],
+			[
+				'Argument for optional parameter $group of function ArgumentsByNameFunction\optional must be passed by name.',
+				68,
+			],
+			[
+				'Argument for parameter $dialect of function ArgumentsByNameFunction\all must be passed by name.',
+				72,
+			],
+			[
+				'Argument for parameter $dialect of function ArgumentsByNameFunction\all must be passed by name.',
+				74,
+			],
+			[
+				'Argument for parameter $dialect of function ArgumentsByNameFunction\all must be passed by name.',
+				78,
+			],
+		]);
+	}
+
 	public function testBug11056(): void
 	{
 		$this->checkExplicitMixed = true;

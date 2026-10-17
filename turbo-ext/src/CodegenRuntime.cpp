@@ -780,6 +780,24 @@ bool getClass(zval *object, zval *ret)
 	return false;
 }
 
+bool implode(zval *glue, zval *pieces, zval *ret)
+{
+	StringBuilder builder;
+	bool first = true;
+	for (auto entry : zv::ArrRef(pieces)) {
+		if (!first) {
+			builder.appendLiteral(Z_STRVAL_P(glue), Z_STRLEN_P(glue));
+		}
+		first = false;
+		if (UNEXPECTED(!builder.append(entry.value().deref().raw()))) {
+			ZVAL_UNDEF(ret);
+			return false;
+		}
+	}
+	*ret = builder.finish().take();
+	return true;
+}
+
 bool inArrayStrict(zval *needle, zval *array)
 {
 	for (auto entry : zv::ArrRef(array)) {

@@ -10,6 +10,7 @@ use PhpParser\NodeAbstract;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
@@ -41,6 +42,7 @@ use ReflectionType;
 use ReflectionUnionType;
 use function addcslashes;
 use function array_column;
+use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -58,6 +60,7 @@ use function count;
 use function explode;
 use function file_get_contents;
 use function function_exists;
+use function get_parent_class;
 use function glob;
 use function implode;
 use function in_array;
@@ -78,7 +81,9 @@ use function preg_match;
 use function preg_match_all;
 use function preg_quote;
 use function preg_replace;
+use function preg_split;
 use function range;
+use function spl_object_id;
 use function sprintf;
 use function str_contains;
 use function str_ends_with;
@@ -86,6 +91,7 @@ use function str_replace;
 use function str_starts_with;
 use function stripslashes;
 use function strlen;
+use function strrpos;
 use function strtolower;
 use function strtoupper;
 use function substr;
@@ -93,6 +99,7 @@ use function ucfirst;
 use function ucwords;
 use function var_export;
 use const PREG_SET_ORDER;
+use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
  * Compiles PHP twins of turbo-shadowed classes to C++ registered through
@@ -144,13 +151,16 @@ final class Compiler
 	/** @var array<string, string>|null lowercase FQCN => generated-header stem of every shadowed class */
 	private ?array $manifest = null;
 
-	/** @var array<string, array{function: string, kind: string, params: list<array{name: string, type: string, default: string|null}>}>|null */
+	/** @var array<string, array{function: string, kind: string, params: list<array{name: string, type: string, default: string|null}>, nullAsNull: bool}>|null */
 	private ?array $nativeNewEntries = null;
+
+	/** @var array<string, true> the method's variables holding a closure that may stay a native closure holder (closureHolderVariables()) */
+	private array $holderVariables = [];
 
 	/** whether the closure expression being compiled may stay a native closure holder (a `callable` parameter's argument) */
 	private bool $closureAsHolder = false;
 
-	/** @var array<string, array{kind: string, params: list<array{name: string, type: string, default: string|null, enum?: string}>, variadic: string|null}>|null the hand-written direct entries (nativeEntries()) */
+	/** @var array<string, array{kind: string, params: list<array{name: string, type: string, default: string|null, enum?: string}>, variadic: string|null, nullAsNull: bool}>|null the hand-written direct entries (nativeEntries()) */
 	private ?array $nativeEntries = null;
 
 	/** @var array<string, true> generated headers the file being compiled reads slots from */
@@ -662,7 +672,7 @@ final class Compiler
 		// the literals the bodies and the glue (defaults) use, interned first
 		$literals = [];
 		foreach ($this->literals as $literal => $index) {
-			$literals[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(\"%s\", %d));", $index, addcslashes($literal, "\"\\\n\r\t"), strlen($literal));
+			$literals[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(\"%s\", %d));", $index, addcslashes($literal, "\"\\\n\r\t?"), strlen($literal));
 		}
 		return str_replace("/*LITERALS*/\n", $literals === [] ? '' : implode("\n", $literals) . "\n", implode("\n", $out));
 	}
@@ -1207,7 +1217,11 @@ final class Compiler
 						// parsed as any object, then checked against the class
 						// (instanceCheck() accepts the native class and the twin)
 						$parse[] = sprintf('Z_PARAM_OBJECT%s(%s)', $param->nullable ? '_OR_NULL' : '', $name);
-						$after[] = sprintf('if (%s != NULL && UNEXPECTED(!%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(%s)); RETURN_THROWS(); }', $name, $this->instanceCheck($name, $param->class, $param->nullable), $param->position + 1, addcslashes($param->describe, '\\"'), $name);
+						// (a DI service's constructor takes any object, like the
+						// hand ports: the container wires the right ones, and the
+						// differential tests hand in recording doubles)
+						$serviceConstructor = $method->name === '__construct' && $method->unit->reflection->getAttributes(AutowiredService::class) !== [];
+						$after[] = $serviceConstructor ? '' : sprintf('if (%s != NULL && UNEXPECTED(!%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(%s)); RETURN_THROWS(); }', $name, $this->instanceCheck($name, $param->class, $param->nullable), $param->position + 1, addcslashes($param->describe, '\\"'), $name);
 						if ($param->nullable) {
 							$lines[] = sprintf('zval %s_null;', $name);
 							$lines[] = sprintf('ZVAL_NULL(&%s_null);', $name);
@@ -1417,6 +1431,8 @@ final class Compiler
 	{
 		$f = new FunctionContext($this->label($method), 'return false;', $method->isStatic ? null : 'self', $method->return);
 		$this->declareLocals($f, $method->params, $method->node->stmts ?? []);
+		$this->holderVariables = $this->closureHolderVariables($method->node->stmts ?? []);
+		$f->stableVars = $this->neverWrittenVariables($method->node->stmts ?? [], array_map(static fn (ParamInfo $p): string => $p->name, $method->params));
 
 		// promoted constructor parameters
 		if (strtolower($method->name) === '__construct') {
@@ -2642,9 +2658,9 @@ final class Compiler
 			case 'bool':
 				return Value::bool($local->cName);
 			case 'zval':
-				return new Value('zval', $local->cName . '.raw()', class: $local->class, isArray: $local->isArray);
+				return new Value('zval', $local->cName . '.raw()', class: $local->class, isArray: $local->isArray, stable: isset($f->stableVars[$name]));
 			case 'param':
-				return new Value('zval', $local->cName, class: $local->class, isArray: $local->isArray);
+				return new Value('zval', $local->cName, class: $local->class, isArray: $local->isArray, stable: isset($f->stableVars[$name]));
 			case 'ref':
 				return new Value('zval', sprintf('zv::Ref(%s).deref().raw()', $local->cName), class: $local->class, isArray: $local->isArray);
 			case 'callable':
@@ -2773,7 +2789,7 @@ final class Compiler
 		// (the PHPDoc type is only a guess, but the cache takes public
 		// declared properties of whatever class the object has, and the
 		// handlers anything else)
-		if ($receiver->kind === 'zval' && ($this->isCacheablePropertyOf($class, $receiverNative, $name) || ($class === null && $this->isCacheablePropertyOf(null, $this->unit()->oracle->phpDocType($expr->var), $name) && !$this->isCompiledPropertyOf($this->unit()->oracle->phpDocType($expr->var))))) {
+		if ($receiver->kind === 'zval' && ($this->isCacheablePropertyOf($class, $receiverNative, $name) || (($class === null || !$this->isCacheableProperty($class, $name)) && $this->isCacheablePropertyOf(null, $this->unit()->oracle->phpDocType($expr->var), $name) && !$this->isCompiledPropertyOf($this->unit()->oracle->phpDocType($expr->var))))) {
 			$z = $this->asZval($f, $receiver);
 			$site = $this->site('pgrt::PropSite', sprintf('prop_%s_%d', $name, count($this->siteNames)));
 			$p = $f->temp('p');
@@ -2917,7 +2933,9 @@ final class Compiler
 				$f->line(sprintf('%s.clear();', $local->cName));
 				return Value::void();
 			}
+			$this->closureAsHolder = isset($this->holderVariables[$target->name]) && ($expr->expr instanceof Expr\Closure || $expr->expr instanceof Expr\ArrowFunction);
 			$value = $this->expr($f, $expr->expr);
+			$this->closureAsHolder = false;
 			if ($local->kind === 'ref') {
 				// through the reference, like any write to a variable bound by reference
 				$owned = $this->own($f, $value);
@@ -3640,6 +3658,9 @@ final class Compiler
 	/** pins a value so later side effects cannot change what it reads */
 	private function stabilize(FunctionContext $f, Value $value): Value
 	{
+		if ($value->stable) {
+			return $value;
+		}
 		if ($value->kind === 'long') {
 			if (preg_replace('/^[A-Za-z_][A-Za-z0-9_]*$|^-?[0-9]+$/', '', $value->code) === '') {
 				return $value;
@@ -3738,6 +3759,20 @@ final class Compiler
 		if (count($entry['params']) !== count($phpParameters)) {
 			return null;
 		}
+		// everything decided before any argument is evaluated
+		foreach ($entry['params'] as $param) {
+			if (isset($byName[$param['name']])) {
+				if (!$this->entryArgumentConvertible($param['type'], $byName[$param['name']]->value)) {
+					return null;
+				}
+				// (an argument not proven to be an object gets the engine's TypeError)
+				if ($param['type'] === 'zval' && $this->needsObjectGuard($constructor, $param['name'], 0, $byName[$param['name']]->value)) {
+					return null;
+				}
+			} elseif ($param['default'] === null) {
+				return null;
+			}
+		}
 		$sideEffects = $this->callHasSideEffects($expr->args);
 		$evaluated = [];
 		foreach ($byName as $parameter => $arg) {
@@ -3758,6 +3793,10 @@ final class Compiler
 			$code = $this->nativeNewArgument($f, $param['type'], $value, $type);
 			if ($code === null) {
 				return null;
+			}
+			if ($param['type'] === 'zval' && ($entry['nullAsNull'] || $param['default'] === 'NULL') && $phpParameters[$param['name']]->allowsNull()) {
+				// the ports take a nullable parameter's null as NULL
+				$code = sprintf('(Z_TYPE_P(%1$s) == IS_NULL ? NULL : %1$s)', $code);
 			}
 			$codes = [...$codes, ...$pendingDefaults, $code];
 			$pendingDefaults = [];
@@ -3814,7 +3853,7 @@ final class Compiler
 	 * or `bool pt_<c>_new(zval *out, ...)` with parameters named like the
 	 * constructor's.
 	 *
-	 * @return array<string, array{function: string, kind: string, params: list<array{name: string, type: string, default: string|null}>}>
+	 * @return array<string, array{function: string, kind: string, params: list<array{name: string, type: string, default: string|null}>, nullAsNull: bool}>
 	 */
 	private function nativeNewEntries(): array
 	{
@@ -3823,8 +3862,8 @@ final class Compiler
 		}
 		$this->nativeNewEntries = [];
 		$code = (string) file_get_contents(__DIR__ . '/../../../../turbo-ext/src/support.h');
-		preg_match_all('~^(?:\[\[nodiscard\]\] )?(zv::Val|bool)\s*(pt_\w+_new)\(([^()]*)\);~m', $code, $matches, PREG_SET_ORDER);
-		foreach ($matches as [, $return, $function, $parameters]) {
+		preg_match_all('~(/\*(?:(?!\*/).)*\*/\s*)?^(?:\[\[nodiscard\]\] )?(zv::Val|bool)\s*(pt_\w+_new)\(([^()]*)\);~ms', $code, $matches, PREG_SET_ORDER);
+		foreach ($matches as [, $comment, $return, $function, $parameters]) {
 			$list = $parameters === '' ? [] : explode(', ', $parameters);
 			$kind = 'val';
 			if ($return === 'bool') {
@@ -3842,7 +3881,7 @@ final class Compiler
 				$types = ['zval *' => 'zval', 'bool ' => 'bool', 'zend_string *' => 'string', 'zend_long ' => 'long', 'int ' => 'tri'];
 				$params[] = ['name' => $m[2], 'type' => $types[$m[1]], 'default' => $m[3] ?? null];
 			}
-			$this->nativeNewEntries[$function] = ['function' => $function, 'kind' => $kind, 'params' => $params];
+			$this->nativeNewEntries[$function] = ['function' => $function, 'kind' => $kind, 'params' => $params, 'nullAsNull' => preg_match('~(?<!IS_)NULL (?:for|=|is|as) (?:a )?null~i', $comment) === 1];
 		}
 		return $this->nativeNewEntries;
 	}
@@ -3900,7 +3939,7 @@ final class Compiler
 		}
 		$key = ($class ?? '?') . '->' . $name;
 		$this->engineCalls[$key] = ($this->engineCalls[$key] ?? 0) + 1;
-		[$argv, $argc, $named] = $this->engineArgs($f, $expr->args, $class !== null ? $this->methodReflection($class, $name) : null);
+		[$argv, $argc, $named] = $this->engineArgs($f, $expr->args, $dispatchClass !== null ? $this->methodReflection($dispatchClass, $name) : null);
 		$t = $f->temp('r');
 		$f->line(sprintf('zv::Val %s;', $t));
 		$op = $this->opFor($name, $argc);
@@ -4072,12 +4111,25 @@ final class Compiler
 			if ($entry === null || ($entry['kind'] === 'status' && !$returnsVoid) || ($entry['variadic'] !== null) !== $variadicMethod) {
 				continue;
 			}
+			// (the reader shapes take a receiver)
+			if ($receiver === null && in_array($entry['kind'], ['hold', 'boolout'], true)) {
+				continue;
+			}
 			$params = $entry['params'];
+			$exactCe = null;
 			if ($receiver !== null) {
 				$first = array_shift($params);
-				if ($first === null || $first['type'] !== 'zval') {
+				if ($first === null || !in_array($first['type'], ['zval', 'obj'], true)) {
 					continue;
 				}
+				if ($first['type'] === 'obj') {
+					$exactCe = $this->shadowCe($candidate->getName());
+					if ($exactCe === null) {
+						continue;
+					}
+				}
+			} elseif (($params[0]['type'] ?? null) === 'obj') {
+				continue;
 			}
 			if (!$variadicMethod) {
 				// the arguments onto the entry's parameters: by position, or
@@ -4097,17 +4149,18 @@ final class Compiler
 					}
 				}
 			}
-			$found = [$snake, $entry, $params];
+			$found = [$snake, $entry, $params, $exactCe];
 			break;
 		}
 		if ($found === null) {
 			return $receiver !== null && $args === [] ? $this->memberDispatchCall($f, $classReflection, $name, $receiver, $native, $returnsVoid) : null;
 		}
-		[$function, $entry, $params] = $found;
+		[$function, $entry, $params, $exactCe] = $found;
 		$kind = $entry['kind'];
 		$sideEffects = $this->callHasSideEffects($callArgs);
 		$values = [];
 		$codes = [];
+		$guards = [];
 		if ($variadicMethod) {
 			foreach ($spread ? [] : $args as $arg) {
 				$value = $this->expr($f, $arg->value);
@@ -4127,18 +4180,47 @@ final class Compiler
 				}
 			}
 			$converted = [];
+			$holders = $this->holderPositions($args, $reflection);
 			foreach ($args as $i => $arg) {
 				$index = $arg->name === null ? $i : (int) array_search($arg->name->toString(), $paramNames, true);
 				if ($params[$index]['type'] === 'enum') {
 					$converted[$index] = (string) $this->enumArgument($params[$index], $class, $arg->value);
 					continue;
 				}
+				$this->closureAsHolder = isset($holders[$i]);
 				$value = $this->expr($f, $arg->value);
+				$this->closureAsHolder = false;
 				if ($sideEffects) {
 					$value = $this->stabilize($f, $value);
 				}
 				$values[] = $this->asZval($f, $value);
 				$converted[$index] = (string) $this->nativeNewArgument($f, $params[$index]['type'], $value, $this->unit()->oracle->nativeType($arg->value));
+				if ($params[$index]['type'] === 'zval' && $this->needsObjectGuard($reflection, $params[$index]['name'], $index, $arg->value)) {
+					// the TypeError the method's own parameter check raises for a
+					// non-object, which the port does not check
+					$z = $this->asZval($f, $value);
+					$parameter = $this->methodParameter($reflection, $params[$index]['name'], $index);
+					$guards[] = [
+						$parameter !== null && $parameter->allowsNull()
+							? sprintf('(Z_TYPE_P(%1$s) == IS_OBJECT || Z_TYPE_P(%1$s) == IS_NULL)', $z)
+							: sprintf('Z_TYPE_P(%s) == IS_OBJECT', $z),
+						sprintf(
+							'zend_type_error("%s::%s(): Argument #%d ($%s) must be of type %s, %%s given", zend_zval_value_name(%s));',
+							addcslashes($reflection->getDeclaringClass()->getName(), '\\'),
+							$reflection->getName(),
+							($parameter?->getPosition() ?? $index) + 1,
+							$parameter?->getName() ?? $params[$index]['name'],
+							addcslashes((string) $parameter?->getType(), '\\'),
+							$z,
+						),
+					];
+				}
+				if ($params[$index]['type'] !== 'zval' || (!$entry['nullAsNull'] && $params[$index]['default'] !== 'NULL') || !$this->parameterAllowsNull($reflection, $params[$index]['name'], $index)) {
+					continue;
+				}
+
+				// the ports take a nullable parameter's null as NULL
+				$converted[$index] = sprintf('(Z_TYPE_P(%1$s) == IS_NULL ? NULL : %1$s)', $converted[$index]);
 			}
 			$pending = [];
 			foreach ($params as $index => $param) {
@@ -4180,16 +4262,19 @@ final class Compiler
 			}
 			$codes = [(string) count($values), $argv];
 		}
-		$callArgs = [...($z !== null ? [$z] : []), ...$codes];
+		$callArgs = [...($z !== null ? [$exactCe !== null ? sprintf('Z_OBJ_P(%s)', $z) : $z] : []), ...$codes];
 		if (in_array($kind, ['hold', 'boolout'], true)) {
-			return $this->readerEntryCall($f, $function, $kind, $name, (string) $z, $native);
+			return $this->readerEntryCall($f, $function, $kind, $name, (string) $z, $native, $exactCe);
 		}
 		$t = $f->temp('r');
 		$f->line(sprintf('zv::Val %s;', $t));
 		if ($z !== null) {
-			$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT))', $z));
+			$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT%s))', $z, $exactCe !== null ? sprintf(' && Z_OBJCE_P(%s) == %s', $z, $exactCe) : ''));
 		} else {
 			$f->open('');
+		}
+		foreach ($guards as [$condition, $error]) {
+			$f->line(sprintf('if (UNEXPECTED(!(%s))) { %s %s }', $condition, $error, $f->fail));
 		}
 		switch ($kind) {
 			case 'val':
@@ -4235,6 +4320,43 @@ final class Compiler
 		return $this->fromEngineResult($t, $native);
 	}
 
+	/** the method's parameter an entry parameter stands for: by name, else by position */
+	private function methodParameter(ReflectionMethod $method, string $name, int $index): ?ReflectionParameter
+	{
+		foreach ($method->getParameters() as $candidate) {
+			if ($candidate->getName() === $name) {
+				return $candidate;
+			}
+		}
+		return $method->getParameters()[$index] ?? null;
+	}
+
+	/** whether a class-typed parameter receives an argument not proven to be an object */
+	private function needsObjectGuard(ReflectionMethod $method, string $name, int $index, Expr $arg): bool
+	{
+		$parameter = $this->methodParameter($method, $name, $index);
+		$type = $parameter?->getType();
+		if ($type === null) {
+			return false;
+		}
+		$classTyped = $type instanceof ReflectionNamedType ? !$type->isBuiltin() || $type->getName() === 'object' : false;
+		if ($type instanceof ReflectionUnionType) {
+			$classTyped = true;
+			foreach ($type->getTypes() as $member) {
+				if (!($member instanceof ReflectionNamedType) || !$member->isBuiltin() || $member->getName() === 'null' || $member->getName() === 'object') {
+					continue;
+				}
+
+				$classTyped = false;
+			}
+		}
+		if (!$classTyped) {
+			return false;
+		}
+		$native = TypeCombinator::removeNull($this->unit()->oracle->nativeType($arg));
+		return !$native->isObject()->yes();
+	}
+
 	/**
 	 * $factory->create(...) as pt_expression_result_create() (Engine.h): the
 	 * nine required parameters through pt_expression_result_args' constructor,
@@ -4259,6 +4381,18 @@ final class Compiler
 		}
 		$bools = ['hasYield', 'isAlwaysTerminating', 'containsNullsafe'];
 		$callables = ['typeCallback', 'specifyTypesCallback', 'createTypesCallback'];
+		$required = array_slice(array_map(static fn (ReflectionParameter $p): string => $p->getName(), $parameters), 0, 9);
+		// everything decided before any argument is evaluated
+		foreach ($required as $parameter) {
+			if (!isset($byName[$parameter])) {
+				return null;
+			}
+		}
+		foreach ($bools as $parameter) {
+			if (isset($byName[$parameter]) && !$this->unit()->oracle->nativeType($byName[$parameter]->value)->isBoolean()->yes()) {
+				return null;
+			}
+		}
 		$sideEffects = $this->callHasSideEffects($expr->args);
 		$values = [];
 		foreach ($byName as $parameter => $arg) {
@@ -4270,9 +4404,6 @@ final class Compiler
 			}
 			if (in_array($parameter, $bools, true)) {
 				if ($value->kind !== 'bool') {
-					if (!$this->unit()->oracle->nativeType($arg->value)->isBoolean()->yes()) {
-						return null;
-					}
 					$value = Value::bool(sprintf('(Z_TYPE_P(%s) == IS_TRUE)', $this->asZval($f, $value)));
 				}
 				$values[$parameter] = $value->code;
@@ -4280,12 +4411,8 @@ final class Compiler
 			}
 			$values[$parameter] = $this->asZval($f, $value);
 		}
-		$required = array_slice(array_map(static fn (ReflectionParameter $p): string => $p->getName(), $parameters), 0, 9);
 		$constructor = [];
 		foreach ($required as $parameter) {
-			if (!isset($values[$parameter])) {
-				return null;
-			}
 			$constructor[] = $values[$parameter];
 		}
 		$args = $f->temp('era');
@@ -4301,6 +4428,17 @@ final class Compiler
 		$f->line(sprintf('zv::Val %s = pt_expression_result_create(%s, %s);', $t, $z, $args));
 		$f->failIf(sprintf('%s.isUndef()', $t));
 		return new Value('zval', $t . '.raw()', $t, ExpressionResult::class);
+	}
+
+	/** whether the method's parameter an entry parameter stands for (by name, else by position) accepts null */
+	private function parameterAllowsNull(ReflectionMethod $method, string $name, int $index): bool
+	{
+		foreach ($method->getParameters() as $parameter) {
+			if ($parameter->getName() === $name) {
+				return $parameter->allowsNull();
+			}
+		}
+		return ($method->getParameters()[$index] ?? null)?->allowsNull() ?? false;
 	}
 
 	/** whether an argument can be converted to an entry parameter's type */
@@ -4354,13 +4492,15 @@ final class Compiler
 	 * A borrowed slot reader of AnalyserValues.h: the slot of the native
 	 * value class, the getter's result (held) for any other object.
 	 */
-	private function readerEntryCall(FunctionContext $f, string $function, string $kind, string $name, string $z, Type $native): Value
+	private function readerEntryCall(FunctionContext $f, string $function, string $kind, string $name, string $z, Type $native, ?string $exactCe = null): Value
 	{
+		$condition = sprintf('Z_TYPE_P(%s) == IS_OBJECT', $z) . ($exactCe !== null ? sprintf(' && Z_OBJCE_P(%s) == %s', $z, $exactCe) : '');
+		$receiverArg = $exactCe !== null ? sprintf('Z_OBJ_P(%s)', $z) : $z;
 		if ($kind === 'boolout') {
 			$out = $f->temp('bo');
 			$f->line(sprintf('bool %s = false;', $out));
-			$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT))', $z));
-			$f->failIf(sprintf('!%s(%s, %s)', $function, $z, $out));
+			$f->open(sprintf('if (EXPECTED(%s))', $condition));
+			$f->failIf(sprintf('!%s(%s, %s)', $function, $receiverArg, $out));
 			$f->close(' else {');
 			$f->open('');
 			$t = $f->temp('r');
@@ -4376,8 +4516,8 @@ final class Compiler
 		$p = $f->temp('p');
 		$f->line(sprintf('zv::Val %s;', $hold));
 		$f->line(sprintf('zval *%s;', $p));
-		$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT))', $z));
-		$f->line(sprintf('%s = %s(%s, %s);', $p, $function, $z, $hold));
+		$f->open(sprintf('if (EXPECTED(%s))', $condition));
+		$f->line(sprintf('%s = %s(%s, %s);', $p, $function, $receiverArg, $hold));
 		$f->failIf(sprintf('%s == NULL', $p));
 		$f->close(' else {');
 		$f->open('');
@@ -4448,7 +4588,7 @@ final class Compiler
 	 * receiver, those take the native class only — and a variadic method's `uint32_t argc, zval *argv` (argv) or
 	 * `uint32_t argc, zval *const *argv` (argvp) tail.
 	 *
-	 * @return array<string, array{kind: string, params: list<array{name: string, type: string, default: string|null, enum?: string}>, variadic: string|null}>
+	 * @return array<string, array{kind: string, params: list<array{name: string, type: string, default: string|null, enum?: string}>, variadic: string|null, nullAsNull: bool}>
 	 */
 	private function nativeEntries(): array
 	{
@@ -4461,7 +4601,7 @@ final class Compiler
 			$code = (string) file_get_contents(__DIR__ . '/../../../../turbo-ext/src/' . $header);
 			preg_match_all('~^inline (?:zval \*|bool )(pt_\w+)\(zval \*\w+, (zv::Val &hold|bool &out)\)$~m', $code, $readers, PREG_SET_ORDER);
 			foreach ($readers as [, $function, $readerTail]) {
-				$this->nativeEntries[$function] = ['kind' => $readerTail === 'bool &out' ? 'boolout' : 'hold', 'params' => [['name' => 'receiver', 'type' => 'zval', 'default' => null]], 'variadic' => null];
+				$this->nativeEntries[$function] = ['kind' => $readerTail === 'bool &out' ? 'boolout' : 'hold', 'params' => [['name' => 'receiver', 'type' => 'zval', 'default' => null]], 'variadic' => null, 'nullAsNull' => false];
 			}
 			preg_match_all('~(/\*(?:(?!\*/).)*\*/\s*)?^(?:\[\[nodiscard\]\] )?(zv::Val|bool|zend_object \*)\s*(pt_\w+)\(([^()]*)\);~ms', $code, $matches, PREG_SET_ORDER);
 			foreach ($matches as $match) {
@@ -4471,10 +4611,18 @@ final class Compiler
 					$variadic = ($tail[1] ?? '') !== '' ? 'argvp' : 'argv';
 					$parameters = (string) preg_replace('~(?:^|, )uint32_t argc, zval \*(?:const \*)?argv$~', '', $parameters);
 				}
+				if ($return === 'bool' && preg_match('~^(zval|zend_object) \*\w+, bool &out$~', $parameters, $m) === 1) {
+					// a bool getter's answer through an out parameter
+					$this->nativeEntries[$function] = ['kind' => 'boolout', 'params' => [['name' => 'receiver', 'type' => $m[1] === 'zval' ? 'zval' : 'obj', 'default' => null]], 'variadic' => null, 'nullAsNull' => false];
+					continue;
+				}
 				$params = [];
 				$valid = true;
 				foreach ($parameters === '' ? [] : explode(', ', $parameters) as $parameter) {
-					if (preg_match('~^zval \*(\w+)( = NULL)?$~', $parameter, $m) === 1) {
+					if ($params === [] && preg_match('~^zend_object \*(\w+)$~', $parameter, $m) === 1) {
+						// a receiver of exactly the native class
+						$params[] = ['name' => $m[1], 'type' => 'obj', 'default' => null];
+					} elseif (preg_match('~^zval \*(\w+)( = NULL)?$~', $parameter, $m) === 1) {
 						$params[] = ['name' => $m[1], 'type' => 'zval', 'default' => ($m[2] ?? '') !== '' ? 'NULL' : null];
 					} elseif (preg_match('~^bool (\w+)(?: = (true|false))?$~', $parameter, $m) === 1) {
 						$params[] = ['name' => $m[1], 'type' => 'bool', 'default' => $m[2] ?? null];
@@ -4504,7 +4652,9 @@ final class Compiler
 				} else {
 					continue;
 				}
-				$this->nativeEntries[$function] = ['kind' => $kind, 'params' => $params, 'variadic' => $variadic];
+				// whether the port takes a nullable parameter's null as a C NULL (documented so)
+				$nullAsNull = preg_match('~(?<!IS_)NULL (?:for|=|is|as) (?:a )?null~i', $comment) === 1;
+				$this->nativeEntries[$function] = ['kind' => $kind, 'params' => $params, 'variadic' => $variadic, 'nullAsNull' => $nullAsNull];
 			}
 		}
 		return $this->nativeEntries;
@@ -4565,7 +4715,7 @@ final class Compiler
 		}
 		$args = $expr->args;
 		$values = [];
-		foreach ($this->lowerArgs($f, $args) as $value) {
+		foreach ($this->lowerArgs($f, $args, $this->methodReflection($class, $name)) as $value) {
 			$values[] = $this->stabilize($f, $value);
 		}
 		$z = $this->asZval($f, $receiver);
@@ -4615,6 +4765,15 @@ final class Compiler
 		if ($method !== null && $method->isStatic) {
 			$args = $this->directArgs($f, $method, $expr->args);
 			return $this->emitDirectCall($f, $method, null, $args);
+		}
+		$levels = ['typeonly' => 'TYPE_ONLY', 'value' => 'VALUE', 'precise' => 'PRECISE', 'cache' => 'CACHE'];
+		if (strtolower($className) === strtolower(VerbosityLevel::class) && isset($levels[strtolower($name)]) && $expr->args === []) {
+			// the twin's singletons, held natively (borrowed: copied)
+			$t = $f->temp('vl');
+			$f->line(sprintf('zval *%s_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_%s);', $t, $levels[strtolower($name)]));
+			$f->failIf(sprintf('%s_p == NULL', $t));
+			$f->line(sprintf('zv::Val %s = zv::Val::copyOf(zv::Ref(%s_p));', $t, $t));
+			return new Value('zval', $t . '.raw()', $t, VerbosityLevel::class);
 		}
 		$entry = $this->nativeEntryCall($f, $className, $name, null, $expr->args, $this->unit()->oracle->nativeType($expr));
 		if ($entry !== null) {
@@ -4732,11 +4891,20 @@ final class Compiler
 			}
 			return $intrinsic;
 		}
-		if ($name === 'count' && count($expr->args) === 1 && $expr->args[0] instanceof Node\Arg && !$expr->args[0]->unpack) {
+		if ($name === 'count' && count($expr->args) === 1 && $expr->args[0] instanceof Node\Arg && !$expr->args[0]->unpack && $expr->args[0]->name === null) {
 			$array = $this->expr($f, $expr->args[0]->value);
 			if ($array->isArray || $this->unit()->oracle->nativeType($expr->args[0]->value)->isArray()->yes()) {
 				return Value::long(sprintf('(zend_long) zend_hash_num_elements(Z_ARRVAL_P(%s))', $this->asZval($f, $array)));
 			}
+			// the evaluated argument goes to the engine as it is (evaluated once)
+			$argv = $f->temp('av');
+			$f->line(sprintf('zval %s[1];', $argv));
+			$f->line(sprintf('ZVAL_COPY_VALUE(&%s[0], %s);', $argv, $this->asZval($f, $array)));
+			$site = $this->site('pgrt::FunctionSite', 'function_count');
+			$t = $f->temp('r');
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->failIf(sprintf('!pgrt::callFunction(%s, "count", 5, %s, 1, %s, %s.raw())', $site, $this->unit()->ce, $argv, $t));
+			return $this->fromEngineResult($t, $native);
 		}
 		$intrinsic = $this->builtinIntrinsic($f, $name, $expr);
 		if ($intrinsic !== null) {
@@ -4807,6 +4975,19 @@ final class Compiler
 				return Value::bool('(' . sprintf($checks[$name], $z) . ')');
 			case 'in_array':
 				return $this->inArrayIntrinsic($f, $expr);
+			case 'implode':
+				$args = $this->plainArgs($expr->args);
+				if ($args === null || count($args) !== 2 || !$this->unit()->oracle->nativeType($args[0]->value)->isString()->yes() || !$this->unit()->oracle->nativeType($args[1]->value)->isArray()->yes()) {
+					return null;
+				}
+				$glue = $this->asZval($f, $this->stabilize($f, $this->expr($f, $args[0]->value)));
+				$pieces = $this->asZval($f, $this->expr($f, $args[1]->value));
+				$t = $f->temp('r');
+				$f->line(sprintf('zv::Val %s;', $t));
+				$f->failIf(sprintf('!pgrt::implode(%s, %s, %s.raw())', $glue, $pieces, $t));
+				return new Value('zval', $t . '.raw()', $t);
+			case 'sprintf':
+				return $this->sprintfIntrinsic($f, $expr);
 			case 'array_last':
 			case 'array_first':
 				if (!$single) {
@@ -4898,6 +5079,66 @@ final class Compiler
 	}
 
 	/**
+	 * sprintf() of a literal format whose only conversions are %s, %d and
+	 * %%: the pieces appended in order (%s converts like a string cast,
+	 * %d like an int cast — what sprintf() does for them).
+	 */
+	private function sprintfIntrinsic(FunctionContext $f, Expr\FuncCall $expr): ?Value
+	{
+		$args = $this->plainArgs($expr->args);
+		if ($args === null || $args === [] || !$args[0]->value instanceof Node\Scalar\String_) {
+			return null;
+		}
+		$format = $args[0]->value->value;
+		if (preg_match_all('/%(.)/', $format, $conversions) === false) {
+			return null;
+		}
+		$pieces = preg_split('/(%[sd%])/', $format, flags: PREG_SPLIT_DELIM_CAPTURE);
+		if ($pieces === false) {
+			return null;
+		}
+		$count = 0;
+		foreach ($conversions[1] as $conversion) {
+			if ($conversion === '%') {
+				continue;
+			}
+			if (!in_array($conversion, ['s', 'd'], true)) {
+				return null;
+			}
+			$count++;
+		}
+		if ($count !== count($args) - 1) {
+			return null;
+		}
+		$values = [];
+		foreach (array_slice($args, 1) as $i => $arg) {
+			$value = $this->expr($f, $arg->value);
+			$values[] = $i < $count - 1 ? $this->stabilize($f, $value) : $value;
+		}
+		$builder = $f->temp('sb');
+		$f->line(sprintf('pgrt::StringBuilder %s;', $builder));
+		$next = 0;
+		foreach ($pieces as $piece) {
+			if ($piece === '') {
+				continue;
+			}
+			if ($piece === '%%') {
+				$f->line(sprintf('%s.appendLiteral("%%", 1);', $builder));
+			} elseif ($piece === '%s') {
+				$f->failIf(sprintf('!%s.append(%s)', $builder, $this->asZval($f, $values[$next++])));
+			} elseif ($piece === '%d') {
+				$value = $values[$next++];
+				$f->line(sprintf('%s.appendLong(%s);', $builder, $value->kind === 'long' ? $value->code : sprintf('zval_get_long(%s)', $this->asZval($f, $value))));
+			} else {
+				$f->line(sprintf('%s.appendLiteral("%s", %d);', $builder, addcslashes($piece, "\"\\\n\r\t?"), strlen($piece)));
+			}
+		}
+		$t = $f->temp('r');
+		$f->line(sprintf('zv::Val %s = %s.finish();', $t, $builder));
+		return new Value('zval', $t . '.raw()', $t);
+	}
+
+	/**
 	 * in_array($needle, $haystack, true): identity against each element,
 	 * unrolled for a literal list of scalars.
 	 */
@@ -4915,12 +5156,21 @@ final class Compiler
 			return null;
 		}
 		$haystack = $args[1]->value;
+		if ($haystack instanceof Expr\Array_) {
+			foreach ($haystack->items as $item) {
+				if ($item->key !== null || $item->byRef || $item->unpack || !$item->value instanceof Node\Scalar\String_) {
+					return null;
+				}
+			}
+		} elseif (!$this->unit()->oracle->nativeType($haystack)->isArray()->yes()) {
+			return null;
+		}
 		$needle = $this->asZval($f, $this->stabilize($f, $this->expr($f, $args[0]->value)));
 		if ($haystack instanceof Expr\Array_) {
 			$items = [];
 			foreach ($haystack->items as $item) {
-				if ($item->key !== null || $item->byRef || $item->unpack || !$item->value instanceof Node\Scalar\String_) {
-					return null;
+				if (!$item->value instanceof Node\Scalar\String_) {
+					continue;
 				}
 				$items[] = $this->asZval($f, $this->literal($item->value->value));
 			}
@@ -4930,9 +5180,6 @@ final class Compiler
 				$f->line(sprintf('if (Z_TYPE_P(%s) == IS_STRING) %s = %s;', $needle, $t, implode(' || ', array_map(static fn (string $item): string => sprintf('zend_string_equals(Z_STR_P(%s), Z_STR_P(%s))', $needle, $item), $items))));
 			}
 			return Value::bool($t);
-		}
-		if (!$this->unit()->oracle->nativeType($haystack)->isArray()->yes()) {
-			return null;
 		}
 		$array = $this->asZval($f, $this->expr($f, $haystack));
 		return Value::bool(sprintf('pgrt::inArrayStrict(%s, %s)', $needle, $array));
@@ -5070,7 +5317,7 @@ final class Compiler
 			return $this->directArgsFromVector($f, $method, $args);
 		}
 
-		return $this->arrangeArgs($f, $method, array_values($args), $this->lowerArgs($f, array_values($args)));
+		return $this->arrangeArgs($f, $method, array_values($args), $this->lowerArgs($f, array_values($args), $this->methodReflection($method->unit->className, $method->name)));
 	}
 
 	/**
@@ -5149,11 +5396,14 @@ final class Compiler
 	 * @param array<Node\Arg> $args
 	 * @return list<Value>
 	 */
-	private function lowerArgs(FunctionContext $f, array $args): array
+	private function lowerArgs(FunctionContext $f, array $args, ?ReflectionFunctionAbstract $callee = null): array
 	{
+		$holders = $this->holderPositions($args, $callee);
 		$values = [];
 		foreach ($args as $i => $arg) {
+			$this->closureAsHolder = isset($holders[$i]);
 			$value = $this->expr($f, $arg->value);
+			$this->closureAsHolder = false;
 			$laterHaveEffects = false;
 			foreach (array_slice($args, $i + 1) as $later) {
 				if (!$this->hasSideEffects($later->value)) {
@@ -5168,6 +5418,233 @@ final class Compiler
 			$values[] = $value;
 		}
 		return $values;
+	}
+
+	/**
+	 * The parameters and captured variables (by name) a function body never
+	 * writes: no assignment, increment, foreach/catch/list target, unset,
+	 * global/static, capture by reference or by-reference argument anywhere
+	 * in it (nested closures included). Their values cannot change while an
+	 * argument list is evaluated, so they need no pinning copy.
+	 *
+	 * @param array<Node\Stmt> $stmts
+	 * @param list<string> $candidates
+	 * @return array<string, true>
+	 */
+	private function neverWrittenVariables(array $stmts, array $candidates): array
+	{
+		$written = [];
+		$mark = static function (?Node $target) use (&$written): void {
+			if ($target === null) {
+				return;
+			}
+			foreach ((new NodeFinder())->findInstanceOf([$target], Expr\Variable::class) as $variable) {
+				if (!is_string($variable->name)) {
+					continue;
+				}
+				$written[$variable->name] = true;
+			}
+		};
+		$dynamic = false;
+		foreach ($this->finder->find($stmts, static fn (Node $node): bool => true) as $node) {
+			if ($node instanceof Expr\Assign || $node instanceof Expr\AssignRef || $node instanceof Expr\AssignOp) {
+				$mark($node->var);
+			} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec || $node instanceof Expr\PostInc || $node instanceof Expr\PostDec) {
+				$mark($node->var);
+			} elseif ($node instanceof Node\Stmt\Foreach_) {
+				$mark($node->keyVar);
+				$mark($node->valueVar);
+			} elseif ($node instanceof Node\Stmt\Catch_) {
+				$mark($node->var);
+			} elseif ($node instanceof Node\Stmt\Unset_ || $node instanceof Node\Stmt\Global_ || $node instanceof Node\Stmt\Static_) {
+				$mark($node);
+			} elseif ($node instanceof Expr\ClosureUse && $node->byRef) {
+				$mark($node->var);
+			} elseif ($node instanceof Node\Arg && $node->byRef) {
+				$mark($node->value);
+			} elseif ($node instanceof Expr\Variable && !is_string($node->name)) {
+				$dynamic = true;
+			} elseif ($node instanceof Expr\FuncCall && $node->name instanceof Node\Name && in_array($node->name->toLowerString(), ['extract', 'compact', 'get_defined_vars', 'parse_str'], true)) {
+				$dynamic = true;
+			} elseif ($node instanceof Expr\CallLike && !$node->isFirstClassCallable()) {
+				// a by-reference parameter of the callee; an unknown callee may have one
+				$callee = $this->calleeReflection($node);
+				foreach ($node->getArgs() as $i => $arg) {
+					if (!$arg->value instanceof Expr\Variable) {
+						continue;
+					}
+					$parameter = $callee !== null ? ($arg->name !== null ? $this->methodParameterByName($callee, $arg->name->toString()) : ($callee->getParameters()[$i] ?? null)) : null;
+					if ($callee !== null && !$arg->unpack && ($parameter === null || !$parameter->isPassedByReference()) && ($parameter !== null || !$callee->isVariadic())) {
+						continue;
+					}
+
+					$mark($arg->value);
+				}
+			}
+		}
+		if ($dynamic) {
+			return [];
+		}
+		$stable = [];
+		foreach ($candidates as $name) {
+			if (isset($written[$name])) {
+				continue;
+			}
+
+			$stable[$name] = true;
+		}
+		return $stable;
+	}
+
+	private function methodParameterByName(ReflectionFunctionAbstract $callee, string $name): ?ReflectionParameter
+	{
+		foreach ($callee->getParameters() as $parameter) {
+			if ($parameter->getName() === $name) {
+				return $parameter;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * The variables of a method body assigned a closure exactly once and
+	 * otherwise only called (`$cb(...)`), captured by value (`use ($cb)`)
+	 * or passed to a parameter declared `callable` — anywhere in the body,
+	 * nested closures included: such a closure never needs to be a real
+	 * Closure, so it stays a native closure holder.
+	 *
+	 * @param array<Node\Stmt> $stmts
+	 * @return array<string, true>
+	 */
+	private function closureHolderVariables(array $stmts): array
+	{
+		$candidates = [];
+		foreach ($this->finder->findInstanceOf($stmts, Expr\Assign::class) as $assign) {
+			if (!$assign->var instanceof Expr\Variable || !is_string($assign->var->name)) {
+				continue;
+			}
+			if (!$assign->expr instanceof Expr\Closure && !$assign->expr instanceof Expr\ArrowFunction) {
+				continue;
+			}
+			$candidates[$assign->var->name][] = $assign->var;
+		}
+		if ($candidates === []) {
+			return [];
+		}
+		// the occurrences that keep a holder valid
+		$safe = [];
+		foreach ($candidates as $targets) {
+			foreach ($targets as $target) {
+				$safe[spl_object_id($target)] = true;
+			}
+		}
+		foreach ($this->finder->find($stmts, static fn (Node $node): bool => $node instanceof Expr\FuncCall || $node instanceof Expr\ClosureUse || $node instanceof Expr\CallLike) as $node) {
+			if ($node instanceof Expr\FuncCall && $node->name instanceof Expr\Variable) {
+				$safe[spl_object_id($node->name)] = true;
+			}
+			if ($node instanceof Expr\ClosureUse && !$node->byRef) {
+				$safe[spl_object_id($node->var)] = true;
+			}
+			if (!$node instanceof Expr\CallLike || $node->isFirstClassCallable()) {
+				continue;
+			}
+			$callee = $this->calleeReflection($node);
+			$args = array_values(array_filter($node->getArgs(), static fn (Node\Arg $arg): bool => !$arg->unpack));
+			foreach (array_keys($this->holderPositions($args, $callee, true)) as $position) {
+				$safe[spl_object_id($args[$position]->value)] = true;
+			}
+		}
+		$holders = [];
+		foreach (array_keys($candidates) as $name) {
+			if (count($candidates[$name]) !== 1) {
+				continue;
+			}
+			$ok = true;
+			foreach ($this->finder->find($stmts, static fn (Node $node): bool => $node instanceof Expr\Variable && $node->name === $name) as $occurrence) {
+				if (!isset($safe[spl_object_id($occurrence)])) {
+					$ok = false;
+					break;
+				}
+			}
+			if (!$ok) {
+				continue;
+			}
+
+			$holders[$name] = true;
+		}
+		return $holders;
+	}
+
+	/** the function or method a call resolves to statically, null when unknown */
+	private function calleeReflection(Expr\CallLike $call): ?ReflectionFunctionAbstract
+	{
+		if ($call instanceof Expr\FuncCall && $call->name instanceof Node\Name) {
+			$name = $call->name->toString();
+			$resolved = $call->name->getAttribute('resolvedName');
+			if ($resolved instanceof Node\Name) {
+				$name = $resolved->toString();
+			}
+			if (!function_exists($name)) {
+				$name = substr($name, (int) strrpos($name, '\\') + ((int) strrpos($name, '\\') > 0 ? 1 : 0));
+			}
+			return function_exists($name) ? new ReflectionFunction($name) : null;
+		}
+		if (($call instanceof Expr\MethodCall || $call instanceof Expr\NullsafeMethodCall) && $call->name instanceof Node\Identifier) {
+			$class = $this->knownClass($this->unit()->oracle->nativeType($call->var)) ?? $this->knownClass($this->unit()->oracle->phpDocType($call->var));
+			return $class !== null ? $this->methodReflection($class, $call->name->toString()) : null;
+		}
+		if ($call instanceof Expr\StaticCall && $call->name instanceof Node\Identifier && $call->class instanceof Node\Name) {
+			$lower = $call->class->toLowerString();
+			$class = in_array($lower, ['self', 'static'], true) ? $this->unit()->className : ($lower === 'parent' ? (string) get_parent_class($this->unit()->className) : $this->className($call->class));
+			return $class !== '' ? $this->methodReflection($class, $call->name->toString()) : null;
+		}
+		if ($call instanceof Expr\New_ && $call->class instanceof Node\Name) {
+			$class = $this->className($call->class);
+			return class_exists($class) ? (new ReflectionClass($class))->getConstructor() : null;
+		}
+		return null;
+	}
+
+	/**
+	 * The arguments that are inline closures passed to a parameter declared
+	 * `callable`: they stay native closure holders (callable themselves)
+	 * instead of becoming a Closure — what the hand ports pass, and what a
+	 * native ExpressionResult calls without the engine.
+	 *
+	 * @param array<Node\Arg> $args
+	 * @return array<int, true>
+	 */
+	private function holderPositions(array $args, ?ReflectionFunctionAbstract $callee, bool $anyValue = false): array
+	{
+		if ($callee === null) {
+			return [];
+		}
+		$parameters = $callee->getParameters();
+		$positions = [];
+		foreach (array_values($args) as $i => $arg) {
+			if (!$anyValue && !$arg->value instanceof Expr\Closure && !$arg->value instanceof Expr\ArrowFunction) {
+				continue;
+			}
+			$parameter = null;
+			if ($arg->name !== null) {
+				foreach ($parameters as $candidate) {
+					if ($candidate->getName() !== $arg->name->toString()) {
+						continue;
+					}
+
+					$parameter = $candidate;
+				}
+			} else {
+				$parameter = $parameters[$i] ?? (count($parameters) > 0 && $parameters[count($parameters) - 1]->isVariadic() ? $parameters[count($parameters) - 1] : null);
+			}
+			$type = $parameter?->getType();
+			if (!($type instanceof ReflectionNamedType) || $type->getName() !== 'callable') {
+				continue;
+			}
+
+			$positions[$i] = true;
+		}
+		return $positions;
 	}
 
 	/**
@@ -5275,7 +5752,7 @@ final class Compiler
 		if ($args === []) {
 			return ['NULL', '0', 'NULL'];
 		}
-		$values = $this->lowerArgs($f, $plain);
+		$values = $this->lowerArgs($f, $plain, $callee);
 		if ($callee !== null) {
 			// by-reference parameters of the callee get a temporary reference
 			// written back after the call (flushWriteBacks() at the call site)
@@ -5610,6 +6087,7 @@ final class Compiler
 			}
 		}
 		$this->declareLocals($inner, $params, $expr instanceof Expr\Closure ? $expr->stmts : $expr->expr, $captureLocals);
+		$inner->stableVars = $this->neverWrittenVariables($expr instanceof Expr\Closure ? $expr->stmts : [new Node\Stmt\Return_($expr->expr)], [...array_map(static fn (ParamInfo $p): string => $p->name, $params), ...array_keys($captures)]);
 		if ($expr instanceof Expr\ArrowFunction) {
 			$this->returnStatement($inner, $expr->expr);
 		} else {

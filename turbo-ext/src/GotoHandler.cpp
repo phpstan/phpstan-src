@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_goto_handler = nullptr;
 
@@ -138,26 +182,25 @@ namespace pgen::GotoHandler {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zv::Val o2 = zv::Val::copyOf(zv::Ref(p_scope));
-		bool k3 = false;
-		bool k4 = true;
-		zv::Val arr5 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zval n6_raw;
-		if (UNEXPECTED(object_init_ex(&n6_raw, pt_ce_internal_statement_exit_point) != SUCCESS)) return false;
-		zv::Val n6 = zv::Val::adopt(n6_raw);
-		if (UNEXPECTED(!pgen::InternalStatementExitPoint::m___construct(Z_OBJ_P(n6.raw()), p_stmt, p_scope))) { zend_object_store_ctor_failed(Z_OBJ_P(n6.raw())); return false; }
-		{ zval v = n6.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr5.raw()), &v); }
-		zval arr7_raw;
-		ZVAL_EMPTY_ARRAY(&arr7_raw);
-		zv::Val o8 = zv::Val::copyOf(zv::Ref(&arr7_raw));
-		zval arr9_raw;
-		ZVAL_EMPTY_ARRAY(&arr9_raw);
-		zv::Val o10 = zv::Val::copyOf(zv::Ref(&arr9_raw));
-		zval av11[1];
-		ZVAL_COPY_VALUE(&av11[0], &pg_lit[0]);
-		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_1, pt_ce_variable_flow, "all", 3, 1, av11, r12.raw(), NULL))) return false;
-		zv::Val n1 = pt_internal_statement_result_new(o2.raw(), k3, k4, arr5.raw(), o8.raw(), o10.raw(), NULL, r12.raw());
+		bool k2 = false;
+		bool k3 = true;
+		zv::Val arr4 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zval n5_raw;
+		if (UNEXPECTED(object_init_ex(&n5_raw, pt_ce_internal_statement_exit_point) != SUCCESS)) return false;
+		zv::Val n5 = zv::Val::adopt(n5_raw);
+		if (UNEXPECTED(!pgen::InternalStatementExitPoint::m___construct(Z_OBJ_P(n5.raw()), p_stmt, p_scope))) { zend_object_store_ctor_failed(Z_OBJ_P(n5.raw())); return false; }
+		{ zval v = n5.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr4.raw()), &v); }
+		zval arr6_raw;
+		ZVAL_EMPTY_ARRAY(&arr6_raw);
+		zv::Val o7 = zv::Val::copyOf(zv::Ref(&arr6_raw));
+		zval arr8_raw;
+		ZVAL_EMPTY_ARRAY(&arr8_raw);
+		zv::Val o9 = zv::Val::copyOf(zv::Ref(&arr8_raw));
+		zval av10[1];
+		ZVAL_COPY_VALUE(&av10[0], &pg_lit[0]);
+		zv::Val r11;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_1, pt_ce_variable_flow, "all", 3, 1, av10, r11.raw(), NULL))) return false;
+		zv::Val n1 = pt_internal_statement_result_new(p_scope, k2, k3, arr4.raw(), o7.raw(), o9.raw(), NULL, (Z_TYPE_P(r11.raw()) == IS_NULL ? NULL : r11.raw()));
 		if (UNEXPECTED(n1.isUndef())) return false;
 		*ret = n1.take();
 		return true;

@@ -103,20 +103,63 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_type_projection_helper = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[2];
+static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_describe_0 */
 static pt_method_site pg_site_1; /* method_invariant_1 */
 static pt_method_site pg_site_2; /* method_bivariant_2 */
 static pt_method_site pg_site_3; /* method_describe_3 */
-static pgrt::FunctionSite pg_site_4; /* function_sprintf */
-static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Type */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\VerbosityLevel */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Type */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\VerbosityLevel */
 
 namespace pgen::TypeProjectionHelper {
 
@@ -165,12 +208,11 @@ namespace pgen::TypeProjectionHelper {
 	 {
 		zv::Val r6;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_variance, "describe", "describe", 8, 0, NULL, r6.raw(), NULL))) return false;
-		zval av7[3];
-		ZVAL_COPY_VALUE(&av7[0], &pg_lit[1]);
-		ZVAL_COPY_VALUE(&av7[1], r6.raw());
-		ZVAL_COPY_VALUE(&av7[2], l_describedType.raw());
-		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "sprintf", 7, pt_ce_type_projection_helper, 3, av7, r8.raw(), NULL))) return false;
+		pgrt::StringBuilder sb7;
+		if (UNEXPECTED(!sb7.append(r6.raw()))) return false;
+		sb7.appendLiteral(" ", 1);
+		if (UNEXPECTED(!sb7.append(l_describedType.raw()))) return false;
+		zv::Val r8 = sb7.finish();
 		*ret = r8.take();
 		return true;
 	}
@@ -184,7 +226,6 @@ namespace sigs = ptdecl::TypeProjectionHelper::sig;
 PT_MINIT_REGISTRATION(pt_register_codegen_TypeProjectionHelper)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("*", 1));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("%s %s", 5));
 	reg::Class cls("PHPStan\\Type\\Generic\\TypeProjectionHelper");
 	ptdecl::TypeProjectionHelper::declareClass(cls);
 	ptdecl::TypeProjectionHelper::declareProperties(cls);
@@ -199,10 +240,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeProjectionHelper)
 			Z_PARAM_OBJECT_OR_NULL(p_variance)
 			Z_PARAM_OBJECT(p_level)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
-		if (p_variance != NULL && UNEXPECTED(!(Z_TYPE_P(p_variance) == IS_NULL || (pgrt::instanceOfClass(p_variance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_variance, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41)))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_variance)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_variance != NULL && UNEXPECTED(!(Z_TYPE_P(p_variance) == IS_NULL || (pgrt::instanceOfClass(p_variance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_variance, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41)))))) { zend_argument_type_error(2, "must be of type %s, %s given", "?PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_variance)); RETURN_THROWS(); }
 		if (p_variance == NULL) p_variance = &p_variance_null;
-		if (p_level != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
+		if (p_level != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TypeProjectionHelper::m_describe(p_type, p_variance, p_level, return_value))) RETURN_THROWS();
 	});

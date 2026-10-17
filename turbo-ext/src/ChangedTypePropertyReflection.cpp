@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_changed_type_property_reflection = nullptr;
 
@@ -693,23 +737,22 @@ namespace pgen::ChangedTypePropertyReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypePropertyReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val o2 = zv::Val::copyOf(zv::Ref(p_hookType));
-		zv::Val vd3;
-		zend_class_entry *vd3_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd3_done = false;
-		if (vd3_ce == pt_ce_changed_type_property_reflection) {
-			bool r4;
-			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_hasHook(Z_OBJ_P(p1), o2.raw(), &r4))) return false;
-			zv::Val o5 = zv::Val::boolean(r4);
-			vd3 = std::move(o5);
-			vd3_done = true;
+		zv::Val vd2;
+		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
+		bool vd2_done = false;
+		if (vd2_ce == pt_ce_changed_type_property_reflection) {
+			bool r3;
+			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_hasHook(Z_OBJ_P(p1), p_hookType, &r3))) return false;
+			zv::Val o4 = zv::Val::boolean(r3);
+			vd2 = std::move(o4);
+			vd2_done = true;
 		}
-		if (!vd3_done) {
-			zval av6[1];
-			ZVAL_COPY_VALUE(&av6[0], o2.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p1, "hasHook", "hashook", 7, 1, av6, vd3.raw()))) return false;
+		if (!vd2_done) {
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p_hookType);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p1, "hasHook", "hashook", 7, 1, av5, vd2.raw()))) return false;
 		}
-		*ret = (Z_TYPE_P(vd3.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(vd2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -723,22 +766,21 @@ namespace pgen::ChangedTypePropertyReflection {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ChangedTypePropertyReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val o2 = zv::Val::copyOf(zv::Ref(p_hookType));
-		zv::Val vd3;
-		zend_class_entry *vd3_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
-		bool vd3_done = false;
-		if (vd3_ce == pt_ce_changed_type_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_getHook(Z_OBJ_P(p1), o2.raw(), r4.raw()))) return false;
-			vd3 = std::move(r4);
-			vd3_done = true;
+		zv::Val vd2;
+		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
+		bool vd2_done = false;
+		if (vd2_ce == pt_ce_changed_type_property_reflection) {
+			zv::Val r3;
+			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_getHook(Z_OBJ_P(p1), p_hookType, r3.raw()))) return false;
+			vd2 = std::move(r3);
+			vd2_done = true;
 		}
-		if (!vd3_done) {
-			zval av5[1];
-			ZVAL_COPY_VALUE(&av5[0], o2.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p1, "getHook", "gethook", 7, 1, av5, vd3.raw()))) return false;
+		if (!vd2_done) {
+			zval av4[1];
+			ZVAL_COPY_VALUE(&av4[0], p_hookType);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p1, "getHook", "gethook", 7, 1, av4, vd2.raw()))) return false;
 		}
-		*ret = vd3.take();
+		*ret = vd2.take();
 		return true;
 	}
 }

@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_isset_expr_handler = nullptr;
 
@@ -113,14 +157,12 @@ static pt_method_site pg_site_2; /* method_doNotTreatPhpDocTypesAsCertain_2 */
 static pt_method_site pg_site_3; /* method_readScopeStateOrSyntheticType_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Analyser\TypeSpecifierContext */
 static pt_method_site pg_site_5; /* method_specifyDefaultTypes_5 */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\ExpressionResultFactory */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper */
-static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Expr */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\NodeScopeResolver */
-static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Stmt */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\MutatingScope */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\ExpressionResultStorage */
-static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\ExpressionContext */
+static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Expr */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Analyser\NodeScopeResolver */
+static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Stmt */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\MutatingScope */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\ExpressionResultStorage */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\ExpressionContext */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -133,33 +175,33 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	bool p_nativeTypesPromoted = Z_TYPE_P(a_nativeTypesPromoted) == IS_TRUE;
 	(void) p_nativeTypesPromoted;
 	 {
-		zv::Val o1 = zv::Val::copyOf(zv::Ref(zv::Ref(&captures[0]).deref().raw()));
-		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, zv::Ref(&captures[1]).deref().raw(), "getExpr", "getexpr", 7, 0, NULL, r2.raw(), NULL))) return;
-		zv::Val q3;
+		zv::Val r1;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, zv::Ref(&captures[1]).deref().raw(), "getExpr", "getexpr", 7, 0, NULL, r1.raw(), NULL))) return;
+		zv::Val q2;
 		if (p_nativeTypesPromoted) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r4.raw(), NULL))) return;
-			q3 = std::move(r4);
+			zv::Val r3;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r3.raw(), NULL))) return;
+			q2 = std::move(r3);
 		} else {
 		 {
-			zv::Val o5 = zv::Val::copyOf(zv::Ref(zv::Ref(&captures[2]).deref().raw()));
-			q3 = std::move(o5);
+			zv::Val o4 = zv::Val::copyOf(zv::Ref(zv::Ref(&captures[2]).deref().raw()));
+			q2 = std::move(o4);
 		}
 		}
-		zv::Val r6;
-		if (EXPECTED(Z_TYPE_P(o1.raw()) == IS_OBJECT)) {
-			r6 = pt_node_scope_resolver_read_scope_state_or_synthetic_type(o1.raw(), r2.raw(), q3.raw());
-			if (UNEXPECTED(r6.isUndef())) return;
+		zv::Val r5;
+		if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[0]).deref().raw()) == IS_OBJECT)) {
+			if (UNEXPECTED(!(Z_TYPE_P(r1.raw()) == IS_OBJECT))) { zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::readScopeStateOrSyntheticType(): Argument #1 ($expr) must be of type PhpParser\\Node\\Expr, %s given", zend_zval_value_name(r1.raw())); return; }
+			r5 = pt_node_scope_resolver_read_scope_state_or_synthetic_type(zv::Ref(&captures[0]).deref().raw(), r1.raw(), q2.raw());
+			if (UNEXPECTED(r5.isUndef())) return;
 		} else {
 		 {
-			zval av7[2];
-			ZVAL_COPY_VALUE(&av7[0], r2.raw());
-			ZVAL_COPY_VALUE(&av7[1], q3.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, o1.raw(), "readScopeStateOrSyntheticType", "readscopestateorsynthetictype", 29, 2, av7, r6.raw()))) return;
+			zval av6[2];
+			ZVAL_COPY_VALUE(&av6[0], r1.raw());
+			ZVAL_COPY_VALUE(&av6[1], q2.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, zv::Ref(&captures[0]).deref().raw(), "readScopeStateOrSyntheticType", "readscopestateorsynthetictype", 29, 2, av6, r5.raw()))) return;
 		}
 		}
-		*return_value = r6.take();
+		*return_value = r5.take();
 		return;
 	}
 }
@@ -241,30 +283,27 @@ namespace pgen::IssetExprHandler {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::IssetExprHandler::slot::expressionResultFactory, "expressionResultFactory");
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
-		zv::Val o3 = zv::Val::copyOf(zv::Ref(p_scope));
-		zv::Val o4 = zv::Val::copyOf(zv::Ref(p_scope));
-		zv::Val o5 = zv::Val::copyOf(zv::Ref(p_expr));
-		bool k6 = false;
-		bool k7 = false;
-		zval arr8_raw;
-		ZVAL_EMPTY_ARRAY(&arr8_raw);
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(&arr8_raw));
-		zval arr10_raw;
-		ZVAL_EMPTY_ARRAY(&arr10_raw);
-		zv::Val o11 = zv::Val::copyOf(zv::Ref(&arr10_raw));
-		zval cap12[3];
-		ZVAL_COPY_VALUE(&cap12[0], p_nodeScopeResolver);
-		ZVAL_COPY_VALUE(&cap12[1], p_expr);
-		ZVAL_COPY_VALUE(&cap12[2], p_scope);
-		zv::Val h13 = pt_native_closure_new(&pg_closure_1, 3, cap12, 0u);
-		zval cap14[2];
-		ZVAL_COPY_VALUE(&cap14[0], p_expr);
-		ZVAL_COPY_VALUE(&cap14[1], &this_zv);
-		zv::Val h15 = pt_native_closure_new(&pg_closure_2, 2, cap14, 0u);
-		pt_expression_result_args era16(o3.raw(), o4.raw(), o5.raw(), k6, k7, o9.raw(), o11.raw(), h13.raw(), h15.raw());
-		zv::Val r17 = pt_expression_result_create(o2.raw(), era16);
-		if (UNEXPECTED(r17.isUndef())) return false;
-		*ret = r17.take();
+		bool k3 = false;
+		bool k4 = false;
+		zval arr5_raw;
+		ZVAL_EMPTY_ARRAY(&arr5_raw);
+		zv::Val o6 = zv::Val::copyOf(zv::Ref(&arr5_raw));
+		zval arr7_raw;
+		ZVAL_EMPTY_ARRAY(&arr7_raw);
+		zv::Val o8 = zv::Val::copyOf(zv::Ref(&arr7_raw));
+		zval cap9[3];
+		ZVAL_COPY_VALUE(&cap9[0], p_nodeScopeResolver);
+		ZVAL_COPY_VALUE(&cap9[1], p_expr);
+		ZVAL_COPY_VALUE(&cap9[2], p_scope);
+		zv::Val h10 = pt_native_closure_new(&pg_closure_1, 3, cap9, 0u);
+		zval cap11[2];
+		ZVAL_COPY_VALUE(&cap11[0], p_expr);
+		ZVAL_COPY_VALUE(&cap11[1], &this_zv);
+		zv::Val h12 = pt_native_closure_new(&pg_closure_2, 2, cap11, 0u);
+		pt_expression_result_args era13(p_scope, p_scope, p_expr, k3, k4, o6.raw(), o8.raw(), h10.raw(), h12.raw());
+		zv::Val r14 = pt_expression_result_create(o2.raw(), era13);
+		if (UNEXPECTED(r14.isUndef())) return false;
+		*ret = r14.take();
 		return true;
 	}
 }
@@ -286,8 +325,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetExprHandler)
 			Z_PARAM_OBJECT(p_expressionResultFactory)
 			Z_PARAM_OBJECT(p_defaultNarrowingHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_expressionResultFactory != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expressionResultFactory, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ExpressionResultFactory", 40)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionResultFactory", zend_zval_value_name(p_expressionResultFactory)); RETURN_THROWS(); }
-		if (p_defaultNarrowingHelper != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_defaultNarrowingHelper, pt_ce_default_narrowing_helper) || pgrt::instanceOfClass(p_defaultNarrowingHelper, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper", 58))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper", zend_zval_value_name(p_defaultNarrowingHelper)); RETURN_THROWS(); }
+		
+		
 		if (UNEXPECTED(!pgen::IssetExprHandler::m___construct(Z_OBJ_P(ZEND_THIS), p_expressionResultFactory, p_defaultNarrowingHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExprHandler\Virtual\IssetExprHandler::supports() */
@@ -295,7 +334,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetExprHandler)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::IssetExprHandler::m_supports(Z_OBJ_P(ZEND_THIS), p_expr, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -317,13 +356,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetExprHandler)
 			Z_PARAM_ZVAL(p_nodeCallback)
 			Z_PARAM_OBJECT(p_context)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_nodeScopeResolver != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_nodeScopeResolver, pt_ce_node_scope_resolver) || pgrt::instanceOfClass(p_nodeScopeResolver, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Analyser\\NodeScopeResolver", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\NodeScopeResolver", zend_zval_value_name(p_nodeScopeResolver)); RETURN_THROWS(); }
-		if (p_stmt != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_stmt, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node\\Stmt", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Stmt", zend_zval_value_name(p_stmt)); RETURN_THROWS(); }
-		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
-		if (p_storage != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_storage, pt_ce_expression_result_storage) || pgrt::instanceOfClass(p_storage, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Analyser\\ExpressionResultStorage", 40))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionResultStorage", zend_zval_value_name(p_storage)); RETURN_THROWS(); }
+		if (p_nodeScopeResolver != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_nodeScopeResolver, pt_ce_node_scope_resolver) || pgrt::instanceOfClass(p_nodeScopeResolver, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Analyser\\NodeScopeResolver", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\NodeScopeResolver", zend_zval_value_name(p_nodeScopeResolver)); RETURN_THROWS(); }
+		if (p_stmt != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_stmt, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node\\Stmt", 19)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Stmt", zend_zval_value_name(p_stmt)); RETURN_THROWS(); }
+		if (p_expr != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_storage != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_storage, pt_ce_expression_result_storage) || pgrt::instanceOfClass(p_storage, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\ExpressionResultStorage", 40))))) { zend_argument_type_error(5, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionResultStorage", zend_zval_value_name(p_storage)); RETURN_THROWS(); }
 		if (p_nodeCallback != NULL && UNEXPECTED(!zend_is_callable(p_nodeCallback, 0, NULL))) { zend_argument_type_error(6, "must be a valid callback, %s given", zend_zval_value_name(p_nodeCallback)); RETURN_THROWS(); }
-		if (p_context != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_context, pt_ce_expression_context) || pgrt::instanceOfClass(p_context, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Analyser\\ExpressionContext", 34))))) { zend_argument_type_error(7, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionContext", zend_zval_value_name(p_context)); RETURN_THROWS(); }
+		if (p_context != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_context, pt_ce_expression_context) || pgrt::instanceOfClass(p_context, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\ExpressionContext", 34))))) { zend_argument_type_error(7, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionContext", zend_zval_value_name(p_context)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IssetExprHandler::m_processExpr(Z_OBJ_P(ZEND_THIS), p_nodeScopeResolver, p_stmt, p_expr, p_scope, p_storage, p_nodeCallback, p_context, return_value))) RETURN_THROWS();
 	});

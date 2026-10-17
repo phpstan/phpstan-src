@@ -22,6 +22,9 @@ final class FunctionContext
 	/** @var array<string, LocalVariable> */
 	public array $locals = [];
 
+	/** @var array<string, true> variables nothing in the function writes after their initialization */
+	public array $stableVars = [];
+
 	/**
 	 * @param string $fail the C++ statement that propagates a pending exception
 	 * @param string|null $self the C++ `zend_object *` of $this

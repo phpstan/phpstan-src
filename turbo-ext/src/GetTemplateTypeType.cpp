@@ -103,28 +103,71 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_get_template_type_type = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[2];
+static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_getReferencedClasses_0 */
 static pt_method_site pg_site_1; /* method_getReferencedTemplateTypes_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Helper\GetTemplateTypeType */
 static pt_method_site pg_site_3; /* method_equals_3 */
 static pt_method_site pg_site_4; /* method_describe_4 */
-static pgrt::FunctionSite pg_site_5; /* function_sprintf */
-static pt_method_site pg_site_6; /* static_PHPStan\Type\TypeUtils::containsTemplateType */
-static pt_method_site pg_site_7; /* method_getTemplateType_7 */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\Type */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode */
-static pt_method_site pg_site_10; /* method_toPhpDocNode_10 */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode */
-static pgrt::ClassSite pg_site_12; /* cls_PHPStan\PhpDocParser\Ast\Type\ConstTypeNode */
-static pgrt::ClassSite pg_site_13; /* cls_PHPStan\PhpDocParser\Ast\Type\GenericTypeNode */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
-static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Type\VerbosityLevel */
+static pt_method_site pg_site_5; /* static_PHPStan\Type\TypeUtils::containsTemplateType */
+static pt_method_site pg_site_6; /* method_getTemplateType_6 */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\Type */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode */
+static pt_method_site pg_site_9; /* method_toPhpDocNode_9 */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\PhpDocParser\Ast\Type\ConstTypeNode */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\PhpDocParser\Ast\Type\GenericTypeNode */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Type\VerbosityLevel */
 
 namespace pgen::GetTemplateTypeType {
 
@@ -247,16 +290,19 @@ namespace pgen::GetTemplateTypeType {
 		}
 		zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::ancestorClassName, "ancestorClassName");
 		if (UNEXPECTED(p4 == NULL)) return false;
-		zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::templateTypeName, "templateTypeName");
-		if (UNEXPECTED(p5 == NULL)) return false;
-		zval av6[4];
-		ZVAL_COPY_VALUE(&av6[0], &pg_lit[0]);
-		ZVAL_COPY_VALUE(&av6[1], r3.raw());
-		ZVAL_COPY_VALUE(&av6[2], p4);
-		ZVAL_COPY_VALUE(&av6[3], p5);
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "sprintf", 7, pt_ce_get_template_type_type, 4, av6, r7.raw(), NULL))) return false;
-		*ret = r7.take();
+		zv::Val o5 = zv::Val::copyOf(zv::Ref(p4));
+		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::templateTypeName, "templateTypeName");
+		if (UNEXPECTED(p6 == NULL)) return false;
+		pgrt::StringBuilder sb7;
+		sb7.appendLiteral("template-type<", 14);
+		if (UNEXPECTED(!sb7.append(r3.raw()))) return false;
+		sb7.appendLiteral(", ", 2);
+		if (UNEXPECTED(!sb7.append(o5.raw()))) return false;
+		sb7.appendLiteral(", ", 2);
+		if (UNEXPECTED(!sb7.append(p6))) return false;
+		sb7.appendLiteral(">", 1);
+		zv::Val r8 = sb7.finish();
+		*ret = r8.take();
 		return true;
 	}
 }
@@ -273,7 +319,7 @@ namespace pgen::GetTemplateTypeType {
 		zval av2[1];
 		ZVAL_COPY_VALUE(&av2[0], p1);
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_6, pt_ce_type_utils, "containstemplatetype", 20, 1, av2, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_5, pt_ce_type_utils, "containstemplatetype", 20, 1, av2, r3.raw(), NULL))) return false;
 		*ret = !((Z_TYPE_P(r3.raw()) == IS_TRUE));
 		return true;
 	}
@@ -307,7 +353,7 @@ namespace pgen::GetTemplateTypeType {
 			zval av8[2];
 			ZVAL_COPY_VALUE(&av8[0], o4.raw());
 			ZVAL_COPY_VALUE(&av8[1], o5.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p1, "getTemplateType", "gettemplatetype", 15, 2, av8, vd6.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p1, "getTemplateType", "gettemplatetype", 15, 2, av8, vd6.raw()))) return false;
 		}
 		*ret = vd6.take();
 		return true;
@@ -322,19 +368,18 @@ namespace pgen::GetTemplateTypeType {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zv::Val o1 = zv::Val::copyOf(zv::Ref(p_cb));
-		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
-		if (UNEXPECTED(p2 == NULL)) return false;
-		zval av3[1];
-		ZVAL_COPY_VALUE(&av3[0], p2);
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callValue(o1.raw(), 1, av3, r4.raw(), NULL))) return false;
-		l_type = std::move(r4);
+		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
+		if (UNEXPECTED(p1 == NULL)) return false;
+		zval av2[1];
+		ZVAL_COPY_VALUE(&av2[0], p1);
+		zv::Val r3;
+		if (UNEXPECTED(!pgrt::callValue(p_cb, 1, av2, r3.raw(), NULL))) return false;
+		l_type = std::move(r3);
 	}
 	 {
-		zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
-		if (UNEXPECTED(p5 == NULL)) return false;
-		if (zend_is_identical(p5, l_type.raw())) {
+		zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
+		if (UNEXPECTED(p4 == NULL)) return false;
+		if (zend_is_identical(p4, l_type.raw())) {
 			 {
 				ZVAL_COPY(ret, &this_zv);
 				return true;
@@ -342,16 +387,16 @@ namespace pgen::GetTemplateTypeType {
 		}
 	}
 	 {
-		zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::ancestorClassName, "ancestorClassName");
+		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::ancestorClassName, "ancestorClassName");
+		if (UNEXPECTED(p6 == NULL)) return false;
+		zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::templateTypeName, "templateTypeName");
 		if (UNEXPECTED(p7 == NULL)) return false;
-		zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::templateTypeName, "templateTypeName");
-		if (UNEXPECTED(p8 == NULL)) return false;
-		if (UNEXPECTED(!(pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::__construct", 1, "type", "PHPStan\\Type\\Type", l_type.raw()); return false; }
-		zval n6_raw;
-		if (UNEXPECTED(object_init_ex(&n6_raw, pt_ce_get_template_type_type) != SUCCESS)) return false;
-		zv::Val n6 = zv::Val::adopt(n6_raw);
-		if (UNEXPECTED(!pgen::GetTemplateTypeType::m___construct(Z_OBJ_P(n6.raw()), l_type.raw(), p7, p8))) { zend_object_store_ctor_failed(Z_OBJ_P(n6.raw())); return false; }
-		*ret = n6.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::__construct", 1, "type", "PHPStan\\Type\\Type", l_type.raw()); return false; }
+		zval n5_raw;
+		if (UNEXPECTED(object_init_ex(&n5_raw, pt_ce_get_template_type_type) != SUCCESS)) return false;
+		zv::Val n5 = zv::Val::adopt(n5_raw);
+		if (UNEXPECTED(!pgen::GetTemplateTypeType::m___construct(Z_OBJ_P(n5.raw()), l_type.raw(), p6, p7))) { zend_object_store_ctor_failed(Z_OBJ_P(n5.raw())); return false; }
+		*ret = n5.take();
 		return true;
 	}
 }
@@ -372,22 +417,21 @@ namespace pgen::GetTemplateTypeType {
 		}
 	}
 	 {
-		zv::Val o1 = zv::Val::copyOf(zv::Ref(p_cb));
-		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
+		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
+		if (UNEXPECTED(p1 == NULL)) return false;
+		zval *p2 = pgrt::readSlot(Z_OBJ_P(p_right), ptdecl::GetTemplateTypeType::slot::type, "type");
 		if (UNEXPECTED(p2 == NULL)) return false;
-		zval *p3 = pgrt::readSlot(Z_OBJ_P(p_right), ptdecl::GetTemplateTypeType::slot::type, "type");
-		if (UNEXPECTED(p3 == NULL)) return false;
-		zval av4[2];
-		ZVAL_COPY_VALUE(&av4[0], p2);
-		ZVAL_COPY_VALUE(&av4[1], p3);
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callValue(o1.raw(), 2, av4, r5.raw(), NULL))) return false;
-		l_type = std::move(r5);
+		zval av3[2];
+		ZVAL_COPY_VALUE(&av3[0], p1);
+		ZVAL_COPY_VALUE(&av3[1], p2);
+		zv::Val r4;
+		if (UNEXPECTED(!pgrt::callValue(p_cb, 2, av3, r4.raw(), NULL))) return false;
+		l_type = std::move(r4);
 	}
 	 {
-		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
-		if (UNEXPECTED(p6 == NULL)) return false;
-		if (zend_is_identical(p6, l_type.raw())) {
+		zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::type, "type");
+		if (UNEXPECTED(p5 == NULL)) return false;
+		if (zend_is_identical(p5, l_type.raw())) {
 			 {
 				ZVAL_COPY(ret, &this_zv);
 				return true;
@@ -395,16 +439,16 @@ namespace pgen::GetTemplateTypeType {
 		}
 	}
 	 {
-		zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::ancestorClassName, "ancestorClassName");
+		zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::ancestorClassName, "ancestorClassName");
+		if (UNEXPECTED(p7 == NULL)) return false;
+		zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::templateTypeName, "templateTypeName");
 		if (UNEXPECTED(p8 == NULL)) return false;
-		zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::templateTypeName, "templateTypeName");
-		if (UNEXPECTED(p9 == NULL)) return false;
-		if (UNEXPECTED(!(pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::__construct", 1, "type", "PHPStan\\Type\\Type", l_type.raw()); return false; }
-		zval n7_raw;
-		if (UNEXPECTED(object_init_ex(&n7_raw, pt_ce_get_template_type_type) != SUCCESS)) return false;
-		zv::Val n7 = zv::Val::adopt(n7_raw);
-		if (UNEXPECTED(!pgen::GetTemplateTypeType::m___construct(Z_OBJ_P(n7.raw()), l_type.raw(), p8, p9))) { zend_object_store_ctor_failed(Z_OBJ_P(n7.raw())); return false; }
-		*ret = n7.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::__construct", 1, "type", "PHPStan\\Type\\Type", l_type.raw()); return false; }
+		zval n6_raw;
+		if (UNEXPECTED(object_init_ex(&n6_raw, pt_ce_get_template_type_type) != SUCCESS)) return false;
+		zv::Val n6 = zv::Val::adopt(n6_raw);
+		if (UNEXPECTED(!pgen::GetTemplateTypeType::m___construct(Z_OBJ_P(n6.raw()), l_type.raw(), p7, p8))) { zend_object_store_ctor_failed(Z_OBJ_P(n6.raw())); return false; }
+		*ret = n6.take();
 		return true;
 	}
 }
@@ -417,8 +461,8 @@ namespace pgen::GetTemplateTypeType {
 	(void) this_zv;
 	 {
 		zval av3[1];
-		ZVAL_COPY_VALUE(&av3[0], &pg_lit[1]);
-		zend_class_entry *ce4 = pgrt::lookupClass(pg_site_9, "PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode", 48);
+		ZVAL_COPY_VALUE(&av3[0], &pg_lit[0]);
+		zend_class_entry *ce4 = pgrt::lookupClass(pg_site_8, "PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode", 48);
 		if (UNEXPECTED(ce4 == NULL)) return false;
 		zv::Val n2;
 		if (UNEXPECTED(!pgrt::newObject(ce4, 1, av3, n2.raw(), NULL))) return false;
@@ -477,14 +521,14 @@ namespace pgen::GetTemplateTypeType {
 			vd7_done = true;
 		}
 		if (!vd7_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p6, "toPhpDocNode", "tophpdocnode", 12, 0, NULL, vd7.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p6, "toPhpDocNode", "tophpdocnode", 12, 0, NULL, vd7.raw()))) return false;
 		}
 		{ zval v = vd7.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr5.raw()), &v); }
 		zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GetTemplateTypeType::slot::ancestorClassName, "ancestorClassName");
 		if (UNEXPECTED(p17 == NULL)) return false;
 		zval av18[1];
 		ZVAL_COPY_VALUE(&av18[0], p17);
-		zend_class_entry *ce19 = pgrt::lookupClass(pg_site_9, "PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode", 48);
+		zend_class_entry *ce19 = pgrt::lookupClass(pg_site_8, "PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode", 48);
 		if (UNEXPECTED(ce19 == NULL)) return false;
 		zv::Val n16;
 		if (UNEXPECTED(!pgrt::newObject(ce19, 1, av18, n16.raw(), NULL))) return false;
@@ -496,13 +540,13 @@ namespace pgen::GetTemplateTypeType {
 		zval z24;
 		ZVAL_LONG(&z24, 1);
 		ZVAL_COPY_VALUE(&av23[1], &z24);
-		zend_class_entry *ce25 = pgrt::lookupClass(pg_site_11, "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprStringNode", 54);
+		zend_class_entry *ce25 = pgrt::lookupClass(pg_site_10, "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprStringNode", 54);
 		if (UNEXPECTED(ce25 == NULL)) return false;
 		zv::Val n21;
 		if (UNEXPECTED(!pgrt::newObject(ce25, 2, av23, n21.raw(), NULL))) return false;
 		zval av26[1];
 		ZVAL_COPY_VALUE(&av26[0], n21.raw());
-		zend_class_entry *ce27 = pgrt::lookupClass(pg_site_12, "PHPStan\\PhpDocParser\\Ast\\Type\\ConstTypeNode", 43);
+		zend_class_entry *ce27 = pgrt::lookupClass(pg_site_11, "PHPStan\\PhpDocParser\\Ast\\Type\\ConstTypeNode", 43);
 		if (UNEXPECTED(ce27 == NULL)) return false;
 		zv::Val n20;
 		if (UNEXPECTED(!pgrt::newObject(ce27, 1, av26, n20.raw(), NULL))) return false;
@@ -510,7 +554,7 @@ namespace pgen::GetTemplateTypeType {
 		zval av28[2];
 		ZVAL_COPY_VALUE(&av28[0], n2.raw());
 		ZVAL_COPY_VALUE(&av28[1], arr5.raw());
-		zend_class_entry *ce29 = pgrt::lookupClass(pg_site_13, "PHPStan\\PhpDocParser\\Ast\\Type\\GenericTypeNode", 45);
+		zend_class_entry *ce29 = pgrt::lookupClass(pg_site_12, "PHPStan\\PhpDocParser\\Ast\\Type\\GenericTypeNode", 45);
 		if (UNEXPECTED(ce29 == NULL)) return false;
 		zv::Val n1;
 		if (UNEXPECTED(!pgrt::newObject(ce29, 2, av28, n1.raw(), NULL))) return false;
@@ -546,8 +590,7 @@ namespace sigs = ptdecl::GetTemplateTypeType::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_GetTemplateTypeType)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("template-type<%s, %s, %s>", 25));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("template-type", 13));
+	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("template-type", 13));
 	reg::Class cls("PHPStan\\Type\\Helper\\GetTemplateTypeType");
 	ptdecl::GetTemplateTypeType::declareClass(cls);
 	ptdecl::GetTemplateTypeType::declareProperties(cls);
@@ -564,7 +607,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GetTemplateTypeType)
 			Z_PARAM_STR(p_ancestorClassName_str)
 			Z_PARAM_STR(p_templateTypeName_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		if (p_ancestorClassName_str != NULL) { ZVAL_STR(&p_ancestorClassName_zv, p_ancestorClassName_str); p_ancestorClassName = &p_ancestorClassName_zv; }
 		if (p_templateTypeName_str != NULL) { ZVAL_STR(&p_templateTypeName_zv, p_templateTypeName_str); p_templateTypeName = &p_templateTypeName_zv; }
 		if (UNEXPECTED(!pgen::GetTemplateTypeType::m___construct(Z_OBJ_P(ZEND_THIS), p_type, p_ancestorClassName, p_templateTypeName))) RETURN_THROWS();
@@ -585,7 +628,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GetTemplateTypeType)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_positionVariance)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_positionVariance != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
+		if (p_positionVariance != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::GetTemplateTypeType::m_getReferencedTemplateTypes(Z_OBJ_P(ZEND_THIS), p_positionVariance, return_value))) RETURN_THROWS();
 	});
@@ -594,7 +637,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GetTemplateTypeType)
 		zval *pa1;
 		if (argc > 0) {
 			pa1 = zv::Ref(&argv[0]).deref().raw();
-			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pt_ce_template_type_variance) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::getReferencedTemplateTypes", 1, "positionVariance", "PHPStan\\Type\\Generic\\TemplateTypeVariance", pa1); return zv::Val(); }
+			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pt_ce_template_type_variance) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::getReferencedTemplateTypes", 1, "positionVariance", "PHPStan\\Type\\Generic\\TemplateTypeVariance", pa1); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Type\\Helper\\GetTemplateTypeType::getReferencedTemplateTypes", argc, 1);
@@ -610,7 +653,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GetTemplateTypeType)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_type)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::GetTemplateTypeType::m_equals(Z_OBJ_P(ZEND_THIS), p_type, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -620,7 +663,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GetTemplateTypeType)
 		zval *pa1;
 		if (argc > 0) {
 			pa1 = zv::Ref(&argv[0]).deref().raw();
-			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::equals", 1, "type", "PHPStan\\Type\\Type", pa1); return zv::Val(); }
+			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::equals", 1, "type", "PHPStan\\Type\\Type", pa1); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Type\\Helper\\GetTemplateTypeType::equals", argc, 1);
@@ -636,7 +679,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GetTemplateTypeType)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_level)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_level != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
+		if (p_level != NULL && UNEXPECTED(!(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::GetTemplateTypeType::m_describe(Z_OBJ_P(ZEND_THIS), p_level, return_value))) RETURN_THROWS();
 	});
@@ -645,7 +688,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GetTemplateTypeType)
 		zval *pa1;
 		if (argc > 0) {
 			pa1 = zv::Ref(&argv[0]).deref().raw();
-			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pt_ce_verbosity_level) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Type\\VerbosityLevel", 27))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::describe", 1, "level", "PHPStan\\Type\\VerbosityLevel", pa1); return zv::Val(); }
+			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pt_ce_verbosity_level) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\VerbosityLevel", 27))))) { pgrt::throwArgumentType("PHPStan\\Type\\Helper\\GetTemplateTypeType::describe", 1, "level", "PHPStan\\Type\\VerbosityLevel", pa1); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Type\\Helper\\GetTemplateTypeType::describe", argc, 1);
@@ -699,7 +742,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GetTemplateTypeType)
 			Z_PARAM_OBJECT(p_right)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_right != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_right)); RETURN_THROWS(); }
+		if (p_right != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_right)); RETURN_THROWS(); }
 		if (p_cb != NULL && UNEXPECTED(!zend_is_callable(p_cb, 0, NULL))) { zend_argument_type_error(2, "must be a valid callback, %s given", zend_zval_value_name(p_cb)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::GetTemplateTypeType::m_traverseSimultaneously(Z_OBJ_P(ZEND_THIS), p_right, p_cb, return_value))) RETURN_THROWS();

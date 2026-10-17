@@ -103,14 +103,57 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_template_type_scope = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[4];
+static zval pg_lit[1];
 
-static pgrt::FunctionSite pg_site_0; /* function_sprintf */
-static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
+static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
 
 namespace pgen::TemplateTypeScope {
 
@@ -270,11 +313,11 @@ namespace pgen::TemplateTypeScope {
 			 {
 				zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateTypeScope::slot::functionName, "functionName");
 				if (UNEXPECTED(p5 == NULL)) return false;
-				zval av6[2];
-				ZVAL_COPY_VALUE(&av6[0], &pg_lit[1]);
-				ZVAL_COPY_VALUE(&av6[1], p5);
-				zv::Val r7;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "sprintf", 7, pt_ce_template_type_scope, 2, av6, r7.raw(), NULL))) return false;
+				pgrt::StringBuilder sb6;
+				sb6.appendLiteral("function ", 9);
+				if (UNEXPECTED(!sb6.append(p5))) return false;
+				sb6.appendLiteral("()", 2);
+				zv::Val r7 = sb6.finish();
 				*ret = r7.take();
 				return true;
 			}
@@ -287,11 +330,10 @@ namespace pgen::TemplateTypeScope {
 			 {
 				zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateTypeScope::slot::className, "className");
 				if (UNEXPECTED(p9 == NULL)) return false;
-				zval av10[2];
-				ZVAL_COPY_VALUE(&av10[0], &pg_lit[2]);
-				ZVAL_COPY_VALUE(&av10[1], p9);
-				zv::Val r11;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "sprintf", 7, pt_ce_template_type_scope, 2, av10, r11.raw(), NULL))) return false;
+				pgrt::StringBuilder sb10;
+				sb10.appendLiteral("class ", 6);
+				if (UNEXPECTED(!sb10.append(p9))) return false;
+				zv::Val r11 = sb10.finish();
 				*ret = r11.take();
 				return true;
 			}
@@ -300,15 +342,17 @@ namespace pgen::TemplateTypeScope {
 	 {
 		zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateTypeScope::slot::className, "className");
 		if (UNEXPECTED(p12 == NULL)) return false;
-		zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateTypeScope::slot::functionName, "functionName");
-		if (UNEXPECTED(p13 == NULL)) return false;
-		zval av14[3];
-		ZVAL_COPY_VALUE(&av14[0], &pg_lit[3]);
-		ZVAL_COPY_VALUE(&av14[1], p12);
-		ZVAL_COPY_VALUE(&av14[2], p13);
-		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "sprintf", 7, pt_ce_template_type_scope, 3, av14, r15.raw(), NULL))) return false;
-		*ret = r15.take();
+		zv::Val o13 = zv::Val::copyOf(zv::Ref(p12));
+		zval *p14 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateTypeScope::slot::functionName, "functionName");
+		if (UNEXPECTED(p14 == NULL)) return false;
+		pgrt::StringBuilder sb15;
+		sb15.appendLiteral("method ", 7);
+		if (UNEXPECTED(!sb15.append(o13.raw()))) return false;
+		sb15.appendLiteral("::", 2);
+		if (UNEXPECTED(!sb15.append(p14))) return false;
+		sb15.appendLiteral("()", 2);
+		zv::Val r16 = sb15.finish();
+		*ret = r16.take();
 		return true;
 	}
 }
@@ -339,9 +383,6 @@ namespace sigs = ptdecl::TemplateTypeScope::sig;
 PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("anonymous function", 18));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("function %s()", 13));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("class %s", 8));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("method %s::%s()", 15));
 	reg::Class cls("PHPStan\\Type\\Generic\\TemplateTypeScope");
 	ptdecl::TemplateTypeScope::declareClass(cls);
 	ptdecl::TemplateTypeScope::declareProperties(cls);
@@ -424,7 +465,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_other)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_template_type_scope) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Generic\\TemplateTypeScope", 38))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeScope", zend_zval_value_name(p_other)); RETURN_THROWS(); }
+		if (p_other != NULL && UNEXPECTED(!((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_template_type_scope) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Generic\\TemplateTypeScope", 38))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeScope", zend_zval_value_name(p_other)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::TemplateTypeScope::m_equals(Z_OBJ_P(ZEND_THIS), p_other, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -434,7 +475,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 		zval *pa1;
 		if (argc > 0) {
 			pa1 = zv::Ref(&argv[0]).deref().raw();
-			if (UNEXPECTED(!((Z_TYPE_P(pa1) == IS_OBJECT && Z_OBJCE_P(pa1) == pt_ce_template_type_scope) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Generic\\TemplateTypeScope", 38))))) { pgrt::throwArgumentType("PHPStan\\Type\\Generic\\TemplateTypeScope::equals", 1, "other", "PHPStan\\Type\\Generic\\TemplateTypeScope", pa1); return zv::Val(); }
+			if (UNEXPECTED(!((Z_TYPE_P(pa1) == IS_OBJECT && Z_OBJCE_P(pa1) == pt_ce_template_type_scope) || pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Generic\\TemplateTypeScope", 38))))) { pgrt::throwArgumentType("PHPStan\\Type\\Generic\\TemplateTypeScope::equals", 1, "other", "PHPStan\\Type\\Generic\\TemplateTypeScope", pa1); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Type\\Generic\\TemplateTypeScope::equals", argc, 1);

@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_trait_collecting_visitor = nullptr;
 
@@ -130,16 +174,15 @@ namespace pgen::TraitCollectingVisitor {
 	}
 	 {
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p_node));
-		zv::Val o3 = zv::Val::copyOf(zv::Ref(o2.raw()));
-		zval *w4 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::TraitCollectingVisitor::slot::traits)).deref().raw();
-		if (Z_TYPE_P(w4) <= IS_NULL) { zval_ptr_dtor(w4); array_init(w4); } else if (UNEXPECTED(Z_TYPE_P(w4) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-		SEPARATE_ARRAY(w4);
-		{ zval v = o3.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w4), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+		zval *w3 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::TraitCollectingVisitor::slot::traits)).deref().raw();
+		if (Z_TYPE_P(w3) <= IS_NULL) { zval_ptr_dtor(w3); array_init(w3); } else if (UNEXPECTED(Z_TYPE_P(w3) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+		SEPARATE_ARRAY(w3);
+		{ zval v = o2.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w3), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 	}
 	 {
-		zval z5;
-		ZVAL_NULL(&z5);
-		ZVAL_COPY_VALUE(ret, &z5);
+		zval z4;
+		ZVAL_NULL(&z4);
+		ZVAL_COPY_VALUE(ret, &z4);
 		return true;
 	}
 }

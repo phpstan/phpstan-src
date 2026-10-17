@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_template_constant_integer_type = nullptr;
 
@@ -142,40 +186,34 @@ namespace pgen::TemplateConstantIntegerType {
 		if (UNEXPECTED(!pgrt::callBound(pg_site_1, pt_ce_constant_integer_type, self, "__construct", 11, 1, av2, r4.raw(), NULL))) return false;
 	}
 	 {
-		zv::Val o5 = zv::Val::copyOf(zv::Ref(p_scope));
+		zval o5;
+		ZVAL_COPY(&o5, p_scope);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::scope, &o5);
+	}
+	 {
 		zval o6;
-		ZVAL_COPY(&o6, o5.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::scope, &o6);
+		ZVAL_COPY(&o6, p_templateTypeStrategy);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::strategy, &o6);
 	}
 	 {
-		zv::Val o7 = zv::Val::copyOf(zv::Ref(p_templateTypeStrategy));
+		zval o7;
+		ZVAL_COPY(&o7, p_templateTypeVariance);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::variance, &o7);
+	}
+	 {
 		zval o8;
-		ZVAL_COPY(&o8, o7.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::strategy, &o8);
+		ZVAL_COPY(&o8, p_name);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::name, &o8);
 	}
 	 {
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(p_templateTypeVariance));
+		zval o9;
+		ZVAL_COPY(&o9, p_bound);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::bound, &o9);
+	}
+	 {
 		zval o10;
-		ZVAL_COPY(&o10, o9.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::variance, &o10);
-	}
-	 {
-		zv::Val o11 = zv::Val::copyOf(zv::Ref(p_name));
-		zval o12;
-		ZVAL_COPY(&o12, o11.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::name, &o12);
-	}
-	 {
-		zv::Val o13 = zv::Val::copyOf(zv::Ref(p_bound));
-		zval o14;
-		ZVAL_COPY(&o14, o13.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TemplateConstantIntegerType::slot::bound, &o14);
-	}
-	 {
-		zv::Val o15 = zv::Val::copyOf(zv::Ref(p_default));
-		zval o16;
-		ZVAL_COPY(&o16, o15.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_2, Z_OBJ_P(&this_zv), "default", 7), &o16);
+		ZVAL_COPY(&o10, p_default);
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_2, Z_OBJ_P(&this_zv), "default", 7), &o10);
 	}
 	return true;
 }

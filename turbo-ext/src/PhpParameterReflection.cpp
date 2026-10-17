@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_php_parameter_reflection = nullptr;
 
@@ -328,7 +372,7 @@ namespace pgen::PhpParameterReflection {
 				ZVAL_BOOL(&z25, k24);
 				zv::Val r26;
 				 {
-					r26 = pt_typehint_helper_decide_type_from_reflection(r19.raw(), o20.raw(), o22.raw(), k24);
+					r26 = pt_typehint_helper_decide_type_from_reflection((Z_TYPE_P(r19.raw()) == IS_NULL ? NULL : r19.raw()), (Z_TYPE_P(o20.raw()) == IS_NULL ? NULL : o20.raw()), (Z_TYPE_P(o22.raw()) == IS_NULL ? NULL : o22.raw()), k24);
 					if (UNEXPECTED(r26.isUndef())) return false;
 				}
 				zval o27;
@@ -487,7 +531,7 @@ namespace pgen::PhpParameterReflection {
 			ZVAL_BOOL(&z11, k10);
 			zv::Val r12;
 			 {
-				r12 = pt_typehint_helper_decide_type_from_reflection(r6.raw(), NULL, o8.raw(), k10);
+				r12 = pt_typehint_helper_decide_type_from_reflection((Z_TYPE_P(r6.raw()) == IS_NULL ? NULL : r6.raw()), NULL, (Z_TYPE_P(o8.raw()) == IS_NULL ? NULL : o8.raw()), k10);
 				if (UNEXPECTED(r12.isUndef())) return false;
 			}
 			zval o13;

@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_process_closure_result = nullptr;
 
@@ -202,17 +246,29 @@ namespace pgen::ProcessClosureResult {
 	 {
 		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ProcessClosureResult::slot::byRefClosureResultScope, "byRefClosureResultScope");
 		if (UNEXPECTED(p2 == NULL)) return false;
-		zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ProcessClosureResult::slot::byRefUses, "byRefUses");
-		if (UNEXPECTED(p3 == NULL)) return false;
-		zval av4[3];
-		ZVAL_COPY_VALUE(&av4[0], p2);
+		zval z3;
+		ZVAL_NULL(&z3);
+		zval z4;
+		ZVAL_NULL(&z4);
 		zval z5;
 		ZVAL_NULL(&z5);
-		ZVAL_COPY_VALUE(&av4[1], &z5);
-		ZVAL_COPY_VALUE(&av4[2], p3);
-		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "processClosureScope", "processclosurescope", 19, 3, av4, r6.raw(), NULL))) return false;
-		*ret = r6.take();
+		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ProcessClosureResult::slot::byRefUses, "byRefUses");
+		if (UNEXPECTED(p6 == NULL)) return false;
+		zv::Val r7;
+		if (EXPECTED(Z_TYPE_P(p_scope) == IS_OBJECT && Z_OBJCE_P(p_scope) == pt_ce_mutating_scope)) {
+			if (UNEXPECTED(!((Z_TYPE_P(&z5) == IS_OBJECT || Z_TYPE_P(&z5) == IS_NULL)))) { zend_type_error("PHPStan\\Analyser\\MutatingScope::processClosureScope(): Argument #2 ($prevScope) must be of type ?PHPStan\\Analyser\\MutatingScope, %s given", zend_zval_value_name(&z5)); return false; }
+			r7 = pt_mutating_scope_process_closure_scope(Z_OBJ_P(p_scope), p2, &z4, p6);
+			if (UNEXPECTED(r7.isUndef())) return false;
+		} else {
+		 {
+			zval av8[3];
+			ZVAL_COPY_VALUE(&av8[0], p2);
+			ZVAL_COPY_VALUE(&av8[1], &z3);
+			ZVAL_COPY_VALUE(&av8[2], p6);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "processClosureScope", "processclosurescope", 19, 3, av8, r7.raw()))) return false;
+		}
+		}
+		*ret = r7.take();
 		return true;
 	}
 }

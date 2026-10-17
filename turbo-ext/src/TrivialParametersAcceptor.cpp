@@ -103,15 +103,58 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_trivial_parameters_acceptor = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[3];
+static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* static_PHPStan\Type\Generic\TemplateTypeMap::createEmpty */
 static pt_method_site pg_site_1; /* static_PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty */
-static pgrt::FunctionSite pg_site_2; /* function_sprintf */
 
 namespace pgen::TrivialParametersAcceptor {
 
@@ -275,11 +318,10 @@ namespace pgen::TrivialParametersAcceptor {
 		zv::Val arr1 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::TrivialParametersAcceptor::slot::callableName, "callableName");
 		if (UNEXPECTED(p3 == NULL)) return false;
-		zval av4[2];
-		ZVAL_COPY_VALUE(&av4[0], &pg_lit[1]);
-		ZVAL_COPY_VALUE(&av4[1], p3);
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "sprintf", 7, pt_ce_trivial_parameters_acceptor, 2, av4, r5.raw(), NULL))) return false;
+		pgrt::StringBuilder sb4;
+		sb4.appendLiteral("call to a ", 10);
+		if (UNEXPECTED(!sb4.append(p3))) return false;
+		zv::Val r5 = sb4.finish();
 		bool k6 = false;
 		zv::Val n2 = pt_simple_impure_point_new(Z_STR_P(&pg_lit[0]), Z_STR_P(r5.raw()), k6);
 		if (UNEXPECTED(n2.isUndef())) return false;
@@ -382,7 +424,7 @@ namespace pgen::TrivialParametersAcceptor {
 zv::Val pt_trivial_parameters_acceptor_new(zend_string *a_callableName)
 {
 	zval a_callableName_zv;
-	if (a_callableName != NULL) { ZVAL_STR(&a_callableName_zv, a_callableName); } else { ZVAL_COPY_VALUE(&a_callableName_zv, &pg_lit[2]); }
+	if (a_callableName != NULL) { ZVAL_STR(&a_callableName_zv, a_callableName); } else { ZVAL_COPY_VALUE(&a_callableName_zv, &pg_lit[1]); }
 	zval object;
 	if (UNEXPECTED(object_init_ex(&object, pt_ce_trivial_parameters_acceptor) != SUCCESS)) return zv::Val();
 	if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m___construct(Z_OBJ(object), &a_callableName_zv))) {
@@ -428,15 +470,14 @@ namespace sigs = ptdecl::TrivialParametersAcceptor::sig;
 PT_MINIT_REGISTRATION(pt_register_codegen_TrivialParametersAcceptor)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("functionCall", 12));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("call to a %s", 12));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("callable", 8));
+	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("callable", 8));
 	reg::Class cls("PHPStan\\Reflection\\TrivialParametersAcceptor");
 	ptdecl::TrivialParametersAcceptor::declareClass(cls);
 	ptdecl::TrivialParametersAcceptor::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\TrivialParametersAcceptor::__construct() */
 		zval *p_callableName = NULL;
 		zval p_callableName_default;
-		ZVAL_COPY_VALUE(&p_callableName_default, &pg_lit[2]);
+		ZVAL_COPY_VALUE(&p_callableName_default, &pg_lit[1]);
 		p_callableName = &p_callableName_default;
 		zend_string *p_callableName_str = NULL;
 		zval p_callableName_zv;

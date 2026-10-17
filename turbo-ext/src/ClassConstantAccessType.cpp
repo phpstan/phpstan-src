@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_class_constant_access_type = nullptr;
 
@@ -381,13 +425,64 @@ namespace pgen::ClassConstantAccessType {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zv::Val o1 = zv::Val::copyOf(zv::Ref(p_cb));
-		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::type, "type");
+		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::type, "type");
+		if (UNEXPECTED(p1 == NULL)) return false;
+		zval av2[1];
+		ZVAL_COPY_VALUE(&av2[0], p1);
+		zv::Val r3;
+		if (UNEXPECTED(!pgrt::callValue(p_cb, 1, av2, r3.raw(), NULL))) return false;
+		l_type = std::move(r3);
+	}
+	 {
+		zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::type, "type");
+		if (UNEXPECTED(p4 == NULL)) return false;
+		if (zend_is_identical(p4, l_type.raw())) {
+			 {
+				ZVAL_COPY(ret, &this_zv);
+				return true;
+			}
+		}
+	}
+	 {
+		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::constantName, "constantName");
+		if (UNEXPECTED(p6 == NULL)) return false;
+		zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::nativeType, "nativeType");
+		if (UNEXPECTED(p7 == NULL)) return false;
+		if (UNEXPECTED(!(pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\ClassConstantAccessType::__construct", 1, "type", "PHPStan\\Type\\Type", l_type.raw()); return false; }
+		zval n5_raw;
+		if (UNEXPECTED(object_init_ex(&n5_raw, pt_ce_class_constant_access_type) != SUCCESS)) return false;
+		zv::Val n5 = zv::Val::adopt(n5_raw);
+		if (UNEXPECTED(!pgen::ClassConstantAccessType::m___construct(Z_OBJ_P(n5.raw()), l_type.raw(), p6, p7))) { zend_object_store_ctor_failed(Z_OBJ_P(n5.raw())); return false; }
+		*ret = n5.take();
+		return true;
+	}
+}
+
+/* PHPStan\Type\ClassConstantAccessType::traverseSimultaneously() */
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret)
+{
+	zv::Val l_type;
+	zval this_zv;
+	ZVAL_OBJ(&this_zv, self);
+	(void) this_zv;
+	 {
+		if (!(((Z_TYPE_P(p_right) == IS_OBJECT && Z_OBJCE_P(p_right) == pt_ce_class_constant_access_type) || pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\ClassConstantAccessType", 36))))) {
+			 {
+				ZVAL_COPY(ret, &this_zv);
+				return true;
+			}
+		}
+	}
+	 {
+		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::type, "type");
+		if (UNEXPECTED(p1 == NULL)) return false;
+		zval *p2 = pgrt::readSlot(Z_OBJ_P(p_right), ptdecl::ClassConstantAccessType::slot::type, "type");
 		if (UNEXPECTED(p2 == NULL)) return false;
-		zval av3[1];
-		ZVAL_COPY_VALUE(&av3[0], p2);
+		zval av3[2];
+		ZVAL_COPY_VALUE(&av3[0], p1);
+		ZVAL_COPY_VALUE(&av3[1], p2);
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callValue(o1.raw(), 1, av3, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callValue(p_cb, 2, av3, r4.raw(), NULL))) return false;
 		l_type = std::move(r4);
 	}
 	 {
@@ -411,59 +506,6 @@ namespace pgen::ClassConstantAccessType {
 		zv::Val n6 = zv::Val::adopt(n6_raw);
 		if (UNEXPECTED(!pgen::ClassConstantAccessType::m___construct(Z_OBJ_P(n6.raw()), l_type.raw(), p7, p8))) { zend_object_store_ctor_failed(Z_OBJ_P(n6.raw())); return false; }
 		*ret = n6.take();
-		return true;
-	}
-}
-
-/* PHPStan\Type\ClassConstantAccessType::traverseSimultaneously() */
-[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret)
-{
-	zv::Val l_type;
-	zval this_zv;
-	ZVAL_OBJ(&this_zv, self);
-	(void) this_zv;
-	 {
-		if (!(((Z_TYPE_P(p_right) == IS_OBJECT && Z_OBJCE_P(p_right) == pt_ce_class_constant_access_type) || pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\ClassConstantAccessType", 36))))) {
-			 {
-				ZVAL_COPY(ret, &this_zv);
-				return true;
-			}
-		}
-	}
-	 {
-		zv::Val o1 = zv::Val::copyOf(zv::Ref(p_cb));
-		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::type, "type");
-		if (UNEXPECTED(p2 == NULL)) return false;
-		zval *p3 = pgrt::readSlot(Z_OBJ_P(p_right), ptdecl::ClassConstantAccessType::slot::type, "type");
-		if (UNEXPECTED(p3 == NULL)) return false;
-		zval av4[2];
-		ZVAL_COPY_VALUE(&av4[0], p2);
-		ZVAL_COPY_VALUE(&av4[1], p3);
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callValue(o1.raw(), 2, av4, r5.raw(), NULL))) return false;
-		l_type = std::move(r5);
-	}
-	 {
-		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::type, "type");
-		if (UNEXPECTED(p6 == NULL)) return false;
-		if (zend_is_identical(p6, l_type.raw())) {
-			 {
-				ZVAL_COPY(ret, &this_zv);
-				return true;
-			}
-		}
-	}
-	 {
-		zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::constantName, "constantName");
-		if (UNEXPECTED(p8 == NULL)) return false;
-		zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassConstantAccessType::slot::nativeType, "nativeType");
-		if (UNEXPECTED(p9 == NULL)) return false;
-		if (UNEXPECTED(!(pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\ClassConstantAccessType::__construct", 1, "type", "PHPStan\\Type\\Type", l_type.raw()); return false; }
-		zval n7_raw;
-		if (UNEXPECTED(object_init_ex(&n7_raw, pt_ce_class_constant_access_type) != SUCCESS)) return false;
-		zv::Val n7 = zv::Val::adopt(n7_raw);
-		if (UNEXPECTED(!pgen::ClassConstantAccessType::m___construct(Z_OBJ_P(n7.raw()), l_type.raw(), p8, p9))) { zend_object_store_ctor_failed(Z_OBJ_P(n7.raw())); return false; }
-		*ret = n7.take();
 		return true;
 	}
 }

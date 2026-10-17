@@ -107,6 +107,50 @@ extern zend_class_entry *pt_ce_return_handler;
 extern zend_class_entry *pt_ce_global_handler;
 extern zend_class_entry *pt_ce_declare_handler;
 extern zend_class_entry *pt_ce_const_handler;
+extern zend_class_entry *pt_ce_cond_expr_holder;
+extern zend_class_entry *pt_ce_array_handler;
+extern zend_class_entry *pt_ce_class_const_fetch_handler;
+extern zend_class_entry *pt_ce_coalesce_handler;
+extern zend_class_entry *pt_ce_const_fetch_handler;
+extern zend_class_entry *pt_ce_empty_handler;
+extern zend_class_entry *pt_ce_instanceof_handler;
+extern zend_class_entry *pt_ce_isset_handler;
+extern zend_class_entry *pt_ce_nullsafe_method_call_handler;
+extern zend_class_entry *pt_ce_nullsafe_property_fetch_handler;
+extern zend_class_entry *pt_ce_pipe_handler;
+extern zend_class_entry *pt_ce_post_dec_handler;
+extern zend_class_entry *pt_ce_post_inc_handler;
+extern zend_class_entry *pt_ce_pre_dec_handler;
+extern zend_class_entry *pt_ce_pre_inc_handler;
+extern zend_class_entry *pt_ce_class_const_handler;
+extern zend_class_entry *pt_ce_class_like_handler;
+extern zend_class_entry *pt_ce_if_handler;
+extern zend_class_entry *pt_ce_property_handler;
+extern zend_class_entry *pt_ce_static_variable_handler;
+extern zend_class_entry *pt_ce_switch_handler;
+extern zend_class_entry *pt_ce_trait_handler;
+extern zend_class_entry *pt_ce_try_catch_handler;
+extern zend_class_entry *pt_ce_assign_op_handler;
+extern zend_class_entry *pt_ce_binary_op_handler;
+extern zend_class_entry *pt_ce_bitwise_not_handler;
+extern zend_class_entry *pt_ce_boolean_and_handler;
+extern zend_class_entry *pt_ce_boolean_not_handler;
+extern zend_class_entry *pt_ce_boolean_or_handler;
+extern zend_class_entry *pt_ce_cast_handler;
+extern zend_class_entry *pt_ce_cast_string_handler;
+extern zend_class_entry *pt_ce_interpolated_string_handler;
+extern zend_class_entry *pt_ce_unary_minus_handler;
+extern zend_class_entry *pt_ce_unary_plus_handler;
+extern zend_class_entry *pt_ce_function_callable_node_handler;
+extern zend_class_entry *pt_ce_instantiation_callable_node_handler;
+extern zend_class_entry *pt_ce_method_callable_node_handler;
+extern zend_class_entry *pt_ce_set_existing_offset_value_type_expr_handler;
+extern zend_class_entry *pt_ce_set_offset_value_type_expr_handler;
+extern zend_class_entry *pt_ce_static_method_callable_node_handler;
+extern zend_class_entry *pt_ce_yield_from_handler;
+extern zend_class_entry *pt_ce_yield_handler;
+extern zend_class_entry *pt_ce_expression_handler;
+extern zend_class_entry *pt_ce_unset_handler;
 
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
@@ -1014,5 +1058,291 @@ namespace pgen::ConstHandler {
 [[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
 [[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
 } // namespace pgen::ConstHandler
+
+namespace pgen::ConditionalExpressionHolder {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_conditionExpressionTypeHolders, zval *p_typeHolder);
+[[nodiscard]] bool m_getConditionExpressionTypeHolders(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getTypeHolder(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getKey(zend_object *self, zval *ret);
+} // namespace pgen::ConditionalExpressionHolder
+
+namespace pgen::ArrayHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_expressionResultFactory);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_getCallableDependencies(zend_object *self, zval *p_scope, zval *p_expr, zval *p_itemResults, zval *p_result, zval *ret);
+[[nodiscard]] bool m_collectAbsorbedItems(zend_object *self, zval *p_expr, zval *p_itemResults, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getExpectedArrayType(zend_object *self, zval *p_type, zval *ret);
+[[nodiscard]] bool m_getExpectedValueType(zend_object *self, zval *p_arrayType, zval *p_keyType, zval *ret);
+} // namespace pgen::ArrayHandler
+
+namespace pgen::ClassConstFetchHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_reflectionProvider);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_getDependencies(zend_object *self, zval *p_scope, zval *p_expr, zval *p_classResult, zval *p_result, zval *ret);
+} // namespace pgen::ClassConstFetchHandler
+
+namespace pgen::CoalesceHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_nonNullabilityHelper, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_coalesceCompositionHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_canNonNullLeftSatisfyContext(zval *p_leftType, zval *p_context, bool *ret);
+} // namespace pgen::CoalesceHandler
+
+namespace pgen::ConstFetchHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_constantResolver, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_reflectionProvider);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::ConstFetchHandler
+
+namespace pgen::EmptyHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_nonNullabilityHelper, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_booleanNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::EmptyHandler
+
+namespace pgen::InstanceofHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::InstanceofHandler
+
+namespace pgen::IssetHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_nonNullabilityHelper, zval *p_expressionResultFactory, zval *p_methodThrowPointHelper, zval *p_defaultNarrowingHelper, zval *p_booleanNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_memoizeSubjectTypes(zval *p_types, zval *ret);
+} // namespace pgen::IssetHandler
+
+namespace pgen::NullsafeMethodCallHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_nonNullabilityHelper, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_booleanNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::NullsafeMethodCallHandler
+
+namespace pgen::NullsafePropertyFetchHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_nonNullabilityHelper, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_booleanNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::NullsafePropertyFetchHandler
+
+namespace pgen::PipeHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::PipeHandler
+
+namespace pgen::PostDecHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_incDecTypeHelper, zval *p_assignHandler);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::PostDecHandler
+
+namespace pgen::PostIncHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_incDecTypeHelper, zval *p_assignHandler);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::PostIncHandler
+
+namespace pgen::PreDecHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_incDecTypeHelper, zval *p_defaultNarrowingHelper, zval *p_assignHandler);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::PreDecHandler
+
+namespace pgen::PreIncHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_incDecTypeHelper, zval *p_defaultNarrowingHelper, zval *p_assignHandler);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::PreIncHandler
+
+namespace pgen::ClassConstHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_attributesHandler);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::ClassConstHandler
+
+namespace pgen::ClassLikeHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflector, zval *p_classReflectionFactory, zval *p_calledMethodProcessor, zval *p_reflectionProvider, zval *p_attributesHandler, zval *p_readWritePropertiesExtensions);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_getDeclarationDependencies(zend_object *self, zval *p_scope, zval *p_stmt, zval *ret);
+[[nodiscard]] bool m_getCurrentClassReflection(zend_object *self, zval *p_stmt, zval *p_className, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_createAstClassReflection(zend_object *self, zval *p_stmt, zval *p_className, zval *p_scope, zval *ret);
+} // namespace pgen::ClassLikeHandler
+
+namespace pgen::IfHandler {
+[[nodiscard]] bool m___construct(zend_object *self, bool p_treatPhpDocTypesAsCertain);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::IfHandler
+
+namespace pgen::PropertyHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_phpDocsResolver, zval *p_propertyHooksProcessor, zval *p_attributesHandler);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::PropertyHandler
+
+namespace pgen::StaticVariableHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_varAnnotationProcessor, zval *p_staticVariableInference);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::StaticVariableHandler
+
+namespace pgen::SwitchHandler {
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_container);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::SwitchHandler
+
+namespace pgen::TraitHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflectionProvider);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::TraitHandler
+
+namespace pgen::TryCatchHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_statementsHandler);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::TryCatchHandler
+
+namespace pgen::AssignOpHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_assignHandler, zval *p_initializerExprTypeResolver, zval *p_implicitToStringCallHelper, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_coalesceCompositionHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::AssignOpHandler
+
+namespace pgen::BinaryOpHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_richerScopeGetTypeHelper, zval *p_phpVersion, zval *p_implicitToStringCallHelper, zval *p_exprPrinter, zval *p_identicalNarrowingHelper, zval *p_countNarrowingHelper, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_resolveEqualType(zend_object *self, zval *p_scope, zval *p_expr, zval *p_leftResult, zval *p_rightResult, zval *ret);
+[[nodiscard]] bool m_createRangeTypes(zend_object *self, zval *p_rootExpr, zval *p_expr, zval *p_type, zval *p_context, zval *ret);
+} // namespace pgen::BinaryOpHandler
+
+namespace pgen::BitwiseNotHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::BitwiseNotHandler
+
+namespace pgen::BooleanAndHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_booleanNarrowingHelper, zval *p_expressionResultFactory);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::BooleanAndHandler
+
+namespace pgen::BooleanNotHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::BooleanNotHandler
+
+namespace pgen::BooleanOrHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_booleanNarrowingHelper, zval *p_expressionResultFactory);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::BooleanOrHandler
+
+namespace pgen::CastHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_identicalNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::CastHandler
+
+namespace pgen::CastStringHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_implicitToStringCallHelper, zval *p_expressionResultFactory);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::CastStringHandler
+
+namespace pgen::InterpolatedStringHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_implicitToStringCallHelper, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::InterpolatedStringHandler
+
+namespace pgen::UnaryMinusHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::UnaryMinusHandler
+
+namespace pgen::UnaryPlusHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::UnaryPlusHandler
+
+namespace pgen::FunctionCallableNodeHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_initializerExprTypeResolver, zval *p_reflectionProvider);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_getDependencies(zend_object *self, zval *p_scope, zval *p_expr, zval *p_nameResult, zval *p_result, zval *ret);
+[[nodiscard]] bool m_resolveType(zend_object *self, zval *p_scope, zval *p_expr, zval *p_nameResult, zval *ret);
+[[nodiscard]] bool m_isClosureObject(zval *p_type, bool *ret);
+} // namespace pgen::FunctionCallableNodeHandler
+
+namespace pgen::InstantiationCallableNodeHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_initializerExprTypeResolver);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_getDependencies(zend_object *self, zval *p_scope, zval *p_expr, zval *p_classResult, zval *p_result, zval *ret);
+} // namespace pgen::InstantiationCallableNodeHandler
+
+namespace pgen::MethodCallableNodeHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_initializerExprTypeResolver);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_getDependencies(zend_object *self, zval *p_scope, zval *p_expr, zval *p_varResult, zval *p_result, zval *ret);
+[[nodiscard]] bool m_resolveType(zend_object *self, zval *p_scope, zval *p_expr, zval *p_varResult, zval *ret);
+} // namespace pgen::MethodCallableNodeHandler
+
+namespace pgen::SetExistingOffsetValueTypeExprHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::SetExistingOffsetValueTypeExprHandler
+
+namespace pgen::SetOffsetValueTypeExprHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::SetOffsetValueTypeExprHandler
+
+namespace pgen::StaticMethodCallableNodeHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper, zval *p_initializerExprTypeResolver, zval *p_reflectionProvider);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_getDependencies(zend_object *self, zval *p_scope, zval *p_expr, zval *p_classResult, zval *p_result, zval *ret);
+} // namespace pgen::StaticMethodCallableNodeHandler
+
+namespace pgen::YieldFromHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::YieldFromHandler
+
+namespace pgen::YieldHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_expressionResultFactory, zval *p_defaultNarrowingHelper);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_expr, bool *ret);
+[[nodiscard]] bool m_processExpr(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_expr, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+} // namespace pgen::YieldHandler
+
+namespace pgen::ExpressionHandler {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_statementsHandler, bool p_rememberPossiblyImpureFunctionValues);
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_isCallRememberedDespiteItsOwnImpurity(zend_object *self, zval *p_impurePoints, zval *p_call, bool *ret);
+} // namespace pgen::ExpressionHandler
+
+namespace pgen::UnsetHandler {
+[[nodiscard]] bool m_supports(zend_object *self, zval *p_stmt, bool *ret);
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_container, zval *p_assignHandler);
+[[nodiscard]] bool m_processStmt(zend_object *self, zval *p_nodeScopeResolver, zval *p_stmt, zval *p_scope, zval *p_storage, zval *p_nodeCallback, zval *p_context, zval *ret);
+[[nodiscard]] bool m_hasDestructionSideEffects(zend_object *self, zval *p_type, bool *ret);
+} // namespace pgen::UnsetHandler
 
 #endif

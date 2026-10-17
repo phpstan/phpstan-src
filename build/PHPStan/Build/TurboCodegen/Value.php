@@ -8,7 +8,8 @@ namespace PHPStan\Build\TurboCodegen;
  *
  * - `long` / `bool`: an unboxed zend_long / bool C++ expression
  * - `zval`: a `zval *` C++ expression — borrowed (valid until the next side
- *   effect) unless $temp names the zv::Val that owns it
+ *   effect) unless $temp names the zv::Val that owns it, or $stable says
+ *   it reads a variable nothing in the function writes
  * - `null`: the PHP null constant
  * - `void`: no value
  */
@@ -25,6 +26,7 @@ final class Value
 		public readonly ?string $temp = null,
 		public readonly ?string $class = null,
 		public readonly bool $isArray = false,
+		public readonly bool $stable = false,
 	)
 	{
 	}

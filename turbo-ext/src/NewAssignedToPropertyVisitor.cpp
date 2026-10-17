@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_new_assigned_to_property_visitor = nullptr;
 
@@ -112,11 +156,16 @@ static zval pg_lit[1];
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Expr\Assign */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr\AssignRef */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Expr\AssignOp */
-static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr\PropertyFetch */
-static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr\StaticPropertyFetch */
-static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Expr\New_ */
-static pt_method_site pg_site_6; /* method_setAttribute_6 */
-static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
+static pgrt::PropSite pg_site_3; /* prop_var_3 */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr\PropertyFetch */
+static pgrt::PropSite pg_site_5; /* prop_var_5 */
+static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Expr\StaticPropertyFetch */
+static pgrt::PropSite pg_site_7; /* prop_expr_7 */
+static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Expr\New_ */
+static pgrt::PropSite pg_site_9; /* prop_expr_9 */
+static pgrt::PropSite pg_site_10; /* prop_var_10 */
+static pt_method_site pg_site_11; /* method_setAttribute_11 */
+static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
 
 namespace pgen::NewAssignedToPropertyVisitor {
 
@@ -137,48 +186,48 @@ namespace pgen::NewAssignedToPropertyVisitor {
 		}
 		if (b1) {
 			 {
-				zval *p5;
 				zv::Val o6;
-				 {
+				zval *p5 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_3, Z_OBJ_P(p_node), "var", 3) : NULL;
+				if (UNEXPECTED(p5 == NULL || Z_ISUNDEF_P(p5))) {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_new_assigned_to_property_visitor, "var", 3, o6.raw()))) return false;
 					p5 = o6.raw();
 				}
-				bool b4 = pgrt::instanceOfClass(p5, pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr\\PropertyFetch", 33));
+				bool b4 = pgrt::instanceOfClass(zv::Ref(p5).deref().raw(), pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr\\PropertyFetch", 33));
 				if (!b4) {
-					zval *p7;
 					zv::Val o8;
-					 {
+					zval *p7 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_5, Z_OBJ_P(p_node), "var", 3) : NULL;
+					if (UNEXPECTED(p7 == NULL || Z_ISUNDEF_P(p7))) {
 						if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_new_assigned_to_property_visitor, "var", 3, o8.raw()))) return false;
 						p7 = o8.raw();
 					}
-					b4 = pgrt::instanceOfClass(p7, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Expr\\StaticPropertyFetch", 39));
+					b4 = pgrt::instanceOfClass(zv::Ref(p7).deref().raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Expr\\StaticPropertyFetch", 39));
 				}
 				bool b3 = b4;
 				if (b3) {
-					zval *p9;
 					zv::Val o10;
-					 {
+					zval *p9 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_7, Z_OBJ_P(p_node), "expr", 4) : NULL;
+					if (UNEXPECTED(p9 == NULL || Z_ISUNDEF_P(p9))) {
 						if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_new_assigned_to_property_visitor, "expr", 4, o10.raw()))) return false;
 						p9 = o10.raw();
 					}
-					b3 = pgrt::instanceOfClass(p9, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Expr\\New_", 24));
+					b3 = pgrt::instanceOfClass(zv::Ref(p9).deref().raw(), pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node\\Expr\\New_", 24));
 				}
 				if (b3) {
 					 {
-						zval *p11;
 						zv::Val o12;
-						 {
+						zval *p11 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_9, Z_OBJ_P(p_node), "expr", 4) : NULL;
+						if (UNEXPECTED(p11 == NULL || Z_ISUNDEF_P(p11))) {
 							if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_new_assigned_to_property_visitor, "expr", 4, o12.raw()))) return false;
 							p11 = o12.raw();
 						}
-						zval *p13;
 						zv::Val o14;
-						 {
+						zval *p13 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_10, Z_OBJ_P(p_node), "var", 3) : NULL;
+						if (UNEXPECTED(p13 == NULL || Z_ISUNDEF_P(p13))) {
 							if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_new_assigned_to_property_visitor, "var", 3, o14.raw()))) return false;
 							p13 = o14.raw();
 						}
 						zv::Val r15;
-						if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_6, p11, &pg_lit[0], p13, r15.raw()))) return false;
+						if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_11, zv::Ref(p11).deref().raw(), &pg_lit[0], zv::Ref(p13).deref().raw(), r15.raw()))) return false;
 					}
 				}
 			}
@@ -209,7 +258,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NewAssignedToPropertyVisitor)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(p_node)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(!pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NewAssignedToPropertyVisitor::m_enterNode(Z_OBJ_P(ZEND_THIS), p_node, return_value))) RETURN_THROWS();
 	});

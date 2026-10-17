@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 
 static pt_method_site pg_site_0; /* method_equals_0 */
@@ -137,14 +181,12 @@ namespace pgen::ExpressionTypeHolder {
 [[nodiscard]] bool m_createYes(zval *p_expr, zval *p_type, zval *ret)
 {
 	 {
-		zv::Val o2 = zv::Val::copyOf(zv::Ref(p_expr));
-		zv::Val o3 = zv::Val::copyOf(zv::Ref(p_type));
-		zv::Val r4;
-		if (UNEXPECTED(!pgen::TrinaryLogic::m_createYes(r4.raw()))) return false;
+		zv::Val r2;
+		if (UNEXPECTED(!pgen::TrinaryLogic::m_createYes(r2.raw()))) return false;
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_expr_type_holder) != SUCCESS)) return false;
 		zv::Val n1 = zv::Val::adopt(n1_raw);
-		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m___construct(Z_OBJ_P(n1.raw()), o2.raw(), o3.raw(), r4.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
+		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m___construct(Z_OBJ_P(n1.raw()), p_expr, p_type, r2.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
 		*ret = n1.take();
 		return true;
 	}
@@ -154,14 +196,12 @@ namespace pgen::ExpressionTypeHolder {
 [[nodiscard]] bool m_createMaybe(zval *p_expr, zval *p_type, zval *ret)
 {
 	 {
-		zv::Val o2 = zv::Val::copyOf(zv::Ref(p_expr));
-		zv::Val o3 = zv::Val::copyOf(zv::Ref(p_type));
-		zv::Val r4;
-		if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r4.raw()))) return false;
+		zv::Val r2;
+		if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(r2.raw()))) return false;
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_expr_type_holder) != SUCCESS)) return false;
 		zv::Val n1 = zv::Val::adopt(n1_raw);
-		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m___construct(Z_OBJ_P(n1.raw()), o2.raw(), o3.raw(), r4.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
+		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m___construct(Z_OBJ_P(n1.raw()), p_expr, p_type, r2.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
 		*ret = n1.take();
 		return true;
 	}

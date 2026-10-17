@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_offset_access_type = nullptr;
 
@@ -393,23 +437,89 @@ namespace pgen::OffsetAccessType {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zv::Val o1 = zv::Val::copyOf(zv::Ref(p_cb));
-		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::type, "type");
+		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::type, "type");
+		if (UNEXPECTED(p1 == NULL)) return false;
+		zval av2[1];
+		ZVAL_COPY_VALUE(&av2[0], p1);
+		zv::Val r3;
+		if (UNEXPECTED(!pgrt::callValue(p_cb, 1, av2, r3.raw(), NULL))) return false;
+		l_type = std::move(r3);
+	}
+	 {
+		zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::offset, "offset");
+		if (UNEXPECTED(p4 == NULL)) return false;
+		zval av5[1];
+		ZVAL_COPY_VALUE(&av5[0], p4);
+		zv::Val r6;
+		if (UNEXPECTED(!pgrt::callValue(p_cb, 1, av5, r6.raw(), NULL))) return false;
+		l_offset = std::move(r6);
+	}
+	 {
+		zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::type, "type");
+		if (UNEXPECTED(p8 == NULL)) return false;
+		bool b7 = zend_is_identical(p8, l_type.raw());
+		if (b7) {
+			zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::offset, "offset");
+			if (UNEXPECTED(p9 == NULL)) return false;
+			b7 = zend_is_identical(p9, l_offset.raw());
+		}
+		if (b7) {
+			 {
+				ZVAL_COPY(ret, &this_zv);
+				return true;
+			}
+		}
+	}
+	 {
+		if (UNEXPECTED(!(pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\OffsetAccessType::__construct", 1, "type", "PHPStan\\Type\\Type", l_type.raw()); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(l_offset.raw(), pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\OffsetAccessType::__construct", 2, "offset", "PHPStan\\Type\\Type", l_offset.raw()); return false; }
+		zval n10_raw;
+		if (UNEXPECTED(object_init_ex(&n10_raw, pt_ce_offset_access_type) != SUCCESS)) return false;
+		zv::Val n10 = zv::Val::adopt(n10_raw);
+		if (UNEXPECTED(!pgen::OffsetAccessType::m___construct(Z_OBJ_P(n10.raw()), l_type.raw(), l_offset.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n10.raw())); return false; }
+		*ret = n10.take();
+		return true;
+	}
+}
+
+/* PHPStan\Type\OffsetAccessType::traverseSimultaneously() */
+[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret)
+{
+	zv::Val l_type;
+	zv::Val l_offset;
+	zval this_zv;
+	ZVAL_OBJ(&this_zv, self);
+	(void) this_zv;
+	 {
+		if (!(((Z_TYPE_P(p_right) == IS_OBJECT && Z_OBJCE_P(p_right) == pt_ce_offset_access_type) || pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\OffsetAccessType", 29))))) {
+			 {
+				ZVAL_COPY(ret, &this_zv);
+				return true;
+			}
+		}
+	}
+	 {
+		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::type, "type");
+		if (UNEXPECTED(p1 == NULL)) return false;
+		zval *p2 = pgrt::readSlot(Z_OBJ_P(p_right), ptdecl::OffsetAccessType::slot::type, "type");
 		if (UNEXPECTED(p2 == NULL)) return false;
-		zval av3[1];
-		ZVAL_COPY_VALUE(&av3[0], p2);
+		zval av3[2];
+		ZVAL_COPY_VALUE(&av3[0], p1);
+		ZVAL_COPY_VALUE(&av3[1], p2);
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callValue(o1.raw(), 1, av3, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callValue(p_cb, 2, av3, r4.raw(), NULL))) return false;
 		l_type = std::move(r4);
 	}
 	 {
-		zv::Val o5 = zv::Val::copyOf(zv::Ref(p_cb));
-		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::offset, "offset");
+		zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::offset, "offset");
+		if (UNEXPECTED(p5 == NULL)) return false;
+		zval *p6 = pgrt::readSlot(Z_OBJ_P(p_right), ptdecl::OffsetAccessType::slot::offset, "offset");
 		if (UNEXPECTED(p6 == NULL)) return false;
-		zval av7[1];
-		ZVAL_COPY_VALUE(&av7[0], p6);
+		zval av7[2];
+		ZVAL_COPY_VALUE(&av7[0], p5);
+		ZVAL_COPY_VALUE(&av7[1], p6);
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callValue(o5.raw(), 1, av7, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callValue(p_cb, 2, av7, r8.raw(), NULL))) return false;
 		l_offset = std::move(r8);
 	}
 	 {
@@ -436,76 +546,6 @@ namespace pgen::OffsetAccessType {
 		zv::Val n12 = zv::Val::adopt(n12_raw);
 		if (UNEXPECTED(!pgen::OffsetAccessType::m___construct(Z_OBJ_P(n12.raw()), l_type.raw(), l_offset.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n12.raw())); return false; }
 		*ret = n12.take();
-		return true;
-	}
-}
-
-/* PHPStan\Type\OffsetAccessType::traverseSimultaneously() */
-[[nodiscard]] bool m_traverseSimultaneously(zend_object *self, zval *p_right, zval *p_cb, zval *ret)
-{
-	zv::Val l_type;
-	zv::Val l_offset;
-	zval this_zv;
-	ZVAL_OBJ(&this_zv, self);
-	(void) this_zv;
-	 {
-		if (!(((Z_TYPE_P(p_right) == IS_OBJECT && Z_OBJCE_P(p_right) == pt_ce_offset_access_type) || pgrt::instanceOfClass(p_right, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Type\\OffsetAccessType", 29))))) {
-			 {
-				ZVAL_COPY(ret, &this_zv);
-				return true;
-			}
-		}
-	}
-	 {
-		zv::Val o1 = zv::Val::copyOf(zv::Ref(p_cb));
-		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::type, "type");
-		if (UNEXPECTED(p2 == NULL)) return false;
-		zval *p3 = pgrt::readSlot(Z_OBJ_P(p_right), ptdecl::OffsetAccessType::slot::type, "type");
-		if (UNEXPECTED(p3 == NULL)) return false;
-		zval av4[2];
-		ZVAL_COPY_VALUE(&av4[0], p2);
-		ZVAL_COPY_VALUE(&av4[1], p3);
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callValue(o1.raw(), 2, av4, r5.raw(), NULL))) return false;
-		l_type = std::move(r5);
-	}
-	 {
-		zv::Val o6 = zv::Val::copyOf(zv::Ref(p_cb));
-		zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::offset, "offset");
-		if (UNEXPECTED(p7 == NULL)) return false;
-		zval *p8 = pgrt::readSlot(Z_OBJ_P(p_right), ptdecl::OffsetAccessType::slot::offset, "offset");
-		if (UNEXPECTED(p8 == NULL)) return false;
-		zval av9[2];
-		ZVAL_COPY_VALUE(&av9[0], p7);
-		ZVAL_COPY_VALUE(&av9[1], p8);
-		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callValue(o6.raw(), 2, av9, r10.raw(), NULL))) return false;
-		l_offset = std::move(r10);
-	}
-	 {
-		zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::type, "type");
-		if (UNEXPECTED(p12 == NULL)) return false;
-		bool b11 = zend_is_identical(p12, l_type.raw());
-		if (b11) {
-			zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::offset, "offset");
-			if (UNEXPECTED(p13 == NULL)) return false;
-			b11 = zend_is_identical(p13, l_offset.raw());
-		}
-		if (b11) {
-			 {
-				ZVAL_COPY(ret, &this_zv);
-				return true;
-			}
-		}
-	}
-	 {
-		if (UNEXPECTED(!(pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\OffsetAccessType::__construct", 1, "type", "PHPStan\\Type\\Type", l_type.raw()); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(l_offset.raw(), pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\OffsetAccessType::__construct", 2, "offset", "PHPStan\\Type\\Type", l_offset.raw()); return false; }
-		zval n14_raw;
-		if (UNEXPECTED(object_init_ex(&n14_raw, pt_ce_offset_access_type) != SUCCESS)) return false;
-		zv::Val n14 = zv::Val::adopt(n14_raw);
-		if (UNEXPECTED(!pgen::OffsetAccessType::m___construct(Z_OBJ_P(n14.raw()), l_type.raw(), l_offset.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n14.raw())); return false; }
-		*ret = n14.take();
 		return true;
 	}
 }

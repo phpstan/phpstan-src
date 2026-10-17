@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_unresolvable_type_helper = nullptr;
 
@@ -189,12 +233,11 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			q13 = std::move(o14);
 		} else {
 		 {
-			zv::Val o15 = zv::Val::copyOf(zv::Ref(p_traverse));
-			zval av16[1];
-			ZVAL_COPY_VALUE(&av16[0], p_type);
-			zv::Val r17;
-			if (UNEXPECTED(!pgrt::callValue(o15.raw(), 1, av16, r17.raw(), NULL))) return;
-			q13 = std::move(r17);
+			zval av15[1];
+			ZVAL_COPY_VALUE(&av15[0], p_type);
+			zv::Val r16;
+			if (UNEXPECTED(!pgrt::callValue(p_traverse, 1, av15, r16.raw(), NULL))) return;
+			q13 = std::move(r16);
 		}
 		}
 		if (UNEXPECTED(!(pgrt::instanceOfClass(q13.raw(), pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Type", 17))))) { pgrt::throwReturnType("PHPStan\\Rules\\PhpDoc\\UnresolvableTypeHelper::{closure}", "PHPStan\\Type\\Type", q13.raw()); return; }

@@ -103,6 +103,50 @@
 #include "generated/GlobalHandler.h"
 #include "generated/DeclareHandler.h"
 #include "generated/ConstHandler.h"
+#include "generated/ConditionalExpressionHolder.h"
+#include "generated/ArrayHandler.h"
+#include "generated/ClassConstFetchHandler.h"
+#include "generated/CoalesceHandler.h"
+#include "generated/ConstFetchHandler.h"
+#include "generated/EmptyHandler.h"
+#include "generated/InstanceofHandler.h"
+#include "generated/IssetHandler.h"
+#include "generated/NullsafeMethodCallHandler.h"
+#include "generated/NullsafePropertyFetchHandler.h"
+#include "generated/PipeHandler.h"
+#include "generated/PostDecHandler.h"
+#include "generated/PostIncHandler.h"
+#include "generated/PreDecHandler.h"
+#include "generated/PreIncHandler.h"
+#include "generated/ClassConstHandler.h"
+#include "generated/ClassLikeHandler.h"
+#include "generated/IfHandler.h"
+#include "generated/PropertyHandler.h"
+#include "generated/StaticVariableHandler.h"
+#include "generated/SwitchHandler.h"
+#include "generated/TraitHandler.h"
+#include "generated/TryCatchHandler.h"
+#include "generated/AssignOpHandler.h"
+#include "generated/BinaryOpHandler.h"
+#include "generated/BitwiseNotHandler.h"
+#include "generated/BooleanAndHandler.h"
+#include "generated/BooleanNotHandler.h"
+#include "generated/BooleanOrHandler.h"
+#include "generated/CastHandler.h"
+#include "generated/CastStringHandler.h"
+#include "generated/InterpolatedStringHandler.h"
+#include "generated/UnaryMinusHandler.h"
+#include "generated/UnaryPlusHandler.h"
+#include "generated/FunctionCallableNodeHandler.h"
+#include "generated/InstantiationCallableNodeHandler.h"
+#include "generated/MethodCallableNodeHandler.h"
+#include "generated/SetExistingOffsetValueTypeExprHandler.h"
+#include "generated/SetOffsetValueTypeExprHandler.h"
+#include "generated/StaticMethodCallableNodeHandler.h"
+#include "generated/YieldFromHandler.h"
+#include "generated/YieldHandler.h"
+#include "generated/ExpressionHandler.h"
+#include "generated/UnsetHandler.h"
 
 zend_class_entry *pt_ce_strict_mixed_type = nullptr;
 
@@ -350,25 +394,17 @@ namespace pgen::StrictMixedType {
 	(void) this_zv;
 	 {
 		zv::Val h1 = pt_native_closure_new(&pg_closure_1, 0, NULL, 0u);
-		zv::Val cl2 = pt_native_closure_to_closure(h1.raw());
-		if (UNEXPECTED(cl2.isUndef())) return false;
-		zv::Val h3 = pt_native_closure_new(&pg_closure_2, 0, NULL, 0u);
-		zv::Val cl4 = pt_native_closure_to_closure(h3.raw());
-		if (UNEXPECTED(cl4.isUndef())) return false;
-		zv::Val h5 = pt_native_closure_new(&pg_closure_3, 0, NULL, 0u);
-		zv::Val cl6 = pt_native_closure_to_closure(h5.raw());
-		if (UNEXPECTED(cl6.isUndef())) return false;
-		zv::Val h7 = pt_native_closure_new(&pg_closure_4, 0, NULL, 0u);
-		zv::Val cl8 = pt_native_closure_to_closure(h7.raw());
-		if (UNEXPECTED(cl8.isUndef())) return false;
-		zval av9[4];
-		ZVAL_COPY_VALUE(&av9[0], cl2.raw());
-		ZVAL_COPY_VALUE(&av9[1], cl4.raw());
-		ZVAL_COPY_VALUE(&av9[2], cl6.raw());
-		ZVAL_COPY_VALUE(&av9[3], cl8.raw());
-		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_level, "handle", "handle", 6, 4, av9, r10.raw(), NULL))) return false;
-		*ret = r10.take();
+		zv::Val h2 = pt_native_closure_new(&pg_closure_2, 0, NULL, 0u);
+		zv::Val h3 = pt_native_closure_new(&pg_closure_3, 0, NULL, 0u);
+		zv::Val h4 = pt_native_closure_new(&pg_closure_4, 0, NULL, 0u);
+		zval av5[4];
+		ZVAL_COPY_VALUE(&av5[0], h1.raw());
+		ZVAL_COPY_VALUE(&av5[1], h2.raw());
+		ZVAL_COPY_VALUE(&av5[2], h3.raw());
+		ZVAL_COPY_VALUE(&av5[3], h4.raw());
+		zv::Val r6;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_level, "handle", "handle", 6, 4, av5, r6.raw(), NULL))) return false;
+		*ret = r6.take();
 		return true;
 	}
 }

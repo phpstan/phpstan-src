@@ -542,6 +542,9 @@ public:
 		return true;
 	}
 
+	void appendLiteral(const char *s, size_t len) { smart_str_appendl(&str, s, len); }
+	void appendLong(zend_long value) { smart_str_append_long(&str, value); }
+
 	zv::Val finish()
 	{
 		smart_str_0(&str);
@@ -612,6 +615,9 @@ bool inArrayStrict(zval *needle, zval *array);
  * engine for anything else (coercion, TypeError) */
 enum class StrMatch : uint8_t { STARTS, ENDS, CONTAINS };
 [[nodiscard]] bool strMatch(FunctionSite &site, const char *name, size_t len, StrMatch kind, zval *haystack, zval *needle, zval *ret);
+
+/* implode($glue, $pieces) of a string and an array; false = pending exception */
+[[nodiscard]] bool implode(zval *glue, zval *pieces, zval *ret);
 
 /* array_pop() on a separated array in place */
 void arrayPop(zval *array, zval *ret);

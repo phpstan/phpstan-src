@@ -87,6 +87,17 @@ services:
 		factory: @pathRoutingParser
 		autowired: false
 
+	# Persist complete name scopes independently of the analysed paths, while
+	# retaining the PHP 8 parser routing for version-independent stub files.
+	fileTypeMapperParser:
+		class: PHPStan\Parser\PathRoutingParser
+		arguments:
+			currentPhpVersionRichParser: @cachedRichParser
+			currentPhpVersionSimpleParser: @cachedRichParser
+			php8Parser: @php8Parser
+			singleReflectionFile: null
+		autowired: false
+
 	freshStubParser:
 		class: PHPStan\Parser\StubParser
 		arguments:

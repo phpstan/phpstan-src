@@ -12,13 +12,14 @@ use PHPStan\Type\Type;
  * - `callable`: a pgrt::Callable parameter
  * - `vector`: a variadic parameter (`zval *` + `uint32_t` count)
  * - `constarray`: a `static` variable holding a constant array that is never written
+ * - `ref`: a `zval *` that may hold a reference (a by-reference binding), read and written through it
  * - `list`: a local list that never escapes — only `[]`, `$x[] = ...` and `...$x` — kept in a pgrt::ValVec
  */
 final class LocalVariable
 {
 
 	/**
-	 * @param 'long'|'bool'|'zval'|'param'|'callable'|'vector'|'constarray'|'list' $kind
+	 * @param 'long'|'bool'|'zval'|'param'|'ref'|'callable'|'vector'|'constarray'|'list' $kind
 	 */
 	public function __construct(
 		public readonly string $kind,

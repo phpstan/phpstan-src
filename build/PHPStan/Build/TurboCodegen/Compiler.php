@@ -10,22 +10,31 @@ use PhpParser\NodeFinder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionType;
+use ReflectionUnionType;
 use function addcslashes;
 use function array_key_exists;
 use function array_keys;
-use function array_map;
+use function array_pop;
+use function array_reverse;
 use function array_slice;
 use function array_values;
 use function class_exists;
@@ -33,23 +42,34 @@ use function count;
 use function explode;
 use function file_get_contents;
 use function function_exists;
+use function glob;
 use function implode;
 use function in_array;
 use function interface_exists;
+use function is_array;
 use function is_bool;
+use function is_float;
 use function is_int;
 use function is_string;
+use function lcfirst;
 use function ltrim;
+use function preg_match;
 use function preg_match_all;
+use function preg_quote;
 use function preg_replace;
 use function sprintf;
 use function str_contains;
 use function str_ends_with;
+use function str_replace;
 use function str_starts_with;
+use function stripslashes;
 use function strlen;
 use function strtolower;
 use function strtoupper;
 use function substr;
+use function ucwords;
+use function var_export;
+use const PREG_SET_ORDER;
 
 /**
  * Compiles PHP twins of turbo-shadowed classes to C++ registered through
@@ -95,8 +115,11 @@ final class Compiler
 
 	private NodeFinder $finder;
 
+	/** @var array<string, string>|null lowercase FQCN => the native class-entry variable of every shadowed class */
+	private ?array $shadowCes = null;
+
 	/**
-	 * @param array<string, array{file: string, stem: string, ce: string, implementation: string}> $classes FQCN => where its twin lives, its generated-header stem, its class-entry variable, the .cpp to write
+	 * @param array<string, array{file: string, stem: string, ce: string, implementation: string, defineCe?: bool, new?: array{string, string}, dispatch?: array{function: string, enum: string, prefix: string, receiver: string, fallback?: string}}> $classes FQCN => where its twin lives, its generated-header stem, its class-entry variable, the .cpp to write, and the native C API to export (see compiled-classes.php)
 	 */
 	public function __construct(array $classes)
 	{
@@ -104,7 +127,7 @@ final class Compiler
 		foreach ($classes as $className => $config) {
 			$oracle = new TypeOracle($config['file']);
 			$reflection = self::reflect($className);
-			$unit = new ClassUnit($className, $config['stem'], $config['ce'], $reflection, $oracle, $oracle->getClass($className), $config['implementation']);
+			$unit = new ClassUnit($className, $config['stem'], $config['ce'], $reflection, $oracle, $oracle->getClass($className), $config['implementation'], $config['defineCe'] ?? false, $config['new'] ?? null, $config['dispatch'] ?? null);
 			$this->units[strtolower($className)] = $unit;
 		}
 		foreach ($this->units as $unit) {
@@ -215,11 +238,82 @@ final class Compiler
 		if ($type === null) {
 			return ['zval', new MixedType(), 'mixed', null, true, false];
 		}
-		if (!$type instanceof ReflectionNamedType) {
-			throw new CompileError(sprintf('%s: union/intersection declared types are not supported', $unit->className));
+		if ($type instanceof ReflectionUnionType) {
+			$members = [];
+			foreach ($type->getTypes() as $member) {
+				if (!$member instanceof ReflectionNamedType) {
+					throw new CompileError(sprintf('%s: DNF declared types are not supported', $unit->className));
+				}
+				[, $memberType] = $this->lowerDeclaredType($member, $unit, $isParameter);
+				$members[] = $memberType;
+			}
+			$union = TypeCombinator::union(...$members);
+			return ['zval', $union, (string) $type, null, $type->allowsNull(), false];
 		}
-		$name = $type->getName();
-		$nullable = $type->allowsNull() && $name !== 'mixed' && $name !== 'null';
+		if (!$type instanceof ReflectionNamedType) {
+			throw new CompileError(sprintf('%s: intersection declared types are not supported', $unit->className));
+		}
+		return $this->lowerNamedType($type->getName(), $type->allowsNull(), $unit, $isParameter);
+	}
+
+	/**
+	 * A type written in the twin's source (closure signatures), lowered like
+	 * a reflected one.
+	 *
+	 * @return array{'long'|'bool'|'zval'|'callable'|'void', Type, string, string|null, bool, bool}
+	 */
+	private function lowerAstType(?Node $type, bool $isParameter): array
+	{
+		if ($type === null) {
+			return ['zval', new MixedType(), 'mixed', null, true, false];
+		}
+		if ($type instanceof Node\NullableType) {
+			return $this->lowerNamedType($this->astTypeName($type->type), true, $this->unit(), $isParameter);
+		}
+		if ($type instanceof Node\UnionType) {
+			$members = [];
+			$described = [];
+			$nullable = false;
+			foreach ($type->types as $member) {
+				if (!$member instanceof Node\Identifier && !$member instanceof Node\Name) {
+					throw new CompileError('DNF closure types are not supported');
+				}
+				$name = $this->astTypeName($member);
+				$nullable = $nullable || strtolower($name) === 'null';
+				[, $memberType] = $this->lowerNamedType($name, false, $this->unit(), $isParameter);
+				$members[] = $memberType;
+				$described[] = $name;
+			}
+			return ['zval', TypeCombinator::union(...$members), implode('|', $described), null, $nullable, false];
+		}
+		if ($type instanceof Node\Identifier || $type instanceof Node\Name) {
+			$name = $this->astTypeName($type);
+			return $this->lowerNamedType($name, strtolower($name) === 'mixed' || strtolower($name) === 'null', $this->unit(), $isParameter);
+		}
+		throw new CompileError('intersection closure types are not supported');
+	}
+
+	private function astTypeName(Node $type): string
+	{
+		if ($type instanceof Node\Name) {
+			$lower = $type->toLowerString();
+			if (in_array($lower, ['self', 'static'], true)) {
+				return $this->unit()->className;
+			}
+			return ltrim($type->toString(), '\\');
+		}
+		if ($type instanceof Node\Identifier) {
+			return $type->toString();
+		}
+		throw new CompileError('unsupported type node');
+	}
+
+	/**
+	 * @return array{'long'|'bool'|'zval'|'callable'|'void', Type, string, string|null, bool, bool}
+	 */
+	private function lowerNamedType(string $name, bool $allowsNull, ClassUnit $unit, bool $isParameter): array
+	{
+		$nullable = $allowsNull && $name !== 'mixed' && $name !== 'null';
 		$describe = ($nullable ? '?' : '') . $name;
 		switch (strtolower($name)) {
 			case 'int':
@@ -234,6 +328,21 @@ final class Compiler
 				return ['bool', new BooleanType(), $describe, null, false, false];
 			case 'void':
 				return ['void', new VoidType(), 'void', null, false, false];
+			case 'null':
+				return ['zval', new NullType(), 'null', null, true, false];
+			case 'false':
+				return ['zval', new ConstantBooleanType(false), 'false', null, false, false];
+			case 'true':
+				return ['zval', new ConstantBooleanType(true), 'true', null, false, false];
+			case 'float':
+				$t = new FloatType();
+				return ['zval', $nullable ? TypeCombinator::addNull($t) : $t, $describe, null, $nullable, false];
+			case 'object':
+				$t = new ObjectWithoutClassType();
+				return ['zval', $nullable ? TypeCombinator::addNull($t) : $t, $describe, null, $nullable, false];
+			case 'iterable':
+				$t = new IterableType(new MixedType(), new MixedType());
+				return ['zval', $nullable ? TypeCombinator::addNull($t) : $t, $describe, null, $nullable, false];
 			case 'array':
 				$t = new ArrayType(new MixedType(), new MixedType());
 				return ['zval', $nullable ? TypeCombinator::addNull($t) : $t, $describe, null, $nullable, !$nullable];
@@ -361,6 +470,9 @@ final class Compiler
 			}
 		}
 
+		$exports = $this->renderExports($unit);
+		$registration = $this->renderRegistration($unit);
+
 		$out = [];
 		$out[] = sprintf('/* Generated by turbo-ext/bin/compile-twins.php from %s — do not edit. */', $this->relativeFile($unit));
 		$out[] = '';
@@ -394,9 +506,15 @@ final class Compiler
 		}
 		$out[] = sprintf('} // namespace pgen::%s', $unit->stem);
 		$out[] = '';
-		$out[] = sprintf('namespace sigs = ptdecl::%s::sig;', $unit->stem);
+		foreach ($exports as $line) {
+			$out[] = $line;
+		}
 		$out[] = '';
-		$out[] = $this->renderRegistration($unit);
+		if ($unit->methods !== []) {
+			$out[] = sprintf('namespace sigs = ptdecl::%s::sig;', $unit->stem);
+			$out[] = '';
+		}
+		$out[] = $registration;
 		return implode("\n", $out) . "\n";
 	}
 
@@ -410,9 +528,7 @@ final class Compiler
 		$out = [];
 		$out[] = sprintf('PT_MINIT_REGISTRATION(pt_register_codegen_%s)', $unit->stem);
 		$out[] = '{';
-		foreach ($this->literals as $literal => $index) {
-			$out[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(\"%s\", %d));", $index, addcslashes($literal, "\"\\\n\r\t"), strlen($literal));
-		}
+		$out[] = '/*LITERALS*/';
 		$out[] = sprintf("\treg::Class cls(\"%s\");", addcslashes($unit->className, '\\'));
 		$out[] = sprintf("\tptdecl::%s::declareClass(cls);", $unit->stem);
 		$out[] = sprintf("\tptdecl::%s::declareProperties(cls);", $unit->stem);
@@ -440,7 +556,12 @@ final class Compiler
 		}
 		$out[] = sprintf("\tcls.shadow(&%s);", $unit->ce);
 		$out[] = '}';
-		return implode("\n", $out);
+		// the literals the bodies and the glue (defaults) use, interned first
+		$literals = [];
+		foreach ($this->literals as $literal => $index) {
+			$literals[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(\"%s\", %d));", $index, addcslashes($literal, "\"\\\n\r\t"), strlen($literal));
+		}
+		return str_replace("/*LITERALS*/\n", $literals === [] ? '' : implode("\n", $literals) . "\n", implode("\n", $out));
 	}
 
 	/**
@@ -485,6 +606,187 @@ final class Compiler
 			$ids = $m[1];
 		}
 		return $ids;
+	}
+
+	/**
+	 * The native C API other files of the extension use for the class:
+	 * its class-entry variable, a `pt_x_new()` constructor entering the
+	 * compiled constructor, a member dispatch over a family enum.
+	 *
+	 * @return list<string>
+	 */
+	private function renderExports(ClassUnit $unit): array
+	{
+		$out = [];
+		if ($unit->defineCe) {
+			$out[] = sprintf('zend_class_entry *%s = nullptr;', $unit->ce);
+			$out[] = '';
+		}
+		if ($unit->newExport !== null) {
+			$out = [...$out, ...$this->renderNewExport($unit, $unit->newExport[0], $unit->newExport[1])];
+		}
+		if ($unit->dispatchExport !== null) {
+			$out = [...$out, ...$this->renderDispatchExport($unit, $unit->dispatchExport)];
+		}
+		return $out;
+	}
+
+	/**
+	 * `new X(...)` for native callers, in the calling convention the
+	 * hand-written port exported: `val` returns zv::Val (UNDEF = pending
+	 * exception) and takes the constructor's parameters, `out` writes *out
+	 * and returns false on an exception, `argv` takes the arguments as a
+	 * vector.
+	 *
+	 * @return list<string>
+	 */
+	private function renderNewExport(ClassUnit $unit, string $name, string $flavor): array
+	{
+		$constructor = $unit->methods['__construct'] ?? null;
+		if ($constructor === null && $unit->reflection->getConstructor() !== null) {
+			throw new CompileError(sprintf('%s inherits its constructor; export its `new` by hand', $unit->className));
+		}
+		$params = $constructor !== null ? $constructor->params : [];
+		$decl = [];
+		$pre = [];
+		$args = [];
+		if ($flavor === 'argv') {
+			$decl[] = 'uint32_t argc';
+			$decl[] = 'zval *argv';
+			if ($constructor !== null) {
+				$f = new FunctionContext($this->label($constructor), 'return zv::Val();', null, null);
+				$args = $this->distributeVector($f, $constructor, 'argv', 'argc');
+				$pre[] = $f->render();
+			}
+		} else {
+			foreach ($params as $param) {
+				if ($param->variadic) {
+					throw new CompileError('variadic constructors cannot be exported');
+				}
+				if ($param->kind === 'long') {
+					$decl[] = 'zend_long ' . $param->name;
+					$args[] = $param->name;
+				} elseif ($param->kind === 'bool') {
+					$decl[] = 'bool ' . $param->name;
+					$args[] = $param->name;
+				} elseif ($param->kind === 'callable') {
+					throw new CompileError('callable constructor parameters cannot be exported');
+				} elseif (TypeCombinator::removeNull($param->declared)->isString()->yes()) {
+					// strings travel as zend_string * (NULL = null)
+					$decl[] = 'zend_string *' . $param->name;
+					$pre[] = sprintf("\tzval %s_zv;", $param->name);
+					$none = $param->default !== null ? $this->constantZvalInit($param->name . '_zv', $param->default) : sprintf('ZVAL_NULL(&%s_zv);', $param->name);
+					$pre[] = sprintf("\tif (%s != NULL) { ZVAL_STR(&%s_zv, %s); } else { %s }", $param->name, $param->name, $param->name, $none);
+					$args[] = '&' . $param->name . '_zv';
+				} else {
+					// the hand-written ports' convention: NULL = null, or the
+					// parameter's default where it has one
+					$decl[] = 'zval *' . $param->name;
+					$pre[] = sprintf("\tzval %s_none;", $param->name);
+					$pre[] = "\t" . ($param->default !== null ? $this->constantZvalInit($param->name . '_none', $param->default) : sprintf('ZVAL_NULL(&%s_none);', $param->name));
+					$pre[] = sprintf("\tif (%s == NULL) %s = &%s_none;", $param->name, $param->name, $param->name);
+					$args[] = $param->name;
+				}
+			}
+		}
+		$construct = $constructor !== null
+			? sprintf('pgen::%s::%s(%s)', $unit->stem, $this->cppMethodName($constructor), implode(', ', ['Z_OBJ(object)', ...$args]))
+			: 'true';
+		$out = [];
+		$out[] = sprintf('/* new %s(...) for native callers */', $unit->className);
+		if ($flavor === 'out') {
+			$out[] = sprintf('bool %s(%s)', $name, implode(', ', ['zval *out', ...$decl]));
+		} else {
+			$out[] = sprintf('zv::Val %s(%s)', $name, implode(', ', $decl));
+		}
+		$fail = $flavor === 'out' ? 'return false;' : 'return zv::Val();';
+		$out[] = '{';
+		foreach ($pre as $line) {
+			$out[] = str_replace('return zv::Val();', $fail, $line);
+		}
+		$out[] = "\tzval object;";
+		$out[] = sprintf("\tif (UNEXPECTED(object_init_ex(&object, %s) != SUCCESS)) %s", $unit->ce, $fail);
+		$out[] = sprintf("\tif (UNEXPECTED(!%s)) {", $construct);
+		$out[] = "\t\tzend_object_store_ctor_failed(Z_OBJ(object));";
+		$out[] = "\t\tzval_ptr_dtor(&object);";
+		$out[] = "\t\t" . $fail;
+		$out[] = "\t}";
+		$out[] = $flavor === 'out' ? "\tZVAL_COPY_VALUE(out, &object);
+	return true;" : "\treturn zv::Val::adopt(object);";
+		$out[] = '}';
+		$out[] = '';
+		return $out;
+	}
+
+	/**
+	 * A family's member dispatch (`pt_x_call(object, member)`): every member
+	 * of the enum the class implements entered directly, the others through
+	 * the family's by-name fallback.
+	 *
+	 * @param array{function: string, enum: string, prefix: string, receiver: string, fallback?: string} $dispatch
+	 * @return list<string>
+	 */
+	private function renderDispatchExport(ClassUnit $unit, array $dispatch): array
+	{
+		$members = $this->enumMembers($dispatch['enum'], $dispatch['prefix']);
+		$out = [];
+		$out[] = sprintf('/* the %s dispatch for native callers */', $dispatch['enum']);
+		$out[] = sprintf('zv::Val %s(zend_object *%s, %s member)', $dispatch['function'], $dispatch['receiver'], $dispatch['enum']);
+		$out[] = '{';
+		$out[] = "\tswitch (member) {";
+		foreach ($members as $constant => $suffix) {
+			$methodName = lcfirst(str_replace('_', '', ucwords(strtolower($suffix), '_')));
+			$method = $unit->methods[strtolower($methodName)] ?? null;
+			if ($suffix === 'MEMBER_COUNT') {
+				$out[] = sprintf("\t\tcase %s: break;", $constant);
+				continue;
+			}
+			if ($method === null || $method->isStatic || $method->params !== []) {
+				if (!isset($dispatch['fallback'])) {
+					throw new CompileError(sprintf('%s has no method for %s and no fallback', $unit->className, $constant));
+				}
+				$out[] = sprintf("\t\tcase %s: return %s(%s, member);", $constant, $dispatch['fallback'], $dispatch['receiver']);
+				continue;
+			}
+			$call = sprintf('pgen::%s::%s', $unit->stem, $this->cppMethodName($method));
+			switch ($method->return->kind) {
+				case 'bool':
+					$out[] = sprintf("\t\tcase %s: { bool r; if (UNEXPECTED(!%s(%s, &r))) return zv::Val(); return zv::Val::boolean(r); }", $constant, $call, $dispatch['receiver']);
+					break;
+				case 'long':
+					$out[] = sprintf("\t\tcase %s: { zend_long r; if (UNEXPECTED(!%s(%s, &r))) return zv::Val(); return zv::Val::integer(r); }", $constant, $call, $dispatch['receiver']);
+					break;
+				case 'zval':
+					$out[] = sprintf("\t\tcase %s: { zv::Val r; if (UNEXPECTED(!%s(%s, r.raw()))) return zv::Val(); return r; }", $constant, $call, $dispatch['receiver']);
+					break;
+				default:
+					$out[] = sprintf("\t\tcase %s: { if (UNEXPECTED(!%s(%s))) return zv::Val(); return zv::Val::null(); }", $constant, $call, $dispatch['receiver']);
+			}
+		}
+		$out[] = "\t}";
+		$out[] = "\tZEND_UNREACHABLE();";
+		$out[] = "\treturn zv::Val();";
+		$out[] = '}';
+		$out[] = '';
+		return $out;
+	}
+
+	/** @return array<string, string> constant => suffix after the prefix, in declaration order */
+	private function enumMembers(string $enum, string $prefix): array
+	{
+		foreach (glob(__DIR__ . '/../../../../turbo-ext/src/*.h') ?: [] as $header) {
+			$code = (string) file_get_contents($header);
+			if (preg_match('/enum\s+' . preg_quote($enum, '/') . '\b[^{]*\{(.*?)\}/s', $code, $m) !== 1) {
+				continue;
+			}
+			preg_match_all('/\b(' . preg_quote($prefix, '/') . '(\w+))\b/', (string) preg_replace('~/\*.*?\*/~s', '', $m[1]), $matches, PREG_SET_ORDER);
+			$members = [];
+			foreach ($matches as $match) {
+				$members[$match[1]] = $match[2];
+			}
+			return $members;
+		}
+		throw new CompileError(sprintf('enum %s not found', $enum));
 	}
 
 	/** drops one pair of enclosing parentheses (`if ((a == b))` warns) */
@@ -580,18 +882,17 @@ final class Compiler
 						$lines[] = sprintf('%s = &%s_default;', $name, $name);
 					}
 					if ($param->class !== null) {
-						$parse[] = sprintf('Z_PARAM_OBJECT_OF_CLASS%s(%s, %s)', $param->nullable ? '_OR_NULL' : '', $name, $this->classEntry($param->class, null));
+						// parsed as any object, then checked against the class
+						// (instanceCheck() accepts the native class and the twin)
+						$parse[] = sprintf('Z_PARAM_OBJECT%s(%s)', $param->nullable ? '_OR_NULL' : '', $name);
+						$after[] = sprintf('if (%s != NULL && UNEXPECTED(!%s)) { zend_argument_type_error(%d, "must be of type %%s, %%s given", "%s", zend_zval_value_name(%s)); RETURN_THROWS(); }', $name, $this->instanceCheck($name, $param->class, $param->nullable), $param->position + 1, addcslashes($param->describe, '\\"'), $name);
 						if ($param->nullable) {
 							$lines[] = sprintf('zval %s_null;', $name);
 							$lines[] = sprintf('ZVAL_NULL(&%s_null);', $name);
 							$after[] = sprintf('if (%s == NULL) %s = &%s_null;', $name, $name, $name);
 						}
-					} elseif ($param->isArray) {
-						$parse[] = sprintf('Z_PARAM_ARRAY(%s)', $name);
-					} elseif ($param->declared->isString()->yes()) {
-						throw new CompileError('string parameters are not supported yet');
 					} else {
-						$parse[] = sprintf('Z_PARAM_ZVAL(%s)', $name);
+						$this->scalarParamGlue($param, $name, $lines, $parse, $after);
 					}
 					$args[] = $name;
 			}
@@ -648,6 +949,64 @@ final class Compiler
 		return implode("\n", $out);
 	}
 
+	/**
+	 * The ZPP of a zval-lowered parameter that is not an object: the engine's
+	 * own macro for its type, so a weak-mode caller gets the same coercions a
+	 * PHP function would apply, and a borrowed zval over the parsed value.
+	 *
+	 * @param list<string> $lines
+	 * @param list<string> $parse
+	 * @param list<string> $after
+	 */
+	private function scalarParamGlue(ParamInfo $param, string $name, array &$lines, array &$parse, array &$after): void
+	{
+		$declared = TypeCombinator::removeNull($param->declared);
+		$orNull = $param->nullable ? '_OR_NULL' : '';
+		$nullNormalize = static function () use ($name, &$lines, &$after): void {
+			$lines[] = sprintf('zval %s_null;', $name);
+			$lines[] = sprintf('ZVAL_NULL(&%s_null);', $name);
+			$after[] = sprintf('if (%s == NULL) %s = &%s_null;', $name, $name, $name);
+		};
+		if ($param->declared instanceof MixedType) {
+			$parse[] = sprintf('Z_PARAM_ZVAL(%s)', $name);
+			return;
+		}
+		if ($declared->isArray()->yes()) {
+			$parse[] = sprintf('Z_PARAM_ARRAY%s(%s)', $orNull, $name);
+			if ($param->nullable) {
+				$nullNormalize();
+			}
+			return;
+		}
+		if ($declared->isString()->yes()) {
+			$lines[] = sprintf('zend_string *%s_str = NULL;', $name);
+			$lines[] = sprintf('zval %s_zv;', $name);
+			$parse[] = sprintf('Z_PARAM_STR%s(%s_str)', $orNull, $name);
+			$after[] = sprintf('if (%s_str != NULL) { ZVAL_STR(&%s_zv, %s_str); %s = &%s_zv; }', $name, $name, $name, $name, $name);
+			if ($param->nullable) {
+				$nullNormalize();
+			}
+			return;
+		}
+		if ($param->nullable && ($declared->isInteger()->yes() || $declared->isBoolean()->yes() || $declared->isFloat()->yes())) {
+			[$macro, $ctype, $set] = $declared->isInteger()->yes() ? ['LONG', 'zend_long', 'ZVAL_LONG'] : ($declared->isBoolean()->yes() ? ['BOOL', 'bool', 'ZVAL_BOOL'] : ['DOUBLE', 'double', 'ZVAL_DOUBLE']);
+			$lines[] = sprintf('%s %s_raw = 0;', $ctype, $name);
+			$lines[] = sprintf('bool %s_isNull = true;', $name);
+			$lines[] = sprintf('zval %s_zv;', $name);
+			$parse[] = sprintf('Z_PARAM_%s_OR_NULL(%s_raw, %s_isNull)', $macro, $name, $name);
+			$after[] = sprintf('if (%s != NULL || ZEND_NUM_ARGS() > %d) { if (%s_isNull) { ZVAL_NULL(&%s_zv); } else { %s(&%s_zv, %s_raw); } %s = &%s_zv; }', $name, $param->position, $name, $name, $set, $name, $name, $name, $name);
+			return;
+		}
+		if ($declared->isFloat()->yes()) {
+			$lines[] = sprintf('double %s_raw = 0;', $name);
+			$lines[] = sprintf('zval %s_zv;', $name);
+			$parse[] = sprintf('Z_PARAM_DOUBLE(%s_raw)', $name);
+			$after[] = sprintf('if (ZEND_NUM_ARGS() > %d) { ZVAL_DOUBLE(&%s_zv, %s_raw); %s = &%s_zv; }', $param->position, $name, $name, $name, $name);
+			return;
+		}
+		throw new CompileError(sprintf('parameter $%s of type %s has no argument parsing yet', $param->name, $param->describe));
+	}
+
 	private function label(MethodInfo $method): string
 	{
 		return $method->unit->className . '::' . $method->name;
@@ -685,6 +1044,12 @@ final class Compiler
 		}
 		if (is_bool($value)) {
 			return sprintf('ZVAL_BOOL(&%s, %s);', $cVar, $value ? 'true' : 'false');
+		}
+		if (is_string($value)) {
+			return sprintf('ZVAL_COPY_VALUE(&%s, %s);', $cVar, $this->literal($value)->code);
+		}
+		if (is_float($value)) {
+			return sprintf('ZVAL_DOUBLE(&%s, %s);', $cVar, var_export($value, true));
 		}
 		throw new CompileError('unsupported default value');
 	}
@@ -780,31 +1145,79 @@ final class Compiler
 	 *
 	 * @param list<ParamInfo> $params
 	 * @param list<Stmt>|Expr $body
+	 * @param array<string, LocalVariable> $captures a closure's captured variables
 	 */
-	private function declareLocals(FunctionContext $f, array $params, array|Expr $body): void
+	private function declareLocals(FunctionContext $f, array $params, array|Expr $body, array $captures = []): void
 	{
 		$bodyNodes = $body instanceof Expr ? [$body] : $body;
 		$assigned = [];
 		$foreachOnly = [];
+		$refs = [];
 		$staticVars = [];
-		foreach ($this->finder->find($bodyNodes, static fn (Node $n): bool => true) as $node) {
-			if ($node instanceof Expr\ArrowFunction || $node instanceof Expr\Closure) {
+		foreach ($this->scopeNodes($bodyNodes) as $node) {
+			if ($node instanceof Expr\Closure) {
+				foreach ($node->uses as $use) {
+					if (!$use->byRef || !is_string($use->var->name)) {
+						continue;
+					}
+
+					$refs[$use->var->name] = true;
+				}
+				continue;
+			}
+			if ($node instanceof Expr\AssignRef) {
+				if (!$node->var instanceof Expr\Variable || !is_string($node->var->name)) {
+					throw new CompileError(sprintf('reference assignment to a non-variable (line %d)', $node->getStartLine()));
+				}
+				$refs[$node->var->name] = true;
+				$assigned[$node->var->name][] = new MixedType();
 				continue;
 			}
 			if ($node instanceof Expr\Assign || $node instanceof Expr\AssignOp) {
 				$var = $node->var;
 				if ($var instanceof Expr\Variable && is_string($var->name)) {
 					$assigned[$var->name][] = $node instanceof Expr\Assign ? $this->unit()->oracle->nativeType($node->expr) : $this->unit()->oracle->nativeType($node);
-				} elseif ($var instanceof Expr\ArrayDimFetch && $var->var instanceof Expr\Variable && is_string($var->var->name)) {
-					$assigned[$var->var->name][] = new ArrayType(new MixedType(), new MixedType());
+				} elseif ($var instanceof Expr\ArrayDimFetch || $var instanceof Expr\PropertyFetch) {
+					$root = $var;
+					while ($root instanceof Expr\ArrayDimFetch) {
+						$root = $root->var;
+					}
+					if ($var instanceof Expr\ArrayDimFetch && $root instanceof Expr\Variable && is_string($root->name) && $root->name !== 'this') {
+						$assigned[$root->name][] = new ArrayType(new MixedType(), new MixedType());
+					}
+				} elseif ($var instanceof Expr\List_ || $var instanceof Expr\Array_) {
+					foreach ($this->finder->findInstanceOf([$var], Expr\Variable::class) as $item) {
+						if (!is_string($item->name)) {
+							continue;
+						}
+
+						$assigned[$item->name][] = new MixedType();
+					}
 				}
 			}
 			if ($node instanceof Stmt\Foreach_) {
-				if ($node->keyVar !== null || $node->byRef) {
-					throw new CompileError(sprintf('foreach with a key or by reference is not supported (line %d)', $node->getStartLine()));
+				$iterable = $this->unit()->oracle->nativeType($node->expr);
+				if ($node->keyVar !== null) {
+					if (!$node->keyVar instanceof Expr\Variable || !is_string($node->keyVar->name)) {
+						throw new CompileError('foreach needs a plain key variable');
+					}
+					$assigned[$node->keyVar->name][] = $iterable->isArray()->yes() ? $iterable->getIterableKeyType() : new MixedType();
 				}
 				if ($node->valueVar instanceof Expr\Variable && is_string($node->valueVar->name)) {
-					$foreachOnly[$node->valueVar->name] = true;
+					if ($node->byRef) {
+						$refs[$node->valueVar->name] = true;
+						$assigned[$node->valueVar->name][] = new MixedType();
+					} else {
+						$foreachOnly[$node->valueVar->name] = true;
+					}
+				} elseif ($node->valueVar instanceof Expr\List_ || $node->valueVar instanceof Expr\Array_) {
+					foreach ($this->finder->findInstanceOf([$node->valueVar], Expr\Variable::class) as $item) {
+						if (!is_string($item->name)) {
+							continue;
+						}
+
+						$assigned[$item->name][] = new MixedType();
+					}
 				}
 			}
 			if (!($node instanceof Stmt\Static_)) {
@@ -819,28 +1232,31 @@ final class Compiler
 			}
 		}
 
-		$paramNames = [];
-		foreach ($params as $param) {
-			$paramNames[$param->name] = $param;
-		}
-
 		foreach ($params as $param) {
 			if ($param->variadic) {
 				$f->locals[$param->name] = new LocalVariable('vector', 'p_' . $param->name, $param->class);
-				if (isset($assigned[$param->name])) {
+				if (isset($assigned[$param->name]) || isset($refs[$param->name])) {
 					throw new CompileError('reassigning a variadic parameter is not supported');
 				}
 				continue;
 			}
+			$cName = 'l_' . $param->name;
+			if (isset($refs[$param->name])) {
+				if ($param->kind === 'callable') {
+					throw new CompileError('binding a callable parameter by reference is not supported');
+				}
+				$f->line(sprintf('zv::Val %s = %s;', $cName, $this->paramAsVal($param)));
+				$f->locals[$param->name] = new LocalVariable('ref', $cName . '.raw()');
+				continue;
+			}
 			if (isset($assigned[$param->name]) || isset($foreachOnly[$param->name])) {
 				// a reassigned parameter gets a local copy
-				$kind = in_array($param->kind, ['long', 'bool'], true) ? $param->kind : 'zval';
 				if ($param->kind === 'callable') {
 					throw new CompileError('reassigning a callable parameter is not supported');
 				}
-				$cName = 'l_' . $param->name;
+				$kind = in_array($param->kind, ['long', 'bool'], true) && $this->sameScalarKind($param->kind, $assigned[$param->name] ?? []) ? $param->kind : 'zval';
 				if ($kind === 'zval') {
-					$f->line(sprintf('zv::Val %s = zv::Val::copyOf(zv::Ref(p_%s));', $cName, $param->name));
+					$f->line(sprintf('zv::Val %s = %s;', $cName, $this->paramAsVal($param)));
 				} else {
 					$f->line(sprintf('%s %s = p_%s;', $kind === 'long' ? 'zend_long' : 'bool', $cName, $param->name));
 				}
@@ -860,6 +1276,16 @@ final class Compiler
 			}
 		}
 
+		foreach ($captures as $name => $capture) {
+			if ($capture->kind === 'ref' || (!isset($assigned[$name]) && !isset($foreachOnly[$name]) && !isset($refs[$name]))) {
+				$f->locals[$name] = $capture;
+				continue;
+			}
+			// a by-value capture the body writes: its own copy, like the closure's static variable
+			$f->line(sprintf('zv::Val l_%s = zv::Val::copyOf(zv::Ref(%s).deref());', $name, $capture->cName));
+			$f->locals[$name] = isset($refs[$name]) ? new LocalVariable('ref', 'l_' . $name . '.raw()') : new LocalVariable('zval', 'l_' . $name);
+		}
+
 		foreach ($staticVars as $name => $type) {
 			if (isset($assigned[$name])) {
 				throw new CompileError(sprintf('static $%s is written to; only read-only constant statics are supported', $name));
@@ -870,9 +1296,17 @@ final class Compiler
 			$f->locals[$name] = new LocalVariable('constarray', '', isArray: true, constant: $type);
 		}
 
+		foreach (array_keys($refs) as $name) {
+			if (isset($f->locals[$name])) {
+				continue;
+			}
+			$f->line(sprintf('zv::Val l_%s;', $name));
+			$f->locals[$name] = new LocalVariable('ref', 'l_' . $name . '.raw()');
+		}
+
 		foreach (array_keys($foreachOnly) as $name) {
-			// a parameter got its copy above, an otherwise assigned variable is declared below
-			if (isset($paramNames[$name]) || isset($assigned[$name])) {
+			// a parameter or capture got its copy above, an otherwise assigned variable is declared below
+			if (isset($f->locals[$name]) || isset($assigned[$name])) {
 				continue;
 			}
 			$f->line(sprintf('zval *l_%s = NULL;', $name));
@@ -881,8 +1315,11 @@ final class Compiler
 
 		$lists = $this->nonEscapingLists($bodyNodes, array_keys($assigned));
 		foreach ($assigned as $name => $types) {
-			if (isset($paramNames[$name]) || $name === 'this') {
+			if (isset($f->locals[$name]) || $name === 'this') {
 				continue;
+			}
+			if (isset($foreachOnly[$name])) {
+				$types[] = new MixedType();
 			}
 			if (isset($lists[$name])) {
 				$f->line(sprintf('pgrt::ValVec l_%s;', $name));
@@ -909,6 +1346,72 @@ final class Compiler
 		$f->line('zval this_zv;');
 		$f->line(sprintf('ZVAL_OBJ(&this_zv, %s);', $f->self));
 		$f->line('(void) this_zv;');
+	}
+
+	/** @param list<Type> $assignedTypes */
+	private function sameScalarKind(string $kind, array $assignedTypes): bool
+	{
+		foreach ($assignedTypes as $type) {
+			if ($kind === 'long' && !$type->isInteger()->yes()) {
+				return false;
+			}
+			if ($kind === 'bool' && !$type->isBoolean()->yes()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/** an owned copy of a parameter as a zv::Val initializer */
+	private function paramAsVal(ParamInfo $param): string
+	{
+		switch ($param->kind) {
+			case 'long':
+				return sprintf('zv::Val::integer(p_%s)', $param->name);
+			case 'bool':
+				return sprintf('zv::Val::boolean(p_%s)', $param->name);
+			default:
+				return sprintf('zv::Val::copyOf(zv::Ref(p_%s))', $param->name);
+		}
+	}
+
+	/**
+	 * Every node of a function body that belongs to its own scope: nested
+	 * closures, arrow functions and classes are reported but not entered.
+	 *
+	 * @param list<Node> $nodes
+	 * @return list<Node>
+	 */
+	private function scopeNodes(array $nodes): array
+	{
+		$out = [];
+		$stack = array_reverse($nodes);
+		while ($stack !== []) {
+			$node = array_pop($stack);
+			$out[] = $node;
+			if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction || $node instanceof Stmt\Class_ || $node instanceof Expr\New_ && $node->class instanceof Stmt\Class_) {
+				continue;
+			}
+			$children = [];
+			foreach ($node->getSubNodeNames() as $name) {
+				$sub = $node->$name;
+				if ($sub instanceof Node) {
+					$children[] = $sub;
+				} elseif (is_array($sub)) {
+					foreach ($sub as $item) {
+						if (!($item instanceof Node)) {
+							continue;
+						}
+
+						$children[] = $item;
+					}
+				}
+			}
+			foreach (array_reverse($children) as $child) {
+				$stack[] = $child;
+			}
+		}
+		return $out;
 	}
 
 	/**
@@ -1016,7 +1519,196 @@ final class Compiler
 		if ($stmt instanceof Stmt\Nop) {
 			return;
 		}
+		if ($stmt instanceof Stmt\While_) {
+			$f->open('while (true)');
+			$f->line(sprintf('if (!(%s)) break;', $this->condition($f, $stmt->cond)));
+			$this->statements($f, $stmt->stmts);
+			$f->close();
+			return;
+		}
+		if ($stmt instanceof Stmt\Do_) {
+			if ($this->finder->findFirst($stmt->stmts, static fn (Node $n): bool => $n instanceof Stmt\Continue_) !== null) {
+				throw new CompileError('continue inside do-while is not supported');
+			}
+			$f->open('while (true)');
+			$this->statements($f, $stmt->stmts);
+			$f->line(sprintf('if (!(%s)) break;', $this->condition($f, $stmt->cond)));
+			$f->close();
+			return;
+		}
+		if ($stmt instanceof Stmt\For_) {
+			$f->open('');
+			foreach ($stmt->init as $init) {
+				$this->expr($f, $init);
+			}
+			$f->open('for (;;)');
+			foreach ($stmt->cond as $i => $cond) {
+				$c = $this->condition($f, $cond);
+				if ($i !== count($stmt->cond) - 1) {
+					continue;
+				}
+
+				$f->line(sprintf('if (!(%s)) break;', $c));
+			}
+			$this->statements($f, $stmt->stmts);
+			// `continue` must still run the loop step: the step is emitted in a
+			// lambda-free way by forbidding continue in compiled for loops
+			if ($this->finder->findFirst($stmt->stmts, static fn (Node $n): bool => $n instanceof Stmt\Continue_) !== null) {
+				throw new CompileError('continue inside for is not supported');
+			}
+			foreach ($stmt->loop as $loop) {
+				$this->expr($f, $loop);
+			}
+			$f->close();
+			$f->close();
+			return;
+		}
+		if ($stmt instanceof Stmt\Switch_) {
+			$this->switchStatement($f, $stmt);
+			return;
+		}
+		if ($stmt instanceof Stmt\TryCatch) {
+			$this->tryStatement($f, $stmt);
+			return;
+		}
+		if ($stmt instanceof Stmt\Unset_) {
+			foreach ($stmt->vars as $var) {
+				$this->unsetTarget($f, $var);
+			}
+			return;
+		}
 		throw new CompileError(sprintf('unsupported statement %s on line %d', $stmt::class, $stmt->getStartLine()));
+	}
+
+	/**
+	 * switch: the subject evaluated once, the matching case found by loose
+	 * comparison in order, then a C++ switch over the case index keeps the
+	 * fall-through and `break` semantics.
+	 */
+	private function switchStatement(FunctionContext $f, Stmt\Switch_ $stmt): void
+	{
+		if ($this->finder->findFirst($stmt->cases, static fn (Node $n): bool => $n instanceof Stmt\Continue_ || ($n instanceof Stmt\Break_ && $n->num !== null)) !== null) {
+			throw new CompileError('continue/break N inside switch is not supported');
+		}
+		$f->open('');
+		$subject = $this->stabilize($f, $this->expr($f, $stmt->cond));
+		$index = $f->temp('sw');
+		$f->line(sprintf('int %s = -1;', $index));
+		$default = null;
+		foreach (array_values($stmt->cases) as $i => $case) {
+			if ($case->cond === null) {
+				$default = $i;
+				continue;
+			}
+			$f->open(sprintf('if (%s == -1)', $index));
+			$value = $this->expr($f, $case->cond);
+			$f->line(sprintf('if (%s) %s = %d;', $this->looseEquals($f, $subject, $value), $index, $i));
+			$f->close();
+		}
+		if ($default !== null) {
+			$f->line(sprintf('if (%s == -1) %s = %d;', $index, $index, $default));
+		}
+		$f->open(sprintf('switch (%s)', $index));
+		foreach (array_values($stmt->cases) as $i => $case) {
+			$f->line(sprintf('case %d: {', $i));
+			$this->statements($f, $case->stmts);
+			$f->line('}');
+			$f->line('[[fallthrough]];');
+		}
+		$f->line('default: break;');
+		$f->close();
+		$f->close();
+	}
+
+	/**
+	 * try/catch: inside the try body a pending exception jumps to the
+	 * handler, which takes it over if it is an instance of a caught class
+	 * and propagates it otherwise.
+	 */
+	private function tryStatement(FunctionContext $f, Stmt\TryCatch $stmt): void
+	{
+		if ($stmt->finally !== null) {
+			throw new CompileError('finally is not supported yet');
+		}
+		$label = sprintf('catch_%s', $f->temp('c'));
+		$outerFail = $f->fail;
+		$f->open('');
+		$f->fail = sprintf('goto %s;', $label);
+		$f->open('');
+		$this->statements($f, $stmt->stmts);
+		$f->close();
+		$f->fail = $outerFail;
+		$f->line(sprintf('if (false) {'));
+		$f->line(sprintf('%s:', $label));
+		$f->open('');
+		$f->line('zend_object *thrown = EG(exception);');
+		$caught = $f->temp('caught');
+		$f->line(sprintf('bool %s = false;', $caught));
+		foreach ($stmt->catches as $catch) {
+			$checks = [];
+			foreach ($catch->types as $type) {
+				$checks[] = $this->catchCheck(ltrim($type->toString(), '\\\\'));
+			}
+			$f->open(sprintf('if (!%s && (%s))', $caught, implode(' || ', $checks)));
+			$f->line(sprintf('%s = true;', $caught));
+			$f->line('zval exception;');
+			$f->line('ZVAL_OBJ_COPY(&exception, thrown);');
+			$f->line('zend_clear_exception();');
+			if ($catch->var !== null) {
+				$this->assignTo($f, $catch->var, '&exception');
+			}
+			$f->line('zval_ptr_dtor(&exception);');
+			$this->statements($f, $catch->stmts);
+			$f->close();
+		}
+		$f->line(sprintf('if (!%s) %s', $caught, $outerFail));
+		$f->close();
+		$f->line('}');
+		$f->close();
+	}
+
+	private function catchCheck(string $class): string
+	{
+		switch (strtolower($class)) {
+			case 'throwable':
+				return 'instanceof_function(thrown->ce, zend_ce_throwable)';
+			case 'exception':
+				return 'instanceof_function(thrown->ce, zend_ce_exception)';
+			case 'error':
+				return 'instanceof_function(thrown->ce, zend_ce_error)';
+		}
+		$site = $this->site('pgrt::ClassSite', 'cls_' . $class);
+		// catch never autoloads: an unloaded class catches nothing
+		return sprintf('pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(%s, "%s", %d))', $site, addcslashes($class, '\\'), strlen($class));
+	}
+
+	private function unsetTarget(FunctionContext $f, Expr $var): void
+	{
+		if ($var instanceof Expr\Variable && is_string($var->name)) {
+			$local = $f->locals[$var->name] ?? null;
+			if ($local === null || !in_array($local->kind, ['zval', 'ref'], true)) {
+				throw new CompileError(sprintf('unset($%s) of a variable without a zval home', $var->name));
+			}
+			$f->line(sprintf('%s.release();', $local->kind === 'zval' ? $local->cName : $this->refStorage($local)));
+			return;
+		}
+		if ($var instanceof Expr\ArrayDimFetch && $var->dim !== null) {
+			$f->open('');
+			$key = $this->stabilize($f, $this->expr($f, $var->dim));
+			$container = $this->writablePtr($f, $var->var, false);
+			$f->open(sprintf('if (Z_TYPE_P(%s) == IS_ARRAY)', $container));
+			$f->line(sprintf('SEPARATE_ARRAY(%s);', $container));
+			if ($key->kind === 'long') {
+				$f->line(sprintf('zend_hash_index_del(Z_ARRVAL_P(%s), %s);', $container, $key->code));
+			} else {
+				$k = $this->asZval($f, $key);
+				$f->line(sprintf('if (Z_TYPE_P(%s) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(%s), Z_STR_P(%s)); } else if (Z_TYPE_P(%s) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(%s), Z_LVAL_P(%s)); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); %s }', $k, $container, $k, $k, $container, $k, $f->fail));
+			}
+			$f->close();
+			$f->close();
+			return;
+		}
+		throw new CompileError('unset() of this target is not supported');
 	}
 
 	private function returnStatement(FunctionContext $f, ?Expr $expr): void
@@ -1036,7 +1728,7 @@ final class Compiler
 		if ($f->isClosure) {
 			$z = $this->asZval($f, $value);
 			if (!$proven) {
-				$this->emitTypeCheck($f, $z, $return->describe, $return->declared, $return->class, $return->nullable, sprintf('pgrt::throwReturnType("%s", "%s", %s); return;', addcslashes($f->label, '\\'), addcslashes($return->describe, '\\'), $z));
+				$this->emitTypeCheck($f, $z, $return->describe, $return->declared, sprintf('pgrt::throwReturnType("%s", "%s", %s); return;', addcslashes($f->label, '\\'), addcslashes($return->describe, '\\'), $z));
 			}
 			if ($value->temp !== null) {
 				$f->line(sprintf('*return_value = %s.take();', $value->temp));
@@ -1057,7 +1749,7 @@ final class Compiler
 			case 'zval':
 				$z = $this->asZval($f, $value);
 				if (!$proven) {
-					$this->emitTypeCheck($f, $z, $return->describe, $return->declared, $return->class, $return->nullable, sprintf('pgrt::throwReturnType("%s", "%s", %s); return false;', addcslashes($f->label, '\\'), addcslashes($return->describe, '\\'), $z));
+					$this->emitTypeCheck($f, $z, $return->describe, $return->declared, sprintf('pgrt::throwReturnType("%s", "%s", %s); return false;', addcslashes($f->label, '\\'), addcslashes($return->describe, '\\'), $z));
 				}
 				if ($value->temp !== null) {
 					$f->line(sprintf('*ret = %s.take();', $value->temp));
@@ -1104,63 +1796,173 @@ final class Compiler
 
 	private function foreachStatement(FunctionContext $f, Stmt\Foreach_ $stmt): void
 	{
-		$valueVar = $stmt->valueVar;
-		if (!$valueVar instanceof Expr\Variable || !is_string($valueVar->name)) {
-			throw new CompileError('foreach needs a plain value variable');
-		}
-		$local = $f->locals[$valueVar->name] ?? null;
-		if ($local === null) {
-			throw new CompileError(sprintf('foreach variable $%s has no home', $valueVar->name));
-		}
 		$f->open('');
 		$source = $stmt->expr;
-		if ($source instanceof Expr\Variable && is_string($source->name) && ($f->locals[$source->name] ?? null)?->kind === 'vector') {
+		if (!$stmt->byRef && $source instanceof Expr\Variable && is_string($source->name) && ($f->locals[$source->name] ?? null)?->kind === 'vector') {
 			$vector = $f->locals[$source->name];
 			$i = $f->temp('i');
 			$f->open(sprintf('for (uint32_t %s = 0; %s < %s_count; %s++)', $i, $i, $vector->cName, $i));
-			$this->bindForeachValue($f, $local, sprintf('zv::Ref(&%s[%s]).deref().raw()', $vector->cName, $i));
+			if ($stmt->keyVar !== null) {
+				$key = $f->temp('k');
+				$f->line(sprintf('zval %s;', $key));
+				$f->line(sprintf('ZVAL_LONG(&%s, (zend_long) %s);', $key, $i));
+				$this->assignTo($f, $stmt->keyVar, '&' . $key, true);
+			}
+			$this->assignTo($f, $stmt->valueVar, sprintf('zv::Ref(&%s[%s]).deref().raw()', $vector->cName, $i), true);
 			$this->statements($f, $stmt->stmts);
 			$f->close();
 			$f->close();
 			return;
 		}
-		$array = $this->expr($f, $source);
-		if ($array->kind !== 'zval') {
-			throw new CompileError('foreach over a non-array');
-		}
-		$held = $f->temp('a');
-		$f->line(sprintf('zv::Val %s = zv::Val::copyOf(zv::Ref(%s).deref());', $held, $array->code));
-		if (!$array->isArray && !$this->unit()->oracle->nativeType($source)->isArray()->yes()) {
-			// not proven an array: the VM's warning for a scalar; iterating an
-			// object's properties is outside the compiled subset
-			$f->open(sprintf('if (UNEXPECTED(Z_TYPE_P(%s.raw()) != IS_ARRAY))', $held));
-			$f->line(sprintf('if (Z_TYPE_P(%s.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); %s }', $held, $f->fail));
-			$f->line(sprintf('zend_error(E_WARNING, "foreach() argument must be of type array|object, %%s given", zend_zval_value_name(%s.raw()));', $held));
+
+		$ht = $f->temp('ht');
+		if ($stmt->byRef) {
+			// over the variable's own array, separated first: each element
+			// becomes a reference the value variable is bound to
+			if (!$source instanceof Expr\Variable || !is_string($source->name) || !in_array(($f->locals[$source->name] ?? null)?->kind, ['zval', 'ref'], true)) {
+				throw new CompileError('foreach by reference over anything but a local array is not supported');
+			}
+			$container = $f->locals[$source->name];
+			$arr = $f->temp('a');
+			$f->line(sprintf('zval *%s = zv::Ref(%s).deref().raw();', $arr, $container->kind === 'zval' ? $container->cName . '.raw()' : $container->cName));
+			$f->open(sprintf('if (UNEXPECTED(Z_TYPE_P(%s) != IS_ARRAY))', $arr));
+			$f->line(sprintf('zend_error(E_WARNING, "foreach() argument must be of type array|object, %%s given", zend_zval_value_name(%s));', $arr));
 			$f->failIf('EG(exception)');
-			$f->line(sprintf('%s = zv::Val(zv::Arr::empty());', $held));
-			$f->close();
+			$f->close(' else {');
+			$f->open('');
+			$f->line(sprintf('SEPARATE_ARRAY(%s);', $arr));
+			$f->line(sprintf('HashTable *%s = Z_ARRVAL_P(%s);', $ht, $arr));
+		} else {
+			$array = $this->expr($f, $source);
+			if ($array->kind !== 'zval') {
+				throw new CompileError('foreach over a non-array');
+			}
+			$held = $f->temp('a');
+			$f->line(sprintf('zv::Val %s = zv::Val::copyOf(zv::Ref(%s).deref());', $held, $array->code));
+			if (!$array->isArray && !$this->unit()->oracle->nativeType($source)->isArray()->yes()) {
+				// not proven an array: the VM's warning for a scalar; iterating an
+				// object's properties is outside the compiled subset
+				$f->open(sprintf('if (UNEXPECTED(Z_TYPE_P(%s.raw()) != IS_ARRAY))', $held));
+				$f->line(sprintf('if (Z_TYPE_P(%s.raw()) == IS_OBJECT) { zend_throw_error(NULL, "phpstan_turbo codegen: foreach over an object is not compiled"); %s }', $held, $f->fail));
+				$f->line(sprintf('zend_error(E_WARNING, "foreach() argument must be of type array|object, %%s given", zend_zval_value_name(%s.raw()));', $held));
+				$f->failIf('EG(exception)');
+				$f->line(sprintf('%s = zv::Val(zv::Arr::empty());', $held));
+				$f->close();
+			}
+			$f->line(sprintf('HashTable *%s = Z_ARRVAL_P(%s.raw());', $ht, $held));
 		}
 		$v = $f->temp('v');
+		$num = $f->temp('n');
+		$str = $f->temp('s');
 		$f->line(sprintf('zval *%s;', $v));
-		$f->open(sprintf('ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(%s.raw()), %s)', $held, $v));
-		$this->bindForeachValue($f, $local, sprintf('zv::Ref(%s).deref().raw()', $v));
+		$f->line(sprintf('zend_ulong %s;', $num));
+		$f->line(sprintf('zend_string *%s;', $str));
+		$f->open(sprintf('ZEND_HASH_FOREACH_KEY_VAL(%s, %s, %s, %s)', $ht, $num, $str, $v));
+		$f->line(sprintf('(void) %s; (void) %s;', $num, $str));
+		if ($stmt->keyVar !== null) {
+			$key = $f->temp('k');
+			$f->line(sprintf('zval %s;', $key));
+			$f->line(sprintf('if (%s != NULL) { ZVAL_STR(&%s, %s); } else { ZVAL_LONG(&%s, (zend_long) %s); }', $str, $key, $str, $key, $num));
+			$this->assignTo($f, $stmt->keyVar, '&' . $key, true);
+		}
+		if ($stmt->byRef) {
+			if (!$stmt->valueVar instanceof Expr\Variable || !is_string($stmt->valueVar->name) || ($f->locals[$stmt->valueVar->name] ?? null)?->kind !== 'ref') {
+				throw new CompileError('foreach by reference needs a plain variable');
+			}
+			$f->line(sprintf('ZVAL_MAKE_REF(%s);', $v));
+			$f->line(sprintf('%s = zv::Val::copyOf(zv::Ref(%s));', $this->refStorage($f->locals[$stmt->valueVar->name]), $v));
+		} else {
+			$this->assignTo($f, $stmt->valueVar, sprintf('zv::Ref(%s).deref().raw()', $v), true);
+		}
 		$this->statements($f, $stmt->stmts);
 		$f->close();
 		$f->line('ZEND_HASH_FOREACH_END();');
+		if ($stmt->byRef) {
+			$f->close();
+			$f->line('}');
+		}
 		$f->close();
 	}
 
-	private function bindForeachValue(FunctionContext $f, LocalVariable $local, string $zvalPtr): void
+	/** the zv::Val a `ref` local of this function is stored in */
+	private function refStorage(LocalVariable $local): string
 	{
-		switch ($local->kind) {
-			case 'param':
-				$f->line(sprintf('%s = %s;', $local->cName, $zvalPtr));
-				return;
-			case 'zval':
-				$f->line(sprintf('%s = zv::Val::copyOf(zv::Ref(%s));', $local->cName, $zvalPtr));
-				return;
+		if (!str_ends_with($local->cName, '.raw()')) {
+			throw new CompileError('rebinding a captured reference is not supported');
 		}
-		throw new CompileError('foreach into a scalar variable is not supported');
+		return substr($local->cName, 0, -strlen('.raw()'));
+	}
+
+	/**
+	 * Stores a value (a borrowed `zval *`) into an assignment target: a local
+	 * of any home, or a list()/[] destructuring of it. $bind lets a variable
+	 * only ever bound by foreach borrow the element instead of copying it.
+	 */
+	private function assignTo(FunctionContext $f, Expr $target, string $zvalPtr, bool $bind = false): void
+	{
+		if ($target instanceof Expr\Variable && is_string($target->name)) {
+			$local = $f->locals[$target->name] ?? null;
+			if ($local === null) {
+				throw new CompileError(sprintf('$%s has no home', $target->name));
+			}
+			switch ($local->kind) {
+				case 'param':
+					if (!$bind) {
+						throw new CompileError(sprintf('$%s is not assignable', $target->name));
+					}
+					$f->line(sprintf('%s = %s;', $local->cName, $zvalPtr));
+					return;
+				case 'zval':
+					$f->line(sprintf('%s = zv::Val::copyOf(zv::Ref(%s));', $local->cName, $zvalPtr));
+					return;
+				case 'ref':
+					$f->line(sprintf('zv::Ref(zv::Ref(%s).deref().raw()).assign(zv::Val::copyOf(zv::Ref(%s)));', $local->cName, $zvalPtr));
+					return;
+				case 'long':
+					$f->line(sprintf('%s = %s;', $local->cName, $this->asLong($f, new Value('zval', $zvalPtr), 'int', $f->label)));
+					return;
+				case 'bool':
+					$f->line(sprintf('if (UNEXPECTED(Z_TYPE_P(%s) != IS_TRUE && Z_TYPE_P(%s) != IS_FALSE)) { zend_type_error("%s: bool expected, %%s given", zend_zval_value_name(%s)); %s }', $zvalPtr, $zvalPtr, addcslashes($f->label, '\\'), $zvalPtr, $f->fail));
+					$f->line(sprintf('%s = Z_TYPE_P(%s) == IS_TRUE;', $local->cName, $zvalPtr));
+					return;
+			}
+			throw new CompileError(sprintf('$%s cannot be assigned', $target->name));
+		}
+		if ($target instanceof Expr\List_ || $target instanceof Expr\Array_) {
+			// list(...) = $array: each item from its key or position; a
+			// missing key warns and reads null, a non-array reads null throughout
+			$arr = $f->temp('la');
+			$f->line(sprintf('zval *%s = %s;', $arr, $zvalPtr));
+			$position = 0;
+			foreach ($target->items as $item) {
+				if ($item === null) {
+					$position++;
+					continue;
+				}
+				if ($item->byRef || $item->unpack) {
+					throw new CompileError('by-reference list() items are not supported');
+				}
+				$e = $f->temp('le');
+				$f->line(sprintf('zval *%s = NULL;', $e));
+				if ($item->key === null) {
+					$f->line(sprintf('if (Z_TYPE_P(%s) == IS_ARRAY) { %s = zend_hash_index_find(Z_ARRVAL_P(%s), %d); if (%s == NULL) { pgrt::warnUndefinedIndex(%d); } }', $arr, $e, $arr, $position, $e, $position));
+					$position++;
+				} else {
+					$key = $this->expr($f, $item->key);
+					if ($key->kind === 'long') {
+						$f->line(sprintf('if (Z_TYPE_P(%s) == IS_ARRAY) { %s = zend_hash_index_find(Z_ARRVAL_P(%s), %s); if (%s == NULL) { pgrt::warnUndefinedIndex(%s); } }', $arr, $e, $arr, $key->code, $e, $key->code));
+					} else {
+						$k = $this->asZval($f, $key);
+						$f->line(sprintf('if (Z_TYPE_P(%s) == IS_ARRAY && Z_TYPE_P(%s) == IS_STRING) { %s = zend_symtable_find(Z_ARRVAL_P(%s), Z_STR_P(%s)); if (%s == NULL) { zend_error(E_WARNING, "Undefined array key \\"%%s\\"", Z_STRVAL_P(%s)); } }', $arr, $k, $e, $arr, $k, $e, $k));
+					}
+				}
+				$f->failIf('EG(exception)');
+				$f->line(sprintf('if (%s == NULL) %s = &EG(uninitialized_zval);', $e, $e));
+				$this->assignTo($f, $item->value, sprintf('zv::Ref(%s).deref().raw()', $e));
+			}
+			return;
+		}
+		throw new CompileError(sprintf('unsupported assignment target %s', $target::class));
 	}
 
 	// ---------------------------------------------------------------- expressions
@@ -1199,7 +2001,39 @@ final class Compiler
 			if (in_array($name, ['true', 'false'], true)) {
 				return Value::bool($name);
 			}
-			throw new CompileError(sprintf('constant %s is not supported', $name));
+			$values = $native->getConstantScalarValues();
+			if (count($values) === 1 && (is_int($values[0]) || is_string($values[0]) || is_bool($values[0]))) {
+				return is_int($values[0]) ? Value::long((string) $values[0]) : (is_bool($values[0]) ? Value::bool($values[0] ? 'true' : 'false') : $this->literal($values[0]));
+			}
+			// a constant whose value is not known statically
+			$t = $f->temp('cn');
+			$constant = ltrim($expr->name->toString(), '\\');
+			$f->line(sprintf('zval *%s = zend_get_constant_str("%s", %d);', $t, addcslashes($constant, '\\\\'), strlen($constant)));
+			$f->line(sprintf('if (UNEXPECTED(%s == NULL)) { zend_throw_error(NULL, "Undefined constant \\"%%s\\"", "%s"); %s }', $t, addcslashes($constant, '\\\\'), $f->fail));
+			return $this->narrowZval($t, '', $native);
+		}
+		if ($expr instanceof Expr\ClassConstFetch && $expr->name instanceof Node\Identifier && $expr->name->toLowerString() === 'class') {
+			if ($expr->class instanceof Node\Name && $expr->class->toLowerString() !== 'static') {
+				return $this->literal($this->className($expr->class));
+			}
+			$object = $expr->class instanceof Node\Name ? new Value('zval', '&this_zv') : $this->expr($f, $expr->class);
+			$t = $f->temp('cls');
+			$z = $this->asZval($f, $object);
+			$f->line(sprintf('if (UNEXPECTED(Z_TYPE_P(%s) != IS_OBJECT)) { zend_type_error("Cannot use \\"::class\\" on %%s", zend_zval_value_name(%s)); %s }', $z, $z, $f->fail));
+			$f->line(sprintf('zv::Val %s = zv::Val::string(Z_OBJCE_P(%s)->name);', $t, $z));
+			return new Value('zval', $t . '.raw()', $t);
+		}
+		if ($expr instanceof Expr\ClassConstFetch && $native->getConstantScalarValues() === []) {
+			// an array, enum case or otherwise non-scalar constant: the engine's own value
+			if (!$expr->class instanceof Node\Name || !$expr->name instanceof Node\Identifier) {
+				throw new CompileError('dynamic class constant fetch');
+			}
+			$class = $this->className($expr->class);
+			$ce = $this->classEntry($class, $f);
+			$t = $f->temp('cc');
+			$f->line(sprintf('zval *%s = pgrt::classConstant(%s, %s, %s);', $t, $ce, $this->literal($expr->name->toString())->code, $this->unit()->ce));
+			$f->failIf(sprintf('%s == NULL', $t));
+			return $this->narrowZval($t, '', $native);
 		}
 		if ($expr instanceof Expr\ClassConstFetch) {
 			$value = $this->constantValue($expr);
@@ -1212,7 +2046,10 @@ final class Compiler
 			if (is_bool($value)) {
 				return Value::bool($value ? 'true' : 'false');
 			}
-			throw new CompileError('only int/string/bool class constants are supported');
+			if ($value === null) {
+				return Value::null();
+			}
+			throw new CompileError('only int/string/bool/null class constants are supported');
 		}
 		if ($expr instanceof Expr\Array_) {
 			return $this->arrayLiteral($f, $expr);
@@ -1237,6 +2074,19 @@ final class Compiler
 		if ($expr instanceof Expr\AssignOp\BitwiseAnd || $expr instanceof Expr\AssignOp\BitwiseOr) {
 			return $this->bitwiseAssign($f, $expr);
 		}
+		if ($expr instanceof Expr\BinaryOp\Coalesce) {
+			$ptr = $this->issetPtr($f, $expr->left);
+			$t = $f->temp('q');
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->open(sprintf('if (%s != NULL && Z_TYPE_P(%s) > IS_NULL)', $ptr, $ptr));
+			$f->line(sprintf('%s = zv::Val::copyOf(zv::Ref(%s));', $t, $ptr));
+			$f->close(' else {');
+			$f->open('');
+			$f->line(sprintf('%s = std::move(%s);', $t, $this->own($f, $this->expr($f, $expr->right))));
+			$f->close();
+			$f->line('}');
+			return $this->narrowZval($t . '.raw()', $t, $native);
+		}
 		if ($expr instanceof Expr\BinaryOp) {
 			return $this->binaryOp($f, $expr);
 		}
@@ -1258,8 +2108,8 @@ final class Compiler
 		if ($expr instanceof Expr\FuncCall) {
 			return $this->funcCall($f, $expr);
 		}
-		if ($expr instanceof Expr\ArrowFunction) {
-			return $this->arrowFunction($f, $expr);
+		if ($expr instanceof Expr\ArrowFunction || $expr instanceof Expr\Closure) {
+			return $this->closureExpr($f, $expr);
 		}
 		if ($expr instanceof Expr\Throw_) {
 			$exception = $this->expr($f, $expr->expr);
@@ -1267,6 +2117,77 @@ final class Compiler
 			$f->line(sprintf('zend_throw_exception_object(%s.raw()); ZVAL_UNDEF(%s.raw());', $owned, $owned));
 			$f->line($f->fail);
 			return Value::void();
+		}
+		if ($expr instanceof Expr\Isset_) {
+			$checks = [];
+			foreach ($expr->vars as $var) {
+				$ptr = $this->issetPtr($f, $var);
+				$checks[] = sprintf('(%s != NULL && Z_TYPE_P(%s) > IS_NULL)', $ptr, $ptr);
+			}
+			return Value::bool(implode(' && ', $checks));
+		}
+		if ($expr instanceof Expr\Empty_) {
+			$ptr = $this->issetPtr($f, $expr->expr);
+			return Value::bool(sprintf('(%s == NULL || !zend_is_true(%s))', $ptr, $ptr));
+		}
+		if ($expr instanceof Expr\PreInc || $expr instanceof Expr\PreDec || $expr instanceof Expr\PostInc || $expr instanceof Expr\PostDec) {
+			return $this->incDec($f, $expr);
+		}
+		if ($expr instanceof Expr\Cast) {
+			return $this->cast($f, $expr);
+		}
+		if ($expr instanceof Node\Scalar\InterpolatedString) {
+			$parts = [];
+			foreach ($expr->parts as $part) {
+				if ($part instanceof Node\InterpolatedStringPart) {
+					$parts[] = $this->literal($part->value);
+				} else {
+					$parts[] = $this->stabilize($f, $this->expr($f, $part));
+				}
+			}
+			$t = $f->temp('str');
+			$f->line(sprintf('pgrt::StringBuilder %s_b;', $t));
+			foreach ($parts as $part) {
+				$f->failIf(sprintf('!%s_b.append(%s)', $t, $this->asZval($f, $part)));
+			}
+			$f->line(sprintf('zv::Val %s = %s_b.finish();', $t, $t));
+			return new Value('zval', $t . '.raw()', $t);
+		}
+		if ($expr instanceof Node\Scalar\Float_) {
+			$t = $f->temp('fl');
+			$f->line(sprintf('zval %s;', $t));
+			$f->line(sprintf('ZVAL_DOUBLE(&%s, %s);', $t, var_export($expr->value, true)));
+			return new Value('zval', '&' . $t);
+		}
+		if ($expr instanceof Node\Scalar\MagicConst) {
+			$value = $this->constantValue($expr);
+			if (is_int($value)) {
+				return Value::long((string) $value);
+			}
+			return $this->literal((string) $value);
+		}
+		if ($expr instanceof Expr\UnaryMinus) {
+			$operand = $this->expr($f, $expr->expr);
+			if ($operand->kind === 'long') {
+				$t = $f->temp('neg');
+				$f->line(sprintf('zend_long %s;', $t));
+				$f->failIf(sprintf('!pgrt::negateLong(%s, &%s)', $operand->code, $t));
+				return Value::long($t);
+			}
+			return $this->arithmetic($f, 'mul_function', $operand, Value::long('-1'), $native);
+		}
+		if ($expr instanceof Expr\UnaryPlus) {
+			return $this->arithmetic($f, 'mul_function', $this->expr($f, $expr->expr), Value::long('1'), $native);
+		}
+		if ($expr instanceof Expr\BitwiseNot) {
+			$operand = $this->expr($f, $expr->expr);
+			if ($operand->kind === 'long') {
+				return Value::long(sprintf('(~%s)', $operand->code));
+			}
+			$t = $f->temp('bn');
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->failIf(sprintf('bitwise_not_function(%s.raw(), %s) != SUCCESS', $t, $this->asZval($f, $operand)));
+			return $this->narrowZval($t . '.raw()', $t, $native);
 		}
 		if ($expr instanceof Expr\Instanceof_) {
 			$value = $this->expr($f, $expr->expr);
@@ -1295,6 +2216,8 @@ final class Compiler
 				return new Value('zval', $local->cName . '.raw()', class: $local->class, isArray: $local->isArray);
 			case 'param':
 				return new Value('zval', $local->cName, class: $local->class, isArray: $local->isArray);
+			case 'ref':
+				return new Value('zval', sprintf('zv::Ref(%s).deref().raw()', $local->cName), class: $local->class, isArray: $local->isArray);
 			case 'callable':
 				return new Value('zval', sprintf('&%s.fci.function_name', $local->cName));
 			case 'vector':
@@ -1365,6 +2288,10 @@ final class Compiler
 		$unit = $this->units[strtolower($className)] ?? null;
 		if ($unit !== null) {
 			return $unit->ce;
+		}
+		$shadowCe = $this->shadowCe($className);
+		if ($shadowCe !== null) {
+			return $shadowCe;
 		}
 		if ($f === null) {
 			throw new CompileError(sprintf('class %s needs a run-time lookup outside a function', $className));
@@ -1529,6 +2456,12 @@ final class Compiler
 				return Value::void();
 			}
 			$value = $this->expr($f, $expr->expr);
+			if ($local->kind === 'ref') {
+				// through the reference, like any write to a variable bound by reference
+				$owned = $this->own($f, $value);
+				$f->line(sprintf('zv::Ref(zv::Ref(%s).deref().raw()).assign(std::move(%s));', $local->cName, $owned));
+				return new Value('zval', sprintf('zv::Ref(%s).deref().raw()', $local->cName));
+			}
 			switch ($local->kind) {
 				case 'long':
 					$f->line(sprintf('%s = %s;', $local->cName, $this->asLong($f, $value, 'int', $f->label)));
@@ -1550,16 +2483,169 @@ final class Compiler
 				$f->line(sprintf('{ zval v = %s.take(); %s.pushOwned(&v); }', $owned, $local->cName));
 				return Value::void();
 			}
-			if ($local === null || $local->kind !== 'zval') {
-				throw new CompileError('$x[] = needs an array local');
+		}
+		if ($target instanceof Expr\ArrayDimFetch) {
+			// PHP evaluates the offset, then the value, then writes
+			$key = $target->dim !== null ? $this->stabilize($f, $this->expr($f, $target->dim)) : null;
+			$value = $this->stabilize($f, $this->expr($f, $expr->expr));
+			$owned = $f->temp('o');
+			$f->line(sprintf('zv::Val %s = zv::Val::copyOf(zv::Ref(%s));', $owned, $this->asZval($f, $value)));
+			$container = $this->writablePtr($f, $target->var, true);
+			$this->dimStore($f, $container, $key, $owned);
+			return $value;
+		}
+		if ($target instanceof Expr\PropertyFetch) {
+			return $this->assignProperty($f, $target, $expr->expr);
+		}
+		if ($target instanceof Expr\StaticPropertyFetch) {
+			$value = $this->stabilize($f, $this->expr($f, $expr->expr));
+			$owned = $f->temp('o');
+			$f->line(sprintf('zv::Val %s = zv::Val::copyOf(zv::Ref(%s));', $owned, $this->asZval($f, $value)));
+			$propertyType = $this->staticPropertyType($target);
+			if ($propertyType !== null && !$propertyType->isSuperTypeOf($this->unit()->oracle->nativeType($expr->expr))->yes()) {
+				$check = $this->typeCheck($owned . '.raw()', $propertyType, $propertyType->describe(VerbosityLevel::typeOnly()));
+				if ($check !== null) {
+					$f->line(sprintf('if (UNEXPECTED(!%s)) { zend_type_error("Cannot assign %%s to property %%s::$%%s of type %%s", zend_zval_value_name(%s.raw()), "%s", "%s", "%s"); %s }', $check, $owned, addcslashes($this->className($target->class), '\\\\'), $target->name instanceof Node\VarLikeIdentifier ? $target->name->toString() : '', addcslashes($propertyType->describe(VerbosityLevel::typeOnly()), '\\\\'), $f->fail));
+				}
 			}
-			$value = $this->expr($f, $expr->expr);
-			$owned = $this->own($f, $value);
-			$f->line(sprintf('if (UNEXPECTED(Z_TYPE_P(%s.raw()) != IS_ARRAY)) { %s = zv::Val::adopt([]() { zval a; array_init(&a); return a; }()); }', $local->cName, $local->cName));
-			$f->line(sprintf('{ zval v = %s.take(); pgrt::append(%s.raw(), &v); }', $owned, $local->cName));
-			return Value::void();
+			$slot = $this->staticPropertySlot($f, $target);
+			$f->line(sprintf('zv::Ref(%s).assign(std::move(%s));', $slot, $owned));
+			return $value;
+		}
+		if ($target instanceof Expr\List_ || $target instanceof Expr\Array_) {
+			$value = $this->stabilize($f, $this->expr($f, $expr->expr));
+			$this->assignTo($f, $target, $this->asZval($f, $value));
+			return $value;
 		}
 		throw new CompileError(sprintf('unsupported assignment target %s on line %d', $target::class, $expr->getStartLine()));
+	}
+
+	/**
+	 * A writable, dereferenced zval for the container of an offset write:
+	 * a local, a property or static property slot, or a nested offset
+	 * (created on the way, as the VM's write fetches do). With $forArray the
+	 * zval is made an array (null auto-vivifies) and separated.
+	 */
+	private function writablePtr(FunctionContext $f, Expr $expr, bool $forArray): string
+	{
+		$t = $f->temp('w');
+		if ($expr instanceof Expr\Variable && is_string($expr->name)) {
+			$local = $f->locals[$expr->name] ?? null;
+			if ($local === null || !in_array($local->kind, ['zval', 'ref'], true)) {
+				throw new CompileError(sprintf('$%s has no writable zval home', $expr->name));
+			}
+			$f->line(sprintf('zval *%s = zv::Ref(%s).deref().raw();', $t, $local->kind === 'zval' ? $local->cName . '.raw()' : $local->cName));
+		} elseif ($expr instanceof Expr\PropertyFetch) {
+			$slot = $this->propertySlotForWrite($f, $expr);
+			$f->line(sprintf('zval *%s = zv::Ref(%s).deref().raw();', $t, $slot));
+		} elseif ($expr instanceof Expr\StaticPropertyFetch) {
+			$slot = $this->staticPropertySlot($f, $expr);
+			$f->line(sprintf('zval *%s = %s;', $t, $slot));
+		} elseif ($expr instanceof Expr\ArrayDimFetch) {
+			$key = $expr->dim !== null ? $this->stabilize($f, $this->expr($f, $expr->dim)) : null;
+			$parent = $this->writablePtr($f, $expr->var, true);
+			$f->line(sprintf('zval *%s;', $t));
+			if ($key === null) {
+				$f->line(sprintf('{ zval none; ZVAL_NULL(&none); %s = zend_hash_next_index_insert(Z_ARRVAL_P(%s), &none); }', $t, $parent));
+				$f->line(sprintf('if (UNEXPECTED(%s == NULL)) { zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); %s }', $t, $f->fail));
+			} else {
+				$f->line(sprintf('%s = %s;', $t, $this->dimLookupForWrite($f, $parent, $key)));
+				$f->failIf(sprintf('%s == NULL', $t));
+				$f->line(sprintf('ZVAL_DEREF(%s);', $t));
+			}
+		} else {
+			throw new CompileError(sprintf('%s is not a writable container', $expr::class));
+		}
+		if ($forArray) {
+			$f->line(sprintf('if (Z_TYPE_P(%s) <= IS_NULL) { zval_ptr_dtor(%s); array_init(%s); } else if (UNEXPECTED(Z_TYPE_P(%s) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); %s }', $t, $t, $t, $t, $f->fail));
+			$f->line(sprintf('SEPARATE_ARRAY(%s);', $t));
+		}
+		return $t;
+	}
+
+	/** the element of an array for a write: found or added as null (NULL = an illegal offset, error pending) */
+	private function dimLookupForWrite(FunctionContext $f, string $array, Value $key): string
+	{
+		if ($key->kind === 'long') {
+			return sprintf('pgrt::dimWriteLong(%s, %s)', $array, $key->code);
+		}
+		return sprintf('pgrt::dimWrite(%s, %s)', $array, $this->asZval($f, $key));
+	}
+
+	private function dimStore(FunctionContext $f, string $array, ?Value $key, string $owned): void
+	{
+		if ($key === null) {
+			$f->line(sprintf('{ zval v = %s.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(%s), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); %s } }', $owned, $array, $f->fail));
+			return;
+		}
+		$e = $f->temp('e');
+		$f->line(sprintf('zval *%s = %s;', $e, $this->dimLookupForWrite($f, $array, $key)));
+		$f->failIf(sprintf('%s == NULL', $e));
+		$f->line(sprintf('zv::Ref(%s).assign(std::move(%s));', $e, $owned));
+	}
+
+	/** the slot of a declared property of a compiled class, for a write that is not a readonly initialization */
+	private function propertySlotForWrite(FunctionContext $f, Expr\PropertyFetch $fetch): string
+	{
+		if (!$fetch->name instanceof Node\Identifier) {
+			throw new CompileError('dynamic property names are not supported');
+		}
+		$name = $fetch->name->toString();
+		$receiver = $this->stabilize($f, $this->expr($f, $fetch->var));
+		$class = $receiver->class ?? $this->knownClass($this->unit()->oracle->nativeType($fetch->var));
+		$unit = $class !== null ? ($this->units[strtolower($class)] ?? null) : null;
+		if ($unit === null || !$unit->reflection->hasProperty($name)) {
+			throw new CompileError(sprintf('writing into ->%s of a value not proven to be a compiled class', $name));
+		}
+		$property = $unit->reflection->getProperty($name);
+		if ($property->isReadOnly() || $property->isStatic()) {
+			throw new CompileError(sprintf('->%s is readonly or static', $name));
+		}
+		return sprintf('OBJ_PROP_NUM(Z_OBJ_P(%s), ptdecl::%s::slot::%s)', $receiver->code, $unit->stem, $name);
+	}
+
+	/**
+	 * $object->name = value: a declared property of a compiled class by slot
+	 * (readonly initialized once, a typed one checked unless proven), any
+	 * other through the object handlers with the class as calling scope.
+	 */
+	private function assignProperty(FunctionContext $f, Expr\PropertyFetch $target, Expr $valueExpr): Value
+	{
+		if (!$target->name instanceof Node\Identifier) {
+			throw new CompileError('dynamic property names are not supported');
+		}
+		$name = $target->name->toString();
+		$receiver = $this->stabilize($f, $this->expr($f, $target->var));
+		$value = $this->stabilize($f, $this->expr($f, $valueExpr));
+		$z = $this->asZval($f, $value);
+		$class = $receiver->class ?? $this->knownClass($this->unit()->oracle->nativeType($target->var));
+		$unit = $class !== null ? ($this->units[strtolower($class)] ?? null) : null;
+		if ($unit !== null && $unit->reflection->hasProperty($name) && !$unit->reflection->getProperty($name)->isStatic()) {
+			$property = $unit->reflection->getProperty($name);
+			$slot = sprintf('ptdecl::%s::slot::%s', $unit->stem, $name);
+			$owned = $f->temp('o');
+			$f->line(sprintf('zval %s;', $owned));
+			$f->line(sprintf('ZVAL_COPY(&%s, %s);', $owned, $z));
+			$type = $property->getType();
+			if ($type !== null) {
+				[, $declared, $describe] = $this->lowerDeclaredType($type, $unit, false);
+				if (!$declared->isSuperTypeOf($this->unit()->oracle->nativeType($valueExpr))->yes()) {
+					$check = $this->typeCheck('&' . $owned, $declared, $describe);
+					if ($check !== null) {
+						$f->line(sprintf('if (UNEXPECTED(!%s)) { zend_type_error("Cannot assign %%s to property %%s::$%%s of type %%s", zend_zval_value_name(&%s), "%s", "%s", "%s"); zval_ptr_dtor(&%s); %s }', $check, $owned, addcslashes($unit->className, '\\\\'), $name, addcslashes($describe, '\\\\'), $owned, $f->fail));
+					}
+				}
+			}
+			if ($property->isReadOnly()) {
+				$f->failIf(sprintf('!pgrt::initReadonly(Z_OBJ_P(%s), %s, "%s", &%s)', $receiver->code, $slot, $name, $owned));
+			} else {
+				$f->line(sprintf('pgrt::writeSlot(Z_OBJ_P(%s), %s, &%s);', $receiver->code, $slot, $owned));
+			}
+			return $value;
+		}
+		$r = $this->asZval($f, $receiver);
+		$f->failIf(sprintf('!pgrt::writePropertyGeneric(%s, %s, %s, %s)', $r, $this->unit()->ce, $this->literal($name)->code, $z));
+		return $value;
 	}
 
 	private function coalesceAssign(FunctionContext $f, Expr\AssignOp\Coalesce $expr): Value
@@ -1649,10 +2735,11 @@ final class Compiler
 
 	private function binaryOp(FunctionContext $f, Expr\BinaryOp $expr): Value
 	{
-		if ($expr instanceof Expr\BinaryOp\BooleanAnd || $expr instanceof Expr\BinaryOp\BooleanOr) {
+		$native = $this->unit()->oracle->nativeType($expr);
+		if ($expr instanceof Expr\BinaryOp\BooleanAnd || $expr instanceof Expr\BinaryOp\BooleanOr || $expr instanceof Expr\BinaryOp\LogicalAnd || $expr instanceof Expr\BinaryOp\LogicalOr) {
 			$t = $f->temp('b');
 			$f->line(sprintf('bool %s = %s;', $t, $this->condition($f, $expr->left)));
-			$f->open(sprintf('if (%s%s)', $expr instanceof Expr\BinaryOp\BooleanAnd ? '' : '!', $t));
+			$f->open(sprintf('if (%s%s)', $expr instanceof Expr\BinaryOp\BooleanAnd || $expr instanceof Expr\BinaryOp\LogicalAnd ? '' : '!', $t));
 			$f->line(sprintf('%s = %s;', $t, $this->condition($f, $expr->right)));
 			$f->close();
 			return Value::bool($t);
@@ -1702,6 +2789,61 @@ final class Compiler
 			}
 			return Value::long(sprintf('(%s %s %s)', $left->code, $bit[$expr::class], $right->code));
 		}
+		if ($expr instanceof Expr\BinaryOp\Equal || $expr instanceof Expr\BinaryOp\NotEqual) {
+			$code = $this->looseEquals($f, $left, $right);
+			return Value::bool($expr instanceof Expr\BinaryOp\Equal ? $code : '!' . $code);
+		}
+		if ($expr instanceof Expr\BinaryOp\Spaceship) {
+			if ($longs) {
+				return Value::long(sprintf('ZEND_THREEWAY_COMPARE(%s, %s)', $left->code, $right->code));
+			}
+			return Value::long(sprintf('(zend_long) zend_compare(%s, %s)', $this->asZval($f, $left), $this->asZval($f, $right)));
+		}
+		if ($expr instanceof Expr\BinaryOp\LogicalXor) {
+			return Value::bool(sprintf('(%s != %s)', $this->asBool($left), $this->asBool($right)));
+		}
+		if ($expr instanceof Expr\BinaryOp\Concat) {
+			$t = $f->temp('cat');
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->failIf(sprintf('!pgrt::concat(%s, %s, %s.raw())', $this->asZval($f, $left), $this->asZval($f, $right), $t));
+			return new Value('zval', $t . '.raw()', $t);
+		}
+		$overflowing = [
+			Expr\BinaryOp\Plus::class => ['addLong', 'add_function'],
+			Expr\BinaryOp\Minus::class => ['subLong', 'sub_function'],
+			Expr\BinaryOp\Mul::class => ['mulLong', 'mul_function'],
+		];
+		if (isset($overflowing[$expr::class])) {
+			[$longOp, $generic] = $overflowing[$expr::class];
+			if ($longs && $native->isInteger()->yes()) {
+				$t = $f->temp('ar');
+				$f->line(sprintf('zend_long %s;', $t));
+				$f->failIf(sprintf('!pgrt::%s(%s, %s, &%s)', $longOp, $left->code, $right->code, $t));
+				return Value::long($t);
+			}
+			return $this->arithmetic($f, $generic, $left, $right, $native);
+		}
+		$generic = [
+			Expr\BinaryOp\Div::class => 'div_function',
+			Expr\BinaryOp\Mod::class => 'mod_function',
+			Expr\BinaryOp\Pow::class => 'pow_function',
+			Expr\BinaryOp\ShiftLeft::class => 'shift_left_function',
+			Expr\BinaryOp\BitwiseAnd::class => 'bitwise_and_function',
+			Expr\BinaryOp\BitwiseOr::class => 'bitwise_or_function',
+			Expr\BinaryOp\BitwiseXor::class => 'bitwise_xor_function',
+		];
+		if (isset($generic[$expr::class]) && !$longs) {
+			return $this->arithmetic($f, $generic[$expr::class], $left, $right, $native);
+		}
+		if ($expr instanceof Expr\BinaryOp\Mod && $longs) {
+			$t = $f->temp('md');
+			$f->line(sprintf('zend_long %s;', $t));
+			$f->failIf(sprintf('!pgrt::modLong(%s, %s, &%s)', $left->code, $right->code, $t));
+			return Value::long($t);
+		}
+		if (isset($generic[$expr::class])) {
+			return $this->arithmetic($f, $generic[$expr::class], $left, $right, $native);
+		}
 		if ($expr instanceof Expr\BinaryOp\ShiftRight) {
 			if (!$longs) {
 				throw new CompileError('>> on non-int operands is not supported');
@@ -1712,6 +2854,155 @@ final class Compiler
 			return Value::long($t);
 		}
 		throw new CompileError(sprintf('unsupported operator %s on line %d', $expr::class, $expr->getStartLine()));
+	}
+
+	/** $a == $b with PHP 8 semantics */
+	private function looseEquals(FunctionContext $f, Value $left, Value $right): string
+	{
+		if ($left->kind === 'long' && $right->kind === 'long') {
+			return sprintf('(%s == %s)', $left->code, $right->code);
+		}
+		if ($left->kind === 'bool' && $right->kind === 'bool') {
+			return sprintf('(%s == %s)', $left->code, $right->code);
+		}
+		return sprintf('zend_is_equal(%s, %s)', $this->asZval($f, $left), $this->asZval($f, $right));
+	}
+
+	/** a binary operator through the engine's operator function (any operand types, PHP's coercions and errors) */
+	private function arithmetic(FunctionContext $f, string $function, Value $left, Value $right, Type $native): Value
+	{
+		$t = $f->temp('ar');
+		$f->line(sprintf('zv::Val %s;', $t));
+		$f->failIf(sprintf('%s(%s.raw(), %s, %s) != SUCCESS || EG(exception)', $function, $t, $this->asZval($f, $left), $this->asZval($f, $right)));
+		return $this->narrowZval($t . '.raw()', $t, $native);
+	}
+
+	/** an owned zval result, as an unboxed scalar when its native type is one */
+	private function narrowZval(string $code, string $temp, Type $native): Value
+	{
+		if ($native->isInteger()->yes()) {
+			return Value::long(sprintf('Z_LVAL_P(%s)', $code));
+		}
+		if ($native->isBoolean()->yes()) {
+			return Value::bool(sprintf('(Z_TYPE_P(%s) == IS_TRUE)', $code));
+		}
+		return new Value('zval', $code, $temp !== '' ? $temp : null, $this->knownClass($native), $native->isArray()->yes());
+	}
+
+	private function incDec(FunctionContext $f, Expr\PreInc|Expr\PreDec|Expr\PostInc|Expr\PostDec $expr): Value
+	{
+		$increment = $expr instanceof Expr\PreInc || $expr instanceof Expr\PostInc;
+		$post = $expr instanceof Expr\PostInc || $expr instanceof Expr\PostDec;
+		$var = $expr->var;
+		if ($var instanceof Expr\Variable && is_string($var->name) && ($f->locals[$var->name] ?? null)?->kind === 'long') {
+			$local = $f->locals[$var->name];
+			$old = $f->temp('old');
+			$f->line(sprintf('zend_long %s = %s;', $old, $local->cName));
+			$f->failIf(sprintf('!pgrt::%s(%s, 1, &%s)', $increment ? 'addLong' : 'subLong', $old, $local->cName));
+			return Value::long($post ? $old : $local->cName);
+		}
+		$ptr = $this->writablePtr($f, $var, false);
+		$old = $f->temp('old');
+		if ($post) {
+			$f->line(sprintf('zv::Val %s = zv::Val::copyOf(zv::Ref(%s));', $old, $ptr));
+		}
+		$f->failIf(sprintf('%s(%s) != SUCCESS || EG(exception)', $increment ? 'increment_function' : 'decrement_function', $ptr));
+		if ($post) {
+			return $this->narrowZval($old . '.raw()', $old, $this->unit()->oracle->nativeType($expr));
+		}
+		return new Value('zval', $ptr);
+	}
+
+	private function cast(FunctionContext $f, Expr\Cast $expr): Value
+	{
+		$operand = $this->expr($f, $expr->expr);
+		if ($expr instanceof Expr\Cast\Int_) {
+			if ($operand->kind === 'long') {
+				return $operand;
+			}
+			if ($operand->kind === 'bool') {
+				return Value::long(sprintf('((zend_long) %s)', $operand->code));
+			}
+			$t = $f->temp('ci');
+			$f->line(sprintf('zend_long %s = zval_get_long(%s);', $t, $this->asZval($f, $operand)));
+			$f->failIf('EG(exception)');
+			return Value::long($t);
+		}
+		if ($expr instanceof Expr\Cast\Bool_) {
+			return Value::bool($this->asBool($operand));
+		}
+		$z = $this->asZval($f, $operand);
+		$t = $f->temp('cv');
+		$f->line(sprintf('zv::Val %s = zv::Val::copyOf(zv::Ref(%s));', $t, $z));
+		if ($expr instanceof Expr\Cast\String_) {
+			$f->failIf(sprintf('!pgrt::castString(%s.raw())', $t));
+		} elseif ($expr instanceof Expr\Cast\Double) {
+			$f->line(sprintf('convert_to_double(%s.raw());', $t));
+		} elseif ($expr instanceof Expr\Cast\Array_) {
+			$f->line(sprintf('convert_to_array(%s.raw());', $t));
+		} elseif ($expr instanceof Expr\Cast\Object_) {
+			$f->line(sprintf('convert_to_object(%s.raw());', $t));
+		} else {
+			throw new CompileError(sprintf('unsupported cast %s', $expr::class));
+		}
+		$f->failIf('EG(exception)');
+		return new Value('zval', $t . '.raw()', $t, isArray: $expr instanceof Expr\Cast\Array_);
+	}
+
+	/**
+	 * The zval an isset()/??/empty() operand reads, or NULL where PHP finds
+	 * nothing — without the warnings a plain read would raise.
+	 */
+	private function issetPtr(FunctionContext $f, Expr $expr): string
+	{
+		$t = $f->temp('is');
+		if ($expr instanceof Expr\Variable && is_string($expr->name)) {
+			if ($expr->name === 'this') {
+				return '&this_zv';
+			}
+			$local = $f->locals[$expr->name] ?? null;
+			if ($local === null) {
+				return 'NULL';
+			}
+			switch ($local->kind) {
+				case 'zval':
+					$f->line(sprintf('zval *%s = Z_ISUNDEF_P(%s.raw()) ? NULL : %s.raw();', $t, $local->cName, $local->cName));
+					return $t;
+				case 'ref':
+					$f->line(sprintf('zval *%s = zv::Ref(%s).deref().raw();', $t, $local->cName));
+					$f->line(sprintf('if (Z_ISUNDEF_P(%s)) %s = NULL;', $t, $t));
+					return $t;
+				case 'param':
+					return $local->cName;
+			}
+			return $this->asZval($f, $this->readLocal($f, $expr->name));
+		}
+		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
+			$base = $this->issetPtr($f, $expr->var);
+			$key = $this->asZval($f, $this->stabilize($f, $this->expr($f, $expr->dim)));
+			$tmp = $f->temp('ist');
+			$f->line(sprintf('zv::Val %s;', $tmp));
+			$f->line(sprintf('zval *%s = %s == NULL ? NULL : pgrt::dimIs(%s, %s, %s.raw());', $t, $base, $base, $key, $tmp));
+			$f->failIf('EG(exception)');
+			return $t;
+		}
+		if (($expr instanceof Expr\PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) && $expr->name instanceof Node\Identifier) {
+			$name = $expr->name->toString();
+			$base = $this->issetPtr($f, $expr->var);
+			$tmp = $f->temp('ist');
+			$f->line(sprintf('zv::Val %s;', $tmp));
+			$f->line(sprintf('zval *%s = %s == NULL ? NULL : pgrt::propIs(%s, %s, %s, %s.raw());', $t, $base, $base, $this->unit()->ce, $this->literal($name)->code, $tmp));
+			$f->failIf('EG(exception)');
+			return $t;
+		}
+		if ($expr instanceof Expr\StaticPropertyFetch) {
+			$slot = $this->staticPropertySlot($f, $expr);
+			$f->line(sprintf('zval *%s = Z_ISUNDEF_P(%s) ? NULL : %s;', $t, $slot, $slot));
+			return $t;
+		}
+		// any other expression is evaluated: it is set when it is not null
+		$value = $this->stabilize($f, $this->expr($f, $expr));
+		return $this->asZval($f, $value);
 	}
 
 	private function identical(FunctionContext $f, Value $left, Value $right, Expr $leftExpr, Expr $rightExpr): string
@@ -1852,10 +3143,10 @@ final class Compiler
 			}
 			return new Value('zval', $t . '.raw()', $t, $className);
 		}
-		[$argv, $argc] = $this->engineArgs($f, $expr->args);
+		[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
 		$ce = $this->classEntry($className, $f);
 		$f->line(sprintf('zv::Val %s;', $t));
-		$f->failIf(sprintf('!pgrt::newObject(%s, %s, %s, %s.raw())', $ce, $argc, $argv, $t));
+		$f->failIf(sprintf('!pgrt::newObject(%s, %s, %s, %s.raw(), %s)', $ce, $argc, $argv, $t, $named));
 		return new Value('zval', $t . '.raw()', $t, $className);
 	}
 
@@ -1879,11 +3170,11 @@ final class Compiler
 		if ($this->callHasSideEffects($expr->args)) {
 			$receiver = $this->stabilize($f, $receiver);
 		}
-		[$argv, $argc] = $this->engineArgs($f, $expr->args);
+		[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
 		$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
 		$t = $f->temp('r');
 		$f->line(sprintf('zv::Val %s;', $t));
-		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, %s, %s, %s.raw())', $site, $this->asZval($f, $receiver), $name, strtolower($name), strlen($name), $argc, $argv, $t));
+		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, %s, %s, %s.raw(), %s)', $site, $this->asZval($f, $receiver), $name, strtolower($name), strlen($name), $argc, $argv, $t, $named));
 		return $this->fromEngineResult($t, $this->unit()->oracle->nativeType($expr));
 	}
 
@@ -1900,12 +3191,12 @@ final class Compiler
 			$args = $this->directArgs($f, $method, $expr->args);
 			return $this->emitDirectCall($f, $method, null, $args);
 		}
-		[$argv, $argc] = $this->engineArgs($f, $expr->args);
+		[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
 		$ce = $this->classEntry($className, $f);
 		$site = $this->site('pt_method_site', sprintf('static_%s::%s', $className, $name));
 		$t = $f->temp('r');
 		$f->line(sprintf('zv::Val %s;', $t));
-		$f->failIf(sprintf('!pgrt::callStatic(%s, %s, "%s", %d, %s, %s, %s.raw())', $site, $ce, strtolower($name), strlen($name), $argc, $argv, $t));
+		$f->failIf(sprintf('!pgrt::callStatic(%s, %s, "%s", %d, %s, %s, %s.raw(), %s)', $site, $ce, strtolower($name), strlen($name), $argc, $argv, $t, $named));
 		return $this->fromEngineResult($t, $this->unit()->oracle->nativeType($expr));
 	}
 
@@ -1915,17 +3206,17 @@ final class Compiler
 		if ($expr->name instanceof Expr) {
 			$callee = $expr->name;
 			if ($callee instanceof Expr\Variable && is_string($callee->name) && ($f->locals[$callee->name] ?? null)?->kind === 'callable') {
-				[$argv, $argc] = $this->engineArgs($f, $expr->args);
+				[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
 				$t = $f->temp('r');
 				$f->line(sprintf('zv::Val %s;', $t));
-				$f->failIf(sprintf('!pgrt::callCallable(%s, %s, %s, %s.raw())', $f->locals[$callee->name]->cName, $argc, $argv, $t));
+				$f->failIf(sprintf('!pgrt::callCallable(%s, %s, %s, %s.raw(), %s)', $f->locals[$callee->name]->cName, $argc, $argv, $t, $named));
 				return $this->fromEngineResult($t, $native);
 			}
 			$value = $this->stabilize($f, $this->expr($f, $callee));
-			[$argv, $argc] = $this->engineArgs($f, $expr->args);
+			[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
 			$t = $f->temp('r');
 			$f->line(sprintf('zv::Val %s;', $t));
-			$f->failIf(sprintf('!pgrt::callValue(%s, %s, %s, %s.raw())', $this->asZval($f, $value), $argc, $argv, $t));
+			$f->failIf(sprintf('!pgrt::callValue(%s, %s, %s, %s.raw(), %s)', $this->asZval($f, $value), $argc, $argv, $t, $named));
 			return $this->fromEngineResult($t, $native);
 		}
 		$name = strtolower(ltrim($expr->name->toString(), '\\'));
@@ -1959,11 +3250,11 @@ final class Compiler
 		if ($intrinsic !== null) {
 			return $intrinsic;
 		}
-		[$argv, $argc] = $this->engineArgs($f, $expr->args);
+		[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
 		$site = $this->site('pgrt::FunctionSite', 'function_' . $name);
 		$t = $f->temp('r');
 		$f->line(sprintf('zv::Val %s;', $t));
-		$f->failIf(sprintf('!pgrt::callFunction(%s, "%s", %d, %s, %s, %s, %s.raw())', $site, $name, strlen($name), $this->unit()->ce, $argc, $argv, $t));
+		$f->failIf(sprintf('!pgrt::callFunction(%s, "%s", %d, %s, %s, %s, %s.raw(), %s)', $site, $name, strlen($name), $this->unit()->ce, $argc, $argv, $t, $named));
 		return $this->fromEngineResult($t, $native);
 	}
 
@@ -1974,7 +3265,10 @@ final class Compiler
 		$single = count($expr->args) === 1 && $expr->args[0] instanceof Node\Arg && !$expr->args[0]->unpack && $expr->args[0]->name === null;
 		switch ($name) {
 			case 'array_merge':
-				[$argv, $argc] = $this->engineArgs($f, $expr->args);
+				[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
+				if ($named !== 'NULL') {
+					return null;
+				}
 				$t = $f->temp('r');
 				$f->line(sprintf('zv::Val %s;', $t));
 				$f->failIf(sprintf('!pgrt::arrayMerge(%s, %s, %s.raw())', $argc, $argv, $t));
@@ -2148,7 +3442,7 @@ final class Compiler
 					$z = $this->asZval($f, $value);
 					$argExpr = $restExprs[$i];
 					if ($param->class !== null && !$param->declared->isSuperTypeOf($this->unit()->oracle->nativeType($argExpr->value))->yes()) {
-						$this->emitTypeCheck($f, $z, $param->describe, $param->declared, $param->class, $param->nullable, sprintf('pgrt::throwArgumentType("%s", %d, "%s", "%s", %s); %s', addcslashes($label, '\\'), $param->position + $i + 1, $param->name, addcslashes($param->describe, '\\'), $z, $f->fail));
+						$this->emitTypeCheck($f, $z, $param->describe, $param->declared, sprintf('pgrt::throwArgumentType("%s", %d, "%s", "%s", %s); %s', addcslashes($label, '\\'), $param->position + $i + 1, $param->name, addcslashes($param->describe, '\\'), $z, $f->fail));
 					}
 					$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $vec, $i, $z));
 				}
@@ -2227,7 +3521,7 @@ final class Compiler
 					$i = $f->temp('i');
 					$f->open(sprintf('for (uint32_t %s = 0; %s < %s; %s++)', $i, $i, $count, $i));
 					$z = sprintf('zv::Ref(&%s[%d + %s]).deref().raw()', $argv, $n, $i);
-					$this->emitTypeCheck($f, $z, $param->describe, $param->declared, $param->class, $param->nullable, sprintf('pgrt::throwArgumentType("%s", %d + %s + 1, "%s", "%s", %s); %s', addcslashes($label, '\\'), $n, $i, $param->name, addcslashes($param->describe, '\\'), $z, $f->fail));
+					$this->emitTypeCheck($f, $z, $param->describe, $param->declared, sprintf('pgrt::throwArgumentType("%s", %d + %s + 1, "%s", "%s", %s); %s', addcslashes($label, '\\'), $n, $i, $param->name, addcslashes($param->describe, '\\'), $z, $f->fail));
 					$f->close();
 				}
 				$out[] = sprintf('%s > 0 ? &%s[%d] : NULL', $count, $argv, $n);
@@ -2240,7 +3534,7 @@ final class Compiler
 			$default = $param->default !== null ? $this->defaultArg($f, $param, true) : null;
 			$f->open(sprintf('if (%s > %d)', $size, $n));
 			$f->line(sprintf('%s = zv::Ref(&%s[%d]).deref().raw();', $p, $argv, $n));
-			$this->emitTypeCheck($f, $p, $param->describe, $param->declared, $param->class, $param->nullable, sprintf('pgrt::throwArgumentType("%s", %d, "%s", "%s", %s); %s', addcslashes($label, '\\'), $n + 1, $param->name, addcslashes($param->describe, '\\'), $p, $f->fail));
+			$this->emitTypeCheck($f, $p, $param->describe, $param->declared, sprintf('pgrt::throwArgumentType("%s", %d, "%s", "%s", %s); %s', addcslashes($label, '\\'), $n + 1, $param->name, addcslashes($param->describe, '\\'), $p, $f->fail));
 			$f->close(' else {');
 			$f->open('');
 			if ($param->default === null) {
@@ -2268,38 +3562,68 @@ final class Compiler
 	}
 
 	/**
-	 * Engine-call arguments: [argv expression, argc expression].
+	 * Engine-call arguments: [argv expression, argc expression, named-arguments HashTable * or NULL].
 	 *
 	 * @param array<Node\Arg|Node\VariadicPlaceholder> $args
-	 * @return array{string, string}
+	 * @return array{string, string, string}
 	 */
 	private function engineArgs(FunctionContext $f, array $args): array
 	{
+		$hasNamed = false;
 		foreach ($args as $arg) {
 			if (!$arg instanceof Node\Arg) {
 				throw new CompileError('first-class callables are not supported');
 			}
-			if ($arg->name !== null) {
-				throw new CompileError('named arguments are not supported');
+			if ($arg->name === null) {
+				continue;
 			}
+
+			$hasNamed = true;
 		}
 		$plain = array_values($args);
 		foreach ($plain as $arg) {
 			if ($arg->unpack) {
+				if ($hasNamed) {
+					throw new CompileError('spread and named arguments together are not supported');
+				}
 				$vec = $this->argVector($f, $plain);
-				return [$vec . '.argv()', $vec . '.size()'];
+				return [$vec . '.argv()', $vec . '.size()', 'NULL'];
 			}
 		}
 		if ($args === []) {
-			return ['NULL', '0'];
+			return ['NULL', '0', 'NULL'];
 		}
 		$values = $this->lowerArgs($f, $plain);
-		$argv = $f->temp('av');
-		$f->line(sprintf('zval %s[%d];', $argv, count($values)));
-		foreach ($values as $i => $value) {
-			$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $i, $this->asZval($f, $value)));
+		$positional = [];
+		$named = [];
+		foreach ($plain as $i => $arg) {
+			if ($arg->name !== null) {
+				$named[$arg->name->toString()] = $values[$i];
+			} else {
+				if ($named !== []) {
+					throw new CompileError('a positional argument after a named one');
+				}
+				$positional[] = $values[$i];
+			}
 		}
-		return [$argv, (string) count($values)];
+		$argv = 'NULL';
+		if ($positional !== []) {
+			$argv = $f->temp('av');
+			$f->line(sprintf('zval %s[%d];', $argv, count($positional)));
+			foreach ($positional as $i => $value) {
+				$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $i, $this->asZval($f, $value)));
+			}
+		}
+		$namedTable = 'NULL';
+		if ($named !== []) {
+			$table = $f->temp('na');
+			$f->line(sprintf('zv::Arr %s = zv::Arr::create(%d);', $table, count($named)));
+			foreach ($named as $name => $value) {
+				$f->line(sprintf('{ zval v; ZVAL_COPY(&v, %s); zend_hash_str_add_new(%s.table(), "%s", %d, &v); }', $this->asZval($f, $value), $table, $name, strlen($name)));
+			}
+			$namedTable = $table . '.table()';
+		}
+		return [$argv, (string) count($positional), $namedTable];
 	}
 
 	/** @param array<Node\Arg> $args */
@@ -2395,7 +3719,7 @@ final class Compiler
 			default:
 				$z = $this->asZval($f, $value);
 				if (!$proven) {
-					$this->emitTypeCheck($f, $z, $param->describe, $param->declared, $param->class, $param->nullable, $fail($z));
+					$this->emitTypeCheck($f, $z, $param->describe, $param->declared, $fail($z));
 				}
 				return $z;
 		}
@@ -2428,89 +3752,155 @@ final class Compiler
 		}
 	}
 
-	private function arrowFunction(FunctionContext $f, Expr\ArrowFunction $expr): Value
+	/**
+	 * A closure or arrow function: its body becomes a native closure body
+	 * (pt_native_closure) over the captured values — by value as `use ($x)`
+	 * and an arrow function copy them, by reference as `use (&$x)` binds
+	 * them, `$this` when the body uses it — handed out as a real \\Closure.
+	 */
+	private function closureExpr(FunctionContext $f, Expr\ArrowFunction|Expr\Closure $expr): Value
 	{
-		// captures: the outer variables the body reads
-		$paramNames = [];
-		foreach ($expr->params as $param) {
-			if (!$param->var instanceof Expr\Variable || !is_string($param->var->name)) {
-				throw new CompileError('closure parameter');
-			}
-			$paramNames[$param->var->name] = true;
-		}
-		$captures = [];
-		foreach ($this->finder->findInstanceOf([$expr->expr], Expr\Variable::class) as $var) {
-			if (!is_string($var->name) || isset($paramNames[$var->name])) {
-				continue;
-			}
-			if ($var->name === 'this') {
-				throw new CompileError('closures using $this are not supported yet');
-			}
-			$captures[$var->name] = true;
-		}
-		$captureNames = array_keys($captures);
-
-		$index = ++$this->closureCount;
-		$fn = sprintf('pg_closure_%d', $index);
 		$label = $this->unit()->className . '::{closure}';
-		if ($expr->returnType !== null) {
-			$returnType = $expr->returnType;
-			if (!$returnType instanceof Node\Identifier && !$returnType instanceof Node\Name) {
-				throw new CompileError('closure return type');
-			}
-			$typeName = $returnType->toString();
-			if ($typeName !== 'string') {
-				throw new CompileError('closure return types other than string are not supported yet');
-			}
-
-			$return = new ReturnInfo('zval', new StringType(), 'string');
-		} else {
-			$return = new ReturnInfo('zval', new MixedType(), 'mixed');
-		}
-
-		$inner = new FunctionContext($label, 'return;', null, $return, true);
-		$required = 0;
+		$params = [];
+		$paramNames = [];
 		foreach ($expr->params as $i => $param) {
 			if (!$param->var instanceof Expr\Variable || !is_string($param->var->name)) {
 				throw new CompileError('closure parameter');
 			}
-			$name = $param->var->name;
-			if ($param->default !== null || $param->variadic || $param->byRef) {
-				throw new CompileError('closure parameters must be plain required parameters');
+			if ($param->byRef || $param->variadic) {
+				throw new CompileError('by-reference and variadic closure parameters are not supported');
 			}
-			$required++;
-			$inner->line(sprintf('zval *l_%s = zv::Ref(&argv[%d]).deref().raw();', $name, $i));
-			$class = null;
-			if ($param->type !== null) {
-				if (!$param->type instanceof Node\Name) {
-					throw new CompileError('closure parameter types other than classes are not supported yet');
+			[$kind, $declared, $describe, $class, $nullable, $isArray] = $this->lowerAstType($param->type, true);
+			if (in_array($kind, ['callable', 'void'], true)) {
+				$kind = 'zval';
+			}
+			$params[] = new ParamInfo($param->var->name, $i, $kind, $declared, $describe, $class, $nullable, false, $param->default, $isArray, false, false);
+			$paramNames[$param->var->name] = true;
+		}
+
+		// what the closure captures, in creation order
+		$captures = [];
+		if ($expr instanceof Expr\Closure) {
+			foreach ($expr->uses as $use) {
+				if (!is_string($use->var->name)) {
+					throw new CompileError('closure use');
 				}
-				$class = ltrim($param->type->toString(), '\\');
-				$ce = $class === 'Closure' ? 'zend_ce_closure' : $this->classEntry($class, $inner);
-				$inner->line(sprintf('if (UNEXPECTED(Z_TYPE_P(l_%s) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(l_%s), %s))) { pgrt::throwArgumentType("%s", %d, "%s", "%s", l_%s); return; }', $name, $name, $ce, addcslashes($label, '\\'), $i + 1, $name, addcslashes($class, '\\'), $name));
+				$captures[$use->var->name] = $use->byRef;
 			}
-			$inner->locals[$name] = new LocalVariable('param', 'l_' . $name, $class);
+		} else {
+			foreach ($this->finder->findInstanceOf([$expr->expr], Expr\Variable::class) as $var) {
+				if (!is_string($var->name) || isset($paramNames[$var->name]) || $var->name === 'this' || !isset($f->locals[$var->name])) {
+					continue;
+				}
+				$captures[$var->name] = false;
+			}
 		}
-		foreach ($captureNames as $i => $name) {
-			$inner->locals[$name] = new LocalVariable('param', sprintf('zv::Ref(&captures[%d]).deref().raw()', $i));
+		$body = $expr instanceof Expr\Closure ? $expr->stmts : [$expr->expr];
+		$usesThis = !$expr->static && $this->finder->findFirst($body, static fn (Node $n): bool => $n instanceof Expr\Variable && $n->name === 'this') !== null;
+		if ($usesThis && $f->self === null) {
+			throw new CompileError('a closure using $this outside an instance method');
 		}
-		$body = [];
-		$body[] = sprintf('static void %s(zval *captures, uint32_t argc, zval *argv, zval *return_value)', $fn);
-		$body[] = '{';
-		$body[] = "\t(void) captures;";
-		$body[] = sprintf("\tif (UNEXPECTED(argc < %d)) { pgrt::throwTooFewArguments(\"%s\", argc, %d); return; }", $required, addcslashes($label, '\\'), $required);
-		$this->returnStatement($inner, $expr->expr);
-		$body[] = $inner->render();
-		$body[] = '}';
-		$this->closures[] = implode("\n", $body);
+
+		if ($expr->returnType !== null) {
+			[$returnKind, $returnDeclared, $returnDescribe, $returnClass, $returnNullable] = $this->lowerAstType($expr->returnType, false);
+			$return = $returnKind === 'void'
+				? new ReturnInfo('void', $returnDeclared, 'void')
+				: new ReturnInfo('zval', $returnDeclared, $returnDescribe, $returnClass, $returnNullable);
+		} else {
+			$return = new ReturnInfo('zval', new MixedType(), 'mixed');
+		}
+
+		$index = ++$this->closureCount;
+		$fn = sprintf('pg_closure_%d', $index);
+		$captureLocals = [];
+		$k = 0;
+		foreach ($captures as $name => $byRef) {
+			$captureLocals[$name] = $byRef
+				? new LocalVariable('ref', sprintf('&captures[%d]', $k))
+				: new LocalVariable('param', sprintf('zv::Ref(&captures[%d]).deref().raw()', $k));
+			$k++;
+		}
+		$thisIndex = $usesThis ? $k : null;
+
+		$inner = new FunctionContext($label, 'return;', $thisIndex !== null ? sprintf('Z_OBJ(captures[%d])', $thisIndex) : null, $return, true);
+		$required = 0;
+		foreach ($params as $param) {
+			if ($param->default !== null) {
+				continue;
+			}
+
+			$required = $param->position + 1;
+		}
+		// the parameters: present arguments checked like the closure's signature, defaults for missing ones
+		foreach ($params as $param) {
+			$z = 'a_' . $param->name;
+			$inner->line(sprintf('zval *%s;', $z));
+			if ($param->default !== null) {
+				$inner->line(sprintf('zval %s_default;', $z));
+				$inner->line($this->constantZvalInit($z . '_default', $param->default));
+				$inner->line(sprintf('%s = argc > %d ? zv::Ref(&argv[%d]).deref().raw() : &%s_default;', $z, $param->position, $param->position, $z));
+			} else {
+				$inner->line(sprintf('%s = zv::Ref(&argv[%d]).deref().raw();', $z, $param->position));
+			}
+			$this->emitTypeCheck($inner, $z, $param->describe, $param->declared, sprintf('pgrt::throwArgumentType("%s", %d, "%s", "%s", %s); return;', addcslashes($label, '\\'), $param->position + 1, $param->name, addcslashes($param->describe, '\\'), $z));
+			switch ($param->kind) {
+				case 'long':
+					$inner->line(sprintf('zend_long p_%s = Z_LVAL_P(%s);', $param->name, $z));
+					break;
+				case 'bool':
+					$inner->line(sprintf('bool p_%s = Z_TYPE_P(%s) == IS_TRUE;', $param->name, $z));
+					break;
+				default:
+					$inner->line(sprintf('zval *p_%s = %s;', $param->name, $z));
+			}
+		}
+		$this->declareLocals($inner, $params, $expr instanceof Expr\Closure ? $expr->stmts : $expr->expr, $captureLocals);
+		if ($expr instanceof Expr\ArrowFunction) {
+			$this->returnStatement($inner, $expr->expr);
+		} else {
+			$this->statements($inner, $expr->stmts);
+		}
+		$out = [];
+		$out[] = sprintf('static void %s(zval *captures, uint32_t argc, zval *argv, zval *return_value)', $fn);
+		$out[] = '{';
+		$out[] = "\t(void) captures;";
+		$out[] = "\t(void) argv;";
+		$out[] = sprintf("\tif (UNEXPECTED(argc < %d)) { pgrt::throwTooFewArguments(\"%s\", argc, %d); return; }", $required, addcslashes($label, '\\'), $required);
+		$out[] = $inner->render();
+		$out[] = '}';
+		$this->closures[] = implode("\n", $out);
 
 		// the creation site
-		$captureArgs = [];
-		foreach ($captureNames as $name) {
-			$captureArgs[] = $this->asZval($f, $this->readLocal($f, $name));
+		$count = count($captures) + ($usesThis ? 1 : 0);
+		$mask = 0;
+		$argv = 'NULL';
+		if ($count > 0) {
+			$argv = $f->temp('cap');
+			$f->line(sprintf('zval %s[%d];', $argv, $count));
+			$k = 0;
+			foreach ($captures as $name => $byRef) {
+				$local = $f->locals[$name] ?? null;
+				if ($local === null) {
+					// an undefined variable is captured as null
+					$f->line(sprintf('ZVAL_NULL(&%s[%d]);', $argv, $k));
+				} elseif ($byRef) {
+					if ($local->kind !== 'ref') {
+						throw new CompileError(sprintf('$%s is captured by reference but has no reference home', $name));
+					}
+					$f->line(sprintf('if (!Z_ISREF_P(%s)) { if (Z_ISUNDEF_P(%s)) { ZVAL_NULL(%s); } ZVAL_MAKE_REF(%s); }', $local->cName, $local->cName, $local->cName, $local->cName));
+					$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $k, $local->cName));
+					$mask |= 1 << $k;
+				} else {
+					$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $k, $this->asZval($f, $this->readLocal($f, $name))));
+				}
+				$k++;
+			}
+			if ($usesThis) {
+				$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], &this_zv);', $argv, $k));
+			}
 		}
 		$holder = $f->temp('h');
-		$f->line(sprintf('zv::Val %s = pt_native_closure(&%s%s);', $holder, $fn, $captureArgs === [] ? '' : ', ' . implode(', ', array_map(static fn (string $a): string => sprintf('(const zval *) %s', $a), $captureArgs))));
+		$f->line(sprintf('zv::Val %s = pt_native_closure_new(&%s, %d, %s, %du);', $holder, $fn, $count, $argv, $mask));
 		$closure = $f->temp('cl');
 		$f->line(sprintf('zv::Val %s = pt_native_closure_to_closure(%s.raw());', $closure, $holder));
 		$f->failIf(sprintf('%s.isUndef()', $closure));
@@ -2599,14 +3989,20 @@ final class Compiler
 	private function instanceCheck(string $zvalPtr, string $class, bool $nullable): string
 	{
 		$unit = $this->units[strtolower($class)] ?? null;
-		if ($unit !== null && $unit->reflection->isFinal()) {
-			$check = sprintf('(Z_TYPE_P(%s) == IS_OBJECT && Z_OBJCE_P(%s) == %s)', $zvalPtr, $zvalPtr, $unit->ce);
-		} elseif ($class === 'Closure') {
+		$native = $unit !== null ? $unit->ce : $this->shadowCe($class);
+		if (strtolower($class) === 'closure') {
 			$check = sprintf('(Z_TYPE_P(%s) == IS_OBJECT && Z_OBJCE_P(%s) == zend_ce_closure)', $zvalPtr, $zvalPtr);
-		} elseif ($unit !== null) {
-			$check = sprintf('(Z_TYPE_P(%s) == IS_OBJECT && instanceof_function(Z_OBJCE_P(%s), %s))', $zvalPtr, $zvalPtr, $unit->ce);
+		} elseif ($native !== null) {
+			// the native class, or — in the differential tests, where the
+			// natives are declared under prefixed names beside the twins —
+			// the class the name means (in production one and the same)
+			$fast = $unit !== null && $unit->reflection->isFinal()
+				? sprintf('(Z_TYPE_P(%s) == IS_OBJECT && Z_OBJCE_P(%s) == %s)', $zvalPtr, $zvalPtr, $native)
+				: sprintf('pgrt::instanceOfClass(%s, %s)', $zvalPtr, $native);
+			$site = $this->site('pgrt::ClassSite', 'cls_' . $class);
+			$check = sprintf('(%s || pgrt::instanceOfClass(%s, pgrt::lookupClassQuiet(%s, "%s", %d)))', $fast, $zvalPtr, $site, addcslashes($class, '\\'), strlen($class));
 		} else {
-			throw new CompileError(sprintf('instance checks against %s need a class lookup; not supported here', $class));
+			$check = sprintf('pgrt::instanceOfClass(%s, %s)', $zvalPtr, $this->classEntryExpr($class));
 		}
 		if ($nullable) {
 			return sprintf('(Z_TYPE_P(%s) == IS_NULL || %s)', $zvalPtr, $check);
@@ -2614,22 +4010,96 @@ final class Compiler
 		return $check;
 	}
 
-	private function emitTypeCheck(FunctionContext $f, string $z, string $describe, Type $declared, ?string $class, bool $nullable, string $onFailure): void
+	/**
+	 * The class-entry variable of a shadowed class: its native class (also
+	 * under the prefixed names of the differential tests), set at activation.
+	 */
+	private function shadowCe(string $class): ?string
 	{
-		if ($class !== null) {
-			$check = $this->instanceCheck($z, $class, $nullable);
-		} elseif ($declared->isArray()->yes()) {
-			$check = sprintf('(Z_TYPE_P(%s) == IS_ARRAY)', $z);
-		} elseif ($declared->isString()->yes()) {
-			$check = sprintf('(Z_TYPE_P(%s) == IS_STRING)', $z);
-		} elseif ($declared instanceof MixedType) {
+		if ($this->shadowCes === null) {
+			$this->shadowCes = [];
+			foreach (glob(__DIR__ . '/../../../../turbo-ext/src/*.cpp') ?: [] as $file) {
+				$code = (string) file_get_contents($file);
+				if (preg_match_all('/reg::Class cls\("((?:[^"\\\\]|\\\\.)+)"\);.*?cls\.shadow\(&(\w+)\)/s', $code, $matches, PREG_SET_ORDER) === 0) {
+					continue;
+				}
+				foreach ($matches as $match) {
+					$this->shadowCes[strtolower(stripslashes($match[1]))] = $match[2];
+				}
+			}
+		}
+		return $this->shadowCes[strtolower($class)] ?? null;
+	}
+
+	/**
+	 * A class entry usable inside a condition: a compiled class's variable,
+	 * or a per-request cached lookup (an unloadable class compares as no
+	 * class, like instanceof of an unknown name).
+	 */
+	private function classEntryExpr(string $class): string
+	{
+		$unit = $this->units[strtolower($class)] ?? null;
+		if ($unit !== null) {
+			return $unit->ce;
+		}
+		$shadowCe = $this->shadowCe($class);
+		if ($shadowCe !== null) {
+			return $shadowCe;
+		}
+		$site = $this->site('pgrt::ClassSite', 'cls_' . $class);
+		return sprintf('pgrt::lookupClassQuiet(%s, "%s", %d)', $site, addcslashes($class, '\\'), strlen($class));
+	}
+
+	private function emitTypeCheck(FunctionContext $f, string $z, string $describe, Type $declared, string $onFailure): void
+	{
+		$check = $this->typeCheck($z, $declared, $describe);
+		if ($check === null) {
 			return;
-		} elseif ($declared->isNull()->yes()) {
-			$check = sprintf('(Z_TYPE_P(%s) == IS_NULL)', $z);
-		} else {
-			throw new CompileError(sprintf('no run-time check for %s', $describe));
 		}
 		$f->line(sprintf('if (UNEXPECTED(!%s)) { %s }', $check, $onFailure));
+	}
+
+	/** the C++ condition a value of the declared type satisfies (strict mode); null = any value does */
+	private function typeCheck(string $z, Type $declared, string $describe): ?string
+	{
+		if ($declared instanceof MixedType) {
+			return null;
+		}
+		$atoms = $declared instanceof UnionType ? $declared->getTypes() : [$declared];
+		$checks = [];
+		foreach ($atoms as $atom) {
+			if ($atom->isNull()->yes()) {
+				$checks[] = sprintf('Z_TYPE_P(%s) == IS_NULL', $z);
+			} elseif ($atom->isTrue()->yes()) {
+				$checks[] = sprintf('Z_TYPE_P(%s) == IS_TRUE', $z);
+			} elseif ($atom->isFalse()->yes()) {
+				$checks[] = sprintf('Z_TYPE_P(%s) == IS_FALSE', $z);
+			} elseif ($atom->isBoolean()->yes()) {
+				$checks[] = sprintf('Z_TYPE_P(%s) == IS_TRUE || Z_TYPE_P(%s) == IS_FALSE', $z, $z);
+			} elseif ($atom->isInteger()->yes()) {
+				$checks[] = sprintf('Z_TYPE_P(%s) == IS_LONG', $z);
+			} elseif ($atom->isString()->yes()) {
+				$checks[] = sprintf('Z_TYPE_P(%s) == IS_STRING', $z);
+			} elseif ($atom->isArray()->yes()) {
+				$checks[] = sprintf('Z_TYPE_P(%s) == IS_ARRAY', $z);
+			} elseif ($atom->isObject()->yes() && $atom->getObjectClassNames() === []) {
+				$checks[] = sprintf('Z_TYPE_P(%s) == IS_OBJECT', $z);
+			} elseif ($atom->equals(new CallableType())) {
+				$checks[] = sprintf('zend_is_callable(%s, 0, NULL)', $z);
+			} elseif ($atom->equals(new IterableType(new MixedType(), new MixedType()))) {
+				$checks[] = sprintf('Z_TYPE_P(%s) == IS_ARRAY || (Z_TYPE_P(%s) == IS_OBJECT && instanceof_function(Z_OBJCE_P(%s), zend_ce_traversable))', $z, $z, $z);
+			} elseif ($atom->isFloat()->yes()) {
+				throw new CompileError(sprintf('run-time float checks (int widening) are not compiled (%s)', $describe));
+			} elseif (count($atom->getObjectClassNames()) === 1) {
+				$checks[] = $this->instanceCheck($z, $atom->getObjectClassNames()[0], false);
+			} else {
+				throw new CompileError(sprintf('no run-time check for %s', $describe));
+			}
+		}
+		if (count($checks) === 1 && str_starts_with($checks[0], '(') && self::unparen($checks[0]) !== $checks[0]) {
+			return $checks[0];
+		}
+		return '(' . implode(' || ', $checks) . ')';
 	}
 
 }

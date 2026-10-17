@@ -25,7 +25,10 @@ foreach (glob('build/PHPStan/Build/TurboCodegen/*.php') as $file) {
 }
 
 $classes = [];
-foreach (require 'turbo-ext/compiled-classes.php' as $className => $ce) {
+foreach (require 'turbo-ext/compiled-classes.php' as $className => $config) {
+	if (is_string($config)) {
+		$config = ['ce' => $config];
+	}
 	$reflection = new ReflectionClass($className);
 	$attributes = $reflection->getAttributes(ShadowedByTurboExtension::class);
 	if (count($attributes) !== 1) {
@@ -36,9 +39,8 @@ foreach (require 'turbo-ext/compiled-classes.php' as $className => $ce) {
 	$classes[$className] = [
 		'file' => substr((string) $reflection->getFileName(), strlen($root) + 1),
 		'stem' => basename($implementation, '.cpp'),
-		'ce' => $ce,
 		'implementation' => 'turbo-ext/src/' . basename($implementation),
-	];
+	] + $config;
 }
 
 $check = in_array('--check', $argv, true);

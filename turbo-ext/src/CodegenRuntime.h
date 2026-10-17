@@ -17,6 +17,7 @@
 #include "support.h"
 #include "zv.h"
 #include "Engine.h"
+#include "zend_smart_str.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -50,6 +51,27 @@ static zend_always_inline zend_class_entry *lookupClass(ClassSite &site, const c
 	return lookupClassSlow(site, name, len);
 }
 
+/* the class of a name if it is loaded (no autoloading: instanceof and type
+ * checks never load a class), cached once found; NULL otherwise */
+zend_class_entry *lookupClassQuietSlow(ClassSite &site, const char *name, size_t len);
+
+static zend_always_inline zend_class_entry *lookupClassQuiet(ClassSite &site, const char *name, size_t len)
+{
+	if (EXPECTED(site.ce != NULL && site.generation == pt_engine_generation)) return site.ce;
+	return lookupClassQuietSlow(site, name, len);
+}
+
+/* $value instanceof <ce>, where an unloaded class (NULL) has no instances */
+static zend_always_inline bool instanceOfClass(zval *value, zend_class_entry *ce)
+{
+	return ce != NULL && Z_TYPE_P(value) == IS_OBJECT && instanceof_function(Z_OBJCE_P(value), ce);
+}
+
+static zend_always_inline bool objectInstanceOf(zend_object *object, zend_class_entry *ce)
+{
+	return ce != NULL && instanceof_function(object->ce, ce);
+}
+
 struct StaticSite
 {
 	zend_class_entry *ce;
@@ -77,13 +99,13 @@ struct FunctionSite
  * leaves the caller's frame current, and scope-sensitive builtins
  * (array_column() reading a private property) must still see the lexical
  * class; false = pending exception (*ret is then UNDEF) */
-[[nodiscard]] bool callFunction(FunctionSite &site, const char *lcname, size_t len, zend_class_entry *scope, uint32_t argc, zval *argv, zval *ret);
+[[nodiscard]] bool callFunction(FunctionSite &site, const char *lcname, size_t len, zend_class_entry *scope, uint32_t argc, zval *argv, zval *ret, HashTable *named = NULL);
 
 /* Class::method(...$argv) through the engine; false = pending exception */
-[[nodiscard]] bool callStatic(pt_method_site &site, zend_class_entry *ce, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret);
+[[nodiscard]] bool callStatic(pt_method_site &site, zend_class_entry *ce, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret, HashTable *named = NULL);
 
 /* $object->method(...$argv) through the engine; false = pending exception */
-[[nodiscard]] bool callMethod(pt_method_site &site, zval *object, const char *name, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret);
+[[nodiscard]] bool callMethod(pt_method_site &site, zval *object, const char *name, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret, HashTable *named = NULL);
 
 /* }}} */
 
@@ -91,7 +113,7 @@ struct FunctionSite
 
 /* new ce(...$argv) through the engine's constructor; false = pending
  * exception (*out is then UNDEF) */
-[[nodiscard]] bool newObject(zend_class_entry *ce, uint32_t argc, zval *argv, zval *out);
+[[nodiscard]] bool newObject(zend_class_entry *ce, uint32_t argc, zval *argv, zval *out, HashTable *named = NULL);
 
 /* a declared property's slot of an object known to be ce or a subclass,
  * checked to be initialized; NULL with an Error pending */
@@ -138,13 +160,35 @@ struct Callable
 	zend_fcall_info_cache fcc;
 };
 
-static zend_always_inline bool callCallable(Callable &callable, uint32_t argc, zval *argv, zval *ret)
+static zend_always_inline bool callCallable(Callable &callable, uint32_t argc, zval *argv, zval *ret, HashTable *named = NULL)
 {
-	return pt_call_fci(&callable.fci, &callable.fcc, argc, argv, ret);
+	if (EXPECTED(named == NULL)) {
+		/* pt_call_fci() releases *ret on failure: reset it for the caller's zv::Val */
+		if (UNEXPECTED(!pt_call_fci(&callable.fci, &callable.fcc, argc, argv, ret))) {
+			ZVAL_UNDEF(ret);
+			return false;
+		}
+		return true;
+	}
+	callable.fci.retval = ret;
+	callable.fci.param_count = argc;
+	callable.fci.params = argv;
+	callable.fci.named_params = named;
+	bool ok = zend_call_function(&callable.fci, &callable.fcc) == SUCCESS && !EG(exception);
+	callable.fci.named_params = NULL;
+	if (!ok) {
+		zval_ptr_dtor(ret);
+		ZVAL_UNDEF(ret);
+	}
+	return ok;
 }
 
+/* a callable value as a parsed `callable` parameter; false = a TypeError
+ * pending (not callable) */
+[[nodiscard]] bool callableOf(zval *value, Callable &out);
+
 /* $value(...$argv) of any callable value; false = pending exception */
-[[nodiscard]] bool callValue(zval *value, uint32_t argc, zval *argv, zval *ret);
+[[nodiscard]] bool callValue(zval *value, uint32_t argc, zval *argv, zval *ret, HashTable *named = NULL);
 
 /* }}} */
 
@@ -321,6 +365,127 @@ static zend_always_inline bool shiftRight(zend_long a, zend_long b, zend_long *o
 		return true;
 	}
 	*out = a >> b;
+	return true;
+}
+
+/* }}} */
+
+/* Class::NAME of a constant whose value is not a compile-time scalar (an
+ * array, an enum case): the engine's evaluated value, borrowed; NULL with an
+ * Error pending */
+zval *classConstant(zend_class_entry *ce, zval *name, zend_class_entry *scope);
+
+/* {{{ writes and isset reads */
+
+/* $array[$key] for a write: the element, added as null when missing; NULL
+ * with a TypeError pending for an illegal offset type */
+zval *dimWrite(zval *array, zval *key);
+
+static zend_always_inline zval *dimWriteLong(zval *array, zend_long key)
+{
+	zval *found = zend_hash_index_find(Z_ARRVAL_P(array), key);
+	if (found != NULL) return found;
+	zval none;
+	ZVAL_NULL(&none);
+	return zend_hash_index_add_new(Z_ARRVAL_P(array), key, &none);
+}
+
+/* $object->name = $value through the handlers, `scope` as the calling class;
+ * false = pending exception */
+[[nodiscard]] bool writePropertyGeneric(zval *object, zend_class_entry *scope, zval *name, zval *value);
+
+/* the value isset($base[$key]) / ?? reads, NULL when there is none; *tmp
+ * holds a value read from an object */
+zval *dimIs(zval *base, zval *key, zval *tmp);
+
+/* the value isset($base->name) / ?? reads, NULL when there is none */
+zval *propIs(zval *base, zend_class_entry *scope, zval *name, zval *tmp);
+
+/* }}} */
+
+/* {{{ strings */
+
+/* $a . $b; false = pending exception (a failed __toString()) */
+[[nodiscard]] bool concat(zval *a, zval *b, zval *out);
+
+/* (string) in place; false = pending exception */
+[[nodiscard]] bool castString(zval *value);
+
+/* an interpolated string, built part by part */
+class StringBuilder
+{
+public:
+	StringBuilder() { memset(&str, 0, sizeof(str)); }
+	StringBuilder(const StringBuilder &) = delete;
+	StringBuilder &operator=(const StringBuilder &) = delete;
+	~StringBuilder() { smart_str_free(&str); }
+
+	[[nodiscard]] bool append(zval *part)
+	{
+		if (Z_TYPE_P(part) == IS_STRING) {
+			smart_str_append(&str, Z_STR_P(part));
+			return true;
+		}
+		zend_string *tmp;
+		zend_string *converted = zval_try_get_tmp_string(part, &tmp);
+		if (UNEXPECTED(converted == NULL)) return false;
+		smart_str_append(&str, converted);
+		zend_tmp_string_release(tmp);
+		return true;
+	}
+
+	zv::Val finish()
+	{
+		smart_str_0(&str);
+		zend_string *result = str.s != NULL ? str.s : ZSTR_EMPTY_ALLOC();
+		str.s = NULL;
+		return zv::Val::adoptString(result);
+	}
+
+private:
+	smart_str str;
+};
+
+/* }}} */
+
+/* {{{ integer arithmetic of int-proven operands: PHP turns an overflow into
+ * a float, which an int-typed C++ home cannot hold — compiled code raises an
+ * Error instead (never reached by PHPStan's counters and offsets) */
+
+ZEND_COLD bool throwIntegerOverflow();
+
+static zend_always_inline bool addLong(zend_long a, zend_long b, zend_long *out)
+{
+	if (UNEXPECTED(__builtin_add_overflow(a, b, out))) return throwIntegerOverflow();
+	return true;
+}
+
+static zend_always_inline bool subLong(zend_long a, zend_long b, zend_long *out)
+{
+	if (UNEXPECTED(__builtin_sub_overflow(a, b, out))) return throwIntegerOverflow();
+	return true;
+}
+
+static zend_always_inline bool mulLong(zend_long a, zend_long b, zend_long *out)
+{
+	if (UNEXPECTED(__builtin_mul_overflow(a, b, out))) return throwIntegerOverflow();
+	return true;
+}
+
+static zend_always_inline bool negateLong(zend_long a, zend_long *out)
+{
+	if (UNEXPECTED(a == ZEND_LONG_MIN)) return throwIntegerOverflow();
+	*out = -a;
+	return true;
+}
+
+static zend_always_inline bool modLong(zend_long a, zend_long b, zend_long *out)
+{
+	if (UNEXPECTED(b == 0)) {
+		zend_throw_exception_ex(zend_ce_division_by_zero_error, 0, "Modulo by zero");
+		return false;
+	}
+	*out = b == -1 ? 0 : a % b;
 	return true;
 }
 

@@ -55,6 +55,12 @@ final class TypeOracle
 		if (!$this->types->offsetExists($expr)) {
 			return new MixedType();
 		}
+		if ($expr instanceof Node\Expr\ArrayDimFetch) {
+			// an array's native type can carry PHPDoc element types in through
+			// narrowing (count() on a `@return list<X>` array), so what an
+			// offset read yields is never treated as proven
+			return new MixedType();
+		}
 		return $this->types[$expr][0];
 	}
 

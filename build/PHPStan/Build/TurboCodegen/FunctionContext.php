@@ -26,7 +26,7 @@ final class FunctionContext
 	 */
 	public function __construct(
 		public readonly string $label,
-		public readonly string $fail,
+		public string $fail,
 		public readonly ?string $self,
 		public readonly ?ReturnInfo $return,
 		public readonly bool $isClosure = false,

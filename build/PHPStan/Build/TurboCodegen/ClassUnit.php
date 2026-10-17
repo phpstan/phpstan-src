@@ -23,6 +23,11 @@ final class ClassUnit
 		public readonly TypeOracle $oracle,
 		public readonly Class_ $node,
 		public readonly string $implementation,
+		public readonly bool $defineCe = false,
+		/** @var array{string, string}|null */
+		public readonly ?array $newExport = null,
+		/** @var array{function: string, enum: string, prefix: string, receiver: string, fallback?: string}|null */
+		public readonly ?array $dispatchExport = null,
 	)
 	{
 	}

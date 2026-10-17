@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_resolved_php_doc_block = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[14];
+static zval pg_lit[3];
 
 static pt_method_site pg_site_0; /* static_PHPStan\Type\Generic\TemplateTypeMap::createEmpty */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\Type */
@@ -2955,35 +2955,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[2], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::isDeprecated)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_46, p5, "resolveIsDeprecated", "resolveisdeprecated", 19, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_46, p3, "resolveIsDeprecated", "resolveisdeprecated", 19, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isDeprecated, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isDeprecated, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -2995,35 +2993,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[3], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::isNotDeprecated)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_47, p5, "resolveIsNotDeprecated", "resolveisnotdeprecated", 22, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_47, p3, "resolveIsNotDeprecated", "resolveisnotdeprecated", 22, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isNotDeprecated, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isNotDeprecated, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -3035,35 +3031,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[4], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::isInternal)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_48, p5, "resolveIsInternal", "resolveisinternal", 17, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_48, p3, "resolveIsInternal", "resolveisinternal", 17, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isInternal, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isInternal, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -3075,35 +3069,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[5], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::isFinal)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_49, p5, "resolveIsFinal", "resolveisfinal", 14, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_49, p3, "resolveIsFinal", "resolveisfinal", 14, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isFinal, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isFinal, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -3115,35 +3107,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[6], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::hasConsistentConstructor)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_50, p5, "resolveHasConsistentConstructor", "resolvehasconsistentconstructor", 31, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_50, p3, "resolveHasConsistentConstructor", "resolvehasconsistentconstructor", 31, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::hasConsistentConstructor, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::hasConsistentConstructor, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -3155,35 +3145,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[7], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::acceptsNamedArguments)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_51, p5, "resolveAcceptsNamedArguments", "resolveacceptsnamedarguments", 28, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_51, p3, "resolveAcceptsNamedArguments", "resolveacceptsnamedarguments", 28, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::acceptsNamedArguments, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::acceptsNamedArguments, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -3213,7 +3201,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isPure, "isPure");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		if (zend_is_identical(p1, &pg_lit[8])) {
+		if (zend_is_identical(p1, &pg_lit[2])) {
 			 {
 				zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
 				if (UNEXPECTED(p2 == NULL)) return false;
@@ -3301,35 +3289,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[9], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::areAllMethodsPure)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_54, p5, "resolveAllMethodsPure", "resolveallmethodspure", 21, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_54, p3, "resolveAllMethodsPure", "resolveallmethodspure", 21, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::areAllMethodsPure, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::areAllMethodsPure, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -3341,35 +3327,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[10], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::areAllMethodsImpure)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_55, p5, "resolveAllMethodsImpure", "resolveallmethodsimpure", 23, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_55, p3, "resolveAllMethodsImpure", "resolveallmethodsimpure", 23, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::areAllMethodsImpure, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::areAllMethodsImpure, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -3381,35 +3365,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[11], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::isReadOnly)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_56, p5, "resolveIsReadOnly", "resolveisreadonly", 17, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_56, p3, "resolveIsReadOnly", "resolveisreadonly", 17, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isReadOnly, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isReadOnly, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -3421,35 +3403,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[12], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::isImmutable)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_57, p5, "resolveIsImmutable", "resolveisimmutable", 18, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_57, p3, "resolveIsImmutable", "resolveisimmutable", 18, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isImmutable, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isImmutable, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -3461,35 +3441,33 @@ namespace pgen::ResolvedPhpDocBlock {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_resolved_php_doc_block, &pg_lit[13], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ResolvedPhpDocBlock::slot::isAllowedPrivateMutation)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
-			if (UNEXPECTED(p6 == NULL)) return false;
-			zval av7[1];
-			ZVAL_COPY_VALUE(&av7[0], p6);
-			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_58, p5, "resolveAllowPrivateMutation", "resolveallowprivatemutation", 27, 1, av7, r8.raw(), NULL))) return false;
-			bool k9 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNodeResolver, "phpDocNodeResolver");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::phpDocNode, "phpDocNode");
+			if (UNEXPECTED(p4 == NULL)) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p4);
+			zv::Val r6;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_58, p3, "resolveAllowPrivateMutation", "resolveallowprivatemutation", 27, 1, av5, r6.raw(), NULL))) return false;
+			bool k7 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
+			zval z8;
+			ZVAL_BOOL(&z8, k7);
+			zval o9;
+			ZVAL_COPY(&o9, &z8);
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isAllowedPrivateMutation, &o9);
 			zval z10;
-			ZVAL_BOOL(&z10, k9);
-			zval o11;
-			ZVAL_COPY(&o11, &z10);
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isAllowedPrivateMutation, &o11);
-			zval z12;
-			ZVAL_BOOL(&z12, k9);
-			ca4 = zv::Val::copyOf(zv::Ref(&z12));
+			ZVAL_BOOL(&z10, k7);
+			ca2 = zv::Val::copyOf(zv::Ref(&z10));
 		}
 		}
-		*ret = (Z_TYPE_P(ca4.raw()) == IS_TRUE);
+		*ret = (Z_TYPE_P(ca2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -4426,18 +4404,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("/** */", 6));
 	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("$", 1));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("isDeprecated", 12));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("isNotDeprecated", 15));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("isInternal", 10));
-	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("isFinal", 7));
-	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("hasConsistentConstructor", 24));
-	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("acceptsNamedArguments", 21));
-	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("notLoaded", 9));
-	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("areAllMethodsPure", 17));
-	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("areAllMethodsImpure", 19));
-	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("isReadOnly", 10));
-	ZVAL_INTERNED_STR(&pg_lit[12], pgrt::internLiteral("isImmutable", 11));
-	ZVAL_INTERNED_STR(&pg_lit[13], pgrt::internLiteral("isAllowedPrivateMutation", 24));
+	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("notLoaded", 9));
 	reg::Class cls("PHPStan\\PhpDoc\\ResolvedPhpDocBlock");
 	ptdecl::ResolvedPhpDocBlock::declareClass(cls);
 	ptdecl::ResolvedPhpDocBlock::declareProperties(cls);

@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_file_content_hasher = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[4];
+static zval pg_lit[3];
 
 static pgrt::FunctionSite pg_site_0; /* function_stat */
 static pgrt::FunctionSite pg_site_1; /* function_hash_file */
@@ -43,112 +43,110 @@ namespace pgen::FileContentHasher {
 		}
 	}
 	 {
-		zval *is7 = &this_zv;
+		zval *is6 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileContentHasher::slot::hashes)).deref().raw();
+		if (Z_ISUNDEF_P(is6)) is6 = NULL;
+		zv::Val o7 = zv::Val::copyOf(zv::Ref(p_file));
 		zv::Val ist8;
-		zval *is6 = is7 == NULL ? NULL : pgrt::propIs(is7, pt_ce_file_content_hasher, &pg_lit[0], ist8.raw());
+		zval *is5 = is6 == NULL ? NULL : pgrt::dimIs(is6, o7.raw(), ist8.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(p_file));
-		zv::Val ist10;
-		zval *is5 = is6 == NULL ? NULL : pgrt::dimIs(is6, o9.raw(), ist10.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q11;
+		zv::Val q9;
 		if (is5 != NULL && Z_TYPE_P(is5) > IS_NULL) {
-			q11 = zv::Val::copyOf(zv::Ref(is5));
+			q9 = zv::Val::copyOf(zv::Ref(is5));
 		} else {
 		 {
-			zv::Val o12 = zv::Val::null();
-			q11 = std::move(o12);
+			zv::Val o10 = zv::Val::null();
+			q9 = std::move(o10);
 		}
 		}
-		l_memo = std::move(q11);
+		l_memo = std::move(q9);
 	}
 	 {
-		bool b14 = !(Z_TYPE_P(l_memo.raw()) == IS_NULL);
-		if (b14) {
-			zv::Val et16;
-			zval *e15 = Z_TYPE_P(l_memo.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_memo.raw()), 0) : NULL;
-			if (UNEXPECTED(e15 == NULL)) {
-				zval z17;
-				ZVAL_LONG(&z17, 0);
-				e15 = pgrt::dimRead(l_memo.raw(), &z17, et16.raw());
-				if (UNEXPECTED(e15 == NULL)) return false;
+		bool b12 = !(Z_TYPE_P(l_memo.raw()) == IS_NULL);
+		if (b12) {
+			zv::Val et14;
+			zval *e13 = Z_TYPE_P(l_memo.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_memo.raw()), 0) : NULL;
+			if (UNEXPECTED(e13 == NULL)) {
+				zval z15;
+				ZVAL_LONG(&z15, 0);
+				e13 = pgrt::dimRead(l_memo.raw(), &z15, et14.raw());
+				if (UNEXPECTED(e13 == NULL)) return false;
 			}
+			zv::Val et17;
+			zval *e16 = pgrt::dimRead(l_stat.raw(), &pg_lit[0], et17.raw());
+			if (UNEXPECTED(e16 == NULL)) return false;
+			b12 = zend_is_identical(zv::Ref(e13).deref().raw(), zv::Ref(e16).deref().raw());
+		}
+		bool b11 = b12;
+		if (b11) {
 			zv::Val et19;
-			zval *e18 = pgrt::dimRead(l_stat.raw(), &pg_lit[1], et19.raw());
-			if (UNEXPECTED(e18 == NULL)) return false;
-			b14 = zend_is_identical(zv::Ref(e15).deref().raw(), zv::Ref(e18).deref().raw());
-		}
-		bool b13 = b14;
-		if (b13) {
-			zv::Val et21;
-			zval *e20 = Z_TYPE_P(l_memo.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_memo.raw()), 1) : NULL;
-			if (UNEXPECTED(e20 == NULL)) {
-				zval z22;
-				ZVAL_LONG(&z22, 1);
-				e20 = pgrt::dimRead(l_memo.raw(), &z22, et21.raw());
-				if (UNEXPECTED(e20 == NULL)) return false;
+			zval *e18 = Z_TYPE_P(l_memo.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_memo.raw()), 1) : NULL;
+			if (UNEXPECTED(e18 == NULL)) {
+				zval z20;
+				ZVAL_LONG(&z20, 1);
+				e18 = pgrt::dimRead(l_memo.raw(), &z20, et19.raw());
+				if (UNEXPECTED(e18 == NULL)) return false;
 			}
-			zv::Val et24;
-			zval *e23 = pgrt::dimRead(l_stat.raw(), &pg_lit[2], et24.raw());
-			if (UNEXPECTED(e23 == NULL)) return false;
-			b13 = zend_is_identical(zv::Ref(e20).deref().raw(), zv::Ref(e23).deref().raw());
+			zv::Val et22;
+			zval *e21 = pgrt::dimRead(l_stat.raw(), &pg_lit[1], et22.raw());
+			if (UNEXPECTED(e21 == NULL)) return false;
+			b11 = zend_is_identical(zv::Ref(e18).deref().raw(), zv::Ref(e21).deref().raw());
 		}
-		if (b13) {
+		if (b11) {
 			 {
-				zv::Val et26;
-				zval *e25 = Z_TYPE_P(l_memo.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_memo.raw()), 2) : NULL;
-				if (UNEXPECTED(e25 == NULL)) {
-					zval z27;
-					ZVAL_LONG(&z27, 2);
-					e25 = pgrt::dimRead(l_memo.raw(), &z27, et26.raw());
-					if (UNEXPECTED(e25 == NULL)) return false;
+				zv::Val et24;
+				zval *e23 = Z_TYPE_P(l_memo.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_memo.raw()), 2) : NULL;
+				if (UNEXPECTED(e23 == NULL)) {
+					zval z25;
+					ZVAL_LONG(&z25, 2);
+					e23 = pgrt::dimRead(l_memo.raw(), &z25, et24.raw());
+					if (UNEXPECTED(e23 == NULL)) return false;
 				}
-				if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(e25).deref().raw()) == IS_STRING || Z_TYPE_P(zv::Ref(e25).deref().raw()) == IS_FALSE))) { pgrt::throwReturnType("PHPStan\\File\\FileContentHasher::hash", "string|false", zv::Ref(e25).deref().raw()); return false; }
-				ZVAL_COPY(ret, zv::Ref(e25).deref().raw());
+				if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(e23).deref().raw()) == IS_STRING || Z_TYPE_P(zv::Ref(e23).deref().raw()) == IS_FALSE))) { pgrt::throwReturnType("PHPStan\\File\\FileContentHasher::hash", "string|false", zv::Ref(e23).deref().raw()); return false; }
+				ZVAL_COPY(ret, zv::Ref(e23).deref().raw());
 				return true;
 			}
 		}
 	}
 	 {
-		zval av28[2];
-		ZVAL_COPY_VALUE(&av28[0], &pg_lit[3]);
-		ZVAL_COPY_VALUE(&av28[1], p_file);
-		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "hash_file", 9, pt_ce_file_content_hasher, 2, av28, r29.raw(), NULL))) return false;
-		l_hash = std::move(r29);
+		zval av26[2];
+		ZVAL_COPY_VALUE(&av26[0], &pg_lit[2]);
+		ZVAL_COPY_VALUE(&av26[1], p_file);
+		zv::Val r27;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "hash_file", 9, pt_ce_file_content_hasher, 2, av26, r27.raw(), NULL))) return false;
+		l_hash = std::move(r27);
 	}
 	 {
 		if (Z_TYPE_P(l_hash.raw()) == (false ? IS_TRUE : IS_FALSE)) {
 			 {
-				zval z30;
-				ZVAL_BOOL(&z30, false);
-				ZVAL_COPY_VALUE(ret, &z30);
+				zval z28;
+				ZVAL_BOOL(&z28, false);
+				ZVAL_COPY_VALUE(ret, &z28);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val o31 = zv::Val::copyOf(zv::Ref(p_file));
-		zv::Val arr32 = zv::Val::adopt([]() { zval a; array_init_size(&a, 3); return a; }());
-		zv::Val et34;
-		zval *e33 = pgrt::dimRead(l_stat.raw(), &pg_lit[1], et34.raw());
-		if (UNEXPECTED(e33 == NULL)) return false;
-		zv::Val o35 = zv::Val::copyOf(zv::Ref(zv::Ref(e33).deref().raw()));
-		{ zval v = o35.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr32.raw()), &v); }
-		zv::Val et37;
-		zval *e36 = pgrt::dimRead(l_stat.raw(), &pg_lit[2], et37.raw());
-		if (UNEXPECTED(e36 == NULL)) return false;
-		zv::Val o38 = zv::Val::copyOf(zv::Ref(zv::Ref(e36).deref().raw()));
-		{ zval v = o38.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr32.raw()), &v); }
-		zv::Val o39 = zv::Val::copyOf(zv::Ref(l_hash.raw()));
-		{ zval v = o39.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr32.raw()), &v); }
-		zv::Val o40 = zv::Val::copyOf(zv::Ref(arr32.raw()));
-		zval *w41 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileContentHasher::slot::hashes)).deref().raw();
-		if (Z_TYPE_P(w41) <= IS_NULL) { zval_ptr_dtor(w41); array_init(w41); } else if (UNEXPECTED(Z_TYPE_P(w41) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-		SEPARATE_ARRAY(w41);
-		zval *e42 = pgrt::dimWrite(w41, o31.raw());
-		if (UNEXPECTED(e42 == NULL)) return false;
-		zv::Ref(e42).assign(std::move(o40));
+		zv::Val o29 = zv::Val::copyOf(zv::Ref(p_file));
+		zv::Val arr30 = zv::Val::adopt([]() { zval a; array_init_size(&a, 3); return a; }());
+		zv::Val et32;
+		zval *e31 = pgrt::dimRead(l_stat.raw(), &pg_lit[0], et32.raw());
+		if (UNEXPECTED(e31 == NULL)) return false;
+		zv::Val o33 = zv::Val::copyOf(zv::Ref(zv::Ref(e31).deref().raw()));
+		{ zval v = o33.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr30.raw()), &v); }
+		zv::Val et35;
+		zval *e34 = pgrt::dimRead(l_stat.raw(), &pg_lit[1], et35.raw());
+		if (UNEXPECTED(e34 == NULL)) return false;
+		zv::Val o36 = zv::Val::copyOf(zv::Ref(zv::Ref(e34).deref().raw()));
+		{ zval v = o36.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr30.raw()), &v); }
+		zv::Val o37 = zv::Val::copyOf(zv::Ref(l_hash.raw()));
+		{ zval v = o37.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr30.raw()), &v); }
+		zv::Val o38 = zv::Val::copyOf(zv::Ref(arr30.raw()));
+		zval *w39 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileContentHasher::slot::hashes)).deref().raw();
+		if (Z_TYPE_P(w39) <= IS_NULL) { zval_ptr_dtor(w39); array_init(w39); } else if (UNEXPECTED(Z_TYPE_P(w39) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+		SEPARATE_ARRAY(w39);
+		zval *e40 = pgrt::dimWrite(w39, o29.raw());
+		if (UNEXPECTED(e40 == NULL)) return false;
+		zv::Ref(e40).assign(std::move(o38));
 	}
 	 {
 		ZVAL_COPY(ret, l_hash.raw());
@@ -163,10 +161,9 @@ namespace sigs = ptdecl::FileContentHasher::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_FileContentHasher)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("hashes", 6));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("mtime", 5));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("size", 4));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("sha256", 6));
+	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("mtime", 5));
+	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("size", 4));
+	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("sha256", 6));
 	reg::Class cls("PHPStan\\File\\FileContentHasher");
 	ptdecl::FileContentHasher::declareClass(cls);
 	ptdecl::FileContentHasher::declareProperties(cls);

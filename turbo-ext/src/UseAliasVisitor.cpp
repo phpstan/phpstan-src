@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_use_alias_visitor = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[3];
+static zval pg_lit[2];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Stmt\Namespace_ */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Stmt\Use_ */
@@ -269,37 +269,35 @@ namespace pgen::UseAliasVisitor {
 								l_lowerOriginal = std::move(r68);
 							}
 							 {
-								zval *is72 = &this_zv;
+								zval *is71 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::UseAliasVisitor::slot::explicitAliases)).deref().raw();
+								if (Z_ISUNDEF_P(is71)) is71 = NULL;
+								zv::Val o72 = zv::Val::copyOf(zv::Ref(l_lowerOriginal.raw()));
 								zv::Val ist73;
-								zval *is71 = is72 == NULL ? NULL : pgrt::propIs(is72, pt_ce_use_alias_visitor, &pg_lit[1], ist73.raw());
-								if (UNEXPECTED(EG(exception))) return false;
-								zv::Val o74 = zv::Val::copyOf(zv::Ref(l_lowerOriginal.raw()));
-								zv::Val ist75;
-								zval *is70 = is71 == NULL ? NULL : pgrt::dimIs(is71, o74.raw(), ist75.raw());
+								zval *is70 = is71 == NULL ? NULL : pgrt::dimIs(is71, o72.raw(), ist73.raw());
 								if (UNEXPECTED(EG(exception))) return false;
 								bool b69 = (is70 != NULL && Z_TYPE_P(is70) > IS_NULL);
 								if (b69) {
-									zval *p76 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::UseAliasVisitor::slot::explicitAliases, "explicitAliases");
-									if (UNEXPECTED(p76 == NULL)) return false;
+									zval *p74 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::UseAliasVisitor::slot::explicitAliases, "explicitAliases");
+									if (UNEXPECTED(p74 == NULL)) return false;
+									zv::Val et76;
+									zval *e75 = pgrt::dimRead(p74, l_lowerOriginal.raw(), et76.raw());
+									if (UNEXPECTED(e75 == NULL)) return false;
 									zv::Val et78;
-									zval *e77 = pgrt::dimRead(p76, l_lowerOriginal.raw(), et78.raw());
-									if (UNEXPECTED(e77 == NULL)) return false;
-									zv::Val et80;
-									zval *e79 = Z_TYPE_P(l_originalParts.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_originalParts.raw()), 0) : NULL;
-									if (UNEXPECTED(e79 == NULL)) {
-										zval z81;
-										ZVAL_LONG(&z81, 0);
-										e79 = pgrt::dimRead(l_originalParts.raw(), &z81, et80.raw());
-										if (UNEXPECTED(e79 == NULL)) return false;
+									zval *e77 = Z_TYPE_P(l_originalParts.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_originalParts.raw()), 0) : NULL;
+									if (UNEXPECTED(e77 == NULL)) {
+										zval z79;
+										ZVAL_LONG(&z79, 0);
+										e77 = pgrt::dimRead(l_originalParts.raw(), &z79, et78.raw());
+										if (UNEXPECTED(e77 == NULL)) return false;
 									}
-									b69 = zend_is_identical(zv::Ref(e77).deref().raw(), zv::Ref(e79).deref().raw());
+									b69 = zend_is_identical(zv::Ref(e75).deref().raw(), zv::Ref(e77).deref().raw());
 								}
 								if (b69) {
 									 {
-										zval z82;
-										ZVAL_BOOL(&z82, true);
-										zv::Val r83;
-										if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_22, p_node, &pg_lit[2], &z82, r83.raw()))) return false;
+										zval z80;
+										ZVAL_BOOL(&z80, true);
+										zv::Val r81;
+										if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_22, p_node, &pg_lit[1], &z80, r81.raw()))) return false;
 									}
 								}
 							}
@@ -310,9 +308,9 @@ namespace pgen::UseAliasVisitor {
 		}
 	}
 	 {
-		zval z84;
-		ZVAL_NULL(&z84);
-		ZVAL_COPY_VALUE(ret, &z84);
+		zval z82;
+		ZVAL_NULL(&z82);
+		ZVAL_COPY_VALUE(ret, &z82);
 		return true;
 	}
 }
@@ -325,8 +323,7 @@ namespace sigs = ptdecl::UseAliasVisitor::sig;
 PT_MINIT_REGISTRATION(pt_register_codegen_UseAliasVisitor)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("originalName", 12));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("explicitAliases", 15));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("isExplicitUseAlias", 18));
+	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("isExplicitUseAlias", 18));
 	reg::Class cls("PHPStan\\Parser\\UseAliasVisitor");
 	ptdecl::UseAliasVisitor::declareClass(cls);
 	ptdecl::UseAliasVisitor::declareProperties(cls);

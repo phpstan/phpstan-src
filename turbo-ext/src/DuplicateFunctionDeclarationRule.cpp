@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_duplicate_function_declaration_rule = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[5];
+static zval pg_lit[4];
 
 static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
 static pt_method_site pg_site_1; /* method_getName_1 */
@@ -59,7 +59,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			q5 = zv::Val::copyOf(zv::Ref(r4.raw()));
 		} else {
 		 {
-			zv::Val o6 = zv::Val::copyOf(zv::Ref(&pg_lit[3]));
+			zv::Val o6 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
 			q5 = std::move(o6);
 		}
 		}
@@ -185,44 +185,42 @@ namespace pgen::DuplicateFunctionDeclarationRule {
 							l_reflectionFunctionName = std::move(r13);
 						}
 						 {
-							zval *is16 = &this_zv;
+							zval *is15 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap)).deref().raw();
+							if (Z_ISUNDEF_P(is15)) is15 = NULL;
+							zv::Val o16 = zv::Val::copyOf(zv::Ref(l_reflectionFunctionName.raw()));
 							zv::Val ist17;
-							zval *is15 = is16 == NULL ? NULL : pgrt::propIs(is16, pt_ce_duplicate_function_declaration_rule, &pg_lit[1], ist17.raw());
-							if (UNEXPECTED(EG(exception))) return false;
-							zv::Val o18 = zv::Val::copyOf(zv::Ref(l_reflectionFunctionName.raw()));
-							zv::Val ist19;
-							zval *is14 = is15 == NULL ? NULL : pgrt::dimIs(is15, o18.raw(), ist19.raw());
+							zval *is14 = is15 == NULL ? NULL : pgrt::dimIs(is15, o16.raw(), ist17.raw());
 							if (UNEXPECTED(EG(exception))) return false;
 							if (!((is14 != NULL && Z_TYPE_P(is14) > IS_NULL))) {
 								 {
-									zv::Val o20 = zv::Val::copyOf(zv::Ref(l_reflectionFunctionName.raw()));
-									zval arr21_raw;
-									ZVAL_EMPTY_ARRAY(&arr21_raw);
-									zv::Val o22 = zv::Val::copyOf(zv::Ref(&arr21_raw));
-									zv::Val o23 = zv::Val::copyOf(zv::Ref(o22.raw()));
-									zval *w24 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap)).deref().raw();
-									if (Z_TYPE_P(w24) <= IS_NULL) { zval_ptr_dtor(w24); array_init(w24); } else if (UNEXPECTED(Z_TYPE_P(w24) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-									SEPARATE_ARRAY(w24);
-									zval *e25 = pgrt::dimWrite(w24, o20.raw());
-									if (UNEXPECTED(e25 == NULL)) return false;
-									zv::Ref(e25).assign(std::move(o23));
+									zv::Val o18 = zv::Val::copyOf(zv::Ref(l_reflectionFunctionName.raw()));
+									zval arr19_raw;
+									ZVAL_EMPTY_ARRAY(&arr19_raw);
+									zv::Val o20 = zv::Val::copyOf(zv::Ref(&arr19_raw));
+									zv::Val o21 = zv::Val::copyOf(zv::Ref(o20.raw()));
+									zval *w22 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap)).deref().raw();
+									if (Z_TYPE_P(w22) <= IS_NULL) { zval_ptr_dtor(w22); array_init(w22); } else if (UNEXPECTED(Z_TYPE_P(w22) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+									SEPARATE_ARRAY(w22);
+									zval *e23 = pgrt::dimWrite(w22, o18.raw());
+									if (UNEXPECTED(e23 == NULL)) return false;
+									zv::Ref(e23).assign(std::move(o21));
 								}
 							}
 						}
 						 {
-							zv::Val o26 = zv::Val::copyOf(zv::Ref(l_reflectionFunction));
-							zv::Val o27 = zv::Val::copyOf(zv::Ref(o26.raw()));
-							zv::Val o29 = zv::Val::copyOf(zv::Ref(l_reflectionFunctionName.raw()));
-							zval *w30 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap)).deref().raw();
-							if (Z_TYPE_P(w30) <= IS_NULL) { zval_ptr_dtor(w30); array_init(w30); } else if (UNEXPECTED(Z_TYPE_P(w30) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-							SEPARATE_ARRAY(w30);
-							zval *w28;
-							w28 = pgrt::dimWrite(w30, o29.raw());
-							if (UNEXPECTED(w28 == NULL)) return false;
-							ZVAL_DEREF(w28);
+							zv::Val o24 = zv::Val::copyOf(zv::Ref(l_reflectionFunction));
+							zv::Val o25 = zv::Val::copyOf(zv::Ref(o24.raw()));
+							zv::Val o27 = zv::Val::copyOf(zv::Ref(l_reflectionFunctionName.raw()));
+							zval *w28 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap)).deref().raw();
 							if (Z_TYPE_P(w28) <= IS_NULL) { zval_ptr_dtor(w28); array_init(w28); } else if (UNEXPECTED(Z_TYPE_P(w28) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 							SEPARATE_ARRAY(w28);
-							{ zval v = o27.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w28), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+							zval *w26;
+							w26 = pgrt::dimWrite(w28, o27.raw());
+							if (UNEXPECTED(w26 == NULL)) return false;
+							ZVAL_DEREF(w26);
+							if (Z_TYPE_P(w26) <= IS_NULL) { zval_ptr_dtor(w26); array_init(w26); } else if (UNEXPECTED(Z_TYPE_P(w26) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+							SEPARATE_ARRAY(w26);
+							{ zval v = o25.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w26), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 						}
 					}
 					if (UNEXPECTED(!it10.next())) return false;
@@ -232,74 +230,72 @@ namespace pgen::DuplicateFunctionDeclarationRule {
 		}
 	}
 	 {
-		zval *is34 = &this_zv;
-		zv::Val ist35;
-		zval *is33 = is34 == NULL ? NULL : pgrt::propIs(is34, pt_ce_duplicate_function_declaration_rule, &pg_lit[1], ist35.raw());
+		zval *is31 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap)).deref().raw();
+		if (Z_ISUNDEF_P(is31)) is31 = NULL;
+		zv::Val o32 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
+		zv::Val ist33;
+		zval *is30 = is31 == NULL ? NULL : pgrt::dimIs(is31, o32.raw(), ist33.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o36 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
-		zv::Val ist37;
-		zval *is32 = is33 == NULL ? NULL : pgrt::dimIs(is33, o36.raw(), ist37.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		bool b31 = !((is32 != NULL && Z_TYPE_P(is32) > IS_NULL));
-		if (!b31) {
-			zval *p38 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap, "functionMap");
-			if (UNEXPECTED(p38 == NULL)) return false;
-			zv::Val et40;
-			zval *e39 = pgrt::dimRead(p38, l_functionName.raw(), et40.raw());
-			if (UNEXPECTED(e39 == NULL)) return false;
-			zval av41[1];
-			ZVAL_COPY_VALUE(&av41[0], zv::Ref(e39).deref().raw());
-			zv::Val r42;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "count", 5, pt_ce_duplicate_function_declaration_rule, 1, av41, r42.raw()))) return false;
-			b31 = (Z_LVAL_P(r42.raw()) < 2);
+		bool b29 = !((is30 != NULL && Z_TYPE_P(is30) > IS_NULL));
+		if (!b29) {
+			zval *p34 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap, "functionMap");
+			if (UNEXPECTED(p34 == NULL)) return false;
+			zv::Val et36;
+			zval *e35 = pgrt::dimRead(p34, l_functionName.raw(), et36.raw());
+			if (UNEXPECTED(e35 == NULL)) return false;
+			zval av37[1];
+			ZVAL_COPY_VALUE(&av37[0], zv::Ref(e35).deref().raw());
+			zv::Val r38;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "count", 5, pt_ce_duplicate_function_declaration_rule, 1, av37, r38.raw()))) return false;
+			b29 = (Z_LVAL_P(r38.raw()) < 2);
 		}
-		if (b31) {
+		if (b29) {
 			 {
-				zval arr43_raw;
-				ZVAL_EMPTY_ARRAY(&arr43_raw);
-				ZVAL_COPY(ret, &arr43_raw);
+				zval arr39_raw;
+				ZVAL_EMPTY_ARRAY(&arr39_raw);
+				ZVAL_COPY(ret, &arr39_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val arr44 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val o45 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
-		zval cap46[1];
-		ZVAL_COPY_VALUE(&cap46[0], &this_zv);
-		zv::Val h47 = pt_native_closure_new(&pg_closure_1, 1, cap46, 0u);
-		zval *p48 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap, "functionMap");
-		if (UNEXPECTED(p48 == NULL)) return false;
-		zv::Val et50;
-		zval *e49 = pgrt::dimRead(p48, l_functionName.raw(), et50.raw());
-		if (UNEXPECTED(e49 == NULL)) return false;
-		zval av51[2];
-		ZVAL_COPY_VALUE(&av51[0], h47.raw());
-		ZVAL_COPY_VALUE(&av51[1], zv::Ref(e49).deref().raw());
-		zv::Val r52;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "array_map", 9, pt_ce_duplicate_function_declaration_rule, 2, av51, r52.raw(), NULL))) return false;
-		zv::Val r53;
-		if (UNEXPECTED(!pgrt::implode(&pg_lit[2], r52.raw(), r53.raw()))) return false;
-		pgrt::StringBuilder sb54;
-		sb54.appendLiteral("Function ", 9);
-		if (UNEXPECTED(!sb54.append(o45.raw()))) return false;
-		sb54.appendLiteral(" declared multiple times:\012", 26);
-		if (UNEXPECTED(!sb54.append(r53.raw()))) return false;
-		zv::Val r55 = sb54.finish();
-		zval av56[1];
-		ZVAL_COPY_VALUE(&av56[0], r55.raw());
-		zend_class_entry *ce57 = pgrt::lookupClass(pg_site_10, "PHPStan\\Rules\\RuleErrorBuilder", 30);
-		if (UNEXPECTED(ce57 == NULL)) return false;
-		zv::Val r58;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_11, ce57, "message", 7, 1, av56, r58.raw(), NULL))) return false;
-		zval av59[1];
-		ZVAL_COPY_VALUE(&av59[0], &pg_lit[4]);
-		zv::Val r60;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r58.raw(), "identifier", "identifier", 10, 1, av59, r60.raw(), NULL))) return false;
-		zv::Val r61;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r60.raw(), "build", "build", 5, 0, NULL, r61.raw(), NULL))) return false;
-		{ zval v = r61.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr44.raw()), &v); }
-		*ret = arr44.take();
+		zv::Val arr40 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zv::Val o41 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
+		zval cap42[1];
+		ZVAL_COPY_VALUE(&cap42[0], &this_zv);
+		zv::Val h43 = pt_native_closure_new(&pg_closure_1, 1, cap42, 0u);
+		zval *p44 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DuplicateFunctionDeclarationRule::slot::functionMap, "functionMap");
+		if (UNEXPECTED(p44 == NULL)) return false;
+		zv::Val et46;
+		zval *e45 = pgrt::dimRead(p44, l_functionName.raw(), et46.raw());
+		if (UNEXPECTED(e45 == NULL)) return false;
+		zval av47[2];
+		ZVAL_COPY_VALUE(&av47[0], h43.raw());
+		ZVAL_COPY_VALUE(&av47[1], zv::Ref(e45).deref().raw());
+		zv::Val r48;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "array_map", 9, pt_ce_duplicate_function_declaration_rule, 2, av47, r48.raw(), NULL))) return false;
+		zv::Val r49;
+		if (UNEXPECTED(!pgrt::implode(&pg_lit[1], r48.raw(), r49.raw()))) return false;
+		pgrt::StringBuilder sb50;
+		sb50.appendLiteral("Function ", 9);
+		if (UNEXPECTED(!sb50.append(o41.raw()))) return false;
+		sb50.appendLiteral(" declared multiple times:\012", 26);
+		if (UNEXPECTED(!sb50.append(r49.raw()))) return false;
+		zv::Val r51 = sb50.finish();
+		zval av52[1];
+		ZVAL_COPY_VALUE(&av52[0], r51.raw());
+		zend_class_entry *ce53 = pgrt::lookupClass(pg_site_10, "PHPStan\\Rules\\RuleErrorBuilder", 30);
+		if (UNEXPECTED(ce53 == NULL)) return false;
+		zv::Val r54;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_11, ce53, "message", 7, 1, av52, r54.raw(), NULL))) return false;
+		zval av55[1];
+		ZVAL_COPY_VALUE(&av55[0], &pg_lit[3]);
+		zv::Val r56;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r54.raw(), "identifier", "identifier", 10, 1, av55, r56.raw(), NULL))) return false;
+		zv::Val r57;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r56.raw(), "build", "build", 5, 0, NULL, r57.raw(), NULL))) return false;
+		{ zval v = r57.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr40.raw()), &v); }
+		*ret = arr40.take();
 		return true;
 	}
 }
@@ -312,10 +308,9 @@ namespace sigs = ptdecl::DuplicateFunctionDeclarationRule::sig;
 PT_MINIT_REGISTRATION(pt_register_codegen_DuplicateFunctionDeclarationRule)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("PHPStan\\Node\\InFunctionNode", 27));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("functionMap", 11));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("\012", 1));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("unknown", 7));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("function.duplicate", 18));
+	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("\012", 1));
+	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("unknown", 7));
+	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("function.duplicate", 18));
 	reg::Class cls("PHPStan\\Rules\\Functions\\DuplicateFunctionDeclarationRule");
 	ptdecl::DuplicateFunctionDeclarationRule::declareClass(cls);
 	ptdecl::DuplicateFunctionDeclarationRule::declareProperties(cls);

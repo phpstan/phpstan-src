@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_class_name_usage_location = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[39];
+static zval pg_lit[38];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Reflection\ExtendedMethodReflection */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Reflection\ExtendedPropertyReflection */
@@ -62,24 +62,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[0], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[1], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(q6.raw(), pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Reflection\\ExtendedMethodReflection", 43)) || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getMethod", "?PHPStan\\Reflection\\ExtendedMethodReflection", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(q4.raw(), pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Reflection\\ExtendedMethodReflection", 43)) || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getMethod", "?PHPStan\\Reflection\\ExtendedMethodReflection", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -91,24 +89,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[1], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[2], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(q6.raw(), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Reflection\\ExtendedPropertyReflection", 45)) || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getProperty", "?PHPStan\\Reflection\\ExtendedPropertyReflection", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(q4.raw(), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Reflection\\ExtendedPropertyReflection", 45)) || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getProperty", "?PHPStan\\Reflection\\ExtendedPropertyReflection", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -120,24 +116,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[2], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[3], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(q6.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Reflection\\FunctionReflection", 37)) || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getFunction", "?PHPStan\\Reflection\\FunctionReflection", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(q4.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Reflection\\FunctionReflection", 37)) || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getFunction", "?PHPStan\\Reflection\\FunctionReflection", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -149,24 +143,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[3], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[4], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(q6.raw()) == IS_STRING || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getPhpDocTagName", "?string", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(Z_TYPE_P(q4.raw()) == IS_STRING || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getPhpDocTagName", "?string", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -178,24 +170,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[4], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[5], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(q6.raw()) == IS_STRING || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getAssertedExprString", "?string", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(Z_TYPE_P(q4.raw()) == IS_STRING || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getAssertedExprString", "?string", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -207,24 +197,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[5], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[6], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(q6.raw(), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ClassConstantReflection", 42)) || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getClassConstant", "?PHPStan\\Reflection\\ClassConstantReflection", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(q4.raw(), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ClassConstantReflection", 42)) || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getClassConstant", "?PHPStan\\Reflection\\ClassConstantReflection", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -236,24 +224,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[6], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[7], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(q6.raw()) == IS_STRING || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getCurrentClassName", "?string", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(Z_TYPE_P(q4.raw()) == IS_STRING || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getCurrentClassName", "?string", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -265,24 +251,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[7], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[8], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(q6.raw()) == IS_STRING || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getParameterName", "?string", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(Z_TYPE_P(q4.raw()) == IS_STRING || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getParameterName", "?string", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -294,24 +278,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[8], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[9], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(q6.raw()) == IS_STRING || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getTypeAliasName", "?string", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(Z_TYPE_P(q4.raw()) == IS_STRING || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getTypeAliasName", "?string", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -323,24 +305,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[9], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[10], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(q6.raw()) == IS_STRING || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getMethodTagName", "?string", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(Z_TYPE_P(q4.raw()) == IS_STRING || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getMethodTagName", "?string", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -352,24 +332,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[10], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[11], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(q6.raw()) == IS_STRING || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getPropertyTagName", "?string", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(Z_TYPE_P(q4.raw()) == IS_STRING || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getPropertyTagName", "?string", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -381,24 +359,22 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[11], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[12], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::null();
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::null();
+			q4 = std::move(o5);
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(q6.raw()) == IS_STRING || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getTemplateTagName", "?string", q6.raw()); return false; }
-		*ret = q6.take();
+		if (UNEXPECTED(!(Z_TYPE_P(q4.raw()) == IS_STRING || Z_TYPE_P(q4.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Rules\\ClassNameUsageLocation::getTemplateTagName", "?string", q4.raw()); return false; }
+		*ret = q4.take();
 		return true;
 	}
 }
@@ -410,23 +386,21 @@ namespace pgen::ClassNameUsageLocation {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_class_name_usage_location, &pg_lit[0], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::ClassNameUsageLocation::slot::data)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[12], ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &pg_lit[13], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q6;
+		zv::Val q4;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q6 = zv::Val::copyOf(zv::Ref(is1));
+			q4 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o7 = zv::Val::boolean(false);
-			q6 = std::move(o7);
+			zv::Val o5 = zv::Val::boolean(false);
+			q4 = std::move(o5);
 		}
 		}
-		*ret = zend_is_true(q6.raw());
+		*ret = zend_is_true(q4.raw());
 		return true;
 	}
 }
@@ -448,85 +422,85 @@ namespace pgen::ClassNameUsageLocation {
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
 		int sw3 = -1;
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[14]) == 0) sw3 = 0;
+			if (zend_compare(o2.raw(), &pg_lit[13]) == 0) sw3 = 0;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[15]) == 0) sw3 = 1;
+			if (zend_compare(o2.raw(), &pg_lit[14]) == 0) sw3 = 1;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[16]) == 0) sw3 = 2;
+			if (zend_compare(o2.raw(), &pg_lit[15]) == 0) sw3 = 2;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[17]) == 0) sw3 = 3;
+			if (zend_compare(o2.raw(), &pg_lit[16]) == 0) sw3 = 3;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[18]) == 0) sw3 = 4;
+			if (zend_compare(o2.raw(), &pg_lit[17]) == 0) sw3 = 4;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[6]) == 0) sw3 = 5;
+			if (zend_compare(o2.raw(), &pg_lit[5]) == 0) sw3 = 5;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[19]) == 0) sw3 = 6;
+			if (zend_compare(o2.raw(), &pg_lit[18]) == 0) sw3 = 6;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[20]) == 0) sw3 = 7;
+			if (zend_compare(o2.raw(), &pg_lit[19]) == 0) sw3 = 7;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[21]) == 0) sw3 = 8;
+			if (zend_compare(o2.raw(), &pg_lit[20]) == 0) sw3 = 8;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[22]) == 0) sw3 = 9;
+			if (zend_compare(o2.raw(), &pg_lit[21]) == 0) sw3 = 9;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[23]) == 0) sw3 = 10;
+			if (zend_compare(o2.raw(), &pg_lit[22]) == 0) sw3 = 10;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[2]) == 0) sw3 = 11;
+			if (zend_compare(o2.raw(), &pg_lit[1]) == 0) sw3 = 11;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[24]) == 0) sw3 = 12;
+			if (zend_compare(o2.raw(), &pg_lit[23]) == 0) sw3 = 12;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[25]) == 0) sw3 = 13;
+			if (zend_compare(o2.raw(), &pg_lit[24]) == 0) sw3 = 13;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[26]) == 0) sw3 = 14;
+			if (zend_compare(o2.raw(), &pg_lit[25]) == 0) sw3 = 14;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[27]) == 0) sw3 = 15;
+			if (zend_compare(o2.raw(), &pg_lit[26]) == 0) sw3 = 15;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[28]) == 0) sw3 = 16;
+			if (zend_compare(o2.raw(), &pg_lit[27]) == 0) sw3 = 16;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[29]) == 0) sw3 = 17;
+			if (zend_compare(o2.raw(), &pg_lit[28]) == 0) sw3 = 17;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[30]) == 0) sw3 = 18;
+			if (zend_compare(o2.raw(), &pg_lit[29]) == 0) sw3 = 18;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[31]) == 0) sw3 = 19;
+			if (zend_compare(o2.raw(), &pg_lit[30]) == 0) sw3 = 19;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[32]) == 0) sw3 = 20;
+			if (zend_compare(o2.raw(), &pg_lit[31]) == 0) sw3 = 20;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[33]) == 0) sw3 = 21;
+			if (zend_compare(o2.raw(), &pg_lit[32]) == 0) sw3 = 21;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[34]) == 0) sw3 = 22;
+			if (zend_compare(o2.raw(), &pg_lit[33]) == 0) sw3 = 22;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[35]) == 0) sw3 = 23;
+			if (zend_compare(o2.raw(), &pg_lit[34]) == 0) sw3 = 23;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[36]) == 0) sw3 = 24;
+			if (zend_compare(o2.raw(), &pg_lit[35]) == 0) sw3 = 24;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[37]) == 0) sw3 = 25;
+			if (zend_compare(o2.raw(), &pg_lit[36]) == 0) sw3 = 25;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(o2.raw(), &pg_lit[38]) == 0) sw3 = 26;
+			if (zend_compare(o2.raw(), &pg_lit[37]) == 0) sw3 = 26;
 		}
 		switch (sw3) {
 			case 0: {
@@ -1449,7 +1423,7 @@ namespace pgen::ClassNameUsageLocation {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassNameUsageLocation::slot::value, "value");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		if (zend_is_identical(p1, &pg_lit[19])) {
+		if (zend_is_identical(p1, &pg_lit[18])) {
 			 {
 				zval av2[1];
 				ZVAL_COPY_VALUE(&av2[0], p_secondPart);
@@ -1467,7 +1441,7 @@ namespace pgen::ClassNameUsageLocation {
 	 {
 		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassNameUsageLocation::slot::value, "value");
 		if (UNEXPECTED(p6 == NULL)) return false;
-		if (zend_is_identical(p6, &pg_lit[20])) {
+		if (zend_is_identical(p6, &pg_lit[19])) {
 			 {
 				zval av7[1];
 				ZVAL_COPY_VALUE(&av7[0], p_secondPart);
@@ -1485,7 +1459,7 @@ namespace pgen::ClassNameUsageLocation {
 	 {
 		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassNameUsageLocation::slot::value, "value");
 		if (UNEXPECTED(p11 == NULL)) return false;
-		if (zend_is_identical(p11, &pg_lit[21])) {
+		if (zend_is_identical(p11, &pg_lit[20])) {
 			 {
 				zval av12[1];
 				ZVAL_COPY_VALUE(&av12[0], p_secondPart);
@@ -1503,7 +1477,7 @@ namespace pgen::ClassNameUsageLocation {
 	 {
 		zval *p16 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassNameUsageLocation::slot::value, "value");
 		if (UNEXPECTED(p16 == NULL)) return false;
-		if (zend_is_identical(p16, &pg_lit[22])) {
+		if (zend_is_identical(p16, &pg_lit[21])) {
 			 {
 				zval av17[1];
 				ZVAL_COPY_VALUE(&av17[0], p_secondPart);
@@ -1521,7 +1495,7 @@ namespace pgen::ClassNameUsageLocation {
 	 {
 		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassNameUsageLocation::slot::value, "value");
 		if (UNEXPECTED(p21 == NULL)) return false;
-		if (zend_is_identical(p21, &pg_lit[37])) {
+		if (zend_is_identical(p21, &pg_lit[36])) {
 			 {
 				pgrt::StringBuilder sb22;
 				sb22.appendLiteral("generics.", 9);
@@ -1536,7 +1510,7 @@ namespace pgen::ClassNameUsageLocation {
 	 {
 		zval *p24 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassNameUsageLocation::slot::value, "value");
 		if (UNEXPECTED(p24 == NULL)) return false;
-		if (zend_is_identical(p24, &pg_lit[38])) {
+		if (zend_is_identical(p24, &pg_lit[37])) {
 			 {
 				pgrt::StringBuilder sb25;
 				sb25.appendLiteral("generics.", 9);
@@ -1569,45 +1543,44 @@ namespace sigs = ptdecl::ClassNameUsageLocation::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameUsageLocation)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("data", 4));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("method", 6));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("property", 8));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("function", 8));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("phpDocTagName", 13));
-	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("assertedExprString", 18));
-	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("classConstant", 13));
-	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("currentClassName", 16));
-	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("parameterName", 13));
-	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("typeAliasName", 13));
-	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("methodTagName", 13));
-	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("propertyTagName", 15));
-	ZVAL_INTERNED_STR(&pg_lit[12], pgrt::internLiteral("templateTagName", 15));
-	ZVAL_INTERNED_STR(&pg_lit[13], pgrt::internLiteral("isInAnonymousFunction", 21));
-	ZVAL_INTERNED_STR(&pg_lit[14], pgrt::internLiteral("traitUse", 8));
-	ZVAL_INTERNED_STR(&pg_lit[15], pgrt::internLiteral("staticProperty", 14));
-	ZVAL_INTERNED_STR(&pg_lit[16], pgrt::internLiteral("assert", 6));
-	ZVAL_INTERNED_STR(&pg_lit[17], pgrt::internLiteral("attribute", 9));
-	ZVAL_INTERNED_STR(&pg_lit[18], pgrt::internLiteral("catch", 5));
-	ZVAL_INTERNED_STR(&pg_lit[19], pgrt::internLiteral("classImplements", 15));
-	ZVAL_INTERNED_STR(&pg_lit[20], pgrt::internLiteral("enumImplements", 14));
-	ZVAL_INTERNED_STR(&pg_lit[21], pgrt::internLiteral("interfaceExtends", 16));
-	ZVAL_INTERNED_STR(&pg_lit[22], pgrt::internLiteral("classExtends", 12));
-	ZVAL_INTERNED_STR(&pg_lit[23], pgrt::internLiteral("instanceof", 10));
-	ZVAL_INTERNED_STR(&pg_lit[24], pgrt::internLiteral("parameter", 9));
-	ZVAL_INTERNED_STR(&pg_lit[25], pgrt::internLiteral("return", 6));
-	ZVAL_INTERNED_STR(&pg_lit[26], pgrt::internLiteral("selfOut", 7));
-	ZVAL_INTERNED_STR(&pg_lit[27], pgrt::internLiteral("varTag", 6));
-	ZVAL_INTERNED_STR(&pg_lit[28], pgrt::internLiteral("new", 3));
-	ZVAL_INTERNED_STR(&pg_lit[29], pgrt::internLiteral("typeAlias", 9));
-	ZVAL_INTERNED_STR(&pg_lit[30], pgrt::internLiteral("methodTag", 9));
-	ZVAL_INTERNED_STR(&pg_lit[31], pgrt::internLiteral("mixin", 5));
-	ZVAL_INTERNED_STR(&pg_lit[32], pgrt::internLiteral("propertyTag", 11));
-	ZVAL_INTERNED_STR(&pg_lit[33], pgrt::internLiteral("requireExtends", 14));
-	ZVAL_INTERNED_STR(&pg_lit[34], pgrt::internLiteral("requireImplements", 17));
-	ZVAL_INTERNED_STR(&pg_lit[35], pgrt::internLiteral("sealed", 6));
-	ZVAL_INTERNED_STR(&pg_lit[36], pgrt::internLiteral("staticMethod", 12));
-	ZVAL_INTERNED_STR(&pg_lit[37], pgrt::internLiteral("templateBound", 13));
-	ZVAL_INTERNED_STR(&pg_lit[38], pgrt::internLiteral("templateDefault", 15));
+	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("method", 6));
+	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("property", 8));
+	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("function", 8));
+	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("phpDocTagName", 13));
+	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("assertedExprString", 18));
+	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("classConstant", 13));
+	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("currentClassName", 16));
+	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("parameterName", 13));
+	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("typeAliasName", 13));
+	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("methodTagName", 13));
+	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("propertyTagName", 15));
+	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("templateTagName", 15));
+	ZVAL_INTERNED_STR(&pg_lit[12], pgrt::internLiteral("isInAnonymousFunction", 21));
+	ZVAL_INTERNED_STR(&pg_lit[13], pgrt::internLiteral("traitUse", 8));
+	ZVAL_INTERNED_STR(&pg_lit[14], pgrt::internLiteral("staticProperty", 14));
+	ZVAL_INTERNED_STR(&pg_lit[15], pgrt::internLiteral("assert", 6));
+	ZVAL_INTERNED_STR(&pg_lit[16], pgrt::internLiteral("attribute", 9));
+	ZVAL_INTERNED_STR(&pg_lit[17], pgrt::internLiteral("catch", 5));
+	ZVAL_INTERNED_STR(&pg_lit[18], pgrt::internLiteral("classImplements", 15));
+	ZVAL_INTERNED_STR(&pg_lit[19], pgrt::internLiteral("enumImplements", 14));
+	ZVAL_INTERNED_STR(&pg_lit[20], pgrt::internLiteral("interfaceExtends", 16));
+	ZVAL_INTERNED_STR(&pg_lit[21], pgrt::internLiteral("classExtends", 12));
+	ZVAL_INTERNED_STR(&pg_lit[22], pgrt::internLiteral("instanceof", 10));
+	ZVAL_INTERNED_STR(&pg_lit[23], pgrt::internLiteral("parameter", 9));
+	ZVAL_INTERNED_STR(&pg_lit[24], pgrt::internLiteral("return", 6));
+	ZVAL_INTERNED_STR(&pg_lit[25], pgrt::internLiteral("selfOut", 7));
+	ZVAL_INTERNED_STR(&pg_lit[26], pgrt::internLiteral("varTag", 6));
+	ZVAL_INTERNED_STR(&pg_lit[27], pgrt::internLiteral("new", 3));
+	ZVAL_INTERNED_STR(&pg_lit[28], pgrt::internLiteral("typeAlias", 9));
+	ZVAL_INTERNED_STR(&pg_lit[29], pgrt::internLiteral("methodTag", 9));
+	ZVAL_INTERNED_STR(&pg_lit[30], pgrt::internLiteral("mixin", 5));
+	ZVAL_INTERNED_STR(&pg_lit[31], pgrt::internLiteral("propertyTag", 11));
+	ZVAL_INTERNED_STR(&pg_lit[32], pgrt::internLiteral("requireExtends", 14));
+	ZVAL_INTERNED_STR(&pg_lit[33], pgrt::internLiteral("requireImplements", 17));
+	ZVAL_INTERNED_STR(&pg_lit[34], pgrt::internLiteral("sealed", 6));
+	ZVAL_INTERNED_STR(&pg_lit[35], pgrt::internLiteral("staticMethod", 12));
+	ZVAL_INTERNED_STR(&pg_lit[36], pgrt::internLiteral("templateBound", 13));
+	ZVAL_INTERNED_STR(&pg_lit[37], pgrt::internLiteral("templateDefault", 15));
 	reg::Class cls("PHPStan\\Rules\\ClassNameUsageLocation");
 	ptdecl::ClassNameUsageLocation::declareClass(cls);
 	ptdecl::ClassNameUsageLocation::declareProperties(cls);

@@ -6,8 +6,6 @@
 
 zend_class_entry *pt_ce_php_parameter_from_parser_node_reflection = nullptr;
 
-/* the interned string literals, created at module startup */
-static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_isNull_0 */
 static pt_method_site pg_site_1; /* method_inferTemplateTypes_1 */
@@ -206,21 +204,19 @@ namespace pgen::PhpParameterFromParserNodeReflection {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_php_parameter_from_parser_node_reflection, &pg_lit[0], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::PhpParameterFromParserNodeReflection::slot::phpDocType)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val q2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q4 = zv::Val::copyOf(zv::Ref(is1));
+			q2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val n5;
-			if (UNEXPECTED(!pt_mixed_type_new(n5.raw()))) return false;
-			q4 = std::move(n5);
+			zv::Val n3;
+			if (UNEXPECTED(!pt_mixed_type_new(n3.raw()))) return false;
+			q2 = std::move(n3);
 		}
 		}
-		*ret = q4.take();
+		*ret = q2.take();
 		return true;
 	}
 }
@@ -441,7 +437,6 @@ namespace sigs = ptdecl::PhpParameterFromParserNodeReflection::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("phpDocType", 10));
 	reg::Class cls("PHPStan\\Reflection\\Php\\PhpParameterFromParserNodeReflection");
 	ptdecl::PhpParameterFromParserNodeReflection::declareClass(cls);
 	ptdecl::PhpParameterFromParserNodeReflection::declareProperties(cls);

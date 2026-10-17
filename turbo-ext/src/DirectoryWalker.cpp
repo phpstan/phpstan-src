@@ -380,61 +380,59 @@ namespace pgen::DirectoryWalker {
 		l_signature = std::move(r10);
 	}
 	 {
-		zval *is13 = &this_zv;
+		zval *is12 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::DirectoryWalker::slot::listings)).deref().raw();
+		if (Z_ISUNDEF_P(is12)) is12 = NULL;
+		zv::Val o13 = zv::Val::copyOf(zv::Ref(p_directory));
 		zv::Val ist14;
-		zval *is12 = is13 == NULL ? NULL : pgrt::propIs(is13, pt_ce_directory_walker, &pg_lit[7], ist14.raw());
+		zval *is11 = is12 == NULL ? NULL : pgrt::dimIs(is12, o13.raw(), ist14.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o15 = zv::Val::copyOf(zv::Ref(p_directory));
-		zv::Val ist16;
-		zval *is11 = is12 == NULL ? NULL : pgrt::dimIs(is12, o15.raw(), ist16.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q17;
+		zv::Val q15;
 		if (is11 != NULL && Z_TYPE_P(is11) > IS_NULL) {
-			q17 = zv::Val::copyOf(zv::Ref(is11));
+			q15 = zv::Val::copyOf(zv::Ref(is11));
 		} else {
 		 {
-			zv::Val o18 = zv::Val::null();
-			q17 = std::move(o18);
+			zv::Val o16 = zv::Val::null();
+			q15 = std::move(o16);
 		}
 		}
-		l_listing = std::move(q17);
+		l_listing = std::move(q15);
 	}
 	 {
-		bool b20 = !(Z_TYPE_P(l_signature.raw()) == IS_NULL);
-		if (b20) {
-			b20 = !(Z_TYPE_P(l_listing.raw()) == IS_NULL);
+		bool b18 = !(Z_TYPE_P(l_signature.raw()) == IS_NULL);
+		if (b18) {
+			b18 = !(Z_TYPE_P(l_listing.raw()) == IS_NULL);
 		}
-		bool b19 = b20;
-		if (b19) {
-			zv::Val et22;
-			zval *e21 = Z_TYPE_P(l_listing.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_listing.raw()), 0) : NULL;
-			if (UNEXPECTED(e21 == NULL)) {
-				zval z23;
-				ZVAL_LONG(&z23, 0);
-				e21 = pgrt::dimRead(l_listing.raw(), &z23, et22.raw());
-				if (UNEXPECTED(e21 == NULL)) return false;
+		bool b17 = b18;
+		if (b17) {
+			zv::Val et20;
+			zval *e19 = Z_TYPE_P(l_listing.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_listing.raw()), 0) : NULL;
+			if (UNEXPECTED(e19 == NULL)) {
+				zval z21;
+				ZVAL_LONG(&z21, 0);
+				e19 = pgrt::dimRead(l_listing.raw(), &z21, et20.raw());
+				if (UNEXPECTED(e19 == NULL)) return false;
 			}
-			b19 = zend_is_identical(zv::Ref(e21).deref().raw(), l_signature.raw());
+			b17 = zend_is_identical(zv::Ref(e19).deref().raw(), l_signature.raw());
 		}
-		if (b19) {
+		if (b17) {
 			 {
-				zv::Val et25;
-				zval *e24 = Z_TYPE_P(l_listing.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_listing.raw()), 1) : NULL;
-				if (UNEXPECTED(e24 == NULL)) {
-					zval z26;
-					ZVAL_LONG(&z26, 1);
-					e24 = pgrt::dimRead(l_listing.raw(), &z26, et25.raw());
-					if (UNEXPECTED(e24 == NULL)) return false;
+				zv::Val et23;
+				zval *e22 = Z_TYPE_P(l_listing.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_listing.raw()), 1) : NULL;
+				if (UNEXPECTED(e22 == NULL)) {
+					zval z24;
+					ZVAL_LONG(&z24, 1);
+					e22 = pgrt::dimRead(l_listing.raw(), &z24, et23.raw());
+					if (UNEXPECTED(e22 == NULL)) return false;
 				}
-				zv::Val o27 = zv::Val::copyOf(zv::Ref(zv::Ref(e24).deref().raw()));
-				l_entries = std::move(o27);
+				zv::Val o25 = zv::Val::copyOf(zv::Ref(zv::Ref(e22).deref().raw()));
+				l_entries = std::move(o25);
 			}
 		} else {
 		 {
 			 {
-				zv::Val r28;
-				if (UNEXPECTED(!pgen::DirectoryWalker::m_readDirectory(Z_OBJ_P(&this_zv), p_directory, r28.raw()))) return false;
-				l_entries = std::move(r28);
+				zv::Val r26;
+				if (UNEXPECTED(!pgen::DirectoryWalker::m_readDirectory(Z_OBJ_P(&this_zv), p_directory, r26.raw()))) return false;
+				l_entries = std::move(r26);
 			}
 			 {
 				if (Z_TYPE_P(l_entries.raw()) == IS_NULL) {
@@ -447,40 +445,40 @@ namespace pgen::DirectoryWalker {
 			 {
 				if (!(Z_TYPE_P(l_signature.raw()) == IS_NULL)) {
 					 {
-						zv::Val o29 = zv::Val::copyOf(zv::Ref(p_directory));
-						zv::Val arr30 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-						zv::Val o31 = zv::Val::copyOf(zv::Ref(l_signature.raw()));
-						{ zval v = o31.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr30.raw()), &v); }
-						zv::Val o32 = zv::Val::copyOf(zv::Ref(l_entries.raw()));
-						{ zval v = o32.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr30.raw()), &v); }
-						zv::Val o33 = zv::Val::copyOf(zv::Ref(arr30.raw()));
-						zval *w34 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectoryWalker::slot::listings)).deref().raw();
-						if (Z_TYPE_P(w34) <= IS_NULL) { zval_ptr_dtor(w34); array_init(w34); } else if (UNEXPECTED(Z_TYPE_P(w34) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-						SEPARATE_ARRAY(w34);
-						zval *e35 = pgrt::dimWrite(w34, o29.raw());
-						if (UNEXPECTED(e35 == NULL)) return false;
-						zv::Ref(e35).assign(std::move(o33));
+						zv::Val o27 = zv::Val::copyOf(zv::Ref(p_directory));
+						zv::Val arr28 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
+						zv::Val o29 = zv::Val::copyOf(zv::Ref(l_signature.raw()));
+						{ zval v = o29.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr28.raw()), &v); }
+						zv::Val o30 = zv::Val::copyOf(zv::Ref(l_entries.raw()));
+						{ zval v = o30.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr28.raw()), &v); }
+						zv::Val o31 = zv::Val::copyOf(zv::Ref(arr28.raw()));
+						zval *w32 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectoryWalker::slot::listings)).deref().raw();
+						if (Z_TYPE_P(w32) <= IS_NULL) { zval_ptr_dtor(w32); array_init(w32); } else if (UNEXPECTED(Z_TYPE_P(w32) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+						SEPARATE_ARRAY(w32);
+						zval *e33 = pgrt::dimWrite(w32, o27.raw());
+						if (UNEXPECTED(e33 == NULL)) return false;
+						zv::Ref(e33).assign(std::move(o31));
 					}
 				} else {
 				 {
 					 {
-						zv::Val o36 = zv::Val::copyOf(zv::Ref(p_directory));
-						zval *w37 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectoryWalker::slot::listings)).deref().raw();
-						if (Z_TYPE_P(w37) == IS_ARRAY) {
-							SEPARATE_ARRAY(w37);
-							if (Z_TYPE_P(o36.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w37), Z_STR_P(o36.raw())); } else if (Z_TYPE_P(o36.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w37), Z_LVAL_P(o36.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
+						zv::Val o34 = zv::Val::copyOf(zv::Ref(p_directory));
+						zval *w35 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectoryWalker::slot::listings)).deref().raw();
+						if (Z_TYPE_P(w35) == IS_ARRAY) {
+							SEPARATE_ARRAY(w35);
+							if (Z_TYPE_P(o34.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w35), Z_STR_P(o34.raw())); } else if (Z_TYPE_P(o34.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w35), Z_LVAL_P(o34.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
 						}
 					}
 				}
 				}
 			}
 			 {
-				bool k38 = true;
-				zval z39;
-				ZVAL_BOOL(&z39, k38);
-				zval o40;
-				ZVAL_COPY(&o40, &z39);
-				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::DirectoryWalker::slot::listingsChanged, &o40);
+				bool k36 = true;
+				zval z37;
+				ZVAL_BOOL(&z37, k36);
+				zval o38;
+				ZVAL_COPY(&o38, &z37);
+				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::DirectoryWalker::slot::listingsChanged, &o38);
 			}
 		}
 		}
@@ -494,78 +492,78 @@ namespace pgen::DirectoryWalker {
 		}
 	}
 	 {
-		zval av42[2];
-		ZVAL_COPY_VALUE(&av42[0], &pg_lit[8]);
-		ZVAL_COPY_VALUE(&av42[1], l_entries.raw());
-		zv::Val r43;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "explode", 7, pt_ce_directory_walker, 2, av42, r43.raw(), NULL))) return false;
-		zv::Val a44 = zv::Val::copyOf(zv::Ref(r43.raw()).deref());
-		HashTable *ht41 = Z_ARRVAL_P(a44.raw());
-		zval *v45;
-		zend_ulong n46;
-		zend_string *s47;
-		ZEND_HASH_FOREACH_KEY_VAL(ht41, n46, s47, v45) {
-			(void) n46; (void) s47;
-			l_entry = zv::Ref(v45).deref().raw();
+		zval av40[2];
+		ZVAL_COPY_VALUE(&av40[0], &pg_lit[7]);
+		ZVAL_COPY_VALUE(&av40[1], l_entries.raw());
+		zv::Val r41;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "explode", 7, pt_ce_directory_walker, 2, av40, r41.raw(), NULL))) return false;
+		zv::Val a42 = zv::Val::copyOf(zv::Ref(r41.raw()).deref());
+		HashTable *ht39 = Z_ARRVAL_P(a42.raw());
+		zval *v43;
+		zend_ulong n44;
+		zend_string *s45;
+		ZEND_HASH_FOREACH_KEY_VAL(ht39, n44, s45, v43) {
+			(void) n44; (void) s45;
+			l_entry = zv::Ref(v43).deref().raw();
 			 {
 				 {
-					zv::Val et51;
-					zval *e50 = Z_TYPE_P(l_entry) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_entry), 0) : NULL;
-					if (UNEXPECTED(e50 == NULL)) {
-						zval z52;
-						ZVAL_LONG(&z52, 0);
-						e50 = pgrt::dimRead(l_entry, &z52, et51.raw());
-						if (UNEXPECTED(e50 == NULL)) return false;
+					zv::Val et49;
+					zval *e48 = Z_TYPE_P(l_entry) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_entry), 0) : NULL;
+					if (UNEXPECTED(e48 == NULL)) {
+						zval z50;
+						ZVAL_LONG(&z50, 0);
+						e48 = pgrt::dimRead(l_entry, &z50, et49.raw());
+						if (UNEXPECTED(e48 == NULL)) return false;
 					}
-					zv::Val o53 = zv::Val::copyOf(zv::Ref(zv::Ref(e50).deref().raw()));
-					l_type = std::move(o53);
+					zv::Val o51 = zv::Val::copyOf(zv::Ref(zv::Ref(e48).deref().raw()));
+					l_type = std::move(o51);
 				}
 				 {
-					zval av54[2];
-					ZVAL_COPY_VALUE(&av54[0], l_entry);
-					zval z55;
-					ZVAL_LONG(&z55, 1);
-					ZVAL_COPY_VALUE(&av54[1], &z55);
-					zv::Val r56;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "substr", 6, pt_ce_directory_walker, 2, av54, r56.raw(), NULL))) return false;
-					l_name = std::move(r56);
+					zval av52[2];
+					ZVAL_COPY_VALUE(&av52[0], l_entry);
+					zval z53;
+					ZVAL_LONG(&z53, 1);
+					ZVAL_COPY_VALUE(&av52[1], &z53);
+					zv::Val r54;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "substr", 6, pt_ce_directory_walker, 2, av52, r54.raw(), NULL))) return false;
+					l_name = std::move(r54);
 				}
 				 {
-					zv::Val cat57;
-					if (UNEXPECTED(!pgrt::concat(p_directory, &pg_lit[4], cat57.raw()))) return false;
-					zv::Val cat58;
-					if (UNEXPECTED(!pgrt::concat(cat57.raw(), l_name.raw(), cat58.raw()))) return false;
-					l_path = std::move(cat58);
+					zv::Val cat55;
+					if (UNEXPECTED(!pgrt::concat(p_directory, &pg_lit[4], cat55.raw()))) return false;
+					zv::Val cat56;
+					if (UNEXPECTED(!pgrt::concat(cat55.raw(), l_name.raw(), cat56.raw()))) return false;
+					l_path = std::move(cat56);
 				}
 				 {
-					if (zend_is_identical(l_type.raw(), &pg_lit[9])) {
+					if (zend_is_identical(l_type.raw(), &pg_lit[8])) {
 						 {
-							zval av59[1];
-							ZVAL_COPY_VALUE(&av59[0], l_path.raw());
-							zv::Val r60;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "is_dir", 6, pt_ce_directory_walker, 1, av59, r60.raw(), NULL))) return false;
-							if (Z_TYPE_P(r60.raw()) == IS_TRUE) {
+							zval av57[1];
+							ZVAL_COPY_VALUE(&av57[0], l_path.raw());
+							zv::Val r58;
+							if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "is_dir", 6, pt_ce_directory_walker, 1, av57, r58.raw(), NULL))) return false;
+							if (Z_TYPE_P(r58.raw()) == IS_TRUE) {
 								 {
-									zval *cc63 = pgrt::classConstant(pt_ce_directory_walker, &pg_lit[10], pt_ce_directory_walker);
-									if (UNEXPECTED(cc63 == NULL)) return false;
-									zv::Val o64 = zv::Val::copyOf(zv::Ref(cc63));
-									zv::Val o65 = zv::Val::copyOf(zv::Ref(l_name.raw()));
-									zv::Val ist66;
-									zval *is61 = o64.raw() == NULL ? NULL : pgrt::dimIs(o64.raw(), o65.raw(), ist66.raw());
+									zval *cc61 = pgrt::classConstant(pt_ce_directory_walker, &pg_lit[9], pt_ce_directory_walker);
+									if (UNEXPECTED(cc61 == NULL)) return false;
+									zv::Val o62 = zv::Val::copyOf(zv::Ref(cc61));
+									zv::Val o63 = zv::Val::copyOf(zv::Ref(l_name.raw()));
+									zv::Val ist64;
+									zval *is59 = o62.raw() == NULL ? NULL : pgrt::dimIs(o62.raw(), o63.raw(), ist64.raw());
 									if (UNEXPECTED(EG(exception))) return false;
-									if (is61 != NULL && Z_TYPE_P(is61) > IS_NULL) {
-										goto cont49;
+									if (is59 != NULL && Z_TYPE_P(is59) > IS_NULL) {
+										goto cont47;
 									}
 								}
 								 {
-									zv::Val o67 = zv::Val::copyOf(zv::Ref(&pg_lit[11]));
-									l_type = std::move(o67);
+									zv::Val o65 = zv::Val::copyOf(zv::Ref(&pg_lit[10]));
+									l_type = std::move(o65);
 								}
 							} else {
 							 {
 								 {
-									zv::Val o68 = zv::Val::copyOf(zv::Ref(&pg_lit[12]));
-									l_type = std::move(o68);
+									zv::Val o66 = zv::Val::copyOf(zv::Ref(&pg_lit[11]));
+									l_type = std::move(o66);
 								}
 							}
 							}
@@ -573,52 +571,52 @@ namespace pgen::DirectoryWalker {
 					}
 				}
 				 {
-					if (zend_is_identical(l_type.raw(), &pg_lit[11])) {
+					if (zend_is_identical(l_type.raw(), &pg_lit[10])) {
 						 {
-							zval *is69 = zv::Ref(p_files).deref().raw();
+							zval *is67 = zv::Ref(p_files).deref().raw();
+							if (Z_ISUNDEF_P(is67)) is67 = NULL;
+							zv::Val ref68 = zv::Val::adopt([&]() { zval inner; if (is67 != NULL) { ZVAL_COPY(&inner, is67); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
+							zval *is69 = zv::Ref(p_visited).deref().raw();
 							if (Z_ISUNDEF_P(is69)) is69 = NULL;
 							zv::Val ref70 = zv::Val::adopt([&]() { zval inner; if (is69 != NULL) { ZVAL_COPY(&inner, is69); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
-							zval *is71 = zv::Ref(p_visited).deref().raw();
-							if (Z_ISUNDEF_P(is71)) is71 = NULL;
-							zv::Val ref72 = zv::Val::adopt([&]() { zval inner; if (is71 != NULL) { ZVAL_COPY(&inner, is71); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
-							bool r73;
-							if (UNEXPECTED(!pgen::DirectoryWalker::m_walkDirectory(Z_OBJ_P(&this_zv), l_path.raw(), p_pattern, p_signatures, ref70.raw(), ref72.raw(), &r73))) return false;
+							bool r71;
+							if (UNEXPECTED(!pgen::DirectoryWalker::m_walkDirectory(Z_OBJ_P(&this_zv), l_path.raw(), p_pattern, p_signatures, ref68.raw(), ref70.raw(), &r71))) return false;
 							 {
-								zv::Ref(zv::Ref(p_files).deref().raw()).assign(zv::Val::copyOf(zv::Ref(Z_REFVAL_P(ref70.raw()))));
+								zv::Ref(zv::Ref(p_files).deref().raw()).assign(zv::Val::copyOf(zv::Ref(Z_REFVAL_P(ref68.raw()))));
 							}
 							 {
-								zv::Ref(zv::Ref(p_visited).deref().raw()).assign(zv::Val::copyOf(zv::Ref(Z_REFVAL_P(ref72.raw()))));
+								zv::Ref(zv::Ref(p_visited).deref().raw()).assign(zv::Val::copyOf(zv::Ref(Z_REFVAL_P(ref70.raw()))));
 							}
-							if (!(r73)) {
+							if (!(r71)) {
 								 {
 									*ret = false;
 									return true;
 								}
 							}
 						}
-						goto cont49;
+						goto cont47;
 					}
 				}
 				 {
-					zval av74[2];
-					ZVAL_COPY_VALUE(&av74[0], p_pattern);
-					ZVAL_COPY_VALUE(&av74[1], l_name.raw());
-					zv::Val r75;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "preg_match", 10, pt_ce_directory_walker, 2, av74, r75.raw(), NULL))) return false;
-					if (!(Z_TYPE_P(r75.raw()) == IS_LONG && Z_LVAL_P(r75.raw()) == 1)) {
-						goto cont49;
+					zval av72[2];
+					ZVAL_COPY_VALUE(&av72[0], p_pattern);
+					ZVAL_COPY_VALUE(&av72[1], l_name.raw());
+					zv::Val r73;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "preg_match", 10, pt_ce_directory_walker, 2, av72, r73.raw(), NULL))) return false;
+					if (!(Z_TYPE_P(r73.raw()) == IS_LONG && Z_LVAL_P(r73.raw()) == 1)) {
+						goto cont47;
 					}
 				}
 				 {
-					zv::Val o76 = zv::Val::copyOf(zv::Ref(l_path.raw()));
-					zv::Val o77 = zv::Val::copyOf(zv::Ref(o76.raw()));
-					zval *w78 = zv::Ref(p_files).deref().raw();
-					if (Z_TYPE_P(w78) <= IS_NULL) { zval_ptr_dtor(w78); array_init(w78); } else if (UNEXPECTED(Z_TYPE_P(w78) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w78);
-					{ zval v = o77.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w78), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zv::Val o74 = zv::Val::copyOf(zv::Ref(l_path.raw()));
+					zv::Val o75 = zv::Val::copyOf(zv::Ref(o74.raw()));
+					zval *w76 = zv::Ref(p_files).deref().raw();
+					if (Z_TYPE_P(w76) <= IS_NULL) { zval_ptr_dtor(w76); array_init(w76); } else if (UNEXPECTED(Z_TYPE_P(w76) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w76);
+					{ zval v = o75.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w76), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
-			cont49:;
+			cont47:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}
@@ -678,7 +676,7 @@ namespace pgen::DirectoryWalker {
 				 {
 					zv::Val o11 = zv::Val::copyOf(zv::Ref(l_name.raw()));
 					zv::Val r12;
-					if (UNEXPECTED(!pgrt::strMatch(pg_site_18, "str_starts_with", 15, pgrt::StrMatch::STARTS, o11.raw(), &pg_lit[13], r12.raw()))) return false;
+					if (UNEXPECTED(!pgrt::strMatch(pg_site_18, "str_starts_with", 15, pgrt::StrMatch::STARTS, o11.raw(), &pg_lit[12], r12.raw()))) return false;
 					if (Z_TYPE_P(r12.raw()) == IS_TRUE) {
 						goto cont10;
 					}
@@ -703,7 +701,7 @@ namespace pgen::DirectoryWalker {
 				}
 				 {
 					zv::Val et19;
-					zval *e18 = pgrt::dimRead(l_stat.raw(), &pg_lit[14], et19.raw());
+					zval *e18 = pgrt::dimRead(l_stat.raw(), &pg_lit[13], et19.raw());
 					if (UNEXPECTED(e18 == NULL)) return false;
 					zv::Val ar20;
 					zval z21;
@@ -715,7 +713,7 @@ namespace pgen::DirectoryWalker {
 					if (l_type == 40960) {
 						 {
 							zv::Val cat22;
-							if (UNEXPECTED(!pgrt::concat(&pg_lit[9], l_name.raw(), cat22.raw()))) return false;
+							if (UNEXPECTED(!pgrt::concat(&pg_lit[8], l_name.raw(), cat22.raw()))) return false;
 							zv::Val o23 = zv::Val::copyOf(zv::Ref(cat22.raw()));
 							zval *w24 = zv::Ref(l_entries.raw()).deref().raw();
 							if (Z_TYPE_P(w24) <= IS_NULL) { zval_ptr_dtor(w24); array_init(w24); } else if (UNEXPECTED(Z_TYPE_P(w24) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -727,7 +725,7 @@ namespace pgen::DirectoryWalker {
 						 {
 							if (l_type == 16384) {
 								 {
-									zval *cc27 = pgrt::classConstant(pt_ce_directory_walker, &pg_lit[10], pt_ce_directory_walker);
+									zval *cc27 = pgrt::classConstant(pt_ce_directory_walker, &pg_lit[9], pt_ce_directory_walker);
 									if (UNEXPECTED(cc27 == NULL)) return false;
 									zv::Val o28 = zv::Val::copyOf(zv::Ref(cc27));
 									zv::Val o29 = zv::Val::copyOf(zv::Ref(l_name.raw()));
@@ -740,7 +738,7 @@ namespace pgen::DirectoryWalker {
 								}
 								 {
 									zv::Val cat31;
-									if (UNEXPECTED(!pgrt::concat(&pg_lit[11], l_name.raw(), cat31.raw()))) return false;
+									if (UNEXPECTED(!pgrt::concat(&pg_lit[10], l_name.raw(), cat31.raw()))) return false;
 									zv::Val o32 = zv::Val::copyOf(zv::Ref(cat31.raw()));
 									zval *w33 = zv::Ref(l_entries.raw()).deref().raw();
 									if (Z_TYPE_P(w33) <= IS_NULL) { zval_ptr_dtor(w33); array_init(w33); } else if (UNEXPECTED(Z_TYPE_P(w33) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -751,7 +749,7 @@ namespace pgen::DirectoryWalker {
 							 {
 								 {
 									zv::Val cat34;
-									if (UNEXPECTED(!pgrt::concat(&pg_lit[12], l_name.raw(), cat34.raw()))) return false;
+									if (UNEXPECTED(!pgrt::concat(&pg_lit[11], l_name.raw(), cat34.raw()))) return false;
 									zv::Val o35 = zv::Val::copyOf(zv::Ref(cat34.raw()));
 									zval *w36 = zv::Ref(l_entries.raw()).deref().raw();
 									if (Z_TYPE_P(w36) <= IS_NULL) { zval_ptr_dtor(w36); array_init(w36); } else if (UNEXPECTED(Z_TYPE_P(w36) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -776,7 +774,7 @@ namespace pgen::DirectoryWalker {
 	}
 	 {
 		zv::Val r39;
-		if (UNEXPECTED(!pgrt::implode(&pg_lit[8], l_entries.raw(), r39.raw()))) return false;
+		if (UNEXPECTED(!pgrt::implode(&pg_lit[7], l_entries.raw(), r39.raw()))) return false;
 		*ret = r39.take();
 		return true;
 	}
@@ -804,7 +802,7 @@ namespace pgen::DirectoryWalker {
 		zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DirectoryWalker::slot::tmpDir, "tmpDir");
 		if (UNEXPECTED(p3 == NULL)) return false;
 		zv::Val cat4;
-		if (UNEXPECTED(!pgrt::concat(p3, &pg_lit[15], cat4.raw()))) return false;
+		if (UNEXPECTED(!pgrt::concat(p3, &pg_lit[14], cat4.raw()))) return false;
 		*ret = cat4.take();
 		return true;
 	}
@@ -869,7 +867,7 @@ namespace pgen::DirectoryWalker {
 		pgrt::Silence silence9;
 		zv::Val arr10 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zv::Val o11 = zv::Val::boolean(false);
-		{ zval v = o11.take(); zend_symtable_update(Z_ARRVAL_P(arr10.raw()), Z_STR_P(&pg_lit[16]), &v); }
+		{ zval v = o11.take(); zend_symtable_update(Z_ARRVAL_P(arr10.raw()), Z_STR_P(&pg_lit[15]), &v); }
 		zval av12[2];
 		ZVAL_COPY_VALUE(&av12[0], l_contents.raw());
 		ZVAL_COPY_VALUE(&av12[1], arr10.raw());
@@ -884,7 +882,7 @@ namespace pgen::DirectoryWalker {
 		if (!b15) {
 			zval *is18 = Z_ISUNDEF_P(l_data.raw()) ? NULL : l_data.raw();
 			zv::Val ist19;
-			zval *is17 = is18 == NULL ? NULL : pgrt::dimIs(is18, &pg_lit[17], ist19.raw());
+			zval *is17 = is18 == NULL ? NULL : pgrt::dimIs(is18, &pg_lit[16], ist19.raw());
 			if (UNEXPECTED(EG(exception))) return false;
 			zv::Val q20;
 			if (is17 != NULL && Z_TYPE_P(is17) > IS_NULL) {
@@ -895,13 +893,13 @@ namespace pgen::DirectoryWalker {
 				q20 = std::move(o21);
 			}
 			}
-			b15 = !zend_is_identical(q20.raw(), &pg_lit[18]);
+			b15 = !zend_is_identical(q20.raw(), &pg_lit[17]);
 		}
 		bool b14 = b15;
 		if (!b14) {
 			zval *is23 = Z_ISUNDEF_P(l_data.raw()) ? NULL : l_data.raw();
 			zv::Val ist24;
-			zval *is22 = is23 == NULL ? NULL : pgrt::dimIs(is23, &pg_lit[7], ist24.raw());
+			zval *is22 = is23 == NULL ? NULL : pgrt::dimIs(is23, &pg_lit[18], ist24.raw());
 			if (UNEXPECTED(EG(exception))) return false;
 			zv::Val q25;
 			if (is22 != NULL && Z_TYPE_P(is22) > IS_NULL) {
@@ -923,7 +921,7 @@ namespace pgen::DirectoryWalker {
 	}
 	 {
 		zv::Val et29;
-		zval *e28 = pgrt::dimRead(l_data.raw(), &pg_lit[7], et29.raw());
+		zval *e28 = pgrt::dimRead(l_data.raw(), &pg_lit[18], et29.raw());
 		if (UNEXPECTED(e28 == NULL)) return false;
 		zv::Val o30 = zv::Val::copyOf(zv::Ref(zv::Ref(e28).deref().raw()));
 		l_listings = std::move(o30);
@@ -1103,12 +1101,12 @@ namespace pgen::DirectoryWalker {
 		pgrt::Silence silence49;
 		zv::Val o50 = zv::Val::copyOf(zv::Ref(l_temporaryFile.raw()));
 		zv::Val arr51 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
-		zv::Val o52 = zv::Val::copyOf(zv::Ref(&pg_lit[18]));
-		{ zval v = o52.take(); zend_symtable_update(Z_ARRVAL_P(arr51.raw()), Z_STR_P(&pg_lit[17]), &v); }
+		zv::Val o52 = zv::Val::copyOf(zv::Ref(&pg_lit[17]));
+		{ zval v = o52.take(); zend_symtable_update(Z_ARRVAL_P(arr51.raw()), Z_STR_P(&pg_lit[16]), &v); }
 		zval *p53 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DirectoryWalker::slot::listings, "listings");
 		if (UNEXPECTED(p53 == NULL)) return false;
 		zv::Val o54 = zv::Val::copyOf(zv::Ref(p53));
-		{ zval v = o54.take(); zend_symtable_update(Z_ARRVAL_P(arr51.raw()), Z_STR_P(&pg_lit[7]), &v); }
+		{ zval v = o54.take(); zend_symtable_update(Z_ARRVAL_P(arr51.raw()), Z_STR_P(&pg_lit[18]), &v); }
 		zval av55[1];
 		ZVAL_COPY_VALUE(&av55[0], arr51.raw());
 		zv::Val r56;
@@ -1166,18 +1164,18 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("/", 1));
 	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("://", 3));
 	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("", 0));
-	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("listings", 8));
-	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("\000", 1));
-	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("l", 1));
-	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("VCS_DIRECTORIES", 15));
-	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("d", 1));
-	ZVAL_INTERNED_STR(&pg_lit[12], pgrt::internLiteral("f", 1));
-	ZVAL_INTERNED_STR(&pg_lit[13], pgrt::internLiteral(".", 1));
-	ZVAL_INTERNED_STR(&pg_lit[14], pgrt::internLiteral("mode", 4));
-	ZVAL_INTERNED_STR(&pg_lit[15], pgrt::internLiteral("/cache/directory-listings.bin", 29));
-	ZVAL_INTERNED_STR(&pg_lit[16], pgrt::internLiteral("allowed_classes", 15));
-	ZVAL_INTERNED_STR(&pg_lit[17], pgrt::internLiteral("format", 6));
-	ZVAL_INTERNED_STR(&pg_lit[18], pgrt::internLiteral("directoryListings-v2", 20));
+	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("\000", 1));
+	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("l", 1));
+	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("VCS_DIRECTORIES", 15));
+	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("d", 1));
+	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("f", 1));
+	ZVAL_INTERNED_STR(&pg_lit[12], pgrt::internLiteral(".", 1));
+	ZVAL_INTERNED_STR(&pg_lit[13], pgrt::internLiteral("mode", 4));
+	ZVAL_INTERNED_STR(&pg_lit[14], pgrt::internLiteral("/cache/directory-listings.bin", 29));
+	ZVAL_INTERNED_STR(&pg_lit[15], pgrt::internLiteral("allowed_classes", 15));
+	ZVAL_INTERNED_STR(&pg_lit[16], pgrt::internLiteral("format", 6));
+	ZVAL_INTERNED_STR(&pg_lit[17], pgrt::internLiteral("directoryListings-v2", 20));
+	ZVAL_INTERNED_STR(&pg_lit[18], pgrt::internLiteral("listings", 8));
 	ZVAL_INTERNED_STR(&pg_lit[19], pgrt::internLiteral("/cache", 6));
 	ZVAL_INTERNED_STR(&pg_lit[20], pgrt::internLiteral("x", 1));
 	reg::Class cls("PHPStan\\File\\DirectoryWalker");

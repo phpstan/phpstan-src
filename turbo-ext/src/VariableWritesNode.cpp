@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_variable_writes_node = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[10];
+static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_getAttributes_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\NodeAbstract */
@@ -180,16 +180,14 @@ namespace pgen::VariableWritesNode {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_variable_writes_node, &pg_lit[0], ist4.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zend_long r5;
-		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r5))) return false;
-		zval z6;
-		ZVAL_LONG(&z6, r5);
-		zv::Val ist7;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z6, ist7.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::VariableWritesNode::slot::usedWriteIds)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zend_long r3;
+		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r3))) return false;
+		zval z4;
+		ZVAL_LONG(&z4, r3);
+		zv::Val ist5;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z4, ist5.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		*ret = (is1 != NULL && Z_TYPE_P(is1) > IS_NULL);
 		return true;
@@ -203,16 +201,14 @@ namespace pgen::VariableWritesNode {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_variable_writes_node, &pg_lit[1], ist4.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zend_long r5;
-		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r5))) return false;
-		zval z6;
-		ZVAL_LONG(&z6, r5);
-		zv::Val ist7;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z6, ist7.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::VariableWritesNode::slot::coveredWriteIds)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zend_long r3;
+		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r3))) return false;
+		zval z4;
+		ZVAL_LONG(&z4, r3);
+		zv::Val ist5;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z4, ist5.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		*ret = (is1 != NULL && Z_TYPE_P(is1) > IS_NULL);
 		return true;
@@ -226,16 +222,14 @@ namespace pgen::VariableWritesNode {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_variable_writes_node, &pg_lit[2], ist4.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zend_long r5;
-		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r5))) return false;
-		zval z6;
-		ZVAL_LONG(&z6, r5);
-		zv::Val ist7;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z6, ist7.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::VariableWritesNode::slot::overwrittenWriteIds)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zend_long r3;
+		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r3))) return false;
+		zval z4;
+		ZVAL_LONG(&z4, r3);
+		zv::Val ist5;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z4, ist5.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		*ret = (is1 != NULL && Z_TYPE_P(is1) > IS_NULL);
 		return true;
@@ -249,16 +243,14 @@ namespace pgen::VariableWritesNode {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_variable_writes_node, &pg_lit[3], ist4.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zend_long r5;
-		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r5))) return false;
-		zval z6;
-		ZVAL_LONG(&z6, r5);
-		zv::Val ist7;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z6, ist7.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::VariableWritesNode::slot::readWriteIds)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zend_long r3;
+		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r3))) return false;
+		zval z4;
+		ZVAL_LONG(&z4, r3);
+		zv::Val ist5;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z4, ist5.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		*ret = (is1 != NULL && Z_TYPE_P(is1) > IS_NULL);
 		return true;
@@ -272,12 +264,10 @@ namespace pgen::VariableWritesNode {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_variable_writes_node, &pg_lit[4], ist4.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, p_variableName, ist5.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::VariableWritesNode::slot::readVariableNames)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, p_variableName, ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		*ret = (is1 != NULL && Z_TYPE_P(is1) > IS_NULL);
 		return true;
@@ -291,28 +281,26 @@ namespace pgen::VariableWritesNode {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_variable_writes_node, &pg_lit[5], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::VariableWritesNode::slot::redundantWriteTypes)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zend_long r3;
+		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r3))) return false;
+		zval z4;
+		ZVAL_LONG(&z4, r3);
+		zv::Val ist5;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z4, ist5.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zend_long r5;
-		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r5))) return false;
-		zval z6;
-		ZVAL_LONG(&z6, r5);
-		zv::Val ist7;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z6, ist7.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q8;
+		zv::Val q6;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q8 = zv::Val::copyOf(zv::Ref(is1));
+			q6 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o9 = zv::Val::null();
-			q8 = std::move(o9);
+			zv::Val o7 = zv::Val::null();
+			q6 = std::move(o7);
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(q8.raw(), pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Type", 17)) || Z_TYPE_P(q8.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Node\\VariableWritesNode::getRedundantType", "?PHPStan\\Type\\Type", q8.raw()); return false; }
-		*ret = q8.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(q6.raw(), pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Type", 17)) || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Node\\VariableWritesNode::getRedundantType", "?PHPStan\\Type\\Type", q6.raw()); return false; }
+		*ret = q6.take();
 		return true;
 	}
 }
@@ -324,28 +312,26 @@ namespace pgen::VariableWritesNode {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_variable_writes_node, &pg_lit[6], ist4.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::VariableWritesNode::slot::variableOverwritingLoops)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zend_long r3;
+		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r3))) return false;
+		zval z4;
+		ZVAL_LONG(&z4, r3);
+		zv::Val ist5;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z4, ist5.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zend_long r5;
-		if (UNEXPECTED(!pgen::VariableWrite::m_getId(Z_OBJ_P(p_write), &r5))) return false;
-		zval z6;
-		ZVAL_LONG(&z6, r5);
-		zv::Val ist7;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, &z6, ist7.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val q8;
+		zv::Val q6;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			q8 = zv::Val::copyOf(zv::Ref(is1));
+			q6 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val o9 = zv::Val::null();
-			q8 = std::move(o9);
+			zv::Val o7 = zv::Val::null();
+			q6 = std::move(o7);
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(q8.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Stmt", 19)) || Z_TYPE_P(q8.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Node\\VariableWritesNode::getVariableOverwritingLoop", "?PhpParser\\Node\\Stmt", q8.raw()); return false; }
-		*ret = q8.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(q6.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Stmt", 19)) || Z_TYPE_P(q6.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Node\\VariableWritesNode::getVariableOverwritingLoop", "?PhpParser\\Node\\Stmt", q6.raw()); return false; }
+		*ret = q6.take();
 		return true;
 	}
 }
@@ -367,12 +353,10 @@ namespace pgen::VariableWritesNode {
 		}
 		bool b1 = b2;
 		if (!b1) {
-			zval *is7 = &this_zv;
-			zv::Val ist8;
-			zval *is6 = is7 == NULL ? NULL : pgrt::propIs(is7, pt_ce_variable_writes_node, &pg_lit[7], ist8.raw());
-			if (UNEXPECTED(EG(exception))) return false;
-			zv::Val ist9;
-			zval *is5 = is6 == NULL ? NULL : pgrt::dimIs(is6, p_variableName, ist9.raw());
+			zval *is6 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::VariableWritesNode::slot::referencedVariableNames)).deref().raw();
+			if (Z_ISUNDEF_P(is6)) is6 = NULL;
+			zv::Val ist7;
+			zval *is5 = is6 == NULL ? NULL : pgrt::dimIs(is6, p_variableName, ist7.raw());
 			if (UNEXPECTED(EG(exception))) return false;
 			b1 = (is5 != NULL && Z_TYPE_P(is5) > IS_NULL);
 		}
@@ -388,12 +372,10 @@ namespace pgen::VariableWritesNode {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
-		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_variable_writes_node, &pg_lit[8], ist4.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ist5;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, p_variableName, ist5.raw());
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::VariableWritesNode::slot::untrackedVariableNames)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val ist3;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, p_variableName, ist3.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		*ret = (is1 != NULL && Z_TYPE_P(is1) > IS_NULL);
 		return true;
@@ -421,7 +403,7 @@ namespace pgen::VariableWritesNode {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		ZVAL_COPY(ret, &pg_lit[9]);
+		ZVAL_COPY(ret, &pg_lit[0]);
 		return true;
 	}
 }
@@ -447,16 +429,7 @@ namespace sigs = ptdecl::VariableWritesNode::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_VariableWritesNode)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("usedWriteIds", 12));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("coveredWriteIds", 15));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("overwrittenWriteIds", 19));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("readWriteIds", 12));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("readVariableNames", 17));
-	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("redundantWriteTypes", 19));
-	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("variableOverwritingLoops", 24));
-	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("referencedVariableNames", 23));
-	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("untrackedVariableNames", 22));
-	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("PHPStan_Node_VariableWritesNode", 31));
+	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("PHPStan_Node_VariableWritesNode", 31));
 	reg::Class cls("PHPStan\\Node\\VariableWritesNode");
 	ptdecl::VariableWritesNode::declareClass(cls);
 	ptdecl::VariableWritesNode::declareProperties(cls);

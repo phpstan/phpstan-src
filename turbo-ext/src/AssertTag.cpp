@@ -6,8 +6,6 @@
 
 zend_class_entry *pt_ce_assert_tag = nullptr;
 
-/* the interned string literals, created at module startup */
-static zval pg_lit[1];
 
 static pgrt::PropIndexSite pg_site_0; /* slot_if_0 */
 static pgrt::PropIndexSite pg_site_1; /* slot_if_1 */
@@ -83,25 +81,23 @@ namespace pgen::AssertTag {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is2 = &this_zv;
-		zv::Val ist3;
-		zval *is1 = is2 == NULL ? NULL : pgrt::propIs(is2, pt_ce_assert_tag, &pg_lit[0], ist3.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca4;
+		zval *is1 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::AssertTag::slot::originalType)).deref().raw();
+		if (Z_ISUNDEF_P(is1)) is1 = NULL;
+		zv::Val ca2;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca4 = zv::Val::copyOf(zv::Ref(is1));
+			ca2 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::AssertTag::slot::type, "type");
-			if (UNEXPECTED(p5 == NULL)) return false;
-			zv::Val o6 = zv::Val::copyOf(zv::Ref(p5));
-			zval o7;
-			ZVAL_COPY(&o7, o6.raw());
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::AssertTag::slot::originalType, &o7);
-			ca4 = zv::Val::copyOf(zv::Ref(o6.raw()));
+			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::AssertTag::slot::type, "type");
+			if (UNEXPECTED(p3 == NULL)) return false;
+			zv::Val o4 = zv::Val::copyOf(zv::Ref(p3));
+			zval o5;
+			ZVAL_COPY(&o5, o4.raw());
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::AssertTag::slot::originalType, &o5);
+			ca2 = zv::Val::copyOf(zv::Ref(o4.raw()));
 		}
 		}
-		*ret = ca4.take();
+		*ret = ca2.take();
 		return true;
 	}
 }
@@ -325,7 +321,6 @@ namespace sigs = ptdecl::AssertTag::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_AssertTag)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("originalType", 12));
 	reg::Class cls("PHPStan\\PhpDoc\\Tag\\AssertTag");
 	ptdecl::AssertTag::declareClass(cls);
 	ptdecl::AssertTag::declareProperties(cls);

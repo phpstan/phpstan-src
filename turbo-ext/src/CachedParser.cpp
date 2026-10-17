@@ -6,8 +6,6 @@
 
 zend_class_entry *pt_ce_cached_parser = nullptr;
 
-/* the interned string literals, created at module startup */
-static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_get_0 */
 static pt_method_site pg_site_1; /* method_parseFile_1 */
@@ -91,13 +89,11 @@ namespace pgen::CachedParser {
 	 {
 		bool b5 = !(Z_TYPE_P(l_cachedNodes.raw()) == IS_NULL);
 		if (b5) {
-			zval *is8 = &this_zv;
+			zval *is7 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::CachedParser::slot::parsedByString)).deref().raw();
+			if (Z_ISUNDEF_P(is7)) is7 = NULL;
+			zv::Val o8 = zv::Val::copyOf(zv::Ref(l_sourceCode.raw()));
 			zv::Val ist9;
-			zval *is7 = is8 == NULL ? NULL : pgrt::propIs(is8, pt_ce_cached_parser, &pg_lit[0], ist9.raw());
-			if (UNEXPECTED(EG(exception))) return false;
-			zv::Val o10 = zv::Val::copyOf(zv::Ref(l_sourceCode.raw()));
-			zv::Val ist11;
-			zval *is6 = is7 == NULL ? NULL : pgrt::dimIs(is7, o10.raw(), ist11.raw());
+			zval *is6 = is7 == NULL ? NULL : pgrt::dimIs(is7, o8.raw(), ist9.raw());
 			if (UNEXPECTED(EG(exception))) return false;
 			b5 = !((is6 != NULL && Z_TYPE_P(is6) > IS_NULL));
 		}
@@ -110,66 +106,66 @@ namespace pgen::CachedParser {
 		}
 	}
 	 {
-		zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::CachedParser::slot::originalParser, "originalParser");
-		if (UNEXPECTED(p12 == NULL)) return false;
-		zv::Val vd13;
-		zend_class_entry *vd13_ce = Z_TYPE_P(p12) == IS_OBJECT ? Z_OBJCE_P(p12) : NULL;
-		bool vd13_done = false;
-		if (vd13_ce == pt_ce_rich_parser) {
+		zval *p10 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::CachedParser::slot::originalParser, "originalParser");
+		if (UNEXPECTED(p10 == NULL)) return false;
+		zv::Val vd11;
+		zend_class_entry *vd11_ce = Z_TYPE_P(p10) == IS_OBJECT ? Z_OBJCE_P(p10) : NULL;
+		bool vd11_done = false;
+		if (vd11_ce == pt_ce_rich_parser) {
+			zv::Val r12;
+			if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p10), p_file, r12.raw()))) return false;
+			vd11 = std::move(r12);
+			vd11_done = true;
+		}
+		if (vd11_ce == pt_ce_cached_parser) {
+			zv::Val r13;
+			if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p10), p_file, r13.raw()))) return false;
+			vd11 = std::move(r13);
+			vd11_done = true;
+		}
+		if (vd11_ce == pt_ce_simple_parser) {
 			zv::Val r14;
-			if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p12), p_file, r14.raw()))) return false;
-			vd13 = std::move(r14);
-			vd13_done = true;
+			if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p10), p_file, r14.raw()))) return false;
+			vd11 = std::move(r14);
+			vd11_done = true;
 		}
-		if (vd13_ce == pt_ce_cached_parser) {
+		if (vd11_ce == pt_ce_path_routing_parser) {
 			zv::Val r15;
-			if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p12), p_file, r15.raw()))) return false;
-			vd13 = std::move(r15);
-			vd13_done = true;
+			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p10), p_file, r15.raw()))) return false;
+			vd11 = std::move(r15);
+			vd11_done = true;
 		}
-		if (vd13_ce == pt_ce_simple_parser) {
-			zv::Val r16;
-			if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p12), p_file, r16.raw()))) return false;
-			vd13 = std::move(r16);
-			vd13_done = true;
+		if (!vd11_done) {
+			zval av16[1];
+			ZVAL_COPY_VALUE(&av16[0], p_file);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p10, "parseFile", "parsefile", 9, 1, av16, vd11.raw()))) return false;
 		}
-		if (vd13_ce == pt_ce_path_routing_parser) {
-			zv::Val r17;
-			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p12), p_file, r17.raw()))) return false;
-			vd13 = std::move(r17);
-			vd13_done = true;
-		}
-		if (!vd13_done) {
-			zval av18[1];
-			ZVAL_COPY_VALUE(&av18[0], p_file);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p12, "parseFile", "parsefile", 9, 1, av18, vd13.raw()))) return false;
-		}
-		l_nodes = std::move(vd13);
+		l_nodes = std::move(vd11);
 	}
 	 {
 		if (!(Z_TYPE_P(l_cachedNodes.raw()) == IS_NULL)) {
 			 {
-				zval *p19 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::CachedParser::slot::cachedNodesByString, "cachedNodesByString");
-				if (UNEXPECTED(p19 == NULL)) return false;
-				zv::Val r20;
-				if (EXPECTED(Z_TYPE_P(p19) == IS_OBJECT)) {
-					if (UNEXPECTED(!pt_lru_cache_replace(p19, Z_STR_P(l_sourceCode.raw()), l_nodes.raw()))) return false;
-					ZVAL_NULL(r20.raw());
+				zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::CachedParser::slot::cachedNodesByString, "cachedNodesByString");
+				if (UNEXPECTED(p17 == NULL)) return false;
+				zv::Val r18;
+				if (EXPECTED(Z_TYPE_P(p17) == IS_OBJECT)) {
+					if (UNEXPECTED(!pt_lru_cache_replace(p17, Z_STR_P(l_sourceCode.raw()), l_nodes.raw()))) return false;
+					ZVAL_NULL(r18.raw());
 				} else {
 				 {
-					zval av21[2];
-					ZVAL_COPY_VALUE(&av21[0], l_sourceCode.raw());
-					ZVAL_COPY_VALUE(&av21[1], l_nodes.raw());
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p19, "replace", "replace", 7, 2, av21, r20.raw()))) return false;
+					zval av19[2];
+					ZVAL_COPY_VALUE(&av19[0], l_sourceCode.raw());
+					ZVAL_COPY_VALUE(&av19[1], l_nodes.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p17, "replace", "replace", 7, 2, av19, r18.raw()))) return false;
 				}
 				}
 			}
 			 {
-				zv::Val o22 = zv::Val::copyOf(zv::Ref(l_sourceCode.raw()));
-				zval *w23 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::CachedParser::slot::parsedByString)).deref().raw();
-				if (Z_TYPE_P(w23) == IS_ARRAY) {
-					SEPARATE_ARRAY(w23);
-					if (Z_TYPE_P(o22.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w23), Z_STR_P(o22.raw())); } else if (Z_TYPE_P(o22.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w23), Z_LVAL_P(o22.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
+				zv::Val o20 = zv::Val::copyOf(zv::Ref(l_sourceCode.raw()));
+				zval *w21 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::CachedParser::slot::parsedByString)).deref().raw();
+				if (Z_TYPE_P(w21) == IS_ARRAY) {
+					SEPARATE_ARRAY(w21);
+					if (Z_TYPE_P(o20.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w21), Z_STR_P(o20.raw())); } else if (Z_TYPE_P(o20.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w21), Z_LVAL_P(o20.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
 				}
 			}
 			 {
@@ -550,7 +546,6 @@ namespace sigs = ptdecl::CachedParser::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_CachedParser)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("parsedByString", 14));
 	reg::Class cls("PHPStan\\Parser\\CachedParser");
 	ptdecl::CachedParser::declareClass(cls);
 	ptdecl::CachedParser::declareProperties(cls);

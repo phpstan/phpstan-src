@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_file_excluder = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[5];
+static zval pg_lit[4];
 
 static pgrt::FunctionSite pg_site_0; /* function_strlen */
 static pt_method_site pg_site_1; /* method_normalizePath_1 */
@@ -209,13 +209,11 @@ namespace pgen::FileExcluder {
 		l_file = std::move(r3);
 	}
 	 {
-		zval *is6 = &this_zv;
+		zval *is5 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::FileExcluder::slot::literalAnalyseFilesExcludes)).deref().raw();
+		if (Z_ISUNDEF_P(is5)) is5 = NULL;
+		zv::Val o6 = zv::Val::copyOf(zv::Ref(l_file.raw()));
 		zv::Val ist7;
-		zval *is5 = is6 == NULL ? NULL : pgrt::propIs(is6, pt_ce_file_excluder, &pg_lit[2], ist7.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o8 = zv::Val::copyOf(zv::Ref(l_file.raw()));
-		zv::Val ist9;
-		zval *is4 = is5 == NULL ? NULL : pgrt::dimIs(is5, o8.raw(), ist9.raw());
+		zval *is4 = is5 == NULL ? NULL : pgrt::dimIs(is5, o6.raw(), ist7.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		if (is4 != NULL && Z_TYPE_P(is4) > IS_NULL) {
 			 {
@@ -225,22 +223,22 @@ namespace pgen::FileExcluder {
 		}
 	}
 	 {
-		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::literalAnalyseDirectoryExcludes, "literalAnalyseDirectoryExcludes");
-		if (UNEXPECTED(p11 == NULL)) return false;
-		zv::Val a12 = zv::Val::copyOf(zv::Ref(p11).deref());
-		HashTable *ht10 = Z_ARRVAL_P(a12.raw());
-		zval *v13;
-		zend_ulong n14;
-		zend_string *s15;
-		ZEND_HASH_FOREACH_KEY_VAL(ht10, n14, s15, v13) {
-			(void) n14; (void) s15;
-			l_exclude = zv::Ref(v13).deref().raw();
+		zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::literalAnalyseDirectoryExcludes, "literalAnalyseDirectoryExcludes");
+		if (UNEXPECTED(p9 == NULL)) return false;
+		zv::Val a10 = zv::Val::copyOf(zv::Ref(p9).deref());
+		HashTable *ht8 = Z_ARRVAL_P(a10.raw());
+		zval *v11;
+		zend_ulong n12;
+		zend_string *s13;
+		ZEND_HASH_FOREACH_KEY_VAL(ht8, n12, s13, v11) {
+			(void) n12; (void) s13;
+			l_exclude = zv::Ref(v11).deref().raw();
 			 {
 				 {
-					zv::Val o18 = zv::Val::copyOf(zv::Ref(l_file.raw()));
-					zv::Val r19;
-					if (UNEXPECTED(!pgrt::strMatch(pg_site_5, "str_starts_with", 15, pgrt::StrMatch::STARTS, o18.raw(), l_exclude, r19.raw()))) return false;
-					if (Z_TYPE_P(r19.raw()) == IS_TRUE) {
+					zv::Val o16 = zv::Val::copyOf(zv::Ref(l_file.raw()));
+					zv::Val r17;
+					if (UNEXPECTED(!pgrt::strMatch(pg_site_5, "str_starts_with", 15, pgrt::StrMatch::STARTS, o16.raw(), l_exclude, r17.raw()))) return false;
+					if (Z_TYPE_P(r17.raw()) == IS_TRUE) {
 						 {
 							*ret = true;
 							return true;
@@ -252,29 +250,29 @@ namespace pgen::FileExcluder {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::fnmatchAnalyseExcludes, "fnmatchAnalyseExcludes");
-		if (UNEXPECTED(p21 == NULL)) return false;
-		zv::Val a22 = zv::Val::copyOf(zv::Ref(p21).deref());
-		HashTable *ht20 = Z_ARRVAL_P(a22.raw());
-		zval *v23;
-		zend_ulong n24;
-		zend_string *s25;
-		ZEND_HASH_FOREACH_KEY_VAL(ht20, n24, s25, v23) {
-			(void) n24; (void) s25;
-			l_exclude = zv::Ref(v23).deref().raw();
+		zval *p19 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::fnmatchAnalyseExcludes, "fnmatchAnalyseExcludes");
+		if (UNEXPECTED(p19 == NULL)) return false;
+		zv::Val a20 = zv::Val::copyOf(zv::Ref(p19).deref());
+		HashTable *ht18 = Z_ARRVAL_P(a20.raw());
+		zval *v21;
+		zend_ulong n22;
+		zend_string *s23;
+		ZEND_HASH_FOREACH_KEY_VAL(ht18, n22, s23, v21) {
+			(void) n22; (void) s23;
+			l_exclude = zv::Ref(v21).deref().raw();
 			 {
 				 {
-					zval *p28 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::fnmatchFlags, "fnmatchFlags");
-					if (UNEXPECTED(p28 == NULL)) return false;
-					zval av29[3];
-					ZVAL_COPY_VALUE(&av29[0], l_exclude);
-					ZVAL_COPY_VALUE(&av29[1], l_file.raw());
-					zval z30;
-					ZVAL_LONG(&z30, Z_LVAL_P(p28));
-					ZVAL_COPY_VALUE(&av29[2], &z30);
-					zv::Val r31;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "fnmatch", 7, pt_ce_file_excluder, 3, av29, r31.raw(), NULL))) return false;
-					if (Z_TYPE_P(r31.raw()) == IS_TRUE) {
+					zval *p26 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::fnmatchFlags, "fnmatchFlags");
+					if (UNEXPECTED(p26 == NULL)) return false;
+					zval av27[3];
+					ZVAL_COPY_VALUE(&av27[0], l_exclude);
+					ZVAL_COPY_VALUE(&av27[1], l_file.raw());
+					zval z28;
+					ZVAL_LONG(&z28, Z_LVAL_P(p26));
+					ZVAL_COPY_VALUE(&av27[2], &z28);
+					zv::Val r29;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "fnmatch", 7, pt_ce_file_excluder, 3, av27, r29.raw(), NULL))) return false;
+					if (Z_TYPE_P(r29.raw()) == IS_TRUE) {
 						 {
 							*ret = true;
 							return true;
@@ -321,7 +319,7 @@ namespace pgen::FileExcluder {
 				ZVAL_COPY_VALUE(&av3[2], &z5);
 				zv::Val r6;
 				if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "substr", 6, pt_ce_file_excluder, 3, av3, r6.raw(), NULL))) return false;
-				if (zend_is_identical(r6.raw(), &pg_lit[3])) {
+				if (zend_is_identical(r6.raw(), &pg_lit[2])) {
 					 {
 						*ret = true;
 						return true;
@@ -342,7 +340,7 @@ namespace pgen::FileExcluder {
 {
 	 {
 		zval av1[2];
-		ZVAL_COPY_VALUE(&av1[0], &pg_lit[4]);
+		ZVAL_COPY_VALUE(&av1[0], &pg_lit[3]);
 		ZVAL_COPY_VALUE(&av1[1], p_path);
 		zv::Val r2;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_8, "preg_match", 10, pt_ce_file_excluder, 2, av1, r2.raw(), NULL))) return false;
@@ -362,9 +360,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileExcluder)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("\\", 1));
 	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("/", 1));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("literalAnalyseFilesExcludes", 27));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral(":", 1));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("~[*\?[\\]]~", 9));
+	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral(":", 1));
+	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("~[*\?[\\]]~", 9));
 	reg::Class cls("PHPStan\\File\\FileExcluder");
 	ptdecl::FileExcluder::declareClass(cls);
 	ptdecl::FileExcluder::declareProperties(cls);

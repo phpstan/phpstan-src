@@ -6,8 +6,6 @@
 
 zend_class_entry *pt_ce_memoizing_reflection_provider = nullptr;
 
-/* the interned string literals, created at module startup */
-static zval pg_lit[4];
 
 static pt_method_site pg_site_0; /* method_hasClass_0 */
 static pt_method_site pg_site_1; /* method_getClass_1 */
@@ -54,13 +52,11 @@ namespace pgen::MemoizingReflectionProvider {
 		l_lowerClassName = std::move(r1);
 	}
 	 {
-		zval *is4 = &this_zv;
+		zval *is3 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::MemoizingReflectionProvider::slot::knownClasses)).deref().raw();
+		if (Z_ISUNDEF_P(is3)) is3 = NULL;
+		zv::Val o4 = zv::Val::copyOf(zv::Ref(l_lowerClassName.raw()));
 		zv::Val ist5;
-		zval *is3 = is4 == NULL ? NULL : pgrt::propIs(is4, pt_ce_memoizing_reflection_provider, &pg_lit[0], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o6 = zv::Val::copyOf(zv::Ref(l_lowerClassName.raw()));
-		zv::Val ist7;
-		zval *is2 = is3 == NULL ? NULL : pgrt::dimIs(is3, o6.raw(), ist7.raw());
+		zval *is2 = is3 == NULL ? NULL : pgrt::dimIs(is3, o4.raw(), ist5.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		if (is2 != NULL && Z_TYPE_P(is2) > IS_NULL) {
 			 {
@@ -70,15 +66,13 @@ namespace pgen::MemoizingReflectionProvider {
 		}
 	}
 	 {
-		zval *is10 = &this_zv;
-		zv::Val ist11;
-		zval *is9 = is10 == NULL ? NULL : pgrt::propIs(is10, pt_ce_memoizing_reflection_provider, &pg_lit[1], ist11.raw());
+		zval *is7 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::MemoizingReflectionProvider::slot::unknownClasses)).deref().raw();
+		if (Z_ISUNDEF_P(is7)) is7 = NULL;
+		zv::Val o8 = zv::Val::copyOf(zv::Ref(p_className));
+		zv::Val ist9;
+		zval *is6 = is7 == NULL ? NULL : pgrt::dimIs(is7, o8.raw(), ist9.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o12 = zv::Val::copyOf(zv::Ref(p_className));
-		zv::Val ist13;
-		zval *is8 = is9 == NULL ? NULL : pgrt::dimIs(is9, o12.raw(), ist13.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		if (is8 != NULL && Z_TYPE_P(is8) > IS_NULL) {
+		if (is6 != NULL && Z_TYPE_P(is6) > IS_NULL) {
 			 {
 				*ret = false;
 				return true;
@@ -86,55 +80,55 @@ namespace pgen::MemoizingReflectionProvider {
 		}
 	}
 	 {
-		zval *p14 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::provider, "provider");
-		if (UNEXPECTED(p14 == NULL)) return false;
-		zv::Val o15 = zv::Val::copyOf(zv::Ref(p_className));
-		zv::Val vd16;
-		zend_class_entry *vd16_ce = Z_TYPE_P(p14) == IS_OBJECT ? Z_OBJCE_P(p14) : NULL;
-		bool vd16_done = false;
-		if (vd16_ce == pt_ce_memoizing_reflection_provider) {
-			bool r17;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p14), o15.raw(), &r17))) return false;
-			zv::Val o18 = zv::Val::boolean(r17);
-			vd16 = std::move(o18);
-			vd16_done = true;
+		zval *p10 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::provider, "provider");
+		if (UNEXPECTED(p10 == NULL)) return false;
+		zv::Val o11 = zv::Val::copyOf(zv::Ref(p_className));
+		zv::Val vd12;
+		zend_class_entry *vd12_ce = Z_TYPE_P(p10) == IS_OBJECT ? Z_OBJCE_P(p10) : NULL;
+		bool vd12_done = false;
+		if (vd12_ce == pt_ce_memoizing_reflection_provider) {
+			bool r13;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p10), o11.raw(), &r13))) return false;
+			zv::Val o14 = zv::Val::boolean(r13);
+			vd12 = std::move(o14);
+			vd12_done = true;
 		}
-		if (!vd16_done) {
-			zval av19[1];
-			ZVAL_COPY_VALUE(&av19[0], o15.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p14, "hasClass", "hasclass", 8, 1, av19, vd16.raw()))) return false;
+		if (!vd12_done) {
+			zval av15[1];
+			ZVAL_COPY_VALUE(&av15[0], o11.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p10, "hasClass", "hasclass", 8, 1, av15, vd12.raw()))) return false;
 		}
-		l_result = (Z_TYPE_P(vd16.raw()) == IS_TRUE);
+		l_result = (Z_TYPE_P(vd12.raw()) == IS_TRUE);
 	}
 	 {
 		if (l_result) {
 			 {
-				zv::Val o20 = zv::Val::copyOf(zv::Ref(l_lowerClassName.raw()));
-				bool k21 = true;
-				zval z23;
-				ZVAL_BOOL(&z23, k21);
-				zv::Val o22 = zv::Val::copyOf(zv::Ref(&z23));
-				zval *w24 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::knownClasses)).deref().raw();
-				if (Z_TYPE_P(w24) <= IS_NULL) { zval_ptr_dtor(w24); array_init(w24); } else if (UNEXPECTED(Z_TYPE_P(w24) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w24);
-				zval *e25 = pgrt::dimWrite(w24, o20.raw());
-				if (UNEXPECTED(e25 == NULL)) return false;
-				zv::Ref(e25).assign(std::move(o22));
+				zv::Val o16 = zv::Val::copyOf(zv::Ref(l_lowerClassName.raw()));
+				bool k17 = true;
+				zval z19;
+				ZVAL_BOOL(&z19, k17);
+				zv::Val o18 = zv::Val::copyOf(zv::Ref(&z19));
+				zval *w20 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::knownClasses)).deref().raw();
+				if (Z_TYPE_P(w20) <= IS_NULL) { zval_ptr_dtor(w20); array_init(w20); } else if (UNEXPECTED(Z_TYPE_P(w20) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w20);
+				zval *e21 = pgrt::dimWrite(w20, o16.raw());
+				if (UNEXPECTED(e21 == NULL)) return false;
+				zv::Ref(e21).assign(std::move(o18));
 			}
 		} else {
 		 {
 			 {
-				zv::Val o26 = zv::Val::copyOf(zv::Ref(p_className));
-				bool k27 = true;
-				zval z29;
-				ZVAL_BOOL(&z29, k27);
-				zv::Val o28 = zv::Val::copyOf(zv::Ref(&z29));
-				zval *w30 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::unknownClasses)).deref().raw();
-				if (Z_TYPE_P(w30) <= IS_NULL) { zval_ptr_dtor(w30); array_init(w30); } else if (UNEXPECTED(Z_TYPE_P(w30) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w30);
-				zval *e31 = pgrt::dimWrite(w30, o26.raw());
-				if (UNEXPECTED(e31 == NULL)) return false;
-				zv::Ref(e31).assign(std::move(o28));
+				zv::Val o22 = zv::Val::copyOf(zv::Ref(p_className));
+				bool k23 = true;
+				zval z25;
+				ZVAL_BOOL(&z25, k23);
+				zv::Val o24 = zv::Val::copyOf(zv::Ref(&z25));
+				zval *w26 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::unknownClasses)).deref().raw();
+				if (Z_TYPE_P(w26) <= IS_NULL) { zval_ptr_dtor(w26); array_init(w26); } else if (UNEXPECTED(Z_TYPE_P(w26) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w26);
+				zval *e27 = pgrt::dimWrite(w26, o22.raw());
+				if (UNEXPECTED(e27 == NULL)) return false;
+				zv::Ref(e27).assign(std::move(o24));
 			}
 		}
 		}
@@ -152,49 +146,47 @@ namespace pgen::MemoizingReflectionProvider {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::MemoizingReflectionProvider::slot::classes)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val r3 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p_className)));
 		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_memoizing_reflection_provider, &pg_lit[2], ist4.raw());
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, r3.raw(), ist4.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val r5 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p_className)));
-		zv::Val ist6;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, r5.raw(), ist6.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca7;
+		zv::Val ca5;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca7 = zv::Val::copyOf(zv::Ref(is1));
+			ca5 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val r8 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p_className)));
-			zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::provider, "provider");
-			if (UNEXPECTED(p9 == NULL)) return false;
-			zv::Val o10 = zv::Val::copyOf(zv::Ref(p_className));
-			zv::Val vd11;
-			zend_class_entry *vd11_ce = Z_TYPE_P(p9) == IS_OBJECT ? Z_OBJCE_P(p9) : NULL;
-			bool vd11_done = false;
-			if (vd11_ce == pt_ce_memoizing_reflection_provider) {
-				zv::Val r12;
-				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p9), o10.raw(), r12.raw()))) return false;
-				vd11 = std::move(r12);
-				vd11_done = true;
+			zv::Val r6 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p_className)));
+			zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::provider, "provider");
+			if (UNEXPECTED(p7 == NULL)) return false;
+			zv::Val o8 = zv::Val::copyOf(zv::Ref(p_className));
+			zv::Val vd9;
+			zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
+			bool vd9_done = false;
+			if (vd9_ce == pt_ce_memoizing_reflection_provider) {
+				zv::Val r10;
+				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
+				vd9 = std::move(r10);
+				vd9_done = true;
 			}
-			if (!vd11_done) {
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], o10.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p9, "getClass", "getclass", 8, 1, av13, vd11.raw()))) return false;
+			if (!vd9_done) {
+				zval av11[1];
+				ZVAL_COPY_VALUE(&av11[0], o8.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p7, "getClass", "getclass", 8, 1, av11, vd9.raw()))) return false;
 			}
-			zv::Val o14 = zv::Val::copyOf(zv::Ref(vd11.raw()));
-			zval *w15 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::classes)).deref().raw();
-			if (Z_TYPE_P(w15) <= IS_NULL) { zval_ptr_dtor(w15); array_init(w15); } else if (UNEXPECTED(Z_TYPE_P(w15) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w15);
-			zval *e16 = pgrt::dimWrite(w15, r8.raw());
-			if (UNEXPECTED(e16 == NULL)) return false;
-			zv::Ref(e16).assign(std::move(o14));
-			ca7 = zv::Val::copyOf(zv::Ref(vd11.raw()));
+			zv::Val o12 = zv::Val::copyOf(zv::Ref(vd9.raw()));
+			zval *w13 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::classes)).deref().raw();
+			if (Z_TYPE_P(w13) <= IS_NULL) { zval_ptr_dtor(w13); array_init(w13); } else if (UNEXPECTED(Z_TYPE_P(w13) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w13);
+			zval *e14 = pgrt::dimWrite(w13, r6.raw());
+			if (UNEXPECTED(e14 == NULL)) return false;
+			zv::Ref(e14).assign(std::move(o12));
+			ca5 = zv::Val::copyOf(zv::Ref(vd9.raw()));
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(ca7.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(ca7.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwReturnType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::getClass", "PHPStan\\Reflection\\ClassReflection", ca7.raw()); return false; }
-		*ret = ca7.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(ca5.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(ca5.raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwReturnType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::getClass", "PHPStan\\Reflection\\ClassReflection", ca5.raw()); return false; }
+		*ret = ca5.take();
 		return true;
 	}
 }
@@ -206,49 +198,47 @@ namespace pgen::MemoizingReflectionProvider {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::MemoizingReflectionProvider::slot::classNames)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val r3 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p_className)));
 		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_memoizing_reflection_provider, &pg_lit[3], ist4.raw());
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, r3.raw(), ist4.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val r5 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p_className)));
-		zv::Val ist6;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, r5.raw(), ist6.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca7;
+		zv::Val ca5;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca7 = zv::Val::copyOf(zv::Ref(is1));
+			ca5 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
-			zv::Val r8 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p_className)));
-			zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::provider, "provider");
-			if (UNEXPECTED(p9 == NULL)) return false;
-			zv::Val o10 = zv::Val::copyOf(zv::Ref(p_className));
-			zv::Val vd11;
-			zend_class_entry *vd11_ce = Z_TYPE_P(p9) == IS_OBJECT ? Z_OBJCE_P(p9) : NULL;
-			bool vd11_done = false;
-			if (vd11_ce == pt_ce_memoizing_reflection_provider) {
-				zv::Val r12;
-				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClassName(Z_OBJ_P(p9), o10.raw(), r12.raw()))) return false;
-				vd11 = std::move(r12);
-				vd11_done = true;
+			zv::Val r6 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p_className)));
+			zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::provider, "provider");
+			if (UNEXPECTED(p7 == NULL)) return false;
+			zv::Val o8 = zv::Val::copyOf(zv::Ref(p_className));
+			zv::Val vd9;
+			zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
+			bool vd9_done = false;
+			if (vd9_ce == pt_ce_memoizing_reflection_provider) {
+				zv::Val r10;
+				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClassName(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
+				vd9 = std::move(r10);
+				vd9_done = true;
 			}
-			if (!vd11_done) {
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], o10.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p9, "getClassName", "getclassname", 12, 1, av13, vd11.raw()))) return false;
+			if (!vd9_done) {
+				zval av11[1];
+				ZVAL_COPY_VALUE(&av11[0], o8.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p7, "getClassName", "getclassname", 12, 1, av11, vd9.raw()))) return false;
 			}
-			zv::Val o14 = zv::Val::copyOf(zv::Ref(vd11.raw()));
-			zval *w15 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::classNames)).deref().raw();
-			if (Z_TYPE_P(w15) <= IS_NULL) { zval_ptr_dtor(w15); array_init(w15); } else if (UNEXPECTED(Z_TYPE_P(w15) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w15);
-			zval *e16 = pgrt::dimWrite(w15, r8.raw());
-			if (UNEXPECTED(e16 == NULL)) return false;
-			zv::Ref(e16).assign(std::move(o14));
-			ca7 = zv::Val::copyOf(zv::Ref(vd11.raw()));
+			zv::Val o12 = zv::Val::copyOf(zv::Ref(vd9.raw()));
+			zval *w13 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::classNames)).deref().raw();
+			if (Z_TYPE_P(w13) <= IS_NULL) { zval_ptr_dtor(w13); array_init(w13); } else if (UNEXPECTED(Z_TYPE_P(w13) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w13);
+			zval *e14 = pgrt::dimWrite(w13, r6.raw());
+			if (UNEXPECTED(e14 == NULL)) return false;
+			zv::Ref(e14).assign(std::move(o12));
+			ca5 = zv::Val::copyOf(zv::Ref(vd9.raw()));
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(ca7.raw()) == IS_STRING))) { pgrt::throwReturnType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::getClassName", "string", ca7.raw()); return false; }
-		*ret = ca7.take();
+		if (UNEXPECTED(!(Z_TYPE_P(ca5.raw()) == IS_STRING))) { pgrt::throwReturnType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::getClassName", "string", ca5.raw()); return false; }
+		*ret = ca5.take();
 		return true;
 	}
 }
@@ -491,10 +481,6 @@ namespace sigs = ptdecl::MemoizingReflectionProvider::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("knownClasses", 12));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("unknownClasses", 14));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("classes", 7));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("classNames", 10));
 	reg::Class cls("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider");
 	ptdecl::MemoizingReflectionProvider::declareClass(cls);
 	ptdecl::MemoizingReflectionProvider::declareProperties(cls);

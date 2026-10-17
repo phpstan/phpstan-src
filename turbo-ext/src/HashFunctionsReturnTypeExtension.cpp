@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_hash_functions_return_type_extension = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[6];
+static zval pg_lit[5];
 
 static pt_method_site pg_site_0; /* method_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
@@ -58,28 +58,26 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		l_algorithm = std::move(r2);
 	}
 	 {
-		zval *is4 = &this_zv;
-		zv::Val ist5;
-		zval *is3 = is4 == NULL ? NULL : pgrt::propIs(is4, pt_ce_hash_functions_return_type_extension, &pg_lit[3], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return;
-		zv::Val ca6;
+		zval *is3 = zv::Ref(OBJ_PROP_NUM(Z_OBJ(captures[3]), ptdecl::HashFunctionsReturnTypeExtension::slot::hashAlgorithms)).deref().raw();
+		if (Z_ISUNDEF_P(is3)) is3 = NULL;
+		zv::Val ca4;
 		if (is3 != NULL && Z_TYPE_P(is3) > IS_NULL) {
-			ca6 = zv::Val::copyOf(zv::Ref(is3));
+			ca4 = zv::Val::copyOf(zv::Ref(is3));
 		} else {
 		 {
-			zv::Val r7;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "hash_algos", 10, pt_ce_hash_functions_return_type_extension, 0, NULL, r7.raw(), NULL))) return;
-			zval o8;
-			ZVAL_COPY(&o8, r7.raw());
-			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::HashFunctionsReturnTypeExtension::slot::hashAlgorithms, &o8);
-			ca6 = zv::Val::copyOf(zv::Ref(r7.raw()));
+			zv::Val r5;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "hash_algos", 10, pt_ce_hash_functions_return_type_extension, 0, NULL, r5.raw(), NULL))) return;
+			zval o6;
+			ZVAL_COPY(&o6, r5.raw());
+			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::HashFunctionsReturnTypeExtension::slot::hashAlgorithms, &o6);
+			ca4 = zv::Val::copyOf(zv::Ref(r5.raw()));
 		}
 		}
-		l_hashAlgorithms = std::move(ca6);
+		l_hashAlgorithms = std::move(ca4);
 	}
 	 {
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(l_algorithm.raw()));
-		if (!(pgrt::inArrayStrict(o9.raw(), l_hashAlgorithms.raw()))) {
+		zv::Val o7 = zv::Val::copyOf(zv::Ref(l_algorithm.raw()));
+		if (!(pgrt::inArrayStrict(o7.raw(), l_hashAlgorithms.raw()))) {
 			 {
 				ZVAL_COPY(return_value, zv::Ref(&captures[2]).deref().raw());
 				return;
@@ -87,17 +85,17 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 	}
 	 {
-		zv::Val et12;
-		zval *e11 = pgrt::dimRead(zv::Ref(&captures[0]).deref().raw(), &pg_lit[4], et12.raw());
-		if (UNEXPECTED(e11 == NULL)) return;
-		bool b10 = zend_is_true(zv::Ref(e11).deref().raw());
-		if (b10) {
-			zv::Val o13 = zv::Val::copyOf(zv::Ref(l_algorithm.raw()));
-			zval *cc14 = pgrt::classConstant(pt_ce_hash_functions_return_type_extension, &pg_lit[5], pt_ce_hash_functions_return_type_extension);
-			if (UNEXPECTED(cc14 == NULL)) return;
-			b10 = pgrt::inArrayStrict(o13.raw(), cc14);
+		zv::Val et10;
+		zval *e9 = pgrt::dimRead(zv::Ref(&captures[0]).deref().raw(), &pg_lit[3], et10.raw());
+		if (UNEXPECTED(e9 == NULL)) return;
+		bool b8 = zend_is_true(zv::Ref(e9).deref().raw());
+		if (b8) {
+			zv::Val o11 = zv::Val::copyOf(zv::Ref(l_algorithm.raw()));
+			zval *cc12 = pgrt::classConstant(pt_ce_hash_functions_return_type_extension, &pg_lit[4], pt_ce_hash_functions_return_type_extension);
+			if (UNEXPECTED(cc12 == NULL)) return;
+			b8 = pgrt::inArrayStrict(o11.raw(), cc12);
 		}
-		if (b10) {
+		if (b8) {
 			 {
 				ZVAL_COPY(return_value, zv::Ref(&captures[2]).deref().raw());
 				return;
@@ -663,9 +661,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HashFunctionsReturnTypeExtension)
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("SUPPORTED_FUNCTIONS", 19));
 	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("binary", 6));
 	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("possiblyFalse", 13));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("hashAlgorithms", 14));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("cryptographic", 13));
-	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("NON_CRYPTOGRAPHIC_ALGORITHMS", 28));
+	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("cryptographic", 13));
+	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("NON_CRYPTOGRAPHIC_ALGORITHMS", 28));
 	reg::Class cls("PHPStan\\Type\\Php\\HashFunctionsReturnTypeExtension");
 	ptdecl::HashFunctionsReturnTypeExtension::declareClass(cls);
 	ptdecl::HashFunctionsReturnTypeExtension::declareProperties(cls);

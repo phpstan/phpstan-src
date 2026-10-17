@@ -6,8 +6,6 @@
 
 zend_class_entry *pt_ce_direct_registry = nullptr;
 
-/* the interned string literals, created at module startup */
-static zval pg_lit[2];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Rules\MultipleNodeTypesRule */
 static pgrt::DispatchCache pg_site_1; /* dispatch_getNodeTypes_1 */
@@ -2668,91 +2666,87 @@ namespace pgen::DirectRegistry {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::DirectRegistry::slot::cache)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val o3 = zv::Val::copyOf(zv::Ref(p_nodeType));
 		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_direct_registry, &pg_lit[0], ist4.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o5 = zv::Val::copyOf(zv::Ref(p_nodeType));
-		zv::Val ist6;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o5.raw(), ist6.raw());
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o3.raw(), ist4.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		if (!((is1 != NULL && Z_TYPE_P(is1) > IS_NULL))) {
 			 {
-				zv::Val arr7 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-				zv::Val o8 = zv::Val::copyOf(zv::Ref(p_nodeType));
-				{ zval v = o8.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr7.raw()), &v); }
-				zval av9[1];
-				ZVAL_COPY_VALUE(&av9[0], p_nodeType);
-				zv::Val r10;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "class_parents", 13, pt_ce_direct_registry, 1, av9, r10.raw(), NULL))) return false;
-				zv::Val ar11;
-				if (UNEXPECTED(add_function(ar11.raw(), arr7.raw(), r10.raw()) != SUCCESS || EG(exception))) return false;
-				zval av12[1];
-				ZVAL_COPY_VALUE(&av12[0], p_nodeType);
-				zv::Val r13;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "class_implements", 16, pt_ce_direct_registry, 1, av12, r13.raw(), NULL))) return false;
-				zv::Val ar14;
-				if (UNEXPECTED(add_function(ar14.raw(), ar11.raw(), r13.raw()) != SUCCESS || EG(exception))) return false;
-				l_parentNodeTypes = std::move(ar14);
+				zv::Val arr5 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+				zv::Val o6 = zv::Val::copyOf(zv::Ref(p_nodeType));
+				{ zval v = o6.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr5.raw()), &v); }
+				zval av7[1];
+				ZVAL_COPY_VALUE(&av7[0], p_nodeType);
+				zv::Val r8;
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "class_parents", 13, pt_ce_direct_registry, 1, av7, r8.raw(), NULL))) return false;
+				zv::Val ar9;
+				if (UNEXPECTED(add_function(ar9.raw(), arr5.raw(), r8.raw()) != SUCCESS || EG(exception))) return false;
+				zval av10[1];
+				ZVAL_COPY_VALUE(&av10[0], p_nodeType);
+				zv::Val r11;
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "class_implements", 16, pt_ce_direct_registry, 1, av10, r11.raw(), NULL))) return false;
+				zv::Val ar12;
+				if (UNEXPECTED(add_function(ar12.raw(), ar9.raw(), r11.raw()) != SUCCESS || EG(exception))) return false;
+				l_parentNodeTypes = std::move(ar12);
 			}
 			 {
-				zval arr15_raw;
-				ZVAL_EMPTY_ARRAY(&arr15_raw);
-				zv::Val o16 = zv::Val::copyOf(zv::Ref(&arr15_raw));
-				l_rules = std::move(o16);
+				zval arr13_raw;
+				ZVAL_EMPTY_ARRAY(&arr13_raw);
+				zv::Val o14 = zv::Val::copyOf(zv::Ref(&arr13_raw));
+				l_rules = std::move(o14);
 			}
 			 {
-				zv::Val a18 = zv::Val::copyOf(zv::Ref(l_parentNodeTypes.raw()).deref());
-				HashTable *ht17 = Z_ARRVAL_P(a18.raw());
-				zval *v19;
-				zend_ulong n20;
-				zend_string *s21;
-				ZEND_HASH_FOREACH_KEY_VAL(ht17, n20, s21, v19) {
-					(void) n20; (void) s21;
-					l_parentNodeType = zv::Ref(v19).deref().raw();
+				zv::Val a16 = zv::Val::copyOf(zv::Ref(l_parentNodeTypes.raw()).deref());
+				HashTable *ht15 = Z_ARRVAL_P(a16.raw());
+				zval *v17;
+				zend_ulong n18;
+				zend_string *s19;
+				ZEND_HASH_FOREACH_KEY_VAL(ht15, n18, s19, v17) {
+					(void) n18; (void) s19;
+					l_parentNodeType = zv::Ref(v17).deref().raw();
 					 {
 						 {
-							zval *is27 = &this_zv;
-							zv::Val ist28;
-							zval *is26 = is27 == NULL ? NULL : pgrt::propIs(is27, pt_ce_direct_registry, &pg_lit[1], ist28.raw());
+							zval *is24 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::DirectRegistry::slot::rules)).deref().raw();
+							if (Z_ISUNDEF_P(is24)) is24 = NULL;
+							zv::Val o25 = zv::Val::copyOf(zv::Ref(l_parentNodeType));
+							zv::Val ist26;
+							zval *is23 = is24 == NULL ? NULL : pgrt::dimIs(is24, o25.raw(), ist26.raw());
 							if (UNEXPECTED(EG(exception))) return false;
-							zv::Val o29 = zv::Val::copyOf(zv::Ref(l_parentNodeType));
-							zv::Val ist30;
-							zval *is25 = is26 == NULL ? NULL : pgrt::dimIs(is26, o29.raw(), ist30.raw());
-							if (UNEXPECTED(EG(exception))) return false;
-							zv::Val q31;
-							if (is25 != NULL && Z_TYPE_P(is25) > IS_NULL) {
-								q31 = zv::Val::copyOf(zv::Ref(is25));
+							zv::Val q27;
+							if (is23 != NULL && Z_TYPE_P(is23) > IS_NULL) {
+								q27 = zv::Val::copyOf(zv::Ref(is23));
 							} else {
 							 {
-								zval arr32_raw;
-								ZVAL_EMPTY_ARRAY(&arr32_raw);
-								zv::Val o33 = zv::Val::copyOf(zv::Ref(&arr32_raw));
-								q31 = std::move(o33);
+								zval arr28_raw;
+								ZVAL_EMPTY_ARRAY(&arr28_raw);
+								zv::Val o29 = zv::Val::copyOf(zv::Ref(&arr28_raw));
+								q27 = std::move(o29);
 							}
 							}
-							pgrt::ForeachIter it34;
-							if (UNEXPECTED(!it34.begin(q31.raw()))) return false;
-							while (it34.valid()) {
-								l_rule = zv::Ref(it34.current()).deref().raw();
+							pgrt::ForeachIter it30;
+							if (UNEXPECTED(!it30.begin(q27.raw()))) return false;
+							while (it30.valid()) {
+								l_rule = zv::Ref(it30.current()).deref().raw();
 								 {
 									 {
-										zval av37[1];
-										ZVAL_COPY_VALUE(&av37[0], l_rule);
-										zv::Val r38;
-										if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "spl_object_id", 13, pt_ce_direct_registry, 1, av37, r38.raw(), NULL))) return false;
-										zend_long k39 = Z_LVAL_P(r38.raw());
-										zv::Val o40 = zv::Val::copyOf(zv::Ref(l_rule));
-										zv::Val o41 = zv::Val::copyOf(zv::Ref(o40.raw()));
-										zval *w42 = zv::Ref(l_rules.raw()).deref().raw();
-										if (Z_TYPE_P(w42) <= IS_NULL) { zval_ptr_dtor(w42); array_init(w42); } else if (UNEXPECTED(Z_TYPE_P(w42) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-										SEPARATE_ARRAY(w42);
-										zval *e43 = pgrt::dimWriteLong(w42, k39);
-										if (UNEXPECTED(e43 == NULL)) return false;
-										zv::Ref(e43).assign(std::move(o41));
+										zval av33[1];
+										ZVAL_COPY_VALUE(&av33[0], l_rule);
+										zv::Val r34;
+										if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "spl_object_id", 13, pt_ce_direct_registry, 1, av33, r34.raw(), NULL))) return false;
+										zend_long k35 = Z_LVAL_P(r34.raw());
+										zv::Val o36 = zv::Val::copyOf(zv::Ref(l_rule));
+										zv::Val o37 = zv::Val::copyOf(zv::Ref(o36.raw()));
+										zval *w38 = zv::Ref(l_rules.raw()).deref().raw();
+										if (Z_TYPE_P(w38) <= IS_NULL) { zval_ptr_dtor(w38); array_init(w38); } else if (UNEXPECTED(Z_TYPE_P(w38) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+										SEPARATE_ARRAY(w38);
+										zval *e39 = pgrt::dimWriteLong(w38, k35);
+										if (UNEXPECTED(e39 == NULL)) return false;
+										zv::Ref(e39).assign(std::move(o37));
 									}
 								}
-								if (UNEXPECTED(!it34.next())) return false;
+								if (UNEXPECTED(!it30.next())) return false;
 							}
 							if (UNEXPECTED(EG(exception))) return false;
 						}
@@ -2761,27 +2755,27 @@ namespace pgen::DirectRegistry {
 				ZEND_HASH_FOREACH_END();
 			}
 			 {
-				zv::Val o44 = zv::Val::copyOf(zv::Ref(p_nodeType));
-				zv::Val r45;
-				if (UNEXPECTED(!pgrt::arrayValues(l_rules.raw(), r45.raw()))) return false;
-				zv::Val o46 = zv::Val::copyOf(zv::Ref(r45.raw()));
-				zval *w47 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::cache)).deref().raw();
-				if (Z_TYPE_P(w47) <= IS_NULL) { zval_ptr_dtor(w47); array_init(w47); } else if (UNEXPECTED(Z_TYPE_P(w47) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w47);
-				zval *e48 = pgrt::dimWrite(w47, o44.raw());
-				if (UNEXPECTED(e48 == NULL)) return false;
-				zv::Ref(e48).assign(std::move(o46));
+				zv::Val o40 = zv::Val::copyOf(zv::Ref(p_nodeType));
+				zv::Val r41;
+				if (UNEXPECTED(!pgrt::arrayValues(l_rules.raw(), r41.raw()))) return false;
+				zv::Val o42 = zv::Val::copyOf(zv::Ref(r41.raw()));
+				zval *w43 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::cache)).deref().raw();
+				if (Z_TYPE_P(w43) <= IS_NULL) { zval_ptr_dtor(w43); array_init(w43); } else if (UNEXPECTED(Z_TYPE_P(w43) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w43);
+				zval *e44 = pgrt::dimWrite(w43, o40.raw());
+				if (UNEXPECTED(e44 == NULL)) return false;
+				zv::Ref(e44).assign(std::move(o42));
 			}
 		}
 	}
 	 {
-		zval *p49 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::cache, "cache");
-		if (UNEXPECTED(p49 == NULL)) return false;
-		zv::Val et51;
-		zval *e50 = pgrt::dimRead(p49, p_nodeType, et51.raw());
-		if (UNEXPECTED(e50 == NULL)) return false;
-		zv::Val o52 = zv::Val::copyOf(zv::Ref(zv::Ref(e50).deref().raw()));
-		l_selectedRules = std::move(o52);
+		zval *p45 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DirectRegistry::slot::cache, "cache");
+		if (UNEXPECTED(p45 == NULL)) return false;
+		zv::Val et47;
+		zval *e46 = pgrt::dimRead(p45, p_nodeType, et47.raw());
+		if (UNEXPECTED(e46 == NULL)) return false;
+		zv::Val o48 = zv::Val::copyOf(zv::Ref(zv::Ref(e46).deref().raw()));
+		l_selectedRules = std::move(o48);
 	}
 	 {
 		if (UNEXPECTED(!(Z_TYPE_P(l_selectedRules.raw()) == IS_ARRAY))) { pgrt::throwReturnType("PHPStan\\Rules\\DirectRegistry::getRules", "array", l_selectedRules.raw()); return false; }
@@ -2797,8 +2791,6 @@ namespace sigs = ptdecl::DirectRegistry::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_DirectRegistry)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("cache", 5));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("rules", 5));
 	reg::Class cls("PHPStan\\Rules\\DirectRegistry");
 	ptdecl::DirectRegistry::declareClass(cls);
 	ptdecl::DirectRegistry::declareProperties(cls);

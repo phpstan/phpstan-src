@@ -6,8 +6,6 @@
 
 zend_class_entry *pt_ce_memoizing_container = nullptr;
 
-/* the interned string literals, created at module startup */
-static zval pg_lit[4];
 
 static pt_method_site pg_site_0; /* method_hasService_0 */
 static pt_method_site pg_site_1; /* method_getService_1 */
@@ -70,48 +68,46 @@ namespace pgen::MemoizingContainer {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::MemoizingContainer::slot::servicesByName)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val o3 = zv::Val::copyOf(zv::Ref(p_serviceName));
 		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_memoizing_container, &pg_lit[0], ist4.raw());
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o3.raw(), ist4.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o5 = zv::Val::copyOf(zv::Ref(p_serviceName));
-		zv::Val ist6;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o5.raw(), ist6.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca7;
+		zv::Val ca5;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca7 = zv::Val::copyOf(zv::Ref(is1));
+			ca5 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
+			zv::Val o6 = zv::Val::copyOf(zv::Ref(p_serviceName));
+			zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::originalContainer, "originalContainer");
+			if (UNEXPECTED(p7 == NULL)) return false;
 			zv::Val o8 = zv::Val::copyOf(zv::Ref(p_serviceName));
-			zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::originalContainer, "originalContainer");
-			if (UNEXPECTED(p9 == NULL)) return false;
-			zv::Val o10 = zv::Val::copyOf(zv::Ref(p_serviceName));
-			zv::Val vd11;
-			zend_class_entry *vd11_ce = Z_TYPE_P(p9) == IS_OBJECT ? Z_OBJCE_P(p9) : NULL;
-			bool vd11_done = false;
-			if (vd11_ce == pt_ce_memoizing_container) {
-				zv::Val r12;
-				if (UNEXPECTED(!pgen::MemoizingContainer::m_getService(Z_OBJ_P(p9), o10.raw(), r12.raw()))) return false;
-				vd11 = std::move(r12);
-				vd11_done = true;
+			zv::Val vd9;
+			zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
+			bool vd9_done = false;
+			if (vd9_ce == pt_ce_memoizing_container) {
+				zv::Val r10;
+				if (UNEXPECTED(!pgen::MemoizingContainer::m_getService(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
+				vd9 = std::move(r10);
+				vd9_done = true;
 			}
-			if (!vd11_done) {
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], o10.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p9, "getService", "getservice", 10, 1, av13, vd11.raw()))) return false;
+			if (!vd9_done) {
+				zval av11[1];
+				ZVAL_COPY_VALUE(&av11[0], o8.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p7, "getService", "getservice", 10, 1, av11, vd9.raw()))) return false;
 			}
-			zv::Val o14 = zv::Val::copyOf(zv::Ref(vd11.raw()));
-			zval *w15 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::servicesByName)).deref().raw();
-			if (Z_TYPE_P(w15) <= IS_NULL) { zval_ptr_dtor(w15); array_init(w15); } else if (UNEXPECTED(Z_TYPE_P(w15) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w15);
-			zval *e16 = pgrt::dimWrite(w15, o8.raw());
-			if (UNEXPECTED(e16 == NULL)) return false;
-			zv::Ref(e16).assign(std::move(o14));
-			ca7 = zv::Val::copyOf(zv::Ref(vd11.raw()));
+			zv::Val o12 = zv::Val::copyOf(zv::Ref(vd9.raw()));
+			zval *w13 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::servicesByName)).deref().raw();
+			if (Z_TYPE_P(w13) <= IS_NULL) { zval_ptr_dtor(w13); array_init(w13); } else if (UNEXPECTED(Z_TYPE_P(w13) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w13);
+			zval *e14 = pgrt::dimWrite(w13, o6.raw());
+			if (UNEXPECTED(e14 == NULL)) return false;
+			zv::Ref(e14).assign(std::move(o12));
+			ca5 = zv::Val::copyOf(zv::Ref(vd9.raw()));
 		}
 		}
-		*ret = ca7.take();
+		*ret = ca5.take();
 		return true;
 	}
 }
@@ -123,48 +119,46 @@ namespace pgen::MemoizingContainer {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::MemoizingContainer::slot::servicesByType)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val o3 = zv::Val::copyOf(zv::Ref(p_className));
 		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_memoizing_container, &pg_lit[1], ist4.raw());
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o3.raw(), ist4.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o5 = zv::Val::copyOf(zv::Ref(p_className));
-		zv::Val ist6;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o5.raw(), ist6.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca7;
+		zv::Val ca5;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca7 = zv::Val::copyOf(zv::Ref(is1));
+			ca5 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
+			zv::Val o6 = zv::Val::copyOf(zv::Ref(p_className));
+			zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::originalContainer, "originalContainer");
+			if (UNEXPECTED(p7 == NULL)) return false;
 			zv::Val o8 = zv::Val::copyOf(zv::Ref(p_className));
-			zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::originalContainer, "originalContainer");
-			if (UNEXPECTED(p9 == NULL)) return false;
-			zv::Val o10 = zv::Val::copyOf(zv::Ref(p_className));
-			zv::Val vd11;
-			zend_class_entry *vd11_ce = Z_TYPE_P(p9) == IS_OBJECT ? Z_OBJCE_P(p9) : NULL;
-			bool vd11_done = false;
-			if (vd11_ce == pt_ce_memoizing_container) {
-				zv::Val r12;
-				if (UNEXPECTED(!pgen::MemoizingContainer::m_getByType(Z_OBJ_P(p9), o10.raw(), r12.raw()))) return false;
-				vd11 = std::move(r12);
-				vd11_done = true;
+			zv::Val vd9;
+			zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
+			bool vd9_done = false;
+			if (vd9_ce == pt_ce_memoizing_container) {
+				zv::Val r10;
+				if (UNEXPECTED(!pgen::MemoizingContainer::m_getByType(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
+				vd9 = std::move(r10);
+				vd9_done = true;
 			}
-			if (!vd11_done) {
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], o10.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p9, "getByType", "getbytype", 9, 1, av13, vd11.raw()))) return false;
+			if (!vd9_done) {
+				zval av11[1];
+				ZVAL_COPY_VALUE(&av11[0], o8.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p7, "getByType", "getbytype", 9, 1, av11, vd9.raw()))) return false;
 			}
-			zv::Val o14 = zv::Val::copyOf(zv::Ref(vd11.raw()));
-			zval *w15 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::servicesByType)).deref().raw();
-			if (Z_TYPE_P(w15) <= IS_NULL) { zval_ptr_dtor(w15); array_init(w15); } else if (UNEXPECTED(Z_TYPE_P(w15) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w15);
-			zval *e16 = pgrt::dimWrite(w15, o8.raw());
-			if (UNEXPECTED(e16 == NULL)) return false;
-			zv::Ref(e16).assign(std::move(o14));
-			ca7 = zv::Val::copyOf(zv::Ref(vd11.raw()));
+			zv::Val o12 = zv::Val::copyOf(zv::Ref(vd9.raw()));
+			zval *w13 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::servicesByType)).deref().raw();
+			if (Z_TYPE_P(w13) <= IS_NULL) { zval_ptr_dtor(w13); array_init(w13); } else if (UNEXPECTED(Z_TYPE_P(w13) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w13);
+			zval *e14 = pgrt::dimWrite(w13, o6.raw());
+			if (UNEXPECTED(e14 == NULL)) return false;
+			zv::Ref(e14).assign(std::move(o12));
+			ca5 = zv::Val::copyOf(zv::Ref(vd9.raw()));
 		}
 		}
-		*ret = ca7.take();
+		*ret = ca5.take();
 		return true;
 	}
 }
@@ -204,49 +198,47 @@ namespace pgen::MemoizingContainer {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::MemoizingContainer::slot::servicesByTag)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val o3 = zv::Val::copyOf(zv::Ref(p_tagName));
 		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_memoizing_container, &pg_lit[2], ist4.raw());
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o3.raw(), ist4.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o5 = zv::Val::copyOf(zv::Ref(p_tagName));
-		zv::Val ist6;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o5.raw(), ist6.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca7;
+		zv::Val ca5;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca7 = zv::Val::copyOf(zv::Ref(is1));
+			ca5 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
+			zv::Val o6 = zv::Val::copyOf(zv::Ref(p_tagName));
+			zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::originalContainer, "originalContainer");
+			if (UNEXPECTED(p7 == NULL)) return false;
 			zv::Val o8 = zv::Val::copyOf(zv::Ref(p_tagName));
-			zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::originalContainer, "originalContainer");
-			if (UNEXPECTED(p9 == NULL)) return false;
-			zv::Val o10 = zv::Val::copyOf(zv::Ref(p_tagName));
-			zv::Val vd11;
-			zend_class_entry *vd11_ce = Z_TYPE_P(p9) == IS_OBJECT ? Z_OBJCE_P(p9) : NULL;
-			bool vd11_done = false;
-			if (vd11_ce == pt_ce_memoizing_container) {
-				zv::Val r12;
-				if (UNEXPECTED(!pgen::MemoizingContainer::m_getServicesByTag(Z_OBJ_P(p9), o10.raw(), r12.raw()))) return false;
-				vd11 = std::move(r12);
-				vd11_done = true;
+			zv::Val vd9;
+			zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
+			bool vd9_done = false;
+			if (vd9_ce == pt_ce_memoizing_container) {
+				zv::Val r10;
+				if (UNEXPECTED(!pgen::MemoizingContainer::m_getServicesByTag(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
+				vd9 = std::move(r10);
+				vd9_done = true;
 			}
-			if (!vd11_done) {
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], o10.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p9, "getServicesByTag", "getservicesbytag", 16, 1, av13, vd11.raw()))) return false;
+			if (!vd9_done) {
+				zval av11[1];
+				ZVAL_COPY_VALUE(&av11[0], o8.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p7, "getServicesByTag", "getservicesbytag", 16, 1, av11, vd9.raw()))) return false;
 			}
-			zv::Val o14 = zv::Val::copyOf(zv::Ref(vd11.raw()));
-			zval *w15 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::servicesByTag)).deref().raw();
-			if (Z_TYPE_P(w15) <= IS_NULL) { zval_ptr_dtor(w15); array_init(w15); } else if (UNEXPECTED(Z_TYPE_P(w15) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w15);
-			zval *e16 = pgrt::dimWrite(w15, o8.raw());
-			if (UNEXPECTED(e16 == NULL)) return false;
-			zv::Ref(e16).assign(std::move(o14));
-			ca7 = zv::Val::copyOf(zv::Ref(vd11.raw()));
+			zv::Val o12 = zv::Val::copyOf(zv::Ref(vd9.raw()));
+			zval *w13 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::servicesByTag)).deref().raw();
+			if (Z_TYPE_P(w13) <= IS_NULL) { zval_ptr_dtor(w13); array_init(w13); } else if (UNEXPECTED(Z_TYPE_P(w13) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w13);
+			zval *e14 = pgrt::dimWrite(w13, o6.raw());
+			if (UNEXPECTED(e14 == NULL)) return false;
+			zv::Ref(e14).assign(std::move(o12));
+			ca5 = zv::Val::copyOf(zv::Ref(vd9.raw()));
 		}
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(ca7.raw()) == IS_ARRAY))) { pgrt::throwReturnType("PHPStan\\DependencyInjection\\MemoizingContainer::getServicesByTag", "array", ca7.raw()); return false; }
-		*ret = ca7.take();
+		if (UNEXPECTED(!(Z_TYPE_P(ca5.raw()) == IS_ARRAY))) { pgrt::throwReturnType("PHPStan\\DependencyInjection\\MemoizingContainer::getServicesByTag", "array", ca5.raw()); return false; }
+		*ret = ca5.take();
 		return true;
 	}
 }
@@ -258,49 +250,47 @@ namespace pgen::MemoizingContainer {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is3 = &this_zv;
+		zval *is2 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::MemoizingContainer::slot::extensionsCollections)).deref().raw();
+		if (Z_ISUNDEF_P(is2)) is2 = NULL;
+		zv::Val o3 = zv::Val::copyOf(zv::Ref(p_extensionInterfaceName));
 		zv::Val ist4;
-		zval *is2 = is3 == NULL ? NULL : pgrt::propIs(is3, pt_ce_memoizing_container, &pg_lit[3], ist4.raw());
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o3.raw(), ist4.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o5 = zv::Val::copyOf(zv::Ref(p_extensionInterfaceName));
-		zv::Val ist6;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o5.raw(), ist6.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val ca7;
+		zv::Val ca5;
 		if (is1 != NULL && Z_TYPE_P(is1) > IS_NULL) {
-			ca7 = zv::Val::copyOf(zv::Ref(is1));
+			ca5 = zv::Val::copyOf(zv::Ref(is1));
 		} else {
 		 {
+			zv::Val o6 = zv::Val::copyOf(zv::Ref(p_extensionInterfaceName));
+			zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::originalContainer, "originalContainer");
+			if (UNEXPECTED(p7 == NULL)) return false;
 			zv::Val o8 = zv::Val::copyOf(zv::Ref(p_extensionInterfaceName));
-			zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::originalContainer, "originalContainer");
-			if (UNEXPECTED(p9 == NULL)) return false;
-			zv::Val o10 = zv::Val::copyOf(zv::Ref(p_extensionInterfaceName));
-			zv::Val vd11;
-			zend_class_entry *vd11_ce = Z_TYPE_P(p9) == IS_OBJECT ? Z_OBJCE_P(p9) : NULL;
-			bool vd11_done = false;
-			if (vd11_ce == pt_ce_memoizing_container) {
-				zv::Val r12;
-				if (UNEXPECTED(!pgen::MemoizingContainer::m_getExtensionsCollection(Z_OBJ_P(p9), o10.raw(), r12.raw()))) return false;
-				vd11 = std::move(r12);
-				vd11_done = true;
+			zv::Val vd9;
+			zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
+			bool vd9_done = false;
+			if (vd9_ce == pt_ce_memoizing_container) {
+				zv::Val r10;
+				if (UNEXPECTED(!pgen::MemoizingContainer::m_getExtensionsCollection(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
+				vd9 = std::move(r10);
+				vd9_done = true;
 			}
-			if (!vd11_done) {
-				zval av13[1];
-				ZVAL_COPY_VALUE(&av13[0], o10.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p9, "getExtensionsCollection", "getextensionscollection", 23, 1, av13, vd11.raw()))) return false;
+			if (!vd9_done) {
+				zval av11[1];
+				ZVAL_COPY_VALUE(&av11[0], o8.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p7, "getExtensionsCollection", "getextensionscollection", 23, 1, av11, vd9.raw()))) return false;
 			}
-			zv::Val o14 = zv::Val::copyOf(zv::Ref(vd11.raw()));
-			zval *w15 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::extensionsCollections)).deref().raw();
-			if (Z_TYPE_P(w15) <= IS_NULL) { zval_ptr_dtor(w15); array_init(w15); } else if (UNEXPECTED(Z_TYPE_P(w15) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w15);
-			zval *e16 = pgrt::dimWrite(w15, o8.raw());
-			if (UNEXPECTED(e16 == NULL)) return false;
-			zv::Ref(e16).assign(std::move(o14));
-			ca7 = zv::Val::copyOf(zv::Ref(vd11.raw()));
+			zv::Val o12 = zv::Val::copyOf(zv::Ref(vd9.raw()));
+			zval *w13 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingContainer::slot::extensionsCollections)).deref().raw();
+			if (Z_TYPE_P(w13) <= IS_NULL) { zval_ptr_dtor(w13); array_init(w13); } else if (UNEXPECTED(Z_TYPE_P(w13) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w13);
+			zval *e14 = pgrt::dimWrite(w13, o6.raw());
+			if (UNEXPECTED(e14 == NULL)) return false;
+			zv::Ref(e14).assign(std::move(o12));
+			ca5 = zv::Val::copyOf(zv::Ref(vd9.raw()));
 		}
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(ca7.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\DependencyInjection\\ExtensionsCollection", 48))))) { pgrt::throwReturnType("PHPStan\\DependencyInjection\\MemoizingContainer::getExtensionsCollection", "PHPStan\\DependencyInjection\\ExtensionsCollection", ca7.raw()); return false; }
-		*ret = ca7.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(ca5.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\DependencyInjection\\ExtensionsCollection", 48))))) { pgrt::throwReturnType("PHPStan\\DependencyInjection\\MemoizingContainer::getExtensionsCollection", "PHPStan\\DependencyInjection\\ExtensionsCollection", ca5.raw()); return false; }
+		*ret = ca5.take();
 		return true;
 	}
 }
@@ -395,10 +385,6 @@ namespace sigs = ptdecl::MemoizingContainer::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("servicesByName", 14));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("servicesByType", 14));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("servicesByTag", 13));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("extensionsCollections", 21));
 	reg::Class cls("PHPStan\\DependencyInjection\\MemoizingContainer");
 	ptdecl::MemoizingContainer::declareClass(cls);
 	ptdecl::MemoizingContainer::declareProperties(cls);

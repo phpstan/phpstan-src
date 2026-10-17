@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_annotations_methods_class_reflection_extension = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[3];
+static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_getCacheKey_0 */
 static pt_method_site pg_site_1; /* method_getCacheKey_1 */
@@ -79,31 +79,29 @@ namespace pgen::AnnotationsMethodsClassReflectionExtension {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *is4 = &this_zv;
-		zv::Val ist5;
-		zval *is3 = is4 == NULL ? NULL : pgrt::propIs(is4, pt_ce_annotations_methods_class_reflection_extension, &pg_lit[0], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val r6;
+		zval *is3 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::AnnotationsMethodsClassReflectionExtension::slot::methods)).deref().raw();
+		if (Z_ISUNDEF_P(is3)) is3 = NULL;
+		zv::Val r4;
 		if (EXPECTED(Z_TYPE_P(p_classReflection) == IS_OBJECT && Z_OBJCE_P(p_classReflection) == pt_ce_class_reflection)) {
-			r6 = pt_class_reflection_get_cache_key(Z_OBJ_P(p_classReflection));
-			if (UNEXPECTED(r6.isUndef())) return false;
+			r4 = pt_class_reflection_get_cache_key(Z_OBJ_P(p_classReflection));
+			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_classReflection, "getCacheKey", "getcachekey", 11, 0, NULL, r6.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_classReflection, "getCacheKey", "getcachekey", 11, 0, NULL, r4.raw()))) return false;
 		}
 		}
-		zv::Val ist7;
-		zval *is2 = is3 == NULL ? NULL : pgrt::dimIs(is3, r6.raw(), ist7.raw());
+		zv::Val ist5;
+		zval *is2 = is3 == NULL ? NULL : pgrt::dimIs(is3, r4.raw(), ist5.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o8 = zv::Val::copyOf(zv::Ref(p_methodName));
-		zv::Val ist9;
-		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o8.raw(), ist9.raw());
+		zv::Val o6 = zv::Val::copyOf(zv::Ref(p_methodName));
+		zv::Val ist7;
+		zval *is1 = is2 == NULL ? NULL : pgrt::dimIs(is2, o6.raw(), ist7.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		if (!((is1 != NULL && Z_TYPE_P(is1) > IS_NULL))) {
 			 {
-				zv::Val r10;
-				if (UNEXPECTED(!pgen::AnnotationsMethodsClassReflectionExtension::m_findClassReflectionWithMethod(Z_OBJ_P(&this_zv), p_classReflection, p_classReflection, p_methodName, r10.raw()))) return false;
-				l_method = std::move(r10);
+				zv::Val r8;
+				if (UNEXPECTED(!pgen::AnnotationsMethodsClassReflectionExtension::m_findClassReflectionWithMethod(Z_OBJ_P(&this_zv), p_classReflection, p_classReflection, p_methodName, r8.raw()))) return false;
+				l_method = std::move(r8);
 			}
 			 {
 				if (Z_TYPE_P(l_method.raw()) == IS_NULL) {
@@ -114,30 +112,30 @@ namespace pgen::AnnotationsMethodsClassReflectionExtension {
 				}
 			}
 			 {
-				zv::Val o11 = zv::Val::copyOf(zv::Ref(p_methodName));
-				zv::Val o12 = zv::Val::copyOf(zv::Ref(l_method.raw()));
-				zv::Val o13 = zv::Val::copyOf(zv::Ref(o12.raw()));
-				zv::Val r15;
+				zv::Val o9 = zv::Val::copyOf(zv::Ref(p_methodName));
+				zv::Val o10 = zv::Val::copyOf(zv::Ref(l_method.raw()));
+				zv::Val o11 = zv::Val::copyOf(zv::Ref(o10.raw()));
+				zv::Val r13;
 				if (EXPECTED(Z_TYPE_P(p_classReflection) == IS_OBJECT && Z_OBJCE_P(p_classReflection) == pt_ce_class_reflection)) {
-					r15 = pt_class_reflection_get_cache_key(Z_OBJ_P(p_classReflection));
-					if (UNEXPECTED(r15.isUndef())) return false;
+					r13 = pt_class_reflection_get_cache_key(Z_OBJ_P(p_classReflection));
+					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_classReflection, "getCacheKey", "getcachekey", 11, 0, NULL, r15.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_classReflection, "getCacheKey", "getcachekey", 11, 0, NULL, r13.raw()))) return false;
 				}
 				}
-				zval *w16 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::AnnotationsMethodsClassReflectionExtension::slot::methods)).deref().raw();
-				if (Z_TYPE_P(w16) <= IS_NULL) { zval_ptr_dtor(w16); array_init(w16); } else if (UNEXPECTED(Z_TYPE_P(w16) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w16);
-				zval *w14;
-				w14 = pgrt::dimWrite(w16, r15.raw());
-				if (UNEXPECTED(w14 == NULL)) return false;
-				ZVAL_DEREF(w14);
+				zval *w14 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::AnnotationsMethodsClassReflectionExtension::slot::methods)).deref().raw();
 				if (Z_TYPE_P(w14) <= IS_NULL) { zval_ptr_dtor(w14); array_init(w14); } else if (UNEXPECTED(Z_TYPE_P(w14) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 				SEPARATE_ARRAY(w14);
-				zval *e17 = pgrt::dimWrite(w14, o11.raw());
-				if (UNEXPECTED(e17 == NULL)) return false;
-				zv::Ref(e17).assign(std::move(o13));
+				zval *w12;
+				w12 = pgrt::dimWrite(w14, r13.raw());
+				if (UNEXPECTED(w12 == NULL)) return false;
+				ZVAL_DEREF(w12);
+				if (Z_TYPE_P(w12) <= IS_NULL) { zval_ptr_dtor(w12); array_init(w12); } else if (UNEXPECTED(Z_TYPE_P(w12) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w12);
+				zval *e15 = pgrt::dimWrite(w12, o9.raw());
+				if (UNEXPECTED(e15 == NULL)) return false;
+				zv::Ref(e15).assign(std::move(o11));
 			}
 		}
 	}
@@ -360,11 +358,11 @@ namespace pgen::AnnotationsMethodsClassReflectionExtension {
 			 {
 				zv::Val q42;
 				if (zend_is_true(l_isStatic.raw())) {
-					zv::Val o43 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
+					zv::Val o43 = zv::Val::copyOf(zv::Ref(&pg_lit[0]));
 					q42 = std::move(o43);
 				} else {
 				 {
-					zv::Val o44 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
+					zv::Val o44 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
 					q42 = std::move(o44);
 				}
 				}
@@ -672,9 +670,8 @@ namespace sigs = ptdecl::AnnotationsMethodsClassReflectionExtension::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_AnnotationsMethodsClassReflectionExtension)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("methods", 7));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("__callStatic", 12));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("__call", 6));
+	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("__callStatic", 12));
+	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("__call", 6));
 	reg::Class cls("PHPStan\\Reflection\\Annotations\\AnnotationsMethodsClassReflectionExtension");
 	ptdecl::AnnotationsMethodsClassReflectionExtension::declareClass(cls);
 	ptdecl::AnnotationsMethodsClassReflectionExtension::declareProperties(cls);

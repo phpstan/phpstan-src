@@ -3914,6 +3914,22 @@ final class Compiler
 			$f->failIf('EG(exception)');
 			return $t;
 		}
+		if ($expr instanceof Expr\PropertyFetch && $expr->name instanceof Node\Identifier && $expr->var instanceof Expr\Variable && $expr->var->name === 'this' && $f->self !== null) {
+			// a declared property of this compiled class: its slot (unset or
+			// uninitialized = UNDEF), unless magic methods take part
+			$name = $expr->name->toString();
+			$reflection = $this->unit()->reflection;
+			$property = $reflection->hasProperty($name) ? $reflection->getProperty($name) : null;
+			$slot = !$reflection->hasMethod('__get') && !$reflection->hasMethod('__isset') && $property !== null && !$property->isStatic()
+				&& (!$property->isPrivate() || $property->getDeclaringClass()->getName() === $reflection->getName())
+				? $this->slotExpr($this->unit()->className, $name, $f->self)
+				: null;
+			if ($slot !== null) {
+				$f->line(sprintf('zval *%s = zv::Ref(OBJ_PROP_NUM(%s, %s)).deref().raw();', $t, $f->self, $slot));
+				$f->line(sprintf('if (Z_ISUNDEF_P(%s)) %s = NULL;', $t, $t));
+				return $t;
+			}
+		}
 		if (($expr instanceof Expr\PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) && $expr->name instanceof Node\Identifier) {
 			$name = $expr->name->toString();
 			$base = $this->issetPtr($f, $expr->var);

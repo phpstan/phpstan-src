@@ -6,8 +6,6 @@
 
 zend_class_entry *pt_ce_dynamic_return_type_extension_registry = nullptr;
 
-/* the interned string literals, created at module startup */
-static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_getAll_0 */
 static pgrt::DispatchCache pg_site_1; /* dispatch_getClass_1 */
@@ -497,892 +495,890 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 		l_functionName = std::move(r1);
 	}
 	 {
-		zval *is4 = &this_zv;
+		zval *is3 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicReturnTypeExtensionsByFunction)).deref().raw();
+		if (Z_ISUNDEF_P(is3)) is3 = NULL;
+		zv::Val o4 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
 		zv::Val ist5;
-		zval *is3 = is4 == NULL ? NULL : pgrt::propIs(is4, pt_ce_dynamic_return_type_extension_registry, &pg_lit[0], ist5.raw());
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val o6 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
-		zv::Val ist7;
-		zval *is2 = is3 == NULL ? NULL : pgrt::dimIs(is3, o6.raw(), ist7.raw());
+		zval *is2 = is3 == NULL ? NULL : pgrt::dimIs(is3, o4.raw(), ist5.raw());
 		if (UNEXPECTED(EG(exception))) return false;
 		if (is2 != NULL && Z_TYPE_P(is2) > IS_NULL) {
 			 {
-				zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicReturnTypeExtensionsByFunction, "dynamicReturnTypeExtensionsByFunction");
-				if (UNEXPECTED(p8 == NULL)) return false;
-				zv::Val et10;
-				zval *e9 = pgrt::dimRead(p8, l_functionName.raw(), et10.raw());
-				if (UNEXPECTED(e9 == NULL)) return false;
-				if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(e9).deref().raw()) == IS_ARRAY))) { pgrt::throwReturnType("PHPStan\\Type\\DynamicReturnTypeExtensionRegistry::getDynamicFunctionReturnTypeExtensions", "array", zv::Ref(e9).deref().raw()); return false; }
-				ZVAL_COPY(ret, zv::Ref(e9).deref().raw());
+				zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicReturnTypeExtensionsByFunction, "dynamicReturnTypeExtensionsByFunction");
+				if (UNEXPECTED(p6 == NULL)) return false;
+				zv::Val et8;
+				zval *e7 = pgrt::dimRead(p6, l_functionName.raw(), et8.raw());
+				if (UNEXPECTED(e7 == NULL)) return false;
+				if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(e7).deref().raw()) == IS_ARRAY))) { pgrt::throwReturnType("PHPStan\\Type\\DynamicReturnTypeExtensionRegistry::getDynamicFunctionReturnTypeExtensions", "array", zv::Ref(e7).deref().raw()); return false; }
+				ZVAL_COPY(ret, zv::Ref(e7).deref().raw());
 				return true;
 			}
 		}
 	}
 	 {
-		zval arr11_raw;
-		ZVAL_EMPTY_ARRAY(&arr11_raw);
-		zv::Val o12 = zv::Val::copyOf(zv::Ref(&arr11_raw));
-		l_supportedFunctions = std::move(o12);
+		zval arr9_raw;
+		ZVAL_EMPTY_ARRAY(&arr9_raw);
+		zv::Val o10 = zv::Val::copyOf(zv::Ref(&arr9_raw));
+		l_supportedFunctions = std::move(o10);
 	}
 	 {
-		zval *p14 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicFunctionReturnTypeExtensions, "dynamicFunctionReturnTypeExtensions");
-		if (UNEXPECTED(p14 == NULL)) return false;
-		zv::Val vd15;
-		zend_class_entry *vd15_ce = Z_TYPE_P(p14) == IS_OBJECT ? Z_OBJCE_P(p14) : NULL;
-		bool vd15_done = false;
-		if (vd15_ce == pt_ce_lazy_extensions_collection) {
-			zv::Val r16;
-			if (UNEXPECTED(!pgen::LazyExtensionsCollection::m_getAll(Z_OBJ_P(p14), r16.raw()))) return false;
-			vd15 = std::move(r16);
-			vd15_done = true;
+		zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicFunctionReturnTypeExtensions, "dynamicFunctionReturnTypeExtensions");
+		if (UNEXPECTED(p12 == NULL)) return false;
+		zv::Val vd13;
+		zend_class_entry *vd13_ce = Z_TYPE_P(p12) == IS_OBJECT ? Z_OBJCE_P(p12) : NULL;
+		bool vd13_done = false;
+		if (vd13_ce == pt_ce_lazy_extensions_collection) {
+			zv::Val r14;
+			if (UNEXPECTED(!pgen::LazyExtensionsCollection::m_getAll(Z_OBJ_P(p12), r14.raw()))) return false;
+			vd13 = std::move(r14);
+			vd13_done = true;
 		}
-		if (!vd15_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p14, "getAll", "getall", 6, 0, NULL, vd15.raw()))) return false;
+		if (!vd13_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p12, "getAll", "getall", 6, 0, NULL, vd13.raw()))) return false;
 		}
-		zv::Val a17 = zv::Val::copyOf(zv::Ref(vd15.raw()).deref());
-		HashTable *ht13 = Z_ARRVAL_P(a17.raw());
-		zval *v18;
-		zend_ulong n19;
-		zend_string *s20;
-		ZEND_HASH_FOREACH_KEY_VAL(ht13, n19, s20, v18) {
-			(void) n19; (void) s20;
-			l_dynamicFunctionReturnTypeExtension = zv::Ref(v18).deref().raw();
+		zv::Val a15 = zv::Val::copyOf(zv::Ref(vd13.raw()).deref());
+		HashTable *ht11 = Z_ARRVAL_P(a15.raw());
+		zval *v16;
+		zend_ulong n17;
+		zend_string *s18;
+		ZEND_HASH_FOREACH_KEY_VAL(ht11, n17, s18, v16) {
+			(void) n17; (void) s18;
+			l_dynamicFunctionReturnTypeExtension = zv::Ref(v16).deref().raw();
 			 {
 				 {
-					zv::Val vd23;
-					zend_class_entry *vd23_ce = Z_TYPE_P(l_dynamicFunctionReturnTypeExtension) == IS_OBJECT ? Z_OBJCE_P(l_dynamicFunctionReturnTypeExtension) : NULL;
-					bool vd23_done = false;
-					static zend_class_entry **const vd23_table[] = { &pt_ce_gettype_function_return_type_extension, &pt_ce_array_replace_function_return_type_extension, &pt_ce_date_interval_format_function_return_type_extension, &pt_ce_array_combine_function_return_type_extension, &pt_ce_array_find_key_function_return_type_extension, &pt_ce_trigger_error_dynamic_return_type_extension, &pt_ce_clamp_function_return_type_extension, &pt_ce_pathinfo_function_dynamic_return_type_extension, &pt_ce_str_pad_function_return_type_extension, &pt_ce_stat_dynamic_return_type_extension, &pt_ce_array_first_last_dynamic_return_type_extension, &pt_ce_abs_function_dynamic_return_type_extension, &pt_ce_constant_function_return_type_extension, &pt_ce_array_keys_function_dynamic_return_type_extension, &pt_ce_filter_input_dynamic_return_type_extension, &pt_ce_argument_based_function_return_type_extension, &pt_ce_non_empty_string_functions_return_type_extension, &pt_ce_str_shuffle_function_return_type_extension, &pt_ce_array_next_dynamic_return_type_extension, &pt_ce_highlight_string_dynamic_return_type_extension, &pt_ce_pg_result_status_dynamic_return_type_extension, &pt_ce_substr_dynamic_return_type_extension, &pt_ce_array_change_key_case_function_return_type_extension, &pt_ce_array_shift_function_return_type_extension, &pt_ce_implode_function_return_type_extension, &pt_ce_openssl_cipher_functions_return_type_extension, &pt_ce_explode_function_dynamic_return_type_extension, &pt_ce_array_count_values_dynamic_return_type_extension, &pt_ce_array_filter_function_return_type_extension, &pt_ce_trim_function_dynamic_return_type_extension, &pt_ce_preg_filter_function_return_type_extension, &pt_ce_pow_function_return_type_extension, &pt_ce_array_fill_function_return_type_extension, &pt_ce_array_merge_function_dynamic_return_type_extension, &pt_ce_get_called_class_dynamic_return_type_extension, &pt_ce_localtime_function_dynamic_return_type_extension, &pt_ce_array_reduce_function_return_type_extension, &pt_ce_array_map_function_return_type_extension, &pt_ce_curl_getinfo_function_dynamic_return_type_extension, &pt_ce_array_values_function_dynamic_return_type_extension, &pt_ce_date_time_dynamic_return_type_extension, &pt_ce_date_time_create_dynamic_return_type_extension, &pt_ce_array_find_function_return_type_extension, &pt_ce_pg_last_notice_dynamic_return_type_extension, &pt_ce_filter_var_dynamic_return_type_extension, &pt_ce_get_defined_vars_function_return_type_extension, &pt_ce_mb_substitute_character_dynamic_return_type_extension, &pt_ce_array_fill_keys_function_return_type_extension, &pt_ce_array_key_dynamic_return_type_extension, &pt_ce_class_implements_function_return_type_extension, &pt_ce_min_max_function_return_type_extension, &pt_ce_base64_decode_dynamic_function_return_type_extension, &pt_ce_str_increment_decrement_function_return_type_extension, &pt_ce_ltrim_function_return_type_extension, &pt_ce_gettimeofday_dynamic_function_return_type_extension, &pt_ce_array_pad_dynamic_return_type_extension, &pt_ce_round_function_return_type_extension, &pt_ce_array_column_function_return_type_extension, &pt_ce_output_buffering_dynamic_return_type_extension, &pt_ce_ini_get_return_type_extension, &pt_ce_str_case_functions_return_type_extension, &pt_ce_replace_functions_dynamic_return_type_extension, &pt_ce_array_search_function_dynamic_return_type_extension, &pt_ce_filter_var_array_dynamic_return_type_extension, &pt_ce_str_tok_function_return_type_extension, &pt_ce_str_word_count_function_dynamic_return_type_extension, &pt_ce_strlen_function_return_type_extension, &pt_ce_array_sum_function_dynamic_return_type_extension, &pt_ce_hash_functions_return_type_extension, &pt_ce_microtime_function_return_type_extension, &pt_ce_dio_stat_dynamic_function_return_type_extension, &pt_ce_strrev_function_return_type_extension, &pt_ce_array_rand_function_return_type_extension, &pt_ce_date_function_return_type_extension, &pt_ce_idate_function_return_type_extension, &pt_ce_get_parent_class_dynamic_function_return_type_extension, &pt_ce_strval_family_function_return_type_extension, &pt_ce_array_reverse_function_return_type_extension, &pt_ce_random_int_function_return_type_extension, &pt_ce_version_compare_function_dynamic_return_type_extension, &pt_ce_array_slice_function_return_type_extension, &pt_ce_array_chunk_function_return_type_extension, &pt_ce_array_pop_function_return_type_extension, &pt_ce_count_chars_function_dynamic_return_type_extension, &pt_ce_array_intersect_key_function_return_type_extension, &pt_ce_array_flip_function_return_type_extension, &pt_ce_bc_math_string_or_null_return_type_extension, &pt_ce_array_splice_function_return_type_extension, &pt_ce_str_repeat_function_return_type_extension, &pt_ce_iterator_to_array_function_return_type_extension, &pt_ce_get_class_dynamic_return_type_extension, &pt_ce_hrtime_function_return_type_extension, &pt_ce_date_format_function_return_type_extension, &pt_ce_mb_convert_encoding_function_return_type_extension, &pt_ce_compact_function_return_type_extension, &pt_ce_get_debug_type_function_return_type_extension, &pt_ce_count_function_return_type_extension, &pt_ce_number_format_function_dynamic_return_type_extension, &pt_ce_array_current_dynamic_return_type_extension };
-					static const uint16_t vd23_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99 };
-					switch (pgrt::dispatchCase(pg_site_10, vd23_ce, vd23_table, vd23_cases, 99)) {
+					zv::Val vd21;
+					zend_class_entry *vd21_ce = Z_TYPE_P(l_dynamicFunctionReturnTypeExtension) == IS_OBJECT ? Z_OBJCE_P(l_dynamicFunctionReturnTypeExtension) : NULL;
+					bool vd21_done = false;
+					static zend_class_entry **const vd21_table[] = { &pt_ce_gettype_function_return_type_extension, &pt_ce_array_replace_function_return_type_extension, &pt_ce_date_interval_format_function_return_type_extension, &pt_ce_array_combine_function_return_type_extension, &pt_ce_array_find_key_function_return_type_extension, &pt_ce_trigger_error_dynamic_return_type_extension, &pt_ce_clamp_function_return_type_extension, &pt_ce_pathinfo_function_dynamic_return_type_extension, &pt_ce_str_pad_function_return_type_extension, &pt_ce_stat_dynamic_return_type_extension, &pt_ce_array_first_last_dynamic_return_type_extension, &pt_ce_abs_function_dynamic_return_type_extension, &pt_ce_constant_function_return_type_extension, &pt_ce_array_keys_function_dynamic_return_type_extension, &pt_ce_filter_input_dynamic_return_type_extension, &pt_ce_argument_based_function_return_type_extension, &pt_ce_non_empty_string_functions_return_type_extension, &pt_ce_str_shuffle_function_return_type_extension, &pt_ce_array_next_dynamic_return_type_extension, &pt_ce_highlight_string_dynamic_return_type_extension, &pt_ce_pg_result_status_dynamic_return_type_extension, &pt_ce_substr_dynamic_return_type_extension, &pt_ce_array_change_key_case_function_return_type_extension, &pt_ce_array_shift_function_return_type_extension, &pt_ce_implode_function_return_type_extension, &pt_ce_openssl_cipher_functions_return_type_extension, &pt_ce_explode_function_dynamic_return_type_extension, &pt_ce_array_count_values_dynamic_return_type_extension, &pt_ce_array_filter_function_return_type_extension, &pt_ce_trim_function_dynamic_return_type_extension, &pt_ce_preg_filter_function_return_type_extension, &pt_ce_pow_function_return_type_extension, &pt_ce_array_fill_function_return_type_extension, &pt_ce_array_merge_function_dynamic_return_type_extension, &pt_ce_get_called_class_dynamic_return_type_extension, &pt_ce_localtime_function_dynamic_return_type_extension, &pt_ce_array_reduce_function_return_type_extension, &pt_ce_array_map_function_return_type_extension, &pt_ce_curl_getinfo_function_dynamic_return_type_extension, &pt_ce_array_values_function_dynamic_return_type_extension, &pt_ce_date_time_dynamic_return_type_extension, &pt_ce_date_time_create_dynamic_return_type_extension, &pt_ce_array_find_function_return_type_extension, &pt_ce_pg_last_notice_dynamic_return_type_extension, &pt_ce_filter_var_dynamic_return_type_extension, &pt_ce_get_defined_vars_function_return_type_extension, &pt_ce_mb_substitute_character_dynamic_return_type_extension, &pt_ce_array_fill_keys_function_return_type_extension, &pt_ce_array_key_dynamic_return_type_extension, &pt_ce_class_implements_function_return_type_extension, &pt_ce_min_max_function_return_type_extension, &pt_ce_base64_decode_dynamic_function_return_type_extension, &pt_ce_str_increment_decrement_function_return_type_extension, &pt_ce_ltrim_function_return_type_extension, &pt_ce_gettimeofday_dynamic_function_return_type_extension, &pt_ce_array_pad_dynamic_return_type_extension, &pt_ce_round_function_return_type_extension, &pt_ce_array_column_function_return_type_extension, &pt_ce_output_buffering_dynamic_return_type_extension, &pt_ce_ini_get_return_type_extension, &pt_ce_str_case_functions_return_type_extension, &pt_ce_replace_functions_dynamic_return_type_extension, &pt_ce_array_search_function_dynamic_return_type_extension, &pt_ce_filter_var_array_dynamic_return_type_extension, &pt_ce_str_tok_function_return_type_extension, &pt_ce_str_word_count_function_dynamic_return_type_extension, &pt_ce_strlen_function_return_type_extension, &pt_ce_array_sum_function_dynamic_return_type_extension, &pt_ce_hash_functions_return_type_extension, &pt_ce_microtime_function_return_type_extension, &pt_ce_dio_stat_dynamic_function_return_type_extension, &pt_ce_strrev_function_return_type_extension, &pt_ce_array_rand_function_return_type_extension, &pt_ce_date_function_return_type_extension, &pt_ce_idate_function_return_type_extension, &pt_ce_get_parent_class_dynamic_function_return_type_extension, &pt_ce_strval_family_function_return_type_extension, &pt_ce_array_reverse_function_return_type_extension, &pt_ce_random_int_function_return_type_extension, &pt_ce_version_compare_function_dynamic_return_type_extension, &pt_ce_array_slice_function_return_type_extension, &pt_ce_array_chunk_function_return_type_extension, &pt_ce_array_pop_function_return_type_extension, &pt_ce_count_chars_function_dynamic_return_type_extension, &pt_ce_array_intersect_key_function_return_type_extension, &pt_ce_array_flip_function_return_type_extension, &pt_ce_bc_math_string_or_null_return_type_extension, &pt_ce_array_splice_function_return_type_extension, &pt_ce_str_repeat_function_return_type_extension, &pt_ce_iterator_to_array_function_return_type_extension, &pt_ce_get_class_dynamic_return_type_extension, &pt_ce_hrtime_function_return_type_extension, &pt_ce_date_format_function_return_type_extension, &pt_ce_mb_convert_encoding_function_return_type_extension, &pt_ce_compact_function_return_type_extension, &pt_ce_get_debug_type_function_return_type_extension, &pt_ce_count_function_return_type_extension, &pt_ce_number_format_function_dynamic_return_type_extension, &pt_ce_array_current_dynamic_return_type_extension };
+					static const uint16_t vd21_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99 };
+					switch (pgrt::dispatchCase(pg_site_10, vd21_ce, vd21_table, vd21_cases, 99)) {
 						case 1: {
-							bool r24;
-							if (UNEXPECTED(!pgen::GettypeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r24))) return false;
-							zv::Val o25 = zv::Val::boolean(r24);
-							vd23 = std::move(o25);
-							vd23_done = true;
+							bool r22;
+							if (UNEXPECTED(!pgen::GettypeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r22))) return false;
+							zv::Val o23 = zv::Val::boolean(r22);
+							vd21 = std::move(o23);
+							vd21_done = true;
 						}
 						break;
 						case 2: {
-							bool r26;
-							if (UNEXPECTED(!pgen::ArrayReplaceFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r26))) return false;
-							zv::Val o27 = zv::Val::boolean(r26);
-							vd23 = std::move(o27);
-							vd23_done = true;
+							bool r24;
+							if (UNEXPECTED(!pgen::ArrayReplaceFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r24))) return false;
+							zv::Val o25 = zv::Val::boolean(r24);
+							vd21 = std::move(o25);
+							vd21_done = true;
 						}
 						break;
 						case 3: {
-							bool r28;
-							if (UNEXPECTED(!pgen::DateIntervalFormatFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r28))) return false;
-							zv::Val o29 = zv::Val::boolean(r28);
-							vd23 = std::move(o29);
-							vd23_done = true;
+							bool r26;
+							if (UNEXPECTED(!pgen::DateIntervalFormatFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r26))) return false;
+							zv::Val o27 = zv::Val::boolean(r26);
+							vd21 = std::move(o27);
+							vd21_done = true;
 						}
 						break;
 						case 4: {
-							bool r30;
-							if (UNEXPECTED(!pgen::ArrayCombineFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r30))) return false;
-							zv::Val o31 = zv::Val::boolean(r30);
-							vd23 = std::move(o31);
-							vd23_done = true;
+							bool r28;
+							if (UNEXPECTED(!pgen::ArrayCombineFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r28))) return false;
+							zv::Val o29 = zv::Val::boolean(r28);
+							vd21 = std::move(o29);
+							vd21_done = true;
 						}
 						break;
 						case 5: {
-							bool r32;
-							if (UNEXPECTED(!pgen::ArrayFindKeyFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r32))) return false;
-							zv::Val o33 = zv::Val::boolean(r32);
-							vd23 = std::move(o33);
-							vd23_done = true;
+							bool r30;
+							if (UNEXPECTED(!pgen::ArrayFindKeyFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r30))) return false;
+							zv::Val o31 = zv::Val::boolean(r30);
+							vd21 = std::move(o31);
+							vd21_done = true;
 						}
 						break;
 						case 6: {
-							bool r34;
-							if (UNEXPECTED(!pgen::TriggerErrorDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r34))) return false;
-							zv::Val o35 = zv::Val::boolean(r34);
-							vd23 = std::move(o35);
-							vd23_done = true;
+							bool r32;
+							if (UNEXPECTED(!pgen::TriggerErrorDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r32))) return false;
+							zv::Val o33 = zv::Val::boolean(r32);
+							vd21 = std::move(o33);
+							vd21_done = true;
 						}
 						break;
 						case 7: {
-							bool r36;
-							if (UNEXPECTED(!pgen::ClampFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r36))) return false;
-							zv::Val o37 = zv::Val::boolean(r36);
-							vd23 = std::move(o37);
-							vd23_done = true;
+							bool r34;
+							if (UNEXPECTED(!pgen::ClampFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r34))) return false;
+							zv::Val o35 = zv::Val::boolean(r34);
+							vd21 = std::move(o35);
+							vd21_done = true;
 						}
 						break;
 						case 8: {
-							bool r38;
-							if (UNEXPECTED(!pgen::PathinfoFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r38))) return false;
-							zv::Val o39 = zv::Val::boolean(r38);
-							vd23 = std::move(o39);
-							vd23_done = true;
+							bool r36;
+							if (UNEXPECTED(!pgen::PathinfoFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r36))) return false;
+							zv::Val o37 = zv::Val::boolean(r36);
+							vd21 = std::move(o37);
+							vd21_done = true;
 						}
 						break;
 						case 9: {
-							bool r40;
-							if (UNEXPECTED(!pgen::StrPadFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r40))) return false;
-							zv::Val o41 = zv::Val::boolean(r40);
-							vd23 = std::move(o41);
-							vd23_done = true;
+							bool r38;
+							if (UNEXPECTED(!pgen::StrPadFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r38))) return false;
+							zv::Val o39 = zv::Val::boolean(r38);
+							vd21 = std::move(o39);
+							vd21_done = true;
 						}
 						break;
 						case 10: {
-							bool r42;
-							if (UNEXPECTED(!pgen::StatDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r42))) return false;
-							zv::Val o43 = zv::Val::boolean(r42);
-							vd23 = std::move(o43);
-							vd23_done = true;
+							bool r40;
+							if (UNEXPECTED(!pgen::StatDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r40))) return false;
+							zv::Val o41 = zv::Val::boolean(r40);
+							vd21 = std::move(o41);
+							vd21_done = true;
 						}
 						break;
 						case 11: {
-							bool r44;
-							if (UNEXPECTED(!pgen::ArrayFirstLastDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r44))) return false;
-							zv::Val o45 = zv::Val::boolean(r44);
-							vd23 = std::move(o45);
-							vd23_done = true;
+							bool r42;
+							if (UNEXPECTED(!pgen::ArrayFirstLastDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r42))) return false;
+							zv::Val o43 = zv::Val::boolean(r42);
+							vd21 = std::move(o43);
+							vd21_done = true;
 						}
 						break;
 						case 12: {
-							bool r46;
-							if (UNEXPECTED(!pgen::AbsFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r46))) return false;
-							zv::Val o47 = zv::Val::boolean(r46);
-							vd23 = std::move(o47);
-							vd23_done = true;
+							bool r44;
+							if (UNEXPECTED(!pgen::AbsFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r44))) return false;
+							zv::Val o45 = zv::Val::boolean(r44);
+							vd21 = std::move(o45);
+							vd21_done = true;
 						}
 						break;
 						case 13: {
-							bool r48;
-							if (UNEXPECTED(!pgen::ConstantFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r48))) return false;
-							zv::Val o49 = zv::Val::boolean(r48);
-							vd23 = std::move(o49);
-							vd23_done = true;
+							bool r46;
+							if (UNEXPECTED(!pgen::ConstantFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r46))) return false;
+							zv::Val o47 = zv::Val::boolean(r46);
+							vd21 = std::move(o47);
+							vd21_done = true;
 						}
 						break;
 						case 14: {
-							bool r50;
-							if (UNEXPECTED(!pgen::ArrayKeysFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r50))) return false;
-							zv::Val o51 = zv::Val::boolean(r50);
-							vd23 = std::move(o51);
-							vd23_done = true;
+							bool r48;
+							if (UNEXPECTED(!pgen::ArrayKeysFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r48))) return false;
+							zv::Val o49 = zv::Val::boolean(r48);
+							vd21 = std::move(o49);
+							vd21_done = true;
 						}
 						break;
 						case 15: {
-							bool r52;
-							if (UNEXPECTED(!pgen::FilterInputDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r52))) return false;
-							zv::Val o53 = zv::Val::boolean(r52);
-							vd23 = std::move(o53);
-							vd23_done = true;
+							bool r50;
+							if (UNEXPECTED(!pgen::FilterInputDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r50))) return false;
+							zv::Val o51 = zv::Val::boolean(r50);
+							vd21 = std::move(o51);
+							vd21_done = true;
 						}
 						break;
 						case 16: {
-							bool r54;
-							if (UNEXPECTED(!pgen::ArgumentBasedFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r54))) return false;
-							zv::Val o55 = zv::Val::boolean(r54);
-							vd23 = std::move(o55);
-							vd23_done = true;
+							bool r52;
+							if (UNEXPECTED(!pgen::ArgumentBasedFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r52))) return false;
+							zv::Val o53 = zv::Val::boolean(r52);
+							vd21 = std::move(o53);
+							vd21_done = true;
 						}
 						break;
 						case 17: {
-							bool r56;
-							if (UNEXPECTED(!pgen::NonEmptyStringFunctionsReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r56))) return false;
-							zv::Val o57 = zv::Val::boolean(r56);
-							vd23 = std::move(o57);
-							vd23_done = true;
+							bool r54;
+							if (UNEXPECTED(!pgen::NonEmptyStringFunctionsReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r54))) return false;
+							zv::Val o55 = zv::Val::boolean(r54);
+							vd21 = std::move(o55);
+							vd21_done = true;
 						}
 						break;
 						case 18: {
-							bool r58;
-							if (UNEXPECTED(!pgen::StrShuffleFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r58))) return false;
-							zv::Val o59 = zv::Val::boolean(r58);
-							vd23 = std::move(o59);
-							vd23_done = true;
+							bool r56;
+							if (UNEXPECTED(!pgen::StrShuffleFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r56))) return false;
+							zv::Val o57 = zv::Val::boolean(r56);
+							vd21 = std::move(o57);
+							vd21_done = true;
 						}
 						break;
 						case 19: {
-							bool r60;
-							if (UNEXPECTED(!pgen::ArrayNextDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r60))) return false;
-							zv::Val o61 = zv::Val::boolean(r60);
-							vd23 = std::move(o61);
-							vd23_done = true;
+							bool r58;
+							if (UNEXPECTED(!pgen::ArrayNextDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r58))) return false;
+							zv::Val o59 = zv::Val::boolean(r58);
+							vd21 = std::move(o59);
+							vd21_done = true;
 						}
 						break;
 						case 20: {
-							bool r62;
-							if (UNEXPECTED(!pgen::HighlightStringDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r62))) return false;
-							zv::Val o63 = zv::Val::boolean(r62);
-							vd23 = std::move(o63);
-							vd23_done = true;
+							bool r60;
+							if (UNEXPECTED(!pgen::HighlightStringDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r60))) return false;
+							zv::Val o61 = zv::Val::boolean(r60);
+							vd21 = std::move(o61);
+							vd21_done = true;
 						}
 						break;
 						case 21: {
-							bool r64;
-							if (UNEXPECTED(!pgen::PgResultStatusDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r64))) return false;
-							zv::Val o65 = zv::Val::boolean(r64);
-							vd23 = std::move(o65);
-							vd23_done = true;
+							bool r62;
+							if (UNEXPECTED(!pgen::PgResultStatusDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r62))) return false;
+							zv::Val o63 = zv::Val::boolean(r62);
+							vd21 = std::move(o63);
+							vd21_done = true;
 						}
 						break;
 						case 22: {
-							bool r66;
-							if (UNEXPECTED(!pgen::SubstrDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r66))) return false;
-							zv::Val o67 = zv::Val::boolean(r66);
-							vd23 = std::move(o67);
-							vd23_done = true;
+							bool r64;
+							if (UNEXPECTED(!pgen::SubstrDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r64))) return false;
+							zv::Val o65 = zv::Val::boolean(r64);
+							vd21 = std::move(o65);
+							vd21_done = true;
 						}
 						break;
 						case 23: {
-							bool r68;
-							if (UNEXPECTED(!pgen::ArrayChangeKeyCaseFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r68))) return false;
-							zv::Val o69 = zv::Val::boolean(r68);
-							vd23 = std::move(o69);
-							vd23_done = true;
+							bool r66;
+							if (UNEXPECTED(!pgen::ArrayChangeKeyCaseFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r66))) return false;
+							zv::Val o67 = zv::Val::boolean(r66);
+							vd21 = std::move(o67);
+							vd21_done = true;
 						}
 						break;
 						case 24: {
-							bool r70;
-							if (UNEXPECTED(!pgen::ArrayShiftFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r70))) return false;
-							zv::Val o71 = zv::Val::boolean(r70);
-							vd23 = std::move(o71);
-							vd23_done = true;
+							bool r68;
+							if (UNEXPECTED(!pgen::ArrayShiftFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r68))) return false;
+							zv::Val o69 = zv::Val::boolean(r68);
+							vd21 = std::move(o69);
+							vd21_done = true;
 						}
 						break;
 						case 25: {
-							bool r72;
-							if (UNEXPECTED(!pgen::ImplodeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r72))) return false;
-							zv::Val o73 = zv::Val::boolean(r72);
-							vd23 = std::move(o73);
-							vd23_done = true;
+							bool r70;
+							if (UNEXPECTED(!pgen::ImplodeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r70))) return false;
+							zv::Val o71 = zv::Val::boolean(r70);
+							vd21 = std::move(o71);
+							vd21_done = true;
 						}
 						break;
 						case 26: {
-							bool r74;
-							if (UNEXPECTED(!pgen::OpensslCipherFunctionsReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r74))) return false;
-							zv::Val o75 = zv::Val::boolean(r74);
-							vd23 = std::move(o75);
-							vd23_done = true;
+							bool r72;
+							if (UNEXPECTED(!pgen::OpensslCipherFunctionsReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r72))) return false;
+							zv::Val o73 = zv::Val::boolean(r72);
+							vd21 = std::move(o73);
+							vd21_done = true;
 						}
 						break;
 						case 27: {
-							bool r76;
-							if (UNEXPECTED(!pgen::ExplodeFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r76))) return false;
-							zv::Val o77 = zv::Val::boolean(r76);
-							vd23 = std::move(o77);
-							vd23_done = true;
+							bool r74;
+							if (UNEXPECTED(!pgen::ExplodeFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r74))) return false;
+							zv::Val o75 = zv::Val::boolean(r74);
+							vd21 = std::move(o75);
+							vd21_done = true;
 						}
 						break;
 						case 28: {
-							bool r78;
-							if (UNEXPECTED(!pgen::ArrayCountValuesDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r78))) return false;
-							zv::Val o79 = zv::Val::boolean(r78);
-							vd23 = std::move(o79);
-							vd23_done = true;
+							bool r76;
+							if (UNEXPECTED(!pgen::ArrayCountValuesDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r76))) return false;
+							zv::Val o77 = zv::Val::boolean(r76);
+							vd21 = std::move(o77);
+							vd21_done = true;
 						}
 						break;
 						case 29: {
-							bool r80;
-							if (UNEXPECTED(!pgen::ArrayFilterFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r80))) return false;
-							zv::Val o81 = zv::Val::boolean(r80);
-							vd23 = std::move(o81);
-							vd23_done = true;
+							bool r78;
+							if (UNEXPECTED(!pgen::ArrayFilterFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r78))) return false;
+							zv::Val o79 = zv::Val::boolean(r78);
+							vd21 = std::move(o79);
+							vd21_done = true;
 						}
 						break;
 						case 30: {
-							bool r82;
-							if (UNEXPECTED(!pgen::TrimFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r82))) return false;
-							zv::Val o83 = zv::Val::boolean(r82);
-							vd23 = std::move(o83);
-							vd23_done = true;
+							bool r80;
+							if (UNEXPECTED(!pgen::TrimFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r80))) return false;
+							zv::Val o81 = zv::Val::boolean(r80);
+							vd21 = std::move(o81);
+							vd21_done = true;
 						}
 						break;
 						case 31: {
-							bool r84;
-							if (UNEXPECTED(!pgen::PregFilterFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r84))) return false;
-							zv::Val o85 = zv::Val::boolean(r84);
-							vd23 = std::move(o85);
-							vd23_done = true;
+							bool r82;
+							if (UNEXPECTED(!pgen::PregFilterFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r82))) return false;
+							zv::Val o83 = zv::Val::boolean(r82);
+							vd21 = std::move(o83);
+							vd21_done = true;
 						}
 						break;
 						case 32: {
-							bool r86;
-							if (UNEXPECTED(!pgen::PowFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r86))) return false;
-							zv::Val o87 = zv::Val::boolean(r86);
-							vd23 = std::move(o87);
-							vd23_done = true;
+							bool r84;
+							if (UNEXPECTED(!pgen::PowFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r84))) return false;
+							zv::Val o85 = zv::Val::boolean(r84);
+							vd21 = std::move(o85);
+							vd21_done = true;
 						}
 						break;
 						case 33: {
-							bool r88;
-							if (UNEXPECTED(!pgen::ArrayFillFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r88))) return false;
-							zv::Val o89 = zv::Val::boolean(r88);
-							vd23 = std::move(o89);
-							vd23_done = true;
+							bool r86;
+							if (UNEXPECTED(!pgen::ArrayFillFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r86))) return false;
+							zv::Val o87 = zv::Val::boolean(r86);
+							vd21 = std::move(o87);
+							vd21_done = true;
 						}
 						break;
 						case 34: {
-							bool r90;
-							if (UNEXPECTED(!pgen::ArrayMergeFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r90))) return false;
-							zv::Val o91 = zv::Val::boolean(r90);
-							vd23 = std::move(o91);
-							vd23_done = true;
+							bool r88;
+							if (UNEXPECTED(!pgen::ArrayMergeFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r88))) return false;
+							zv::Val o89 = zv::Val::boolean(r88);
+							vd21 = std::move(o89);
+							vd21_done = true;
 						}
 						break;
 						case 35: {
-							bool r92;
-							if (UNEXPECTED(!pgen::GetCalledClassDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r92))) return false;
-							zv::Val o93 = zv::Val::boolean(r92);
-							vd23 = std::move(o93);
-							vd23_done = true;
+							bool r90;
+							if (UNEXPECTED(!pgen::GetCalledClassDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r90))) return false;
+							zv::Val o91 = zv::Val::boolean(r90);
+							vd21 = std::move(o91);
+							vd21_done = true;
 						}
 						break;
 						case 36: {
-							bool r94;
-							if (UNEXPECTED(!pgen::LocaltimeFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r94))) return false;
-							zv::Val o95 = zv::Val::boolean(r94);
-							vd23 = std::move(o95);
-							vd23_done = true;
+							bool r92;
+							if (UNEXPECTED(!pgen::LocaltimeFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r92))) return false;
+							zv::Val o93 = zv::Val::boolean(r92);
+							vd21 = std::move(o93);
+							vd21_done = true;
 						}
 						break;
 						case 37: {
-							bool r96;
-							if (UNEXPECTED(!pgen::ArrayReduceFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r96))) return false;
-							zv::Val o97 = zv::Val::boolean(r96);
-							vd23 = std::move(o97);
-							vd23_done = true;
+							bool r94;
+							if (UNEXPECTED(!pgen::ArrayReduceFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r94))) return false;
+							zv::Val o95 = zv::Val::boolean(r94);
+							vd21 = std::move(o95);
+							vd21_done = true;
 						}
 						break;
 						case 38: {
-							bool r98;
-							if (UNEXPECTED(!pgen::ArrayMapFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r98))) return false;
-							zv::Val o99 = zv::Val::boolean(r98);
-							vd23 = std::move(o99);
-							vd23_done = true;
+							bool r96;
+							if (UNEXPECTED(!pgen::ArrayMapFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r96))) return false;
+							zv::Val o97 = zv::Val::boolean(r96);
+							vd21 = std::move(o97);
+							vd21_done = true;
 						}
 						break;
 						case 39: {
-							bool r100;
-							if (UNEXPECTED(!pgen::CurlGetinfoFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r100))) return false;
-							zv::Val o101 = zv::Val::boolean(r100);
-							vd23 = std::move(o101);
-							vd23_done = true;
+							bool r98;
+							if (UNEXPECTED(!pgen::CurlGetinfoFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r98))) return false;
+							zv::Val o99 = zv::Val::boolean(r98);
+							vd21 = std::move(o99);
+							vd21_done = true;
 						}
 						break;
 						case 40: {
-							bool r102;
-							if (UNEXPECTED(!pgen::ArrayValuesFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r102))) return false;
-							zv::Val o103 = zv::Val::boolean(r102);
-							vd23 = std::move(o103);
-							vd23_done = true;
+							bool r100;
+							if (UNEXPECTED(!pgen::ArrayValuesFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r100))) return false;
+							zv::Val o101 = zv::Val::boolean(r100);
+							vd21 = std::move(o101);
+							vd21_done = true;
 						}
 						break;
 						case 41: {
-							bool r104;
-							if (UNEXPECTED(!pgen::DateTimeDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r104))) return false;
-							zv::Val o105 = zv::Val::boolean(r104);
-							vd23 = std::move(o105);
-							vd23_done = true;
+							bool r102;
+							if (UNEXPECTED(!pgen::DateTimeDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r102))) return false;
+							zv::Val o103 = zv::Val::boolean(r102);
+							vd21 = std::move(o103);
+							vd21_done = true;
 						}
 						break;
 						case 42: {
-							bool r106;
-							if (UNEXPECTED(!pgen::DateTimeCreateDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r106))) return false;
-							zv::Val o107 = zv::Val::boolean(r106);
-							vd23 = std::move(o107);
-							vd23_done = true;
+							bool r104;
+							if (UNEXPECTED(!pgen::DateTimeCreateDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r104))) return false;
+							zv::Val o105 = zv::Val::boolean(r104);
+							vd21 = std::move(o105);
+							vd21_done = true;
 						}
 						break;
 						case 43: {
-							bool r108;
-							if (UNEXPECTED(!pgen::ArrayFindFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r108))) return false;
-							zv::Val o109 = zv::Val::boolean(r108);
-							vd23 = std::move(o109);
-							vd23_done = true;
+							bool r106;
+							if (UNEXPECTED(!pgen::ArrayFindFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r106))) return false;
+							zv::Val o107 = zv::Val::boolean(r106);
+							vd21 = std::move(o107);
+							vd21_done = true;
 						}
 						break;
 						case 44: {
-							bool r110;
-							if (UNEXPECTED(!pgen::PgLastNoticeDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r110))) return false;
-							zv::Val o111 = zv::Val::boolean(r110);
-							vd23 = std::move(o111);
-							vd23_done = true;
+							bool r108;
+							if (UNEXPECTED(!pgen::PgLastNoticeDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r108))) return false;
+							zv::Val o109 = zv::Val::boolean(r108);
+							vd21 = std::move(o109);
+							vd21_done = true;
 						}
 						break;
 						case 45: {
-							bool r112;
-							if (UNEXPECTED(!pgen::FilterVarDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r112))) return false;
-							zv::Val o113 = zv::Val::boolean(r112);
-							vd23 = std::move(o113);
-							vd23_done = true;
+							bool r110;
+							if (UNEXPECTED(!pgen::FilterVarDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r110))) return false;
+							zv::Val o111 = zv::Val::boolean(r110);
+							vd21 = std::move(o111);
+							vd21_done = true;
 						}
 						break;
 						case 46: {
-							bool r114;
-							if (UNEXPECTED(!pgen::GetDefinedVarsFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r114))) return false;
-							zv::Val o115 = zv::Val::boolean(r114);
-							vd23 = std::move(o115);
-							vd23_done = true;
+							bool r112;
+							if (UNEXPECTED(!pgen::GetDefinedVarsFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r112))) return false;
+							zv::Val o113 = zv::Val::boolean(r112);
+							vd21 = std::move(o113);
+							vd21_done = true;
 						}
 						break;
 						case 47: {
-							bool r116;
-							if (UNEXPECTED(!pgen::MbSubstituteCharacterDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r116))) return false;
-							zv::Val o117 = zv::Val::boolean(r116);
-							vd23 = std::move(o117);
-							vd23_done = true;
+							bool r114;
+							if (UNEXPECTED(!pgen::MbSubstituteCharacterDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r114))) return false;
+							zv::Val o115 = zv::Val::boolean(r114);
+							vd21 = std::move(o115);
+							vd21_done = true;
 						}
 						break;
 						case 48: {
-							bool r118;
-							if (UNEXPECTED(!pgen::ArrayFillKeysFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r118))) return false;
-							zv::Val o119 = zv::Val::boolean(r118);
-							vd23 = std::move(o119);
-							vd23_done = true;
+							bool r116;
+							if (UNEXPECTED(!pgen::ArrayFillKeysFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r116))) return false;
+							zv::Val o117 = zv::Val::boolean(r116);
+							vd21 = std::move(o117);
+							vd21_done = true;
 						}
 						break;
 						case 49: {
-							bool r120;
-							if (UNEXPECTED(!pgen::ArrayKeyDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r120))) return false;
-							zv::Val o121 = zv::Val::boolean(r120);
-							vd23 = std::move(o121);
-							vd23_done = true;
+							bool r118;
+							if (UNEXPECTED(!pgen::ArrayKeyDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r118))) return false;
+							zv::Val o119 = zv::Val::boolean(r118);
+							vd21 = std::move(o119);
+							vd21_done = true;
 						}
 						break;
 						case 50: {
-							bool r122;
-							if (UNEXPECTED(!pgen::ClassImplementsFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r122))) return false;
-							zv::Val o123 = zv::Val::boolean(r122);
-							vd23 = std::move(o123);
-							vd23_done = true;
+							bool r120;
+							if (UNEXPECTED(!pgen::ClassImplementsFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r120))) return false;
+							zv::Val o121 = zv::Val::boolean(r120);
+							vd21 = std::move(o121);
+							vd21_done = true;
 						}
 						break;
 						case 51: {
-							bool r124;
-							if (UNEXPECTED(!pgen::MinMaxFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r124))) return false;
-							zv::Val o125 = zv::Val::boolean(r124);
-							vd23 = std::move(o125);
-							vd23_done = true;
+							bool r122;
+							if (UNEXPECTED(!pgen::MinMaxFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r122))) return false;
+							zv::Val o123 = zv::Val::boolean(r122);
+							vd21 = std::move(o123);
+							vd21_done = true;
 						}
 						break;
 						case 52: {
-							bool r126;
-							if (UNEXPECTED(!pgen::Base64DecodeDynamicFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r126))) return false;
-							zv::Val o127 = zv::Val::boolean(r126);
-							vd23 = std::move(o127);
-							vd23_done = true;
+							bool r124;
+							if (UNEXPECTED(!pgen::Base64DecodeDynamicFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r124))) return false;
+							zv::Val o125 = zv::Val::boolean(r124);
+							vd21 = std::move(o125);
+							vd21_done = true;
 						}
 						break;
 						case 53: {
-							bool r128;
-							if (UNEXPECTED(!pgen::StrIncrementDecrementFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r128))) return false;
-							zv::Val o129 = zv::Val::boolean(r128);
-							vd23 = std::move(o129);
-							vd23_done = true;
+							bool r126;
+							if (UNEXPECTED(!pgen::StrIncrementDecrementFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r126))) return false;
+							zv::Val o127 = zv::Val::boolean(r126);
+							vd21 = std::move(o127);
+							vd21_done = true;
 						}
 						break;
 						case 54: {
-							bool r130;
-							if (UNEXPECTED(!pgen::LtrimFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r130))) return false;
-							zv::Val o131 = zv::Val::boolean(r130);
-							vd23 = std::move(o131);
-							vd23_done = true;
+							bool r128;
+							if (UNEXPECTED(!pgen::LtrimFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r128))) return false;
+							zv::Val o129 = zv::Val::boolean(r128);
+							vd21 = std::move(o129);
+							vd21_done = true;
 						}
 						break;
 						case 55: {
-							bool r132;
-							if (UNEXPECTED(!pgen::GettimeofdayDynamicFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r132))) return false;
-							zv::Val o133 = zv::Val::boolean(r132);
-							vd23 = std::move(o133);
-							vd23_done = true;
+							bool r130;
+							if (UNEXPECTED(!pgen::GettimeofdayDynamicFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r130))) return false;
+							zv::Val o131 = zv::Val::boolean(r130);
+							vd21 = std::move(o131);
+							vd21_done = true;
 						}
 						break;
 						case 56: {
-							bool r134;
-							if (UNEXPECTED(!pgen::ArrayPadDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r134))) return false;
-							zv::Val o135 = zv::Val::boolean(r134);
-							vd23 = std::move(o135);
-							vd23_done = true;
+							bool r132;
+							if (UNEXPECTED(!pgen::ArrayPadDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r132))) return false;
+							zv::Val o133 = zv::Val::boolean(r132);
+							vd21 = std::move(o133);
+							vd21_done = true;
 						}
 						break;
 						case 57: {
-							bool r136;
-							if (UNEXPECTED(!pgen::RoundFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r136))) return false;
-							zv::Val o137 = zv::Val::boolean(r136);
-							vd23 = std::move(o137);
-							vd23_done = true;
+							bool r134;
+							if (UNEXPECTED(!pgen::RoundFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r134))) return false;
+							zv::Val o135 = zv::Val::boolean(r134);
+							vd21 = std::move(o135);
+							vd21_done = true;
 						}
 						break;
 						case 58: {
-							bool r138;
-							if (UNEXPECTED(!pgen::ArrayColumnFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r138))) return false;
-							zv::Val o139 = zv::Val::boolean(r138);
-							vd23 = std::move(o139);
-							vd23_done = true;
+							bool r136;
+							if (UNEXPECTED(!pgen::ArrayColumnFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r136))) return false;
+							zv::Val o137 = zv::Val::boolean(r136);
+							vd21 = std::move(o137);
+							vd21_done = true;
 						}
 						break;
 						case 59: {
-							bool r140;
-							if (UNEXPECTED(!pgen::OutputBufferingDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r140))) return false;
-							zv::Val o141 = zv::Val::boolean(r140);
-							vd23 = std::move(o141);
-							vd23_done = true;
+							bool r138;
+							if (UNEXPECTED(!pgen::OutputBufferingDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r138))) return false;
+							zv::Val o139 = zv::Val::boolean(r138);
+							vd21 = std::move(o139);
+							vd21_done = true;
 						}
 						break;
 						case 60: {
-							bool r142;
-							if (UNEXPECTED(!pgen::IniGetReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r142))) return false;
-							zv::Val o143 = zv::Val::boolean(r142);
-							vd23 = std::move(o143);
-							vd23_done = true;
+							bool r140;
+							if (UNEXPECTED(!pgen::IniGetReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r140))) return false;
+							zv::Val o141 = zv::Val::boolean(r140);
+							vd21 = std::move(o141);
+							vd21_done = true;
 						}
 						break;
 						case 61: {
-							bool r144;
-							if (UNEXPECTED(!pgen::StrCaseFunctionsReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r144))) return false;
-							zv::Val o145 = zv::Val::boolean(r144);
-							vd23 = std::move(o145);
-							vd23_done = true;
+							bool r142;
+							if (UNEXPECTED(!pgen::StrCaseFunctionsReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r142))) return false;
+							zv::Val o143 = zv::Val::boolean(r142);
+							vd21 = std::move(o143);
+							vd21_done = true;
 						}
 						break;
 						case 62: {
-							bool r146;
-							if (UNEXPECTED(!pgen::ReplaceFunctionsDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r146))) return false;
-							zv::Val o147 = zv::Val::boolean(r146);
-							vd23 = std::move(o147);
-							vd23_done = true;
+							bool r144;
+							if (UNEXPECTED(!pgen::ReplaceFunctionsDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r144))) return false;
+							zv::Val o145 = zv::Val::boolean(r144);
+							vd21 = std::move(o145);
+							vd21_done = true;
 						}
 						break;
 						case 63: {
-							bool r148;
-							if (UNEXPECTED(!pgen::ArraySearchFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r148))) return false;
-							zv::Val o149 = zv::Val::boolean(r148);
-							vd23 = std::move(o149);
-							vd23_done = true;
+							bool r146;
+							if (UNEXPECTED(!pgen::ArraySearchFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r146))) return false;
+							zv::Val o147 = zv::Val::boolean(r146);
+							vd21 = std::move(o147);
+							vd21_done = true;
 						}
 						break;
 						case 64: {
-							bool r150;
-							if (UNEXPECTED(!pgen::FilterVarArrayDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r150))) return false;
-							zv::Val o151 = zv::Val::boolean(r150);
-							vd23 = std::move(o151);
-							vd23_done = true;
+							bool r148;
+							if (UNEXPECTED(!pgen::FilterVarArrayDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r148))) return false;
+							zv::Val o149 = zv::Val::boolean(r148);
+							vd21 = std::move(o149);
+							vd21_done = true;
 						}
 						break;
 						case 65: {
-							bool r152;
-							if (UNEXPECTED(!pgen::StrTokFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r152))) return false;
-							zv::Val o153 = zv::Val::boolean(r152);
-							vd23 = std::move(o153);
-							vd23_done = true;
+							bool r150;
+							if (UNEXPECTED(!pgen::StrTokFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r150))) return false;
+							zv::Val o151 = zv::Val::boolean(r150);
+							vd21 = std::move(o151);
+							vd21_done = true;
 						}
 						break;
 						case 66: {
-							bool r154;
-							if (UNEXPECTED(!pgen::StrWordCountFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r154))) return false;
-							zv::Val o155 = zv::Val::boolean(r154);
-							vd23 = std::move(o155);
-							vd23_done = true;
+							bool r152;
+							if (UNEXPECTED(!pgen::StrWordCountFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r152))) return false;
+							zv::Val o153 = zv::Val::boolean(r152);
+							vd21 = std::move(o153);
+							vd21_done = true;
 						}
 						break;
 						case 67: {
-							bool r156;
-							if (UNEXPECTED(!pgen::StrlenFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r156))) return false;
-							zv::Val o157 = zv::Val::boolean(r156);
-							vd23 = std::move(o157);
-							vd23_done = true;
+							bool r154;
+							if (UNEXPECTED(!pgen::StrlenFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r154))) return false;
+							zv::Val o155 = zv::Val::boolean(r154);
+							vd21 = std::move(o155);
+							vd21_done = true;
 						}
 						break;
 						case 68: {
-							bool r158;
-							if (UNEXPECTED(!pgen::ArraySumFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r158))) return false;
-							zv::Val o159 = zv::Val::boolean(r158);
-							vd23 = std::move(o159);
-							vd23_done = true;
+							bool r156;
+							if (UNEXPECTED(!pgen::ArraySumFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r156))) return false;
+							zv::Val o157 = zv::Val::boolean(r156);
+							vd21 = std::move(o157);
+							vd21_done = true;
 						}
 						break;
 						case 69: {
-							bool r160;
-							if (UNEXPECTED(!pgen::HashFunctionsReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r160))) return false;
-							zv::Val o161 = zv::Val::boolean(r160);
-							vd23 = std::move(o161);
-							vd23_done = true;
+							bool r158;
+							if (UNEXPECTED(!pgen::HashFunctionsReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r158))) return false;
+							zv::Val o159 = zv::Val::boolean(r158);
+							vd21 = std::move(o159);
+							vd21_done = true;
 						}
 						break;
 						case 70: {
-							bool r162;
-							if (UNEXPECTED(!pgen::MicrotimeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r162))) return false;
-							zv::Val o163 = zv::Val::boolean(r162);
-							vd23 = std::move(o163);
-							vd23_done = true;
+							bool r160;
+							if (UNEXPECTED(!pgen::MicrotimeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r160))) return false;
+							zv::Val o161 = zv::Val::boolean(r160);
+							vd21 = std::move(o161);
+							vd21_done = true;
 						}
 						break;
 						case 71: {
-							bool r164;
-							if (UNEXPECTED(!pgen::DioStatDynamicFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r164))) return false;
-							zv::Val o165 = zv::Val::boolean(r164);
-							vd23 = std::move(o165);
-							vd23_done = true;
+							bool r162;
+							if (UNEXPECTED(!pgen::DioStatDynamicFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r162))) return false;
+							zv::Val o163 = zv::Val::boolean(r162);
+							vd21 = std::move(o163);
+							vd21_done = true;
 						}
 						break;
 						case 72: {
-							bool r166;
-							if (UNEXPECTED(!pgen::StrrevFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r166))) return false;
-							zv::Val o167 = zv::Val::boolean(r166);
-							vd23 = std::move(o167);
-							vd23_done = true;
+							bool r164;
+							if (UNEXPECTED(!pgen::StrrevFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r164))) return false;
+							zv::Val o165 = zv::Val::boolean(r164);
+							vd21 = std::move(o165);
+							vd21_done = true;
 						}
 						break;
 						case 73: {
-							bool r168;
-							if (UNEXPECTED(!pgen::ArrayRandFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r168))) return false;
-							zv::Val o169 = zv::Val::boolean(r168);
-							vd23 = std::move(o169);
-							vd23_done = true;
+							bool r166;
+							if (UNEXPECTED(!pgen::ArrayRandFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r166))) return false;
+							zv::Val o167 = zv::Val::boolean(r166);
+							vd21 = std::move(o167);
+							vd21_done = true;
 						}
 						break;
 						case 74: {
-							bool r170;
-							if (UNEXPECTED(!pgen::DateFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r170))) return false;
-							zv::Val o171 = zv::Val::boolean(r170);
-							vd23 = std::move(o171);
-							vd23_done = true;
+							bool r168;
+							if (UNEXPECTED(!pgen::DateFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r168))) return false;
+							zv::Val o169 = zv::Val::boolean(r168);
+							vd21 = std::move(o169);
+							vd21_done = true;
 						}
 						break;
 						case 75: {
-							bool r172;
-							if (UNEXPECTED(!pgen::IdateFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r172))) return false;
-							zv::Val o173 = zv::Val::boolean(r172);
-							vd23 = std::move(o173);
-							vd23_done = true;
+							bool r170;
+							if (UNEXPECTED(!pgen::IdateFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r170))) return false;
+							zv::Val o171 = zv::Val::boolean(r170);
+							vd21 = std::move(o171);
+							vd21_done = true;
 						}
 						break;
 						case 76: {
-							bool r174;
-							if (UNEXPECTED(!pgen::GetParentClassDynamicFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r174))) return false;
-							zv::Val o175 = zv::Val::boolean(r174);
-							vd23 = std::move(o175);
-							vd23_done = true;
+							bool r172;
+							if (UNEXPECTED(!pgen::GetParentClassDynamicFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r172))) return false;
+							zv::Val o173 = zv::Val::boolean(r172);
+							vd21 = std::move(o173);
+							vd21_done = true;
 						}
 						break;
 						case 77: {
-							bool r176;
-							if (UNEXPECTED(!pgen::StrvalFamilyFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r176))) return false;
-							zv::Val o177 = zv::Val::boolean(r176);
-							vd23 = std::move(o177);
-							vd23_done = true;
+							bool r174;
+							if (UNEXPECTED(!pgen::StrvalFamilyFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r174))) return false;
+							zv::Val o175 = zv::Val::boolean(r174);
+							vd21 = std::move(o175);
+							vd21_done = true;
 						}
 						break;
 						case 78: {
-							bool r178;
-							if (UNEXPECTED(!pgen::ArrayReverseFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r178))) return false;
-							zv::Val o179 = zv::Val::boolean(r178);
-							vd23 = std::move(o179);
-							vd23_done = true;
+							bool r176;
+							if (UNEXPECTED(!pgen::ArrayReverseFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r176))) return false;
+							zv::Val o177 = zv::Val::boolean(r176);
+							vd21 = std::move(o177);
+							vd21_done = true;
 						}
 						break;
 						case 79: {
-							bool r180;
-							if (UNEXPECTED(!pgen::RandomIntFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r180))) return false;
-							zv::Val o181 = zv::Val::boolean(r180);
-							vd23 = std::move(o181);
-							vd23_done = true;
+							bool r178;
+							if (UNEXPECTED(!pgen::RandomIntFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r178))) return false;
+							zv::Val o179 = zv::Val::boolean(r178);
+							vd21 = std::move(o179);
+							vd21_done = true;
 						}
 						break;
 						case 80: {
-							bool r182;
-							if (UNEXPECTED(!pgen::VersionCompareFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r182))) return false;
-							zv::Val o183 = zv::Val::boolean(r182);
-							vd23 = std::move(o183);
-							vd23_done = true;
+							bool r180;
+							if (UNEXPECTED(!pgen::VersionCompareFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r180))) return false;
+							zv::Val o181 = zv::Val::boolean(r180);
+							vd21 = std::move(o181);
+							vd21_done = true;
 						}
 						break;
 						case 81: {
-							bool r184;
-							if (UNEXPECTED(!pgen::ArraySliceFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r184))) return false;
-							zv::Val o185 = zv::Val::boolean(r184);
-							vd23 = std::move(o185);
-							vd23_done = true;
+							bool r182;
+							if (UNEXPECTED(!pgen::ArraySliceFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r182))) return false;
+							zv::Val o183 = zv::Val::boolean(r182);
+							vd21 = std::move(o183);
+							vd21_done = true;
 						}
 						break;
 						case 82: {
-							bool r186;
-							if (UNEXPECTED(!pgen::ArrayChunkFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r186))) return false;
-							zv::Val o187 = zv::Val::boolean(r186);
-							vd23 = std::move(o187);
-							vd23_done = true;
+							bool r184;
+							if (UNEXPECTED(!pgen::ArrayChunkFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r184))) return false;
+							zv::Val o185 = zv::Val::boolean(r184);
+							vd21 = std::move(o185);
+							vd21_done = true;
 						}
 						break;
 						case 83: {
-							bool r188;
-							if (UNEXPECTED(!pgen::ArrayPopFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r188))) return false;
-							zv::Val o189 = zv::Val::boolean(r188);
-							vd23 = std::move(o189);
-							vd23_done = true;
+							bool r186;
+							if (UNEXPECTED(!pgen::ArrayPopFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r186))) return false;
+							zv::Val o187 = zv::Val::boolean(r186);
+							vd21 = std::move(o187);
+							vd21_done = true;
 						}
 						break;
 						case 84: {
-							bool r190;
-							if (UNEXPECTED(!pgen::CountCharsFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r190))) return false;
-							zv::Val o191 = zv::Val::boolean(r190);
-							vd23 = std::move(o191);
-							vd23_done = true;
+							bool r188;
+							if (UNEXPECTED(!pgen::CountCharsFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r188))) return false;
+							zv::Val o189 = zv::Val::boolean(r188);
+							vd21 = std::move(o189);
+							vd21_done = true;
 						}
 						break;
 						case 85: {
-							bool r192;
-							if (UNEXPECTED(!pgen::ArrayIntersectKeyFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r192))) return false;
-							zv::Val o193 = zv::Val::boolean(r192);
-							vd23 = std::move(o193);
-							vd23_done = true;
+							bool r190;
+							if (UNEXPECTED(!pgen::ArrayIntersectKeyFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r190))) return false;
+							zv::Val o191 = zv::Val::boolean(r190);
+							vd21 = std::move(o191);
+							vd21_done = true;
 						}
 						break;
 						case 86: {
-							bool r194;
-							if (UNEXPECTED(!pgen::ArrayFlipFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r194))) return false;
-							zv::Val o195 = zv::Val::boolean(r194);
-							vd23 = std::move(o195);
-							vd23_done = true;
+							bool r192;
+							if (UNEXPECTED(!pgen::ArrayFlipFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r192))) return false;
+							zv::Val o193 = zv::Val::boolean(r192);
+							vd21 = std::move(o193);
+							vd21_done = true;
 						}
 						break;
 						case 87: {
-							bool r196;
-							if (UNEXPECTED(!pgen::BcMathStringOrNullReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r196))) return false;
-							zv::Val o197 = zv::Val::boolean(r196);
-							vd23 = std::move(o197);
-							vd23_done = true;
+							bool r194;
+							if (UNEXPECTED(!pgen::BcMathStringOrNullReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r194))) return false;
+							zv::Val o195 = zv::Val::boolean(r194);
+							vd21 = std::move(o195);
+							vd21_done = true;
 						}
 						break;
 						case 88: {
-							bool r198;
-							if (UNEXPECTED(!pgen::ArraySpliceFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r198))) return false;
-							zv::Val o199 = zv::Val::boolean(r198);
-							vd23 = std::move(o199);
-							vd23_done = true;
+							bool r196;
+							if (UNEXPECTED(!pgen::ArraySpliceFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r196))) return false;
+							zv::Val o197 = zv::Val::boolean(r196);
+							vd21 = std::move(o197);
+							vd21_done = true;
 						}
 						break;
 						case 89: {
-							bool r200;
-							if (UNEXPECTED(!pgen::StrRepeatFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r200))) return false;
-							zv::Val o201 = zv::Val::boolean(r200);
-							vd23 = std::move(o201);
-							vd23_done = true;
+							bool r198;
+							if (UNEXPECTED(!pgen::StrRepeatFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r198))) return false;
+							zv::Val o199 = zv::Val::boolean(r198);
+							vd21 = std::move(o199);
+							vd21_done = true;
 						}
 						break;
 						case 90: {
-							bool r202;
-							if (UNEXPECTED(!pgen::IteratorToArrayFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r202))) return false;
-							zv::Val o203 = zv::Val::boolean(r202);
-							vd23 = std::move(o203);
-							vd23_done = true;
+							bool r200;
+							if (UNEXPECTED(!pgen::IteratorToArrayFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r200))) return false;
+							zv::Val o201 = zv::Val::boolean(r200);
+							vd21 = std::move(o201);
+							vd21_done = true;
 						}
 						break;
 						case 91: {
-							bool r204;
-							if (UNEXPECTED(!pgen::GetClassDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r204))) return false;
-							zv::Val o205 = zv::Val::boolean(r204);
-							vd23 = std::move(o205);
-							vd23_done = true;
+							bool r202;
+							if (UNEXPECTED(!pgen::GetClassDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r202))) return false;
+							zv::Val o203 = zv::Val::boolean(r202);
+							vd21 = std::move(o203);
+							vd21_done = true;
 						}
 						break;
 						case 92: {
-							bool r206;
-							if (UNEXPECTED(!pgen::HrtimeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r206))) return false;
-							zv::Val o207 = zv::Val::boolean(r206);
-							vd23 = std::move(o207);
-							vd23_done = true;
+							bool r204;
+							if (UNEXPECTED(!pgen::HrtimeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r204))) return false;
+							zv::Val o205 = zv::Val::boolean(r204);
+							vd21 = std::move(o205);
+							vd21_done = true;
 						}
 						break;
 						case 93: {
-							bool r208;
-							if (UNEXPECTED(!pgen::DateFormatFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r208))) return false;
-							zv::Val o209 = zv::Val::boolean(r208);
-							vd23 = std::move(o209);
-							vd23_done = true;
+							bool r206;
+							if (UNEXPECTED(!pgen::DateFormatFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r206))) return false;
+							zv::Val o207 = zv::Val::boolean(r206);
+							vd21 = std::move(o207);
+							vd21_done = true;
 						}
 						break;
 						case 94: {
-							bool r210;
-							if (UNEXPECTED(!pgen::MbConvertEncodingFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r210))) return false;
-							zv::Val o211 = zv::Val::boolean(r210);
-							vd23 = std::move(o211);
-							vd23_done = true;
+							bool r208;
+							if (UNEXPECTED(!pgen::MbConvertEncodingFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r208))) return false;
+							zv::Val o209 = zv::Val::boolean(r208);
+							vd21 = std::move(o209);
+							vd21_done = true;
 						}
 						break;
 						case 95: {
-							bool r212;
-							if (UNEXPECTED(!pgen::CompactFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r212))) return false;
-							zv::Val o213 = zv::Val::boolean(r212);
-							vd23 = std::move(o213);
-							vd23_done = true;
+							bool r210;
+							if (UNEXPECTED(!pgen::CompactFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r210))) return false;
+							zv::Val o211 = zv::Val::boolean(r210);
+							vd21 = std::move(o211);
+							vd21_done = true;
 						}
 						break;
 						case 96: {
-							bool r214;
-							if (UNEXPECTED(!pgen::GetDebugTypeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r214))) return false;
-							zv::Val o215 = zv::Val::boolean(r214);
-							vd23 = std::move(o215);
-							vd23_done = true;
+							bool r212;
+							if (UNEXPECTED(!pgen::GetDebugTypeFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r212))) return false;
+							zv::Val o213 = zv::Val::boolean(r212);
+							vd21 = std::move(o213);
+							vd21_done = true;
 						}
 						break;
 						case 97: {
-							bool r216;
-							if (UNEXPECTED(!pgen::CountFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r216))) return false;
-							zv::Val o217 = zv::Val::boolean(r216);
-							vd23 = std::move(o217);
-							vd23_done = true;
+							bool r214;
+							if (UNEXPECTED(!pgen::CountFunctionReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r214))) return false;
+							zv::Val o215 = zv::Val::boolean(r214);
+							vd21 = std::move(o215);
+							vd21_done = true;
 						}
 						break;
 						case 98: {
-							bool r218;
-							if (UNEXPECTED(!pgen::NumberFormatFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r218))) return false;
-							zv::Val o219 = zv::Val::boolean(r218);
-							vd23 = std::move(o219);
-							vd23_done = true;
+							bool r216;
+							if (UNEXPECTED(!pgen::NumberFormatFunctionDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r216))) return false;
+							zv::Val o217 = zv::Val::boolean(r216);
+							vd21 = std::move(o217);
+							vd21_done = true;
 						}
 						break;
 						case 99: {
-							bool r220;
-							if (UNEXPECTED(!pgen::ArrayCurrentDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r220))) return false;
-							zv::Val o221 = zv::Val::boolean(r220);
-							vd23 = std::move(o221);
-							vd23_done = true;
+							bool r218;
+							if (UNEXPECTED(!pgen::ArrayCurrentDynamicReturnTypeExtension::m_isFunctionSupported(Z_OBJ_P(l_dynamicFunctionReturnTypeExtension), p_functionReflection, &r218))) return false;
+							zv::Val o219 = zv::Val::boolean(r218);
+							vd21 = std::move(o219);
+							vd21_done = true;
 						}
 						break;
 						default:
 						break;
 					}
-					if (!vd23_done) {
-						zval av222[1];
-						ZVAL_COPY_VALUE(&av222[0], p_functionReflection);
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_dynamicFunctionReturnTypeExtension, "isFunctionSupported", "isfunctionsupported", 19, 1, av222, vd23.raw()))) return false;
+					if (!vd21_done) {
+						zval av220[1];
+						ZVAL_COPY_VALUE(&av220[0], p_functionReflection);
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_dynamicFunctionReturnTypeExtension, "isFunctionSupported", "isfunctionsupported", 19, 1, av220, vd21.raw()))) return false;
 					}
-					if (!(zend_is_true(vd23.raw()))) {
-						goto cont22;
+					if (!(zend_is_true(vd21.raw()))) {
+						goto cont20;
 					}
 				}
 				 {
-					zv::Val o223 = zv::Val::copyOf(zv::Ref(l_dynamicFunctionReturnTypeExtension));
-					zv::Val o224 = zv::Val::copyOf(zv::Ref(o223.raw()));
-					zval *w225 = zv::Ref(l_supportedFunctions.raw()).deref().raw();
-					if (Z_TYPE_P(w225) <= IS_NULL) { zval_ptr_dtor(w225); array_init(w225); } else if (UNEXPECTED(Z_TYPE_P(w225) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w225);
-					{ zval v = o224.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w225), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zv::Val o221 = zv::Val::copyOf(zv::Ref(l_dynamicFunctionReturnTypeExtension));
+					zv::Val o222 = zv::Val::copyOf(zv::Ref(o221.raw()));
+					zval *w223 = zv::Ref(l_supportedFunctions.raw()).deref().raw();
+					if (Z_TYPE_P(w223) <= IS_NULL) { zval_ptr_dtor(w223); array_init(w223); } else if (UNEXPECTED(Z_TYPE_P(w223) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w223);
+					{ zval v = o222.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w223), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
-			cont22:;
+			cont20:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val o226 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
-		zv::Val o227 = zv::Val::copyOf(zv::Ref(l_supportedFunctions.raw()));
-		zv::Val o228 = zv::Val::copyOf(zv::Ref(o227.raw()));
-		zval *w229 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicReturnTypeExtensionsByFunction)).deref().raw();
-		if (Z_TYPE_P(w229) <= IS_NULL) { zval_ptr_dtor(w229); array_init(w229); } else if (UNEXPECTED(Z_TYPE_P(w229) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-		SEPARATE_ARRAY(w229);
-		zval *e230 = pgrt::dimWrite(w229, o226.raw());
-		if (UNEXPECTED(e230 == NULL)) return false;
-		zv::Ref(e230).assign(std::move(o228));
-		*ret = o227.take();
+		zv::Val o224 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
+		zv::Val o225 = zv::Val::copyOf(zv::Ref(l_supportedFunctions.raw()));
+		zv::Val o226 = zv::Val::copyOf(zv::Ref(o225.raw()));
+		zval *w227 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::dynamicReturnTypeExtensionsByFunction)).deref().raw();
+		if (Z_TYPE_P(w227) <= IS_NULL) { zval_ptr_dtor(w227); array_init(w227); } else if (UNEXPECTED(Z_TYPE_P(w227) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+		SEPARATE_ARRAY(w227);
+		zval *e228 = pgrt::dimWrite(w227, o224.raw());
+		if (UNEXPECTED(e228 == NULL)) return false;
+		zv::Ref(e228).assign(std::move(o226));
+		*ret = o225.take();
 		return true;
 	}
 }
@@ -1394,7 +1390,6 @@ namespace sigs = ptdecl::DynamicReturnTypeExtensionRegistry::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_DynamicReturnTypeExtensionRegistry)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("dynamicReturnTypeExtensionsByFunction", 37));
 	reg::Class cls("PHPStan\\Type\\DynamicReturnTypeExtensionRegistry");
 	ptdecl::DynamicReturnTypeExtensionRegistry::declareClass(cls);
 	ptdecl::DynamicReturnTypeExtensionRegistry::declareProperties(cls);

@@ -39,9 +39,9 @@ static pgrt::DispatchCache pg_site_26; /* dispatch_hasSideEffects_26 */
 static pt_method_site pg_site_27; /* method_hasSideEffects_27 */
 static pgrt::DispatchCache pg_site_28; /* dispatch_getDeclaringClass_28 */
 static pt_method_site pg_site_29; /* method_getDeclaringClass_29 */
-static pt_method_site pg_site_30; /* method_getName_30 */
-static pt_method_site pg_site_31; /* method_getName_31 */
-static pt_method_site pg_site_32; /* method_getStartLine_32 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getName_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getName_31 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getStartLine_32 */
 static pgrt::ClassSite pg_site_33; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_34; /* cls_PHPStan\Analyser\Scope */
 
@@ -471,7 +471,7 @@ namespace pgen::PossiblyPureStaticCallCollector {
 			if (UNEXPECTED(r73.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_30, vd67.raw(), "getName", "getname", 7, 0, NULL, r73.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, vd67.raw(), "getName", "getname", 7, r73.raw()))) return false;
 		}
 		}
 		{ zval v = r73.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr66.raw()), &v); }
@@ -481,12 +481,12 @@ namespace pgen::PossiblyPureStaticCallCollector {
 			if (UNEXPECTED(r74.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r74.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, l_methodReflection.raw(), "getName", "getname", 7, r74.raw()))) return false;
 		}
 		}
 		{ zval v = r74.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr66.raw()), &v); }
 		zv::Val r75;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_32, p_node, "getStartLine", "getstartline", 12, 0, NULL, r75.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, p_node, "getStartLine", "getstartline", 12, r75.raw()))) return false;
 		zv::Val o76 = zv::Val::integer(Z_LVAL_P(r75.raw()));
 		{ zval v = o76.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr66.raw()), &v); }
 		*ret = arr66.take();

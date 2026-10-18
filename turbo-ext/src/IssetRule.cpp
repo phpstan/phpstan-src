@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_isset_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[6];
 
-static pt_method_site pg_site_0; /* method_getVarResults_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getVarResults_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_2; /* method_isNull_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isNull_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Analyser\ExpressionResult */
 static pt_method_site pg_site_4; /* method_getExpr_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Expr */
@@ -42,7 +42,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_type, "isNull", "isnull", 6, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_type, "isNull", "isnull", 6, r1.raw()))) return;
 		}
 		}
 		l_isNull = std::move(r1);
@@ -121,7 +121,7 @@ namespace pgen::IssetRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getVarResults", "getvarresults", 13, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getVarResults", "getvarresults", 13, r4.raw()))) return false;
 		pgrt::ForeachIter it5;
 		if (UNEXPECTED(!it5.begin(r4.raw()))) return false;
 		while (it5.valid()) {

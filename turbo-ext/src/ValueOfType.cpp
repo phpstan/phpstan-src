@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_value_of_type = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getReferencedClasses_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getReferencedClasses_0 */
 static pt_method_site pg_site_1; /* method_getReferencedTemplateTypes_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\ValueOfType */
 static pt_method_site pg_site_3; /* method_equals_3 */
@@ -18,11 +18,11 @@ static pt_method_site pg_site_5; /* static_PHPStan\Type\TypeUtils::containsTempl
 static pt_method_site pg_site_6; /* method_isEnum_6 */
 static pt_method_site pg_site_7; /* method_getEnumCases_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\Generic\TemplateType */
-static pt_method_site pg_site_9; /* method_getBound_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getBound_9 */
 static pt_method_site pg_site_10; /* method_isSuperTypeOf_10 */
-static pt_method_site pg_site_11; /* method_getBackingValueType_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getBackingValueType_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_13; /* method_getIterableValueType_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getIterableValueType_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode */
 static pgrt::DispatchCache pg_site_15; /* dispatch_toPhpDocNode_15 */
 static pt_method_site pg_site_16; /* method_toPhpDocNode_16 */
@@ -59,7 +59,7 @@ namespace pgen::ValueOfType {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -238,7 +238,7 @@ namespace pgen::ValueOfType {
 					zval *p14 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ValueOfType::slot::type, "type");
 					if (UNEXPECTED(p14 == NULL)) return false;
 					zv::Val r15;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p14, "getBound", "getbound", 8, 0, NULL, r15.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p14, "getBound", "getbound", 8, r15.raw()))) return false;
 					zval av16[1];
 					ZVAL_COPY_VALUE(&av16[0], r15.raw());
 					zv::Val r17;
@@ -288,7 +288,7 @@ namespace pgen::ValueOfType {
 					 {
 						 {
 							zv::Val r32;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_enumCase, "getBackingValueType", "getbackingvaluetype", 19, 0, NULL, r32.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_enumCase, "getBackingValueType", "getbackingvaluetype", 19, r32.raw()))) return false;
 							l_valueType = std::move(r32);
 						}
 						 {
@@ -353,7 +353,7 @@ namespace pgen::ValueOfType {
 			if (UNEXPECTED(r42.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p41, "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r42.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p41, "getIterableValueType", "getiterablevaluetype", 20, r42.raw()))) return false;
 		}
 		}
 		*ret = r42.take();

@@ -23,7 +23,7 @@ static pt_method_site pg_site_10; /* method_getConstant_10 */
 static pt_method_site pg_site_11; /* static_PHPStan\Dependency\Dependencies::create */
 static pgrt::PropSite pg_site_12; /* prop_name_12 */
 static pgrt::PropSite pg_site_13; /* prop_name_13 */
-static pt_method_site pg_site_14; /* method_isFullyQualified_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isFullyQualified_14 */
 static pt_method_site pg_site_15; /* method_getNamespace_15 */
 static pt_method_site pg_site_16; /* method_getNamespace_16 */
 static pgrt::PropSite pg_site_17; /* prop_name_17 */
@@ -35,7 +35,7 @@ static pt_method_site pg_site_22; /* method_hasExpressionType_22 */
 static pt_method_site pg_site_23; /* method_toString_23 */
 static pgrt::PropSite pg_site_24; /* prop_expressionTypes_24 */
 static pt_method_site pg_site_25; /* method_getNodeKey_25 */
-static pt_method_site pg_site_26; /* method_getType_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getType_26 */
 static pt_method_site pg_site_27; /* method_resolveConstantType_27 */
 static pgrt::PropSite pg_site_28; /* prop_name_28 */
 static pt_method_site pg_site_29; /* method_resolveConstant_29 */
@@ -132,7 +132,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			p10 = o11.raw();
 		}
 		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, zv::Ref(p10).deref().raw(), "isFullyQualified", "isfullyqualified", 16, 0, NULL, r12.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, zv::Ref(p10).deref().raw(), "isFullyQualified", "isfullyqualified", 16, r12.raw()))) return;
 		bool b9 = !(zend_is_true(r12.raw()));
 		if (b9) {
 			zv::Val r13;
@@ -258,7 +258,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 								if (UNEXPECTED(r54.isUndef())) return;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_26, zv::Ref(e52).deref().raw(), "getType", "gettype", 7, 0, NULL, r54.raw(), NULL))) return;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, zv::Ref(e52).deref().raw(), "getType", "gettype", 7, r54.raw()))) return;
 							}
 							}
 							zval av55[2];

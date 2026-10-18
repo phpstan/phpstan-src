@@ -11,8 +11,8 @@ static zval pg_lit[3];
 
 static pgrt::DispatchCache pg_site_0; /* dispatch_getDeclaringClass_0 */
 static pt_method_site pg_site_1; /* method_getDeclaringClass_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pgrt::PropSite pg_site_4; /* prop_args_4 */
 static pgrt::DispatchCache pg_site_5; /* dispatch_getThrowType_5 */
 static pt_method_site pg_site_6; /* method_getThrowType_6 */
@@ -82,7 +82,7 @@ namespace pgen::DsMapDynamicMethodThrowTypeExtension {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, vd2.raw(), "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, vd2.raw(), "getName", "getname", 7, r8.raw()))) return false;
 		}
 		}
 		bool b1 = zend_is_identical(r8.raw(), &pg_lit[0]);
@@ -93,7 +93,7 @@ namespace pgen::DsMapDynamicMethodThrowTypeExtension {
 				if (UNEXPECTED(r9.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_methodReflection, "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_methodReflection, "getName", "getname", 7, r9.raw()))) return false;
 			}
 			}
 			bool ia10 = false;

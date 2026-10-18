@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_constant_attributes_rule = nullptr;
 static zval pg_lit[6];
 
 static pgrt::PropSite pg_site_0; /* prop_attrGroups_0 */
-static pt_method_site pg_site_1; /* method_getPhpVersion_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getPhpVersion_1 */
 static pgrt::PropSite pg_site_2; /* prop_attrGroups_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\AttributesCheck */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
@@ -70,7 +70,7 @@ namespace pgen::ConstantAttributesRule {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, r5.raw()))) return false;
 		zv::Val r6;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsAttributesOnGlobalConstants(Z_OBJ_P(r5.raw()), r6.raw()))) return false;
 		bool r7;

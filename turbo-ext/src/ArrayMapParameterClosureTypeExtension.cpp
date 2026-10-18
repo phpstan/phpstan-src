@@ -9,14 +9,14 @@ zend_class_entry *pt_ce_array_map_parameter_closure_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
 static pgrt::PropSite pg_site_5; /* prop_unpack_5 */
-static pt_method_site pg_site_6; /* method_getConstantArrays_6 */
-static pt_method_site pg_site_7; /* method_getValueTypes_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getConstantArrays_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getValueTypes_7 */
 static pt_method_site pg_site_8; /* method_getIterableValueType_8 */
 static pt_method_site pg_site_9; /* method_getIterableValueType_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Reflection\FunctionReflection */
@@ -40,7 +40,7 @@ namespace pgen::ArrayMapParameterClosureTypeExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		bool b1 = zend_is_identical(r2.raw(), &pg_lit[0]);
@@ -51,7 +51,7 @@ namespace pgen::ArrayMapParameterClosureTypeExtension {
 				if (UNEXPECTED(r3.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_parameter, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_parameter, "getName", "getname", 7, r3.raw()))) return false;
 			}
 			}
 			b1 = zend_is_identical(r3.raw(), &pg_lit[1]);
@@ -156,7 +156,7 @@ namespace pgen::ArrayMapParameterClosureTypeExtension {
 								if (UNEXPECTED(r18.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_arrayType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r18.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_arrayType.raw(), "getConstantArrays", "getconstantarrays", 17, r18.raw()))) return false;
 							}
 							}
 							l_constantArrays = std::move(r18);
@@ -188,7 +188,7 @@ namespace pgen::ArrayMapParameterClosureTypeExtension {
 											if (UNEXPECTED(r28.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_constantArray, "getValueTypes", "getvaluetypes", 13, 0, NULL, r28.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_constantArray, "getValueTypes", "getvaluetypes", 13, r28.raw()))) return false;
 										}
 										}
 										pgrt::ForeachIter it29;

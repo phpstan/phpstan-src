@@ -18,9 +18,9 @@ static pgrt::PropSite pg_site_5; /* prop_params_5 */
 static pt_method_site pg_site_6; /* method_getFunction_6 */
 static pt_method_site pg_site_7; /* method_isOpaque_7 */
 static pt_method_site pg_site_8; /* method_isInClass_8 */
-static pt_method_site pg_site_9; /* method_getClassReflection_9 */
-static pt_method_site pg_site_10; /* method_isAttributeClass_10 */
-static pt_method_site pg_site_11; /* method_getInterfaces_11 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getClassReflection_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isAttributeClass_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getInterfaces_11 */
 static pt_method_site pg_site_12; /* method_hasConstructor_12 */
 static pt_method_site pg_site_13; /* method_getDisplayName_13 */
 static pt_method_site pg_site_14; /* method_isAnonymous_14 */
@@ -223,14 +223,14 @@ namespace pgen::UnusedConstructorParametersRule {
 			if (UNEXPECTED(r26.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r26.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_scope, "getClassReflection", "getclassreflection", 18, r26.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r26);
 	}
 	 {
 		zv::Val r27;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_classReflection.raw(), "isAttributeClass", "isattributeclass", 16, 0, NULL, r27.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_classReflection.raw(), "isAttributeClass", "isattributeclass", 16, r27.raw()))) return false;
 		if (Z_TYPE_P(r27.raw()) == IS_TRUE) {
 			 {
 				zval arr28_raw;
@@ -242,7 +242,7 @@ namespace pgen::UnusedConstructorParametersRule {
 	}
 	 {
 		zv::Val r30;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, 0, NULL, r30.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, r30.raw()))) return false;
 		zv::Val a31 = zv::Val::copyOf(zv::Ref(r30.raw()).deref());
 		HashTable *ht29 = Z_ARRVAL_P(a31.raw());
 		zval *v32;

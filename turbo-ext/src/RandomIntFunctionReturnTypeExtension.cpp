@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_random_int_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pt_method_site pg_site_3; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
@@ -19,20 +19,20 @@ static pt_method_site pg_site_6; /* method_toInteger_6 */
 static pgrt::PropSite pg_site_7; /* prop_value_7 */
 static pt_method_site pg_site_8; /* method_getType_8 */
 static pt_method_site pg_site_9; /* method_toInteger_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\IntegerRangeType */
 static pgrt::GetterSite pg_site_13; /* getter_getMin_13 */
-static pt_method_site pg_site_14; /* method_getMin_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getMin_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
-static pt_method_site pg_site_16; /* method_getValue_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getValue_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Type\UnionType */
-static pt_method_site pg_site_18; /* method_getTypes_18 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getTypes_18 */
 static pgrt::FunctionSite pg_site_19; /* function_array_map */
 static pgrt::GetterSite pg_site_20; /* getter_getMax_20 */
-static pt_method_site pg_site_21; /* method_getMax_21 */
-static pt_method_site pg_site_22; /* method_getValue_22 */
-static pt_method_site pg_site_23; /* method_getTypes_23 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getMax_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getValue_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getTypes_23 */
 static pgrt::FunctionSite pg_site_24; /* function_assert */
 static pgrt::FunctionSite pg_site_25; /* function_min */
 static pgrt::FunctionSite pg_site_26; /* function_max */
@@ -59,7 +59,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 					ZVAL_COPY(r2.raw(), gs1);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_type, "getMin", "getmin", 6, 0, NULL, r2.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_type, "getMin", "getmin", 6, r2.raw()))) return;
 				}
 				}
 				*return_value = r2.take();
@@ -76,7 +76,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(r3.isUndef())) return;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p_type, "getValue", "getvalue", 8, 0, NULL, r3.raw(), NULL))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, p_type, "getValue", "getvalue", 8, r3.raw()))) return;
 				}
 				}
 				zval z4;
@@ -113,7 +113,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 					ZVAL_COPY(r2.raw(), gs1);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_21, p_type, "getMax", "getmax", 6, 0, NULL, r2.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, p_type, "getMax", "getmax", 6, r2.raw()))) return;
 				}
 				}
 				*return_value = r2.take();
@@ -130,7 +130,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(r3.isUndef())) return;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_22, p_type, "getValue", "getvalue", 8, 0, NULL, r3.raw(), NULL))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, p_type, "getValue", "getvalue", 8, r3.raw()))) return;
 				}
 				}
 				zval z4;
@@ -163,7 +163,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -195,7 +195,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_functionReflection, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_functionReflection, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		bool ia4 = false;
@@ -329,7 +329,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 			if (UNEXPECTED(r32.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_functionReflection, "getName", "getname", 7, 0, NULL, r32.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_functionReflection, "getName", "getname", 7, r32.raw()))) return false;
 		}
 		}
 		if (zend_is_identical(r32.raw(), &pg_lit[1])) {
@@ -378,7 +378,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 				if (UNEXPECTED(r3.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_minType, "getTypes", "gettypes", 8, 0, NULL, r3.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, p_minType, "getTypes", "gettypes", 8, r3.raw()))) return false;
 			}
 			}
 			q2 = std::move(r3);
@@ -407,7 +407,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 				if (UNEXPECTED(r10.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p_maxType, "getTypes", "gettypes", 8, 0, NULL, r10.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, p_maxType, "getTypes", "gettypes", 8, r10.raw()))) return false;
 			}
 			}
 			q9 = std::move(r10);

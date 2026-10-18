@@ -18,11 +18,11 @@ static pt_method_site pg_site_5; /* method_getNativeReflection_5 */
 static pt_method_site pg_site_6; /* method_canWriteProperty_6 */
 static pgrt::GetterSite pg_site_7; /* getter_isReadOnlyByPhpDoc_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\Php\PhpPropertyReflection */
-static pt_method_site pg_site_9; /* method_isReadOnlyByPhpDoc_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isReadOnlyByPhpDoc_9 */
 static pt_method_site pg_site_10; /* method_isReadOnly_10 */
 static pt_method_site pg_site_11; /* method_getDeclaringClass_11 */
 static pt_method_site pg_site_12; /* method_getDisplayName_12 */
-static pt_method_site pg_site_13; /* method_getName_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Rules\Properties\PropertyReflectionFinder */
 static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
@@ -160,7 +160,7 @@ namespace pgen::ReadOnlyByPhpDocPropertyAssignRefRule {
 						ZVAL_COPY(r27.raw(), gs26);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_nativeReflection.raw(), "isReadOnlyByPhpDoc", "isreadonlybyphpdoc", 18, 0, NULL, r27.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_nativeReflection.raw(), "isReadOnlyByPhpDoc", "isreadonlybyphpdoc", 18, r27.raw()))) return false;
 					}
 					}
 					bool b25 = !(zend_is_true(r27.raw()));
@@ -209,7 +209,7 @@ namespace pgen::ReadOnlyByPhpDocPropertyAssignRefRule {
 						if (UNEXPECTED(r32.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_propertyReflection, "getName", "getname", 7, 0, NULL, r32.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_propertyReflection, "getName", "getname", 7, r32.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb33;

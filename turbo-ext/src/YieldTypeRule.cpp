@@ -17,25 +17,25 @@ static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\MixedType */
 static pgrt::PropSite pg_site_4; /* prop_key_4 */
 static pgrt::PropSite pg_site_5; /* prop_key_5 */
 static pt_method_site pg_site_6; /* method_getType_6 */
-static pt_method_site pg_site_7; /* method_getIterableKeyType_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getIterableKeyType_7 */
 static pt_method_site pg_site_8; /* method_isDeclareStrictTypes_8 */
-static pt_method_site pg_site_9; /* method_getIterableKeyType_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getIterableKeyType_9 */
 static pt_method_site pg_site_10; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
-static pt_method_site pg_site_11; /* method_getIterableKeyType_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getIterableKeyType_11 */
 static pt_method_site pg_site_12; /* method_describe_12 */
 static pt_method_site pg_site_13; /* method_describe_13 */
 static pgrt::PropSite pg_site_14; /* prop_value_14 */
 static pgrt::PropSite pg_site_15; /* prop_value_15 */
 static pt_method_site pg_site_16; /* method_getType_16 */
-static pt_method_site pg_site_17; /* method_getIterableValueType_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getIterableValueType_17 */
 static pt_method_site pg_site_18; /* method_isDeclareStrictTypes_18 */
-static pt_method_site pg_site_19; /* method_getIterableValueType_19 */
-static pt_method_site pg_site_20; /* method_getIterableValueType_20 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getIterableValueType_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getIterableValueType_20 */
 static pt_method_site pg_site_21; /* method_describe_21 */
 static pt_method_site pg_site_22; /* method_describe_22 */
-static pt_method_site pg_site_23; /* method_isInFirstLevelStatement_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_isInFirstLevelStatement_23 */
 static pt_method_site pg_site_24; /* method_getKeepVoidType_24 */
-static pt_method_site pg_site_25; /* method_isVoid_25 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_isVoid_25 */
 static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_27; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Analyser\Scope */
@@ -216,7 +216,7 @@ namespace pgen::YieldTypeRule {
 			if (UNEXPECTED(r22.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r22.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r22.raw()))) return false;
 		}
 		}
 		zv::Val o23 = zv::Val::copyOf(zv::Ref(l_keyType.raw()));
@@ -250,7 +250,7 @@ namespace pgen::YieldTypeRule {
 					if (UNEXPECTED(r30.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r30.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r30.raw()))) return false;
 				}
 				}
 				zval av31[2];
@@ -267,7 +267,7 @@ namespace pgen::YieldTypeRule {
 					if (UNEXPECTED(r33.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r33.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r33.raw()))) return false;
 				}
 				}
 				zval av34[1];
@@ -365,7 +365,7 @@ namespace pgen::YieldTypeRule {
 			if (UNEXPECTED(r57.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r57.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r57.raw()))) return false;
 		}
 		}
 		zv::Val o58 = zv::Val::copyOf(zv::Ref(l_valueType.raw()));
@@ -399,7 +399,7 @@ namespace pgen::YieldTypeRule {
 					if (UNEXPECTED(r65.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r65.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r65.raw()))) return false;
 				}
 				}
 				zval av66[2];
@@ -416,7 +416,7 @@ namespace pgen::YieldTypeRule {
 					if (UNEXPECTED(r68.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r68.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r68.raw()))) return false;
 				}
 				}
 				zval av69[1];
@@ -468,7 +468,7 @@ namespace pgen::YieldTypeRule {
 	}
 	 {
 		zv::Val r83;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, 0, NULL, r83.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, r83.raw()))) return false;
 		bool b82 = !((Z_TYPE_P(r83.raw()) == IS_TRUE));
 		if (b82) {
 			zv::Val r84;
@@ -492,7 +492,7 @@ namespace pgen::YieldTypeRule {
 				if (UNEXPECTED(r87.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_25, r84.raw(), "isVoid", "isvoid", 6, 0, NULL, r87.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, r84.raw(), "isVoid", "isvoid", 6, r87.raw()))) return false;
 			}
 			}
 			bool r88;

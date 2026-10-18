@@ -10,57 +10,57 @@ zend_class_entry *pt_ce_regex_array_shape_matcher = nullptr;
 static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_getConstantStrings_0 */
-static pt_method_site pg_site_1; /* method_getValue_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getValue_1 */
 static pt_method_site pg_site_2; /* method_parseGroups_2 */
 static pgrt::GetterSite pg_site_3; /* getter_getSubjectBaseType_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Regex\RegexAstWalkResult */
-static pt_method_site pg_site_5; /* method_getSubjectBaseType_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getSubjectBaseType_5 */
 static pt_method_site pg_site_6; /* method_getArray_6 */
 static pt_method_site pg_site_7; /* method_getConstantStrings_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
-static pt_method_site pg_site_9; /* method_getValue_9 */
-static pt_method_site pg_site_10; /* method_getValue_10 */
-static pt_method_site pg_site_11; /* method_getValue_11 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValue_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getValue_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_13; /* method_parseGroups_13 */
 static pgrt::GetterSite pg_site_14; /* getter_getCapturingGroups_14 */
-static pt_method_site pg_site_15; /* method_getCapturingGroups_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getCapturingGroups_15 */
 static pgrt::GetterSite pg_site_16; /* getter_getMarkVerbs_16 */
-static pt_method_site pg_site_17; /* method_getMarkVerbs_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getMarkVerbs_17 */
 static pgrt::GetterSite pg_site_18; /* getter_getSubjectBaseType_18 */
-static pt_method_site pg_site_19; /* method_getSubjectBaseType_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getSubjectBaseType_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Type\Regex\RegexGroupList */
-static pt_method_site pg_site_21; /* method_countTrailingOptionals_21 */
-static pt_method_site pg_site_22; /* method_getOnlyOptionalTopLevelGroup_22 */
-static pt_method_site pg_site_23; /* method_getOnlyTopLevelAlternation_23 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_countTrailingOptionals_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getOnlyOptionalTopLevelGroup_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getOnlyTopLevelAlternation_23 */
 static pt_method_site pg_site_24; /* method_forceGroupNonOptional_24 */
 static pt_method_site pg_site_25; /* method_setOffsetValueType_25 */
 static pt_method_site pg_site_26; /* method_getArray_26 */
 static pgrt::GetterSite pg_site_27; /* getter_getGroupCombinations_27 */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Type\Regex\RegexAlternation */
-static pt_method_site pg_site_29; /* method_getGroupCombinations_29 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_getGroupCombinations_29 */
 static pgrt::GetterSite pg_site_30; /* getter_getId_30 */
 static pgrt::ClassSite pg_site_31; /* cls_PHPStan\Type\Regex\RegexCapturingGroup */
-static pt_method_site pg_site_32; /* method_getId_32 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getId_32 */
 static pgrt::FunctionSite pg_site_33; /* function_in_array */
-static pt_method_site pg_site_34; /* method_inOptionalAlternation_34 */
+static pgrt::MethodShapeSite pg_site_34; /* method0_inOptionalAlternation_34 */
 static pt_method_site pg_site_35; /* method_forceGroupAlternationBranchMatched_35 */
-static pt_method_site pg_site_36; /* method_resetsGroupCounter_36 */
+static pgrt::MethodShapeSite pg_site_36; /* method0_resetsGroupCounter_36 */
 static pt_method_site pg_site_37; /* method_forceGroupTypeAndNonOptional_37 */
-static pt_method_site pg_site_38; /* method_getAlternationId_38 */
+static pgrt::MethodShapeSite pg_site_38; /* method0_getAlternationId_38 */
 static pgrt::GetterSite pg_site_39; /* getter_getId_39 */
-static pt_method_site pg_site_40; /* method_getId_40 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_getId_40 */
 static pt_method_site pg_site_41; /* method_removeGroup_41 */
 static pgrt::GetterSite pg_site_42; /* getter_getAlternationsCount_42 */
-static pt_method_site pg_site_43; /* method_getAlternationsCount_43 */
+static pgrt::MethodShapeSite pg_site_43; /* method0_getAlternationsCount_43 */
 static pgrt::GetterSite pg_site_44; /* getter_getGroupCombinations_44 */
-static pt_method_site pg_site_45; /* method_getGroupCombinations_45 */
+static pgrt::MethodShapeSite pg_site_45; /* method0_getGroupCombinations_45 */
 static pt_method_site pg_site_46; /* method_setOffsetValueType_46 */
 static pt_method_site pg_site_47; /* method_getArray_47 */
 static pt_method_site pg_site_48; /* method_setOffsetValueType_48 */
 static pgrt::FunctionSite pg_site_49; /* function_count */
-static pt_method_site pg_site_50; /* method_isNamed_50 */
-static pt_method_site pg_site_51; /* method_getName_51 */
+static pgrt::MethodShapeSite pg_site_50; /* method0_isNamed_50 */
+static pgrt::MethodShapeSite pg_site_51; /* method0_getName_51 */
 static pt_method_site pg_site_52; /* method_setOffsetValueType_52 */
 static pt_method_site pg_site_53; /* method_setOffsetValueType_53 */
 static pt_method_site pg_site_54; /* method_setOffsetValueType_54 */
@@ -68,16 +68,16 @@ static pt_method_site pg_site_55; /* static_PHPStan\Type\IntegerRangeType::creat
 static pt_method_site pg_site_56; /* method_getArray_56 */
 static pt_method_site pg_site_57; /* method_getArray_57 */
 static pt_method_site pg_site_58; /* method_getArray_58 */
-static pt_method_site pg_site_59; /* method_isOptional_59 */
-static pt_method_site pg_site_60; /* method_isOptional_60 */
-static pt_method_site pg_site_61; /* method_isOptional_61 */
-static pt_method_site pg_site_62; /* method_getType_62 */
-static pt_method_site pg_site_63; /* method_getType_63 */
-static pt_method_site pg_site_64; /* method_isOptional_64 */
-static pt_method_site pg_site_65; /* method_isOptional_65 */
-static pt_method_site pg_site_66; /* method_getType_66 */
-static pt_method_site pg_site_67; /* method_getType_67 */
-static pt_method_site pg_site_68; /* method_isOptional_68 */
+static pgrt::MethodShapeSite pg_site_59; /* method0_isOptional_59 */
+static pgrt::MethodShapeSite pg_site_60; /* method0_isOptional_60 */
+static pgrt::MethodShapeSite pg_site_61; /* method0_isOptional_61 */
+static pgrt::MethodShapeSite pg_site_62; /* method0_getType_62 */
+static pgrt::MethodShapeSite pg_site_63; /* method0_getType_63 */
+static pgrt::MethodShapeSite pg_site_64; /* method0_isOptional_64 */
+static pgrt::MethodShapeSite pg_site_65; /* method0_isOptional_65 */
+static pgrt::MethodShapeSite pg_site_66; /* method0_getType_66 */
+static pgrt::MethodShapeSite pg_site_67; /* method0_getType_67 */
+static pgrt::MethodShapeSite pg_site_68; /* method0_isOptional_68 */
 static pt_method_site pg_site_69; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
 static pt_method_site pg_site_70; /* method_setOffsetValueType_70 */
 static pt_method_site pg_site_71; /* method_setOffsetValueType_71 */
@@ -205,7 +205,7 @@ namespace pgen::RegexArrayShapeMatcher {
 						if (UNEXPECTED(r14.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_constantString, "getValue", "getvalue", 8, 0, NULL, r14.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_constantString, "getValue", "getvalue", 8, r14.raw()))) return false;
 					}
 					}
 					zval av15[1];
@@ -231,7 +231,7 @@ namespace pgen::RegexArrayShapeMatcher {
 						ZVAL_COPY(r19.raw(), gs18);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_astWalkResult.raw(), "getSubjectBaseType", "getsubjectbasetype", 18, 0, NULL, r19.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_astWalkResult.raw(), "getSubjectBaseType", "getsubjectbasetype", 18, r19.raw()))) return false;
 					}
 					}
 					{ zval v = r19.take(); l_subjectTypes.pushOwned(&v); }
@@ -336,7 +336,7 @@ namespace pgen::RegexArrayShapeMatcher {
 					if (UNEXPECTED(r9.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_flagsType, "getValue", "getvalue", 8, 0, NULL, r9.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_flagsType, "getValue", "getvalue", 8, r9.raw()))) return false;
 				}
 				}
 				zv::Val o10 = zv::Val::integer((Z_LVAL_P(r9.raw()) & ((((256 | 1) | 2) | 512) | 2048)));
@@ -350,7 +350,7 @@ namespace pgen::RegexArrayShapeMatcher {
 					if (UNEXPECTED(r12.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_flagsType, "getValue", "getvalue", 8, 0, NULL, r12.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_flagsType, "getValue", "getvalue", 8, r12.raw()))) return false;
 				}
 				}
 				if (!(Z_TYPE_P(o11.raw()) == IS_LONG && Z_LVAL_P(o11.raw()) == Z_LVAL_P(r12.raw()))) {
@@ -387,7 +387,7 @@ namespace pgen::RegexArrayShapeMatcher {
 						if (UNEXPECTED(r23.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_constantString, "getValue", "getvalue", 8, 0, NULL, r23.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_constantString, "getValue", "getvalue", 8, r23.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(r23.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\RegexArrayShapeMatcher::matchRegex", 1, "regex", "string", r23.raw()); return false; }
@@ -499,7 +499,7 @@ namespace pgen::RegexArrayShapeMatcher {
 			ZVAL_COPY(r6.raw(), gs5);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_astWalkResult.raw(), "getCapturingGroups", "getcapturinggroups", 18, 0, NULL, r6.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_astWalkResult.raw(), "getCapturingGroups", "getcapturinggroups", 18, r6.raw()))) return false;
 		}
 		}
 		l_groupList = std::move(r6);
@@ -511,7 +511,7 @@ namespace pgen::RegexArrayShapeMatcher {
 			ZVAL_COPY(r8.raw(), gs7);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_astWalkResult.raw(), "getMarkVerbs", "getmarkverbs", 12, 0, NULL, r8.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_astWalkResult.raw(), "getMarkVerbs", "getmarkverbs", 12, r8.raw()))) return false;
 		}
 		}
 		l_markVerbs = std::move(r8);
@@ -532,7 +532,7 @@ namespace pgen::RegexArrayShapeMatcher {
 					ZVAL_COPY(r12.raw(), gs11);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_astWalkResult.raw(), "getSubjectBaseType", "getsubjectbasetype", 18, 0, NULL, r12.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_astWalkResult.raw(), "getSubjectBaseType", "getsubjectbasetype", 18, r12.raw()))) return false;
 				}
 				}
 				l_subjectBaseType = std::move(r12);
@@ -550,17 +550,17 @@ namespace pgen::RegexArrayShapeMatcher {
 	}
 	 {
 		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_regexGroupList.raw(), "countTrailingOptionals", "counttrailingoptionals", 22, 0, NULL, r16.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_regexGroupList.raw(), "countTrailingOptionals", "counttrailingoptionals", 22, r16.raw()))) return false;
 		l_trailingOptionals = Z_LVAL_P(r16.raw());
 	}
 	 {
 		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_regexGroupList.raw(), "getOnlyOptionalTopLevelGroup", "getonlyoptionaltoplevelgroup", 28, 0, NULL, r17.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_regexGroupList.raw(), "getOnlyOptionalTopLevelGroup", "getonlyoptionaltoplevelgroup", 28, r17.raw()))) return false;
 		l_onlyOptionalTopLevelGroup = std::move(r17);
 	}
 	 {
 		zv::Val r18;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_regexGroupList.raw(), "getOnlyTopLevelAlternation", "getonlytoplevelalternation", 26, 0, NULL, r18.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_regexGroupList.raw(), "getOnlyTopLevelAlternation", "getonlytoplevelalternation", 26, r18.raw()))) return false;
 		l_onlyTopLevelAlternation = std::move(r18);
 	}
 	 {
@@ -689,7 +689,7 @@ namespace pgen::RegexArrayShapeMatcher {
 							ZVAL_COPY(r45.raw(), gs44);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_onlyTopLevelAlternation.raw(), "getGroupCombinations", "getgroupcombinations", 20, 0, NULL, r45.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, l_onlyTopLevelAlternation.raw(), "getGroupCombinations", "getgroupcombinations", 20, r45.raw()))) return false;
 						}
 						}
 						zv::Val a46 = zv::Val::copyOf(zv::Ref(r45.raw()).deref());
@@ -726,7 +726,7 @@ namespace pgen::RegexArrayShapeMatcher {
 													ZVAL_COPY(r60.raw(), gs59);
 												} else {
 												 {
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_group, "getId", "getid", 5, 0, NULL, r60.raw()))) return false;
+													if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, l_group, "getId", "getid", 5, r60.raw()))) return false;
 												}
 												}
 												zval av61[3];
@@ -742,7 +742,7 @@ namespace pgen::RegexArrayShapeMatcher {
 												if (Z_TYPE_P(r64.raw()) == IS_TRUE) {
 													 {
 														zv::Val r65;
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_group, "inOptionalAlternation", "inoptionalalternation", 21, 0, NULL, r65.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_34, l_group, "inOptionalAlternation", "inoptionalalternation", 21, r65.raw()))) return false;
 														l_isOptionalAlternation = (Z_TYPE_P(r65.raw()) == IS_TRUE);
 													}
 													 {
@@ -761,7 +761,7 @@ namespace pgen::RegexArrayShapeMatcher {
 														bool b68 = l_beforeCurrentCombo;
 														if (b68) {
 															zv::Val r69;
-															if (UNEXPECTED(!pgrt::callMethod(pg_site_36, l_group, "resetsGroupCounter", "resetsgroupcounter", 18, 0, NULL, r69.raw(), NULL))) return false;
+															if (UNEXPECTED(!pgrt::callMethod0(pg_site_36, l_group, "resetsGroupCounter", "resetsgroupcounter", 18, r69.raw()))) return false;
 															b68 = !((Z_TYPE_P(r69.raw()) == IS_TRUE));
 														}
 														if (b68) {
@@ -781,14 +781,14 @@ namespace pgen::RegexArrayShapeMatcher {
 														 {
 															 {
 																zv::Val r76;
-																if (UNEXPECTED(!pgrt::callMethod(pg_site_38, l_group, "getAlternationId", "getalternationid", 16, 0, NULL, r76.raw(), NULL))) return false;
+																if (UNEXPECTED(!pgrt::callMethod0(pg_site_38, l_group, "getAlternationId", "getalternationid", 16, r76.raw()))) return false;
 																zval *gs77 = Z_TYPE_P(l_onlyTopLevelAlternation.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_39, Z_OBJ_P(l_onlyTopLevelAlternation.raw()), pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Type\\Regex\\RegexAlternation", 35), "getid", 5, "alternationId", 13) : NULL;
 																zv::Val r78;
 																if (EXPECTED(gs77 != NULL)) {
 																	ZVAL_COPY(r78.raw(), gs77);
 																} else {
 																 {
-																	if (UNEXPECTED(!pgrt::callMethod(pg_site_40, l_onlyTopLevelAlternation.raw(), "getId", "getid", 5, 0, NULL, r78.raw()))) return false;
+																	if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, l_onlyTopLevelAlternation.raw(), "getId", "getid", 5, r78.raw()))) return false;
 																}
 																}
 																bool b75 = (Z_TYPE_P(r76.raw()) == IS_LONG && Z_LVAL_P(r76.raw()) == Z_LVAL_P(r78.raw()));
@@ -842,7 +842,7 @@ namespace pgen::RegexArrayShapeMatcher {
 								ZVAL_COPY(r88.raw(), gs87);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_onlyTopLevelAlternation.raw(), "getAlternationsCount", "getalternationscount", 20, 0, NULL, r88.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_43, l_onlyTopLevelAlternation.raw(), "getAlternationsCount", "getalternationscount", 20, r88.raw()))) return false;
 							}
 							}
 							zend_long k89 = Z_LVAL_P(r88.raw());
@@ -852,7 +852,7 @@ namespace pgen::RegexArrayShapeMatcher {
 								ZVAL_COPY(r91.raw(), gs90);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_45, l_onlyTopLevelAlternation.raw(), "getGroupCombinations", "getgroupcombinations", 20, 0, NULL, r91.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_45, l_onlyTopLevelAlternation.raw(), "getGroupCombinations", "getgroupcombinations", 20, r91.raw()))) return false;
 							}
 							}
 							bool b86 = !(k89 == (zend_long) zend_hash_num_elements(Z_ARRVAL_P(r91.raw())));
@@ -1021,7 +1021,7 @@ namespace pgen::RegexArrayShapeMatcher {
 				}
 				 {
 					zv::Val r21;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_50, l_captureGroup, "isNamed", "isnamed", 7, 0, NULL, r21.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_50, l_captureGroup, "isNamed", "isnamed", 7, r21.raw()))) return false;
 					if (Z_TYPE_P(r21.raw()) == IS_TRUE) {
 						 {
 							l_forceList = false;
@@ -1034,7 +1034,7 @@ namespace pgen::RegexArrayShapeMatcher {
 								if (UNEXPECTED(r23.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_51, l_captureGroup, "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_51, l_captureGroup, "getName", "getname", 7, r23.raw()))) return false;
 							}
 							}
 							zv::Val r24;
@@ -1414,7 +1414,7 @@ namespace pgen::RegexArrayShapeMatcher {
 									if (UNEXPECTED(r7.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p_captureGroup, "isOptional", "isoptional", 10, 0, NULL, r7.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_59, p_captureGroup, "isOptional", "isoptional", 10, r7.raw()))) return false;
 								}
 								}
 								l_optional = (Z_TYPE_P(r7.raw()) == IS_TRUE);
@@ -1461,7 +1461,7 @@ namespace pgen::RegexArrayShapeMatcher {
 						if (UNEXPECTED(r6.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_60, p_captureGroup, "isOptional", "isoptional", 10, 0, NULL, r6.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_60, p_captureGroup, "isOptional", "isoptional", 10, r6.raw()))) return false;
 					}
 					}
 					b2 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
@@ -1484,7 +1484,7 @@ namespace pgen::RegexArrayShapeMatcher {
 							if (UNEXPECTED(r12.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_61, p_captureGroup, "isOptional", "isoptional", 10, 0, NULL, r12.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_61, p_captureGroup, "isOptional", "isoptional", 10, r12.raw()))) return false;
 						}
 						}
 						b8 = (Z_TYPE_P(r12.raw()) == IS_TRUE);
@@ -1503,7 +1503,7 @@ namespace pgen::RegexArrayShapeMatcher {
 							if (UNEXPECTED(r13.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_62, p_captureGroup, "getType", "gettype", 7, 0, NULL, r13.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_62, p_captureGroup, "getType", "gettype", 7, r13.raw()))) return false;
 						}
 						}
 						zv::Val n14;
@@ -1537,7 +1537,7 @@ namespace pgen::RegexArrayShapeMatcher {
 							if (UNEXPECTED(r19.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_63, p_captureGroup, "getType", "gettype", 7, 0, NULL, r19.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_63, p_captureGroup, "getType", "gettype", 7, r19.raw()))) return false;
 						}
 						}
 						zv::Val r20;
@@ -1562,7 +1562,7 @@ namespace pgen::RegexArrayShapeMatcher {
 						if (UNEXPECTED(r24.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_64, p_captureGroup, "isOptional", "isoptional", 10, 0, NULL, r24.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_64, p_captureGroup, "isOptional", "isoptional", 10, r24.raw()))) return false;
 					}
 					}
 					b21 = !((Z_TYPE_P(r24.raw()) == IS_TRUE));
@@ -1642,7 +1642,7 @@ namespace pgen::RegexArrayShapeMatcher {
 				if (UNEXPECTED(r42.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_65, p_captureGroup, "isOptional", "isoptional", 10, 0, NULL, r42.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_65, p_captureGroup, "isOptional", "isoptional", 10, r42.raw()))) return false;
 			}
 			}
 			b39 = (Z_TYPE_P(r42.raw()) == IS_TRUE);
@@ -1655,7 +1655,7 @@ namespace pgen::RegexArrayShapeMatcher {
 					if (UNEXPECTED(r43.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_66, p_captureGroup, "getType", "gettype", 7, 0, NULL, r43.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_66, p_captureGroup, "getType", "gettype", 7, r43.raw()))) return false;
 				}
 				}
 				zv::Val r44;
@@ -1681,7 +1681,7 @@ namespace pgen::RegexArrayShapeMatcher {
 					if (UNEXPECTED(r48.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_67, p_captureGroup, "getType", "gettype", 7, 0, NULL, r48.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_67, p_captureGroup, "getType", "gettype", 7, r48.raw()))) return false;
 				}
 				}
 				zv::Val r49;
@@ -1710,7 +1710,7 @@ namespace pgen::RegexArrayShapeMatcher {
 						if (UNEXPECTED(r54.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_68, p_captureGroup, "isOptional", "isoptional", 10, 0, NULL, r54.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_68, p_captureGroup, "isOptional", "isoptional", 10, r54.raw()))) return false;
 					}
 					}
 					b51 = !((Z_TYPE_P(r54.raw()) == IS_TRUE));

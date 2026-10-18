@@ -9,23 +9,23 @@ zend_class_entry *pt_ce_mb_substitute_character_dynamic_return_type_extension = 
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getPhpVersion_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getPhpVersion_1 */
 static pt_method_site pg_site_2; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
 static pt_method_site pg_site_3; /* method_getArgs_3 */
 static pt_method_site pg_site_4; /* method_getArgs_4 */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
 static pt_method_site pg_site_6; /* method_getType_6 */
-static pt_method_site pg_site_7; /* method_isString_7 */
-static pt_method_site pg_site_8; /* method_isNull_8 */
-static pt_method_site pg_site_9; /* method_isInteger_9 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_isString_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isNull_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isInteger_9 */
 static pt_method_site pg_site_10; /* method_isSuperTypeOf_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
 static pt_method_site pg_site_12; /* method_isNonEmptyString_12 */
 static pt_method_site pg_site_13; /* method_isNumericString_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Type\Constant\ConstantStringType */
-static pt_method_site pg_site_15; /* method_getValue_15 */
-static pt_method_site pg_site_16; /* method_isNumericString_16 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getValue_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_isNumericString_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_18; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Analyser\Scope */
@@ -45,7 +45,7 @@ namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -75,7 +75,7 @@ namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		l_phpVersion = std::move(r1);
 	}
 	 {
@@ -228,7 +228,7 @@ namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension {
 			if (UNEXPECTED(r49.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_argType.raw(), "isString", "isstring", 8, 0, NULL, r49.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_argType.raw(), "isString", "isstring", 8, r49.raw()))) return false;
 		}
 		}
 		l_isString = std::move(r49);
@@ -240,7 +240,7 @@ namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension {
 			if (UNEXPECTED(r50.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_argType.raw(), "isNull", "isnull", 6, 0, NULL, r50.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_argType.raw(), "isNull", "isnull", 6, r50.raw()))) return false;
 		}
 		}
 		l_isNull = std::move(r50);
@@ -252,7 +252,7 @@ namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension {
 			if (UNEXPECTED(r51.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_argType.raw(), "isInteger", "isinteger", 9, 0, NULL, r51.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_argType.raw(), "isInteger", "isinteger", 9, r51.raw()))) return false;
 		}
 		}
 		l_isInteger = std::move(r51);
@@ -473,7 +473,7 @@ namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension {
 									if (UNEXPECTED(r102.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_argType.raw(), "getValue", "getvalue", 8, 0, NULL, r102.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_argType.raw(), "getValue", "getvalue", 8, r102.raw()))) return false;
 								}
 								}
 								zv::Val r103 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r102.raw())));
@@ -494,7 +494,7 @@ namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension {
 							}
 							 {
 								zv::Val r107;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_argType.raw(), "isNumericString", "isnumericstring", 15, 0, NULL, r107.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_argType.raw(), "isNumericString", "isnumericstring", 15, r107.raw()))) return false;
 								bool r108;
 								if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r107.raw()), &r108))) return false;
 								if (r108) {

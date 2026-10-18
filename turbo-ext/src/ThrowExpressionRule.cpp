@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_throw_expression_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPhpVersion_0 */
 static pt_method_site pg_site_1; /* method_getAttribute_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Analyser\Scope */
@@ -36,7 +36,7 @@ namespace pgen::ThrowExpressionRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsThrowExpression(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;

@@ -10,16 +10,16 @@ zend_class_entry *pt_ce_constant_condition_in_trait_helper = nullptr;
 static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_printExpr_0 */
-static pt_method_site pg_site_1; /* method_getStartLine_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getStartLine_1 */
 static pt_method_site pg_site_2; /* method_isInTrait_2 */
 static pt_method_site pg_site_3; /* method_getTraitReflection_3 */
-static pt_method_site pg_site_4; /* method_getName_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
 static pt_method_site pg_site_5; /* method_emitCollectedData_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\FixableNodeRuleError */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\ShouldNotHappenException */
 static pt_method_site pg_site_8; /* method_isInTrait_8 */
 static pt_method_site pg_site_9; /* method_getTraitReflection_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
 static pt_method_site pg_site_11; /* method_transform_11 */
 static pt_method_site pg_site_12; /* method_emitCollectedData_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node\Expr */
@@ -59,7 +59,7 @@ namespace pgen::ConstantConditionInTraitHelper {
 		zv::Val r3;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "printExpr", "printexpr", 9, 1, av2, r3.raw(), NULL))) return false;
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_expr, "getStartLine", "getstartline", 12, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_expr, "getStartLine", "getstartline", 12, r4.raw()))) return false;
 		pgrt::StringBuilder sb5;
 		if (UNEXPECTED(!sb5.append(r3.raw()))) return false;
 		sb5.appendLiteral(":", 1);
@@ -121,7 +121,7 @@ namespace pgen::ConstantConditionInTraitHelper {
 			if (UNEXPECTED(r9.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r7.raw(), "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, r7.raw(), "getName", "getname", 7, r9.raw()))) return false;
 		}
 		}
 		{ zval v = r9.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr5.raw()), &v); }
@@ -204,7 +204,7 @@ namespace pgen::ConstantConditionInTraitHelper {
 			if (UNEXPECTED(r12.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r10.raw(), "getName", "getname", 7, 0, NULL, r12.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, r10.raw(), "getName", "getname", 7, r12.raw()))) return false;
 		}
 		}
 		{ zval v = r12.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr8.raw()), &v); }

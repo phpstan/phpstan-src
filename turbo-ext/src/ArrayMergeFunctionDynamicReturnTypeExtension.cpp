@@ -9,26 +9,26 @@ zend_class_entry *pt_ce_array_merge_function_dynamic_return_type_extension = nul
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pgrt::PropSite pg_site_4; /* prop_unpack_4 */
-static pt_method_site pg_site_5; /* method_isConstantArray_5 */
-static pt_method_site pg_site_6; /* method_getConstantArrays_6 */
-static pt_method_site pg_site_7; /* method_getValueTypes_7 */
-static pt_method_site pg_site_8; /* method_getIterableValueType_8 */
-static pt_method_site pg_site_9; /* method_isIterableAtLeastOnce_9 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isConstantArray_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getConstantArrays_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getValueTypes_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getIterableValueType_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isIterableAtLeastOnce_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_11; /* method_isConstantArray_11 */
-static pt_method_site pg_site_12; /* method_getConstantArrays_12 */
-static pt_method_site pg_site_13; /* method_getKeyTypes_13 */
-static pt_method_site pg_site_14; /* method_getValue_14 */
-static pt_method_site pg_site_15; /* method_isUnsealed_15 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_isConstantArray_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getConstantArrays_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getKeyTypes_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getValue_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_isUnsealed_15 */
 static pt_method_site pg_site_16; /* method_yes_16 */
 static pgrt::GetterSite pg_site_17; /* getter_getUnsealedTypes_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Type\Constant\ConstantArrayType */
-static pt_method_site pg_site_19; /* method_getUnsealedTypes_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getUnsealedTypes_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
 static pt_method_site pg_site_21; /* method_getOffsetValueType_21 */
 static pt_method_site pg_site_22; /* method_hasOffsetValueType_22 */
@@ -36,27 +36,27 @@ static pt_method_site pg_site_23; /* method_yes_23 */
 static pt_method_site pg_site_24; /* method_setOffsetValueType_24 */
 static pt_method_site pg_site_25; /* method_makeUnsealed_25 */
 static pt_method_site pg_site_26; /* method_getArray_26 */
-static pt_method_site pg_site_27; /* method_getConstantArrays_27 */
-static pt_method_site pg_site_28; /* method_isUnsealed_28 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getConstantArrays_27 */
+static pgrt::MethodShapeSite pg_site_28; /* method0_isUnsealed_28 */
 static pt_method_site pg_site_29; /* method_maybe_29 */
-static pt_method_site pg_site_30; /* method_getConstantArrays_30 */
-static pt_method_site pg_site_31; /* method_getKeyTypes_31 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getConstantArrays_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getKeyTypes_31 */
 static pt_method_site pg_site_32; /* method_hasOffsetValueType_32 */
 static pt_method_site pg_site_33; /* method_yes_33 */
-static pt_method_site pg_site_34; /* method_getValue_34 */
+static pgrt::MethodShapeSite pg_site_34; /* method0_getValue_34 */
 static pt_method_site pg_site_35; /* method_getOffsetValueType_35 */
-static pt_method_site pg_site_36; /* method_getIterableValueType_36 */
-static pt_method_site pg_site_37; /* method_getIterableKeyType_37 */
+static pgrt::MethodShapeSite pg_site_36; /* method0_getIterableValueType_36 */
+static pgrt::MethodShapeSite pg_site_37; /* method0_getIterableKeyType_37 */
 static pt_method_site pg_site_38; /* static_PHPStan\Type\TypeUtils::getAccessoryTypes */
 static pgrt::ClassSite pg_site_39; /* cls_PHPStan\Type\Accessory\HasOffsetType */
 static pgrt::ClassSite pg_site_40; /* cls_PHPStan\Type\Accessory\HasOffsetValueType */
-static pt_method_site pg_site_41; /* method_getOffsetType_41 */
-static pt_method_site pg_site_42; /* method_getValue_42 */
+static pgrt::MethodShapeSite pg_site_41; /* method0_getOffsetType_41 */
+static pgrt::MethodShapeSite pg_site_42; /* method0_getValue_42 */
 static pt_method_site pg_site_43; /* method_getOffsetValueType_43 */
-static pt_method_site pg_site_44; /* method_getIterableKeyType_44 */
-static pt_method_site pg_site_45; /* method_getIterableValueType_45 */
+static pgrt::MethodShapeSite pg_site_44; /* method0_getIterableKeyType_44 */
+static pgrt::MethodShapeSite pg_site_45; /* method0_getIterableValueType_45 */
 static pt_method_site pg_site_46; /* method_isSuperTypeOf_46 */
-static pt_method_site pg_site_47; /* method_isIterableAtLeastOnce_47 */
+static pgrt::MethodShapeSite pg_site_47; /* method0_isIterableAtLeastOnce_47 */
 static pt_method_site pg_site_48; /* method_yes_48 */
 static pgrt::ClassSite pg_site_49; /* cls_PHPStan\Type\NeverType */
 static pt_method_site pg_site_50; /* method_setOffsetValueType_50 */
@@ -83,7 +83,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_argType, "isConstantArray", "isconstantarray", 15, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_argType, "isConstantArray", "isconstantarray", 15, r1.raw()))) return;
 		}
 		}
 		*return_value = r1.take();
@@ -106,7 +106,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -239,7 +239,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 								if (UNEXPECTED(r25.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_argType.raw(), "isConstantArray", "isconstantarray", 15, 0, NULL, r25.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_argType.raw(), "isConstantArray", "isconstantarray", 15, r25.raw()))) return false;
 							}
 							}
 							bool r26;
@@ -252,7 +252,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 										if (UNEXPECTED(r28.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r28.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, r28.raw()))) return false;
 									}
 									}
 									zv::Val a29 = zv::Val::copyOf(zv::Ref(r28.raw()).deref());
@@ -271,7 +271,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 													if (UNEXPECTED(r36.isUndef())) return false;
 												} else {
 												 {
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_constantArray, "getValueTypes", "getvaluetypes", 13, 0, NULL, r36.raw(), NULL))) return false;
+													if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_constantArray, "getValueTypes", "getvaluetypes", 13, r36.raw()))) return false;
 												}
 												}
 												pgrt::ForeachIter it37;
@@ -305,7 +305,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 										if (UNEXPECTED(r43.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r43.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r43.raw()))) return false;
 									}
 									}
 									zv::Val o44 = zv::Val::copyOf(zv::Ref(r43.raw()));
@@ -324,7 +324,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 								if (UNEXPECTED(r46.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r46.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r46.raw()))) return false;
 							}
 							}
 							bool r47;
@@ -436,7 +436,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 								if (UNEXPECTED(r77.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r77.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, r77.raw()))) return false;
 							}
 							}
 							pgrt::ForeachIter it78;
@@ -451,7 +451,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 											if (UNEXPECTED(r82.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_constantArray, "getKeyTypes", "getkeytypes", 11, 0, NULL, r82.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_constantArray, "getKeyTypes", "getkeytypes", 11, r82.raw()))) return false;
 										}
 										}
 										pgrt::ForeachIter it83;
@@ -466,7 +466,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 														if (UNEXPECTED(r86.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_keyType.raw(), "getValue", "getvalue", 8, 0, NULL, r86.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_keyType.raw(), "getValue", "getvalue", 8, r86.raw()))) return false;
 													}
 													}
 													zv::Val o87 = zv::Val::copyOf(zv::Ref(l_keyType.raw()));
@@ -490,7 +490,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 											if (UNEXPECTED(r91.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_constantArray, "isUnsealed", "isunsealed", 10, 0, NULL, r91.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_constantArray, "isUnsealed", "isunsealed", 10, r91.raw()))) return false;
 										}
 										}
 										zv::Val vd92;
@@ -517,7 +517,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 											ZVAL_COPY(r96.raw(), gs95);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_constantArray, "getUnsealedTypes", "getunsealedtypes", 16, 0, NULL, r96.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_constantArray, "getUnsealedTypes", "getunsealedtypes", 16, r96.raw()))) return false;
 										}
 										}
 										l_unsealedTypes = std::move(r96);
@@ -734,7 +734,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 						if (UNEXPECTED(r149.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r149.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, r149.raw()))) return false;
 					}
 					}
 					pgrt::ForeachIter it150;
@@ -749,7 +749,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 									if (UNEXPECTED(r153.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_constantArray, "isUnsealed", "isunsealed", 10, 0, NULL, r153.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_28, l_constantArray, "isUnsealed", "isunsealed", 10, r153.raw()))) return false;
 								}
 								}
 								zv::Val vd154;
@@ -810,7 +810,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 						if (UNEXPECTED(r166.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r166.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, r166.raw()))) return false;
 					}
 					}
 					l_constArrays = std::move(r166);
@@ -832,7 +832,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 											if (UNEXPECTED(r173.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_constantArray, "getKeyTypes", "getkeytypes", 11, 0, NULL, r173.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, l_constantArray, "getKeyTypes", "getkeytypes", 11, r173.raw()))) return false;
 										}
 										}
 										pgrt::ForeachIter it174;
@@ -877,7 +877,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 														if (UNEXPECTED(r183.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_keyType.raw(), "getValue", "getvalue", 8, 0, NULL, r183.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_34, l_keyType.raw(), "getValue", "getvalue", 8, r183.raw()))) return false;
 													}
 													}
 													zv::Val arr184 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
@@ -927,7 +927,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 										if (UNEXPECTED(r191.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_36, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r191.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_36, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r191.raw()))) return false;
 									}
 									}
 									l_iterableValue = std::move(r191);
@@ -939,7 +939,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 										if (UNEXPECTED(r192.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_argType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r192.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_37, l_argType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r192.raw()))) return false;
 									}
 									}
 									{ zval v = r192.take(); l_unsealedKeyTypes.pushOwned(&v); }
@@ -1079,7 +1079,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 							}
 							 {
 								zv::Val r243;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_41, l_accessoryType, "getOffsetType", "getoffsettype", 13, 0, NULL, r243.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_41, l_accessoryType, "getOffsetType", "getoffsettype", 13, r243.raw()))) return false;
 								l_offsetType = std::move(r243);
 							}
 							 {
@@ -1089,7 +1089,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 									if (UNEXPECTED(r244.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_42, l_offsetType.raw(), "getValue", "getvalue", 8, 0, NULL, r244.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, l_offsetType.raw(), "getValue", "getvalue", 8, r244.raw()))) return false;
 								}
 								}
 								zv::Val arr245 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
@@ -1161,7 +1161,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 						if (UNEXPECTED(r262.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_44, l_argType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r262.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_44, l_argType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r262.raw()))) return false;
 					}
 					}
 					l_keyType = std::move(r262);
@@ -1181,7 +1181,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 						if (UNEXPECTED(r266.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_45, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r266.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_45, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r266.raw()))) return false;
 					}
 					}
 					{ zval v = r266.take(); l_valueTypes.pushOwned(&v); }
@@ -1218,7 +1218,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 							if (UNEXPECTED(r273.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_47, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r273.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_47, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r273.raw()))) return false;
 						}
 						}
 						zv::Val vd274;

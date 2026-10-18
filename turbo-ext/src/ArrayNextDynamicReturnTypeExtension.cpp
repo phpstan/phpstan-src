@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_array_next_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_isIterableAtLeastOnce_4 */
-static pt_method_site pg_site_5; /* method_getIterableValueType_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isIterableAtLeastOnce_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getIterableValueType_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
@@ -34,7 +34,7 @@ namespace pgen::ArrayNextDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -110,7 +110,7 @@ namespace pgen::ArrayNextDynamicReturnTypeExtension {
 			if (UNEXPECTED(r15.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r15.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r15.raw()))) return false;
 		}
 		}
 		l_iterableAtLeastOnce = std::move(r15);
@@ -134,7 +134,7 @@ namespace pgen::ArrayNextDynamicReturnTypeExtension {
 			if (UNEXPECTED(r18.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r18.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r18.raw()))) return false;
 		}
 		}
 		l_valueType = std::move(r18);

@@ -15,7 +15,7 @@ static pgrt::PropSite pg_site_2; /* prop_name_2 */
 static pt_method_site pg_site_3; /* method_hasFunction_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pt_method_site pg_site_5; /* method_getFunction_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
 static pt_method_site pg_site_7; /* method_getArgs_7 */
 static pt_method_site pg_site_8; /* method_getVariants_8 */
 static pt_method_site pg_site_9; /* method_getNamedArgumentsVariants_9 */
@@ -28,16 +28,16 @@ static pt_method_site pg_site_15; /* method_describe_15 */
 static pgrt::FunctionSite pg_site_16; /* function_sprintf */
 static pgrt::PropSite pg_site_17; /* prop_value_17 */
 static pt_method_site pg_site_18; /* method_getNativeType_18 */
-static pt_method_site pg_site_19; /* method_isArray_19 */
-static pt_method_site pg_site_20; /* method_isIterableAtLeastOnce_20 */
-static pt_method_site pg_site_21; /* method_isList_21 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_isArray_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_isIterableAtLeastOnce_20 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_isList_21 */
 static pt_method_site pg_site_22; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
-static pt_method_site pg_site_23; /* method_getArraySize_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getArraySize_23 */
 static pt_method_site pg_site_24; /* method_isSuperTypeOf_24 */
 static pgrt::PropSite pg_site_25; /* prop_value_25 */
 static pt_method_site pg_site_26; /* method_getType_26 */
 static pt_method_site pg_site_27; /* method_getParameters_27 */
-static pt_method_site pg_site_28; /* method_getDefaultValue_28 */
+static pgrt::MethodShapeSite pg_site_28; /* method0_getDefaultValue_28 */
 static pt_method_site pg_site_29; /* method_isSuperTypeOf_29 */
 static pgrt::ClassSite pg_site_30; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_31; /* cls_PhpParser\Node */
@@ -267,7 +267,7 @@ namespace pgen::SortWithoutEffectRule {
 			if (UNEXPECTED(r23.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_functionReflection.raw(), "getName", "getname", 7, r23.raw()))) return false;
 		}
 		}
 		l_functionName = std::move(r23);
@@ -575,7 +575,7 @@ namespace pgen::SortWithoutEffectRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_arrayType, "isArray", "isarray", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p_arrayType, "isArray", "isarray", 7, r1.raw()))) return false;
 		}
 		}
 		bool r2;
@@ -596,7 +596,7 @@ namespace pgen::SortWithoutEffectRule {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_arrayType, "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, p_arrayType, "isIterableAtLeastOnce", "isiterableatleastonce", 21, r4.raw()))) return false;
 		}
 		}
 		bool r5;
@@ -615,7 +615,7 @@ namespace pgen::SortWithoutEffectRule {
 			if (UNEXPECTED(r6.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, p_arrayType, "isList", "islist", 6, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, p_arrayType, "isList", "islist", 6, r6.raw()))) return false;
 		}
 		}
 		bool r7;
@@ -659,7 +659,7 @@ namespace pgen::SortWithoutEffectRule {
 		zv::Val r14;
 		if (UNEXPECTED(!pgrt::callStatic(pg_site_22, pt_ce_integer_range_type, "frominterval", 12, 2, av11, r14.raw(), NULL))) return false;
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p_arrayType, "getArraySize", "getarraysize", 12, 0, NULL, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, p_arrayType, "getArraySize", "getarraysize", 12, r15.raw()))) return false;
 		zval av16[1];
 		ZVAL_COPY_VALUE(&av16[0], r15.raw());
 		zv::Val r17;
@@ -774,7 +774,7 @@ namespace pgen::SortWithoutEffectRule {
 					if (UNEXPECTED(r15.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_28, zv::Ref(e12).deref().raw(), "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r15.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_28, zv::Ref(e12).deref().raw(), "getDefaultValue", "getdefaultvalue", 15, r15.raw()))) return false;
 				}
 				}
 				l_flagsType = std::move(r15);

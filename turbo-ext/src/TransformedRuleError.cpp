@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_transformed_rule_error = nullptr;
 
 static pgrt::GetterSite pg_site_0; /* getter_getIdentifier_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Analyser\Error */
-static pt_method_site pg_site_2; /* method_getIdentifier_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getIdentifier_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::GetterSite pg_site_4; /* getter_getMessage_4 */
-static pt_method_site pg_site_5; /* method_getMessage_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getMessage_5 */
 
 namespace pgen::TransformedRuleError {
 
@@ -58,7 +58,7 @@ namespace pgen::TransformedRuleError {
 			ZVAL_COPY(r3.raw(), gs2);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p1, "getIdentifier", "getidentifier", 13, 0, NULL, r3.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p1, "getIdentifier", "getidentifier", 13, r3.raw()))) return false;
 		}
 		}
 		l_identifier = std::move(r3);
@@ -96,7 +96,7 @@ namespace pgen::TransformedRuleError {
 			ZVAL_COPY(r3.raw(), gs2);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p1, "getMessage", "getmessage", 10, 0, NULL, r3.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p1, "getMessage", "getmessage", 10, r3.raw()))) return false;
 		}
 		}
 		*ret = r3.take();

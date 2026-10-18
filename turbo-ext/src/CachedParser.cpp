@@ -19,7 +19,7 @@ static pgrt::FunctionSite pg_site_8; /* function_filemtime */
 static pgrt::FunctionSite pg_site_9; /* function_filesize */
 static pt_method_site pg_site_10; /* method_get_10 */
 static pt_method_site pg_site_11; /* method_set_11 */
-static pt_method_site pg_site_12; /* method_count_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_count_12 */
 static pt_method_site pg_site_13; /* method_all_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Parser\Parser */
 
@@ -496,7 +496,7 @@ namespace pgen::CachedParser {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::CachedParser::slot::cachedNodesByString, "cachedNodesByString");
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p1, "count", "count", 5, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p1, "count", "count", 5, r2.raw()))) return false;
 		*ret = Z_LVAL_P(r2.raw());
 		return true;
 	}

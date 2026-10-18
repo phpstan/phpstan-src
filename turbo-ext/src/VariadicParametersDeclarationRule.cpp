@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_variadic_parameters_declaration_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getParams_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getParams_0 */
 static pgrt::FunctionSite pg_site_1; /* function_count */
 static pgrt::PropSite pg_site_2; /* prop_variadic_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node */
@@ -42,7 +42,7 @@ namespace pgen::VariadicParametersDeclarationRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getParams", "getparams", 9, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getParams", "getparams", 9, r1.raw()))) return false;
 		l_parameters = std::move(r1);
 	}
 	 {

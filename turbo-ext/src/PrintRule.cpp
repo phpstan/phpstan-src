@@ -17,7 +17,7 @@ static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr */
 static pt_method_site pg_site_5; /* method_toString_5 */
 static pt_method_site pg_site_6; /* method_describe_6 */
 static pgrt::PropSite pg_site_7; /* prop_expr_7 */
-static pt_method_site pg_site_8; /* method_getStartLine_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getStartLine_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
@@ -170,7 +170,7 @@ namespace pgen::PrintRule {
 					p23 = o24.raw();
 				}
 				zv::Val r25;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, zv::Ref(p23).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r25.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, zv::Ref(p23).deref().raw(), "getStartLine", "getstartline", 12, r25.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r25.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r25.raw()); return false; }
 				zv::Val r26;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r22.raw()), Z_LVAL_P(r25.raw()), r26.raw()))) return false;

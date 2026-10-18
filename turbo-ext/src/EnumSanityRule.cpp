@@ -9,40 +9,40 @@ zend_class_entry *pt_ce_enum_sanity_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[21];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_isEnum_1 */
 static pt_method_site pg_site_2; /* method_getOriginalNode_2 */
-static pt_method_site pg_site_3; /* method_getMethods_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getMethods_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pt_method_site pg_site_5; /* method_toLowerString_5 */
-static pt_method_site pg_site_6; /* method_isMagic_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isMagic_6 */
 static pt_method_site pg_site_7; /* method_getDisplayName_7 */
-static pt_method_site pg_site_8; /* method_getStartLine_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getStartLine_8 */
 static pt_method_site pg_site_9; /* method_getDisplayName_9 */
-static pt_method_site pg_site_10; /* method_getStartLine_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getStartLine_10 */
 static pgrt::FunctionSite pg_site_11; /* function_array_key_exists */
 static pt_method_site pg_site_12; /* method_getDisplayName_12 */
 static pgrt::PropSite pg_site_13; /* prop_name_13 */
 static pgrt::PropSite pg_site_14; /* prop_name_14 */
-static pt_method_site pg_site_15; /* method_getStartLine_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getStartLine_15 */
 static pt_method_site pg_site_16; /* method_getDisplayName_16 */
 static pgrt::PropSite pg_site_17; /* prop_name_17 */
 static pgrt::PropSite pg_site_18; /* prop_name_18 */
-static pt_method_site pg_site_19; /* method_getStartLine_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getStartLine_19 */
 static pgrt::PropSite pg_site_20; /* prop_scalarType_20 */
 static pt_method_site pg_site_21; /* method_getDisplayName_21 */
 static pgrt::PropSite pg_site_22; /* prop_name_22 */
 static pgrt::PropSite pg_site_23; /* prop_name_23 */
-static pt_method_site pg_site_24; /* method_getStartLine_24 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getStartLine_24 */
 static pgrt::PropSite pg_site_25; /* prop_scalarType_25 */
 static pgrt::PropSite pg_site_26; /* prop_scalarType_26 */
 static pgrt::PropSite pg_site_27; /* prop_name_27 */
 static pt_method_site pg_site_28; /* method_getDisplayName_28 */
 static pgrt::PropSite pg_site_29; /* prop_scalarType_29 */
-static pt_method_site pg_site_30; /* method_getStartLine_30 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getStartLine_30 */
 static pt_method_site pg_site_31; /* method_implementsInterface_31 */
 static pt_method_site pg_site_32; /* method_getDisplayName_32 */
-static pt_method_site pg_site_33; /* method_getStartLine_33 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getStartLine_33 */
 static pgrt::PropSite pg_site_34; /* prop_stmts_34 */
 static pgrt::ClassSite pg_site_35; /* cls_PhpParser\Node\Stmt\EnumCase */
 static pgrt::PropSite pg_site_36; /* prop_name_36 */
@@ -53,26 +53,26 @@ static pt_method_site pg_site_40; /* method_getDisplayName_40 */
 static pgrt::PropSite pg_site_41; /* prop_expr_41 */
 static pt_method_site pg_site_42; /* method_getType_42 */
 static pt_method_site pg_site_43; /* method_describe_43 */
-static pt_method_site pg_site_44; /* method_getStartLine_44 */
+static pgrt::MethodShapeSite pg_site_44; /* method0_getStartLine_44 */
 static pgrt::PropSite pg_site_45; /* prop_scalarType_45 */
 static pgrt::PropSite pg_site_46; /* prop_expr_46 */
 static pt_method_site pg_site_47; /* method_getDisplayName_47 */
 static pgrt::PropSite pg_site_48; /* prop_scalarType_48 */
 static pgrt::PropSite pg_site_49; /* prop_name_49 */
-static pt_method_site pg_site_50; /* method_getStartLine_50 */
+static pgrt::MethodShapeSite pg_site_50; /* method0_getStartLine_50 */
 static pgrt::PropSite pg_site_51; /* prop_expr_51 */
 static pt_method_site pg_site_52; /* method_getType_52 */
 static pgrt::PropSite pg_site_53; /* prop_scalarType_53 */
 static pt_method_site pg_site_54; /* method_toLowerString_54 */
 static pt_method_site pg_site_55; /* method_isSuperTypeOf_55 */
-static pt_method_site pg_site_56; /* method_getConstantScalarValues_56 */
+static pgrt::MethodShapeSite pg_site_56; /* method0_getConstantScalarValues_56 */
 static pgrt::ClassSite pg_site_57; /* cls_PHPStan\ShouldNotHappenException */
 static pt_method_site pg_site_58; /* method_getDisplayName_58 */
 static pt_method_site pg_site_59; /* method_describe_59 */
 static pt_method_site pg_site_60; /* method_describe_60 */
-static pt_method_site pg_site_61; /* method_getStartLine_61 */
+static pgrt::MethodShapeSite pg_site_61; /* method0_getStartLine_61 */
 static pt_method_site pg_site_62; /* method_getDisplayName_62 */
-static pt_method_site pg_site_63; /* method_getStartLine_63 */
+static pgrt::MethodShapeSite pg_site_63; /* method0_getStartLine_63 */
 static pgrt::ClassSite pg_site_64; /* cls_PHPStan\Reflection\InitializerExprTypeResolver */
 static pgrt::ClassSite pg_site_65; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_66; /* cls_PHPStan\Analyser\Scope */
@@ -144,7 +144,7 @@ namespace pgen::EnumSanityRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -210,7 +210,7 @@ namespace pgen::EnumSanityRule {
 	}
 	 {
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_enumNode.raw(), "getMethods", "getmethods", 10, 0, NULL, r13.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_enumNode.raw(), "getMethods", "getmethods", 10, r13.raw()))) return false;
 		pgrt::ForeachIter it14;
 		if (UNEXPECTED(!it14.begin(r13.raw()))) return false;
 		while (it14.valid()) {
@@ -229,7 +229,7 @@ namespace pgen::EnumSanityRule {
 				}
 				 {
 					zv::Val r20;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_methodNode, "isMagic", "ismagic", 7, 0, NULL, r20.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_methodNode, "isMagic", "ismagic", 7, r20.raw()))) return false;
 					if (zend_is_true(r20.raw())) {
 						 {
 							if (zend_is_identical(l_lowercasedMethodName.raw(), &pg_lit[1])) {
@@ -253,7 +253,7 @@ namespace pgen::EnumSanityRule {
 									zv::Val r25;
 									if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r24.raw()), &pg_lit[2], r25.raw()))) return false;
 									zv::Val r26;
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_methodNode, "getStartLine", "getstartline", 12, 0, NULL, r26.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_methodNode, "getStartLine", "getstartline", 12, r26.raw()))) return false;
 									if (UNEXPECTED(Z_TYPE_P(r26.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r26.raw()); return false; }
 									zv::Val r27;
 									if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r25.raw()), Z_LVAL_P(r26.raw()), r27.raw()))) return false;
@@ -291,7 +291,7 @@ namespace pgen::EnumSanityRule {
 											zv::Val r36;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r35.raw()), &pg_lit[4], r36.raw()))) return false;
 											zv::Val r37;
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_methodNode, "getStartLine", "getstartline", 12, 0, NULL, r37.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_methodNode, "getStartLine", "getstartline", 12, r37.raw()))) return false;
 											if (UNEXPECTED(Z_TYPE_P(r37.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r37.raw()); return false; }
 											zv::Val r38;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r36.raw()), Z_LVAL_P(r37.raw()), r38.raw()))) return false;
@@ -350,7 +350,7 @@ namespace pgen::EnumSanityRule {
 													zv::Val r54;
 													if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r53.raw()), &pg_lit[6], r54.raw()))) return false;
 													zv::Val r55;
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_methodNode, "getStartLine", "getstartline", 12, 0, NULL, r55.raw(), NULL))) return false;
+													if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_methodNode, "getStartLine", "getstartline", 12, r55.raw()))) return false;
 													if (UNEXPECTED(Z_TYPE_P(r55.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r55.raw()); return false; }
 													zv::Val r56;
 													if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r54.raw()), Z_LVAL_P(r55.raw()), r56.raw()))) return false;
@@ -410,7 +410,7 @@ namespace pgen::EnumSanityRule {
 							zv::Val r69;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r68.raw()), &pg_lit[8], r69.raw()))) return false;
 							zv::Val r70;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_methodNode, "getStartLine", "getstartline", 12, 0, NULL, r70.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_methodNode, "getStartLine", "getstartline", 12, r70.raw()))) return false;
 							if (UNEXPECTED(Z_TYPE_P(r70.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r70.raw()); return false; }
 							zv::Val r71;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r69.raw()), Z_LVAL_P(r70.raw()), r71.raw()))) return false;
@@ -479,7 +479,7 @@ namespace pgen::EnumSanityRule {
 					zv::Val r88;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r87.raw()), &pg_lit[8], r88.raw()))) return false;
 					zv::Val r89;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_methodNode, "getStartLine", "getstartline", 12, 0, NULL, r89.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_methodNode, "getStartLine", "getstartline", 12, r89.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r89.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r89.raw()); return false; }
 					zv::Val r90;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r88.raw()), Z_LVAL_P(r89.raw()), r90.raw()))) return false;
@@ -552,7 +552,7 @@ namespace pgen::EnumSanityRule {
 					p109 = o110.raw();
 				}
 				zv::Val r111;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_30, zv::Ref(p109).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r111.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, zv::Ref(p109).deref().raw(), "getStartLine", "getstartline", 12, r111.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r111.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r111.raw()); return false; }
 				zv::Val r112;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r108.raw()), Z_LVAL_P(r111.raw()), r112.raw()))) return false;
@@ -594,7 +594,7 @@ namespace pgen::EnumSanityRule {
 				zv::Val r123;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r122.raw()), &pg_lit[15], r123.raw()))) return false;
 				zv::Val r124;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_33, l_enumNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r124.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, l_enumNode.raw(), "getStartLine", "getstartline", 12, r124.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r124.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r124.raw()); return false; }
 				zv::Val r125;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r123.raw()), Z_LVAL_P(r124.raw()), r125.raw()))) return false;
@@ -733,7 +733,7 @@ namespace pgen::EnumSanityRule {
 							zv::Val r164;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r163.raw()), &pg_lit[16], r164.raw()))) return false;
 							zv::Val r165;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_44, l_stmt, "getStartLine", "getstartline", 12, 0, NULL, r165.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_44, l_stmt, "getStartLine", "getstartline", 12, r165.raw()))) return false;
 							zv::Val r166;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r164.raw()), Z_LVAL_P(r165.raw()), r166.raw()))) return false;
 							zv::Val r167;
@@ -804,7 +804,7 @@ namespace pgen::EnumSanityRule {
 							zv::Val r184;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r183.raw()), &pg_lit[17], r184.raw()))) return false;
 							zv::Val r185;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_50, l_stmt, "getStartLine", "getstartline", 12, 0, NULL, r185.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_50, l_stmt, "getStartLine", "getstartline", 12, r185.raw()))) return false;
 							zv::Val r186;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r184.raw()), Z_LVAL_P(r185.raw()), r186.raw()))) return false;
 							zv::Val r187;
@@ -895,7 +895,7 @@ namespace pgen::EnumSanityRule {
 								if (UNEXPECTED(r208.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_56, l_exprType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r208.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_56, l_exprType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r208.raw()))) return false;
 							}
 							}
 							l_constantValues = std::move(r208);
@@ -1031,7 +1031,7 @@ namespace pgen::EnumSanityRule {
 					zv::Val r246;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r245.raw()), &pg_lit[18], r246.raw()))) return false;
 					zv::Val r247;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_61, l_stmt, "getStartLine", "getstartline", 12, 0, NULL, r247.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_61, l_stmt, "getStartLine", "getstartline", 12, r247.raw()))) return false;
 					zv::Val r248;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r246.raw()), Z_LVAL_P(r247.raw()), r248.raw()))) return false;
 					zv::Val r249;
@@ -1095,7 +1095,7 @@ namespace pgen::EnumSanityRule {
 					zv::Val r267;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r266.raw()), &pg_lit[20], r267.raw()))) return false;
 					zv::Val r268;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_63, l_enumNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r268.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_63, l_enumNode.raw(), "getStartLine", "getstartline", 12, r268.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r268.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r268.raw()); return false; }
 					zv::Val r269;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r267.raw()), Z_LVAL_P(r268.raw()), r269.raw()))) return false;

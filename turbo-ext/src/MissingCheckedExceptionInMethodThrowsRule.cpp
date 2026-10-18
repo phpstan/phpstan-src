@@ -16,8 +16,8 @@ static pt_method_site pg_site_3; /* method_getThrowPoints_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_5; /* method_getDeclaringClass_5 */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
-static pt_method_site pg_site_8; /* method_getStartLine_8 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getStartLine_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\Exceptions\MissingCheckedExceptionInThrowsCheck */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
@@ -185,7 +185,7 @@ namespace pgen::MissingCheckedExceptionInMethodThrowsRule {
 						if (UNEXPECTED(r29.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r29.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_methodReflection.raw(), "getName", "getname", 7, r29.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb30;
@@ -200,7 +200,7 @@ namespace pgen::MissingCheckedExceptionInMethodThrowsRule {
 					zv::Val r32;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r31.raw(), r32.raw()))) return false;
 					zv::Val r33;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_throwPointNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r33.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_throwPointNode.raw(), "getStartLine", "getstartline", 12, r33.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r33.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r33.raw()); return false; }
 					zv::Val r34;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r32.raw()), Z_LVAL_P(r33.raw()), r34.raw()))) return false;

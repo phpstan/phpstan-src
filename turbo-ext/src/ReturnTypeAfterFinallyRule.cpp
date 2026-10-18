@@ -32,12 +32,12 @@ static pt_method_site pg_site_18; /* method_isDeclareStrictTypes_18 */
 static pt_method_site pg_site_19; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
 static pt_method_site pg_site_20; /* method_describe_20 */
 static pt_method_site pg_site_21; /* method_describe_21 */
-static pt_method_site pg_site_22; /* method_getStartLine_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getStartLine_22 */
 static pt_method_site pg_site_23; /* method_isInAnonymousFunction_23 */
 static pt_method_site pg_site_24; /* method_getAnonymousFunctionReturnType_24 */
 static pt_method_site pg_site_25; /* method_getFunction_25 */
 static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection */
-static pt_method_site pg_site_27; /* method_getName_27 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getName_27 */
 static pt_method_site pg_site_28; /* method_getReturnType_28 */
 static pgrt::FunctionSite pg_site_29; /* function_ucfirst */
 static pt_method_site pg_site_30; /* method_getDisplayName_30 */
@@ -543,7 +543,7 @@ namespace pgen::ReturnTypeAfterFinallyRule {
 					zv::Val r121;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r120.raw(), r121.raw()))) return false;
 					zv::Val r122;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_returnNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r122.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_returnNode.raw(), "getStartLine", "getstartline", 12, r122.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r122.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r122.raw()); return false; }
 					zv::Val r123;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r121.raw()), Z_LVAL_P(r122.raw()), r123.raw()))) return false;
@@ -655,7 +655,7 @@ namespace pgen::ReturnTypeAfterFinallyRule {
 					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_function.raw(), "getName", "getname", 7, 0, NULL, r13.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_function.raw(), "getName", "getname", 7, r13.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb14;

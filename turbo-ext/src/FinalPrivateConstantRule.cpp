@@ -11,8 +11,8 @@ static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_isInClass_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_2; /* method_getClassReflection_2 */
-static pt_method_site pg_site_3; /* method_isFinal_3 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getClassReflection_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isFinal_3 */
 static pt_method_site pg_site_4; /* method_isPrivate_4 */
 static pgrt::PropSite pg_site_5; /* prop_consts_5 */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
@@ -78,7 +78,7 @@ namespace pgen::FinalPrivateConstantRule {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_scope, "getClassReflection", "getclassreflection", 18, r7.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r7);
@@ -90,7 +90,7 @@ namespace pgen::FinalPrivateConstantRule {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "isFinal", "isfinal", 7, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "isFinal", "isfinal", 7, r8.raw()))) return false;
 		}
 		}
 		if (!(zend_is_true(r8.raw()))) {

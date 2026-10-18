@@ -9,19 +9,19 @@ zend_class_entry *pt_ce_pdoconnect_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[14];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
 static pt_method_site pg_site_5; /* method_getConstantStrings_5 */
-static pt_method_site pg_site_6; /* method_getValue_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getValue_6 */
 static pgrt::FunctionSite pg_site_7; /* function_str_starts_with */
-static pt_method_site pg_site_8; /* method_getValue_8 */
-static pt_method_site pg_site_9; /* method_getValue_9 */
-static pt_method_site pg_site_10; /* method_getValue_10 */
-static pt_method_site pg_site_11; /* method_getValue_11 */
-static pt_method_site pg_site_12; /* method_getValue_12 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getValue_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValue_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getValue_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getValue_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Reflection\MethodReflection */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node\Expr\StaticCall */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
@@ -71,7 +71,7 @@ namespace pgen::PDOConnectReturnTypeExtension {
 				if (UNEXPECTED(r4.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r4.raw()))) return false;
 			}
 			}
 			b1 = zend_is_identical(r4.raw(), &pg_lit[1]);
@@ -184,7 +184,7 @@ namespace pgen::PDOConnectReturnTypeExtension {
 						if (UNEXPECTED(r25.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_constantString, "getValue", "getvalue", 8, 0, NULL, r25.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_constantString, "getValue", "getvalue", 8, r25.raw()))) return false;
 					}
 					}
 					zv::Val r26;
@@ -208,7 +208,7 @@ namespace pgen::PDOConnectReturnTypeExtension {
 								if (UNEXPECTED(r30.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_constantString, "getValue", "getvalue", 8, 0, NULL, r30.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_constantString, "getValue", "getvalue", 8, r30.raw()))) return false;
 							}
 							}
 							zv::Val r31;
@@ -232,7 +232,7 @@ namespace pgen::PDOConnectReturnTypeExtension {
 										if (UNEXPECTED(r35.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_constantString, "getValue", "getvalue", 8, 0, NULL, r35.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_constantString, "getValue", "getvalue", 8, r35.raw()))) return false;
 									}
 									}
 									zv::Val r36;
@@ -256,7 +256,7 @@ namespace pgen::PDOConnectReturnTypeExtension {
 												if (UNEXPECTED(r40.isUndef())) return false;
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_constantString, "getValue", "getvalue", 8, 0, NULL, r40.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_constantString, "getValue", "getvalue", 8, r40.raw()))) return false;
 											}
 											}
 											zv::Val r41;
@@ -280,7 +280,7 @@ namespace pgen::PDOConnectReturnTypeExtension {
 														if (UNEXPECTED(r45.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_constantString, "getValue", "getvalue", 8, 0, NULL, r45.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_constantString, "getValue", "getvalue", 8, r45.raw()))) return false;
 													}
 													}
 													zv::Val r46;
@@ -304,7 +304,7 @@ namespace pgen::PDOConnectReturnTypeExtension {
 																if (UNEXPECTED(r50.isUndef())) return false;
 															} else {
 															 {
-																if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_constantString, "getValue", "getvalue", 8, 0, NULL, r50.raw(), NULL))) return false;
+																if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_constantString, "getValue", "getvalue", 8, r50.raw()))) return false;
 															}
 															}
 															zv::Val r51;

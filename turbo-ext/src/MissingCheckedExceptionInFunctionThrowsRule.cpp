@@ -10,12 +10,12 @@ zend_class_entry *pt_ce_missing_checked_exception_in_function_throws_rule = null
 static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_getStatementResult_0 */
-static pt_method_site pg_site_1; /* method_getFunctionReflection_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getFunctionReflection_1 */
 static pt_method_site pg_site_2; /* method_getThrowType_2 */
 static pt_method_site pg_site_3; /* method_getThrowPoints_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_5; /* method_getName_5 */
-static pt_method_site pg_site_6; /* method_getStartLine_6 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getStartLine_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\Exceptions\MissingCheckedExceptionInThrowsCheck */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\Scope */
@@ -80,7 +80,7 @@ namespace pgen::MissingCheckedExceptionInFunctionThrowsRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getFunctionReflection", "getfunctionreflection", 21, r4.raw()))) return false;
 		l_functionReflection = std::move(r4);
 	}
 	 {
@@ -146,7 +146,7 @@ namespace pgen::MissingCheckedExceptionInFunctionThrowsRule {
 						if (UNEXPECTED(r24.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r24.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_functionReflection.raw(), "getName", "getname", 7, r24.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb25;
@@ -159,7 +159,7 @@ namespace pgen::MissingCheckedExceptionInFunctionThrowsRule {
 					zv::Val r27;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r26.raw(), r27.raw()))) return false;
 					zv::Val r28;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_throwPointNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r28.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_throwPointNode.raw(), "getStartLine", "getstartline", 12, r28.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r28.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r28.raw()); return false; }
 					zv::Val r29;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r27.raw()), Z_LVAL_P(r28.raw()), r29.raw()))) return false;

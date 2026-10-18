@@ -7,10 +7,10 @@
 zend_class_entry *pt_ce_too_wide_throw_type_check = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_isVoid_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_isVoid_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Analyser\ThrowPoint */
 static pt_method_site pg_site_2; /* method_isExplicit_2 */
-static pt_method_site pg_site_3; /* method_getType_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getType_3 */
 static pgrt::FunctionSite pg_site_4; /* function_array_map */
 static pt_method_site pg_site_5; /* static_PHPStan\Type\TypeUtils::flattenTypes */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\NeverType */
@@ -65,7 +65,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r6.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_throwPoint, "getType", "gettype", 7, 0, NULL, r6.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_throwPoint, "getType", "gettype", 7, r6.raw()))) return;
 		}
 		}
 		*return_value = r6.take();
@@ -103,7 +103,7 @@ namespace pgen::TooWideThrowTypeCheck {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_throwType, "isVoid", "isvoid", 6, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_throwType, "isVoid", "isvoid", 6, r1.raw()))) return false;
 		}
 		}
 		bool r2;

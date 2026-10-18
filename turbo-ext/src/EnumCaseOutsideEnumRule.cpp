@@ -11,7 +11,7 @@ static zval pg_lit[3];
 
 static pt_method_site pg_site_0; /* method_isInTrait_0 */
 static pt_method_site pg_site_1; /* method_isInClass_1 */
-static pt_method_site pg_site_2; /* method_getClassReflection_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getClassReflection_2 */
 static pt_method_site pg_site_3; /* method_isEnum_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
@@ -79,7 +79,7 @@ namespace pgen::EnumCaseOutsideEnumRule {
 				if (UNEXPECTED(r11.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r11.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_scope, "getClassReflection", "getclassreflection", 18, r11.raw()))) return false;
 			}
 			}
 			bool bo12 = false;

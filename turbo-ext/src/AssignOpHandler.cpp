@@ -34,18 +34,18 @@ static pt_method_site pg_site_21; /* method_processExprNode_21 */
 static pt_method_site pg_site_22; /* method_getScope_22 */
 static pt_method_site pg_site_23; /* method_mergeWith_23 */
 static pt_method_site pg_site_24; /* method_observingTemplateArgumentFrame_24 */
-static pt_method_site pg_site_25; /* method_getType_25 */
-static pt_method_site pg_site_26; /* method_getType_26 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getType_25 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getType_26 */
 static pt_method_site pg_site_27; /* method_addTemplateArgumentConstraints_27 */
 static pgrt::PropSite pg_site_28; /* prop_expr_28 */
 static pt_method_site pg_site_29; /* method_hasYield_29 */
 static pt_method_site pg_site_30; /* method_isAlwaysTerminating_30 */
-static pt_method_site pg_site_31; /* method_getType_31 */
-static pt_method_site pg_site_32; /* method_isNull_32 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getType_31 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_isNull_32 */
 static pt_method_site pg_site_33; /* method_getThrowPoints_33 */
 static pt_method_site pg_site_34; /* method_getImpurePoints_34 */
 static pgrt::ClassSite pg_site_35; /* cls_PhpParser\Node\Expr */
-static pt_method_site pg_site_36; /* method_doNotTreatPhpDocTypesAsCertain_36 */
+static pgrt::MethodShapeSite pg_site_36; /* method0_doNotTreatPhpDocTypesAsCertain_36 */
 static pgrt::PropSite pg_site_37; /* prop_var_37 */
 static pgrt::PropSite pg_site_38; /* prop_nativeTypesPromoted_38 */
 static pt_method_site pg_site_39; /* method_getTypeOnScope_39 */
@@ -110,14 +110,14 @@ static pt_method_site pg_site_97; /* method_specifyDefaultTypes_97 */
 static pt_method_site pg_site_98; /* method_null_98 */
 static pt_method_site pg_site_99; /* method_truthy_99 */
 static pt_method_site pg_site_100; /* method_falsey_100 */
-static pt_method_site pg_site_101; /* method_doNotTreatPhpDocTypesAsCertain_101 */
+static pgrt::MethodShapeSite pg_site_101; /* method0_doNotTreatPhpDocTypesAsCertain_101 */
 static pgrt::PropSite pg_site_102; /* prop_var_102 */
 static pt_method_site pg_site_103; /* static_PHPStan\Analyser\TypeSpecifierContext::createFalse */
 static pt_method_site pg_site_104; /* method_createSubjectTypes_104 */
 static pt_method_site pg_site_105; /* method_setRootExpr_105 */
 static pt_method_site pg_site_106; /* method_unionWith_106 */
 static pgrt::ClassSite pg_site_107; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_108; /* method_doNotTreatPhpDocTypesAsCertain_108 */
+static pgrt::MethodShapeSite pg_site_108; /* method0_doNotTreatPhpDocTypesAsCertain_108 */
 static pgrt::PropSite pg_site_109; /* prop_var_109 */
 static pt_method_site pg_site_110; /* method_createSubjectTypes_110 */
 static pt_method_site pg_site_111; /* method_storeExpressionResult_111 */
@@ -180,7 +180,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q1;
 		if (zend_is_true(zv::Ref(&captures[5]).deref().raw())) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_36, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_36, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r2.raw()))) return;
 			q1 = std::move(r2);
 		} else {
 		 {
@@ -831,7 +831,7 @@ static void pg_closure_4(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q13;
 		if (p_nativeTypesPromoted) {
 			zv::Val r14;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_101, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r14.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_101, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r14.raw()))) return;
 			q13 = std::move(r14);
 		} else {
 		 {
@@ -927,7 +927,7 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q1;
 		if (p_nativeTypesPromoted) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_108, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_108, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r2.raw()))) return;
 			q1 = std::move(r2);
 		} else {
 		 {
@@ -1384,7 +1384,7 @@ namespace pgen::AssignOpHandler {
 							if (UNEXPECTED(r72.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_condResult.raw(), "getType", "gettype", 7, 0, NULL, r72.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_condResult.raw(), "getType", "gettype", 7, r72.raw()))) return false;
 						}
 						}
 						{ zval v = r72.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr71.raw()), &v); }
@@ -1394,7 +1394,7 @@ namespace pgen::AssignOpHandler {
 							if (UNEXPECTED(r73.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_rightResult.raw(), "getType", "gettype", 7, 0, NULL, r73.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_rightResult.raw(), "getType", "gettype", 7, r73.raw()))) return false;
 						}
 						}
 						{ zval v = r73.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr71.raw()), &v); }
@@ -1460,7 +1460,7 @@ namespace pgen::AssignOpHandler {
 						if (UNEXPECTED(r90.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_condResult.raw(), "getType", "gettype", 7, 0, NULL, r90.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, l_condResult.raw(), "getType", "gettype", 7, r90.raw()))) return false;
 					}
 					}
 					zv::Val r91;
@@ -1469,7 +1469,7 @@ namespace pgen::AssignOpHandler {
 						if (UNEXPECTED(r91.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_32, r90.raw(), "isNull", "isnull", 6, 0, NULL, r91.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, r90.raw(), "isNull", "isnull", 6, r91.raw()))) return false;
 					}
 					}
 					bool r92;

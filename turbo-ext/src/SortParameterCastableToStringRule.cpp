@@ -15,7 +15,7 @@ static pgrt::PropSite pg_site_2; /* prop_name_2 */
 static pt_method_site pg_site_3; /* method_hasFunction_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pt_method_site pg_site_5; /* method_getFunction_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
 static pt_method_site pg_site_7; /* method_getArgs_7 */
 static pt_method_site pg_site_8; /* method_getVariants_8 */
 static pt_method_site pg_site_9; /* method_getNamedArgumentsVariants_9 */
@@ -23,11 +23,11 @@ static pt_method_site pg_site_10; /* method_getArgs_10 */
 static pt_method_site pg_site_11; /* method_getParameters_11 */
 static pgrt::PropSite pg_site_12; /* prop_value_12 */
 static pt_method_site pg_site_13; /* method_getType_13 */
-static pt_method_site pg_site_14; /* method_getDefaultValue_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getDefaultValue_14 */
 static pt_method_site pg_site_15; /* method_equals_15 */
 static pt_method_site pg_site_16; /* static_PHPStan\Type\TypeUtils::getConstantIntegers */
-static pt_method_site pg_site_17; /* method_getValue_17 */
-static pt_method_site pg_site_18; /* method_getValue_18 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getValue_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getValue_18 */
 static pgrt::FunctionSite pg_site_19; /* function_in_array */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_21; /* method_toString_21 */
@@ -327,7 +327,7 @@ namespace pgen::SortParameterCastableToStringRule {
 			if (UNEXPECTED(r23.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_functionReflection.raw(), "getName", "getname", 7, r23.raw()))) return false;
 		}
 		}
 		l_functionName = std::move(r23);
@@ -516,7 +516,7 @@ namespace pgen::SortParameterCastableToStringRule {
 							if (UNEXPECTED(r60.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_14, zv::Ref(e57).deref().raw(), "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r60.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, zv::Ref(e57).deref().raw(), "getDefaultValue", "getdefaultvalue", 15, r60.raw()))) return false;
 						}
 						}
 						l_flags = std::move(r60);
@@ -584,7 +584,7 @@ namespace pgen::SortParameterCastableToStringRule {
 						if (UNEXPECTED(r77.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_flag, "getValue", "getvalue", 8, 0, NULL, r77.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_flag, "getValue", "getvalue", 8, r77.raw()))) return false;
 					}
 					}
 					if (Z_TYPE_P(r77.raw()) == IS_LONG && Z_LVAL_P(r77.raw()) == 1) {
@@ -600,7 +600,7 @@ namespace pgen::SortParameterCastableToStringRule {
 								if (UNEXPECTED(r78.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_flag, "getValue", "getvalue", 8, 0, NULL, r78.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_flag, "getValue", "getvalue", 8, r78.raw()))) return false;
 							}
 							}
 							zv::Val ar79;

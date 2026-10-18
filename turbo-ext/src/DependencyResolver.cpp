@@ -11,62 +11,62 @@ static zval pg_lit[5];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Analyser\NamespaceUsesTracker */
 static pt_method_site pg_site_1; /* method_getFile_1 */
-static pt_method_site pg_site_2; /* method_reset_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_reset_2 */
 static pt_method_site pg_site_3; /* method_enterNode_3 */
 static pt_method_site pg_site_4; /* method_getFunction_4 */
-static pt_method_site pg_site_5; /* method_getNamespaceUses_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getNamespaceUses_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Dependency\ResolvedDependencies */
 static pgrt::FunctionSite pg_site_7; /* function_spl_object_id */
-static pt_method_site pg_site_8; /* method_getReferencedClasses_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getReferencedClasses_8 */
 static pt_method_site pg_site_9; /* method_walk_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Reflection\ClassReflection */
 static pt_method_site pg_site_11; /* method_getClass_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Broker\ClassNotFoundException */
-static pt_method_site pg_site_13; /* method_getInterfaces_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getInterfaces_13 */
 static pt_method_site pg_site_14; /* method_getTraits_14 */
-static pt_method_site pg_site_15; /* method_getResolvedMixinTypes_15 */
-static pt_method_site pg_site_16; /* method_getRequireExtendsTags_16 */
-static pt_method_site pg_site_17; /* method_getType_17 */
-static pt_method_site pg_site_18; /* method_getSealedTags_18 */
-static pt_method_site pg_site_19; /* method_getType_19 */
-static pt_method_site pg_site_20; /* method_getTemplateTags_20 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getResolvedMixinTypes_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getRequireExtendsTags_16 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getType_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getSealedTags_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getType_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getTemplateTags_20 */
 static pgrt::GetterSite pg_site_21; /* getter_getBound_21 */
 static pgrt::ClassSite pg_site_22; /* cls_PHPStan\PhpDoc\Tag\TemplateTag */
-static pt_method_site pg_site_23; /* method_getBound_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getBound_23 */
 static pgrt::GetterSite pg_site_24; /* getter_getDefault_24 */
-static pt_method_site pg_site_25; /* method_getDefault_25 */
-static pt_method_site pg_site_26; /* method_getPropertyTags_26 */
-static pt_method_site pg_site_27; /* method_isReadable_27 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getDefault_25 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getPropertyTags_26 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_isReadable_27 */
 static pgrt::GetterSite pg_site_28; /* getter_getReadableType_28 */
 static pgrt::ClassSite pg_site_29; /* cls_PHPStan\PhpDoc\Tag\PropertyTag */
-static pt_method_site pg_site_30; /* method_getReadableType_30 */
-static pt_method_site pg_site_31; /* method_isWritable_31 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getReadableType_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_isWritable_31 */
 static pgrt::GetterSite pg_site_32; /* getter_getWritableType_32 */
-static pt_method_site pg_site_33; /* method_getWritableType_33 */
-static pt_method_site pg_site_34; /* method_getMethodTags_34 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getWritableType_33 */
+static pgrt::MethodShapeSite pg_site_34; /* method0_getMethodTags_34 */
 static pgrt::GetterSite pg_site_35; /* getter_getReturnType_35 */
 static pgrt::ClassSite pg_site_36; /* cls_PHPStan\PhpDoc\Tag\MethodTag */
-static pt_method_site pg_site_37; /* method_getReturnType_37 */
+static pgrt::MethodShapeSite pg_site_37; /* method0_getReturnType_37 */
 static pgrt::GetterSite pg_site_38; /* getter_getParameters_38 */
-static pt_method_site pg_site_39; /* method_getParameters_39 */
-static pt_method_site pg_site_40; /* method_getType_40 */
-static pt_method_site pg_site_41; /* method_getDefaultValue_41 */
-static pt_method_site pg_site_42; /* method_getExtendsTags_42 */
-static pt_method_site pg_site_43; /* method_getType_43 */
-static pt_method_site pg_site_44; /* method_getImplementsTags_44 */
-static pt_method_site pg_site_45; /* method_getType_45 */
-static pt_method_site pg_site_46; /* method_getReferencedClasses_46 */
+static pgrt::MethodShapeSite pg_site_39; /* method0_getParameters_39 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_getType_40 */
+static pgrt::MethodShapeSite pg_site_41; /* method0_getDefaultValue_41 */
+static pgrt::MethodShapeSite pg_site_42; /* method0_getExtendsTags_42 */
+static pgrt::MethodShapeSite pg_site_43; /* method0_getType_43 */
+static pgrt::MethodShapeSite pg_site_44; /* method0_getImplementsTags_44 */
+static pgrt::MethodShapeSite pg_site_45; /* method0_getType_45 */
+static pgrt::MethodShapeSite pg_site_46; /* method0_getReferencedClasses_46 */
 static pt_method_site pg_site_47; /* method_hasClass_47 */
 static pt_method_site pg_site_48; /* method_getClass_48 */
-static pt_method_site pg_site_49; /* method_getResolvedPhpDoc_49 */
+static pgrt::MethodShapeSite pg_site_49; /* method0_getResolvedPhpDoc_49 */
 static pgrt::GetterSite pg_site_50; /* getter_getImportedFrom_50 */
 static pgrt::ClassSite pg_site_51; /* cls_PHPStan\PhpDoc\Tag\TypeAliasImportTag */
-static pt_method_site pg_site_52; /* method_getImportedFrom_52 */
+static pgrt::MethodShapeSite pg_site_52; /* method0_getImportedFrom_52 */
 static pt_method_site pg_site_53; /* method_hasClass_53 */
 static pt_method_site pg_site_54; /* method_getClass_54 */
-static pt_method_site pg_site_55; /* method_getParentClass_55 */
+static pgrt::MethodShapeSite pg_site_55; /* method0_getParentClass_55 */
 static pt_method_site pg_site_56; /* method_resolveVersionedExtensionPackage_56 */
-static pt_method_site pg_site_57; /* method_getFileName_57 */
+static pgrt::MethodShapeSite pg_site_57; /* method0_getFileName_57 */
 static pgrt::FunctionSite pg_site_58; /* function_str_starts_with */
 static pt_method_site pg_site_59; /* method_resolvePackage_59 */
 static pt_method_site pg_site_60; /* method_isPathPackage_60 */
@@ -174,7 +174,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 						if (UNEXPECTED(r25.isUndef())) return;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_type, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r25.raw(), NULL))) return;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_type, "getReferencedClasses", "getreferencedclasses", 20, r25.raw()))) return;
 					}
 					}
 					pgrt::ForeachIter it26;
@@ -539,7 +539,7 @@ namespace pgen::DependencyResolver {
 				zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DependencyResolver::slot::nameScopeTracker, "nameScopeTracker");
 				if (UNEXPECTED(p6 == NULL)) return false;
 				zv::Val r7;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p6, "reset", "reset", 5, 0, NULL, r7.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p6, "reset", "reset", 5, r7.raw()))) return false;
 			}
 		}
 	}
@@ -633,7 +633,7 @@ namespace pgen::DependencyResolver {
 		zval *p34 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DependencyResolver::slot::nameScopeTracker, "nameScopeTracker");
 		if (UNEXPECTED(p34 == NULL)) return false;
 		zv::Val r35;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p34, "getNamespaceUses", "getnamespaceuses", 16, 0, NULL, r35.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p34, "getNamespaceUses", "getnamespaceuses", 16, r35.raw()))) return false;
 		zv::Val r36;
 		if (UNEXPECTED(!pgen::ExportedNodeResolver::m_resolve(Z_OBJ_P(o33.raw()), p_node, r35.raw(), r36.raw()))) return false;
 		*ret = r36.take();
@@ -1150,7 +1150,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zv::Val r17;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, 0, NULL, r17.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, r17.raw()))) return false;
 					zv::Val a18 = zv::Val::copyOf(zv::Ref(r17.raw()).deref());
 					HashTable *ht16 = Z_ARRVAL_P(a18.raw());
 					zval *v19;
@@ -1208,7 +1208,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zv::Val r43;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_classReflection.raw(), "getResolvedMixinTypes", "getresolvedmixintypes", 21, 0, NULL, r43.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_classReflection.raw(), "getResolvedMixinTypes", "getresolvedmixintypes", 21, r43.raw()))) return false;
 					zv::Val a44 = zv::Val::copyOf(zv::Ref(r43.raw()).deref());
 					HashTable *ht42 = Z_ARRVAL_P(a44.raw());
 					zval *v45;
@@ -1232,7 +1232,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zv::Val r54;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_classReflection.raw(), "getRequireExtendsTags", "getrequireextendstags", 21, 0, NULL, r54.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_classReflection.raw(), "getRequireExtendsTags", "getrequireextendstags", 21, r54.raw()))) return false;
 					zv::Val a55 = zv::Val::copyOf(zv::Ref(r54.raw()).deref());
 					HashTable *ht53 = Z_ARRVAL_P(a55.raw());
 					zval *v56;
@@ -1249,7 +1249,7 @@ namespace pgen::DependencyResolver {
 									if (UNEXPECTED(r61.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_extendsTag, "getType", "gettype", 7, 0, NULL, r61.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_extendsTag, "getType", "gettype", 7, r61.raw()))) return false;
 								}
 								}
 								zv::Val o62 = zv::Val::copyOf(zv::Ref(r61.raw()));
@@ -1264,7 +1264,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zv::Val r65;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_classReflection.raw(), "getSealedTags", "getsealedtags", 13, 0, NULL, r65.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_classReflection.raw(), "getSealedTags", "getsealedtags", 13, r65.raw()))) return false;
 					zv::Val a66 = zv::Val::copyOf(zv::Ref(r65.raw()).deref());
 					HashTable *ht64 = Z_ARRVAL_P(a66.raw());
 					zval *v67;
@@ -1281,7 +1281,7 @@ namespace pgen::DependencyResolver {
 									if (UNEXPECTED(r72.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_sealedTag, "getType", "gettype", 7, 0, NULL, r72.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_sealedTag, "getType", "gettype", 7, r72.raw()))) return false;
 								}
 								}
 								zv::Val o73 = zv::Val::copyOf(zv::Ref(r72.raw()));
@@ -1296,7 +1296,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zv::Val r76;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r76.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, r76.raw()))) return false;
 					zv::Val a77 = zv::Val::copyOf(zv::Ref(r76.raw()).deref());
 					HashTable *ht75 = Z_ARRVAL_P(a77.raw());
 					zval *v78;
@@ -1313,7 +1313,7 @@ namespace pgen::DependencyResolver {
 									ZVAL_COPY(r84.raw(), gs83);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_templateTag, "getBound", "getbound", 8, 0, NULL, r84.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_templateTag, "getBound", "getbound", 8, r84.raw()))) return false;
 								}
 								}
 								zv::Val o85 = zv::Val::copyOf(zv::Ref(r84.raw()));
@@ -1329,7 +1329,7 @@ namespace pgen::DependencyResolver {
 									ZVAL_COPY(r88.raw(), gs87);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_templateTag, "getDefault", "getdefault", 10, 0, NULL, r88.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_templateTag, "getDefault", "getdefault", 10, r88.raw()))) return false;
 								}
 								}
 								zv::Val o89 = zv::Val::copyOf(zv::Ref(r88.raw()));
@@ -1344,7 +1344,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zv::Val r92;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_classReflection.raw(), "getPropertyTags", "getpropertytags", 15, 0, NULL, r92.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_classReflection.raw(), "getPropertyTags", "getpropertytags", 15, r92.raw()))) return false;
 					zv::Val a93 = zv::Val::copyOf(zv::Ref(r92.raw()).deref());
 					HashTable *ht91 = Z_ARRVAL_P(a93.raw());
 					zval *v94;
@@ -1356,7 +1356,7 @@ namespace pgen::DependencyResolver {
 						 {
 							 {
 								zv::Val r99;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_propertyTag, "isReadable", "isreadable", 10, 0, NULL, r99.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_propertyTag, "isReadable", "isreadable", 10, r99.raw()))) return false;
 								if (zend_is_true(r99.raw())) {
 									 {
 										zval *gs100 = Z_TYPE_P(l_propertyTag) == IS_OBJECT ? pgrt::trivialGetter(pg_site_28, Z_OBJ_P(l_propertyTag), pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\PhpDoc\\Tag\\PropertyTag", 30), "getreadabletype", 15, "readableType", 12) : NULL;
@@ -1365,7 +1365,7 @@ namespace pgen::DependencyResolver {
 											ZVAL_COPY(r101.raw(), gs100);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_propertyTag, "getReadableType", "getreadabletype", 15, 0, NULL, r101.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_propertyTag, "getReadableType", "getreadabletype", 15, r101.raw()))) return false;
 										}
 										}
 										zv::Val o102 = zv::Val::copyOf(zv::Ref(r101.raw()));
@@ -1378,7 +1378,7 @@ namespace pgen::DependencyResolver {
 							}
 							 {
 								zv::Val r104;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_propertyTag, "isWritable", "iswritable", 10, 0, NULL, r104.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, l_propertyTag, "isWritable", "iswritable", 10, r104.raw()))) return false;
 								if (!(zend_is_true(r104.raw()))) {
 									goto cont98;
 								}
@@ -1390,7 +1390,7 @@ namespace pgen::DependencyResolver {
 									ZVAL_COPY(r106.raw(), gs105);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_33, l_propertyTag, "getWritableType", "getwritabletype", 15, 0, NULL, r106.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, l_propertyTag, "getWritableType", "getwritabletype", 15, r106.raw()))) return false;
 								}
 								}
 								zv::Val o107 = zv::Val::copyOf(zv::Ref(r106.raw()));
@@ -1406,7 +1406,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zv::Val r110;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_classReflection.raw(), "getMethodTags", "getmethodtags", 13, 0, NULL, r110.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_34, l_classReflection.raw(), "getMethodTags", "getmethodtags", 13, r110.raw()))) return false;
 					zv::Val a111 = zv::Val::copyOf(zv::Ref(r110.raw()).deref());
 					HashTable *ht109 = Z_ARRVAL_P(a111.raw());
 					zval *v112;
@@ -1423,7 +1423,7 @@ namespace pgen::DependencyResolver {
 									ZVAL_COPY(r118.raw(), gs117);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_methodTag, "getReturnType", "getreturntype", 13, 0, NULL, r118.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_37, l_methodTag, "getReturnType", "getreturntype", 13, r118.raw()))) return false;
 								}
 								}
 								zv::Val o119 = zv::Val::copyOf(zv::Ref(r118.raw()));
@@ -1439,7 +1439,7 @@ namespace pgen::DependencyResolver {
 									ZVAL_COPY(r123.raw(), gs122);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_39, l_methodTag, "getParameters", "getparameters", 13, 0, NULL, r123.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_39, l_methodTag, "getParameters", "getparameters", 13, r123.raw()))) return false;
 								}
 								}
 								pgrt::ForeachIter it124;
@@ -1454,7 +1454,7 @@ namespace pgen::DependencyResolver {
 												if (UNEXPECTED(r127.isUndef())) return false;
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_40, l_parameter, "getType", "gettype", 7, 0, NULL, r127.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, l_parameter, "getType", "gettype", 7, r127.raw()))) return false;
 											}
 											}
 											zv::Val o128 = zv::Val::copyOf(zv::Ref(r127.raw()));
@@ -1470,7 +1470,7 @@ namespace pgen::DependencyResolver {
 												if (UNEXPECTED(r130.isUndef())) return false;
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_41, l_parameter, "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r130.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_41, l_parameter, "getDefaultValue", "getdefaultvalue", 15, r130.raw()))) return false;
 											}
 											}
 											zv::Val o131 = zv::Val::copyOf(zv::Ref(r130.raw()));
@@ -1490,7 +1490,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zv::Val r134;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_42, l_classReflection.raw(), "getExtendsTags", "getextendstags", 14, 0, NULL, r134.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, l_classReflection.raw(), "getExtendsTags", "getextendstags", 14, r134.raw()))) return false;
 					zv::Val a135 = zv::Val::copyOf(zv::Ref(r134.raw()).deref());
 					HashTable *ht133 = Z_ARRVAL_P(a135.raw());
 					zval *v136;
@@ -1507,7 +1507,7 @@ namespace pgen::DependencyResolver {
 									if (UNEXPECTED(r141.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_extendsTag, "getType", "gettype", 7, 0, NULL, r141.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_43, l_extendsTag, "getType", "gettype", 7, r141.raw()))) return false;
 								}
 								}
 								zv::Val o142 = zv::Val::copyOf(zv::Ref(r141.raw()));
@@ -1522,7 +1522,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zv::Val r145;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_44, l_classReflection.raw(), "getImplementsTags", "getimplementstags", 17, 0, NULL, r145.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_44, l_classReflection.raw(), "getImplementsTags", "getimplementstags", 17, r145.raw()))) return false;
 					zv::Val a146 = zv::Val::copyOf(zv::Ref(r145.raw()).deref());
 					HashTable *ht144 = Z_ARRVAL_P(a146.raw());
 					zval *v147;
@@ -1539,7 +1539,7 @@ namespace pgen::DependencyResolver {
 									if (UNEXPECTED(r152.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_45, l_implementsTag, "getType", "gettype", 7, 0, NULL, r152.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_45, l_implementsTag, "getType", "gettype", 7, r152.raw()))) return false;
 								}
 								}
 								zv::Val o153 = zv::Val::copyOf(zv::Ref(r152.raw()));
@@ -1574,7 +1574,7 @@ namespace pgen::DependencyResolver {
 									if (UNEXPECTED(r163.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_46, l_referencedType, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r163.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_46, l_referencedType, "getReferencedClasses", "getreferencedclasses", 20, r163.raw()))) return false;
 								}
 								}
 								pgrt::ForeachIter it164;
@@ -1662,7 +1662,7 @@ namespace pgen::DependencyResolver {
 						if (UNEXPECTED(r183.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_49, l_classReflection.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, 0, NULL, r183.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_49, l_classReflection.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, r183.raw()))) return false;
 					}
 					}
 					l_phpDoc = std::move(r183);
@@ -1688,7 +1688,7 @@ namespace pgen::DependencyResolver {
 											ZVAL_COPY(r193.raw(), gs192);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_52, l_importTag, "getImportedFrom", "getimportedfrom", 15, 0, NULL, r193.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_52, l_importTag, "getImportedFrom", "getimportedfrom", 15, r193.raw()))) return false;
 										}
 										}
 										l_importedFrom = std::move(r193);
@@ -1769,7 +1769,7 @@ namespace pgen::DependencyResolver {
 						if (UNEXPECTED(r210.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_55, l_classReflection.raw(), "getParentClass", "getparentclass", 14, 0, NULL, r210.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_55, l_classReflection.raw(), "getParentClass", "getparentclass", 14, r210.raw()))) return false;
 					}
 					}
 					l_classReflection = std::move(r210);
@@ -1873,7 +1873,7 @@ namespace pgen::DependencyResolver {
 						if (UNEXPECTED(r16.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_57, l_reflection, "getFileName", "getfilename", 11, 0, NULL, r16.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_57, l_reflection, "getFileName", "getfilename", 11, r16.raw()))) return false;
 					}
 					}
 					l_dependencyFile = std::move(r16);

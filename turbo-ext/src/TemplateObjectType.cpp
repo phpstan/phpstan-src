@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_template_object_type = nullptr;
 
 static pgrt::GetterSite pg_site_0; /* getter_getClassName_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\ObjectType */
-static pt_method_site pg_site_2; /* method_getClassName_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getClassName_2 */
 static pt_method_site pg_site_3; /* bound_PHPStan\Type\ObjectType::__construct */
 static pgrt::PropIndexSite pg_site_4; /* slot_default_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
@@ -32,7 +32,7 @@ namespace pgen::TemplateObjectType {
 			ZVAL_COPY(r2.raw(), gs1);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_bound, "getClassName", "getclassname", 12, 0, NULL, r2.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_bound, "getClassName", "getclassname", 12, r2.raw()))) return false;
 		}
 		}
 		zval av3[1];

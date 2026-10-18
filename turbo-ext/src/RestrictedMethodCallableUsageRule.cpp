@@ -10,14 +10,14 @@ zend_class_entry *pt_ce_restricted_method_callable_usage_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Identifier */
 static pt_method_site pg_site_2; /* method_getAll_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
-static pt_method_site pg_site_5; /* method_getVar_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getVar_5 */
 static pt_method_site pg_site_6; /* method_getType_6 */
-static pt_method_site pg_site_7; /* method_getObjectClassNames_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getObjectClassNames_7 */
 static pt_method_site pg_site_8; /* method_hasClass_8 */
 static pt_method_site pg_site_9; /* method_getClass_9 */
 static pt_method_site pg_site_10; /* method_hasMethod_10 */
@@ -78,7 +78,7 @@ namespace pgen::RestrictedMethodCallableUsageRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		if (!(pgrt::instanceOfClass(r1.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Identifier", 25)))) {
@@ -126,7 +126,7 @@ namespace pgen::RestrictedMethodCallableUsageRule {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getName", "getname", 7, r8.raw()))) return false;
 		}
 		}
 		zv::Val o10;
@@ -140,7 +140,7 @@ namespace pgen::RestrictedMethodCallableUsageRule {
 	}
 	 {
 		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_node, "getVar", "getvar", 6, 0, NULL, r12.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_node, "getVar", "getvar", 6, r12.raw()))) return false;
 		zv::Val r13;
 		zend_class_entry *rc14 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc14 == pt_ce_mutating_scope) {
@@ -161,7 +161,7 @@ namespace pgen::RestrictedMethodCallableUsageRule {
 			if (UNEXPECTED(r16.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_methodCalledOnType.raw(), "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r16.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_methodCalledOnType.raw(), "getObjectClassNames", "getobjectclassnames", 19, r16.raw()))) return false;
 		}
 		}
 		l_referencedClasses = std::move(r16);

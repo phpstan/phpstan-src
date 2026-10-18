@@ -14,11 +14,11 @@ static pt_method_site pg_site_1; /* method_getSelfOutType_1 */
 static pt_method_site pg_site_2; /* method_getDeclaringClass_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_4; /* method_getDisplayName_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
 static pt_method_site pg_site_8; /* method_getDisplayName_8 */
-static pt_method_site pg_site_9; /* method_getName_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
 static pt_method_site pg_site_10; /* method_describe_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\MissingTypehintCheck */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
@@ -167,7 +167,7 @@ namespace pgen::MissingMethodSelfOutTypeRule {
 						if (UNEXPECTED(r22.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r22.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_methodReflection.raw(), "getName", "getname", 7, r22.raw()))) return false;
 					}
 					}
 					zv::Val o23 = zv::Val::copyOf(zv::Ref(l_phpDocTagMessage.raw()));
@@ -241,7 +241,7 @@ namespace pgen::MissingMethodSelfOutTypeRule {
 						if (UNEXPECTED(r45.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r45.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_methodReflection.raw(), "getName", "getname", 7, r45.raw()))) return false;
 					}
 					}
 					zv::Val o46 = zv::Val::copyOf(zv::Ref(l_phpDocTagMessage.raw()));
@@ -305,7 +305,7 @@ namespace pgen::MissingMethodSelfOutTypeRule {
 						if (UNEXPECTED(r65.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r65.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_methodReflection.raw(), "getName", "getname", 7, r65.raw()))) return false;
 					}
 					}
 					zv::Val o66 = zv::Val::copyOf(zv::Ref(l_phpDocTagMessage.raw()));

@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_property_attributes_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
-static pt_method_site pg_site_1; /* method_getClassReflection_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPhpVersion_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getClassReflection_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pt_method_site pg_site_3; /* method_getNativeProperty_3 */
 static pt_method_site pg_site_4; /* method_getNativeReflection_4 */
 static pt_method_site pg_site_5; /* method_getAttributes_5 */
@@ -59,7 +59,7 @@ namespace pgen::PropertyAttributesRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsOverrideAttributeOnProperty(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;
@@ -72,7 +72,7 @@ namespace pgen::PropertyAttributesRule {
 					if (UNEXPECTED(r4.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r4.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getClassReflection", "getclassreflection", 18, r4.raw()))) return false;
 				}
 				}
 				zv::Val r5;
@@ -81,7 +81,7 @@ namespace pgen::PropertyAttributesRule {
 					if (UNEXPECTED(r5.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getName", "getname", 7, 0, NULL, r5.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getName", "getname", 7, r5.raw()))) return false;
 				}
 				}
 				zval av6[1];

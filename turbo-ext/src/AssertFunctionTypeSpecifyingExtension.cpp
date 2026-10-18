@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_assert_function_type_specifying_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
@@ -36,7 +36,7 @@ namespace pgen::AssertFunctionTypeSpecifyingExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		bool b1 = zend_is_identical(r2.raw(), &pg_lit[0]);

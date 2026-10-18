@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_non_empty_string_functions_return_type_extension = nullp
 /* the interned string literals, created at module startup */
 static zval pg_lit[11];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
 static pt_method_site pg_site_5; /* method_isNonFalsyString_5 */
@@ -19,7 +19,7 @@ static pt_method_site pg_site_6; /* method_isNonEmptyString_6 */
 static pgrt::PropSite pg_site_7; /* prop_value_7 */
 static pt_method_site pg_site_8; /* method_getType_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
-static pt_method_site pg_site_10; /* method_getValue_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValue_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\Scope */
@@ -39,7 +39,7 @@ namespace pgen::NonEmptyStringFunctionsReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -79,7 +79,7 @@ namespace pgen::NonEmptyStringFunctionsReturnTypeExtension {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_functionReflection, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_functionReflection, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		bool ia4 = false;
@@ -260,7 +260,7 @@ namespace pgen::NonEmptyStringFunctionsReturnTypeExtension {
 			if (UNEXPECTED(r13.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_flagsType.raw(), "getValue", "getvalue", 8, 0, NULL, r13.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_flagsType.raw(), "getValue", "getvalue", 8, r13.raw()))) return false;
 		}
 		}
 		*ret = ((Z_LVAL_P(r13.raw()) & 8) != 0);

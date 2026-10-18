@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_filter_functions_throw_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPhpVersion_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name\FullyQualified */
 static pt_method_site pg_site_2; /* method_hasConstant_2 */
 static pt_method_site pg_site_3; /* method_hasFlag_3 */
@@ -62,7 +62,7 @@ namespace pgen::FilterFunctionsThrowTypeExtension {
 	(void) this_zv;
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, r2.raw()))) return false;
 		zv::Val r3;
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasFilterThrowOnFailureConstant(Z_OBJ_P(r2.raw()), r3.raw()))) return false;
 		bool r4;

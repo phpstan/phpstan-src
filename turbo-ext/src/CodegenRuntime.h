@@ -747,6 +747,23 @@ private:
 	bool active = true;
 };
 
+/* {{{ $object->name() without arguments: per receiver class (PROP_SITE_WAYS
+ * per site) the method and what its body is (pt_abi.trivial_shape): a
+ * literal or a declared property is answered without the call — the
+ * many tiny getters of php-parser's nodes and BetterReflection */
+struct MethodShapeSite
+{
+	zend_class_entry *ce[PROP_SITE_WAYS];
+	zend_function *fn[PROP_SITE_WAYS];
+	pt_trivial_shape shape[PROP_SITE_WAYS];
+	uint32_t generation;
+	uint32_t next;
+};
+
+[[nodiscard]] bool callMethod0(MethodShapeSite &site, zval *object, const char *name, const char *lcname, size_t len, zval *ret);
+
+/* }}} */
+
 /* {{{ virtual dispatch over many compiled implementations: a call site's
  * receiver class mapped to the case of its implementation (0 = none: the
  * engine call), in an open-addressing cache in front of a scan of the

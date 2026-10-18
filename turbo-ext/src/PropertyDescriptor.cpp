@@ -11,7 +11,7 @@ static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Expr\PropertyFetch */
 static pgrt::PropSite pg_site_1; /* prop_var_1 */
 static pt_method_site pg_site_2; /* method_getType_2 */
 static pt_method_site pg_site_3; /* method_getDeclaringClass_3 */
-static pt_method_site pg_site_4; /* method_getName_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
 static pt_method_site pg_site_5; /* method_isSuperTypeOf_5 */
 static pt_method_site pg_site_6; /* method_getDeclaringClass_6 */
 static pt_method_site pg_site_7; /* method_getDisplayName_7 */
@@ -94,7 +94,7 @@ namespace pgen::PropertyDescriptor {
 					if (UNEXPECTED(r11.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd7.raw(), "getName", "getname", 7, 0, NULL, r11.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, vd7.raw(), "getName", "getname", 7, r11.raw()))) return false;
 				}
 				}
 				zv::Val n6;

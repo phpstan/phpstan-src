@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_function_signature_variance_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getFunctionReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\Generics\VarianceCheck */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
@@ -52,7 +52,7 @@ namespace pgen::FunctionSignatureVarianceRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, r1.raw()))) return false;
 		l_functionReflection = std::move(r1);
 	}
 	 {
@@ -62,7 +62,7 @@ namespace pgen::FunctionSignatureVarianceRule {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_functionReflection.raw(), "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		l_functionName = std::move(r2);

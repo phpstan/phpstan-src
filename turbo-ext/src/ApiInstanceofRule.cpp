@@ -15,26 +15,26 @@ static pgrt::PropSite pg_site_2; /* prop_class_2 */
 static pt_method_site pg_site_3; /* method_resolveName_3 */
 static pt_method_site pg_site_4; /* method_hasClass_4 */
 static pt_method_site pg_site_5; /* method_getClass_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
-static pt_method_site pg_site_7; /* method_getFileName_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getFileName_7 */
 static pt_method_site pg_site_8; /* method_getDisplayName_8 */
-static pt_method_site pg_site_9; /* method_getClassTypeDescription_9 */
-static pt_method_site pg_site_10; /* method_getClassTypeDescription_10 */
-static pt_method_site pg_site_11; /* method_getResolvedPhpDoc_11 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getClassTypeDescription_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getClassTypeDescription_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getResolvedPhpDoc_11 */
 static pt_method_site pg_site_12; /* method_getTagsByName_12 */
 static pgrt::FunctionSite pg_site_13; /* function_count */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node\Expr\Instanceof_ */
 static pt_method_site pg_site_15; /* method_is_15 */
-static pt_method_site pg_site_16; /* method_isInterface_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_isInterface_16 */
 static pt_method_site pg_site_17; /* method_getType_17 */
 static pt_method_site pg_site_18; /* method_isTrue_18 */
 static pt_method_site pg_site_19; /* method_isFalse_19 */
-static pt_method_site pg_site_20; /* method_getName_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getName_20 */
 static pgrt::PropSite pg_site_21; /* prop_expr_21 */
 static pt_method_site pg_site_22; /* method_getType_22 */
 static pgrt::ClassSite pg_site_23; /* cls_PHPStan\Type\UnionType */
-static pt_method_site pg_site_24; /* method_getTypes_24 */
-static pt_method_site pg_site_25; /* method_getObjectClassNames_25 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getTypes_24 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getObjectClassNames_25 */
 static pt_method_site pg_site_26; /* method_isSuperTypeOf_26 */
 static pt_method_site pg_site_27; /* method_getDisplayName_27 */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Rules\Api\ApiRuleHelper */
@@ -195,7 +195,7 @@ namespace pgen::ApiInstanceofRule {
 			if (UNEXPECTED(r26.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_classReflection.raw(), "getName", "getname", 7, r26.raw()))) return false;
 		}
 		}
 		zv::Val r27;
@@ -204,7 +204,7 @@ namespace pgen::ApiInstanceofRule {
 			if (UNEXPECTED(r27.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_classReflection.raw(), "getFileName", "getfilename", 11, 0, NULL, r27.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_classReflection.raw(), "getFileName", "getfilename", 11, r27.raw()))) return false;
 		}
 		}
 		bool r28;
@@ -229,7 +229,7 @@ namespace pgen::ApiInstanceofRule {
 		}
 		}
 		zv::Val r31;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r31.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r31.raw()))) return false;
 		zv::Val r32 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r31.raw())));
 		pgrt::StringBuilder sb33;
 		sb33.appendLiteral("Asking about instanceof ", 24);
@@ -241,7 +241,7 @@ namespace pgen::ApiInstanceofRule {
 		zv::Val r35;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r34.raw(), r35.raw()))) return false;
 		zv::Val r36;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r36.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r36.raw()))) return false;
 		zv::Val r37 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r36.raw())));
 		pgrt::StringBuilder sb38;
 		sb38.appendLiteral("phpstanApi.", 11);
@@ -267,7 +267,7 @@ namespace pgen::ApiInstanceofRule {
 			if (UNEXPECTED(r45.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_classReflection.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, 0, NULL, r45.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_classReflection.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, r45.raw()))) return false;
 		}
 		}
 		l_docBlock = std::move(r45);
@@ -368,7 +368,7 @@ namespace pgen::ApiInstanceofRule {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p_classReflection, "isInterface", "isinterface", 11, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, p_classReflection, "isInterface", "isinterface", 11, r4.raw()))) return false;
 		}
 		}
 		if (Z_TYPE_P(r4.raw()) == IS_TRUE) {
@@ -455,7 +455,7 @@ namespace pgen::ApiInstanceofRule {
 			if (UNEXPECTED(r19.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_classReflection, "getName", "getname", 7, 0, NULL, r19.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, p_classReflection, "getName", "getname", 7, r19.raw()))) return false;
 		}
 		}
 		zv::Val n18;
@@ -495,7 +495,7 @@ namespace pgen::ApiInstanceofRule {
 					if (UNEXPECTED(r26.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_exprType.raw(), "getTypes", "gettypes", 8, 0, NULL, r26.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_exprType.raw(), "getTypes", "gettypes", 8, r26.raw()))) return false;
 				}
 				}
 				zv::Val a27 = zv::Val::copyOf(zv::Ref(r26.raw()).deref());
@@ -514,7 +514,7 @@ namespace pgen::ApiInstanceofRule {
 								if (UNEXPECTED(r34.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_innerType, "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r34.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_innerType, "getObjectClassNames", "getobjectclassnames", 19, r34.raw()))) return false;
 							}
 							}
 							zval arr35_raw;

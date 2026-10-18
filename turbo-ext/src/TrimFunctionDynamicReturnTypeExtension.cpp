@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_trim_function_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
@@ -19,14 +19,14 @@ static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_getConstantStrings_8 */
 static pt_method_site pg_site_9; /* method_getConstantStrings_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
-static pt_method_site pg_site_11; /* method_getValue_11 */
-static pt_method_site pg_site_12; /* method_getValue_12 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getValue_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getValue_12 */
 static pgrt::FunctionSite pg_site_13; /* function_rtrim */
-static pt_method_site pg_site_14; /* method_getValue_14 */
-static pt_method_site pg_site_15; /* method_getValue_15 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getValue_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getValue_15 */
 static pgrt::FunctionSite pg_site_16; /* function_trim */
-static pt_method_site pg_site_17; /* method_getValue_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getValue_17 */
 static pgrt::FunctionSite pg_site_18; /* function_preg_match */
 static pt_method_site pg_site_19; /* method_isNumericString_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Reflection\FunctionReflection */
@@ -48,7 +48,7 @@ namespace pgen::TrimFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -279,7 +279,7 @@ namespace pgen::TrimFunctionDynamicReturnTypeExtension {
 					if (UNEXPECTED(r42.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_functionReflection, "getName", "getname", 7, 0, NULL, r42.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_functionReflection, "getName", "getname", 7, r42.raw()))) return false;
 				}
 				}
 				l_functionName = std::move(r42);
@@ -315,7 +315,7 @@ namespace pgen::TrimFunctionDynamicReturnTypeExtension {
 														if (UNEXPECTED(r59.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_stringConstantString, "getValue", "getvalue", 8, 0, NULL, r59.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_stringConstantString, "getValue", "getvalue", 8, r59.raw()))) return false;
 													}
 													}
 													zv::Val r60;
@@ -324,7 +324,7 @@ namespace pgen::TrimFunctionDynamicReturnTypeExtension {
 														if (UNEXPECTED(r60.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_trimConstantString, "getValue", "getvalue", 8, 0, NULL, r60.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_trimConstantString, "getValue", "getvalue", 8, r60.raw()))) return false;
 													}
 													}
 													zval av61[2];
@@ -341,7 +341,7 @@ namespace pgen::TrimFunctionDynamicReturnTypeExtension {
 														if (UNEXPECTED(r63.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_stringConstantString, "getValue", "getvalue", 8, 0, NULL, r63.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_stringConstantString, "getValue", "getvalue", 8, r63.raw()))) return false;
 													}
 													}
 													zv::Val r64;
@@ -350,7 +350,7 @@ namespace pgen::TrimFunctionDynamicReturnTypeExtension {
 														if (UNEXPECTED(r64.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_trimConstantString, "getValue", "getvalue", 8, 0, NULL, r64.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_trimConstantString, "getValue", "getvalue", 8, r64.raw()))) return false;
 													}
 													}
 													zval av65[2];
@@ -379,7 +379,7 @@ namespace pgen::TrimFunctionDynamicReturnTypeExtension {
 										if (UNEXPECTED(r69.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_trimConstantString, "getValue", "getvalue", 8, 0, NULL, r69.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_trimConstantString, "getValue", "getvalue", 8, r69.raw()))) return false;
 									}
 									}
 									zval av70[2];

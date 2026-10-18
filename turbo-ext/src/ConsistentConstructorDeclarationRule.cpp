@@ -10,11 +10,11 @@ zend_class_entry *pt_ce_consistent_constructor_declaration_rule = nullptr;
 static zval pg_lit[4];
 
 static pt_method_site pg_site_0; /* method_getMethodReflection_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::FunctionSite pg_site_2; /* function_strtolower */
-static pt_method_site pg_site_3; /* method_getClassReflection_3 */
-static pt_method_site pg_site_4; /* method_hasConsistentConstructor_4 */
-static pt_method_site pg_site_5; /* method_isFinal_5 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getClassReflection_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_hasConsistentConstructor_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isFinal_5 */
 static pt_method_site pg_site_6; /* method_isPrivate_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
@@ -69,7 +69,7 @@ namespace pgen::ConsistentConstructorDeclarationRule {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_method.raw(), "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_method.raw(), "getName", "getname", 7, r4.raw()))) return false;
 		}
 		}
 		zval av5[1];
@@ -92,14 +92,14 @@ namespace pgen::ConsistentConstructorDeclarationRule {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getClassReflection", "getclassreflection", 18, r8.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r8);
 	}
 	 {
 		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "hasConsistentConstructor", "hasconsistentconstructor", 24, 0, NULL, r9.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_classReflection.raw(), "hasConsistentConstructor", "hasconsistentconstructor", 24, r9.raw()))) return false;
 		if (!(zend_is_true(r9.raw()))) {
 			 {
 				zval arr10_raw;
@@ -116,7 +116,7 @@ namespace pgen::ConsistentConstructorDeclarationRule {
 			if (UNEXPECTED(r11.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_classReflection.raw(), "isFinal", "isfinal", 7, 0, NULL, r11.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_classReflection.raw(), "isFinal", "isfinal", 7, r11.raw()))) return false;
 		}
 		}
 		if (zend_is_true(r11.raw())) {

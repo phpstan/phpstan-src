@@ -16,7 +16,7 @@ static pt_method_site pg_site_3; /* method_hasClass_3 */
 static pgrt::PropSite pg_site_4; /* prop_namespacedName_4 */
 static pt_method_site pg_site_5; /* method_toString_5 */
 static pt_method_site pg_site_6; /* method_getClass_6 */
-static pt_method_site pg_site_7; /* method_getSealedTags_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getSealedTags_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
@@ -146,7 +146,7 @@ namespace pgen::SealedDefinitionTraitRule {
 	}
 	 {
 		zv::Val r25;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_traitReflection.raw(), "getSealedTags", "getsealedtags", 13, 0, NULL, r25.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_traitReflection.raw(), "getSealedTags", "getsealedtags", 13, r25.raw()))) return false;
 		l_sealedTags = std::move(r25);
 	}
 	 {

@@ -14,11 +14,11 @@ static pt_method_site pg_site_1; /* method_isNonEmptyString_1 */
 static pt_method_site pg_site_2; /* method_hasInstanceProperty_2 */
 static pt_method_site pg_site_3; /* method_getInstanceProperty_3 */
 static pt_method_site pg_site_4; /* method_getReadableType_4 */
-static pt_method_site pg_site_5; /* method_isInteger_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isInteger_5 */
 static pgrt::ClassSite pg_site_6; /* cls_DateTime */
 static pt_method_site pg_site_7; /* method_diff_7 */
 static pgrt::ClassSite pg_site_8; /* cls_DateInterval */
-static pt_method_site pg_site_9; /* method_getValue_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
 static pt_method_site pg_site_10; /* method_format_10 */
 static pgrt::FunctionSite pg_site_11; /* function_is_numeric */
 static pgrt::FunctionSite pg_site_12; /* function_strtolower */
@@ -156,7 +156,7 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 				if (UNEXPECTED(r21.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, vd17.raw(), "isInteger", "isinteger", 9, 0, NULL, r21.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, vd17.raw(), "isInteger", "isinteger", 9, r21.raw()))) return false;
 			}
 			}
 			bool r22;
@@ -218,7 +218,7 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 						if (UNEXPECTED(r42.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_string, "getValue", "getvalue", 8, 0, NULL, r42.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_string, "getValue", "getvalue", 8, r42.raw()))) return false;
 					}
 					}
 					l_formatString = std::move(r42);

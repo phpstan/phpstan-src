@@ -63,10 +63,10 @@ static pt_method_site pg_site_52; /* method_hasYield_52 */
 static pt_method_site pg_site_53; /* method_getThrowPoints_53 */
 static pt_method_site pg_site_54; /* method_getImpurePoints_54 */
 static pt_method_site pg_site_55; /* method_isAlwaysTerminating_55 */
-static pt_method_site pg_site_56; /* method_getType_56 */
+static pgrt::MethodShapeSite pg_site_56; /* method0_getType_56 */
 static pgrt::ClassSite pg_site_57; /* cls_PHPStan\Type\NeverType */
 static pgrt::GetterSite pg_site_58; /* getter_isExplicit_58 */
-static pt_method_site pg_site_59; /* method_isExplicit_59 */
+static pgrt::MethodShapeSite pg_site_59; /* method0_isExplicit_59 */
 static pt_method_site pg_site_60; /* method_getVariableFlow_60 */
 static pt_method_site pg_site_61; /* method_getVariableFlow_61 */
 static pt_method_site pg_site_62; /* method_getNode_62 */
@@ -778,7 +778,7 @@ namespace pgen::ExpressionHandler {
 			if (UNEXPECTED(r118.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_56, l_result.raw(), "getType", "gettype", 7, 0, NULL, r118.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_56, l_result.raw(), "getType", "gettype", 7, r118.raw()))) return false;
 		}
 		}
 		l_statementType = std::move(r118);
@@ -792,7 +792,7 @@ namespace pgen::ExpressionHandler {
 				ZVAL_COPY(r121.raw(), gs120);
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_59, l_statementType.raw(), "isExplicit", "isexplicit", 10, 0, NULL, r121.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_59, l_statementType.raw(), "isExplicit", "isexplicit", 10, r121.raw()))) return false;
 			}
 			}
 			b119 = (Z_TYPE_P(r121.raw()) == IS_TRUE);

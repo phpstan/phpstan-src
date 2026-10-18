@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_found_property_reflection = nullptr;
 static pt_method_site pg_site_0; /* method_getDeclaringClass_0 */
 static pt_method_site pg_site_1; /* method_isStatic_1 */
 static pt_method_site pg_site_2; /* method_isPrivate_2 */
-static pt_method_site pg_site_3; /* method_isPublic_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isPublic_3 */
 static pt_method_site pg_site_4; /* method_getDocComment_4 */
 static pt_method_site pg_site_5; /* method_hasPhpDocType_5 */
 static pt_method_site pg_site_6; /* method_getPhpDocType_6 */
@@ -26,8 +26,8 @@ static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Reflection\WrapperPropertyRefl
 static pt_method_site pg_site_16; /* method_getOriginalReflection_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Reflection\Php\PhpPropertyReflection */
 static pt_method_site pg_site_18; /* method_isAbstract_18 */
-static pt_method_site pg_site_19; /* method_isFinalByKeyword_19 */
-static pt_method_site pg_site_20; /* method_isFinal_20 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_isFinalByKeyword_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_isFinal_20 */
 static pt_method_site pg_site_21; /* method_isVirtual_21 */
 static pt_method_site pg_site_22; /* method_hasHook_22 */
 static pt_method_site pg_site_23; /* method_getHook_23 */
@@ -228,7 +228,7 @@ namespace pgen::FoundPropertyReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p1, "isPublic", "ispublic", 8, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p1, "isPublic", "ispublic", 8, r2.raw()))) return false;
 		}
 		}
 		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
@@ -817,7 +817,7 @@ namespace pgen::FoundPropertyReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p1, "isFinalByKeyword", "isfinalbykeyword", 16, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p1, "isFinalByKeyword", "isfinalbykeyword", 16, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -840,7 +840,7 @@ namespace pgen::FoundPropertyReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p1, "isFinal", "isfinal", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, p1, "isFinal", "isfinal", 7, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();

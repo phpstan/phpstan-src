@@ -9,23 +9,23 @@ zend_class_entry *pt_ce_argument_based_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_getArgs_4 */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
 static pt_method_site pg_site_6; /* method_getType_6 */
-static pt_method_site pg_site_7; /* method_getIterableKeyType_7 */
-static pt_method_site pg_site_8; /* method_getIterableValueType_8 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getIterableKeyType_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getIterableValueType_8 */
 static pgrt::PropSite pg_site_9; /* prop_unpack_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\GeneralizePrecision */
 static pt_method_site pg_site_11; /* static_PHPStan\Type\GeneralizePrecision::moreSpecific */
 static pt_method_site pg_site_12; /* method_generalize_12 */
-static pt_method_site pg_site_13; /* method_getIterableValueType_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getIterableValueType_13 */
 static pt_method_site pg_site_14; /* method_generalize_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
-static pt_method_site pg_site_16; /* method_isIterableAtLeastOnce_16 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_isIterableAtLeastOnce_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_18; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Analyser\Scope */
@@ -99,7 +99,7 @@ namespace pgen::ArgumentBasedFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		zval *cc2 = pgrt::classConstant(pt_ce_argument_based_function_return_type_extension, &pg_lit[0], pt_ce_argument_based_function_return_type_extension);
@@ -129,7 +129,7 @@ namespace pgen::ArgumentBasedFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		zval *cc2 = pgrt::classConstant(pt_ce_argument_based_function_return_type_extension, &pg_lit[0], pt_ce_argument_based_function_return_type_extension);
@@ -155,7 +155,7 @@ namespace pgen::ArgumentBasedFunctionReturnTypeExtension {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_functionReflection, "getName", "getname", 7, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_functionReflection, "getName", "getname", 7, r7.raw()))) return false;
 		}
 		}
 		zv::Val et9;
@@ -218,7 +218,7 @@ namespace pgen::ArgumentBasedFunctionReturnTypeExtension {
 			if (UNEXPECTED(r25.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_argumentType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r25.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_argumentType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r25.raw()))) return false;
 		}
 		}
 		l_argumentKeyType = std::move(r25);
@@ -230,7 +230,7 @@ namespace pgen::ArgumentBasedFunctionReturnTypeExtension {
 			if (UNEXPECTED(r26.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_argumentType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r26.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_argumentType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r26.raw()))) return false;
 		}
 		}
 		l_argumentValueType = std::move(r26);
@@ -262,7 +262,7 @@ namespace pgen::ArgumentBasedFunctionReturnTypeExtension {
 					if (UNEXPECTED(r34.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_argumentValueType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r34.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_argumentValueType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r34.raw()))) return false;
 				}
 				}
 				zend_class_entry *ce35 = pgrt::lookupClass(pg_site_10, "PHPStan\\Type\\GeneralizePrecision", 32);
@@ -289,7 +289,7 @@ namespace pgen::ArgumentBasedFunctionReturnTypeExtension {
 			if (UNEXPECTED(r41.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_functionReflection, "getName", "getname", 7, 0, NULL, r41.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_functionReflection, "getName", "getname", 7, r41.raw()))) return false;
 		}
 		}
 		bool b40 = zend_is_identical(r41.raw(), &pg_lit[1]);
@@ -300,7 +300,7 @@ namespace pgen::ArgumentBasedFunctionReturnTypeExtension {
 				if (UNEXPECTED(r42.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_argumentType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r42.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_argumentType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r42.raw()))) return false;
 			}
 			}
 			bool r43;

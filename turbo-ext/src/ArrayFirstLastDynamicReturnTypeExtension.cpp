@@ -9,14 +9,14 @@ zend_class_entry *pt_ce_array_first_last_dynamic_return_type_extension = nullptr
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_isIterableAtLeastOnce_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
-static pt_method_site pg_site_6; /* method_getIterableKeyType_6 */
-static pt_method_site pg_site_7; /* method_getIterableValueType_7 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isIterableAtLeastOnce_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getIterableKeyType_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getIterableValueType_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -37,7 +37,7 @@ namespace pgen::ArrayFirstLastDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -107,7 +107,7 @@ namespace pgen::ArrayFirstLastDynamicReturnTypeExtension {
 			if (UNEXPECTED(r11.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r11.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r11.raw()))) return false;
 		}
 		}
 		l_iterableAtLeastOnce = std::move(r11);
@@ -131,7 +131,7 @@ namespace pgen::ArrayFirstLastDynamicReturnTypeExtension {
 			if (UNEXPECTED(r14.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_functionReflection, "getName", "getname", 7, 0, NULL, r14.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_functionReflection, "getName", "getname", 7, r14.raw()))) return false;
 		}
 		}
 		int sw15 = -1;
@@ -160,7 +160,7 @@ namespace pgen::ArrayFirstLastDynamicReturnTypeExtension {
 					if (UNEXPECTED(r18.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_argType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r18.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_argType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r18.raw()))) return false;
 				}
 				}
 				l_resultType = std::move(r18);
@@ -179,7 +179,7 @@ namespace pgen::ArrayFirstLastDynamicReturnTypeExtension {
 					if (UNEXPECTED(r19.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r19.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r19.raw()))) return false;
 				}
 				}
 				l_resultType = std::move(r19);

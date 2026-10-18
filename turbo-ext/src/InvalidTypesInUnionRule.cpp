@@ -11,25 +11,25 @@ static zval pg_lit[4];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\FunctionLike */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Node\ClassPropertyNode */
-static pt_method_site pg_site_2; /* method_getParams_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getParams_2 */
 static pgrt::PropSite pg_site_3; /* prop_type_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\ComplexType */
 static pgrt::PropSite pg_site_5; /* prop_type_5 */
-static pt_method_site pg_site_6; /* method_getReturnType_6 */
-static pt_method_site pg_site_7; /* method_getReturnType_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getReturnType_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getReturnType_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\UnionType */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\NullableType */
 static pgrt::PropSite pg_site_10; /* prop_types_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Identifier */
 static pt_method_site pg_site_12; /* method_toLowerString_12 */
 static pt_method_site pg_site_13; /* method_toString_13 */
-static pt_method_site pg_site_14; /* method_getStartLine_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getStartLine_14 */
 static pgrt::PropSite pg_site_15; /* prop_type_15 */
 static pgrt::PropSite pg_site_16; /* prop_type_16 */
 static pt_method_site pg_site_17; /* method_toLowerString_17 */
 static pgrt::PropSite pg_site_18; /* prop_type_18 */
 static pt_method_site pg_site_19; /* method_toString_19 */
-static pt_method_site pg_site_20; /* method_getStartLine_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getStartLine_20 */
 static pgrt::ClassSite pg_site_21; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Analyser\Scope */
 
@@ -133,7 +133,7 @@ namespace pgen::InvalidTypesInUnionRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_functionLike, "getParams", "getparams", 9, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_functionLike, "getParams", "getparams", 9, r4.raw()))) return false;
 		zv::Val a5 = zv::Val::copyOf(zv::Ref(r4.raw()).deref());
 		HashTable *ht3 = Z_ARRVAL_P(a5.raw());
 		zval *v6;
@@ -178,12 +178,12 @@ namespace pgen::InvalidTypesInUnionRule {
 	}
 	 {
 		zv::Val r19;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_functionLike, "getReturnType", "getreturntype", 13, 0, NULL, r19.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_functionLike, "getReturnType", "getreturntype", 13, r19.raw()))) return false;
 		if (pgrt::instanceOfClass(r19.raw(), pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\ComplexType", 26))) {
 			 {
 				zv::Val o20 = zv::Val::copyOf(zv::Ref(l_errors.raw()));
 				zv::Val r21;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_functionLike, "getReturnType", "getreturntype", 13, 0, NULL, r21.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_functionLike, "getReturnType", "getreturntype", 13, r21.raw()))) return false;
 				zv::Val r22;
 				if (UNEXPECTED(!pgen::InvalidTypesInUnionRule::m_processComplexType(Z_OBJ_P(&this_zv), r21.raw(), r22.raw()))) return false;
 				zval av23[2];
@@ -297,7 +297,7 @@ namespace pgen::InvalidTypesInUnionRule {
 									zv::Val r19;
 									if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r18.raw(), r19.raw()))) return false;
 									zv::Val r20;
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_complexType, "getStartLine", "getstartline", 12, 0, NULL, r20.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_complexType, "getStartLine", "getstartline", 12, r20.raw()))) return false;
 									zv::Val r21;
 									if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r19.raw()), Z_LVAL_P(r20.raw()), r21.raw()))) return false;
 									pgrt::StringBuilder sb22;
@@ -371,7 +371,7 @@ namespace pgen::InvalidTypesInUnionRule {
 						zv::Val r41;
 						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r40.raw(), r41.raw()))) return false;
 						zv::Val r42;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_complexType, "getStartLine", "getstartline", 12, 0, NULL, r42.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, p_complexType, "getStartLine", "getstartline", 12, r42.raw()))) return false;
 						zv::Val r43;
 						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r41.raw()), Z_LVAL_P(r42.raw()), r43.raw()))) return false;
 						pgrt::StringBuilder sb44;

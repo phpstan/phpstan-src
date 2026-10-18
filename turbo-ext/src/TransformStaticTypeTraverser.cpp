@@ -9,11 +9,11 @@ zend_class_entry *pt_ce_transform_static_type_traverser = nullptr;
 
 static pt_method_site pg_site_0; /* method_isInClass_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\StaticType */
-static pt_method_site pg_site_2; /* method_getClassReflection_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getClassReflection_2 */
 static pt_method_site pg_site_3; /* method_changeBaseClass_3 */
-static pt_method_site pg_site_4; /* method_isFinal_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isFinal_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\ThisType */
-static pt_method_site pg_site_6; /* method_getStaticObjectType_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getStaticObjectType_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
 
@@ -76,7 +76,7 @@ namespace pgen::TransformStaticTypeTraverser {
 					if (UNEXPECTED(r8.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p7, "getClassReflection", "getclassreflection", 18, 0, NULL, r8.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p7, "getClassReflection", "getclassreflection", 18, r8.raw()))) return false;
 				}
 				}
 				l_classReflection = std::move(r8);
@@ -102,7 +102,7 @@ namespace pgen::TransformStaticTypeTraverser {
 					if (UNEXPECTED(r12.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "isFinal", "isfinal", 7, 0, NULL, r12.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_classReflection.raw(), "isFinal", "isfinal", 7, r12.raw()))) return false;
 				}
 				}
 				bool b11 = (Z_TYPE_P(r12.raw()) == IS_TRUE);
@@ -112,7 +112,7 @@ namespace pgen::TransformStaticTypeTraverser {
 				if (b11) {
 					 {
 						zv::Val r13;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_changedType.raw(), "getStaticObjectType", "getstaticobjecttype", 19, 0, NULL, r13.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_changedType.raw(), "getStaticObjectType", "getstaticobjecttype", 19, r13.raw()))) return false;
 						l_changedType = std::move(r13);
 					}
 				}

@@ -14,7 +14,7 @@ static pgrt::ClassSite pg_site_1; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::PropSite pg_site_2; /* prop_consts_2 */
 static pgrt::PropSite pg_site_3; /* prop_name_3 */
 static pt_method_site pg_site_4; /* method_toString_4 */
-static pt_method_site pg_site_5; /* method_getClassReflection_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getClassReflection_5 */
 static pt_method_site pg_site_6; /* method_getConstant_6 */
 static pt_method_site pg_site_7; /* method_getPhpDocType_7 */
 static pt_method_site pg_site_8; /* method_getDeclaringClass_8 */
@@ -128,7 +128,7 @@ namespace pgen::MissingClassConstantTypehintRule {
 						if (UNEXPECTED(r19.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r19.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, r19.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(l_constantName.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Constants\\MissingClassConstantTypehintRule::processSingleConstant", 2, "constantName", "string", l_constantName.raw()); return false; }

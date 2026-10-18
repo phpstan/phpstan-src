@@ -28,17 +28,17 @@ static pt_method_site pg_site_14; /* method_toString_14 */
 static pt_method_site pg_site_15; /* method_getFunctionLike_15 */
 static pgrt::PropSite pg_site_16; /* prop_name_16 */
 static pt_method_site pg_site_17; /* method_toLowerString_17 */
-static pt_method_site pg_site_18; /* method_isStatic_18 */
-static pt_method_site pg_site_19; /* method_isPrivate_19 */
-static pt_method_site pg_site_20; /* method_isPublic_20 */
-static pt_method_site pg_site_21; /* method_isFinal_21 */
-static pt_method_site pg_site_22; /* method_isFinal_22 */
-static pt_method_site pg_site_23; /* method_isFinal_23 */
-static pt_method_site pg_site_24; /* method_returnsByRef_24 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_isStatic_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_isPrivate_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_isPublic_20 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_isFinal_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_isFinal_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_isFinal_23 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_returnsByRef_24 */
 static pgrt::PropSite pg_site_25; /* prop_body_25 */
-static pt_method_site pg_site_26; /* method_isAbstract_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_isAbstract_26 */
 static pt_method_site pg_site_27; /* method_getReturnType_27 */
-static pt_method_site pg_site_28; /* method_isVoid_28 */
+static pgrt::MethodShapeSite pg_site_28; /* method0_isVoid_28 */
 static pgrt::ClassSite pg_site_29; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_30; /* cls_PHPStan\Type\Generic\TemplateTypeMap */
 static pgrt::ClassSite pg_site_31; /* cls_PHPStan\Type\Type */
@@ -620,7 +620,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_method.raw(), "isStatic", "isstatic", 8, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_method.raw(), "isStatic", "isstatic", 8, r2.raw()))) return false;
 		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
 		return true;
 	}
@@ -648,7 +648,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_method.raw(), "isPrivate", "isprivate", 9, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_method.raw(), "isPrivate", "isprivate", 9, r2.raw()))) return false;
 		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
 		return true;
 	}
@@ -681,7 +681,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_method.raw(), "isPublic", "ispublic", 8, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_method.raw(), "isPublic", "ispublic", 8, r2.raw()))) return false;
 		}
 		}
 		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
@@ -710,7 +710,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 					if (UNEXPECTED(r2.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_method.raw(), "isFinal", "isfinal", 7, 0, NULL, r2.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_method.raw(), "isFinal", "isfinal", 7, r2.raw()))) return false;
 				}
 				}
 				zv::Val r3;
@@ -727,7 +727,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_method.raw(), "isFinal", "isfinal", 7, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_method.raw(), "isFinal", "isfinal", 7, r5.raw()))) return false;
 		}
 		}
 		bool b4 = (Z_TYPE_P(r5.raw()) == IS_TRUE);
@@ -758,7 +758,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_23, r1.raw(), "isFinal", "isfinal", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, r1.raw(), "isFinal", "isfinal", 7, r2.raw()))) return false;
 		}
 		}
 		zv::Val r3;
@@ -804,7 +804,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 		zv::Val r1;
 		if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getClassMethod(Z_OBJ_P(&this_zv), r1.raw()))) return false;
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_24, r1.raw(), "returnsByRef", "returnsbyref", 12, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, r1.raw(), "returnsByRef", "returnsbyref", 12, r2.raw()))) return false;
 		zv::Val r3;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_createFromBoolean((Z_TYPE_P(r2.raw()) == IS_TRUE), r3.raw()))) return false;
 		*ret = r3.take();
@@ -842,7 +842,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_method.raw(), "isAbstract", "isabstract", 10, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_method.raw(), "isAbstract", "isabstract", 10, r5.raw()))) return false;
 		zv::Val r6;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_createFromBoolean((Z_TYPE_P(r5.raw()) == IS_TRUE), r6.raw()))) return false;
 		*ret = r6.take();
@@ -894,7 +894,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 				if (UNEXPECTED(r6.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_28, vd4.raw(), "isVoid", "isvoid", 6, 0, NULL, r6.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_28, vd4.raw(), "isVoid", "isvoid", 6, r6.raw()))) return false;
 			}
 			}
 			bool r7;

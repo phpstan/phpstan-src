@@ -9,17 +9,17 @@ zend_class_entry *pt_ce_missing_magic_serialization_methods_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[6];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_implementsInterface_1 */
-static pt_method_site pg_site_2; /* method_isAbstract_2 */
-static pt_method_site pg_site_3; /* method_isInterface_3 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isAbstract_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isInterface_3 */
 static pt_method_site pg_site_4; /* method_isEnum_4 */
 static pt_method_site pg_site_5; /* method_getNativeReflection_5 */
-static pt_method_site pg_site_6; /* method_getMethods_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getMethods_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound */
-static pt_method_site pg_site_8; /* method_getName_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
 static pgrt::FunctionSite pg_site_9; /* function_strtolower */
-static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
 static pt_method_site pg_site_11; /* method_getDisplayName_11 */
 static pt_method_site pg_site_12; /* method_getDisplayName_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Php\PhpVersion */
@@ -71,7 +71,7 @@ namespace pgen::MissingMagicSerializationMethodsRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -106,7 +106,7 @@ namespace pgen::MissingMagicSerializationMethodsRule {
 	}
 	 {
 		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_classReflection.raw(), "isAbstract", "isabstract", 10, 0, NULL, r10.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_classReflection.raw(), "isAbstract", "isabstract", 10, r10.raw()))) return false;
 		bool b9 = zend_is_true(r10.raw());
 		if (!b9) {
 			zv::Val r11;
@@ -115,7 +115,7 @@ namespace pgen::MissingMagicSerializationMethodsRule {
 				if (UNEXPECTED(r11.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r11.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "isInterface", "isinterface", 11, r11.raw()))) return false;
 			}
 			}
 			b9 = zend_is_true(r11.raw());
@@ -162,7 +162,7 @@ namespace pgen::MissingMagicSerializationMethodsRule {
 				}
 				}
 				zv::Val r19;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r18.raw(), "getMethods", "getmethods", 10, 0, NULL, r19.raw(), NULL))) goto catch_c17;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, r18.raw(), "getMethods", "getmethods", 10, r19.raw()))) goto catch_c17;
 				l_nativeMethods = std::move(r19);
 			}
 		}
@@ -207,7 +207,7 @@ namespace pgen::MissingMagicSerializationMethodsRule {
 						if (UNEXPECTED(r26.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_method, "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_method, "getName", "getname", 7, r26.raw()))) return false;
 					}
 					}
 					zval av27[1];
@@ -227,7 +227,7 @@ namespace pgen::MissingMagicSerializationMethodsRule {
 						if (UNEXPECTED(r29.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_method, "getName", "getname", 7, 0, NULL, r29.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_method, "getName", "getname", 7, r29.raw()))) return false;
 					}
 					}
 					zval av30[1];

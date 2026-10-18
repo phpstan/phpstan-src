@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_ignore_parse_error_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getNodes_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getNodes_0 */
 static pgrt::FunctionSite pg_site_1; /* function_count */
 static pt_method_site pg_site_2; /* method_getAttribute_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node */
@@ -44,7 +44,7 @@ namespace pgen::IgnoreParseErrorRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getNodes", "getnodes", 8, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getNodes", "getnodes", 8, r1.raw()))) return false;
 		l_nodes = std::move(r1);
 	}
 	 {

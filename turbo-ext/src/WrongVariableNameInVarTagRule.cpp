@@ -20,19 +20,19 @@ static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Node\InFunctionNode */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Node\InClassMethodNode */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Node\InClassNode */
 static pt_method_site pg_site_10; /* method_getFunction_10 */
-static pt_method_site pg_site_11; /* method_getComments_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getComments_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Comment\Doc */
 static pt_method_site pg_site_13; /* method_getFile_13 */
 static pt_method_site pg_site_14; /* method_isInClass_14 */
-static pt_method_site pg_site_15; /* method_getClassReflection_15 */
-static pt_method_site pg_site_16; /* method_getName_16 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getClassReflection_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getName_16 */
 static pt_method_site pg_site_17; /* method_isInTrait_17 */
 static pt_method_site pg_site_18; /* method_getTraitReflection_18 */
-static pt_method_site pg_site_19; /* method_getName_19 */
-static pt_method_site pg_site_20; /* method_getName_20 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getName_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getName_20 */
 static pgrt::GetterSite pg_site_21; /* getter_getText_21 */
 static pgrt::ClassSite pg_site_22; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_23; /* method_getText_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getText_23 */
 static pgrt::ClassSite pg_site_24; /* cls_PhpParser\Node\Stmt\Foreach_ */
 static pgrt::PropSite pg_site_25; /* prop_expr_25 */
 static pgrt::PropSite pg_site_26; /* prop_keyVar_26 */
@@ -276,7 +276,7 @@ namespace pgen::WrongVariableNameInVarTagRule {
 	}
 	 {
 		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_node, "getComments", "getcomments", 11, 0, NULL, r16.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_node, "getComments", "getcomments", 11, r16.raw()))) return false;
 		zv::Val a17 = zv::Val::copyOf(zv::Ref(r16.raw()).deref());
 		HashTable *ht15 = Z_ARRVAL_P(a17.raw());
 		zval *v18;
@@ -331,7 +331,7 @@ namespace pgen::WrongVariableNameInVarTagRule {
 							if (UNEXPECTED(r32.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r32.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_scope, "getClassReflection", "getclassreflection", 18, r32.raw()))) return false;
 						}
 						}
 						zv::Val r33;
@@ -340,7 +340,7 @@ namespace pgen::WrongVariableNameInVarTagRule {
 							if (UNEXPECTED(r33.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_16, r32.raw(), "getName", "getname", 7, 0, NULL, r33.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, r32.raw(), "getName", "getname", 7, r33.raw()))) return false;
 						}
 						}
 						q31 = std::move(r33);
@@ -386,7 +386,7 @@ namespace pgen::WrongVariableNameInVarTagRule {
 							if (UNEXPECTED(r42.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_19, r40.raw(), "getName", "getname", 7, 0, NULL, r42.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, r40.raw(), "getName", "getname", 7, r42.raw()))) return false;
 						}
 						}
 						q39 = std::move(r42);
@@ -404,7 +404,7 @@ namespace pgen::WrongVariableNameInVarTagRule {
 							if (UNEXPECTED(r45.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_function.raw(), "getName", "getname", 7, 0, NULL, r45.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_function.raw(), "getName", "getname", 7, r45.raw()))) return false;
 						}
 						}
 						q44 = std::move(r45);
@@ -420,7 +420,7 @@ namespace pgen::WrongVariableNameInVarTagRule {
 						ZVAL_COPY(r48.raw(), gs47);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_comment, "getText", "gettext", 7, 0, NULL, r48.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_comment, "getText", "gettext", 7, r48.raw()))) return false;
 					}
 					}
 					zv::Val r49;

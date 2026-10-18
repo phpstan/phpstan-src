@@ -9,38 +9,38 @@ zend_class_entry *pt_ce_do_while_loop_constant_condition_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[6];
 
-static pt_method_site pg_site_0; /* method_getCond_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getCond_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr */
-static pt_method_site pg_site_2; /* method_getCond_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getCond_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\Constant\ConstantBooleanType */
-static pt_method_site pg_site_4; /* method_getValue_4 */
-static pt_method_site pg_site_5; /* method_hasYield_5 */
-static pt_method_site pg_site_6; /* method_getCond_6 */
-static pt_method_site pg_site_7; /* method_getExitPoints_7 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getValue_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_hasYield_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getCond_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getExitPoints_7 */
 static pt_method_site pg_site_8; /* method_getStatement_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Stmt\Continue_ */
-static pt_method_site pg_site_10; /* method_getCond_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getCond_10 */
 static pgrt::PropSite pg_site_11; /* prop_num_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Scalar\Int_ */
 static pgrt::PropSite pg_site_13; /* prop_num_13 */
 static pgrt::PropSite pg_site_14; /* prop_value_14 */
-static pt_method_site pg_site_15; /* method_getCond_15 */
-static pt_method_site pg_site_16; /* method_getExitPoints_16 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getCond_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getExitPoints_16 */
 static pt_method_site pg_site_17; /* method_getStatement_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PhpParser\Node\Stmt\Break_ */
-static pt_method_site pg_site_19; /* method_getCond_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getCond_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_21; /* method_getCond_21 */
-static pt_method_site pg_site_22; /* method_getValue_22 */
-static pt_method_site pg_site_23; /* method_getCond_23 */
-static pt_method_site pg_site_24; /* method_getStartLine_24 */
-static pt_method_site pg_site_25; /* method_getValue_25 */
-static pt_method_site pg_site_26; /* method_getCond_26 */
-static pt_method_site pg_site_27; /* method_getValue_27 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getCond_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getValue_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getCond_23 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getStartLine_24 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getValue_25 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getCond_26 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getValue_27 */
 static pt_method_site pg_site_28; /* method_isInTrait_28 */
-static pt_method_site pg_site_29; /* method_getCond_29 */
-static pt_method_site pg_site_30; /* method_getValue_30 */
-static pt_method_site pg_site_31; /* method_getCond_31 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_getCond_29 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getValue_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getCond_31 */
 static pgrt::ClassSite pg_site_32; /* cls_PHPStan\Rules\Comparison\ConstantConditionRuleHelper */
 static pgrt::ClassSite pg_site_33; /* cls_PHPStan\Rules\Comparison\ConstantConditionInTraitHelper */
 static pgrt::ClassSite pg_site_34; /* cls_PHPStan\Rules\Comparison\FunctionCallConstantConditionHelper */
@@ -78,7 +78,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(p2 == NULL)) return;
 		zv::Val o3 = zv::Val::copyOf(zv::Ref(p2));
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_21, zv::Ref(&captures[1]).deref().raw(), "getCond", "getcond", 7, 0, NULL, r4.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, zv::Ref(&captures[1]).deref().raw(), "getCond", "getcond", 7, r4.raw()))) return;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r4.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionRuleHelper::getNativeBooleanType", 2, "expr", "PhpParser\\Node\\Expr", r4.raw()); return; }
 		zv::Val r5;
 		if (UNEXPECTED(!pgen::ConstantConditionRuleHelper::m_getNativeBooleanType(Z_OBJ_P(o3.raw()), zv::Ref(&captures[0]).deref().raw(), r4.raw(), r5.raw()))) return;
@@ -165,7 +165,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getCond", "getcond", 7, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getCond", "getcond", 7, r3.raw()))) return false;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r3.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionRuleHelper::getBooleanType", 2, "expr", "PhpParser\\Node\\Expr", r3.raw()); return false; }
 		zv::Val r4;
 		if (UNEXPECTED(!pgen::ConstantConditionRuleHelper::m_getBooleanType(Z_OBJ_P(o2.raw()), p_scope, r3.raw(), r4.raw()))) return false;
@@ -176,7 +176,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 		if (UNEXPECTED(p5 == NULL)) return false;
 		zv::Val o6 = zv::Val::copyOf(zv::Ref(p5));
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getCond", "getcond", 7, 0, NULL, r7.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getCond", "getcond", 7, r7.raw()))) return false;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r7.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::isTypeCheckCandidate", 1, "expr", "PhpParser\\Node\\Expr", r7.raw()); return false; }
 		bool r8;
 		if (UNEXPECTED(!pgen::FunctionCallConstantConditionHelper::m_isTypeCheckCandidate(Z_OBJ_P(o6.raw()), r7.raw(), &r8))) return false;
@@ -191,17 +191,17 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 					if (UNEXPECTED(r9.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r9.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_exprType.raw(), "getValue", "getvalue", 8, r9.raw()))) return false;
 				}
 				}
 				if (Z_TYPE_P(r9.raw()) == IS_TRUE) {
 					 {
 						zv::Val r10;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_node, "hasYield", "hasyield", 8, 0, NULL, r10.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_node, "hasYield", "hasyield", 8, r10.raw()))) return false;
 						if (zend_is_true(r10.raw())) {
 							 {
 								zv::Val r11;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_node, "getCond", "getcond", 7, 0, NULL, r11.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_node, "getCond", "getcond", 7, r11.raw()))) return false;
 								if (UNEXPECTED(!(pgrt::instanceOfClass(r11.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\DoWhileLoopConstantConditionRule::emitNoError", 2, "cond", "PhpParser\\Node\\Expr", r11.raw()); return false; }
 								if (UNEXPECTED(!pgen::DoWhileLoopConstantConditionRule::m_emitNoError(Z_OBJ_P(&this_zv), p_scope, r11.raw(), l_isTypeCheckCandidate))) return false;
 							}
@@ -215,7 +215,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 					}
 					 {
 						zv::Val r15;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_node, "getExitPoints", "getexitpoints", 13, 0, NULL, r15.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_node, "getExitPoints", "getexitpoints", 13, r15.raw()))) return false;
 						pgrt::ForeachIter it16;
 						if (UNEXPECTED(!it16.begin(r15.raw()))) return false;
 						while (it16.valid()) {
@@ -240,7 +240,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 									if (!(pgrt::instanceOfClass(l_statement.raw(), pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node\\Stmt\\Continue_", 29)))) {
 										 {
 											zv::Val r21;
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_node, "getCond", "getcond", 7, 0, NULL, r21.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_node, "getCond", "getcond", 7, r21.raw()))) return false;
 											if (UNEXPECTED(!(pgrt::instanceOfClass(r21.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\DoWhileLoopConstantConditionRule::emitNoError", 2, "cond", "PhpParser\\Node\\Expr", r21.raw()); return false; }
 											if (UNEXPECTED(!pgen::DoWhileLoopConstantConditionRule::m_emitNoError(Z_OBJ_P(&this_zv), p_scope, r21.raw(), l_isTypeCheckCandidate))) return false;
 										}
@@ -279,7 +279,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 									if (Z_LVAL_P(zv::Ref(p28).deref().raw()) > 1) {
 										 {
 											zv::Val r30;
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_node, "getCond", "getcond", 7, 0, NULL, r30.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_node, "getCond", "getcond", 7, r30.raw()))) return false;
 											if (UNEXPECTED(!(pgrt::instanceOfClass(r30.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\DoWhileLoopConstantConditionRule::emitNoError", 2, "cond", "PhpParser\\Node\\Expr", r30.raw()); return false; }
 											if (UNEXPECTED(!pgen::DoWhileLoopConstantConditionRule::m_emitNoError(Z_OBJ_P(&this_zv), p_scope, r30.raw(), l_isTypeCheckCandidate))) return false;
 										}
@@ -301,7 +301,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 				 {
 					 {
 						zv::Val r34;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p_node, "getExitPoints", "getexitpoints", 13, 0, NULL, r34.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, p_node, "getExitPoints", "getexitpoints", 13, r34.raw()))) return false;
 						pgrt::ForeachIter it35;
 						if (UNEXPECTED(!it35.begin(r34.raw()))) return false;
 						while (it35.valid()) {
@@ -326,7 +326,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 									if (pgrt::instanceOfClass(l_statement.raw(), pgrt::lookupClassQuiet(pg_site_18, "PhpParser\\Node\\Stmt\\Break_", 26))) {
 										 {
 											zv::Val r40;
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_node, "getCond", "getcond", 7, 0, NULL, r40.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p_node, "getCond", "getcond", 7, r40.raw()))) return false;
 											if (UNEXPECTED(!(pgrt::instanceOfClass(r40.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\DoWhileLoopConstantConditionRule::emitNoError", 2, "cond", "PhpParser\\Node\\Expr", r40.raw()); return false; }
 											if (UNEXPECTED(!pgen::DoWhileLoopConstantConditionRule::m_emitNoError(Z_OBJ_P(&this_zv), p_scope, r40.raw(), l_isTypeCheckCandidate))) return false;
 										}
@@ -362,7 +362,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 					if (UNEXPECTED(r46.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r46.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_exprType.raw(), "getValue", "getvalue", 8, r46.raw()))) return false;
 				}
 				}
 				zv::Val q47;
@@ -387,9 +387,9 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 				zv::Val r54;
 				if (UNEXPECTED(!pgrt::callValue(o45.raw(), 1, av53, r54.raw(), NULL))) return false;
 				zv::Val r55;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p_node, "getCond", "getcond", 7, 0, NULL, r55.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, p_node, "getCond", "getcond", 7, r55.raw()))) return false;
 				zv::Val r56;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_24, r55.raw(), "getStartLine", "getstartline", 12, 0, NULL, r56.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, r55.raw(), "getStartLine", "getstartline", 12, r56.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r56.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r56.raw()); return false; }
 				zv::Val r57;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r54.raw()), Z_LVAL_P(r56.raw()), r57.raw()))) return false;
@@ -399,7 +399,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 					if (UNEXPECTED(r58.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r58.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_exprType.raw(), "getValue", "getvalue", 8, r58.raw()))) return false;
 				}
 				}
 				zv::Val q59;
@@ -429,14 +429,14 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 						if (UNEXPECTED(p66 == NULL)) return false;
 						zv::Val o67 = zv::Val::copyOf(zv::Ref(p66));
 						zv::Val r68;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_26, p_node, "getCond", "getcond", 7, 0, NULL, r68.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, p_node, "getCond", "getcond", 7, r68.raw()))) return false;
 						zv::Val r69;
 						if (EXPECTED(Z_TYPE_P(l_exprType.raw()) == IS_OBJECT)) {
 							r69 = pt_type_op(Z_OBJ_P(l_exprType.raw()), PT_OP_GET_VALUE, 0, NULL);
 							if (UNEXPECTED(r69.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r69.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_exprType.raw(), "getValue", "getvalue", 8, r69.raw()))) return false;
 						}
 						}
 						if (UNEXPECTED(!(pgrt::instanceOfClass(r68.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::emitFunctionCallError", 3, "expr", "PhpParser\\Node\\Expr", r68.raw()); return false; }
@@ -472,14 +472,14 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 						if (UNEXPECTED(p76 == NULL)) return false;
 						zv::Val o77 = zv::Val::copyOf(zv::Ref(p76));
 						zv::Val r78;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_29, p_node, "getCond", "getcond", 7, 0, NULL, r78.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, p_node, "getCond", "getcond", 7, r78.raw()))) return false;
 						zv::Val r79;
 						if (EXPECTED(Z_TYPE_P(l_exprType.raw()) == IS_OBJECT)) {
 							r79 = pt_type_op(Z_OBJ_P(l_exprType.raw()), PT_OP_GET_VALUE, 0, NULL);
 							if (UNEXPECTED(r79.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r79.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_exprType.raw(), "getValue", "getvalue", 8, r79.raw()))) return false;
 						}
 						}
 						if (UNEXPECTED(!(pgrt::instanceOfClass(r78.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitError", 3, "expr", "PhpParser\\Node\\Expr", r78.raw()); return false; }
@@ -504,7 +504,7 @@ namespace pgen::DoWhileLoopConstantConditionRule {
 	}
 	 {
 		zv::Val r84;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_31, p_node, "getCond", "getcond", 7, 0, NULL, r84.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, p_node, "getCond", "getcond", 7, r84.raw()))) return false;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r84.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\DoWhileLoopConstantConditionRule::emitNoError", 2, "cond", "PhpParser\\Node\\Expr", r84.raw()); return false; }
 		if (UNEXPECTED(!pgen::DoWhileLoopConstantConditionRule::m_emitNoError(Z_OBJ_P(&this_zv), p_scope, r84.raw(), l_isTypeCheckCandidate))) return false;
 	}

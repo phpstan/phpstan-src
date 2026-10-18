@@ -11,22 +11,22 @@ static zval pg_lit[8];
 
 static pt_method_site pg_site_0; /* method_isInClass_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_2; /* method_getClassReflection_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getClassReflection_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_isInTrait_4 */
 static pt_method_site pg_site_5; /* method_getTraitReflection_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
-static pt_method_site pg_site_7; /* method_getDocComment_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getDocComment_7 */
 static pt_method_site pg_site_8; /* method_getFile_8 */
 static pgrt::GetterSite pg_site_9; /* getter_getText_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_11; /* method_getText_11 */
-static pt_method_site pg_site_12; /* method_getClassReflection_12 */
-static pt_method_site pg_site_13; /* method_getClassTypeDescription_13 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getText_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getClassReflection_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getClassTypeDescription_13 */
 static pgrt::FunctionSite pg_site_14; /* function_ucfirst */
 static pgrt::PropSite pg_site_15; /* prop_traits_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\PhpDoc\Tag\UsesTag */
-static pt_method_site pg_site_17; /* method_getType_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getType_17 */
 static pgrt::FunctionSite pg_site_18; /* function_array_map */
 static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Type\FileTypeMapper */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Rules\Generics\GenericAncestorsCheck */
@@ -50,7 +50,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_tag, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, p_tag, "getType", "gettype", 7, r1.raw()))) return;
 		}
 		}
 		*return_value = r1.take();
@@ -137,7 +137,7 @@ namespace pgen::UsedTraitsRule {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_scope, "getClassReflection", "getclassreflection", 18, r7.raw()))) return false;
 		}
 		}
 		zv::Val r8;
@@ -146,7 +146,7 @@ namespace pgen::UsedTraitsRule {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, r7.raw(), "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, r7.raw(), "getName", "getname", 7, r8.raw()))) return false;
 		}
 		}
 		l_className = std::move(r8);
@@ -192,7 +192,7 @@ namespace pgen::UsedTraitsRule {
 					if (UNEXPECTED(r16.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r14.raw(), "getName", "getname", 7, 0, NULL, r16.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, r14.raw(), "getName", "getname", 7, r16.raw()))) return false;
 				}
 				}
 				l_traitName = std::move(r16);
@@ -207,7 +207,7 @@ namespace pgen::UsedTraitsRule {
 	}
 	 {
 		zv::Val r19;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r19.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_node, "getDocComment", "getdoccomment", 13, r19.raw()))) return false;
 		l_docComment = std::move(r19);
 	}
 	 {
@@ -237,7 +237,7 @@ namespace pgen::UsedTraitsRule {
 					ZVAL_COPY(r27.raw(), gs26);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r27.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_docComment.raw(), "getText", "gettext", 7, r27.raw()))) return false;
 				}
 				}
 				zval z28;
@@ -260,11 +260,11 @@ namespace pgen::UsedTraitsRule {
 			if (UNEXPECTED(r31.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r31.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_scope, "getClassReflection", "getclassreflection", 18, r31.raw()))) return false;
 		}
 		}
 		zv::Val r32;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r31.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r32.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, r31.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r32.raw()))) return false;
 		zv::Val r33 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r32.raw())));
 		l_typeDescription = std::move(r33);
 	}

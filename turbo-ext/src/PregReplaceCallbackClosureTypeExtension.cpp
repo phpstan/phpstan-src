@@ -9,18 +9,18 @@ zend_class_entry *pt_ce_preg_replace_callback_closure_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Expr */
-static pt_method_site pg_site_7; /* method_getName_7 */
-static pt_method_site pg_site_8; /* method_isOptional_8 */
-static pt_method_site pg_site_9; /* method_passedByReference_9 */
-static pt_method_site pg_site_10; /* method_isVariadic_10 */
-static pt_method_site pg_site_11; /* method_getDefaultValue_11 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isOptional_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_passedByReference_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isVariadic_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getDefaultValue_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Reflection\ParameterReflection */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -53,7 +53,7 @@ namespace pgen::PregReplaceCallbackClosureTypeExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		bool b1 = zend_is_identical(r2.raw(), &pg_lit[0]);
@@ -64,7 +64,7 @@ namespace pgen::PregReplaceCallbackClosureTypeExtension {
 				if (UNEXPECTED(r3.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_parameter, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_parameter, "getName", "getname", 7, r3.raw()))) return false;
 			}
 			}
 			b1 = zend_is_identical(r3.raw(), &pg_lit[1]);
@@ -201,7 +201,7 @@ namespace pgen::PregReplaceCallbackClosureTypeExtension {
 			if (UNEXPECTED(r33.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_parameter, "getName", "getname", 7, 0, NULL, r33.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_parameter, "getName", "getname", 7, r33.raw()))) return false;
 		}
 		}
 		zv::Val r34;
@@ -210,7 +210,7 @@ namespace pgen::PregReplaceCallbackClosureTypeExtension {
 			if (UNEXPECTED(r34.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_parameter, "isOptional", "isoptional", 10, 0, NULL, r34.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_parameter, "isOptional", "isoptional", 10, r34.raw()))) return false;
 		}
 		}
 		bool k35 = (Z_TYPE_P(r34.raw()) == IS_TRUE);
@@ -221,7 +221,7 @@ namespace pgen::PregReplaceCallbackClosureTypeExtension {
 			if (UNEXPECTED(r37.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_parameter, "passedByReference", "passedbyreference", 17, 0, NULL, r37.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_parameter, "passedByReference", "passedbyreference", 17, r37.raw()))) return false;
 		}
 		}
 		zv::Val r38;
@@ -230,7 +230,7 @@ namespace pgen::PregReplaceCallbackClosureTypeExtension {
 			if (UNEXPECTED(r38.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_parameter, "isVariadic", "isvariadic", 10, 0, NULL, r38.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_parameter, "isVariadic", "isvariadic", 10, r38.raw()))) return false;
 		}
 		}
 		bool k39 = (Z_TYPE_P(r38.raw()) == IS_TRUE);
@@ -240,7 +240,7 @@ namespace pgen::PregReplaceCallbackClosureTypeExtension {
 			if (UNEXPECTED(r40.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_parameter, "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r40.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_parameter, "getDefaultValue", "getdefaultvalue", 15, r40.raw()))) return false;
 		}
 		}
 		zval n32_raw;

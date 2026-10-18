@@ -21,19 +21,19 @@ static pt_method_site pg_site_8; /* method_getType_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Expr\BinaryOp\Concat */
 static pt_method_site pg_site_10; /* method_resolvePatternConcat_10 */
 static pt_method_site pg_site_11; /* method_getConstantStrings_11 */
-static pt_method_site pg_site_12; /* method_getValue_12 */
-static pt_method_site pg_site_13; /* method_getConstantArrays_13 */
-static pt_method_site pg_site_14; /* method_getValueTypes_14 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getValue_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getConstantArrays_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getValueTypes_14 */
 static pt_method_site pg_site_15; /* method_getConstantStrings_15 */
-static pt_method_site pg_site_16; /* method_getValue_16 */
-static pt_method_site pg_site_17; /* method_getConstantArrays_17 */
-static pt_method_site pg_site_18; /* method_getKeyTypes_18 */
-static pt_method_site pg_site_19; /* method_getConstantStrings_19 */
-static pt_method_site pg_site_20; /* method_getValue_20 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getValue_16 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getConstantArrays_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getKeyTypes_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getConstantStrings_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getValue_20 */
 static pgrt::ClassSite pg_site_21; /* cls_Nette\Utils\Strings */
 static pt_method_site pg_site_22; /* static_Nette\Utils\Strings::match */
 static pgrt::ClassSite pg_site_23; /* cls_Nette\Utils\RegexpException */
-static pt_method_site pg_site_24; /* method_getMessage_24 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getMessage_24 */
 static pgrt::ClassSite pg_site_25; /* cls_PHPStan\Type\Regex\RegexExpressionHelper */
 static pgrt::ClassSite pg_site_26; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_27; /* cls_PHPStan\Analyser\Scope */
@@ -296,7 +296,7 @@ namespace pgen::RegularExpressionPatternRule {
 								if (UNEXPECTED(r43.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_constantStringType, "getValue", "getvalue", 8, 0, NULL, r43.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_constantStringType, "getValue", "getvalue", 8, r43.raw()))) return false;
 							}
 							}
 							zv::Val o44 = zv::Val::copyOf(zv::Ref(r43.raw()));
@@ -323,7 +323,7 @@ namespace pgen::RegularExpressionPatternRule {
 					if (UNEXPECTED(r49.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_patternType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r49.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_patternType.raw(), "getConstantArrays", "getconstantarrays", 17, r49.raw()))) return false;
 				}
 				}
 				zv::Val a50 = zv::Val::copyOf(zv::Ref(r49.raw()).deref());
@@ -342,7 +342,7 @@ namespace pgen::RegularExpressionPatternRule {
 								if (UNEXPECTED(r57.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_constantArrayType, "getValueTypes", "getvaluetypes", 13, 0, NULL, r57.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_constantArrayType, "getValueTypes", "getvaluetypes", 13, r57.raw()))) return false;
 							}
 							}
 							pgrt::ForeachIter it58;
@@ -375,7 +375,7 @@ namespace pgen::RegularExpressionPatternRule {
 														if (UNEXPECTED(r67.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_constantString, "getValue", "getvalue", 8, 0, NULL, r67.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_constantString, "getValue", "getvalue", 8, r67.raw()))) return false;
 													}
 													}
 													zv::Val o68 = zv::Val::copyOf(zv::Ref(r67.raw()));
@@ -409,7 +409,7 @@ namespace pgen::RegularExpressionPatternRule {
 					if (UNEXPECTED(r71.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_patternType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r71.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_patternType.raw(), "getConstantArrays", "getconstantarrays", 17, r71.raw()))) return false;
 				}
 				}
 				zv::Val a72 = zv::Val::copyOf(zv::Ref(r71.raw()).deref());
@@ -428,7 +428,7 @@ namespace pgen::RegularExpressionPatternRule {
 								if (UNEXPECTED(r79.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_constantArrayType, "getKeyTypes", "getkeytypes", 11, 0, NULL, r79.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_constantArrayType, "getKeyTypes", "getkeytypes", 11, r79.raw()))) return false;
 							}
 							}
 							pgrt::ForeachIter it80;
@@ -438,7 +438,7 @@ namespace pgen::RegularExpressionPatternRule {
 								 {
 									 {
 										zv::Val r84;
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_arrayKeyType, "getConstantStrings", "getconstantstrings", 18, 0, NULL, r84.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_arrayKeyType, "getConstantStrings", "getconstantstrings", 18, r84.raw()))) return false;
 										pgrt::ForeachIter it85;
 										if (UNEXPECTED(!it85.begin(r84.raw()))) return false;
 										while (it85.valid()) {
@@ -451,7 +451,7 @@ namespace pgen::RegularExpressionPatternRule {
 														if (UNEXPECTED(r88.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_constantString, "getValue", "getvalue", 8, 0, NULL, r88.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_constantString, "getValue", "getvalue", 8, r88.raw()))) return false;
 													}
 													}
 													zv::Val o89 = zv::Val::copyOf(zv::Ref(r88.raw()));
@@ -515,7 +515,7 @@ namespace pgen::RegularExpressionPatternRule {
 				zval_ptr_dtor(&exception);
 				 {
 					zv::Val r6;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r6.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_e.raw(), "getMessage", "getmessage", 10, r6.raw()))) return false;
 					*ret = r6.take();
 					return true;
 				}

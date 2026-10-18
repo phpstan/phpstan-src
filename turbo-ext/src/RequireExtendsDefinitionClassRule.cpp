@@ -9,11 +9,11 @@ zend_class_entry *pt_ce_require_extends_definition_class_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_getRequireExtendsTags_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getRequireExtendsTags_1 */
 static pgrt::FunctionSite pg_site_2; /* function_count */
-static pt_method_site pg_site_3; /* method_isInterface_3 */
-static pt_method_site pg_site_4; /* method_getClassTypeDescription_4 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isInterface_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassTypeDescription_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Rules\PhpDoc\RequireExtendsCheck */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Analyser\Scope */
@@ -59,14 +59,14 @@ namespace pgen::RequireExtendsDefinitionClassRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_classReflection.raw(), "getRequireExtendsTags", "getrequireextendstags", 21, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_classReflection.raw(), "getRequireExtendsTags", "getrequireextendstags", 21, r2.raw()))) return false;
 		l_extendsTags = std::move(r2);
 	}
 	 {
@@ -90,7 +90,7 @@ namespace pgen::RequireExtendsDefinitionClassRule {
 			if (UNEXPECTED(r6.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "isInterface", "isinterface", 11, r6.raw()))) return false;
 		}
 		}
 		if (!(zend_is_true(r6.raw()))) {
@@ -99,7 +99,7 @@ namespace pgen::RequireExtendsDefinitionClassRule {
 				zv::Val r8;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r8.raw()))) return false;
 				zv::Val r9;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r9.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r9.raw()))) return false;
 				pgrt::StringBuilder sb10;
 				sb10.appendLiteral("requireExtends.on", 17);
 				if (UNEXPECTED(!sb10.append(r9.raw()))) return false;

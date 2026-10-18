@@ -12,23 +12,23 @@ static zval pg_lit[13];
 static pt_method_site pg_site_0; /* method_toString_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Identifier */
 static pgrt::ClassSite pg_site_2; /* cls_ReflectionClass */
-static pt_method_site pg_site_3; /* method_newInstanceWithoutConstructor_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_newInstanceWithoutConstructor_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\BetterReflection\Reflection\ReflectionNamedType */
-static pt_method_site pg_site_5; /* method_isBuiltin_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isBuiltin_5 */
 static pt_method_site pg_site_6; /* method_reflectClass_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\BetterReflection\Reflection\ReflectionEnum */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\BetterReflection\Reflection\ReflectionFunction */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\BetterReflection\Reflection\ReflectionParameter */
 static pt_method_site pg_site_10; /* method_getDeclaringFunction_10 */
 static pgrt::ClassSite pg_site_11; /* cls_LogicException */
-static pt_method_site pg_site_12; /* method_getImplementingClass_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getImplementingClass_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\BetterReflection\Reflection\ReflectionClass */
 static pgrt::FunctionSite pg_site_14; /* function_assert */
-static pt_method_site pg_site_15; /* method_getDeclaringClass_15 */
-static pt_method_site pg_site_16; /* method_getParentClass_16 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getDeclaringClass_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getParentClass_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\BetterReflection\Reflection\ReflectionMethod */
-static pt_method_site pg_site_18; /* method_getCurrentClass_18 */
-static pt_method_site pg_site_19; /* method_getName_19 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getCurrentClass_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getName_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\BetterReflection\Reflector\Reflector */
 
 static void pg_const_BUILT_IN_TYPES(zval *out)
@@ -162,7 +162,7 @@ namespace pgen::BetterReflectionNamedType {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_reflection.raw(), "newInstanceWithoutConstructor", "newinstancewithoutconstructor", 29, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_reflection.raw(), "newInstanceWithoutConstructor", "newinstancewithoutconstructor", 29, r4.raw()))) return false;
 		l_ref = std::move(r4);
 	}
 	 {
@@ -298,7 +298,7 @@ namespace pgen::BetterReflectionNamedType {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, &this_zv, "isBuiltin", "isbuiltin", 9, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, &this_zv, "isBuiltin", "isbuiltin", 9, r1.raw()))) return false;
 		}
 		}
 		if (!((Z_TYPE_P(r1.raw()) == IS_TRUE))) {
@@ -392,7 +392,7 @@ namespace pgen::BetterReflectionNamedType {
 				zval *p25 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
 				if (UNEXPECTED(p25 == NULL)) return false;
 				zv::Val r26;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p25, "getImplementingClass", "getimplementingclass", 20, 0, NULL, r26.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p25, "getImplementingClass", "getimplementingclass", 20, r26.raw()))) return false;
 				l_class = std::move(r26);
 			}
 			 {
@@ -421,7 +421,7 @@ namespace pgen::BetterReflectionNamedType {
 				zval *p32 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
 				if (UNEXPECTED(p32 == NULL)) return false;
 				zv::Val r33;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p32, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, r33.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p32, "getDeclaringClass", "getdeclaringclass", 17, r33.raw()))) return false;
 				l_class = std::move(r33);
 			}
 			 {
@@ -445,7 +445,7 @@ namespace pgen::BetterReflectionNamedType {
 					if (UNEXPECTED(r39.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_class.raw(), "getParentClass", "getparentclass", 14, 0, NULL, r39.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_class.raw(), "getParentClass", "getparentclass", 14, r39.raw()))) return false;
 				}
 				}
 				l_parentClass = std::move(r39);
@@ -482,7 +482,7 @@ namespace pgen::BetterReflectionNamedType {
 				zval *p47 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
 				if (UNEXPECTED(p47 == NULL)) return false;
 				zv::Val r48;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p47, "getCurrentClass", "getcurrentclass", 15, 0, NULL, r48.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, p47, "getCurrentClass", "getcurrentclass", 15, r48.raw()))) return false;
 				*ret = r48.take();
 				return true;
 			}
@@ -583,7 +583,7 @@ namespace pgen::BetterReflectionNamedType {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, &this_zv, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, &this_zv, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = r1.take();

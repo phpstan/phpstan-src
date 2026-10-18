@@ -14,12 +14,12 @@ static pt_method_site pg_site_1; /* method_isPrivate_1 */
 static pt_method_site pg_site_2; /* method_isAbstract_2 */
 static pt_method_site pg_site_3; /* method_yes_3 */
 static pt_method_site pg_site_4; /* method_isInTrait_4 */
-static pt_method_site pg_site_5; /* method_getClassReflection_5 */
-static pt_method_site pg_site_6; /* method_isAbstract_6 */
-static pt_method_site pg_site_7; /* method_isInterface_7 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getClassReflection_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isAbstract_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_isInterface_7 */
 static pt_method_site pg_site_8; /* method_getDeclaringClass_8 */
 static pt_method_site pg_site_9; /* method_getDisplayName_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
 
@@ -156,7 +156,7 @@ namespace pgen::AbstractPrivateMethodRule {
 			if (UNEXPECTED(r19.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r19.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, r19.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r19);
@@ -173,7 +173,7 @@ namespace pgen::AbstractPrivateMethodRule {
 	}
 	 {
 		zv::Val r22;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_classReflection.raw(), "isAbstract", "isabstract", 10, 0, NULL, r22.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_classReflection.raw(), "isAbstract", "isabstract", 10, r22.raw()))) return false;
 		bool b21 = !((Z_TYPE_P(r22.raw()) == IS_TRUE));
 		if (b21) {
 			zv::Val r23;
@@ -182,7 +182,7 @@ namespace pgen::AbstractPrivateMethodRule {
 				if (UNEXPECTED(r23.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_classReflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r23.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_classReflection.raw(), "isInterface", "isinterface", 11, r23.raw()))) return false;
 			}
 			}
 			b21 = !((Z_TYPE_P(r23.raw()) == IS_TRUE));
@@ -225,7 +225,7 @@ namespace pgen::AbstractPrivateMethodRule {
 			if (UNEXPECTED(r29.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_method.raw(), "getName", "getname", 7, 0, NULL, r29.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_method.raw(), "getName", "getname", 7, r29.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb30;

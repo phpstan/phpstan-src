@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_template_constant_string_type = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_getValue_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getValue_0 */
 static pt_method_site pg_site_1; /* bound_PHPStan\Type\Constant\ConstantStringType::__construct */
 static pgrt::PropIndexSite pg_site_2; /* slot_default_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
@@ -31,7 +31,7 @@ namespace pgen::TemplateConstantStringType {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_bound, "getValue", "getvalue", 8, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_bound, "getValue", "getvalue", 8, r1.raw()))) return false;
 		}
 		}
 		zval av2[1];

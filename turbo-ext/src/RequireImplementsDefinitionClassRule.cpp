@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_require_implements_definition_class_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_getRequireImplementsTags_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getRequireImplementsTags_1 */
 static pgrt::FunctionSite pg_site_2; /* function_count */
-static pt_method_site pg_site_3; /* method_getClassTypeDescription_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getClassTypeDescription_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
 
@@ -45,14 +45,14 @@ namespace pgen::RequireImplementsDefinitionClassRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_classReflection.raw(), "getRequireImplementsTags", "getrequireimplementstags", 24, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_classReflection.raw(), "getRequireImplementsTags", "getrequireimplementstags", 24, r2.raw()))) return false;
 		l_implementsTags = std::move(r2);
 	}
 	 {
@@ -74,7 +74,7 @@ namespace pgen::RequireImplementsDefinitionClassRule {
 		zv::Val r7;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r7.raw()))) return false;
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r8.raw()))) return false;
 		pgrt::StringBuilder sb9;
 		sb9.appendLiteral("requireImplements.on", 20);
 		if (UNEXPECTED(!sb9.append(r8.raw()))) return false;

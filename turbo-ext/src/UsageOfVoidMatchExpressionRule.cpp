@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_usage_of_void_match_expression_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_isInFirstLevelStatement_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_isInFirstLevelStatement_0 */
 static pt_method_site pg_site_1; /* method_getKeepVoidType_1 */
-static pt_method_site pg_site_2; /* method_isVoid_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isVoid_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Analyser\Scope */
 
@@ -38,7 +38,7 @@ namespace pgen::UsageOfVoidMatchExpressionRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, r1.raw()))) return false;
 		if (!((Z_TYPE_P(r1.raw()) == IS_TRUE))) {
 			 {
 				zv::Val r2;
@@ -65,7 +65,7 @@ namespace pgen::UsageOfVoidMatchExpressionRule {
 					if (UNEXPECTED(r5.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_matchResultType.raw(), "isVoid", "isvoid", 6, 0, NULL, r5.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_matchResultType.raw(), "isVoid", "isvoid", 6, r5.raw()))) return false;
 				}
 				}
 				bool r6;

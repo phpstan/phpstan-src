@@ -10,13 +10,13 @@ zend_class_entry *pt_ce_existing_classes_in_arrow_function_typehints_rule = null
 static zval pg_lit[9];
 
 static pgrt::PropSite pg_site_0; /* prop_returnType_0 */
-static pt_method_site pg_site_1; /* method_getPhpVersion_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getPhpVersion_1 */
 static pgrt::PropSite pg_site_2; /* prop_returnType_2 */
 static pt_method_site pg_site_3; /* method_isInClass_3 */
-static pt_method_site pg_site_4; /* method_getClassReflection_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassReflection_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\NonAcceptingNeverType */
-static pt_method_site pg_site_6; /* method_getParams_6 */
-static pt_method_site pg_site_7; /* method_getReturnType_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getParams_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getReturnType_7 */
 static pt_method_site pg_site_8; /* method_getAttrGroups_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\FunctionDefinitionCheck */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
@@ -72,7 +72,7 @@ namespace pgen::ExistingClassesInArrowFunctionTypehintsRule {
 		bool b3 = !(Z_TYPE_P(zv::Ref(p4).deref().raw()) == IS_NULL);
 		if (b3) {
 			zv::Val r6;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, r6.raw()))) return false;
 			zv::Val r7;
 			if (UNEXPECTED(!pgen::PhpVersions::m_supportsNeverReturnTypeInArrowFunction(Z_OBJ_P(r6.raw()), r7.raw()))) return false;
 			bool r8;
@@ -111,7 +111,7 @@ namespace pgen::ExistingClassesInArrowFunctionTypehintsRule {
 						if (UNEXPECTED(r17.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r17.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, r17.raw()))) return false;
 					}
 					}
 					q16 = std::move(r17);
@@ -152,9 +152,9 @@ namespace pgen::ExistingClassesInArrowFunctionTypehintsRule {
 		if (UNEXPECTED(p27 == NULL)) return false;
 		zv::Val o28 = zv::Val::copyOf(zv::Ref(p27));
 		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_node, "getParams", "getparams", 9, 0, NULL, r29.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_node, "getParams", "getparams", 9, r29.raw()))) return false;
 		zv::Val r30;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_node, "getReturnType", "getreturntype", 13, 0, NULL, r30.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_node, "getReturnType", "getreturntype", 13, r30.raw()))) return false;
 		zv::Val vd31;
 		zend_class_entry *vd31_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
 		bool vd31_done = false;

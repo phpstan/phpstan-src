@@ -13,16 +13,16 @@ static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Reflection\ExtendedMethodReflec
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Reflection\ExtendedPropertyReflection */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\ClassConstantReflection */
-static pt_method_site pg_site_4; /* method_getName_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
-static pt_method_site pg_site_9; /* method_getName_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
-static pt_method_site pg_site_13; /* method_getName_13 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
 static pgrt::FunctionSite pg_site_14; /* function_ucfirst */
 
 namespace pgen::ClassNameUsageLocation {
@@ -550,7 +550,7 @@ namespace pgen::ClassNameUsageLocation {
 							if (UNEXPECTED(r14.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_property.raw(), "getName", "getname", 7, 0, NULL, r14.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_property.raw(), "getName", "getname", 7, r14.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb15;
@@ -659,7 +659,7 @@ namespace pgen::ClassNameUsageLocation {
 							if (UNEXPECTED(r34.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r33.raw(), "getName", "getname", 7, 0, NULL, r34.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, r33.raw(), "getName", "getname", 7, r34.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb35;
@@ -836,7 +836,7 @@ namespace pgen::ClassNameUsageLocation {
 							if (UNEXPECTED(r66.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_property.raw(), "getName", "getname", 7, 0, NULL, r66.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_property.raw(), "getName", "getname", 7, r66.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb67;
@@ -908,7 +908,7 @@ namespace pgen::ClassNameUsageLocation {
 											if (UNEXPECTED(r81.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r80.raw(), "getName", "getname", 7, 0, NULL, r81.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, r80.raw(), "getName", "getname", 7, r81.raw()))) return false;
 										}
 										}
 										pgrt::StringBuilder sb82;
@@ -937,7 +937,7 @@ namespace pgen::ClassNameUsageLocation {
 									if (UNEXPECTED(r86.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r85.raw(), "getName", "getname", 7, 0, NULL, r86.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, r85.raw(), "getName", "getname", 7, r86.raw()))) return false;
 								}
 								}
 								pgrt::StringBuilder sb87;
@@ -968,7 +968,7 @@ namespace pgen::ClassNameUsageLocation {
 									if (UNEXPECTED(r92.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r91.raw(), "getName", "getname", 7, 0, NULL, r92.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, r91.raw(), "getName", "getname", 7, r92.raw()))) return false;
 								}
 								}
 								pgrt::StringBuilder sb93;
@@ -1045,7 +1045,7 @@ namespace pgen::ClassNameUsageLocation {
 									if (UNEXPECTED(r107.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r106.raw(), "getName", "getname", 7, 0, NULL, r107.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, r106.raw(), "getName", "getname", 7, r107.raw()))) return false;
 								}
 								}
 								pgrt::StringBuilder sb108;
@@ -1071,7 +1071,7 @@ namespace pgen::ClassNameUsageLocation {
 							if (UNEXPECTED(r111.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_11, r110.raw(), "getName", "getname", 7, 0, NULL, r111.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, r110.raw(), "getName", "getname", 7, r111.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb112;
@@ -1099,7 +1099,7 @@ namespace pgen::ClassNameUsageLocation {
 							if (UNEXPECTED(r116.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r115.raw(), "getName", "getname", 7, 0, NULL, r116.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, r115.raw(), "getName", "getname", 7, r116.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb117;
@@ -1317,7 +1317,7 @@ namespace pgen::ClassNameUsageLocation {
 							if (UNEXPECTED(r154.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_method.raw(), "getName", "getname", 7, 0, NULL, r154.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_method.raw(), "getName", "getname", 7, r154.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb155;

@@ -10,9 +10,9 @@ zend_class_entry *pt_ce_existing_classes_in_typehints_rule = nullptr;
 static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_getMethodReflection_0 */
-static pt_method_site pg_site_1; /* method_getClassReflection_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getClassReflection_1 */
 static pt_method_site pg_site_2; /* method_getDisplayName_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_getOriginalNode_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Stmt\ClassMethod */
@@ -84,7 +84,7 @@ namespace pgen::ExistingClassesInTypehintsRule {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getClassReflection", "getclassreflection", 18, r4.raw()))) return false;
 		}
 		}
 		zv::Val r5;
@@ -108,7 +108,7 @@ namespace pgen::ExistingClassesInTypehintsRule {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_methodReflection.raw(), "getName", "getname", 7, r7.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!(Z_TYPE_P(r7.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", r7.raw()); return false; }

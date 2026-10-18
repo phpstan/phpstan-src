@@ -17,18 +17,18 @@ static pt_method_site pg_site_4; /* method_getNamespace_4 */
 static pgrt::PropSite pg_site_5; /* prop_name_5 */
 static pgrt::PropSite pg_site_6; /* prop_name_6 */
 static pgrt::FunctionSite pg_site_7; /* function_trim */
-static pt_method_site pg_site_8; /* method_getDocComment_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getDocComment_8 */
 static pt_method_site pg_site_9; /* method_getFile_9 */
 static pt_method_site pg_site_10; /* method_isInClass_10 */
-static pt_method_site pg_site_11; /* method_getClassReflection_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getClassReflection_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
 static pt_method_site pg_site_13; /* method_isInTrait_13 */
 static pt_method_site pg_site_14; /* method_getTraitReflection_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
 static pgrt::GetterSite pg_site_16; /* getter_getText_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_18; /* method_getText_18 */
-static pt_method_site pg_site_19; /* method_getParams_19 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getText_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getParams_19 */
 static pgrt::PropSite pg_site_20; /* prop_var_20 */
 static pgrt::ClassSite pg_site_21; /* cls_PhpParser\Node\Expr\Variable */
 static pgrt::PropSite pg_site_22; /* prop_var_22 */
@@ -39,7 +39,7 @@ static pgrt::PropSite pg_site_26; /* prop_name_26 */
 static pgrt::PropSite pg_site_27; /* prop_type_27 */
 static pt_method_site pg_site_28; /* method_isParameterValueNullable_28 */
 static pt_method_site pg_site_29; /* method_getFunctionType_29 */
-static pt_method_site pg_site_30; /* method_isCallable_30 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_isCallable_30 */
 static pt_method_site pg_site_31; /* method_describe_31 */
 static pgrt::ClassSite pg_site_32; /* cls_PHPStan\Type\FileTypeMapper */
 static pgrt::ClassSite pg_site_33; /* cls_PhpParser\Node */
@@ -161,7 +161,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 	}
 	 {
 		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r17.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_node, "getDocComment", "getdoccomment", 13, r17.raw()))) return false;
 		l_docComment = std::move(r17);
 	}
 	 {
@@ -214,7 +214,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 				if (UNEXPECTED(r28.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r28.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_scope, "getClassReflection", "getclassreflection", 18, r28.raw()))) return false;
 			}
 			}
 			zv::Val r29;
@@ -223,7 +223,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 				if (UNEXPECTED(r29.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r28.raw(), "getName", "getname", 7, 0, NULL, r29.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, r28.raw(), "getName", "getname", 7, r29.raw()))) return false;
 			}
 			}
 			q27 = std::move(r29);
@@ -269,7 +269,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 				if (UNEXPECTED(r38.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r36.raw(), "getName", "getname", 7, 0, NULL, r38.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, r36.raw(), "getName", "getname", 7, r38.raw()))) return false;
 			}
 			}
 			q35 = std::move(r38);
@@ -286,7 +286,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 			ZVAL_COPY(r42.raw(), gs41);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r42.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_docComment.raw(), "getText", "gettext", 7, r42.raw()))) return false;
 		}
 		}
 		zv::Val r43;
@@ -301,7 +301,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 	}
 	 {
 		zv::Val r47;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_node, "getParams", "getparams", 9, 0, NULL, r47.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p_node, "getParams", "getparams", 9, r47.raw()))) return false;
 		zv::Val a48 = zv::Val::copyOf(zv::Ref(r47.raw()).deref());
 		HashTable *ht46 = Z_ARRVAL_P(a48.raw());
 		zval *v49;
@@ -479,7 +479,7 @@ namespace pgen::IncompatibleParamImmediatelyInvokedCallableRule {
 								if (UNEXPECTED(r112.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_30, zv::Ref(e110).deref().raw(), "isCallable", "iscallable", 10, 0, NULL, r112.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, zv::Ref(e110).deref().raw(), "isCallable", "iscallable", 10, r112.raw()))) return false;
 							}
 							}
 							bool r113;

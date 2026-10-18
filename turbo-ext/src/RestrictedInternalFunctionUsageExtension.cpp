@@ -10,11 +10,11 @@ zend_class_entry *pt_ce_restricted_internal_function_usage_extension = nullptr;
 static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_isInternal_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::FunctionSite pg_site_2; /* function_explode */
 static pgrt::FunctionSite pg_site_3; /* function_array_slice */
-static pt_method_site pg_site_4; /* method_getName_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\InternalTag\RestrictedInternalUsageHelper */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
@@ -91,7 +91,7 @@ namespace pgen::RestrictedInternalFunctionUsageExtension {
 			if (UNEXPECTED(r11.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_functionReflection, "getName", "getname", 7, 0, NULL, r11.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_functionReflection, "getName", "getname", 7, r11.raw()))) return false;
 		}
 		}
 		zval av12[2];
@@ -136,7 +136,7 @@ namespace pgen::RestrictedInternalFunctionUsageExtension {
 					if (UNEXPECTED(r23.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_functionReflection, "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_functionReflection, "getName", "getname", 7, r23.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb24;
@@ -158,7 +158,7 @@ namespace pgen::RestrictedInternalFunctionUsageExtension {
 			if (UNEXPECTED(r27.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_functionReflection, "getName", "getname", 7, 0, NULL, r27.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_functionReflection, "getName", "getname", 7, r27.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb28;

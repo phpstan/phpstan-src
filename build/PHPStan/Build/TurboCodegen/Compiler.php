@@ -4475,8 +4475,14 @@ final class Compiler
 			$f->close(' else {');
 			$f->open('');
 		}
-		$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
-		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, %s, %s, %s.raw(), %s)', $site, $z, $name, strtolower($name), strlen($name), $argc, $argv, $t, $named));
+		if ($argc === '0' && $named === 'NULL') {
+			// a getter or a constant answer of the receiver's class is read without the call
+			$site = $this->site('pgrt::MethodShapeSite', sprintf('method0_%s_%d', $name, count($this->siteNames)));
+			$f->failIf(sprintf('!pgrt::callMethod0(%s, %s, "%s", "%s", %d, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), $t));
+		} else {
+			$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
+			$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, %s, %s, %s.raw(), %s)', $site, $z, $name, strtolower($name), strlen($name), $argc, $argv, $t, $named));
+		}
 		if ($op !== null && $named === 'NULL') {
 			$f->close();
 			$f->line('}');
@@ -5069,8 +5075,8 @@ final class Compiler
 		$f->line(sprintf('ZVAL_COPY(%s.raw(), %s);', $t, $slot));
 		$f->close(' else {');
 		$f->open('');
-		$callSite = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
-		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, 0, NULL, %s.raw())', $callSite, $z, $name, strtolower($name), strlen($name), $t));
+		$callSite = $this->site('pgrt::MethodShapeSite', sprintf('method0_%s_%d', $name, count($this->siteNames)));
+		$f->failIf(sprintf('!pgrt::callMethod0(%s, %s, "%s", "%s", %d, %s.raw())', $callSite, $z, $name, strtolower($name), strlen($name), $t));
 		$f->close();
 		$f->line('}');
 		return $this->fromEngineResult($t, $native);

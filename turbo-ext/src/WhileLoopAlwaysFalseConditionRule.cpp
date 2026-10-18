@@ -11,12 +11,12 @@ static zval pg_lit[4];
 
 static pgrt::PropSite pg_site_0; /* prop_cond_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr */
-static pt_method_site pg_site_2; /* method_isFalse_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isFalse_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\RuleErrorBuilder */
 static pgrt::PropSite pg_site_4; /* prop_cond_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Constant\ConstantBooleanType */
 static pgrt::PropSite pg_site_6; /* prop_cond_6 */
-static pt_method_site pg_site_7; /* method_getStartLine_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getStartLine_7 */
 static pgrt::PropSite pg_site_8; /* prop_cond_8 */
 static pgrt::PropSite pg_site_9; /* prop_cond_9 */
 static pt_method_site pg_site_10; /* method_isInTrait_10 */
@@ -159,7 +159,7 @@ namespace pgen::WhileLoopAlwaysFalseConditionRule {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_exprType.raw(), "isFalse", "isfalse", 7, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_exprType.raw(), "isFalse", "isfalse", 7, r5.raw()))) return false;
 		bool r6;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r5.raw()), &r6))) return false;
 		if (r6) {
@@ -186,7 +186,7 @@ namespace pgen::WhileLoopAlwaysFalseConditionRule {
 					p13 = o14.raw();
 				}
 				zv::Val r15;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, zv::Ref(p13).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r15.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, zv::Ref(p13).deref().raw(), "getStartLine", "getstartline", 12, r15.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r15.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r15.raw()); return false; }
 				zv::Val r16;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r12.raw()), Z_LVAL_P(r15.raw()), r16.raw()))) return false;

@@ -19,31 +19,31 @@ static pt_method_site pg_site_5; /* method_describe_5 */
 static pgrt::FunctionSite pg_site_6; /* function_sprintf */
 static pgrt::GetterSite pg_site_7; /* getter_getClassName_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\ObjectType */
-static pt_method_site pg_site_9; /* method_getClassName_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getClassName_9 */
 static pgrt::FunctionSite pg_site_10; /* function_array_keys */
-static pt_method_site pg_site_11; /* method_getReferencedClasses_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getReferencedClasses_11 */
 static pt_method_site pg_site_12; /* method_hasClass_12 */
 static pgrt::GetterSite pg_site_13; /* getter_getClassName_13 */
-static pt_method_site pg_site_14; /* method_getClassName_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getClassName_14 */
 static pt_method_site pg_site_15; /* method_getClass_15 */
-static pt_method_site pg_site_16; /* method_isTrait_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_isTrait_16 */
 static pt_method_site pg_site_17; /* static_PHPStan\Type\Generic\TemplateTypeVariance::createStatic */
 static pt_method_site pg_site_18; /* method_describe_18 */
 static pgrt::GetterSite pg_site_19; /* getter_getVariances_19 */
-static pt_method_site pg_site_20; /* method_getVariances_20 */
-static pt_method_site pg_site_21; /* method_invariant_21 */
-static pt_method_site pg_site_22; /* method_getTypes_22 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getVariances_20 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_invariant_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getTypes_22 */
 static pgrt::ClassSite pg_site_23; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_24; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
 static pt_method_site pg_site_25; /* method_describe_25 */
 static pt_method_site pg_site_26; /* method_hasClass_26 */
 static pt_method_site pg_site_27; /* method_getClass_27 */
-static pt_method_site pg_site_28; /* method_getName_28 */
+static pgrt::MethodShapeSite pg_site_28; /* method0_getName_28 */
 static pt_method_site pg_site_29; /* method_isGeneric_29 */
-static pt_method_site pg_site_30; /* method_getTemplateTypeMap_30 */
-static pt_method_site pg_site_31; /* method_getTypes_31 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getTemplateTypeMap_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getTypes_31 */
 static pgrt::ClassSite pg_site_32; /* cls_PHPStan\Type\Generic\TemplateType */
-static pt_method_site pg_site_33; /* method_getDefault_33 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getDefault_33 */
 static pgrt::FunctionSite pg_site_34; /* function_array_filter */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -78,7 +78,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 		bool b1 = pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_32, "PHPStan\\Type\\Generic\\TemplateType", 33));
 		if (b1) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_type, "getDefault", "getdefault", 10, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, p_type, "getDefault", "getdefault", 10, r2.raw()))) return;
 			b1 = (Z_TYPE_P(r2.raw()) == IS_NULL);
 		}
 		zval z3;
@@ -226,7 +226,7 @@ namespace pgen::GenericAncestorsCheck {
 						ZVAL_COPY(r29.raw(), gs28);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_ancestorType, "getClassName", "getclassname", 12, 0, NULL, r29.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_ancestorType, "getClassName", "getclassname", 12, r29.raw()))) return false;
 					}
 					}
 					l_ancestorTypeClassName = std::move(r29);
@@ -364,7 +364,7 @@ namespace pgen::GenericAncestorsCheck {
 						if (UNEXPECTED(r72.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_ancestorType, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r72.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_ancestorType, "getReferencedClasses", "getreferencedclasses", 20, r72.raw()))) return false;
 					}
 					}
 					zv::Val a73 = zv::Val::copyOf(zv::Ref(r72.raw()).deref());
@@ -434,7 +434,7 @@ namespace pgen::GenericAncestorsCheck {
 									ZVAL_COPY(r96.raw(), gs95);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_ancestorType, "getClassName", "getclassname", 12, 0, NULL, r96.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_ancestorType, "getClassName", "getclassname", 12, r96.raw()))) return false;
 								}
 								}
 								if (zend_is_identical(o94.raw(), r96.raw())) {
@@ -474,7 +474,7 @@ namespace pgen::GenericAncestorsCheck {
 									if (UNEXPECTED(r103.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_classReflection.raw(), "isTrait", "istrait", 7, 0, NULL, r103.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_classReflection.raw(), "isTrait", "istrait", 7, r103.raw()))) return false;
 								}
 								}
 								if (!((Z_TYPE_P(r103.raw()) == IS_TRUE))) {
@@ -565,7 +565,7 @@ namespace pgen::GenericAncestorsCheck {
 						ZVAL_COPY(r132.raw(), gs131);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_ancestorType, "getVariances", "getvariances", 12, 0, NULL, r132.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_ancestorType, "getVariances", "getvariances", 12, r132.raw()))) return false;
 					}
 					}
 					zv::Val a133 = zv::Val::copyOf(zv::Ref(r132.raw()).deref());
@@ -582,7 +582,7 @@ namespace pgen::GenericAncestorsCheck {
 						 {
 							 {
 								zv::Val r140;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_typeVariance, "invariant", "invariant", 9, 0, NULL, r140.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_typeVariance, "invariant", "invariant", 9, r140.raw()))) return false;
 								if (zend_is_true(r140.raw())) {
 									goto cont139;
 								}
@@ -594,7 +594,7 @@ namespace pgen::GenericAncestorsCheck {
 									if (UNEXPECTED(r141.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_ancestorType, "getTypes", "gettypes", 8, 0, NULL, r141.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_ancestorType, "getTypes", "gettypes", 8, r141.raw()))) return false;
 								}
 								}
 								zv::Val et143;
@@ -735,7 +735,7 @@ namespace pgen::GenericAncestorsCheck {
 								if (UNEXPECTED(r183.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_unusedNameClassReflection.raw(), "getName", "getname", 7, 0, NULL, r183.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_28, l_unusedNameClassReflection.raw(), "getName", "getname", 7, r183.raw()))) return false;
 							}
 							}
 							zval *p184 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::GenericAncestorsCheck::slot::skipCheckGenericClasses, "skipCheckGenericClasses");
@@ -766,7 +766,7 @@ namespace pgen::GenericAncestorsCheck {
 								if (UNEXPECTED(r187.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_unusedNameClassReflection.raw(), "getTemplateTypeMap", "gettemplatetypemap", 18, 0, NULL, r187.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_unusedNameClassReflection.raw(), "getTemplateTypeMap", "gettemplatetypemap", 18, r187.raw()))) return false;
 							}
 							}
 							zv::Val r188;
@@ -775,7 +775,7 @@ namespace pgen::GenericAncestorsCheck {
 								if (UNEXPECTED(r188.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_31, r187.raw(), "getTypes", "gettypes", 8, 0, NULL, r188.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, r187.raw(), "getTypes", "gettypes", 8, r188.raw()))) return false;
 							}
 							}
 							l_templateTypes = std::move(r188);

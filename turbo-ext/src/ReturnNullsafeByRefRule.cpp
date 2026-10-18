@@ -15,7 +15,7 @@ static pt_method_site pg_site_2; /* method_getReturnNode_2 */
 static pgrt::PropSite pg_site_3; /* prop_expr_3 */
 static pgrt::PropSite pg_site_4; /* prop_expr_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Expr */
-static pt_method_site pg_site_6; /* method_getStartLine_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getStartLine_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\NullsafeCheck */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\Scope */
@@ -148,7 +148,7 @@ namespace pgen::ReturnNullsafeByRefRule {
 					zv::Val r21;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r21.raw()))) return false;
 					zv::Val r22;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_returnNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r22.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_returnNode.raw(), "getStartLine", "getstartline", 12, r22.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r22.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r22.raw()); return false; }
 					zv::Val r23;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r21.raw()), Z_LVAL_P(r22.raw()), r23.raw()))) return false;

@@ -11,7 +11,7 @@ static zval pg_lit[4];
 
 static pt_method_site pg_site_0; /* method_getFunctionLike_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Stmt\ClassMethod */
-static pt_method_site pg_site_2; /* method_isPrivate_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isPrivate_2 */
 static pgrt::PropSite pg_site_3; /* prop_stmts_3 */
 static pgrt::PropSite pg_site_4; /* prop_stmts_4 */
 static pgrt::PropSite pg_site_5; /* prop_name_5 */
@@ -20,7 +20,7 @@ static pgrt::FunctionSite pg_site_7; /* function_str_starts_with */
 static pgrt::PropSite pg_site_8; /* prop_params_8 */
 static pt_method_site pg_site_9; /* method_isInClass_9 */
 static pt_method_site pg_site_10; /* method_getFunction_10 */
-static pt_method_site pg_site_11; /* method_getClassReflection_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getClassReflection_11 */
 static pt_method_site pg_site_12; /* method_getDisplayName_12 */
 static pgrt::PropSite pg_site_13; /* prop_name_13 */
 static pt_method_site pg_site_14; /* method_toString_14 */
@@ -92,7 +92,7 @@ namespace pgen::UnusedMethodParametersRule {
 	}
 	 {
 		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_originalNode.raw(), "isPrivate", "isprivate", 9, 0, NULL, r6.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_originalNode.raw(), "isPrivate", "isprivate", 9, r6.raw()))) return false;
 		bool b5 = !((Z_TYPE_P(r6.raw()) == IS_TRUE));
 		if (!b5) {
 			zv::Val o8;
@@ -220,7 +220,7 @@ namespace pgen::UnusedMethodParametersRule {
 			if (UNEXPECTED(r30.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r30.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_scope, "getClassReflection", "getclassreflection", 18, r30.raw()))) return false;
 		}
 		}
 		zv::Val r31;

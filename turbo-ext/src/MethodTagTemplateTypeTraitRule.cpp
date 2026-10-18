@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_method_tag_template_type_trait_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getDocComment_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getDocComment_0 */
 static pgrt::PropSite pg_site_1; /* prop_namespacedName_1 */
 static pt_method_site pg_site_2; /* method_toString_2 */
 static pt_method_site pg_site_3; /* method_hasClass_3 */
@@ -17,7 +17,7 @@ static pt_method_site pg_site_4; /* method_toString_4 */
 static pt_method_site pg_site_5; /* method_getClass_5 */
 static pgrt::GetterSite pg_site_6; /* getter_getText_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_8; /* method_getText_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getText_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Stmt\ClassLike */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Rules\Generics\MethodTagTemplateTypeCheck */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Reflection\ReflectionProvider */
@@ -63,7 +63,7 @@ namespace pgen::MethodTagTemplateTypeTraitRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, r1.raw()))) return false;
 		l_docComment = std::move(r1);
 	}
 	 {
@@ -170,7 +170,7 @@ namespace pgen::MethodTagTemplateTypeTraitRule {
 			ZVAL_COPY(r27.raw(), gs26);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r27.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_docComment.raw(), "getText", "gettext", 7, r27.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 3, "node", "PhpParser\\Node\\Stmt\\ClassLike", p_node); return false; }

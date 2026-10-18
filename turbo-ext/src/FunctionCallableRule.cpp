@@ -9,22 +9,22 @@ zend_class_entry *pt_ce_function_callable_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[7];
 
-static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPhpVersion_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_3; /* method_toString_3 */
 static pt_method_site pg_site_4; /* method_hasFunction_4 */
 static pt_method_site pg_site_5; /* method_getFunction_5 */
 static pt_method_site pg_site_6; /* method_resolveFunctionName_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
 static pgrt::FunctionSite pg_site_8; /* function_strtolower */
-static pt_method_site pg_site_9; /* method_getName_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
 static pt_method_site pg_site_11; /* method_isInFunctionExists_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_13; /* method_isCallable_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_isCallable_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_15; /* method_isCallable_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_isCallable_15 */
 static pt_method_site pg_site_16; /* method_describe_16 */
 static pt_method_site pg_site_17; /* method_describe_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Reflection\ReflectionProvider */
@@ -49,7 +49,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_type, "isCallable", "iscallable", 10, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_type, "isCallable", "iscallable", 10, r1.raw()))) return;
 		}
 		}
 		bool r2;
@@ -111,7 +111,7 @@ namespace pgen::FunctionCallableRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsFirstClassCallables(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;
@@ -140,7 +140,7 @@ namespace pgen::FunctionCallableRule {
 			if (UNEXPECTED(r9.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getName", "getname", 7, r9.raw()))) return false;
 		}
 		}
 		l_functionName = std::move(r9);
@@ -245,7 +245,7 @@ namespace pgen::FunctionCallableRule {
 									if (UNEXPECTED(r33.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_function.raw(), "getName", "getname", 7, 0, NULL, r33.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_function.raw(), "getName", "getname", 7, r33.raw()))) return false;
 								}
 								}
 								zv::Val r34 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r33.raw())));
@@ -261,7 +261,7 @@ namespace pgen::FunctionCallableRule {
 										if (UNEXPECTED(r37.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_function.raw(), "getName", "getname", 7, 0, NULL, r37.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_function.raw(), "getName", "getname", 7, r37.raw()))) return false;
 									}
 									}
 									b32 = !zend_is_identical(r37.raw(), l_calledFunctionName.raw());
@@ -275,7 +275,7 @@ namespace pgen::FunctionCallableRule {
 											if (UNEXPECTED(r39.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_function.raw(), "getName", "getname", 7, 0, NULL, r39.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_function.raw(), "getName", "getname", 7, r39.raw()))) return false;
 										}
 										}
 										pgrt::StringBuilder sb40;
@@ -376,7 +376,7 @@ namespace pgen::FunctionCallableRule {
 			if (UNEXPECTED(r62.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_type.raw(), "isCallable", "iscallable", 10, 0, NULL, r62.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_type.raw(), "isCallable", "iscallable", 10, r62.raw()))) return false;
 		}
 		}
 		l_isCallable = std::move(r62);

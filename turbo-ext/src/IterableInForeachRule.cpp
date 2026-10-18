@@ -18,7 +18,7 @@ static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\ErrorType */
 static pt_method_site pg_site_6; /* method_isIterable_6 */
 static pt_method_site pg_site_7; /* method_describe_7 */
 static pgrt::PropSite pg_site_8; /* prop_expr_8 */
-static pt_method_site pg_site_9; /* method_getStartLine_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getStartLine_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
@@ -212,7 +212,7 @@ namespace pgen::IterableInForeachRule {
 			p28 = o29.raw();
 		}
 		zv::Val r30;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, zv::Ref(p28).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r30.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, zv::Ref(p28).deref().raw(), "getStartLine", "getstartline", 12, r30.raw()))) return false;
 		if (UNEXPECTED(Z_TYPE_P(r30.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r30.raw()); return false; }
 		zv::Val r31;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r27.raw()), Z_LVAL_P(r30.raw()), r31.raw()))) return false;

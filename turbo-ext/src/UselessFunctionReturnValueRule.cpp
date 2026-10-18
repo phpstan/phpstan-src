@@ -11,12 +11,12 @@ static zval pg_lit[3];
 
 static pgrt::PropSite pg_site_0; /* prop_name_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name */
-static pt_method_site pg_site_2; /* method_isInFirstLevelStatement_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isInFirstLevelStatement_2 */
 static pgrt::PropSite pg_site_3; /* prop_name_3 */
 static pt_method_site pg_site_4; /* method_hasFunction_4 */
 static pgrt::PropSite pg_site_5; /* prop_name_5 */
 static pt_method_site pg_site_6; /* method_getFunction_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
 static pt_method_site pg_site_8; /* method_getArgs_8 */
 static pt_method_site pg_site_9; /* method_getVariants_9 */
 static pt_method_site pg_site_10; /* method_getNamedArgumentsVariants_10 */
@@ -24,11 +24,11 @@ static pt_method_site pg_site_11; /* method_getArgs_11 */
 static pgrt::PropSite pg_site_12; /* prop_value_12 */
 static pt_method_site pg_site_13; /* method_getType_13 */
 static pt_method_site pg_site_14; /* method_isFalse_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
-static pt_method_site pg_site_16; /* method_getName_16 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getName_16 */
 static pt_method_site pg_site_17; /* method_getParameters_17 */
-static pt_method_site pg_site_18; /* method_getName_18 */
-static pt_method_site pg_site_19; /* method_getStartLine_19 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getName_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getStartLine_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_21; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Analyser\Scope */
@@ -94,7 +94,7 @@ namespace pgen::UselessFunctionReturnValueRule {
 		bool b1 = !(pgrt::instanceOfClass(zv::Ref(p2).deref().raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Name", 19)));
 		if (!b1) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, r4.raw()))) return false;
 			b1 = (Z_TYPE_P(r4.raw()) == IS_TRUE);
 		}
 		if (b1) {
@@ -188,7 +188,7 @@ namespace pgen::UselessFunctionReturnValueRule {
 			if (UNEXPECTED(r25.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r25.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_functionReflection.raw(), "getName", "getname", 7, r25.raw()))) return false;
 		}
 		}
 		zval *cc26 = pgrt::classConstant(pt_ce_useless_function_return_value_rule, &pg_lit[1], pt_ce_useless_function_return_value_rule);
@@ -334,7 +334,7 @@ namespace pgen::UselessFunctionReturnValueRule {
 					if (UNEXPECTED(r54.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r54.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_functionReflection.raw(), "getName", "getname", 7, r54.raw()))) return false;
 				}
 				}
 				zval *cc55 = pgrt::classConstant(pt_ce_useless_function_return_value_rule, &pg_lit[1], pt_ce_useless_function_return_value_rule);
@@ -346,7 +346,7 @@ namespace pgen::UselessFunctionReturnValueRule {
 					if (UNEXPECTED(r57.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r57.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_functionReflection.raw(), "getName", "getname", 7, r57.raw()))) return false;
 				}
 				}
 				zv::Val et59;
@@ -385,7 +385,7 @@ namespace pgen::UselessFunctionReturnValueRule {
 					if (UNEXPECTED(r67.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, zv::Ref(e64).deref().raw(), "getName", "getname", 7, 0, NULL, r67.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, zv::Ref(e64).deref().raw(), "getName", "getname", 7, r67.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb68;
@@ -404,7 +404,7 @@ namespace pgen::UselessFunctionReturnValueRule {
 				zv::Val r71;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r70.raw()), &pg_lit[2], r71.raw()))) return false;
 				zv::Val r72;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_funcCall, "getStartLine", "getstartline", 12, 0, NULL, r72.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p_funcCall, "getStartLine", "getstartline", 12, r72.raw()))) return false;
 				zv::Val r73;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r71.raw()), Z_LVAL_P(r72.raw()), r73.raw()))) return false;
 				zv::Val r74;

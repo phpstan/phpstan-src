@@ -26,8 +26,8 @@ static pt_method_site pg_site_13; /* method_getScope_13 */
 static pt_method_site pg_site_14; /* method_getThrowPoints_14 */
 static pt_method_site pg_site_15; /* method_getImpurePoints_15 */
 static pt_method_site pg_site_16; /* method_isAlwaysTerminating_16 */
-static pt_method_site pg_site_17; /* method_getType_17 */
-static pt_method_site pg_site_18; /* method_getType_18 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getType_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getType_18 */
 static pt_method_site pg_site_19; /* method_collectYieldSend_19 */
 static pt_method_site pg_site_20; /* method_addTemplateArgumentConstraints_20 */
 static pt_method_site pg_site_21; /* method_getFunction_21 */
@@ -473,7 +473,7 @@ namespace pgen::YieldHandler {
 				if (UNEXPECTED(r60.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_keyResult.raw(), "getType", "gettype", 7, 0, NULL, r60.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_keyResult.raw(), "getType", "gettype", 7, r60.raw()))) return false;
 			}
 			}
 			q59 = std::move(r60);
@@ -491,7 +491,7 @@ namespace pgen::YieldHandler {
 				if (UNEXPECTED(r63.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_valueResult.raw(), "getType", "gettype", 7, 0, NULL, r63.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_valueResult.raw(), "getType", "gettype", 7, r63.raw()))) return false;
 			}
 			}
 			q62 = std::move(r63);

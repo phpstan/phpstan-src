@@ -11,25 +11,25 @@ static zval pg_lit[6];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\EmitCollectedDataNode */
 static pgrt::GetterSite pg_site_1; /* getter_getData_1 */
-static pt_method_site pg_site_2; /* method_getData_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getData_2 */
 static pgrt::GetterSite pg_site_3; /* getter_getCollectorType_3 */
-static pt_method_site pg_site_4; /* method_getCollectorType_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getCollectorType_4 */
 static pt_method_site pg_site_5; /* method_getFile_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Stmt\Trait_ */
 static pgrt::FunctionSite pg_site_7; /* function_array_keys */
-static pt_method_site pg_site_8; /* method_getStartLine_8 */
-static pt_method_site pg_site_9; /* method_getEndLine_9 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getStartLine_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getEndLine_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Node\InTraitNode */
 static pgrt::GetterSite pg_site_11; /* getter_getOriginalNode_11 */
-static pt_method_site pg_site_12; /* method_getOriginalNode_12 */
-static pt_method_site pg_site_13; /* method_getFileDescription_13 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getOriginalNode_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getFileDescription_13 */
 static pgrt::GetterSite pg_site_14; /* getter_getTraitReflection_14 */
-static pt_method_site pg_site_15; /* method_getTraitReflection_15 */
-static pt_method_site pg_site_16; /* method_getFileName_16 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getTraitReflection_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getFileName_16 */
 static pt_method_site pg_site_17; /* method_isInTrait_17 */
 static pt_method_site pg_site_18; /* method_getTraitReflection_18 */
-static pt_method_site pg_site_19; /* method_getFileName_19 */
-static pt_method_site pg_site_20; /* method_getFileName_20 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getFileName_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getFileName_20 */
 static pt_method_site pg_site_21; /* method_parseFile_21 */
 static pt_method_site pg_site_22; /* method_getRules_22 */
 static pgrt::DispatchCache pg_site_23; /* dispatch_processNode_23 */
@@ -39,60 +39,60 @@ static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Analyser\CollectedDataEmitter 
 static pgrt::ClassSite pg_site_27; /* cls_PHPStan\Analyser\DependencyTracker */
 static pt_method_site pg_site_28; /* method_processNode_28 */
 static pgrt::ClassSite pg_site_29; /* cls_PHPStan\AnalysedCodeException */
-static pt_method_site pg_site_30; /* method_getMessage_30 */
-static pt_method_site pg_site_31; /* method_getMessage_31 */
-static pt_method_site pg_site_32; /* method_getMessage_32 */
-static pt_method_site pg_site_33; /* method_getStartLine_33 */
-static pt_method_site pg_site_34; /* method_getTip_34 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getMessage_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getMessage_31 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getMessage_32 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getStartLine_33 */
+static pgrt::MethodShapeSite pg_site_34; /* method0_getTip_34 */
 static pgrt::ClassSite pg_site_35; /* cls_PHPStan\Analyser\Error */
 static pt_method_site pg_site_36; /* method_withIdentifier_36 */
 static pgrt::ClassSite pg_site_37; /* cls_PHPStan\Analyser\InternalError */
 static pt_method_site pg_site_38; /* static_PHPStan\Analyser\InternalError::prepareTrace */
-static pt_method_site pg_site_39; /* method_getTraceAsString_39 */
+static pgrt::MethodShapeSite pg_site_39; /* method0_getTraceAsString_39 */
 static pt_method_site pg_site_40; /* method_withMetadata_40 */
 static pgrt::ClassSite pg_site_41; /* cls_PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound */
 static pgrt::GetterSite pg_site_42; /* getter_getIdentifier_42 */
-static pt_method_site pg_site_43; /* method_getIdentifier_43 */
-static pt_method_site pg_site_44; /* method_getName_44 */
-static pt_method_site pg_site_45; /* method_getStartLine_45 */
+static pgrt::MethodShapeSite pg_site_43; /* method0_getIdentifier_43 */
+static pgrt::MethodShapeSite pg_site_44; /* method0_getName_44 */
+static pgrt::MethodShapeSite pg_site_45; /* method0_getStartLine_45 */
 static pt_method_site pg_site_46; /* method_withIdentifier_46 */
-static pt_method_site pg_site_47; /* method_getTraceAsString_47 */
+static pgrt::MethodShapeSite pg_site_47; /* method0_getTraceAsString_47 */
 static pt_method_site pg_site_48; /* method_withMetadata_48 */
 static pgrt::ClassSite pg_site_49; /* cls_PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode */
 static pgrt::ClassSite pg_site_50; /* cls_PHPStan\BetterReflection\Reflection\Exception\CircularReference */
-static pt_method_site pg_site_51; /* method_getMessage_51 */
-static pt_method_site pg_site_52; /* method_getStartLine_52 */
+static pgrt::MethodShapeSite pg_site_51; /* method0_getMessage_51 */
+static pgrt::MethodShapeSite pg_site_52; /* method0_getStartLine_52 */
 static pt_method_site pg_site_53; /* method_withIdentifier_53 */
-static pt_method_site pg_site_54; /* method_getTraceAsString_54 */
+static pgrt::MethodShapeSite pg_site_54; /* method0_getTraceAsString_54 */
 static pt_method_site pg_site_55; /* method_withMetadata_55 */
 static pgrt::ClassSite pg_site_56; /* cls_PHPStan\Rules\FileDependenciesRuleError */
 static pgrt::DispatchCache pg_site_57; /* dispatch_getFileDependencies_57 */
 static pt_method_site pg_site_58; /* method_getFileDependencies_58 */
 static pt_method_site pg_site_59; /* method_trackFileDependency_59 */
 static pt_method_site pg_site_60; /* method_transform_60 */
-static pt_method_site pg_site_61; /* method_canBeIgnored_61 */
+static pgrt::MethodShapeSite pg_site_61; /* method0_canBeIgnored_61 */
 static pt_method_site pg_site_62; /* method_shouldIgnore_62 */
 static pgrt::DispatchCache pg_site_63; /* dispatch_processNode_63 */
 static pt_method_site pg_site_64; /* method_processNode_64 */
-static pt_method_site pg_site_65; /* method_getMessage_65 */
-static pt_method_site pg_site_66; /* method_getMessage_66 */
-static pt_method_site pg_site_67; /* method_getMessage_67 */
-static pt_method_site pg_site_68; /* method_getStartLine_68 */
-static pt_method_site pg_site_69; /* method_getTip_69 */
+static pgrt::MethodShapeSite pg_site_65; /* method0_getMessage_65 */
+static pgrt::MethodShapeSite pg_site_66; /* method0_getMessage_66 */
+static pgrt::MethodShapeSite pg_site_67; /* method0_getMessage_67 */
+static pgrt::MethodShapeSite pg_site_68; /* method0_getStartLine_68 */
+static pgrt::MethodShapeSite pg_site_69; /* method0_getTip_69 */
 static pt_method_site pg_site_70; /* method_withIdentifier_70 */
-static pt_method_site pg_site_71; /* method_getTraceAsString_71 */
+static pgrt::MethodShapeSite pg_site_71; /* method0_getTraceAsString_71 */
 static pt_method_site pg_site_72; /* method_withMetadata_72 */
 static pgrt::GetterSite pg_site_73; /* getter_getIdentifier_73 */
-static pt_method_site pg_site_74; /* method_getIdentifier_74 */
-static pt_method_site pg_site_75; /* method_getName_75 */
-static pt_method_site pg_site_76; /* method_getStartLine_76 */
+static pgrt::MethodShapeSite pg_site_74; /* method0_getIdentifier_74 */
+static pgrt::MethodShapeSite pg_site_75; /* method0_getName_75 */
+static pgrt::MethodShapeSite pg_site_76; /* method0_getStartLine_76 */
 static pt_method_site pg_site_77; /* method_withIdentifier_77 */
-static pt_method_site pg_site_78; /* method_getTraceAsString_78 */
+static pgrt::MethodShapeSite pg_site_78; /* method0_getTraceAsString_78 */
 static pt_method_site pg_site_79; /* method_withMetadata_79 */
-static pt_method_site pg_site_80; /* method_getMessage_80 */
-static pt_method_site pg_site_81; /* method_getStartLine_81 */
+static pgrt::MethodShapeSite pg_site_80; /* method0_getMessage_80 */
+static pgrt::MethodShapeSite pg_site_81; /* method0_getStartLine_81 */
 static pt_method_site pg_site_82; /* method_withIdentifier_82 */
-static pt_method_site pg_site_83; /* method_getTraceAsString_83 */
+static pgrt::MethodShapeSite pg_site_83; /* method0_getTraceAsString_83 */
 static pt_method_site pg_site_84; /* method_withMetadata_84 */
 static pt_method_site pg_site_85; /* method_getFile_85 */
 static pt_method_site pg_site_86; /* method_getAttribute_86 */
@@ -197,7 +197,7 @@ namespace pgen::FileAnalyserCallback {
 					ZVAL_COPY(r3.raw(), gs2);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getData", "getdata", 7, 0, NULL, r3.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getData", "getdata", 7, r3.raw()))) return false;
 				}
 				}
 				zv::Val o4 = zv::Val::copyOf(zv::Ref(r3.raw()));
@@ -207,7 +207,7 @@ namespace pgen::FileAnalyserCallback {
 					ZVAL_COPY(r7.raw(), gs6);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_node, "getCollectorType", "getcollectortype", 16, 0, NULL, r7.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_node, "getCollectorType", "getcollectortype", 16, r7.raw()))) return false;
 				}
 				}
 				zv::Val o9 = zv::Val::copyOf(zv::Ref(p_scope));
@@ -290,14 +290,14 @@ namespace pgen::FileAnalyserCallback {
 						 {
 							zv::Val o33 = zv::Val::copyOf(zv::Ref(l_lineToIgnore));
 							zv::Val r34;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_node, "getStartLine", "getstartline", 12, 0, NULL, r34.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_node, "getStartLine", "getstartline", 12, r34.raw()))) return false;
 							zval z35;
 							ZVAL_LONG(&z35, Z_LVAL_P(r34.raw()));
 							bool b32 = (zend_compare(o33.raw(), &z35) < 0);
 							if (!b32) {
 								zv::Val o36 = zv::Val::copyOf(zv::Ref(l_lineToIgnore));
 								zv::Val r37;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_node, "getEndLine", "getendline", 10, 0, NULL, r37.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_node, "getEndLine", "getendline", 10, r37.raw()))) return false;
 								zval z38;
 								ZVAL_LONG(&z38, Z_LVAL_P(r37.raw()));
 								b32 = (zend_compare(o36.raw(), &z38) > 0);
@@ -339,14 +339,14 @@ namespace pgen::FileAnalyserCallback {
 					ZVAL_COPY(r45.raw(), gs44);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, r45.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_node, "getOriginalNode", "getoriginalnode", 15, r45.raw()))) return false;
 				}
 				}
 				l_traitNode = std::move(r45);
 			}
 			 {
 				zv::Val r46;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_scope, "getFileDescription", "getfiledescription", 18, 0, NULL, r46.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_scope, "getFileDescription", "getfiledescription", 18, r46.raw()))) return false;
 				l_fileDescription = std::move(r46);
 			}
 			 {
@@ -399,7 +399,7 @@ namespace pgen::FileAnalyserCallback {
 					ZVAL_COPY(r65.raw(), gs64);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_node, "getTraitReflection", "gettraitreflection", 18, 0, NULL, r65.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_node, "getTraitReflection", "gettraitreflection", 18, r65.raw()))) return false;
 				}
 				}
 				zv::Val r66;
@@ -408,7 +408,7 @@ namespace pgen::FileAnalyserCallback {
 					if (UNEXPECTED(r66.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, r65.raw(), "getFileName", "getfilename", 11, 0, NULL, r66.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, r65.raw(), "getFileName", "getfilename", 11, r66.raw()))) return false;
 				}
 				}
 				l_traitFileName = std::move(r66);
@@ -469,7 +469,7 @@ namespace pgen::FileAnalyserCallback {
 					if (UNEXPECTED(r78.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_traitReflection.raw(), "getFileName", "getfilename", 11, 0, NULL, r78.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_traitReflection.raw(), "getFileName", "getfilename", 11, r78.raw()))) return false;
 				}
 				}
 				if (!(Z_TYPE_P(r78.raw()) == IS_NULL)) {
@@ -480,7 +480,7 @@ namespace pgen::FileAnalyserCallback {
 							if (UNEXPECTED(r79.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_traitReflection.raw(), "getFileName", "getfilename", 11, 0, NULL, r79.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_traitReflection.raw(), "getFileName", "getfilename", 11, r79.raw()))) return false;
 						}
 						}
 						l_traitFilePath = std::move(r79);
@@ -3188,7 +3188,7 @@ namespace pgen::FileAnalyserCallback {
 							 {
 								zval *is479 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
 								zv::Val r480;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r480.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_e.raw(), "getMessage", "getmessage", 10, r480.raw()))) return false;
 								zv::Val ist481;
 								zval *is478 = is479 == NULL ? NULL : pgrt::dimIs(is479, r480.raw(), ist481.raw());
 								if (UNEXPECTED(EG(exception))) return false;
@@ -3198,7 +3198,7 @@ namespace pgen::FileAnalyserCallback {
 							}
 							 {
 								zv::Val r482;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r482.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, l_e.raw(), "getMessage", "getmessage", 10, r482.raw()))) return false;
 								bool k483 = true;
 								zval z485;
 								ZVAL_BOOL(&z485, k483);
@@ -3212,16 +3212,16 @@ namespace pgen::FileAnalyserCallback {
 							}
 							 {
 								zv::Val r489;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r489.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, l_e.raw(), "getMessage", "getmessage", 10, r489.raw()))) return false;
 								zval *p490 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
 								if (UNEXPECTED(p490 == NULL)) return false;
 								zv::Val o491 = zv::Val::copyOf(zv::Ref(p490));
 								zv::Val r492;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_node, "getStartLine", "getstartline", 12, 0, NULL, r492.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, p_node, "getStartLine", "getstartline", 12, r492.raw()))) return false;
 								zend_long k493 = Z_LVAL_P(r492.raw());
 								zv::Val o494 = zv::Val::copyOf(zv::Ref(l_e.raw()));
 								zv::Val r495;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r495.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_34, l_e.raw(), "getTip", "gettip", 6, r495.raw()))) return false;
 								zval av496[4];
 								ZVAL_COPY_VALUE(&av496[0], r489.raw());
 								ZVAL_COPY_VALUE(&av496[1], o491.raw());
@@ -3248,7 +3248,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce504, "preparetrace", 12, 1, av503, r505.raw(), NULL))) return false;
 								{ zval v = r505.take(); zend_symtable_update(Z_ARRVAL_P(arr502.raw()), Z_STR_P(&pg_lit[1]), &v); }
 								zv::Val r506;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_39, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r506.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_39, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, r506.raw()))) return false;
 								{ zval v = r506.take(); zend_symtable_update(Z_ARRVAL_P(arr502.raw()), Z_STR_P(&pg_lit[2]), &v); }
 								zval av507[1];
 								ZVAL_COPY_VALUE(&av507[0], arr502.raw());
@@ -3276,7 +3276,7 @@ namespace pgen::FileAnalyserCallback {
 									ZVAL_COPY(r513.raw(), gs512);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r513.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_43, l_e.raw(), "getIdentifier", "getidentifier", 13, r513.raw()))) return false;
 								}
 								}
 								zv::Val r514;
@@ -3285,7 +3285,7 @@ namespace pgen::FileAnalyserCallback {
 									if (UNEXPECTED(r514.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_44, r513.raw(), "getName", "getname", 7, 0, NULL, r514.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_44, r513.raw(), "getName", "getname", 7, r514.raw()))) return false;
 								}
 								}
 								pgrt::StringBuilder sb515;
@@ -3297,7 +3297,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(p517 == NULL)) return false;
 								zv::Val o518 = zv::Val::copyOf(zv::Ref(p517));
 								zv::Val r519;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_45, p_node, "getStartLine", "getstartline", 12, 0, NULL, r519.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_45, p_node, "getStartLine", "getstartline", 12, r519.raw()))) return false;
 								zval av520[4];
 								ZVAL_COPY_VALUE(&av520[0], r516.raw());
 								ZVAL_COPY_VALUE(&av520[1], o518.raw());
@@ -3324,7 +3324,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce528, "preparetrace", 12, 1, av527, r529.raw(), NULL))) return false;
 								{ zval v = r529.take(); zend_symtable_update(Z_ARRVAL_P(arr526.raw()), Z_STR_P(&pg_lit[1]), &v); }
 								zv::Val r530;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_47, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r530.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_47, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, r530.raw()))) return false;
 								{ zval v = r530.take(); zend_symtable_update(Z_ARRVAL_P(arr526.raw()), Z_STR_P(&pg_lit[2]), &v); }
 								zval av531[1];
 								ZVAL_COPY_VALUE(&av531[0], arr526.raw());
@@ -3347,7 +3347,7 @@ namespace pgen::FileAnalyserCallback {
 							zval_ptr_dtor(&exception);
 							 {
 								zv::Val r536;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_51, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r536.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_51, l_e.raw(), "getMessage", "getmessage", 10, r536.raw()))) return false;
 								pgrt::StringBuilder sb537;
 								sb537.appendLiteral("Reflection error: ", 18);
 								if (UNEXPECTED(!sb537.append(r536.raw()))) return false;
@@ -3356,7 +3356,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(p539 == NULL)) return false;
 								zv::Val o540 = zv::Val::copyOf(zv::Ref(p539));
 								zv::Val r541;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_52, p_node, "getStartLine", "getstartline", 12, 0, NULL, r541.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_52, p_node, "getStartLine", "getstartline", 12, r541.raw()))) return false;
 								zval av542[4];
 								ZVAL_COPY_VALUE(&av542[0], r538.raw());
 								ZVAL_COPY_VALUE(&av542[1], o540.raw());
@@ -3381,7 +3381,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce549, "preparetrace", 12, 1, av548, r550.raw(), NULL))) return false;
 								{ zval v = r550.take(); zend_symtable_update(Z_ARRVAL_P(arr547.raw()), Z_STR_P(&pg_lit[1]), &v); }
 								zv::Val r551;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_54, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r551.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_54, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, r551.raw()))) return false;
 								{ zval v = r551.take(); zend_symtable_update(Z_ARRVAL_P(arr547.raw()), Z_STR_P(&pg_lit[2]), &v); }
 								zval av552[1];
 								ZVAL_COPY_VALUE(&av552[0], arr547.raw());
@@ -4351,7 +4351,7 @@ namespace pgen::FileAnalyserCallback {
 							}
 							 {
 								zv::Val r701;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_61, l_error.raw(), "canBeIgnored", "canbeignored", 12, 0, NULL, r701.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_61, l_error.raw(), "canBeIgnored", "canbeignored", 12, r701.raw()))) return false;
 								if (Z_TYPE_P(r701.raw()) == IS_TRUE) {
 									 {
 										zval *p703 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::ignoreErrorExtensions, "ignoreErrorExtensions");
@@ -4574,7 +4574,7 @@ namespace pgen::FileAnalyserCallback {
 							 {
 								zval *is753 = Z_ISUNDEF_P(l_uniquedAnalysedCodeExceptionMessages.raw()) ? NULL : l_uniquedAnalysedCodeExceptionMessages.raw();
 								zv::Val r754;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_65, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r754.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_65, l_e.raw(), "getMessage", "getmessage", 10, r754.raw()))) return false;
 								zv::Val ist755;
 								zval *is752 = is753 == NULL ? NULL : pgrt::dimIs(is753, r754.raw(), ist755.raw());
 								if (UNEXPECTED(EG(exception))) return false;
@@ -4584,7 +4584,7 @@ namespace pgen::FileAnalyserCallback {
 							}
 							 {
 								zv::Val r756;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_66, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r756.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_66, l_e.raw(), "getMessage", "getmessage", 10, r756.raw()))) return false;
 								bool k757 = true;
 								zval z759;
 								ZVAL_BOOL(&z759, k757);
@@ -4598,16 +4598,16 @@ namespace pgen::FileAnalyserCallback {
 							}
 							 {
 								zv::Val r763;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_67, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r763.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_67, l_e.raw(), "getMessage", "getmessage", 10, r763.raw()))) return false;
 								zval *p764 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::file, "file");
 								if (UNEXPECTED(p764 == NULL)) return false;
 								zv::Val o765 = zv::Val::copyOf(zv::Ref(p764));
 								zv::Val r766;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_68, p_node, "getStartLine", "getstartline", 12, 0, NULL, r766.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_68, p_node, "getStartLine", "getstartline", 12, r766.raw()))) return false;
 								zend_long k767 = Z_LVAL_P(r766.raw());
 								zv::Val o768 = zv::Val::copyOf(zv::Ref(l_e.raw()));
 								zv::Val r769;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_69, l_e.raw(), "getTip", "gettip", 6, 0, NULL, r769.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_69, l_e.raw(), "getTip", "gettip", 6, r769.raw()))) return false;
 								zval av770[4];
 								ZVAL_COPY_VALUE(&av770[0], r763.raw());
 								ZVAL_COPY_VALUE(&av770[1], o765.raw());
@@ -4634,7 +4634,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce778, "preparetrace", 12, 1, av777, r779.raw(), NULL))) return false;
 								{ zval v = r779.take(); zend_symtable_update(Z_ARRVAL_P(arr776.raw()), Z_STR_P(&pg_lit[1]), &v); }
 								zv::Val r780;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_71, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r780.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_71, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, r780.raw()))) return false;
 								{ zval v = r780.take(); zend_symtable_update(Z_ARRVAL_P(arr776.raw()), Z_STR_P(&pg_lit[2]), &v); }
 								zval av781[1];
 								ZVAL_COPY_VALUE(&av781[0], arr776.raw());
@@ -4662,7 +4662,7 @@ namespace pgen::FileAnalyserCallback {
 									ZVAL_COPY(r787.raw(), gs786);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_74, l_e.raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r787.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_74, l_e.raw(), "getIdentifier", "getidentifier", 13, r787.raw()))) return false;
 								}
 								}
 								zv::Val r788;
@@ -4671,7 +4671,7 @@ namespace pgen::FileAnalyserCallback {
 									if (UNEXPECTED(r788.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_75, r787.raw(), "getName", "getname", 7, 0, NULL, r788.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_75, r787.raw(), "getName", "getname", 7, r788.raw()))) return false;
 								}
 								}
 								pgrt::StringBuilder sb789;
@@ -4683,7 +4683,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(p791 == NULL)) return false;
 								zv::Val o792 = zv::Val::copyOf(zv::Ref(p791));
 								zv::Val r793;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_76, p_node, "getStartLine", "getstartline", 12, 0, NULL, r793.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_76, p_node, "getStartLine", "getstartline", 12, r793.raw()))) return false;
 								zval av794[4];
 								ZVAL_COPY_VALUE(&av794[0], r790.raw());
 								ZVAL_COPY_VALUE(&av794[1], o792.raw());
@@ -4710,7 +4710,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce802, "preparetrace", 12, 1, av801, r803.raw(), NULL))) return false;
 								{ zval v = r803.take(); zend_symtable_update(Z_ARRVAL_P(arr800.raw()), Z_STR_P(&pg_lit[1]), &v); }
 								zv::Val r804;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_78, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r804.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_78, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, r804.raw()))) return false;
 								{ zval v = r804.take(); zend_symtable_update(Z_ARRVAL_P(arr800.raw()), Z_STR_P(&pg_lit[2]), &v); }
 								zval av805[1];
 								ZVAL_COPY_VALUE(&av805[0], arr800.raw());
@@ -4733,7 +4733,7 @@ namespace pgen::FileAnalyserCallback {
 							zval_ptr_dtor(&exception);
 							 {
 								zv::Val r810;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_80, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r810.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_80, l_e.raw(), "getMessage", "getmessage", 10, r810.raw()))) return false;
 								pgrt::StringBuilder sb811;
 								sb811.appendLiteral("Reflection error: ", 18);
 								if (UNEXPECTED(!sb811.append(r810.raw()))) return false;
@@ -4742,7 +4742,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(p813 == NULL)) return false;
 								zv::Val o814 = zv::Val::copyOf(zv::Ref(p813));
 								zv::Val r815;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_81, p_node, "getStartLine", "getstartline", 12, 0, NULL, r815.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_81, p_node, "getStartLine", "getstartline", 12, r815.raw()))) return false;
 								zval av816[4];
 								ZVAL_COPY_VALUE(&av816[0], r812.raw());
 								ZVAL_COPY_VALUE(&av816[1], o814.raw());
@@ -4767,7 +4767,7 @@ namespace pgen::FileAnalyserCallback {
 								if (UNEXPECTED(!pgrt::callStatic(pg_site_38, ce823, "preparetrace", 12, 1, av822, r824.raw(), NULL))) return false;
 								{ zval v = r824.take(); zend_symtable_update(Z_ARRVAL_P(arr821.raw()), Z_STR_P(&pg_lit[1]), &v); }
 								zv::Val r825;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_83, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, 0, NULL, r825.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_83, l_e.raw(), "getTraceAsString", "gettraceasstring", 16, r825.raw()))) return false;
 								{ zval v = r825.take(); zend_symtable_update(Z_ARRVAL_P(arr821.raw()), Z_STR_P(&pg_lit[2]), &v); }
 								zval av826[1];
 								ZVAL_COPY_VALUE(&av826[0], arr821.raw());

@@ -23,7 +23,7 @@ static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Expr\PropertyFetch */
 static pgrt::PropSite pg_site_11; /* prop_var_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Expr\StaticPropertyFetch */
 static pgrt::PropSite pg_site_13; /* prop_var_13 */
-static pt_method_site pg_site_14; /* method_getStartLine_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getStartLine_14 */
 static pgrt::PropSite pg_site_15; /* prop_var_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_17; /* method_isSuperTypeOf_17 */
@@ -31,10 +31,10 @@ static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Type\ErrorType */
 static pt_method_site pg_site_19; /* method_isSuperTypeOf_19 */
 static pt_method_site pg_site_20; /* method_describe_20 */
 static pgrt::PropSite pg_site_21; /* prop_var_21 */
-static pt_method_site pg_site_22; /* method_getStartLine_22 */
-static pt_method_site pg_site_23; /* method_isString_23 */
-static pt_method_site pg_site_24; /* method_isNull_24 */
-static pt_method_site pg_site_25; /* method_isBoolean_25 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getStartLine_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_isString_23 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_isNull_24 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_isBoolean_25 */
 static pt_method_site pg_site_26; /* method_describe_26 */
 static pgrt::ClassSite pg_site_27; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Php\PhpVersion */
@@ -295,7 +295,7 @@ namespace pgen::InvalidIncDecOperationRule {
 					p34 = o35.raw();
 				}
 				zv::Val r36;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, zv::Ref(p34).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r36.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, zv::Ref(p34).deref().raw(), "getStartLine", "getstartline", 12, r36.raw()))) return false;
 				zv::Val r37;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r33.raw()), Z_LVAL_P(r36.raw()), r37.raw()))) return false;
 				pgrt::StringBuilder sb38;
@@ -546,7 +546,7 @@ namespace pgen::InvalidIncDecOperationRule {
 			p102 = o103.raw();
 		}
 		zv::Val r104;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_22, zv::Ref(p102).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r104.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, zv::Ref(p102).deref().raw(), "getStartLine", "getstartline", 12, r104.raw()))) return false;
 		zv::Val r105;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r101.raw()), Z_LVAL_P(r104.raw()), r105.raw()))) return false;
 		pgrt::StringBuilder sb106;
@@ -564,7 +564,7 @@ namespace pgen::InvalidIncDecOperationRule {
 			if (UNEXPECTED(r110.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_varType.raw(), "isString", "isstring", 8, 0, NULL, r110.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_varType.raw(), "isString", "isstring", 8, r110.raw()))) return false;
 		}
 		}
 		bool r111;
@@ -609,7 +609,7 @@ namespace pgen::InvalidIncDecOperationRule {
 			if (UNEXPECTED(r121.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_varType.raw(), "isNull", "isnull", 6, 0, NULL, r121.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_varType.raw(), "isNull", "isnull", 6, r121.raw()))) return false;
 		}
 		}
 		bool r122;
@@ -637,7 +637,7 @@ namespace pgen::InvalidIncDecOperationRule {
 			if (UNEXPECTED(r127.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_varType.raw(), "isBoolean", "isboolean", 9, 0, NULL, r127.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_varType.raw(), "isBoolean", "isboolean", 9, r127.raw()))) return false;
 		}
 		}
 		bool r128;

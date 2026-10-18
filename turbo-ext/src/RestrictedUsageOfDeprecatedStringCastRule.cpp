@@ -13,7 +13,7 @@ static zval pg_lit[2];
 static pt_method_site pg_site_0; /* method_getAll_0 */
 static pgrt::PropSite pg_site_1; /* prop_expr_1 */
 static pt_method_site pg_site_2; /* method_getType_2 */
-static pt_method_site pg_site_3; /* method_getObjectClassNames_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getObjectClassNames_3 */
 static pt_method_site pg_site_4; /* method_hasClass_4 */
 static pt_method_site pg_site_5; /* method_getClass_5 */
 static pt_method_site pg_site_6; /* method_hasNativeMethod_6 */
@@ -122,7 +122,7 @@ namespace pgen::RestrictedUsageOfDeprecatedStringCastRule {
 			if (UNEXPECTED(r11.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_exprType.raw(), "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r11.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_exprType.raw(), "getObjectClassNames", "getobjectclassnames", 19, r11.raw()))) return false;
 		}
 		}
 		l_referencedClasses = std::move(r11);

@@ -81,6 +81,22 @@ namespace reg {
 struct FunctionEntry;
 }
 
+/* what a user method's body is, when it is trivial enough to answer
+ * without running it (pt_abi.trivial_shape) */
+enum pt_trivial_kind : uint8_t
+{
+	PT_TRIVIAL_NONE = 0,  /* run it */
+	PT_TRIVIAL_CONST = 1, /* `return <literal>;`: constant (a scalar or an interned string) */
+	PT_TRIVIAL_PROP = 2,  /* `return $this->prop;`: the declared instance property at offset */
+};
+
+struct pt_trivial_shape
+{
+	pt_trivial_kind kind;
+	uint32_t offset;
+	zval constant;
+};
+
 /* what a class's zend_object_handlers override over the standard ones */
 struct pt_abi_handlers
 {
@@ -181,6 +197,8 @@ struct pt_abi_globals
 	bool (*is_true)(const zval *op);
 	/* the name of an internal function's i-th parameter (zend_internal_arg_info's layout differs between minors) */
 	const char *(*internal_arg_name)(const zend_function *fn, uint32_t i);
+	/* a parameterless user method's trivial body, read from its opcodes */
+	void (*trivial_shape)(const zend_function *fn, pt_trivial_shape *out);
 };
 
 /* Defined by the shared core, filled by the version-specific library, which

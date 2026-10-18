@@ -13,10 +13,10 @@ static pt_method_site pg_site_2; /* method_shouldResolveTemplateArguments_2 */
 static pt_method_site pg_site_3; /* method_enterThrow_3 */
 static pt_method_site pg_site_4; /* method_processExprNode_4 */
 static pt_method_site pg_site_5; /* method_getVariableFlow_5 */
-static pt_method_site pg_site_6; /* method_getType_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getType_6 */
 static pt_method_site pg_site_7; /* static_PHPStan\Analyser\VariableFlow::throwing */
 static pt_method_site pg_site_8; /* method_getThrowPoints_8 */
-static pt_method_site pg_site_9; /* method_getType_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getType_9 */
 static pt_method_site pg_site_10; /* method_getImpurePoints_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\TypeSpecifierContext */
 static pt_method_site pg_site_12; /* method_specifyDefaultTypes_12 */
@@ -193,7 +193,7 @@ namespace pgen::ThrowHandler {
 			if (UNEXPECTED(r15.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_exprResult.raw(), "getType", "gettype", 7, 0, NULL, r15.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_exprResult.raw(), "getType", "gettype", 7, r15.raw()))) return false;
 		}
 		}
 		zval av16[2];
@@ -232,7 +232,7 @@ namespace pgen::ThrowHandler {
 			if (UNEXPECTED(r27.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_exprResult.raw(), "getType", "gettype", 7, 0, NULL, r27.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_exprResult.raw(), "getType", "gettype", 7, r27.raw()))) return false;
 		}
 		}
 		bool k28 = false;

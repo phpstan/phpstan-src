@@ -9,19 +9,19 @@ zend_class_entry *pt_ce_hash_functions_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
 static pt_method_site pg_site_6; /* method_isFalse_6 */
-static pt_method_site pg_site_7; /* method_getPhpVersion_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getPhpVersion_7 */
 static pgrt::PropSite pg_site_8; /* prop_value_8 */
 static pt_method_site pg_site_9; /* method_getType_9 */
 static pt_method_site pg_site_10; /* method_getConstantStrings_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Constant\ConstantStringType */
-static pt_method_site pg_site_12; /* method_getValue_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getValue_12 */
 static pgrt::FunctionSite pg_site_13; /* function_hash_algos */
 static pgrt::FunctionSite pg_site_14; /* function_array_map */
 static pt_method_site pg_site_15; /* method_isSuperTypeOf_15 */
@@ -51,7 +51,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_type, "getValue", "getvalue", 8, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_type, "getValue", "getvalue", 8, r1.raw()))) return;
 		}
 		}
 		zv::Val r2 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r1.raw())));
@@ -262,7 +262,7 @@ namespace pgen::HashFunctionsReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		zv::Val r2 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r1.raw())));
@@ -329,7 +329,7 @@ namespace pgen::HashFunctionsReturnTypeExtension {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_functionReflection, "getName", "getname", 7, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_functionReflection, "getName", "getname", 7, r7.raw()))) return false;
 		}
 		}
 		zv::Val r8 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r7.raw())));
@@ -476,7 +476,7 @@ namespace pgen::HashFunctionsReturnTypeExtension {
 	}
 	 {
 		zv::Val r51;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r51.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_scope, "getPhpVersion", "getphpversion", 13, r51.raw()))) return false;
 		zv::Val r52;
 		if (UNEXPECTED(!pgen::PhpVersions::m_throwsValueErrorForInternalFunctions(Z_OBJ_P(r51.raw()), r52.raw()))) return false;
 		l_throwsValueError = std::move(r52);

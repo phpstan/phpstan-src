@@ -16,7 +16,7 @@ static pt_method_site pg_site_3; /* method_getNativeReflection_3 */
 static pt_method_site pg_site_4; /* method_canWriteProperty_4 */
 static pt_method_site pg_site_5; /* method_getDeclaringClass_5 */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
 static pt_method_site pg_site_8; /* method_isPrivateSet_8 */
 static pt_method_site pg_site_9; /* method_isProtectedSet_9 */
 static pt_method_site pg_site_10; /* method_isPrivate_10 */
@@ -186,7 +186,7 @@ namespace pgen::PropertyAssignRefRule {
 						if (UNEXPECTED(r27.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_propertyReflection, "getName", "getname", 7, 0, NULL, r27.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_propertyReflection, "getName", "getname", 7, r27.raw()))) return false;
 					}
 					}
 					zv::Val vd28;

@@ -10,21 +10,21 @@ zend_class_entry *pt_ce_restricted_internal_class_name_usage_extension = nullptr
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_isInternal_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_isInternal_0 */
 static pgrt::DispatchCache pg_site_1; /* dispatch_isInternal_1 */
 static pt_method_site pg_site_2; /* method_isInternal_2 */
 static pgrt::DispatchCache pg_site_3; /* dispatch_getDeclaringClass_3 */
 static pt_method_site pg_site_4; /* method_getDeclaringClass_4 */
-static pt_method_site pg_site_5; /* method_isInternal_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isInternal_5 */
 static pt_method_site pg_site_6; /* method_isInternal_6 */
 static pt_method_site pg_site_7; /* method_getDeclaringClass_7 */
-static pt_method_site pg_site_8; /* method_isInternal_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isInternal_8 */
 static pt_method_site pg_site_9; /* method_isInternal_9 */
 static pt_method_site pg_site_10; /* method_getDeclaringClass_10 */
-static pt_method_site pg_site_11; /* method_isInternal_11 */
-static pt_method_site pg_site_12; /* method_getClassTypeDescription_12 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_isInternal_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getClassTypeDescription_12 */
 static pt_method_site pg_site_13; /* method_getDisplayName_13 */
-static pt_method_site pg_site_14; /* method_getClassTypeDescription_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getClassTypeDescription_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Rules\InternalTag\RestrictedInternalUsageHelper */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
@@ -55,7 +55,7 @@ namespace pgen::RestrictedInternalClassNameUsageExtension {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_classReflection, "isInternal", "isinternal", 10, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_classReflection, "isInternal", "isinternal", 10, r1.raw()))) return false;
 		if (!((Z_TYPE_P(r1.raw()) == IS_TRUE))) {
 			 {
 				zval z2;
@@ -190,7 +190,7 @@ namespace pgen::RestrictedInternalClassNameUsageExtension {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_method.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd16.raw()))) return false;
 							}
 							zv::Val r22;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_5, vd16.raw(), "isInternal", "isinternal", 10, 0, NULL, r22.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, vd16.raw(), "isInternal", "isinternal", 10, r22.raw()))) return false;
 							b8 = (Z_TYPE_P(r22.raw()) == IS_TRUE);
 						}
 						if (b8) {
@@ -271,7 +271,7 @@ namespace pgen::RestrictedInternalClassNameUsageExtension {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_property.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd32.raw()))) return false;
 							}
 							zv::Val r36;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, vd32.raw(), "isInternal", "isinternal", 10, 0, NULL, r36.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, vd32.raw(), "isInternal", "isinternal", 10, r36.raw()))) return false;
 							b26 = (Z_TYPE_P(r36.raw()) == IS_TRUE);
 						}
 						if (b26) {
@@ -328,7 +328,7 @@ namespace pgen::RestrictedInternalClassNameUsageExtension {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_constant.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd44.raw()))) return false;
 							}
 							zv::Val r46;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_11, vd44.raw(), "isInternal", "isinternal", 10, 0, NULL, r46.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, vd44.raw(), "isInternal", "isinternal", 10, r46.raw()))) return false;
 							b40 = (Z_TYPE_P(r46.raw()) == IS_TRUE);
 						}
 						if (b40) {
@@ -346,7 +346,7 @@ namespace pgen::RestrictedInternalClassNameUsageExtension {
 	}
 	 {
 		zv::Val r48;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r48.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, r48.raw()))) return false;
 		zv::Val r49 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r48.raw())));
 		zv::Val r50;
 		if (EXPECTED(Z_TYPE_P(p_classReflection) == IS_OBJECT && Z_OBJCE_P(p_classReflection) == pt_ce_class_reflection)) {
@@ -366,7 +366,7 @@ namespace pgen::RestrictedInternalClassNameUsageExtension {
 		zv::Val r53;
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_createMessage(Z_OBJ_P(p_location), r52.raw(), r53.raw()))) return false;
 		zv::Val r54;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r54.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, r54.raw()))) return false;
 		pgrt::StringBuilder sb55;
 		sb55.appendLiteral("internal", 8);
 		if (UNEXPECTED(!sb55.append(r54.raw()))) return false;

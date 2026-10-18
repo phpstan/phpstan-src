@@ -185,6 +185,62 @@ bool callMethod(pt_method_site &site, zval *object, const char *name, const char
 	return true;
 }
 
+bool callMethod0(MethodShapeSite &site, zval *object, const char *name, const char *lcname, size_t len, zval *ret)
+{
+	PGRT_COUNT_HIT("M", Z_TYPE_P(object) == IS_OBJECT ? ZSTR_VAL(Z_OBJCE_P(object)->name) : "?", lcname);
+	if (UNEXPECTED(Z_TYPE_P(object) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function %s() on %s", name, zend_zval_value_name(object));
+		ZVAL_UNDEF(ret);
+		return false;
+	}
+	zend_object *zobj = Z_OBJ_P(object);
+	uint32_t way = PROP_SITE_WAYS;
+	if (EXPECTED(site.generation == pt_engine_generation)) {
+		for (uint32_t i = 0; i < PROP_SITE_WAYS; i++) {
+			if (site.ce[i] == zobj->ce) {
+				way = i;
+				break;
+			}
+		}
+	}
+	if (UNEXPECTED(way == PROP_SITE_WAYS)) {
+		zend_function *fn = pt_find_method(zobj->ce, lcname, len);
+		if (UNEXPECTED(fn == NULL)) {
+			ZVAL_UNDEF(ret);
+			return false;
+		}
+		if (site.generation != pt_engine_generation) {
+			site = {};
+			site.generation = pt_engine_generation;
+		}
+		way = site.next++ % PROP_SITE_WAYS;
+		site.ce[way] = zobj->ce;
+		site.fn[way] = fn;
+		pt_abi.trivial_shape(fn, &site.shape[way]);
+	}
+	const pt_trivial_shape &shape = site.shape[way];
+	if (shape.kind == PT_TRIVIAL_CONST) {
+		ZVAL_COPY_VALUE(ret, &shape.constant);
+		return true;
+	}
+	if (shape.kind == PT_TRIVIAL_PROP) {
+		zval *slot = OBJ_PROP(zobj, shape.offset);
+		ZVAL_DEREF(slot);
+		if (EXPECTED(Z_TYPE_P(slot) != IS_UNDEF)) {
+			ZVAL_COPY(ret, slot);
+			return true;
+		}
+		/* unset or uninitialized: the method, for __get() or the Error */
+	}
+	zend_call_known_function(site.fn[way], zobj, zobj->ce, ret, 0, NULL, NULL);
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(ret);
+		ZVAL_UNDEF(ret);
+		return false;
+	}
+	return true;
+}
+
 bool callBound(pt_method_site &site, zend_class_entry *ce, zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *ret, HashTable *named)
 {
 	PGRT_COUNT_HIT("B", ZSTR_VAL(ce->name), lcname);

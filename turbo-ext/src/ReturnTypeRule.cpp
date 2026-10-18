@@ -30,11 +30,11 @@ static pt_method_site pg_site_17; /* static_PHPStan\Type\IntegerRangeType::fromI
 static pt_method_site pg_site_18; /* method_isSuperTypeOf_18 */
 static pgrt::PropSite pg_site_19; /* prop_expr_19 */
 static pt_method_site pg_site_20; /* method_getType_20 */
-static pt_method_site pg_site_21; /* method_getIterableValueType_21 */
-static pt_method_site pg_site_22; /* method_getMessage_22 */
-static pt_method_site pg_site_23; /* method_getLine_23 */
-static pt_method_site pg_site_24; /* method_getIdentifier_24 */
-static pt_method_site pg_site_25; /* method_isString_25 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getIterableValueType_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getMessage_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getLine_23 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getIdentifier_24 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_isString_25 */
 static pt_method_site pg_site_26; /* method_isSuperTypeOf_26 */
 static pt_method_site pg_site_27; /* method_isSuperTypeOf_27 */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Rules\FunctionReturnTypeCheck */
@@ -1350,7 +1350,7 @@ namespace pgen::ReturnTypeRule {
 					if (UNEXPECTED(r217.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_21, r214.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r217.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, r214.raw(), "getIterableValueType", "getiterablevaluetype", 20, r217.raw()))) return false;
 				}
 				}
 				l_returnValueType = std::move(r217);
@@ -1365,7 +1365,7 @@ namespace pgen::ReturnTypeRule {
 					if (UNEXPECTED(e218 == NULL)) return false;
 				}
 				zv::Val r221;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_22, zv::Ref(e218).deref().raw(), "getMessage", "getmessage", 10, 0, NULL, r221.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, zv::Ref(e218).deref().raw(), "getMessage", "getmessage", 10, r221.raw()))) return false;
 				zv::Val r222;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r221.raw(), r222.raw()))) return false;
 				zv::Val et224;
@@ -1377,7 +1377,7 @@ namespace pgen::ReturnTypeRule {
 					if (UNEXPECTED(e223 == NULL)) return false;
 				}
 				zv::Val r226;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_23, zv::Ref(e223).deref().raw(), "getLine", "getline", 7, 0, NULL, r226.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, zv::Ref(e223).deref().raw(), "getLine", "getline", 7, r226.raw()))) return false;
 				zv::Val r227;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r222.raw()), Z_LVAL_P(r226.raw()), r227.raw()))) return false;
 				zv::Val et229;
@@ -1389,7 +1389,7 @@ namespace pgen::ReturnTypeRule {
 					if (UNEXPECTED(e228 == NULL)) return false;
 				}
 				zv::Val r231;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_24, zv::Ref(e228).deref().raw(), "getIdentifier", "getidentifier", 13, 0, NULL, r231.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, zv::Ref(e228).deref().raw(), "getIdentifier", "getidentifier", 13, r231.raw()))) return false;
 				zv::Val r232;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r227.raw()), r231.raw(), r232.raw()))) return false;
 				l_builder = std::move(r232);
@@ -1401,7 +1401,7 @@ namespace pgen::ReturnTypeRule {
 					if (UNEXPECTED(r233.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_returnValueType.raw(), "isString", "isstring", 8, 0, NULL, r233.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_returnValueType.raw(), "isString", "isstring", 8, r233.raw()))) return false;
 				}
 				}
 				bool r234;

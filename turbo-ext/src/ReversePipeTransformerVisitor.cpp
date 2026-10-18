@@ -13,11 +13,11 @@ static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Expr\FuncCall */
 static pt_method_site pg_site_1; /* method_isFirstClassCallable_1 */
 static pgrt::GetterSite pg_site_2; /* getter_getAttributes_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_4; /* method_getAttributes_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getAttributes_4 */
 static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pt_method_site pg_site_6; /* method_getArgs_6 */
 static pgrt::GetterSite pg_site_7; /* getter_getAttributes_7 */
-static pt_method_site pg_site_8; /* method_getAttributes_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getAttributes_8 */
 static pgrt::PropSite pg_site_9; /* prop_name_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_11; /* method_getArgs_11 */
@@ -31,11 +31,11 @@ static pgrt::PropSite pg_site_18; /* prop_name_18 */
 static pgrt::ClassSite pg_site_19; /* cls_PhpParser\Node\Expr\MethodCall */
 static pt_method_site pg_site_20; /* method_isFirstClassCallable_20 */
 static pgrt::GetterSite pg_site_21; /* getter_getAttributes_21 */
-static pt_method_site pg_site_22; /* method_getAttributes_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getAttributes_22 */
 static pt_method_site pg_site_23; /* method_getArgs_23 */
 static pt_method_site pg_site_24; /* method_getArgs_24 */
 static pgrt::GetterSite pg_site_25; /* getter_getAttributes_25 */
-static pt_method_site pg_site_26; /* method_getAttributes_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getAttributes_26 */
 static pt_method_site pg_site_27; /* method_getArgs_27 */
 static pgrt::PropSite pg_site_28; /* prop_value_28 */
 static pgrt::PropSite pg_site_29; /* prop_var_29 */
@@ -43,11 +43,11 @@ static pgrt::PropSite pg_site_30; /* prop_name_30 */
 static pgrt::ClassSite pg_site_31; /* cls_PhpParser\Node\Expr\StaticCall */
 static pt_method_site pg_site_32; /* method_isFirstClassCallable_32 */
 static pgrt::GetterSite pg_site_33; /* getter_getAttributes_33 */
-static pt_method_site pg_site_34; /* method_getAttributes_34 */
+static pgrt::MethodShapeSite pg_site_34; /* method0_getAttributes_34 */
 static pt_method_site pg_site_35; /* method_getArgs_35 */
 static pt_method_site pg_site_36; /* method_getArgs_36 */
 static pgrt::GetterSite pg_site_37; /* getter_getAttributes_37 */
-static pt_method_site pg_site_38; /* method_getAttributes_38 */
+static pgrt::MethodShapeSite pg_site_38; /* method0_getAttributes_38 */
 static pt_method_site pg_site_39; /* method_getArgs_39 */
 static pgrt::PropSite pg_site_40; /* prop_value_40 */
 static pgrt::PropSite pg_site_41; /* prop_class_41 */
@@ -80,7 +80,7 @@ namespace pgen::ReversePipeTransformerVisitor {
 					ZVAL_COPY(r4.raw(), gs3);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_node, "getAttributes", "getattributes", 13, 0, NULL, r4.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_node, "getAttributes", "getattributes", 13, r4.raw()))) return false;
 				}
 				}
 				l_attributes = std::move(r4);
@@ -148,7 +148,7 @@ namespace pgen::ReversePipeTransformerVisitor {
 							ZVAL_COPY(r25.raw(), gs24);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, zv::Ref(e21).deref().raw(), "getAttributes", "getattributes", 13, 0, NULL, r25.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, zv::Ref(e21).deref().raw(), "getAttributes", "getattributes", 13, r25.raw()))) return false;
 						}
 						}
 						zv::Val o26 = zv::Val::copyOf(zv::Ref(r25.raw()));
@@ -291,7 +291,7 @@ namespace pgen::ReversePipeTransformerVisitor {
 					ZVAL_COPY(r70.raw(), gs69);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_22, p_node, "getAttributes", "getattributes", 13, 0, NULL, r70.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, p_node, "getAttributes", "getattributes", 13, r70.raw()))) return false;
 				}
 				}
 				l_attributes = std::move(r70);
@@ -359,7 +359,7 @@ namespace pgen::ReversePipeTransformerVisitor {
 							ZVAL_COPY(r91.raw(), gs90);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_26, zv::Ref(e87).deref().raw(), "getAttributes", "getattributes", 13, 0, NULL, r91.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, zv::Ref(e87).deref().raw(), "getAttributes", "getattributes", 13, r91.raw()))) return false;
 						}
 						}
 						zv::Val o92 = zv::Val::copyOf(zv::Ref(r91.raw()));
@@ -465,7 +465,7 @@ namespace pgen::ReversePipeTransformerVisitor {
 					ZVAL_COPY(r125.raw(), gs124);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_34, p_node, "getAttributes", "getattributes", 13, 0, NULL, r125.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_34, p_node, "getAttributes", "getattributes", 13, r125.raw()))) return false;
 				}
 				}
 				l_attributes = std::move(r125);
@@ -533,7 +533,7 @@ namespace pgen::ReversePipeTransformerVisitor {
 							ZVAL_COPY(r146.raw(), gs145);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_38, zv::Ref(e142).deref().raw(), "getAttributes", "getattributes", 13, 0, NULL, r146.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_38, zv::Ref(e142).deref().raw(), "getAttributes", "getattributes", 13, r146.raw()))) return false;
 						}
 						}
 						zv::Val o147 = zv::Val::copyOf(zv::Ref(r146.raw()));

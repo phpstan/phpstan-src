@@ -9,15 +9,15 @@ zend_class_entry *pt_ce_openssl_cipher_functions_return_type_extension = nullptr
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getPhpVersion_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getPhpVersion_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pt_method_site pg_site_3; /* method_getArgs_3 */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
 static pt_method_site pg_site_6; /* method_getConstantStrings_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\Constant\ConstantStringType */
-static pt_method_site pg_site_8; /* method_getValue_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getValue_8 */
 static pt_method_site pg_site_9; /* method_isSupportedCipherMethod_9 */
 static pgrt::FunctionSite pg_site_10; /* function_array_map */
 static pt_method_site pg_site_11; /* method_getArgs_11 */
@@ -52,7 +52,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r3.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_algorithm, "getValue", "getvalue", 8, 0, NULL, r3.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_algorithm, "getValue", "getvalue", 8, r3.raw()))) return;
 		}
 		}
 		zval av4[2];
@@ -94,7 +94,7 @@ namespace pgen::OpensslCipherFunctionsReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -115,7 +115,7 @@ namespace pgen::OpensslCipherFunctionsReturnTypeExtension {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_throwsValueErrorForInternalFunctions(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;

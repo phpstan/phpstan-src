@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_curl_getinfo_function_dynamic_return_type_extension = nu
 /* the interned string literals, created at module startup */
 static zval pg_lit[123];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pt_method_site pg_site_3; /* method_getArgs_3 */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
-static pt_method_site pg_site_6; /* method_isNull_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isNull_6 */
 static pt_method_site pg_site_7; /* method_toInteger_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
 static pt_method_site pg_site_9; /* static_PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo */
@@ -58,7 +58,7 @@ namespace pgen::CurlGetinfoFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -149,7 +149,7 @@ namespace pgen::CurlGetinfoFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r15.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_componentType.raw(), "isNull", "isnull", 6, 0, NULL, r15.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_componentType.raw(), "isNull", "isnull", 6, r15.raw()))) return false;
 		}
 		}
 		bool r16;

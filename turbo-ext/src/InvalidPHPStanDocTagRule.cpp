@@ -19,14 +19,14 @@ static pgrt::PropSite pg_site_6; /* prop_expr_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Expr\AssignRef */
 static pgrt::PropSite pg_site_8; /* prop_expr_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Expr\AssignOp */
-static pt_method_site pg_site_10; /* method_getDocComment_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getDocComment_10 */
 static pgrt::GetterSite pg_site_11; /* getter_getText_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_13; /* method_getText_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getText_13 */
 static pt_method_site pg_site_14; /* method_tokenize_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\PhpDocParser\Parser\TokenIterator */
 static pt_method_site pg_site_16; /* method_parse_16 */
-static pt_method_site pg_site_17; /* method_getTags_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getTags_17 */
 static pgrt::PropSite pg_site_18; /* prop_name_18 */
 static pgrt::FunctionSite pg_site_19; /* function_str_starts_with */
 static pgrt::PropSite pg_site_20; /* prop_name_20 */
@@ -293,7 +293,7 @@ namespace pgen::InvalidPHPStanDocTagRule {
 	}
 	 {
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r13.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_node, "getDocComment", "getdoccomment", 13, r13.raw()))) return false;
 		l_docComment = std::move(r13);
 	}
 	 {
@@ -313,7 +313,7 @@ namespace pgen::InvalidPHPStanDocTagRule {
 			ZVAL_COPY(r16.raw(), gs15);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r16.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_docComment.raw(), "getText", "gettext", 7, r16.raw()))) return false;
 		}
 		}
 		l_phpDocString = std::move(r16);
@@ -350,7 +350,7 @@ namespace pgen::InvalidPHPStanDocTagRule {
 	}
 	 {
 		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_phpDocNode.raw(), "getTags", "gettags", 7, 0, NULL, r29.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_phpDocNode.raw(), "getTags", "gettags", 7, r29.raw()))) return false;
 		zv::Val a30 = zv::Val::copyOf(zv::Ref(r29.raw()).deref());
 		HashTable *ht28 = Z_ARRVAL_P(a30.raw());
 		zval *v31;

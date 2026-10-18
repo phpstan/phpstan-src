@@ -30,7 +30,7 @@ static pgrt::PropSite pg_site_17; /* prop_var_17 */
 static pgrt::PropSite pg_site_18; /* prop_name_18 */
 static pgrt::FunctionSite pg_site_19; /* function_sprintf */
 static pgrt::PropSite pg_site_20; /* prop_var_20 */
-static pt_method_site pg_site_21; /* method_getStartLine_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getStartLine_21 */
 static pgrt::ClassSite pg_site_22; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_23; /* cls_PHPStan\Analyser\Scope */
 
@@ -370,7 +370,7 @@ namespace pgen::UnusedClosureUsesRule {
 								p74 = o75.raw();
 							}
 							zv::Val r76;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_21, zv::Ref(p74).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r76.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, zv::Ref(p74).deref().raw(), "getStartLine", "getstartline", 12, r76.raw()))) return false;
 							if (UNEXPECTED(Z_TYPE_P(r76.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r76.raw()); return false; }
 							zv::Val r77;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(o73.raw()), Z_LVAL_P(r76.raw()), r77.raw()))) return false;

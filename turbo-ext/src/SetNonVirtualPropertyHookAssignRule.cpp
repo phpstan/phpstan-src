@@ -9,15 +9,15 @@ zend_class_entry *pt_ce_set_non_virtual_property_hook_assign_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_getPropertyHookNode_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPropertyHookNode_0 */
 static pgrt::PropSite pg_site_1; /* prop_name_1 */
 static pt_method_site pg_site_2; /* method_toLowerString_2 */
-static pt_method_site pg_site_3; /* method_getHookReflection_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getHookReflection_3 */
 static pt_method_site pg_site_4; /* method_isPropertyHook_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\ShouldNotHappenException */
 static pt_method_site pg_site_6; /* method_getHookedPropertyName_6 */
-static pt_method_site pg_site_7; /* method_getClassReflection_7 */
-static pt_method_site pg_site_8; /* method_getPropertyReflection_8 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getClassReflection_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getPropertyReflection_8 */
 static pt_method_site pg_site_9; /* method_isVirtual_9 */
 static pt_method_site pg_site_10; /* method_yes_10 */
 static pt_method_site pg_site_11; /* method_getExecutionEnds_11 */
@@ -30,7 +30,7 @@ static pgrt::PropSite pg_site_17; /* prop_expr_17 */
 static pt_method_site pg_site_18; /* method_getType_18 */
 static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Type\NeverType */
 static pgrt::GetterSite pg_site_20; /* getter_isExplicit_20 */
-static pt_method_site pg_site_21; /* method_isExplicit_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_isExplicit_21 */
 static pt_method_site pg_site_22; /* method_getScope_22 */
 static pt_method_site pg_site_23; /* method_getScope_23 */
 static pt_method_site pg_site_24; /* method_mergeWith_24 */
@@ -40,9 +40,9 @@ static pt_method_site pg_site_27; /* method_getScope_27 */
 static pt_method_site pg_site_28; /* method_mergeWith_28 */
 static pgrt::ClassSite pg_site_29; /* cls_PHPStan\Node\Expr\PropertyInitializationExpr */
 static pt_method_site pg_site_30; /* method_hasExpressionType_30 */
-static pt_method_site pg_site_31; /* method_yes_31 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_yes_31 */
 static pt_method_site pg_site_32; /* method_getDisplayName_32 */
-static pt_method_site pg_site_33; /* method_maybe_33 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_maybe_33 */
 static pgrt::ClassSite pg_site_34; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_35; /* cls_PHPStan\Analyser\Scope */
 
@@ -81,7 +81,7 @@ namespace pgen::SetNonVirtualPropertyHookAssignRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getPropertyHookNode", "getpropertyhooknode", 19, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getPropertyHookNode", "getpropertyhooknode", 19, r1.raw()))) return false;
 		l_hookNode = std::move(r1);
 	}
 	 {
@@ -104,7 +104,7 @@ namespace pgen::SetNonVirtualPropertyHookAssignRule {
 	}
 	 {
 		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getHookReflection", "gethookreflection", 17, 0, NULL, r6.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getHookReflection", "gethookreflection", 17, r6.raw()))) return false;
 		l_hookReflection = std::move(r6);
 	}
 	 {
@@ -154,14 +154,14 @@ namespace pgen::SetNonVirtualPropertyHookAssignRule {
 			if (UNEXPECTED(r14.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r14.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_node, "getClassReflection", "getclassreflection", 18, r14.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r14);
 	}
 	 {
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_node, "getPropertyReflection", "getpropertyreflection", 21, 0, NULL, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_node, "getPropertyReflection", "getpropertyreflection", 21, r15.raw()))) return false;
 		l_propertyReflection = std::move(r15);
 	}
 	 {
@@ -307,7 +307,7 @@ namespace pgen::SetNonVirtualPropertyHookAssignRule {
 											ZVAL_COPY(r44.raw(), gs43);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_exprType.raw(), "isExplicit", "isexplicit", 10, 0, NULL, r44.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_exprType.raw(), "isExplicit", "isexplicit", 10, r44.raw()))) return false;
 										}
 										}
 										b42 = (Z_TYPE_P(r44.raw()) == IS_TRUE);
@@ -457,7 +457,7 @@ namespace pgen::SetNonVirtualPropertyHookAssignRule {
 	}
 	 {
 		zv::Val r72;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_hasInit.raw(), "yes", "yes", 3, 0, NULL, r72.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, l_hasInit.raw(), "yes", "yes", 3, r72.raw()))) return false;
 		if (zend_is_true(r72.raw())) {
 			 {
 				zval arr73_raw;
@@ -480,7 +480,7 @@ namespace pgen::SetNonVirtualPropertyHookAssignRule {
 		}
 		zv::Val o76 = zv::Val::copyOf(zv::Ref(l_propertyName.raw()));
 		zv::Val r77;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_33, l_hasInit.raw(), "maybe", "maybe", 5, 0, NULL, r77.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, l_hasInit.raw(), "maybe", "maybe", 5, r77.raw()))) return false;
 		zv::Val q78;
 		if (zend_is_true(r77.raw())) {
 			zv::Val o79 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));

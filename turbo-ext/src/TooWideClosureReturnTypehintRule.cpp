@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_too_wide_closure_return_typehint_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getClosureExpr_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClosureExpr_0 */
 static pgrt::PropSite pg_site_1; /* prop_returnType_1 */
 static pt_method_site pg_site_2; /* method_getStatementResult_2 */
 static pgrt::GetterSite pg_site_3; /* getter_hasYield_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Analyser\StatementResult */
-static pt_method_site pg_site_5; /* method_hasYield_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_hasYield_5 */
 static pt_method_site pg_site_6; /* method_getReturnStatements_6 */
 static pgrt::FunctionSite pg_site_7; /* function_count */
 static pgrt::PropSite pg_site_8; /* prop_returnType_8 */
@@ -70,7 +70,7 @@ namespace pgen::TooWideClosureReturnTypehintRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClosureExpr", "getclosureexpr", 14, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClosureExpr", "getclosureexpr", 14, r1.raw()))) return false;
 		l_closureExpr = std::move(r1);
 	}
 	 {
@@ -117,7 +117,7 @@ namespace pgen::TooWideClosureReturnTypehintRule {
 			ZVAL_COPY(r9.raw(), gs8);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_statementResult.raw(), "hasYield", "hasyield", 8, 0, NULL, r9.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_statementResult.raw(), "hasYield", "hasyield", 8, r9.raw()))) return false;
 		}
 		}
 		if (zend_is_true(r9.raw())) {

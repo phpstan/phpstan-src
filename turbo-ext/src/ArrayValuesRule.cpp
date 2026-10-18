@@ -15,7 +15,7 @@ static pgrt::PropSite pg_site_2; /* prop_name_2 */
 static pt_method_site pg_site_3; /* method_hasFunction_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pt_method_site pg_site_5; /* method_getFunction_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
 static pt_method_site pg_site_7; /* method_getArgs_7 */
 static pt_method_site pg_site_8; /* method_getVariants_8 */
 static pt_method_site pg_site_9; /* method_getNamedArgumentsVariants_9 */
@@ -24,17 +24,17 @@ static pgrt::PropSite pg_site_11; /* prop_value_11 */
 static pt_method_site pg_site_12; /* method_getType_12 */
 static pgrt::PropSite pg_site_13; /* prop_value_13 */
 static pt_method_site pg_site_14; /* method_getNativeType_14 */
-static pt_method_site pg_site_15; /* method_isIterableAtLeastOnce_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_isIterableAtLeastOnce_15 */
 static pt_method_site pg_site_16; /* method_describe_16 */
 static pgrt::FunctionSite pg_site_17; /* function_sprintf */
 static pgrt::PropSite pg_site_18; /* prop_value_18 */
 static pt_method_site pg_site_19; /* method_getNativeType_19 */
-static pt_method_site pg_site_20; /* method_isIterableAtLeastOnce_20 */
-static pt_method_site pg_site_21; /* method_isList_21 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_isIterableAtLeastOnce_20 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_isList_21 */
 static pt_method_site pg_site_22; /* method_describe_22 */
 static pgrt::PropSite pg_site_23; /* prop_value_23 */
 static pt_method_site pg_site_24; /* method_getNativeType_24 */
-static pt_method_site pg_site_25; /* method_isList_25 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_isList_25 */
 static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_27; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Analyser\Scope */
@@ -183,7 +183,7 @@ namespace pgen::ArrayValuesRule {
 			if (UNEXPECTED(r23.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_functionReflection.raw(), "getName", "getname", 7, r23.raw()))) return false;
 		}
 		}
 		if (!zend_is_identical(r23.raw(), &pg_lit[1])) {
@@ -346,7 +346,7 @@ namespace pgen::ArrayValuesRule {
 			if (UNEXPECTED(r54.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_arrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r54.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_arrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r54.raw()))) return false;
 		}
 		}
 		bool r55;
@@ -427,7 +427,7 @@ namespace pgen::ArrayValuesRule {
 								if (UNEXPECTED(r77.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_nativeArrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r77.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_nativeArrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r77.raw()))) return false;
 							}
 							}
 							bool r78;
@@ -460,7 +460,7 @@ namespace pgen::ArrayValuesRule {
 			if (UNEXPECTED(r82.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_arrayType.raw(), "isList", "islist", 6, 0, NULL, r82.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_arrayType.raw(), "isList", "islist", 6, r82.raw()))) return false;
 		}
 		}
 		bool r83;
@@ -541,7 +541,7 @@ namespace pgen::ArrayValuesRule {
 								if (UNEXPECTED(r105.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_nativeArrayType.raw(), "isList", "islist", 6, 0, NULL, r105.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_nativeArrayType.raw(), "isList", "islist", 6, r105.raw()))) return false;
 							}
 							}
 							bool r106;

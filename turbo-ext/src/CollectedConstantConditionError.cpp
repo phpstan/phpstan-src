@@ -11,7 +11,7 @@ static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Analyser\Error */
 static pt_method_site pg_site_1; /* method_transformPaths_1 */
 static pt_method_site pg_site_2; /* static_PHPStan\Analyser\Error::decode */
 static pt_method_site pg_site_3; /* method_transformPaths_3 */
-static pt_method_site pg_site_4; /* method_jsonSerialize_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_jsonSerialize_4 */
 
 namespace pgen::CollectedConstantConditionError {
 
@@ -42,7 +42,7 @@ namespace pgen::CollectedConstantConditionError {
 		zv::Val r7;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, r5.raw(), "transformPaths", "transformpaths", 14, 1, av6, r7.raw(), NULL))) return false;
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r7.raw(), "jsonSerialize", "jsonserialize", 13, 0, NULL, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, r7.raw(), "jsonSerialize", "jsonserialize", 13, r8.raw()))) return false;
 		*ret = r8.take();
 		return true;
 	}

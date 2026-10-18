@@ -23,7 +23,7 @@ static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\ErrorType */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr\AssignOp\Plus */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Expr\BinaryOp\Plus */
 static pt_method_site pg_site_13; /* method_toNumber_13 */
-static pt_method_site pg_site_14; /* method_isArray_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isArray_14 */
 static pt_method_site pg_site_15; /* method_toNumber_15 */
 static pt_method_site pg_site_16; /* method_getType_16 */
 static pt_method_site pg_site_17; /* method_equals_17 */
@@ -49,7 +49,7 @@ static pt_method_site pg_site_36; /* method_getType_36 */
 static pt_method_site pg_site_37; /* method_describe_37 */
 static pt_method_site pg_site_38; /* method_getType_38 */
 static pt_method_site pg_site_39; /* method_describe_39 */
-static pt_method_site pg_site_40; /* method_getStartLine_40 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_getStartLine_40 */
 static pgrt::ClassSite pg_site_41; /* cls_PHPStan\Node\Printer\ExprPrinter */
 static pgrt::ClassSite pg_site_42; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_43; /* cls_PhpParser\Node */
@@ -128,7 +128,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r5.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_type, "isArray", "isarray", 7, 0, NULL, r5.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_type, "isArray", "isarray", 7, r5.raw()))) return;
 			}
 			}
 			bool r6;
@@ -746,7 +746,7 @@ namespace pgen::InvalidBinaryOperationRule {
 		zv::Val r128;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r127.raw(), r128.raw()))) return false;
 		zv::Val r129;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_40, l_left.raw(), "getStartLine", "getstartline", 12, 0, NULL, r129.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, l_left.raw(), "getStartLine", "getstartline", 12, r129.raw()))) return false;
 		zv::Val r130;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r128.raw()), Z_LVAL_P(r129.raw()), r130.raw()))) return false;
 		pgrt::StringBuilder sb131;

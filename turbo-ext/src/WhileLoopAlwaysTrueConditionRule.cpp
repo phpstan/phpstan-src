@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_while_loop_always_true_condition_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getExitPoints_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getExitPoints_0 */
 static pt_method_site pg_site_1; /* method_getStatement_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Stmt\Break_ */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Stmt\Continue_ */
@@ -22,13 +22,13 @@ static pt_method_site pg_site_9; /* method_getOriginalNode_9 */
 static pgrt::PropSite pg_site_10; /* prop_cond_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr */
 static pgrt::PropSite pg_site_12; /* prop_cond_12 */
-static pt_method_site pg_site_13; /* method_isTrue_13 */
-static pt_method_site pg_site_14; /* method_hasYield_14 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_isTrue_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_hasYield_14 */
 static pgrt::PropSite pg_site_15; /* prop_cond_15 */
 static pgrt::PropSite pg_site_16; /* prop_cond_16 */
 static pt_method_site pg_site_17; /* method_getFunction_17 */
 static pt_method_site pg_site_18; /* method_getAnonymousFunctionReflection_18 */
-static pt_method_site pg_site_19; /* method_getReturnType_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getReturnType_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Type\NeverType */
 static pgrt::PropSite pg_site_21; /* prop_cond_21 */
 static pgrt::PropSite pg_site_22; /* prop_cond_22 */
@@ -36,7 +36,7 @@ static pgrt::ClassSite pg_site_23; /* cls_PHPStan\Rules\RuleErrorBuilder */
 static pgrt::PropSite pg_site_24; /* prop_cond_24 */
 static pgrt::ClassSite pg_site_25; /* cls_PHPStan\Type\Constant\ConstantBooleanType */
 static pgrt::PropSite pg_site_26; /* prop_cond_26 */
-static pt_method_site pg_site_27; /* method_getStartLine_27 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getStartLine_27 */
 static pgrt::PropSite pg_site_28; /* prop_cond_28 */
 static pt_method_site pg_site_29; /* method_isInTrait_29 */
 static pgrt::PropSite pg_site_30; /* prop_cond_30 */
@@ -169,7 +169,7 @@ namespace pgen::WhileLoopAlwaysTrueConditionRule {
 	(void) this_zv;
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getExitPoints", "getexitpoints", 13, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getExitPoints", "getexitpoints", 13, r2.raw()))) return false;
 		pgrt::ForeachIter it3;
 		if (UNEXPECTED(!it3.begin(r2.raw()))) return false;
 		while (it3.valid()) {
@@ -331,13 +331,13 @@ namespace pgen::WhileLoopAlwaysTrueConditionRule {
 	}
 	 {
 		zv::Val r32;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_exprType.raw(), "isTrue", "istrue", 6, 0, NULL, r32.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_exprType.raw(), "isTrue", "istrue", 6, r32.raw()))) return false;
 		bool r33;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r32.raw()), &r33))) return false;
 		if (r33) {
 			 {
 				zv::Val r34;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_node, "hasYield", "hasyield", 8, 0, NULL, r34.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_node, "hasYield", "hasyield", 8, r34.raw()))) return false;
 				if (zend_is_true(r34.raw())) {
 					 {
 						if (l_isTypeCheckCandidate) {
@@ -419,7 +419,7 @@ namespace pgen::WhileLoopAlwaysTrueConditionRule {
 				bool b50 = !(Z_TYPE_P(l_ref.raw()) == IS_NULL);
 				if (b50) {
 					zv::Val r51;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_ref.raw(), "getReturnType", "getreturntype", 13, 0, NULL, r51.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_ref.raw(), "getReturnType", "getreturntype", 13, r51.raw()))) return false;
 					b50 = (pgrt::instanceOfClass(r51.raw(), pt_ce_never_type) || pgrt::instanceOfClass(r51.raw(), pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Type\\NeverType", 22)));
 				}
 				if (b50) {
@@ -485,7 +485,7 @@ namespace pgen::WhileLoopAlwaysTrueConditionRule {
 					p67 = o68.raw();
 				}
 				zv::Val r69;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_27, zv::Ref(p67).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r69.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, zv::Ref(p67).deref().raw(), "getStartLine", "getstartline", 12, r69.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r69.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r69.raw()); return false; }
 				zv::Val r70;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r66.raw()), Z_LVAL_P(r69.raw()), r70.raw()))) return false;

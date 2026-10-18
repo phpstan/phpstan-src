@@ -22,10 +22,10 @@ static pt_method_site pg_site_9; /* method_getFunction_9 */
 static pgrt::PropSite pg_site_10; /* prop_name_10 */
 static pgrt::PropSite pg_site_11; /* prop_name_11 */
 static pt_method_site pg_site_12; /* method_resolveFunctionName_12 */
-static pt_method_site pg_site_13; /* method_getName_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
 static pgrt::FunctionSite pg_site_14; /* function_strtolower */
-static pt_method_site pg_site_15; /* method_getName_15 */
-static pt_method_site pg_site_16; /* method_getName_16 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getName_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_18; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Analyser\Scope */
@@ -274,7 +274,7 @@ namespace pgen::CallToNonExistentFunctionRule {
 					if (UNEXPECTED(r52.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_function.raw(), "getName", "getname", 7, 0, NULL, r52.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_function.raw(), "getName", "getname", 7, r52.raw()))) return false;
 				}
 				}
 				zv::Val r53 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r52.raw())));
@@ -290,7 +290,7 @@ namespace pgen::CallToNonExistentFunctionRule {
 						if (UNEXPECTED(r56.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_function.raw(), "getName", "getname", 7, 0, NULL, r56.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_function.raw(), "getName", "getname", 7, r56.raw()))) return false;
 					}
 					}
 					b51 = !zend_is_identical(r56.raw(), l_calledFunctionName.raw());
@@ -304,7 +304,7 @@ namespace pgen::CallToNonExistentFunctionRule {
 							if (UNEXPECTED(r58.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_function.raw(), "getName", "getname", 7, 0, NULL, r58.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_function.raw(), "getName", "getname", 7, r58.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb59;

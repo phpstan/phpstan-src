@@ -16,7 +16,7 @@ static pgrt::PropSite pg_site_3; /* prop_name_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
 static pt_method_site pg_site_6; /* method_getConstantStrings_6 */
-static pt_method_site pg_site_7; /* method_getValue_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getValue_7 */
 static pgrt::PropSite pg_site_8; /* prop_name_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Scalar\String_ */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Expr\BinaryOp\Identical */
@@ -30,15 +30,15 @@ static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_18; /* method_isInClass_18 */
 static pt_method_site pg_site_19; /* method_resolveTypeByName_19 */
 static pt_method_site pg_site_20; /* method_isInClass_20 */
-static pt_method_site pg_site_21; /* method_getClassReflection_21 */
-static pt_method_site pg_site_22; /* method_getParentClass_22 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getClassReflection_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getParentClass_22 */
 static pt_method_site pg_site_23; /* method_getDisplayName_23 */
 static pt_method_site pg_site_24; /* method_resolveTypeByName_24 */
 static pt_method_site pg_site_25; /* method_hasClass_25 */
 static pt_method_site pg_site_26; /* method_isInClassExists_26 */
 static pt_method_site pg_site_27; /* method_resolveTypeByName_27 */
-static pt_method_site pg_site_28; /* method_getObjectClassReflections_28 */
-static pt_method_site pg_site_29; /* method_isTrait_29 */
+static pgrt::MethodShapeSite pg_site_28; /* method0_getObjectClassReflections_28 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_isTrait_29 */
 static pt_method_site pg_site_30; /* method_getDisplayName_30 */
 static pt_method_site pg_site_31; /* method_getClass_31 */
 static pt_method_site pg_site_32; /* method_hasConstant_32 */
@@ -47,11 +47,11 @@ static pgrt::ClassSite pg_site_34; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_35; /* method_canAccessConstants_35 */
 static pt_method_site pg_site_36; /* method_hasConstant_36 */
 static pgrt::ClassSite pg_site_37; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_38; /* method_getPhpVersion_38 */
-static pt_method_site pg_site_39; /* method_isString_39 */
-static pt_method_site pg_site_40; /* method_isString_40 */
+static pgrt::MethodShapeSite pg_site_38; /* method0_getPhpVersion_38 */
+static pgrt::MethodShapeSite pg_site_39; /* method0_isString_39 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_isString_40 */
 static pgrt::ClassSite pg_site_41; /* cls_PHPStan\Type\ThisType */
-static pt_method_site pg_site_42; /* method_getStaticObjectType_42 */
+static pgrt::MethodShapeSite pg_site_42; /* method0_getStaticObjectType_42 */
 static pt_method_site pg_site_43; /* method_canAccessConstants_43 */
 static pt_method_site pg_site_44; /* method_describe_44 */
 static pt_method_site pg_site_45; /* method_hasExpressionType_45 */
@@ -259,7 +259,7 @@ namespace pgen::ClassConstantRule {
 								if (UNEXPECTED(r27.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_constantString, "getValue", "getvalue", 8, 0, NULL, r27.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_constantString, "getValue", "getvalue", 8, r27.raw()))) return false;
 							}
 							}
 							l_name = std::move(r27);
@@ -529,7 +529,7 @@ namespace pgen::ClassConstantRule {
 									if (UNEXPECTED(r37.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_21, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r37.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, p_scope, "getClassReflection", "getclassreflection", 18, r37.raw()))) return false;
 								}
 								}
 								l_currentClassReflection = std::move(r37);
@@ -541,7 +541,7 @@ namespace pgen::ClassConstantRule {
 									if (UNEXPECTED(r38.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_currentClassReflection.raw(), "getParentClass", "getparentclass", 14, 0, NULL, r38.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_currentClassReflection.raw(), "getParentClass", "getparentclass", 14, r38.raw()))) return false;
 								}
 								}
 								if (Z_TYPE_P(r38.raw()) == IS_NULL) {
@@ -713,7 +713,7 @@ namespace pgen::ClassConstantRule {
 											if (UNEXPECTED(r82.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_classType.raw(), "getObjectClassReflections", "getobjectclassreflections", 25, 0, NULL, r82.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_28, l_classType.raw(), "getObjectClassReflections", "getobjectclassreflections", 25, r82.raw()))) return false;
 										}
 										}
 										zv::Val a83 = zv::Val::copyOf(zv::Ref(r82.raw()).deref());
@@ -732,7 +732,7 @@ namespace pgen::ClassConstantRule {
 														if (UNEXPECTED(r89.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_classTypeReflection, "isTrait", "istrait", 7, 0, NULL, r89.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, l_classTypeReflection, "isTrait", "istrait", 7, r89.raw()))) return false;
 													}
 													}
 													if (!(zend_is_true(r89.raw()))) {
@@ -906,7 +906,7 @@ namespace pgen::ClassConstantRule {
 				if (zend_is_identical(r131.raw(), &pg_lit[7])) {
 					 {
 						zv::Val r132;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_38, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r132.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_38, p_scope, "getPhpVersion", "getphpversion", 13, r132.raw()))) return false;
 						zv::Val r133;
 						if (UNEXPECTED(!pgen::PhpVersions::m_supportsClassConstantOnExpression(Z_OBJ_P(r132.raw()), r133.raw()))) return false;
 						bool r134;
@@ -937,7 +937,7 @@ namespace pgen::ClassConstantRule {
 								if (UNEXPECTED(r141.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_39, l_classType.raw(), "isString", "isstring", 8, 0, NULL, r141.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_39, l_classType.raw(), "isString", "isstring", 8, r141.raw()))) return false;
 							}
 							}
 							bool r142;
@@ -973,7 +973,7 @@ namespace pgen::ClassConstantRule {
 			if (UNEXPECTED(r148.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_40, l_classType.raw(), "isString", "isstring", 8, 0, NULL, r148.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, l_classType.raw(), "isString", "isstring", 8, r148.raw()))) return false;
 		}
 		}
 		bool r149;
@@ -993,7 +993,7 @@ namespace pgen::ClassConstantRule {
 		if (pgrt::instanceOfClass(l_classType.raw(), pt_ce_this_type) || pgrt::instanceOfClass(l_classType.raw(), pgrt::lookupClassQuiet(pg_site_41, "PHPStan\\Type\\ThisType", 21))) {
 			 {
 				zv::Val r151;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_42, l_classType.raw(), "getStaticObjectType", "getstaticobjecttype", 19, 0, NULL, r151.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, l_classType.raw(), "getStaticObjectType", "getstaticobjecttype", 19, r151.raw()))) return false;
 				l_typeForDescribe = std::move(r151);
 			}
 		}

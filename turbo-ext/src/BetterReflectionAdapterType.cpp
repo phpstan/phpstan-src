@@ -10,12 +10,12 @@ zend_class_entry *pt_ce_better_reflection_adapter_type = nullptr;
 static zval pg_lit[1];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\BetterReflection\Reflection\ReflectionUnionType */
-static pt_method_site pg_site_1; /* method_getTypes_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getTypes_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\BetterReflection\Reflection\ReflectionType */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\BetterReflection\Reflection\ReflectionNamedType */
-static pt_method_site pg_site_4; /* method_getName_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
 static pgrt::FunctionSite pg_site_5; /* function_array_filter */
-static pt_method_site pg_site_6; /* method_allowsNull_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_allowsNull_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\BetterReflection\Reflection\ReflectionIntersectionType */
@@ -41,7 +41,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r2.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_type, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_type, "getName", "getname", 7, r2.raw()))) return;
 			}
 			}
 			b1 = zend_is_identical(r2.raw(), &pg_lit[0]);
@@ -88,7 +88,7 @@ namespace pgen::BetterReflectionAdapterType {
 					if (UNEXPECTED(r1.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_betterReflectionType, "getTypes", "gettypes", 8, 0, NULL, r1.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_betterReflectionType, "getTypes", "gettypes", 8, r1.raw()))) return false;
 				}
 				}
 				zv::Val h2 = pt_native_closure_new(&pg_closure_1, 0, NULL, 0u);
@@ -103,7 +103,7 @@ namespace pgen::BetterReflectionAdapterType {
 			}
 			 {
 				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_betterReflectionType, "allowsNull", "allowsnull", 10, 0, NULL, r8.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_betterReflectionType, "allowsNull", "allowsnull", 10, r8.raw()))) return false;
 				bool b7 = (Z_TYPE_P(r8.raw()) == IS_TRUE);
 				if (b7) {
 					b7 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_nonNullTypes.raw())) == 1);

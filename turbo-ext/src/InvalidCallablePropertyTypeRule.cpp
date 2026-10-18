@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_invalid_callable_property_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getNativeProperty_2 */
 static pt_method_site pg_site_3; /* method_hasNativeType_3 */
 static pt_method_site pg_site_4; /* method_getNativeType_4 */
@@ -19,7 +19,7 @@ static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\UnionType */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\IntersectionType */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\CallableType */
 static pt_method_site pg_site_9; /* method_getDisplayName_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
 
@@ -104,7 +104,7 @@ namespace pgen::InvalidCallablePropertyTypeRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -117,7 +117,7 @@ namespace pgen::InvalidCallablePropertyTypeRule {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		zval av4[1];
@@ -213,7 +213,7 @@ namespace pgen::InvalidCallablePropertyTypeRule {
 			if (UNEXPECTED(r20.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_node, "getName", "getname", 7, 0, NULL, r20.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_node, "getName", "getname", 7, r20.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb21;

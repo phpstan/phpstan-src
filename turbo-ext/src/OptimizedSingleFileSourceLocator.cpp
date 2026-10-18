@@ -15,26 +15,26 @@ static pt_method_site pg_site_2; /* method_load_2 */
 static pt_method_site pg_site_3; /* method_fetchNodes_3 */
 static pgrt::GetterSite pg_site_4; /* getter_getClassNodes_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Reflection\BetterReflection\SourceLocator\FetchedNodesResult */
-static pt_method_site pg_site_6; /* method_getClassNodes_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getClassNodes_6 */
 static pgrt::FunctionSite pg_site_7; /* function_array_keys */
 static pgrt::GetterSite pg_site_8; /* getter_getFunctionNodes_8 */
-static pt_method_site pg_site_9; /* method_getFunctionNodes_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getFunctionNodes_9 */
 static pgrt::GetterSite pg_site_10; /* getter_getConstantNodes_10 */
-static pt_method_site pg_site_11; /* method_getConstantNodes_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getConstantNodes_11 */
 static pt_method_site pg_site_12; /* method_save_12 */
 static pt_method_site pg_site_13; /* method_load_13 */
 static pt_method_site pg_site_14; /* method_isClass_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
 static pgrt::FunctionSite pg_site_16; /* function_array_key_exists */
 static pt_method_site pg_site_17; /* method_isFunction_17 */
-static pt_method_site pg_site_18; /* method_getName_18 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getName_18 */
 static pt_method_site pg_site_19; /* method_isConstant_19 */
-static pt_method_site pg_site_20; /* method_getName_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getName_20 */
 static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Reflection\ConstantNameHelper */
 static pt_method_site pg_site_22; /* static_PHPStan\Reflection\ConstantNameHelper::normalize */
-static pt_method_site pg_site_23; /* method_getType_23 */
-static pt_method_site pg_site_24; /* method_getName_24 */
-static pt_method_site pg_site_25; /* method_getName_25 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getType_23 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getName_24 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getName_25 */
 static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Internal\ComposerHelper */
 static pt_method_site pg_site_27; /* static_PHPStan\Internal\ComposerHelper::getBetterReflectionVersion */
 static pt_method_site pg_site_28; /* method_load_28 */
@@ -50,24 +50,24 @@ static pt_method_site pg_site_37; /* static_PHPStan\BetterReflection\Reflection\
 static pt_method_site pg_site_38; /* static_PHPStan\BetterReflection\Reflection\ReflectionClass::importFromCache */
 static pt_method_site pg_site_39; /* method_fetchNodes_39 */
 static pgrt::GetterSite pg_site_40; /* getter_getClassNodes_40 */
-static pt_method_site pg_site_41; /* method_getClassNodes_41 */
+static pgrt::MethodShapeSite pg_site_41; /* method0_getClassNodes_41 */
 static pgrt::GetterSite pg_site_42; /* getter_getFunctionNodes_42 */
-static pt_method_site pg_site_43; /* method_getFunctionNodes_43 */
+static pgrt::MethodShapeSite pg_site_43; /* method0_getFunctionNodes_43 */
 static pgrt::GetterSite pg_site_44; /* getter_getConstantNodes_44 */
-static pt_method_site pg_site_45; /* method_getConstantNodes_45 */
+static pgrt::MethodShapeSite pg_site_45; /* method0_getConstantNodes_45 */
 static pt_method_site pg_site_46; /* method_save_46 */
 static pgrt::ClassSite pg_site_47; /* cls_PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection */
 static pt_method_site pg_site_48; /* method_isClass_48 */
 static pgrt::GetterSite pg_site_49; /* getter_getClassNodes_49 */
-static pt_method_site pg_site_50; /* method_getClassNodes_50 */
-static pt_method_site pg_site_51; /* method_getName_51 */
+static pgrt::MethodShapeSite pg_site_50; /* method0_getClassNodes_50 */
+static pgrt::MethodShapeSite pg_site_51; /* method0_getName_51 */
 static pgrt::GetterSite pg_site_52; /* getter_getNode_52 */
 static pgrt::ClassSite pg_site_53; /* cls_PHPStan\Reflection\BetterReflection\SourceLocator\FetchedNode */
-static pt_method_site pg_site_54; /* method_getNode_54 */
+static pgrt::MethodShapeSite pg_site_54; /* method0_getNode_54 */
 static pgrt::GetterSite pg_site_55; /* getter_getLocatedSource_55 */
-static pt_method_site pg_site_56; /* method_getLocatedSource_56 */
+static pgrt::MethodShapeSite pg_site_56; /* method0_getLocatedSource_56 */
 static pgrt::GetterSite pg_site_57; /* getter_getNamespace_57 */
-static pt_method_site pg_site_58; /* method_getNamespace_58 */
+static pgrt::MethodShapeSite pg_site_58; /* method0_getNamespace_58 */
 static pt_method_site pg_site_59; /* method___invoke_59 */
 static pgrt::ClassSite pg_site_60; /* cls_PHPStan\BetterReflection\Reflection\ReflectionClass */
 static pgrt::ClassSite pg_site_61; /* cls_PHPStan\ShouldNotHappenException */
@@ -75,74 +75,74 @@ static pt_method_site pg_site_62; /* method_exportToCache_62 */
 static pt_method_site pg_site_63; /* method_save_63 */
 static pt_method_site pg_site_64; /* method_isFunction_64 */
 static pgrt::GetterSite pg_site_65; /* getter_getFunctionNodes_65 */
-static pt_method_site pg_site_66; /* method_getFunctionNodes_66 */
-static pt_method_site pg_site_67; /* method_getName_67 */
+static pgrt::MethodShapeSite pg_site_66; /* method0_getFunctionNodes_66 */
+static pgrt::MethodShapeSite pg_site_67; /* method0_getName_67 */
 static pgrt::GetterSite pg_site_68; /* getter_getNode_68 */
-static pt_method_site pg_site_69; /* method_getNode_69 */
+static pgrt::MethodShapeSite pg_site_69; /* method0_getNode_69 */
 static pgrt::GetterSite pg_site_70; /* getter_getLocatedSource_70 */
-static pt_method_site pg_site_71; /* method_getLocatedSource_71 */
+static pgrt::MethodShapeSite pg_site_71; /* method0_getLocatedSource_71 */
 static pgrt::GetterSite pg_site_72; /* getter_getNamespace_72 */
-static pt_method_site pg_site_73; /* method_getNamespace_73 */
+static pgrt::MethodShapeSite pg_site_73; /* method0_getNamespace_73 */
 static pt_method_site pg_site_74; /* method___invoke_74 */
-static pt_method_site pg_site_75; /* method_exportToCache_75 */
+static pgrt::MethodShapeSite pg_site_75; /* method0_exportToCache_75 */
 static pt_method_site pg_site_76; /* method_save_76 */
 static pt_method_site pg_site_77; /* method_isConstant_77 */
 static pgrt::GetterSite pg_site_78; /* getter_getConstantNodes_78 */
-static pt_method_site pg_site_79; /* method_getConstantNodes_79 */
-static pt_method_site pg_site_80; /* method_getName_80 */
+static pgrt::MethodShapeSite pg_site_79; /* method0_getConstantNodes_79 */
+static pgrt::MethodShapeSite pg_site_80; /* method0_getName_80 */
 static pgrt::GetterSite pg_site_81; /* getter_getNode_81 */
-static pt_method_site pg_site_82; /* method_getNode_82 */
+static pgrt::MethodShapeSite pg_site_82; /* method0_getNode_82 */
 static pgrt::ClassSite pg_site_83; /* cls_PhpParser\Node\Stmt\Const_ */
 static pgrt::PropSite pg_site_84; /* prop_consts_84 */
 static pgrt::PropSite pg_site_85; /* prop_namespacedName_85 */
 static pgrt::PropSite pg_site_86; /* prop_namespacedName_86 */
 static pt_method_site pg_site_87; /* method_toString_87 */
 static pgrt::GetterSite pg_site_88; /* getter_getNode_88 */
-static pt_method_site pg_site_89; /* method_getNode_89 */
+static pgrt::MethodShapeSite pg_site_89; /* method0_getNode_89 */
 static pgrt::GetterSite pg_site_90; /* getter_getLocatedSource_90 */
-static pt_method_site pg_site_91; /* method_getLocatedSource_91 */
+static pgrt::MethodShapeSite pg_site_91; /* method0_getLocatedSource_91 */
 static pgrt::GetterSite pg_site_92; /* getter_getNamespace_92 */
-static pt_method_site pg_site_93; /* method_getNamespace_93 */
+static pgrt::MethodShapeSite pg_site_93; /* method0_getNamespace_93 */
 static pt_method_site pg_site_94; /* method___invoke_94 */
-static pt_method_site pg_site_95; /* method_exportToCache_95 */
+static pgrt::MethodShapeSite pg_site_95; /* method0_exportToCache_95 */
 static pt_method_site pg_site_96; /* method_save_96 */
 static pt_method_site pg_site_97; /* method_fetchNodes_97 */
 static pt_method_site pg_site_98; /* method_isClass_98 */
 static pgrt::GetterSite pg_site_99; /* getter_getClassNodes_99 */
-static pt_method_site pg_site_100; /* method_getClassNodes_100 */
+static pgrt::MethodShapeSite pg_site_100; /* method0_getClassNodes_100 */
 static pgrt::GetterSite pg_site_101; /* getter_getNode_101 */
-static pt_method_site pg_site_102; /* method_getNode_102 */
+static pgrt::MethodShapeSite pg_site_102; /* method0_getNode_102 */
 static pgrt::GetterSite pg_site_103; /* getter_getLocatedSource_103 */
-static pt_method_site pg_site_104; /* method_getLocatedSource_104 */
+static pgrt::MethodShapeSite pg_site_104; /* method0_getLocatedSource_104 */
 static pgrt::GetterSite pg_site_105; /* getter_getNamespace_105 */
-static pt_method_site pg_site_106; /* method_getNamespace_106 */
+static pgrt::MethodShapeSite pg_site_106; /* method0_getNamespace_106 */
 static pt_method_site pg_site_107; /* method___invoke_107 */
 static pt_method_site pg_site_108; /* method_isFunction_108 */
 static pgrt::GetterSite pg_site_109; /* getter_getFunctionNodes_109 */
-static pt_method_site pg_site_110; /* method_getFunctionNodes_110 */
+static pgrt::MethodShapeSite pg_site_110; /* method0_getFunctionNodes_110 */
 static pgrt::GetterSite pg_site_111; /* getter_getNode_111 */
-static pt_method_site pg_site_112; /* method_getNode_112 */
+static pgrt::MethodShapeSite pg_site_112; /* method0_getNode_112 */
 static pgrt::GetterSite pg_site_113; /* getter_getLocatedSource_113 */
-static pt_method_site pg_site_114; /* method_getLocatedSource_114 */
+static pgrt::MethodShapeSite pg_site_114; /* method0_getLocatedSource_114 */
 static pgrt::GetterSite pg_site_115; /* getter_getNamespace_115 */
-static pt_method_site pg_site_116; /* method_getNamespace_116 */
+static pgrt::MethodShapeSite pg_site_116; /* method0_getNamespace_116 */
 static pt_method_site pg_site_117; /* method___invoke_117 */
 static pt_method_site pg_site_118; /* method_isConstant_118 */
 static pgrt::GetterSite pg_site_119; /* getter_getConstantNodes_119 */
-static pt_method_site pg_site_120; /* method_getConstantNodes_120 */
+static pgrt::MethodShapeSite pg_site_120; /* method0_getConstantNodes_120 */
 static pgrt::GetterSite pg_site_121; /* getter_getNode_121 */
-static pt_method_site pg_site_122; /* method_getNode_122 */
+static pgrt::MethodShapeSite pg_site_122; /* method0_getNode_122 */
 static pgrt::PropSite pg_site_123; /* prop_consts_123 */
 static pgrt::PropSite pg_site_124; /* prop_namespacedName_124 */
 static pgrt::GetterSite pg_site_125; /* getter_getLocatedSource_125 */
-static pt_method_site pg_site_126; /* method_getLocatedSource_126 */
+static pgrt::MethodShapeSite pg_site_126; /* method0_getLocatedSource_126 */
 static pgrt::GetterSite pg_site_127; /* getter_getNamespace_127 */
-static pt_method_site pg_site_128; /* method_getNamespace_128 */
+static pgrt::MethodShapeSite pg_site_128; /* method0_getNamespace_128 */
 static pt_method_site pg_site_129; /* method___invoke_129 */
 static pgrt::GetterSite pg_site_130; /* getter_getLocatedSource_130 */
-static pt_method_site pg_site_131; /* method_getLocatedSource_131 */
+static pgrt::MethodShapeSite pg_site_131; /* method0_getLocatedSource_131 */
 static pgrt::GetterSite pg_site_132; /* getter_getNamespace_132 */
-static pt_method_site pg_site_133; /* method_getNamespace_133 */
+static pgrt::MethodShapeSite pg_site_133; /* method0_getNamespace_133 */
 static pt_method_site pg_site_134; /* method___invoke_134 */
 static pgrt::ClassSite pg_site_135; /* cls_PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher */
 static pgrt::ClassSite pg_site_136; /* cls_PHPStan\Cache\Cache */
@@ -321,7 +321,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 			ZVAL_COPY(r26.raw(), gs25);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_fetchedNodesResult.raw(), "getClassNodes", "getclassnodes", 13, 0, NULL, r26.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_fetchedNodesResult.raw(), "getClassNodes", "getclassnodes", 13, r26.raw()))) return false;
 		}
 		}
 		zval av27[1];
@@ -367,7 +367,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 			ZVAL_COPY(r44.raw(), gs43);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_fetchedNodesResult.raw(), "getFunctionNodes", "getfunctionnodes", 16, 0, NULL, r44.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_fetchedNodesResult.raw(), "getFunctionNodes", "getfunctionnodes", 16, r44.raw()))) return false;
 		}
 		}
 		zval av45[1];
@@ -413,7 +413,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 			ZVAL_COPY(r62.raw(), gs61);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_fetchedNodesResult.raw(), "getConstantNodes", "getconstantnodes", 16, 0, NULL, r62.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_fetchedNodesResult.raw(), "getConstantNodes", "getconstantnodes", 16, r62.raw()))) return false;
 		}
 		}
 		zval av63[1];
@@ -562,7 +562,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 							if (UNEXPECTED(r15.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_identifier, "getName", "getname", 7, 0, NULL, r15.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_identifier, "getName", "getname", 7, r15.raw()))) return false;
 						}
 						}
 						zv::Val r16 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r15.raw())));
@@ -612,7 +612,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 							if (UNEXPECTED(r26.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_identifier, "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, p_identifier, "getName", "getname", 7, r26.raw()))) return false;
 						}
 						}
 						zv::Val r27 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r26.raw())));
@@ -662,7 +662,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 							if (UNEXPECTED(r37.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_identifier, "getName", "getname", 7, 0, NULL, r37.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, p_identifier, "getName", "getname", 7, r37.raw()))) return false;
 						}
 						}
 						zval av38[1];
@@ -707,7 +707,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 			if (UNEXPECTED(r49.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p_identifier, "getType", "gettype", 7, 0, NULL, r49.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, p_identifier, "getType", "gettype", 7, r49.raw()))) return false;
 		}
 		}
 		zv::Val r50;
@@ -716,7 +716,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 			if (UNEXPECTED(r50.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_24, r49.raw(), "getName", "getname", 7, 0, NULL, r50.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, r49.raw(), "getName", "getname", 7, r50.raw()))) return false;
 		}
 		}
 		zv::Val r51;
@@ -725,7 +725,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 			if (UNEXPECTED(r51.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_25, p_identifier, "getName", "getname", 7, 0, NULL, r51.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, p_identifier, "getName", "getname", 7, r51.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb52;
@@ -921,7 +921,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					ZVAL_COPY(r102.raw(), gs101);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_41, l_fetchedNodesResult.raw(), "getClassNodes", "getclassnodes", 13, 0, NULL, r102.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_41, l_fetchedNodesResult.raw(), "getClassNodes", "getclassnodes", 13, r102.raw()))) return false;
 				}
 				}
 				zval av103[1];
@@ -967,7 +967,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					ZVAL_COPY(r120.raw(), gs119);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_fetchedNodesResult.raw(), "getFunctionNodes", "getfunctionnodes", 16, 0, NULL, r120.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_43, l_fetchedNodesResult.raw(), "getFunctionNodes", "getfunctionnodes", 16, r120.raw()))) return false;
 				}
 				}
 				zval av121[1];
@@ -1013,7 +1013,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					ZVAL_COPY(r138.raw(), gs137);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_45, l_fetchedNodesResult.raw(), "getConstantNodes", "getconstantnodes", 16, 0, NULL, r138.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_45, l_fetchedNodesResult.raw(), "getConstantNodes", "getconstantnodes", 16, r138.raw()))) return false;
 				}
 				}
 				zval av139[1];
@@ -1106,7 +1106,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					ZVAL_COPY(r168.raw(), gs167);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_50, l_fetchedNodesResult.raw(), "getClassNodes", "getclassnodes", 13, 0, NULL, r168.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_50, l_fetchedNodesResult.raw(), "getClassNodes", "getclassnodes", 13, r168.raw()))) return false;
 				}
 				}
 				l_classNodes = std::move(r168);
@@ -1118,7 +1118,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					if (UNEXPECTED(r169.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_51, p_identifier, "getName", "getname", 7, 0, NULL, r169.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_51, p_identifier, "getName", "getname", 7, r169.raw()))) return false;
 				}
 				}
 				zv::Val r170 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r169.raw())));
@@ -1152,7 +1152,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r181.raw(), gs180);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_54, l_classNode, "getNode", "getnode", 7, 0, NULL, r181.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_54, l_classNode, "getNode", "getnode", 7, r181.raw()))) return false;
 							}
 							}
 							zval *gs182 = Z_TYPE_P(l_classNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_55, Z_OBJ_P(l_classNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getlocatedsource", 16, "locatedSource", 13) : NULL;
@@ -1161,7 +1161,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r183.raw(), gs182);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_56, l_classNode, "getLocatedSource", "getlocatedsource", 16, 0, NULL, r183.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_56, l_classNode, "getLocatedSource", "getlocatedsource", 16, r183.raw()))) return false;
 							}
 							}
 							zval *gs184 = Z_TYPE_P(l_classNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_57, Z_OBJ_P(l_classNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getnamespace", 12, "namespace", 9) : NULL;
@@ -1170,7 +1170,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r185.raw(), gs184);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_58, l_classNode, "getNamespace", "getnamespace", 12, 0, NULL, r185.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_58, l_classNode, "getNamespace", "getnamespace", 12, r185.raw()))) return false;
 							}
 							}
 							zval av186[4];
@@ -1252,7 +1252,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					ZVAL_COPY(r202.raw(), gs201);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_66, l_fetchedNodesResult.raw(), "getFunctionNodes", "getfunctionnodes", 16, 0, NULL, r202.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_66, l_fetchedNodesResult.raw(), "getFunctionNodes", "getfunctionnodes", 16, r202.raw()))) return false;
 				}
 				}
 				l_functionNodes = std::move(r202);
@@ -1264,7 +1264,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					if (UNEXPECTED(r203.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_67, p_identifier, "getName", "getname", 7, 0, NULL, r203.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_67, p_identifier, "getName", "getname", 7, r203.raw()))) return false;
 				}
 				}
 				zv::Val r204 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r203.raw())));
@@ -1298,7 +1298,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r215.raw(), gs214);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_69, l_functionNode, "getNode", "getnode", 7, 0, NULL, r215.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_69, l_functionNode, "getNode", "getnode", 7, r215.raw()))) return false;
 							}
 							}
 							zval *gs216 = Z_TYPE_P(l_functionNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_70, Z_OBJ_P(l_functionNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getlocatedsource", 16, "locatedSource", 13) : NULL;
@@ -1307,7 +1307,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r217.raw(), gs216);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_71, l_functionNode, "getLocatedSource", "getlocatedsource", 16, 0, NULL, r217.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_71, l_functionNode, "getLocatedSource", "getlocatedsource", 16, r217.raw()))) return false;
 							}
 							}
 							zval *gs218 = Z_TYPE_P(l_functionNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_72, Z_OBJ_P(l_functionNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getnamespace", 12, "namespace", 9) : NULL;
@@ -1316,7 +1316,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r219.raw(), gs218);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_73, l_functionNode, "getNamespace", "getnamespace", 12, 0, NULL, r219.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_73, l_functionNode, "getNamespace", "getnamespace", 12, r219.raw()))) return false;
 							}
 							}
 							zval av220[4];
@@ -1347,7 +1347,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 							zv::Val o226 = zv::Val::copyOf(zv::Ref(l_reflectionCacheKey.raw()));
 							zv::Val o227 = zv::Val::copyOf(zv::Ref(l_reflectionVariableCacheKey.raw()));
 							zv::Val r228;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_75, l_functionReflection.raw(), "exportToCache", "exporttocache", 13, 0, NULL, r228.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_75, l_functionReflection.raw(), "exportToCache", "exporttocache", 13, r228.raw()))) return false;
 							zval av229[3];
 							ZVAL_COPY_VALUE(&av229[0], o226.raw());
 							ZVAL_COPY_VALUE(&av229[1], o227.raw());
@@ -1388,7 +1388,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					ZVAL_COPY(r235.raw(), gs234);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_79, l_fetchedNodesResult.raw(), "getConstantNodes", "getconstantnodes", 16, 0, NULL, r235.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_79, l_fetchedNodesResult.raw(), "getConstantNodes", "getconstantnodes", 16, r235.raw()))) return false;
 				}
 				}
 				l_constantNodes = std::move(r235);
@@ -1400,7 +1400,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					if (UNEXPECTED(r236.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_80, p_identifier, "getName", "getname", 7, 0, NULL, r236.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_80, p_identifier, "getName", "getname", 7, r236.raw()))) return false;
 				}
 				}
 				zval av237[1];
@@ -1438,7 +1438,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r249.raw(), gs248);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_82, l_fetchedConstantNode, "getNode", "getnode", 7, 0, NULL, r249.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_82, l_fetchedConstantNode, "getNode", "getnode", 7, r249.raw()))) return false;
 							}
 							}
 							l_constantNode = std::move(r249);
@@ -1536,7 +1536,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r276.raw(), gs275);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_89, l_fetchedConstantNode, "getNode", "getnode", 7, 0, NULL, r276.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_89, l_fetchedConstantNode, "getNode", "getnode", 7, r276.raw()))) return false;
 							}
 							}
 							zval *gs277 = Z_TYPE_P(l_fetchedConstantNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_90, Z_OBJ_P(l_fetchedConstantNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getlocatedsource", 16, "locatedSource", 13) : NULL;
@@ -1545,7 +1545,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r278.raw(), gs277);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_91, l_fetchedConstantNode, "getLocatedSource", "getlocatedsource", 16, 0, NULL, r278.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_91, l_fetchedConstantNode, "getLocatedSource", "getlocatedsource", 16, r278.raw()))) return false;
 							}
 							}
 							zval *gs279 = Z_TYPE_P(l_fetchedConstantNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_92, Z_OBJ_P(l_fetchedConstantNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getnamespace", 12, "namespace", 9) : NULL;
@@ -1554,7 +1554,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 								ZVAL_COPY(r280.raw(), gs279);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_93, l_fetchedConstantNode, "getNamespace", "getnamespace", 12, 0, NULL, r280.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_93, l_fetchedConstantNode, "getNamespace", "getnamespace", 12, r280.raw()))) return false;
 							}
 							}
 							zval av281[5];
@@ -1586,7 +1586,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 							zv::Val o287 = zv::Val::copyOf(zv::Ref(l_reflectionCacheKey.raw()));
 							zv::Val o288 = zv::Val::copyOf(zv::Ref(l_reflectionVariableCacheKey.raw()));
 							zv::Val r289;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_95, l_constantReflection.raw(), "exportToCache", "exporttocache", 13, 0, NULL, r289.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_95, l_constantReflection.raw(), "exportToCache", "exporttocache", 13, r289.raw()))) return false;
 							zval av290[3];
 							ZVAL_COPY_VALUE(&av290[0], o287.raw());
 							ZVAL_COPY_VALUE(&av290[1], o288.raw());
@@ -1691,7 +1691,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					ZVAL_COPY(r13.raw(), gs12);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_100, l_fetchedNodesResult.raw(), "getClassNodes", "getclassnodes", 13, 0, NULL, r13.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_100, l_fetchedNodesResult.raw(), "getClassNodes", "getclassnodes", 13, r13.raw()))) return false;
 				}
 				}
 				l_classNodes = std::move(r13);
@@ -1720,7 +1720,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 											ZVAL_COPY(r27.raw(), gs26);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_102, l_classNode, "getNode", "getnode", 7, 0, NULL, r27.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_102, l_classNode, "getNode", "getnode", 7, r27.raw()))) return false;
 										}
 										}
 										zval *gs28 = Z_TYPE_P(l_classNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_103, Z_OBJ_P(l_classNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getlocatedsource", 16, "locatedSource", 13) : NULL;
@@ -1729,7 +1729,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 											ZVAL_COPY(r29.raw(), gs28);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_104, l_classNode, "getLocatedSource", "getlocatedsource", 16, 0, NULL, r29.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_104, l_classNode, "getLocatedSource", "getlocatedsource", 16, r29.raw()))) return false;
 										}
 										}
 										zval *gs30 = Z_TYPE_P(l_classNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_105, Z_OBJ_P(l_classNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getnamespace", 12, "namespace", 9) : NULL;
@@ -1738,7 +1738,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 											ZVAL_COPY(r31.raw(), gs30);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_106, l_classNode, "getNamespace", "getnamespace", 12, 0, NULL, r31.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_106, l_classNode, "getNamespace", "getnamespace", 12, r31.raw()))) return false;
 										}
 										}
 										zval av32[4];
@@ -1803,7 +1803,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					ZVAL_COPY(r43.raw(), gs42);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_110, l_fetchedNodesResult.raw(), "getFunctionNodes", "getfunctionnodes", 16, 0, NULL, r43.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_110, l_fetchedNodesResult.raw(), "getFunctionNodes", "getfunctionnodes", 16, r43.raw()))) return false;
 				}
 				}
 				l_functionNodes = std::move(r43);
@@ -1832,7 +1832,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 											ZVAL_COPY(r57.raw(), gs56);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_112, l_functionNode, "getNode", "getnode", 7, 0, NULL, r57.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_112, l_functionNode, "getNode", "getnode", 7, r57.raw()))) return false;
 										}
 										}
 										zval *gs58 = Z_TYPE_P(l_functionNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_113, Z_OBJ_P(l_functionNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getlocatedsource", 16, "locatedSource", 13) : NULL;
@@ -1841,7 +1841,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 											ZVAL_COPY(r59.raw(), gs58);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_114, l_functionNode, "getLocatedSource", "getlocatedsource", 16, 0, NULL, r59.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_114, l_functionNode, "getLocatedSource", "getlocatedsource", 16, r59.raw()))) return false;
 										}
 										}
 										zval *gs60 = Z_TYPE_P(l_functionNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_115, Z_OBJ_P(l_functionNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getnamespace", 12, "namespace", 9) : NULL;
@@ -1850,7 +1850,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 											ZVAL_COPY(r61.raw(), gs60);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_116, l_functionNode, "getNamespace", "getnamespace", 12, 0, NULL, r61.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_116, l_functionNode, "getNamespace", "getnamespace", 12, r61.raw()))) return false;
 										}
 										}
 										zval av62[4];
@@ -1903,7 +1903,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 					ZVAL_COPY(r71.raw(), gs70);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_120, l_fetchedNodesResult.raw(), "getConstantNodes", "getconstantnodes", 16, 0, NULL, r71.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_120, l_fetchedNodesResult.raw(), "getConstantNodes", "getconstantnodes", 16, r71.raw()))) return false;
 				}
 				}
 				l_constantNodes = std::move(r71);
@@ -1931,7 +1931,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 											ZVAL_COPY(r84.raw(), gs83);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_122, l_fetchedConstantNode, "getNode", "getnode", 7, 0, NULL, r84.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_122, l_fetchedConstantNode, "getNode", "getnode", 7, r84.raw()))) return false;
 										}
 										}
 										l_constantNode = std::move(r84);
@@ -1984,7 +1984,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 																ZVAL_COPY(r102.raw(), gs101);
 															} else {
 															 {
-																if (UNEXPECTED(!pgrt::callMethod(pg_site_126, l_fetchedConstantNode, "getLocatedSource", "getlocatedsource", 16, 0, NULL, r102.raw()))) return false;
+																if (UNEXPECTED(!pgrt::callMethod0(pg_site_126, l_fetchedConstantNode, "getLocatedSource", "getlocatedsource", 16, r102.raw()))) return false;
 															}
 															}
 															zval *gs103 = Z_TYPE_P(l_fetchedConstantNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_127, Z_OBJ_P(l_fetchedConstantNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getnamespace", 12, "namespace", 9) : NULL;
@@ -1993,7 +1993,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 																ZVAL_COPY(r104.raw(), gs103);
 															} else {
 															 {
-																if (UNEXPECTED(!pgrt::callMethod(pg_site_128, l_fetchedConstantNode, "getNamespace", "getnamespace", 12, 0, NULL, r104.raw()))) return false;
+																if (UNEXPECTED(!pgrt::callMethod0(pg_site_128, l_fetchedConstantNode, "getNamespace", "getnamespace", 12, r104.raw()))) return false;
 															}
 															}
 															zval av105[5];
@@ -2042,7 +2042,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 											ZVAL_COPY(r115.raw(), gs114);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_131, l_fetchedConstantNode, "getLocatedSource", "getlocatedsource", 16, 0, NULL, r115.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_131, l_fetchedConstantNode, "getLocatedSource", "getlocatedsource", 16, r115.raw()))) return false;
 										}
 										}
 										zval *gs116 = Z_TYPE_P(l_fetchedConstantNode) == IS_OBJECT ? pgrt::trivialGetter(pg_site_132, Z_OBJ_P(l_fetchedConstantNode), pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\FetchedNode", 61), "getnamespace", 12, "namespace", 9) : NULL;
@@ -2051,7 +2051,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 											ZVAL_COPY(r117.raw(), gs116);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_133, l_fetchedConstantNode, "getNamespace", "getnamespace", 12, 0, NULL, r117.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_133, l_fetchedConstantNode, "getNamespace", "getnamespace", 12, r117.raw()))) return false;
 										}
 										}
 										zval av118[4];

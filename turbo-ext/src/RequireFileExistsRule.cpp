@@ -12,7 +12,7 @@ static zval pg_lit[11];
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Expr\Include_ */
 static pgrt::PropSite pg_site_1; /* prop_expr_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Expr */
-static pt_method_site pg_site_3; /* method_getValue_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getValue_3 */
 static pgrt::PropSite pg_site_4; /* prop_expr_4 */
 static pt_method_site pg_site_5; /* method_printExpr_5 */
 static pt_method_site pg_site_6; /* method_resolve_6 */
@@ -21,7 +21,7 @@ static pt_method_site pg_site_8; /* method_resolve_8 */
 static pgrt::FunctionSite pg_site_9; /* function_is_file */
 static pt_method_site pg_site_10; /* method_isInTrait_10 */
 static pt_method_site pg_site_11; /* method_getTraitReflection_11 */
-static pt_method_site pg_site_12; /* method_getFileName_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getFileName_12 */
 static pt_method_site pg_site_13; /* method_getFile_13 */
 static pgrt::PropSite pg_site_14; /* prop_type_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\ShouldNotHappenException */
@@ -38,11 +38,11 @@ static pgrt::PropSite pg_site_25; /* prop_right_25 */
 static pt_method_site pg_site_26; /* method_getType_26 */
 static pt_method_site pg_site_27; /* method_getConstantStrings_27 */
 static pgrt::FunctionSite pg_site_28; /* function_dirname */
-static pt_method_site pg_site_29; /* method_getValue_29 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_getValue_29 */
 static pgrt::PropSite pg_site_30; /* prop_right_30 */
 static pgrt::PropSite pg_site_31; /* prop_left_31 */
-static pt_method_site pg_site_32; /* method_getValue_32 */
-static pt_method_site pg_site_33; /* method_getValue_33 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getValue_32 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getValue_33 */
 static pgrt::ClassSite pg_site_34; /* cls_PhpParser\Node\Name\FullyQualified */
 static pgrt::PropSite pg_site_35; /* prop_expr_35 */
 static pgrt::ClassSite pg_site_36; /* cls_PhpParser\Node\Arg */
@@ -184,7 +184,7 @@ namespace pgen::RequireFileExistsRule {
 						if (UNEXPECTED(r18.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_path.raw(), "getValue", "getvalue", 8, 0, NULL, r18.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_path.raw(), "getValue", "getvalue", 8, r18.raw()))) return false;
 					}
 					}
 					l_path = std::move(r18);
@@ -364,7 +364,7 @@ namespace pgen::RequireFileExistsRule {
 					if (UNEXPECTED(r7.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r5.raw(), "getFileName", "getfilename", 11, 0, NULL, r7.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, r5.raw(), "getFileName", "getfilename", 11, r7.raw()))) return false;
 				}
 				}
 				l_traitFileName = std::move(r7);
@@ -696,7 +696,7 @@ namespace pgen::RequireFileExistsRule {
 								if (UNEXPECTED(r36.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_constantString, "getValue", "getvalue", 8, 0, NULL, r36.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, l_constantString, "getValue", "getvalue", 8, r36.raw()))) return false;
 							}
 							}
 							zv::Val cat37;
@@ -786,7 +786,7 @@ namespace pgen::RequireFileExistsRule {
 									if (UNEXPECTED(r68.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_left, "getValue", "getvalue", 8, 0, NULL, r68.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, l_left, "getValue", "getvalue", 8, r68.raw()))) return false;
 								}
 								}
 								zv::Val r69;
@@ -795,7 +795,7 @@ namespace pgen::RequireFileExistsRule {
 									if (UNEXPECTED(r69.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_33, l_rightPath, "getValue", "getvalue", 8, 0, NULL, r69.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, l_rightPath, "getValue", "getvalue", 8, r69.raw()))) return false;
 								}
 								}
 								zv::Val cat70;

@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_array_object_constructor_return_type_extension = nullptr
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pgrt::PropSite pg_site_1; /* prop_class_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Name */
 static pgrt::PropSite pg_site_3; /* prop_class_3 */
@@ -18,7 +18,7 @@ static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_isObject_8 */
-static pt_method_site pg_site_9; /* method_toArrayKey_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_toArrayKey_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Reflection\MethodReflection */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr\StaticCall */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
@@ -50,7 +50,7 @@ namespace pgen::ArrayObjectConstructorReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[1]);
@@ -185,7 +185,7 @@ namespace pgen::ArrayObjectConstructorReturnTypeExtension {
 			if (UNEXPECTED(r32.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_mixed.raw(), "toArrayKey", "toarraykey", 10, 0, NULL, r32.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_mixed.raw(), "toArrayKey", "toarraykey", 10, r32.raw()))) return false;
 		}
 		}
 		{ zval v = r32.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr31.raw()), &v); }

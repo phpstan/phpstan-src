@@ -9,39 +9,39 @@ zend_class_entry *pt_ce_duplicate_keys_in_literal_arrays_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_getItemNodes_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getItemNodes_0 */
 static pgrt::GetterSite pg_site_1; /* getter_getArrayItem_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Node\LiteralArrayItem */
-static pt_method_site pg_site_3; /* method_getArrayItem_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getArrayItem_3 */
 static pgrt::PropSite pg_site_4; /* prop_key_4 */
 static pgrt::PropSite pg_site_5; /* prop_unpack_5 */
 static pgrt::GetterSite pg_site_6; /* getter_getScope_6 */
-static pt_method_site pg_site_7; /* method_getScope_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getScope_7 */
 static pgrt::PropSite pg_site_8; /* prop_value_8 */
 static pt_method_site pg_site_9; /* method_getType_9 */
 static pt_method_site pg_site_10; /* method_getKeyTypes_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
-static pt_method_site pg_site_12; /* method_getValue_12 */
-static pt_method_site pg_site_13; /* method_getValue_13 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getValue_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getValue_13 */
 static pgrt::FunctionSite pg_site_14; /* function_max */
 static pgrt::PropSite pg_site_15; /* prop_value_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node\Expr\Array_ */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_18; /* method_isString_18 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_isString_18 */
 static pgrt::FunctionSite pg_site_19; /* function_array_filter */
 static pgrt::GetterSite pg_site_20; /* getter_getScope_20 */
-static pt_method_site pg_site_21; /* method_getScope_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getScope_21 */
 static pt_method_site pg_site_22; /* method_getType_22 */
-static pt_method_site pg_site_23; /* method_toArrayKey_23 */
-static pt_method_site pg_site_24; /* method_getConstantScalarValues_24 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_toArrayKey_23 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getConstantScalarValues_24 */
 static pgrt::FunctionSite pg_site_25; /* function_count */
-static pt_method_site pg_site_26; /* method_toArrayKey_26 */
-static pt_method_site pg_site_27; /* method_getConstantScalarValues_27 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_toArrayKey_26 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getConstantScalarValues_27 */
 static pgrt::FunctionSite pg_site_28; /* function_array_search */
 static pgrt::FunctionSite pg_site_29; /* function_array_key_first */
 static pt_method_site pg_site_30; /* method_printExpr_30 */
 static pgrt::FunctionSite pg_site_31; /* function_var_export */
-static pt_method_site pg_site_32; /* method_getStartLine_32 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getStartLine_32 */
 static pgrt::FunctionSite pg_site_33; /* function_array_keys */
 static pgrt::FunctionSite pg_site_34; /* function_implode */
 static pgrt::ClassSite pg_site_35; /* cls_PHPStan\Node\Printer\ExprPrinter */
@@ -66,7 +66,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_keyType, "isString", "isstring", 8, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, p_keyType, "isString", "isstring", 8, r1.raw()))) return;
 		}
 		}
 		bool r2;
@@ -173,7 +173,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 	}
 	 {
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getItemNodes", "getitemnodes", 12, 0, NULL, r13.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getItemNodes", "getitemnodes", 12, r13.raw()))) return false;
 		pgrt::ForeachIter it14;
 		if (UNEXPECTED(!it14.begin(r13.raw()))) return false;
 		while (it14.valid()) {
@@ -186,7 +186,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 						ZVAL_COPY(r18.raw(), gs17);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_itemNode, "getArrayItem", "getarrayitem", 12, 0, NULL, r18.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_itemNode, "getArrayItem", "getarrayitem", 12, r18.raw()))) return false;
 					}
 					}
 					l_item = std::move(r18);
@@ -264,7 +264,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 								ZVAL_COPY(r33.raw(), gs32);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_itemNode, "getScope", "getscope", 8, 0, NULL, r33.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_itemNode, "getScope", "getscope", 8, r33.raw()))) return false;
 							}
 							}
 							zv::Val o35;
@@ -324,7 +324,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 												if (UNEXPECTED(r50.isUndef())) return false;
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_unpackedKeyType, "getValue", "getvalue", 8, 0, NULL, r50.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_unpackedKeyType, "getValue", "getvalue", 8, r50.raw()))) return false;
 											}
 											}
 											zv::Val o51 = zv::Val::integer(Z_LVAL_P(r50.raw()));
@@ -338,7 +338,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 												if (UNEXPECTED(r53.isUndef())) return false;
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_unpackedKeyType, "getValue", "getvalue", 8, 0, NULL, r53.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_unpackedKeyType, "getValue", "getvalue", 8, r53.raw()))) return false;
 											}
 											}
 											zval av54[2];
@@ -441,7 +441,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 										ZVAL_COPY(r75.raw(), gs74);
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_itemNode, "getScope", "getscope", 8, 0, NULL, r75.raw()))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_itemNode, "getScope", "getscope", 8, r75.raw()))) return false;
 									}
 									}
 									zv::Val r76;
@@ -464,7 +464,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 										if (UNEXPECTED(r79.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_keyType.raw(), "toArrayKey", "toarraykey", 10, 0, NULL, r79.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_keyType.raw(), "toArrayKey", "toarraykey", 10, r79.raw()))) return false;
 									}
 									}
 									zv::Val r80;
@@ -473,7 +473,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 										if (UNEXPECTED(r80.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_24, r79.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r80.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, r79.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r80.raw()))) return false;
 									}
 									}
 									l_arrayKeyValues = std::move(r80);
@@ -565,7 +565,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 									if (UNEXPECTED(r108.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_keyType.raw(), "toArrayKey", "toarraykey", 10, 0, NULL, r108.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_keyType.raw(), "toArrayKey", "toarraykey", 10, r108.raw()))) return false;
 								}
 								}
 								zv::Val r109;
@@ -574,7 +574,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 									if (UNEXPECTED(r109.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_27, r108.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r109.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, r108.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r109.raw()))) return false;
 								}
 								}
 								l_keyValues = std::move(r109);
@@ -874,7 +874,7 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 												 {
 													zv::Val o202 = zv::Val::copyOf(zv::Ref(l_value.raw()));
 													zv::Val r203;
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_item.raw(), "getStartLine", "getstartline", 12, 0, NULL, r203.raw(), NULL))) return false;
+													if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, l_item.raw(), "getStartLine", "getstartline", 12, r203.raw()))) return false;
 													zv::Val o204 = zv::Val::copyOf(zv::Ref(r203.raw()));
 													zval *w205 = zv::Ref(l_valueLines.raw()).deref().raw();
 													if (Z_TYPE_P(w205) <= IS_NULL) { zval_ptr_dtor(w205); array_init(w205); } else if (UNEXPECTED(Z_TYPE_P(w205) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }

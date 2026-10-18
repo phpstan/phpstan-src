@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_var_tag_changed_expression_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getExpr_0 */
-static pt_method_site pg_site_1; /* method_getVarTag_1 */
-static pt_method_site pg_site_2; /* method_getType_2 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getExpr_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getVarTag_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getType_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Rules\PhpDoc\VarTagTypeRuleHelper */
@@ -55,16 +55,16 @@ namespace pgen::VarTagChangedExpressionTypeRule {
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getExpr", "getexpr", 7, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getExpr", "getexpr", 7, r3.raw()))) return false;
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getVarTag", "getvartag", 9, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getVarTag", "getvartag", 9, r4.raw()))) return false;
 		zv::Val r5;
 		if (EXPECTED(Z_TYPE_P(r4.raw()) == IS_OBJECT)) {
 			r5 = pt_type_op(Z_OBJ_P(r4.raw()), PT_OP_GET_TYPE, 0, NULL);
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, r4.raw(), "getType", "gettype", 7, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, r4.raw(), "getType", "gettype", 7, r5.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r3.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\VarTagTypeRuleHelper::checkExprType", 2, "expr", "PhpParser\\Node\\Expr", r3.raw()); return false; }

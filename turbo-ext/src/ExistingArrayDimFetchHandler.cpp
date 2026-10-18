@@ -8,12 +8,12 @@ zend_class_entry *pt_ce_existing_array_dim_fetch_handler = nullptr;
 
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\Expr\ExistingArrayDimFetch */
-static pt_method_site pg_site_1; /* method_getVar_1 */
-static pt_method_site pg_site_2; /* method_getDim_2 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getVar_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getDim_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr\ArrayDimFetch */
 static pt_method_site pg_site_4; /* method_processExprNode_4 */
 static pt_method_site pg_site_5; /* method_getNativeType_5 */
-static pt_method_site pg_site_6; /* method_getType_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getType_6 */
 static pt_method_site pg_site_7; /* method_getDependencies_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\NodeScopeResolver */
@@ -53,7 +53,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r3.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, 0, NULL, r3.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, r3.raw()))) return;
 			}
 			}
 			q1 = std::move(r3);
@@ -99,9 +99,9 @@ namespace pgen::ExistingArrayDimFetchHandler {
 	(void) this_zv;
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_expr, "getVar", "getvar", 6, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_expr, "getVar", "getvar", 6, r2.raw()))) return false;
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_expr, "getDim", "getdim", 6, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_expr, "getDim", "getdim", 6, r3.raw()))) return false;
 		zval av4[2];
 		ZVAL_COPY_VALUE(&av4[0], r2.raw());
 		ZVAL_COPY_VALUE(&av4[1], r3.raw());

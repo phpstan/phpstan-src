@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_interface_template_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_isInterface_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
-static pt_method_site pg_site_3; /* method_getTemplateTags_3 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_isInterface_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getTemplateTags_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Rules\Generics\TemplateTypeCheck */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\Scope */
@@ -59,7 +59,7 @@ namespace pgen::InterfaceTemplateTypeRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -71,7 +71,7 @@ namespace pgen::InterfaceTemplateTypeRule {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_classReflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_classReflection.raw(), "isInterface", "isinterface", 11, r2.raw()))) return false;
 		}
 		}
 		if (!(zend_is_true(r2.raw()))) {
@@ -90,7 +90,7 @@ namespace pgen::InterfaceTemplateTypeRule {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_classReflection.raw(), "getName", "getname", 7, r4.raw()))) return false;
 		}
 		}
 		l_interfaceName = std::move(r4);
@@ -109,7 +109,7 @@ namespace pgen::InterfaceTemplateTypeRule {
 		zv::Val r8;
 		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithClass(l_interfaceName.raw(), r8.raw()))) return false;
 		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r9.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, r9.raw()))) return false;
 		pgrt::StringBuilder sb10;
 		sb10.appendLiteral("PHPDoc tag @template for interface ", 35);
 		if (UNEXPECTED(!sb10.append(l_escapadInterfaceName.raw()))) return false;

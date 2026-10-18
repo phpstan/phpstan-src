@@ -10,13 +10,13 @@ zend_class_entry *pt_ce_dom_document_create_element_dynamic_return_type_extensio
 static zval pg_lit[3];
 
 static pgrt::FunctionSite pg_site_0; /* function_extension_loaded */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
 static pgrt::ClassSite pg_site_5; /* cls_DOMDocument */
 static pt_method_site pg_site_6; /* method_getConstantStrings_6 */
-static pt_method_site pg_site_7; /* method_getValue_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getValue_7 */
 static pt_method_site pg_site_8; /* method_createElement_8 */
 static pgrt::ClassSite pg_site_9; /* cls_DOMException */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\NeverType */
@@ -61,7 +61,7 @@ namespace pgen::DomDocumentCreateElementDynamicReturnTypeExtension {
 				if (UNEXPECTED(r4.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_methodReflection, "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_methodReflection, "getName", "getname", 7, r4.raw()))) return false;
 			}
 			}
 			b1 = zend_is_identical(r4.raw(), &pg_lit[2]);
@@ -170,7 +170,7 @@ namespace pgen::DomDocumentCreateElementDynamicReturnTypeExtension {
 								if (UNEXPECTED(r28.isUndef())) goto catch_c26;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_constantString, "getValue", "getvalue", 8, 0, NULL, r28.raw(), NULL))) goto catch_c26;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_constantString, "getValue", "getvalue", 8, r28.raw()))) goto catch_c26;
 							}
 							}
 							zval av29[1];

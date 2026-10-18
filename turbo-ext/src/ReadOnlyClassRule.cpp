@@ -9,11 +9,11 @@ zend_class_entry *pt_ce_read_only_class_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_isReadOnly_1 */
 static pt_method_site pg_site_2; /* method_isAnonymous_2 */
-static pt_method_site pg_site_3; /* method_getPhpVersion_3 */
-static pt_method_site pg_site_4; /* method_getPhpVersion_4 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getPhpVersion_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getPhpVersion_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\Scope */
 
@@ -45,7 +45,7 @@ namespace pgen::ReadOnlyClassRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -84,7 +84,7 @@ namespace pgen::ReadOnlyClassRule {
 		if (bo5) {
 			 {
 				zv::Val r7;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r7.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_scope, "getPhpVersion", "getphpversion", 13, r7.raw()))) return false;
 				zv::Val r8;
 				if (UNEXPECTED(!pgen::PhpVersions::m_supportsReadOnlyAnonymousClasses(Z_OBJ_P(r7.raw()), r8.raw()))) return false;
 				bool r9;
@@ -116,7 +116,7 @@ namespace pgen::ReadOnlyClassRule {
 	}
 	 {
 		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r16.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_scope, "getPhpVersion", "getphpversion", 13, r16.raw()))) return false;
 		zv::Val r17;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsReadOnlyClasses(Z_OBJ_P(r16.raw()), r17.raw()))) return false;
 		bool r18;

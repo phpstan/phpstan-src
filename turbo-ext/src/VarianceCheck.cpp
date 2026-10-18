@@ -9,37 +9,37 @@ zend_class_entry *pt_ce_variance_check = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getTemplateTypeMap_0 */
-static pt_method_site pg_site_1; /* method_getTypes_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getTemplateTypeMap_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getTypes_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Generic\TemplateType */
-static pt_method_site pg_site_3; /* method_getScope_3 */
-static pt_method_site pg_site_4; /* method_getVariance_4 */
-static pt_method_site pg_site_5; /* method_invariant_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getScope_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getVariance_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_invariant_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
 static pt_method_site pg_site_7; /* static_PHPStan\Type\Generic\TemplateTypeVariance::createCovariant */
 static pt_method_site pg_site_8; /* static_PHPStan\Type\Generic\TemplateTypeVariance::createContravariant */
 static pt_method_site pg_site_9; /* method_getParameters_9 */
-static pt_method_site pg_site_10; /* method_getType_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getType_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
 static pgrt::FunctionSite pg_site_12; /* function_sprintf */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_14; /* method_getOutType_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
 static pt_method_site pg_site_16; /* method_getReturnType_16 */
 static pt_method_site pg_site_17; /* method_getReferencedTemplateTypes_17 */
-static pt_method_site pg_site_18; /* method_getType_18 */
-static pt_method_site pg_site_19; /* method_getScope_19 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getType_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getScope_19 */
 static pt_method_site pg_site_20; /* method_getFunctionName_20 */
-static pt_method_site pg_site_21; /* method_getVariance_21 */
-static pt_method_site pg_site_22; /* method_invariant_22 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getVariance_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_invariant_22 */
 static pt_method_site pg_site_23; /* method_getPositionVariance_23 */
 static pgrt::ClassSite pg_site_24; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
-static pt_method_site pg_site_25; /* method_getName_25 */
-static pt_method_site pg_site_26; /* method_getVariance_26 */
-static pt_method_site pg_site_27; /* method_describe_27 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getName_25 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getVariance_26 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_describe_27 */
 static pt_method_site pg_site_28; /* method_getPositionVariance_28 */
-static pt_method_site pg_site_29; /* method_describe_29 */
-static pt_method_site pg_site_30; /* method_getVariance_30 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_describe_29 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getVariance_30 */
 static pt_method_site pg_site_31; /* method_validPosition_31 */
 static pgrt::ClassSite pg_site_32; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
 
@@ -74,7 +74,7 @@ namespace pgen::VarianceCheck {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_parametersAcceptor, "getTemplateTypeMap", "gettemplatetypemap", 18, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_parametersAcceptor, "getTemplateTypeMap", "gettemplatetypemap", 18, r4.raw()))) return false;
 		}
 		}
 		zv::Val r5;
@@ -83,7 +83,7 @@ namespace pgen::VarianceCheck {
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, r4.raw(), "getTypes", "gettypes", 8, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, r4.raw(), "getTypes", "gettypes", 8, r5.raw()))) return false;
 		}
 		}
 		zv::Val a6 = zv::Val::copyOf(zv::Ref(r5.raw()).deref());
@@ -99,7 +99,7 @@ namespace pgen::VarianceCheck {
 					bool b13 = !(pgrt::instanceOfClass(l_templateType, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\Generic\\TemplateType", 33)));
 					if (!b13) {
 						zv::Val r14;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_templateType, "getScope", "getscope", 8, 0, NULL, r14.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_templateType, "getScope", "getscope", 8, r14.raw()))) return false;
 						zv::Val r15;
 						if (UNEXPECTED(!pgen::TemplateTypeScope::m_getFunctionName(Z_OBJ_P(r14.raw()), r15.raw()))) return false;
 						b13 = (Z_TYPE_P(r15.raw()) == IS_NULL);
@@ -107,9 +107,9 @@ namespace pgen::VarianceCheck {
 					bool b12 = b13;
 					if (!b12) {
 						zv::Val r16;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_templateType, "getVariance", "getvariance", 11, 0, NULL, r16.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_templateType, "getVariance", "getvariance", 11, r16.raw()))) return false;
 						zv::Val r17;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r16.raw(), "invariant", "invariant", 9, 0, NULL, r17.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, r16.raw(), "invariant", "invariant", 9, r17.raw()))) return false;
 						b12 = (Z_TYPE_P(r17.raw()) == IS_TRUE);
 					}
 					if (b12) {
@@ -123,7 +123,7 @@ namespace pgen::VarianceCheck {
 						if (UNEXPECTED(r18.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_templateType, "getName", "getname", 7, 0, NULL, r18.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_templateType, "getName", "getname", 7, r18.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb19;
@@ -207,7 +207,7 @@ namespace pgen::VarianceCheck {
 						if (UNEXPECTED(r40.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_parameterReflection, "getType", "gettype", 7, 0, NULL, r40.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_parameterReflection, "getType", "gettype", 7, r40.raw()))) return false;
 					}
 					}
 					l_type = std::move(r40);
@@ -219,7 +219,7 @@ namespace pgen::VarianceCheck {
 						if (UNEXPECTED(r41.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_parameterReflection, "getName", "getname", 7, 0, NULL, r41.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_parameterReflection, "getName", "getname", 7, r41.raw()))) return false;
 					}
 					}
 					zval av42[2];
@@ -287,7 +287,7 @@ namespace pgen::VarianceCheck {
 						if (UNEXPECTED(r58.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_parameterReflection, "getName", "getname", 7, 0, NULL, r58.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_parameterReflection, "getName", "getname", 7, r58.raw()))) return false;
 					}
 					}
 					zval av59[2];
@@ -421,14 +421,14 @@ namespace pgen::VarianceCheck {
 						if (UNEXPECTED(r12.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_reference, "getType", "gettype", 7, 0, NULL, r12.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_reference, "getType", "gettype", 7, r12.raw()))) return false;
 					}
 					}
 					l_referredType = std::move(r12);
 				}
 				 {
 					zv::Val r15;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_referredType.raw(), "getScope", "getscope", 8, 0, NULL, r15.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_referredType.raw(), "getScope", "getscope", 8, r15.raw()))) return false;
 					zv::Val vd16;
 					zend_class_entry *vd16_ce = Z_TYPE_P(r15.raw()) == IS_OBJECT ? Z_OBJCE_P(r15.raw()) : NULL;
 					bool vd16_done = false;
@@ -444,9 +444,9 @@ namespace pgen::VarianceCheck {
 					bool b14 = !(Z_TYPE_P(vd16.raw()) == IS_NULL);
 					if (b14) {
 						zv::Val r18;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_referredType.raw(), "getVariance", "getvariance", 11, 0, NULL, r18.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_referredType.raw(), "getVariance", "getvariance", 11, r18.raw()))) return false;
 						zv::Val r19;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_22, r18.raw(), "invariant", "invariant", 9, 0, NULL, r19.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, r18.raw(), "invariant", "invariant", 9, r19.raw()))) return false;
 						b14 = !(zend_is_true(r19.raw()));
 					}
 					bool b13 = b14;
@@ -480,13 +480,13 @@ namespace pgen::VarianceCheck {
 						if (UNEXPECTED(r23.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_referredType.raw(), "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_referredType.raw(), "getName", "getname", 7, r23.raw()))) return false;
 					}
 					}
 					zv::Val r24;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_referredType.raw(), "getVariance", "getvariance", 11, 0, NULL, r24.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_referredType.raw(), "getVariance", "getvariance", 11, r24.raw()))) return false;
 					zv::Val r25;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_27, r24.raw(), "describe", "describe", 8, 0, NULL, r25.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, r24.raw(), "describe", "describe", 8, r25.raw()))) return false;
 					zv::Val vd26;
 					zend_class_entry *vd26_ce = Z_TYPE_P(l_reference) == IS_OBJECT ? Z_OBJCE_P(l_reference) : NULL;
 					bool vd26_done = false;
@@ -500,7 +500,7 @@ namespace pgen::VarianceCheck {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_reference, "getPositionVariance", "getpositionvariance", 19, 0, NULL, vd26.raw()))) return false;
 					}
 					zv::Val r28;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_29, vd26.raw(), "describe", "describe", 8, 0, NULL, r28.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, vd26.raw(), "describe", "describe", 8, r28.raw()))) return false;
 					pgrt::StringBuilder sb29;
 					sb29.appendLiteral("Template type ", 14);
 					if (UNEXPECTED(!sb29.append(r23.raw()))) return false;
@@ -543,7 +543,7 @@ namespace pgen::VarianceCheck {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_30, p_type, "getVariance", "getvariance", 11, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, p_type, "getVariance", "getvariance", 11, r1.raw()))) return false;
 		zval av2[1];
 		ZVAL_COPY_VALUE(&av2[0], r1.raw());
 		zv::Val r3;

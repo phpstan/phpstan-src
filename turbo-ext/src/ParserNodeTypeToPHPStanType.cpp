@@ -10,10 +10,10 @@ zend_class_entry *pt_ce_parser_node_type_to_phpstan_type = nullptr;
 static zval pg_lit[17];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Name */
-static pt_method_site pg_site_1; /* method_getName_1 */
-static pt_method_site pg_site_2; /* method_getParentClass_2 */
-static pt_method_site pg_site_3; /* method_getParentClass_3 */
-static pt_method_site pg_site_4; /* method_getName_4 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getParentClass_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getParentClass_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\NullableType */
 static pgrt::PropSite pg_site_6; /* prop_type_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\UnionType */
@@ -86,7 +86,7 @@ namespace pgen::ParserNodeTypeToPHPStanType {
 									if (UNEXPECTED(r8.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_classReflection, "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_classReflection, "getName", "getname", 7, r8.raw()))) return false;
 								}
 								}
 								l_typeClassName = std::move(r8);
@@ -106,7 +106,7 @@ namespace pgen::ParserNodeTypeToPHPStanType {
 										if (UNEXPECTED(r11.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_classReflection, "getParentClass", "getparentclass", 14, 0, NULL, r11.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_classReflection, "getParentClass", "getparentclass", 14, r11.raw()))) return false;
 									}
 									}
 									b9 = !(Z_TYPE_P(r11.raw()) == IS_NULL);
@@ -119,7 +119,7 @@ namespace pgen::ParserNodeTypeToPHPStanType {
 											if (UNEXPECTED(r12.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_classReflection, "getParentClass", "getparentclass", 14, 0, NULL, r12.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_classReflection, "getParentClass", "getparentclass", 14, r12.raw()))) return false;
 										}
 										}
 										zv::Val r13;
@@ -128,7 +128,7 @@ namespace pgen::ParserNodeTypeToPHPStanType {
 											if (UNEXPECTED(r13.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r12.raw(), "getName", "getname", 7, 0, NULL, r13.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, r12.raw(), "getName", "getname", 7, r13.raw()))) return false;
 										}
 										}
 										l_typeClassName = std::move(r13);

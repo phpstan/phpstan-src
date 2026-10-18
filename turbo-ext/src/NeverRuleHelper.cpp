@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_never_rule_helper = nullptr;
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Type\NeverType */
 static pgrt::GetterSite pg_site_1; /* getter_isExplicit_1 */
-static pt_method_site pg_site_2; /* method_isExplicit_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isExplicit_2 */
 static pt_method_site pg_site_3; /* method_isGenerator_3 */
 static pt_method_site pg_site_4; /* method_getExecutionEnds_4 */
 static pt_method_site pg_site_5; /* method_getStatementResult_5 */
@@ -43,7 +43,7 @@ namespace pgen::NeverRuleHelper {
 				ZVAL_COPY(r3.raw(), gs2);
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_returnType, "isExplicit", "isexplicit", 10, 0, NULL, r3.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_returnType, "isExplicit", "isexplicit", 10, r3.raw()))) return false;
 			}
 			}
 			b1 = (Z_TYPE_P(r3.raw()) == IS_TRUE);

@@ -9,20 +9,20 @@ zend_class_entry *pt_ce_set_property_hook_parameter_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[8];
 
-static pt_method_site pg_site_0; /* method_getHookReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getHookReflection_0 */
 static pt_method_site pg_site_1; /* method_isPropertyHook_1 */
 static pt_method_site pg_site_2; /* method_getPropertyHookName_2 */
-static pt_method_site pg_site_3; /* method_getPropertyReflection_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getPropertyReflection_3 */
 static pt_method_site pg_site_4; /* method_getParameters_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_6; /* method_getClassReflection_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getClassReflection_6 */
 static pt_method_site pg_site_7; /* method_hasNativeType_7 */
 static pt_method_site pg_site_8; /* method_hasNativeType_8 */
-static pt_method_site pg_site_9; /* method_getName_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
 static pt_method_site pg_site_10; /* method_getDisplayName_10 */
 static pt_method_site pg_site_11; /* method_getHookedPropertyName_11 */
 static pt_method_site pg_site_12; /* method_hasNativeType_12 */
-static pt_method_site pg_site_13; /* method_getName_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
 static pt_method_site pg_site_14; /* method_getDisplayName_14 */
 static pt_method_site pg_site_15; /* method_getHookedPropertyName_15 */
 static pt_method_site pg_site_16; /* method_getNativeType_16 */
@@ -31,17 +31,17 @@ static pt_method_site pg_site_18; /* method_isSuperTypeOf_18 */
 static pt_method_site pg_site_19; /* method_yes_19 */
 static pt_method_site pg_site_20; /* method_getNativeType_20 */
 static pt_method_site pg_site_21; /* method_describe_21 */
-static pt_method_site pg_site_22; /* method_getName_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getName_22 */
 static pt_method_site pg_site_23; /* method_getNativeType_23 */
 static pt_method_site pg_site_24; /* method_describe_24 */
 static pt_method_site pg_site_25; /* method_getDisplayName_25 */
 static pt_method_site pg_site_26; /* method_getHookedPropertyName_26 */
-static pt_method_site pg_site_27; /* method_getType_27 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getType_27 */
 static pt_method_site pg_site_28; /* method_getReadableType_28 */
 static pt_method_site pg_site_29; /* method_isSuperTypeOf_29 */
 static pt_method_site pg_site_30; /* method_yes_30 */
 static pt_method_site pg_site_31; /* method_describe_31 */
-static pt_method_site pg_site_32; /* method_getName_32 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getName_32 */
 static pt_method_site pg_site_33; /* method_getReadableType_33 */
 static pt_method_site pg_site_34; /* method_describe_34 */
 static pt_method_site pg_site_35; /* method_getDisplayName_35 */
@@ -52,13 +52,13 @@ static pt_method_site pg_site_39; /* method_equals_39 */
 static pgrt::ClassSite pg_site_40; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_41; /* method_getDisplayName_41 */
 static pt_method_site pg_site_42; /* method_getHookedPropertyName_42 */
-static pt_method_site pg_site_43; /* method_getName_43 */
+static pgrt::MethodShapeSite pg_site_43; /* method0_getName_43 */
 static pt_method_site pg_site_44; /* method_getDisplayName_44 */
 static pt_method_site pg_site_45; /* method_getHookedPropertyName_45 */
-static pt_method_site pg_site_46; /* method_getName_46 */
+static pgrt::MethodShapeSite pg_site_46; /* method0_getName_46 */
 static pt_method_site pg_site_47; /* method_getDisplayName_47 */
 static pt_method_site pg_site_48; /* method_getHookedPropertyName_48 */
-static pt_method_site pg_site_49; /* method_getName_49 */
+static pgrt::MethodShapeSite pg_site_49; /* method0_getName_49 */
 static pt_method_site pg_site_50; /* method_describe_50 */
 static pgrt::ClassSite pg_site_51; /* cls_PHPStan\Rules\MissingTypehintCheck */
 static pgrt::ClassSite pg_site_52; /* cls_PhpParser\Node */
@@ -115,7 +115,7 @@ namespace pgen::SetPropertyHookParameterRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getHookReflection", "gethookreflection", 17, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getHookReflection", "gethookreflection", 17, r1.raw()))) return false;
 		l_hookReflection = std::move(r1);
 	}
 	 {
@@ -165,7 +165,7 @@ namespace pgen::SetPropertyHookParameterRule {
 	}
 	 {
 		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getPropertyReflection", "getpropertyreflection", 21, 0, NULL, r9.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getPropertyReflection", "getpropertyreflection", 21, r9.raw()))) return false;
 		l_propertyReflection = std::move(r9);
 	}
 	 {
@@ -208,7 +208,7 @@ namespace pgen::SetPropertyHookParameterRule {
 			if (UNEXPECTED(r18.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r18.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_node, "getClassReflection", "getclassreflection", 18, r18.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r18);
@@ -271,7 +271,7 @@ namespace pgen::SetPropertyHookParameterRule {
 							if (UNEXPECTED(r31.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_parameter.raw(), "getName", "getname", 7, 0, NULL, r31.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_parameter.raw(), "getName", "getname", 7, r31.raw()))) return false;
 						}
 						}
 						zv::Val r32;
@@ -351,7 +351,7 @@ namespace pgen::SetPropertyHookParameterRule {
 							if (UNEXPECTED(r48.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_parameter.raw(), "getName", "getname", 7, 0, NULL, r48.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_parameter.raw(), "getName", "getname", 7, r48.raw()))) return false;
 						}
 						}
 						zv::Val r49;
@@ -492,7 +492,7 @@ namespace pgen::SetPropertyHookParameterRule {
 									if (UNEXPECTED(r75.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_parameter.raw(), "getName", "getname", 7, 0, NULL, r75.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_parameter.raw(), "getName", "getname", 7, r75.raw()))) return false;
 								}
 								}
 								zv::Val r76;
@@ -595,7 +595,7 @@ namespace pgen::SetPropertyHookParameterRule {
 			if (UNEXPECTED(r93.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_parameter.raw(), "getType", "gettype", 7, 0, NULL, r93.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_parameter.raw(), "getType", "gettype", 7, r93.raw()))) return false;
 		}
 		}
 		l_parameterType = std::move(r93);
@@ -658,7 +658,7 @@ namespace pgen::SetPropertyHookParameterRule {
 					if (UNEXPECTED(r105.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_parameter.raw(), "getName", "getname", 7, 0, NULL, r105.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, l_parameter.raw(), "getName", "getname", 7, r105.raw()))) return false;
 				}
 				}
 				zv::Val r106;
@@ -831,7 +831,7 @@ namespace pgen::SetPropertyHookParameterRule {
 						if (UNEXPECTED(r139.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_parameter.raw(), "getName", "getname", 7, 0, NULL, r139.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_43, l_parameter.raw(), "getName", "getname", 7, r139.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb140;
@@ -916,7 +916,7 @@ namespace pgen::SetPropertyHookParameterRule {
 						if (UNEXPECTED(r163.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_46, l_parameter.raw(), "getName", "getname", 7, 0, NULL, r163.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_46, l_parameter.raw(), "getName", "getname", 7, r163.raw()))) return false;
 					}
 					}
 					zv::Val o164 = zv::Val::copyOf(zv::Ref(l_name.raw()));
@@ -991,7 +991,7 @@ namespace pgen::SetPropertyHookParameterRule {
 						if (UNEXPECTED(r184.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_49, l_parameter.raw(), "getName", "getname", 7, 0, NULL, r184.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_49, l_parameter.raw(), "getName", "getname", 7, r184.raw()))) return false;
 					}
 					}
 					zv::Val o185 = zv::Val::copyOf(zv::Ref(l_callableType));

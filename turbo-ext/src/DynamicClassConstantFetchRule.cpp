@@ -11,12 +11,12 @@ static zval pg_lit[5];
 
 static pgrt::PropSite pg_site_0; /* prop_name_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr */
-static pt_method_site pg_site_2; /* method_getPhpVersion_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getPhpVersion_2 */
 static pgrt::PropSite pg_site_3; /* prop_name_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_5; /* method_isString_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isString_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_7; /* method_isString_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_isString_7 */
 static pt_method_site pg_site_8; /* method_describe_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
@@ -39,7 +39,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_type, "isString", "isstring", 8, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_type, "isString", "isstring", 8, r1.raw()))) return;
 		}
 		}
 		bool r2;
@@ -103,7 +103,7 @@ namespace pgen::DynamicClassConstantFetchRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_scope, "getPhpVersion", "getphpversion", 13, r4.raw()))) return false;
 		zv::Val r5;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsDynamicClassConstantFetch(Z_OBJ_P(r4.raw()), r5.raw()))) return false;
 		bool r6;
@@ -163,7 +163,7 @@ namespace pgen::DynamicClassConstantFetchRule {
 			if (UNEXPECTED(r21.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_type.raw(), "isString", "isstring", 8, 0, NULL, r21.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_type.raw(), "isString", "isstring", 8, r21.raw()))) return false;
 		}
 		}
 		bool r22;

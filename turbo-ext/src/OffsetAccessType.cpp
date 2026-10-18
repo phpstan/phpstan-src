@@ -7,8 +7,8 @@
 zend_class_entry *pt_ce_offset_access_type = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_getReferencedClasses_0 */
-static pt_method_site pg_site_1; /* method_getReferencedClasses_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getReferencedClasses_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getReferencedClasses_1 */
 static pt_method_site pg_site_2; /* method_getReferencedTemplateTypes_2 */
 static pt_method_site pg_site_3; /* method_getReferencedTemplateTypes_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\OffsetAccessType */
@@ -59,7 +59,7 @@ namespace pgen::OffsetAccessType {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, r2.raw()))) return false;
 		}
 		}
 		zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::OffsetAccessType::slot::offset, "offset");
@@ -70,7 +70,7 @@ namespace pgen::OffsetAccessType {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p3, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p3, "getReferencedClasses", "getreferencedclasses", 20, r4.raw()))) return false;
 		}
 		}
 		zval av5[2];

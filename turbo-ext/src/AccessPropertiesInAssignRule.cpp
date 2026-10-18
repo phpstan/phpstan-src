@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_access_properties_in_assign_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getPropertyFetch_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPropertyFetch_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr\PropertyFetch */
-static pt_method_site pg_site_2; /* method_isAssignOp_2 */
-static pt_method_site pg_site_3; /* method_getPropertyFetch_3 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isAssignOp_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getPropertyFetch_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Rules\Properties\AccessPropertiesCheck */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\Scope */
@@ -51,7 +51,7 @@ namespace pgen::AccessPropertiesInAssignRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getPropertyFetch", "getpropertyfetch", 16, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getPropertyFetch", "getpropertyfetch", 16, r1.raw()))) return false;
 		if (!(pgrt::instanceOfClass(r1.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr\\PropertyFetch", 33)))) {
 			 {
 				zval arr2_raw;
@@ -63,7 +63,7 @@ namespace pgen::AccessPropertiesInAssignRule {
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "isAssignOp", "isassignop", 10, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "isAssignOp", "isassignop", 10, r3.raw()))) return false;
 		if (zend_is_true(r3.raw())) {
 			 {
 				zval arr4_raw;
@@ -78,7 +78,7 @@ namespace pgen::AccessPropertiesInAssignRule {
 		if (UNEXPECTED(p5 == NULL)) return false;
 		zv::Val o6 = zv::Val::copyOf(zv::Ref(p5));
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getPropertyFetch", "getpropertyfetch", 16, 0, NULL, r7.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getPropertyFetch", "getpropertyfetch", 16, r7.raw()))) return false;
 		zv::Val r8;
 		if (UNEXPECTED(!pgen::AccessPropertiesCheck::m_check(Z_OBJ_P(o6.raw()), r7.raw(), p_scope, true, r8.raw()))) return false;
 		*ret = r8.take();

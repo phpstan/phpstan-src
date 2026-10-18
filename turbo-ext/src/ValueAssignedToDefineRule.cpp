@@ -20,7 +20,7 @@ static pt_method_site pg_site_6; /* method_getType_6 */
 static pt_method_site pg_site_7; /* method_getConstantStrings_7 */
 static pgrt::PropSite pg_site_8; /* prop_value_8 */
 static pt_method_site pg_site_9; /* method_getType_9 */
-static pt_method_site pg_site_10; /* method_getValue_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValue_10 */
 static pt_method_site pg_site_11; /* method_getConfiguredGlobalConstantType_11 */
 static pt_method_site pg_site_12; /* method_accepts_12 */
 static pt_method_site pg_site_13; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
@@ -227,7 +227,7 @@ namespace pgen::ValueAssignedToDefineRule {
 						if (UNEXPECTED(r41.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_constantNameString, "getValue", "getvalue", 8, 0, NULL, r41.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_constantNameString, "getValue", "getvalue", 8, r41.raw()))) return false;
 					}
 					}
 					l_constantName = std::move(r41);

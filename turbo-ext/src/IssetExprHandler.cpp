@@ -8,8 +8,8 @@ zend_class_entry *pt_ce_isset_expr_handler = nullptr;
 
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\IssetExpr */
-static pt_method_site pg_site_1; /* method_getExpr_1 */
-static pt_method_site pg_site_2; /* method_doNotTreatPhpDocTypesAsCertain_2 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getExpr_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_doNotTreatPhpDocTypesAsCertain_2 */
 static pt_method_site pg_site_3; /* method_readScopeStateOrSyntheticType_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Analyser\TypeSpecifierContext */
 static pt_method_site pg_site_5; /* method_specifyDefaultTypes_5 */
@@ -32,11 +32,11 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	(void) p_nativeTypesPromoted;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, zv::Ref(&captures[1]).deref().raw(), "getExpr", "getexpr", 7, 0, NULL, r1.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, zv::Ref(&captures[1]).deref().raw(), "getExpr", "getexpr", 7, r1.raw()))) return;
 		zv::Val q2;
 		if (p_nativeTypesPromoted) {
 			zv::Val r3;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r3.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, zv::Ref(&captures[2]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r3.raw()))) return;
 			q2 = std::move(r3);
 		} else {
 		 {

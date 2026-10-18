@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_randomizer_method_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[8];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
-static pt_method_site pg_site_5; /* method_shuffleArray_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_shuffleArray_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pgrt::PropSite pg_site_7; /* prop_value_7 */
 static pt_method_site pg_site_8; /* method_getType_8 */
@@ -82,7 +82,7 @@ namespace pgen::RandomizerMethodReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -121,7 +121,7 @@ namespace pgen::RandomizerMethodReturnTypeExtension {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_methodReflection, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_methodReflection, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		int sw4 = -1;
@@ -166,7 +166,7 @@ namespace pgen::RandomizerMethodReturnTypeExtension {
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getType", "gettype", 7, 1, av14, r12.raw()))) return false;
 				}
 				zv::Val r15;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r12.raw(), "shuffleArray", "shufflearray", 12, 0, NULL, r15.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, r12.raw(), "shuffleArray", "shufflearray", 12, r15.raw()))) return false;
 				*ret = r15.take();
 				return true;
 			}

@@ -23,14 +23,14 @@ static pt_method_site pg_site_10; /* method_hasNativeMethod_10 */
 static pt_method_site pg_site_11; /* method_getNativeMethod_11 */
 static pgrt::DispatchCache pg_site_12; /* dispatch_getDeclaringClass_12 */
 static pt_method_site pg_site_13; /* method_getDeclaringClass_13 */
-static pt_method_site pg_site_14; /* method_getName_14 */
-static pt_method_site pg_site_15; /* method_getFileName_15 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getFileName_15 */
 static pt_method_site pg_site_16; /* method_getDisplayName_16 */
-static pt_method_site pg_site_17; /* method_getName_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getName_17 */
 static pgrt::DispatchCache pg_site_18; /* dispatch_getDeclaringClass_18 */
 static pt_method_site pg_site_19; /* method_getDeclaringClass_19 */
-static pt_method_site pg_site_20; /* method_getName_20 */
-static pt_method_site pg_site_21; /* method_getResolvedPhpDoc_21 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getName_20 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getResolvedPhpDoc_21 */
 static pt_method_site pg_site_22; /* method_getTagsByName_22 */
 static pgrt::FunctionSite pg_site_23; /* function_count */
 static pgrt::DispatchCache pg_site_24; /* dispatch_getDocComment_24 */
@@ -306,7 +306,7 @@ namespace pgen::ApiStaticCallRule {
 			if (UNEXPECTED(r43.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_declaringClass.raw(), "getName", "getname", 7, 0, NULL, r43.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_declaringClass.raw(), "getName", "getname", 7, r43.raw()))) return false;
 		}
 		}
 		zv::Val r44;
@@ -315,7 +315,7 @@ namespace pgen::ApiStaticCallRule {
 			if (UNEXPECTED(r44.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_declaringClass.raw(), "getFileName", "getfilename", 11, 0, NULL, r44.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_declaringClass.raw(), "getFileName", "getfilename", 11, r44.raw()))) return false;
 		}
 		}
 		bool r45;
@@ -357,7 +357,7 @@ namespace pgen::ApiStaticCallRule {
 			if (UNEXPECTED(r50.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r50.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_methodReflection.raw(), "getName", "getname", 7, r50.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb51;
@@ -459,7 +459,7 @@ namespace pgen::ApiStaticCallRule {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_methodReflection, "getName", "getname", 7, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, p_methodReflection, "getName", "getname", 7, r7.raw()))) return false;
 		}
 		}
 		if (!zend_is_identical(r7.raw(), &pg_lit[3])) {
@@ -470,7 +470,7 @@ namespace pgen::ApiStaticCallRule {
 					if (UNEXPECTED(r8.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_declaringClass.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, 0, NULL, r8.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_declaringClass.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, r8.raw()))) return false;
 				}
 				}
 				l_classDocBlock = std::move(r8);

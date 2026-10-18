@@ -7,10 +7,10 @@
 zend_class_entry *pt_ce_changed_type_property_reflection = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_isStatic_1 */
 static pt_method_site pg_site_2; /* method_isPrivate_2 */
-static pt_method_site pg_site_3; /* method_isPublic_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isPublic_3 */
 static pt_method_site pg_site_4; /* method_getDocComment_4 */
 static pt_method_site pg_site_5; /* method_hasPhpDocType_5 */
 static pt_method_site pg_site_6; /* method_hasNativeType_6 */
@@ -21,8 +21,8 @@ static pt_method_site pg_site_10; /* method_isDeprecated_10 */
 static pt_method_site pg_site_11; /* method_getDeprecatedDescription_11 */
 static pt_method_site pg_site_12; /* method_isInternal_12 */
 static pt_method_site pg_site_13; /* method_isAbstract_13 */
-static pt_method_site pg_site_14; /* method_isFinalByKeyword_14 */
-static pt_method_site pg_site_15; /* method_isFinal_15 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isFinalByKeyword_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_isFinal_15 */
 static pt_method_site pg_site_16; /* method_isVirtual_16 */
 static pt_method_site pg_site_17; /* method_hasHook_17 */
 static pt_method_site pg_site_18; /* method_getHook_18 */
@@ -78,7 +78,7 @@ namespace pgen::ChangedTypePropertyReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p1, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -197,7 +197,7 @@ namespace pgen::ChangedTypePropertyReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p1, "isPublic", "ispublic", 8, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p1, "isPublic", "ispublic", 8, r2.raw()))) return false;
 		}
 		}
 		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
@@ -685,7 +685,7 @@ namespace pgen::ChangedTypePropertyReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p1, "isFinalByKeyword", "isfinalbykeyword", 16, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p1, "isFinalByKeyword", "isfinalbykeyword", 16, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -708,7 +708,7 @@ namespace pgen::ChangedTypePropertyReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p1, "isFinal", "isfinal", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p1, "isFinal", "isfinal", 7, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();

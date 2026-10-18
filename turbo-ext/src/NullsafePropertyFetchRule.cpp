@@ -10,18 +10,18 @@ zend_class_entry *pt_ce_nullsafe_property_fetch_rule = nullptr;
 static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_getOriginalNode_0 */
-static pt_method_site pg_site_1; /* method_getCalledOnType_1 */
-static pt_method_site pg_site_2; /* method_getCalledOnNativeType_2 */
-static pt_method_site pg_site_3; /* method_isNull_3 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getCalledOnType_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getCalledOnNativeType_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isNull_3 */
 static pt_method_site pg_site_4; /* method_no_4 */
 static pt_method_site pg_site_5; /* method_isUndefinedExpressionAllowed_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\RuleErrorBuilder */
-static pt_method_site pg_site_7; /* method_getCalledOnNativeType_7 */
-static pt_method_site pg_site_8; /* method_isNull_8 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getCalledOnNativeType_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isNull_8 */
 static pt_method_site pg_site_9; /* method_no_9 */
 static pt_method_site pg_site_10; /* method_describe_10 */
 static pgrt::PropSite pg_site_11; /* prop_name_11 */
-static pt_method_site pg_site_12; /* method_getStartLine_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getStartLine_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Analyser\Scope */
 
@@ -57,7 +57,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, zv::Ref(&captures[0]).deref().raw(), "getCalledOnNativeType", "getcalledonnativetype", 21, 0, NULL, r4.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, zv::Ref(&captures[0]).deref().raw(), "getCalledOnNativeType", "getcalledonnativetype", 21, r4.raw()))) return;
 		l_calledOnNativeType = std::move(r4);
 	}
 	 {
@@ -67,7 +67,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r5.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_calledOnNativeType.raw(), "isNull", "isnull", 6, 0, NULL, r5.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_calledOnNativeType.raw(), "isNull", "isnull", 6, r5.raw()))) return;
 		}
 		}
 		zv::Val vd6;
@@ -176,12 +176,12 @@ namespace pgen::NullsafePropertyFetchRule {
 		zv::Val q7;
 		if (Z_TYPE_P(p6) == IS_TRUE) {
 			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getCalledOnType", "getcalledontype", 15, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getCalledOnType", "getcalledontype", 15, r8.raw()))) return false;
 			q7 = std::move(r8);
 		} else {
 		 {
 			zv::Val r9;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getCalledOnNativeType", "getcalledonnativetype", 21, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getCalledOnNativeType", "getcalledonnativetype", 21, r9.raw()))) return false;
 			q7 = std::move(r9);
 		}
 		}
@@ -194,7 +194,7 @@ namespace pgen::NullsafePropertyFetchRule {
 			if (UNEXPECTED(r10.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_calledOnType.raw(), "isNull", "isnull", 6, 0, NULL, r10.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_calledOnType.raw(), "isNull", "isnull", 6, r10.raw()))) return false;
 		}
 		}
 		zv::Val vd11;
@@ -275,7 +275,7 @@ namespace pgen::NullsafePropertyFetchRule {
 			p30 = o31.raw();
 		}
 		zv::Val r32;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, zv::Ref(p30).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r32.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, zv::Ref(p30).deref().raw(), "getStartLine", "getstartline", 12, r32.raw()))) return false;
 		if (UNEXPECTED(Z_TYPE_P(r32.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r32.raw()); return false; }
 		zv::Val r33;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r29.raw()), Z_LVAL_P(r32.raw()), r33.raw()))) return false;

@@ -9,15 +9,15 @@ zend_class_entry *pt_ce_preg_filter_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getVariants_2 */
 static pt_method_site pg_site_3; /* static_PHPStan\Reflection\ParametersAcceptorSelector::selectFromArgs */
 static pt_method_site pg_site_4; /* method_getReturnType_4 */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
 static pt_method_site pg_site_6; /* method_getType_6 */
-static pt_method_site pg_site_7; /* method_isArray_7 */
-static pt_method_site pg_site_8; /* method_isString_8 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_isArray_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isString_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
@@ -37,7 +37,7 @@ namespace pgen::PregFilterFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -152,7 +152,7 @@ namespace pgen::PregFilterFunctionReturnTypeExtension {
 			if (UNEXPECTED(r19.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_subjectType.raw(), "isArray", "isarray", 7, 0, NULL, r19.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_subjectType.raw(), "isArray", "isarray", 7, r19.raw()))) return false;
 		}
 		}
 		bool r20;
@@ -177,7 +177,7 @@ namespace pgen::PregFilterFunctionReturnTypeExtension {
 			if (UNEXPECTED(r24.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_subjectType.raw(), "isString", "isstring", 8, 0, NULL, r24.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_subjectType.raw(), "isString", "isstring", 8, r24.raw()))) return false;
 		}
 		}
 		bool r25;

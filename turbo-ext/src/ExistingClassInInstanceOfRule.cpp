@@ -12,12 +12,12 @@ static zval pg_lit[7];
 static pgrt::PropSite pg_site_0; /* prop_class_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_2; /* method_isInClass_2 */
-static pt_method_site pg_site_3; /* method_getStartLine_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getStartLine_3 */
 static pt_method_site pg_site_4; /* method_hasClass_4 */
 static pt_method_site pg_site_5; /* method_isInClassExists_5 */
-static pt_method_site pg_site_6; /* method_getStartLine_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getStartLine_6 */
 static pt_method_site pg_site_7; /* method_getClass_7 */
-static pt_method_site pg_site_8; /* method_isTrait_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isTrait_8 */
 static pgrt::PropSite pg_site_9; /* prop_expr_9 */
 static pt_method_site pg_site_10; /* method_getType_10 */
 static pt_method_site pg_site_11; /* method_describe_11 */
@@ -142,7 +142,7 @@ namespace pgen::ExistingClassInInstanceOfRule {
 						zv::Val r19;
 						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r16.raw()), r18.raw(), r19.raw()))) return false;
 						zv::Val r20;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_class.raw(), "getStartLine", "getstartline", 12, 0, NULL, r20.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_class.raw(), "getStartLine", "getstartline", 12, r20.raw()))) return false;
 						zv::Val r21;
 						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r19.raw()), Z_LVAL_P(r20.raw()), r21.raw()))) return false;
 						zv::Val r22;
@@ -219,7 +219,7 @@ namespace pgen::ExistingClassInInstanceOfRule {
 				zv::Val r40;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r39.raw()), &pg_lit[4], r40.raw()))) return false;
 				zv::Val r41;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_class.raw(), "getStartLine", "getstartline", 12, 0, NULL, r41.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_class.raw(), "getStartLine", "getstartline", 12, r41.raw()))) return false;
 				zv::Val r42;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r40.raw()), Z_LVAL_P(r41.raw()), r42.raw()))) return false;
 				l_errorBuilder = std::move(r42);
@@ -303,7 +303,7 @@ namespace pgen::ExistingClassInInstanceOfRule {
 			if (UNEXPECTED(r64.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_classReflection.raw(), "isTrait", "istrait", 7, 0, NULL, r64.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_classReflection.raw(), "isTrait", "istrait", 7, r64.raw()))) return false;
 		}
 		}
 		if (Z_TYPE_P(r64.raw()) == IS_TRUE) {

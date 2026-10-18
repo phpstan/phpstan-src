@@ -11,18 +11,18 @@ static zval pg_lit[4];
 
 static pgrt::PropSite pg_site_0; /* prop_right_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_2; /* method_isCallable_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isCallable_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_5; /* method_isCallable_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isCallable_5 */
 static pt_method_site pg_site_6; /* method_getCallableParametersAcceptors_6 */
 static pt_method_site pg_site_7; /* method_getParameters_7 */
-static pt_method_site pg_site_8; /* method_passedByReference_8 */
-static pt_method_site pg_site_9; /* method_no_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_passedByReference_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_no_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
 static pgrt::PropSite pg_site_12; /* prop_right_12 */
-static pt_method_site pg_site_13; /* method_getStartLine_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getStartLine_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
@@ -44,7 +44,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_type, "isCallable", "iscallable", 10, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_type, "isCallable", "iscallable", 10, r1.raw()))) return;
 		}
 		}
 		bool r2;
@@ -128,7 +128,7 @@ namespace pgen::PipeOperatorRule {
 			if (UNEXPECTED(r10.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_rightType.raw(), "isCallable", "iscallable", 10, 0, NULL, r10.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_rightType.raw(), "isCallable", "iscallable", 10, r10.raw()))) return false;
 		}
 		}
 		bool r11;
@@ -194,11 +194,11 @@ namespace pgen::PipeOperatorRule {
 									if (UNEXPECTED(r29.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_parameter, "passedByReference", "passedbyreference", 17, 0, NULL, r29.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_parameter, "passedByReference", "passedbyreference", 17, r29.raw()))) return false;
 								}
 								}
 								zv::Val r30;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r29.raw(), "no", "no", 2, 0, NULL, r30.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, r29.raw(), "no", "no", 2, r30.raw()))) return false;
 								if (zend_is_true(r30.raw())) {
 									goto brk27;
 								}
@@ -211,7 +211,7 @@ namespace pgen::PipeOperatorRule {
 									if (UNEXPECTED(r32.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_parameter, "getName", "getname", 7, 0, NULL, r32.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_parameter, "getName", "getname", 7, r32.raw()))) return false;
 								}
 								}
 								zv::Val q33;
@@ -222,7 +222,7 @@ namespace pgen::PipeOperatorRule {
 										if (UNEXPECTED(r34.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_parameter, "getName", "getname", 7, 0, NULL, r34.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_parameter, "getName", "getname", 7, r34.raw()))) return false;
 									}
 									}
 									zv::Val cat35;
@@ -248,7 +248,7 @@ namespace pgen::PipeOperatorRule {
 									p40 = o41.raw();
 								}
 								zv::Val r42;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_13, zv::Ref(p40).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r42.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, zv::Ref(p40).deref().raw(), "getStartLine", "getstartline", 12, r42.raw()))) return false;
 								if (UNEXPECTED(Z_TYPE_P(r42.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r42.raw()); return false; }
 								zv::Val r43;
 								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r39.raw()), Z_LVAL_P(r42.raw()), r43.raw()))) return false;

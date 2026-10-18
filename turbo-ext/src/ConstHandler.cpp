@@ -22,7 +22,7 @@ static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Name\FullyQualified */
 static pgrt::PropSite pg_site_12; /* prop_name_12 */
 static pt_method_site pg_site_13; /* method_toString_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node\Expr\ConstFetch */
-static pt_method_site pg_site_15; /* method_getType_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getType_15 */
 static pt_method_site pg_site_16; /* method_getNativeType_16 */
 static pt_method_site pg_site_17; /* method_assignExpression_17 */
 static pt_method_site pg_site_18; /* method_callNodeCallback_18 */
@@ -243,7 +243,7 @@ namespace pgen::ConstHandler {
 						if (UNEXPECTED(r49.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_constResult.raw(), "getType", "gettype", 7, 0, NULL, r49.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_constResult.raw(), "getType", "gettype", 7, r49.raw()))) return false;
 					}
 					}
 					zv::Val r50;

@@ -12,9 +12,9 @@ static zval pg_lit[1];
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
 static pt_method_site pg_site_2; /* method_getReturnType_2 */
-static pt_method_site pg_site_3; /* method_isVoid_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isVoid_3 */
 static pt_method_site pg_site_4; /* method_yes_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pgrt::FunctionSite pg_site_6; /* function_strtolower */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\TrinaryLogic */
@@ -372,7 +372,7 @@ namespace pgen::NativeFunctionReflection {
 						if (UNEXPECTED(r12.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_3, vd9.raw(), "isVoid", "isvoid", 6, 0, NULL, r12.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, vd9.raw(), "isVoid", "isvoid", 6, r12.raw()))) return false;
 					}
 					}
 					zv::Val vd13;
@@ -515,7 +515,7 @@ namespace pgen::NativeFunctionReflection {
 						if (UNEXPECTED(r9.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_attrib, "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_attrib, "getName", "getname", 7, r9.raw()))) return false;
 					}
 					}
 					zval av10[1];

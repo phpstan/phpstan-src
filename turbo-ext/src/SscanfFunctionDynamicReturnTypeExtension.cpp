@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_sscanf_function_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[11];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pt_method_site pg_site_4; /* method_getConstantStrings_4 */
-static pt_method_site pg_site_5; /* method_getValue_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getValue_5 */
 static pgrt::FunctionSite pg_site_6; /* function_preg_match_all */
 static pgrt::FunctionSite pg_site_7; /* function_count */
 static pt_method_site pg_site_8; /* method_setOffsetValueType_8 */
@@ -38,7 +38,7 @@ namespace pgen::SscanfFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -146,7 +146,7 @@ namespace pgen::SscanfFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r18.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_formatType.raw(), "getValue", "getvalue", 8, 0, NULL, r18.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_formatType.raw(), "getValue", "getvalue", 8, r18.raw()))) return false;
 		}
 		}
 		zval *is19 = Z_ISUNDEF_P(l_matches.raw()) ? NULL : l_matches.raw();

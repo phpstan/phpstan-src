@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_date_time_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
@@ -17,9 +17,9 @@ static pt_method_site pg_site_4; /* method_getConstantStrings_4 */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
 static pt_method_site pg_site_6; /* method_getType_6 */
 static pt_method_site pg_site_7; /* method_getConstantStrings_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
-static pt_method_site pg_site_9; /* method_getValue_9 */
-static pt_method_site pg_site_10; /* method_getValue_10 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValue_10 */
 static pgrt::ClassSite pg_site_11; /* cls_DateTime */
 static pt_method_site pg_site_12; /* static_DateTime::createFromFormat */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Reflection\FunctionReflection */
@@ -41,7 +41,7 @@ namespace pgen::DateTimeDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -184,7 +184,7 @@ namespace pgen::DateTimeDynamicReturnTypeExtension {
 			if (UNEXPECTED(r25.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_functionReflection, "getName", "getname", 7, 0, NULL, r25.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_functionReflection, "getName", "getname", 7, r25.raw()))) return false;
 		}
 		}
 		zv::Val q26;
@@ -226,7 +226,7 @@ namespace pgen::DateTimeDynamicReturnTypeExtension {
 									if (UNEXPECTED(r43.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_formatConstantString, "getValue", "getvalue", 8, 0, NULL, r43.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_formatConstantString, "getValue", "getvalue", 8, r43.raw()))) return false;
 								}
 								}
 								zv::Val r44;
@@ -235,7 +235,7 @@ namespace pgen::DateTimeDynamicReturnTypeExtension {
 									if (UNEXPECTED(r44.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_datetimeConstantString, "getValue", "getvalue", 8, 0, NULL, r44.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_datetimeConstantString, "getValue", "getvalue", 8, r44.raw()))) return false;
 								}
 								}
 								zval av45[2];

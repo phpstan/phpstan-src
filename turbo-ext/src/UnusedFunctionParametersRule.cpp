@@ -15,8 +15,8 @@ static pgrt::PropSite pg_site_2; /* prop_stmts_2 */
 static pgrt::PropSite pg_site_3; /* prop_params_3 */
 static pt_method_site pg_site_4; /* method_getFunction_4 */
 static pgrt::PropSite pg_site_5; /* prop_params_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Node\VariableWritesNode */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\UnusedParametersCheck */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
@@ -161,7 +161,7 @@ namespace pgen::UnusedFunctionParametersRule {
 			if (UNEXPECTED(r21.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_function.raw(), "getName", "getname", 7, 0, NULL, r21.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_function.raw(), "getName", "getname", 7, r21.raw()))) return false;
 		}
 		}
 		zv::Val r22;
@@ -180,7 +180,7 @@ namespace pgen::UnusedFunctionParametersRule {
 			if (UNEXPECTED(r26.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_function.raw(), "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_function.raw(), "getName", "getname", 7, r26.raw()))) return false;
 		}
 		}
 		zv::Val r27;

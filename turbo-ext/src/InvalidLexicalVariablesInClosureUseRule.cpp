@@ -16,7 +16,7 @@ static pgrt::PropSite pg_site_3; /* prop_var_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pgrt::PropSite pg_site_5; /* prop_var_5 */
 static pgrt::PropSite pg_site_6; /* prop_name_6 */
-static pt_method_site pg_site_7; /* method_getParams_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getParams_7 */
 static pgrt::FunctionSite pg_site_8; /* function_array_map */
 static pgrt::FunctionSite pg_site_9; /* function_array_filter */
 static pgrt::PropSite pg_site_10; /* prop_uses_10 */
@@ -24,10 +24,10 @@ static pgrt::PropSite pg_site_11; /* prop_var_11 */
 static pgrt::PropSite pg_site_12; /* prop_name_12 */
 static pgrt::PropSite pg_site_13; /* prop_var_13 */
 static pgrt::PropSite pg_site_14; /* prop_name_14 */
-static pt_method_site pg_site_15; /* method_getStartLine_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getStartLine_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
-static pt_method_site pg_site_17; /* method_getStartLine_17 */
-static pt_method_site pg_site_18; /* method_getStartLine_18 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getStartLine_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getStartLine_18 */
 static pgrt::ClassSite pg_site_19; /* cls_PhpParser\Node */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -147,7 +147,7 @@ namespace pgen::InvalidLexicalVariablesInClosureUseRule {
 	 {
 		zv::Val h3 = pt_native_closure_new(&pg_closure_1, 0, NULL, 0u);
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_node, "getParams", "getparams", 9, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_node, "getParams", "getparams", 9, r4.raw()))) return false;
 		zval av5[2];
 		ZVAL_COPY_VALUE(&av5[0], h3.raw());
 		ZVAL_COPY_VALUE(&av5[1], r4.raw());
@@ -213,7 +213,7 @@ namespace pgen::InvalidLexicalVariablesInClosureUseRule {
 							zv::Val r26;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[2], r26.raw()))) return false;
 							zv::Val r27;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_use, "getStartLine", "getstartline", 12, 0, NULL, r27.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_use, "getStartLine", "getstartline", 12, r27.raw()))) return false;
 							if (UNEXPECTED(Z_TYPE_P(r27.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r27.raw()); return false; }
 							zv::Val r28;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r26.raw()), Z_LVAL_P(r27.raw()), r28.raw()))) return false;
@@ -248,7 +248,7 @@ namespace pgen::InvalidLexicalVariablesInClosureUseRule {
 							zv::Val r39;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r38.raw(), r39.raw()))) return false;
 							zv::Val r40;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_use, "getStartLine", "getstartline", 12, 0, NULL, r40.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_use, "getStartLine", "getstartline", 12, r40.raw()))) return false;
 							if (UNEXPECTED(Z_TYPE_P(r40.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r40.raw()); return false; }
 							zv::Val r41;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r39.raw()), Z_LVAL_P(r40.raw()), r41.raw()))) return false;
@@ -282,7 +282,7 @@ namespace pgen::InvalidLexicalVariablesInClosureUseRule {
 					zv::Val r50;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r49.raw(), r50.raw()))) return false;
 					zv::Val r51;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_use, "getStartLine", "getstartline", 12, 0, NULL, r51.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_use, "getStartLine", "getstartline", 12, r51.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r51.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r51.raw()); return false; }
 					zv::Val r52;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r50.raw()), Z_LVAL_P(r51.raw()), r52.raw()))) return false;

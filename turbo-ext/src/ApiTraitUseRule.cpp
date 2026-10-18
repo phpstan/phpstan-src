@@ -13,8 +13,8 @@ static pgrt::PropSite pg_site_0; /* prop_traits_0 */
 static pt_method_site pg_site_1; /* method_toString_1 */
 static pt_method_site pg_site_2; /* method_hasClass_2 */
 static pt_method_site pg_site_3; /* method_getClass_3 */
-static pt_method_site pg_site_4; /* method_getName_4 */
-static pt_method_site pg_site_5; /* method_getFileName_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getFileName_5 */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\Api\ApiRuleHelper */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\ReflectionProvider */
@@ -159,7 +159,7 @@ namespace pgen::ApiTraitUseRule {
 						if (UNEXPECTED(r28.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_traitReflection.raw(), "getName", "getname", 7, 0, NULL, r28.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_traitReflection.raw(), "getName", "getname", 7, r28.raw()))) return false;
 					}
 					}
 					zv::Val r29;
@@ -168,7 +168,7 @@ namespace pgen::ApiTraitUseRule {
 						if (UNEXPECTED(r29.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_traitReflection.raw(), "getFileName", "getfilename", 11, 0, NULL, r29.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_traitReflection.raw(), "getFileName", "getfilename", 11, r29.raw()))) return false;
 					}
 					}
 					bool r30;

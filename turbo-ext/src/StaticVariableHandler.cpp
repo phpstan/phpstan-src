@@ -36,7 +36,7 @@ static pgrt::PropSite pg_site_23; /* prop_var_23 */
 static pt_method_site pg_site_24; /* method_getResolvedTypes_24 */
 static pgrt::PropSite pg_site_25; /* prop_var_25 */
 static pt_method_site pg_site_26; /* method_isInferred_26 */
-static pt_method_site pg_site_27; /* method_getType_27 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getType_27 */
 static pt_method_site pg_site_28; /* method_getNativeType_28 */
 static pgrt::PropSite pg_site_29; /* prop_var_29 */
 static pgrt::PropSite pg_site_30; /* prop_name_30 */
@@ -443,7 +443,7 @@ namespace pgen::StaticVariableHandler {
 									if (UNEXPECTED(r86.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_defaultExprResult.raw(), "getType", "gettype", 7, 0, NULL, r86.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_defaultExprResult.raw(), "getType", "gettype", 7, r86.raw()))) return false;
 								}
 								}
 								{ zval v = r86.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr85.raw()), &v); }

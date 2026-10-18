@@ -14,7 +14,7 @@ static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name */
 static pgrt::PropSite pg_site_2; /* prop_name_2 */
 static pt_method_site pg_site_3; /* method_resolveFunctionName_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Analyser\MutatingScope */
-static pt_method_site pg_site_5; /* method_debug_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_debug_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Analyser\Scope */
 
@@ -142,7 +142,7 @@ namespace pgen::DebugScopeRule {
 	}
 	 {
 		zv::Val r19;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "debug", "debug", 5, 0, NULL, r19.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_scope, "debug", "debug", 5, r19.raw()))) return false;
 		zv::Val a20 = zv::Val::copyOf(zv::Ref(r19.raw()).deref());
 		HashTable *ht18 = Z_ARRVAL_P(a20.raw());
 		zval *v21;

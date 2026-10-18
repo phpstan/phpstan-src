@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_unpack_iterable_in_array_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getItemNodes_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getItemNodes_0 */
 static pgrt::GetterSite pg_site_1; /* getter_getArrayItem_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Node\LiteralArrayItem */
-static pt_method_site pg_site_3; /* method_getArrayItem_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getArrayItem_3 */
 static pgrt::PropSite pg_site_4; /* prop_unpack_4 */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\Type */
@@ -21,7 +21,7 @@ static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Type\ErrorType */
 static pt_method_site pg_site_10; /* method_isIterable_10 */
 static pt_method_site pg_site_11; /* method_describe_11 */
-static pt_method_site pg_site_12; /* method_getStartLine_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getStartLine_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
@@ -103,7 +103,7 @@ namespace pgen::UnpackIterableInArrayRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getItemNodes", "getitemnodes", 12, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getItemNodes", "getitemnodes", 12, r4.raw()))) return false;
 		pgrt::ForeachIter it5;
 		if (UNEXPECTED(!it5.begin(r4.raw()))) return false;
 		while (it5.valid()) {
@@ -116,7 +116,7 @@ namespace pgen::UnpackIterableInArrayRule {
 						ZVAL_COPY(r9.raw(), gs8);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_itemNode, "getArrayItem", "getarrayitem", 12, 0, NULL, r9.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_itemNode, "getArrayItem", "getarrayitem", 12, r9.raw()))) return false;
 					}
 					}
 					l_item = std::move(r9);
@@ -209,7 +209,7 @@ namespace pgen::UnpackIterableInArrayRule {
 					zv::Val r30;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r29.raw()), &pg_lit[2], r30.raw()))) return false;
 					zv::Val r31;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_item.raw(), "getStartLine", "getstartline", 12, 0, NULL, r31.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_item.raw(), "getStartLine", "getstartline", 12, r31.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r31.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r31.raw()); return false; }
 					zv::Val r32;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r30.raw()), Z_LVAL_P(r31.raw()), r32.raw()))) return false;

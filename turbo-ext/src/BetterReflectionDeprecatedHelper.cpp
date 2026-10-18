@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_better_reflection_deprecated_helper = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getAttributes_0 */
-static pt_method_site pg_site_1; /* method_getDocComment_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getAttributes_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getDocComment_1 */
 
 namespace pgen::BetterReflectionDeprecatedHelper {
 
@@ -19,7 +19,7 @@ namespace pgen::BetterReflectionDeprecatedHelper {
 {
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_reflection, "getAttributes", "getattributes", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_reflection, "getAttributes", "getattributes", 13, r1.raw()))) return false;
 		if (UNEXPECTED(!(Z_TYPE_P(r1.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\Reflection\\Attribute\\ReflectionAttributeHelper::filterAttributesByName", 1, "attributes", "array", r1.raw()); return false; }
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::BetterReflectionAttributeHelper::m_filterAttributesByName(r1.raw(), &pg_lit[0], r2.raw()))) return false;
@@ -34,7 +34,7 @@ namespace pgen::BetterReflectionDeprecatedHelper {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_reflection, "getDocComment", "getdoccomment", 13, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_reflection, "getDocComment", "getdoccomment", 13, r4.raw()))) return false;
 		if (UNEXPECTED(!(Z_TYPE_P(r4.raw()) == IS_STRING || Z_TYPE_P(r4.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\Reflection\\Annotation\\AnnotationHelper::isDeprecated", 1, "docComment", "?string", r4.raw()); return false; }
 		bool r5;
 		if (UNEXPECTED(!pgen::BetterReflectionAnnotationHelper::m_isDeprecated(r4.raw(), &r5))) return false;

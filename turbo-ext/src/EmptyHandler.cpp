@@ -28,11 +28,11 @@ static pt_method_site pg_site_17; /* method_hasYield_17 */
 static pt_method_site pg_site_18; /* method_isAlwaysTerminating_18 */
 static pt_method_site pg_site_19; /* method_getThrowPoints_19 */
 static pt_method_site pg_site_20; /* method_getImpurePoints_20 */
-static pt_method_site pg_site_21; /* method_doNotTreatPhpDocTypesAsCertain_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_doNotTreatPhpDocTypesAsCertain_21 */
 static pt_method_site pg_site_22; /* method_getIssetabilityResolution_22 */
 static pt_method_site pg_site_23; /* method_notEmpty_23 */
 static pgrt::ClassSite pg_site_24; /* cls_PHPStan\Analyser\TypeSpecifierContext */
-static pt_method_site pg_site_25; /* method_doNotTreatPhpDocTypesAsCertain_25 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_doNotTreatPhpDocTypesAsCertain_25 */
 static pt_method_site pg_site_26; /* method_getIssetabilityResolution_26 */
 static pt_method_site pg_site_27; /* method_isSet_27 */
 static pgrt::PropSite pg_site_28; /* prop_expr_28 */
@@ -49,20 +49,20 @@ static pgrt::PropSite pg_site_38; /* prop_expr_38 */
 static pt_method_site pg_site_39; /* method_createIssetSingleSubjectNonTrueTypes_39 */
 static pgrt::PropSite pg_site_40; /* prop_expr_40 */
 static pt_method_site pg_site_41; /* method_createIssetTruthyChainTypes_41 */
-static pt_method_site pg_site_42; /* method_doNotTreatPhpDocTypesAsCertain_42 */
+static pgrt::MethodShapeSite pg_site_42; /* method0_doNotTreatPhpDocTypesAsCertain_42 */
 static pt_method_site pg_site_43; /* method_getIssetabilityResolution_43 */
 static pgrt::ClassSite pg_site_44; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_45; /* method_isNull_45 */
+static pgrt::MethodShapeSite pg_site_45; /* method0_isNull_45 */
 static pt_method_site pg_site_46; /* method_isSet_46 */
 static pt_method_site pg_site_47; /* method_null_47 */
 static pt_method_site pg_site_48; /* method_specifyDefaultTypes_48 */
 static pt_method_site pg_site_49; /* method_negate_49 */
 static pt_method_site pg_site_50; /* method_getSpecifiedTypesForScope_50 */
 static pt_method_site pg_site_51; /* method_getNativeType_51 */
-static pt_method_site pg_site_52; /* method_getType_52 */
+static pgrt::MethodShapeSite pg_site_52; /* method0_getType_52 */
 static pt_method_site pg_site_53; /* method_toBoolean_53 */
-static pt_method_site pg_site_54; /* method_isTrue_54 */
-static pt_method_site pg_site_55; /* method_isFalse_55 */
+static pgrt::MethodShapeSite pg_site_54; /* method0_isTrue_54 */
+static pgrt::MethodShapeSite pg_site_55; /* method0_isFalse_55 */
 static pt_method_site pg_site_56; /* static_PHPStan\Analyser\TypeSpecifierContext::createTruthy */
 static pt_method_site pg_site_57; /* method_applySpecifiedTypes_57 */
 static pt_method_site pg_site_58; /* static_PHPStan\Analyser\TypeSpecifierContext::createFalsey */
@@ -92,7 +92,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q1;
 		if (p_nativeTypesPromoted) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, zv::Ref(&captures[1]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, zv::Ref(&captures[1]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r2.raw()))) return;
 			q1 = std::move(r2);
 		} else {
 		 {
@@ -321,7 +321,7 @@ static void pg_closure_6(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_45, p_type, "isNull", "isnull", 6, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_45, p_type, "isNull", "isnull", 6, r1.raw()))) return;
 		}
 		}
 		l_isNull = std::move(r1);
@@ -364,7 +364,7 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q1;
 		if (p_nativeTypesPromoted) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_42, zv::Ref(&captures[1]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, zv::Ref(&captures[1]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r2.raw()))) return;
 			q1 = std::move(r2);
 		} else {
 		 {
@@ -523,7 +523,7 @@ static void pg_closure_8(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r3.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_52, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, 0, NULL, r3.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_52, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, r3.raw()))) return;
 			}
 			}
 			q1 = std::move(r3);
@@ -545,7 +545,7 @@ static void pg_closure_8(zval *captures, uint32_t argc, zval *argv, zval *return
 	}
 	 {
 		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_54, l_bool.raw(), "isTrue", "istrue", 6, 0, NULL, r6.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_54, l_bool.raw(), "isTrue", "istrue", 6, r6.raw()))) return;
 		bool r7;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r6.raw()), &r7))) return;
 		if (r7) {
@@ -559,7 +559,7 @@ static void pg_closure_8(zval *captures, uint32_t argc, zval *argv, zval *return
 	}
 	 {
 		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_55, l_bool.raw(), "isFalse", "isfalse", 7, 0, NULL, r9.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_55, l_bool.raw(), "isFalse", "isfalse", 7, r9.raw()))) return;
 		bool r10;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r9.raw()), &r10))) return;
 		if (r10) {
@@ -646,7 +646,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q1;
 		if (p_nativeTypesPromoted) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_25, zv::Ref(&captures[4]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, zv::Ref(&captures[4]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r2.raw()))) return;
 			q1 = std::move(r2);
 		} else {
 		 {

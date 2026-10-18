@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_function_conditional_return_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getFunctionReflection_0 */
 static pt_method_site pg_site_1; /* method_getVariants_1 */
 static pgrt::FunctionSite pg_site_2; /* function_count */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
@@ -53,7 +53,7 @@ namespace pgen::FunctionConditionalReturnTypeRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, r1.raw()))) return false;
 		l_function = std::move(r1);
 	}
 	 {

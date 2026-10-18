@@ -7,11 +7,11 @@
 zend_class_entry *pt_ce_consistent_constructor_helper = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_hasConsistentConstructor_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_hasConsistentConstructor_0 */
 static pt_method_site pg_site_1; /* method_hasConstructor_1 */
 static pt_method_site pg_site_2; /* method_getConstructor_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\Dummy\DummyConstructorReflection */
-static pt_method_site pg_site_4; /* method_getParentClass_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getParentClass_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Reflection\ClassReflection */
 
 namespace pgen::ConsistentConstructorHelper {
@@ -25,7 +25,7 @@ namespace pgen::ConsistentConstructorHelper {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_classReflection, "hasConsistentConstructor", "hasconsistentconstructor", 24, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_classReflection, "hasConsistentConstructor", "hasconsistentconstructor", 24, r1.raw()))) return false;
 		if (Z_TYPE_P(r1.raw()) == IS_TRUE) {
 			 {
 				bool bo2 = false;
@@ -73,7 +73,7 @@ namespace pgen::ConsistentConstructorHelper {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_classReflection, "getParentClass", "getparentclass", 14, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_classReflection, "getParentClass", "getparentclass", 14, r8.raw()))) return false;
 		}
 		}
 		l_parent = std::move(r8);

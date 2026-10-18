@@ -9,15 +9,15 @@ zend_class_entry *pt_ce_array_count_values_dynamic_return_type_extension = nullp
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_getArrays_4 */
-static pt_method_site pg_site_5; /* method_isIterableAtLeastOnce_5 */
-static pt_method_site pg_site_6; /* method_getItemType_6 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getArrays_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isIterableAtLeastOnce_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getItemType_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\NeverType */
-static pt_method_site pg_site_8; /* method_toArrayKey_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_toArrayKey_8 */
 static pt_method_site pg_site_9; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -38,7 +38,7 @@ namespace pgen::ArrayCountValuesDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -112,7 +112,7 @@ namespace pgen::ArrayCountValuesDynamicReturnTypeExtension {
 	}
 	 {
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_inputType.raw(), "getArrays", "getarrays", 9, 0, NULL, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_inputType.raw(), "getArrays", "getarrays", 9, r15.raw()))) return false;
 		l_arrayTypes = std::move(r15);
 	}
 	 {
@@ -122,7 +122,7 @@ namespace pgen::ArrayCountValuesDynamicReturnTypeExtension {
 			if (UNEXPECTED(r16.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_inputType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r16.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_inputType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r16.raw()))) return false;
 		}
 		}
 		bool r17;
@@ -164,7 +164,7 @@ namespace pgen::ArrayCountValuesDynamicReturnTypeExtension {
 						if (UNEXPECTED(r31.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_arrayType, "getItemType", "getitemtype", 11, 0, NULL, r31.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_arrayType, "getItemType", "getitemtype", 11, r31.raw()))) return false;
 					}
 					}
 					zv::Val o32 = zv::Val::copyOf(zv::Ref(l_allowedValues.raw()));
@@ -190,7 +190,7 @@ namespace pgen::ArrayCountValuesDynamicReturnTypeExtension {
 						if (UNEXPECTED(r36.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_itemType.raw(), "toArrayKey", "toarraykey", 10, 0, NULL, r36.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_itemType.raw(), "toArrayKey", "toarraykey", 10, r36.raw()))) return false;
 					}
 					}
 					zval av37[2];

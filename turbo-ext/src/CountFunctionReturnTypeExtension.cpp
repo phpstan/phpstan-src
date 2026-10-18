@@ -10,22 +10,22 @@ zend_class_entry *pt_ce_count_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_isIterableAtLeastOnce_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isIterableAtLeastOnce_4 */
 static pt_method_site pg_site_5; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
-static pt_method_site pg_site_8; /* method_getArraySize_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getArraySize_8 */
 static pt_method_site pg_site_9; /* method_getArgs_9 */
 static pt_method_site pg_site_10; /* method_getArgs_10 */
 static pgrt::PropSite pg_site_11; /* prop_value_11 */
 static pt_method_site pg_site_12; /* method_getType_12 */
 static pt_method_site pg_site_13; /* method_isSuperTypeOf_13 */
-static pt_method_site pg_site_14; /* method_getIterableValueType_14 */
-static pt_method_site pg_site_15; /* method_isArray_15 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getIterableValueType_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_isArray_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Analyser\Scope */
@@ -46,7 +46,7 @@ namespace pgen::CountFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -120,7 +120,7 @@ namespace pgen::CountFunctionReturnTypeExtension {
 					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_arrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r13.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_arrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r13.raw()))) return false;
 				}
 				}
 				bool r14;
@@ -176,7 +176,7 @@ namespace pgen::CountFunctionReturnTypeExtension {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_scope, "getType", "gettype", 7, 1, av27, r25.raw()))) return false;
 		}
 		zv::Val r28;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r25.raw(), "getArraySize", "getarraysize", 12, 0, NULL, r28.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, r25.raw(), "getArraySize", "getarraysize", 12, r28.raw()))) return false;
 		*ret = r28.take();
 		return true;
 	}
@@ -255,7 +255,7 @@ namespace pgen::CountFunctionReturnTypeExtension {
 					if (UNEXPECTED(r18.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_countedType, "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r18.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_countedType, "getIterableValueType", "getiterablevaluetype", 20, r18.raw()))) return false;
 				}
 				}
 				zv::Val r19;
@@ -264,7 +264,7 @@ namespace pgen::CountFunctionReturnTypeExtension {
 					if (UNEXPECTED(r19.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r18.raw(), "isArray", "isarray", 7, 0, NULL, r19.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, r18.raw(), "isArray", "isarray", 7, r19.raw()))) return false;
 				}
 				}
 				zv::Val r20;

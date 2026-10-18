@@ -15,10 +15,10 @@ static pgrt::PropSite pg_site_2; /* prop_var_2 */
 static pgrt::PropSite pg_site_3; /* prop_expr_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_6; /* method_isArray_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isArray_6 */
 static pt_method_site pg_site_7; /* method_isSuperTypeOf_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_9; /* method_isArray_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isArray_9 */
 static pt_method_site pg_site_10; /* method_isSuperTypeOf_10 */
 static pt_method_site pg_site_11; /* method_describe_11 */
 static pgrt::PropSite pg_site_12; /* prop_items_12 */
@@ -52,7 +52,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r2.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_varType, "isArray", "isarray", 7, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_varType, "isArray", "isarray", 7, r2.raw()))) return;
 		}
 		}
 		bool r3;
@@ -200,7 +200,7 @@ namespace pgen::ArrayDestructuringRule {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_exprType.raw(), "isArray", "isarray", 7, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_exprType.raw(), "isArray", "isarray", 7, r8.raw()))) return false;
 		}
 		}
 		bool r9;

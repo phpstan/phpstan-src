@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_constant_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
 static pt_method_site pg_site_5; /* method_getConstantStrings_5 */
-static pt_method_site pg_site_6; /* method_getValue_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getValue_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -48,7 +48,7 @@ namespace pgen::ConstantFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -147,7 +147,7 @@ namespace pgen::ConstantFunctionReturnTypeExtension {
 						if (UNEXPECTED(r26.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_constantName, "getValue", "getvalue", 8, 0, NULL, r26.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_constantName, "getValue", "getvalue", 8, r26.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(r26.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\ConstantHelper::createExprFromConstantName", 1, "constantName", "string", r26.raw()); return false; }

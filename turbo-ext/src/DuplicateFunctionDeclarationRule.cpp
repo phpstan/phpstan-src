@@ -9,15 +9,15 @@ zend_class_entry *pt_ce_duplicate_function_declaration_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getFunctionReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_reflectAllFunctions_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pgrt::FunctionSite pg_site_4; /* function_count */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\BetterReflection\Reflection\ReflectionFunction */
-static pt_method_site pg_site_6; /* method_getFileName_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getFileName_6 */
 static pt_method_site pg_site_7; /* method_getRelativePath_7 */
-static pt_method_site pg_site_8; /* method_getStartLine_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getStartLine_8 */
 static pgrt::FunctionSite pg_site_9; /* function_array_map */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\BetterReflection\Reflector\Reflector */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\File\RelativePathHelper */
@@ -47,7 +47,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r4.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_function, "getFileName", "getfilename", 11, 0, NULL, r4.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_function, "getFileName", "getfilename", 11, r4.raw()))) return;
 		}
 		}
 		zv::Val q5;
@@ -74,7 +74,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, o2.raw(), "getRelativePath", "getrelativepath", 15, 1, av9, vd7.raw()))) return;
 		}
 		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_function, "getStartLine", "getstartline", 12, 0, NULL, r10.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_function, "getStartLine", "getstartline", 12, r10.raw()))) return;
 		pgrt::StringBuilder sb11;
 		sb11.appendLiteral("- ", 2);
 		if (UNEXPECTED(!sb11.append(vd7.raw()))) return;
@@ -128,7 +128,7 @@ namespace pgen::DuplicateFunctionDeclarationRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, r1.raw()))) return false;
 		l_thisFunction = std::move(r1);
 	}
 	 {
@@ -138,7 +138,7 @@ namespace pgen::DuplicateFunctionDeclarationRule {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_thisFunction.raw(), "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_thisFunction.raw(), "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		l_functionName = std::move(r2);
@@ -185,7 +185,7 @@ namespace pgen::DuplicateFunctionDeclarationRule {
 								if (UNEXPECTED(r14.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_reflectionFunction, "getName", "getname", 7, 0, NULL, r14.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_reflectionFunction, "getName", "getname", 7, r14.raw()))) return false;
 							}
 							}
 							l_reflectionFunctionName = std::move(r14);

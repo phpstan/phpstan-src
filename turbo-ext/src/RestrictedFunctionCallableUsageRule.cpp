@@ -10,11 +10,11 @@ zend_class_entry *pt_ce_restricted_function_callable_usage_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pt_method_site pg_site_3; /* method_hasFunction_3 */
-static pt_method_site pg_site_4; /* method_getName_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
 static pt_method_site pg_site_5; /* method_getFunction_5 */
 static pt_method_site pg_site_6; /* method_getAll_6 */
 static pt_method_site pg_site_7; /* method_isRestrictedFunctionUsage_7 */
@@ -68,7 +68,7 @@ namespace pgen::RestrictedFunctionCallableUsageRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		if (!(pgrt::instanceOfClass(r1.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Name", 19)))) {
@@ -90,7 +90,7 @@ namespace pgen::RestrictedFunctionCallableUsageRule {
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getName", "getname", 7, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getName", "getname", 7, r5.raw()))) return false;
 		}
 		}
 		zv::Val vd6;
@@ -135,7 +135,7 @@ namespace pgen::RestrictedFunctionCallableUsageRule {
 			if (UNEXPECTED(r15.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_node, "getName", "getname", 7, 0, NULL, r15.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_node, "getName", "getname", 7, r15.raw()))) return false;
 		}
 		}
 		zv::Val vd16;

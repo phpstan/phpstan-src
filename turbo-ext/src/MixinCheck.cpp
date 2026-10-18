@@ -10,29 +10,29 @@ zend_class_entry *pt_ce_mixin_check = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[16];
 
-static pt_method_site pg_site_0; /* method_getMixinTags_0 */
-static pt_method_site pg_site_1; /* method_getType_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getMixinTags_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getType_1 */
 static pt_method_site pg_site_2; /* method_canCallMethods_2 */
 static pt_method_site pg_site_3; /* method_yes_3 */
 static pt_method_site pg_site_4; /* method_canAccessProperties_4 */
 static pt_method_site pg_site_5; /* method_yes_5 */
 static pt_method_site pg_site_6; /* method_describe_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_8; /* method_getClassTypeDescription_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getClassTypeDescription_8 */
 static pt_method_site pg_site_9; /* method_getDisplayName_9 */
-static pt_method_site pg_site_10; /* method_getClassTypeDescription_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getClassTypeDescription_10 */
 static pt_method_site pg_site_11; /* method_getDisplayName_11 */
 static pt_method_site pg_site_12; /* method_describe_12 */
 static pt_method_site pg_site_13; /* method_getNativeReflection_13 */
-static pt_method_site pg_site_14; /* method_getName_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
-static pt_method_site pg_site_16; /* method_getResolvedPhpDoc_16 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getResolvedPhpDoc_16 */
 static pt_method_site pg_site_17; /* method_getTraitContextResolvedPhpDoc_17 */
-static pt_method_site pg_site_18; /* method_getType_18 */
-static pt_method_site pg_site_19; /* method_getReferencedClasses_19 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getType_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getReferencedClasses_19 */
 static pt_method_site pg_site_20; /* method_hasClass_20 */
 static pt_method_site pg_site_21; /* method_getClass_21 */
-static pt_method_site pg_site_22; /* method_isTrait_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_isTrait_22 */
 static pgrt::ClassSite pg_site_23; /* cls_PHPStan\Analyser\Scope */
 static pgrt::ClassSite pg_site_24; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_25; /* cls_PhpParser\Node\Stmt\ClassLike */
@@ -161,7 +161,7 @@ namespace pgen::MixinCheck {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_classReflection, "getMixinTags", "getmixintags", 12, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_classReflection, "getMixinTags", "getmixintags", 12, r4.raw()))) return false;
 		zv::Val a5 = zv::Val::copyOf(zv::Ref(r4.raw()).deref());
 		HashTable *ht3 = Z_ARRVAL_P(a5.raw());
 		zval *v6;
@@ -178,7 +178,7 @@ namespace pgen::MixinCheck {
 						if (UNEXPECTED(r11.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_mixinTag, "getType", "gettype", 7, 0, NULL, r11.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_mixinTag, "getType", "gettype", 7, r11.raw()))) return false;
 					}
 					}
 					l_type = std::move(r11);
@@ -299,7 +299,7 @@ namespace pgen::MixinCheck {
 						 {
 							 {
 								zv::Val r44;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r44.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, r44.raw()))) return false;
 								zv::Val r45;
 								if (EXPECTED(Z_TYPE_P(p_classReflection) == IS_OBJECT && Z_OBJCE_P(p_classReflection) == pt_ce_class_reflection)) {
 									r45 = pt_class_reflection_get_display_name(Z_OBJ_P(p_classReflection));
@@ -401,7 +401,7 @@ namespace pgen::MixinCheck {
 						 {
 							 {
 								zv::Val r83;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r83.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, r83.raw()))) return false;
 								zv::Val r84;
 								if (EXPECTED(Z_TYPE_P(p_classReflection) == IS_OBJECT && Z_OBJCE_P(p_classReflection) == pt_ce_class_reflection)) {
 									r84 = pt_class_reflection_get_display_name(Z_OBJ_P(p_classReflection));
@@ -491,7 +491,7 @@ namespace pgen::MixinCheck {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r1.raw(), "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, r1.raw(), "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		zv::Val r3;
@@ -500,7 +500,7 @@ namespace pgen::MixinCheck {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_implementingClassReflection, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_implementingClassReflection, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		if (zend_is_identical(r2.raw(), r3.raw())) {
@@ -511,7 +511,7 @@ namespace pgen::MixinCheck {
 					if (UNEXPECTED(r4.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p_reflection, "getResolvedPhpDoc", "getresolvedphpdoc", 17, 0, NULL, r4.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, p_reflection, "getResolvedPhpDoc", "getresolvedphpdoc", 17, r4.raw()))) return false;
 				}
 				}
 				l_phpDoc = std::move(r4);
@@ -563,7 +563,7 @@ namespace pgen::MixinCheck {
 						if (UNEXPECTED(r18.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_mixinTag, "getType", "gettype", 7, 0, NULL, r18.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_mixinTag, "getType", "gettype", 7, r18.raw()))) return false;
 					}
 					}
 					l_type = std::move(r18);
@@ -639,7 +639,7 @@ namespace pgen::MixinCheck {
 						if (UNEXPECTED(r41.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_type.raw(), "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r41.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_type.raw(), "getReferencedClasses", "getreferencedclasses", 20, r41.raw()))) return false;
 					}
 					}
 					pgrt::ForeachIter it42;
@@ -739,7 +739,7 @@ namespace pgen::MixinCheck {
 											if (UNEXPECTED(r68.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_22, vd64.raw(), "isTrait", "istrait", 7, 0, NULL, r68.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, vd64.raw(), "isTrait", "istrait", 7, r68.raw()))) return false;
 										}
 										}
 										if (Z_TYPE_P(r68.raw()) == IS_TRUE) {

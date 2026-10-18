@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_class_property_node = nullptr;
 static zval pg_lit[1];
 
 static pgrt::PropIndexSite pg_site_0; /* slot_default_0 */
-static pt_method_site pg_site_1; /* method_getAttributes_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getAttributes_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\NodeAbstract */
 static pt_method_site pg_site_3; /* bound_PhpParser\NodeAbstract::__construct */
 static pgrt::PropIndexSite pg_site_4; /* slot_default_4 */
@@ -81,7 +81,7 @@ namespace pgen::ClassPropertyNode {
 	pgrt::writeSlot(self, ptdecl::ClassPropertyNode::slot::classReflection, &o14_raw);
 	 {
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_originalNode, "getAttributes", "getattributes", 13, 0, NULL, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_originalNode, "getAttributes", "getattributes", 13, r15.raw()))) return false;
 		zval av16[1];
 		ZVAL_COPY_VALUE(&av16[0], r15.raw());
 		zend_class_entry *ce17 = pgrt::lookupClass(pg_site_2, "PhpParser\\NodeAbstract", 22);

@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_read_only_property_rule = nullptr;
 static zval pg_lit[9];
 
 static pt_method_site pg_site_0; /* method_isReadOnly_0 */
-static pt_method_site pg_site_1; /* method_getPhpVersion_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getPhpVersion_1 */
 static pt_method_site pg_site_2; /* method_getNativeType_2 */
 static pt_method_site pg_site_3; /* method_getDefault_3 */
 static pt_method_site pg_site_4; /* method_isStatic_4 */
@@ -69,7 +69,7 @@ namespace pgen::ReadOnlyPropertyRule {
 	}
 	 {
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r7.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, r7.raw()))) return false;
 		zv::Val r8;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsReadOnlyProperties(Z_OBJ_P(r7.raw()), r8.raw()))) return false;
 		bool r9;

@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_native_typed_class_constant_rule = nullptr;
 static zval pg_lit[3];
 
 static pgrt::PropSite pg_site_0; /* prop_type_0 */
-static pt_method_site pg_site_1; /* method_getPhpVersion_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getPhpVersion_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Analyser\Scope */
 
@@ -52,7 +52,7 @@ namespace pgen::NativeTypedClassConstantRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, r4.raw()))) return false;
 		zv::Val r5;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsNativeTypesInClassConstants(Z_OBJ_P(r4.raw()), r5.raw()))) return false;
 		bool r6;

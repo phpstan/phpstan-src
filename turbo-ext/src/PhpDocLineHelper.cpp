@@ -10,11 +10,11 @@ zend_class_entry *pt_ce_php_doc_line_helper = nullptr;
 static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_getAttribute_0 */
-static pt_method_site pg_site_1; /* method_getDocComment_1 */
-static pt_method_site pg_site_2; /* method_getStartLine_2 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getDocComment_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getStartLine_2 */
 static pgrt::GetterSite pg_site_3; /* getter_getStartLine_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_5; /* method_getStartLine_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getStartLine_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\PhpDocParser\Ast\Node */
 
@@ -34,7 +34,7 @@ namespace pgen::PhpDocLineHelper {
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getDocComment", "getdoccomment", 13, r3.raw()))) return false;
 		l_phpDoc = std::move(r3);
 	}
 	 {
@@ -45,7 +45,7 @@ namespace pgen::PhpDocLineHelper {
 		if (b4) {
 			 {
 				zv::Val r5;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getStartLine", "getstartline", 12, 0, NULL, r5.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getStartLine", "getstartline", 12, r5.raw()))) return false;
 				*ret = Z_LVAL_P(r5.raw());
 				return true;
 			}
@@ -58,7 +58,7 @@ namespace pgen::PhpDocLineHelper {
 			ZVAL_COPY(r7.raw(), gs6);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_phpDoc.raw(), "getStartLine", "getstartline", 12, 0, NULL, r7.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_phpDoc.raw(), "getStartLine", "getstartline", 12, r7.raw()))) return false;
 		}
 		}
 		zv::Val ar8;

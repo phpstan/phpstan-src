@@ -12,10 +12,10 @@ static zval pg_lit[5];
 static pgrt::PropSite pg_site_0; /* prop_dim_0 */
 static pgrt::PropSite pg_site_1; /* prop_var_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_3; /* method_isArray_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isArray_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_6; /* method_isArray_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isArray_6 */
 static pgrt::PropSite pg_site_7; /* prop_dim_7 */
 static pt_method_site pg_site_8; /* method_isSuperTypeOf_8 */
 static pt_method_site pg_site_9; /* method_isSuperTypeOf_9 */
@@ -42,7 +42,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_varType, "isArray", "isarray", 7, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_varType, "isArray", "isarray", 7, r1.raw()))) return;
 		}
 		}
 		bool r2;
@@ -183,7 +183,7 @@ namespace pgen::InvalidKeyInArrayDimFetchRule {
 			if (UNEXPECTED(r13.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_varType.raw(), "isArray", "isarray", 7, 0, NULL, r13.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_varType.raw(), "isArray", "isarray", 7, r13.raw()))) return false;
 		}
 		}
 		l_isArray = std::move(r13);

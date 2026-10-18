@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_date_function_return_type_helper = nullptr;
 static zval pg_lit[18];
 
 static pt_method_site pg_site_0; /* method_getConstantStrings_0 */
-static pt_method_site pg_site_1; /* method_getValue_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getValue_1 */
 static pt_method_site pg_site_2; /* method_isNonEmptyString_2 */
 static pt_method_site pg_site_3; /* method_isNumericString_3 */
 static pt_method_site pg_site_4; /* method_isNonEmptyString_4 */
@@ -65,7 +65,7 @@ namespace pgen::DateFunctionReturnTypeHelper {
 						if (UNEXPECTED(r12.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_formatString, "getValue", "getvalue", 8, 0, NULL, r12.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_formatString, "getValue", "getvalue", 8, r12.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(r12.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\DateFunctionReturnTypeHelper::buildReturnTypeFromFormat", 1, "formatString", "string", r12.raw()); return false; }

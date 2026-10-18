@@ -10,12 +10,12 @@ zend_class_entry *pt_ce_restricted_internal_usage_helper = nullptr;
 static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_isAnonymous_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_getNamespace_4 */
-static pt_method_site pg_site_5; /* method_getClassReflection_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getClassReflection_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
 static pgrt::FunctionSite pg_site_7; /* function_explode */
 static pgrt::FunctionSite pg_site_8; /* function_str_starts_with */
 static pgrt::FunctionSite pg_site_9; /* function_array_slice */
@@ -56,7 +56,7 @@ namespace pgen::RestrictedInternalUsageHelper {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_classReflection, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_classReflection, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		bool r4;
@@ -79,7 +79,7 @@ namespace pgen::RestrictedInternalUsageHelper {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool r2;
@@ -102,7 +102,7 @@ namespace pgen::RestrictedInternalUsageHelper {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_classReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_classReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		zv::Val r2;
@@ -146,7 +146,7 @@ namespace pgen::RestrictedInternalUsageHelper {
 					if (UNEXPECTED(r3.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r3.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, r3.raw()))) return false;
 				}
 				}
 				l_classReflection = std::move(r3);
@@ -166,7 +166,7 @@ namespace pgen::RestrictedInternalUsageHelper {
 					if (UNEXPECTED(r4.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_classReflection.raw(), "getName", "getname", 7, r4.raw()))) return false;
 				}
 				}
 				*ret = !zend_is_identical(r4.raw(), p_name);

@@ -9,16 +9,16 @@ zend_class_entry *pt_ce_array_intersect_key_function_return_type_extension = nul
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pgrt::PropSite pg_site_4; /* prop_unpack_4 */
-static pt_method_site pg_site_5; /* method_getIterableValueType_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getIterableValueType_5 */
 static pgrt::FunctionSite pg_site_6; /* function_array_slice */
-static pt_method_site pg_site_7; /* method_isArray_7 */
-static pt_method_site pg_site_8; /* method_isArray_8 */
-static pt_method_site pg_site_9; /* method_getPhpVersion_9 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_isArray_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isArray_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getPhpVersion_9 */
 static pt_method_site pg_site_10; /* method_intersectKeyArray_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -39,7 +39,7 @@ namespace pgen::ArrayIntersectKeyFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -126,7 +126,7 @@ namespace pgen::ArrayIntersectKeyFunctionReturnTypeExtension {
 								if (UNEXPECTED(r19.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r19.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r19.raw()))) return false;
 							}
 							}
 							zv::Val o20 = zv::Val::copyOf(zv::Ref(r19.raw()));
@@ -191,7 +191,7 @@ namespace pgen::ArrayIntersectKeyFunctionReturnTypeExtension {
 			if (UNEXPECTED(r35.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_firstArrayType.raw(), "isArray", "isarray", 7, 0, NULL, r35.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_firstArrayType.raw(), "isArray", "isarray", 7, r35.raw()))) return false;
 		}
 		}
 		bool r36;
@@ -206,7 +206,7 @@ namespace pgen::ArrayIntersectKeyFunctionReturnTypeExtension {
 					if (UNEXPECTED(r38.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_otherArraysType.raw(), "isArray", "isarray", 7, 0, NULL, r38.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_otherArraysType.raw(), "isArray", "isarray", 7, r38.raw()))) return false;
 				}
 				}
 				bool r39;
@@ -218,7 +218,7 @@ namespace pgen::ArrayIntersectKeyFunctionReturnTypeExtension {
 		if (b34) {
 			 {
 				zv::Val r40;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r40.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_scope, "getPhpVersion", "getphpversion", 13, r40.raw()))) return false;
 				zv::Val r41;
 				if (UNEXPECTED(!pgen::PhpVersions::m_arrayFunctionsReturnNullWithNonArray(Z_OBJ_P(r40.raw()), r41.raw()))) return false;
 				bool r42;

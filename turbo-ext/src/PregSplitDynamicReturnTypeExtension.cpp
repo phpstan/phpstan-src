@@ -9,22 +9,22 @@ zend_class_entry *pt_ce_preg_split_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pt_method_site pg_site_4; /* method_getConstantStrings_4 */
-static pt_method_site pg_site_5; /* method_getValue_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getValue_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_getConstantStrings_8 */
 static pgrt::PropSite pg_site_9; /* prop_value_9 */
 static pt_method_site pg_site_10; /* method_getType_10 */
-static pt_method_site pg_site_11; /* method_getConstantScalarValues_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getConstantScalarValues_11 */
 static pgrt::FunctionSite pg_site_12; /* function_is_numeric */
 static pgrt::PropSite pg_site_13; /* prop_value_13 */
 static pt_method_site pg_site_14; /* method_getType_14 */
-static pt_method_site pg_site_15; /* method_getConstantScalarValues_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getConstantScalarValues_15 */
 static pgrt::PropSite pg_site_16; /* prop_value_16 */
 static pt_method_site pg_site_17; /* method_bitwiseOrContainsConstant_17 */
 static pt_method_site pg_site_18; /* method_setOffsetValueType_18 */
@@ -36,9 +36,9 @@ static pt_method_site pg_site_23; /* method_bitwiseOrContainsConstant_23 */
 static pt_method_site pg_site_24; /* static_PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo */
 static pt_method_site pg_site_25; /* method_isNonEmptyString_25 */
 static pt_method_site pg_site_26; /* method_isNonEmptyString_26 */
-static pt_method_site pg_site_27; /* method_getTypes_27 */
-static pt_method_site pg_site_28; /* method_getValue_28 */
-static pt_method_site pg_site_29; /* method_getValue_29 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getTypes_27 */
+static pgrt::MethodShapeSite pg_site_28; /* method0_getValue_28 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_getValue_29 */
 static pgrt::FunctionSite pg_site_30; /* function_preg_split */
 static pgrt::ClassSite pg_site_31; /* cls_Nette\Utils\Strings */
 static pt_method_site pg_site_32; /* static_Nette\Utils\Strings::match */
@@ -76,7 +76,7 @@ namespace pgen::PregSplitDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		zv::Val r2 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r1.raw())));
@@ -246,7 +246,7 @@ namespace pgen::PregSplitDynamicReturnTypeExtension {
 								if (UNEXPECTED(r37.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_patternConstantType, "getValue", "getvalue", 8, 0, NULL, r37.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_patternConstantType, "getValue", "getvalue", 8, r37.raw()))) return false;
 							}
 							}
 							bool r38;
@@ -358,7 +358,7 @@ namespace pgen::PregSplitDynamicReturnTypeExtension {
 					if (UNEXPECTED(r60.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_limitType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r60.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_limitType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r60.raw()))) return false;
 				}
 				}
 				zv::Val a61 = zv::Val::copyOf(zv::Ref(r60.raw()).deref());
@@ -459,7 +459,7 @@ namespace pgen::PregSplitDynamicReturnTypeExtension {
 					if (UNEXPECTED(r87.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_flagType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r87.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_flagType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r87.raw()))) return false;
 				}
 				}
 				zv::Val a88 = zv::Val::copyOf(zv::Ref(r87.raw()).deref());
@@ -774,7 +774,7 @@ namespace pgen::PregSplitDynamicReturnTypeExtension {
 							if (UNEXPECTED(r175.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_returnListType.raw(), "getTypes", "gettypes", 8, 0, NULL, r175.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_returnListType.raw(), "getTypes", "gettypes", 8, r175.raw()))) return false;
 						}
 						}
 						if (UNEXPECTED(!pgrt::spreadInto(arr173.raw(), r175.raw()))) return false;
@@ -849,7 +849,7 @@ namespace pgen::PregSplitDynamicReturnTypeExtension {
 															if (UNEXPECTED(r209.isUndef())) return false;
 														} else {
 														 {
-															if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_patternConstantType, "getValue", "getvalue", 8, 0, NULL, r209.raw(), NULL))) return false;
+															if (UNEXPECTED(!pgrt::callMethod0(pg_site_28, l_patternConstantType, "getValue", "getvalue", 8, r209.raw()))) return false;
 														}
 														}
 														zv::Val r210;
@@ -858,7 +858,7 @@ namespace pgen::PregSplitDynamicReturnTypeExtension {
 															if (UNEXPECTED(r210.isUndef())) return false;
 														} else {
 														 {
-															if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_subjectConstantType, "getValue", "getvalue", 8, 0, NULL, r210.raw(), NULL))) return false;
+															if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, l_subjectConstantType, "getValue", "getvalue", 8, r210.raw()))) return false;
 														}
 														}
 														zend_long ci211 = zval_get_long(l_limit);

@@ -22,7 +22,7 @@ static pgrt::FunctionSite pg_site_9; /* function_str_starts_with */
 static pt_method_site pg_site_10; /* method_getKind_10 */
 static pgrt::FunctionSite pg_site_11; /* function_in_array */
 static pt_method_site pg_site_12; /* method_getKind_12 */
-static pt_method_site pg_site_13; /* method_getPhpVersion_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getPhpVersion_13 */
 static pt_method_site pg_site_14; /* method_getRedundantType_14 */
 static pt_method_site pg_site_15; /* method_isOffsetWrite_15 */
 static pt_method_site pg_site_16; /* method_isUsed_16 */
@@ -32,7 +32,7 @@ static pgrt::ClassSite pg_site_19; /* cls_PHPStan\ShouldNotHappenException */
 static pt_method_site pg_site_20; /* method_isOffsetWrite_20 */
 static pt_method_site pg_site_21; /* method_printExpr_21 */
 static pt_method_site pg_site_22; /* method_describe_22 */
-static pt_method_site pg_site_23; /* method_getStartLine_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getStartLine_23 */
 static pt_method_site pg_site_24; /* method_isUsed_24 */
 static pt_method_site pg_site_25; /* method_flowsIntoNeverReadWrite_25 */
 static pt_method_site pg_site_26; /* method_isRead_26 */
@@ -61,7 +61,7 @@ static pt_method_site pg_site_48; /* method_getKind_48 */
 static pt_method_site pg_site_49; /* method_isRead_49 */
 static pt_method_site pg_site_50; /* method_isOverwritten_50 */
 static pt_method_site pg_site_51; /* method_getNode_51 */
-static pt_method_site pg_site_52; /* method_getStartLine_52 */
+static pgrt::MethodShapeSite pg_site_52; /* method0_getStartLine_52 */
 static pgrt::FunctionSite pg_site_53; /* function_ucfirst */
 static pgrt::ClassSite pg_site_54; /* cls_PHPStan\Node\Printer\ExprPrinter */
 static pgrt::ClassSite pg_site_55; /* cls_PhpParser\Node */
@@ -360,7 +360,7 @@ namespace pgen::UnusedVariableRule {
 					bool b60 = (Z_TYPE_P(vd61.raw()) == IS_LONG && Z_LVAL_P(vd61.raw()) == 11);
 					if (b60) {
 						zv::Val r64;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r64.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_scope, "getPhpVersion", "getphpversion", 13, r64.raw()))) return false;
 						zv::Val r65;
 						if (UNEXPECTED(!pgen::PhpVersions::m_supportsNoncapturingCatches(Z_OBJ_P(r64.raw()), r65.raw()))) return false;
 						bool r66;
@@ -519,7 +519,7 @@ namespace pgen::UnusedVariableRule {
 							zv::Val r102;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r101.raw()), &pg_lit[4], r102.raw()))) return false;
 							zv::Val r103;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_target.raw(), "getStartLine", "getstartline", 12, 0, NULL, r103.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_target.raw(), "getStartLine", "getstartline", 12, r103.raw()))) return false;
 							zv::Val r104;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r102.raw()), Z_LVAL_P(r103.raw()), r104.raw()))) return false;
 							zv::Val r105;
@@ -1168,7 +1168,7 @@ namespace pgen::UnusedVariableRule {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_51, l_write, "getNode", "getnode", 7, 0, NULL, vd264.raw()))) return false;
 					}
 					zv::Val r266;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_52, vd264.raw(), "getStartLine", "getstartline", 12, 0, NULL, r266.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_52, vd264.raw(), "getStartLine", "getstartline", 12, r266.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r266.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r266.raw()); return false; }
 					zv::Val r267;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r263.raw()), Z_LVAL_P(r266.raw()), r267.raw()))) return false;

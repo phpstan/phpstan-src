@@ -13,22 +13,22 @@ static pgrt::PropIndexSite pg_site_0; /* slot_namespace_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Error */
 static pt_method_site pg_site_2; /* method_handleError_2 */
 static pgrt::PropIndexSite pg_site_3; /* slot_namespace_3 */
-static pt_method_site pg_site_4; /* method_isSpecialClassName_4 */
-static pt_method_site pg_site_5; /* method_isUnqualified_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isSpecialClassName_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isUnqualified_5 */
 static pt_method_site pg_site_6; /* method_toString_6 */
 static pgrt::GetterSite pg_site_7; /* getter_getAttributes_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_9; /* method_getAttributes_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getAttributes_9 */
 static pt_method_site pg_site_10; /* method_handleError_10 */
-static pt_method_site pg_site_11; /* method_isFullyQualified_11 */
-static pt_method_site pg_site_12; /* method_isUnqualified_12 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_isFullyQualified_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_isUnqualified_12 */
 static pgrt::PropIndexSite pg_site_13; /* slot_namespace_13 */
 static pgrt::GetterSite pg_site_14; /* getter_getAttributes_14 */
-static pt_method_site pg_site_15; /* method_getAttributes_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getAttributes_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node\Name\FullyQualified */
 static pgrt::PropIndexSite pg_site_17; /* slot_namespace_17 */
 static pgrt::GetterSite pg_site_18; /* getter_getAttributes_18 */
-static pt_method_site pg_site_19; /* method_getAttributes_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getAttributes_19 */
 static pt_method_site pg_site_20; /* static_PhpParser\Node\Name\FullyQualified::concat */
 static pgrt::ClassSite pg_site_21; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_22; /* method_getResolvedName_22 */
@@ -39,15 +39,15 @@ static pgrt::FunctionSite pg_site_26; /* function_substr */
 static pt_method_site pg_site_27; /* method_toString_27 */
 static pt_method_site pg_site_28; /* method_toLowerString_28 */
 static pt_method_site pg_site_29; /* method_getPossibleNames_29 */
-static pt_method_site pg_site_30; /* method_toCodeString_30 */
-static pt_method_site pg_site_31; /* method_getFirst_31 */
-static pt_method_site pg_site_32; /* method_isQualified_32 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_toCodeString_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getFirst_31 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_isQualified_32 */
 static pt_method_site pg_site_33; /* method_slice_33 */
 static pgrt::GetterSite pg_site_34; /* getter_getAttributes_34 */
-static pt_method_site pg_site_35; /* method_getAttributes_35 */
-static pt_method_site pg_site_36; /* method_isUnqualified_36 */
+static pgrt::MethodShapeSite pg_site_35; /* method0_getAttributes_35 */
+static pgrt::MethodShapeSite pg_site_36; /* method0_isUnqualified_36 */
 static pgrt::GetterSite pg_site_37; /* getter_getAttributes_37 */
-static pt_method_site pg_site_38; /* method_getAttributes_38 */
+static pgrt::MethodShapeSite pg_site_38; /* method0_getAttributes_38 */
 static pgrt::PropIndexSite pg_site_39; /* slot_namespace_39 */
 static pgrt::PropIndexSite pg_site_40; /* slot_namespace_40 */
 static pgrt::FunctionSite pg_site_41; /* function_strrpos */
@@ -251,13 +251,13 @@ namespace pgen::NameContext {
 		bool b1 = (p_type == 1);
 		if (b1) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_name, "isSpecialClassName", "isspecialclassname", 18, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_name, "isSpecialClassName", "isspecialclassname", 18, r2.raw()))) return false;
 			b1 = (Z_TYPE_P(r2.raw()) == IS_TRUE);
 		}
 		if (b1) {
 			 {
 				zv::Val r3;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_name, "isUnqualified", "isunqualified", 13, 0, NULL, r3.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_name, "isUnqualified", "isunqualified", 13, r3.raw()))) return false;
 				if (!((Z_TYPE_P(r3.raw()) == IS_TRUE))) {
 					 {
 						zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NameContext::slot::errorHandler, "errorHandler");
@@ -276,7 +276,7 @@ namespace pgen::NameContext {
 							ZVAL_COPY(r11.raw(), gs10);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_name, "getAttributes", "getattributes", 13, 0, NULL, r11.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_name, "getAttributes", "getattributes", 13, r11.raw()))) return false;
 						}
 						}
 						zval av12[2];
@@ -301,7 +301,7 @@ namespace pgen::NameContext {
 	}
 	 {
 		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_name, "isFullyQualified", "isfullyqualified", 16, 0, NULL, r16.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_name, "isFullyQualified", "isfullyqualified", 16, r16.raw()))) return false;
 		if (Z_TYPE_P(r16.raw()) == IS_TRUE) {
 			 {
 				ZVAL_COPY(ret, p_name);
@@ -324,7 +324,7 @@ namespace pgen::NameContext {
 		bool b18 = !(p_type == 1);
 		if (b18) {
 			zv::Val r19;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_name, "isUnqualified", "isunqualified", 13, 0, NULL, r19.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_name, "isUnqualified", "isunqualified", 13, r19.raw()))) return false;
 			b18 = (Z_TYPE_P(r19.raw()) == IS_TRUE);
 		}
 		if (b18) {
@@ -339,7 +339,7 @@ namespace pgen::NameContext {
 							ZVAL_COPY(r23.raw(), gs22);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_name, "getAttributes", "getattributes", 13, 0, NULL, r23.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_name, "getAttributes", "getattributes", 13, r23.raw()))) return false;
 						}
 						}
 						zval av24[2];
@@ -372,7 +372,7 @@ namespace pgen::NameContext {
 			ZVAL_COPY(r30.raw(), gs29);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_name, "getAttributes", "getattributes", 13, 0, NULL, r30.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p_name, "getAttributes", "getattributes", 13, r30.raw()))) return false;
 		}
 		}
 		zval av31[3];
@@ -699,7 +699,7 @@ namespace pgen::NameContext {
 			 {
 				 {
 					zv::Val r15;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_possibleName, "toCodeString", "tocodestring", 12, 0, NULL, r15.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_possibleName, "toCodeString", "tocodestring", 12, r15.raw()))) return false;
 					zval av16[1];
 					ZVAL_COPY_VALUE(&av16[0], r15.raw());
 					zv::Val r17;
@@ -742,12 +742,12 @@ namespace pgen::NameContext {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_31, p_name, "getFirst", "getfirst", 8, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, p_name, "getFirst", "getfirst", 8, r1.raw()))) return false;
 		l_firstPart = std::move(r1);
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_32, p_name, "isQualified", "isqualified", 11, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, p_name, "isQualified", "isqualified", 11, r2.raw()))) return false;
 		if (Z_TYPE_P(r2.raw()) == IS_TRUE) {
 			 {
 				zv::Val r3 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(l_firstPart.raw())));
@@ -797,7 +797,7 @@ namespace pgen::NameContext {
 							ZVAL_COPY(r23.raw(), gs22);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_35, p_name, "getAttributes", "getattributes", 13, 0, NULL, r23.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_35, p_name, "getAttributes", "getattributes", 13, r23.raw()))) return false;
 						}
 						}
 						zval av24[3];
@@ -818,7 +818,7 @@ namespace pgen::NameContext {
 		 {
 			 {
 				zv::Val r27;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_36, p_name, "isUnqualified", "isunqualified", 13, 0, NULL, r27.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_36, p_name, "isUnqualified", "isunqualified", 13, r27.raw()))) return false;
 				if (Z_TYPE_P(r27.raw()) == IS_TRUE) {
 					 {
 						zv::Val q28;
@@ -867,7 +867,7 @@ namespace pgen::NameContext {
 									ZVAL_COPY(r47.raw(), gs46);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_38, p_name, "getAttributes", "getattributes", 13, 0, NULL, r47.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_38, p_name, "getAttributes", "getattributes", 13, r47.raw()))) return false;
 								}
 								}
 								zval av48[2];

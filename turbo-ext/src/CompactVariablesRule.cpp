@@ -17,13 +17,13 @@ static pgrt::FunctionSite pg_site_4; /* function_strtolower */
 static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
-static pt_method_site pg_site_8; /* method_getValue_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getValue_8 */
 static pt_method_site pg_site_9; /* method_hasVariableType_9 */
-static pt_method_site pg_site_10; /* method_getStartLine_10 */
-static pt_method_site pg_site_11; /* method_getStartLine_11 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getStartLine_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getStartLine_11 */
 static pt_method_site pg_site_12; /* method_getConstantStrings_12 */
-static pt_method_site pg_site_13; /* method_getConstantArrays_13 */
-static pt_method_site pg_site_14; /* method_getValueTypes_14 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getConstantArrays_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getValueTypes_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
@@ -169,7 +169,7 @@ namespace pgen::CompactVariablesRule {
 									if (UNEXPECTED(r30.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_constantString, "getValue", "getvalue", 8, 0, NULL, r30.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_constantString, "getValue", "getvalue", 8, r30.raw()))) return false;
 								}
 								}
 								l_variableName = std::move(r30);
@@ -196,7 +196,7 @@ namespace pgen::CompactVariablesRule {
 										zv::Val r37;
 										if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r36.raw()), &pg_lit[2], r37.raw()))) return false;
 										zv::Val r38;
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_argument, "getStartLine", "getstartline", 12, 0, NULL, r38.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_argument, "getStartLine", "getstartline", 12, r38.raw()))) return false;
 										if (UNEXPECTED(Z_TYPE_P(r38.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r38.raw()); return false; }
 										zv::Val r39;
 										if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r37.raw()), Z_LVAL_P(r38.raw()), r39.raw()))) return false;
@@ -231,7 +231,7 @@ namespace pgen::CompactVariablesRule {
 												zv::Val r49;
 												if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r48.raw()), &pg_lit[2], r49.raw()))) return false;
 												zv::Val r50;
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_argument, "getStartLine", "getstartline", 12, 0, NULL, r50.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_argument, "getStartLine", "getstartline", 12, r50.raw()))) return false;
 												if (UNEXPECTED(Z_TYPE_P(r50.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r50.raw()); return false; }
 												zv::Val r51;
 												if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r49.raw()), Z_LVAL_P(r50.raw()), r51.raw()))) return false;
@@ -309,7 +309,7 @@ namespace pgen::CompactVariablesRule {
 			if (UNEXPECTED(r6.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_type, "getConstantArrays", "getconstantarrays", 17, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_type, "getConstantArrays", "getconstantarrays", 17, r6.raw()))) return false;
 		}
 		}
 		zv::Val a7 = zv::Val::copyOf(zv::Ref(r6.raw()).deref());
@@ -328,7 +328,7 @@ namespace pgen::CompactVariablesRule {
 						if (UNEXPECTED(r14.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_constantArrayType, "getValueTypes", "getvaluetypes", 13, 0, NULL, r14.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_constantArrayType, "getValueTypes", "getvaluetypes", 13, r14.raw()))) return false;
 					}
 					}
 					pgrt::ForeachIter it15;

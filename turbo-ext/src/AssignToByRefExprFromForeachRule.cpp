@@ -12,7 +12,7 @@ static zval pg_lit[5];
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\VariableAssignNode */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Node\PropertyAssignNode */
 static pgrt::GetterSite pg_site_2; /* getter_getPropertyFetch_2 */
-static pt_method_site pg_site_3; /* method_getPropertyFetch_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getPropertyFetch_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Node\Expr\ForeachValueByRefExpr */
 static pt_method_site pg_site_5; /* method_hasExpressionType_5 */
 static pt_method_site pg_site_6; /* method_printExpr_6 */
@@ -88,7 +88,7 @@ namespace pgen::AssignToByRefExprFromForeachRule {
 							ZVAL_COPY(r3.raw(), gs2);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getPropertyFetch", "getpropertyfetch", 16, 0, NULL, r3.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getPropertyFetch", "getpropertyfetch", 16, r3.raw()))) return false;
 						}
 						}
 						l_expr = std::move(r3);

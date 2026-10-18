@@ -9,22 +9,22 @@ zend_class_entry *pt_ce_parameter_out_type_check = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[6];
 
-static pt_method_site pg_site_0; /* method_isVariadic_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_isVariadic_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_2; /* method_isSuperTypeOf_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\ErrorType */
 static pt_method_site pg_site_4; /* method_getType_4 */
-static pt_method_site pg_site_5; /* method_isArray_5 */
-static pt_method_site pg_site_6; /* method_getIterableValueType_6 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isArray_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getIterableValueType_6 */
 static pt_method_site pg_site_7; /* method_isSuperTypeOf_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\ExtendedMethodReflection */
 static pgrt::DispatchCache pg_site_9; /* dispatch_getDeclaringClass_9 */
 static pt_method_site pg_site_10; /* method_getDeclaringClass_10 */
 static pt_method_site pg_site_11; /* method_getDisplayName_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
-static pt_method_site pg_site_13; /* method_getName_13 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
 static pt_method_site pg_site_14; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
-static pt_method_site pg_site_15; /* method_getName_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
 static pt_method_site pg_site_16; /* method_describe_16 */
 static pt_method_site pg_site_17; /* method_describe_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Analyser\Scope */
@@ -96,7 +96,7 @@ namespace pgen::ParameterOutTypeCheck {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_parameter, "isVariadic", "isvariadic", 10, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_parameter, "isVariadic", "isvariadic", 10, r1.raw()))) return false;
 		}
 		}
 		l_isVariadic = (Z_TYPE_P(r1.raw()) == IS_TRUE);
@@ -151,7 +151,7 @@ namespace pgen::ParameterOutTypeCheck {
 					if (UNEXPECTED(r12.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_assignedExprType.raw(), "isArray", "isarray", 7, 0, NULL, r12.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_assignedExprType.raw(), "isArray", "isarray", 7, r12.raw()))) return false;
 				}
 				}
 				bool r13;
@@ -172,7 +172,7 @@ namespace pgen::ParameterOutTypeCheck {
 					if (UNEXPECTED(r15.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_assignedExprType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r15.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_assignedExprType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r15.raw()))) return false;
 				}
 				}
 				l_assignedExprType = std::move(r15);
@@ -267,7 +267,7 @@ namespace pgen::ParameterOutTypeCheck {
 					if (UNEXPECTED(r27.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_inFunction, "getName", "getname", 7, 0, NULL, r27.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_inFunction, "getName", "getname", 7, r27.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb28;
@@ -288,7 +288,7 @@ namespace pgen::ParameterOutTypeCheck {
 					if (UNEXPECTED(r30.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_inFunction, "getName", "getname", 7, 0, NULL, r30.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_inFunction, "getName", "getname", 7, r30.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb31;
@@ -316,7 +316,7 @@ namespace pgen::ParameterOutTypeCheck {
 			if (UNEXPECTED(r35.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_parameter, "getName", "getname", 7, 0, NULL, r35.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_parameter, "getName", "getname", 7, r35.raw()))) return false;
 		}
 		}
 		zv::Val q36;

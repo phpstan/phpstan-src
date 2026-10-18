@@ -10,49 +10,49 @@ zend_class_entry *pt_ce_function_callable_node_handler = nullptr;
 static zval pg_lit[1];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\FunctionCallableNode */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Expr */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_shouldResolveTemplateArguments_4 */
 static pt_method_site pg_site_5; /* method_processExprNode_5 */
 static pt_method_site pg_site_6; /* method_getScope_6 */
 static pt_method_site pg_site_7; /* method_observingTemplateArgumentFrame_7 */
-static pt_method_site pg_site_8; /* method_getType_8 */
-static pt_method_site pg_site_9; /* method_getType_9 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getType_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getType_9 */
 static pt_method_site pg_site_10; /* method_addTemplateArgumentConstraints_10 */
 static pt_method_site pg_site_11; /* method_hasYield_11 */
 static pt_method_site pg_site_12; /* method_getThrowPoints_12 */
 static pt_method_site pg_site_13; /* method_getImpurePoints_13 */
 static pt_method_site pg_site_14; /* method_isAlwaysTerminating_14 */
 static pt_method_site pg_site_15; /* method_getVariableFlow_15 */
-static pt_method_site pg_site_16; /* method_doNotTreatPhpDocTypesAsCertain_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_doNotTreatPhpDocTypesAsCertain_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\TypeSpecifierContext */
 static pt_method_site pg_site_18; /* method_specifyDefaultTypes_18 */
 static pt_method_site pg_site_19; /* method_getDependencies_19 */
 static pt_method_site pg_site_20; /* method_withDependencies_20 */
-static pt_method_site pg_site_21; /* method_getType_21 */
-static pt_method_site pg_site_22; /* method_isCallable_22 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getType_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_isCallable_22 */
 static pt_method_site pg_site_23; /* method_getCallableParametersAcceptors_23 */
 static pt_method_site pg_site_24; /* method_getReturnType_24 */
-static pt_method_site pg_site_25; /* method_getName_25 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getName_25 */
 static pgrt::ClassSite pg_site_26; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_27; /* method_hasFunction_27 */
 static pt_method_site pg_site_28; /* method_getFunction_28 */
 static pt_method_site pg_site_29; /* method_getVariants_29 */
 static pt_method_site pg_site_30; /* method_getAsserts_30 */
-static pt_method_site pg_site_31; /* method_getType_31 */
-static pt_method_site pg_site_32; /* method_isCallable_32 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getType_31 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_isCallable_32 */
 static pt_method_site pg_site_33; /* method_getCallableParametersAcceptors_33 */
 static pt_method_site pg_site_34; /* method_getReturnType_34 */
 static pt_method_site pg_site_35; /* method_getParameters_35 */
 static pt_method_site pg_site_36; /* method_getFile_36 */
 static pgrt::GetterSite pg_site_37; /* getter_getOriginalNode_37 */
-static pt_method_site pg_site_38; /* method_getOriginalNode_38 */
+static pgrt::MethodShapeSite pg_site_38; /* method0_getOriginalNode_38 */
 static pgrt::PropSite pg_site_39; /* prop_name_39 */
 static pgrt::ClassSite pg_site_40; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::PropSite pg_site_41; /* prop_nativeTypesPromoted_41 */
 static pt_method_site pg_site_42; /* method_getTypeOnScope_42 */
-static pt_method_site pg_site_43; /* method_isCallable_43 */
+static pgrt::MethodShapeSite pg_site_43; /* method0_isCallable_43 */
 static pt_method_site pg_site_44; /* method_getCallableParametersAcceptors_44 */
 static pgrt::PropSite pg_site_45; /* prop_nativeTypesPromoted_45 */
 static pt_method_site pg_site_46; /* method_createFirstClassCallable_46 */
@@ -84,7 +84,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q1;
 		if (p_nativeTypesPromoted) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, zv::Ref(&captures[0]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, zv::Ref(&captures[0]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r2.raw()))) return;
 			q1 = std::move(r2);
 		} else {
 		 {
@@ -220,7 +220,7 @@ namespace pgen::FunctionCallableNodeHandler {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_expr, "getName", "getname", 7, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_expr, "getName", "getname", 7, r7.raw()))) return false;
 		}
 		}
 		if (pgrt::instanceOfClass(r7.raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr", 19))) {
@@ -231,7 +231,7 @@ namespace pgen::FunctionCallableNodeHandler {
 					if (UNEXPECTED(r8.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_expr, "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_expr, "getName", "getname", 7, r8.raw()))) return false;
 				}
 				}
 				zv::Val o9 = zv::Val::copyOf(zv::Ref(l_scope.raw()));
@@ -306,7 +306,7 @@ namespace pgen::FunctionCallableNodeHandler {
 						if (UNEXPECTED(r23.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_nameResult.raw(), "getType", "gettype", 7, 0, NULL, r23.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_nameResult.raw(), "getType", "gettype", 7, r23.raw()))) return false;
 					}
 					}
 					bool r24;
@@ -322,7 +322,7 @@ namespace pgen::FunctionCallableNodeHandler {
 							if (UNEXPECTED(r26.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_nameResult.raw(), "getType", "gettype", 7, 0, NULL, r26.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_nameResult.raw(), "getType", "gettype", 7, r26.raw()))) return false;
 						}
 						}
 						zv::Val r27;
@@ -521,7 +521,7 @@ namespace pgen::FunctionCallableNodeHandler {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, p_result, "getType", "gettype", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, p_result, "getType", "gettype", 7, r3.raw()))) return false;
 		}
 		}
 		l_callableType = std::move(r3);
@@ -533,7 +533,7 @@ namespace pgen::FunctionCallableNodeHandler {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_callableType.raw(), "isCallable", "iscallable", 10, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_callableType.raw(), "isCallable", "iscallable", 10, r4.raw()))) return false;
 		}
 		}
 		bool r5;
@@ -601,7 +601,7 @@ namespace pgen::FunctionCallableNodeHandler {
 			if (UNEXPECTED(r22.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_25, p_expr, "getName", "getname", 7, 0, NULL, r22.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, p_expr, "getName", "getname", 7, r22.raw()))) return false;
 		}
 		}
 		l_name = std::move(r22);
@@ -731,7 +731,7 @@ namespace pgen::FunctionCallableNodeHandler {
 							if (UNEXPECTED(r49.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_31, p_nameResult, "getType", "gettype", 7, 0, NULL, r49.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, p_nameResult, "getType", "gettype", 7, r49.raw()))) return false;
 						}
 						}
 						l_nameType = std::move(r49);
@@ -743,7 +743,7 @@ namespace pgen::FunctionCallableNodeHandler {
 							if (UNEXPECTED(r50.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_nameType.raw(), "isCallable", "iscallable", 10, 0, NULL, r50.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, l_nameType.raw(), "isCallable", "iscallable", 10, r50.raw()))) return false;
 						}
 						}
 						bool r51;
@@ -861,7 +861,7 @@ namespace pgen::FunctionCallableNodeHandler {
 			ZVAL_COPY(r2.raw(), gs1);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_38, p_expr, "getOriginalNode", "getoriginalnode", 15, 0, NULL, r2.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_38, p_expr, "getOriginalNode", "getoriginalnode", 15, r2.raw()))) return false;
 		}
 		}
 		l_originalNode = std::move(r2);
@@ -926,7 +926,7 @@ namespace pgen::FunctionCallableNodeHandler {
 					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_callableType.raw(), "isCallable", "iscallable", 10, 0, NULL, r13.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_43, l_callableType.raw(), "isCallable", "iscallable", 10, r13.raw()))) return false;
 				}
 				}
 				bool r14;

@@ -9,16 +9,16 @@ zend_class_entry *pt_ce_min_max_function_throw_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getThrowType_2 */
-static pt_method_site pg_site_3; /* method_getPhpVersion_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getPhpVersion_3 */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getNativeType_5 */
 static pgrt::PropSite pg_site_6; /* prop_unpack_6 */
-static pt_method_site pg_site_7; /* method_getIterableValueType_7 */
-static pt_method_site pg_site_8; /* method_isArray_8 */
-static pt_method_site pg_site_9; /* method_isIterableAtLeastOnce_9 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getIterableValueType_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isArray_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isIterableAtLeastOnce_9 */
 static pgrt::PropSite pg_site_10; /* prop_unpack_10 */
 static pgrt::PropSite pg_site_11; /* prop_name_11 */
 static pt_method_site pg_site_12; /* method_getThrowType_12 */
@@ -26,8 +26,8 @@ static pgrt::PropSite pg_site_13; /* prop_value_13 */
 static pt_method_site pg_site_14; /* method_getNativeType_14 */
 static pt_method_site pg_site_15; /* method_getVariants_15 */
 static pt_method_site pg_site_16; /* method_getParameters_16 */
-static pt_method_site pg_site_17; /* method_getType_17 */
-static pt_method_site pg_site_18; /* method_isArray_18 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getType_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_isArray_18 */
 static pt_method_site pg_site_19; /* method_yes_19 */
 static pt_method_site pg_site_20; /* method_getThrowType_20 */
 static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Reflection\FunctionReflection */
@@ -49,7 +49,7 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -104,7 +104,7 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_scope, "getPhpVersion", "getphpversion", 13, r5.raw()))) return false;
 		zv::Val r6;
 		if (UNEXPECTED(!pgen::PhpVersions::m_throwsValueErrorForInternalFunctions(Z_OBJ_P(r5.raw()), r6.raw()))) return false;
 		bool r7;
@@ -169,7 +169,7 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 					if (UNEXPECTED(r22.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_firstArgType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r22.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_firstArgType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r22.raw()))) return false;
 				}
 				}
 				l_firstArgType = std::move(r22);
@@ -183,7 +183,7 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 			if (UNEXPECTED(r24.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_firstArgType.raw(), "isArray", "isarray", 7, 0, NULL, r24.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_firstArgType.raw(), "isArray", "isarray", 7, r24.raw()))) return false;
 		}
 		}
 		bool r25;
@@ -196,7 +196,7 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 				if (UNEXPECTED(r26.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_firstArgType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r26.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_firstArgType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r26.raw()))) return false;
 			}
 			}
 			bool r27;
@@ -372,7 +372,7 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 				if (UNEXPECTED(r71.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_17, zv::Ref(e68).deref().raw(), "getType", "gettype", 7, 0, NULL, r71.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, zv::Ref(e68).deref().raw(), "getType", "gettype", 7, r71.raw()))) return false;
 			}
 			}
 			zv::Val r72;
@@ -381,7 +381,7 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 				if (UNEXPECTED(r72.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_18, r71.raw(), "isArray", "isarray", 7, 0, NULL, r72.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, r71.raw(), "isArray", "isarray", 7, r72.raw()))) return false;
 			}
 			}
 			zv::Val vd73;

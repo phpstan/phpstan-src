@@ -11,14 +11,14 @@ static zval pg_lit[1];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Type\CompoundType */
 static pt_method_site pg_site_1; /* method_isSubTypeOf_1 */
-static pt_method_site pg_site_2; /* method_getObjectClassNames_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getObjectClassNames_2 */
 static pt_method_site pg_site_3; /* bound_PHPStan\Type\StringType::isSuperTypeOf */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Reflection\ReflectionProviderStaticAccessor */
 static pt_method_site pg_site_5; /* static_PHPStan\Reflection\ReflectionProviderStaticAccessor::getInstance */
 static pt_method_site pg_site_6; /* method_hasClass_6 */
 static pt_method_site pg_site_7; /* method_getClass_7 */
 static pt_method_site pg_site_8; /* method_hasNativeMethod_8 */
-static pt_method_site pg_site_9; /* method_getObjectClassNames_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getObjectClassNames_9 */
 static pt_method_site pg_site_10; /* bound_PHPStan\Type\StringType::accepts */
 static pt_method_site pg_site_11; /* method_hasClass_11 */
 static pt_method_site pg_site_12; /* method_getClass_12 */
@@ -64,7 +64,7 @@ namespace pgen::StringAlwaysAcceptingObjectWithToStringType {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_type, "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_type, "getObjectClassNames", "getobjectclassnames", 19, r3.raw()))) return false;
 		}
 		}
 		l_thatClassNames = std::move(r3);
@@ -221,7 +221,7 @@ namespace pgen::StringAlwaysAcceptingObjectWithToStringType {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_type, "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_type, "getObjectClassNames", "getobjectclassnames", 19, r1.raw()))) return false;
 		}
 		}
 		l_thatClassNames = std::move(r1);

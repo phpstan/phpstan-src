@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_too_wide_function_parameter_out_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
-static pt_method_site pg_site_1; /* method_getStartLine_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getFunctionReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getStartLine_1 */
 static pt_method_site pg_site_2; /* method_getExecutionEnds_2 */
 static pt_method_site pg_site_3; /* method_getReturnStatements_3 */
 static pt_method_site pg_site_4; /* method_getParameters_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\TooWideTypehints\TooWideParameterOutTypeCheck */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
@@ -54,7 +54,7 @@ namespace pgen::TooWideFunctionParameterOutTypeRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, r1.raw()))) return false;
 		l_inFunction = std::move(r1);
 	}
 	 {
@@ -62,7 +62,7 @@ namespace pgen::TooWideFunctionParameterOutTypeRule {
 		if (UNEXPECTED(p2 == NULL)) return false;
 		zv::Val o3 = zv::Val::copyOf(zv::Ref(p2));
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getStartLine", "getstartline", 12, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getStartLine", "getstartline", 12, r4.raw()))) return false;
 		zend_long k5 = Z_LVAL_P(r4.raw());
 		zv::Val vd6;
 		zend_class_entry *vd6_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
@@ -106,7 +106,7 @@ namespace pgen::TooWideFunctionParameterOutTypeRule {
 			if (UNEXPECTED(r12.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_inFunction.raw(), "getName", "getname", 7, 0, NULL, r12.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_inFunction.raw(), "getName", "getname", 7, r12.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb13;

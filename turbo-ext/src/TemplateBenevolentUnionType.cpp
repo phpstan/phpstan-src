@@ -7,17 +7,17 @@
 zend_class_entry *pt_ce_template_benevolent_union_type = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_getTypes_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getTypes_0 */
 static pt_method_site pg_site_1; /* bound_PHPStan\Type\BenevolentUnionType::__construct */
 static pgrt::PropIndexSite pg_site_2; /* slot_default_2 */
 static pgrt::PropIndexSite pg_site_3; /* slot_default_3 */
 static pt_method_site pg_site_4; /* bound_PHPStan\Type\BenevolentUnionType::filterTypes */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Generic\TemplateType */
-static pt_method_site pg_site_6; /* method_getScope_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
-static pt_method_site pg_site_8; /* method_getVariance_8 */
-static pt_method_site pg_site_9; /* method_getStrategy_9 */
-static pt_method_site pg_site_10; /* method_getDefault_10 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getScope_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getVariance_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getStrategy_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getDefault_10 */
 static pt_method_site pg_site_11; /* static_PHPStan\Type\Generic\TemplateTypeFactory::create */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Type\Generic\TemplateTypeStrategy */
@@ -40,7 +40,7 @@ namespace pgen::TemplateBenevolentUnionType {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_bound, "getTypes", "gettypes", 8, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_bound, "getTypes", "gettypes", 8, r1.raw()))) return false;
 		}
 		}
 		zval av2[1];
@@ -131,23 +131,23 @@ namespace pgen::TemplateBenevolentUnionType {
 		if (!(pgrt::instanceOfClass(l_result.raw(), pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Generic\\TemplateType", 33)))) {
 			 {
 				zv::Val r3;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, &this_zv, "getScope", "getscope", 8, 0, NULL, r3.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, &this_zv, "getScope", "getscope", 8, r3.raw()))) return false;
 				zv::Val r4;
 				if (EXPECTED(Z_TYPE_P(&this_zv) == IS_OBJECT)) {
 					r4 = pt_type_op(Z_OBJ_P(&this_zv), PT_OP_GET_NAME, 0, NULL);
 					if (UNEXPECTED(r4.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, &this_zv, "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, &this_zv, "getName", "getname", 7, r4.raw()))) return false;
 				}
 				}
 				zv::Val o5 = zv::Val::copyOf(zv::Ref(l_result.raw()));
 				zv::Val r6;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, &this_zv, "getVariance", "getvariance", 11, 0, NULL, r6.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, &this_zv, "getVariance", "getvariance", 11, r6.raw()))) return false;
 				zv::Val r7;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, &this_zv, "getStrategy", "getstrategy", 11, 0, NULL, r7.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, &this_zv, "getStrategy", "getstrategy", 11, r7.raw()))) return false;
 				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_10, &this_zv, "getDefault", "getdefault", 10, 0, NULL, r8.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, &this_zv, "getDefault", "getdefault", 10, r8.raw()))) return false;
 				zval av9[6];
 				ZVAL_COPY_VALUE(&av9[0], r3.raw());
 				ZVAL_COPY_VALUE(&av9[1], r4.raw());

@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_simple_xmlelement_class_property_reflection_extension = 
 static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_is_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Reflection\Php\SimpleXMLElementProperty */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\ClassReflection */
 
@@ -53,7 +53,7 @@ namespace pgen::SimpleXMLElementClassPropertyReflectionExtension {
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_classReflection, "getName", "getname", 7, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_classReflection, "getName", "getname", 7, r5.raw()))) return false;
 		}
 		}
 		zv::Val n4;

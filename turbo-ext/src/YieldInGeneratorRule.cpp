@@ -17,9 +17,9 @@ static pt_method_site pg_site_4; /* method_getReturnType_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\MixedType */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\NeverType */
 static pgrt::GetterSite pg_site_7; /* getter_isExplicit_7 */
-static pt_method_site pg_site_8; /* method_isExplicit_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isExplicit_8 */
 static pt_method_site pg_site_9; /* method_isIterable_9 */
-static pt_method_site pg_site_10; /* method_isArray_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isArray_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
 
@@ -188,7 +188,7 @@ namespace pgen::YieldInGeneratorRule {
 				ZVAL_COPY(r18.raw(), gs17);
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_returnType.raw(), "isExplicit", "isexplicit", 10, 0, NULL, r18.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_returnType.raw(), "isExplicit", "isexplicit", 10, r18.raw()))) return false;
 			}
 			}
 			b16 = (Z_TYPE_P(r18.raw()) == IS_TRUE);
@@ -220,7 +220,7 @@ namespace pgen::YieldInGeneratorRule {
 					if (UNEXPECTED(r22.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_returnType.raw(), "isArray", "isarray", 7, 0, NULL, r22.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_returnType.raw(), "isArray", "isarray", 7, r22.raw()))) return false;
 				}
 				}
 				bool r23;

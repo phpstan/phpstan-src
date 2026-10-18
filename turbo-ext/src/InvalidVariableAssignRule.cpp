@@ -13,7 +13,7 @@ static pt_method_site pg_site_0; /* method_getVariable_0 */
 static pgrt::PropSite pg_site_1; /* prop_name_1 */
 static pgrt::PropSite pg_site_2; /* prop_name_2 */
 static pt_method_site pg_site_3; /* method_isInClass_3 */
-static pt_method_site pg_site_4; /* method_getClassReflection_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassReflection_4 */
 static pt_method_site pg_site_5; /* method_implementsInterface_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Analyser\Scope */
@@ -104,7 +104,7 @@ namespace pgen::InvalidVariableAssignRule {
 							if (UNEXPECTED(r13.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r13.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, r13.raw()))) return false;
 						}
 						}
 						l_classReflection = std::move(r13);

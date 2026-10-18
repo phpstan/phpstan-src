@@ -13,12 +13,12 @@ static pgrt::FunctionSite pg_site_0; /* function_array_key_exists */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\ConditionalTypeForParameter */
 static pgrt::GetterSite pg_site_3; /* getter_getParameterName_3 */
-static pt_method_site pg_site_4; /* method_getParameterName_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getParameterName_4 */
 static pgrt::FunctionSite pg_site_5; /* function_substr */
 static pt_method_site pg_site_6; /* method_changeParameterName_6 */
 static pgrt::GetterSite pg_site_7; /* getter_getParameterName_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\PhpDoc\Tag\AssertTagParameter */
-static pt_method_site pg_site_9; /* method_getParameterName_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getParameterName_9 */
 static pt_method_site pg_site_10; /* method_changeParameterName_10 */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -47,7 +47,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 					ZVAL_COPY(r2.raw(), gs1);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_type.raw(), "getParameterName", "getparametername", 16, 0, NULL, r2.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_type.raw(), "getParameterName", "getparametername", 16, r2.raw()))) return;
 				}
 				}
 				zval av3[2];
@@ -214,7 +214,7 @@ namespace pgen::InheritedPhpDocParameterMapping {
 			ZVAL_COPY(r2.raw(), gs1);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_parameter.raw(), "getParameterName", "getparametername", 16, 0, NULL, r2.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_parameter.raw(), "getParameterName", "getparametername", 16, r2.raw()))) return false;
 		}
 		}
 		zval av3[2];

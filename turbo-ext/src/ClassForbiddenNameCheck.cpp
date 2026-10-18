@@ -11,7 +11,7 @@ static zval pg_lit[3];
 
 static pt_method_site pg_site_0; /* method_getAll_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Classes\ForbiddenClassNameExtension */
-static pt_method_site pg_site_2; /* method_getClassPrefixes_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getClassPrefixes_2 */
 static pgrt::FunctionSite pg_site_3; /* function_array_map */
 static pt_method_site pg_site_4; /* method_getClassName_4 */
 static pgrt::FunctionSite pg_site_5; /* function_str_starts_with */
@@ -19,7 +19,7 @@ static pgrt::FunctionSite pg_site_6; /* function_strlen */
 static pgrt::FunctionSite pg_site_7; /* function_substr */
 static pgrt::FunctionSite pg_site_8; /* function_strpos */
 static pt_method_site pg_site_9; /* method_getNode_9 */
-static pt_method_site pg_site_10; /* method_getStartLine_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getStartLine_10 */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -33,7 +33,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	(void) p_extension;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_extension, "getClassPrefixes", "getclassprefixes", 16, 0, NULL, r1.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_extension, "getClassPrefixes", "getclassprefixes", 16, r1.raw()))) return;
 		*return_value = r1.take();
 		return;
 	}
@@ -259,7 +259,7 @@ namespace pgen::ClassForbiddenNameCheck {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_pair, "getNode", "getnode", 7, 0, NULL, vd48.raw()))) return false;
 					}
 					zv::Val r50;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, vd48.raw(), "getStartLine", "getstartline", 12, 0, NULL, r50.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, vd48.raw(), "getStartLine", "getstartline", 12, r50.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r50.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r50.raw()); return false; }
 					zv::Val r51;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r47.raw()), Z_LVAL_P(r50.raw()), r51.raw()))) return false;

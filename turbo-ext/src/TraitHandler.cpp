@@ -21,8 +21,8 @@ static pt_method_site pg_site_8; /* method_hasClass_8 */
 static pgrt::PropSite pg_site_9; /* prop_namespacedName_9 */
 static pt_method_site pg_site_10; /* method_toString_10 */
 static pt_method_site pg_site_11; /* method_getClass_11 */
-static pt_method_site pg_site_12; /* method_getRequireImplementsTags_12 */
-static pt_method_site pg_site_13; /* method_getType_13 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getRequireImplementsTags_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getType_13 */
 static pt_method_site pg_site_14; /* method_getFile_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node\Stmt */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\NodeScopeResolver */
@@ -208,7 +208,7 @@ namespace pgen::TraitHandler {
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, o35.raw(), "getClass", "getclass", 8, 1, av42, vd39.raw()))) return false;
 				}
 				zv::Val r43;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, vd39.raw(), "getRequireImplementsTags", "getrequireimplementstags", 24, 0, NULL, r43.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, vd39.raw(), "getRequireImplementsTags", "getrequireimplementstags", 24, r43.raw()))) return false;
 				zv::Val a44 = zv::Val::copyOf(zv::Ref(r43.raw()).deref());
 				HashTable *ht33 = Z_ARRVAL_P(a44.raw());
 				zval *v45;
@@ -225,7 +225,7 @@ namespace pgen::TraitHandler {
 								if (UNEXPECTED(r50.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_implementsTag, "getType", "gettype", 7, 0, NULL, r50.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_implementsTag, "getType", "gettype", 7, r50.raw()))) return false;
 							}
 							}
 							zv::Val o51 = zv::Val::copyOf(zv::Ref(r50.raw()));

@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_open_ssl_encrypt_parameter_out_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
 static pt_method_site pg_site_5; /* method_getConstantStrings_5 */
-static pt_method_site pg_site_6; /* method_getValue_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getValue_6 */
 static pgrt::FunctionSite pg_site_7; /* function_strtolower */
 static pgrt::FunctionSite pg_site_8; /* function_substr */
 static pt_method_site pg_site_9; /* method_isSupportedCipherMethod_9 */
@@ -52,7 +52,7 @@ namespace pgen::OpenSslEncryptParameterOutTypeExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		bool b1 = zend_is_identical(r2.raw(), &pg_lit[0]);
@@ -63,7 +63,7 @@ namespace pgen::OpenSslEncryptParameterOutTypeExtension {
 				if (UNEXPECTED(r3.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_parameter, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_parameter, "getName", "getname", 7, r3.raw()))) return false;
 			}
 			}
 			b1 = zend_is_identical(r3.raw(), &pg_lit[1]);
@@ -170,7 +170,7 @@ namespace pgen::OpenSslEncryptParameterOutTypeExtension {
 						if (UNEXPECTED(r25.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_cipherType, "getValue", "getvalue", 8, 0, NULL, r25.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_cipherType, "getValue", "getvalue", 8, r25.raw()))) return false;
 					}
 					}
 					zval av26[1];

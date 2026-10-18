@@ -11,9 +11,9 @@ static zval pg_lit[8];
 
 static pt_method_site pg_site_0; /* method_getExprResult_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_2; /* method_isNull_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isNull_2 */
 static pt_method_site pg_site_3; /* method_toBoolean_3 */
-static pt_method_site pg_site_4; /* method_isFalse_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isFalse_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\ExpressionResult */
 static pt_method_site pg_site_6; /* method_getExpr_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Expr */
@@ -45,7 +45,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_type, "isNull", "isnull", 6, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_type, "isNull", "isnull", 6, r1.raw()))) return;
 		}
 		}
 		l_isNull = std::move(r1);
@@ -76,7 +76,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_type, "toBoolean", "toboolean", 9, 0, NULL, vd4.raw()))) return;
 		}
 		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd4.raw(), "isFalse", "isfalse", 7, 0, NULL, r6.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, vd4.raw(), "isFalse", "isfalse", 7, r6.raw()))) return;
 		l_isFalsey = std::move(r6);
 	}
 	 {

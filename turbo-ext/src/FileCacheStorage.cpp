@@ -15,7 +15,7 @@ static pgrt::FunctionSite pg_site_2; /* function_unserialize */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Cache\CacheItem */
 static pt_method_site pg_site_4; /* method_isVariableKeyValid_4 */
 static pgrt::GetterSite pg_site_5; /* getter_getData_5 */
-static pt_method_site pg_site_6; /* method_getData_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getData_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Internal\DirectoryCreator */
 static pt_method_site pg_site_8; /* static_PHPStan\Internal\DirectoryCreator::ensureDirectoryExists */
 static pgrt::ClassSite pg_site_9; /* cls_Nette\Utils\Random */
@@ -33,7 +33,7 @@ static pgrt::ClassSite pg_site_20; /* cls_PHPStan\File\CouldNotReadFileException
 static pgrt::ClassSite pg_site_21; /* cls_RecursiveDirectoryIterator */
 static pt_method_site pg_site_22; /* method_setFlags_22 */
 static pgrt::ClassSite pg_site_23; /* cls_RecursiveIteratorIterator */
-static pt_method_site pg_site_24; /* method_getPathname_24 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getPathname_24 */
 static pgrt::FunctionSite pg_site_25; /* function_str_ends_with */
 static pgrt::FunctionSite pg_site_26; /* function_dirname */
 static pgrt::FunctionSite pg_site_27; /* function_strlen */
@@ -182,7 +182,7 @@ namespace pgen::FileCacheStorage {
 			ZVAL_COPY(r19.raw(), gs18);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_cacheItem.raw(), "getData", "getdata", 7, 0, NULL, r19.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_cacheItem.raw(), "getData", "getdata", 7, r19.raw()))) return false;
 		}
 		}
 		*ret = r19.take();
@@ -592,7 +592,7 @@ namespace pgen::FileCacheStorage {
 			 {
 				 {
 					zv::Val r27;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_file, "getPathname", "getpathname", 11, 0, NULL, r27.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_file, "getPathname", "getpathname", 11, r27.raw()))) return false;
 					l_path = std::move(r27);
 				}
 				 {

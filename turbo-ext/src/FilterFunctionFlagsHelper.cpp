@@ -9,17 +9,17 @@ zend_class_entry *pt_ce_filter_function_flags_helper = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pt_method_site pg_site_3; /* method_getVariants_3 */
 static pt_method_site pg_site_4; /* method_getNamedArgumentsVariants_4 */
 static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
-static pt_method_site pg_site_8; /* method_isArray_8 */
-static pt_method_site pg_site_9; /* method_getConstantArrays_9 */
-static pt_method_site pg_site_10; /* method_getValueTypes_10 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isArray_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getConstantArrays_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValueTypes_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\Scope */
@@ -69,7 +69,7 @@ namespace pgen::FilterFunctionFlagsHelper {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		zval *cc2 = pgrt::classConstant(pt_ce_filter_function_flags_helper, &pg_lit[0], pt_ce_filter_function_flags_helper);
@@ -102,7 +102,7 @@ namespace pgen::FilterFunctionFlagsHelper {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		l_functionName = std::move(r1);
@@ -257,7 +257,7 @@ namespace pgen::FilterFunctionFlagsHelper {
 			if (UNEXPECTED(r36.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_optionsType.raw(), "isArray", "isarray", 7, 0, NULL, r36.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_optionsType.raw(), "isArray", "isarray", 7, r36.raw()))) return false;
 		}
 		}
 		bool r37;
@@ -278,7 +278,7 @@ namespace pgen::FilterFunctionFlagsHelper {
 			if (UNEXPECTED(r39.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_optionsType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r39.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_optionsType.raw(), "getConstantArrays", "getconstantarrays", 17, r39.raw()))) return false;
 		}
 		}
 		l_constantArrays = std::move(r39);
@@ -319,7 +319,7 @@ namespace pgen::FilterFunctionFlagsHelper {
 						if (UNEXPECTED(r53.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_constantArray, "getValueTypes", "getvaluetypes", 13, 0, NULL, r53.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_constantArray, "getValueTypes", "getvaluetypes", 13, r53.raw()))) return false;
 					}
 					}
 					pgrt::ForeachIter it54;

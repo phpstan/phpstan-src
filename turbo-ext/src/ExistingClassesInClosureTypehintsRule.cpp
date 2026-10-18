@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_existing_classes_in_closure_typehints_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[7];
 
-static pt_method_site pg_site_0; /* method_getParams_0 */
-static pt_method_site pg_site_1; /* method_getReturnType_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getParams_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getReturnType_1 */
 static pt_method_site pg_site_2; /* method_getAttrGroups_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\FunctionDefinitionCheck */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
@@ -53,9 +53,9 @@ namespace pgen::ExistingClassesInClosureTypehintsRule {
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getParams", "getparams", 9, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getParams", "getparams", 9, r3.raw()))) return false;
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getReturnType", "getreturntype", 13, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getReturnType", "getreturntype", 13, r4.raw()))) return false;
 		zv::Val vd5;
 		zend_class_entry *vd5_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
 		bool vd5_done = false;

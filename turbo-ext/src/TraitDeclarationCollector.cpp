@@ -12,7 +12,7 @@ static zval pg_lit[1];
 static pgrt::PropSite pg_site_0; /* prop_namespacedName_0 */
 static pgrt::PropSite pg_site_1; /* prop_namespacedName_1 */
 static pt_method_site pg_site_2; /* method_toString_2 */
-static pt_method_site pg_site_3; /* method_getStartLine_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getStartLine_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
 
@@ -64,7 +64,7 @@ namespace pgen::TraitDeclarationCollector {
 		if (UNEXPECTED(!pgrt::nameToString(pg_site_2, zv::Ref(p5).deref().raw(), r7.raw()))) return false;
 		{ zval v = r7.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr4.raw()), &v); }
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getStartLine", "getstartline", 12, 0, NULL, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getStartLine", "getstartline", 12, r8.raw()))) return false;
 		zv::Val o9 = zv::Val::integer(Z_LVAL_P(r8.raw()));
 		{ zval v = o9.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr4.raw()), &v); }
 		*ret = arr4.take();

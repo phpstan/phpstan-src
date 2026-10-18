@@ -10,10 +10,10 @@ zend_class_entry *pt_ce_simple_xmlelement_constructor_throw_type_extension = nul
 static zval pg_lit[3];
 
 static pgrt::FunctionSite pg_site_0; /* function_extension_loaded */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::DispatchCache pg_site_2; /* dispatch_getDeclaringClass_2 */
 static pt_method_site pg_site_3; /* method_getDeclaringClass_3 */
-static pt_method_site pg_site_4; /* method_getName_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
 static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::DispatchCache pg_site_6; /* dispatch_getThrowType_6 */
 static pt_method_site pg_site_7; /* method_getThrowType_7 */
@@ -22,7 +22,7 @@ static pgrt::PropSite pg_site_9; /* prop_value_9 */
 static pt_method_site pg_site_10; /* method_getType_10 */
 static pt_method_site pg_site_11; /* method_getConstantStrings_11 */
 static pgrt::FunctionSite pg_site_12; /* function_libxml_use_internal_errors */
-static pt_method_site pg_site_13; /* method_getValue_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getValue_13 */
 static pgrt::ClassSite pg_site_14; /* cls_SimpleXMLElement */
 static pgrt::DispatchCache pg_site_15; /* dispatch_getThrowType_15 */
 static pt_method_site pg_site_16; /* method_getThrowType_16 */
@@ -54,7 +54,7 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 				if (UNEXPECTED(r5.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_methodReflection, "getName", "getname", 7, 0, NULL, r5.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_methodReflection, "getName", "getname", 7, r5.raw()))) return false;
 			}
 			}
 			b2 = zend_is_identical(r5.raw(), &pg_lit[1]);
@@ -114,7 +114,7 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 				if (UNEXPECTED(r12.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd6.raw(), "getName", "getname", 7, 0, NULL, r12.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, vd6.raw(), "getName", "getname", 7, r12.raw()))) return false;
 			}
 			}
 			b1 = zend_is_identical(r12.raw(), &pg_lit[2]);
@@ -269,7 +269,7 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 										if (UNEXPECTED(r36.isUndef())) goto catch_c34;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_constantString, "getValue", "getvalue", 8, 0, NULL, r36.raw(), NULL))) goto catch_c34;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_constantString, "getValue", "getvalue", 8, r36.raw()))) goto catch_c34;
 									}
 									}
 									zval av37[1];

@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_sealed_definition_class_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[6];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_getSealedTags_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getSealedTags_1 */
 static pgrt::FunctionSite pg_site_2; /* function_count */
 static pt_method_site pg_site_3; /* method_isEnum_3 */
-static pt_method_site pg_site_4; /* method_getType_4 */
-static pt_method_site pg_site_5; /* method_getObjectClassNames_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getType_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getObjectClassNames_5 */
 static pt_method_site pg_site_6; /* method_describe_6 */
 static pt_method_site pg_site_7; /* method_hasClass_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\ReflectionProvider */
@@ -78,14 +78,14 @@ namespace pgen::SealedDefinitionClassRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_classReflection.raw(), "getSealedTags", "getsealedtags", 13, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_classReflection.raw(), "getSealedTags", "getsealedtags", 13, r2.raw()))) return false;
 		l_sealedTags = std::move(r2);
 	}
 	 {
@@ -147,7 +147,7 @@ namespace pgen::SealedDefinitionClassRule {
 						if (UNEXPECTED(r18.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_sealedTag, "getType", "gettype", 7, 0, NULL, r18.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_sealedTag, "getType", "gettype", 7, r18.raw()))) return false;
 					}
 					}
 					l_type = std::move(r18);
@@ -159,7 +159,7 @@ namespace pgen::SealedDefinitionClassRule {
 						if (UNEXPECTED(r19.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_type.raw(), "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r19.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_type.raw(), "getObjectClassNames", "getobjectclassnames", 19, r19.raw()))) return false;
 					}
 					}
 					l_classNames = std::move(r19);

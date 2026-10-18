@@ -13,11 +13,11 @@ static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\CallableType */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\ClosureType */
 static pt_method_site pg_site_3; /* method_describe_3 */
-static pt_method_site pg_site_4; /* method_getTemplateTags_4 */
-static pt_method_site pg_site_5; /* method_getTemplateTags_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getTemplateTags_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getTemplateTags_5 */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
 static pgrt::FunctionSite pg_site_7; /* function_array_keys */
-static pt_method_site pg_site_8; /* method_getTemplateTags_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getTemplateTags_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Reflection\ClassReflection */
@@ -86,7 +86,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val r10;
 		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithAnonymousFunction(r10.raw()))) return;
 		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_type, "getTemplateTags", "gettemplatetags", 15, 0, NULL, r11.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_type, "getTemplateTags", "gettemplatetags", 15, r11.raw()))) return;
 		pgrt::StringBuilder sb12;
 		sb12.appendLiteral("PHPDoc tag ", 11);
 		if (UNEXPECTED(!sb12.append(zv::Ref(&captures[3]).deref().raw()))) return;
@@ -168,7 +168,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	}
 	 {
 		zv::Val r27;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_type, "getTemplateTags", "gettemplatetags", 15, 0, NULL, r27.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_type, "getTemplateTags", "gettemplatetags", 15, r27.raw()))) return;
 		l_templateTags = std::move(r27);
 	}
 	 {
@@ -278,7 +278,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (!(Z_TYPE_P(zv::Ref(&captures[6]).deref().raw()) == IS_NULL)) {
 			 {
 				zv::Val r59;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, zv::Ref(&captures[6]).deref().raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r59.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, zv::Ref(&captures[6]).deref().raw(), "getTemplateTags", "gettemplatetags", 15, r59.raw()))) return;
 				zval av60[1];
 				ZVAL_COPY_VALUE(&av60[0], r59.raw());
 				zv::Val r61;

@@ -8,9 +8,9 @@ zend_class_entry *pt_ce_static_method_callable_node_handler = nullptr;
 
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\StaticMethodCallableNode */
-static pt_method_site pg_site_1; /* method_getClass_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getClass_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Expr */
-static pt_method_site pg_site_3; /* method_getClass_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getClass_3 */
 static pt_method_site pg_site_4; /* method_shouldResolveTemplateArguments_4 */
 static pt_method_site pg_site_5; /* method_processExprNode_5 */
 static pt_method_site pg_site_6; /* method_getScope_6 */
@@ -18,8 +18,8 @@ static pt_method_site pg_site_7; /* method_hasYield_7 */
 static pt_method_site pg_site_8; /* method_getThrowPoints_8 */
 static pt_method_site pg_site_9; /* method_getImpurePoints_9 */
 static pt_method_site pg_site_10; /* method_isAlwaysTerminating_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
 static pt_method_site pg_site_13; /* method_shouldResolveTemplateArguments_13 */
 static pt_method_site pg_site_14; /* method_processExprNode_14 */
 static pt_method_site pg_site_15; /* method_getScope_15 */
@@ -29,20 +29,20 @@ static pt_method_site pg_site_18; /* method_getImpurePoints_18 */
 static pt_method_site pg_site_19; /* method_isAlwaysTerminating_19 */
 static pt_method_site pg_site_20; /* method_getVariableFlow_20 */
 static pt_method_site pg_site_21; /* method_getVariableFlow_21 */
-static pt_method_site pg_site_22; /* method_getOriginalNode_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getOriginalNode_22 */
 static pt_method_site pg_site_23; /* method_getFirstClassCallableType_23 */
 static pgrt::ClassSite pg_site_24; /* cls_PHPStan\Analyser\TypeSpecifierContext */
 static pt_method_site pg_site_25; /* method_specifyDefaultTypes_25 */
 static pt_method_site pg_site_26; /* method_getDependencies_26 */
 static pt_method_site pg_site_27; /* method_getDependencies_27 */
 static pt_method_site pg_site_28; /* method_withDependencies_28 */
-static pt_method_site pg_site_29; /* method_getType_29 */
-static pt_method_site pg_site_30; /* method_isCallable_30 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_getType_29 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_isCallable_30 */
 static pt_method_site pg_site_31; /* method_getCallableParametersAcceptors_31 */
 static pt_method_site pg_site_32; /* method_getReturnType_32 */
-static pt_method_site pg_site_33; /* method_getName_33 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getName_33 */
 static pgrt::GetterSite pg_site_34; /* getter_getClass_34 */
-static pt_method_site pg_site_35; /* method_getClass_35 */
+static pgrt::MethodShapeSite pg_site_35; /* method0_getClass_35 */
 static pgrt::ClassSite pg_site_36; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_37; /* method_resolveName_37 */
 static pgrt::ClassSite pg_site_38; /* cls_PhpParser\Node\Identifier */
@@ -52,12 +52,12 @@ static pt_method_site pg_site_41; /* method_toString_41 */
 static pt_method_site pg_site_42; /* method_hasMethod_42 */
 static pt_method_site pg_site_43; /* method_toString_43 */
 static pt_method_site pg_site_44; /* method_getMethod_44 */
-static pt_method_site pg_site_45; /* method_getType_45 */
+static pgrt::MethodShapeSite pg_site_45; /* method0_getType_45 */
 static pt_method_site pg_site_46; /* method_toString_46 */
 static pt_method_site pg_site_47; /* method_getMethodReflection_47 */
 static pgrt::DispatchCache pg_site_48; /* dispatch_getDeclaringClass_48 */
 static pt_method_site pg_site_49; /* method_getDeclaringClass_49 */
-static pt_method_site pg_site_50; /* method_getName_50 */
+static pgrt::MethodShapeSite pg_site_50; /* method0_getName_50 */
 static pt_method_site pg_site_51; /* method_getFile_51 */
 static pgrt::ClassSite pg_site_52; /* cls_PHPStan\Analyser\NodeScopeResolver */
 static pgrt::ClassSite pg_site_53; /* cls_PhpParser\Node\Stmt */
@@ -84,7 +84,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(p1 == NULL)) return;
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_22, zv::Ref(&captures[0]).deref().raw(), "getOriginalNode", "getoriginalnode", 15, 0, NULL, r3.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, zv::Ref(&captures[0]).deref().raw(), "getOriginalNode", "getoriginalnode", 15, r3.raw()))) return;
 		zv::Val r4;
 		 {
 			r4 = pt_initializer_expr_context_from_scope(zv::Ref(&captures[1]).deref().raw());
@@ -232,11 +232,11 @@ namespace pgen::StaticMethodCallableNodeHandler {
 	}
 	 {
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_expr, "getClass", "getclass", 8, 0, NULL, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_expr, "getClass", "getclass", 8, r8.raw()))) return false;
 		if (pgrt::instanceOfClass(r8.raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr", 19))) {
 			 {
 				zv::Val r9;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_expr, "getClass", "getclass", 8, 0, NULL, r9.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_expr, "getClass", "getclass", 8, r9.raw()))) return false;
 				zv::Val o10 = zv::Val::copyOf(zv::Ref(l_scope.raw()));
 				bool bo11 = false;
 				if (EXPECTED(Z_TYPE_P(p_context) == IS_OBJECT)) {
@@ -354,7 +354,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 			if (UNEXPECTED(r31.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_expr, "getName", "getname", 7, 0, NULL, r31.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_expr, "getName", "getname", 7, r31.raw()))) return false;
 		}
 		}
 		if (pgrt::instanceOfClass(r31.raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr", 19))) {
@@ -365,7 +365,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 					if (UNEXPECTED(r32.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_expr, "getName", "getname", 7, 0, NULL, r32.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_expr, "getName", "getname", 7, r32.raw()))) return false;
 				}
 				}
 				zv::Val o33 = zv::Val::copyOf(zv::Ref(l_scope.raw()));
@@ -663,7 +663,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_29, p_result, "getType", "gettype", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, p_result, "getType", "gettype", 7, r3.raw()))) return false;
 		}
 		}
 		l_callableType = std::move(r3);
@@ -675,7 +675,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_callableType.raw(), "isCallable", "iscallable", 10, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_callableType.raw(), "isCallable", "iscallable", 10, r4.raw()))) return false;
 		}
 		}
 		bool r5;
@@ -743,7 +743,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 			if (UNEXPECTED(r22.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_expr, "getName", "getname", 7, 0, NULL, r22.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, p_expr, "getName", "getname", 7, r22.raw()))) return false;
 		}
 		}
 		l_name = std::move(r22);
@@ -755,7 +755,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 			ZVAL_COPY(r24.raw(), gs23);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_35, p_expr, "getClass", "getclass", 8, 0, NULL, r24.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_35, p_expr, "getClass", "getclass", 8, r24.raw()))) return false;
 		}
 		}
 		l_class = std::move(r24);
@@ -894,7 +894,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 							if (UNEXPECTED(r54.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_45, p_classResult, "getType", "gettype", 7, 0, NULL, r54.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_45, p_classResult, "getType", "gettype", 7, r54.raw()))) return false;
 						}
 						}
 						l_classType = std::move(r54);
@@ -990,7 +990,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 					if (UNEXPECTED(r68.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_50, vd62.raw(), "getName", "getname", 7, 0, NULL, r68.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_50, vd62.raw(), "getName", "getname", 7, r68.raw()))) return false;
 				}
 				}
 				zv::Val o69 = zv::Val::copyOf(zv::Ref(r68.raw()));

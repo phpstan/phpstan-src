@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_class_template_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_isClass_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_isClass_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pt_method_site pg_site_3; /* method_isAnonymous_3 */
 static pt_method_site pg_site_4; /* method_getDisplayName_4 */
-static pt_method_site pg_site_5; /* method_getTemplateTags_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getTemplateTags_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\Generics\TemplateTypeCheck */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
@@ -61,14 +61,14 @@ namespace pgen::ClassTemplateTypeRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_classReflection.raw(), "isClass", "isclass", 7, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_classReflection.raw(), "isClass", "isclass", 7, r2.raw()))) return false;
 		if (!(zend_is_true(r2.raw()))) {
 			 {
 				zval arr3_raw;
@@ -85,7 +85,7 @@ namespace pgen::ClassTemplateTypeRule {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_classReflection.raw(), "getName", "getname", 7, r4.raw()))) return false;
 		}
 		}
 		l_className = std::move(r4);
@@ -136,7 +136,7 @@ namespace pgen::ClassTemplateTypeRule {
 		zv::Val r13;
 		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithClass(l_className.raw(), r13.raw()))) return false;
 		zv::Val r14;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r14.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, r14.raw()))) return false;
 		pgrt::StringBuilder sb15;
 		sb15.appendLiteral("PHPDoc tag @template for ", 25);
 		if (UNEXPECTED(!sb15.append(l_displayName.raw()))) return false;

@@ -12,31 +12,31 @@ static zval pg_lit[9];
 
 static pgrt::GetterSite pg_site_0; /* getter_getAssign_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Node\Property\PropertyAssign */
-static pt_method_site pg_site_2; /* method_getAssign_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getAssign_2 */
 static pgrt::GetterSite pg_site_3; /* getter_getPropertyFetch_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Node\PropertyAssignNode */
-static pt_method_site pg_site_5; /* method_getPropertyFetch_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getPropertyFetch_5 */
 static pgrt::GetterSite pg_site_6; /* getter_getScope_6 */
-static pt_method_site pg_site_7; /* method_getScope_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getScope_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
-static pt_method_site pg_site_9; /* method_getName_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
 static pt_method_site pg_site_11; /* method_getDeclaringClass_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
 static pt_method_site pg_site_13; /* method_getScope_13 */
 static pgrt::GetterSite pg_site_14; /* getter_getAssignedExpr_14 */
-static pt_method_site pg_site_15; /* method_getAssignedExpr_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getAssignedExpr_15 */
 static pt_method_site pg_site_16; /* method_getType_16 */
 static pt_method_site pg_site_17; /* method_getType_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Type\MixedType */
 static pgrt::GetterSite pg_site_19; /* getter_isExplicitMixed_19 */
-static pt_method_site pg_site_20; /* method_isExplicitMixed_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_isExplicitMixed_20 */
 static pt_method_site pg_site_21; /* static_PHPStan\Type\TypeUtils::resolveLateResolvableTypes */
 static pt_method_site pg_site_22; /* method_equals_22 */
 static pt_method_site pg_site_23; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
 static pt_method_site pg_site_24; /* method_describe_24 */
 static pgrt::FunctionSite pg_site_25; /* function_sprintf */
-static pt_method_site pg_site_26; /* method_getStartLine_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getStartLine_26 */
 static pgrt::ClassSite pg_site_27; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_28; /* method_equals_28 */
 static pgrt::ClassSite pg_site_29; /* cls_PHPStan\Type\SimultaneousTypeTraverser */
@@ -45,24 +45,24 @@ static pt_method_site pg_site_31; /* method_equals_31 */
 static pt_method_site pg_site_32; /* method_describe_32 */
 static pgrt::FunctionSite pg_site_33; /* function_lcfirst */
 static pt_method_site pg_site_34; /* method_describe_34 */
-static pt_method_site pg_site_35; /* method_getStartLine_35 */
+static pgrt::MethodShapeSite pg_site_35; /* method0_getStartLine_35 */
 static pt_method_site pg_site_36; /* method_accepts_36 */
 static pt_method_site pg_site_37; /* method_equals_37 */
 static pt_method_site pg_site_38; /* method_describe_38 */
-static pt_method_site pg_site_39; /* method_getStartLine_39 */
-static pt_method_site pg_site_40; /* method_getStatementResult_40 */
+static pgrt::MethodShapeSite pg_site_39; /* method0_getStartLine_39 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_getStatementResult_40 */
 static pgrt::GetterSite pg_site_41; /* getter_hasYield_41 */
 static pgrt::ClassSite pg_site_42; /* cls_PHPStan\Analyser\StatementResult */
-static pt_method_site pg_site_43; /* method_hasYield_43 */
-static pt_method_site pg_site_44; /* method_getReturnStatements_44 */
+static pgrt::MethodShapeSite pg_site_43; /* method0_hasYield_43 */
+static pgrt::MethodShapeSite pg_site_44; /* method0_getReturnStatements_44 */
 static pt_method_site pg_site_45; /* method_getReturnNode_45 */
 static pgrt::PropSite pg_site_46; /* prop_expr_46 */
 static pt_method_site pg_site_47; /* method_getScope_47 */
 static pgrt::PropSite pg_site_48; /* prop_expr_48 */
 static pt_method_site pg_site_49; /* method_getType_49 */
 static pt_method_site pg_site_50; /* method_isAlwaysTerminating_50 */
-static pt_method_site pg_site_51; /* method_hasNativeReturnTypehint_51 */
-static pt_method_site pg_site_52; /* method_getExecutionEnds_52 */
+static pgrt::MethodShapeSite pg_site_51; /* method0_hasNativeReturnTypehint_51 */
+static pgrt::MethodShapeSite pg_site_52; /* method0_getExecutionEnds_52 */
 static pt_method_site pg_site_53; /* method_getStatementResult_53 */
 static pt_method_site pg_site_54; /* method_isAlwaysTerminating_54 */
 static pt_method_site pg_site_55; /* method_getReturnNode_55 */
@@ -72,54 +72,54 @@ static pt_method_site pg_site_58; /* method_getReturnNode_58 */
 static pgrt::PropSite pg_site_59; /* prop_expr_59 */
 static pgrt::PropSite pg_site_60; /* prop_name_60 */
 static pt_method_site pg_site_61; /* method_toString_61 */
-static pt_method_site pg_site_62; /* method_isBoolean_62 */
-static pt_method_site pg_site_63; /* method_isBoolean_63 */
-static pt_method_site pg_site_64; /* method_isNull_64 */
+static pgrt::MethodShapeSite pg_site_62; /* method0_isBoolean_62 */
+static pgrt::MethodShapeSite pg_site_63; /* method0_isBoolean_63 */
+static pgrt::MethodShapeSite pg_site_64; /* method0_isNull_64 */
 static pt_method_site pg_site_65; /* method_isTrue_65 */
 static pt_method_site pg_site_66; /* method_isFalse_66 */
 static pgrt::GetterSite pg_site_67; /* getter_isExplicitMixed_67 */
-static pt_method_site pg_site_68; /* method_isExplicitMixed_68 */
+static pgrt::MethodShapeSite pg_site_68; /* method0_isExplicitMixed_68 */
 static pt_method_site pg_site_69; /* method_equals_69 */
-static pt_method_site pg_site_70; /* method_getStartLine_70 */
+static pgrt::MethodShapeSite pg_site_70; /* method0_getStartLine_70 */
 static pt_method_site pg_site_71; /* method_equals_71 */
 static pt_method_site pg_site_72; /* method_equals_72 */
 static pt_method_site pg_site_73; /* method_describe_73 */
 static pt_method_site pg_site_74; /* method_describe_74 */
-static pt_method_site pg_site_75; /* method_getStartLine_75 */
+static pgrt::MethodShapeSite pg_site_75; /* method0_getStartLine_75 */
 static pt_method_site pg_site_76; /* method_accepts_76 */
 static pt_method_site pg_site_77; /* method_equals_77 */
-static pt_method_site pg_site_78; /* method_getStartLine_78 */
+static pgrt::MethodShapeSite pg_site_78; /* method0_getStartLine_78 */
 static pt_method_site pg_site_79; /* method_equals_79 */
 static pt_method_site pg_site_80; /* method_equals_80 */
 static pt_method_site pg_site_81; /* method_equals_81 */
 static pt_method_site pg_site_82; /* method_describe_82 */
 static pt_method_site pg_site_83; /* method_describe_83 */
 static pt_method_site pg_site_84; /* method_accepts_84 */
-static pt_method_site pg_site_85; /* method_isBoolean_85 */
+static pgrt::MethodShapeSite pg_site_85; /* method0_isBoolean_85 */
 static pt_method_site pg_site_86; /* method_isTrue_86 */
 static pt_method_site pg_site_87; /* method_describe_87 */
 static pt_method_site pg_site_88; /* method_describe_88 */
 static pgrt::ClassSite pg_site_89; /* cls_PHPStan\Type\UnionType */
-static pt_method_site pg_site_90; /* method_getTypes_90 */
+static pgrt::MethodShapeSite pg_site_90; /* method0_getTypes_90 */
 static pt_method_site pg_site_91; /* method_isSuperTypeOf_91 */
 static pt_method_site pg_site_92; /* method_describe_92 */
-static pt_method_site pg_site_93; /* method_isNull_93 */
-static pt_method_site pg_site_94; /* method_getTypes_94 */
+static pgrt::MethodShapeSite pg_site_93; /* method0_isNull_93 */
+static pgrt::MethodShapeSite pg_site_94; /* method0_getTypes_94 */
 static pt_method_site pg_site_95; /* method_isSuperTypeOf_95 */
 static pt_method_site pg_site_96; /* method_no_96 */
 static pt_method_site pg_site_97; /* method_describe_97 */
-static pt_method_site pg_site_98; /* method_isConstantScalarValue_98 */
-static pt_method_site pg_site_99; /* method_isConstantScalarValue_99 */
-static pt_method_site pg_site_100; /* method_getTypes_100 */
+static pgrt::MethodShapeSite pg_site_98; /* method0_isConstantScalarValue_98 */
+static pgrt::MethodShapeSite pg_site_99; /* method0_isConstantScalarValue_99 */
+static pgrt::MethodShapeSite pg_site_100; /* method0_getTypes_100 */
 static pt_method_site pg_site_101; /* method_isSuperTypeOf_101 */
 static pt_method_site pg_site_102; /* method_no_102 */
-static pt_method_site pg_site_103; /* method_isNull_103 */
+static pgrt::MethodShapeSite pg_site_103; /* method0_isNull_103 */
 static pt_method_site pg_site_104; /* method_yes_104 */
 static pt_method_site pg_site_105; /* method_isTrue_105 */
 static pt_method_site pg_site_106; /* method_isFalse_106 */
-static pt_method_site pg_site_107; /* method_isNull_107 */
-static pt_method_site pg_site_108; /* method_getPhpVersion_108 */
-static pt_method_site pg_site_109; /* method_isBoolean_109 */
+static pgrt::MethodShapeSite pg_site_107; /* method0_isNull_107 */
+static pgrt::MethodShapeSite pg_site_108; /* method0_getPhpVersion_108 */
+static pgrt::MethodShapeSite pg_site_109; /* method0_isBoolean_109 */
 static pt_method_site pg_site_110; /* method_isTrue_110 */
 static pt_method_site pg_site_111; /* method_isFalse_111 */
 static pt_method_site pg_site_112; /* method_getFiniteTypes_112 */
@@ -127,7 +127,7 @@ static pt_method_site pg_site_113; /* method_isSuperTypeOf_113 */
 static pt_method_site pg_site_114; /* method_no_114 */
 static pt_method_site pg_site_115; /* method_isTrue_115 */
 static pt_method_site pg_site_116; /* method_isFalse_116 */
-static pt_method_site pg_site_117; /* method_isNull_117 */
+static pgrt::MethodShapeSite pg_site_117; /* method0_isNull_117 */
 static pgrt::ClassSite pg_site_118; /* cls_PHPStan\Node\ClassPropertyNode */
 static pgrt::ClassSite pg_site_119; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_120; /* cls_PHPStan\Node\MethodReturnStatementsNode */
@@ -379,7 +379,7 @@ namespace pgen::TooWideTypeCheck {
 						ZVAL_COPY(r13.raw(), gs12);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_assign, "getAssign", "getassign", 9, 0, NULL, r13.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_assign, "getAssign", "getassign", 9, r13.raw()))) return false;
 					}
 					}
 					l_assignNode = std::move(r13);
@@ -394,7 +394,7 @@ namespace pgen::TooWideTypeCheck {
 						ZVAL_COPY(r17.raw(), gs16);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_assignNode.raw(), "getPropertyFetch", "getpropertyfetch", 16, 0, NULL, r17.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_assignNode.raw(), "getPropertyFetch", "getpropertyfetch", 16, r17.raw()))) return false;
 					}
 					}
 					zval *gs18 = Z_TYPE_P(l_assign) == IS_OBJECT ? pgrt::trivialGetter(pg_site_6, Z_OBJ_P(l_assign), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Node\\Property\\PropertyAssign", 36), "getscope", 8, "scope", 5) : NULL;
@@ -403,7 +403,7 @@ namespace pgen::TooWideTypeCheck {
 						ZVAL_COPY(r19.raw(), gs18);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_assign, "getScope", "getscope", 8, 0, NULL, r19.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_assign, "getScope", "getscope", 8, r19.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(pgrt::instanceOfClass(r19.raw(), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Analyser\\Scope", 22))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Properties\\PropertyReflectionFinder::findPropertyReflectionsFromNode", 2, "scope", "PHPStan\\Analyser\\Scope", r19.raw()); return false; }
@@ -440,7 +440,7 @@ namespace pgen::TooWideTypeCheck {
 									if (UNEXPECTED(r30.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_assignPropertyReflection, "getName", "getname", 7, 0, NULL, r30.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_assignPropertyReflection, "getName", "getname", 7, r30.raw()))) return false;
 								}
 								}
 								if (!zend_is_identical(r29.raw(), r30.raw())) {
@@ -454,7 +454,7 @@ namespace pgen::TooWideTypeCheck {
 									if (UNEXPECTED(r31.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_declaringClass, "getName", "getname", 7, 0, NULL, r31.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_declaringClass, "getName", "getname", 7, r31.raw()))) return false;
 								}
 								}
 								zv::Val vd32;
@@ -475,7 +475,7 @@ namespace pgen::TooWideTypeCheck {
 									if (UNEXPECTED(r34.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_12, vd32.raw(), "getName", "getname", 7, 0, NULL, r34.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, vd32.raw(), "getName", "getname", 7, r34.raw()))) return false;
 								}
 								}
 								if (!zend_is_identical(r31.raw(), r34.raw())) {
@@ -501,7 +501,7 @@ namespace pgen::TooWideTypeCheck {
 									ZVAL_COPY(r38.raw(), gs37);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_assignNode.raw(), "getAssignedExpr", "getassignedexpr", 15, 0, NULL, r38.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_assignNode.raw(), "getAssignedExpr", "getassignedexpr", 15, r38.raw()))) return false;
 								}
 								}
 								zv::Val r39;
@@ -620,7 +620,7 @@ namespace pgen::TooWideTypeCheck {
 				ZVAL_COPY(r65.raw(), gs64);
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_phpDocPropertyType.raw(), "isExplicitMixed", "isexplicitmixed", 15, 0, NULL, r65.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_phpDocPropertyType.raw(), "isExplicitMixed", "isexplicitmixed", 15, r65.raw()))) return false;
 			}
 			}
 			b63 = (Z_TYPE_P(r65.raw()) == IS_TRUE);
@@ -691,7 +691,7 @@ namespace pgen::TooWideTypeCheck {
 						zv::Val r82;
 						if (UNEXPECTED(!pgrt::callFunction(pg_site_25, "sprintf", 7, pt_ce_too_wide_type_check, 3, av81, r82.raw(), NULL))) return false;
 						zv::Val r83;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_26, p_node, "getStartLine", "getstartline", 12, 0, NULL, r83.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, p_node, "getStartLine", "getstartline", 12, r83.raw()))) return false;
 						zval z84;
 						ZVAL_NULL(&z84);
 						zv::Val r85;
@@ -803,7 +803,7 @@ namespace pgen::TooWideTypeCheck {
 				zv::Val r114;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r113.raw()), &pg_lit[3], r114.raw()))) return false;
 				zv::Val r115;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_35, p_node, "getStartLine", "getstartline", 12, 0, NULL, r115.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_35, p_node, "getStartLine", "getstartline", 12, r115.raw()))) return false;
 				zv::Val r116;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r114.raw()), Z_LVAL_P(r115.raw()), r116.raw()))) return false;
 				zval av117[2];
@@ -883,7 +883,7 @@ namespace pgen::TooWideTypeCheck {
 				zv::Val r134;
 				if (UNEXPECTED(!pgrt::callFunction(pg_site_25, "sprintf", 7, pt_ce_too_wide_type_check, 3, av133, r134.raw(), NULL))) return false;
 				zv::Val r135;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_39, p_node, "getStartLine", "getstartline", 12, 0, NULL, r135.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_39, p_node, "getStartLine", "getstartline", 12, r135.raw()))) return false;
 				zval z136;
 				ZVAL_NULL(&z136);
 				zv::Val r137;
@@ -919,7 +919,7 @@ namespace pgen::TooWideTypeCheck {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_40, p_node, "getStatementResult", "getstatementresult", 18, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, p_node, "getStatementResult", "getstatementresult", 18, r1.raw()))) return false;
 		l_statementResult = std::move(r1);
 	}
 	 {
@@ -929,7 +929,7 @@ namespace pgen::TooWideTypeCheck {
 			ZVAL_COPY(r3.raw(), gs2);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_statementResult.raw(), "hasYield", "hasyield", 8, 0, NULL, r3.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_43, l_statementResult.raw(), "hasYield", "hasyield", 8, r3.raw()))) return false;
 		}
 		}
 		if (Z_TYPE_P(r3.raw()) == IS_TRUE) {
@@ -943,7 +943,7 @@ namespace pgen::TooWideTypeCheck {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_44, p_node, "getReturnStatements", "getreturnstatements", 19, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_44, p_node, "getReturnStatements", "getreturnstatements", 19, r5.raw()))) return false;
 		l_returnStatements = std::move(r5);
 	}
 	 {
@@ -1058,11 +1058,11 @@ namespace pgen::TooWideTypeCheck {
 	}
 	 {
 		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_51, p_node, "hasNativeReturnTypehint", "hasnativereturntypehint", 23, 0, NULL, r29.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_51, p_node, "hasNativeReturnTypehint", "hasnativereturntypehint", 23, r29.raw()))) return false;
 		if (!((Z_TYPE_P(r29.raw()) == IS_TRUE))) {
 			 {
 				zv::Val r31;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_52, p_node, "getExecutionEnds", "getexecutionends", 16, 0, NULL, r31.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_52, p_node, "getExecutionEnds", "getexecutionends", 16, r31.raw()))) return false;
 				zv::Val a32 = zv::Val::copyOf(zv::Ref(r31.raw()).deref());
 				HashTable *ht30 = Z_ARRVAL_P(a32.raw());
 				zval *v33;
@@ -1203,7 +1203,7 @@ namespace pgen::TooWideTypeCheck {
 				if (UNEXPECTED(r68.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_62, p_nativeFunctionReturnType, "isBoolean", "isboolean", 9, 0, NULL, r68.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_62, p_nativeFunctionReturnType, "isBoolean", "isboolean", 9, r68.raw()))) return false;
 			}
 			}
 			bool r69;
@@ -1216,7 +1216,7 @@ namespace pgen::TooWideTypeCheck {
 					if (UNEXPECTED(r70.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_63, l_phpDocFunctionReturnType.raw(), "isBoolean", "isboolean", 9, 0, NULL, r70.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_63, l_phpDocFunctionReturnType.raw(), "isBoolean", "isboolean", 9, r70.raw()))) return false;
 				}
 				}
 				bool r71;
@@ -1263,7 +1263,7 @@ namespace pgen::TooWideTypeCheck {
 				if (UNEXPECTED(r80.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_64, l_returnType.raw(), "isNull", "isnull", 6, 0, NULL, r80.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_64, l_returnType.raw(), "isNull", "isnull", 6, r80.raw()))) return false;
 			}
 			}
 			bool r81;
@@ -1336,7 +1336,7 @@ namespace pgen::TooWideTypeCheck {
 				ZVAL_COPY(r93.raw(), gs92);
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_68, l_phpDocFunctionReturnType.raw(), "isExplicitMixed", "isexplicitmixed", 15, 0, NULL, r93.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_68, l_phpDocFunctionReturnType.raw(), "isExplicitMixed", "isexplicitmixed", 15, r93.raw()))) return false;
 			}
 			}
 			b91 = (Z_TYPE_P(r93.raw()) == IS_TRUE);
@@ -1378,7 +1378,7 @@ namespace pgen::TooWideTypeCheck {
 						zv::Val o102 = zv::Val::copyOf(zv::Ref(l_unionMessagePattern.raw()));
 						zv::Val o103 = zv::Val::copyOf(zv::Ref(l_boolMessagePattern.raw()));
 						zv::Val r104;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_70, p_node, "getStartLine", "getstartline", 12, 0, NULL, r104.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_70, p_node, "getStartLine", "getstartline", 12, r104.raw()))) return false;
 						zval z105;
 						ZVAL_NULL(&z105);
 						zv::Val r106;
@@ -1493,7 +1493,7 @@ namespace pgen::TooWideTypeCheck {
 				zv::Val r136;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r135.raw()), &pg_lit[7], r136.raw()))) return false;
 				zv::Val r137;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_75, p_node, "getStartLine", "getstartline", 12, 0, NULL, r137.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_75, p_node, "getStartLine", "getstartline", 12, r137.raw()))) return false;
 				zv::Val r138;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r136.raw()), Z_LVAL_P(r137.raw()), r138.raw()))) return false;
 				zval av139[2];
@@ -1545,7 +1545,7 @@ namespace pgen::TooWideTypeCheck {
 				zv::Val o149 = zv::Val::copyOf(zv::Ref(l_unionMessagePattern.raw()));
 				zv::Val o150 = zv::Val::copyOf(zv::Ref(l_boolMessagePattern.raw()));
 				zv::Val r151;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_78, p_node, "getStartLine", "getstartline", 12, 0, NULL, r151.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_78, p_node, "getStartLine", "getstartline", 12, r151.raw()))) return false;
 				zval z152;
 				ZVAL_NULL(&z152);
 				zv::Val r153;
@@ -1746,7 +1746,7 @@ namespace pgen::TooWideTypeCheck {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_85, p_originalType, "isBoolean", "isboolean", 9, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_85, p_originalType, "isBoolean", "isboolean", 9, r1.raw()))) return false;
 		}
 		}
 		bool r2;
@@ -1878,7 +1878,7 @@ namespace pgen::TooWideTypeCheck {
 			if (UNEXPECTED(r33.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_90, p_originalType, "getTypes", "gettypes", 8, 0, NULL, r33.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_90, p_originalType, "getTypes", "gettypes", 8, r33.raw()))) return false;
 		}
 		}
 		zv::Val a34 = zv::Val::copyOf(zv::Ref(r33.raw()).deref());
@@ -1985,7 +1985,7 @@ namespace pgen::TooWideTypeCheck {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_93, p_returnType, "isNull", "isnull", 6, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_93, p_returnType, "isNull", "isnull", 6, r1.raw()))) return false;
 		}
 		}
 		bool r2;
@@ -2012,7 +2012,7 @@ namespace pgen::TooWideTypeCheck {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_94, p_functionReturnType, "getTypes", "gettypes", 8, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_94, p_functionReturnType, "getTypes", "gettypes", 8, r7.raw()))) return false;
 		}
 		}
 		zv::Val a8 = zv::Val::copyOf(zv::Ref(r7.raw()).deref());
@@ -2115,7 +2115,7 @@ namespace pgen::TooWideTypeCheck {
 					if (UNEXPECTED(r2.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_98, p_declaredType, "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r2.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_98, p_declaredType, "isConstantScalarValue", "isconstantscalarvalue", 21, r2.raw()))) return false;
 				}
 				}
 				bool r3;
@@ -2128,7 +2128,7 @@ namespace pgen::TooWideTypeCheck {
 						if (UNEXPECTED(r4.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_99, p_actualReturnType, "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r4.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_99, p_actualReturnType, "isConstantScalarValue", "isconstantscalarvalue", 21, r4.raw()))) return false;
 					}
 					}
 					bool r5;
@@ -2152,7 +2152,7 @@ namespace pgen::TooWideTypeCheck {
 					if (UNEXPECTED(r7.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_100, p_declaredType, "getTypes", "gettypes", 8, 0, NULL, r7.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_100, p_declaredType, "getTypes", "gettypes", 8, r7.raw()))) return false;
 				}
 				}
 				zv::Val a8 = zv::Val::copyOf(zv::Ref(r7.raw()).deref());
@@ -2202,7 +2202,7 @@ namespace pgen::TooWideTypeCheck {
 										if (UNEXPECTED(r19.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_103, l_innerType, "isNull", "isnull", 6, 0, NULL, r19.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_103, l_innerType, "isNull", "isnull", 6, r19.raw()))) return false;
 									}
 									}
 									zv::Val vd20;
@@ -2279,7 +2279,7 @@ namespace pgen::TooWideTypeCheck {
 											if (UNEXPECTED(r34.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_107, p_actualReturnType, "isNull", "isnull", 6, 0, NULL, r34.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_107, p_actualReturnType, "isNull", "isnull", 6, r34.raw()))) return false;
 										}
 										}
 										bool r35;
@@ -2328,7 +2328,7 @@ namespace pgen::TooWideTypeCheck {
 		bool b40 = p_native;
 		if (b40) {
 			zv::Val r41;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_108, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r41.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_108, p_scope, "getPhpVersion", "getphpversion", 13, r41.raw()))) return false;
 			zv::Val r42;
 			if (UNEXPECTED(!pgen::PhpVersions::m_supportsTrueAndFalseStandaloneType(Z_OBJ_P(r41.raw()), r42.raw()))) return false;
 			bool r43;
@@ -2349,7 +2349,7 @@ namespace pgen::TooWideTypeCheck {
 			if (UNEXPECTED(r44.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_109, p_declaredType, "isBoolean", "isboolean", 9, 0, NULL, r44.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_109, p_declaredType, "isBoolean", "isboolean", 9, r44.raw()))) return false;
 		}
 		}
 		bool r45;
@@ -2528,7 +2528,7 @@ namespace pgen::TooWideTypeCheck {
 									if (UNEXPECTED(r80.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_117, p_actualReturnType, "isNull", "isnull", 6, 0, NULL, r80.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_117, p_actualReturnType, "isNull", "isnull", 6, r80.raw()))) return false;
 								}
 								}
 								bool r81;

@@ -9,14 +9,14 @@ zend_class_entry *pt_ce_trigger_error_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
-static pt_method_site pg_site_5; /* method_getValue_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getValue_5 */
 static pgrt::FunctionSite pg_site_6; /* function_in_array */
-static pt_method_site pg_site_7; /* method_getPhpVersion_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getPhpVersion_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
@@ -36,7 +36,7 @@ namespace pgen::TriggerErrorDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -115,7 +115,7 @@ namespace pgen::TriggerErrorDynamicReturnTypeExtension {
 					if (UNEXPECTED(r12.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_errorType.raw(), "getValue", "getvalue", 8, 0, NULL, r12.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_errorType.raw(), "getValue", "getvalue", 8, r12.raw()))) return false;
 				}
 				}
 				l_errorLevel = Z_LVAL_P(r12.raw());
@@ -155,7 +155,7 @@ namespace pgen::TriggerErrorDynamicReturnTypeExtension {
 				if (!((Z_TYPE_P(r23.raw()) == IS_TRUE))) {
 					 {
 						zv::Val r24;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r24.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_scope, "getPhpVersion", "getphpversion", 13, r24.raw()))) return false;
 						zv::Val r25;
 						if (UNEXPECTED(!pgen::PhpVersions::m_throwsValueErrorForInternalFunctions(Z_OBJ_P(r24.raw()), r25.raw()))) return false;
 						bool r26;

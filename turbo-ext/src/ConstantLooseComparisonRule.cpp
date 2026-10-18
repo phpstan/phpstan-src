@@ -20,7 +20,7 @@ static pt_method_site pg_site_7; /* method_getNativeType_7 */
 static pt_method_site pg_site_8; /* method_isTrue_8 */
 static pt_method_site pg_site_9; /* method_isFalse_9 */
 static pt_method_site pg_site_10; /* method_isFalse_10 */
-static pt_method_site pg_site_11; /* method_getOperatorSigil_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getOperatorSigil_11 */
 static pgrt::PropSite pg_site_12; /* prop_left_12 */
 static pt_method_site pg_site_13; /* method_getType_13 */
 static pt_method_site pg_site_14; /* method_describe_14 */
@@ -29,7 +29,7 @@ static pt_method_site pg_site_16; /* method_getType_16 */
 static pt_method_site pg_site_17; /* method_describe_17 */
 static pt_method_site pg_site_18; /* method_isInTrait_18 */
 static pt_method_site pg_site_19; /* method_getAttribute_19 */
-static pt_method_site pg_site_20; /* method_getOperatorSigil_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getOperatorSigil_20 */
 static pgrt::PropSite pg_site_21; /* prop_left_21 */
 static pt_method_site pg_site_22; /* method_getType_22 */
 static pt_method_site pg_site_23; /* method_describe_23 */
@@ -350,7 +350,7 @@ namespace pgen::ConstantLooseComparisonRule {
 			 {
 				zv::Val o29 = zv::Val::copyOf(zv::Ref(l_addTip.raw()));
 				zv::Val r30;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_node, "getOperatorSigil", "getoperatorsigil", 16, 0, NULL, r30.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_node, "getOperatorSigil", "getoperatorsigil", 16, r30.raw()))) return false;
 				zv::Val o32;
 				zval *p31 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_12, Z_OBJ_P(p_node), "left", 4) : NULL;
 				if (UNEXPECTED(p31 == NULL || Z_ISUNDEF_P(p31))) {
@@ -524,7 +524,7 @@ namespace pgen::ConstantLooseComparisonRule {
 	 {
 		zv::Val o74 = zv::Val::copyOf(zv::Ref(l_addTip.raw()));
 		zv::Val r75;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_node, "getOperatorSigil", "getoperatorsigil", 16, 0, NULL, r75.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, p_node, "getOperatorSigil", "getoperatorsigil", 16, r75.raw()))) return false;
 		zv::Val o77;
 		zval *p76 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_21, Z_OBJ_P(p_node), "left", 4) : NULL;
 		if (UNEXPECTED(p76 == NULL || Z_ISUNDEF_P(p76))) {

@@ -31,11 +31,11 @@ static pt_method_site pg_site_18; /* method_hasFunction_18 */
 static pgrt::PropSite pg_site_19; /* prop_name_19 */
 static pt_method_site pg_site_20; /* method_getFunction_20 */
 static pt_method_site pg_site_21; /* method_mustUseReturnValue_21 */
-static pt_method_site pg_site_22; /* method_getName_22 */
-static pt_method_site pg_site_23; /* method_getName_23 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getName_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getName_23 */
 static pgrt::PropSite pg_site_24; /* prop_name_24 */
 static pt_method_site pg_site_25; /* method_getType_25 */
-static pt_method_site pg_site_26; /* method_isCallable_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_isCallable_26 */
 static pt_method_site pg_site_27; /* method_getCallableParametersAcceptors_27 */
 static pt_method_site pg_site_28; /* method_mustUseReturnValue_28 */
 static pgrt::ClassSite pg_site_29; /* cls_PHPStan\TrinaryLogic */
@@ -338,7 +338,7 @@ namespace pgen::CallToFunctionStatementWithNoDiscardRule {
 									if (UNEXPECTED(r57.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_function.raw(), "getName", "getname", 7, 0, NULL, r57.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_function.raw(), "getName", "getname", 7, r57.raw()))) return false;
 								}
 								}
 								pgrt::StringBuilder sb58;
@@ -386,7 +386,7 @@ namespace pgen::CallToFunctionStatementWithNoDiscardRule {
 					if (UNEXPECTED(r67.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_function.raw(), "getName", "getname", 7, 0, NULL, r67.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_function.raw(), "getName", "getname", 7, r67.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb68;
@@ -439,7 +439,7 @@ namespace pgen::CallToFunctionStatementWithNoDiscardRule {
 			if (UNEXPECTED(r79.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_callableType.raw(), "isCallable", "iscallable", 10, 0, NULL, r79.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_callableType.raw(), "isCallable", "iscallable", 10, r79.raw()))) return false;
 		}
 		}
 		bool r80;

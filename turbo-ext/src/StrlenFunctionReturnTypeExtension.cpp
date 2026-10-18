@@ -9,11 +9,11 @@ zend_class_entry *pt_ce_strlen_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_getConstantScalarValues_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getConstantScalarValues_4 */
 static pgrt::FunctionSite pg_site_5; /* function_strlen */
 static pt_method_site pg_site_6; /* method_isNonEmptyString_6 */
 static pgrt::FunctionSite pg_site_7; /* function_sort */
@@ -22,10 +22,10 @@ static pgrt::FunctionSite pg_site_9; /* function_max */
 static pgrt::FunctionSite pg_site_10; /* function_range */
 static pt_method_site pg_site_11; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
 static pgrt::FunctionSite pg_site_12; /* function_array_map */
-static pt_method_site pg_site_13; /* method_isBoolean_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_isBoolean_13 */
 static pt_method_site pg_site_14; /* method_isSuperTypeOf_14 */
 static pt_method_site pg_site_15; /* method_isNonEmptyString_15 */
-static pt_method_site pg_site_16; /* method_isString_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_isString_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_18; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Analyser\Scope */
@@ -64,7 +64,7 @@ namespace pgen::StrlenFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -138,7 +138,7 @@ namespace pgen::StrlenFunctionReturnTypeExtension {
 			if (UNEXPECTED(r11.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_argType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r11.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_argType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r11.raw()))) return false;
 		}
 		}
 		l_constantScalars = std::move(r11);
@@ -289,7 +289,7 @@ namespace pgen::StrlenFunctionReturnTypeExtension {
 					if (UNEXPECTED(r53.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_argType.raw(), "isBoolean", "isboolean", 9, 0, NULL, r53.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_argType.raw(), "isBoolean", "isboolean", 9, r53.raw()))) return false;
 				}
 				}
 				bool r54;
@@ -374,7 +374,7 @@ namespace pgen::StrlenFunctionReturnTypeExtension {
 									if (UNEXPECTED(r74.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_argType.raw(), "isString", "isstring", 8, 0, NULL, r74.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_argType.raw(), "isString", "isstring", 8, r74.raw()))) return false;
 								}
 								}
 								bool r75;

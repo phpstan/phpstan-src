@@ -7,20 +7,20 @@
 zend_class_entry *pt_ce_php_parameter_reflection = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_isOptional_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
-static pt_method_site pg_site_2; /* method_isDefaultValueAvailable_2 */
-static pt_method_site pg_site_3; /* method_getDefaultValueExpression_3 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_isOptional_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isDefaultValueAvailable_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getDefaultValueExpression_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
-static pt_method_site pg_site_5; /* method_isNull_5 */
-static pt_method_site pg_site_6; /* method_getType_6 */
-static pt_method_site pg_site_7; /* method_isPassedByReference_7 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isNull_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getType_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_isPassedByReference_7 */
 static pt_method_site pg_site_8; /* static_PHPStan\Reflection\PassedByReference::createCreatesNewVariable */
-static pt_method_site pg_site_9; /* method_isVariadic_9 */
-static pt_method_site pg_site_10; /* method_getType_10 */
-static pt_method_site pg_site_11; /* method_getType_11 */
-static pt_method_site pg_site_12; /* method_isDefaultValueAvailable_12 */
-static pt_method_site pg_site_13; /* method_getDefaultValueExpression_13 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isVariadic_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getType_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getType_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_isDefaultValueAvailable_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getDefaultValueExpression_13 */
 static pt_method_site pg_site_14; /* method_getType_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Reflection\AllowedConstantsResult */
 static pt_method_site pg_site_16; /* method_check_16 */
@@ -90,7 +90,7 @@ namespace pgen::PhpParameterReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "isOptional", "isoptional", 10, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p1, "isOptional", "isoptional", 10, r2.raw()))) return false;
 		}
 		}
 		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
@@ -113,7 +113,7 @@ namespace pgen::PhpParameterReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p1, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p1, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -145,7 +145,7 @@ namespace pgen::PhpParameterReflection {
 					zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParameterReflection::slot::reflection, "reflection");
 					if (UNEXPECTED(p5 == NULL)) return false;
 					zv::Val r6;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p5, "isDefaultValueAvailable", "isdefaultvalueavailable", 23, 0, NULL, r6.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p5, "isDefaultValueAvailable", "isdefaultvalueavailable", 23, r6.raw()))) return false;
 					b4 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
 				}
 				if (b4) {
@@ -156,7 +156,7 @@ namespace pgen::PhpParameterReflection {
 						zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParameterReflection::slot::reflection, "reflection");
 						if (UNEXPECTED(p9 == NULL)) return false;
 						zv::Val r10;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p9, "getDefaultValueExpression", "getdefaultvalueexpression", 25, 0, NULL, r10.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p9, "getDefaultValueExpression", "getdefaultvalueexpression", 25, r10.raw()))) return false;
 						zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParameterReflection::slot::reflection, "reflection");
 						if (UNEXPECTED(p11 == NULL)) return false;
 						zv::Val r12;
@@ -185,7 +185,7 @@ namespace pgen::PhpParameterReflection {
 							if (UNEXPECTED(r15.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_defaultValueType.raw(), "isNull", "isnull", 6, 0, NULL, r15.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_defaultValueType.raw(), "isNull", "isnull", 6, r15.raw()))) return false;
 						}
 						}
 						bool r16;
@@ -212,7 +212,7 @@ namespace pgen::PhpParameterReflection {
 					if (UNEXPECTED(r19.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p18, "getType", "gettype", 7, 0, NULL, r19.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p18, "getType", "gettype", 7, r19.raw()))) return false;
 				}
 				}
 				zv::Val o20 = zv::Val::copyOf(zv::Ref(l_phpDocType.raw()));
@@ -253,7 +253,7 @@ namespace pgen::PhpParameterReflection {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParameterReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p1, "isPassedByReference", "ispassedbyreference", 19, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p1, "isPassedByReference", "ispassedbyreference", 19, r2.raw()))) return false;
 		zv::Val q3;
 		if (Z_TYPE_P(r2.raw()) == IS_TRUE) {
 			zv::Val r4;
@@ -291,7 +291,7 @@ namespace pgen::PhpParameterReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p1, "isVariadic", "isvariadic", 10, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p1, "isVariadic", "isvariadic", 10, r2.raw()))) return false;
 		}
 		}
 		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
@@ -340,7 +340,7 @@ namespace pgen::PhpParameterReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p1, "getType", "gettype", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p1, "getType", "gettype", 7, r2.raw()))) return false;
 		}
 		}
 		*ret = !(Z_TYPE_P(r2.raw()) == IS_NULL);
@@ -370,7 +370,7 @@ namespace pgen::PhpParameterReflection {
 				if (UNEXPECTED(r4.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p3, "getType", "gettype", 7, 0, NULL, r4.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p3, "getType", "gettype", 7, r4.raw()))) return false;
 			}
 			}
 			zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParameterReflection::slot::declaringClass, "declaringClass");
@@ -407,7 +407,7 @@ namespace pgen::PhpParameterReflection {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParameterReflection::slot::reflection, "reflection");
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p1, "isDefaultValueAvailable", "isdefaultvalueavailable", 23, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p1, "isDefaultValueAvailable", "isdefaultvalueavailable", 23, r2.raw()))) return false;
 		if (Z_TYPE_P(r2.raw()) == IS_TRUE) {
 			 {
 				zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParameterReflection::slot::initializerExprTypeResolver, "initializerExprTypeResolver");
@@ -416,7 +416,7 @@ namespace pgen::PhpParameterReflection {
 				zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParameterReflection::slot::reflection, "reflection");
 				if (UNEXPECTED(p5 == NULL)) return false;
 				zv::Val r6;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p5, "getDefaultValueExpression", "getdefaultvalueexpression", 25, 0, NULL, r6.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p5, "getDefaultValueExpression", "getdefaultvalueexpression", 25, r6.raw()))) return false;
 				zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParameterReflection::slot::reflection, "reflection");
 				if (UNEXPECTED(p7 == NULL)) return false;
 				zv::Val r8;

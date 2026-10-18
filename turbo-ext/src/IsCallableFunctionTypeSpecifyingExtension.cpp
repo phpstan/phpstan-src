@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_is_callable_function_type_specifying_extension = nullptr
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_null_1 */
 static pt_method_site pg_site_2; /* method_null_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\ShouldNotHappenException */
@@ -19,8 +19,8 @@ static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Expr\Array_ */
 static pgrt::PropSite pg_site_9; /* prop_items_9 */
-static pt_method_site pg_site_10; /* method_isConstantArray_10 */
-static pt_method_site pg_site_11; /* method_isCallable_11 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isConstantArray_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_isCallable_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Name */
 static pgrt::PropSite pg_site_13; /* prop_items_13 */
 static pgrt::PropSite pg_site_14; /* prop_value_14 */
@@ -64,7 +64,7 @@ namespace pgen::IsCallableFunctionTypeSpecifyingExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		zv::Val r3 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r2.raw())));
@@ -189,7 +189,7 @@ namespace pgen::IsCallableFunctionTypeSpecifyingExtension {
 				if (UNEXPECTED(r26.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_valueType.raw(), "isConstantArray", "isconstantarray", 15, 0, NULL, r26.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_valueType.raw(), "isConstantArray", "isconstantarray", 15, r26.raw()))) return false;
 			}
 			}
 			bool r27;
@@ -204,7 +204,7 @@ namespace pgen::IsCallableFunctionTypeSpecifyingExtension {
 				if (UNEXPECTED(r28.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_valueType.raw(), "isCallable", "iscallable", 10, 0, NULL, r28.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_valueType.raw(), "isCallable", "iscallable", 10, r28.raw()))) return false;
 			}
 			}
 			bool r29;

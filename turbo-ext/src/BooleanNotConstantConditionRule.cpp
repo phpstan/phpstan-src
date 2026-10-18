@@ -15,18 +15,18 @@ static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Constant\ConstantBooleanTy
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\RuleErrorBuilder */
 static pgrt::PropSite pg_site_4; /* prop_expr_4 */
 static pt_method_site pg_site_5; /* method_getAttribute_5 */
-static pt_method_site pg_site_6; /* method_getValue_6 */
-static pt_method_site pg_site_7; /* method_getValue_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getValue_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getValue_7 */
 static pgrt::PropSite pg_site_8; /* prop_expr_8 */
-static pt_method_site pg_site_9; /* method_getStartLine_9 */
-static pt_method_site pg_site_10; /* method_getValue_10 */
-static pt_method_site pg_site_11; /* method_getValue_11 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getStartLine_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValue_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getValue_11 */
 static pgrt::PropSite pg_site_12; /* prop_expr_12 */
 static pgrt::PropSite pg_site_13; /* prop_expr_13 */
-static pt_method_site pg_site_14; /* method_getValue_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getValue_14 */
 static pt_method_site pg_site_15; /* method_isInTrait_15 */
 static pgrt::PropSite pg_site_16; /* prop_expr_16 */
-static pt_method_site pg_site_17; /* method_getValue_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getValue_17 */
 static pgrt::PropSite pg_site_18; /* prop_expr_18 */
 static pgrt::PropSite pg_site_19; /* prop_expr_19 */
 static pgrt::PropSite pg_site_20; /* prop_expr_20 */
@@ -190,7 +190,7 @@ namespace pgen::BooleanNotConstantConditionRule {
 					if (UNEXPECTED(r10.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r10.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_exprType.raw(), "getValue", "getvalue", 8, r10.raw()))) return false;
 				}
 				}
 				bool b9 = (Z_TYPE_P(r10.raw()) == IS_TRUE);
@@ -212,7 +212,7 @@ namespace pgen::BooleanNotConstantConditionRule {
 							if (UNEXPECTED(r13.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r13.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_exprType.raw(), "getValue", "getvalue", 8, r13.raw()))) return false;
 						}
 						}
 						zv::Val q14;
@@ -243,7 +243,7 @@ namespace pgen::BooleanNotConstantConditionRule {
 							p22 = o23.raw();
 						}
 						zv::Val r24;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, zv::Ref(p22).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r24.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, zv::Ref(p22).deref().raw(), "getStartLine", "getstartline", 12, r24.raw()))) return false;
 						if (UNEXPECTED(Z_TYPE_P(r24.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r24.raw()); return false; }
 						zv::Val r25;
 						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r21.raw()), Z_LVAL_P(r24.raw()), r25.raw()))) return false;
@@ -256,7 +256,7 @@ namespace pgen::BooleanNotConstantConditionRule {
 							if (UNEXPECTED(r28.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r28.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_exprType.raw(), "getValue", "getvalue", 8, r28.raw()))) return false;
 						}
 						}
 						bool b27 = !((Z_TYPE_P(r28.raw()) == IS_TRUE));
@@ -284,7 +284,7 @@ namespace pgen::BooleanNotConstantConditionRule {
 							if (UNEXPECTED(r32.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r32.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_exprType.raw(), "getValue", "getvalue", 8, r32.raw()))) return false;
 						}
 						}
 						zv::Val q33;
@@ -339,7 +339,7 @@ namespace pgen::BooleanNotConstantConditionRule {
 									if (UNEXPECTED(r49.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r49.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_exprType.raw(), "getValue", "getvalue", 8, r49.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(pgrt::instanceOfClass(o48.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::emitFunctionCallError", 3, "expr", "PhpParser\\Node\\Expr", o48.raw()); return false; }
@@ -387,7 +387,7 @@ namespace pgen::BooleanNotConstantConditionRule {
 									if (UNEXPECTED(r61.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r61.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_exprType.raw(), "getValue", "getvalue", 8, r61.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(pgrt::instanceOfClass(o60.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitError", 3, "expr", "PhpParser\\Node\\Expr", o60.raw()); return false; }

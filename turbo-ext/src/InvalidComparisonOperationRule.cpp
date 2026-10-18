@@ -36,13 +36,13 @@ static pt_method_site pg_site_23; /* method_isSuperTypeOf_23 */
 static pt_method_site pg_site_24; /* method_toNumber_24 */
 static pt_method_site pg_site_25; /* method_equals_25 */
 static pt_method_site pg_site_26; /* method_getType_26 */
-static pt_method_site pg_site_27; /* method_isNull_27 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_isNull_27 */
 static pt_method_site pg_site_28; /* method_isSuperTypeOf_28 */
 static pt_method_site pg_site_29; /* method_getType_29 */
-static pt_method_site pg_site_30; /* method_isNull_30 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_isNull_30 */
 static pt_method_site pg_site_31; /* method_isSuperTypeOf_31 */
 static pgrt::ClassSite pg_site_32; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_33; /* method_getOperatorSigil_33 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getOperatorSigil_33 */
 static pgrt::PropSite pg_site_34; /* prop_left_34 */
 static pt_method_site pg_site_35; /* method_getType_35 */
 static pt_method_site pg_site_36; /* method_describe_36 */
@@ -50,7 +50,7 @@ static pgrt::PropSite pg_site_37; /* prop_right_37 */
 static pt_method_site pg_site_38; /* method_getType_38 */
 static pt_method_site pg_site_39; /* method_describe_39 */
 static pgrt::PropSite pg_site_40; /* prop_left_40 */
-static pt_method_site pg_site_41; /* method_getStartLine_41 */
+static pgrt::MethodShapeSite pg_site_41; /* method0_getStartLine_41 */
 static pgrt::ClassSite pg_site_42; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_43; /* cls_PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry */
 static pgrt::ClassSite pg_site_44; /* cls_PhpParser\Node */
@@ -519,7 +519,7 @@ namespace pgen::InvalidComparisonOperationRule {
 			if (UNEXPECTED(r9.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_type.raw(), "isNull", "isnull", 6, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_type.raw(), "isNull", "isnull", 6, r9.raw()))) return false;
 		}
 		}
 		bool r10;
@@ -595,7 +595,7 @@ namespace pgen::InvalidComparisonOperationRule {
 			if (UNEXPECTED(r11.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_type.raw(), "isNull", "isnull", 6, 0, NULL, r11.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_type.raw(), "isNull", "isnull", 6, r11.raw()))) return false;
 		}
 		}
 		bool r12;
@@ -730,7 +730,7 @@ namespace pgen::InvalidComparisonOperationRule {
 	 {
 		zv::Val arr14 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_node, "getOperatorSigil", "getoperatorsigil", 16, 0, NULL, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, p_node, "getOperatorSigil", "getoperatorsigil", 16, r15.raw()))) return false;
 		zv::Val o17;
 		zval *p16 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_34, Z_OBJ_P(p_node), "left", 4) : NULL;
 		if (UNEXPECTED(p16 == NULL || Z_ISUNDEF_P(p16))) {
@@ -819,7 +819,7 @@ namespace pgen::InvalidComparisonOperationRule {
 			p35 = o36.raw();
 		}
 		zv::Val r37;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_41, zv::Ref(p35).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r37.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_41, zv::Ref(p35).deref().raw(), "getStartLine", "getstartline", 12, r37.raw()))) return false;
 		zv::Val r38;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r34.raw()), Z_LVAL_P(r37.raw()), r38.raw()))) return false;
 		pgrt::StringBuilder sb39;

@@ -28,19 +28,19 @@ static pt_method_site pg_site_15; /* method_getType_15 */
 static pgrt::PropSite pg_site_16; /* prop_value_16 */
 static pt_method_site pg_site_17; /* method_getType_17 */
 static pt_method_site pg_site_18; /* method_getConstantStrings_18 */
-static pt_method_site pg_site_19; /* method_getValue_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getValue_19 */
 static pt_method_site pg_site_20; /* method_hasClass_20 */
-static pt_method_site pg_site_21; /* method_getValue_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getValue_21 */
 static pt_method_site pg_site_22; /* method_getClass_22 */
-static pt_method_site pg_site_23; /* method_getTemplateTypeMap_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getTemplateTypeMap_23 */
 static pt_method_site pg_site_24; /* method_getConstantStrings_24 */
-static pt_method_site pg_site_25; /* method_getValue_25 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getValue_25 */
 static pt_method_site pg_site_26; /* method_hasType_26 */
 static pgrt::DispatchCache pg_site_27; /* dispatch_getDeclaringClass_27 */
 static pt_method_site pg_site_28; /* method_getDeclaringClass_28 */
 static pt_method_site pg_site_29; /* method_getDisplayName_29 */
-static pt_method_site pg_site_30; /* method_getName_30 */
-static pt_method_site pg_site_31; /* method_getValue_31 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getName_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getValue_31 */
 static pt_method_site pg_site_32; /* method_getDisplayName_32 */
 static pgrt::ClassSite pg_site_33; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_34; /* cls_PhpParser\Node */
@@ -361,7 +361,7 @@ namespace pgen::GetTemplateTypeRule {
 						if (UNEXPECTED(r63.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_classNameType, "getValue", "getvalue", 8, 0, NULL, r63.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_classNameType, "getValue", "getvalue", 8, r63.raw()))) return false;
 					}
 					}
 					zv::Val vd64;
@@ -402,7 +402,7 @@ namespace pgen::GetTemplateTypeRule {
 						if (UNEXPECTED(r72.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_classNameType, "getValue", "getvalue", 8, 0, NULL, r72.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_classNameType, "getValue", "getvalue", 8, r72.raw()))) return false;
 					}
 					}
 					zv::Val vd73;
@@ -434,7 +434,7 @@ namespace pgen::GetTemplateTypeRule {
 						if (UNEXPECTED(r77.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_classReflection.raw(), "getTemplateTypeMap", "gettemplatetypemap", 18, 0, NULL, r77.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_classReflection.raw(), "getTemplateTypeMap", "gettemplatetypemap", 18, r77.raw()))) return false;
 					}
 					}
 					l_templateTypeMap = std::move(r77);
@@ -469,7 +469,7 @@ namespace pgen::GetTemplateTypeRule {
 									if (UNEXPECTED(r88.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_templateTypeName, "getValue", "getvalue", 8, 0, NULL, r88.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_templateTypeName, "getValue", "getvalue", 8, r88.raw()))) return false;
 								}
 								}
 								zval av89[1];
@@ -543,7 +543,7 @@ namespace pgen::GetTemplateTypeRule {
 									if (UNEXPECTED(r98.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r98.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_methodReflection.raw(), "getName", "getname", 7, r98.raw()))) return false;
 								}
 								}
 								zv::Val r99;
@@ -552,7 +552,7 @@ namespace pgen::GetTemplateTypeRule {
 									if (UNEXPECTED(r99.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_templateTypeName, "getValue", "getvalue", 8, 0, NULL, r99.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, l_templateTypeName, "getValue", "getvalue", 8, r99.raw()))) return false;
 								}
 								}
 								zv::Val r100;

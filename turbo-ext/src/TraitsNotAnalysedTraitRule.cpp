@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_traits_not_analysed_trait_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_isOnlyFilesAnalysis_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_isOnlyFilesAnalysis_0 */
 static pt_method_site pg_site_1; /* method_get_1 */
 static pt_method_site pg_site_2; /* method_get_2 */
 static pgrt::FunctionSite pg_site_3; /* function_strtolower */
@@ -49,7 +49,7 @@ namespace pgen::TraitsNotAnalysedTraitRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "isOnlyFilesAnalysis", "isonlyfilesanalysis", 19, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "isOnlyFilesAnalysis", "isonlyfilesanalysis", 19, r1.raw()))) return false;
 		if (zend_is_true(r1.raw())) {
 			 {
 				zval arr2_raw;

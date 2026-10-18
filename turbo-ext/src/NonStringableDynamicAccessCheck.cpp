@@ -13,20 +13,20 @@ static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_1; /* method_toString_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\ErrorType */
 static pt_method_site pg_site_3; /* method_toString_3 */
-static pt_method_site pg_site_4; /* method_isString_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isString_4 */
 static pt_method_site pg_site_5; /* method_toString_5 */
 static pt_method_site pg_site_6; /* method_toString_6 */
-static pt_method_site pg_site_7; /* method_isString_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_isString_7 */
 static pt_method_site pg_site_8; /* method_getType_8 */
-static pt_method_site pg_site_9; /* method_isString_9 */
-static pt_method_site pg_site_10; /* method_isString_10 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isString_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isString_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_12; /* method_resolveName_12 */
 static pt_method_site pg_site_13; /* method_getType_13 */
 static pt_method_site pg_site_14; /* method_describe_14 */
 static pt_method_site pg_site_15; /* method_describe_15 */
 static pgrt::FunctionSite pg_site_16; /* function_sprintf */
-static pt_method_site pg_site_17; /* method_getStartLine_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getStartLine_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Rules\IdentifierRuleError */
 static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Analyser\Scope */
 static pgrt::ClassSite pg_site_20; /* cls_PhpParser\Node\Expr */
@@ -86,7 +86,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r8.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd5.raw(), "isString", "isstring", 8, 0, NULL, r8.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, vd5.raw(), "isString", "isstring", 8, r8.raw()))) return;
 			}
 			}
 			bool r9;
@@ -117,7 +117,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_type, "isString", "isstring", 8, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_type, "isString", "isstring", 8, r1.raw()))) return;
 		}
 		}
 		bool r2;
@@ -223,7 +223,7 @@ namespace pgen::NonStringableDynamicAccessCheck {
 					if (UNEXPECTED(r16.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, vd13.raw(), "isString", "isstring", 8, 0, NULL, r16.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, vd13.raw(), "isString", "isstring", 8, r16.raw()))) return false;
 				}
 				}
 				bool r17;
@@ -305,7 +305,7 @@ namespace pgen::NonStringableDynamicAccessCheck {
 				if (UNEXPECTED(r9.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_nameType.raw(), "isString", "isstring", 8, 0, NULL, r9.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_nameType.raw(), "isString", "isstring", 8, r9.raw()))) return false;
 			}
 			}
 			bool r10;
@@ -422,7 +422,7 @@ namespace pgen::NonStringableDynamicAccessCheck {
 		zv::Val r16;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r15.raw(), r16.raw()))) return false;
 		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_name, "getStartLine", "getstartline", 12, 0, NULL, r17.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, p_name, "getStartLine", "getstartline", 12, r17.raw()))) return false;
 		zv::Val r18;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r16.raw()), Z_LVAL_P(r17.raw()), r18.raw()))) return false;
 		zv::Val r19;

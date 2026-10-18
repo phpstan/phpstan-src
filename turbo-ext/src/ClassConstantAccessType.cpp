@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_class_constant_access_type = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getReferencedClasses_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getReferencedClasses_0 */
 static pt_method_site pg_site_1; /* method_getReferencedTemplateTypes_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\ClassConstantAccessType */
 static pt_method_site pg_site_3; /* method_equals_3 */
 static pt_method_site pg_site_4; /* method_equals_4 */
-static pt_method_site pg_site_5; /* method_resolve_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_resolve_5 */
 static pt_method_site pg_site_6; /* method_describe_6 */
 static pt_method_site pg_site_7; /* static_PHPStan\Type\TypeUtils::containsTemplateType */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\StaticType */
@@ -22,7 +22,7 @@ static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Type\ClassConstantPatternResolv
 static pt_method_site pg_site_10; /* static_PHPStan\Type\ClassConstantPatternResolver::resolve */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Generic\TemplateType */
-static pt_method_site pg_site_13; /* method_getName_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\PhpDocParser\Ast\Type\ConstTypeNode */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
@@ -83,7 +83,7 @@ namespace pgen::ClassConstantAccessType {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -206,7 +206,7 @@ namespace pgen::ClassConstantAccessType {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, &this_zv, "resolve", "resolve", 7, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, &this_zv, "resolve", "resolve", 7, r1.raw()))) return false;
 		zval av2[1];
 		ZVAL_COPY_VALUE(&av2[0], p_level);
 		zv::Val r3;
@@ -385,7 +385,7 @@ namespace pgen::ClassConstantAccessType {
 				if (UNEXPECTED(r6.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p5, "getName", "getname", 7, 0, NULL, r6.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p5, "getName", "getname", 7, r6.raw()))) return false;
 			}
 			}
 			q4 = std::move(r6);

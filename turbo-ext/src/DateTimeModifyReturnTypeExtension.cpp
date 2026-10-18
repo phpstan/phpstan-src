@@ -9,16 +9,16 @@ zend_class_entry *pt_ce_date_time_modify_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pt_method_site pg_site_4; /* method_getConstantStrings_4 */
 static pgrt::ClassSite pg_site_5; /* cls_DateTime */
-static pt_method_site pg_site_6; /* method_getValue_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getValue_6 */
 static pt_method_site pg_site_7; /* method_modify_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\NeverType */
-static pt_method_site pg_site_9; /* method_getPhpVersion_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getPhpVersion_9 */
 static pgrt::PropSite pg_site_10; /* prop_var_10 */
 static pt_method_site pg_site_11; /* method_getType_11 */
 static pt_method_site pg_site_12; /* method_isSuperTypeOf_12 */
@@ -127,7 +127,7 @@ namespace pgen::DateTimeModifyReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -238,7 +238,7 @@ namespace pgen::DateTimeModifyReturnTypeExtension {
 								if (UNEXPECTED(r24.isUndef())) goto catch_c20;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_constantString, "getValue", "getvalue", 8, 0, NULL, r24.raw(), NULL))) goto catch_c20;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_constantString, "getValue", "getvalue", 8, r24.raw()))) goto catch_c20;
 							}
 							}
 							zval av25[1];
@@ -311,7 +311,7 @@ namespace pgen::DateTimeModifyReturnTypeExtension {
 				if (!(l_hasDateTime)) {
 					 {
 						zv::Val r31;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r31.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_scope, "getPhpVersion", "getphpversion", 13, r31.raw()))) return false;
 						zv::Val r32;
 						if (UNEXPECTED(!pgen::PhpVersions::m_hasDateTimeExceptions(Z_OBJ_P(r31.raw()), r32.raw()))) return false;
 						bool r33;

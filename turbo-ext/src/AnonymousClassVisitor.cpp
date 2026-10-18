@@ -10,11 +10,11 @@ zend_class_entry *pt_ce_anonymous_class_visitor = nullptr;
 static zval pg_lit[2];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Stmt\Class_ */
-static pt_method_site pg_site_1; /* method_isAnonymous_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_isAnonymous_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Node\AnonymousClassNode */
 static pt_method_site pg_site_3; /* static_PHPStan\Node\AnonymousClassNode::createFromClassNode */
 static pt_method_site pg_site_4; /* method_setAttribute_4 */
-static pt_method_site pg_site_5; /* method_getStartLine_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getStartLine_5 */
 static pgrt::FunctionSite pg_site_6; /* function_count */
 static pt_method_site pg_site_7; /* method_setAttribute_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
@@ -54,7 +54,7 @@ namespace pgen::AnonymousClassVisitor {
 		bool b1 = !(pgrt::instanceOfClass(l_node.raw(), pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt\\Class_", 26)));
 		if (!b1) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_node.raw(), "isAnonymous", "isanonymous", 11, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_node.raw(), "isAnonymous", "isanonymous", 11, r2.raw()))) return false;
 			b1 = !((Z_TYPE_P(r2.raw()) == IS_TRUE));
 		}
 		if (b1) {
@@ -85,7 +85,7 @@ namespace pgen::AnonymousClassVisitor {
 		zv::Val o9 = zv::Val::copyOf(zv::Ref(l_node.raw()));
 		zv::Val o10 = zv::Val::copyOf(zv::Ref(o9.raw()));
 		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_node.raw(), "getStartLine", "getstartline", 12, 0, NULL, r12.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_node.raw(), "getStartLine", "getstartline", 12, r12.raw()))) return false;
 		zend_long k13 = Z_LVAL_P(r12.raw());
 		zval *w14 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::AnonymousClassVisitor::slot::nodesPerLine)).deref().raw();
 		if (Z_TYPE_P(w14) <= IS_NULL) { zval_ptr_dtor(w14); array_init(w14); } else if (UNEXPECTED(Z_TYPE_P(w14) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }

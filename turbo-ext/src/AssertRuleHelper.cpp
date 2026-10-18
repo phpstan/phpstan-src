@@ -11,22 +11,22 @@ zend_class_entry *pt_ce_assert_rule_helper = nullptr;
 static zval pg_lit[22];
 
 static pt_method_site pg_site_0; /* method_getParameters_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
-static pt_method_site pg_site_2; /* method_getType_2 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getType_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\ExtendedMethodReflection */
 static pgrt::DispatchCache pg_site_4; /* dispatch_isStatic_4 */
 static pt_method_site pg_site_5; /* method_isStatic_5 */
 static pgrt::DispatchCache pg_site_6; /* dispatch_getDeclaringClass_6 */
 static pt_method_site pg_site_7; /* method_getDeclaringClass_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
-static pt_method_site pg_site_9; /* method_getAsserts_9 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getAsserts_9 */
 static pgrt::GetterSite pg_site_10; /* getter_getAll_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Reflection\Assertions */
-static pt_method_site pg_site_12; /* method_getAll_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getAll_12 */
 static pt_method_site pg_site_13; /* method_getParameter_13 */
 static pgrt::GetterSite pg_site_14; /* getter_getParameterName_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\PhpDoc\Tag\AssertTagParameter */
-static pt_method_site pg_site_16; /* method_getParameterName_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getParameterName_16 */
 static pgrt::FunctionSite pg_site_17; /* function_substr */
 static pt_method_site pg_site_18; /* method_isExplicit_18 */
 static pt_method_site pg_site_19; /* method_getParameter_19 */
@@ -34,9 +34,9 @@ static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Node\Expr\TypeExpr */
 static pt_method_site pg_site_21; /* method_getExpr_21 */
 static pt_method_site pg_site_22; /* method_getScopeType_22 */
 static pt_method_site pg_site_23; /* method_getParameter_23 */
-static pt_method_site pg_site_24; /* method_describe_24 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_describe_24 */
 static pgrt::ClassSite pg_site_25; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_26; /* method_getType_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getType_26 */
 static pt_method_site pg_site_27; /* method_getIf_27 */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_29; /* method_isSuperTypeOf_29 */
@@ -53,10 +53,10 @@ static pt_method_site pg_site_39; /* method_yes_39 */
 static pt_method_site pg_site_40; /* method_isNegated_40 */
 static pt_method_site pg_site_41; /* method_describe_41 */
 static pt_method_site pg_site_42; /* method_describe_42 */
-static pt_method_site pg_site_43; /* method_getReferencedClasses_43 */
+static pgrt::MethodShapeSite pg_site_43; /* method0_getReferencedClasses_43 */
 static pt_method_site pg_site_44; /* method_hasClass_44 */
 static pt_method_site pg_site_45; /* method_getClass_45 */
-static pt_method_site pg_site_46; /* method_isTrait_46 */
+static pgrt::MethodShapeSite pg_site_46; /* method0_isTrait_46 */
 static pt_method_site pg_site_47; /* method_describe_47 */
 static pgrt::ClassSite pg_site_48; /* cls_PHPStan\Analyser\Scope */
 static pgrt::ClassSite pg_site_49; /* cls_PhpParser\Node\Stmt\Function_ */
@@ -163,7 +163,7 @@ namespace pgen::AssertRuleHelper {
 						if (UNEXPECTED(r13.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_parameter, "getName", "getname", 7, 0, NULL, r13.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_parameter, "getName", "getname", 7, r13.raw()))) return false;
 					}
 					}
 					zv::Val r14;
@@ -172,7 +172,7 @@ namespace pgen::AssertRuleHelper {
 						if (UNEXPECTED(r14.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_parameter, "getType", "gettype", 7, 0, NULL, r14.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_parameter, "getType", "gettype", 7, r14.raw()))) return false;
 					}
 					}
 					zv::Val o15 = zv::Val::copyOf(zv::Ref(r14.raw()));
@@ -302,7 +302,7 @@ namespace pgen::AssertRuleHelper {
 					if (UNEXPECTED(r37.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_class.raw(), "getName", "getname", 7, 0, NULL, r37.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_class.raw(), "getName", "getname", 7, r37.raw()))) return false;
 				}
 				}
 				zv::Val o38 = zv::Val::copyOf(zv::Ref(l_class.raw()));
@@ -326,14 +326,14 @@ namespace pgen::AssertRuleHelper {
 	}
 	 {
 		zv::Val r45;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_reflection, "getAsserts", "getasserts", 10, 0, NULL, r45.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_reflection, "getAsserts", "getasserts", 10, r45.raw()))) return false;
 		zval *gs46 = Z_TYPE_P(r45.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_10, Z_OBJ_P(r45.raw()), pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Reflection\\Assertions", 29), "getall", 6, "asserts", 7) : NULL;
 		zv::Val r47;
 		if (EXPECTED(gs46 != NULL)) {
 			ZVAL_COPY(r47.raw(), gs46);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, r45.raw(), "getAll", "getall", 6, 0, NULL, r47.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, r45.raw(), "getAll", "getall", 6, r47.raw()))) return false;
 		}
 		}
 		zv::Val a48 = zv::Val::copyOf(zv::Ref(r47.raw()).deref());
@@ -364,7 +364,7 @@ namespace pgen::AssertRuleHelper {
 						ZVAL_COPY(r57.raw(), gs56);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, vd54.raw(), "getParameterName", "getparametername", 16, 0, NULL, r57.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, vd54.raw(), "getParameterName", "getparametername", 16, r57.raw()))) return false;
 					}
 					}
 					zval av58[2];
@@ -467,7 +467,7 @@ namespace pgen::AssertRuleHelper {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_assert, "getParameter", "getparameter", 12, 0, NULL, vd83.raw()))) return false;
 					}
 					zv::Val r85;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_24, vd83.raw(), "describe", "describe", 8, 0, NULL, r85.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, vd83.raw(), "describe", "describe", 8, r85.raw()))) return false;
 					l_assertedExprString = std::move(r85);
 				}
 				 {
@@ -500,7 +500,7 @@ namespace pgen::AssertRuleHelper {
 						if (UNEXPECTED(r93.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_assert, "getType", "gettype", 7, 0, NULL, r93.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_assert, "getType", "gettype", 7, r93.raw()))) return false;
 					}
 					}
 					l_assertedType = std::move(r93);
@@ -888,7 +888,7 @@ namespace pgen::AssertRuleHelper {
 						if (UNEXPECTED(r192.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_43, l_assertedType.raw(), "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r192.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_43, l_assertedType.raw(), "getReferencedClasses", "getreferencedclasses", 20, r192.raw()))) return false;
 					}
 					}
 					pgrt::ForeachIter it193;
@@ -985,7 +985,7 @@ namespace pgen::AssertRuleHelper {
 									if (UNEXPECTED(r219.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_46, l_classReflection.raw(), "isTrait", "istrait", 7, 0, NULL, r219.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_46, l_classReflection.raw(), "isTrait", "istrait", 7, r219.raw()))) return false;
 								}
 								}
 								if (Z_TYPE_P(r219.raw()) == IS_TRUE) {

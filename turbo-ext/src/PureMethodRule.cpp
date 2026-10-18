@@ -12,7 +12,7 @@ static zval pg_lit[2];
 static pt_method_site pg_site_0; /* method_getMethodReflection_0 */
 static pt_method_site pg_site_1; /* method_getDeclaringClass_1 */
 static pt_method_site pg_site_2; /* method_getDisplayName_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_getParameters_4 */
 static pt_method_site pg_site_5; /* method_getReturnType_5 */
 static pt_method_site pg_site_6; /* method_getImpurePoints_6 */
@@ -112,7 +112,7 @@ namespace pgen::PureMethodRule {
 			if (UNEXPECTED(r9.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_method.raw(), "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_method.raw(), "getName", "getname", 7, r9.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb10;

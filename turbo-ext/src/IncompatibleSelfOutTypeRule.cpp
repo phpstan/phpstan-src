@@ -13,18 +13,18 @@ static zval pg_lit[5];
 static pt_method_site pg_site_0; /* method_getMethodReflection_0 */
 static pt_method_site pg_site_1; /* method_getSelfOutType_1 */
 static pt_method_site pg_site_2; /* method_getDeclaringClass_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_isSuperTypeOf_4 */
 static pt_method_site pg_site_5; /* method_describe_5 */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
 static pt_method_site pg_site_8; /* method_describe_8 */
 static pt_method_site pg_site_9; /* method_isStatic_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_13; /* method_getDisplayName_13 */
-static pt_method_site pg_site_14; /* method_getName_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Rules\PhpDoc\UnresolvableTypeHelper */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Rules\Generics\GenericObjectTypeCheck */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node */
@@ -142,7 +142,7 @@ namespace pgen::IncompatibleSelfOutTypeRule {
 			if (UNEXPECTED(r10.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r10.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "getName", "getname", 7, r10.raw()))) return false;
 		}
 		}
 		zval av11[1];
@@ -205,7 +205,7 @@ namespace pgen::IncompatibleSelfOutTypeRule {
 					if (UNEXPECTED(r23.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_method.raw(), "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_method.raw(), "getName", "getname", 7, r23.raw()))) return false;
 				}
 				}
 				zv::Val o24 = zv::Val::copyOf(zv::Ref(l_classType.raw()));
@@ -270,7 +270,7 @@ namespace pgen::IncompatibleSelfOutTypeRule {
 					if (UNEXPECTED(r38.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r38.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_classReflection.raw(), "getName", "getname", 7, r38.raw()))) return false;
 				}
 				}
 				zv::Val r39;
@@ -279,7 +279,7 @@ namespace pgen::IncompatibleSelfOutTypeRule {
 					if (UNEXPECTED(r39.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_method.raw(), "getName", "getname", 7, 0, NULL, r39.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_method.raw(), "getName", "getname", 7, r39.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb40;
@@ -329,7 +329,7 @@ namespace pgen::IncompatibleSelfOutTypeRule {
 					if (UNEXPECTED(r50.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_method.raw(), "getName", "getname", 7, 0, NULL, r50.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_method.raw(), "getName", "getname", 7, r50.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb51;

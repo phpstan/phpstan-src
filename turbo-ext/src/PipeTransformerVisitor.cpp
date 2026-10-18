@@ -21,13 +21,13 @@ static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Arg */
 static pgrt::PropSite pg_site_9; /* prop_right_9 */
 static pgrt::GetterSite pg_site_10; /* getter_getAttributes_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_12; /* method_getAttributes_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getAttributes_12 */
 static pgrt::GetterSite pg_site_13; /* getter_getAttributes_13 */
-static pt_method_site pg_site_14; /* method_getAttributes_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getAttributes_14 */
 static pgrt::PropSite pg_site_15; /* prop_right_15 */
 static pgrt::GetterSite pg_site_16; /* getter_getRawArgs_16 */
-static pt_method_site pg_site_17; /* method_getRawArgs_17 */
-static pt_method_site pg_site_18; /* method_getAttributes_18 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getRawArgs_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getAttributes_18 */
 static pgrt::PropSite pg_site_19; /* prop_right_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PhpParser\Node\Expr\MethodCall */
 static pgrt::PropSite pg_site_21; /* prop_right_21 */
@@ -39,13 +39,13 @@ static pgrt::PropSite pg_site_26; /* prop_name_26 */
 static pgrt::PropSite pg_site_27; /* prop_left_27 */
 static pgrt::PropSite pg_site_28; /* prop_right_28 */
 static pgrt::GetterSite pg_site_29; /* getter_getAttributes_29 */
-static pt_method_site pg_site_30; /* method_getAttributes_30 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getAttributes_30 */
 static pgrt::GetterSite pg_site_31; /* getter_getAttributes_31 */
-static pt_method_site pg_site_32; /* method_getAttributes_32 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getAttributes_32 */
 static pgrt::PropSite pg_site_33; /* prop_right_33 */
 static pgrt::GetterSite pg_site_34; /* getter_getRawArgs_34 */
-static pt_method_site pg_site_35; /* method_getRawArgs_35 */
-static pt_method_site pg_site_36; /* method_getAttributes_36 */
+static pgrt::MethodShapeSite pg_site_35; /* method0_getRawArgs_35 */
+static pgrt::MethodShapeSite pg_site_36; /* method0_getAttributes_36 */
 static pgrt::PropSite pg_site_37; /* prop_right_37 */
 static pgrt::ClassSite pg_site_38; /* cls_PhpParser\Node\Expr\StaticCall */
 static pgrt::PropSite pg_site_39; /* prop_right_39 */
@@ -57,17 +57,17 @@ static pgrt::PropSite pg_site_44; /* prop_name_44 */
 static pgrt::PropSite pg_site_45; /* prop_left_45 */
 static pgrt::PropSite pg_site_46; /* prop_right_46 */
 static pgrt::GetterSite pg_site_47; /* getter_getAttributes_47 */
-static pt_method_site pg_site_48; /* method_getAttributes_48 */
+static pgrt::MethodShapeSite pg_site_48; /* method0_getAttributes_48 */
 static pgrt::GetterSite pg_site_49; /* getter_getAttributes_49 */
-static pt_method_site pg_site_50; /* method_getAttributes_50 */
+static pgrt::MethodShapeSite pg_site_50; /* method0_getAttributes_50 */
 static pgrt::PropSite pg_site_51; /* prop_right_51 */
 static pgrt::GetterSite pg_site_52; /* getter_getRawArgs_52 */
-static pt_method_site pg_site_53; /* method_getRawArgs_53 */
-static pt_method_site pg_site_54; /* method_getAttributes_54 */
+static pgrt::MethodShapeSite pg_site_53; /* method0_getRawArgs_53 */
+static pgrt::MethodShapeSite pg_site_54; /* method0_getAttributes_54 */
 static pgrt::PropSite pg_site_55; /* prop_right_55 */
 static pgrt::PropSite pg_site_56; /* prop_left_56 */
 static pgrt::GetterSite pg_site_57; /* getter_getAttributes_57 */
-static pt_method_site pg_site_58; /* method_getAttributes_58 */
+static pgrt::MethodShapeSite pg_site_58; /* method0_getAttributes_58 */
 static pgrt::ClassSite pg_site_59; /* cls_PhpParser\Node */
 
 namespace pgen::PipeTransformerVisitor {
@@ -148,7 +148,7 @@ namespace pgen::PipeTransformerVisitor {
 					ZVAL_COPY(r23.raw(), gs22);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, zv::Ref(p20).deref().raw(), "getAttributes", "getattributes", 13, 0, NULL, r23.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, zv::Ref(p20).deref().raw(), "getAttributes", "getattributes", 13, r23.raw()))) return false;
 				}
 				}
 				zv::Val arr24 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
@@ -158,7 +158,7 @@ namespace pgen::PipeTransformerVisitor {
 					ZVAL_COPY(r26.raw(), gs25);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_node, "getAttributes", "getattributes", 13, 0, NULL, r26.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_node, "getAttributes", "getattributes", 13, r26.raw()))) return false;
 				}
 				}
 				{ zval v = r26.take(); zend_symtable_update(Z_ARRVAL_P(arr24.raw()), Z_STR_P(&pg_lit[0]), &v); }
@@ -174,7 +174,7 @@ namespace pgen::PipeTransformerVisitor {
 					ZVAL_COPY(r30.raw(), gs29);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, zv::Ref(p27).deref().raw(), "getRawArgs", "getrawargs", 10, 0, NULL, r30.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, zv::Ref(p27).deref().raw(), "getRawArgs", "getrawargs", 10, r30.raw()))) return false;
 				}
 				}
 				zv::Val et32;
@@ -186,7 +186,7 @@ namespace pgen::PipeTransformerVisitor {
 					if (UNEXPECTED(e31 == NULL)) return false;
 				}
 				zv::Val r34;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_18, zv::Ref(e31).deref().raw(), "getAttributes", "getattributes", 13, 0, NULL, r34.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, zv::Ref(e31).deref().raw(), "getAttributes", "getattributes", 13, r34.raw()))) return false;
 				{ zval v = r34.take(); zend_symtable_update(Z_ARRVAL_P(arr24.raw()), Z_STR_P(&pg_lit[1]), &v); }
 				zval av35[2];
 				ZVAL_COPY_VALUE(&av35[0], r23.raw());
@@ -280,7 +280,7 @@ namespace pgen::PipeTransformerVisitor {
 					ZVAL_COPY(r66.raw(), gs65);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_30, zv::Ref(p63).deref().raw(), "getAttributes", "getattributes", 13, 0, NULL, r66.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, zv::Ref(p63).deref().raw(), "getAttributes", "getattributes", 13, r66.raw()))) return false;
 				}
 				}
 				zv::Val arr67 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
@@ -290,7 +290,7 @@ namespace pgen::PipeTransformerVisitor {
 					ZVAL_COPY(r69.raw(), gs68);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_32, p_node, "getAttributes", "getattributes", 13, 0, NULL, r69.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, p_node, "getAttributes", "getattributes", 13, r69.raw()))) return false;
 				}
 				}
 				{ zval v = r69.take(); zend_symtable_update(Z_ARRVAL_P(arr67.raw()), Z_STR_P(&pg_lit[0]), &v); }
@@ -306,7 +306,7 @@ namespace pgen::PipeTransformerVisitor {
 					ZVAL_COPY(r73.raw(), gs72);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_35, zv::Ref(p70).deref().raw(), "getRawArgs", "getrawargs", 10, 0, NULL, r73.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_35, zv::Ref(p70).deref().raw(), "getRawArgs", "getrawargs", 10, r73.raw()))) return false;
 				}
 				}
 				zv::Val et75;
@@ -318,7 +318,7 @@ namespace pgen::PipeTransformerVisitor {
 					if (UNEXPECTED(e74 == NULL)) return false;
 				}
 				zv::Val r77;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_36, zv::Ref(e74).deref().raw(), "getAttributes", "getattributes", 13, 0, NULL, r77.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_36, zv::Ref(e74).deref().raw(), "getAttributes", "getattributes", 13, r77.raw()))) return false;
 				{ zval v = r77.take(); zend_symtable_update(Z_ARRVAL_P(arr67.raw()), Z_STR_P(&pg_lit[1]), &v); }
 				zval av78[2];
 				ZVAL_COPY_VALUE(&av78[0], r66.raw());
@@ -413,7 +413,7 @@ namespace pgen::PipeTransformerVisitor {
 					ZVAL_COPY(r109.raw(), gs108);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_48, zv::Ref(p106).deref().raw(), "getAttributes", "getattributes", 13, 0, NULL, r109.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_48, zv::Ref(p106).deref().raw(), "getAttributes", "getattributes", 13, r109.raw()))) return false;
 				}
 				}
 				zv::Val arr110 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
@@ -423,7 +423,7 @@ namespace pgen::PipeTransformerVisitor {
 					ZVAL_COPY(r112.raw(), gs111);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_50, p_node, "getAttributes", "getattributes", 13, 0, NULL, r112.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_50, p_node, "getAttributes", "getattributes", 13, r112.raw()))) return false;
 				}
 				}
 				{ zval v = r112.take(); zend_symtable_update(Z_ARRVAL_P(arr110.raw()), Z_STR_P(&pg_lit[0]), &v); }
@@ -439,7 +439,7 @@ namespace pgen::PipeTransformerVisitor {
 					ZVAL_COPY(r116.raw(), gs115);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_53, zv::Ref(p113).deref().raw(), "getRawArgs", "getrawargs", 10, 0, NULL, r116.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_53, zv::Ref(p113).deref().raw(), "getRawArgs", "getrawargs", 10, r116.raw()))) return false;
 				}
 				}
 				zv::Val et118;
@@ -451,7 +451,7 @@ namespace pgen::PipeTransformerVisitor {
 					if (UNEXPECTED(e117 == NULL)) return false;
 				}
 				zv::Val r120;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_54, zv::Ref(e117).deref().raw(), "getAttributes", "getattributes", 13, 0, NULL, r120.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_54, zv::Ref(e117).deref().raw(), "getAttributes", "getattributes", 13, r120.raw()))) return false;
 				{ zval v = r120.take(); zend_symtable_update(Z_ARRVAL_P(arr110.raw()), Z_STR_P(&pg_lit[1]), &v); }
 				zval av121[2];
 				ZVAL_COPY_VALUE(&av121[0], r109.raw());
@@ -502,7 +502,7 @@ namespace pgen::PipeTransformerVisitor {
 			ZVAL_COPY(r138.raw(), gs137);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_58, p_node, "getAttributes", "getattributes", 13, 0, NULL, r138.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_58, p_node, "getAttributes", "getattributes", 13, r138.raw()))) return false;
 		}
 		}
 		{ zval v = r138.take(); zend_symtable_update(Z_ARRVAL_P(arr136.raw()), Z_STR_P(&pg_lit[0]), &v); }

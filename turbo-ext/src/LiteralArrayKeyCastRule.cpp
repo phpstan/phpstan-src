@@ -13,9 +13,9 @@ static pgrt::PropSite pg_site_0; /* prop_items_0 */
 static pgrt::PropSite pg_site_1; /* prop_key_1 */
 static pgrt::PropSite pg_site_2; /* prop_key_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_isConstantScalarValue_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isConstantScalarValue_4 */
 static pt_method_site pg_site_5; /* method_getConstantScalarTypes_5 */
-static pt_method_site pg_site_6; /* method_toArrayKey_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_toArrayKey_6 */
 static pt_method_site pg_site_7; /* method_equals_7 */
 static pt_method_site pg_site_8; /* method_describe_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Type\GeneralizePrecision */
@@ -24,7 +24,7 @@ static pt_method_site pg_site_11; /* method_generalize_11 */
 static pt_method_site pg_site_12; /* method_describe_12 */
 static pt_method_site pg_site_13; /* method_describe_13 */
 static pt_method_site pg_site_14; /* method_describe_14 */
-static pt_method_site pg_site_15; /* method_getStartLine_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getStartLine_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
 
@@ -110,7 +110,7 @@ namespace pgen::LiteralArrayKeyCastRule {
 						if (UNEXPECTED(r16.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_keyType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r16.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_keyType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, r16.raw()))) return false;
 					}
 					}
 					bool r17;
@@ -157,7 +157,7 @@ namespace pgen::LiteralArrayKeyCastRule {
 									if (UNEXPECTED(r28.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_constantScalar, "toArrayKey", "toarraykey", 10, 0, NULL, r28.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_constantScalar, "toArrayKey", "toarraykey", 10, r28.raw()))) return false;
 								}
 								}
 								l_arrayKeyType = std::move(r28);
@@ -265,7 +265,7 @@ namespace pgen::LiteralArrayKeyCastRule {
 								zv::Val r55;
 								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_tip(Z_OBJ_P(r54.raw()), &pg_lit[2], r55.raw()))) return false;
 								zv::Val r56;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_item, "getStartLine", "getstartline", 12, 0, NULL, r56.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_item, "getStartLine", "getstartline", 12, r56.raw()))) return false;
 								if (UNEXPECTED(Z_TYPE_P(r56.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r56.raw()); return false; }
 								zv::Val r57;
 								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r55.raw()), Z_LVAL_P(r56.raw()), r57.raw()))) return false;

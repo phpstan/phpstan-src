@@ -16,12 +16,12 @@ static pgrt::PropSite pg_site_3; /* prop_name_3 */
 static pt_method_site pg_site_4; /* method_hasFunction_4 */
 static pgrt::PropSite pg_site_5; /* prop_name_5 */
 static pt_method_site pg_site_6; /* method_getFunction_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
-static pt_method_site pg_site_8; /* method_getClassReflection_8 */
-static pt_method_site pg_site_9; /* method_getInterfaces_9 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getClassReflection_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getInterfaces_9 */
 static pgrt::FunctionSite pg_site_10; /* function_array_keys */
 static pgrt::FunctionSite pg_site_11; /* function_str_starts_with */
-static pt_method_site pg_site_12; /* method_getName_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
@@ -185,7 +185,7 @@ namespace pgen::RuntimeReflectionFunctionRule {
 			if (UNEXPECTED(r28.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r28.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_functionReflection.raw(), "getName", "getname", 7, r28.raw()))) return false;
 		}
 		}
 		bool ia29 = false;
@@ -206,7 +206,7 @@ namespace pgen::RuntimeReflectionFunctionRule {
 			if (UNEXPECTED(r31.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r31.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_scope, "getClassReflection", "getclassreflection", 18, r31.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r31);
@@ -216,7 +216,7 @@ namespace pgen::RuntimeReflectionFunctionRule {
 	}
 	 {
 		zv::Val r33;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, 0, NULL, r33.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, r33.raw()))) return false;
 		zval av34[1];
 		ZVAL_COPY_VALUE(&av34[0], r33.raw());
 		zv::Val r35;
@@ -264,7 +264,7 @@ namespace pgen::RuntimeReflectionFunctionRule {
 			if (UNEXPECTED(r46.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r46.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_functionReflection.raw(), "getName", "getname", 7, r46.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb47;

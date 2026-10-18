@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_array_find_key_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_getArrays_4 */
-static pt_method_site pg_site_5; /* method_getIterableKeyType_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getArrays_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getIterableKeyType_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
@@ -34,7 +34,7 @@ namespace pgen::ArrayFindKeyFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -95,7 +95,7 @@ namespace pgen::ArrayFindKeyFunctionReturnTypeExtension {
 	}
 	 {
 		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_arrayType.raw(), "getArrays", "getarrays", 9, 0, NULL, r11.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_arrayType.raw(), "getArrays", "getarrays", 9, r11.raw()))) return false;
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r11.raw())) < 1) {
 			 {
 				zval z12;
@@ -112,7 +112,7 @@ namespace pgen::ArrayFindKeyFunctionReturnTypeExtension {
 			if (UNEXPECTED(r13.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_arrayType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r13.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_arrayType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r13.raw()))) return false;
 		}
 		}
 		zv::Val n14;

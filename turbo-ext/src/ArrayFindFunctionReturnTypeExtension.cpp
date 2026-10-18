@@ -9,18 +9,18 @@ zend_class_entry *pt_ce_array_find_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_getArrays_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getArrays_4 */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
-static pt_method_site pg_site_8; /* method_getIterableValueType_8 */
-static pt_method_site pg_site_9; /* method_getArrays_9 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getIterableValueType_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getArrays_9 */
 static pgrt::FunctionSite pg_site_10; /* function_array_map */
-static pt_method_site pg_site_11; /* method_isIterableAtLeastOnce_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_isIterableAtLeastOnce_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Analyser\Scope */
@@ -41,7 +41,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_type, "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_type, "getIterableValueType", "getiterablevaluetype", 20, r1.raw()))) return;
 		}
 		}
 		*return_value = r1.take();
@@ -76,7 +76,7 @@ namespace pgen::ArrayFindFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -141,7 +141,7 @@ namespace pgen::ArrayFindFunctionReturnTypeExtension {
 	}
 	 {
 		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_arrayType.raw(), "getArrays", "getarrays", 9, 0, NULL, r11.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_arrayType.raw(), "getArrays", "getarrays", 9, r11.raw()))) return false;
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r11.raw())) < 1) {
 			 {
 				zval z12;
@@ -204,7 +204,7 @@ namespace pgen::ArrayFindFunctionReturnTypeExtension {
 	 {
 		zv::Val h30 = pt_native_closure_new(&pg_closure_1, 0, NULL, 0u);
 		zv::Val r31;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_resultTypes.raw(), "getArrays", "getarrays", 9, 0, NULL, r31.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_resultTypes.raw(), "getArrays", "getarrays", 9, r31.raw()))) return false;
 		zval av32[2];
 		ZVAL_COPY_VALUE(&av32[0], h30.raw());
 		ZVAL_COPY_VALUE(&av32[1], r31.raw());
@@ -227,7 +227,7 @@ namespace pgen::ArrayFindFunctionReturnTypeExtension {
 			if (UNEXPECTED(r35.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_resultTypes.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r35.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_resultTypes.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r35.raw()))) return false;
 		}
 		}
 		bool r36;

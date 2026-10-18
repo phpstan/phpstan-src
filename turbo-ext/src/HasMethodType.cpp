@@ -17,14 +17,14 @@ static pt_method_site pg_site_4; /* method_hasMethod_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\UnionType */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\IntersectionType */
 static pt_method_site pg_site_7; /* method_isSuperTypeOf_7 */
-static pt_method_site pg_site_8; /* method_isCallable_8 */
-static pt_method_site pg_site_9; /* method_isCallable_9 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isCallable_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isCallable_9 */
 static pt_method_site pg_site_10; /* method_isSuperTypeOf_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Accessory\HasMethodType */
 static pt_method_site pg_site_12; /* method_hasMethod_12 */
 static pt_method_site pg_site_13; /* method_isSubTypeOf_13 */
 static pt_method_site pg_site_14; /* method_getUnresolvedMethodPrototype_14 */
-static pt_method_site pg_site_15; /* method_getTransformedMethod_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getTransformedMethod_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Reflection\Dummy\DummyMethodReflection */
 static pt_method_site pg_site_17; /* method_getDeclaringClass_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Type\Type */
@@ -283,7 +283,7 @@ namespace pgen::HasMethodType {
 			if (UNEXPECTED(r6.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, &this_zv, "isCallable", "iscallable", 10, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, &this_zv, "isCallable", "iscallable", 10, r6.raw()))) return false;
 		}
 		}
 		bool r7;
@@ -296,7 +296,7 @@ namespace pgen::HasMethodType {
 				if (UNEXPECTED(r8.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_otherType, "isCallable", "iscallable", 10, 0, NULL, r8.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_otherType, "isCallable", "iscallable", 10, r8.raw()))) return false;
 			}
 			}
 			bool r9;
@@ -488,7 +488,7 @@ namespace pgen::HasMethodType {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r2.raw(), "getTransformedMethod", "gettransformedmethod", 20, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, r2.raw(), "getTransformedMethod", "gettransformedmethod", 20, r3.raw()))) return false;
 		}
 		}
 		*ret = r3.take();

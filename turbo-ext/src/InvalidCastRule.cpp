@@ -23,12 +23,12 @@ static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\ErrorType */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr */
 static pt_method_site pg_site_12; /* method_getClass_12 */
 static pt_method_site pg_site_13; /* method_getNativeReflection_13 */
-static pt_method_site pg_site_14; /* method_getShortName_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getShortName_14 */
 static pgrt::FunctionSite pg_site_15; /* function_substr */
 static pgrt::PropSite pg_site_16; /* prop_expr_16 */
 static pt_method_site pg_site_17; /* method_getType_17 */
 static pt_method_site pg_site_18; /* method_describe_18 */
-static pt_method_site pg_site_19; /* method_getStartLine_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getStartLine_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_22; /* cls_PhpParser\Node */
@@ -376,7 +376,7 @@ namespace pgen::InvalidCastRule {
 				}
 				}
 				zv::Val r28;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r27.raw(), "getShortName", "getshortname", 12, 0, NULL, r28.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, r27.raw(), "getShortName", "getshortname", 12, r28.raw()))) return false;
 				l_shortName = std::move(r28);
 			}
 			 {
@@ -458,7 +458,7 @@ namespace pgen::InvalidCastRule {
 				zv::Val r50;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r47.raw()), r49.raw(), r50.raw()))) return false;
 				zv::Val r51;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_node, "getStartLine", "getstartline", 12, 0, NULL, r51.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p_node, "getStartLine", "getstartline", 12, r51.raw()))) return false;
 				zv::Val r52;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r50.raw()), Z_LVAL_P(r51.raw()), r52.raw()))) return false;
 				zv::Val r53;

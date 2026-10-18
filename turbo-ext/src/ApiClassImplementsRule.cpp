@@ -13,10 +13,10 @@ static pgrt::PropSite pg_site_0; /* prop_implements_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_2; /* method_hasClass_2 */
 static pt_method_site pg_site_3; /* method_getClass_3 */
-static pt_method_site pg_site_4; /* method_getName_4 */
-static pt_method_site pg_site_5; /* method_getFileName_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getFileName_5 */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
-static pt_method_site pg_site_7; /* method_getResolvedPhpDoc_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getResolvedPhpDoc_7 */
 static pt_method_site pg_site_8; /* method_getTagsByName_8 */
 static pgrt::FunctionSite pg_site_9; /* function_count */
 static pt_method_site pg_site_10; /* method_getTagsByName_10 */
@@ -191,7 +191,7 @@ namespace pgen::ApiClassImplementsRule {
 			if (UNEXPECTED(r19.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_implementedClassReflection.raw(), "getName", "getname", 7, 0, NULL, r19.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_implementedClassReflection.raw(), "getName", "getname", 7, r19.raw()))) return false;
 		}
 		}
 		zv::Val r20;
@@ -200,7 +200,7 @@ namespace pgen::ApiClassImplementsRule {
 			if (UNEXPECTED(r20.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_implementedClassReflection.raw(), "getFileName", "getfilename", 11, 0, NULL, r20.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_implementedClassReflection.raw(), "getFileName", "getfilename", 11, r20.raw()))) return false;
 		}
 		}
 		bool r21;
@@ -251,7 +251,7 @@ namespace pgen::ApiClassImplementsRule {
 			if (UNEXPECTED(r32.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_implementedClassReflection.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, 0, NULL, r32.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_implementedClassReflection.raw(), "getResolvedPhpDoc", "getresolvedphpdoc", 17, r32.raw()))) return false;
 		}
 		}
 		l_docBlock = std::move(r32);

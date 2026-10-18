@@ -16,15 +16,15 @@ static pgrt::PropSite pg_site_3; /* prop_name_3 */
 static pt_method_site pg_site_4; /* method_toLowerString_4 */
 static pt_method_site pg_site_5; /* method_isInClass_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_7; /* method_getClassReflection_7 */
-static pt_method_site pg_site_8; /* method_isClass_8 */
-static pt_method_site pg_site_9; /* method_getClassTypeDescription_9 */
-static pt_method_site pg_site_10; /* method_getClassTypeDescription_10 */
-static pt_method_site pg_site_11; /* method_isAbstract_11 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getClassReflection_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isClass_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getClassTypeDescription_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getClassTypeDescription_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_isAbstract_11 */
 static pt_method_site pg_site_12; /* method_getDisplayName_12 */
 static pt_method_site pg_site_13; /* method_hasConstructor_13 */
 static pt_method_site pg_site_14; /* method_getConstructor_14 */
-static pt_method_site pg_site_15; /* method_isPublic_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_isPublic_15 */
 static pt_method_site pg_site_16; /* method_getDisplayName_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Analyser\Scope */
@@ -190,19 +190,19 @@ namespace pgen::NonClassAttributeClassRule {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_scope, "getClassReflection", "getclassreflection", 18, r7.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r7);
 	}
 	 {
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_classReflection.raw(), "isClass", "isclass", 7, 0, NULL, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_classReflection.raw(), "isClass", "isclass", 7, r8.raw()))) return false;
 		if (!((Z_TYPE_P(r8.raw()) == IS_TRUE))) {
 			 {
 				zv::Val arr9 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 				zv::Val r10;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r10.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r10.raw()))) return false;
 				pgrt::StringBuilder sb11;
 				if (UNEXPECTED(!sb11.append(r10.raw()))) return false;
 				sb11.appendLiteral(" cannot be an Attribute class.", 30);
@@ -210,7 +210,7 @@ namespace pgen::NonClassAttributeClassRule {
 				zv::Val r13;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r12.raw(), r13.raw()))) return false;
 				zv::Val r14;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r14.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r14.raw()))) return false;
 				zv::Val r15 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r14.raw())));
 				pgrt::StringBuilder sb16;
 				sb16.appendLiteral("attribute.", 10);
@@ -228,7 +228,7 @@ namespace pgen::NonClassAttributeClassRule {
 	}
 	 {
 		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_classReflection.raw(), "isAbstract", "isabstract", 10, 0, NULL, r20.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_classReflection.raw(), "isAbstract", "isabstract", 10, r20.raw()))) return false;
 		if (Z_TYPE_P(r20.raw()) == IS_TRUE) {
 			 {
 				zv::Val arr21 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
@@ -294,7 +294,7 @@ namespace pgen::NonClassAttributeClassRule {
 			if (UNEXPECTED(r32.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, r31.raw(), "isPublic", "ispublic", 8, 0, NULL, r32.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, r31.raw(), "isPublic", "ispublic", 8, r32.raw()))) return false;
 		}
 		}
 		if (!((Z_TYPE_P(r32.raw()) == IS_TRUE))) {

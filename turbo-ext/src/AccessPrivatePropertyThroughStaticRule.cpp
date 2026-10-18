@@ -22,12 +22,12 @@ static pt_method_site pg_site_9; /* method_hasStaticProperty_9 */
 static pt_method_site pg_site_10; /* method_getStaticProperty_10 */
 static pt_method_site pg_site_11; /* method_isPrivate_11 */
 static pt_method_site pg_site_12; /* method_isInClass_12 */
-static pt_method_site pg_site_13; /* method_getClassReflection_13 */
-static pt_method_site pg_site_14; /* method_isFinal_14 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getClassReflection_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isFinal_14 */
 static pt_method_site pg_site_15; /* method_getDeclaringClass_15 */
 static pt_method_site pg_site_16; /* method_getDisplayName_16 */
 static pgrt::PropSite pg_site_17; /* prop_name_17 */
-static pt_method_site pg_site_18; /* method_getStartLine_18 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getStartLine_18 */
 static pgrt::ClassSite pg_site_19; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Analyser\Scope */
 
@@ -228,7 +228,7 @@ namespace pgen::AccessPrivatePropertyThroughStaticRule {
 				if (UNEXPECTED(r39.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r39.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_scope, "getClassReflection", "getclassreflection", 18, r39.raw()))) return false;
 			}
 			}
 			zv::Val r40;
@@ -237,7 +237,7 @@ namespace pgen::AccessPrivatePropertyThroughStaticRule {
 				if (UNEXPECTED(r40.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r39.raw(), "isFinal", "isfinal", 7, 0, NULL, r40.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, r39.raw(), "isFinal", "isfinal", 7, r40.raw()))) return false;
 			}
 			}
 			b34 = (Z_TYPE_P(r40.raw()) == IS_TRUE);
@@ -302,7 +302,7 @@ namespace pgen::AccessPrivatePropertyThroughStaticRule {
 			p51 = o52.raw();
 		}
 		zv::Val r53;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_18, zv::Ref(p51).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r53.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, zv::Ref(p51).deref().raw(), "getStartLine", "getstartline", 12, r53.raw()))) return false;
 		zv::Val r54;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r50.raw()), Z_LVAL_P(r53.raw()), r54.raw()))) return false;
 		zv::Val r55;

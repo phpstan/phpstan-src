@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_idate_function_return_type_helper = nullptr;
 static zval pg_lit[23];
 
 static pt_method_site pg_site_0; /* method_getConstantStrings_0 */
-static pt_method_site pg_site_1; /* method_getValue_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getValue_1 */
 static pt_method_site pg_site_2; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\Type */
 
@@ -59,7 +59,7 @@ namespace pgen::IdateFunctionReturnTypeHelper {
 						if (UNEXPECTED(r12.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_formatString, "getValue", "getvalue", 8, 0, NULL, r12.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_formatString, "getValue", "getvalue", 8, r12.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(r12.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\IdateFunctionReturnTypeHelper::buildReturnTypeFromFormat", 1, "formatString", "string", r12.raw()); return false; }

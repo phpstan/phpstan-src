@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_mixin_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_getOriginalNode_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Stmt\ClassLike */
@@ -59,7 +59,7 @@ namespace pgen::MixinRule {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r3.raw()))) return false;
 		}
 		}
 		zv::Val vd4;

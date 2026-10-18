@@ -17,7 +17,7 @@ static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pt_method_site pg_site_5; /* method_hasFunction_5 */
 static pgrt::PropSite pg_site_6; /* prop_name_6 */
 static pt_method_site pg_site_7; /* method_getFunction_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
 static pgrt::FunctionSite pg_site_9; /* function_ucfirst */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Reflection\ParametersAcceptor */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -188,7 +188,7 @@ namespace pgen::CallUserFuncRule {
 			if (UNEXPECTED(r27.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r27.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_functionReflection.raw(), "getName", "getname", 7, r27.raw()))) return false;
 		}
 		}
 		l_functionName = std::move(r27);

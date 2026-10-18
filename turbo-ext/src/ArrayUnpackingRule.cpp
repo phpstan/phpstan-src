@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_array_unpacking_rule = nullptr;
 static zval pg_lit[4];
 
 static pgrt::PropSite pg_site_0; /* prop_unpack_0 */
-static pt_method_site pg_site_1; /* method_getPhpVersion_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getPhpVersion_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pt_method_site pg_site_4; /* method_getIterableKeyType_4 */
@@ -19,9 +19,9 @@ static pt_method_site pg_site_6; /* method_getNativeType_6 */
 static pt_method_site pg_site_7; /* method_getIterableKeyType_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Node\Expr\NativeTypeExpr */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_10; /* method_isString_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isString_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_12; /* method_isString_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_isString_12 */
 static pgrt::PropSite pg_site_13; /* prop_value_13 */
 static pt_method_site pg_site_14; /* method_getType_14 */
 static pt_method_site pg_site_15; /* method_describe_15 */
@@ -46,7 +46,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_type, "isString", "isstring", 8, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_type, "isString", "isstring", 8, r1.raw()))) return;
 		}
 		}
 		bool r2;
@@ -103,7 +103,7 @@ namespace pgen::ArrayUnpackingRule {
 		bool b1 = (Z_TYPE_P(zv::Ref(p2).deref().raw()) == (false ? IS_TRUE : IS_FALSE));
 		if (!b1) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, r4.raw()))) return false;
 			zv::Val r5;
 			if (UNEXPECTED(!pgen::PhpVersions::m_supportsArrayUnpackingWithStringKeys(Z_OBJ_P(r4.raw()), r5.raw()))) return false;
 			bool r6;
@@ -221,7 +221,7 @@ namespace pgen::ArrayUnpackingRule {
 			if (UNEXPECTED(r33.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_keyType.raw(), "isString", "isstring", 8, 0, NULL, r33.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_keyType.raw(), "isString", "isstring", 8, r33.raw()))) return false;
 		}
 		}
 		l_isString = std::move(r33);

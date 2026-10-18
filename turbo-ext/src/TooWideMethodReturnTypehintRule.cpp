@@ -17,14 +17,14 @@ static pt_method_site pg_site_4; /* method_getDeclaringClass_4 */
 static pt_method_site pg_site_5; /* method_getDeclaringClass_5 */
 static pt_method_site pg_site_6; /* method_isPrivate_6 */
 static pt_method_site pg_site_7; /* method_getDeclaringClass_7 */
-static pt_method_site pg_site_8; /* method_isFinal_8 */
-static pt_method_site pg_site_9; /* method_isFinal_9 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isFinal_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isFinal_9 */
 static pt_method_site pg_site_10; /* method_yes_10 */
 static pt_method_site pg_site_11; /* method_getNativeReturnType_11 */
 static pt_method_site pg_site_12; /* method_getPhpDocReturnType_12 */
 static pt_method_site pg_site_13; /* method_getDeclaringClass_13 */
 static pt_method_site pg_site_14; /* method_getDisplayName_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
 static pt_method_site pg_site_16; /* method_isPrivate_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Node\MethodReturnStatementsNode */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Node\FunctionReturnStatementsNode */
@@ -259,7 +259,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 					if (UNEXPECTED(r30.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, vd28.raw(), "isFinal", "isfinal", 7, 0, NULL, r30.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, vd28.raw(), "isFinal", "isfinal", 7, r30.raw()))) return false;
 				}
 				}
 				bool b27 = !(zend_is_true(r30.raw()));
@@ -270,7 +270,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 						if (UNEXPECTED(r31.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_method.raw(), "isFinal", "isfinal", 7, 0, NULL, r31.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_method.raw(), "isFinal", "isfinal", 7, r31.raw()))) return false;
 					}
 					}
 					zv::Val vd32;
@@ -370,7 +370,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			if (UNEXPECTED(r47.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_method.raw(), "getName", "getname", 7, 0, NULL, r47.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_method.raw(), "getName", "getname", 7, r47.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb48;

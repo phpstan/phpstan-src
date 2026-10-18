@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_pathinfo_function_dynamic_return_type_extension = nullpt
 /* the interned string literals, created at module startup */
 static zval pg_lit[6];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
@@ -21,14 +21,14 @@ static pt_method_site pg_site_8; /* method_setOffsetValueType_8 */
 static pt_method_site pg_site_9; /* method_getArray_9 */
 static pgrt::PropSite pg_site_10; /* prop_value_10 */
 static pt_method_site pg_site_11; /* method_getType_11 */
-static pt_method_site pg_site_12; /* method_getConstantScalarValues_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getConstantScalarValues_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_14; /* method_hasConstant_14 */
 static pt_method_site pg_site_15; /* method_getConstant_15 */
 static pt_method_site pg_site_16; /* method_getValueType_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_19; /* method_getValue_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getValue_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_21; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Analyser\Scope */
@@ -60,7 +60,7 @@ namespace pgen::PathinfoFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -291,7 +291,7 @@ namespace pgen::PathinfoFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r48.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_flagsType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r48.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_flagsType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r48.raw()))) return false;
 		}
 		}
 		l_scalarValues = std::move(r48);
@@ -511,7 +511,7 @@ namespace pgen::PathinfoFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r35.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_valueType.raw(), "getValue", "getvalue", 8, 0, NULL, r35.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_valueType.raw(), "getValue", "getvalue", 8, r35.raw()))) return false;
 		}
 		}
 		zval z36;

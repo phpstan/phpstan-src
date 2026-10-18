@@ -13,9 +13,9 @@ static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Expr\UnaryPlus */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr\UnaryMinus */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Expr\BitwiseNot */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_4; /* method_isString_4 */
-static pt_method_site pg_site_5; /* method_isInteger_5 */
-static pt_method_site pg_site_6; /* method_isFloat_6 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isString_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isInteger_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isFloat_6 */
 static pt_method_site pg_site_7; /* method_toNumber_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\ErrorType */
 static pgrt::PropSite pg_site_9; /* prop_expr_9 */
@@ -26,7 +26,7 @@ static pgrt::PropSite pg_site_13; /* prop_expr_13 */
 static pt_method_site pg_site_14; /* method_getType_14 */
 static pt_method_site pg_site_15; /* method_describe_15 */
 static pgrt::PropSite pg_site_16; /* prop_expr_16 */
-static pt_method_site pg_site_17; /* method_getStartLine_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getStartLine_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_19; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Analyser\Scope */
@@ -48,7 +48,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r3.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_type, "isString", "isstring", 8, 0, NULL, r3.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_type, "isString", "isstring", 8, r3.raw()))) return;
 		}
 		}
 		bool r4;
@@ -61,7 +61,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r5.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_type, "isInteger", "isinteger", 9, 0, NULL, r5.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_type, "isInteger", "isinteger", 9, r5.raw()))) return;
 			}
 			}
 			bool r6;
@@ -76,7 +76,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r7.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_type, "isFloat", "isfloat", 7, 0, NULL, r7.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_type, "isFloat", "isfloat", 7, r7.raw()))) return;
 			}
 			}
 			bool r8;
@@ -358,7 +358,7 @@ namespace pgen::InvalidUnaryOperationRule {
 			p40 = o41.raw();
 		}
 		zv::Val r42;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_17, zv::Ref(p40).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r42.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, zv::Ref(p40).deref().raw(), "getStartLine", "getstartline", 12, r42.raw()))) return false;
 		zv::Val r43;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r39.raw()), Z_LVAL_P(r42.raw()), r43.raw()))) return false;
 		zv::Val r44;

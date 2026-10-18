@@ -9,20 +9,20 @@ zend_class_entry *pt_ce_class_attributes_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[10];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_getNativeReflection_1 */
 static pt_method_site pg_site_2; /* method_getAttributes_2 */
 static pgrt::FunctionSite pg_site_3; /* function_count */
-static pt_method_site pg_site_4; /* method_getClassTypeDescription_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassTypeDescription_4 */
 static pgrt::FunctionSite pg_site_5; /* function_strtolower */
 static pt_method_site pg_site_6; /* method_getDisplayName_6 */
 static pt_method_site pg_site_7; /* method_getOriginalNode_7 */
 static pgrt::PropSite pg_site_8; /* prop_attrGroups_8 */
 static pt_method_site pg_site_9; /* method_isReadOnly_9 */
 static pt_method_site pg_site_10; /* method_isEnum_10 */
-static pt_method_site pg_site_11; /* method_isInterface_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_isInterface_11 */
 static pt_method_site pg_site_12; /* method_isEnum_12 */
-static pt_method_site pg_site_13; /* method_isInterface_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_isInterface_13 */
 static pt_method_site pg_site_14; /* method_getNativeReflection_14 */
 static pt_method_site pg_site_15; /* method_getAttributes_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Rules\AttributesCheck */
@@ -75,7 +75,7 @@ namespace pgen::ClassAttributesRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -101,7 +101,7 @@ namespace pgen::ClassAttributesRule {
 		if (Z_LVAL_P(r6.raw()) > 0) {
 			 {
 				zv::Val r7;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r7.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r7.raw()))) return false;
 				zval av8[1];
 				ZVAL_COPY_VALUE(&av8[0], r7.raw());
 				zv::Val r9;
@@ -225,7 +225,7 @@ namespace pgen::ClassAttributesRule {
 				if (UNEXPECTED(r36.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_classReflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r36.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_classReflection.raw(), "isInterface", "isinterface", 11, r36.raw()))) return false;
 			}
 			}
 			b30 = zend_is_true(r36.raw());
@@ -268,7 +268,7 @@ namespace pgen::ClassAttributesRule {
 					if (UNEXPECTED(r43.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_classReflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r43.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_classReflection.raw(), "isInterface", "isinterface", 11, r43.raw()))) return false;
 				}
 				}
 				if (zend_is_true(r43.raw())) {

@@ -11,15 +11,15 @@ static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_getDisplayName_0 */
 static pt_method_site pg_site_1; /* method_getFile_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pt_method_site pg_site_3; /* method_isInTrait_3 */
 static pt_method_site pg_site_4; /* method_getTraitReflection_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
-static pt_method_site pg_site_6; /* method_getTemplateTypeMap_6 */
-static pt_method_site pg_site_7; /* method_getTypes_7 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getTemplateTypeMap_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getTypes_7 */
 static pgrt::GetterSite pg_site_8; /* getter_getTemplateTags_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\PhpDoc\Tag\MethodTag */
-static pt_method_site pg_site_10; /* method_getTemplateTags_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getTemplateTags_10 */
 static pgrt::FunctionSite pg_site_11; /* function_array_keys */
 static pt_method_site pg_site_12; /* method_describe_12 */
 static pt_method_site pg_site_13; /* method_getDisplayName_13 */
@@ -95,7 +95,7 @@ namespace pgen::MethodTagTemplateTypeCheck {
 			if (UNEXPECTED(r6.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_classReflection, "getName", "getname", 7, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_classReflection, "getName", "getname", 7, r6.raw()))) return false;
 		}
 		}
 		zv::Val r7;
@@ -134,7 +134,7 @@ namespace pgen::MethodTagTemplateTypeCheck {
 				if (UNEXPECTED(r14.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r12.raw(), "getName", "getname", 7, 0, NULL, r14.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, r12.raw(), "getName", "getname", 7, r14.raw()))) return false;
 			}
 			}
 			q11 = std::move(r14);
@@ -168,7 +168,7 @@ namespace pgen::MethodTagTemplateTypeCheck {
 			if (UNEXPECTED(r21.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_classReflection, "getTemplateTypeMap", "gettemplatetypemap", 18, 0, NULL, r21.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_classReflection, "getTemplateTypeMap", "gettemplatetypemap", 18, r21.raw()))) return false;
 		}
 		}
 		zv::Val r22;
@@ -177,7 +177,7 @@ namespace pgen::MethodTagTemplateTypeCheck {
 			if (UNEXPECTED(r22.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r21.raw(), "getTypes", "gettypes", 8, 0, NULL, r22.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, r21.raw(), "getTypes", "gettypes", 8, r22.raw()))) return false;
 		}
 		}
 		l_classTemplateTypes = std::move(r22);
@@ -204,7 +204,7 @@ namespace pgen::MethodTagTemplateTypeCheck {
 						ZVAL_COPY(r33.raw(), gs32);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_methodTag, "getTemplateTags", "gettemplatetags", 15, 0, NULL, r33.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_methodTag, "getTemplateTags", "gettemplatetags", 15, r33.raw()))) return false;
 					}
 					}
 					l_methodTemplateTags = std::move(r33);

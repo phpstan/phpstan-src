@@ -9,17 +9,17 @@ zend_class_entry *pt_ce_catch_with_unthrown_exception_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getCaughtType_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getCaughtType_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\NeverType */
-static pt_method_site pg_site_2; /* method_getOriginalCaughtType_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getOriginalCaughtType_2 */
 static pt_method_site pg_site_3; /* method_describe_3 */
-static pt_method_site pg_site_4; /* method_getStartLine_4 */
-static pt_method_site pg_site_5; /* method_getCaughtType_5 */
-static pt_method_site pg_site_6; /* method_getObjectClassNames_6 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getStartLine_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getCaughtType_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getObjectClassNames_6 */
 static pt_method_site pg_site_7; /* method_isCheckedException_7 */
-static pt_method_site pg_site_8; /* method_getCaughtType_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getCaughtType_8 */
 static pt_method_site pg_site_9; /* method_describe_9 */
-static pt_method_site pg_site_10; /* method_getStartLine_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getStartLine_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\Exceptions\ExceptionTypeResolver */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\Scope */
@@ -63,12 +63,12 @@ namespace pgen::CatchWithUnthrownExceptionRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getCaughtType", "getcaughttype", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getCaughtType", "getcaughttype", 13, r1.raw()))) return false;
 		if (pgrt::instanceOfClass(r1.raw(), pt_ce_never_type) || pgrt::instanceOfClass(r1.raw(), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\NeverType", 22))) {
 			 {
 				zv::Val arr2 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 				zv::Val r3;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getOriginalCaughtType", "getoriginalcaughttype", 21, 0, NULL, r3.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getOriginalCaughtType", "getoriginalcaughttype", 21, r3.raw()))) return false;
 				zval *vl4_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 				if (UNEXPECTED(vl4_p == NULL)) return false;
 				zv::Val vl4 = zv::Val::copyOf(zv::Ref(vl4_p));
@@ -91,7 +91,7 @@ namespace pgen::CatchWithUnthrownExceptionRule {
 				zv::Val r9;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r8.raw(), r9.raw()))) return false;
 				zv::Val r10;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_node, "getStartLine", "getstartline", 12, 0, NULL, r10.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_node, "getStartLine", "getstartline", 12, r10.raw()))) return false;
 				zv::Val r11;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r9.raw()), Z_LVAL_P(r10.raw()), r11.raw()))) return false;
 				zv::Val r12;
@@ -113,14 +113,14 @@ namespace pgen::CatchWithUnthrownExceptionRule {
 			}
 			 {
 				zv::Val r16;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_node, "getCaughtType", "getcaughttype", 13, 0, NULL, r16.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_node, "getCaughtType", "getcaughttype", 13, r16.raw()))) return false;
 				zv::Val r17;
 				if (EXPECTED(Z_TYPE_P(r16.raw()) == IS_OBJECT)) {
 					r17 = pt_type_op(Z_OBJ_P(r16.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 					if (UNEXPECTED(r17.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r16.raw(), "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r17.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, r16.raw(), "getObjectClassNames", "getobjectclassnames", 19, r17.raw()))) return false;
 				}
 				}
 				pgrt::ForeachIter it18;
@@ -177,7 +177,7 @@ namespace pgen::CatchWithUnthrownExceptionRule {
 	 {
 		zv::Val arr28 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_node, "getCaughtType", "getcaughttype", 13, 0, NULL, r29.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_node, "getCaughtType", "getcaughttype", 13, r29.raw()))) return false;
 		zval *vl30_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 		if (UNEXPECTED(vl30_p == NULL)) return false;
 		zv::Val vl30 = zv::Val::copyOf(zv::Ref(vl30_p));
@@ -200,7 +200,7 @@ namespace pgen::CatchWithUnthrownExceptionRule {
 		zv::Val r35;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r34.raw(), r35.raw()))) return false;
 		zv::Val r36;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_node, "getStartLine", "getstartline", 12, 0, NULL, r36.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_node, "getStartLine", "getstartline", 12, r36.raw()))) return false;
 		zv::Val r37;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r35.raw()), Z_LVAL_P(r36.raw()), r37.raw()))) return false;
 		zv::Val r38;

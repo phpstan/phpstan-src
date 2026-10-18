@@ -12,7 +12,7 @@ static zval pg_lit[4];
 static pgrt::PropSite pg_site_0; /* prop_consts_0 */
 static pgrt::PropSite pg_site_1; /* prop_name_1 */
 static pt_method_site pg_site_2; /* method_toLowerString_2 */
-static pt_method_site pg_site_3; /* method_getStartLine_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getStartLine_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
 
@@ -73,7 +73,7 @@ namespace pgen::ClassAsClassConstantRule {
 					zv::Val r12;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[2], r12.raw()))) return false;
 					zv::Val r13;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_const, "getStartLine", "getstartline", 12, 0, NULL, r13.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_const, "getStartLine", "getstartline", 12, r13.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r13.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r13.raw()); return false; }
 					zv::Val r14;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r12.raw()), Z_LVAL_P(r13.raw()), r14.raw()))) return false;

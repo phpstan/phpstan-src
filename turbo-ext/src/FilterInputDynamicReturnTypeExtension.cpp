@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_filter_input_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
@@ -19,7 +19,7 @@ static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pgrt::PropSite pg_site_8; /* prop_value_8 */
 static pt_method_site pg_site_9; /* method_getType_9 */
-static pt_method_site pg_site_10; /* method_getPhpVersion_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getPhpVersion_10 */
 static pt_method_site pg_site_11; /* method_getInputType_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -52,7 +52,7 @@ namespace pgen::FilterInputDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -217,7 +217,7 @@ namespace pgen::FilterInputDynamicReturnTypeExtension {
 		}
 		}
 		zv::Val r49;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r49.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_scope, "getPhpVersion", "getphpversion", 13, r49.raw()))) return false;
 		zval av50[5];
 		ZVAL_COPY_VALUE(&av50[0], r10.raw());
 		ZVAL_COPY_VALUE(&av50[1], r18.raw());

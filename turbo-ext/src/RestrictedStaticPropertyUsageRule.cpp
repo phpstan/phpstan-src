@@ -30,9 +30,9 @@ static pt_method_site pg_site_16; /* method_getClass_16 */
 static pt_method_site pg_site_17; /* method_hasStaticProperty_17 */
 static pt_method_site pg_site_18; /* method_getStaticProperty_18 */
 static pt_method_site pg_site_19; /* method_isRestrictedPropertyUsage_19 */
-static pt_method_site pg_site_20; /* method_getName_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getName_20 */
 static pt_method_site pg_site_21; /* method_getDeclaringClass_21 */
-static pt_method_site pg_site_22; /* method_getName_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getName_22 */
 static pt_method_site pg_site_23; /* method_isRestrictedPropertyUsage_23 */
 static pgrt::ClassSite pg_site_24; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_25; /* cls_PHPStan\Analyser\Scope */
@@ -411,7 +411,7 @@ namespace pgen::RestrictedStaticPropertyUsageRule {
 									if (UNEXPECTED(r74.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r74.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_classReflection.raw(), "getName", "getname", 7, r74.raw()))) return false;
 								}
 								}
 								zv::Val vd75;
@@ -444,7 +444,7 @@ namespace pgen::RestrictedStaticPropertyUsageRule {
 									if (UNEXPECTED(r79.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_22, vd75.raw(), "getName", "getname", 7, 0, NULL, r79.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, vd75.raw(), "getName", "getname", 7, r79.raw()))) return false;
 								}
 								}
 								if (!zend_is_identical(r74.raw(), r79.raw())) {

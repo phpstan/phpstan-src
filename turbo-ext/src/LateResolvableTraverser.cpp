@@ -8,8 +8,8 @@ zend_class_entry *pt_ce_late_resolvable_traverser = nullptr;
 
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Type\LateResolvableType */
-static pt_method_site pg_site_1; /* method_isResolvable_1 */
-static pt_method_site pg_site_2; /* method_resolve_2 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_isResolvable_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_resolve_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\CallableType */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\ClosureType */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Type */
@@ -59,7 +59,7 @@ namespace pgen::LateResolvableTraverser {
 					bool b2 = b3;
 					if (!b2) {
 						zv::Val r6;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_type.raw(), "isResolvable", "isresolvable", 12, 0, NULL, r6.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_type.raw(), "isResolvable", "isresolvable", 12, r6.raw()))) return false;
 						b2 = (Z_TYPE_P(r6.raw()) == IS_TRUE);
 					}
 					b1 = b2;
@@ -69,7 +69,7 @@ namespace pgen::LateResolvableTraverser {
 			 {
 				 {
 					zv::Val r9;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_type.raw(), "resolve", "resolve", 7, 0, NULL, r9.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_type.raw(), "resolve", "resolve", 7, r9.raw()))) return false;
 					l_type = std::move(r9);
 				}
 			}

@@ -10,14 +10,14 @@ zend_class_entry *pt_ce_incompatible_arrow_function_default_parameter_type_rule 
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getClosureType_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClosureType_0 */
 static pgrt::GetterSite pg_site_1; /* getter_getParameters_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\ClosureType */
-static pt_method_site pg_site_3; /* method_getParameters_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getParameters_3 */
 static pt_method_site pg_site_4; /* method_getOriginalNode_4 */
 static pgrt::GetterSite pg_site_5; /* getter_getParams_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Expr\ArrowFunction */
-static pt_method_site pg_site_7; /* method_getParams_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getParams_7 */
 static pgrt::PropSite pg_site_8; /* prop_default_8 */
 static pgrt::PropSite pg_site_9; /* prop_var_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Expr\Error */
@@ -26,7 +26,7 @@ static pgrt::PropSite pg_site_12; /* prop_name_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::PropSite pg_site_14; /* prop_default_14 */
 static pt_method_site pg_site_15; /* method_getType_15 */
-static pt_method_site pg_site_16; /* method_getType_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getType_16 */
 static pt_method_site pg_site_17; /* static_PHPStan\Type\Generic\TemplateTypeHelper::resolveToBounds */
 static pt_method_site pg_site_18; /* method_accepts_18 */
 static pt_method_site pg_site_19; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
@@ -34,7 +34,7 @@ static pgrt::PropSite pg_site_20; /* prop_var_20 */
 static pgrt::PropSite pg_site_21; /* prop_name_21 */
 static pt_method_site pg_site_22; /* method_describe_22 */
 static pt_method_site pg_site_23; /* method_describe_23 */
-static pt_method_site pg_site_24; /* method_getStartLine_24 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getStartLine_24 */
 static pgrt::ClassSite pg_site_25; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Analyser\Scope */
 
@@ -68,14 +68,14 @@ namespace pgen::IncompatibleArrowFunctionDefaultParameterTypeRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClosureType", "getclosuretype", 14, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClosureType", "getclosuretype", 14, r1.raw()))) return false;
 		zval *gs2 = Z_TYPE_P(r1.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_1, Z_OBJ_P(r1.raw()), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Type\\ClosureType", 24), "getparameters", 13, "parameters", 10) : NULL;
 		zv::Val r3;
 		if (EXPECTED(gs2 != NULL)) {
 			ZVAL_COPY(r3.raw(), gs2);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, r1.raw(), "getParameters", "getparameters", 13, 0, NULL, r3.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, r1.raw(), "getParameters", "getparameters", 13, r3.raw()))) return false;
 		}
 		}
 		l_parameters = std::move(r3);
@@ -123,7 +123,7 @@ namespace pgen::IncompatibleArrowFunctionDefaultParameterTypeRule {
 			ZVAL_COPY(r13.raw(), gs12);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, vd7.raw(), "getParams", "getparams", 9, 0, NULL, r13.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, vd7.raw(), "getParams", "getparams", 9, r13.raw()))) return false;
 		}
 		}
 		pgrt::ForeachIter it14;
@@ -210,7 +210,7 @@ namespace pgen::IncompatibleArrowFunctionDefaultParameterTypeRule {
 						if (UNEXPECTED(r37.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, zv::Ref(e35).deref().raw(), "getType", "gettype", 7, 0, NULL, r37.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, zv::Ref(e35).deref().raw(), "getType", "gettype", 7, r37.raw()))) return false;
 					}
 					}
 					l_parameterType = std::move(r37);
@@ -308,7 +308,7 @@ namespace pgen::IncompatibleArrowFunctionDefaultParameterTypeRule {
 					zv::Val r59;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r58.raw(), r59.raw()))) return false;
 					zv::Val r60;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_param, "getStartLine", "getstartline", 12, 0, NULL, r60.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_param, "getStartLine", "getstartline", 12, r60.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r60.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r60.raw()); return false; }
 					zv::Val r61;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r59.raw()), Z_LVAL_P(r60.raw()), r61.raw()))) return false;

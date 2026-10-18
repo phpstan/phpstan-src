@@ -9,17 +9,17 @@ zend_class_entry *pt_ce_allowed_sub_types_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
-static pt_method_site pg_site_2; /* method_getImmediateInterfaces_2 */
-static pt_method_site pg_site_3; /* method_getParentClass_3 */
-static pt_method_site pg_site_4; /* method_getAllowedSubTypes_4 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getImmediateInterfaces_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getParentClass_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getAllowedSubTypes_4 */
 static pt_method_site pg_site_5; /* method_isObject_5 */
 static pt_method_site pg_site_6; /* method_yes_6 */
-static pt_method_site pg_site_7; /* method_getObjectClassNames_7 */
-static pt_method_site pg_site_8; /* method_getClassTypeDescription_8 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getObjectClassNames_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getClassTypeDescription_8 */
 static pgrt::FunctionSite pg_site_9; /* function_strtolower */
-static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
 
@@ -59,7 +59,7 @@ namespace pgen::AllowedSubTypesRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -71,14 +71,14 @@ namespace pgen::AllowedSubTypesRule {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_classReflection.raw(), "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		l_className = std::move(r2);
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_classReflection.raw(), "getImmediateInterfaces", "getimmediateinterfaces", 22, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_classReflection.raw(), "getImmediateInterfaces", "getimmediateinterfaces", 22, r3.raw()))) return false;
 		zv::Val r4;
 		if (UNEXPECTED(!pgrt::arrayValues(r3.raw(), r4.raw()))) return false;
 		l_parents = std::move(r4);
@@ -90,7 +90,7 @@ namespace pgen::AllowedSubTypesRule {
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "getParentClass", "getparentclass", 14, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "getParentClass", "getparentclass", 14, r5.raw()))) return false;
 		}
 		}
 		l_parentClass = std::move(r5);
@@ -125,7 +125,7 @@ namespace pgen::AllowedSubTypesRule {
 			 {
 				 {
 					zv::Val r18;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_parentReflection, "getAllowedSubTypes", "getallowedsubtypes", 18, 0, NULL, r18.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_parentReflection, "getAllowedSubTypes", "getallowedsubtypes", 18, r18.raw()))) return false;
 					l_allowedSubTypes = std::move(r18);
 				}
 				 {
@@ -176,7 +176,7 @@ namespace pgen::AllowedSubTypesRule {
 									if (UNEXPECTED(r28.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_allowedSubType, "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r28.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_allowedSubType, "getObjectClassNames", "getobjectclassnames", 19, r28.raw()))) return false;
 								}
 								}
 								zv::Val arr29 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
@@ -194,7 +194,7 @@ namespace pgen::AllowedSubTypesRule {
 				}
 				 {
 					zv::Val r31;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r31.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r31.raw()))) return false;
 					zval av32[1];
 					ZVAL_COPY_VALUE(&av32[0], r31.raw());
 					zv::Val r33;
@@ -209,7 +209,7 @@ namespace pgen::AllowedSubTypesRule {
 						if (UNEXPECTED(r35.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_parentReflection, "getName", "getname", 7, 0, NULL, r35.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_parentReflection, "getName", "getname", 7, r35.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb36;

@@ -9,17 +9,17 @@ zend_class_entry *pt_ce_date_interval_create_from_date_string_throw_type_extensi
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pgrt::DispatchCache pg_site_1; /* dispatch_getDeclaringClass_1 */
 static pt_method_site pg_site_2; /* method_getDeclaringClass_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_getArgs_4 */
-static pt_method_site pg_site_5; /* method_getPhpVersion_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getPhpVersion_5 */
 static pt_method_site pg_site_6; /* method_getArgs_6 */
 static pgrt::PropSite pg_site_7; /* prop_value_7 */
 static pt_method_site pg_site_8; /* method_getType_8 */
 static pt_method_site pg_site_9; /* method_getConstantStrings_9 */
-static pt_method_site pg_site_10; /* method_getValue_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValue_10 */
 static pgrt::ClassSite pg_site_11; /* cls_DateInterval */
 static pt_method_site pg_site_12; /* static_DateInterval::createFromDateString */
 static pgrt::DispatchCache pg_site_13; /* dispatch_getThrowType_13 */
@@ -46,7 +46,7 @@ namespace pgen::DateIntervalCreateFromDateStringThrowTypeExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		bool b1 = zend_is_identical(r2.raw(), &pg_lit[0]);
@@ -104,7 +104,7 @@ namespace pgen::DateIntervalCreateFromDateStringThrowTypeExtension {
 				if (UNEXPECTED(r9.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, vd3.raw(), "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, vd3.raw(), "getName", "getname", 7, r9.raw()))) return false;
 			}
 			}
 			b1 = zend_is_identical(r9.raw(), &pg_lit[1]);
@@ -138,7 +138,7 @@ namespace pgen::DateIntervalCreateFromDateStringThrowTypeExtension {
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_scope, "getPhpVersion", "getphpversion", 13, r3.raw()))) return false;
 		zv::Val r4;
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasDateTimeExceptions(Z_OBJ_P(r3.raw()), r4.raw()))) return false;
 		bool r5;
@@ -218,7 +218,7 @@ namespace pgen::DateIntervalCreateFromDateStringThrowTypeExtension {
 								if (UNEXPECTED(r28.isUndef())) goto catch_c26;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_constantString, "getValue", "getvalue", 8, 0, NULL, r28.raw(), NULL))) goto catch_c26;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_constantString, "getValue", "getvalue", 8, r28.raw()))) goto catch_c26;
 							}
 							}
 							zval av29[1];

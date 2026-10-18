@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_void_cast_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
-static pt_method_site pg_site_1; /* method_isInFirstLevelStatement_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPhpVersion_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_isInFirstLevelStatement_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Analyser\Scope */
 
@@ -43,7 +43,7 @@ namespace pgen::VoidCastRule {
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, r3.raw()))) return false;
 		zv::Val r4;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsVoidCast(Z_OBJ_P(r3.raw()), r4.raw()))) return false;
 		bool r5;
@@ -68,7 +68,7 @@ namespace pgen::VoidCastRule {
 	}
 	 {
 		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, 0, NULL, r12.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, r12.raw()))) return false;
 		if (Z_TYPE_P(r12.raw()) == IS_TRUE) {
 			 {
 				ZVAL_COPY(ret, l_errors.raw());

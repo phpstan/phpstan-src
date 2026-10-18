@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_no_php_code_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getNodes_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getNodes_0 */
 static pgrt::FunctionSite pg_site_1; /* function_count */
-static pt_method_site pg_site_2; /* method_getNodes_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getNodes_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Stmt\InlineHTML */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
@@ -39,7 +39,7 @@ namespace pgen::NoPhpCodeRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getNodes", "getnodes", 8, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getNodes", "getnodes", 8, r1.raw()))) return false;
 		zval av2[1];
 		ZVAL_COPY_VALUE(&av2[0], r1.raw());
 		zv::Val r3;
@@ -55,7 +55,7 @@ namespace pgen::NoPhpCodeRule {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getNodes", "getnodes", 8, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getNodes", "getnodes", 8, r5.raw()))) return false;
 		zv::Val et7;
 		zval *e6 = Z_TYPE_P(r5.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(r5.raw()), 0) : NULL;
 		if (UNEXPECTED(e6 == NULL)) {

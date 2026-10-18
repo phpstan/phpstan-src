@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_date_period_constructor_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pgrt::PropSite pg_site_1; /* prop_class_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Name */
 static pgrt::PropSite pg_site_3; /* prop_class_3 */
@@ -17,12 +17,12 @@ static pt_method_site pg_site_4; /* method_resolveName_4 */
 static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
-static pt_method_site pg_site_8; /* method_isString_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isString_8 */
 static pgrt::PropSite pg_site_9; /* prop_value_9 */
 static pt_method_site pg_site_10; /* method_getType_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_12; /* method_isSuperTypeOf_12 */
-static pt_method_site pg_site_13; /* method_isInteger_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_isInteger_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Reflection\MethodReflection */
 static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node\Expr\StaticCall */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
@@ -54,7 +54,7 @@ namespace pgen::DatePeriodConstructorReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[1]);
@@ -179,7 +179,7 @@ namespace pgen::DatePeriodConstructorReturnTypeExtension {
 			if (UNEXPECTED(r25.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_firstArgType.raw(), "isString", "isstring", 8, 0, NULL, r25.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_firstArgType.raw(), "isString", "isstring", 8, r25.raw()))) return false;
 		}
 		}
 		bool r26;
@@ -293,7 +293,7 @@ namespace pgen::DatePeriodConstructorReturnTypeExtension {
 			if (UNEXPECTED(r55.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_thirdArgType.raw(), "isInteger", "isinteger", 9, 0, NULL, r55.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_thirdArgType.raw(), "isInteger", "isinteger", 9, r55.raw()))) return false;
 		}
 		}
 		bool r56;

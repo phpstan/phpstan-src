@@ -37,7 +37,7 @@ static pt_method_site pg_site_24; /* method_getNativeType_24 */
 static pt_method_site pg_site_25; /* method_isSuperTypeOf_25 */
 static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Rules\RuleErrorBuilder */
 static pt_method_site pg_site_27; /* method_getNativeType_27 */
-static pt_method_site pg_site_28; /* method_getValue_28 */
+static pgrt::MethodShapeSite pg_site_28; /* method0_getValue_28 */
 static pt_method_site pg_site_29; /* method_describe_29 */
 static pt_method_site pg_site_30; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
 static pt_method_site pg_site_31; /* method_describe_31 */
@@ -568,7 +568,7 @@ namespace pgen::ImpossibleInstanceOfRule {
 			if (UNEXPECTED(r86.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_28, l_instanceofType.raw(), "getValue", "getvalue", 8, 0, NULL, r86.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_28, l_instanceofType.raw(), "getValue", "getvalue", 8, r86.raw()))) return false;
 		}
 		}
 		if (!((Z_TYPE_P(r86.raw()) == IS_TRUE))) {

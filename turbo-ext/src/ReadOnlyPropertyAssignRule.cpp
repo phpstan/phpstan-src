@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_read_only_property_assign_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[8];
 
-static pt_method_site pg_site_0; /* method_getPropertyFetch_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPropertyFetch_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr\PropertyFetch */
 static pt_method_site pg_site_2; /* method_getAttribute_2 */
 static pt_method_site pg_site_3; /* method_getNativeReflection_3 */
@@ -18,42 +18,42 @@ static pt_method_site pg_site_5; /* method_isReadOnly_5 */
 static pt_method_site pg_site_6; /* method_getDeclaringClass_6 */
 static pt_method_site pg_site_7; /* method_isInClass_7 */
 static pt_method_site pg_site_8; /* method_getDisplayName_8 */
-static pt_method_site pg_site_9; /* method_getName_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
 static pgrt::PropSite pg_site_10; /* prop_name_10 */
-static pt_method_site pg_site_11; /* method_getStartLine_11 */
-static pt_method_site pg_site_12; /* method_getClassReflection_12 */
-static pt_method_site pg_site_13; /* method_getName_13 */
-static pt_method_site pg_site_14; /* method_getName_14 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getStartLine_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getClassReflection_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
 static pt_method_site pg_site_15; /* method_isPrivateSet_15 */
 static pt_method_site pg_site_16; /* method_getDeclaringClass_16 */
 static pt_method_site pg_site_17; /* method_isSubclassOfClass_17 */
 static pt_method_site pg_site_18; /* method_getDisplayName_18 */
-static pt_method_site pg_site_19; /* method_getName_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getName_19 */
 static pgrt::PropSite pg_site_20; /* prop_name_20 */
-static pt_method_site pg_site_21; /* method_getStartLine_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getStartLine_21 */
 static pt_method_site pg_site_22; /* method_getFunction_22 */
 static pgrt::ClassSite pg_site_23; /* cls_PHPStan\Reflection\MethodReflection */
 static pgrt::ClassSite pg_site_24; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_25; /* method_getName_25 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getName_25 */
 static pt_method_site pg_site_26; /* method_getConstructors_26 */
 static pgrt::PropSite pg_site_27; /* prop_var_27 */
 static pt_method_site pg_site_28; /* method_getType_28 */
 static pt_method_site pg_site_29; /* method_getDisplayName_29 */
-static pt_method_site pg_site_30; /* method_getName_30 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getName_30 */
 static pgrt::PropSite pg_site_31; /* prop_name_31 */
-static pt_method_site pg_site_32; /* method_getStartLine_32 */
-static pt_method_site pg_site_33; /* method_getName_33 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getStartLine_32 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getName_33 */
 static pgrt::ClassSite pg_site_34; /* cls_PHPStan\Node\Expr\CloneReinitializationExpr */
 static pt_method_site pg_site_35; /* method_hasExpressionType_35 */
 static pt_method_site pg_site_36; /* method_getDisplayName_36 */
-static pt_method_site pg_site_37; /* method_getName_37 */
+static pgrt::MethodShapeSite pg_site_37; /* method0_getName_37 */
 static pgrt::PropSite pg_site_38; /* prop_name_38 */
-static pt_method_site pg_site_39; /* method_getStartLine_39 */
+static pgrt::MethodShapeSite pg_site_39; /* method0_getStartLine_39 */
 static pt_method_site pg_site_40; /* method_isArrayAccessOffsetWrite_40 */
 static pt_method_site pg_site_41; /* method_getDisplayName_41 */
-static pt_method_site pg_site_42; /* method_getName_42 */
+static pgrt::MethodShapeSite pg_site_42; /* method0_getName_42 */
 static pgrt::PropSite pg_site_43; /* prop_name_43 */
-static pt_method_site pg_site_44; /* method_getStartLine_44 */
+static pgrt::MethodShapeSite pg_site_44; /* method0_getStartLine_44 */
 static pgrt::ClassSite pg_site_45; /* cls_PHPStan\Rules\Properties\PropertyReflectionFinder */
 static pgrt::ClassSite pg_site_46; /* cls_PHPStan\Reflection\ConstructorsHelper */
 static pgrt::ClassSite pg_site_47; /* cls_PHPStan\Php\PhpVersion */
@@ -112,7 +112,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getPropertyFetch", "getpropertyfetch", 16, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getPropertyFetch", "getpropertyfetch", 16, r1.raw()))) return false;
 		l_propertyFetch = std::move(r1);
 	}
 	 {
@@ -255,7 +255,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 								if (UNEXPECTED(r30.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_propertyReflection, "getName", "getname", 7, 0, NULL, r30.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_propertyReflection, "getName", "getname", 7, r30.raw()))) return false;
 							}
 							}
 							pgrt::StringBuilder sb31;
@@ -274,7 +274,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 								p34 = o35.raw();
 							}
 							zv::Val r36;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_11, zv::Ref(p34).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r36.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, zv::Ref(p34).deref().raw(), "getStartLine", "getstartline", 12, r36.raw()))) return false;
 							zv::Val r37;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r33.raw()), Z_LVAL_P(r36.raw()), r37.raw()))) return false;
 							zv::Val r38;
@@ -297,7 +297,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 						if (UNEXPECTED(r42.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r42.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_scope, "getClassReflection", "getclassreflection", 18, r42.raw()))) return false;
 					}
 					}
 					l_scopeClassReflection = std::move(r42);
@@ -309,7 +309,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 						if (UNEXPECTED(r43.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_scopeClassReflection.raw(), "getName", "getname", 7, 0, NULL, r43.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_scopeClassReflection.raw(), "getName", "getname", 7, r43.raw()))) return false;
 					}
 					}
 					zv::Val r44;
@@ -318,7 +318,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 						if (UNEXPECTED(r44.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_declaringClass.raw(), "getName", "getname", 7, 0, NULL, r44.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_declaringClass.raw(), "getName", "getname", 7, r44.raw()))) return false;
 					}
 					}
 					if (!zend_is_identical(r43.raw(), r44.raw())) {
@@ -392,7 +392,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 										if (UNEXPECTED(r58.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_propertyReflection, "getName", "getname", 7, 0, NULL, r58.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_propertyReflection, "getName", "getname", 7, r58.raw()))) return false;
 									}
 									}
 									pgrt::StringBuilder sb59;
@@ -411,7 +411,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 										p62 = o63.raw();
 									}
 									zv::Val r64;
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_21, zv::Ref(p62).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r64.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, zv::Ref(p62).deref().raw(), "getStartLine", "getstartline", 12, r64.raw()))) return false;
 									zv::Val r65;
 									if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r61.raw()), Z_LVAL_P(r64.raw()), r65.raw()))) return false;
 									zv::Val r66;
@@ -465,7 +465,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 						if (UNEXPECTED(r75.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_scopeMethod.raw(), "getName", "getname", 7, 0, NULL, r75.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_scopeMethod.raw(), "getName", "getname", 7, r75.raw()))) return false;
 					}
 					}
 					l_methodName = std::move(r75);
@@ -545,7 +545,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 										if (UNEXPECTED(r95.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_propertyReflection, "getName", "getname", 7, 0, NULL, r95.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_propertyReflection, "getName", "getname", 7, r95.raw()))) return false;
 									}
 									}
 									pgrt::StringBuilder sb96;
@@ -564,7 +564,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 										p99 = o100.raw();
 									}
 									zv::Val r101;
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_32, zv::Ref(p99).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r101.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, zv::Ref(p99).deref().raw(), "getStartLine", "getstartline", 12, r101.raw()))) return false;
 									zv::Val r102;
 									if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r98.raw()), Z_LVAL_P(r101.raw()), r102.raw()))) return false;
 									zv::Val r103;
@@ -589,7 +589,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 											if (UNEXPECTED(r110.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_33, l_propertyReflection, "getName", "getname", 7, 0, NULL, r110.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, l_propertyReflection, "getName", "getname", 7, r110.raw()))) return false;
 										}
 										}
 										zval av111[1];
@@ -623,7 +623,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 												if (UNEXPECTED(r117.isUndef())) return false;
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_propertyReflection, "getName", "getname", 7, 0, NULL, r117.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_37, l_propertyReflection, "getName", "getname", 7, r117.raw()))) return false;
 											}
 											}
 											pgrt::StringBuilder sb118;
@@ -642,7 +642,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 												p121 = o122.raw();
 											}
 											zv::Val r123;
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_39, zv::Ref(p121).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r123.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_39, zv::Ref(p121).deref().raw(), "getStartLine", "getstartline", 12, r123.raw()))) return false;
 											zv::Val r124;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r120.raw()), Z_LVAL_P(r123.raw()), r124.raw()))) return false;
 											zv::Val r125;
@@ -688,7 +688,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 						if (UNEXPECTED(r132.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_42, l_propertyReflection, "getName", "getname", 7, 0, NULL, r132.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, l_propertyReflection, "getName", "getname", 7, r132.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb133;
@@ -707,7 +707,7 @@ namespace pgen::ReadOnlyPropertyAssignRule {
 						p136 = o137.raw();
 					}
 					zv::Val r138;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_44, zv::Ref(p136).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r138.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_44, zv::Ref(p136).deref().raw(), "getStartLine", "getstartline", 12, r138.raw()))) return false;
 					zv::Val r139;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r135.raw()), Z_LVAL_P(r138.raw()), r139.raw()))) return false;
 					zv::Val r140;

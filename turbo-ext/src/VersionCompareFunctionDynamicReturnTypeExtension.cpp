@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_version_compare_function_dynamic_return_type_extension =
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
-static pt_method_site pg_site_2; /* method_getPhpVersion_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getPhpVersion_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
@@ -19,17 +19,17 @@ static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_getConstantStrings_8 */
 static pgrt::FunctionSite pg_site_9; /* function_array_filter */
-static pt_method_site pg_site_10; /* method_getValue_10 */
-static pt_method_site pg_site_11; /* method_getValue_11 */
-static pt_method_site pg_site_12; /* method_getValue_12 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValue_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getValue_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getValue_12 */
 static pgrt::FunctionSite pg_site_13; /* function_version_compare */
-static pt_method_site pg_site_14; /* method_getValue_14 */
-static pt_method_site pg_site_15; /* method_getValue_15 */
-static pt_method_site pg_site_16; /* method_getValue_16 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getValue_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getValue_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getValue_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node\Expr\ConstFetch */
 static pgrt::PropSite pg_site_18; /* prop_name_18 */
 static pt_method_site pg_site_19; /* method_toString_19 */
-static pt_method_site pg_site_20; /* method_getVersionRange_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getVersionRange_20 */
 static pt_method_site pg_site_21; /* method_getVersionString_21 */
 static pt_method_site pg_site_22; /* method_getVersionString_22 */
 static pt_method_site pg_site_23; /* method_getType_23 */
@@ -149,7 +149,7 @@ namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -194,7 +194,7 @@ namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_scope, "getPhpVersion", "getphpversion", 13, r3.raw()))) return false;
 		zv::Val r4;
 		if (UNEXPECTED(!pgen::PhpVersions::m_throwsValueErrorForInternalFunctions(Z_OBJ_P(r3.raw()), r4.raw()))) return false;
 		l_throwsValueError = std::move(r4);
@@ -434,7 +434,7 @@ namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
 														if (UNEXPECTED(r83.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_operatorString, "getValue", "getvalue", 8, 0, NULL, r83.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_operatorString, "getValue", "getvalue", 8, r83.raw()))) return false;
 													}
 													}
 													l_operatorValue = std::move(r83);
@@ -463,7 +463,7 @@ namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
 														if (UNEXPECTED(r87.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_version1String, "getValue", "getvalue", 8, 0, NULL, r87.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_version1String, "getValue", "getvalue", 8, r87.raw()))) return false;
 													}
 													}
 													zv::Val r88;
@@ -472,7 +472,7 @@ namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
 														if (UNEXPECTED(r88.isUndef())) return false;
 													} else {
 													 {
-														if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_version2String, "getValue", "getvalue", 8, 0, NULL, r88.raw(), NULL))) return false;
+														if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_version2String, "getValue", "getvalue", 8, r88.raw()))) return false;
 													}
 													}
 													zval av89[3];
@@ -512,7 +512,7 @@ namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
 											if (UNEXPECTED(r97.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_version1String, "getValue", "getvalue", 8, 0, NULL, r97.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_version1String, "getValue", "getvalue", 8, r97.raw()))) return false;
 										}
 										}
 										zv::Val r98;
@@ -521,7 +521,7 @@ namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
 											if (UNEXPECTED(r98.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_version2String, "getValue", "getvalue", 8, 0, NULL, r98.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_version2String, "getValue", "getvalue", 8, r98.raw()))) return false;
 										}
 										}
 										zval av99[2];
@@ -613,7 +613,7 @@ namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
 						if (UNEXPECTED(r8.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_operatorString, "getValue", "getvalue", 8, 0, NULL, r8.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_operatorString, "getValue", "getvalue", 8, r8.raw()))) return false;
 					}
 					}
 					zval *cc9 = pgrt::classConstant(pt_ce_version_compare_function_dynamic_return_type_extension, &pg_lit[1], pt_ce_version_compare_function_dynamic_return_type_extension);
@@ -661,7 +661,7 @@ namespace pgen::VersionCompareFunctionDynamicReturnTypeExtension {
 				zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::VersionCompareFunctionDynamicReturnTypeExtension::slot::phpVersionRangeHelper, "phpVersionRangeHelper");
 				if (UNEXPECTED(p5 == NULL)) return false;
 				zv::Val r6;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p5, "getVersionRange", "getversionrange", 15, 0, NULL, r6.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, p5, "getVersionRange", "getversionrange", 15, r6.raw()))) return false;
 				zval *la7 = r6.raw();
 				zval *le8 = NULL;
 				if (Z_TYPE_P(la7) == IS_ARRAY) { le8 = zend_hash_index_find(Z_ARRVAL_P(la7), 0); if (le8 == NULL) { pgrt::warnUndefinedIndex(0); } }

@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_number_format_function_dynamic_return_type_extension = n
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
@@ -18,8 +18,8 @@ static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_getConstantStrings_8 */
-static pt_method_site pg_site_9; /* method_getValue_9 */
-static pt_method_site pg_site_10; /* method_getConstantScalarValues_10 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getConstantScalarValues_10 */
 static pgrt::FunctionSite pg_site_11; /* function_in_array */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -40,7 +40,7 @@ namespace pgen::NumberFormatFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -173,7 +173,7 @@ namespace pgen::NumberFormatFunctionDynamicReturnTypeExtension {
 				if (UNEXPECTED(r33.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, zv::Ref(e30).deref().raw(), "getValue", "getvalue", 8, 0, NULL, r33.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, zv::Ref(e30).deref().raw(), "getValue", "getvalue", 8, r33.raw()))) return false;
 			}
 			}
 			b29 = !zend_is_identical(r33.raw(), &pg_lit[1]);
@@ -192,7 +192,7 @@ namespace pgen::NumberFormatFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r34.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_decimalType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r34.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_decimalType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r34.raw()))) return false;
 		}
 		}
 		l_constantScalarValues = std::move(r34);

@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_require_implements_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_getTraits_1 */
-static pt_method_site pg_site_2; /* method_getRequireImplementsTags_2 */
-static pt_method_site pg_site_3; /* method_getType_3 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getRequireImplementsTags_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getType_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\ObjectType */
 static pgrt::GetterSite pg_site_5; /* getter_getClassName_5 */
-static pt_method_site pg_site_6; /* method_getClassName_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getClassName_6 */
 static pt_method_site pg_site_7; /* method_implementsInterface_7 */
 static pt_method_site pg_site_8; /* method_getDisplayName_8 */
 static pt_method_site pg_site_9; /* method_describe_9 */
@@ -56,7 +56,7 @@ namespace pgen::RequireImplementsRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -81,7 +81,7 @@ namespace pgen::RequireImplementsRule {
 			 {
 				 {
 					zv::Val r11;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_trait, "getRequireImplementsTags", "getrequireimplementstags", 24, 0, NULL, r11.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_trait, "getRequireImplementsTags", "getrequireimplementstags", 24, r11.raw()))) return false;
 					l_implementsTags = std::move(r11);
 				}
 				 {
@@ -97,7 +97,7 @@ namespace pgen::RequireImplementsRule {
 									if (UNEXPECTED(r16.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_implementsTag, "getType", "gettype", 7, 0, NULL, r16.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_implementsTag, "getType", "gettype", 7, r16.raw()))) return false;
 								}
 								}
 								l_type = std::move(r16);
@@ -115,7 +115,7 @@ namespace pgen::RequireImplementsRule {
 									ZVAL_COPY(r19.raw(), gs18);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_type.raw(), "getClassName", "getclassname", 12, 0, NULL, r19.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_type.raw(), "getClassName", "getclassname", 12, r19.raw()))) return false;
 								}
 								}
 								zval av20[1];

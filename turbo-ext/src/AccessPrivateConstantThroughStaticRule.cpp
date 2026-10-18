@@ -22,8 +22,8 @@ static pt_method_site pg_site_9; /* method_hasConstant_9 */
 static pt_method_site pg_site_10; /* method_getConstant_10 */
 static pt_method_site pg_site_11; /* method_isPrivate_11 */
 static pt_method_site pg_site_12; /* method_isInClass_12 */
-static pt_method_site pg_site_13; /* method_getClassReflection_13 */
-static pt_method_site pg_site_14; /* method_isFinal_14 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getClassReflection_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isFinal_14 */
 static pt_method_site pg_site_15; /* method_getDeclaringClass_15 */
 static pt_method_site pg_site_16; /* method_getDisplayName_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node */
@@ -211,7 +211,7 @@ namespace pgen::AccessPrivateConstantThroughStaticRule {
 				if (UNEXPECTED(r35.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r35.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_scope, "getClassReflection", "getclassreflection", 18, r35.raw()))) return false;
 			}
 			}
 			zv::Val r36;
@@ -220,7 +220,7 @@ namespace pgen::AccessPrivateConstantThroughStaticRule {
 				if (UNEXPECTED(r36.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r35.raw(), "isFinal", "isfinal", 7, 0, NULL, r36.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, r35.raw(), "isFinal", "isfinal", 7, r36.raw()))) return false;
 			}
 			}
 			b30 = (Z_TYPE_P(r36.raw()) == IS_TRUE);

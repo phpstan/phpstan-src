@@ -12,18 +12,18 @@ static zval pg_lit[3];
 static pgrt::PropSite pg_site_0; /* prop_unpack_0 */
 static pgrt::PropSite pg_site_1; /* prop_value_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_3; /* method_isArray_3 */
-static pt_method_site pg_site_4; /* method_isArray_4 */
-static pt_method_site pg_site_5; /* method_getIterableValueType_5 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isArray_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isArray_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getIterableValueType_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Node\Expr\TypeExpr */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\ErrorType */
 static pt_method_site pg_site_8; /* method_describe_8 */
 static pgrt::FunctionSite pg_site_9; /* function_sprintf */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Rules\IdentifierRuleError */
-static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
 static pgrt::GetterSite pg_site_12; /* getter_getAttributes_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_14; /* method_getAttributes_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getAttributes_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node\Arg */
 static pgrt::PropSite pg_site_16; /* prop_name_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Analyser\Scope */
@@ -46,7 +46,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_type, "isArray", "isarray", 7, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_type, "isArray", "isarray", 7, r1.raw()))) return;
 		}
 		}
 		bool r2;
@@ -147,7 +147,7 @@ namespace pgen::ParameterCastableToStringCheck {
 			if (UNEXPECTED(r12.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_arrayType.raw(), "isArray", "isarray", 7, 0, NULL, r12.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_arrayType.raw(), "isArray", "isarray", 7, r12.raw()))) return false;
 		}
 		}
 		bool r13;
@@ -171,7 +171,7 @@ namespace pgen::ParameterCastableToStringCheck {
 			if (UNEXPECTED(r18.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_arrayType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r18.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_arrayType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r18.raw()))) return false;
 		}
 		}
 		zval av19[1];
@@ -269,7 +269,7 @@ namespace pgen::ParameterCastableToStringCheck {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_parameterReflection, "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_parameterReflection, "getName", "getname", 7, r4.raw()))) return false;
 		}
 		}
 		l_paramName = std::move(r4);
@@ -281,7 +281,7 @@ namespace pgen::ParameterCastableToStringCheck {
 			ZVAL_COPY(r8.raw(), gs7);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_parameter, "getAttributes", "getattributes", 13, 0, NULL, r8.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_parameter, "getAttributes", "getattributes", 13, r8.raw()))) return false;
 		}
 		}
 		zv::Val ist9;

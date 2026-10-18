@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_conditional_return_type_rule_helper = nullptr;
 static zval pg_lit[8];
 
 static pt_method_site pg_site_0; /* method_getParameters_0 */
-static pt_method_site pg_site_1; /* method_getType_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getType_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\ConditionalType */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\ConditionalTypeForParameter */
@@ -18,25 +18,25 @@ static pt_method_site pg_site_5; /* method_getOutType_5 */
 static pt_method_site pg_site_6; /* method_getOutType_6 */
 static pt_method_site pg_site_7; /* method_getClosureThisType_7 */
 static pt_method_site pg_site_8; /* method_getClosureThisType_8 */
-static pt_method_site pg_site_9; /* method_getName_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
 static pt_method_site pg_site_10; /* method_getReturnType_10 */
 static pgrt::GetterSite pg_site_11; /* getter_getSubject_11 */
-static pt_method_site pg_site_12; /* method_getSubject_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getSubject_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Type\StaticType */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Type\Generic\TemplateType */
 static pt_method_site pg_site_15; /* method_describe_15 */
 static pgrt::GetterSite pg_site_16; /* getter_getParameterName_16 */
-static pt_method_site pg_site_17; /* method_getParameterName_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getParameterName_17 */
 static pgrt::FunctionSite pg_site_18; /* function_substr */
-static pt_method_site pg_site_19; /* method_getType_19 */
-static pt_method_site pg_site_20; /* method_getTarget_20 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getType_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getTarget_20 */
 static pt_method_site pg_site_21; /* method_isSuperTypeOf_21 */
 static pt_method_site pg_site_22; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
 static pt_method_site pg_site_23; /* method_describe_23 */
-static pt_method_site pg_site_24; /* method_isNegated_24 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_isNegated_24 */
 static pt_method_site pg_site_25; /* method_describe_25 */
-static pt_method_site pg_site_26; /* method_isNegated_26 */
-static pt_method_site pg_site_27; /* method_isNegated_27 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_isNegated_26 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_isNegated_27 */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -315,7 +315,7 @@ namespace pgen::ConditionalReturnTypeRuleHelper {
 						if (UNEXPECTED(r15.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_parameter, "getType", "gettype", 7, 0, NULL, r15.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_parameter, "getType", "gettype", 7, r15.raw()))) return false;
 					}
 					}
 					zval cap16[1];
@@ -443,7 +443,7 @@ namespace pgen::ConditionalReturnTypeRuleHelper {
 						if (UNEXPECTED(r40.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_parameter, "getName", "getname", 7, 0, NULL, r40.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_parameter, "getName", "getname", 7, r40.raw()))) return false;
 					}
 					}
 					zv::Val o41 = zv::Val::copyOf(zv::Ref(l_parameter));
@@ -514,7 +514,7 @@ namespace pgen::ConditionalReturnTypeRuleHelper {
 								ZVAL_COPY(r62.raw(), gs61);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_conditionalType, "getSubject", "getsubject", 10, 0, NULL, r62.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_conditionalType, "getSubject", "getsubject", 10, r62.raw()))) return false;
 							}
 							}
 							l_subjectType = std::move(r62);
@@ -590,7 +590,7 @@ namespace pgen::ConditionalReturnTypeRuleHelper {
 								ZVAL_COPY(r82.raw(), gs81);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_conditionalType, "getParameterName", "getparametername", 16, 0, NULL, r82.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_conditionalType, "getParameterName", "getparametername", 16, r82.raw()))) return false;
 							}
 							}
 							zval av83[2];
@@ -636,7 +636,7 @@ namespace pgen::ConditionalReturnTypeRuleHelper {
 								if (UNEXPECTED(r96.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_19, zv::Ref(e94).deref().raw(), "getType", "gettype", 7, 0, NULL, r96.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, zv::Ref(e94).deref().raw(), "getType", "gettype", 7, r96.raw()))) return false;
 							}
 							}
 							l_subjectType = std::move(r96);
@@ -646,7 +646,7 @@ namespace pgen::ConditionalReturnTypeRuleHelper {
 				}
 				 {
 					zv::Val r97;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_conditionalType, "getTarget", "gettarget", 9, 0, NULL, r97.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_conditionalType, "getTarget", "gettarget", 9, r97.raw()))) return false;
 					l_targetType = std::move(r97);
 				}
 				 {
@@ -691,7 +691,7 @@ namespace pgen::ConditionalReturnTypeRuleHelper {
 					}
 					}
 					zv::Val r105;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_conditionalType, "isNegated", "isnegated", 9, 0, NULL, r105.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_conditionalType, "isNegated", "isnegated", 9, r105.raw()))) return false;
 					zv::Val q106;
 					if (Z_TYPE_P(r105.raw()) == IS_TRUE) {
 						zv::Val o107 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
@@ -721,7 +721,7 @@ namespace pgen::ConditionalReturnTypeRuleHelper {
 					if (UNEXPECTED(!sb111.append(r110.raw()))) return false;
 					zv::Val r112 = sb111.finish();
 					zv::Val r113;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_conditionalType, "isNegated", "isnegated", 9, 0, NULL, r113.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_conditionalType, "isNegated", "isnegated", 9, r113.raw()))) return false;
 					zv::Val q114;
 					if (Z_TYPE_P(r113.raw()) == IS_TRUE) {
 						bool r115;
@@ -764,7 +764,7 @@ namespace pgen::ConditionalReturnTypeRuleHelper {
 					zv::Val r125;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r124.raw(), r125.raw()))) return false;
 					zv::Val r126;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_conditionalType, "isNegated", "isnegated", 9, 0, NULL, r126.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_conditionalType, "isNegated", "isnegated", 9, r126.raw()))) return false;
 					zv::Val q127;
 					if (Z_TYPE_P(r126.raw()) == IS_TRUE) {
 						bool r128;

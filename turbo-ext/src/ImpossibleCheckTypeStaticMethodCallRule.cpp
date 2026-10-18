@@ -24,7 +24,7 @@ static pgrt::PropSite pg_site_11; /* prop_class_11 */
 static pgrt::DispatchCache pg_site_12; /* dispatch_getDeclaringClass_12 */
 static pt_method_site pg_site_13; /* method_getDeclaringClass_13 */
 static pt_method_site pg_site_14; /* method_getDisplayName_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
 static pt_method_site pg_site_16; /* method_getArgs_16 */
 static pt_method_site pg_site_17; /* method_isInTrait_17 */
 static pt_method_site pg_site_18; /* method_getAttribute_18 */
@@ -32,7 +32,7 @@ static pgrt::PropSite pg_site_19; /* prop_class_19 */
 static pgrt::DispatchCache pg_site_20; /* dispatch_getDeclaringClass_20 */
 static pt_method_site pg_site_21; /* method_getDeclaringClass_21 */
 static pt_method_site pg_site_22; /* method_getDisplayName_22 */
-static pt_method_site pg_site_23; /* method_getName_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getName_23 */
 static pt_method_site pg_site_24; /* method_getArgs_24 */
 static pt_method_site pg_site_25; /* method_isInTrait_25 */
 static pgrt::ClassSite pg_site_26; /* cls_PhpParser\Node\Name */
@@ -409,7 +409,7 @@ namespace pgen::ImpossibleCheckTypeStaticMethodCallRule {
 					if (UNEXPECTED(r42.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_method.raw(), "getName", "getname", 7, 0, NULL, r42.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_method.raw(), "getName", "getname", 7, r42.raw()))) return false;
 				}
 				}
 				zval *p43 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ImpossibleCheckTypeStaticMethodCallRule::slot::impossibleCheckTypeHelper, "impossibleCheckTypeHelper");
@@ -586,7 +586,7 @@ namespace pgen::ImpossibleCheckTypeStaticMethodCallRule {
 			if (UNEXPECTED(r80.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_method.raw(), "getName", "getname", 7, 0, NULL, r80.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_method.raw(), "getName", "getname", 7, r80.raw()))) return false;
 		}
 		}
 		zval *p81 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ImpossibleCheckTypeStaticMethodCallRule::slot::impossibleCheckTypeHelper, "impossibleCheckTypeHelper");

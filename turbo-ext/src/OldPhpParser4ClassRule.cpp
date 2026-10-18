@@ -13,8 +13,8 @@ static pt_method_site pg_site_0; /* method_isInClass_0 */
 static pgrt::FunctionSite pg_site_1; /* function_array_change_key_case */
 static pt_method_site pg_site_2; /* method_toLowerString_2 */
 static pgrt::FunctionSite pg_site_3; /* function_array_key_exists */
-static pt_method_site pg_site_4; /* method_getClassReflection_4 */
-static pt_method_site pg_site_5; /* method_getInterfaces_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassReflection_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getInterfaces_5 */
 static pgrt::FunctionSite pg_site_6; /* function_array_keys */
 static pgrt::FunctionSite pg_site_7; /* function_str_starts_with */
 static pt_method_site pg_site_8; /* method_toString_8 */
@@ -151,7 +151,7 @@ namespace pgen::OldPhpParser4ClassRule {
 			if (UNEXPECTED(r16.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r16.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, r16.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r16);
@@ -161,7 +161,7 @@ namespace pgen::OldPhpParser4ClassRule {
 	}
 	 {
 		zv::Val r18;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, 0, NULL, r18.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, r18.raw()))) return false;
 		zval av19[1];
 		ZVAL_COPY_VALUE(&av19[0], r18.raw());
 		zv::Val r20;

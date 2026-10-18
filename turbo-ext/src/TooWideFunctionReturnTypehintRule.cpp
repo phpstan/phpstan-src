@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_too_wide_function_return_typehint_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getFunctionReflection_0 */
 static pt_method_site pg_site_1; /* method_getNativeReturnType_1 */
 static pt_method_site pg_site_2; /* method_getPhpDocReturnType_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Node\MethodReturnStatementsNode */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Node\FunctionReturnStatementsNode */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\Type */
@@ -55,7 +55,7 @@ namespace pgen::TooWideFunctionReturnTypehintRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, r1.raw()))) return false;
 		l_function = std::move(r1);
 	}
 	 {
@@ -92,7 +92,7 @@ namespace pgen::TooWideFunctionReturnTypehintRule {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_function.raw(), "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_function.raw(), "getName", "getname", 7, r8.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb9;

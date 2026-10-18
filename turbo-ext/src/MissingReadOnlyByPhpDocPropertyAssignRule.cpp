@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_missing_read_only_by_php_doc_property_assign_rule = null
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_getConstructors_1 */
 static pt_method_site pg_site_2; /* method_getUninitializedProperties_2 */
 static pt_method_site pg_site_3; /* method_isReadOnlyByPhpDoc_3 */
 static pt_method_site pg_site_4; /* method_isReadOnly_4 */
 static pt_method_site pg_site_5; /* method_getDisplayName_5 */
-static pt_method_site pg_site_6; /* method_getStartLine_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getStartLine_6 */
 static pt_method_site pg_site_7; /* method_isReadOnlyByPhpDoc_7 */
 static pt_method_site pg_site_8; /* method_isReadOnly_8 */
 static pt_method_site pg_site_9; /* method_getDisplayName_9 */
@@ -75,7 +75,7 @@ namespace pgen::MissingReadOnlyByPhpDocPropertyAssignRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -180,7 +180,7 @@ namespace pgen::MissingReadOnlyByPhpDocPropertyAssignRule {
 					zv::Val r29;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r28.raw(), r29.raw()))) return false;
 					zv::Val r30;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_propertyNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r30.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r30.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r30.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r30.raw()); return false; }
 					zv::Val r31;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r29.raw()), Z_LVAL_P(r30.raw()), r31.raw()))) return false;

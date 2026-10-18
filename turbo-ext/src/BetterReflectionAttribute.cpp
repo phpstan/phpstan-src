@@ -20,9 +20,9 @@ static pgrt::PropSite pg_site_7; /* prop_value_7 */
 static pt_method_site pg_site_8; /* static_PHPStan\BetterReflection\Reflection\ExprCacheHelper::export */
 static pgrt::FunctionSite pg_site_9; /* function_array_map */
 static pgrt::ClassSite pg_site_10; /* cls_ReflectionClass */
-static pt_method_site pg_site_11; /* method_newInstanceWithoutConstructor_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_newInstanceWithoutConstructor_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\BetterReflection\Reflection\ReflectionAttribute */
-static pt_method_site pg_site_13; /* method_getName_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
 static pt_method_site pg_site_14; /* method_reflectClass_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\BetterReflection\NodeCompiler\CompileNodeToValue */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\BetterReflection\NodeCompiler\CompilerContext */
@@ -336,7 +336,7 @@ namespace pgen::BetterReflectionAttribute {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_reflection.raw(), "newInstanceWithoutConstructor", "newinstancewithoutconstructor", 29, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_reflection.raw(), "newInstanceWithoutConstructor", "newinstancewithoutconstructor", 29, r4.raw()))) return false;
 		l_ref = std::move(r4);
 	}
 	 {
@@ -432,7 +432,7 @@ namespace pgen::BetterReflectionAttribute {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, &this_zv, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, &this_zv, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		zv::Val vd4;

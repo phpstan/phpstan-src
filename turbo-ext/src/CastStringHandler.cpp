@@ -28,11 +28,11 @@ static pt_method_site pg_site_15; /* method_isAlwaysTerminating_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node\Expr */
 static pgrt::PropSite pg_site_17; /* prop_expr_17 */
 static pt_method_site pg_site_18; /* method_getNativeType_18 */
-static pt_method_site pg_site_19; /* method_getType_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getType_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\ShouldNotHappenException */
 static pt_method_site pg_site_21; /* method_getCastType_21 */
 static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Analyser\TypeSpecifierContext */
-static pt_method_site pg_site_23; /* method_doNotTreatPhpDocTypesAsCertain_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_doNotTreatPhpDocTypesAsCertain_23 */
 static pgrt::PropSite pg_site_24; /* prop_expr_24 */
 static pgrt::ClassSite pg_site_25; /* cls_PhpParser\Node\Scalar\String_ */
 static pgrt::ClassSite pg_site_26; /* cls_PhpParser\Node\Expr\BinaryOp\NotEqual */
@@ -85,7 +85,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 						if (UNEXPECTED(r5.isUndef())) return;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_19, zv::Ref(&captures[2]).deref().raw(), "getType", "gettype", 7, 0, NULL, r5.raw(), NULL))) return;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, zv::Ref(&captures[2]).deref().raw(), "getType", "gettype", 7, r5.raw()))) return;
 					}
 					}
 					q3 = std::move(r5);
@@ -159,7 +159,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q1;
 		if (p_nativeTypesPromoted) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_23, zv::Ref(&captures[0]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, zv::Ref(&captures[0]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r2.raw()))) return;
 			q1 = std::move(r2);
 		} else {
 		 {

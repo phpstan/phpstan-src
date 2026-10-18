@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_functions_existing_classes_in_typehints_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getFunctionReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getOriginalNode_2 */
-static pt_method_site pg_site_3; /* method_getFunctionReflection_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getFunctionReflection_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Stmt\Function_ */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\FunctionDefinitionCheck */
@@ -54,14 +54,14 @@ namespace pgen::FunctionsExistingClassesInTypehintsRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, r1.raw()))) return false;
 		zv::Val r2;
 		if (EXPECTED(Z_TYPE_P(r1.raw()) == IS_OBJECT)) {
 			r2 = pt_type_op(Z_OBJ_P(r1.raw()), PT_OP_GET_NAME, 0, NULL);
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, r1.raw(), "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, r1.raw(), "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!(Z_TYPE_P(r2.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", r2.raw()); return false; }
@@ -104,7 +104,7 @@ namespace pgen::FunctionsExistingClassesInTypehintsRule {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd6.raw()))) return false;
 		}
 		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r11.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getFunctionReflection", "getfunctionreflection", 21, r11.raw()))) return false;
 		pgrt::StringBuilder sb12;
 		sb12.appendLiteral("Parameter $", 11);
 		sb12.appendLiteral("%", 1);

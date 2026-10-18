@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_str_repeat_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
@@ -20,11 +20,11 @@ static pgrt::PropSite pg_site_7; /* prop_value_7 */
 static pt_method_site pg_site_8; /* method_getType_8 */
 static pt_method_site pg_site_9; /* method_getConstantStrings_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
-static pt_method_site pg_site_11; /* method_getValue_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getValue_11 */
 static pgrt::FunctionSite pg_site_12; /* function_strlen */
-static pt_method_site pg_site_13; /* method_getValue_13 */
-static pt_method_site pg_site_14; /* method_getValue_14 */
-static pt_method_site pg_site_15; /* method_getValue_15 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getValue_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getValue_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getValue_15 */
 static pgrt::FunctionSite pg_site_16; /* function_str_repeat */
 static pt_method_site pg_site_17; /* method_isNonEmptyString_17 */
 static pt_method_site pg_site_18; /* method_isSuperTypeOf_18 */
@@ -33,7 +33,7 @@ static pt_method_site pg_site_20; /* method_isLiteralString_20 */
 static pt_method_site pg_site_21; /* method_isNumericString_21 */
 static pt_method_site pg_site_22; /* method_isSuperTypeOf_22 */
 static pt_method_site pg_site_23; /* method_getConstantStrings_23 */
-static pt_method_site pg_site_24; /* method_getValue_24 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getValue_24 */
 static pgrt::ClassSite pg_site_25; /* cls_Nette\Utils\Strings */
 static pt_method_site pg_site_26; /* static_Nette\Utils\Strings::match */
 static pt_method_site pg_site_27; /* method_isLowercaseString_27 */
@@ -57,7 +57,7 @@ namespace pgen::StrRepeatFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -250,7 +250,7 @@ namespace pgen::StrRepeatFunctionReturnTypeExtension {
 								if (UNEXPECTED(r42.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_constantInputString, "getValue", "getvalue", 8, 0, NULL, r42.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_constantInputString, "getValue", "getvalue", 8, r42.raw()))) return false;
 							}
 							}
 							zval av43[1];
@@ -264,7 +264,7 @@ namespace pgen::StrRepeatFunctionReturnTypeExtension {
 								if (UNEXPECTED(r46.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_multiplierType.raw(), "getValue", "getvalue", 8, 0, NULL, r46.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_multiplierType.raw(), "getValue", "getvalue", 8, r46.raw()))) return false;
 							}
 							}
 							zend_long ar47;
@@ -297,7 +297,7 @@ namespace pgen::StrRepeatFunctionReturnTypeExtension {
 										if (UNEXPECTED(r56.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_constantInputString, "getValue", "getvalue", 8, 0, NULL, r56.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_constantInputString, "getValue", "getvalue", 8, r56.raw()))) return false;
 									}
 									}
 									zv::Val r57;
@@ -306,7 +306,7 @@ namespace pgen::StrRepeatFunctionReturnTypeExtension {
 										if (UNEXPECTED(r57.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_multiplierType.raw(), "getValue", "getvalue", 8, 0, NULL, r57.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_multiplierType.raw(), "getValue", "getvalue", 8, r57.raw()))) return false;
 									}
 									}
 									zval av58[2];
@@ -527,7 +527,7 @@ namespace pgen::StrRepeatFunctionReturnTypeExtension {
 										if (UNEXPECTED(r110.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_constantString, "getValue", "getvalue", 8, 0, NULL, r110.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_constantString, "getValue", "getvalue", 8, r110.raw()))) return false;
 									}
 									}
 									zval av111[2];

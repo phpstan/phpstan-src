@@ -24,18 +24,18 @@ static pt_method_site pg_site_11; /* method_getPropertyReadTagValues_11 */
 static pgrt::PropSite pg_site_12; /* prop_propertyName_12 */
 static pgrt::PropSite pg_site_13; /* prop_type_13 */
 static pgrt::GetterSite pg_site_14; /* getter_getWritableType_14 */
-static pt_method_site pg_site_15; /* method_getWritableType_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getWritableType_15 */
 static pt_method_site pg_site_16; /* method_getPropertyWriteTagValues_16 */
 static pgrt::PropSite pg_site_17; /* prop_propertyName_17 */
 static pgrt::PropSite pg_site_18; /* prop_type_18 */
 static pgrt::GetterSite pg_site_19; /* getter_getReadableType_19 */
-static pt_method_site pg_site_20; /* method_getReadableType_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getReadableType_20 */
 static pt_method_site pg_site_21; /* method_getMethodTagValues_21 */
 static pgrt::PropSite pg_site_22; /* prop_templateTypes_22 */
 static pgrt::FunctionSite pg_site_23; /* function_count */
 static pgrt::GetterSite pg_site_24; /* getter_getClassName_24 */
 static pgrt::ClassSite pg_site_25; /* cls_PHPStan\Analyser\NameScope */
-static pt_method_site pg_site_26; /* method_getClassName_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getClassName_26 */
 static pgrt::PropSite pg_site_27; /* prop_templateTypes_27 */
 static pgrt::PropSite pg_site_28; /* prop_name_28 */
 static pgrt::PropSite pg_site_29; /* prop_name_29 */
@@ -46,7 +46,7 @@ static pgrt::PropSite pg_site_33; /* prop_default_33 */
 static pt_method_site pg_site_34; /* static_PHPStan\Type\Generic\TemplateTypeVariance::createInvariant */
 static pgrt::ClassSite pg_site_35; /* cls_PHPStan\PhpDoc\Tag\TemplateTag */
 static pgrt::GetterSite pg_site_36; /* getter_getClassName_36 */
-static pt_method_site pg_site_37; /* method_getClassName_37 */
+static pgrt::MethodShapeSite pg_site_37; /* method0_getClassName_37 */
 static pgrt::PropSite pg_site_38; /* prop_methodName_38 */
 static pt_method_site pg_site_39; /* static_PHPStan\Type\Generic\TemplateTypeFactory::fromTemplateTag */
 static pgrt::FunctionSite pg_site_40; /* function_array_map */
@@ -132,7 +132,7 @@ static pgrt::ClassSite pg_site_119; /* cls_PHPStan\PhpDoc\Tag\ThrowsTag */
 static pgrt::ClassSite pg_site_120; /* cls_PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode */
 static pgrt::PropSite pg_site_121; /* prop_type_121 */
 static pgrt::ClassSite pg_site_122; /* cls_PHPStan\PhpDoc\Tag\MixinTag */
-static pt_method_site pg_site_123; /* method_getMixinTagValues_123 */
+static pgrt::MethodShapeSite pg_site_123; /* method0_getMixinTagValues_123 */
 static pt_method_site pg_site_124; /* method_getRequireExtendsTagValues_124 */
 static pgrt::PropSite pg_site_125; /* prop_type_125 */
 static pgrt::ClassSite pg_site_126; /* cls_PHPStan\PhpDoc\Tag\RequireExtendsTag */
@@ -174,15 +174,15 @@ static pgrt::PropSite pg_site_161; /* prop_isEquality_161 */
 static pt_method_site pg_site_162; /* method_getSelfOutTypeTagValues_162 */
 static pgrt::PropSite pg_site_163; /* prop_type_163 */
 static pgrt::ClassSite pg_site_164; /* cls_PHPStan\PhpDoc\Tag\SelfOutTypeTag */
-static pt_method_site pg_site_165; /* method_getDeprecatedTagValues_165 */
+static pgrt::MethodShapeSite pg_site_165; /* method0_getDeprecatedTagValues_165 */
 static pgrt::ClassSite pg_site_166; /* cls_PHPStan\PhpDoc\Tag\DeprecatedTag */
 static pt_method_site pg_site_167; /* method_getTagsByName_167 */
 static pt_method_site pg_site_168; /* method_getTagsByName_168 */
 static pt_method_site pg_site_169; /* method_getTagsByName_169 */
 static pt_method_site pg_site_170; /* method_getTagsByName_170 */
-static pt_method_site pg_site_171; /* method_getTags_171 */
+static pgrt::MethodShapeSite pg_site_171; /* method0_getTags_171 */
 static pgrt::PropSite pg_site_172; /* prop_name_172 */
-static pt_method_site pg_site_173; /* method_getTags_173 */
+static pgrt::MethodShapeSite pg_site_173; /* method0_getTags_173 */
 static pgrt::PropSite pg_site_174; /* prop_name_174 */
 static pt_method_site pg_site_175; /* method_getTagsByName_175 */
 static pt_method_site pg_site_176; /* method_getTagsByName_176 */
@@ -652,7 +652,7 @@ namespace pgen::PhpDocNodeResolver {
 											ZVAL_COPY(r71.raw(), gs70);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_15, zv::Ref(e68).deref().raw(), "getWritableType", "getwritabletype", 15, 0, NULL, r71.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, zv::Ref(e68).deref().raw(), "getWritableType", "getwritabletype", 15, r71.raw()))) return false;
 										}
 										}
 										l_writableType = std::move(r71);
@@ -760,7 +760,7 @@ namespace pgen::PhpDocNodeResolver {
 											ZVAL_COPY(r112.raw(), gs111);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_20, zv::Ref(e109).deref().raw(), "getReadableType", "getreadabletype", 15, 0, NULL, r112.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, zv::Ref(e109).deref().raw(), "getReadableType", "getreadabletype", 15, r112.raw()))) return false;
 										}
 										}
 										l_readableType = std::move(r112);
@@ -890,7 +890,7 @@ namespace pgen::PhpDocNodeResolver {
 										ZVAL_COPY(r34.raw(), gs33);
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_nameScope.raw(), "getClassName", "getclassname", 12, 0, NULL, r34.raw()))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_nameScope.raw(), "getClassName", "getclassname", 12, r34.raw()))) return false;
 									}
 									}
 									b28 = !(Z_TYPE_P(r34.raw()) == IS_NULL);
@@ -1010,7 +1010,7 @@ namespace pgen::PhpDocNodeResolver {
 											ZVAL_COPY(r74.raw(), gs73);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_nameScope.raw(), "getClassName", "getclassname", 12, 0, NULL, r74.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_37, l_nameScope.raw(), "getClassName", "getclassname", 12, r74.raw()))) return false;
 										}
 										}
 										zv::Val o76;
@@ -2743,7 +2743,7 @@ namespace pgen::PhpDocNodeResolver {
 		ZVAL_COPY_VALUE(&cap1[1], &this_zv);
 		zv::Val h2 = pt_native_closure_new(&pg_closure_2, 2, cap1, 0u);
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_123, p_phpDocNode, "getMixinTagValues", "getmixintagvalues", 17, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_123, p_phpDocNode, "getMixinTagValues", "getmixintagvalues", 17, r3.raw()))) return false;
 		zval av4[2];
 		ZVAL_COPY_VALUE(&av4[0], h2.raw());
 		ZVAL_COPY_VALUE(&av4[1], r3.raw());
@@ -3667,7 +3667,7 @@ namespace pgen::PhpDocNodeResolver {
 	(void) this_zv;
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_165, p_phpDocNode, "getDeprecatedTagValues", "getdeprecatedtagvalues", 22, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_165, p_phpDocNode, "getDeprecatedTagValues", "getdeprecatedtagvalues", 22, r2.raw()))) return false;
 		zv::Val a3 = zv::Val::copyOf(zv::Ref(r2.raw()).deref());
 		HashTable *ht1 = Z_ARRVAL_P(a3.raw());
 		zval *v4;
@@ -3804,7 +3804,7 @@ namespace pgen::PhpDocNodeResolver {
 	(void) this_zv;
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_171, p_phpDocNode, "getTags", "gettags", 7, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_171, p_phpDocNode, "getTags", "gettags", 7, r2.raw()))) return false;
 		zv::Val a3 = zv::Val::copyOf(zv::Ref(r2.raw()).deref());
 		HashTable *ht1 = Z_ARRVAL_P(a3.raw());
 		zval *v4;
@@ -3850,7 +3850,7 @@ namespace pgen::PhpDocNodeResolver {
 	(void) this_zv;
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_173, p_phpDocNode, "getTags", "gettags", 7, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_173, p_phpDocNode, "getTags", "gettags", 7, r2.raw()))) return false;
 		zv::Val a3 = zv::Val::copyOf(zv::Ref(r2.raw()).deref());
 		HashTable *ht1 = Z_ARRVAL_P(a3.raw());
 		zval *v4;

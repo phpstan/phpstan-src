@@ -26,24 +26,24 @@ static pgrt::PropSite pg_site_13; /* prop_var_13 */
 static pgrt::PropSite pg_site_14; /* prop_name_14 */
 static pgrt::FunctionSite pg_site_15; /* function_sprintf */
 static pgrt::PropSite pg_site_16; /* prop_var_16 */
-static pt_method_site pg_site_17; /* method_getStartLine_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getStartLine_17 */
 static pt_method_site pg_site_18; /* method_getAsserts_18 */
 static pgrt::GetterSite pg_site_19; /* getter_getAll_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Reflection\Assertions */
-static pt_method_site pg_site_21; /* method_getAll_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getAll_21 */
 static pt_method_site pg_site_22; /* method_getParameter_22 */
 static pgrt::GetterSite pg_site_23; /* getter_getParameterName_23 */
 static pgrt::ClassSite pg_site_24; /* cls_PHPStan\PhpDoc\Tag\AssertTagParameter */
-static pt_method_site pg_site_25; /* method_getParameterName_25 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getParameterName_25 */
 static pgrt::FunctionSite pg_site_26; /* function_ltrim */
 static pt_method_site pg_site_27; /* method_getOnlyVariant_27 */
 static pt_method_site pg_site_28; /* method_getReturnType_28 */
 static pt_method_site pg_site_29; /* method_getParameters_29 */
-static pt_method_site pg_site_30; /* method_getType_30 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getType_30 */
 static pgrt::ClassSite pg_site_31; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_32; /* cls_PHPStan\Type\ConditionalTypeForParameter */
 static pgrt::GetterSite pg_site_33; /* getter_getParameterName_33 */
-static pt_method_site pg_site_34; /* method_getParameterName_34 */
+static pgrt::MethodShapeSite pg_site_34; /* method0_getParameterName_34 */
 static pgrt::ClassSite pg_site_35; /* cls_PhpParser\Node\Stmt\Nop */
 static pgrt::ClassSite pg_site_36; /* cls_PHPStan\Node\VariableWritesNode */
 static pgrt::ClassSite pg_site_37; /* cls_PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection */
@@ -72,7 +72,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 					ZVAL_COPY(r2.raw(), gs1);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_34, p_type, "getParameterName", "getparametername", 16, 0, NULL, r2.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_34, p_type, "getParameterName", "getparametername", 16, r2.raw()))) return;
 				}
 				}
 				zval av3[2];
@@ -355,7 +355,7 @@ namespace pgen::UnusedParametersCheck {
 								p65 = o66.raw();
 							}
 							zv::Val r67;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_17, zv::Ref(p65).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r67.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, zv::Ref(p65).deref().raw(), "getStartLine", "getstartline", 12, r67.raw()))) return false;
 							zv::Val r68;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(o64.raw()), Z_LVAL_P(r67.raw()), r68.raw()))) return false;
 						}
@@ -418,7 +418,7 @@ namespace pgen::UnusedParametersCheck {
 			ZVAL_COPY(r7.raw(), gs6);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, vd4.raw(), "getAll", "getall", 6, 0, NULL, r7.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, vd4.raw(), "getAll", "getall", 6, r7.raw()))) return false;
 		}
 		}
 		zv::Val a8 = zv::Val::copyOf(zv::Ref(r7.raw()).deref());
@@ -449,7 +449,7 @@ namespace pgen::UnusedParametersCheck {
 						ZVAL_COPY(r17.raw(), gs16);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_25, vd14.raw(), "getParameterName", "getparametername", 16, 0, NULL, r17.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, vd14.raw(), "getParameterName", "getparametername", 16, r17.raw()))) return false;
 					}
 					}
 					zval av18[2];
@@ -545,7 +545,7 @@ namespace pgen::UnusedParametersCheck {
 						if (UNEXPECTED(r41.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_parameterReflection, "getType", "gettype", 7, 0, NULL, r41.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_parameterReflection, "getType", "gettype", 7, r41.raw()))) return false;
 					}
 					}
 					zv::Val o42 = zv::Val::copyOf(zv::Ref(r41.raw()));

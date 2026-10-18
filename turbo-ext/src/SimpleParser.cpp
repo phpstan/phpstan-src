@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_simple_parser = nullptr;
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Parser\ParserErrorsException */
 static pgrt::GetterSite pg_site_1; /* getter_getErrors_1 */
-static pt_method_site pg_site_2; /* method_getErrors_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getErrors_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\ErrorHandler\Collecting */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Parser\ParserRunner */
 static pt_method_site pg_site_5; /* static_PHPStan\Parser\ParserRunner::parse */
-static pt_method_site pg_site_6; /* method_hasErrors_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_hasErrors_6 */
 static pgrt::GetterSite pg_site_7; /* getter_getErrors_7 */
-static pt_method_site pg_site_8; /* method_getErrors_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getErrors_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\NodeTraverser */
 static pt_method_site pg_site_11; /* method_addVisitor_11 */
@@ -78,7 +78,7 @@ namespace pgen::SimpleParser {
 						ZVAL_COPY(r7.raw(), gs6);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_e.raw(), "getErrors", "geterrors", 9, 0, NULL, r7.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_e.raw(), "getErrors", "geterrors", 9, r7.raw()))) return false;
 					}
 					}
 					zval av8[2];
@@ -134,7 +134,7 @@ namespace pgen::SimpleParser {
 	}
 	 {
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_errorHandler.raw(), "hasErrors", "haserrors", 9, 0, NULL, r7.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_errorHandler.raw(), "hasErrors", "haserrors", 9, r7.raw()))) return false;
 		if (Z_TYPE_P(r7.raw()) == IS_TRUE) {
 			 {
 				zval *gs9 = Z_TYPE_P(l_errorHandler.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_7, Z_OBJ_P(l_errorHandler.raw()), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\ErrorHandler\\Collecting", 33), "geterrors", 9, "errors", 6) : NULL;
@@ -143,7 +143,7 @@ namespace pgen::SimpleParser {
 					ZVAL_COPY(r10.raw(), gs9);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_errorHandler.raw(), "getErrors", "geterrors", 9, 0, NULL, r10.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_errorHandler.raw(), "getErrors", "geterrors", 9, r10.raw()))) return false;
 				}
 				}
 				zval av11[2];

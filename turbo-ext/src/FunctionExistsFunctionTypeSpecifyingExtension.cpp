@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_function_exists_function_type_specifying_extension = nul
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_true_2 */
 static pt_method_site pg_site_3; /* method_getArgs_3 */
@@ -17,7 +17,7 @@ static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
 static pt_method_site pg_site_6; /* method_getConstantStrings_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Name\FullyQualified */
-static pt_method_site pg_site_8; /* method_getValue_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getValue_8 */
 static pgrt::FunctionSite pg_site_9; /* function_ltrim */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Scalar\String_ */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Arg */
@@ -46,7 +46,7 @@ namespace pgen::FunctionExistsFunctionTypeSpecifyingExtension {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		bool b2 = zend_is_identical(r3.raw(), &pg_lit[0]);
@@ -160,7 +160,7 @@ namespace pgen::FunctionExistsFunctionTypeSpecifyingExtension {
 					if (UNEXPECTED(r25.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, zv::Ref(e22).deref().raw(), "getValue", "getvalue", 8, 0, NULL, r25.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, zv::Ref(e22).deref().raw(), "getValue", "getvalue", 8, r25.raw()))) return false;
 				}
 				}
 				zval av26[2];

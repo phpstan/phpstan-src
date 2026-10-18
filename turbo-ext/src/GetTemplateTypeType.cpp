@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_get_template_type_type = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getReferencedClasses_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getReferencedClasses_0 */
 static pt_method_site pg_site_1; /* method_getReferencedTemplateTypes_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Helper\GetTemplateTypeType */
 static pt_method_site pg_site_3; /* method_equals_3 */
@@ -61,7 +61,7 @@ namespace pgen::GetTemplateTypeType {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p1, "getReferencedClasses", "getreferencedclasses", 20, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();

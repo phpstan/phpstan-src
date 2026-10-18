@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_method_tag_template_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getDocComment_0 */
-static pt_method_site pg_site_1; /* method_getClassReflection_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getDocComment_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getClassReflection_1 */
 static pt_method_site pg_site_2; /* method_getOriginalNode_2 */
 static pgrt::GetterSite pg_site_3; /* getter_getText_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_5; /* method_getText_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getText_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Stmt\ClassLike */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\Generics\MethodTagTemplateTypeCheck */
@@ -56,7 +56,7 @@ namespace pgen::MethodTagTemplateTypeRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, r1.raw()))) return false;
 		l_docComment = std::move(r1);
 	}
 	 {
@@ -79,7 +79,7 @@ namespace pgen::MethodTagTemplateTypeRule {
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getClassReflection", "getclassreflection", 18, r5.raw()))) return false;
 		}
 		}
 		zv::Val vd6;
@@ -118,7 +118,7 @@ namespace pgen::MethodTagTemplateTypeRule {
 			ZVAL_COPY(r12.raw(), gs11);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r12.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_docComment.raw(), "getText", "gettext", 7, r12.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r5.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(r5.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Generics\\MethodTagTemplateTypeCheck::check", 1, "classReflection", "PHPStan\\Reflection\\ClassReflection", r5.raw()); return false; }

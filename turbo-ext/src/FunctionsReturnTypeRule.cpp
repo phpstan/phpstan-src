@@ -15,10 +15,10 @@ static pt_method_site pg_site_2; /* method_getFunction_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\MethodReflection */
 static pt_method_site pg_site_4; /* method_getReturnType_4 */
 static pgrt::PropSite pg_site_5; /* prop_expr_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
-static pt_method_site pg_site_9; /* method_getName_9 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
 static pt_method_site pg_site_10; /* method_isGenerator_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Rules\FunctionReturnTypeCheck */
@@ -161,7 +161,7 @@ namespace pgen::FunctionsReturnTypeRule {
 			if (UNEXPECTED(r19.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_function.raw(), "getName", "getname", 7, 0, NULL, r19.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_function.raw(), "getName", "getname", 7, r19.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb20;
@@ -177,7 +177,7 @@ namespace pgen::FunctionsReturnTypeRule {
 			if (UNEXPECTED(r22.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_function.raw(), "getName", "getname", 7, 0, NULL, r22.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_function.raw(), "getName", "getname", 7, r22.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb23;
@@ -193,7 +193,7 @@ namespace pgen::FunctionsReturnTypeRule {
 			if (UNEXPECTED(r25.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_function.raw(), "getName", "getname", 7, 0, NULL, r25.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_function.raw(), "getName", "getname", 7, r25.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb26;
@@ -211,7 +211,7 @@ namespace pgen::FunctionsReturnTypeRule {
 			if (UNEXPECTED(r28.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_function.raw(), "getName", "getname", 7, 0, NULL, r28.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_function.raw(), "getName", "getname", 7, r28.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb29;

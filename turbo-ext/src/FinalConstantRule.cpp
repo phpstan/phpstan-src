@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_final_constant_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_isFinal_0 */
-static pt_method_site pg_site_1; /* method_getPhpVersion_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_isFinal_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getPhpVersion_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Analyser\Scope */
 
@@ -41,7 +41,7 @@ namespace pgen::FinalConstantRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "isFinal", "isfinal", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "isFinal", "isfinal", 7, r1.raw()))) return false;
 		}
 		}
 		if (!(zend_is_true(r1.raw()))) {
@@ -55,7 +55,7 @@ namespace pgen::FinalConstantRule {
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, r3.raw()))) return false;
 		zv::Val r4;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsFinalConstants(Z_OBJ_P(r3.raw()), r4.raw()))) return false;
 		bool r5;

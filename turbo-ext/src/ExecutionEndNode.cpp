@@ -11,7 +11,7 @@ static zval pg_lit[1];
 
 static pgrt::GetterSite pg_site_0; /* getter_getAttributes_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_2; /* method_getAttributes_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getAttributes_2 */
 static pt_method_site pg_site_3; /* bound_PhpParser\NodeAbstract::__construct */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Stmt */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\StatementResult */
@@ -44,7 +44,7 @@ namespace pgen::ExecutionEndNode {
 			ZVAL_COPY(r6.raw(), gs5);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getAttributes", "getattributes", 13, 0, NULL, r6.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getAttributes", "getattributes", 13, r6.raw()))) return false;
 		}
 		}
 		zval av7[1];

@@ -9,22 +9,22 @@ zend_class_entry *pt_ce_date_time_modify_method_throw_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pgrt::DispatchCache pg_site_1; /* dispatch_getDeclaringClass_1 */
 static pt_method_site pg_site_2; /* method_getDeclaringClass_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pgrt::FunctionSite pg_site_4; /* function_in_array */
 static pt_method_site pg_site_5; /* method_getArgs_5 */
-static pt_method_site pg_site_6; /* method_getPhpVersion_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getPhpVersion_6 */
 static pt_method_site pg_site_7; /* method_getArgs_7 */
 static pgrt::PropSite pg_site_8; /* prop_value_8 */
 static pt_method_site pg_site_9; /* method_getType_9 */
 static pt_method_site pg_site_10; /* method_getConstantStrings_10 */
 static pgrt::ClassSite pg_site_11; /* cls_DateTime */
-static pt_method_site pg_site_12; /* method_getValue_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getValue_12 */
 static pt_method_site pg_site_13; /* method_modify_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Type\NeverType */
-static pt_method_site pg_site_15; /* method_getPhpVersion_15 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getPhpVersion_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Reflection\MethodReflection */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node\Expr\MethodCall */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Analyser\Scope */
@@ -44,7 +44,7 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		bool b1 = zend_is_identical(r2.raw(), &pg_lit[0]);
@@ -102,7 +102,7 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 				if (UNEXPECTED(r9.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, vd3.raw(), "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, vd3.raw(), "getName", "getname", 7, r9.raw()))) return false;
 			}
 			}
 			zv::Val arr10 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
@@ -150,7 +150,7 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_scope, "getPhpVersion", "getphpversion", 13, r3.raw()))) return false;
 		zv::Val r4;
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasDateTimeExceptions(Z_OBJ_P(r3.raw()), r4.raw()))) return false;
 		bool r5;
@@ -238,7 +238,7 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 								if (UNEXPECTED(r31.isUndef())) goto catch_c26;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_constantString, "getValue", "getvalue", 8, 0, NULL, r31.raw(), NULL))) goto catch_c26;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_constantString, "getValue", "getvalue", 8, r31.raw()))) goto catch_c26;
 							}
 							}
 							zval av32[1];
@@ -318,7 +318,7 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasDateTimeExceptions(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;

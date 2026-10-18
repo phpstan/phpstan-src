@@ -9,20 +9,20 @@ zend_class_entry *pt_ce_closure_from_callable_dynamic_return_type_extension = nu
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
-static pt_method_site pg_site_5; /* method_isCallable_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isCallable_5 */
 static pt_method_site pg_site_6; /* method_getCallableParametersAcceptors_6 */
 static pt_method_site pg_site_7; /* method_getParameters_7 */
 static pt_method_site pg_site_8; /* method_getReturnType_8 */
-static pt_method_site pg_site_9; /* method_isVariadic_9 */
-static pt_method_site pg_site_10; /* method_getTemplateTypeMap_10 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isVariadic_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getTemplateTypeMap_10 */
 static pt_method_site pg_site_11; /* method_getResolvedTemplateTypeMap_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
-static pt_method_site pg_site_13; /* method_getCallSiteVarianceMap_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getCallSiteVarianceMap_13 */
 static pt_method_site pg_site_14; /* static_PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty */
 static pt_method_site pg_site_15; /* method_getThrowPoints_15 */
 static pt_method_site pg_site_16; /* method_getImpurePoints_16 */
@@ -63,7 +63,7 @@ namespace pgen::ClosureFromCallableDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[1]);
@@ -136,7 +136,7 @@ namespace pgen::ClosureFromCallableDynamicReturnTypeExtension {
 			if (UNEXPECTED(r17.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_callableType.raw(), "isCallable", "iscallable", 10, 0, NULL, r17.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_callableType.raw(), "isCallable", "iscallable", 10, r17.raw()))) return false;
 		}
 		}
 		bool r18;
@@ -212,7 +212,7 @@ namespace pgen::ClosureFromCallableDynamicReturnTypeExtension {
 						if (UNEXPECTED(r36.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_variant, "isVariadic", "isvariadic", 10, 0, NULL, r36.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_variant, "isVariadic", "isvariadic", 10, r36.raw()))) return false;
 					}
 					}
 					zv::Val r37;
@@ -221,7 +221,7 @@ namespace pgen::ClosureFromCallableDynamicReturnTypeExtension {
 						if (UNEXPECTED(r37.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_variant, "getTemplateTypeMap", "gettemplatetypemap", 18, 0, NULL, r37.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_variant, "getTemplateTypeMap", "gettemplatetypemap", 18, r37.raw()))) return false;
 					}
 					}
 					zv::Val vd38;
@@ -244,7 +244,7 @@ namespace pgen::ClosureFromCallableDynamicReturnTypeExtension {
 							if (UNEXPECTED(r41.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_variant, "getCallSiteVarianceMap", "getcallsitevariancemap", 22, 0, NULL, r41.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_variant, "getCallSiteVarianceMap", "getcallsitevariancemap", 22, r41.raw()))) return false;
 						}
 						}
 						q40 = std::move(r41);

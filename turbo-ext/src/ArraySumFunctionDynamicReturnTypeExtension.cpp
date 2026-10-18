@@ -9,28 +9,28 @@ zend_class_entry *pt_ce_array_sum_function_dynamic_return_type_extension = nullp
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_getConstantArrays_4 */
-static pt_method_site pg_site_5; /* method_getConstantArrays_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getConstantArrays_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getConstantArrays_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Scalar\Int_ */
-static pt_method_site pg_site_7; /* method_getValueTypes_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getValueTypes_7 */
 static pt_method_site pg_site_8; /* method_isOptionalKey_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Node\Expr\TypeExpr */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Expr\BinaryOp\Plus */
 static pgrt::GetterSite pg_site_11; /* getter_getUnsealedTypes_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Constant\ConstantArrayType */
-static pt_method_site pg_site_13; /* method_getUnsealedTypes_13 */
-static pt_method_site pg_site_14; /* method_isUnsealed_14 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getUnsealedTypes_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isUnsealed_14 */
 static pt_method_site pg_site_15; /* method_getType_15 */
 static pt_method_site pg_site_16; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node\Expr\BinaryOp\Mul */
 static pt_method_site pg_site_18; /* method_getType_18 */
-static pt_method_site pg_site_19; /* method_getIterableValueType_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getIterableValueType_19 */
 static pt_method_site pg_site_20; /* method_getType_20 */
-static pt_method_site pg_site_21; /* method_isIterableAtLeastOnce_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_isIterableAtLeastOnce_21 */
 static pt_method_site pg_site_22; /* method_toNumber_22 */
 static pgrt::ClassSite pg_site_23; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_24; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -51,7 +51,7 @@ namespace pgen::ArraySumFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -135,7 +135,7 @@ namespace pgen::ArraySumFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r15.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r15.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, r15.raw()))) return false;
 		}
 		}
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r15.raw())) > 0) {
@@ -146,7 +146,7 @@ namespace pgen::ArraySumFunctionDynamicReturnTypeExtension {
 					if (UNEXPECTED(r17.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r17.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_argType.raw(), "getConstantArrays", "getconstantarrays", 17, r17.raw()))) return false;
 				}
 				}
 				zv::Val a18 = zv::Val::copyOf(zv::Ref(r17.raw()).deref());
@@ -176,7 +176,7 @@ namespace pgen::ArraySumFunctionDynamicReturnTypeExtension {
 								if (UNEXPECTED(r29.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_constantArray, "getValueTypes", "getvaluetypes", 13, 0, NULL, r29.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_constantArray, "getValueTypes", "getvaluetypes", 13, r29.raw()))) return false;
 							}
 							}
 							zv::Val a30 = zv::Val::copyOf(zv::Ref(r29.raw()).deref());
@@ -258,7 +258,7 @@ namespace pgen::ArraySumFunctionDynamicReturnTypeExtension {
 								ZVAL_COPY(r58.raw(), gs57);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_constantArray, "getUnsealedTypes", "getunsealedtypes", 16, 0, NULL, r58.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_constantArray, "getUnsealedTypes", "getunsealedtypes", 16, r58.raw()))) return false;
 							}
 							}
 							l_unsealedTypes = std::move(r58);
@@ -272,7 +272,7 @@ namespace pgen::ArraySumFunctionDynamicReturnTypeExtension {
 									if (UNEXPECTED(r60.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_constantArray, "isUnsealed", "isunsealed", 10, 0, NULL, r60.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_constantArray, "isUnsealed", "isunsealed", 10, r60.raw()))) return false;
 								}
 								}
 								bool r61;
@@ -380,7 +380,7 @@ namespace pgen::ArraySumFunctionDynamicReturnTypeExtension {
 					if (UNEXPECTED(r87.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r87.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r87.raw()))) return false;
 				}
 				}
 				l_itemType = std::move(r87);
@@ -457,7 +457,7 @@ namespace pgen::ArraySumFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r110.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r110.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_argType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r110.raw()))) return false;
 		}
 		}
 		bool r111;

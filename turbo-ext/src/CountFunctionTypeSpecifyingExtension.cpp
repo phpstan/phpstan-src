@@ -11,11 +11,11 @@ static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_null_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pt_method_site pg_site_3; /* method_getArgs_3 */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
-static pt_method_site pg_site_6; /* method_isArray_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isArray_6 */
 static pt_method_site pg_site_7; /* method_getArgs_7 */
 static pgrt::PropSite pg_site_8; /* prop_value_8 */
 static pt_method_site pg_site_9; /* method_create_9 */
@@ -58,7 +58,7 @@ namespace pgen::CountFunctionTypeSpecifyingExtension {
 				if (UNEXPECTED(r6.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_functionReflection, "getName", "getname", 7, 0, NULL, r6.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_functionReflection, "getName", "getname", 7, r6.raw()))) return false;
 			}
 			}
 			bool ia7 = false;
@@ -111,7 +111,7 @@ namespace pgen::CountFunctionTypeSpecifyingExtension {
 			if (UNEXPECTED(r11.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r8.raw(), "isArray", "isarray", 7, 0, NULL, r11.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, r8.raw(), "isArray", "isarray", 7, r11.raw()))) return false;
 		}
 		}
 		bool r12;

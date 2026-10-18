@@ -9,19 +9,19 @@ zend_class_entry *pt_ce_date_time_zone_constructor_throw_type_extension = nullpt
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pgrt::DispatchCache pg_site_1; /* dispatch_getDeclaringClass_1 */
 static pt_method_site pg_site_2; /* method_getDeclaringClass_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_getArgs_4 */
 static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_getConstantStrings_8 */
-static pt_method_site pg_site_9; /* method_getValue_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
 static pgrt::ClassSite pg_site_10; /* cls_DateTimeZone */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\NeverType */
-static pt_method_site pg_site_12; /* method_getPhpVersion_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getPhpVersion_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Reflection\MethodReflection */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node\Expr\StaticCall */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
@@ -41,7 +41,7 @@ namespace pgen::DateTimeZoneConstructorThrowTypeExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		bool b1 = zend_is_identical(r2.raw(), &pg_lit[0]);
@@ -99,7 +99,7 @@ namespace pgen::DateTimeZoneConstructorThrowTypeExtension {
 				if (UNEXPECTED(r9.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, vd3.raw(), "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, vd3.raw(), "getName", "getname", 7, r9.raw()))) return false;
 			}
 			}
 			b1 = zend_is_identical(r9.raw(), &pg_lit[1]);
@@ -195,7 +195,7 @@ namespace pgen::DateTimeZoneConstructorThrowTypeExtension {
 								if (UNEXPECTED(r24.isUndef())) goto catch_c22;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_constantString, "getValue", "getvalue", 8, 0, NULL, r24.raw(), NULL))) goto catch_c22;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_constantString, "getValue", "getvalue", 8, r24.raw()))) goto catch_c22;
 							}
 							}
 							zval av25[1];
@@ -267,7 +267,7 @@ namespace pgen::DateTimeZoneConstructorThrowTypeExtension {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasDateTimeExceptions(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;

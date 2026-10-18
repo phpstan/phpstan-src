@@ -11,11 +11,11 @@ static zval pg_lit[4];
 
 static pt_method_site pg_site_0; /* method_getReturnStatements_0 */
 static pgrt::FunctionSite pg_site_1; /* function_count */
-static pt_method_site pg_site_2; /* method_getFunctionReflection_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getFunctionReflection_2 */
 static pt_method_site pg_site_3; /* method_getReturnType_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Node\ReturnStatementsNode */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_6; /* method_getName_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\Playground\NeverRuleHelper */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\Scope */
@@ -83,7 +83,7 @@ namespace pgen::FunctionNeverRule {
 	}
 	 {
 		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r6.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getFunctionReflection", "getfunctionreflection", 21, r6.raw()))) return false;
 		l_function = std::move(r6);
 	}
 	 {
@@ -128,7 +128,7 @@ namespace pgen::FunctionNeverRule {
 			if (UNEXPECTED(r13.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_function.raw(), "getName", "getname", 7, 0, NULL, r13.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_function.raw(), "getName", "getname", 7, r13.raw()))) return false;
 		}
 		}
 		zv::Val q14;

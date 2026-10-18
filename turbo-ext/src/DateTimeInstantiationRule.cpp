@@ -18,7 +18,7 @@ static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_getConstantStrings_8 */
-static pt_method_site pg_site_9; /* method_getValue_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
 static pgrt::ClassSite pg_site_10; /* cls_DateTime */
 static pt_method_site pg_site_11; /* static_DateTime::getLastErrors */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
@@ -169,7 +169,7 @@ namespace pgen::DateTimeInstantiationRule {
 						if (UNEXPECTED(r36.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_constantString, "getValue", "getvalue", 8, 0, NULL, r36.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_constantString, "getValue", "getvalue", 8, r36.raw()))) return false;
 					}
 					}
 					l_dateString = std::move(r36);

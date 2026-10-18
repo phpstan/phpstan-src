@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_str_increment_decrement_function_return_type_extension =
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
-static pt_method_site pg_site_5; /* method_getConstantScalarValues_5 */
-static pt_method_site pg_site_6; /* method_getConstantScalarValues_6 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getConstantScalarValues_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getConstantScalarValues_6 */
 static pgrt::FunctionSite pg_site_7; /* function_str_increment */
 static pgrt::ClassSite pg_site_8; /* cls_ValueError */
 static pgrt::FunctionSite pg_site_9; /* function_str_decrement */
@@ -38,7 +38,7 @@ namespace pgen::StrIncrementDecrementFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -68,7 +68,7 @@ namespace pgen::StrIncrementDecrementFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		l_fnName = std::move(r1);
@@ -123,7 +123,7 @@ namespace pgen::StrIncrementDecrementFunctionReturnTypeExtension {
 			if (UNEXPECTED(r12.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_argType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r12.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_argType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r12.raw()))) return false;
 		}
 		}
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r12.raw())) == 0) {
@@ -148,7 +148,7 @@ namespace pgen::StrIncrementDecrementFunctionReturnTypeExtension {
 			if (UNEXPECTED(r17.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_argType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r17.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_argType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r17.raw()))) return false;
 		}
 		}
 		zv::Val a18 = zv::Val::copyOf(zv::Ref(r17.raw()).deref());

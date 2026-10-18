@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_iterator_to_array_function_return_type_extension = nullp
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
@@ -17,11 +17,11 @@ static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
 static pt_method_site pg_site_6; /* method_isFalse_6 */
 static pt_method_site pg_site_7; /* static_PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo */
-static pt_method_site pg_site_8; /* method_getIterableValueType_8 */
-static pt_method_site pg_site_9; /* method_getIterableKeyType_9 */
-static pt_method_site pg_site_10; /* method_toArrayKey_10 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getIterableValueType_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getIterableKeyType_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_toArrayKey_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\ErrorType */
-static pt_method_site pg_site_12; /* method_getIterableValueType_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getIterableValueType_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
@@ -41,7 +41,7 @@ namespace pgen::IteratorToArrayFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		zv::Val r2 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r1.raw())));
@@ -177,7 +177,7 @@ namespace pgen::IteratorToArrayFunctionReturnTypeExtension {
 							if (UNEXPECTED(r34.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_traversableType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r34.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_traversableType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r34.raw()))) return false;
 						}
 						}
 						zv::Val n30;
@@ -202,7 +202,7 @@ namespace pgen::IteratorToArrayFunctionReturnTypeExtension {
 			if (UNEXPECTED(r36.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_traversableType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r36.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_traversableType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r36.raw()))) return false;
 		}
 		}
 		zv::Val r37;
@@ -211,7 +211,7 @@ namespace pgen::IteratorToArrayFunctionReturnTypeExtension {
 			if (UNEXPECTED(r37.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r36.raw(), "toArrayKey", "toarraykey", 10, 0, NULL, r37.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, r36.raw(), "toArrayKey", "toarraykey", 10, r37.raw()))) return false;
 		}
 		}
 		l_arrayKeyType = std::move(r37);
@@ -238,7 +238,7 @@ namespace pgen::IteratorToArrayFunctionReturnTypeExtension {
 			if (UNEXPECTED(r43.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_traversableType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r43.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_traversableType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r43.raw()))) return false;
 		}
 		}
 		zv::Val n41;

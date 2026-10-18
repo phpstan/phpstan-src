@@ -11,7 +11,7 @@ static pgrt::DispatchCache pg_site_0; /* dispatch_isStatic_0 */
 static pt_method_site pg_site_1; /* method_isStatic_1 */
 static pgrt::DispatchCache pg_site_2; /* dispatch_isPrivate_2 */
 static pt_method_site pg_site_3; /* method_isPrivate_3 */
-static pt_method_site pg_site_4; /* method_isPublic_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isPublic_4 */
 static pgrt::DispatchCache pg_site_5; /* dispatch_getDocComment_5 */
 static pt_method_site pg_site_6; /* method_getDocComment_6 */
 static pgrt::DispatchCache pg_site_7; /* dispatch_getVariants_7 */
@@ -28,10 +28,10 @@ static pgrt::DispatchCache pg_site_17; /* dispatch_getSelfOutType_17 */
 static pt_method_site pg_site_18; /* method_getSelfOutType_18 */
 static pgrt::DispatchCache pg_site_19; /* dispatch_returnsByReference_19 */
 static pt_method_site pg_site_20; /* method_returnsByReference_20 */
-static pt_method_site pg_site_21; /* method_isFinalByKeyword_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_isFinalByKeyword_21 */
 static pgrt::DispatchCache pg_site_22; /* dispatch_isAbstract_22 */
 static pt_method_site pg_site_23; /* method_isAbstract_23 */
-static pt_method_site pg_site_24; /* method_isBuiltin_24 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_isBuiltin_24 */
 static pgrt::DispatchCache pg_site_25; /* dispatch_isPure_25 */
 static pt_method_site pg_site_26; /* method_isPure_26 */
 static pgrt::DispatchCache pg_site_27; /* dispatch_getPureUnlessCallableIsImpureParameters_27 */
@@ -40,14 +40,14 @@ static pgrt::DispatchCache pg_site_29; /* dispatch_getPureUnlessParameterPassedP
 static pt_method_site pg_site_30; /* method_getPureUnlessParameterPassedParameters_30 */
 static pgrt::DispatchCache pg_site_31; /* dispatch_getAttributes_31 */
 static pt_method_site pg_site_32; /* method_getAttributes_32 */
-static pt_method_site pg_site_33; /* method_getName_33 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getName_33 */
 static pgrt::DispatchCache pg_site_34; /* dispatch_getPrototype_34 */
 static pt_method_site pg_site_35; /* method_getPrototype_35 */
 static pgrt::DispatchCache pg_site_36; /* dispatch_isDeprecated_36 */
 static pt_method_site pg_site_37; /* method_isDeprecated_37 */
 static pgrt::DispatchCache pg_site_38; /* dispatch_getDeprecatedDescription_38 */
 static pt_method_site pg_site_39; /* method_getDeprecatedDescription_39 */
-static pt_method_site pg_site_40; /* method_isFinal_40 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_isFinal_40 */
 static pgrt::DispatchCache pg_site_41; /* dispatch_isInternal_41 */
 static pt_method_site pg_site_42; /* method_isInternal_42 */
 static pgrt::DispatchCache pg_site_43; /* dispatch_getThrowType_43 */
@@ -56,7 +56,7 @@ static pgrt::DispatchCache pg_site_45; /* dispatch_hasSideEffects_45 */
 static pt_method_site pg_site_46; /* method_hasSideEffects_46 */
 static pgrt::DispatchCache pg_site_47; /* dispatch_mustUseReturnValue_47 */
 static pt_method_site pg_site_48; /* method_mustUseReturnValue_48 */
-static pt_method_site pg_site_49; /* method_getResolvedPhpDoc_49 */
+static pgrt::MethodShapeSite pg_site_49; /* method0_getResolvedPhpDoc_49 */
 static pgrt::ClassSite pg_site_50; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_51; /* cls_PHPStan\Reflection\ExtendedMethodReflection */
 
@@ -238,7 +238,7 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "isPublic", "ispublic", 8, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p1, "isPublic", "ispublic", 8, r2.raw()))) return false;
 		}
 		}
 		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
@@ -749,7 +749,7 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, p1, "isFinalByKeyword", "isfinalbykeyword", 16, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, p1, "isFinalByKeyword", "isfinalbykeyword", 16, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -834,7 +834,7 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_24, p1, "isBuiltin", "isbuiltin", 9, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, p1, "isBuiltin", "isbuiltin", 9, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -1101,7 +1101,7 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p1, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, p1, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -1307,7 +1307,7 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_40, p1, "isFinal", "isfinal", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, p1, "isFinal", "isfinal", 7, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();
@@ -1574,7 +1574,7 @@ namespace pgen::RewrittenDeclaringClassMethodReflection {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_49, p1, "getResolvedPhpDoc", "getresolvedphpdoc", 17, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_49, p1, "getResolvedPhpDoc", "getresolvedphpdoc", 17, r2.raw()))) return false;
 		}
 		}
 		*ret = r2.take();

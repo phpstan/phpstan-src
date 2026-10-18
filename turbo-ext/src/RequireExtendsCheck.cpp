@@ -9,16 +9,16 @@ zend_class_entry *pt_ce_require_extends_check = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[7];
 
-static pt_method_site pg_site_0; /* method_getType_0 */
-static pt_method_site pg_site_1; /* method_getObjectClassNames_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getType_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getObjectClassNames_1 */
 static pgrt::FunctionSite pg_site_2; /* function_count */
 static pt_method_site pg_site_3; /* method_describe_3 */
 static pt_method_site pg_site_4; /* method_hasClass_4 */
 static pt_method_site pg_site_5; /* method_getClass_5 */
-static pt_method_site pg_site_6; /* method_isInterface_6 */
-static pt_method_site pg_site_7; /* method_isClass_7 */
-static pt_method_site pg_site_8; /* method_getClassTypeDescription_8 */
-static pt_method_site pg_site_9; /* method_isFinal_9 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isInterface_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_isClass_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getClassTypeDescription_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isFinal_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node */
 
@@ -101,7 +101,7 @@ namespace pgen::RequireExtendsCheck {
 						if (UNEXPECTED(r17.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_0, l_extendsTag, "getType", "gettype", 7, 0, NULL, r17.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, l_extendsTag, "getType", "gettype", 7, r17.raw()))) return false;
 					}
 					}
 					l_type = std::move(r17);
@@ -113,7 +113,7 @@ namespace pgen::RequireExtendsCheck {
 						if (UNEXPECTED(r18.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_type.raw(), "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r18.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_type.raw(), "getObjectClassNames", "getobjectclassnames", 19, r18.raw()))) return false;
 					}
 					}
 					l_classNames = std::move(r18);
@@ -262,7 +262,7 @@ namespace pgen::RequireExtendsCheck {
 									if (UNEXPECTED(r59.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_reflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r59.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_reflection.raw(), "isInterface", "isinterface", 11, r59.raw()))) return false;
 								}
 								}
 								if (Z_TYPE_P(r59.raw()) == IS_TRUE) {
@@ -290,7 +290,7 @@ namespace pgen::RequireExtendsCheck {
 								 {
 									 {
 										zv::Val r68;
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_reflection.raw(), "isClass", "isclass", 7, 0, NULL, r68.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_reflection.raw(), "isClass", "isclass", 7, r68.raw()))) return false;
 										if (!((Z_TYPE_P(r68.raw()) == IS_TRUE))) {
 											 {
 												pgrt::StringBuilder sb69;
@@ -301,7 +301,7 @@ namespace pgen::RequireExtendsCheck {
 												zv::Val r71;
 												if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r70.raw(), r71.raw()))) return false;
 												zv::Val r72;
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_reflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r72.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_reflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r72.raw()))) return false;
 												zv::Val r73 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r72.raw())));
 												pgrt::StringBuilder sb74;
 												sb74.appendLiteral("requireExtends.", 15);
@@ -326,7 +326,7 @@ namespace pgen::RequireExtendsCheck {
 													if (UNEXPECTED(r80.isUndef())) return false;
 												} else {
 												 {
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_reflection.raw(), "isFinal", "isfinal", 7, 0, NULL, r80.raw(), NULL))) return false;
+													if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_reflection.raw(), "isFinal", "isfinal", 7, r80.raw()))) return false;
 												}
 												}
 												if (Z_TYPE_P(r80.raw()) == IS_TRUE) {

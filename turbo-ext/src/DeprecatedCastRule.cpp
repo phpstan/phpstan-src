@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_deprecated_cast_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[7];
 
-static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPhpVersion_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr\Cast\Int_ */
 static pt_method_site pg_site_2; /* method_getAttribute_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr\Cast\Bool_ */
@@ -44,7 +44,7 @@ namespace pgen::DeprecatedCastRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_deprecatesNonStandardCasts(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;

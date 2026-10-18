@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_static_method_callable_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPhpVersion_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Identifier */
 static pt_method_site pg_site_3; /* method_toString_3 */
-static pt_method_site pg_site_4; /* method_getClass_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClass_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\Methods\StaticMethodCallCheck */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node */
@@ -56,7 +56,7 @@ namespace pgen::StaticMethodCallableRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsFirstClassCallables(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;
@@ -85,7 +85,7 @@ namespace pgen::StaticMethodCallableRule {
 			if (UNEXPECTED(r9.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getName", "getname", 7, r9.raw()))) return false;
 		}
 		}
 		l_methodName = std::move(r9);
@@ -111,14 +111,14 @@ namespace pgen::StaticMethodCallableRule {
 		zv::Val o13 = zv::Val::copyOf(zv::Ref(p12));
 		zv::Val o14 = zv::Val::copyOf(zv::Ref(l_methodNameName.raw()));
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_node, "getClass", "getclass", 8, 0, NULL, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_node, "getClass", "getclass", 8, r15.raw()))) return false;
 		zv::Val r16;
 		if (EXPECTED(Z_TYPE_P(p_node) == IS_OBJECT)) {
 			r16 = pt_type_op(Z_OBJ_P(p_node), PT_OP_GET_NAME, 0, NULL);
 			if (UNEXPECTED(r16.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_node, "getName", "getname", 7, 0, NULL, r16.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_node, "getName", "getname", 7, r16.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r16.raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Identifier", 25)) || pgrt::instanceOfClass(r16.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\StaticMethodCallCheck::check", 4, "astName", "PhpParser\\Node\\Identifier|PhpParser\\Node\\Expr", r16.raw()); return false; }

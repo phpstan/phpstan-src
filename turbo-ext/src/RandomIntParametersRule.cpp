@@ -25,13 +25,13 @@ static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Constant\ConstantIntegerT
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Type\IntegerRangeType */
 static pt_method_site pg_site_14; /* method_isSmallerThan_14 */
 static pgrt::GetterSite pg_site_15; /* getter_getMin_15 */
-static pt_method_site pg_site_16; /* method_getMin_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getMin_16 */
 static pgrt::GetterSite pg_site_17; /* getter_getMax_17 */
-static pt_method_site pg_site_18; /* method_getMax_18 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getMax_18 */
 static pgrt::GetterSite pg_site_19; /* getter_getMin_19 */
-static pt_method_site pg_site_20; /* method_getMin_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getMin_20 */
 static pgrt::GetterSite pg_site_21; /* getter_getMax_21 */
-static pt_method_site pg_site_22; /* method_getMax_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getMax_22 */
 static pt_method_site pg_site_23; /* method_describe_23 */
 static pt_method_site pg_site_24; /* method_describe_24 */
 static pgrt::FunctionSite pg_site_25; /* function_sprintf */
@@ -301,7 +301,7 @@ namespace pgen::RandomIntParametersRule {
 						ZVAL_COPY(r53.raw(), gs52);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_minType.raw(), "getMin", "getmin", 6, 0, NULL, r53.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_minType.raw(), "getMin", "getmin", 6, r53.raw()))) return false;
 					}
 					}
 					bool b51 = (Z_TYPE_P(r53.raw()) == IS_NULL);
@@ -312,7 +312,7 @@ namespace pgen::RandomIntParametersRule {
 							ZVAL_COPY(r55.raw(), gs54);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_minType.raw(), "getMax", "getmax", 6, 0, NULL, r55.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_minType.raw(), "getMax", "getmax", 6, r55.raw()))) return false;
 						}
 						}
 						b51 = (Z_TYPE_P(r55.raw()) == IS_NULL);
@@ -329,7 +329,7 @@ namespace pgen::RandomIntParametersRule {
 							ZVAL_COPY(r59.raw(), gs58);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_maxType.raw(), "getMin", "getmin", 6, 0, NULL, r59.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_maxType.raw(), "getMin", "getmin", 6, r59.raw()))) return false;
 						}
 						}
 						bool b57 = (Z_TYPE_P(r59.raw()) == IS_NULL);
@@ -340,7 +340,7 @@ namespace pgen::RandomIntParametersRule {
 								ZVAL_COPY(r61.raw(), gs60);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_maxType.raw(), "getMax", "getmax", 6, 0, NULL, r61.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_maxType.raw(), "getMax", "getmax", 6, r61.raw()))) return false;
 							}
 							}
 							b57 = (Z_TYPE_P(r61.raw()) == IS_NULL);

@@ -9,32 +9,32 @@ zend_class_entry *pt_ce_property_exists_type_specifying_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_true_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pt_method_site pg_site_3; /* method_getArgs_3 */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
 static pt_method_site pg_site_6; /* method_getConstantStrings_6 */
-static pt_method_site pg_site_7; /* method_getValue_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getValue_7 */
 static pgrt::PropSite pg_site_8; /* prop_value_8 */
 static pt_method_site pg_site_9; /* method_getType_9 */
-static pt_method_site pg_site_10; /* method_isString_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isString_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Name\FullyQualified */
 static pgrt::GetterSite pg_site_12; /* getter_getRawArgs_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node\Expr\FuncCall */
-static pt_method_site pg_site_14; /* method_getRawArgs_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getRawArgs_14 */
 static pt_method_site pg_site_15; /* method_create_15 */
 static pt_method_site pg_site_16; /* method_isObject_16 */
 static pgrt::PropSite pg_site_17; /* prop_value_17 */
-static pt_method_site pg_site_18; /* method_getValue_18 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getValue_18 */
 static pgrt::ClassSite pg_site_19; /* cls_PhpParser\Node\Identifier */
 static pgrt::ClassSite pg_site_20; /* cls_PhpParser\Node\Expr\PropertyFetch */
 static pgrt::PropSite pg_site_21; /* prop_value_21 */
-static pt_method_site pg_site_22; /* method_getValue_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getValue_22 */
 static pt_method_site pg_site_23; /* method_create_23 */
 static pgrt::GetterSite pg_site_24; /* getter_getRawArgs_24 */
-static pt_method_site pg_site_25; /* method_getRawArgs_25 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getRawArgs_25 */
 static pt_method_site pg_site_26; /* method_create_26 */
 static pgrt::ClassSite pg_site_27; /* cls_PHPStan\Analyser\TypeSpecifier */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Reflection\FunctionReflection */
@@ -82,7 +82,7 @@ namespace pgen::PropertyExistsTypeSpecifyingExtension {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		bool b2 = zend_is_identical(r3.raw(), &pg_lit[0]);
@@ -199,7 +199,7 @@ namespace pgen::PropertyExistsTypeSpecifyingExtension {
 			if (UNEXPECTED(r17.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_propertyNameType.raw(), "getValue", "getvalue", 8, 0, NULL, r17.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_propertyNameType.raw(), "getValue", "getvalue", 8, r17.raw()))) return false;
 		}
 		}
 		if (zend_is_identical(r17.raw(), &pg_lit[1])) {
@@ -250,7 +250,7 @@ namespace pgen::PropertyExistsTypeSpecifyingExtension {
 			if (UNEXPECTED(r29.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_objectOrStringType.raw(), "isString", "isstring", 8, 0, NULL, r29.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_objectOrStringType.raw(), "isString", "isstring", 8, r29.raw()))) return false;
 		}
 		}
 		bool r30;
@@ -272,7 +272,7 @@ namespace pgen::PropertyExistsTypeSpecifyingExtension {
 					ZVAL_COPY(r38.raw(), gs37);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_node, "getRawArgs", "getrawargs", 10, 0, NULL, r38.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_node, "getRawArgs", "getrawargs", 10, r38.raw()))) return false;
 				}
 				}
 				zval av39[2];
@@ -346,7 +346,7 @@ namespace pgen::PropertyExistsTypeSpecifyingExtension {
 			if (UNEXPECTED(r58.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_propertyNameType.raw(), "getValue", "getvalue", 8, 0, NULL, r58.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_propertyNameType.raw(), "getValue", "getvalue", 8, r58.raw()))) return false;
 		}
 		}
 		zval av59[1];
@@ -416,7 +416,7 @@ namespace pgen::PropertyExistsTypeSpecifyingExtension {
 			if (UNEXPECTED(r79.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_propertyNameType.raw(), "getValue", "getvalue", 8, 0, NULL, r79.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_propertyNameType.raw(), "getValue", "getvalue", 8, r79.raw()))) return false;
 		}
 		}
 		zv::Val n78;
@@ -458,7 +458,7 @@ namespace pgen::PropertyExistsTypeSpecifyingExtension {
 			ZVAL_COPY(r8.raw(), gs7);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_25, p_node, "getRawArgs", "getrawargs", 10, 0, NULL, r8.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, p_node, "getRawArgs", "getrawargs", 10, r8.raw()))) return false;
 		}
 		}
 		zval av9[2];

@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_too_wide_property_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_getProperties_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getProperties_1 */
 static pt_method_site pg_site_2; /* method_isPrivate_2 */
 static pt_method_site pg_site_3; /* method_isDeclaredInTrait_3 */
 static pt_method_site pg_site_4; /* method_isPromoted_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pt_method_site pg_site_6; /* method_hasNativeProperty_6 */
 static pt_method_site pg_site_7; /* method_getNativeProperty_7 */
 static pt_method_site pg_site_8; /* method_getAll_8 */
@@ -23,7 +23,7 @@ static pt_method_site pg_site_10; /* method_isAlwaysWritten_10 */
 static pt_method_site pg_site_11; /* method_isInitialized_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\PropertyReflection */
 static pt_method_site pg_site_13; /* method_getDeclaringClass_13 */
-static pt_method_site pg_site_14; /* method_getPropertyAssigns_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getPropertyAssigns_14 */
 static pt_method_site pg_site_15; /* method_getNativeType_15 */
 static pt_method_site pg_site_16; /* method_getPhpDocType_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Node\ClassPropertyNode */
@@ -96,14 +96,14 @@ namespace pgen::TooWidePropertyTypeRule {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r3.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r3);
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getProperties", "getproperties", 13, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getProperties", "getproperties", 13, r5.raw()))) return false;
 		pgrt::ForeachIter it6;
 		if (UNEXPECTED(!it6.begin(r5.raw()))) return false;
 		while (it6.valid()) {
@@ -170,7 +170,7 @@ namespace pgen::TooWidePropertyTypeRule {
 						if (UNEXPECTED(r18.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_property, "getName", "getname", 7, 0, NULL, r18.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_property, "getName", "getname", 7, r18.raw()))) return false;
 					}
 					}
 					l_propertyName = std::move(r18);
@@ -285,7 +285,7 @@ namespace pgen::TooWidePropertyTypeRule {
 					}
 					}
 					zv::Val r44;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_node, "getPropertyAssigns", "getpropertyassigns", 18, 0, NULL, r44.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_node, "getPropertyAssigns", "getpropertyassigns", 18, r44.raw()))) return false;
 					zv::Val r45;
 					if (EXPECTED(Z_TYPE_P(l_propertyReflection.raw()) == IS_OBJECT)) {
 						r45 = pt_extended_property_reflection_call(l_propertyReflection.raw(), PT_PROP_GET_NATIVE_TYPE);

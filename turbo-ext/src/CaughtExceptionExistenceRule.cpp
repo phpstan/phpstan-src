@@ -12,12 +12,12 @@ static zval pg_lit[5];
 static pgrt::PropSite pg_site_0; /* prop_types_0 */
 static pt_method_site pg_site_1; /* method_hasClass_1 */
 static pt_method_site pg_site_2; /* method_isInClassExists_2 */
-static pt_method_site pg_site_3; /* method_getStartLine_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getStartLine_3 */
 static pt_method_site pg_site_4; /* method_getClass_4 */
-static pt_method_site pg_site_5; /* method_isInterface_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isInterface_5 */
 static pt_method_site pg_site_6; /* method_implementsInterface_6 */
 static pt_method_site pg_site_7; /* method_getDisplayName_7 */
-static pt_method_site pg_site_8; /* method_getStartLine_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getStartLine_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\ClassNameCheck */
@@ -138,7 +138,7 @@ namespace pgen::CaughtExceptionExistenceRule {
 							zv::Val r22;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r21.raw(), r22.raw()))) return false;
 							zv::Val r23;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_class, "getStartLine", "getstartline", 12, 0, NULL, r23.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_class, "getStartLine", "getstartline", 12, r23.raw()))) return false;
 							if (UNEXPECTED(Z_TYPE_P(r23.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r23.raw()); return false; }
 							zv::Val r24;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r22.raw()), Z_LVAL_P(r23.raw()), r24.raw()))) return false;
@@ -201,7 +201,7 @@ namespace pgen::CaughtExceptionExistenceRule {
 						if (UNEXPECTED(r38.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_classReflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r38.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_classReflection.raw(), "isInterface", "isinterface", 11, r38.raw()))) return false;
 					}
 					}
 					bool b37 = !((Z_TYPE_P(r38.raw()) == IS_TRUE));
@@ -231,7 +231,7 @@ namespace pgen::CaughtExceptionExistenceRule {
 							zv::Val r44;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r43.raw(), r44.raw()))) return false;
 							zv::Val r45;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_class, "getStartLine", "getstartline", 12, 0, NULL, r45.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_class, "getStartLine", "getstartline", 12, r45.raw()))) return false;
 							if (UNEXPECTED(Z_TYPE_P(r45.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r45.raw()); return false; }
 							zv::Val r46;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r44.raw()), Z_LVAL_P(r45.raw()), r46.raw()))) return false;

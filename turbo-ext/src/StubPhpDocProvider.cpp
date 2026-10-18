@@ -13,14 +13,14 @@ static pgrt::ClassSite pg_site_0; /* cls_PHPStan\PhpDoc\ResolvedPhpDocBlock */
 static pgrt::FunctionSite pg_site_1; /* function_array_key_exists */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\ShouldNotHappenException */
 static pt_method_site pg_site_3; /* method_withClassName_3 */
-static pt_method_site pg_site_4; /* method_getStubFiles_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getStubFiles_4 */
 static pt_method_site pg_site_5; /* method_parseFile_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Stmt\Namespace_ */
 static pgrt::PropSite pg_site_8; /* prop_stmts_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Stmt\Function_ */
 static pgrt::PropSite pg_site_10; /* prop_namespacedName_10 */
-static pt_method_site pg_site_11; /* method_getDocComment_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getDocComment_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Param */
 static pgrt::PropSite pg_site_13; /* prop_var_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node\Expr\Variable */
@@ -29,21 +29,21 @@ static pgrt::PropSite pg_site_16; /* prop_name_16 */
 static pgrt::PropSite pg_site_17; /* prop_var_17 */
 static pgrt::PropSite pg_site_18; /* prop_name_18 */
 static pgrt::GetterSite pg_site_19; /* getter_getParams_19 */
-static pt_method_site pg_site_20; /* method_getParams_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getParams_20 */
 static pgrt::FunctionSite pg_site_21; /* function_array_map */
 static pgrt::GetterSite pg_site_22; /* getter_getText_22 */
 static pgrt::ClassSite pg_site_23; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_24; /* method_getText_24 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getText_24 */
 static pgrt::ClassSite pg_site_25; /* cls_PhpParser\Node\Stmt\Class_ */
 static pgrt::ClassSite pg_site_26; /* cls_PhpParser\Node\Stmt\Interface_ */
 static pgrt::ClassSite pg_site_27; /* cls_PhpParser\Node\Stmt\Trait_ */
 static pgrt::ClassSite pg_site_28; /* cls_PhpParser\Node\Stmt\Enum_ */
 static pgrt::PropSite pg_site_29; /* prop_namespacedName_29 */
-static pt_method_site pg_site_30; /* method_getDocComment_30 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getDocComment_30 */
 static pgrt::GetterSite pg_site_31; /* getter_getText_31 */
-static pt_method_site pg_site_32; /* method_getText_32 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getText_32 */
 static pgrt::PropSite pg_site_33; /* prop_stmts_33 */
-static pt_method_site pg_site_34; /* method_getDocComment_34 */
+static pgrt::MethodShapeSite pg_site_34; /* method0_getDocComment_34 */
 static pgrt::ClassSite pg_site_35; /* cls_PhpParser\Node\Stmt\Property */
 static pgrt::PropSite pg_site_36; /* prop_props_36 */
 static pgrt::PropSite pg_site_37; /* prop_name_37 */
@@ -51,7 +51,7 @@ static pt_method_site pg_site_38; /* method_toString_38 */
 static pgrt::PropSite pg_site_39; /* prop_name_39 */
 static pt_method_site pg_site_40; /* method_toString_40 */
 static pgrt::GetterSite pg_site_41; /* getter_getText_41 */
-static pt_method_site pg_site_42; /* method_getText_42 */
+static pgrt::MethodShapeSite pg_site_42; /* method0_getText_42 */
 static pgrt::ClassSite pg_site_43; /* cls_PhpParser\Node\Stmt\ClassConst */
 static pgrt::PropSite pg_site_44; /* prop_consts_44 */
 static pgrt::PropSite pg_site_45; /* prop_name_45 */
@@ -59,21 +59,21 @@ static pt_method_site pg_site_46; /* method_toString_46 */
 static pgrt::PropSite pg_site_47; /* prop_name_47 */
 static pt_method_site pg_site_48; /* method_toString_48 */
 static pgrt::GetterSite pg_site_49; /* getter_getText_49 */
-static pt_method_site pg_site_50; /* method_getText_50 */
+static pgrt::MethodShapeSite pg_site_50; /* method0_getText_50 */
 static pgrt::ClassSite pg_site_51; /* cls_PhpParser\Node\Stmt\ClassMethod */
 static pgrt::PropSite pg_site_52; /* prop_name_52 */
 static pt_method_site pg_site_53; /* method_toString_53 */
 static pgrt::PropSite pg_site_54; /* prop_name_54 */
 static pt_method_site pg_site_55; /* method_toString_55 */
 static pgrt::GetterSite pg_site_56; /* getter_getText_56 */
-static pt_method_site pg_site_57; /* method_getText_57 */
+static pgrt::MethodShapeSite pg_site_57; /* method0_getText_57 */
 static pgrt::PropSite pg_site_58; /* prop_var_58 */
 static pgrt::PropSite pg_site_59; /* prop_var_59 */
 static pgrt::PropSite pg_site_60; /* prop_name_60 */
 static pgrt::PropSite pg_site_61; /* prop_var_61 */
 static pgrt::PropSite pg_site_62; /* prop_name_62 */
 static pgrt::GetterSite pg_site_63; /* getter_getParams_63 */
-static pt_method_site pg_site_64; /* method_getParams_64 */
+static pgrt::MethodShapeSite pg_site_64; /* method0_getParams_64 */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -1075,7 +1075,7 @@ namespace pgen::StubPhpDocProvider {
 				zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::StubPhpDocProvider::slot::stubFilesProvider, "stubFilesProvider");
 				if (UNEXPECTED(p11 == NULL)) goto finally_f8;
 				zv::Val r12;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p11, "getStubFiles", "getstubfiles", 12, 0, NULL, r12.raw(), NULL))) goto finally_f8;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p11, "getStubFiles", "getstubfiles", 12, r12.raw()))) goto finally_f8;
 				zv::Val a13 = zv::Val::copyOf(zv::Ref(r12.raw()).deref());
 				HashTable *ht10 = Z_ARRVAL_P(a13.raw());
 				zval *v14;
@@ -1234,7 +1234,7 @@ namespace pgen::StubPhpDocProvider {
 			}
 			 {
 				zv::Val r11;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r11.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_node, "getDocComment", "getdoccomment", 13, r11.raw()))) return false;
 				l_docComment = std::move(r11);
 			}
 			 {
@@ -1265,7 +1265,7 @@ namespace pgen::StubPhpDocProvider {
 					ZVAL_COPY(r20.raw(), gs19);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_node, "getParams", "getparams", 9, 0, NULL, r20.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, p_node, "getParams", "getparams", 9, r20.raw()))) return false;
 				}
 				}
 				zval av21[2];
@@ -1292,7 +1292,7 @@ namespace pgen::StubPhpDocProvider {
 					ZVAL_COPY(r30.raw(), gs29);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r30.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_docComment.raw(), "getText", "gettext", 7, r30.raw()))) return false;
 				}
 				}
 				{ zval v = r30.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr27.raw()), &v); }
@@ -1352,7 +1352,7 @@ namespace pgen::StubPhpDocProvider {
 	}
 	 {
 		zv::Val r43;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_30, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r43.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, p_node, "getDocComment", "getdoccomment", 13, r43.raw()))) return false;
 		l_docComment = std::move(r43);
 	}
 	 {
@@ -1382,7 +1382,7 @@ namespace pgen::StubPhpDocProvider {
 					ZVAL_COPY(r53.raw(), gs52);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r53.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, l_docComment.raw(), "getText", "gettext", 7, r53.raw()))) return false;
 				}
 				}
 				{ zval v = r53.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr50.raw()), &v); }
@@ -1493,7 +1493,7 @@ namespace pgen::StubPhpDocProvider {
 			 {
 				 {
 					zv::Val r102;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_stmt, "getDocComment", "getdoccomment", 13, 0, NULL, r102.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_34, l_stmt, "getDocComment", "getdoccomment", 13, r102.raw()))) return false;
 					l_docComment = std::move(r102);
 				}
 				 {
@@ -1563,7 +1563,7 @@ namespace pgen::StubPhpDocProvider {
 											ZVAL_COPY(r127.raw(), gs126);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_42, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r127.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, l_docComment.raw(), "getText", "gettext", 7, r127.raw()))) return false;
 										}
 										}
 										{ zval v = r127.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr124.raw()), &v); }
@@ -1656,7 +1656,7 @@ namespace pgen::StubPhpDocProvider {
 													ZVAL_COPY(r157.raw(), gs156);
 												} else {
 												 {
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_50, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r157.raw()))) return false;
+													if (UNEXPECTED(!pgrt::callMethod0(pg_site_50, l_docComment.raw(), "getText", "gettext", 7, r157.raw()))) return false;
 												}
 												}
 												{ zval v = r157.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr154.raw()), &v); }
@@ -1737,7 +1737,7 @@ namespace pgen::StubPhpDocProvider {
 												ZVAL_COPY(r179.raw(), gs178);
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_57, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r179.raw()))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_57, l_docComment.raw(), "getText", "gettext", 7, r179.raw()))) return false;
 											}
 											}
 											{ zval v = r179.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr176.raw()), &v); }
@@ -1765,7 +1765,7 @@ namespace pgen::StubPhpDocProvider {
 												ZVAL_COPY(r188.raw(), gs187);
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_64, l_stmt, "getParams", "getparams", 9, 0, NULL, r188.raw()))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_64, l_stmt, "getParams", "getparams", 9, r188.raw()))) return false;
 											}
 											}
 											zval av189[2];

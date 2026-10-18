@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_missing_read_only_property_assign_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_getConstructors_1 */
 static pt_method_site pg_site_2; /* method_getUninitializedProperties_2 */
 static pt_method_site pg_site_3; /* method_isReadOnly_3 */
 static pt_method_site pg_site_4; /* method_getDisplayName_4 */
-static pt_method_site pg_site_5; /* method_getStartLine_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getStartLine_5 */
 static pt_method_site pg_site_6; /* method_isReadOnly_6 */
 static pt_method_site pg_site_7; /* method_getDisplayName_7 */
 static pt_method_site pg_site_8; /* method_isReadOnly_8 */
@@ -72,7 +72,7 @@ namespace pgen::MissingReadOnlyPropertyAssignRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -160,7 +160,7 @@ namespace pgen::MissingReadOnlyPropertyAssignRule {
 					zv::Val r25;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r24.raw(), r25.raw()))) return false;
 					zv::Val r26;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_propertyNode.raw(), "getStartLine", "getstartline", 12, 0, NULL, r26.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r26.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r26.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r26.raw()); return false; }
 					zv::Val r27;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r25.raw()), Z_LVAL_P(r26.raw()), r27.raw()))) return false;

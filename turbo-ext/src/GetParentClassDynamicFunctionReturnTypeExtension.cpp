@@ -9,31 +9,31 @@ zend_class_entry *pt_ce_get_parent_class_dynamic_function_return_type_extension 
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_isInTrait_2 */
 static pt_method_site pg_site_3; /* method_isInClass_3 */
-static pt_method_site pg_site_4; /* method_getClassReflection_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassReflection_4 */
 static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_isInTrait_8 */
 static pt_method_site pg_site_9; /* method_getConstantStrings_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\Constant\ConstantStringType */
-static pt_method_site pg_site_11; /* method_getValue_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getValue_11 */
 static pgrt::FunctionSite pg_site_12; /* function_array_map */
 static pt_method_site pg_site_13; /* method_getClassStringObjectType_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Type\StaticType */
 static pt_method_site pg_site_15; /* method_isInTrait_15 */
-static pt_method_site pg_site_16; /* method_getObjectClassNames_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getObjectClassNames_16 */
 static pt_method_site pg_site_17; /* method_hasClass_17 */
 static pt_method_site pg_site_18; /* method_getClass_18 */
-static pt_method_site pg_site_19; /* method_isFinal_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_isFinal_19 */
 static pt_method_site pg_site_20; /* method_hasClass_20 */
 static pt_method_site pg_site_21; /* method_getClass_21 */
-static pt_method_site pg_site_22; /* method_isInterface_22 */
-static pt_method_site pg_site_23; /* method_getParentClass_23 */
-static pt_method_site pg_site_24; /* method_getName_24 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_isInterface_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getParentClass_23 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getName_24 */
 static pgrt::ClassSite pg_site_25; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_26; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_27; /* cls_PHPStan\Analyser\Scope */
@@ -59,7 +59,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_stringType, "getValue", "getvalue", 8, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_stringType, "getValue", "getvalue", 8, r1.raw()))) return;
 		}
 		}
 		zv::Val r2;
@@ -96,7 +96,7 @@ namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -171,7 +171,7 @@ namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension {
 							if (UNEXPECTED(r11.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r11.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, r11.raw()))) return false;
 						}
 						}
 						zv::Val r12;
@@ -362,7 +362,7 @@ namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension {
 			if (UNEXPECTED(r50.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_valueType.raw(), "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r50.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_valueType.raw(), "getObjectClassNames", "getobjectclassnames", 19, r50.raw()))) return false;
 		}
 		}
 		l_classNames = std::move(r50);
@@ -451,7 +451,7 @@ namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension {
 									if (UNEXPECTED(r75.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_19, vd71.raw(), "isFinal", "isfinal", 7, 0, NULL, r75.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, vd71.raw(), "isFinal", "isfinal", 7, r75.raw()))) return false;
 								}
 								}
 								b59 = (Z_TYPE_P(r75.raw()) == IS_TRUE);
@@ -575,7 +575,7 @@ namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension {
 			if (UNEXPECTED(r17.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_classReflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r17.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_classReflection.raw(), "isInterface", "isinterface", 11, r17.raw()))) return false;
 		}
 		}
 		if (Z_TYPE_P(r17.raw()) == IS_TRUE) {
@@ -616,7 +616,7 @@ namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p_classReflection, "getParentClass", "getparentclass", 14, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, p_classReflection, "getParentClass", "getparentclass", 14, r1.raw()))) return false;
 		}
 		}
 		l_parentClass = std::move(r1);
@@ -638,7 +638,7 @@ namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_parentClass.raw(), "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_parentClass.raw(), "getName", "getname", 7, r4.raw()))) return false;
 		}
 		}
 		bool k5 = true;

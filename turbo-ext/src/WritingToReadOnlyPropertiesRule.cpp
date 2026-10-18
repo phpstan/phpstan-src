@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_writing_to_read_only_properties_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getPropertyFetch_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPropertyFetch_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr\PropertyFetch */
 static pgrt::PropSite pg_site_2; /* prop_var_2 */
 static pt_method_site pg_site_3; /* method_canWriteProperty_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
-static pt_method_site pg_site_5; /* method_getStartLine_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getStartLine_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Rules\Properties\PropertyDescriptor */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\Properties\PropertyReflectionFinder */
@@ -67,7 +67,7 @@ namespace pgen::WritingToReadOnlyPropertiesRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getPropertyFetch", "getpropertyfetch", 16, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getPropertyFetch", "getpropertyfetch", 16, r1.raw()))) return false;
 		l_propertyFetch = std::move(r1);
 	}
 	 {
@@ -157,7 +157,7 @@ namespace pgen::WritingToReadOnlyPropertiesRule {
 					p23 = o24.raw();
 				}
 				zv::Val r25;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, zv::Ref(p23).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r25.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, zv::Ref(p23).deref().raw(), "getStartLine", "getstartline", 12, r25.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r25.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r25.raw()); return false; }
 				zv::Val r26;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r22.raw()), Z_LVAL_P(r25.raw()), r26.raw()))) return false;

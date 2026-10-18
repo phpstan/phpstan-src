@@ -17,7 +17,7 @@ static pt_method_site pg_site_6; /* method_isAlwaysTerminating_6 */
 static pt_method_site pg_site_7; /* method_getThrowPoints_7 */
 static pt_method_site pg_site_8; /* method_getImpurePoints_8 */
 static pt_method_site pg_site_9; /* method_getNativeType_9 */
-static pt_method_site pg_site_10; /* method_getType_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getType_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\TypeSpecifierContext */
 static pt_method_site pg_site_12; /* method_getSpecifiedTypes_12 */
 static pt_method_site pg_site_13; /* method_setRootExpr_13 */
@@ -60,7 +60,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r3.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_10, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, 0, NULL, r3.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, r3.raw()))) return;
 			}
 			}
 			q1 = std::move(r3);

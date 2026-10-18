@@ -14,18 +14,18 @@ static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_2; /* method_isInClass_2 */
 static pgrt::PropSite pg_site_3; /* prop_class_3 */
 static pt_method_site pg_site_4; /* method_toString_4 */
-static pt_method_site pg_site_5; /* method_getClassReflection_5 */
-static pt_method_site pg_site_6; /* method_isFinal_6 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getClassReflection_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isFinal_6 */
 static pt_method_site pg_site_7; /* method_hasConstructor_7 */
 static pt_method_site pg_site_8; /* method_getConstructor_8 */
 static pgrt::DispatchCache pg_site_9; /* dispatch_getPrototype_9 */
 static pt_method_site pg_site_10; /* method_getPrototype_10 */
 static pgrt::DispatchCache pg_site_11; /* dispatch_getDeclaringClass_11 */
 static pt_method_site pg_site_12; /* method_getDeclaringClass_12 */
-static pt_method_site pg_site_13; /* method_isInterface_13 */
-static pt_method_site pg_site_14; /* method_getInterfaces_14 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_isInterface_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getInterfaces_14 */
 static pt_method_site pg_site_15; /* method_hasConstructor_15 */
-static pt_method_site pg_site_16; /* method_isFinal_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_isFinal_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Reflection\Php\PhpMethodReflection */
 static pgrt::DispatchCache pg_site_18; /* dispatch_isAbstract_18 */
 static pt_method_site pg_site_19; /* method_isAbstract_19 */
@@ -151,7 +151,7 @@ namespace pgen::NewStaticRule {
 			if (UNEXPECTED(r14.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r14.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_scope, "getClassReflection", "getclassreflection", 18, r14.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r14);
@@ -163,7 +163,7 @@ namespace pgen::NewStaticRule {
 			if (UNEXPECTED(r15.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_classReflection.raw(), "isFinal", "isfinal", 7, 0, NULL, r15.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_classReflection.raw(), "isFinal", "isfinal", 7, r15.raw()))) return false;
 		}
 		}
 		if (Z_TYPE_P(r15.raw()) == IS_TRUE) {
@@ -371,7 +371,7 @@ namespace pgen::NewStaticRule {
 			if (UNEXPECTED(r45.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, vd34.raw(), "isInterface", "isinterface", 11, 0, NULL, r45.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, vd34.raw(), "isInterface", "isinterface", 11, r45.raw()))) return false;
 		}
 		}
 		if (Z_TYPE_P(r45.raw()) == IS_TRUE) {
@@ -385,7 +385,7 @@ namespace pgen::NewStaticRule {
 	}
 	 {
 		zv::Val r48;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, 0, NULL, r48.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_classReflection.raw(), "getInterfaces", "getinterfaces", 13, r48.raw()))) return false;
 		zv::Val a49 = zv::Val::copyOf(zv::Ref(r48.raw()).deref());
 		HashTable *ht47 = Z_ARRVAL_P(a49.raw());
 		zval *v50;
@@ -426,7 +426,7 @@ namespace pgen::NewStaticRule {
 			if (UNEXPECTED(r58.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_constructor.raw(), "isFinal", "isfinal", 7, 0, NULL, r58.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_constructor.raw(), "isFinal", "isfinal", 7, r58.raw()))) return false;
 		}
 		}
 		bool r59;

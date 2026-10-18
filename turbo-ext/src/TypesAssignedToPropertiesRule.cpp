@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_types_assigned_to_properties_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getPropertyFetch_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPropertyFetch_0 */
 static pt_method_site pg_site_1; /* method_getAssignedExpr_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Rules\Properties\FoundPropertyReflection */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr\PropertyFetch */
@@ -33,7 +33,7 @@ static pt_method_site pg_site_19; /* method_isDeclareStrictTypes_19 */
 static pt_method_site pg_site_20; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
 static pt_method_site pg_site_21; /* method_describe_21 */
 static pt_method_site pg_site_22; /* method_describe_22 */
-static pt_method_site pg_site_23; /* method_getStartLine_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getStartLine_23 */
 static pt_method_site pg_site_24; /* method_isStatic_24 */
 static pt_method_site pg_site_25; /* method_getDeclaringClass_25 */
 static pt_method_site pg_site_26; /* method_getDisplayName_26 */
@@ -86,7 +86,7 @@ namespace pgen::TypesAssignedToPropertiesRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getPropertyFetch", "getpropertyfetch", 16, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getPropertyFetch", "getpropertyfetch", 16, r1.raw()))) return false;
 		l_propertyFetch = std::move(r1);
 	}
 	 {
@@ -391,7 +391,7 @@ namespace pgen::TypesAssignedToPropertiesRule {
 				zv::Val r61;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r60.raw(), r61.raw()))) return false;
 				zv::Val r62;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p_assignedExpr, "getStartLine", "getstartline", 12, 0, NULL, r62.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, p_assignedExpr, "getStartLine", "getstartline", 12, r62.raw()))) return false;
 				zv::Val r63;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r61.raw()), Z_LVAL_P(r62.raw()), r63.raw()))) return false;
 				zv::Val r64;

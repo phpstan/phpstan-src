@@ -14,7 +14,7 @@ static pgrt::PropSite pg_site_1; /* prop_name_1 */
 static pgrt::PropSite pg_site_2; /* prop_name_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pt_method_site pg_site_4; /* method_getConstantStrings_4 */
-static pt_method_site pg_site_5; /* method_getValue_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getValue_5 */
 static pgrt::PropSite pg_site_6; /* prop_name_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Scalar\String_ */
 static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Expr\BinaryOp\Identical */
@@ -161,7 +161,7 @@ namespace pgen::DefinedVariableRule {
 								if (UNEXPECTED(r26.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_constantString, "getValue", "getvalue", 8, 0, NULL, r26.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_constantString, "getValue", "getvalue", 8, r26.raw()))) return false;
 							}
 							}
 							l_name = std::move(r26);

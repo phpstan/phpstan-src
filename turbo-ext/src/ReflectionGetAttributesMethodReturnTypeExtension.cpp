@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_reflection_get_attributes_method_return_type_extension =
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
@@ -21,8 +21,8 @@ static pt_method_site pg_site_8; /* method_getVariants_8 */
 static pt_method_site pg_site_9; /* static_PHPStan\Reflection\ParametersAcceptorSelector::selectFromArgs */
 static pt_method_site pg_site_10; /* method_getReturnType_10 */
 static pt_method_site pg_site_11; /* static_PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo */
-static pt_method_site pg_site_12; /* method_getIterableValueType_12 */
-static pt_method_site pg_site_13; /* method_getObjectClassNames_13 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getIterableValueType_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getObjectClassNames_13 */
 static pt_method_site pg_site_14; /* method_isSuperTypeOf_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Reflection\MethodReflection */
@@ -70,7 +70,7 @@ namespace pgen::ReflectionGetAttributesMethodReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -282,7 +282,7 @@ namespace pgen::ReflectionGetAttributesMethodReturnTypeExtension {
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_returnType, "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_returnType, "getIterableValueType", "getiterablevaluetype", 20, r5.raw()))) return false;
 		}
 		}
 		zv::Val r6;
@@ -291,7 +291,7 @@ namespace pgen::ReflectionGetAttributesMethodReturnTypeExtension {
 			if (UNEXPECTED(r6.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r5.raw(), "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, r5.raw(), "getObjectClassNames", "getobjectclassnames", 19, r6.raw()))) return false;
 		}
 		}
 		zv::Val a7 = zv::Val::copyOf(zv::Ref(r6.raw()).deref());

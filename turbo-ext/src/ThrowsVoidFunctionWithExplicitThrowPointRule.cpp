@@ -10,26 +10,26 @@ zend_class_entry *pt_ce_throws_void_function_with_explicit_throw_point_rule = nu
 static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_getStatementResult_0 */
-static pt_method_site pg_site_1; /* method_getFunctionReflection_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getFunctionReflection_1 */
 static pt_method_site pg_site_2; /* method_getThrowType_2 */
 static pt_method_site pg_site_3; /* method_getThrowType_3 */
-static pt_method_site pg_site_4; /* method_isVoid_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isVoid_4 */
 static pt_method_site pg_site_5; /* method_yes_5 */
 static pt_method_site pg_site_6; /* method_getThrowPoints_6 */
 static pt_method_site pg_site_7; /* method_isExplicit_7 */
-static pt_method_site pg_site_8; /* method_getType_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getType_8 */
 static pt_method_site pg_site_9; /* static_PHPStan\Type\TypeUtils::flattenTypes */
-static pt_method_site pg_site_10; /* method_getObjectClassNames_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getObjectClassNames_10 */
 static pgrt::GetterSite pg_site_11; /* getter_getScope_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\ThrowPoint */
-static pt_method_site pg_site_13; /* method_getScope_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getScope_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Analyser\Scope */
 static pt_method_site pg_site_15; /* method_isCheckedException_15 */
-static pt_method_site pg_site_16; /* method_getName_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getName_16 */
 static pt_method_site pg_site_17; /* method_describe_17 */
 static pgrt::GetterSite pg_site_18; /* getter_getNode_18 */
-static pt_method_site pg_site_19; /* method_getNode_19 */
-static pt_method_site pg_site_20; /* method_getStartLine_20 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getNode_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getStartLine_20 */
 static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Rules\Exceptions\ExceptionTypeResolver */
 static pgrt::ClassSite pg_site_22; /* cls_PhpParser\Node */
 
@@ -56,7 +56,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			ZVAL_COPY(r4.raw(), gs3);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, zv::Ref(&captures[0]).deref().raw(), "getScope", "getscope", 8, 0, NULL, r4.raw()))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, zv::Ref(&captures[0]).deref().raw(), "getScope", "getscope", 8, r4.raw()))) return;
 		}
 		}
 		zv::Val vd5;
@@ -147,7 +147,7 @@ namespace pgen::ThrowsVoidFunctionWithExplicitThrowPointRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getFunctionReflection", "getfunctionreflection", 21, r4.raw()))) return false;
 		l_functionReflection = std::move(r4);
 	}
 	 {
@@ -183,7 +183,7 @@ namespace pgen::ThrowsVoidFunctionWithExplicitThrowPointRule {
 				if (UNEXPECTED(r10.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd8.raw(), "isVoid", "isvoid", 6, 0, NULL, r10.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, vd8.raw(), "isVoid", "isvoid", 6, r10.raw()))) return false;
 			}
 			}
 			zv::Val vd11;
@@ -255,7 +255,7 @@ namespace pgen::ThrowsVoidFunctionWithExplicitThrowPointRule {
 						if (UNEXPECTED(r26.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_throwPoint, "getType", "gettype", 7, 0, NULL, r26.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_throwPoint, "getType", "gettype", 7, r26.raw()))) return false;
 					}
 					}
 					zval av27[1];
@@ -282,7 +282,7 @@ namespace pgen::ThrowsVoidFunctionWithExplicitThrowPointRule {
 									if (UNEXPECTED(r37.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_throwPointType, "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r37.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_throwPointType, "getObjectClassNames", "getobjectclassnames", 19, r37.raw()))) return false;
 								}
 								}
 								zval cap38[2];
@@ -308,7 +308,7 @@ namespace pgen::ThrowsVoidFunctionWithExplicitThrowPointRule {
 									if (UNEXPECTED(r42.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r42.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_functionReflection.raw(), "getName", "getname", 7, r42.raw()))) return false;
 								}
 								}
 								zv::Val o43 = zv::Val::copyOf(zv::Ref(l_throwPointType));
@@ -341,11 +341,11 @@ namespace pgen::ThrowsVoidFunctionWithExplicitThrowPointRule {
 									ZVAL_COPY(r51.raw(), gs50);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_throwPoint, "getNode", "getnode", 7, 0, NULL, r51.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_throwPoint, "getNode", "getnode", 7, r51.raw()))) return false;
 								}
 								}
 								zv::Val r52;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_20, r51.raw(), "getStartLine", "getstartline", 12, 0, NULL, r52.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, r51.raw(), "getStartLine", "getstartline", 12, r52.raw()))) return false;
 								if (UNEXPECTED(Z_TYPE_P(r52.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r52.raw()); return false; }
 								zv::Val r53;
 								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r49.raw()), Z_LVAL_P(r52.raw()), r53.raw()))) return false;

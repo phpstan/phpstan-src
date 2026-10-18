@@ -8,7 +8,7 @@
 static zval pg_lit[2];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_1; /* method_getType_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getType_1 */
 static pt_method_site pg_site_2; /* method_describe_2 */
 static pt_method_site pg_site_3; /* method_describe_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Analyser\ExpressionTypeHolder */
@@ -109,7 +109,7 @@ namespace pgen::ConditionalExpressionHolder {
 						if (UNEXPECTED(r13.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_typeHolder, "getType", "gettype", 7, 0, NULL, r13.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_typeHolder, "getType", "gettype", 7, r13.raw()))) return false;
 					}
 					}
 					zval *vl14_p = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_PRECISE);

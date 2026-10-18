@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_round_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getPhpVersion_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getPhpVersion_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pt_method_site pg_site_3; /* method_getArgs_3 */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
@@ -18,7 +18,7 @@ static pt_method_site pg_site_5; /* method_getType_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\MixedType */
 static pt_method_site pg_site_7; /* method_isDeclareStrictTypes_7 */
 static pt_method_site pg_site_8; /* method_isSuperTypeOf_8 */
-static pt_method_site pg_site_9; /* method_isArray_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isArray_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
@@ -38,7 +38,7 @@ namespace pgen::RoundFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -64,7 +64,7 @@ namespace pgen::RoundFunctionReturnTypeExtension {
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_scope, "getPhpVersion", "getphpversion", 13, r2.raw()))) return false;
 		zv::Val r3;
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasStricterRoundFunctions(Z_OBJ_P(r2.raw()), r3.raw()))) return false;
 		l_hasStricterRoundFunctions = std::move(r3);
@@ -238,7 +238,7 @@ namespace pgen::RoundFunctionReturnTypeExtension {
 					if (UNEXPECTED(r45.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_firstArgType.raw(), "isArray", "isarray", 7, 0, NULL, r45.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_firstArgType.raw(), "isArray", "isarray", 7, r45.raw()))) return false;
 				}
 				}
 				bool r46;

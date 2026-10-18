@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_filter_var_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
@@ -17,7 +17,7 @@ static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
-static pt_method_site pg_site_8; /* method_getPhpVersion_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getPhpVersion_8 */
 static pt_method_site pg_site_9; /* method_getType_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -50,7 +50,7 @@ namespace pgen::FilterVarDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		zv::Val r2 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r1.raw())));
@@ -206,7 +206,7 @@ namespace pgen::FilterVarDynamicReturnTypeExtension {
 		zv::Val o42 = zv::Val::copyOf(zv::Ref(l_filterType.raw()));
 		zv::Val o43 = zv::Val::copyOf(zv::Ref(l_flagsType.raw()));
 		zv::Val r44;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r44.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_scope, "getPhpVersion", "getphpversion", 13, r44.raw()))) return false;
 		zval av45[4];
 		ZVAL_COPY_VALUE(&av45[0], o41.raw());
 		ZVAL_COPY_VALUE(&av45[1], o42.raw());

@@ -10,47 +10,47 @@ zend_class_entry *pt_ce_method_tag_check = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[10];
 
-static pt_method_site pg_site_0; /* method_getMethodTags_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getMethodTags_0 */
 static pgrt::GetterSite pg_site_1; /* getter_getParameters_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\PhpDoc\Tag\MethodTag */
-static pt_method_site pg_site_3; /* method_getParameters_3 */
-static pt_method_site pg_site_4; /* method_getType_4 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getParameters_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getType_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_6; /* method_getType_6 */
-static pt_method_site pg_site_7; /* method_getDefaultValue_7 */
-static pt_method_site pg_site_8; /* method_getDefaultValue_8 */
-static pt_method_site pg_site_9; /* method_getDefaultValue_9 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getType_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getDefaultValue_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getDefaultValue_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getDefaultValue_9 */
 static pgrt::GetterSite pg_site_10; /* getter_getReturnType_10 */
-static pt_method_site pg_site_11; /* method_getReturnType_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getReturnType_11 */
 static pgrt::GetterSite pg_site_12; /* getter_getReturnType_12 */
-static pt_method_site pg_site_13; /* method_getReturnType_13 */
-static pt_method_site pg_site_14; /* method_getMethodTags_14 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getReturnType_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getMethodTags_14 */
 static pgrt::GetterSite pg_site_15; /* getter_getParameters_15 */
-static pt_method_site pg_site_16; /* method_getParameters_16 */
-static pt_method_site pg_site_17; /* method_getType_17 */
-static pt_method_site pg_site_18; /* method_getDefaultValue_18 */
-static pt_method_site pg_site_19; /* method_getDefaultValue_19 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getParameters_16 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getType_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getDefaultValue_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getDefaultValue_19 */
 static pgrt::GetterSite pg_site_20; /* getter_getReturnType_20 */
-static pt_method_site pg_site_21; /* method_getReturnType_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getReturnType_21 */
 static pt_method_site pg_site_22; /* method_getTraitContextResolvedPhpDoc_22 */
 static pgrt::GetterSite pg_site_23; /* getter_getParameters_23 */
-static pt_method_site pg_site_24; /* method_getParameters_24 */
-static pt_method_site pg_site_25; /* method_getType_25 */
-static pt_method_site pg_site_26; /* method_getDefaultValue_26 */
-static pt_method_site pg_site_27; /* method_getDefaultValue_27 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getParameters_24 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getType_25 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getDefaultValue_26 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getDefaultValue_27 */
 static pgrt::GetterSite pg_site_28; /* getter_getReturnType_28 */
-static pt_method_site pg_site_29; /* method_getReturnType_29 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_getReturnType_29 */
 static pt_method_site pg_site_30; /* method_getDisplayName_30 */
-static pt_method_site pg_site_31; /* method_getClassTypeDescription_31 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getClassTypeDescription_31 */
 static pt_method_site pg_site_32; /* method_getDisplayName_32 */
-static pt_method_site pg_site_33; /* method_getClassTypeDescription_33 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getClassTypeDescription_33 */
 static pt_method_site pg_site_34; /* method_getDisplayName_34 */
 static pt_method_site pg_site_35; /* method_describe_35 */
-static pt_method_site pg_site_36; /* method_getReferencedClasses_36 */
+static pgrt::MethodShapeSite pg_site_36; /* method0_getReferencedClasses_36 */
 static pt_method_site pg_site_37; /* method_hasClass_37 */
 static pt_method_site pg_site_38; /* method_getDisplayName_38 */
 static pt_method_site pg_site_39; /* method_getClass_39 */
-static pt_method_site pg_site_40; /* method_isTrait_40 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_isTrait_40 */
 static pt_method_site pg_site_41; /* method_getDisplayName_41 */
 static pt_method_site pg_site_42; /* method_getDisplayName_42 */
 static pt_method_site pg_site_43; /* method_getDisplayName_43 */
@@ -117,7 +117,7 @@ namespace pgen::MethodTagCheck {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_classReflection, "getMethodTags", "getmethodtags", 13, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_classReflection, "getMethodTags", "getmethodtags", 13, r4.raw()))) return false;
 		zv::Val a5 = zv::Val::copyOf(zv::Ref(r4.raw()).deref());
 		HashTable *ht3 = Z_ARRVAL_P(a5.raw());
 		zval *v6;
@@ -140,7 +140,7 @@ namespace pgen::MethodTagCheck {
 						ZVAL_COPY(r14.raw(), gs13);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_methodTag, "getParameters", "getparameters", 13, 0, NULL, r14.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_methodTag, "getParameters", "getparameters", 13, r14.raw()))) return false;
 					}
 					}
 					pgrt::ForeachIter it15;
@@ -173,7 +173,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r25.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_parameterTag, "getType", "gettype", 7, 0, NULL, r25.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_parameterTag, "getType", "gettype", 7, r25.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(Z_TYPE_P(o23.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitDefinitionContext", 2, "methodName", "string", o23.raw()); return false; }
@@ -210,7 +210,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r39.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_parameterTag, "getType", "gettype", 7, 0, NULL, r39.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_parameterTag, "getType", "gettype", 7, r39.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(Z_TYPE_P(o37.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitUseContext", 3, "methodName", "string", o37.raw()); return false; }
@@ -245,7 +245,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r50.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r50.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, r50.raw()))) return false;
 								}
 								}
 								if (Z_TYPE_P(r50.raw()) == IS_NULL) {
@@ -268,7 +268,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r56.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r56.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, r56.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(Z_TYPE_P(o54.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitDefinitionContext", 2, "methodName", "string", o54.raw()); return false; }
@@ -305,7 +305,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r70.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r70.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, r70.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(Z_TYPE_P(o68.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitUseContext", 3, "methodName", "string", o68.raw()); return false; }
@@ -352,7 +352,7 @@ namespace pgen::MethodTagCheck {
 						ZVAL_COPY(r86.raw(), gs85);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_methodTag, "getReturnType", "getreturntype", 13, 0, NULL, r86.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_methodTag, "getReturnType", "getreturntype", 13, r86.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(o83.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitDefinitionContext", 2, "methodName", "string", o83.raw()); return false; }
@@ -389,7 +389,7 @@ namespace pgen::MethodTagCheck {
 						ZVAL_COPY(r101.raw(), gs100);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_methodTag, "getReturnType", "getreturntype", 13, 0, NULL, r101.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_methodTag, "getReturnType", "getreturntype", 13, r101.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(o98.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitUseContext", 3, "methodName", "string", o98.raw()); return false; }
@@ -451,7 +451,7 @@ namespace pgen::MethodTagCheck {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_classReflection, "getMethodTags", "getmethodtags", 13, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_classReflection, "getMethodTags", "getmethodtags", 13, r4.raw()))) return false;
 		zv::Val a5 = zv::Val::copyOf(zv::Ref(r4.raw()).deref());
 		HashTable *ht3 = Z_ARRVAL_P(a5.raw());
 		zval *v6;
@@ -474,7 +474,7 @@ namespace pgen::MethodTagCheck {
 						ZVAL_COPY(r14.raw(), gs13);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_methodTag, "getParameters", "getparameters", 13, 0, NULL, r14.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_methodTag, "getParameters", "getparameters", 13, r14.raw()))) return false;
 					}
 					}
 					pgrt::ForeachIter it15;
@@ -507,7 +507,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r25.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_parameterTag, "getType", "gettype", 7, 0, NULL, r25.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_parameterTag, "getType", "gettype", 7, r25.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(Z_TYPE_P(o23.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitDefinitionContext", 2, "methodName", "string", o23.raw()); return false; }
@@ -542,7 +542,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r36.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r36.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, r36.raw()))) return false;
 								}
 								}
 								if (Z_TYPE_P(r36.raw()) == IS_NULL) {
@@ -565,7 +565,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r42.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r42.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, r42.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(Z_TYPE_P(o40.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitDefinitionContext", 2, "methodName", "string", o40.raw()); return false; }
@@ -612,7 +612,7 @@ namespace pgen::MethodTagCheck {
 						ZVAL_COPY(r58.raw(), gs57);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_methodTag, "getReturnType", "getreturntype", 13, 0, NULL, r58.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_methodTag, "getReturnType", "getreturntype", 13, r58.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(o55.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitDefinitionContext", 2, "methodName", "string", o55.raw()); return false; }
@@ -715,7 +715,7 @@ namespace pgen::MethodTagCheck {
 						ZVAL_COPY(r17.raw(), gs16);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_methodTag, "getParameters", "getparameters", 13, 0, NULL, r17.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_methodTag, "getParameters", "getparameters", 13, r17.raw()))) return false;
 					}
 					}
 					pgrt::ForeachIter it18;
@@ -748,7 +748,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r28.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_25, l_parameterTag, "getType", "gettype", 7, 0, NULL, r28.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_parameterTag, "getType", "gettype", 7, r28.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(Z_TYPE_P(o26.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitUseContext", 3, "methodName", "string", o26.raw()); return false; }
@@ -783,7 +783,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r39.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r39.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, r39.raw()))) return false;
 								}
 								}
 								if (Z_TYPE_P(r39.raw()) == IS_NULL) {
@@ -806,7 +806,7 @@ namespace pgen::MethodTagCheck {
 									if (UNEXPECTED(r45.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, 0, NULL, r45.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_parameterTag, "getDefaultValue", "getdefaultvalue", 15, r45.raw()))) return false;
 								}
 								}
 								if (UNEXPECTED(!(Z_TYPE_P(o43.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitUseContext", 3, "methodName", "string", o43.raw()); return false; }
@@ -853,7 +853,7 @@ namespace pgen::MethodTagCheck {
 						ZVAL_COPY(r61.raw(), gs60);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_methodTag, "getReturnType", "getreturntype", 13, 0, NULL, r61.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, l_methodTag, "getReturnType", "getreturntype", 13, r61.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(o58.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\MethodTagCheck::checkMethodTypeInTraitUseContext", 3, "methodName", "string", o58.raw()); return false; }
@@ -1001,7 +1001,7 @@ namespace pgen::MethodTagCheck {
 			 {
 				 {
 					zv::Val r37;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_31, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r37.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, r37.raw()))) return false;
 					zv::Val r38;
 					if (EXPECTED(Z_TYPE_P(p_classReflection) == IS_OBJECT && Z_OBJCE_P(p_classReflection) == pt_ce_class_reflection)) {
 						r38 = pt_class_reflection_get_display_name(Z_OBJ_P(p_classReflection));
@@ -1059,7 +1059,7 @@ namespace pgen::MethodTagCheck {
 			 {
 				 {
 					zv::Val r58;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r58.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, r58.raw()))) return false;
 					zv::Val r59;
 					if (EXPECTED(Z_TYPE_P(p_classReflection) == IS_OBJECT && Z_OBJCE_P(p_classReflection) == pt_ce_class_reflection)) {
 						r59 = pt_class_reflection_get_display_name(Z_OBJ_P(p_classReflection));
@@ -1147,7 +1147,7 @@ namespace pgen::MethodTagCheck {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_36, p_type, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_36, p_type, "getReferencedClasses", "getreferencedclasses", 20, r4.raw()))) return false;
 		}
 		}
 		zv::Val a5 = zv::Val::copyOf(zv::Ref(r4.raw()).deref());
@@ -1268,7 +1268,7 @@ namespace pgen::MethodTagCheck {
 								if (UNEXPECTED(r37.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_40, vd33.raw(), "isTrait", "istrait", 7, 0, NULL, r37.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, vd33.raw(), "isTrait", "istrait", 7, r37.raw()))) return false;
 							}
 							}
 							if (Z_TYPE_P(r37.raw()) == IS_TRUE) {

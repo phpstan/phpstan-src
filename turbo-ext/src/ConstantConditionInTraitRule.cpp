@@ -14,12 +14,12 @@ static pgrt::FunctionSite pg_site_1; /* function_var_export */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Analyser\Error */
 static pt_method_site pg_site_3; /* static_PHPStan\Analyser\Error::decode */
 static pgrt::GetterSite pg_site_4; /* getter_getMessage_4 */
-static pt_method_site pg_site_5; /* method_getMessage_5 */
-static pt_method_site pg_site_6; /* method_getFilePath_6 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getMessage_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getFilePath_6 */
 static pgrt::GetterSite pg_site_7; /* getter_getFile_7 */
-static pt_method_site pg_site_8; /* method_getFile_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getFile_8 */
 static pgrt::FunctionSite pg_site_9; /* function_ksort */
-static pt_method_site pg_site_10; /* method_removeTraitContext_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_removeTraitContext_10 */
 static pt_method_site pg_site_11; /* method_withTraitContexts_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\Scope */
@@ -351,7 +351,7 @@ namespace pgen::ConstantConditionInTraitRule {
 																		ZVAL_COPY(r107.raw(), gs106);
 																	} else {
 																	 {
-																		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_errorObject.raw(), "getMessage", "getmessage", 10, 0, NULL, r107.raw()))) return false;
+																		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_errorObject.raw(), "getMessage", "getmessage", 10, r107.raw()))) return false;
 																	}
 																	}
 																	l_message = std::move(r107);
@@ -369,14 +369,14 @@ namespace pgen::ConstantConditionInTraitRule {
 																}
 																 {
 																	zv::Val r113;
-																	if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_errorObject.raw(), "getFilePath", "getfilepath", 11, 0, NULL, r113.raw(), NULL))) return false;
+																	if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_errorObject.raw(), "getFilePath", "getfilepath", 11, r113.raw()))) return false;
 																	zval *gs114 = Z_TYPE_P(l_errorObject.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_7, Z_OBJ_P(l_errorObject.raw()), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Analyser\\Error", 22), "getfile", 7, "file", 4) : NULL;
 																	zv::Val r115;
 																	if (EXPECTED(gs114 != NULL)) {
 																		ZVAL_COPY(r115.raw(), gs114);
 																	} else {
 																	 {
-																		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_errorObject.raw(), "getFile", "getfile", 7, 0, NULL, r115.raw()))) return false;
+																		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_errorObject.raw(), "getFile", "getfile", 7, r115.raw()))) return false;
 																	}
 																	}
 																	zv::Val o116 = zv::Val::copyOf(zv::Ref(r115.raw()));
@@ -429,7 +429,7 @@ namespace pgen::ConstantConditionInTraitRule {
 														if (UNEXPECTED(e125 == NULL)) return false;
 													}
 													zv::Val r128;
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_10, zv::Ref(e125).deref().raw(), "removeTraitContext", "removetraitcontext", 18, 0, NULL, r128.raw(), NULL))) return false;
+													if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, zv::Ref(e125).deref().raw(), "removeTraitContext", "removetraitcontext", 18, r128.raw()))) return false;
 													zval av129[1];
 													ZVAL_COPY_VALUE(&av129[0], l_traitContexts.raw());
 													zv::Val r130;

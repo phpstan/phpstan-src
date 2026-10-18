@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_json_throw_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[5];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name\FullyQualified */
 static pt_method_site pg_site_2; /* method_hasConstant_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pt_method_site pg_site_6; /* method_getArgs_6 */
 static pgrt::PropSite pg_site_7; /* prop_value_7 */
 static pt_method_site pg_site_8; /* method_bitwiseOrContainsConstant_8 */
@@ -64,7 +64,7 @@ namespace pgen::JsonThrowTypeExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		bool ia3 = false;
@@ -132,7 +132,7 @@ namespace pgen::JsonThrowTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		zval *cc2 = pgrt::classConstant(pt_ce_json_throw_type_extension, &pg_lit[3], pt_ce_json_throw_type_extension);
@@ -158,7 +158,7 @@ namespace pgen::JsonThrowTypeExtension {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_functionReflection, "getName", "getname", 7, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_functionReflection, "getName", "getname", 7, r7.raw()))) return false;
 		}
 		}
 		zv::Val et9;

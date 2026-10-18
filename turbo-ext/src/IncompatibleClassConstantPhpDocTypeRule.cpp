@@ -14,15 +14,15 @@ static pt_method_site pg_site_0; /* method_isInClass_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::PropSite pg_site_2; /* prop_type_2 */
 static pgrt::PropSite pg_site_3; /* prop_type_3 */
-static pt_method_site pg_site_4; /* method_getClassReflection_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassReflection_4 */
 static pgrt::PropSite pg_site_5; /* prop_consts_5 */
 static pgrt::PropSite pg_site_6; /* prop_name_6 */
 static pt_method_site pg_site_7; /* method_toString_7 */
-static pt_method_site pg_site_8; /* method_getClassReflection_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getClassReflection_8 */
 static pt_method_site pg_site_9; /* method_getConstant_9 */
 static pt_method_site pg_site_10; /* method_getPhpDocType_10 */
 static pt_method_site pg_site_11; /* method_getDeclaringClass_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
 static pt_method_site pg_site_13; /* method_isSuperTypeOf_13 */
 static pt_method_site pg_site_14; /* method_getDeclaringClass_14 */
 static pt_method_site pg_site_15; /* method_getDisplayName_15 */
@@ -133,7 +133,7 @@ namespace pgen::IncompatibleClassConstantPhpDocTypeRule {
 					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r13.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, r13.raw()))) return false;
 				}
 				}
 				zv::Val r14;
@@ -179,7 +179,7 @@ namespace pgen::IncompatibleClassConstantPhpDocTypeRule {
 						if (UNEXPECTED(r27.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r27.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_scope, "getClassReflection", "getclassreflection", 18, r27.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(Z_TYPE_P(l_constantName.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\IncompatibleClassConstantPhpDocTypeRule::processSingleConstant", 3, "constantName", "string", l_constantName.raw()); return false; }
@@ -284,7 +284,7 @@ namespace pgen::IncompatibleClassConstantPhpDocTypeRule {
 					if (UNEXPECTED(r12.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, vd10.raw(), "getName", "getname", 7, 0, NULL, r12.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, vd10.raw(), "getName", "getname", 7, r12.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb13;

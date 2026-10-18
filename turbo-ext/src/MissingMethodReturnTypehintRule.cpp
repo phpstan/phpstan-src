@@ -16,20 +16,20 @@ static pt_method_site pg_site_3; /* method_getAttribute_3 */
 static pt_method_site pg_site_4; /* method_getReturnType_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\MixedType */
 static pgrt::GetterSite pg_site_6; /* getter_isExplicitMixed_6 */
-static pt_method_site pg_site_7; /* method_isExplicitMixed_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_isExplicitMixed_7 */
 static pt_method_site pg_site_8; /* method_getDeclaringClass_8 */
 static pt_method_site pg_site_9; /* method_getDisplayName_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_12; /* method_getDeclaringClass_12 */
 static pt_method_site pg_site_13; /* method_getDisplayName_13 */
-static pt_method_site pg_site_14; /* method_getName_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
 static pt_method_site pg_site_15; /* method_getDeclaringClass_15 */
 static pt_method_site pg_site_16; /* method_getDisplayName_16 */
-static pt_method_site pg_site_17; /* method_getName_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getName_17 */
 static pt_method_site pg_site_18; /* method_getDeclaringClass_18 */
 static pt_method_site pg_site_19; /* method_getDisplayName_19 */
-static pt_method_site pg_site_20; /* method_getName_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getName_20 */
 static pt_method_site pg_site_21; /* method_describe_21 */
 static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Rules\MissingTypehintCheck */
 static pgrt::ClassSite pg_site_23; /* cls_PhpParser\Node */
@@ -188,7 +188,7 @@ namespace pgen::MissingMethodReturnTypehintRule {
 				ZVAL_COPY(r19.raw(), gs18);
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_returnType.raw(), "isExplicitMixed", "isexplicitmixed", 15, 0, NULL, r19.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_returnType.raw(), "isExplicitMixed", "isexplicitmixed", 15, r19.raw()))) return false;
 			}
 			}
 			b17 = !((Z_TYPE_P(r19.raw()) == IS_TRUE));
@@ -223,7 +223,7 @@ namespace pgen::MissingMethodReturnTypehintRule {
 					if (UNEXPECTED(r24.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r24.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_methodReflection.raw(), "getName", "getname", 7, r24.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb25;
@@ -294,7 +294,7 @@ namespace pgen::MissingMethodReturnTypehintRule {
 						if (UNEXPECTED(r44.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r44.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_methodReflection.raw(), "getName", "getname", 7, r44.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb45;
@@ -377,7 +377,7 @@ namespace pgen::MissingMethodReturnTypehintRule {
 						if (UNEXPECTED(r68.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r68.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_methodReflection.raw(), "getName", "getname", 7, r68.raw()))) return false;
 					}
 					}
 					zv::Val o69 = zv::Val::copyOf(zv::Ref(l_name.raw()));
@@ -450,7 +450,7 @@ namespace pgen::MissingMethodReturnTypehintRule {
 						if (UNEXPECTED(r89.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r89.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_methodReflection.raw(), "getName", "getname", 7, r89.raw()))) return false;
 					}
 					}
 					zv::Val o90 = zv::Val::copyOf(zv::Ref(l_callableType));

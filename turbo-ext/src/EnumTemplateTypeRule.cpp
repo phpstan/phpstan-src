@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_enum_template_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_isEnum_1 */
-static pt_method_site pg_site_2; /* method_getTemplateTags_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getTemplateTags_2 */
 static pgrt::FunctionSite pg_site_3; /* function_count */
 static pt_method_site pg_site_4; /* method_getDisplayName_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
@@ -47,7 +47,7 @@ namespace pgen::EnumTemplateTypeRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -74,7 +74,7 @@ namespace pgen::EnumTemplateTypeRule {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, r5.raw()))) return false;
 		zval av6[1];
 		ZVAL_COPY_VALUE(&av6[0], r5.raw());
 		zv::Val r7;

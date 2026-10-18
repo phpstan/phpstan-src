@@ -13,51 +13,51 @@ static pt_method_site pg_site_0; /* static_PHPStan\Type\Generic\TemplateTypeMap:
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\ConditionalTypeForParameter */
 static pgrt::GetterSite pg_site_3; /* getter_getParameterName_3 */
-static pt_method_site pg_site_4; /* method_getParameterName_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getParameterName_4 */
 static pgrt::FunctionSite pg_site_5; /* function_substr */
 static pt_method_site pg_site_6; /* method_changeParameterName_6 */
 static pgrt::FunctionSite pg_site_7; /* function_array_key_exists */
-static pt_method_site pg_site_8; /* method_getType_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getType_8 */
 static pt_method_site pg_site_9; /* method_withType_9 */
-static pt_method_site pg_site_10; /* method_getType_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getType_10 */
 static pt_method_site pg_site_11; /* method_withType_11 */
-static pt_method_site pg_site_12; /* method_getType_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getType_12 */
 static pt_method_site pg_site_13; /* method_withType_13 */
-static pt_method_site pg_site_14; /* method_getType_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getType_14 */
 static pt_method_site pg_site_15; /* method_withType_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\PhpDoc\Tag\AssertTag */
 static pgrt::GetterSite pg_site_17; /* getter_getParameterName_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\PhpDoc\Tag\AssertTagParameter */
-static pt_method_site pg_site_19; /* method_getParameterName_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getParameterName_19 */
 static pt_method_site pg_site_20; /* method_changeParameterName_20 */
 static pgrt::FunctionSite pg_site_21; /* function_array_map */
 static pgrt::ClassSite pg_site_22; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_23; /* method_toImplicit_23 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_toImplicit_23 */
 static pt_method_site pg_site_24; /* static_PHPStan\Type\Generic\TemplateTypeVariance::createInvariant */
 static pgrt::ClassSite pg_site_25; /* cls_PHPStan\PhpDoc\Tag\TypedTag */
-static pt_method_site pg_site_26; /* method_getType_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getType_26 */
 static pt_method_site pg_site_27; /* method_withType_27 */
 static pt_method_site pg_site_28; /* static_PHPStan\Type\Generic\TemplateTypeVariance::createContravariant */
-static pt_method_site pg_site_29; /* method_getType_29 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_getType_29 */
 static pgrt::ClassSite pg_site_30; /* cls_PHPStan\Type\StaticType */
 static pt_method_site pg_site_31; /* method_changeBaseClass_31 */
 static pt_method_site pg_site_32; /* method_withType_32 */
-static pt_method_site pg_site_33; /* method_getType_33 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getType_33 */
 static pt_method_site pg_site_34; /* method_isSuperTypeOf_34 */
-static pt_method_site pg_site_35; /* method_getType_35 */
+static pgrt::MethodShapeSite pg_site_35; /* method0_getType_35 */
 static pt_method_site pg_site_36; /* method_withType_36 */
-static pt_method_site pg_site_37; /* method_toImplicit_37 */
+static pgrt::MethodShapeSite pg_site_37; /* method0_toImplicit_37 */
 static pt_method_site pg_site_38; /* static_PHPStan\Type\Generic\TemplateTypeVariance::createCovariant */
 static pgrt::ClassSite pg_site_39; /* cls_PHPStan\PhpDoc\Tag\ReturnTag */
-static pt_method_site pg_site_40; /* method_getType_40 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_getType_40 */
 static pgrt::ClassSite pg_site_41; /* cls_PHPStan\PhpDoc\Tag\ThrowsTag */
-static pt_method_site pg_site_42; /* method_getType_42 */
+static pgrt::MethodShapeSite pg_site_42; /* method0_getType_42 */
 static pt_method_site pg_site_43; /* method_withType_43 */
-static pt_method_site pg_site_44; /* method_getType_44 */
+static pgrt::MethodShapeSite pg_site_44; /* method0_getType_44 */
 static pt_method_site pg_site_45; /* method_withType_45 */
-static pt_method_site pg_site_46; /* method_getType_46 */
-static pt_method_site pg_site_47; /* method_getActiveTemplateTypeMap_47 */
-static pt_method_site pg_site_48; /* method_getCallSiteVarianceMap_48 */
+static pgrt::MethodShapeSite pg_site_46; /* method0_getType_46 */
+static pgrt::MethodShapeSite pg_site_47; /* method0_getActiveTemplateTypeMap_47 */
+static pgrt::MethodShapeSite pg_site_48; /* method0_getCallSiteVarianceMap_48 */
 static pt_method_site pg_site_49; /* static_PHPStan\Type\Generic\TemplateTypeHelper::resolveTemplateTypes */
 static pt_method_site pg_site_50; /* method_withType_50 */
 static pgrt::ClassSite pg_site_51; /* cls_PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode */
@@ -98,7 +98,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 					ZVAL_COPY(r2.raw(), gs1);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_type.raw(), "getParameterName", "getparametername", 16, 0, NULL, r2.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_type.raw(), "getParameterName", "getparametername", 16, r2.raw()))) return;
 				}
 				}
 				zval av3[2];
@@ -161,7 +161,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 			ZVAL_COPY(r3.raw(), gs2);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, r1.raw(), "getParameterName", "getparametername", 16, 0, NULL, r3.raw()))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, r1.raw(), "getParameterName", "getparametername", 16, r3.raw()))) return;
 		}
 		}
 		zval av4[2];
@@ -1350,7 +1350,7 @@ namespace pgen::ResolvedPhpDocBlock {
 						if (UNEXPECTED(r18.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_paramTag, "getType", "gettype", 7, 0, NULL, r18.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_paramTag, "getType", "gettype", 7, r18.raw()))) return false;
 					}
 					}
 					zv::Val o19 = zv::Val::copyOf(zv::Ref(l_mapParameterCb.raw()));
@@ -1421,7 +1421,7 @@ namespace pgen::ResolvedPhpDocBlock {
 						if (UNEXPECTED(r42.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_paramOutTag, "getType", "gettype", 7, 0, NULL, r42.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_paramOutTag, "getType", "gettype", 7, r42.raw()))) return false;
 					}
 					}
 					zv::Val o43 = zv::Val::copyOf(zv::Ref(l_mapParameterCb.raw()));
@@ -1545,7 +1545,7 @@ namespace pgen::ResolvedPhpDocBlock {
 						if (UNEXPECTED(r86.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_paramClosureThisTag, "getType", "gettype", 7, 0, NULL, r86.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_paramClosureThisTag, "getType", "gettype", 7, r86.raw()))) return false;
 					}
 					}
 					zv::Val o87 = zv::Val::copyOf(zv::Ref(l_mapParameterCb.raw()));
@@ -1592,7 +1592,7 @@ namespace pgen::ResolvedPhpDocBlock {
 					if (UNEXPECTED(r98.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_returnTag.raw(), "getType", "gettype", 7, 0, NULL, r98.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_returnTag.raw(), "getType", "gettype", 7, r98.raw()))) return false;
 				}
 				}
 				zv::Val o99 = zv::Val::copyOf(zv::Ref(l_mapParameterCb.raw()));
@@ -3400,7 +3400,7 @@ namespace pgen::ResolvedPhpDocBlock {
 				 {
 					zv::Val arr10 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 					zv::Val r11;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_parentVarTag, "toImplicit", "toimplicit", 10, 0, NULL, r11.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_parentVarTag, "toImplicit", "toimplicit", 10, r11.raw()))) return false;
 					zv::Val r12;
 					if (UNEXPECTED(!pgrt::callStatic(pg_site_24, pt_ce_template_type_variance, "createinvariant", 15, 0, NULL, r12.raw(), NULL))) return false;
 					if (UNEXPECTED(!(pgrt::instanceOfClass(r11.raw(), pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\PhpDoc\\Tag\\TypedTag", 27))))) { pgrt::throwArgumentType("PHPStan\\PhpDoc\\ResolvedPhpDocBlock::resolveTemplateTypeInTag", 1, "tag", "PHPStan\\PhpDoc\\Tag\\TypedTag", r11.raw()); return false; }
@@ -3479,7 +3479,7 @@ namespace pgen::ResolvedPhpDocBlock {
 						if (UNEXPECTED(r15.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_parentParamTag, "getType", "gettype", 7, 0, NULL, r15.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_parentParamTag, "getType", "gettype", 7, r15.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(pgrt::instanceOfClass(r15.raw(), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\PhpDoc\\InheritedPhpDocParameterMapping::transformConditionalReturnTypeWithParameterNameMapping", 1, "type", "PHPStan\\Type\\Type", r15.raw()); return false; }
@@ -3557,7 +3557,7 @@ namespace pgen::ResolvedPhpDocBlock {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_parentReturnTag.raw(), "getType", "gettype", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, l_parentReturnTag.raw(), "getType", "gettype", 7, r2.raw()))) return false;
 		}
 		}
 		l_parentType = std::move(r2);
@@ -3592,7 +3592,7 @@ namespace pgen::ResolvedPhpDocBlock {
 				if (UNEXPECTED(r12.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_returnTag, "getType", "gettype", 7, 0, NULL, r12.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, p_returnTag, "getType", "gettype", 7, r12.raw()))) return false;
 			}
 			}
 			zval av13[1];
@@ -3627,7 +3627,7 @@ namespace pgen::ResolvedPhpDocBlock {
 			if (UNEXPECTED(r18.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_35, l_parentReturnTag.raw(), "getType", "gettype", 7, 0, NULL, r18.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_35, l_parentReturnTag.raw(), "getType", "gettype", 7, r18.raw()))) return false;
 		}
 		}
 		zv::Val r19;
@@ -3637,7 +3637,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		zv::Val r21;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_36, o17.raw(), "withType", "withtype", 8, 1, av20, r21.raw(), NULL))) return false;
 		zv::Val r22;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_37, r21.raw(), "toImplicit", "toimplicit", 10, 0, NULL, r22.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_37, r21.raw(), "toImplicit", "toimplicit", 10, r22.raw()))) return false;
 		zv::Val r23;
 		if (UNEXPECTED(!pgrt::callStatic(pg_site_38, pt_ce_template_type_variance, "createcovariant", 15, 0, NULL, r23.raw(), NULL))) return false;
 		zv::Val r24;
@@ -3778,7 +3778,7 @@ namespace pgen::ResolvedPhpDocBlock {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_40, l_parentThrowsTag.raw(), "getType", "gettype", 7, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, l_parentThrowsTag.raw(), "getType", "gettype", 7, r4.raw()))) return false;
 		}
 		}
 		zv::Val r5;
@@ -3851,7 +3851,7 @@ namespace pgen::ResolvedPhpDocBlock {
 						if (UNEXPECTED(r15.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_42, l_parentParamTag, "getType", "gettype", 7, 0, NULL, r15.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, l_parentParamTag, "getType", "gettype", 7, r15.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(pgrt::instanceOfClass(r15.raw(), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\PhpDoc\\InheritedPhpDocParameterMapping::transformConditionalReturnTypeWithParameterNameMapping", 1, "type", "PHPStan\\Type\\Type", r15.raw()); return false; }
@@ -4152,7 +4152,7 @@ namespace pgen::ResolvedPhpDocBlock {
 						if (UNEXPECTED(r15.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_44, l_parentParamClosureThisTag, "getType", "gettype", 7, 0, NULL, r15.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_44, l_parentParamClosureThisTag, "getType", "gettype", 7, r15.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(!(pgrt::instanceOfClass(r15.raw(), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\PhpDoc\\InheritedPhpDocParameterMapping::transformConditionalReturnTypeWithParameterNameMapping", 1, "type", "PHPStan\\Type\\Type", r15.raw()); return false; }
@@ -4216,7 +4216,7 @@ namespace pgen::ResolvedPhpDocBlock {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_46, p_tag, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_46, p_tag, "getType", "gettype", 7, r1.raw()))) return false;
 		}
 		}
 		zv::Val r2;
@@ -4225,7 +4225,7 @@ namespace pgen::ResolvedPhpDocBlock {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_47, p_classReflection, "getActiveTemplateTypeMap", "getactivetemplatetypemap", 24, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_47, p_classReflection, "getActiveTemplateTypeMap", "getactivetemplatetypemap", 24, r2.raw()))) return false;
 		}
 		}
 		zv::Val r3;
@@ -4234,7 +4234,7 @@ namespace pgen::ResolvedPhpDocBlock {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_48, p_classReflection, "getCallSiteVarianceMap", "getcallsitevariancemap", 22, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_48, p_classReflection, "getCallSiteVarianceMap", "getcallsitevariancemap", 22, r3.raw()))) return false;
 		}
 		}
 		zval av4[4];

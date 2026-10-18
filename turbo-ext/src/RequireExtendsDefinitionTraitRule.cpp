@@ -16,7 +16,7 @@ static pt_method_site pg_site_3; /* method_hasClass_3 */
 static pgrt::PropSite pg_site_4; /* prop_namespacedName_4 */
 static pt_method_site pg_site_5; /* method_toString_5 */
 static pt_method_site pg_site_6; /* method_getClass_6 */
-static pt_method_site pg_site_7; /* method_getRequireExtendsTags_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getRequireExtendsTags_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\PhpDoc\RequireExtendsCheck */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
@@ -150,7 +150,7 @@ namespace pgen::RequireExtendsDefinitionTraitRule {
 	}
 	 {
 		zv::Val r25;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_traitReflection.raw(), "getRequireExtendsTags", "getrequireextendstags", 21, 0, NULL, r25.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_traitReflection.raw(), "getRequireExtendsTags", "getrequireextendstags", 21, r25.raw()))) return false;
 		l_extendsTags = std::move(r25);
 	}
 	 {

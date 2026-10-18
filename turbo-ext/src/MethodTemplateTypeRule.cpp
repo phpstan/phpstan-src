@@ -9,23 +9,23 @@ zend_class_entry *pt_ce_method_template_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getDocComment_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getDocComment_0 */
 static pt_method_site pg_site_1; /* method_isInClass_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_3; /* method_getClassReflection_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getClassReflection_3 */
 static pt_method_site pg_site_4; /* method_getDisplayName_4 */
 static pgrt::PropSite pg_site_5; /* prop_name_5 */
 static pt_method_site pg_site_6; /* method_toString_6 */
 static pt_method_site pg_site_7; /* method_getFile_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
 static pt_method_site pg_site_9; /* method_isInTrait_9 */
 static pt_method_site pg_site_10; /* method_getTraitReflection_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
 static pgrt::GetterSite pg_site_12; /* getter_getText_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_14; /* method_getText_14 */
-static pt_method_site pg_site_15; /* method_getTemplateTypeMap_15 */
-static pt_method_site pg_site_16; /* method_getTypes_16 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getText_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getTemplateTypeMap_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getTypes_16 */
 static pgrt::FunctionSite pg_site_17; /* function_array_keys */
 static pt_method_site pg_site_18; /* method_describe_18 */
 static pt_method_site pg_site_19; /* method_getDisplayName_19 */
@@ -82,7 +82,7 @@ namespace pgen::MethodTemplateTypeRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, r1.raw()))) return false;
 		l_docComment = std::move(r1);
 	}
 	 {
@@ -129,7 +129,7 @@ namespace pgen::MethodTemplateTypeRule {
 			if (UNEXPECTED(r9.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_scope, "getClassReflection", "getclassreflection", 18, r9.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r9);
@@ -180,7 +180,7 @@ namespace pgen::MethodTemplateTypeRule {
 			if (UNEXPECTED(r18.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r18.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_classReflection.raw(), "getName", "getname", 7, r18.raw()))) return false;
 		}
 		}
 		zv::Val r19;
@@ -219,7 +219,7 @@ namespace pgen::MethodTemplateTypeRule {
 				if (UNEXPECTED(r26.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, r24.raw(), "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, r24.raw(), "getName", "getname", 7, r26.raw()))) return false;
 			}
 			}
 			q23 = std::move(r26);
@@ -236,7 +236,7 @@ namespace pgen::MethodTemplateTypeRule {
 			ZVAL_COPY(r30.raw(), gs29);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r30.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_docComment.raw(), "getText", "gettext", 7, r30.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!(Z_TYPE_P(o28.raw()) == IS_STRING || Z_TYPE_P(o28.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Type\\FileTypeMapper::getResolvedPhpDoc", 4, "functionName", "?string", o28.raw()); return false; }
@@ -360,7 +360,7 @@ namespace pgen::MethodTemplateTypeRule {
 			if (UNEXPECTED(r60.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_classReflection.raw(), "getTemplateTypeMap", "gettemplatetypemap", 18, 0, NULL, r60.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_classReflection.raw(), "getTemplateTypeMap", "gettemplatetypemap", 18, r60.raw()))) return false;
 		}
 		}
 		zv::Val r61;
@@ -369,7 +369,7 @@ namespace pgen::MethodTemplateTypeRule {
 			if (UNEXPECTED(r61.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, r60.raw(), "getTypes", "gettypes", 8, 0, NULL, r61.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, r60.raw(), "getTypes", "gettypes", 8, r61.raw()))) return false;
 		}
 		}
 		l_classTemplateTypes = std::move(r61);

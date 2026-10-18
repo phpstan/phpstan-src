@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_variable_writes_node = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getAttributes_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getAttributes_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\NodeAbstract */
 static pt_method_site pg_site_2; /* bound_PhpParser\NodeAbstract::__construct */
 static pt_method_site pg_site_3; /* method_getNode_3 */
@@ -68,7 +68,7 @@ namespace pgen::VariableWritesNode {
 	pgrt::writeSlot(self, ptdecl::VariableWritesNode::slot::allVariableNamesReferenced, &o13_raw);
 	 {
 		zv::Val r14;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionLike, "getAttributes", "getattributes", 13, 0, NULL, r14.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionLike, "getAttributes", "getattributes", 13, r14.raw()))) return false;
 		zval av15[1];
 		ZVAL_COPY_VALUE(&av15[0], r14.raw());
 		zend_class_entry *ce16 = pgrt::lookupClass(pg_site_1, "PhpParser\\NodeAbstract", 22);

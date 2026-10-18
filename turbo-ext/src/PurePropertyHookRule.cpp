@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_pure_property_hook_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getHookReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getHookReflection_0 */
 static pt_method_site pg_site_1; /* method_getPropertyHookName_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::FunctionSite pg_site_3; /* function_ucfirst */
@@ -21,8 +21,8 @@ static pt_method_site pg_site_8; /* method_getReturnType_8 */
 static pt_method_site pg_site_9; /* method_getImpurePoints_9 */
 static pt_method_site pg_site_10; /* method_getStatementResult_10 */
 static pt_method_site pg_site_11; /* method_getThrowPoints_11 */
-static pt_method_site pg_site_12; /* method_getPropertyHookNode_12 */
-static pt_method_site pg_site_13; /* method_getStmts_13 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getPropertyHookNode_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getStmts_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Reflection\ExtendedMethodReflection */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Type\Type */
@@ -66,7 +66,7 @@ namespace pgen::PurePropertyHookRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getHookReflection", "gethookreflection", 17, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getHookReflection", "gethookreflection", 17, r1.raw()))) return false;
 		l_hookReflection = std::move(r1);
 	}
 	 {
@@ -212,9 +212,9 @@ namespace pgen::PurePropertyHookRule {
 		}
 		zv::Val o29 = zv::Val::copyOf(zv::Ref(p28));
 		zv::Val r31;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_node, "getPropertyHookNode", "getpropertyhooknode", 19, 0, NULL, r31.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_node, "getPropertyHookNode", "getpropertyhooknode", 19, r31.raw()))) return false;
 		zv::Val r32;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, r31.raw(), "getStmts", "getstmts", 8, 0, NULL, r32.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, r31.raw(), "getStmts", "getstmts", 8, r32.raw()))) return false;
 		zv::Val q33;
 		if (r32.raw() != NULL && Z_TYPE_P(r32.raw()) > IS_NULL) {
 			q33 = zv::Val::copyOf(zv::Ref(r32.raw()));

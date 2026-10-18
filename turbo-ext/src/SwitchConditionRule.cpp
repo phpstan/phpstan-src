@@ -9,23 +9,23 @@ zend_class_entry *pt_ce_switch_condition_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[9];
 
-static pt_method_site pg_site_0; /* method_getSubject_0 */
-static pt_method_site pg_site_1; /* method_getArms_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getSubject_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getArms_1 */
 static pgrt::GetterSite pg_site_2; /* getter_getScope_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Node\SwitchConditionArm */
-static pt_method_site pg_site_4; /* method_getScope_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getScope_4 */
 static pgrt::GetterSite pg_site_5; /* getter_getCaseCondition_5 */
-static pt_method_site pg_site_6; /* method_getCaseCondition_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getCaseCondition_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_getFiniteTypes_8 */
 static pgrt::FunctionSite pg_site_9; /* function_count */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_11; /* method_printExpr_11 */
 static pgrt::GetterSite pg_site_12; /* getter_getLine_12 */
-static pt_method_site pg_site_13; /* method_getLine_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getLine_13 */
 static pt_method_site pg_site_14; /* method_printExpr_14 */
 static pgrt::GetterSite pg_site_15; /* getter_getLine_15 */
-static pt_method_site pg_site_16; /* method_getLine_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getLine_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node\Expr\BinaryOp\Equal */
 static pt_method_site pg_site_18; /* method_getType_18 */
 static pt_method_site pg_site_19; /* method_isTrue_19 */
@@ -41,21 +41,21 @@ static pt_method_site pg_site_28; /* method_yes_28 */
 static pt_method_site pg_site_29; /* method_describe_29 */
 static pt_method_site pg_site_30; /* method_describe_30 */
 static pgrt::GetterSite pg_site_31; /* getter_getLine_31 */
-static pt_method_site pg_site_32; /* method_getLine_32 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getLine_32 */
 static pt_method_site pg_site_33; /* method_isInTrait_33 */
 static pgrt::GetterSite pg_site_34; /* getter_isLast_34 */
-static pt_method_site pg_site_35; /* method_isLast_35 */
+static pgrt::MethodShapeSite pg_site_35; /* method0_isLast_35 */
 static pt_method_site pg_site_36; /* method_describe_36 */
 static pt_method_site pg_site_37; /* method_getType_37 */
 static pt_method_site pg_site_38; /* method_describe_38 */
 static pgrt::GetterSite pg_site_39; /* getter_getLine_39 */
-static pt_method_site pg_site_40; /* method_getLine_40 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_getLine_40 */
 static pt_method_site pg_site_41; /* method_isInTrait_41 */
 static pt_method_site pg_site_42; /* method_isTrue_42 */
 static pt_method_site pg_site_43; /* method_isFalse_43 */
 static pt_method_site pg_site_44; /* method_equals_44 */
 static pt_method_site pg_site_45; /* method_looseCompare_45 */
-static pt_method_site pg_site_46; /* method_isTrue_46 */
+static pgrt::MethodShapeSite pg_site_46; /* method0_isTrue_46 */
 static pgrt::ClassSite pg_site_47; /* cls_PHPStan\Rules\Comparison\ConstantConditionRuleHelper */
 static pgrt::ClassSite pg_site_48; /* cls_PHPStan\Rules\Comparison\ConstantConditionInTraitHelper */
 static pgrt::ClassSite pg_site_49; /* cls_PHPStan\Node\Printer\ExprPrinter */
@@ -130,7 +130,7 @@ namespace pgen::SwitchConditionRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getSubject", "getsubject", 10, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getSubject", "getsubject", 10, r1.raw()))) return false;
 		l_subject = std::move(r1);
 	}
 	 {
@@ -153,7 +153,7 @@ namespace pgen::SwitchConditionRule {
 	}
 	 {
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getArms", "getarms", 7, 0, NULL, r7.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getArms", "getarms", 7, r7.raw()))) return false;
 		pgrt::ForeachIter it8;
 		if (UNEXPECTED(!it8.begin(r7.raw()))) return false;
 		while (it8.valid()) {
@@ -181,7 +181,7 @@ namespace pgen::SwitchConditionRule {
 						ZVAL_COPY(r15.raw(), gs14);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_arm, "getScope", "getscope", 8, 0, NULL, r15.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_arm, "getScope", "getscope", 8, r15.raw()))) return false;
 					}
 					}
 					l_armScope = std::move(r15);
@@ -193,7 +193,7 @@ namespace pgen::SwitchConditionRule {
 						ZVAL_COPY(r17.raw(), gs16);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_arm, "getCaseCondition", "getcasecondition", 16, 0, NULL, r17.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_arm, "getCaseCondition", "getcasecondition", 16, r17.raw()))) return false;
 					}
 					}
 					l_caseCondition = std::move(r17);
@@ -319,7 +319,7 @@ namespace pgen::SwitchConditionRule {
 										ZVAL_COPY(r55.raw(), gs54);
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_arm, "getLine", "getline", 7, 0, NULL, r55.raw()))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_arm, "getLine", "getline", 7, r55.raw()))) return false;
 									}
 									}
 									if (UNEXPECTED(Z_TYPE_P(r55.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r55.raw()); return false; }
@@ -355,7 +355,7 @@ namespace pgen::SwitchConditionRule {
 								ZVAL_COPY(r67.raw(), gs66);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_arm, "getLine", "getline", 7, 0, NULL, r67.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_arm, "getLine", "getline", 7, r67.raw()))) return false;
 							}
 							}
 							{ zval v = r67.take(); zend_symtable_update(Z_ARRVAL_P(arr61.raw()), Z_STR_P(&pg_lit[3]), &v); }
@@ -645,7 +645,7 @@ namespace pgen::SwitchConditionRule {
 								ZVAL_COPY(r128.raw(), gs127);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_arm, "getLine", "getline", 7, 0, NULL, r128.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, l_arm, "getLine", "getline", 7, r128.raw()))) return false;
 							}
 							}
 							if (UNEXPECTED(Z_TYPE_P(r128.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r128.raw()); return false; }
@@ -705,7 +705,7 @@ namespace pgen::SwitchConditionRule {
 						ZVAL_COPY(r142.raw(), gs141);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_35, l_arm, "isLast", "islast", 6, 0, NULL, r142.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_35, l_arm, "isLast", "islast", 6, r142.raw()))) return false;
 					}
 					}
 					if (zend_is_true(r142.raw())) {
@@ -774,7 +774,7 @@ namespace pgen::SwitchConditionRule {
 						ZVAL_COPY(r160.raw(), gs159);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_40, l_arm, "getLine", "getline", 7, 0, NULL, r160.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, l_arm, "getLine", "getline", 7, r160.raw()))) return false;
 					}
 					}
 					if (UNEXPECTED(Z_TYPE_P(r160.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r160.raw()); return false; }
@@ -945,7 +945,7 @@ namespace pgen::SwitchConditionRule {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_45, p_seenType, "looseCompare", "loosecompare", 12, 2, av8, vd5.raw()))) return false;
 		}
 		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_46, vd5.raw(), "isTrue", "istrue", 6, 0, NULL, r9.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_46, vd5.raw(), "isTrue", "istrue", 6, r9.raw()))) return false;
 		bool r10;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r9.raw()), &r10))) return false;
 		*ret = r10;

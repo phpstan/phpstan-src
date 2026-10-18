@@ -9,19 +9,19 @@ zend_class_entry *pt_ce_array_pad_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
-static pt_method_site pg_site_6; /* method_getIterableKeyType_6 */
-static pt_method_site pg_site_7; /* method_getIterableValueType_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getIterableKeyType_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getIterableValueType_7 */
 static pgrt::PropSite pg_site_8; /* prop_value_8 */
 static pt_method_site pg_site_9; /* method_getType_9 */
-static pt_method_site pg_site_10; /* method_isIterableAtLeastOnce_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isIterableAtLeastOnce_10 */
 static pt_method_site pg_site_11; /* method_isSuperTypeOf_11 */
-static pt_method_site pg_site_12; /* method_isList_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_isList_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
@@ -41,7 +41,7 @@ namespace pgen::ArrayPadDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -144,7 +144,7 @@ namespace pgen::ArrayPadDynamicReturnTypeExtension {
 			if (UNEXPECTED(r24.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_arrayType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r24.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_arrayType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r24.raw()))) return false;
 		}
 		}
 		zv::Val n25;
@@ -163,7 +163,7 @@ namespace pgen::ArrayPadDynamicReturnTypeExtension {
 			if (UNEXPECTED(r28.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_arrayType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r28.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_arrayType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r28.raw()))) return false;
 		}
 		}
 		zv::Val o29 = zv::Val::copyOf(zv::Ref(l_itemType.raw()));
@@ -214,7 +214,7 @@ namespace pgen::ArrayPadDynamicReturnTypeExtension {
 			if (UNEXPECTED(r41.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_arrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r41.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_arrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r41.raw()))) return false;
 		}
 		}
 		bool r42;
@@ -263,7 +263,7 @@ namespace pgen::ArrayPadDynamicReturnTypeExtension {
 			if (UNEXPECTED(r52.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_arrayType.raw(), "isList", "islist", 6, 0, NULL, r52.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_arrayType.raw(), "isList", "islist", 6, r52.raw()))) return false;
 		}
 		}
 		bool r53;

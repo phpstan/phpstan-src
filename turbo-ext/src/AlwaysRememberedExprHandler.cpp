@@ -8,7 +8,7 @@ zend_class_entry *pt_ce_always_remembered_expr_handler = nullptr;
 
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\Expr\AlwaysRememberedExpr */
-static pt_method_site pg_site_1; /* method_getExpr_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getExpr_1 */
 static pt_method_site pg_site_2; /* method_processExprNode_2 */
 static pt_method_site pg_site_3; /* method_getScope_3 */
 static pt_method_site pg_site_4; /* method_getVariableFlow_4 */
@@ -16,14 +16,14 @@ static pt_method_site pg_site_5; /* method_hasYield_5 */
 static pt_method_site pg_site_6; /* method_isAlwaysTerminating_6 */
 static pt_method_site pg_site_7; /* method_getThrowPoints_7 */
 static pt_method_site pg_site_8; /* method_getImpurePoints_8 */
-static pt_method_site pg_site_9; /* method_getNativeExprType_9 */
-static pt_method_site pg_site_10; /* method_getExprType_10 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getNativeExprType_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getExprType_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\TypeSpecifierContext */
 static pt_method_site pg_site_13; /* method_specifyDefaultTypes_13 */
 static pt_method_site pg_site_14; /* method_getSpecifiedTypes_14 */
 static pt_method_site pg_site_15; /* method_unionWith_15 */
-static pt_method_site pg_site_16; /* method_doNotTreatPhpDocTypesAsCertain_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_doNotTreatPhpDocTypesAsCertain_16 */
 static pt_method_site pg_site_17; /* method_createSubjectTypes_17 */
 static pt_method_site pg_site_18; /* method_createSubjectTypes_18 */
 static pt_method_site pg_site_19; /* method_unionWith_19 */
@@ -49,12 +49,12 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q1;
 		if (p_nativeTypesPromoted) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, zv::Ref(&captures[0]).deref().raw(), "getNativeExprType", "getnativeexprtype", 17, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, zv::Ref(&captures[0]).deref().raw(), "getNativeExprType", "getnativeexprtype", 17, r2.raw()))) return;
 			q1 = std::move(r2);
 		} else {
 		 {
 			zv::Val r3;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, zv::Ref(&captures[0]).deref().raw(), "getExprType", "getexprtype", 11, 0, NULL, r3.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, zv::Ref(&captures[0]).deref().raw(), "getExprType", "getexprtype", 11, r3.raw()))) return;
 			q1 = std::move(r3);
 		}
 		}
@@ -155,7 +155,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val q1;
 		if (p_nativeTypesPromoted) {
 			zv::Val r2;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, zv::Ref(&captures[3]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r2.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, zv::Ref(&captures[3]).deref().raw(), "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r2.raw()))) return;
 			q1 = std::move(r2);
 		} else {
 		 {
@@ -269,7 +269,7 @@ namespace pgen::AlwaysRememberedExprHandler {
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_expr, "getExpr", "getexpr", 7, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_expr, "getExpr", "getexpr", 7, r2.raw()))) return false;
 		l_innerExpr = std::move(r2);
 	}
 	 {

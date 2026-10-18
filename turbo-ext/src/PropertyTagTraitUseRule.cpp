@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_property_tag_trait_use_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getTraitReflection_0 */
-static pt_method_site pg_site_1; /* method_getImplementingClassReflection_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getTraitReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getImplementingClassReflection_1 */
 static pt_method_site pg_site_2; /* method_getOriginalNode_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Stmt\ClassLike */
@@ -55,9 +55,9 @@ namespace pgen::PropertyTagTraitUseRule {
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getTraitReflection", "gettraitreflection", 18, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getTraitReflection", "gettraitreflection", 18, r3.raw()))) return false;
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getImplementingClassReflection", "getimplementingclassreflection", 30, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getImplementingClassReflection", "getimplementingclassreflection", 30, r4.raw()))) return false;
 		zv::Val vd5;
 		zend_class_entry *vd5_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
 		bool vd5_done = false;

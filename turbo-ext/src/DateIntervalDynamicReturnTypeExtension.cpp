@@ -9,15 +9,15 @@ zend_class_entry *pt_ce_date_interval_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pt_method_site pg_site_4; /* method_getConstantStrings_4 */
-static pt_method_site pg_site_5; /* method_getValue_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getValue_5 */
 static pgrt::ClassSite pg_site_6; /* cls_DateInterval */
 static pt_method_site pg_site_7; /* static_DateInterval::createFromDateString */
-static pt_method_site pg_site_8; /* method_getPhpVersion_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getPhpVersion_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Reflection\MethodReflection */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Expr\StaticCall */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
@@ -49,7 +49,7 @@ namespace pgen::DateIntervalDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[1]);
@@ -156,7 +156,7 @@ namespace pgen::DateIntervalDynamicReturnTypeExtension {
 								if (UNEXPECTED(r26.isUndef())) goto catch_c24;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_string, "getValue", "getvalue", 8, 0, NULL, r26.raw(), NULL))) goto catch_c24;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_string, "getValue", "getvalue", 8, r26.raw()))) goto catch_c24;
 							}
 							}
 							zval av27[1];
@@ -212,7 +212,7 @@ namespace pgen::DateIntervalDynamicReturnTypeExtension {
 				if (!(l_hasDateInterval)) {
 					 {
 						zv::Val r32;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r32.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_scope, "getPhpVersion", "getphpversion", 13, r32.raw()))) return false;
 						zv::Val r33;
 						if (UNEXPECTED(!pgen::PhpVersions::m_hasDateTimeExceptions(Z_OBJ_P(r32.raw()), r33.raw()))) return false;
 						bool r34;

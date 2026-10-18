@@ -19,14 +19,14 @@ static pgrt::PropSite pg_site_6; /* prop_expr_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Expr\AssignRef */
 static pgrt::PropSite pg_site_8; /* prop_expr_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Expr\AssignOp */
-static pt_method_site pg_site_10; /* method_getDocComment_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getDocComment_10 */
 static pgrt::GetterSite pg_site_11; /* getter_getText_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_13; /* method_getText_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getText_13 */
 static pt_method_site pg_site_14; /* method_tokenize_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\PhpDocParser\Parser\TokenIterator */
 static pt_method_site pg_site_16; /* method_parse_16 */
-static pt_method_site pg_site_17; /* method_getTags_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getTags_17 */
 static pgrt::PropSite pg_site_18; /* prop_name_18 */
 static pgrt::FunctionSite pg_site_19; /* function_str_starts_with */
 static pgrt::PropSite pg_site_20; /* prop_name_20 */
@@ -40,8 +40,8 @@ static pgrt::PropSite pg_site_27; /* prop_value_27 */
 static pgrt::PropSite pg_site_28; /* prop_alias_28 */
 static pgrt::PropSite pg_site_29; /* prop_value_29 */
 static pgrt::PropSite pg_site_30; /* prop_type_30 */
-static pt_method_site pg_site_31; /* method_getException_31 */
-static pt_method_site pg_site_32; /* method_getMessage_32 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getException_31 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_getMessage_32 */
 static pgrt::ClassSite pg_site_33; /* cls_PHPStan\PhpDocParser\Ast\Node */
 static pgrt::PropSite pg_site_34; /* prop_value_34 */
 static pgrt::ClassSite pg_site_35; /* cls_PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode */
@@ -49,7 +49,7 @@ static pgrt::PropSite pg_site_36; /* prop_name_36 */
 static pgrt::PropSite pg_site_37; /* prop_value_37 */
 static pgrt::PropSite pg_site_38; /* prop_value_38 */
 static pgrt::PropSite pg_site_39; /* prop_value_39 */
-static pt_method_site pg_site_40; /* method_getMessage_40 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_getMessage_40 */
 static pgrt::ClassSite pg_site_41; /* cls_PHPStan\PhpDocParser\Lexer\Lexer */
 static pgrt::ClassSite pg_site_42; /* cls_PHPStan\PhpDocParser\Parser\PhpDocParser */
 static pgrt::ClassSite pg_site_43; /* cls_PhpParser\Node */
@@ -179,7 +179,7 @@ namespace pgen::InvalidPhpDocTagValueRule {
 	}
 	 {
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r13.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_node, "getDocComment", "getdoccomment", 13, r13.raw()))) return false;
 		l_docComment = std::move(r13);
 	}
 	 {
@@ -199,7 +199,7 @@ namespace pgen::InvalidPhpDocTagValueRule {
 			ZVAL_COPY(r16.raw(), gs15);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r16.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_docComment.raw(), "getText", "gettext", 7, r16.raw()))) return false;
 		}
 		}
 		l_phpDocString = std::move(r16);
@@ -236,7 +236,7 @@ namespace pgen::InvalidPhpDocTagValueRule {
 	}
 	 {
 		zv::Val r29;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_phpDocNode.raw(), "getTags", "gettags", 7, 0, NULL, r29.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_phpDocNode.raw(), "getTags", "gettags", 7, r29.raw()))) return false;
 		zv::Val a30 = zv::Val::copyOf(zv::Ref(r29.raw()).deref());
 		HashTable *ht28 = Z_ARRVAL_P(a30.raw());
 		zval *v31;
@@ -332,9 +332,9 @@ namespace pgen::InvalidPhpDocTagValueRule {
 								p61 = o62.raw();
 							}
 							zv::Val r63;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_31, zv::Ref(p61).deref().raw(), "getException", "getexception", 12, 0, NULL, r63.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, zv::Ref(p61).deref().raw(), "getException", "getexception", 12, r63.raw()))) return false;
 							zv::Val r64;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_32, r63.raw(), "getMessage", "getmessage", 10, 0, NULL, r64.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, r63.raw(), "getMessage", "getmessage", 10, r64.raw()))) return false;
 							pgrt::StringBuilder sb65;
 							sb65.appendLiteral("PHPDoc tag ", 11);
 							if (UNEXPECTED(!sb65.append(o53.raw()))) return false;
@@ -411,7 +411,7 @@ namespace pgen::InvalidPhpDocTagValueRule {
 						p86 = o87.raw();
 					}
 					zv::Val r88;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_40, p86, "getMessage", "getmessage", 10, 0, NULL, r88.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, p86, "getMessage", "getmessage", 10, r88.raw()))) return false;
 					pgrt::StringBuilder sb89;
 					sb89.appendLiteral("PHPDoc tag ", 11);
 					if (UNEXPECTED(!sb89.append(o78.raw()))) return false;

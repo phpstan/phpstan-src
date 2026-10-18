@@ -11,7 +11,7 @@ static zval pg_lit[1];
 
 static pgrt::GetterSite pg_site_0; /* getter_getAttributes_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_2; /* method_getAttributes_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getAttributes_2 */
 static pt_method_site pg_site_3; /* bound_PhpParser\NodeAbstract::__construct */
 static pgrt::PropSite pg_site_4; /* prop_byRef_4 */
 static pgrt::PropSite pg_site_5; /* prop_returnType_5 */
@@ -19,7 +19,7 @@ static pgrt::PropSite pg_site_6; /* prop_name_6 */
 static pt_method_site pg_site_7; /* method_toString_7 */
 static pgrt::GetterSite pg_site_8; /* getter_getStmts_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Stmt\ClassMethod */
-static pt_method_site pg_site_10; /* method_getStmts_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getStmts_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\StatementResult */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection */
@@ -63,7 +63,7 @@ namespace pgen::MethodReturnStatementsNode {
 			ZVAL_COPY(r10.raw(), gs9);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_method, "getAttributes", "getattributes", 13, 0, NULL, r10.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_method, "getAttributes", "getattributes", 13, r10.raw()))) return false;
 		}
 		}
 		zval av11[1];
@@ -271,7 +271,7 @@ namespace pgen::MethodReturnStatementsNode {
 			ZVAL_COPY(r3.raw(), gs2);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p1, "getStmts", "getstmts", 8, 0, NULL, r3.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p1, "getStmts", "getstmts", 8, r3.raw()))) return false;
 		}
 		}
 		l_stmts = std::move(r3);

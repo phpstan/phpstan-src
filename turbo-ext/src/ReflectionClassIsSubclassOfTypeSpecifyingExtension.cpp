@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_reflection_class_is_subclass_of_type_specifying_extensio
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_null_2 */
 static pgrt::PropSite pg_site_3; /* prop_var_3 */
@@ -73,7 +73,7 @@ namespace pgen::ReflectionClassIsSubclassOfTypeSpecifyingExtension {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		bool b2 = zend_is_identical(r3.raw(), &pg_lit[1]);

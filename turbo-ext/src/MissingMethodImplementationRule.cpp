@@ -9,25 +9,25 @@ zend_class_entry *pt_ce_missing_method_implementation_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[6];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_isInterface_1 */
-static pt_method_site pg_site_2; /* method_isAbstract_2 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_isInterface_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isAbstract_2 */
 static pt_method_site pg_site_3; /* method_getNativeReflection_3 */
-static pt_method_site pg_site_4; /* method_getMethods_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getMethods_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound */
 static pt_method_site pg_site_6; /* method_isAbstract_6 */
 static pt_method_site pg_site_7; /* method_getDeclaringClass_7 */
-static pt_method_site pg_site_8; /* method_isInterface_8 */
-static pt_method_site pg_site_9; /* method_getName_9 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isInterface_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Reflection\ClassReflection */
 static pt_method_site pg_site_11; /* method_isEnum_11 */
 static pt_method_site pg_site_12; /* method_getDisplayName_12 */
-static pt_method_site pg_site_13; /* method_getName_13 */
-static pt_method_site pg_site_14; /* method_isInterface_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
-static pt_method_site pg_site_16; /* method_getParents_16 */
-static pt_method_site pg_site_17; /* method_isBuiltin_17 */
-static pt_method_site pg_site_18; /* method_isAbstract_18 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isInterface_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getParents_16 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_isBuiltin_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_isAbstract_18 */
 static pt_method_site pg_site_19; /* method_implementsInterface_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Analyser\Scope */
@@ -65,7 +65,7 @@ namespace pgen::MissingMethodImplementationRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -77,7 +77,7 @@ namespace pgen::MissingMethodImplementationRule {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_classReflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_classReflection.raw(), "isInterface", "isinterface", 11, r2.raw()))) return false;
 		}
 		}
 		if (zend_is_true(r2.raw())) {
@@ -91,7 +91,7 @@ namespace pgen::MissingMethodImplementationRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_classReflection.raw(), "isAbstract", "isabstract", 10, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_classReflection.raw(), "isAbstract", "isabstract", 10, r4.raw()))) return false;
 		if (zend_is_true(r4.raw())) {
 			 {
 				zval arr5_raw;
@@ -120,7 +120,7 @@ namespace pgen::MissingMethodImplementationRule {
 				}
 				}
 				zv::Val r10;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r9.raw(), "getMethods", "getmethods", 10, 0, NULL, r10.raw(), NULL))) goto catch_c8;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, r9.raw(), "getMethods", "getmethods", 10, r10.raw()))) goto catch_c8;
 				l_nativeMethods = std::move(r10);
 			}
 		}
@@ -192,7 +192,7 @@ namespace pgen::MissingMethodImplementationRule {
 						if (UNEXPECTED(r23.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_declaringClass.raw(), "isInterface", "isinterface", 11, 0, NULL, r23.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_declaringClass.raw(), "isInterface", "isinterface", 11, r23.raw()))) return false;
 					}
 					}
 					bool b22 = zend_is_true(r23.raw());
@@ -204,7 +204,7 @@ namespace pgen::MissingMethodImplementationRule {
 							if (UNEXPECTED(r25.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_declaringClass.raw(), "getName", "getname", 7, 0, NULL, r25.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_declaringClass.raw(), "getName", "getname", 7, r25.raw()))) return false;
 						}
 						}
 						if (UNEXPECTED(!(pgrt::instanceOfClass(o24.raw(), pt_ce_class_reflection) || pgrt::instanceOfClass(o24.raw(), pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassReflection", 34))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Methods\\MissingMethodImplementationRule::isProvidedByBuiltinAncestor", 1, "classReflection", "PHPStan\\Reflection\\ClassReflection", o24.raw()); return false; }
@@ -256,7 +256,7 @@ namespace pgen::MissingMethodImplementationRule {
 						if (UNEXPECTED(r33.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_method, "getName", "getname", 7, 0, NULL, r33.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_method, "getName", "getname", 7, r33.raw()))) return false;
 					}
 					}
 					zv::Val r34;
@@ -265,7 +265,7 @@ namespace pgen::MissingMethodImplementationRule {
 						if (UNEXPECTED(r34.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_declaringClass.raw(), "isInterface", "isinterface", 11, 0, NULL, r34.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_declaringClass.raw(), "isInterface", "isinterface", 11, r34.raw()))) return false;
 					}
 					}
 					zv::Val q35;
@@ -284,7 +284,7 @@ namespace pgen::MissingMethodImplementationRule {
 						if (UNEXPECTED(r38.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_declaringClass.raw(), "getName", "getname", 7, 0, NULL, r38.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_declaringClass.raw(), "getName", "getname", 7, r38.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb39;
@@ -334,7 +334,7 @@ namespace pgen::MissingMethodImplementationRule {
 	(void) this_zv;
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p_classReflection, "getParents", "getparents", 10, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, p_classReflection, "getParents", "getparents", 10, r2.raw()))) return false;
 		zv::Val a3 = zv::Val::copyOf(zv::Ref(r2.raw()).deref());
 		HashTable *ht1 = Z_ARRVAL_P(a3.raw());
 		zval *v4;
@@ -351,7 +351,7 @@ namespace pgen::MissingMethodImplementationRule {
 						if (UNEXPECTED(r9.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_parent, "isBuiltin", "isbuiltin", 9, 0, NULL, r9.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_parent, "isBuiltin", "isbuiltin", 9, r9.raw()))) return false;
 					}
 					}
 					if (!(zend_is_true(r9.raw()))) {
@@ -360,7 +360,7 @@ namespace pgen::MissingMethodImplementationRule {
 				}
 				 {
 					zv::Val r10;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_parent, "isAbstract", "isabstract", 10, 0, NULL, r10.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_parent, "isAbstract", "isabstract", 10, r10.raw()))) return false;
 					if (zend_is_true(r10.raw())) {
 						goto cont8;
 					}

@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_get_called_class_dynamic_return_type_extension = nullptr
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_isInClass_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Name */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr\ClassConstFetch */
@@ -33,7 +33,7 @@ namespace pgen::GetCalledClassDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);

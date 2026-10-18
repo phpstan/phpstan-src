@@ -15,7 +15,7 @@ static pt_method_site pg_site_3; /* method_getClassName_3 */
 static pt_method_site pg_site_4; /* method_getClass_4 */
 static pt_method_site pg_site_5; /* method_isRestrictedClassNameUsage_5 */
 static pt_method_site pg_site_6; /* method_getNode_6 */
-static pt_method_site pg_site_7; /* method_getStartLine_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getStartLine_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\ClassNameUsageLocation */
 
@@ -321,7 +321,7 @@ namespace pgen::ClassNameCheck {
 									if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_pair, "getNode", "getnode", 7, 0, NULL, vd73.raw()))) return false;
 								}
 								zv::Val r75;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_7, vd73.raw(), "getStartLine", "getstartline", 12, 0, NULL, r75.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, vd73.raw(), "getStartLine", "getstartline", 12, r75.raw()))) return false;
 								if (UNEXPECTED(Z_TYPE_P(r75.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r75.raw()); return false; }
 								zv::Val r76;
 								if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r72.raw()), Z_LVAL_P(r75.raw()), r76.raw()))) return false;

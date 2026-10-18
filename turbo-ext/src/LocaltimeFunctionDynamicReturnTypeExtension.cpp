@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_localtime_function_dynamic_return_type_extension = nullp
 /* the interned string literals, created at module startup */
 static zval pg_lit[10];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pt_method_site pg_site_4; /* method_toBoolean_4 */
-static pt_method_site pg_site_5; /* method_isTrue_5 */
-static pt_method_site pg_site_6; /* method_isFalse_6 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isTrue_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isFalse_6 */
 static pt_method_site pg_site_7; /* method_setOffsetValueType_7 */
 static pt_method_site pg_site_8; /* method_getArray_8 */
 static pt_method_site pg_site_9; /* method_setOffsetValueType_9 */
@@ -40,7 +40,7 @@ namespace pgen::LocaltimeFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -113,7 +113,7 @@ namespace pgen::LocaltimeFunctionDynamicReturnTypeExtension {
 	}
 	 {
 		zv::Val r14;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_associativeType.raw(), "isTrue", "istrue", 6, 0, NULL, r14.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_associativeType.raw(), "isTrue", "istrue", 6, r14.raw()))) return false;
 		bool r15;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r14.raw()), &r15))) return false;
 		if (r15) {
@@ -127,7 +127,7 @@ namespace pgen::LocaltimeFunctionDynamicReturnTypeExtension {
 	}
 	 {
 		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_associativeType.raw(), "isFalse", "isfalse", 7, 0, NULL, r17.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_associativeType.raw(), "isFalse", "isfalse", 7, r17.raw()))) return false;
 		bool r18;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r17.raw()), &r18))) return false;
 		if (r18) {

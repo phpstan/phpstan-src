@@ -28,7 +28,7 @@ static pgrt::PropSite pg_site_15; /* prop_parts_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PhpParser\Node\InterpolatedStringPart */
 static pgrt::PropSite pg_site_17; /* prop_value_17 */
 static pt_method_site pg_site_18; /* method_getNativeType_18 */
-static pt_method_site pg_site_19; /* method_getType_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getType_19 */
 static pt_method_site pg_site_20; /* method_toString_20 */
 static pt_method_site pg_site_21; /* method_resolveConcatType_21 */
 static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Type\Type */
@@ -121,7 +121,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 									if (UNEXPECTED(r17.isUndef())) return;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_partResult.raw(), "getType", "gettype", 7, 0, NULL, r17.raw(), NULL))) return;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_partResult.raw(), "getType", "gettype", 7, r17.raw()))) return;
 								}
 								}
 								q15 = std::move(r17);

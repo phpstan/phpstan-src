@@ -21,13 +21,13 @@ static pt_method_site pg_site_8; /* method_hasClass_8 */
 static pt_method_site pg_site_9; /* method_getClass_9 */
 static pt_method_site pg_site_10; /* method_hasConstructor_10 */
 static pt_method_site pg_site_11; /* method_getConstructor_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
 static pgrt::DispatchCache pg_site_13; /* dispatch_isPure_13 */
 static pt_method_site pg_site_14; /* method_isPure_14 */
 static pgrt::DispatchCache pg_site_15; /* dispatch_getDeclaringClass_15 */
 static pt_method_site pg_site_16; /* method_getDeclaringClass_16 */
-static pt_method_site pg_site_17; /* method_getName_17 */
-static pt_method_site pg_site_18; /* method_getStartLine_18 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getName_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getStartLine_18 */
 static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_20; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Analyser\Scope */
@@ -222,7 +222,7 @@ namespace pgen::PossiblyPureNewCollector {
 			if (UNEXPECTED(r33.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_constructor.raw(), "getName", "getname", 7, 0, NULL, r33.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_constructor.raw(), "getName", "getname", 7, r33.raw()))) return false;
 		}
 		}
 		zv::Val r34 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r33.raw())));
@@ -349,12 +349,12 @@ namespace pgen::PossiblyPureNewCollector {
 			if (UNEXPECTED(r51.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, vd45.raw(), "getName", "getname", 7, 0, NULL, r51.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, vd45.raw(), "getName", "getname", 7, r51.raw()))) return false;
 		}
 		}
 		{ zval v = r51.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr44.raw()), &v); }
 		zv::Val r52;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_node, "getStartLine", "getstartline", 12, 0, NULL, r52.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, p_node, "getStartLine", "getstartline", 12, r52.raw()))) return false;
 		zv::Val o53 = zv::Val::integer(Z_LVAL_P(r52.raw()));
 		{ zval v = o53.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr44.raw()), &v); }
 		*ret = arr44.take();

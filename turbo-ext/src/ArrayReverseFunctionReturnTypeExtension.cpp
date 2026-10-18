@@ -9,12 +9,12 @@ zend_class_entry *pt_ce_array_reverse_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_isArray_4 */
-static pt_method_site pg_site_5; /* method_getPhpVersion_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isArray_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getPhpVersion_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_isTrue_8 */
@@ -38,7 +38,7 @@ namespace pgen::ArrayReverseFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -111,7 +111,7 @@ namespace pgen::ArrayReverseFunctionReturnTypeExtension {
 			if (UNEXPECTED(r15.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_type.raw(), "isArray", "isarray", 7, 0, NULL, r15.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_type.raw(), "isArray", "isarray", 7, r15.raw()))) return false;
 		}
 		}
 		bool r16;
@@ -119,7 +119,7 @@ namespace pgen::ArrayReverseFunctionReturnTypeExtension {
 		if (r16) {
 			 {
 				zv::Val r17;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r17.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_scope, "getPhpVersion", "getphpversion", 13, r17.raw()))) return false;
 				zv::Val r18;
 				if (UNEXPECTED(!pgen::PhpVersions::m_arrayFunctionsReturnNullWithNonArray(Z_OBJ_P(r17.raw()), r18.raw()))) return false;
 				bool r19;

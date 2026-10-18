@@ -16,37 +16,37 @@ static pt_method_site pg_site_2; /* method_isIterable_2 */
 static pt_method_site pg_site_3; /* method_describe_3 */
 static pgrt::FunctionSite pg_site_4; /* function_sprintf */
 static pgrt::PropSite pg_site_5; /* prop_expr_5 */
-static pt_method_site pg_site_6; /* method_getStartLine_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getStartLine_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\MixedType */
 static pt_method_site pg_site_8; /* method_describe_8 */
 static pgrt::PropSite pg_site_9; /* prop_expr_9 */
-static pt_method_site pg_site_10; /* method_getStartLine_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getStartLine_10 */
 static pt_method_site pg_site_11; /* method_getAnonymousFunctionReturnType_11 */
 static pt_method_site pg_site_12; /* method_getFunction_12 */
 static pt_method_site pg_site_13; /* method_getReturnType_13 */
-static pt_method_site pg_site_14; /* method_getIterableKeyType_14 */
-static pt_method_site pg_site_15; /* method_getIterableKeyType_15 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getIterableKeyType_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getIterableKeyType_15 */
 static pt_method_site pg_site_16; /* method_isDeclareStrictTypes_16 */
-static pt_method_site pg_site_17; /* method_getIterableKeyType_17 */
-static pt_method_site pg_site_18; /* method_getIterableKeyType_18 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getIterableKeyType_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getIterableKeyType_18 */
 static pt_method_site pg_site_19; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
-static pt_method_site pg_site_20; /* method_getIterableKeyType_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getIterableKeyType_20 */
 static pt_method_site pg_site_21; /* method_describe_21 */
-static pt_method_site pg_site_22; /* method_getIterableKeyType_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getIterableKeyType_22 */
 static pt_method_site pg_site_23; /* method_describe_23 */
 static pgrt::PropSite pg_site_24; /* prop_expr_24 */
-static pt_method_site pg_site_25; /* method_getStartLine_25 */
-static pt_method_site pg_site_26; /* method_getIterableValueType_26 */
-static pt_method_site pg_site_27; /* method_getIterableValueType_27 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getStartLine_25 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_getIterableValueType_26 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getIterableValueType_27 */
 static pt_method_site pg_site_28; /* method_isDeclareStrictTypes_28 */
-static pt_method_site pg_site_29; /* method_getIterableValueType_29 */
-static pt_method_site pg_site_30; /* method_getIterableValueType_30 */
-static pt_method_site pg_site_31; /* method_getIterableValueType_31 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_getIterableValueType_29 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_getIterableValueType_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_getIterableValueType_31 */
 static pt_method_site pg_site_32; /* method_describe_32 */
-static pt_method_site pg_site_33; /* method_getIterableValueType_33 */
+static pgrt::MethodShapeSite pg_site_33; /* method0_getIterableValueType_33 */
 static pt_method_site pg_site_34; /* method_describe_34 */
 static pgrt::PropSite pg_site_35; /* prop_expr_35 */
-static pt_method_site pg_site_36; /* method_getStartLine_36 */
+static pgrt::MethodShapeSite pg_site_36; /* method0_getStartLine_36 */
 static pt_method_site pg_site_37; /* method_getFunction_37 */
 static pt_method_site pg_site_38; /* method_getReturnType_38 */
 static pt_method_site pg_site_39; /* method_getTemplateType_39 */
@@ -57,9 +57,9 @@ static pt_method_site pg_site_43; /* method_describe_43 */
 static pt_method_site pg_site_44; /* method_describe_44 */
 static pt_method_site pg_site_45; /* method_describe_45 */
 static pt_method_site pg_site_46; /* method_describe_46 */
-static pt_method_site pg_site_47; /* method_isInFirstLevelStatement_47 */
+static pgrt::MethodShapeSite pg_site_47; /* method0_isInFirstLevelStatement_47 */
 static pt_method_site pg_site_48; /* method_getKeepVoidType_48 */
-static pt_method_site pg_site_49; /* method_isVoid_49 */
+static pgrt::MethodShapeSite pg_site_49; /* method0_isVoid_49 */
 static pgrt::ClassSite pg_site_50; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_51; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_52; /* cls_PHPStan\Analyser\Scope */
@@ -188,7 +188,7 @@ namespace pgen::YieldFromTypeRule {
 					p19 = o20.raw();
 				}
 				zv::Val r21;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, zv::Ref(p19).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r21.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, zv::Ref(p19).deref().raw(), "getStartLine", "getstartline", 12, r21.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r21.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r21.raw()); return false; }
 				zv::Val r22;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r18.raw()), Z_LVAL_P(r21.raw()), r22.raw()))) return false;
@@ -248,7 +248,7 @@ namespace pgen::YieldFromTypeRule {
 							p38 = o39.raw();
 						}
 						zv::Val r40;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, zv::Ref(p38).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r40.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, zv::Ref(p38).deref().raw(), "getStartLine", "getstartline", 12, r40.raw()))) return false;
 						if (UNEXPECTED(Z_TYPE_P(r40.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r40.raw()); return false; }
 						zv::Val r41;
 						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r37.raw()), Z_LVAL_P(r40.raw()), r41.raw()))) return false;
@@ -362,7 +362,7 @@ namespace pgen::YieldFromTypeRule {
 			if (UNEXPECTED(r57.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r57.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r57.raw()))) return false;
 		}
 		}
 		zv::Val r58;
@@ -371,7 +371,7 @@ namespace pgen::YieldFromTypeRule {
 			if (UNEXPECTED(r58.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_exprType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r58.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_exprType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r58.raw()))) return false;
 		}
 		}
 		zv::Val r59;
@@ -404,7 +404,7 @@ namespace pgen::YieldFromTypeRule {
 					if (UNEXPECTED(r65.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r65.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r65.raw()))) return false;
 				}
 				}
 				zv::Val r66;
@@ -413,7 +413,7 @@ namespace pgen::YieldFromTypeRule {
 					if (UNEXPECTED(r66.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_exprType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r66.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_exprType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r66.raw()))) return false;
 				}
 				}
 				zval av67[2];
@@ -430,7 +430,7 @@ namespace pgen::YieldFromTypeRule {
 					if (UNEXPECTED(r69.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r69.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_returnType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r69.raw()))) return false;
 				}
 				}
 				zval av70[1];
@@ -450,7 +450,7 @@ namespace pgen::YieldFromTypeRule {
 					if (UNEXPECTED(r72.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_exprType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r72.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_exprType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r72.raw()))) return false;
 				}
 				}
 				zval av73[1];
@@ -480,7 +480,7 @@ namespace pgen::YieldFromTypeRule {
 					p78 = o79.raw();
 				}
 				zv::Val r80;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_25, zv::Ref(p78).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r80.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, zv::Ref(p78).deref().raw(), "getStartLine", "getstartline", 12, r80.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r80.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r80.raw()); return false; }
 				zv::Val r81;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r77.raw()), Z_LVAL_P(r80.raw()), r81.raw()))) return false;
@@ -510,7 +510,7 @@ namespace pgen::YieldFromTypeRule {
 			if (UNEXPECTED(r90.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r90.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r90.raw()))) return false;
 		}
 		}
 		zv::Val r91;
@@ -519,7 +519,7 @@ namespace pgen::YieldFromTypeRule {
 			if (UNEXPECTED(r91.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_27, l_exprType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r91.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, l_exprType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r91.raw()))) return false;
 		}
 		}
 		zv::Val r92;
@@ -552,7 +552,7 @@ namespace pgen::YieldFromTypeRule {
 					if (UNEXPECTED(r98.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r98.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r98.raw()))) return false;
 				}
 				}
 				zv::Val r99;
@@ -561,7 +561,7 @@ namespace pgen::YieldFromTypeRule {
 					if (UNEXPECTED(r99.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_exprType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r99.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_exprType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r99.raw()))) return false;
 				}
 				}
 				zval av100[2];
@@ -578,7 +578,7 @@ namespace pgen::YieldFromTypeRule {
 					if (UNEXPECTED(r102.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r102.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, l_returnType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r102.raw()))) return false;
 				}
 				}
 				zval av103[1];
@@ -598,7 +598,7 @@ namespace pgen::YieldFromTypeRule {
 					if (UNEXPECTED(r105.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_33, l_exprType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r105.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_33, l_exprType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r105.raw()))) return false;
 				}
 				}
 				zval av106[1];
@@ -628,7 +628,7 @@ namespace pgen::YieldFromTypeRule {
 					p111 = o112.raw();
 				}
 				zv::Val r113;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_36, zv::Ref(p111).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r113.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_36, zv::Ref(p111).deref().raw(), "getStartLine", "getstartline", 12, r113.raw()))) return false;
 				if (UNEXPECTED(Z_TYPE_P(r113.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r113.raw()); return false; }
 				zv::Val r114;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r110.raw()), Z_LVAL_P(r113.raw()), r114.raw()))) return false;
@@ -872,7 +872,7 @@ namespace pgen::YieldFromTypeRule {
 	}
 	 {
 		zv::Val r169;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_47, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, 0, NULL, r169.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_47, p_scope, "isInFirstLevelStatement", "isinfirstlevelstatement", 23, r169.raw()))) return false;
 		bool b168 = !((Z_TYPE_P(r169.raw()) == IS_TRUE));
 		if (b168) {
 			zv::Val r170;
@@ -896,7 +896,7 @@ namespace pgen::YieldFromTypeRule {
 				if (UNEXPECTED(r173.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_49, r170.raw(), "isVoid", "isvoid", 6, 0, NULL, r173.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_49, r170.raw(), "isVoid", "isvoid", 6, r173.raw()))) return false;
 			}
 			}
 			bool r174;

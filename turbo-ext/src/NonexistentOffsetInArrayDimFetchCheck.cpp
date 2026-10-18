@@ -15,7 +15,7 @@ static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\ErrorType */
 static pt_method_site pg_site_3; /* method_isInExpressionAssign_3 */
 static pt_method_site pg_site_4; /* method_isUndefinedExpressionAllowed_4 */
 static pt_method_site pg_site_5; /* method_hasOffsetValueType_5 */
-static pt_method_site pg_site_6; /* method_isArray_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isArray_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\NeverType */
 static pt_method_site pg_site_8; /* method_getConstantStrings_8 */
 static pt_method_site pg_site_9; /* method_describe_9 */
@@ -23,19 +23,19 @@ static pt_method_site pg_site_10; /* method_describe_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\BenevolentUnionType */
 static pt_method_site pg_site_12; /* static_PHPStan\Type\TypeUtils::flattenTypes */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Type\MixedType */
-static pt_method_site pg_site_14; /* method_isArray_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isArray_14 */
 static pt_method_site pg_site_15; /* method_yes_15 */
-static pt_method_site pg_site_16; /* method_isArray_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_isArray_16 */
 static pt_method_site pg_site_17; /* method_yes_17 */
-static pt_method_site pg_site_18; /* method_isConstantArray_18 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_isConstantArray_18 */
 static pt_method_site pg_site_19; /* method_yes_19 */
 static pt_method_site pg_site_20; /* method_hasOffsetValueType_20 */
 static pt_method_site pg_site_21; /* method_yes_21 */
-static pt_method_site pg_site_22; /* method_isConstantArray_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_isConstantArray_22 */
 static pt_method_site pg_site_23; /* method_yes_23 */
 static pt_method_site pg_site_24; /* method_hasOffsetValueType_24 */
 static pt_method_site pg_site_25; /* method_yes_25 */
-static pt_method_site pg_site_26; /* method_isConstantScalarValue_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_isConstantScalarValue_26 */
 static pt_method_site pg_site_27; /* method_hasOffsetValueType_27 */
 static pt_method_site pg_site_28; /* method_no_28 */
 static pt_method_site pg_site_29; /* method_getConstantStrings_29 */
@@ -204,7 +204,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 					if (UNEXPECTED(r20.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_type.raw(), "isArray", "isarray", 7, 0, NULL, r20.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_type.raw(), "isArray", "isarray", 7, r20.raw()))) return false;
 				}
 				}
 				bool r21;
@@ -381,7 +381,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 								if (UNEXPECTED(r65.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_innerType, "isArray", "isarray", 7, 0, NULL, r65.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_innerType, "isArray", "isarray", 7, r65.raw()))) return false;
 							}
 							}
 							zv::Val vd66;
@@ -420,7 +420,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									if (UNEXPECTED(r76.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_innerType, "isArray", "isarray", 7, 0, NULL, r76.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_innerType, "isArray", "isarray", 7, r76.raw()))) return false;
 								}
 								}
 								zv::Val vd77;
@@ -446,7 +446,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 									if (UNEXPECTED(r80.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_innerType, "isConstantArray", "isconstantarray", 15, 0, NULL, r80.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_innerType, "isConstantArray", "isconstantarray", 15, r80.raw()))) return false;
 								}
 								}
 								zv::Val vd81;
@@ -506,7 +506,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 								if (UNEXPECTED(r90.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_innerType, "isConstantArray", "isconstantarray", 15, 0, NULL, r90.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_innerType, "isConstantArray", "isconstantarray", 15, r90.raw()))) return false;
 							}
 							}
 							zv::Val vd91;
@@ -568,7 +568,7 @@ namespace pgen::NonexistentOffsetInArrayDimFetchCheck {
 												if (UNEXPECTED(r100.isUndef())) return false;
 											} else {
 											 {
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_26, l_dimTypeToCheck.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r100.raw(), NULL))) return false;
+												if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_dimTypeToCheck.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, r100.raw()))) return false;
 											}
 											}
 											bool r101;

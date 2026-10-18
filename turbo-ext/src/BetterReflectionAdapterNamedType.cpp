@@ -10,8 +10,8 @@ zend_class_entry *pt_ce_better_reflection_adapter_named_type = nullptr;
 static zval pg_lit[6];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\BetterReflection\Reflection\ReflectionNamedType */
-static pt_method_site pg_site_1; /* method_getName_1 */
-static pt_method_site pg_site_2; /* method_isBuiltin_2 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isBuiltin_2 */
 static pt_method_site pg_site_3; /* method___toString_3 */
 static pt_method_site pg_site_4; /* method_isIdentifier_4 */
 
@@ -46,7 +46,7 @@ namespace pgen::BetterReflectionAdapterNamedType {
 					if (UNEXPECTED(r5.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_type, "getName", "getname", 7, 0, NULL, r5.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_type, "getName", "getname", 7, r5.raw()))) return false;
 				}
 				}
 				l_nameType = std::move(r5);
@@ -65,7 +65,7 @@ namespace pgen::BetterReflectionAdapterNamedType {
 					if (UNEXPECTED(r9.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_type, "isBuiltin", "isbuiltin", 9, 0, NULL, r9.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_type, "isBuiltin", "isbuiltin", 9, r9.raw()))) return false;
 				}
 				}
 				bool r10;

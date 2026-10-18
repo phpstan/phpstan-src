@@ -14,16 +14,16 @@ static pt_method_site pg_site_0; /* method_isInClass_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::PropSite pg_site_2; /* prop_type_2 */
 static pgrt::PropSite pg_site_3; /* prop_type_3 */
-static pt_method_site pg_site_4; /* method_getClassReflection_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassReflection_4 */
 static pgrt::PropSite pg_site_5; /* prop_consts_5 */
 static pgrt::PropSite pg_site_6; /* prop_name_6 */
 static pt_method_site pg_site_7; /* method_toString_7 */
-static pt_method_site pg_site_8; /* method_getClassReflection_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getClassReflection_8 */
 static pgrt::PropSite pg_site_9; /* prop_value_9 */
 static pt_method_site pg_site_10; /* method_getType_10 */
 static pt_method_site pg_site_11; /* method_getConstant_11 */
 static pt_method_site pg_site_12; /* method_getPhpDocType_12 */
-static pt_method_site pg_site_13; /* method_getName_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
 static pt_method_site pg_site_14; /* method_getConfiguredClassConstantType_14 */
 static pt_method_site pg_site_15; /* method_accepts_15 */
 static pt_method_site pg_site_16; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
@@ -149,7 +149,7 @@ namespace pgen::ValueAssignedToClassConstantRule {
 					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r13.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, r13.raw()))) return false;
 				}
 				}
 				zv::Val r14;
@@ -195,7 +195,7 @@ namespace pgen::ValueAssignedToClassConstantRule {
 						if (UNEXPECTED(r27.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r27.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_scope, "getClassReflection", "getclassreflection", 18, r27.raw()))) return false;
 					}
 					}
 					zv::Val o28 = zv::Val::copyOf(zv::Ref(l_constantName.raw()));
@@ -298,7 +298,7 @@ namespace pgen::ValueAssignedToClassConstantRule {
 							if (UNEXPECTED(r9.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_classReflection, "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_classReflection, "getName", "getname", 7, r9.raw()))) return false;
 						}
 						}
 						zval av10[2];

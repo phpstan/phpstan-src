@@ -12,7 +12,7 @@ static zval pg_lit[6];
 static pt_method_site pg_site_0; /* method_isInAnonymousFunction_0 */
 static pt_method_site pg_site_1; /* method_getAnonymousFunctionReturnType_1 */
 static pt_method_site pg_site_2; /* static_PHPStan\Type\TypeCombinator::containsNull */
-static pt_method_site pg_site_3; /* method_getClosureExpr_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getClosureExpr_3 */
 static pgrt::PropSite pg_site_4; /* prop_returnType_4 */
 static pt_method_site pg_site_5; /* method_getReturnStatements_5 */
 static pt_method_site pg_site_6; /* method_getReturnNode_6 */
@@ -117,7 +117,7 @@ namespace pgen::ClosureReturnTypeRule {
 	}
 	 {
 		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getClosureExpr", "getclosureexpr", 14, 0, NULL, r10.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getClosureExpr", "getclosureexpr", 14, r10.raw()))) return false;
 		zv::Val o12;
 		zval *p11 = Z_TYPE_P(r10.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_4, Z_OBJ_P(r10.raw()), "returnType", 10) : NULL;
 		if (UNEXPECTED(p11 == NULL || Z_ISUNDEF_P(p11))) {

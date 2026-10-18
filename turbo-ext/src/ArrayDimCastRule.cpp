@@ -12,12 +12,12 @@ static zval pg_lit[3];
 static pgrt::PropSite pg_site_0; /* prop_dim_0 */
 static pgrt::PropSite pg_site_1; /* prop_var_1 */
 static pt_method_site pg_site_2; /* method_getType_2 */
-static pt_method_site pg_site_3; /* method_isArray_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isArray_3 */
 static pgrt::PropSite pg_site_4; /* prop_dim_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
-static pt_method_site pg_site_6; /* method_isConstantScalarValue_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isConstantScalarValue_6 */
 static pt_method_site pg_site_7; /* method_getConstantScalarTypes_7 */
-static pt_method_site pg_site_8; /* method_toArrayKey_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_toArrayKey_8 */
 static pt_method_site pg_site_9; /* method_equals_9 */
 static pt_method_site pg_site_10; /* method_describe_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\GeneralizePrecision */
@@ -98,7 +98,7 @@ namespace pgen::ArrayDimCastRule {
 			if (UNEXPECTED(r9.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_varType.raw(), "isArray", "isarray", 7, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_varType.raw(), "isArray", "isarray", 7, r9.raw()))) return false;
 		}
 		}
 		bool r10;
@@ -139,7 +139,7 @@ namespace pgen::ArrayDimCastRule {
 			if (UNEXPECTED(r17.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_dimType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r17.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_dimType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, r17.raw()))) return false;
 		}
 		}
 		bool r18;
@@ -197,7 +197,7 @@ namespace pgen::ArrayDimCastRule {
 						if (UNEXPECTED(r32.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_constantScalar, "toArrayKey", "toarraykey", 10, 0, NULL, r32.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_constantScalar, "toArrayKey", "toarraykey", 10, r32.raw()))) return false;
 					}
 					}
 					l_arrayKeyType = std::move(r32);

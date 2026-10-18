@@ -23,13 +23,13 @@ static pgrt::PropSite pg_site_10; /* prop_value_10 */
 static pt_method_site pg_site_11; /* method_getType_11 */
 static pgrt::PropSite pg_site_12; /* prop_value_12 */
 static pt_method_site pg_site_13; /* method_getNativeType_13 */
-static pt_method_site pg_site_14; /* method_getConstantArrays_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getConstantArrays_14 */
 static pgrt::PropSite pg_site_15; /* prop_value_15 */
 static pt_method_site pg_site_16; /* method_getType_16 */
 static pgrt::PropSite pg_site_17; /* prop_value_17 */
 static pt_method_site pg_site_18; /* method_getNativeType_18 */
 static pt_method_site pg_site_19; /* method_isTrue_19 */
-static pt_method_site pg_site_20; /* method_getValueTypes_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getValueTypes_20 */
 static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_22; /* method_getFiniteTypes_22 */
 static pt_method_site pg_site_23; /* method_describe_23 */
@@ -355,7 +355,7 @@ namespace pgen::ImpossibleInArrayHaystackFiniteTypesRule {
 			if (UNEXPECTED(r62.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_haystackType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r62.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_haystackType.raw(), "getConstantArrays", "getconstantarrays", 17, r62.raw()))) return false;
 		}
 		}
 		l_constantArrays = std::move(r62);
@@ -487,7 +487,7 @@ namespace pgen::ImpossibleInArrayHaystackFiniteTypesRule {
 						if (UNEXPECTED(r97.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_constantArray, "getValueTypes", "getvaluetypes", 13, 0, NULL, r97.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_constantArray, "getValueTypes", "getvaluetypes", 13, r97.raw()))) return false;
 					}
 					}
 					pgrt::ForeachIter it98;

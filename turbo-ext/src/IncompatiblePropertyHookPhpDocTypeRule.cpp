@@ -9,27 +9,27 @@ zend_class_entry *pt_ce_incompatible_property_hook_php_doc_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getDocComment_0 */
-static pt_method_site pg_site_1; /* method_getHookReflection_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getDocComment_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getHookReflection_1 */
 static pt_method_site pg_site_2; /* method_getFile_2 */
-static pt_method_site pg_site_3; /* method_getClassReflection_3 */
-static pt_method_site pg_site_4; /* method_getName_4 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getClassReflection_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
 static pt_method_site pg_site_5; /* method_isInTrait_5 */
 static pt_method_site pg_site_6; /* method_getTraitReflection_6 */
-static pt_method_site pg_site_7; /* method_getName_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
 static pgrt::GetterSite pg_site_9; /* getter_getText_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_11; /* method_getText_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getText_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection */
 static pt_method_site pg_site_14; /* method_getNativeReturnType_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_16; /* method_getParameters_16 */
-static pt_method_site pg_site_17; /* method_getName_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getName_17 */
 static pt_method_site pg_site_18; /* method_getNativeType_18 */
 static pt_method_site pg_site_19; /* method_getParameters_19 */
-static pt_method_site pg_site_20; /* method_getName_20 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getName_20 */
 static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Type\FileTypeMapper */
 static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeCheck */
 static pgrt::ClassSite pg_site_23; /* cls_PhpParser\Node */
@@ -75,7 +75,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, r1.raw()))) return false;
 		l_docComment = std::move(r1);
 	}
 	 {
@@ -90,7 +90,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 	}
 	 {
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getHookReflection", "gethookreflection", 17, 0, NULL, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getHookReflection", "gethookreflection", 17, r3.raw()))) return false;
 		l_hookReflection = std::move(r3);
 	}
 	 {
@@ -116,7 +116,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getClassReflection", "getclassreflection", 18, r8.raw()))) return false;
 		}
 		}
 		zv::Val r9;
@@ -125,7 +125,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 			if (UNEXPECTED(r9.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r8.raw(), "getName", "getname", 7, 0, NULL, r9.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, r8.raw(), "getName", "getname", 7, r9.raw()))) return false;
 		}
 		}
 		zv::Val r10;
@@ -164,7 +164,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 				if (UNEXPECTED(r17.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r15.raw(), "getName", "getname", 7, 0, NULL, r17.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, r15.raw(), "getName", "getname", 7, r17.raw()))) return false;
 			}
 			}
 			q14 = std::move(r17);
@@ -180,7 +180,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 			if (UNEXPECTED(r19.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_hookReflection.raw(), "getName", "getname", 7, 0, NULL, r19.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_hookReflection.raw(), "getName", "getname", 7, r19.raw()))) return false;
 		}
 		}
 		zval *gs20 = Z_TYPE_P(l_docComment.raw()) == IS_OBJECT ? pgrt::trivialGetter(pg_site_9, Z_OBJ_P(l_docComment.raw()), pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Comment", 17), "gettext", 7, "text", 4) : NULL;
@@ -189,7 +189,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 			ZVAL_COPY(r21.raw(), gs20);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r21.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_docComment.raw(), "getText", "gettext", 7, r21.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!(Z_TYPE_P(r9.raw()) == IS_STRING || Z_TYPE_P(r9.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Type\\FileTypeMapper::getResolvedPhpDoc", 2, "className", "?string", r9.raw()); return false; }
@@ -209,7 +209,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 			if (UNEXPECTED(r26.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_hookReflection.raw(), "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_hookReflection.raw(), "getName", "getname", 7, r26.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!((Z_TYPE_P(l_hookReflection.raw()) == IS_OBJECT && Z_OBJCE_P(l_hookReflection.raw()) == pt_ce_php_method_from_parser_node_reflection) || pgrt::instanceOfClass(l_hookReflection.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", 56))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\IncompatiblePropertyHookPhpDocTypeRule::getNativeParameterTypes", 1, "node", "PHPStan\\Reflection\\Php\\PhpMethodFromParserNodeReflection", l_hookReflection.raw()); return false; }
@@ -282,7 +282,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 						if (UNEXPECTED(r12.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_parameter, "getName", "getname", 7, 0, NULL, r12.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_parameter, "getName", "getname", 7, r12.raw()))) return false;
 					}
 					}
 					zv::Val vd13;
@@ -364,7 +364,7 @@ namespace pgen::IncompatiblePropertyHookPhpDocTypeRule {
 						if (UNEXPECTED(r12.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_parameter, "getName", "getname", 7, 0, NULL, r12.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, l_parameter, "getName", "getname", 7, r12.raw()))) return false;
 					}
 					}
 					bool k13 = false;

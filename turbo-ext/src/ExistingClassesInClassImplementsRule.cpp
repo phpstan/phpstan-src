@@ -17,9 +17,9 @@ static pgrt::PropSite pg_site_4; /* prop_implements_4 */
 static pt_method_site pg_site_5; /* method_hasClass_5 */
 static pt_method_site pg_site_6; /* method_isInClassExists_6 */
 static pt_method_site pg_site_7; /* method_getClass_7 */
-static pt_method_site pg_site_8; /* method_isClass_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isClass_8 */
 static pt_method_site pg_site_9; /* method_getDisplayName_9 */
-static pt_method_site pg_site_10; /* method_isTrait_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isTrait_10 */
 static pt_method_site pg_site_11; /* method_getDisplayName_11 */
 static pt_method_site pg_site_12; /* method_isEnum_12 */
 static pt_method_site pg_site_13; /* method_getDisplayName_13 */
@@ -273,7 +273,7 @@ namespace pgen::ExistingClassesInClassImplementsRule {
 						}
 						 {
 							zv::Val r56;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_reflection.raw(), "isClass", "isclass", 7, 0, NULL, r56.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_reflection.raw(), "isClass", "isclass", 7, r56.raw()))) return false;
 							if (Z_TYPE_P(r56.raw()) == IS_TRUE) {
 								 {
 									zv::Val q57;
@@ -327,7 +327,7 @@ namespace pgen::ExistingClassesInClassImplementsRule {
 										if (UNEXPECTED(r70.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_reflection.raw(), "isTrait", "istrait", 7, 0, NULL, r70.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_reflection.raw(), "isTrait", "istrait", 7, r70.raw()))) return false;
 									}
 									}
 									if (Z_TYPE_P(r70.raw()) == IS_TRUE) {

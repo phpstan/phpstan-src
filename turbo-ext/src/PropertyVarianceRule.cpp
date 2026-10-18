@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_property_variance_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_hasNativeProperty_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pt_method_site pg_site_4; /* method_getNativeProperty_4 */
 static pt_method_site pg_site_5; /* method_isPrivate_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Node\ClassPropertyNode */
@@ -20,7 +20,7 @@ static pt_method_site pg_site_7; /* static_PHPStan\Type\Generic\TemplateTypeVari
 static pt_method_site pg_site_8; /* static_PHPStan\Type\Generic\TemplateTypeVariance::createInvariant */
 static pt_method_site pg_site_9; /* method_getReadableType_9 */
 static pt_method_site pg_site_10; /* method_getDisplayName_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Type */
 static pgrt::PropSite pg_site_13; /* prop_name_13 */
 static pgrt::PropSite pg_site_14; /* prop_name_14 */
@@ -70,7 +70,7 @@ namespace pgen::PropertyVarianceRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -83,7 +83,7 @@ namespace pgen::PropertyVarianceRule {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getName", "getname", 7, r3.raw()))) return false;
 		}
 		}
 		zval av4[1];
@@ -114,7 +114,7 @@ namespace pgen::PropertyVarianceRule {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getName", "getname", 7, r8.raw()))) return false;
 		}
 		}
 		zval av9[1];
@@ -199,7 +199,7 @@ namespace pgen::PropertyVarianceRule {
 			if (UNEXPECTED(r23.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_node, "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_node, "getName", "getname", 7, r23.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!(Z_TYPE_P(r23.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Internal\\SprintfHelper::escapeFormatString", 1, "format", "string", r23.raw()); return false; }

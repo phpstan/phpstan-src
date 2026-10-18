@@ -14,7 +14,7 @@ static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Name */
 static pgrt::PropSite pg_site_2; /* prop_name_2 */
 static pt_method_site pg_site_3; /* method_getArgs_3 */
 static pgrt::FunctionSite pg_site_4; /* function_count */
-static pt_method_site pg_site_5; /* method_getStartLine_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getStartLine_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Php\PhpVersion */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
@@ -134,7 +134,7 @@ namespace pgen::DefineParametersRule {
 		zv::Val r17;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[2], r17.raw()))) return false;
 		zv::Val r18;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_node, "getStartLine", "getstartline", 12, 0, NULL, r18.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_node, "getStartLine", "getstartline", 12, r18.raw()))) return false;
 		zv::Val r19;
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r17.raw()), Z_LVAL_P(r18.raw()), r19.raw()))) return false;
 		zv::Val r20;

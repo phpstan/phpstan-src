@@ -14,14 +14,14 @@ static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Expr */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Constant\ConstantBooleanType */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\RuleErrorBuilder */
 static pgrt::PropSite pg_site_4; /* prop_cond_4 */
-static pt_method_site pg_site_5; /* method_getValue_5 */
-static pt_method_site pg_site_6; /* method_getValue_6 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getValue_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getValue_6 */
 static pgrt::PropSite pg_site_7; /* prop_cond_7 */
 static pgrt::PropSite pg_site_8; /* prop_cond_8 */
-static pt_method_site pg_site_9; /* method_getValue_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
 static pt_method_site pg_site_10; /* method_isInTrait_10 */
 static pgrt::PropSite pg_site_11; /* prop_cond_11 */
-static pt_method_site pg_site_12; /* method_getValue_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getValue_12 */
 static pgrt::PropSite pg_site_13; /* prop_cond_13 */
 static pgrt::PropSite pg_site_14; /* prop_cond_14 */
 static pgrt::PropSite pg_site_15; /* prop_cond_15 */
@@ -176,7 +176,7 @@ namespace pgen::TernaryOperatorConstantConditionRule {
 					if (UNEXPECTED(r8.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r8.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_exprType.raw(), "getValue", "getvalue", 8, r8.raw()))) return false;
 				}
 				}
 				zv::Val q9;
@@ -206,7 +206,7 @@ namespace pgen::TernaryOperatorConstantConditionRule {
 					if (UNEXPECTED(r17.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r17.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_exprType.raw(), "getValue", "getvalue", 8, r17.raw()))) return false;
 				}
 				}
 				zv::Val q18;
@@ -259,7 +259,7 @@ namespace pgen::TernaryOperatorConstantConditionRule {
 							if (UNEXPECTED(r34.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r34.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_exprType.raw(), "getValue", "getvalue", 8, r34.raw()))) return false;
 						}
 						}
 						if (UNEXPECTED(!(pgrt::instanceOfClass(o33.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionHelper::emitFunctionCallError", 3, "expr", "PhpParser\\Node\\Expr", o33.raw()); return false; }
@@ -307,7 +307,7 @@ namespace pgen::TernaryOperatorConstantConditionRule {
 							if (UNEXPECTED(r46.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_exprType.raw(), "getValue", "getvalue", 8, 0, NULL, r46.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_exprType.raw(), "getValue", "getvalue", 8, r46.raw()))) return false;
 						}
 						}
 						if (UNEXPECTED(!(pgrt::instanceOfClass(o45.raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr", 19))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Comparison\\ConstantConditionInTraitHelper::emitError", 3, "expr", "PhpParser\\Node\\Expr", o45.raw()); return false; }

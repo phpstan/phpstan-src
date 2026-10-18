@@ -23,18 +23,18 @@ static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_11; /* method_hasConstant_11 */
 static pgrt::PropSite pg_site_12; /* prop_name_12 */
 static pgrt::PropSite pg_site_13; /* prop_name_13 */
-static pt_method_site pg_site_14; /* method_getStartLine_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getStartLine_14 */
 static pgrt::PropSite pg_site_15; /* prop_name_15 */
 static pt_method_site pg_site_16; /* method_hasFunction_16 */
 static pgrt::PropSite pg_site_17; /* prop_name_17 */
 static pgrt::PropSite pg_site_18; /* prop_name_18 */
-static pt_method_site pg_site_19; /* method_getStartLine_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getStartLine_19 */
 static pgrt::PropSite pg_site_20; /* prop_name_20 */
 static pt_method_site pg_site_21; /* method_getFunction_21 */
-static pt_method_site pg_site_22; /* method_getName_22 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getName_22 */
 static pgrt::PropSite pg_site_23; /* prop_name_23 */
 static pgrt::PropSite pg_site_24; /* prop_name_24 */
-static pt_method_site pg_site_25; /* method_getStartLine_25 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getStartLine_25 */
 static pgrt::ClassSite pg_site_26; /* cls_PhpParser\Node\UseItem */
 static pgrt::PropSite pg_site_27; /* prop_name_27 */
 static pgrt::PropSite pg_site_28; /* prop_name_28 */
@@ -329,7 +329,7 @@ namespace pgen::ExistingNamesInUseRule {
 						p29 = o30.raw();
 					}
 					zv::Val r31;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, zv::Ref(p29).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r31.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, zv::Ref(p29).deref().raw(), "getStartLine", "getstartline", 12, r31.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r31.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r31.raw()); return false; }
 					zv::Val r32;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r28.raw()), Z_LVAL_P(r31.raw()), r32.raw()))) return false;
@@ -461,7 +461,7 @@ namespace pgen::ExistingNamesInUseRule {
 								p29 = o30.raw();
 							}
 							zv::Val r31;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_19, zv::Ref(p29).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r31.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, zv::Ref(p29).deref().raw(), "getStartLine", "getstartline", 12, r31.raw()))) return false;
 							if (UNEXPECTED(Z_TYPE_P(r31.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r31.raw()); return false; }
 							zv::Val r32;
 							if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r28.raw()), Z_LVAL_P(r31.raw()), r32.raw()))) return false;
@@ -542,7 +542,7 @@ namespace pgen::ExistingNamesInUseRule {
 										if (UNEXPECTED(r51.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r51.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_functionReflection.raw(), "getName", "getname", 7, r51.raw()))) return false;
 									}
 									}
 									l_realName = std::move(r51);
@@ -585,7 +585,7 @@ namespace pgen::ExistingNamesInUseRule {
 												p62 = o63.raw();
 											}
 											zv::Val r64;
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_25, zv::Ref(p62).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r64.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, zv::Ref(p62).deref().raw(), "getStartLine", "getstartline", 12, r64.raw()))) return false;
 											if (UNEXPECTED(Z_TYPE_P(r64.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r64.raw()); return false; }
 											zv::Val r65;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r61.raw()), Z_LVAL_P(r64.raw()), r65.raw()))) return false;

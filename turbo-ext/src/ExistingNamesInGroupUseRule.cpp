@@ -12,7 +12,7 @@ static zval pg_lit[5];
 static pgrt::PropSite pg_site_0; /* prop_uses_0 */
 static pgrt::PropSite pg_site_1; /* prop_prefix_1 */
 static pgrt::PropSite pg_site_2; /* prop_name_2 */
-static pt_method_site pg_site_3; /* method_getStartLine_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getStartLine_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_5; /* static_PhpParser\Node\Name::concat */
 static pgrt::PropSite pg_site_6; /* prop_type_6 */
@@ -22,13 +22,13 @@ static pgrt::PropSite pg_site_9; /* prop_type_9 */
 static pgrt::PropSite pg_site_10; /* prop_type_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\ShouldNotHappenException */
 static pt_method_site pg_site_12; /* method_hasConstant_12 */
-static pt_method_site pg_site_13; /* method_getStartLine_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getStartLine_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Rules\IdentifierRuleError */
 static pt_method_site pg_site_15; /* method_hasFunction_15 */
-static pt_method_site pg_site_16; /* method_getStartLine_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getStartLine_16 */
 static pt_method_site pg_site_17; /* method_getFunction_17 */
-static pt_method_site pg_site_18; /* method_getName_18 */
-static pt_method_site pg_site_19; /* method_getStartLine_19 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getName_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getStartLine_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Rules\ClassNameCheck */
 static pgrt::ClassSite pg_site_22; /* cls_PhpParser\Node */
@@ -114,7 +114,7 @@ namespace pgen::ExistingNamesInGroupUseRule {
 					zv::Val o14 = zv::Val::copyOf(zv::Ref(zv::Ref(p12).deref().raw()));
 					zv::Val arr15 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 					zv::Val r16;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_use, "getStartLine", "getstartline", 12, 0, NULL, r16.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_use, "getStartLine", "getstartline", 12, r16.raw()))) return false;
 					{ zval v = r16.take(); zend_symtable_update(Z_ARRVAL_P(arr15.raw()), Z_STR_P(&pg_lit[1]), &v); }
 					zval av17[3];
 					ZVAL_COPY_VALUE(&av17[0], o11.raw());
@@ -288,7 +288,7 @@ namespace pgen::ExistingNamesInGroupUseRule {
 				zv::Val r14;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r13.raw(), r14.raw()))) return false;
 				zv::Val r15;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_name, "getStartLine", "getstartline", 12, 0, NULL, r15.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_name, "getStartLine", "getstartline", 12, r15.raw()))) return false;
 				zv::Val r16;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r14.raw()), Z_LVAL_P(r15.raw()), r16.raw()))) return false;
 				zv::Val r17;
@@ -377,7 +377,7 @@ namespace pgen::ExistingNamesInGroupUseRule {
 				zv::Val r14;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r13.raw(), r14.raw()))) return false;
 				zv::Val r15;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p_name, "getStartLine", "getstartline", 12, 0, NULL, r15.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, p_name, "getStartLine", "getstartline", 12, r15.raw()))) return false;
 				zv::Val r16;
 				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r14.raw()), Z_LVAL_P(r15.raw()), r16.raw()))) return false;
 				zv::Val r17;
@@ -446,7 +446,7 @@ namespace pgen::ExistingNamesInGroupUseRule {
 					if (UNEXPECTED(r30.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r30.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_functionReflection.raw(), "getName", "getname", 7, r30.raw()))) return false;
 				}
 				}
 				l_realName = std::move(r30);
@@ -477,7 +477,7 @@ namespace pgen::ExistingNamesInGroupUseRule {
 						zv::Val r38;
 						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r37.raw(), r38.raw()))) return false;
 						zv::Val r39;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_name, "getStartLine", "getstartline", 12, 0, NULL, r39.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p_name, "getStartLine", "getstartline", 12, r39.raw()))) return false;
 						zv::Val r40;
 						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r38.raw()), Z_LVAL_P(r39.raw()), r40.raw()))) return false;
 						zv::Val r41;

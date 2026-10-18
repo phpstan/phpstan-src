@@ -9,17 +9,17 @@ zend_class_entry *pt_ce_overwritten_exit_point_by_finally_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[7];
 
-static pt_method_site pg_site_0; /* method_getTryCatchExitPoints_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getTryCatchExitPoints_0 */
 static pgrt::FunctionSite pg_site_1; /* function_count */
-static pt_method_site pg_site_2; /* method_getTryCatchExitPoints_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getTryCatchExitPoints_2 */
 static pt_method_site pg_site_3; /* method_getStatement_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Stmt */
 static pt_method_site pg_site_5; /* method_getStatement_5 */
-static pt_method_site pg_site_6; /* method_getStartLine_6 */
-static pt_method_site pg_site_7; /* method_getFinallyExitPoints_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getStartLine_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getFinallyExitPoints_7 */
 static pt_method_site pg_site_8; /* method_getStatement_8 */
 static pt_method_site pg_site_9; /* method_getStatement_9 */
-static pt_method_site pg_site_10; /* method_getStartLine_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getStartLine_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PhpParser\Node\Stmt\Return_ */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Stmt\Expression */
 static pgrt::PropSite pg_site_13; /* prop_expr_13 */
@@ -53,7 +53,7 @@ namespace pgen::OverwrittenExitPointByFinallyRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getTryCatchExitPoints", "gettrycatchexitpoints", 21, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getTryCatchExitPoints", "gettrycatchexitpoints", 21, r1.raw()))) return false;
 		zval av2[1];
 		ZVAL_COPY_VALUE(&av2[0], r1.raw());
 		zv::Val r3;
@@ -75,7 +75,7 @@ namespace pgen::OverwrittenExitPointByFinallyRule {
 	}
 	 {
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getTryCatchExitPoints", "gettrycatchexitpoints", 21, 0, NULL, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getTryCatchExitPoints", "gettrycatchexitpoints", 21, r8.raw()))) return false;
 		pgrt::ForeachIter it9;
 		if (UNEXPECTED(!it9.begin(r8.raw()))) return false;
 		while (it9.valid()) {
@@ -117,7 +117,7 @@ namespace pgen::OverwrittenExitPointByFinallyRule {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_exitPoint, "getStatement", "getstatement", 12, 0, NULL, vd18.raw()))) return false;
 					}
 					zv::Val r20;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, vd18.raw(), "getStartLine", "getstartline", 12, 0, NULL, r20.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, vd18.raw(), "getStartLine", "getstartline", 12, r20.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r20.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r20.raw()); return false; }
 					zv::Val r21;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r17.raw()), Z_LVAL_P(r20.raw()), r21.raw()))) return false;
@@ -138,7 +138,7 @@ namespace pgen::OverwrittenExitPointByFinallyRule {
 	}
 	 {
 		zv::Val r27;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_node, "getFinallyExitPoints", "getfinallyexitpoints", 20, 0, NULL, r27.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_node, "getFinallyExitPoints", "getfinallyexitpoints", 20, r27.raw()))) return false;
 		pgrt::ForeachIter it28;
 		if (UNEXPECTED(!it28.begin(r27.raw()))) return false;
 		while (it28.valid()) {
@@ -180,7 +180,7 @@ namespace pgen::OverwrittenExitPointByFinallyRule {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_exitPoint, "getStatement", "getstatement", 12, 0, NULL, vd37.raw()))) return false;
 					}
 					zv::Val r39;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, vd37.raw(), "getStartLine", "getstartline", 12, 0, NULL, r39.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, vd37.raw(), "getStartLine", "getstartline", 12, r39.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r39.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r39.raw()); return false; }
 					zv::Val r40;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r36.raw()), Z_LVAL_P(r39.raw()), r40.raw()))) return false;

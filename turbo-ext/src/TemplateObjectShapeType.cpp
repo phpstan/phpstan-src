@@ -9,9 +9,9 @@ zend_class_entry *pt_ce_template_object_shape_type = nullptr;
 
 static pgrt::GetterSite pg_site_0; /* getter_getProperties_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\ObjectShapeType */
-static pt_method_site pg_site_2; /* method_getProperties_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getProperties_2 */
 static pgrt::GetterSite pg_site_3; /* getter_getOptionalProperties_3 */
-static pt_method_site pg_site_4; /* method_getOptionalProperties_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getOptionalProperties_4 */
 static pt_method_site pg_site_5; /* bound_PHPStan\Type\ObjectShapeType::__construct */
 static pgrt::PropIndexSite pg_site_6; /* slot_default_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
@@ -34,7 +34,7 @@ namespace pgen::TemplateObjectShapeType {
 			ZVAL_COPY(r2.raw(), gs1);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_bound, "getProperties", "getproperties", 13, 0, NULL, r2.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_bound, "getProperties", "getproperties", 13, r2.raw()))) return false;
 		}
 		}
 		zval *gs3 = Z_TYPE_P(p_bound) == IS_OBJECT ? pgrt::trivialGetter(pg_site_3, Z_OBJ_P(p_bound), pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\ObjectShapeType", 28), "getoptionalproperties", 21, "optionalProperties", 18) : NULL;
@@ -43,7 +43,7 @@ namespace pgen::TemplateObjectShapeType {
 			ZVAL_COPY(r4.raw(), gs3);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_bound, "getOptionalProperties", "getoptionalproperties", 21, 0, NULL, r4.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_bound, "getOptionalProperties", "getoptionalproperties", 21, r4.raw()))) return false;
 		}
 		}
 		zval av5[2];

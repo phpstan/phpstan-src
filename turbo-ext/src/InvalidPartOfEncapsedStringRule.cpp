@@ -18,7 +18,7 @@ static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Expr */
 static pt_method_site pg_site_6; /* method_toString_6 */
 static pt_method_site pg_site_7; /* method_printExpr_7 */
 static pt_method_site pg_site_8; /* method_describe_8 */
-static pt_method_site pg_site_9; /* method_getStartLine_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getStartLine_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Node\Printer\ExprPrinter */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
@@ -204,7 +204,7 @@ namespace pgen::InvalidPartOfEncapsedStringRule {
 					zv::Val r28;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r27.raw()), &pg_lit[2], r28.raw()))) return false;
 					zv::Val r29;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_part, "getStartLine", "getstartline", 12, 0, NULL, r29.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_part, "getStartLine", "getstartline", 12, r29.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r29.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r29.raw()); return false; }
 					zv::Val r30;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r28.raw()), Z_LVAL_P(r29.raw()), r30.raw()))) return false;

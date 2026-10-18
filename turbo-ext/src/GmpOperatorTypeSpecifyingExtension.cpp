@@ -14,7 +14,7 @@ static pt_method_site pg_site_1; /* method_isSuperTypeOf_1 */
 static pt_method_site pg_site_2; /* method_isSuperTypeOf_2 */
 static pt_method_site pg_site_3; /* method_isSuperTypeOf_3 */
 static pt_method_site pg_site_4; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
-static pt_method_site pg_site_5; /* method_isInteger_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isInteger_5 */
 static pt_method_site pg_site_6; /* method_isNumericString_6 */
 static pt_method_site pg_site_7; /* method_isSuperTypeOf_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Type\Type */
@@ -174,7 +174,7 @@ namespace pgen::GmpOperatorTypeSpecifyingExtension {
 			if (UNEXPECTED(r17.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_otherSide.raw(), "isInteger", "isinteger", 9, 0, NULL, r17.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_otherSide.raw(), "isInteger", "isinteger", 9, r17.raw()))) return false;
 		}
 		}
 		bool r18;

@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_get_class_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_isInTrait_2 */
 static pt_method_site pg_site_3; /* method_isInClass_3 */
-static pt_method_site pg_site_4; /* method_getClassReflection_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
-static pt_method_site pg_site_6; /* method_getPhpVersion_6 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassReflection_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getPhpVersion_6 */
 static pt_method_site pg_site_7; /* method_getFunction_7 */
 static pt_method_site pg_site_8; /* method_isInAnonymousFunction_8 */
 static pgrt::PropSite pg_site_9; /* prop_value_9 */
@@ -41,7 +41,7 @@ namespace pgen::GetClassDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -115,7 +115,7 @@ namespace pgen::GetClassDynamicReturnTypeExtension {
 							if (UNEXPECTED(r12.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r12.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_scope, "getClassReflection", "getclassreflection", 18, r12.raw()))) return false;
 						}
 						}
 						zv::Val r13;
@@ -124,7 +124,7 @@ namespace pgen::GetClassDynamicReturnTypeExtension {
 							if (UNEXPECTED(r13.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r12.raw(), "getName", "getname", 7, 0, NULL, r13.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, r12.raw(), "getName", "getname", 7, r13.raw()))) return false;
 						}
 						}
 						bool k14 = true;
@@ -137,7 +137,7 @@ namespace pgen::GetClassDynamicReturnTypeExtension {
 			}
 			 {
 				zv::Val r15;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r15.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_scope, "getPhpVersion", "getphpversion", 13, r15.raw()))) return false;
 				zv::Val r16;
 				if (UNEXPECTED(!pgen::PhpVersions::m_throwsValueErrorForInternalFunctions(Z_OBJ_P(r15.raw()), r16.raw()))) return false;
 				l_throwsValueError = std::move(r16);

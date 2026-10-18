@@ -18,14 +18,14 @@ static pgrt::FunctionSite pg_site_5; /* function_in_array */
 static pt_method_site pg_site_6; /* method_getScope_6 */
 static pt_method_site pg_site_7; /* method_afterExtractCall_7 */
 static pt_method_site pg_site_8; /* method_invalidateVolatileExpressions_8 */
-static pt_method_site pg_site_9; /* method_getType_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getType_9 */
 static pt_method_site pg_site_10; /* method_getConstantStrings_10 */
-static pt_method_site pg_site_11; /* method_getValue_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getValue_11 */
 static pt_method_site pg_site_12; /* method_resolve_12 */
 static pgrt::FunctionSite pg_site_13; /* function_is_file */
 static pt_method_site pg_site_14; /* method_getVariableFlow_14 */
 static pt_method_site pg_site_15; /* static_PHPStan\Analyser\VariableFlow::all */
-static pt_method_site pg_site_16; /* method_getType_16 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getType_16 */
 static pt_method_site pg_site_17; /* static_PHPStan\Analyser\VariableFlow::throwing */
 static pt_method_site pg_site_18; /* method_hasYield_18 */
 static pt_method_site pg_site_19; /* method_isAlwaysTerminating_19 */
@@ -271,7 +271,7 @@ namespace pgen::IncludeHandler {
 			if (UNEXPECTED(r28.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_exprResult.raw(), "getType", "gettype", 7, 0, NULL, r28.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_exprResult.raw(), "getType", "gettype", 7, r28.raw()))) return false;
 		}
 		}
 		zv::Val vd29;
@@ -305,7 +305,7 @@ namespace pgen::IncludeHandler {
 						if (UNEXPECTED(r40.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_constantString, "getValue", "getvalue", 8, 0, NULL, r40.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_constantString, "getValue", "getvalue", 8, r40.raw()))) return false;
 					}
 					}
 					zval av41[2];
@@ -373,7 +373,7 @@ namespace pgen::IncludeHandler {
 			if (UNEXPECTED(r61.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_throwPoint.raw(), "getType", "gettype", 7, 0, NULL, r61.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_throwPoint.raw(), "getType", "gettype", 7, r61.raw()))) return false;
 		}
 		}
 		zval av62[2];

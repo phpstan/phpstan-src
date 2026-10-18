@@ -9,17 +9,17 @@ zend_class_entry *pt_ce_array_filter_parameter_closure_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
 static pgrt::PropSite pg_site_5; /* prop_value_5 */
 static pt_method_site pg_site_6; /* method_getType_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
-static pt_method_site pg_site_8; /* method_getValue_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getValue_8 */
 static pt_method_site pg_site_9; /* method_getIterableKeyType_9 */
-static pt_method_site pg_site_10; /* method_getValue_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getValue_10 */
 static pt_method_site pg_site_11; /* method_getIterableValueType_11 */
 static pt_method_site pg_site_12; /* method_getIterableKeyType_12 */
 static pt_method_site pg_site_13; /* method_getIterableValueType_13 */
@@ -44,7 +44,7 @@ namespace pgen::ArrayFilterParameterClosureTypeExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		bool b1 = zend_is_identical(r2.raw(), &pg_lit[0]);
@@ -55,7 +55,7 @@ namespace pgen::ArrayFilterParameterClosureTypeExtension {
 				if (UNEXPECTED(r3.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_parameter, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_parameter, "getName", "getname", 7, r3.raw()))) return false;
 			}
 			}
 			b1 = zend_is_identical(r3.raw(), &pg_lit[1]);
@@ -173,7 +173,7 @@ namespace pgen::ArrayFilterParameterClosureTypeExtension {
 							if (UNEXPECTED(r28.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_mode.raw(), "getValue", "getvalue", 8, 0, NULL, r28.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_mode.raw(), "getValue", "getvalue", 8, r28.raw()))) return false;
 						}
 						}
 						if (Z_LVAL_P(r28.raw()) == 2) {
@@ -208,7 +208,7 @@ namespace pgen::ArrayFilterParameterClosureTypeExtension {
 									if (UNEXPECTED(r34.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_mode.raw(), "getValue", "getvalue", 8, 0, NULL, r34.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_mode.raw(), "getValue", "getvalue", 8, r34.raw()))) return false;
 								}
 								}
 								if (Z_LVAL_P(r34.raw()) == 1) {

@@ -10,10 +10,10 @@ zend_class_entry *pt_ce_consistent_constructor_rule = nullptr;
 static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_getMethodReflection_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pgrt::FunctionSite pg_site_2; /* function_strtolower */
 static pt_method_site pg_site_3; /* method_getDeclaringClass_3 */
-static pt_method_site pg_site_4; /* method_getParentClass_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getParentClass_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::DispatchCache pg_site_6; /* dispatch_getDeclaringClass_6 */
 static pt_method_site pg_site_7; /* method_getDeclaringClass_7 */
@@ -99,7 +99,7 @@ namespace pgen::ConsistentConstructorRule {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_method.raw(), "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_method.raw(), "getName", "getname", 7, r4.raw()))) return false;
 		}
 		}
 		zval av5[1];
@@ -134,7 +134,7 @@ namespace pgen::ConsistentConstructorRule {
 			if (UNEXPECTED(r10.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd8.raw(), "getParentClass", "getparentclass", 14, 0, NULL, r10.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, vd8.raw(), "getParentClass", "getparentclass", 14, r10.raw()))) return false;
 		}
 		}
 		l_parent = std::move(r10);

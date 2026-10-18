@@ -11,19 +11,19 @@ static zval pg_lit[6];
 
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Scalar\MagicConst\Class_ */
 static pt_method_site pg_site_1; /* method_isInClass_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Scalar\MagicConst\Trait_ */
 static pt_method_site pg_site_4; /* method_isInTrait_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Scalar\MagicConst\Method */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Scalar\MagicConst\Function_ */
 static pt_method_site pg_site_8; /* method_getFunctionName_8 */
 static pt_method_site pg_site_9; /* method_isInAnonymousFunction_9 */
 static pt_method_site pg_site_10; /* method_getAttribute_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node\Scalar\MagicConst\Namespace_ */
 static pt_method_site pg_site_13; /* method_getNamespace_13 */
-static pt_method_site pg_site_14; /* method_getName_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
 
@@ -82,7 +82,7 @@ namespace pgen::MagicConstantContextRule {
 					if (UNEXPECTED(r7.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getName", "getname", 7, 0, NULL, r7.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getName", "getname", 7, r7.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb8;
@@ -137,7 +137,7 @@ namespace pgen::MagicConstantContextRule {
 							if (UNEXPECTED(r19.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_node, "getName", "getname", 7, 0, NULL, r19.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_node, "getName", "getname", 7, r19.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb20;
@@ -231,7 +231,7 @@ namespace pgen::MagicConstantContextRule {
 									if (UNEXPECTED(r37.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_node, "getName", "getname", 7, 0, NULL, r37.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_node, "getName", "getname", 7, r37.raw()))) return false;
 								}
 								}
 								pgrt::StringBuilder sb38;
@@ -276,7 +276,7 @@ namespace pgen::MagicConstantContextRule {
 													if (UNEXPECTED(r46.isUndef())) return false;
 												} else {
 												 {
-													if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_node, "getName", "getname", 7, 0, NULL, r46.raw(), NULL))) return false;
+													if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_node, "getName", "getname", 7, r46.raw()))) return false;
 												}
 												}
 												pgrt::StringBuilder sb47;

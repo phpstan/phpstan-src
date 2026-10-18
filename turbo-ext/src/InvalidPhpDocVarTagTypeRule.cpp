@@ -16,27 +16,27 @@ static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Stmt\Const_ */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Stmt\ClassLike */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Stmt\Function_ */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Stmt\ClassMethod */
-static pt_method_site pg_site_6; /* method_getDocComment_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getDocComment_6 */
 static pt_method_site pg_site_7; /* method_getFunction_7 */
 static pt_method_site pg_site_8; /* method_getFile_8 */
 static pt_method_site pg_site_9; /* method_isInClass_9 */
-static pt_method_site pg_site_10; /* method_getClassReflection_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getClassReflection_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
 static pt_method_site pg_site_12; /* method_isInTrait_12 */
 static pt_method_site pg_site_13; /* method_getTraitReflection_13 */
-static pt_method_site pg_site_14; /* method_getName_14 */
-static pt_method_site pg_site_15; /* method_getName_15 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
 static pgrt::GetterSite pg_site_16; /* getter_getText_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_18; /* method_getText_18 */
-static pt_method_site pg_site_19; /* method_getType_19 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getText_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getType_19 */
 static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Type\Type */
 static pgrt::GetterSite pg_site_21; /* getter_getStartLine_21 */
-static pt_method_site pg_site_22; /* method_getStartLine_22 */
-static pt_method_site pg_site_23; /* method_getReferencedClasses_23 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_getStartLine_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getReferencedClasses_23 */
 static pt_method_site pg_site_24; /* method_hasClass_24 */
 static pt_method_site pg_site_25; /* method_getClass_25 */
-static pt_method_site pg_site_26; /* method_isTrait_26 */
+static pgrt::MethodShapeSite pg_site_26; /* method0_isTrait_26 */
 static pgrt::FunctionSite pg_site_27; /* function_sprintf */
 static pt_method_site pg_site_28; /* method_isInClassExists_28 */
 static pgrt::FunctionSite pg_site_29; /* function_array_map */
@@ -174,7 +174,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 	}
 	 {
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r7.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_node, "getDocComment", "getdoccomment", 13, r7.raw()))) return false;
 		l_docComment = std::move(r7);
 	}
 	 {
@@ -243,7 +243,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 				if (UNEXPECTED(r20.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_scope, "getClassReflection", "getclassreflection", 18, 0, NULL, r20.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_scope, "getClassReflection", "getclassreflection", 18, r20.raw()))) return false;
 			}
 			}
 			zv::Val r21;
@@ -252,7 +252,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 				if (UNEXPECTED(r21.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, r20.raw(), "getName", "getname", 7, 0, NULL, r21.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, r20.raw(), "getName", "getname", 7, r21.raw()))) return false;
 			}
 			}
 			q19 = std::move(r21);
@@ -298,7 +298,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 				if (UNEXPECTED(r30.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r28.raw(), "getName", "getname", 7, 0, NULL, r30.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, r28.raw(), "getName", "getname", 7, r30.raw()))) return false;
 			}
 			}
 			q27 = std::move(r30);
@@ -316,7 +316,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 				if (UNEXPECTED(r33.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_function.raw(), "getName", "getname", 7, 0, NULL, r33.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_function.raw(), "getName", "getname", 7, r33.raw()))) return false;
 			}
 			}
 			q32 = std::move(r33);
@@ -332,7 +332,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 			ZVAL_COPY(r36.raw(), gs35);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r36.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, l_docComment.raw(), "getText", "gettext", 7, r36.raw()))) return false;
 		}
 		}
 		zv::Val r37;
@@ -367,7 +367,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 						if (UNEXPECTED(r49.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_varTag, "getType", "gettype", 7, 0, NULL, r49.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_varTag, "getType", "gettype", 7, r49.raw()))) return false;
 					}
 					}
 					l_varTagType = std::move(r49);
@@ -412,7 +412,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 								ZVAL_COPY(r61.raw(), gs60);
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_docComment.raw(), "getStartLine", "getstartline", 12, 0, NULL, r61.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_docComment.raw(), "getStartLine", "getstartline", 12, r61.raw()))) return false;
 							}
 							}
 							zv::Val r62;
@@ -665,7 +665,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 						if (UNEXPECTED(r134.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_varTagType.raw(), "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r134.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_varTagType.raw(), "getReferencedClasses", "getreferencedclasses", 20, r134.raw()))) return false;
 					}
 					}
 					l_referencedClasses = std::move(r134);
@@ -735,7 +735,7 @@ namespace pgen::InvalidPhpDocVarTagTypeRule {
 											if (UNEXPECTED(r153.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_26, vd149.raw(), "isTrait", "istrait", 7, 0, NULL, r153.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, vd149.raw(), "isTrait", "istrait", 7, r153.raw()))) return false;
 										}
 										}
 										if (Z_TYPE_P(r153.raw()) == IS_TRUE) {

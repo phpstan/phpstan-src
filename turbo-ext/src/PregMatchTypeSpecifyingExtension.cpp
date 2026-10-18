@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_preg_match_type_specifying_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_null_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pt_method_site pg_site_3; /* method_true_3 */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
-static pt_method_site pg_site_6; /* method_isString_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isString_6 */
 static pgrt::PropSite pg_site_7; /* prop_value_7 */
 static pgrt::PropSite pg_site_8; /* prop_value_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Expr */
@@ -28,7 +28,7 @@ static pt_method_site pg_site_15; /* method_getType_15 */
 static pt_method_site pg_site_16; /* method_true_16 */
 static pt_method_site pg_site_17; /* method_falsey_17 */
 static pt_method_site pg_site_18; /* method_true_18 */
-static pt_method_site pg_site_19; /* method_getName_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getName_19 */
 static pgrt::PropSite pg_site_20; /* prop_value_20 */
 static pgrt::PropSite pg_site_21; /* prop_value_21 */
 static pt_method_site pg_site_22; /* method_false_22 */
@@ -90,7 +90,7 @@ namespace pgen::PregMatchTypeSpecifyingExtension {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r2.raw()))) return false;
 		}
 		}
 		zv::Val r3 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r2.raw())));
@@ -266,7 +266,7 @@ namespace pgen::PregMatchTypeSpecifyingExtension {
 				if (UNEXPECTED(r38.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, r35.raw(), "isString", "isstring", 8, 0, NULL, r38.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, r35.raw(), "isString", "isstring", 8, r38.raw()))) return false;
 			}
 			}
 			bool r39;
@@ -459,7 +459,7 @@ namespace pgen::PregMatchTypeSpecifyingExtension {
 			if (UNEXPECTED(r75.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_functionReflection, "getName", "getname", 7, 0, NULL, r75.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p_functionReflection, "getName", "getname", 7, r75.raw()))) return false;
 		}
 		}
 		if (zend_is_identical(r75.raw(), &pg_lit[0])) {

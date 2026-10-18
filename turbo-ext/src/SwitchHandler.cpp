@@ -36,7 +36,7 @@ static pt_method_site pg_site_23; /* method_getThrowPoints_23 */
 static pt_method_site pg_site_24; /* method_getImpurePoints_24 */
 static pgrt::PropSite pg_site_25; /* prop_cond_25 */
 static pgrt::PropSite pg_site_26; /* prop_cond_26 */
-static pt_method_site pg_site_27; /* method_getStartLine_27 */
+static pgrt::MethodShapeSite pg_site_27; /* method0_getStartLine_27 */
 static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Node\SwitchConditionArm */
 static pt_method_site pg_site_29; /* method_getByType_29 */
 static pgrt::PropSite pg_site_30; /* prop_cond_30 */
@@ -82,7 +82,7 @@ static pt_method_site pg_site_69; /* method_answersOnScope_69 */
 static pt_method_site pg_site_70; /* method_getTypeOnScope_70 */
 static pgrt::PropSite pg_site_71; /* prop_cond_71 */
 static pt_method_site pg_site_72; /* method_processExprOnDemand_72 */
-static pt_method_site pg_site_73; /* method_getType_73 */
+static pgrt::MethodShapeSite pg_site_73; /* method0_getType_73 */
 static pgrt::ClassSite pg_site_74; /* cls_PHPStan\Type\NeverType */
 static pt_method_site pg_site_75; /* method_mergeWith_75 */
 static pt_method_site pg_site_76; /* method_isAlwaysTerminating_76 */
@@ -574,7 +574,7 @@ namespace pgen::SwitchHandler {
 								p104 = o105.raw();
 							}
 							zv::Val r106;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_27, zv::Ref(p104).deref().raw(), "getStartLine", "getstartline", 12, 0, NULL, r106.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, zv::Ref(p104).deref().raw(), "getStartLine", "getstartline", 12, r106.raw()))) return false;
 							zval av107[4];
 							ZVAL_COPY_VALUE(&av107[0], o102.raw());
 							ZVAL_COPY_VALUE(&av107[1], o103.raw());
@@ -1273,7 +1273,7 @@ namespace pgen::SwitchHandler {
 				if (UNEXPECTED(r264.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_73, r262.raw(), "getType", "gettype", 7, 0, NULL, r264.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_73, r262.raw(), "getType", "gettype", 7, r264.raw()))) return false;
 			}
 			}
 			q253 = std::move(r264);

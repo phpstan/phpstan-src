@@ -17,7 +17,7 @@ static pgrt::PropSite pg_site_3; /* prop_name_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pgrt::PropSite pg_site_5; /* prop_var_5 */
 static pt_method_site pg_site_6; /* method_getType_6 */
-static pt_method_site pg_site_7; /* method_getObjectClassNames_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getObjectClassNames_7 */
 static pt_method_site pg_site_8; /* method_hasClass_8 */
 static pt_method_site pg_site_9; /* method_getClass_9 */
 static pt_method_site pg_site_10; /* method_hasMethod_10 */
@@ -159,7 +159,7 @@ namespace pgen::RestrictedMethodUsageRule {
 			if (UNEXPECTED(r19.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_methodCalledOnType.raw(), "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r19.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_methodCalledOnType.raw(), "getObjectClassNames", "getobjectclassnames", 19, r19.raw()))) return false;
 		}
 		}
 		l_referencedClasses = std::move(r19);

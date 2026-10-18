@@ -10,20 +10,20 @@ zend_class_entry *pt_ce_function_call_constant_condition_helper = nullptr;
 static zval pg_lit[3];
 
 static pt_method_site pg_site_0; /* method_printExpr_0 */
-static pt_method_site pg_site_1; /* method_getStartLine_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getStartLine_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Expr\MethodCall */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Expr\StaticCall */
 static pt_method_site pg_site_5; /* method_isFirstClassCallable_5 */
 static pt_method_site pg_site_6; /* method_isInTrait_6 */
 static pt_method_site pg_site_7; /* method_getTraitReflection_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
 static pt_method_site pg_site_9; /* method_emitCollectedData_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Rules\FixableNodeRuleError */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\ShouldNotHappenException */
 static pt_method_site pg_site_12; /* method_isInTrait_12 */
 static pt_method_site pg_site_13; /* method_getTraitReflection_13 */
-static pt_method_site pg_site_14; /* method_getName_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
 static pt_method_site pg_site_15; /* method_transform_15 */
 static pt_method_site pg_site_16; /* method_emitCollectedData_16 */
 static pt_method_site pg_site_17; /* method_emitCollectedData_17 */
@@ -64,7 +64,7 @@ namespace pgen::FunctionCallConstantConditionHelper {
 		zv::Val r3;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p1, "printExpr", "printexpr", 9, 1, av2, r3.raw(), NULL))) return false;
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_expr, "getStartLine", "getstartline", 12, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_expr, "getStartLine", "getstartline", 12, r4.raw()))) return false;
 		pgrt::StringBuilder sb5;
 		if (UNEXPECTED(!sb5.append(r3.raw()))) return false;
 		sb5.appendLiteral(":", 1);
@@ -147,7 +147,7 @@ namespace pgen::FunctionCallConstantConditionHelper {
 				if (UNEXPECTED(r10.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_8, r8.raw(), "getName", "getname", 7, 0, NULL, r10.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, r8.raw(), "getName", "getname", 7, r10.raw()))) return false;
 			}
 			}
 			q7 = std::move(r10);
@@ -232,7 +232,7 @@ namespace pgen::FunctionCallConstantConditionHelper {
 				if (UNEXPECTED(r13.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_14, r11.raw(), "getName", "getname", 7, 0, NULL, r13.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, r11.raw(), "getName", "getname", 7, r13.raw()))) return false;
 			}
 			}
 			q10 = std::move(r13);

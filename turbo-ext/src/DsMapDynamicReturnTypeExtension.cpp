@@ -9,14 +9,14 @@ zend_class_entry *pt_ce_ds_map_dynamic_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_var_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\TypeWithClassName */
 static pt_method_site pg_site_5; /* method_getAncestorWithClassName_5 */
-static pt_method_site pg_site_6; /* method_getClassReflection_6 */
-static pt_method_site pg_site_7; /* method_getActiveTemplateTypeMap_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getClassReflection_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getActiveTemplateTypeMap_7 */
 static pt_method_site pg_site_8; /* method_getType_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Reflection\MethodReflection */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Expr\MethodCall */
@@ -49,7 +49,7 @@ namespace pgen::DsMapDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_methodReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_methodReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		bool ia2 = false;
@@ -160,7 +160,7 @@ namespace pgen::DsMapDynamicReturnTypeExtension {
 			if (UNEXPECTED(r13.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_mapAncestor.raw(), "getClassReflection", "getclassreflection", 18, 0, NULL, r13.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_mapAncestor.raw(), "getClassReflection", "getclassreflection", 18, r13.raw()))) return false;
 		}
 		}
 		l_mapAncestorClass = std::move(r13);
@@ -182,7 +182,7 @@ namespace pgen::DsMapDynamicReturnTypeExtension {
 			if (UNEXPECTED(r15.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_mapAncestorClass.raw(), "getActiveTemplateTypeMap", "getactivetemplatetypemap", 24, 0, NULL, r15.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_mapAncestorClass.raw(), "getActiveTemplateTypeMap", "getactivetemplatetypemap", 24, r15.raw()))) return false;
 		}
 		}
 		zv::Val r16;

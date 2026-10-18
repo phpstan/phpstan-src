@@ -12,7 +12,7 @@ static zval pg_lit[3];
 static pgrt::FunctionSite pg_site_0; /* function_explode */
 static pgrt::FunctionSite pg_site_1; /* function_ltrim */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Name\FullyQualified */
-static pt_method_site pg_site_3; /* method_isSpecialClassName_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isSpecialClassName_3 */
 static pt_method_site pg_site_4; /* method_toString_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Name */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Identifier */
@@ -99,7 +99,7 @@ namespace pgen::ConstantHelper {
 			}
 			 {
 				zv::Val r17;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classConstName.raw(), "isSpecialClassName", "isspecialclassname", 18, 0, NULL, r17.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classConstName.raw(), "isSpecialClassName", "isspecialclassname", 18, r17.raw()))) return false;
 				if (Z_TYPE_P(r17.raw()) == IS_TRUE) {
 					 {
 						zv::Val r19;

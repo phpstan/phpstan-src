@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_gettype_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[11];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
@@ -17,13 +17,13 @@ static pt_method_site pg_site_4; /* method_getType_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\UnionType */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\IntersectionType */
-static pt_method_site pg_site_8; /* method_isString_8 */
-static pt_method_site pg_site_9; /* method_isArray_9 */
-static pt_method_site pg_site_10; /* method_isBoolean_10 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isString_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isArray_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isBoolean_10 */
 static pt_method_site pg_site_11; /* method_isSuperTypeOf_11 */
-static pt_method_site pg_site_12; /* method_isInteger_12 */
-static pt_method_site pg_site_13; /* method_isFloat_13 */
-static pt_method_site pg_site_14; /* method_isNull_14 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_isInteger_12 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_isFloat_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isNull_14 */
 static pt_method_site pg_site_15; /* method_isObject_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_17; /* cls_PhpParser\Node\Expr\FuncCall */
@@ -69,7 +69,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r4.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_valueType, "isString", "isstring", 8, 0, NULL, r4.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_valueType, "isString", "isstring", 8, r4.raw()))) return;
 		}
 		}
 		bool r5;
@@ -90,7 +90,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r7.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_valueType, "isArray", "isarray", 7, 0, NULL, r7.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, p_valueType, "isArray", "isarray", 7, r7.raw()))) return;
 		}
 		}
 		bool r8;
@@ -111,7 +111,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r10.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_valueType, "isBoolean", "isboolean", 9, 0, NULL, r10.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_valueType, "isBoolean", "isboolean", 9, r10.raw()))) return;
 		}
 		}
 		bool r11;
@@ -167,7 +167,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r21.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_valueType, "isInteger", "isinteger", 9, 0, NULL, r21.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_valueType, "isInteger", "isinteger", 9, r21.raw()))) return;
 		}
 		}
 		bool r22;
@@ -188,7 +188,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r24.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_valueType, "isFloat", "isfloat", 7, 0, NULL, r24.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_valueType, "isFloat", "isfloat", 7, r24.raw()))) return;
 		}
 		}
 		bool r25;
@@ -209,7 +209,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r27.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_valueType, "isNull", "isnull", 6, 0, NULL, r27.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_valueType, "isNull", "isnull", 6, r27.raw()))) return;
 		}
 		}
 		bool r28;
@@ -301,7 +301,7 @@ namespace pgen::GettypeFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);

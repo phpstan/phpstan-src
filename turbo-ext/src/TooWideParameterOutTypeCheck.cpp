@@ -15,20 +15,20 @@ static pt_method_site pg_site_2; /* method_mergeWith_2 */
 static pt_method_site pg_site_3; /* method_getScope_3 */
 static pt_method_site pg_site_4; /* method_getScope_4 */
 static pt_method_site pg_site_5; /* method_mergeWith_5 */
-static pt_method_site pg_site_6; /* method_passedByReference_6 */
-static pt_method_site pg_site_7; /* method_createsNewVariable_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_passedByReference_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_createsNewVariable_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Reflection\ExtendedParameterReflection */
 static pt_method_site pg_site_10; /* method_getOutType_10 */
-static pt_method_site pg_site_11; /* method_getType_11 */
-static pt_method_site pg_site_12; /* method_getName_12 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getType_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node\Expr\Variable */
 static pt_method_site pg_site_14; /* method_getType_14 */
-static pt_method_site pg_site_15; /* method_isVariadic_15 */
-static pt_method_site pg_site_16; /* method_isArray_16 */
-static pt_method_site pg_site_17; /* method_getIterableValueType_17 */
-static pt_method_site pg_site_18; /* method_getName_18 */
-static pt_method_site pg_site_19; /* method_getName_19 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_isVariadic_15 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_isArray_16 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getIterableValueType_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getName_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getName_19 */
 static pgrt::FunctionSite pg_site_20; /* function_lcfirst */
 
 namespace pgen::TooWideParameterOutTypeCheck {
@@ -208,11 +208,11 @@ namespace pgen::TooWideParameterOutTypeCheck {
 						if (UNEXPECTED(r41.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_parameter, "passedByReference", "passedbyreference", 17, 0, NULL, r41.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_parameter, "passedByReference", "passedbyreference", 17, r41.raw()))) return false;
 					}
 					}
 					zv::Val r42;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, r41.raw(), "createsNewVariable", "createsnewvariable", 18, 0, NULL, r42.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, r41.raw(), "createsNewVariable", "createsnewvariable", 18, r42.raw()))) return false;
 					if (!(zend_is_true(r42.raw()))) {
 						goto cont40;
 					}
@@ -300,7 +300,7 @@ namespace pgen::TooWideParameterOutTypeCheck {
 					if (UNEXPECTED(r4.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_parameter, "getType", "gettype", 7, 0, NULL, r4.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, p_parameter, "getType", "gettype", 7, r4.raw()))) return false;
 				}
 				}
 				l_outType = std::move(r4);
@@ -314,7 +314,7 @@ namespace pgen::TooWideParameterOutTypeCheck {
 			if (UNEXPECTED(r6.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_parameter, "getName", "getname", 7, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_parameter, "getName", "getname", 7, r6.raw()))) return false;
 		}
 		}
 		zval av7[1];
@@ -350,7 +350,7 @@ namespace pgen::TooWideParameterOutTypeCheck {
 			if (UNEXPECTED(r12.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_parameter, "isVariadic", "isvariadic", 10, 0, NULL, r12.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_parameter, "isVariadic", "isvariadic", 10, r12.raw()))) return false;
 		}
 		}
 		if (Z_TYPE_P(r12.raw()) == IS_TRUE) {
@@ -361,7 +361,7 @@ namespace pgen::TooWideParameterOutTypeCheck {
 					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_variableType.raw(), "isArray", "isarray", 7, 0, NULL, r13.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_variableType.raw(), "isArray", "isarray", 7, r13.raw()))) return false;
 				}
 				}
 				bool r14;
@@ -382,7 +382,7 @@ namespace pgen::TooWideParameterOutTypeCheck {
 					if (UNEXPECTED(r16.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_variableType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r16.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_variableType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r16.raw()))) return false;
 				}
 				}
 				l_variableType = std::move(r16);
@@ -401,7 +401,7 @@ namespace pgen::TooWideParameterOutTypeCheck {
 			if (UNEXPECTED(r21.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_parameter, "getName", "getname", 7, 0, NULL, r21.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, p_parameter, "getName", "getname", 7, r21.raw()))) return false;
 		}
 		}
 		zv::Val q22;
@@ -430,7 +430,7 @@ namespace pgen::TooWideParameterOutTypeCheck {
 			if (UNEXPECTED(r27.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_parameter, "getName", "getname", 7, 0, NULL, r27.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, p_parameter, "getName", "getname", 7, r27.raw()))) return false;
 		}
 		}
 		zv::Val q28;

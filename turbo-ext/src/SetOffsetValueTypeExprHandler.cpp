@@ -8,19 +8,19 @@ zend_class_entry *pt_ce_set_offset_value_type_expr_handler = nullptr;
 
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\Expr\SetOffsetValueTypeExpr */
-static pt_method_site pg_site_1; /* method_getVar_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getVar_1 */
 static pt_method_site pg_site_2; /* method_processExprNode_2 */
-static pt_method_site pg_site_3; /* method_getDim_3 */
-static pt_method_site pg_site_4; /* method_getDim_4 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getDim_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getDim_4 */
 static pt_method_site pg_site_5; /* method_processExprNode_5 */
-static pt_method_site pg_site_6; /* method_getValue_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getValue_6 */
 static pt_method_site pg_site_7; /* method_processExprNode_7 */
 static pt_method_site pg_site_8; /* method_getNativeType_8 */
-static pt_method_site pg_site_9; /* method_getType_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getType_9 */
 static pt_method_site pg_site_10; /* method_getNativeType_10 */
-static pt_method_site pg_site_11; /* method_getType_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getType_11 */
 static pt_method_site pg_site_12; /* method_getNativeType_12 */
-static pt_method_site pg_site_13; /* method_getType_13 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getType_13 */
 static pt_method_site pg_site_14; /* method_setOffsetValueType_14 */
 static pt_method_site pg_site_15; /* method_getDependencies_15 */
 static pt_method_site pg_site_16; /* method_getDependencies_16 */
@@ -63,7 +63,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r3.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_9, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, 0, NULL, r3.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, r3.raw()))) return;
 			}
 			}
 			q1 = std::move(r3);
@@ -91,7 +91,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(r7.isUndef())) return;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, zv::Ref(&captures[1]).deref().raw(), "getType", "gettype", 7, 0, NULL, r7.raw(), NULL))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, zv::Ref(&captures[1]).deref().raw(), "getType", "gettype", 7, r7.raw()))) return;
 				}
 				}
 				q5 = std::move(r7);
@@ -124,7 +124,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r11.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_13, zv::Ref(&captures[2]).deref().raw(), "getType", "gettype", 7, 0, NULL, r11.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, zv::Ref(&captures[2]).deref().raw(), "getType", "gettype", 7, r11.raw()))) return;
 			}
 			}
 			q9 = std::move(r11);
@@ -187,7 +187,7 @@ namespace pgen::SetOffsetValueTypeExprHandler {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_expr, "getVar", "getvar", 6, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_expr, "getVar", "getvar", 6, r1.raw()))) return false;
 		zv::Val r2;
 		if (EXPECTED(Z_TYPE_P(p_nodeScopeResolver) == IS_OBJECT)) {
 			if (UNEXPECTED(!(Z_TYPE_P(r1.raw()) == IS_OBJECT))) { zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::processExprNode(): Argument #2 ($expr) must be of type PhpParser\\Node\\Expr, %s given", zend_zval_value_name(r1.raw())); return false; }
@@ -209,11 +209,11 @@ namespace pgen::SetOffsetValueTypeExprHandler {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_expr, "getDim", "getdim", 6, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_expr, "getDim", "getdim", 6, r4.raw()))) return false;
 		zv::Val q5;
 		if (!(Z_TYPE_P(r4.raw()) == IS_NULL)) {
 			zv::Val r6;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_expr, "getDim", "getdim", 6, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_expr, "getDim", "getdim", 6, r6.raw()))) return false;
 			zv::Val r7;
 			if (EXPECTED(Z_TYPE_P(p_nodeScopeResolver) == IS_OBJECT)) {
 				if (UNEXPECTED(!(Z_TYPE_P(r6.raw()) == IS_OBJECT))) { zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::processExprNode(): Argument #2 ($expr) must be of type PhpParser\\Node\\Expr, %s given", zend_zval_value_name(r6.raw())); return false; }
@@ -247,7 +247,7 @@ namespace pgen::SetOffsetValueTypeExprHandler {
 			if (UNEXPECTED(r10.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_expr, "getValue", "getvalue", 8, 0, NULL, r10.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_expr, "getValue", "getvalue", 8, r10.raw()))) return false;
 		}
 		}
 		zv::Val r11;

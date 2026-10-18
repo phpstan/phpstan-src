@@ -12,21 +12,21 @@ static zval pg_lit[3];
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Rules\ClassNameNodePair */
 static pt_method_site pg_site_1; /* method_hasClass_1 */
 static pt_method_site pg_site_2; /* method_getClass_2 */
-static pt_method_site pg_site_3; /* method_isBuiltin_3 */
-static pt_method_site pg_site_4; /* method_getName_4 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isBuiltin_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
 static pt_method_site pg_site_5; /* method_getNode_5 */
 static pt_method_site pg_site_6; /* method_getAttribute_6 */
-static pt_method_site pg_site_7; /* method_getClassTypeDescription_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getClassTypeDescription_7 */
 static pt_method_site pg_site_8; /* method_getNode_8 */
-static pt_method_site pg_site_9; /* method_getStartLine_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getStartLine_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_11; /* method_toString_11 */
 static pt_method_site pg_site_12; /* method_toString_12 */
 static pt_method_site pg_site_13; /* method_getAttribute_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node\Name\FullyQualified */
 static pgrt::ClassSite pg_site_15; /* cls_PhpParser\Node\Name\Relative */
-static pt_method_site pg_site_16; /* method_getParts_16 */
-static pt_method_site pg_site_17; /* method_getParts_17 */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getParts_16 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getParts_17 */
 
 namespace pgen::ClassCaseSensitivityCheck {
 
@@ -149,7 +149,7 @@ namespace pgen::ClassCaseSensitivityCheck {
 							if (UNEXPECTED(r27.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "isBuiltin", "isbuiltin", 9, 0, NULL, r27.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "isBuiltin", "isbuiltin", 9, r27.raw()))) return false;
 						}
 						}
 						b25 = (Z_TYPE_P(r27.raw()) == IS_TRUE);
@@ -165,7 +165,7 @@ namespace pgen::ClassCaseSensitivityCheck {
 						if (UNEXPECTED(r28.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r28.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_classReflection.raw(), "getName", "getname", 7, r28.raw()))) return false;
 					}
 					}
 					l_realClassName = std::move(r28);
@@ -203,7 +203,7 @@ namespace pgen::ClassCaseSensitivityCheck {
 				}
 				 {
 					zv::Val r34;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r34.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r34.raw()))) return false;
 					l_typeName = std::move(r34);
 				}
 				 {
@@ -239,7 +239,7 @@ namespace pgen::ClassCaseSensitivityCheck {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_pair, "getNode", "getnode", 7, 0, NULL, vd44.raw()))) return false;
 					}
 					zv::Val r46;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, vd44.raw(), "getStartLine", "getstartline", 12, 0, NULL, r46.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, vd44.raw(), "getStartLine", "getstartline", 12, r46.raw()))) return false;
 					if (UNEXPECTED(Z_TYPE_P(r46.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r46.raw()); return false; }
 					zv::Val r47;
 					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r43.raw()), Z_LVAL_P(r46.raw()), r47.raw()))) return false;
@@ -347,7 +347,7 @@ namespace pgen::ClassCaseSensitivityCheck {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_originalName.raw(), "getParts", "getparts", 8, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, l_originalName.raw(), "getParts", "getparts", 8, r5.raw()))) return false;
 		l_originalParts = std::move(r5);
 	}
 	 {
@@ -360,7 +360,7 @@ namespace pgen::ClassCaseSensitivityCheck {
 	}
 	 {
 		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_node, "getParts", "getparts", 8, 0, NULL, r6.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, p_node, "getParts", "getparts", 8, r6.raw()))) return false;
 		l_resolvedParts = std::move(r6);
 	}
 	 {

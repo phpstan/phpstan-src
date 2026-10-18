@@ -8,9 +8,9 @@ zend_class_entry *pt_ce_unset_offset_expr_handler = nullptr;
 
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\Expr\UnsetOffsetExpr */
-static pt_method_site pg_site_1; /* method_getVar_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getVar_1 */
 static pt_method_site pg_site_2; /* method_processExprNode_2 */
-static pt_method_site pg_site_3; /* method_getDim_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getDim_3 */
 static pt_method_site pg_site_4; /* method_processExprNode_4 */
 static pt_method_site pg_site_5; /* method_createUnsetOffsetExprResult_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Expr */
@@ -56,7 +56,7 @@ namespace pgen::UnsetOffsetExprHandler {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_expr, "getVar", "getvar", 6, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_expr, "getVar", "getvar", 6, r1.raw()))) return false;
 		zv::Val r2;
 		if (EXPECTED(Z_TYPE_P(p_nodeScopeResolver) == IS_OBJECT)) {
 			if (UNEXPECTED(!(Z_TYPE_P(r1.raw()) == IS_OBJECT))) { zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::processExprNode(): Argument #2 ($expr) must be of type PhpParser\\Node\\Expr, %s given", zend_zval_value_name(r1.raw())); return false; }
@@ -78,7 +78,7 @@ namespace pgen::UnsetOffsetExprHandler {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_expr, "getDim", "getdim", 6, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_expr, "getDim", "getdim", 6, r4.raw()))) return false;
 		zv::Val r5;
 		if (EXPECTED(Z_TYPE_P(p_nodeScopeResolver) == IS_OBJECT)) {
 			if (UNEXPECTED(!(Z_TYPE_P(r4.raw()) == IS_OBJECT))) { zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::processExprNode(): Argument #2 ($expr) must be of type PhpParser\\Node\\Expr, %s given", zend_zval_value_name(r4.raw())); return false; }

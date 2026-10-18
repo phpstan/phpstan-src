@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_existing_classes_in_property_hook_typehints_rule = nullp
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getHookReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getHookReflection_0 */
 static pt_method_site pg_site_1; /* method_isPropertyHook_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\ShouldNotHappenException */
-static pt_method_site pg_site_3; /* method_getClassReflection_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getClassReflection_3 */
 static pt_method_site pg_site_4; /* method_getDisplayName_4 */
 static pt_method_site pg_site_5; /* method_getPropertyHookName_5 */
 static pt_method_site pg_site_6; /* method_getHookedPropertyName_6 */
@@ -68,7 +68,7 @@ namespace pgen::ExistingClassesInPropertyHookTypehintsRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getHookReflection", "gethookreflection", 17, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getHookReflection", "gethookreflection", 17, r1.raw()))) return false;
 		l_hookReflection = std::move(r1);
 	}
 	 {
@@ -103,7 +103,7 @@ namespace pgen::ExistingClassesInPropertyHookTypehintsRule {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_node, "getClassReflection", "getclassreflection", 18, r7.raw()))) return false;
 		}
 		}
 		zv::Val r8;

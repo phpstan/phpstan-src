@@ -9,7 +9,7 @@ zend_class_entry *pt_ce_constructor_return_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_getOriginalNode_1 */
 static pt_method_site pg_site_2; /* method_isInTrait_2 */
 static pt_method_site pg_site_3; /* method_getAttribute_3 */
@@ -19,8 +19,8 @@ static pt_method_site pg_site_6; /* method_getDisplayName_6 */
 static pt_method_site pg_site_7; /* method_hasConstructor_7 */
 static pt_method_site pg_site_8; /* method_getConstructor_8 */
 static pt_method_site pg_site_9; /* method_getMethodReflection_9 */
-static pt_method_site pg_site_10; /* method_getName_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getName_11 */
 static pgrt::PropSite pg_site_12; /* prop_returnType_12 */
 static pt_method_site pg_site_13; /* method_getDisplayName_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node */
@@ -58,7 +58,7 @@ namespace pgen::ConstructorReturnTypeRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -235,7 +235,7 @@ namespace pgen::ConstructorReturnTypeRule {
 			if (UNEXPECTED(r32.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_methodReflection.raw(), "getName", "getname", 7, 0, NULL, r32.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_methodReflection.raw(), "getName", "getname", 7, r32.raw()))) return false;
 		}
 		}
 		zv::Val r33;
@@ -244,7 +244,7 @@ namespace pgen::ConstructorReturnTypeRule {
 			if (UNEXPECTED(r33.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_constructorReflection.raw(), "getName", "getname", 7, 0, NULL, r33.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_constructorReflection.raw(), "getName", "getname", 7, r33.raw()))) return false;
 		}
 		}
 		if (!zend_is_identical(r32.raw(), r33.raw())) {

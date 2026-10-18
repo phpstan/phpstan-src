@@ -7,13 +7,13 @@
 zend_class_entry *pt_ce_template_constant_array_type = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_getKeyTypes_0 */
-static pt_method_site pg_site_1; /* method_getValueTypes_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getKeyTypes_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getValueTypes_1 */
 static pgrt::GetterSite pg_site_2; /* getter_getNextAutoIndexes_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\Constant\ConstantArrayType */
-static pt_method_site pg_site_4; /* method_getNextAutoIndexes_4 */
-static pt_method_site pg_site_5; /* method_getOptionalKeys_5 */
-static pt_method_site pg_site_6; /* method_isList_6 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getNextAutoIndexes_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getOptionalKeys_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isList_6 */
 static pt_method_site pg_site_7; /* bound_PHPStan\Type\Constant\ConstantArrayType::__construct */
 static pgrt::PropIndexSite pg_site_8; /* slot_default_8 */
 static pgrt::PropIndexSite pg_site_9; /* slot_default_9 */
@@ -38,7 +38,7 @@ namespace pgen::TemplateConstantArrayType {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_bound, "getKeyTypes", "getkeytypes", 11, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_bound, "getKeyTypes", "getkeytypes", 11, r1.raw()))) return false;
 		}
 		}
 		zv::Val r2;
@@ -47,7 +47,7 @@ namespace pgen::TemplateConstantArrayType {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_bound, "getValueTypes", "getvaluetypes", 13, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_bound, "getValueTypes", "getvaluetypes", 13, r2.raw()))) return false;
 		}
 		}
 		zval *gs3 = Z_TYPE_P(p_bound) == IS_OBJECT ? pgrt::trivialGetter(pg_site_2, Z_OBJ_P(p_bound), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\Constant\\ConstantArrayType", 39), "getnextautoindexes", 18, "nextAutoIndexes", 15) : NULL;
@@ -56,7 +56,7 @@ namespace pgen::TemplateConstantArrayType {
 			ZVAL_COPY(r4.raw(), gs3);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_bound, "getNextAutoIndexes", "getnextautoindexes", 18, 0, NULL, r4.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_bound, "getNextAutoIndexes", "getnextautoindexes", 18, r4.raw()))) return false;
 		}
 		}
 		zv::Val r5;
@@ -65,7 +65,7 @@ namespace pgen::TemplateConstantArrayType {
 			if (UNEXPECTED(r5.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_bound, "getOptionalKeys", "getoptionalkeys", 15, 0, NULL, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_bound, "getOptionalKeys", "getoptionalkeys", 15, r5.raw()))) return false;
 		}
 		}
 		zv::Val r6;
@@ -74,7 +74,7 @@ namespace pgen::TemplateConstantArrayType {
 			if (UNEXPECTED(r6.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_bound, "isList", "islist", 6, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_bound, "isList", "islist", 6, r6.raw()))) return false;
 		}
 		}
 		zval av7[5];

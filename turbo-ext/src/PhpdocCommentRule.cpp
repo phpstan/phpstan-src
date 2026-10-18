@@ -10,13 +10,13 @@ zend_class_entry *pt_ce_phpdoc_comment_rule = nullptr;
 static zval pg_lit[7];
 
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Node\VirtualNode */
-static pt_method_site pg_site_1; /* method_getComments_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getComments_1 */
 static pgrt::GetterSite pg_site_2; /* getter_getText_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_4; /* method_getText_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getText_4 */
 static pgrt::FunctionSite pg_site_5; /* function_str_starts_with */
 static pgrt::GetterSite pg_site_6; /* getter_getText_6 */
-static pt_method_site pg_site_7; /* method_getText_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getText_7 */
 static pgrt::ClassSite pg_site_8; /* cls_Nette\Utils\Strings */
 static pt_method_site pg_site_9; /* static_Nette\Utils\Strings::match */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
@@ -58,7 +58,7 @@ namespace pgen::PhpdocCommentRule {
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getComments", "getcomments", 11, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getComments", "getcomments", 11, r2.raw()))) return false;
 		l_comments = std::move(r2);
 	}
 	 {
@@ -101,7 +101,7 @@ namespace pgen::PhpdocCommentRule {
 									ZVAL_COPY(r24.raw(), gs23);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_comment, "getText", "gettext", 7, 0, NULL, r24.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_comment, "getText", "gettext", 7, r24.raw()))) return false;
 								}
 								}
 								zv::Val r25;
@@ -121,7 +121,7 @@ namespace pgen::PhpdocCommentRule {
 						ZVAL_COPY(r27.raw(), gs26);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_comment, "getText", "gettext", 7, 0, NULL, r27.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_comment, "getText", "gettext", 7, r27.raw()))) return false;
 					}
 					}
 					zval av28[2];

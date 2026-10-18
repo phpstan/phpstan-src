@@ -50,13 +50,13 @@ static pt_method_site pg_site_37; /* method_isStatic_37 */
 static pgrt::DispatchCache pg_site_38; /* dispatch_getDeclaringClass_38 */
 static pt_method_site pg_site_39; /* method_getDeclaringClass_39 */
 static pt_method_site pg_site_40; /* method_getDisplayName_40 */
-static pt_method_site pg_site_41; /* method_getName_41 */
+static pgrt::MethodShapeSite pg_site_41; /* method0_getName_41 */
 static pgrt::DispatchCache pg_site_42; /* dispatch_isStatic_42 */
 static pt_method_site pg_site_43; /* method_isStatic_43 */
 static pgrt::DispatchCache pg_site_44; /* dispatch_getDeclaringClass_44 */
 static pt_method_site pg_site_45; /* method_getDeclaringClass_45 */
 static pt_method_site pg_site_46; /* method_getDisplayName_46 */
-static pt_method_site pg_site_47; /* method_getName_47 */
+static pgrt::MethodShapeSite pg_site_47; /* method0_getName_47 */
 static pgrt::ClassSite pg_site_48; /* cls_PHPStan\Rules\RuleLevelHelper */
 static pgrt::ClassSite pg_site_49; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_50; /* cls_PhpParser\Node */
@@ -689,7 +689,7 @@ namespace pgen::CallToStaticMethodStatementWithNoDiscardRule {
 							if (UNEXPECTED(r107.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_41, l_method.raw(), "getName", "getname", 7, 0, NULL, r107.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_41, l_method.raw(), "getName", "getname", 7, r107.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb108;
@@ -859,7 +859,7 @@ namespace pgen::CallToStaticMethodStatementWithNoDiscardRule {
 			if (UNEXPECTED(r138.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_47, l_method.raw(), "getName", "getname", 7, 0, NULL, r138.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_47, l_method.raw(), "getName", "getname", 7, r138.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb139;

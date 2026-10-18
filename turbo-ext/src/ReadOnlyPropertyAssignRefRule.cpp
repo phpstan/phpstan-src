@@ -17,7 +17,7 @@ static pt_method_site pg_site_4; /* method_canWriteProperty_4 */
 static pt_method_site pg_site_5; /* method_isReadOnly_5 */
 static pt_method_site pg_site_6; /* method_getDeclaringClass_6 */
 static pt_method_site pg_site_7; /* method_getDisplayName_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\Properties\PropertyReflectionFinder */
 static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
@@ -181,7 +181,7 @@ namespace pgen::ReadOnlyPropertyAssignRefRule {
 						if (UNEXPECTED(r26.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_propertyReflection, "getName", "getname", 7, 0, NULL, r26.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_propertyReflection, "getName", "getname", 7, r26.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb27;

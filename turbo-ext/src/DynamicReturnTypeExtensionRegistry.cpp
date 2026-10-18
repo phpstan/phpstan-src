@@ -15,7 +15,7 @@ static pt_method_site pg_site_4; /* method_getAll_4 */
 static pgrt::DispatchCache pg_site_5; /* dispatch_getClass_5 */
 static pt_method_site pg_site_6; /* method_getClass_6 */
 static pt_method_site pg_site_7; /* method_hasClass_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
 static pt_method_site pg_site_9; /* method_getAll_9 */
 static pgrt::DispatchCache pg_site_10; /* dispatch_isFunctionSupported_10 */
 static pt_method_site pg_site_11; /* method_isFunctionSupported_11 */
@@ -517,7 +517,7 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		l_functionName = std::move(r1);

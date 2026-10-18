@@ -17,15 +17,15 @@ static pgrt::PropSite pg_site_2; /* prop_name_2 */
 static pt_method_site pg_site_3; /* method_hasFunction_3 */
 static pgrt::PropSite pg_site_4; /* prop_name_4 */
 static pt_method_site pg_site_5; /* method_getFunction_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
 static pt_method_site pg_site_7; /* method_getArgs_7 */
 static pgrt::PropSite pg_site_8; /* prop_unpack_8 */
 static pgrt::FunctionSite pg_site_9; /* function_count */
 static pgrt::PropSite pg_site_10; /* prop_value_10 */
 static pt_method_site pg_site_11; /* method_getType_11 */
 static pt_method_site pg_site_12; /* method_getConstantStrings_12 */
-static pt_method_site pg_site_13; /* method_getValue_13 */
-static pt_method_site pg_site_14; /* method_getPhpVersion_14 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getValue_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getPhpVersion_14 */
 static pgrt::PropSite pg_site_15; /* prop_value_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_17; /* method_doesArgumentTypeMatchPlaceholder_17 */
@@ -270,7 +270,7 @@ namespace pgen::PrintfParameterTypeRule {
 			if (UNEXPECTED(r23.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_functionReflection.raw(), "getName", "getname", 7, r23.raw()))) return false;
 		}
 		}
 		l_name = std::move(r23);
@@ -420,7 +420,7 @@ namespace pgen::PrintfParameterTypeRule {
 			if (UNEXPECTED(r60.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_formatString.raw(), "getValue", "getvalue", 8, 0, NULL, r60.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_formatString.raw(), "getValue", "getvalue", 8, r60.raw()))) return false;
 		}
 		}
 		l_format = std::move(r60);
@@ -428,7 +428,7 @@ namespace pgen::PrintfParameterTypeRule {
 	 {
 		zv::Val o61 = zv::Val::copyOf(zv::Ref(l_format.raw()));
 		zv::Val r62;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r62.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_scope, "getPhpVersion", "getphpversion", 13, r62.raw()))) return false;
 		zv::Val r63;
 		if (UNEXPECTED(!pgen::PrintfParameterTypeRule::m_getPlaceholders(Z_OBJ_P(&this_zv), o61.raw(), r62.raw(), r63.raw()))) return false;
 		l_placeholderMap = std::move(r63);

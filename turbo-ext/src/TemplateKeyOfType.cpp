@@ -7,16 +7,16 @@
 zend_class_entry *pt_ce_template_key_of_type = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_getType_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getType_0 */
 static pgrt::PropIndexSite pg_site_1; /* slot_default_1 */
-static pt_method_site pg_site_2; /* method_getBound_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getBound_2 */
 static pgrt::DispatchCache pg_site_3; /* dispatch_getResult_3 */
 static pt_method_site pg_site_4; /* method_getResult_4 */
-static pt_method_site pg_site_5; /* method_getScope_5 */
-static pt_method_site pg_site_6; /* method_getName_6 */
-static pt_method_site pg_site_7; /* method_getVariance_7 */
-static pt_method_site pg_site_8; /* method_getStrategy_8 */
-static pt_method_site pg_site_9; /* method_getDefault_9 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getScope_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getVariance_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getStrategy_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getDefault_9 */
 static pt_method_site pg_site_10; /* static_PHPStan\Type\Generic\TemplateTypeFactory::create */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Generic\TemplateTypeStrategy */
@@ -39,7 +39,7 @@ namespace pgen::TemplateKeyOfType {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_bound, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_bound, "getType", "gettype", 7, r1.raw()))) return false;
 		}
 		}
 		if (UNEXPECTED(!pgen::KeyOfType::m___construct(self, r1.raw()))) return false;
@@ -86,7 +86,7 @@ namespace pgen::TemplateKeyOfType {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, &this_zv, "getBound", "getbound", 8, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, &this_zv, "getBound", "getbound", 8, r1.raw()))) return false;
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(r1.raw()) == IS_OBJECT ? Z_OBJCE_P(r1.raw()) : NULL;
 		bool vd2_done = false;
@@ -152,23 +152,23 @@ namespace pgen::TemplateKeyOfType {
 	}
 	 {
 		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, &this_zv, "getScope", "getscope", 8, 0, NULL, r10.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, &this_zv, "getScope", "getscope", 8, r10.raw()))) return false;
 		zv::Val r11;
 		if (EXPECTED(Z_TYPE_P(&this_zv) == IS_OBJECT)) {
 			r11 = pt_type_op(Z_OBJ_P(&this_zv), PT_OP_GET_NAME, 0, NULL);
 			if (UNEXPECTED(r11.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, &this_zv, "getName", "getname", 7, 0, NULL, r11.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, &this_zv, "getName", "getname", 7, r11.raw()))) return false;
 		}
 		}
 		zv::Val o12 = zv::Val::copyOf(zv::Ref(l_result.raw()));
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, &this_zv, "getVariance", "getvariance", 11, 0, NULL, r13.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, &this_zv, "getVariance", "getvariance", 11, r13.raw()))) return false;
 		zv::Val r14;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, &this_zv, "getStrategy", "getstrategy", 11, 0, NULL, r14.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, &this_zv, "getStrategy", "getstrategy", 11, r14.raw()))) return false;
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, &this_zv, "getDefault", "getdefault", 10, 0, NULL, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, &this_zv, "getDefault", "getdefault", 10, r15.raw()))) return false;
 		zval av16[6];
 		ZVAL_COPY_VALUE(&av16[0], r10.raw());
 		ZVAL_COPY_VALUE(&av16[1], r11.raw());

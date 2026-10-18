@@ -9,13 +9,13 @@ zend_class_entry *pt_ce_trait_template_type_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getDocComment_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getDocComment_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::PropSite pg_site_2; /* prop_namespacedName_2 */
 static pt_method_site pg_site_3; /* method_getFile_3 */
 static pgrt::GetterSite pg_site_4; /* getter_getText_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Comment */
-static pt_method_site pg_site_6; /* method_getText_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getText_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\FileTypeMapper */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\Generics\TemplateTypeCheck */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
@@ -62,7 +62,7 @@ namespace pgen::TraitTemplateTypeRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getDocComment", "getdoccomment", 13, r1.raw()))) return false;
 		l_docComment = std::move(r1);
 	}
 	 {
@@ -126,7 +126,7 @@ namespace pgen::TraitTemplateTypeRule {
 			ZVAL_COPY(r17.raw(), gs16);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_docComment.raw(), "getText", "gettext", 7, 0, NULL, r17.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_docComment.raw(), "getText", "gettext", 7, r17.raw()))) return false;
 		}
 		}
 		zval z18;

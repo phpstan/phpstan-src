@@ -9,16 +9,16 @@ zend_class_entry *pt_ce_array_map_function_return_type_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::PropSite pg_site_2; /* prop_value_2 */
 static pt_method_site pg_site_3; /* method_getType_3 */
-static pt_method_site pg_site_4; /* method_isNull_4 */
-static pt_method_site pg_site_5; /* method_isCallable_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isNull_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isCallable_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PhpParser\Node\Arg */
 static pgrt::PropSite pg_site_7; /* prop_value_7 */
 static pt_method_site pg_site_8; /* method_getType_8 */
-static pt_method_site pg_site_9; /* method_getIterableValueType_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getIterableValueType_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Node\Expr\TypeExpr */
 static pgrt::FunctionSite pg_site_11; /* function_array_slice */
 static pgrt::FunctionSite pg_site_12; /* function_array_map */
@@ -26,8 +26,8 @@ static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node\Expr\FuncCall */
 static pt_method_site pg_site_14; /* method_getType_14 */
 static pgrt::PropSite pg_site_15; /* prop_value_15 */
 static pt_method_site pg_site_16; /* method_getType_16 */
-static pt_method_site pg_site_17; /* method_getArraySize_17 */
-static pt_method_site pg_site_18; /* method_getConstantScalarValues_18 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getArraySize_17 */
+static pgrt::MethodShapeSite pg_site_18; /* method0_getConstantScalarValues_18 */
 static pgrt::PropSite pg_site_19; /* prop_value_19 */
 static pgrt::PropSite pg_site_20; /* prop_value_20 */
 static pgrt::ClassSite pg_site_21; /* cls_PhpParser\Node\Expr\BinaryOp\Identical */
@@ -38,20 +38,20 @@ static pgrt::ClassSite pg_site_25; /* cls_PhpParser\Node\Expr\ConstFetch */
 static pgrt::FunctionSite pg_site_26; /* function_array_reduce */
 static pt_method_site pg_site_27; /* method_getType_27 */
 static pt_method_site pg_site_28; /* method_isTrue_28 */
-static pt_method_site pg_site_29; /* method_getIterableValueType_29 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_getIterableValueType_29 */
 static pt_method_site pg_site_30; /* method_setOffsetValueType_30 */
 static pt_method_site pg_site_31; /* method_getArray_31 */
 static pgrt::PropSite pg_site_32; /* prop_value_32 */
 static pt_method_site pg_site_33; /* method_getType_33 */
-static pt_method_site pg_site_34; /* method_getConstantArrays_34 */
+static pgrt::MethodShapeSite pg_site_34; /* method0_getConstantArrays_34 */
 static pt_method_site pg_site_35; /* static_PHPStan\Type\TypeCombinator::countConstantArrayValueTypes */
 static pgrt::ClassSite pg_site_36; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_37; /* method_mapValueType_37 */
-static pt_method_site pg_site_38; /* method_getIterableKeyType_38 */
-static pt_method_site pg_site_39; /* method_isArray_39 */
-static pt_method_site pg_site_40; /* method_getIterableKeyType_40 */
+static pgrt::MethodShapeSite pg_site_38; /* method0_getIterableKeyType_38 */
+static pgrt::MethodShapeSite pg_site_39; /* method0_isArray_39 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_getIterableKeyType_40 */
 static pt_method_site pg_site_41; /* static_PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo */
-static pt_method_site pg_site_42; /* method_isIterableAtLeastOnce_42 */
+static pgrt::MethodShapeSite pg_site_42; /* method0_isIterableAtLeastOnce_42 */
 static pgrt::ClassSite pg_site_43; /* cls_PhpParser\Node\Expr\Closure */
 static pgrt::ClassSite pg_site_44; /* cls_PhpParser\Node\Expr\ArrowFunction */
 static pt_method_site pg_site_45; /* method_setAttribute_45 */
@@ -62,7 +62,7 @@ static pt_method_site pg_site_49; /* method_getType_49 */
 static pt_method_site pg_site_50; /* static_PHPStan\Type\TypeUtils::getAccessoryTypes */
 static pgrt::ClassSite pg_site_51; /* cls_PHPStan\Type\Accessory\HasOffsetValueType */
 static pgrt::GetterSite pg_site_52; /* getter_getOffsetType_52 */
-static pt_method_site pg_site_53; /* method_getOffsetType_53 */
+static pgrt::MethodShapeSite pg_site_53; /* method0_getOffsetType_53 */
 static pgrt::ClassSite pg_site_54; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_55; /* cls_PHPStan\Analyser\Scope */
 
@@ -104,7 +104,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r8.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, r5.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r8.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, r5.raw(), "getIterableValueType", "getiterablevaluetype", 20, r8.raw()))) return;
 		}
 		}
 		zval av9[1];
@@ -186,7 +186,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -291,7 +291,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 			if (UNEXPECTED(r16.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_callableType.raw(), "isNull", "isnull", 6, 0, NULL, r16.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_callableType.raw(), "isNull", "isnull", 6, r16.raw()))) return false;
 		}
 		}
 		bool r17;
@@ -305,7 +305,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 			if (UNEXPECTED(r18.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_callableType.raw(), "isCallable", "iscallable", 10, 0, NULL, r18.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_callableType.raw(), "isCallable", "iscallable", 10, r18.raw()))) return false;
 		}
 		}
 		bool r19;
@@ -437,14 +437,14 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 								}
 								 {
 									zv::Val r60;
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_argType.raw(), "getArraySize", "getarraysize", 12, 0, NULL, r60.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_argType.raw(), "getArraySize", "getarraysize", 12, r60.raw()))) return false;
 									zv::Val r61;
 									if (EXPECTED(Z_TYPE_P(r60.raw()) == IS_OBJECT)) {
 										r61 = pt_type_op(Z_OBJ_P(r60.raw()), PT_OP_GET_CONSTANT_SCALAR_VALUES, 0, NULL);
 										if (UNEXPECTED(r61.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_18, r60.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, 0, NULL, r61.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, r60.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r61.raw()))) return false;
 									}
 									}
 									l_arraySizes = std::move(r61);
@@ -650,7 +650,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 										if (UNEXPECTED(r123.isUndef())) return false;
 									} else {
 									 {
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, 0, NULL, r123.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, l_argType.raw(), "getIterableValueType", "getiterablevaluetype", 20, r123.raw()))) return false;
 									}
 									}
 									l_offsetValueType = std::move(r123);
@@ -761,7 +761,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 					if (UNEXPECTED(r141.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_34, l_arrayType.raw(), "getConstantArrays", "getconstantarrays", 17, 0, NULL, r141.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_34, l_arrayType.raw(), "getConstantArrays", "getconstantarrays", 17, r141.raw()))) return false;
 				}
 				}
 				l_constantArrays = std::move(r141);
@@ -808,7 +808,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 									if (UNEXPECTED(r157.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_38, l_arrayType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r157.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_38, l_arrayType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r157.raw()))) return false;
 								}
 								}
 								zv::Val o158 = zv::Val::copyOf(zv::Ref(l_valueType.raw()));
@@ -839,7 +839,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 							if (UNEXPECTED(r161.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_39, l_arrayType.raw(), "isArray", "isarray", 7, 0, NULL, r161.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_39, l_arrayType.raw(), "isArray", "isarray", 7, r161.raw()))) return false;
 						}
 						}
 						bool r162;
@@ -852,7 +852,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 									if (UNEXPECTED(r165.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_40, l_arrayType.raw(), "getIterableKeyType", "getiterablekeytype", 18, 0, NULL, r165.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, l_arrayType.raw(), "getIterableKeyType", "getiterablekeytype", 18, r165.raw()))) return false;
 								}
 								}
 								zv::Val o166 = zv::Val::copyOf(zv::Ref(l_valueType.raw()));
@@ -921,7 +921,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 			if (UNEXPECTED(r181.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_42, l_arrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r181.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, l_arrayType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r181.raw()))) return false;
 		}
 		}
 		bool r182;
@@ -1144,7 +1144,7 @@ namespace pgen::ArrayMapFunctionReturnTypeExtension {
 						ZVAL_COPY(r17.raw(), gs16);
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_53, l_accessoryType, "getOffsetType", "getoffsettype", 13, 0, NULL, r17.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_53, l_accessoryType, "getOffsetType", "getoffsettype", 13, r17.raw()))) return false;
 					}
 					}
 					zv::Val n15;

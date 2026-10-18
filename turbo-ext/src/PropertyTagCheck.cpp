@@ -10,28 +10,28 @@ zend_class_entry *pt_ce_property_tag_check = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[12];
 
-static pt_method_site pg_site_0; /* method_getPropertyTags_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPropertyTags_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\PhpDoc\Tag\PropertyTag */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_3; /* method_getPropertyTags_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getPropertyTags_3 */
 static pt_method_site pg_site_4; /* method_getTraitContextResolvedPhpDoc_4 */
 static pgrt::GetterSite pg_site_5; /* getter_getReadableType_5 */
-static pt_method_site pg_site_6; /* method_getReadableType_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getReadableType_6 */
 static pgrt::GetterSite pg_site_7; /* getter_getWritableType_7 */
-static pt_method_site pg_site_8; /* method_getWritableType_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getWritableType_8 */
 static pt_method_site pg_site_9; /* method_equals_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\ShouldNotHappenException */
 static pt_method_site pg_site_11; /* method_getDisplayName_11 */
-static pt_method_site pg_site_12; /* method_getClassTypeDescription_12 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getClassTypeDescription_12 */
 static pt_method_site pg_site_13; /* method_getDisplayName_13 */
-static pt_method_site pg_site_14; /* method_getClassTypeDescription_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getClassTypeDescription_14 */
 static pt_method_site pg_site_15; /* method_getDisplayName_15 */
 static pt_method_site pg_site_16; /* method_describe_16 */
-static pt_method_site pg_site_17; /* method_getReferencedClasses_17 */
+static pgrt::MethodShapeSite pg_site_17; /* method0_getReferencedClasses_17 */
 static pt_method_site pg_site_18; /* method_hasClass_18 */
 static pt_method_site pg_site_19; /* method_getDisplayName_19 */
 static pt_method_site pg_site_20; /* method_getClass_20 */
-static pt_method_site pg_site_21; /* method_isTrait_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_isTrait_21 */
 static pt_method_site pg_site_22; /* method_getDisplayName_22 */
 static pt_method_site pg_site_23; /* method_getDisplayName_23 */
 static pt_method_site pg_site_24; /* method_getDisplayName_24 */
@@ -95,7 +95,7 @@ namespace pgen::PropertyTagCheck {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_classReflection, "getPropertyTags", "getpropertytags", 15, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_classReflection, "getPropertyTags", "getpropertytags", 15, r4.raw()))) return false;
 		zv::Val a5 = zv::Val::copyOf(zv::Ref(r4.raw()).deref());
 		HashTable *ht3 = Z_ARRVAL_P(a5.raw());
 		zval *v6;
@@ -220,7 +220,7 @@ namespace pgen::PropertyTagCheck {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_classReflection, "getPropertyTags", "getpropertytags", 15, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_classReflection, "getPropertyTags", "getpropertytags", 15, r4.raw()))) return false;
 		zv::Val a5 = zv::Val::copyOf(zv::Ref(r4.raw()).deref());
 		HashTable *ht3 = Z_ARRVAL_P(a5.raw());
 		zval *v6;
@@ -430,7 +430,7 @@ namespace pgen::PropertyTagCheck {
 			ZVAL_COPY(r2.raw(), gs1);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_propertyTag, "getReadableType", "getreadabletype", 15, 0, NULL, r2.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_propertyTag, "getReadableType", "getreadabletype", 15, r2.raw()))) return false;
 		}
 		}
 		l_readableType = std::move(r2);
@@ -442,7 +442,7 @@ namespace pgen::PropertyTagCheck {
 			ZVAL_COPY(r4.raw(), gs3);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_propertyTag, "getWritableType", "getwritabletype", 15, 0, NULL, r4.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_propertyTag, "getWritableType", "getwritabletype", 15, r4.raw()))) return false;
 		}
 		}
 		l_writableType = std::move(r4);
@@ -673,7 +673,7 @@ namespace pgen::PropertyTagCheck {
 			 {
 				 {
 					zv::Val r37;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r37.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, r37.raw()))) return false;
 					zv::Val r38;
 					if (EXPECTED(Z_TYPE_P(p_classReflection) == IS_OBJECT && Z_OBJCE_P(p_classReflection) == pt_ce_class_reflection)) {
 						r38 = pt_class_reflection_get_display_name(Z_OBJ_P(p_classReflection));
@@ -731,7 +731,7 @@ namespace pgen::PropertyTagCheck {
 			 {
 				 {
 					zv::Val r58;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r58.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_classReflection, "getClassTypeDescription", "getclasstypedescription", 23, r58.raw()))) return false;
 					zv::Val r59;
 					if (EXPECTED(Z_TYPE_P(p_classReflection) == IS_OBJECT && Z_OBJCE_P(p_classReflection) == pt_ce_class_reflection)) {
 						r59 = pt_class_reflection_get_display_name(Z_OBJ_P(p_classReflection));
@@ -819,7 +819,7 @@ namespace pgen::PropertyTagCheck {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_type, "getReferencedClasses", "getreferencedclasses", 20, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, p_type, "getReferencedClasses", "getreferencedclasses", 20, r4.raw()))) return false;
 		}
 		}
 		zv::Val a5 = zv::Val::copyOf(zv::Ref(r4.raw()).deref());
@@ -939,7 +939,7 @@ namespace pgen::PropertyTagCheck {
 								if (UNEXPECTED(r36.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_21, vd32.raw(), "isTrait", "istrait", 7, 0, NULL, r36.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, vd32.raw(), "isTrait", "istrait", 7, r36.raw()))) return false;
 							}
 							}
 							if (Z_TYPE_P(r36.raw()) == IS_TRUE) {

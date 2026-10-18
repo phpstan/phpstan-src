@@ -7,12 +7,12 @@
 zend_class_entry *pt_ce_php_parameter_from_parser_node_reflection = nullptr;
 
 
-static pt_method_site pg_site_0; /* method_isNull_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_isNull_0 */
 static pt_method_site pg_site_1; /* method_inferTemplateTypes_1 */
-static pt_method_site pg_site_2; /* method_isEmpty_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isEmpty_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Type\MixedType */
 static pgrt::GetterSite pg_site_4; /* getter_isExplicitMixed_4 */
-static pt_method_site pg_site_5; /* method_isExplicitMixed_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_isExplicitMixed_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Reflection\AllowedConstantsResult */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\PassedByReference */
@@ -131,7 +131,7 @@ namespace pgen::PhpParameterFromParserNodeReflection {
 							if (UNEXPECTED(r7.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p6, "isNull", "isnull", 6, 0, NULL, r7.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p6, "isNull", "isnull", 6, r7.raw()))) return false;
 						}
 						}
 						bool r8;
@@ -159,7 +159,7 @@ namespace pgen::PhpParameterFromParserNodeReflection {
 							}
 							 {
 								zv::Val r14;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_inferred.raw(), "isEmpty", "isempty", 7, 0, NULL, r14.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_inferred.raw(), "isEmpty", "isempty", 7, r14.raw()))) return false;
 								if (Z_TYPE_P(r14.raw()) == IS_TRUE) {
 									 {
 										zv::Val r15;
@@ -240,7 +240,7 @@ namespace pgen::PhpParameterFromParserNodeReflection {
 				ZVAL_COPY(r5.raw(), gs4);
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p3, "isExplicitMixed", "isexplicitmixed", 15, 0, NULL, r5.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p3, "isExplicitMixed", "isexplicitmixed", 15, r5.raw()))) return false;
 			}
 			}
 			b1 = (Z_TYPE_P(r5.raw()) == IS_TRUE);

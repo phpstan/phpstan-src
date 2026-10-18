@@ -18,10 +18,10 @@ static pt_method_site pg_site_7; /* method_isAlwaysTerminating_7 */
 static pt_method_site pg_site_8; /* method_getThrowPoints_8 */
 static pt_method_site pg_site_9; /* method_getImpurePoints_9 */
 static pt_method_site pg_site_10; /* method_getNativeType_10 */
-static pt_method_site pg_site_11; /* method_getType_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getType_11 */
 static pt_method_site pg_site_12; /* method_toBoolean_12 */
-static pt_method_site pg_site_13; /* method_isTrue_13 */
-static pt_method_site pg_site_14; /* method_isFalse_14 */
+static pgrt::MethodShapeSite pg_site_13; /* method0_isTrue_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isFalse_14 */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\TypeSpecifierContext */
 static pt_method_site pg_site_16; /* method_null_16 */
 static pt_method_site pg_site_17; /* method_specifyDefaultTypes_17 */
@@ -68,7 +68,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(r3.isUndef())) return;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, 0, NULL, r3.raw(), NULL))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, zv::Ref(&captures[0]).deref().raw(), "getType", "gettype", 7, r3.raw()))) return;
 			}
 			}
 			q1 = std::move(r3);
@@ -90,7 +90,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	}
 	 {
 		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_exprBooleanType.raw(), "isTrue", "istrue", 6, 0, NULL, r6.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_exprBooleanType.raw(), "isTrue", "istrue", 6, r6.raw()))) return;
 		bool r7;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r6.raw()), &r7))) return;
 		if (r7) {
@@ -104,7 +104,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	}
 	 {
 		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_exprBooleanType.raw(), "isFalse", "isfalse", 7, 0, NULL, r9.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_exprBooleanType.raw(), "isFalse", "isfalse", 7, r9.raw()))) return;
 		bool r10;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r9.raw()), &r10))) return;
 		if (r10) {

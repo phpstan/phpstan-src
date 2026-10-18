@@ -13,9 +13,9 @@ static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Type\NeverType */
 static pt_method_site pg_site_1; /* method_isSuperTypeOf_1 */
 static pt_method_site pg_site_2; /* method_isSuperTypeOf_2 */
 static pt_method_site pg_site_3; /* method_isSuperTypeOf_3 */
-static pt_method_site pg_site_4; /* method_isFloat_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isFloat_4 */
 static pt_method_site pg_site_5; /* static_PHPStan\Type\IntegerRangeType::fromInterval */
-static pt_method_site pg_site_6; /* method_isInteger_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isInteger_6 */
 static pt_method_site pg_site_7; /* method_isNumericString_7 */
 static pt_method_site pg_site_8; /* method_isSuperTypeOf_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Type\Type */
@@ -155,7 +155,7 @@ namespace pgen::BcMathNumberOperatorTypeSpecifyingExtension {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_otherSide.raw(), "isFloat", "isfloat", 7, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_otherSide.raw(), "isFloat", "isfloat", 7, r8.raw()))) return false;
 		}
 		}
 		bool r9;
@@ -207,7 +207,7 @@ namespace pgen::BcMathNumberOperatorTypeSpecifyingExtension {
 			if (UNEXPECTED(r20.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_otherSide.raw(), "isInteger", "isinteger", 9, 0, NULL, r20.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_otherSide.raw(), "isInteger", "isinteger", 9, r20.raw()))) return false;
 		}
 		}
 		bool r21;

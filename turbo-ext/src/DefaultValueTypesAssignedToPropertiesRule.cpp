@@ -11,8 +11,8 @@ zend_class_entry *pt_ce_default_value_types_assigned_to_properties_rule = nullpt
 static zval pg_lit[5];
 
 static pt_method_site pg_site_0; /* method_getDefault_0 */
-static pt_method_site pg_site_1; /* method_getClassReflection_1 */
-static pt_method_site pg_site_2; /* method_getName_2 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getClassReflection_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
 static pt_method_site pg_site_3; /* method_getNativeProperty_3 */
 static pt_method_site pg_site_4; /* method_getWritableType_4 */
 static pt_method_site pg_site_5; /* method_hasNativeType_5 */
@@ -24,7 +24,7 @@ static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Type\Type */
 static pt_method_site pg_site_11; /* static_PHPStan\Type\VerbosityLevel::getRecommendedLevelByType */
 static pt_method_site pg_site_12; /* method_isStatic_12 */
 static pt_method_site pg_site_13; /* method_getDisplayName_13 */
-static pt_method_site pg_site_14; /* method_getName_14 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
 static pt_method_site pg_site_15; /* method_describe_15 */
 static pt_method_site pg_site_16; /* method_describe_16 */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Rules\RuleLevelHelper */
@@ -102,7 +102,7 @@ namespace pgen::DefaultValueTypesAssignedToPropertiesRule {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getClassReflection", "getclassreflection", 18, r4.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r4);
@@ -115,7 +115,7 @@ namespace pgen::DefaultValueTypesAssignedToPropertiesRule {
 			if (UNEXPECTED(r6.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getName", "getname", 7, 0, NULL, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getName", "getname", 7, r6.raw()))) return false;
 		}
 		}
 		zval av7[1];
@@ -260,7 +260,7 @@ namespace pgen::DefaultValueTypesAssignedToPropertiesRule {
 			if (UNEXPECTED(r33.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_node, "getName", "getname", 7, 0, NULL, r33.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, p_node, "getName", "getname", 7, r33.raw()))) return false;
 		}
 		}
 		zval av34[1];

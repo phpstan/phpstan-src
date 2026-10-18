@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_pure_function_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[2];
 
-static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
-static pt_method_site pg_site_1; /* method_getName_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getFunctionReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
 static pt_method_site pg_site_2; /* method_getParameters_2 */
 static pt_method_site pg_site_3; /* method_getReturnType_3 */
 static pt_method_site pg_site_4; /* method_getImpurePoints_4 */
@@ -59,7 +59,7 @@ namespace pgen::PureFunctionRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, r1.raw()))) return false;
 		l_function = std::move(r1);
 	}
 	 {
@@ -72,7 +72,7 @@ namespace pgen::PureFunctionRule {
 			if (UNEXPECTED(r4.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_function.raw(), "getName", "getname", 7, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_function.raw(), "getName", "getname", 7, r4.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb5;

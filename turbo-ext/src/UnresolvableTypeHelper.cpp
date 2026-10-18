@@ -10,12 +10,12 @@ zend_class_entry *pt_ce_unresolvable_type_helper = nullptr;
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\ErrorType */
 static pgrt::GetterSite pg_site_2; /* getter_getReason_2 */
-static pt_method_site pg_site_3; /* method_getReason_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getReason_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\NeverType */
 static pgrt::GetterSite pg_site_5; /* getter_isExplicit_5 */
-static pt_method_site pg_site_6; /* method_isExplicit_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_isExplicit_6 */
 static pgrt::GetterSite pg_site_7; /* getter_getReason_7 */
-static pt_method_site pg_site_8; /* method_getReason_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getReason_8 */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -50,7 +50,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 					ZVAL_COPY(r4.raw(), gs3);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_type, "getReason", "getreason", 9, 0, NULL, r4.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_type, "getReason", "getreason", 9, r4.raw()))) return;
 				}
 				}
 				l_reason = std::move(r4);
@@ -66,7 +66,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				ZVAL_COPY(r7.raw(), gs6);
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_type, "isExplicit", "isexplicit", 10, 0, NULL, r7.raw()))) return;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_type, "isExplicit", "isexplicit", 10, r7.raw()))) return;
 			}
 			}
 			b5 = !((Z_TYPE_P(r7.raw()) == IS_TRUE));
@@ -83,7 +83,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 					ZVAL_COPY(r10.raw(), gs9);
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_type, "getReason", "getreason", 9, 0, NULL, r10.raw()))) return;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_type, "getReason", "getreason", 9, r10.raw()))) return;
 				}
 				}
 				l_reason = std::move(r10);

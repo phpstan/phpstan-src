@@ -11,16 +11,16 @@ static zval pg_lit[8];
 
 static pt_method_site pg_site_0; /* method_getOriginalNode_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Stmt\Interface_ */
-static pt_method_site pg_site_2; /* method_getClassReflection_2 */
-static pt_method_site pg_site_3; /* method_getName_3 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getClassReflection_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
 static pgrt::PropSite pg_site_4; /* prop_extends_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\PhpDoc\Tag\ExtendsTag */
-static pt_method_site pg_site_6; /* method_getType_6 */
-static pt_method_site pg_site_7; /* method_getExtendsTags_7 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getType_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getExtendsTags_7 */
 static pgrt::FunctionSite pg_site_8; /* function_array_map */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\PhpDoc\Tag\ImplementsTag */
-static pt_method_site pg_site_10; /* method_getType_10 */
-static pt_method_site pg_site_11; /* method_getImplementsTags_11 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getType_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getImplementsTags_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\ClassReflection */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Rules\Generics\GenericAncestorsCheck */
 static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Rules\Generics\CrossCheckInterfacesHelper */
@@ -44,7 +44,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_tag, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_tag, "getType", "gettype", 7, r1.raw()))) return;
 		}
 		}
 		*return_value = r1.take();
@@ -69,7 +69,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r1.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_tag, "getType", "gettype", 7, 0, NULL, r1.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_tag, "getType", "gettype", 7, r1.raw()))) return;
 		}
 		}
 		*return_value = r1.take();
@@ -169,7 +169,7 @@ namespace pgen::InterfaceAncestorsRule {
 			if (UNEXPECTED(r7.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getClassReflection", "getclassreflection", 18, r7.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r7);
@@ -181,7 +181,7 @@ namespace pgen::InterfaceAncestorsRule {
 			if (UNEXPECTED(r8.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "getName", "getname", 7, r8.raw()))) return false;
 		}
 		}
 		l_interfaceName = std::move(r8);
@@ -205,7 +205,7 @@ namespace pgen::InterfaceAncestorsRule {
 		zv::Val o14 = zv::Val::copyOf(zv::Ref(zv::Ref(p12).deref().raw()));
 		zv::Val h15 = pt_native_closure_new(&pg_closure_1, 0, NULL, 0u);
 		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_classReflection.raw(), "getExtendsTags", "getextendstags", 14, 0, NULL, r16.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_classReflection.raw(), "getExtendsTags", "getextendstags", 14, r16.raw()))) return false;
 		zval av17[2];
 		ZVAL_COPY_VALUE(&av17[0], h15.raw());
 		ZVAL_COPY_VALUE(&av17[1], r16.raw());
@@ -265,7 +265,7 @@ namespace pgen::InterfaceAncestorsRule {
 		zv::Val o35 = zv::Val::copyOf(zv::Ref(&arr34_raw));
 		zv::Val h36 = pt_native_closure_new(&pg_closure_2, 0, NULL, 0u);
 		zv::Val r37;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_classReflection.raw(), "getImplementsTags", "getimplementstags", 17, 0, NULL, r37.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_classReflection.raw(), "getImplementsTags", "getimplementstags", 17, r37.raw()))) return false;
 		zval av38[2];
 		ZVAL_COPY_VALUE(&av38[0], h36.raw());
 		ZVAL_COPY_VALUE(&av38[1], r37.raw());

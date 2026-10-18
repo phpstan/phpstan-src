@@ -9,14 +9,14 @@ zend_class_entry *pt_ce_template_generic_object_type = nullptr;
 
 static pgrt::GetterSite pg_site_0; /* getter_getClassName_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\ObjectType */
-static pt_method_site pg_site_2; /* method_getClassName_2 */
-static pt_method_site pg_site_3; /* method_getTypes_3 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getClassName_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getTypes_3 */
 static pgrt::GetterSite pg_site_4; /* getter_getVariances_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Generic\GenericObjectType */
-static pt_method_site pg_site_6; /* method_getVariances_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getVariances_6 */
 static pt_method_site pg_site_7; /* bound_PHPStan\Type\Generic\GenericObjectType::__construct */
 static pgrt::PropIndexSite pg_site_8; /* slot_default_8 */
-static pt_method_site pg_site_9; /* method_getBound_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getBound_9 */
 static pgrt::PropIndexSite pg_site_10; /* slot_default_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
 static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Generic\TemplateTypeStrategy */
@@ -38,7 +38,7 @@ namespace pgen::TemplateGenericObjectType {
 			ZVAL_COPY(r2.raw(), gs1);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_bound, "getClassName", "getclassname", 12, 0, NULL, r2.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_bound, "getClassName", "getclassname", 12, r2.raw()))) return false;
 		}
 		}
 		zv::Val r3;
@@ -47,7 +47,7 @@ namespace pgen::TemplateGenericObjectType {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_bound, "getTypes", "gettypes", 8, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_bound, "getTypes", "gettypes", 8, r3.raw()))) return false;
 		}
 		}
 		zval *gs4 = Z_TYPE_P(p_bound) == IS_OBJECT ? pgrt::trivialGetter(pg_site_4, Z_OBJ_P(p_bound), pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Generic\\GenericObjectType", 38), "getvariances", 12, "variances", 9) : NULL;
@@ -56,7 +56,7 @@ namespace pgen::TemplateGenericObjectType {
 			ZVAL_COPY(r5.raw(), gs4);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_bound, "getVariances", "getvariances", 12, 0, NULL, r5.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_bound, "getVariances", "getvariances", 12, r5.raw()))) return false;
 		}
 		}
 		zval av6[2];
@@ -120,7 +120,7 @@ namespace pgen::TemplateGenericObjectType {
 		if (UNEXPECTED(p8 == NULL)) return false;
 		zv::Val o9 = zv::Val::copyOf(zv::Ref(p8));
 		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, &this_zv, "getBound", "getbound", 8, 0, NULL, r10.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, &this_zv, "getBound", "getbound", 8, r10.raw()))) return false;
 		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_10, Z_OBJ_P(&this_zv), "default", 7), "default");
 		if (UNEXPECTED(p11 == NULL)) return false;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r10.raw(), pt_ce_generic_object_type) || pgrt::instanceOfClass(r10.raw(), pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Type\\Generic\\GenericObjectType", 38))))) { pgrt::throwArgumentType("PHPStan\\Type\\Generic\\TemplateGenericObjectType::__construct", 5, "bound", "PHPStan\\Type\\Generic\\GenericObjectType", r10.raw()); return false; }

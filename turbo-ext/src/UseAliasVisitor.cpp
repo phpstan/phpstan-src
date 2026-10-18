@@ -30,7 +30,7 @@ static pgrt::PropSite pg_site_17; /* prop_alias_17 */
 static pgrt::PropSite pg_site_18; /* prop_name_18 */
 static pgrt::ClassSite pg_site_19; /* cls_PhpParser\Node\Name */
 static pt_method_site pg_site_20; /* method_getAttribute_20 */
-static pt_method_site pg_site_21; /* method_getParts_21 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getParts_21 */
 static pt_method_site pg_site_22; /* method_setAttribute_22 */
 static pgrt::ClassSite pg_site_23; /* cls_PhpParser\Node */
 
@@ -248,7 +248,7 @@ namespace pgen::UseAliasVisitor {
 				if (pgrt::instanceOfClass(l_originalName.raw(), pgrt::lookupClassQuiet(pg_site_19, "PhpParser\\Node\\Name", 19))) {
 					 {
 						zv::Val r63;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_originalName.raw(), "getParts", "getparts", 8, 0, NULL, r63.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_originalName.raw(), "getParts", "getparts", 8, r63.raw()))) return false;
 						l_originalParts = std::move(r63);
 					}
 					 {

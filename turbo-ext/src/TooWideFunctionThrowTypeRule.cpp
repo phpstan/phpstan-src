@@ -10,11 +10,11 @@ zend_class_entry *pt_ce_too_wide_function_throw_type_rule = nullptr;
 static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_getStatementResult_0 */
-static pt_method_site pg_site_1; /* method_getFunctionReflection_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getFunctionReflection_1 */
 static pt_method_site pg_site_2; /* method_getThrowType_2 */
 static pt_method_site pg_site_3; /* method_getThrowPoints_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\Exceptions\TooWideThrowTypeCheck */
 static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Analyser\Scope */
@@ -79,7 +79,7 @@ namespace pgen::TooWideFunctionThrowTypeRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getFunctionReflection", "getfunctionreflection", 21, r4.raw()))) return false;
 		l_functionReflection = std::move(r4);
 	}
 	 {
@@ -149,7 +149,7 @@ namespace pgen::TooWideFunctionThrowTypeRule {
 						if (UNEXPECTED(r23.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r23.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_functionReflection.raw(), "getName", "getname", 7, r23.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb24;

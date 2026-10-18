@@ -18,9 +18,9 @@ static pt_method_site pg_site_5; /* method_getArgs_5 */
 static pgrt::PropSite pg_site_6; /* prop_value_6 */
 static pt_method_site pg_site_7; /* method_getType_7 */
 static pt_method_site pg_site_8; /* method_getConstantStrings_8 */
-static pt_method_site pg_site_9; /* method_getValue_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
 static pgrt::ClassSite pg_site_10; /* cls_DateInterval */
-static pt_method_site pg_site_11; /* method_getMessage_11 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getMessage_11 */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Analyser\Scope */
 
@@ -161,7 +161,7 @@ namespace pgen::DateIntervalInstantiationRule {
 						if (UNEXPECTED(r34.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_constantString, "getValue", "getvalue", 8, 0, NULL, r34.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_constantString, "getValue", "getvalue", 8, r34.raw()))) return false;
 					}
 					}
 					l_dateIntervalString = std::move(r34);
@@ -192,7 +192,7 @@ namespace pgen::DateIntervalInstantiationRule {
 							 {
 								zv::Val o40 = zv::Val::copyOf(zv::Ref(l_dateIntervalString.raw()));
 								zv::Val r41;
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_e.raw(), "getMessage", "getmessage", 10, 0, NULL, r41.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_e.raw(), "getMessage", "getmessage", 10, r41.raw()))) return false;
 								pgrt::StringBuilder sb42;
 								sb42.appendLiteral("Instantiating DateInterval with ", 32);
 								if (UNEXPECTED(!sb42.append(o40.raw()))) return false;

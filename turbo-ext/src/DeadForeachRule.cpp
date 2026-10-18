@@ -12,7 +12,7 @@ static zval pg_lit[3];
 static pgrt::PropSite pg_site_0; /* prop_expr_0 */
 static pt_method_site pg_site_1; /* method_getType_1 */
 static pt_method_site pg_site_2; /* method_isIterable_2 */
-static pt_method_site pg_site_3; /* method_isIterableAtLeastOnce_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isIterableAtLeastOnce_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
 
@@ -88,7 +88,7 @@ namespace pgen::DeadForeachRule {
 			if (UNEXPECTED(r10.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_iterableType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, 0, NULL, r10.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_iterableType.raw(), "isIterableAtLeastOnce", "isiterableatleastonce", 21, r10.raw()))) return false;
 		}
 		}
 		bool r11;

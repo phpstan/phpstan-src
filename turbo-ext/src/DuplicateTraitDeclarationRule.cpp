@@ -10,7 +10,7 @@ zend_class_entry *pt_ce_duplicate_trait_declaration_rule = nullptr;
 static zval pg_lit[2];
 
 static pt_method_site pg_site_0; /* method_getOriginalNode_0 */
-static pt_method_site pg_site_1; /* method_getTraitReflection_1 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getTraitReflection_1 */
 static pt_method_site pg_site_2; /* method_getDisplayName_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Stmt\ClassLike */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Rules\Classes\DuplicateDeclarationHelper */
@@ -84,7 +84,7 @@ namespace pgen::DuplicateTraitDeclarationRule {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd3.raw()))) return false;
 		}
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getTraitReflection", "gettraitreflection", 18, 0, NULL, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getTraitReflection", "gettraitreflection", 18, r8.raw()))) return false;
 		zv::Val r9;
 		if (EXPECTED(Z_TYPE_P(r8.raw()) == IS_OBJECT && Z_OBJCE_P(r8.raw()) == pt_ce_class_reflection)) {
 			r9 = pt_class_reflection_get_display_name(Z_OBJ_P(r8.raw()));

@@ -12,10 +12,10 @@ static zval pg_lit[8];
 static pgrt::ClassSite pg_site_0; /* cls_PHPStan\Analyser\MutatingScope */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::ClassSite pg_site_2; /* cls_PhpParser\Node\Expr\BinaryOp\Identical */
-static pt_method_site pg_site_3; /* method_doNotTreatPhpDocTypesAsCertain_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_doNotTreatPhpDocTypesAsCertain_3 */
 static pt_method_site pg_site_4; /* method_getIdenticalResult_4 */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Expr\BinaryOp\NotIdentical */
-static pt_method_site pg_site_6; /* method_doNotTreatPhpDocTypesAsCertain_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_doNotTreatPhpDocTypesAsCertain_6 */
 static pt_method_site pg_site_7; /* method_getNotIdenticalResult_7 */
 static pgrt::PropSite pg_site_8; /* prop_type_8 */
 static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Type\Constant\ConstantBooleanType */
@@ -30,30 +30,30 @@ static pt_method_site pg_site_17; /* method_getNativeType_17 */
 static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Rules\RuleErrorBuilder */
 static pgrt::PropSite pg_site_19; /* prop_reasons_19 */
 static pt_method_site pg_site_20; /* method_getNativeType_20 */
-static pt_method_site pg_site_21; /* method_isConstantScalarValue_21 */
-static pt_method_site pg_site_22; /* method_isString_22 */
-static pt_method_site pg_site_23; /* method_isConstantScalarValue_23 */
-static pt_method_site pg_site_24; /* method_isString_24 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_isConstantScalarValue_21 */
+static pgrt::MethodShapeSite pg_site_22; /* method0_isString_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_isConstantScalarValue_23 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_isString_24 */
 static pt_method_site pg_site_25; /* method_isLowercaseString_25 */
 static pt_method_site pg_site_26; /* method_isLowercaseString_26 */
 static pt_method_site pg_site_27; /* method_isUppercaseString_27 */
 static pt_method_site pg_site_28; /* method_isUppercaseString_28 */
-static pt_method_site pg_site_29; /* method_isConstantScalarValue_29 */
-static pt_method_site pg_site_30; /* method_isString_30 */
-static pt_method_site pg_site_31; /* method_isConstantScalarValue_31 */
-static pt_method_site pg_site_32; /* method_isString_32 */
+static pgrt::MethodShapeSite pg_site_29; /* method0_isConstantScalarValue_29 */
+static pgrt::MethodShapeSite pg_site_30; /* method0_isString_30 */
+static pgrt::MethodShapeSite pg_site_31; /* method0_isConstantScalarValue_31 */
+static pgrt::MethodShapeSite pg_site_32; /* method0_isString_32 */
 static pt_method_site pg_site_33; /* method_isLowercaseString_33 */
 static pt_method_site pg_site_34; /* method_isLowercaseString_34 */
 static pt_method_site pg_site_35; /* method_isUppercaseString_35 */
 static pt_method_site pg_site_36; /* method_isUppercaseString_36 */
-static pt_method_site pg_site_37; /* method_getValue_37 */
-static pt_method_site pg_site_38; /* method_getOperatorSigil_38 */
+static pgrt::MethodShapeSite pg_site_37; /* method0_getValue_37 */
+static pgrt::MethodShapeSite pg_site_38; /* method0_getOperatorSigil_38 */
 static pt_method_site pg_site_39; /* method_describe_39 */
 static pt_method_site pg_site_40; /* method_describe_40 */
 static pt_method_site pg_site_41; /* method_isInTrait_41 */
 static pt_method_site pg_site_42; /* method_getAttribute_42 */
 static pt_method_site pg_site_43; /* method_isInTrait_43 */
-static pt_method_site pg_site_44; /* method_getOperatorSigil_44 */
+static pgrt::MethodShapeSite pg_site_44; /* method0_getOperatorSigil_44 */
 static pt_method_site pg_site_45; /* method_describe_45 */
 static pt_method_site pg_site_46; /* method_describe_46 */
 static pt_method_site pg_site_47; /* method_isEnum_47 */
@@ -236,7 +236,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 				} else {
 				 {
 					zv::Val r8;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r8.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_scope, "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r8.raw()))) return false;
 					q6 = std::move(r8);
 				}
 				}
@@ -264,7 +264,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 						} else {
 						 {
 							zv::Val r16;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, 0, NULL, r16.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_scope, "doNotTreatPhpDocTypesAsCertain", "donottreatphpdoctypesascertain", 30, r16.raw()))) return false;
 							q14 = std::move(r16);
 						}
 						}
@@ -430,7 +430,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 			if (UNEXPECTED(r54.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_leftType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r54.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_leftType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, r54.raw()))) return false;
 		}
 		}
 		bool r55;
@@ -443,7 +443,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 				if (UNEXPECTED(r56.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_leftType.raw(), "isString", "isstring", 8, 0, NULL, r56.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, l_leftType.raw(), "isString", "isstring", 8, r56.raw()))) return false;
 			}
 			}
 			bool r57;
@@ -458,7 +458,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 				if (UNEXPECTED(r58.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_23, l_rightType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r58.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_rightType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, r58.raw()))) return false;
 			}
 			}
 			bool r59;
@@ -473,7 +473,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 				if (UNEXPECTED(r60.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_24, l_rightType.raw(), "isString", "isstring", 8, 0, NULL, r60.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_rightType.raw(), "isString", "isstring", 8, r60.raw()))) return false;
 			}
 			}
 			bool r61;
@@ -558,7 +558,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 				if (UNEXPECTED(r81.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_29, l_rightType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r81.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, l_rightType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, r81.raw()))) return false;
 			}
 			}
 			bool r82;
@@ -571,7 +571,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 					if (UNEXPECTED(r83.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_30, l_rightType.raw(), "isString", "isstring", 8, 0, NULL, r83.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_30, l_rightType.raw(), "isString", "isstring", 8, r83.raw()))) return false;
 				}
 				}
 				bool r84;
@@ -586,7 +586,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 					if (UNEXPECTED(r85.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_31, l_leftType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, 0, NULL, r85.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_31, l_leftType.raw(), "isConstantScalarValue", "isconstantscalarvalue", 21, r85.raw()))) return false;
 				}
 				}
 				bool r86;
@@ -601,7 +601,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 					if (UNEXPECTED(r87.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_32, l_leftType.raw(), "isString", "isstring", 8, 0, NULL, r87.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_32, l_leftType.raw(), "isString", "isstring", 8, r87.raw()))) return false;
 				}
 				}
 				bool r88;
@@ -696,14 +696,14 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 			if (UNEXPECTED(r105.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_nodeType.raw(), "getValue", "getvalue", 8, 0, NULL, r105.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_37, l_nodeType.raw(), "getValue", "getvalue", 8, r105.raw()))) return false;
 		}
 		}
 		if (!((Z_TYPE_P(r105.raw()) == IS_TRUE))) {
 			 {
 				zv::Val o106 = zv::Val::copyOf(zv::Ref(l_addTip.raw()));
 				zv::Val r107;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_38, p_node, "getOperatorSigil", "getoperatorsigil", 16, 0, NULL, r107.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_38, p_node, "getOperatorSigil", "getoperatorsigil", 16, r107.raw()))) return false;
 				zval av108[1];
 				ZVAL_COPY_VALUE(&av108[0], l_verbosity.raw());
 				zv::Val r109;
@@ -844,7 +844,7 @@ namespace pgen::StrictComparisonOfDifferentTypesRule {
 	 {
 		zv::Val o140 = zv::Val::copyOf(zv::Ref(l_addTip.raw()));
 		zv::Val r141;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_44, p_node, "getOperatorSigil", "getoperatorsigil", 16, 0, NULL, r141.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_44, p_node, "getOperatorSigil", "getoperatorsigil", 16, r141.raw()))) return false;
 		zval av142[1];
 		ZVAL_COPY_VALUE(&av142[0], l_verbosity.raw());
 		zv::Val r143;

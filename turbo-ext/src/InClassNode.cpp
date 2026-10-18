@@ -11,7 +11,7 @@ static zval pg_lit[1];
 
 static pgrt::GetterSite pg_site_0; /* getter_getAttributes_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\NodeAbstract */
-static pt_method_site pg_site_2; /* method_getAttributes_2 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getAttributes_2 */
 static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Stmt */
 static pt_method_site pg_site_4; /* bound_PhpParser\Node\Stmt::__construct */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Stmt\ClassLike */
@@ -38,7 +38,7 @@ namespace pgen::InClassNode {
 			ZVAL_COPY(r4.raw(), gs3);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_originalNode, "getAttributes", "getattributes", 13, 0, NULL, r4.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_originalNode, "getAttributes", "getattributes", 13, r4.raw()))) return false;
 		}
 		}
 		zval av5[1];

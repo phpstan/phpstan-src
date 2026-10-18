@@ -9,17 +9,17 @@ zend_class_entry *pt_ce_properties_in_interface_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[19];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
-static pt_method_site pg_site_1; /* method_isInterface_1 */
-static pt_method_site pg_site_2; /* method_getPhpVersion_2 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_isInterface_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getPhpVersion_2 */
 static pt_method_site pg_site_3; /* method_hasHooks_3 */
-static pt_method_site pg_site_4; /* method_isPublic_4 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isPublic_4 */
 static pt_method_site pg_site_5; /* method_isReadOnly_5 */
 static pt_method_site pg_site_6; /* method_isStatic_6 */
 static pt_method_site pg_site_7; /* method_isAbstract_7 */
-static pt_method_site pg_site_8; /* method_isFinal_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_isFinal_8 */
 static pt_method_site pg_site_9; /* method_getHooks_9 */
-static pt_method_site pg_site_10; /* method_isFinal_10 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_isFinal_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Node\ClassPropertyNode */
 static pgrt::PropSite pg_site_12; /* prop_body_12 */
 static pgrt::ClassSite pg_site_13; /* cls_PhpParser\Node */
@@ -53,7 +53,7 @@ namespace pgen::PropertiesInInterfaceRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		zv::Val r2;
@@ -62,7 +62,7 @@ namespace pgen::PropertiesInInterfaceRule {
 			if (UNEXPECTED(r2.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, r1.raw(), "isInterface", "isinterface", 11, 0, NULL, r2.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, r1.raw(), "isInterface", "isinterface", 11, r2.raw()))) return false;
 		}
 		}
 		if (!(zend_is_true(r2.raw()))) {
@@ -76,7 +76,7 @@ namespace pgen::PropertiesInInterfaceRule {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_scope, "getPhpVersion", "getphpversion", 13, r4.raw()))) return false;
 		zv::Val r5;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsPropertyHooks(Z_OBJ_P(r4.raw()), r5.raw()))) return false;
 		bool r6;
@@ -136,7 +136,7 @@ namespace pgen::PropertiesInInterfaceRule {
 			if (UNEXPECTED(r20.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_node, "isPublic", "ispublic", 8, 0, NULL, r20.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_node, "isPublic", "ispublic", 8, r20.raw()))) return false;
 		}
 		}
 		if (!(zend_is_true(r20.raw()))) {
@@ -256,7 +256,7 @@ namespace pgen::PropertiesInInterfaceRule {
 			if (UNEXPECTED(r50.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_node, "isFinal", "isfinal", 7, 0, NULL, r50.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_node, "isFinal", "isfinal", 7, r50.raw()))) return false;
 		}
 		}
 		if (zend_is_true(r50.raw())) {
@@ -301,7 +301,7 @@ namespace pgen::PropertiesInInterfaceRule {
 						if (UNEXPECTED(r62.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_hook, "isFinal", "isfinal", 7, 0, NULL, r62.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_hook, "isFinal", "isfinal", 7, r62.raw()))) return false;
 					}
 					}
 					if (!(zend_is_true(r62.raw()))) {

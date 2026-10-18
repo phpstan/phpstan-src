@@ -9,16 +9,16 @@ zend_class_entry *pt_ce_missing_function_return_typehint_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[6];
 
-static pt_method_site pg_site_0; /* method_getFunctionReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getFunctionReflection_0 */
 static pt_method_site pg_site_1; /* method_getReturnType_1 */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\MixedType */
 static pgrt::GetterSite pg_site_3; /* getter_isExplicitMixed_3 */
-static pt_method_site pg_site_4; /* method_isExplicitMixed_4 */
-static pt_method_site pg_site_5; /* method_getName_5 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isExplicitMixed_4 */
+static pgrt::MethodShapeSite pg_site_5; /* method0_getName_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_7; /* method_getName_7 */
-static pt_method_site pg_site_8; /* method_getName_8 */
-static pt_method_site pg_site_9; /* method_getName_9 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
 static pt_method_site pg_site_10; /* method_describe_10 */
 static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Rules\MissingTypehintCheck */
 static pgrt::ClassSite pg_site_12; /* cls_PhpParser\Node */
@@ -65,7 +65,7 @@ namespace pgen::MissingFunctionReturnTypehintRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getFunctionReflection", "getfunctionreflection", 21, r1.raw()))) return false;
 		l_functionReflection = std::move(r1);
 	}
 	 {
@@ -92,7 +92,7 @@ namespace pgen::MissingFunctionReturnTypehintRule {
 				ZVAL_COPY(r6.raw(), gs5);
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_returnType.raw(), "isExplicitMixed", "isexplicitmixed", 15, 0, NULL, r6.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_returnType.raw(), "isExplicitMixed", "isexplicitmixed", 15, r6.raw()))) return false;
 			}
 			}
 			b4 = !((Z_TYPE_P(r6.raw()) == IS_TRUE));
@@ -106,7 +106,7 @@ namespace pgen::MissingFunctionReturnTypehintRule {
 					if (UNEXPECTED(r8.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r8.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_functionReflection.raw(), "getName", "getname", 7, r8.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb9;
@@ -154,7 +154,7 @@ namespace pgen::MissingFunctionReturnTypehintRule {
 						if (UNEXPECTED(r25.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r25.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_functionReflection.raw(), "getName", "getname", 7, r25.raw()))) return false;
 					}
 					}
 					pgrt::StringBuilder sb26;
@@ -214,7 +214,7 @@ namespace pgen::MissingFunctionReturnTypehintRule {
 						if (UNEXPECTED(r46.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r46.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_functionReflection.raw(), "getName", "getname", 7, r46.raw()))) return false;
 					}
 					}
 					zv::Val o47 = zv::Val::copyOf(zv::Ref(l_name.raw()));
@@ -264,7 +264,7 @@ namespace pgen::MissingFunctionReturnTypehintRule {
 						if (UNEXPECTED(r64.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_functionReflection.raw(), "getName", "getname", 7, 0, NULL, r64.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_functionReflection.raw(), "getName", "getname", 7, r64.raw()))) return false;
 					}
 					}
 					zv::Val o65 = zv::Val::copyOf(zv::Ref(l_callableType));

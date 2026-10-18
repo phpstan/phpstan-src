@@ -13,10 +13,10 @@ static pt_method_site pg_site_2; /* method_shouldResolveTemplateArguments_2 */
 static pt_method_site pg_site_3; /* method_processExprNode_3 */
 static pt_method_site pg_site_4; /* method_getDependencies_4 */
 static pt_method_site pg_site_5; /* method_callNodeCallback_5 */
-static pt_method_site pg_site_6; /* method_getType_6 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getType_6 */
 static pt_method_site pg_site_7; /* method_getNativeType_7 */
 static pt_method_site pg_site_8; /* method_toBoolean_8 */
-static pt_method_site pg_site_9; /* method_isTrue_9 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_isTrue_9 */
 static pt_method_site pg_site_10; /* method_getThrowPoints_10 */
 static pt_method_site pg_site_11; /* method_getImpurePoints_11 */
 static pt_method_site pg_site_12; /* method_hasYield_12 */
@@ -26,7 +26,7 @@ static pt_method_site pg_site_15; /* method_processStmtNodesInternal_15 */
 static pt_method_site pg_site_16; /* method_getDependencies_16 */
 static pt_method_site pg_site_17; /* method_getVariableFlow_17 */
 static pt_method_site pg_site_18; /* method_getVariableFlow_18 */
-static pt_method_site pg_site_19; /* method_isTrue_19 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_isTrue_19 */
 static pt_method_site pg_site_20; /* method_getExitPoints_20 */
 static pt_method_site pg_site_21; /* method_getThrowPoints_21 */
 static pt_method_site pg_site_22; /* method_getImpurePoints_22 */
@@ -48,7 +48,7 @@ static pt_method_site pg_site_37; /* method_shouldResolveTemplateArguments_37 */
 static pt_method_site pg_site_38; /* method_processExprNode_38 */
 static pt_method_site pg_site_39; /* method_getDependencies_39 */
 static pt_method_site pg_site_40; /* method_callNodeCallback_40 */
-static pt_method_site pg_site_41; /* method_getType_41 */
+static pgrt::MethodShapeSite pg_site_41; /* method0_getType_41 */
 static pt_method_site pg_site_42; /* method_getNativeType_42 */
 static pt_method_site pg_site_43; /* method_toBoolean_43 */
 static pt_method_site pg_site_44; /* method_getThrowPoints_44 */
@@ -59,7 +59,7 @@ static pt_method_site pg_site_48; /* method_processStmtNodesInternal_48 */
 static pt_method_site pg_site_49; /* method_getDependencies_49 */
 static pt_method_site pg_site_50; /* method_getVariableFlow_50 */
 static pt_method_site pg_site_51; /* method_getVariableFlow_51 */
-static pt_method_site pg_site_52; /* method_isTrue_52 */
+static pgrt::MethodShapeSite pg_site_52; /* method0_isTrue_52 */
 static pt_method_site pg_site_53; /* method_getExitPoints_53 */
 static pt_method_site pg_site_54; /* method_getThrowPoints_54 */
 static pt_method_site pg_site_55; /* method_getImpurePoints_55 */
@@ -73,7 +73,7 @@ static pgrt::PropSite pg_site_62; /* prop_stmts_62 */
 static pgrt::PropSite pg_site_63; /* prop_stmts_63 */
 static pgrt::PropSite pg_site_64; /* prop_stmts_64 */
 static pt_method_site pg_site_65; /* method_hasYield_65 */
-static pt_method_site pg_site_66; /* method_isTrue_66 */
+static pgrt::MethodShapeSite pg_site_66; /* method0_isTrue_66 */
 static pt_method_site pg_site_67; /* method_getFalseyScope_67 */
 static pgrt::PropSite pg_site_68; /* prop_else_68 */
 static pt_method_site pg_site_69; /* method_mergeWith_69 */
@@ -268,7 +268,7 @@ namespace pgen::IfHandler {
 				if (UNEXPECTED(r23.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_condResult.raw(), "getType", "gettype", 7, 0, NULL, r23.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_condResult.raw(), "getType", "gettype", 7, r23.raw()))) return false;
 			}
 			}
 			q22 = std::move(r23);
@@ -302,7 +302,7 @@ namespace pgen::IfHandler {
 	}
 	 {
 		zv::Val r27;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_conditionType.raw(), "isTrue", "istrue", 6, 0, NULL, r27.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_conditionType.raw(), "isTrue", "istrue", 6, r27.raw()))) return false;
 		bool r28;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r27.raw()), &r28))) return false;
 		l_ifAlwaysTrue = r28;
@@ -452,7 +452,7 @@ namespace pgen::IfHandler {
 	}
 	 {
 		zv::Val r58;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_19, l_conditionType.raw(), "isTrue", "istrue", 6, 0, NULL, r58.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_conditionType.raw(), "isTrue", "istrue", 6, r58.raw()))) return false;
 		bool r59;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r58.raw()), &r59))) return false;
 		if (!(r59)) {
@@ -801,7 +801,7 @@ namespace pgen::IfHandler {
 							if (UNEXPECTED(r137.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_41, l_condResult.raw(), "getType", "gettype", 7, 0, NULL, r137.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_41, l_condResult.raw(), "getType", "gettype", 7, r137.raw()))) return false;
 						}
 						}
 						q136 = std::move(r137);
@@ -964,7 +964,7 @@ namespace pgen::IfHandler {
 					bool b168 = b169;
 					if (b168) {
 						zv::Val r170;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_52, l_elseIfConditionType.raw(), "isTrue", "istrue", 6, 0, NULL, r170.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_52, l_elseIfConditionType.raw(), "isTrue", "istrue", 6, r170.raw()))) return false;
 						bool r171;
 						if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r170.raw()), &r171))) return false;
 						b168 = !(r171);
@@ -1220,7 +1220,7 @@ namespace pgen::IfHandler {
 				}
 				 {
 					zv::Val r228;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_66, l_elseIfConditionType.raw(), "isTrue", "istrue", 6, 0, NULL, r228.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_66, l_elseIfConditionType.raw(), "isTrue", "istrue", 6, r228.raw()))) return false;
 					bool r229;
 					if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r228.raw()), &r229))) return false;
 					if (r229) {

@@ -9,8 +9,8 @@ zend_class_entry *pt_ce_template_iterable_type = nullptr;
 
 static pgrt::GetterSite pg_site_0; /* getter_getKeyType_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\IterableType */
-static pt_method_site pg_site_2; /* method_getKeyType_2 */
-static pt_method_site pg_site_3; /* method_getItemType_3 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getKeyType_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getItemType_3 */
 static pt_method_site pg_site_4; /* bound_PHPStan\Type\IterableType::__construct */
 static pgrt::PropIndexSite pg_site_5; /* slot_default_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\Generic\TemplateTypeScope */
@@ -33,7 +33,7 @@ namespace pgen::TemplateIterableType {
 			ZVAL_COPY(r2.raw(), gs1);
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_bound, "getKeyType", "getkeytype", 10, 0, NULL, r2.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_bound, "getKeyType", "getkeytype", 10, r2.raw()))) return false;
 		}
 		}
 		zv::Val r3;
@@ -42,7 +42,7 @@ namespace pgen::TemplateIterableType {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_bound, "getItemType", "getitemtype", 11, 0, NULL, r3.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_bound, "getItemType", "getitemtype", 11, r3.raw()))) return false;
 		}
 		}
 		zval av4[2];

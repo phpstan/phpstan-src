@@ -9,14 +9,14 @@ zend_class_entry *pt_ce_str_word_count_function_dynamic_return_type_extension = 
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getName_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
 static pgrt::FunctionSite pg_site_2; /* function_in_array */
 static pt_method_site pg_site_3; /* method_getArgs_3 */
 static pgrt::PropSite pg_site_4; /* prop_value_4 */
 static pt_method_site pg_site_5; /* method_getType_5 */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\Constant\ConstantIntegerType */
-static pt_method_site pg_site_7; /* method_getValue_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getValue_7 */
 static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\FunctionReflection */
 static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node\Expr\FuncCall */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
@@ -36,7 +36,7 @@ namespace pgen::StrWordCountFunctionDynamicReturnTypeExtension {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_functionReflection, "getName", "getname", 7, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_functionReflection, "getName", "getname", 7, r1.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r1.raw(), &pg_lit[0]);
@@ -125,7 +125,7 @@ namespace pgen::StrWordCountFunctionDynamicReturnTypeExtension {
 									if (UNEXPECTED(r20.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_formatType.raw(), "getValue", "getvalue", 8, 0, NULL, r20.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_formatType.raw(), "getValue", "getvalue", 8, r20.raw()))) return false;
 								}
 								}
 								l_val = Z_LVAL_P(r20.raw());

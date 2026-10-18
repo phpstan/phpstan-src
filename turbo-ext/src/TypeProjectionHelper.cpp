@@ -10,9 +10,9 @@ zend_class_entry *pt_ce_type_projection_helper = nullptr;
 static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_describe_0 */
-static pt_method_site pg_site_1; /* method_invariant_1 */
-static pt_method_site pg_site_2; /* method_bivariant_2 */
-static pt_method_site pg_site_3; /* method_describe_3 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_invariant_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_bivariant_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_describe_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Type\Type */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Generic\TemplateTypeVariance */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\VerbosityLevel */
@@ -41,7 +41,7 @@ namespace pgen::TypeProjectionHelper {
 		bool b3 = (Z_TYPE_P(p_variance) == IS_NULL);
 		if (!b3) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_variance, "invariant", "invariant", 9, 0, NULL, r4.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_variance, "invariant", "invariant", 9, r4.raw()))) return false;
 			b3 = (Z_TYPE_P(r4.raw()) == IS_TRUE);
 		}
 		if (b3) {
@@ -53,7 +53,7 @@ namespace pgen::TypeProjectionHelper {
 	}
 	 {
 		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_variance, "bivariant", "bivariant", 9, 0, NULL, r5.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_variance, "bivariant", "bivariant", 9, r5.raw()))) return false;
 		if (Z_TYPE_P(r5.raw()) == IS_TRUE) {
 			 {
 				ZVAL_COPY(ret, &pg_lit[0]);
@@ -63,7 +63,7 @@ namespace pgen::TypeProjectionHelper {
 	}
 	 {
 		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_variance, "describe", "describe", 8, 0, NULL, r6.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_variance, "describe", "describe", 8, r6.raw()))) return false;
 		pgrt::StringBuilder sb7;
 		if (UNEXPECTED(!sb7.append(r6.raw()))) return false;
 		sb7.appendLiteral(" ", 1);

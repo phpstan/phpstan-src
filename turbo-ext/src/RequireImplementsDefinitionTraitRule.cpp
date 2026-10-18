@@ -16,15 +16,15 @@ static pt_method_site pg_site_3; /* method_hasClass_3 */
 static pgrt::PropSite pg_site_4; /* prop_namespacedName_4 */
 static pt_method_site pg_site_5; /* method_toString_5 */
 static pt_method_site pg_site_6; /* method_getClass_6 */
-static pt_method_site pg_site_7; /* method_getRequireImplementsTags_7 */
-static pt_method_site pg_site_8; /* method_getType_8 */
-static pt_method_site pg_site_9; /* method_getObjectClassNames_9 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getRequireImplementsTags_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getType_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getObjectClassNames_9 */
 static pgrt::FunctionSite pg_site_10; /* function_count */
 static pt_method_site pg_site_11; /* method_describe_11 */
 static pt_method_site pg_site_12; /* method_hasClass_12 */
 static pt_method_site pg_site_13; /* method_getClass_13 */
-static pt_method_site pg_site_14; /* method_isInterface_14 */
-static pt_method_site pg_site_15; /* method_getClassTypeDescription_15 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_isInterface_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getClassTypeDescription_15 */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Reflection\ReflectionProvider */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Rules\ClassNameCheck */
 static pgrt::ClassSite pg_site_18; /* cls_PhpParser\Node */
@@ -171,7 +171,7 @@ namespace pgen::RequireImplementsDefinitionTraitRule {
 	}
 	 {
 		zv::Val r25;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_traitReflection.raw(), "getRequireImplementsTags", "getrequireimplementstags", 24, 0, NULL, r25.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_traitReflection.raw(), "getRequireImplementsTags", "getrequireimplementstags", 24, r25.raw()))) return false;
 		l_implementsTags = std::move(r25);
 	}
 	 {
@@ -197,7 +197,7 @@ namespace pgen::RequireImplementsDefinitionTraitRule {
 						if (UNEXPECTED(r35.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_implementsTag, "getType", "gettype", 7, 0, NULL, r35.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_implementsTag, "getType", "gettype", 7, r35.raw()))) return false;
 					}
 					}
 					l_type = std::move(r35);
@@ -209,7 +209,7 @@ namespace pgen::RequireImplementsDefinitionTraitRule {
 						if (UNEXPECTED(r36.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_type.raw(), "getObjectClassNames", "getobjectclassnames", 19, 0, NULL, r36.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_type.raw(), "getObjectClassNames", "getobjectclassnames", 19, r36.raw()))) return false;
 					}
 					}
 					l_classNames = std::move(r36);
@@ -358,7 +358,7 @@ namespace pgen::RequireImplementsDefinitionTraitRule {
 									if (UNEXPECTED(r77.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_14, l_reflection.raw(), "isInterface", "isinterface", 11, 0, NULL, r77.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, l_reflection.raw(), "isInterface", "isinterface", 11, r77.raw()))) return false;
 								}
 								}
 								if (!((Z_TYPE_P(r77.raw()) == IS_TRUE))) {
@@ -371,7 +371,7 @@ namespace pgen::RequireImplementsDefinitionTraitRule {
 										zv::Val r80;
 										if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r79.raw(), r80.raw()))) return false;
 										zv::Val r81;
-										if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_reflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r81.raw(), NULL))) return false;
+										if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_reflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r81.raw()))) return false;
 										zv::Val r82 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r81.raw())));
 										pgrt::StringBuilder sb83;
 										sb83.appendLiteral("requireImplements.", 18);

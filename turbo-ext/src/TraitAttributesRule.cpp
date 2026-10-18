@@ -9,14 +9,14 @@ zend_class_entry *pt_ce_trait_attributes_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[8];
 
-static pt_method_site pg_site_0; /* method_getPhpVersion_0 */
-static pt_method_site pg_site_1; /* method_getTraitReflection_1 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getPhpVersion_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getTraitReflection_1 */
 static pt_method_site pg_site_2; /* method_getNativeReflection_2 */
 static pt_method_site pg_site_3; /* method_getAttributes_3 */
 static pgrt::FunctionSite pg_site_4; /* function_count */
 static pt_method_site pg_site_5; /* method_getOriginalNode_5 */
 static pgrt::PropSite pg_site_6; /* prop_attrGroups_6 */
-static pt_method_site pg_site_7; /* method_getTraitReflection_7 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getTraitReflection_7 */
 static pt_method_site pg_site_8; /* method_getNativeReflection_8 */
 static pt_method_site pg_site_9; /* method_getAttributes_9 */
 static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Rules\AttributesCheck */
@@ -61,7 +61,7 @@ namespace pgen::TraitAttributesRule {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, 0, NULL, r1.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsDeprecatedTraits(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		bool r3;
@@ -69,7 +69,7 @@ namespace pgen::TraitAttributesRule {
 		if (!(r3)) {
 			 {
 				zv::Val r4;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_node, "getTraitReflection", "gettraitreflection", 18, 0, NULL, r4.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_node, "getTraitReflection", "gettraitreflection", 18, r4.raw()))) return false;
 				zv::Val r5;
 				if (EXPECTED(Z_TYPE_P(r4.raw()) == IS_OBJECT && Z_OBJCE_P(r4.raw()) == pt_ce_class_reflection)) {
 					r5 = pt_class_reflection_get_native_reflection(Z_OBJ_P(r4.raw()));
@@ -155,7 +155,7 @@ namespace pgen::TraitAttributesRule {
 	}
 	 {
 		zv::Val r24;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_node, "getTraitReflection", "gettraitreflection", 18, 0, NULL, r24.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_node, "getTraitReflection", "gettraitreflection", 18, r24.raw()))) return false;
 		zv::Val r25;
 		if (EXPECTED(Z_TYPE_P(r24.raw()) == IS_OBJECT && Z_OBJCE_P(r24.raw()) == pt_ce_class_reflection)) {
 			r25 = pt_class_reflection_get_native_reflection(Z_OBJ_P(r24.raw()));

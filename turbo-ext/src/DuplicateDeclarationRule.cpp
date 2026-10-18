@@ -9,10 +9,10 @@ zend_class_entry *pt_ce_duplicate_declaration_rule = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[1];
 
-static pt_method_site pg_site_0; /* method_getClassReflection_0 */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getClassReflection_0 */
 static pt_method_site pg_site_1; /* method_getOriginalNode_1 */
 static pt_method_site pg_site_2; /* method_getDisplayName_2 */
-static pt_method_site pg_site_3; /* method_getClassTypeDescription_3 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getClassTypeDescription_3 */
 static pgrt::FunctionSite pg_site_4; /* function_strtolower */
 static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Stmt\ClassLike */
 static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Rules\Classes\DuplicateDeclarationHelper */
@@ -59,7 +59,7 @@ namespace pgen::DuplicateDeclarationRule {
 			if (UNEXPECTED(r1.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, 0, NULL, r1.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getClassReflection", "getclassreflection", 18, r1.raw()))) return false;
 		}
 		}
 		l_classReflection = std::move(r1);
@@ -108,7 +108,7 @@ namespace pgen::DuplicateDeclarationRule {
 		}
 		}
 		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, 0, NULL, r10.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r10.raw()))) return false;
 		zval av11[1];
 		ZVAL_COPY_VALUE(&av11[0], r10.raw());
 		zv::Val r12;

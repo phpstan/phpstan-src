@@ -17,7 +17,7 @@ static pt_method_site pg_site_4; /* method_getScope_4 */
 static pt_method_site pg_site_5; /* method_invalidateVolatileExpressions_5 */
 static pt_method_site pg_site_6; /* method_getVariableFlow_6 */
 static pt_method_site pg_site_7; /* static_PHPStan\Analyser\VariableFlow::all */
-static pt_method_site pg_site_8; /* method_getType_8 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getType_8 */
 static pt_method_site pg_site_9; /* static_PHPStan\Analyser\VariableFlow::throwing */
 static pt_method_site pg_site_10; /* method_hasYield_10 */
 static pt_method_site pg_site_11; /* method_isAlwaysTerminating_11 */
@@ -225,7 +225,7 @@ namespace pgen::EvalHandler {
 			if (UNEXPECTED(r20.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, l_throwPoint.raw(), "getType", "gettype", 7, 0, NULL, r20.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_throwPoint.raw(), "getType", "gettype", 7, r20.raw()))) return false;
 		}
 		}
 		zval av21[2];

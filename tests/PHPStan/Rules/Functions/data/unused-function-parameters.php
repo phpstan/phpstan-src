@@ -113,3 +113,25 @@ function observedByFuncGetArg(int $x): array
 
 	return [func_get_arg(0), $x];
 }
+
+function completelyUnusedIgnore(int $used, $_ignoredUnused): int
+{
+	return $used;
+}
+
+function byRefUnusedIgnore(int &$_ignoredX): void
+{
+	echo 'no use of the reference';
+}
+
+function variadicIgnoredUnusedIgnore(int $used, int ...$_ignoredRest): int
+{
+	return $used;
+}
+
+function usedViaResolvedVariableVariableIgnore(int $secret, int $_ignoredOther): int
+{
+	$name = 'secret';
+
+	return $$name;
+}

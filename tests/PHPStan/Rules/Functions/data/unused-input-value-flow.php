@@ -57,3 +57,9 @@ function overwrittenParameter(int $input): int
 	$input = 1;
 	return $input;
 }
+
+function overwrittenParameterIgnore(int $_ignoredInput): int
+{
+	$_ignoredInput = 1;
+	return $_ignoredInput;
+}

@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_better_reflection_located_source = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[7];
+static zval pg_lit[10];
 
 static pgrt::FunctionSite pg_site_0; /* function_assert */
 static pgrt::ClassSite pg_site_1; /* cls_PHPStan\BetterReflection\SourceLocator\FileChecker */
@@ -39,12 +39,13 @@ namespace pgen::BetterReflectionLocatedSource {
 			 {
 				zv::Val as3 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
-					zval av4[1];
+					zval av4[2];
 					zval z5;
 					ZVAL_BOOL(&z5, !zend_is_identical(l_filename.raw(), &pg_lit[0]));
 					ZVAL_COPY_VALUE(&av4[0], &z5);
+					ZVAL_COPY_VALUE(&av4[1], &pg_lit[1]);
 					zv::Val r6;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "assert", 6, pt_ce_better_reflection_located_source, 1, av4, r6.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "assert", 6, pt_ce_better_reflection_located_source, 2, av4, r6.raw(), NULL))) return false;
 					zv::Val o7 = zv::Val::boolean((Z_TYPE_P(r6.raw()) == IS_TRUE));
 					as3 = std::move(o7);
 				}
@@ -81,12 +82,13 @@ namespace pgen::BetterReflectionLocatedSource {
 				if (EG(assertions) > 0) {
 					zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionLocatedSource::slot::filename, "filename");
 					if (UNEXPECTED(p3 == NULL)) return false;
-					zval av4[1];
+					zval av4[2];
 					zval z5;
 					ZVAL_BOOL(&z5, !(Z_TYPE_P(p3) == IS_NULL));
 					ZVAL_COPY_VALUE(&av4[0], &z5);
+					ZVAL_COPY_VALUE(&av4[1], &pg_lit[2]);
 					zv::Val r6;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "assert", 6, pt_ce_better_reflection_located_source, 1, av4, r6.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "assert", 6, pt_ce_better_reflection_located_source, 2, av4, r6.raw(), NULL))) return false;
 					zv::Val o7 = zv::Val::boolean((Z_TYPE_P(r6.raw()) == IS_TRUE));
 					as2 = std::move(o7);
 				}
@@ -113,12 +115,13 @@ namespace pgen::BetterReflectionLocatedSource {
 			 {
 				zv::Val as15 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
-					zval av16[1];
+					zval av16[2];
 					zval z17;
 					ZVAL_BOOL(&z17, !(Z_TYPE_P(l_fileContents.raw()) == (false ? IS_TRUE : IS_FALSE)));
 					ZVAL_COPY_VALUE(&av16[0], &z17);
+					ZVAL_COPY_VALUE(&av16[1], &pg_lit[3]);
 					zv::Val r18;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "assert", 6, pt_ce_better_reflection_located_source, 1, av16, r18.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "assert", 6, pt_ce_better_reflection_located_source, 2, av16, r18.raw(), NULL))) return false;
 					zv::Val o19 = zv::Val::boolean((Z_TYPE_P(r18.raw()) == IS_TRUE));
 					as15 = std::move(o19);
 				}
@@ -233,12 +236,13 @@ namespace pgen::BetterReflectionLocatedSource {
 		if (EG(assertions) > 0) {
 			zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionLocatedSource::slot::filename, "filename");
 			if (UNEXPECTED(p2 == NULL)) return false;
-			zval av3[1];
+			zval av3[2];
 			zval z4;
 			ZVAL_BOOL(&z4, !(Z_TYPE_P(p2) == IS_NULL));
 			ZVAL_COPY_VALUE(&av3[0], &z4);
+			ZVAL_COPY_VALUE(&av3[1], &pg_lit[2]);
 			zv::Val r5;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "assert", 6, pt_ce_better_reflection_located_source, 1, av3, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "assert", 6, pt_ce_better_reflection_located_source, 2, av3, r5.raw(), NULL))) return false;
 			zv::Val o6 = zv::Val::boolean((Z_TYPE_P(r5.raw()) == IS_TRUE));
 			as1 = std::move(o6);
 		}
@@ -247,17 +251,17 @@ namespace pgen::BetterReflectionLocatedSource {
 		zv::Val arr7 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
 		zv::Val r8;
 		if (UNEXPECTED(!pgrt::getClass(&this_zv, r8.raw()))) return false;
-		{ zval v = r8.take(); zend_symtable_update(Z_ARRVAL_P(arr7.raw()), Z_STR_P(&pg_lit[1]), &v); }
+		{ zval v = r8.take(); zend_symtable_update(Z_ARRVAL_P(arr7.raw()), Z_STR_P(&pg_lit[4]), &v); }
 		zv::Val arr9 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
 		zval *p10 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionLocatedSource::slot::name, "name");
 		if (UNEXPECTED(p10 == NULL)) return false;
 		zv::Val o11 = zv::Val::copyOf(zv::Ref(p10));
-		{ zval v = o11.take(); zend_symtable_update(Z_ARRVAL_P(arr9.raw()), Z_STR_P(&pg_lit[2]), &v); }
+		{ zval v = o11.take(); zend_symtable_update(Z_ARRVAL_P(arr9.raw()), Z_STR_P(&pg_lit[5]), &v); }
 		zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionLocatedSource::slot::filename, "filename");
 		if (UNEXPECTED(p12 == NULL)) return false;
 		zv::Val o13 = zv::Val::copyOf(zv::Ref(p12));
-		{ zval v = o13.take(); zend_symtable_update(Z_ARRVAL_P(arr9.raw()), Z_STR_P(&pg_lit[3]), &v); }
-		{ zval v = arr9.take(); zend_symtable_update(Z_ARRVAL_P(arr7.raw()), Z_STR_P(&pg_lit[4]), &v); }
+		{ zval v = o13.take(); zend_symtable_update(Z_ARRVAL_P(arr9.raw()), Z_STR_P(&pg_lit[6]), &v); }
+		{ zval v = arr9.take(); zend_symtable_update(Z_ARRVAL_P(arr7.raw()), Z_STR_P(&pg_lit[7]), &v); }
 		*ret = arr7.take();
 		return true;
 	}
@@ -269,47 +273,49 @@ namespace pgen::BetterReflectionLocatedSource {
 	zv::Val l_class;
 	 {
 		zv::Val et2;
-		zval *e1 = pgrt::dimRead(p_data, &pg_lit[1], et2.raw());
+		zval *e1 = pgrt::dimRead(p_data, &pg_lit[4], et2.raw());
 		if (UNEXPECTED(e1 == NULL)) return false;
 		zv::Val o3 = zv::Val::copyOf(zv::Ref(zv::Ref(e1).deref().raw()));
 		l_class = std::move(o3);
 	}
 	 {
-		if (zend_is_identical(l_class.raw(), &pg_lit[5])) {
+		if (zend_is_identical(l_class.raw(), &pg_lit[8])) {
 			 {
-				zv::Val et6;
-				zval *e5 = pgrt::dimRead(p_data, &pg_lit[4], et6.raw());
-				if (UNEXPECTED(e5 == NULL)) return false;
-				zv::Val et8;
-				zval *e7 = pgrt::dimRead(zv::Ref(e5).deref().raw(), &pg_lit[2], et8.raw());
-				if (UNEXPECTED(e7 == NULL)) return false;
-				zv::Val et10;
-				zval *e9 = pgrt::dimRead(p_data, &pg_lit[4], et10.raw());
-				if (UNEXPECTED(e9 == NULL)) return false;
-				zv::Val et12;
-				zval *e11 = pgrt::dimRead(zv::Ref(e9).deref().raw(), &pg_lit[3], et12.raw());
-				if (UNEXPECTED(e11 == NULL)) return false;
-				zval z13;
-				ZVAL_NULL(&z13);
-				if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(e7).deref().raw()) == IS_STRING || Z_TYPE_P(zv::Ref(e7).deref().raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource::__construct", 2, "name", "?string", zv::Ref(e7).deref().raw()); return false; }
-				if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(e11).deref().raw()) == IS_STRING || Z_TYPE_P(zv::Ref(e11).deref().raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource::__construct", 3, "filename", "?string", zv::Ref(e11).deref().raw()); return false; }
-				zval n4_raw;
-				if (UNEXPECTED(object_init_ex(&n4_raw, pt_ce_better_reflection_located_source) != SUCCESS)) return false;
-				zv::Val n4 = zv::Val::adopt(n4_raw);
-				if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m___construct(Z_OBJ_P(n4.raw()), &z13, zv::Ref(e7).deref().raw(), zv::Ref(e11).deref().raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n4.raw())); return false; }
+				zend_class_entry *nce5 = pgrt::lookupClass(pg_site_4, "PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource", 60);
+				if (UNEXPECTED(nce5 == NULL)) return false;
+				zv::Val et7;
+				zval *e6 = pgrt::dimRead(p_data, &pg_lit[7], et7.raw());
+				if (UNEXPECTED(e6 == NULL)) return false;
+				zv::Val et9;
+				zval *e8 = pgrt::dimRead(zv::Ref(e6).deref().raw(), &pg_lit[5], et9.raw());
+				if (UNEXPECTED(e8 == NULL)) return false;
+				zv::Val et11;
+				zval *e10 = pgrt::dimRead(p_data, &pg_lit[7], et11.raw());
+				if (UNEXPECTED(e10 == NULL)) return false;
+				zv::Val et13;
+				zval *e12 = pgrt::dimRead(zv::Ref(e10).deref().raw(), &pg_lit[6], et13.raw());
+				if (UNEXPECTED(e12 == NULL)) return false;
+				zval av14[3];
+				zval z15;
+				ZVAL_NULL(&z15);
+				ZVAL_COPY_VALUE(&av14[0], &z15);
+				ZVAL_COPY_VALUE(&av14[1], zv::Ref(e8).deref().raw());
+				ZVAL_COPY_VALUE(&av14[2], zv::Ref(e12).deref().raw());
+				zv::Val n4;
+				if (UNEXPECTED(!pgrt::newObject(nce5, 3, av14, n4.raw(), NULL))) return false;
 				*ret = n4.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val o14 = zv::Val::copyOf(zv::Ref(l_class.raw()));
-		zval av15[1];
-		ZVAL_COPY_VALUE(&av15[0], p_data);
-		zv::Val r16;
-		if (UNEXPECTED(!pgrt::callStaticDynamic(o14.raw(), pt_ce_better_reflection_located_source, &pg_lit[6], 1, av15, r16.raw(), NULL))) return false;
-		if (UNEXPECTED(!(pgrt::instanceOfClass(r16.raw(), pt_ce_better_reflection_located_source) || pgrt::instanceOfClass(r16.raw(), pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource", 60))))) { pgrt::throwReturnType("PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource::importFromCache", "PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource", r16.raw()); return false; }
-		*ret = r16.take();
+		zv::Val o16 = zv::Val::copyOf(zv::Ref(l_class.raw()));
+		zval av17[1];
+		ZVAL_COPY_VALUE(&av17[0], p_data);
+		zv::Val r18;
+		if (UNEXPECTED(!pgrt::callStaticDynamic(o16.raw(), pt_ce_better_reflection_located_source, &pg_lit[9], 1, av17, r18.raw(), NULL))) return false;
+		if (UNEXPECTED(!(pgrt::instanceOfClass(r18.raw(), pt_ce_better_reflection_located_source) || pgrt::instanceOfClass(r18.raw(), pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource", 60))))) { pgrt::throwReturnType("PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource::importFromCache", "PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource", r18.raw()); return false; }
+		*ret = r18.take();
 		return true;
 	}
 }
@@ -322,12 +328,15 @@ namespace sigs = ptdecl::BetterReflectionLocatedSource::sig;
 PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionLocatedSource)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("", 0));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("class", 5));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("name", 4));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("filename", 8));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("data", 4));
-	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource", 60));
-	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("importFromCache", 15));
+	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("assert($filename !== '')", 24));
+	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("assert($this->filename !== null)", 32));
+	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("assert($fileContents !== false)", 31));
+	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("class", 5));
+	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("name", 4));
+	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("filename", 8));
+	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("data", 4));
+	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource", 60));
+	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("importFromCache", 15));
 	reg::Class cls("PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource");
 	ptdecl::BetterReflectionLocatedSource::declareClass(cls);
 	ptdecl::BetterReflectionLocatedSource::declareProperties(cls);

@@ -179,6 +179,8 @@ struct pt_abi_globals
 	void (*run_on_fresh_stack)(void (*body)(void *), void *data);
 	/* zend_is_true() where the declaration cannot be renamed (MSVC, below) */
 	bool (*is_true)(const zval *op);
+	/* the name of an internal function's i-th parameter (zend_internal_arg_info's layout differs between minors) */
+	const char *(*internal_arg_name)(const zend_function *fn, uint32_t i);
 };
 
 /* Defined by the shared core, filled by the version-specific library, which

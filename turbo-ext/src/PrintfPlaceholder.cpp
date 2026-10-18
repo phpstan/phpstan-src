@@ -234,9 +234,8 @@ namespace pgen::PrintfPlaceholder {
 				bool b45 = !(p_strictPlaceholderTypes);
 				if (!b45) {
 					zv::Val arr47 = zv::Val::adopt([]() { zval a; array_init_size(&a, 3); return a; }());
-					zval n48_raw;
-					if (UNEXPECTED(object_init_ex(&n48_raw, pt_ce_string_always_accepting_object_with_to_string_type) != SUCCESS)) return false;
-					zv::Val n48 = zv::Val::adopt(n48_raw);
+					zv::Val n48;
+					if (UNEXPECTED(!pt_string_always_accepting_object_with_to_string_type_new(n48.raw()))) return false;
 					{ zval v = n48.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr47.raw()), &v); }
 					zv::Val n49;
 					if (UNEXPECTED(!pt_float_type_new(n49.raw()))) return false;

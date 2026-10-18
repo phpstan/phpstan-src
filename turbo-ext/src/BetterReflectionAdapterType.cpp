@@ -16,10 +16,11 @@ static pgrt::ClassSite pg_site_3; /* cls_PHPStan\BetterReflection\Reflection\Ref
 static pt_method_site pg_site_4; /* method_getName_4 */
 static pgrt::FunctionSite pg_site_5; /* function_array_filter */
 static pt_method_site pg_site_6; /* method_allowsNull_6 */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\BetterReflection\Reflection\ReflectionIntersectionType */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType */
-static pt_method_site pg_site_10; /* method_allowsNull_10 */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\BetterReflection\Reflection\ReflectionIntersectionType */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType */
+static pt_method_site pg_site_11; /* method_allowsNull_11 */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -121,41 +122,32 @@ namespace pgen::BetterReflectionAdapterType {
 				}
 				if (b6) {
 					 {
-						zv::Val et14;
-						zval *e13 = Z_TYPE_P(l_nonNullTypes.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_nonNullTypes.raw()), 0) : NULL;
-						if (UNEXPECTED(e13 == NULL)) {
-							zval z15;
-							ZVAL_LONG(&z15, 0);
-							e13 = pgrt::dimRead(l_nonNullTypes.raw(), &z15, et14.raw());
-							if (UNEXPECTED(e13 == NULL)) return false;
+						zend_class_entry *nce13 = pgrt::lookupClass(pg_site_7, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionNamedType", 63);
+						if (UNEXPECTED(nce13 == NULL)) return false;
+						zv::Val et15;
+						zval *e14 = Z_TYPE_P(l_nonNullTypes.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_nonNullTypes.raw()), 0) : NULL;
+						if (UNEXPECTED(e14 == NULL)) {
+							zval z16;
+							ZVAL_LONG(&z16, 0);
+							e14 = pgrt::dimRead(l_nonNullTypes.raw(), &z16, et15.raw());
+							if (UNEXPECTED(e14 == NULL)) return false;
 						}
-						zval n12_raw;
-						if (UNEXPECTED(object_init_ex(&n12_raw, pt_ce_better_reflection_adapter_named_type) != SUCCESS)) return false;
-						zv::Val n12 = zv::Val::adopt(n12_raw);
-						if (UNEXPECTED(!pgen::BetterReflectionAdapterNamedType::m___construct(Z_OBJ_P(n12.raw()), zv::Ref(e13).deref().raw(), true))) { zend_object_store_ctor_failed(Z_OBJ_P(n12.raw())); return false; }
+						zval av17[2];
+						ZVAL_COPY_VALUE(&av17[0], zv::Ref(e14).deref().raw());
+						zval z18;
+						ZVAL_BOOL(&z18, true);
+						ZVAL_COPY_VALUE(&av17[1], &z18);
+						zv::Val n12;
+						if (UNEXPECTED(!pgrt::newObject(nce13, 2, av17, n12.raw(), NULL))) return false;
 						*ret = n12.take();
 						return true;
 					}
 				}
 			}
 			 {
-				zval av17[1];
-				ZVAL_COPY_VALUE(&av17[0], p_betterReflectionType);
-				zend_class_entry *ce18 = pgrt::lookupClass(pg_site_7, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionUnionType", 63);
-				if (UNEXPECTED(ce18 == NULL)) return false;
-				zv::Val n16;
-				if (UNEXPECTED(!pgrt::newObject(ce18, 1, av17, n16.raw(), NULL))) return false;
-				*ret = n16.take();
-				return true;
-			}
-		}
-	}
-	 {
-		if (pgrt::instanceOfClass(p_betterReflectionType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\BetterReflection\\Reflection\\ReflectionIntersectionType", 62))) {
-			 {
 				zval av20[1];
 				ZVAL_COPY_VALUE(&av20[0], p_betterReflectionType);
-				zend_class_entry *ce21 = pgrt::lookupClass(pg_site_9, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionIntersectionType", 70);
+				zend_class_entry *ce21 = pgrt::lookupClass(pg_site_8, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionUnionType", 63);
 				if (UNEXPECTED(ce21 == NULL)) return false;
 				zv::Val n19;
 				if (UNEXPECTED(!pgrt::newObject(ce21, 1, av20, n19.raw(), NULL))) return false;
@@ -165,25 +157,41 @@ namespace pgen::BetterReflectionAdapterType {
 		}
 	}
 	 {
-		zv::Val vd23;
-		zend_class_entry *vd23_ce = Z_TYPE_P(p_betterReflectionType) == IS_OBJECT ? Z_OBJCE_P(p_betterReflectionType) : NULL;
-		bool vd23_done = false;
-		if (vd23_ce == pt_ce_better_reflection_named_type) {
-			bool r24;
-			if (UNEXPECTED(!pgen::BetterReflectionNamedType::m_allowsNull(Z_OBJ_P(p_betterReflectionType), &r24))) return false;
-			zv::Val o25 = zv::Val::boolean(r24);
-			vd23 = std::move(o25);
-			vd23_done = true;
+		if (pgrt::instanceOfClass(p_betterReflectionType, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\BetterReflection\\Reflection\\ReflectionIntersectionType", 62))) {
+			 {
+				zval av23[1];
+				ZVAL_COPY_VALUE(&av23[0], p_betterReflectionType);
+				zend_class_entry *ce24 = pgrt::lookupClass(pg_site_10, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionIntersectionType", 70);
+				if (UNEXPECTED(ce24 == NULL)) return false;
+				zv::Val n22;
+				if (UNEXPECTED(!pgrt::newObject(ce24, 1, av23, n22.raw(), NULL))) return false;
+				*ret = n22.take();
+				return true;
+			}
 		}
-		if (!vd23_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_betterReflectionType, "allowsNull", "allowsnull", 10, 0, NULL, vd23.raw()))) return false;
+	}
+	 {
+		zend_class_entry *nce26 = pgrt::lookupClass(pg_site_7, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionNamedType", 63);
+		if (UNEXPECTED(nce26 == NULL)) return false;
+		zv::Val vd27;
+		zend_class_entry *vd27_ce = Z_TYPE_P(p_betterReflectionType) == IS_OBJECT ? Z_OBJCE_P(p_betterReflectionType) : NULL;
+		bool vd27_done = false;
+		if (vd27_ce == pt_ce_better_reflection_named_type) {
+			bool r28;
+			if (UNEXPECTED(!pgen::BetterReflectionNamedType::m_allowsNull(Z_OBJ_P(p_betterReflectionType), &r28))) return false;
+			zv::Val o29 = zv::Val::boolean(r28);
+			vd27 = std::move(o29);
+			vd27_done = true;
 		}
-		if (UNEXPECTED(Z_TYPE_P(vd23.raw()) != IS_TRUE && Z_TYPE_P(vd23.raw()) != IS_FALSE)) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionNamedType::__construct", 2, "allowsNull", "bool", vd23.raw()); return false; }
-		zval n22_raw;
-		if (UNEXPECTED(object_init_ex(&n22_raw, pt_ce_better_reflection_adapter_named_type) != SUCCESS)) return false;
-		zv::Val n22 = zv::Val::adopt(n22_raw);
-		if (UNEXPECTED(!pgen::BetterReflectionAdapterNamedType::m___construct(Z_OBJ_P(n22.raw()), p_betterReflectionType, (Z_TYPE_P(vd23.raw()) == IS_TRUE)))) { zend_object_store_ctor_failed(Z_OBJ_P(n22.raw())); return false; }
-		*ret = n22.take();
+		if (!vd27_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p_betterReflectionType, "allowsNull", "allowsnull", 10, 0, NULL, vd27.raw()))) return false;
+		}
+		zval av30[2];
+		ZVAL_COPY_VALUE(&av30[0], p_betterReflectionType);
+		ZVAL_COPY_VALUE(&av30[1], vd27.raw());
+		zv::Val n25;
+		if (UNEXPECTED(!pgrt::newObject(nce26, 2, av30, n25.raw(), NULL))) return false;
+		*ret = n25.take();
 		return true;
 	}
 }

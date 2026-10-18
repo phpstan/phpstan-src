@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_better_reflection_named_type = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[11];
+static zval pg_lit[13];
 
 static pt_method_site pg_site_0; /* method_toString_0 */
 static pgrt::ClassSite pg_site_1; /* cls_PhpParser\Node\Identifier */
@@ -398,12 +398,13 @@ namespace pgen::BetterReflectionNamedType {
 			 {
 				zv::Val as27 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
-					zval av28[1];
+					zval av28[2];
 					zval z29;
 					ZVAL_BOOL(&z29, (pgrt::instanceOfClass(l_class.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_class.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
 					ZVAL_COPY_VALUE(&av28[0], &z29);
+					ZVAL_COPY_VALUE(&av28[1], &pg_lit[9]);
 					zv::Val r30;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 1, av28, r30.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 2, av28, r30.raw(), NULL))) return false;
 					zv::Val o31 = zv::Val::boolean((Z_TYPE_P(r30.raw()) == IS_TRUE));
 					as27 = std::move(o31);
 				}
@@ -426,12 +427,13 @@ namespace pgen::BetterReflectionNamedType {
 			 {
 				zv::Val as34 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
-					zval av35[1];
+					zval av35[2];
 					zval z36;
 					ZVAL_BOOL(&z36, (pgrt::instanceOfClass(l_class.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_class.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
 					ZVAL_COPY_VALUE(&av35[0], &z36);
+					ZVAL_COPY_VALUE(&av35[1], &pg_lit[9]);
 					zv::Val r37;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 1, av35, r37.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 2, av35, r37.raw(), NULL))) return false;
 					zv::Val o38 = zv::Val::boolean((Z_TYPE_P(r37.raw()) == IS_TRUE));
 					as34 = std::move(o38);
 				}
@@ -451,12 +453,13 @@ namespace pgen::BetterReflectionNamedType {
 			 {
 				zv::Val as40 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
-					zval av41[1];
+					zval av41[2];
 					zval z42;
 					ZVAL_BOOL(&z42, (pgrt::instanceOfClass(l_parentClass.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_parentClass.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
 					ZVAL_COPY_VALUE(&av41[0], &z42);
+					ZVAL_COPY_VALUE(&av41[1], &pg_lit[10]);
 					zv::Val r43;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 1, av41, r43.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 2, av41, r43.raw(), NULL))) return false;
 					zv::Val o44 = zv::Val::boolean((Z_TYPE_P(r43.raw()) == IS_TRUE));
 					as40 = std::move(o44);
 				}
@@ -516,10 +519,10 @@ namespace pgen::BetterReflectionNamedType {
 		zv::Val r2 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p1)));
 		int sw3 = -1;
 		if (sw3 == -1) {
-			if (zend_compare(r2.raw(), &pg_lit[9]) == 0) sw3 = 0;
+			if (zend_compare(r2.raw(), &pg_lit[11]) == 0) sw3 = 0;
 		}
 		if (sw3 == -1) {
-			if (zend_compare(r2.raw(), &pg_lit[10]) == 0) sw3 = 1;
+			if (zend_compare(r2.raw(), &pg_lit[12]) == 0) sw3 = 1;
 		}
 		if (sw3 == -1) sw3 = 2;
 		switch (sw3) {
@@ -604,8 +607,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionNamedType)
 	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("parent", 6));
 	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("static", 6));
 	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("BUILT_IN_TYPES", 14));
-	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("mixed", 5));
-	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("null", 4));
+	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("assert($class instanceof \\PHPStan\\BetterReflection\\Reflection\\ReflectionClass)", 78));
+	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("assert($parentClass instanceof \\PHPStan\\BetterReflection\\Reflection\\ReflectionClass)", 84));
+	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("mixed", 5));
+	ZVAL_INTERNED_STR(&pg_lit[12], pgrt::internLiteral("null", 4));
 	reg::Class cls("PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType");
 	ptdecl::BetterReflectionNamedType::declareClass(cls);
 	ptdecl::BetterReflectionNamedType::declareProperties(cls);

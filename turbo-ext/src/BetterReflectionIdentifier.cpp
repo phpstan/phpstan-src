@@ -140,9 +140,20 @@ namespace pgen::BetterReflectionIdentifier {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionIdentifier::slot::type, "type");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p1, "isClass", "isclass", 7, 0, NULL, r2.raw(), NULL))) return false;
-		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
+		zv::Val vd2;
+		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
+		bool vd2_done = false;
+		if (vd2_ce == pt_ce_better_reflection_identifier_type) {
+			bool r3;
+			if (UNEXPECTED(!pgen::BetterReflectionIdentifierType::m_isClass(Z_OBJ_P(p1), &r3))) return false;
+			zv::Val o4 = zv::Val::boolean(r3);
+			vd2 = std::move(o4);
+			vd2_done = true;
+		}
+		if (!vd2_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p1, "isClass", "isclass", 7, 0, NULL, vd2.raw()))) return false;
+		}
+		*ret = (Z_TYPE_P(vd2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -156,9 +167,20 @@ namespace pgen::BetterReflectionIdentifier {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionIdentifier::slot::type, "type");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p1, "isFunction", "isfunction", 10, 0, NULL, r2.raw(), NULL))) return false;
-		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
+		zv::Val vd2;
+		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
+		bool vd2_done = false;
+		if (vd2_ce == pt_ce_better_reflection_identifier_type) {
+			bool r3;
+			if (UNEXPECTED(!pgen::BetterReflectionIdentifierType::m_isFunction(Z_OBJ_P(p1), &r3))) return false;
+			zv::Val o4 = zv::Val::boolean(r3);
+			vd2 = std::move(o4);
+			vd2_done = true;
+		}
+		if (!vd2_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p1, "isFunction", "isfunction", 10, 0, NULL, vd2.raw()))) return false;
+		}
+		*ret = (Z_TYPE_P(vd2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -172,9 +194,20 @@ namespace pgen::BetterReflectionIdentifier {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionIdentifier::slot::type, "type");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p1, "isConstant", "isconstant", 10, 0, NULL, r2.raw(), NULL))) return false;
-		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
+		zv::Val vd2;
+		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
+		bool vd2_done = false;
+		if (vd2_ce == pt_ce_better_reflection_identifier_type) {
+			bool r3;
+			if (UNEXPECTED(!pgen::BetterReflectionIdentifierType::m_isConstant(Z_OBJ_P(p1), &r3))) return false;
+			zv::Val o4 = zv::Val::boolean(r3);
+			vd2 = std::move(o4);
+			vd2_done = true;
+		}
+		if (!vd2_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p1, "isConstant", "isconstant", 10, 0, NULL, vd2.raw()))) return false;
+		}
+		*ret = (Z_TYPE_P(vd2.raw()) == IS_TRUE);
 		return true;
 	}
 }
@@ -206,7 +239,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionIdentifier)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name_str != NULL) { ZVAL_STR(&p_name_zv, p_name_str); p_name = &p_name_zv; }
-		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\BetterReflection\\Identifier\\IdentifierType", 50)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\BetterReflection\\Identifier\\IdentifierType", zend_zval_value_name(p_type)); RETURN_THROWS(); }
+		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !(pgrt::instanceOfClass(p_type, pt_ce_better_reflection_identifier_type) || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\BetterReflection\\Identifier\\IdentifierType", 50))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\BetterReflection\\Identifier\\IdentifierType", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifier::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_type))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\Identifier::getName() */

@@ -11,18 +11,17 @@ static pgrt::PropSite pg_site_0; /* prop_attrs_0 */
 static pgrt::PropSite pg_site_1; /* prop_name_1 */
 static pt_method_site pg_site_2; /* method_toLowerString_2 */
 static pgrt::PropSite pg_site_3; /* prop_attrs_3 */
-static pgrt::PropSite pg_site_4; /* prop_name_4 */
-static pt_method_site pg_site_5; /* method_toLowerString_5 */
-static pgrt::FunctionSite pg_site_6; /* function_count */
-static pgrt::ClassSite pg_site_7; /* cls_PhpParser\Node\Attribute */
+static pgrt::ClassSite pg_site_4; /* cls_PHPStan\BetterReflection\Reflection\ReflectionAttribute */
+static pgrt::PropSite pg_site_5; /* prop_name_5 */
+static pt_method_site pg_site_6; /* method_toLowerString_6 */
+static pgrt::FunctionSite pg_site_7; /* function_count */
 static pt_method_site pg_site_8; /* method_getName_8 */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\BetterReflection\Reflection\ReflectionAttribute */
-static pt_method_site pg_site_10; /* method_getClass_10 */
-static pt_method_site pg_site_11; /* method_getName_11 */
-static pt_method_site pg_site_12; /* method_isSubclassOf_12 */
-static pt_method_site pg_site_13; /* method_implementsInterface_13 */
-static pgrt::FunctionSite pg_site_14; /* function_array_filter */
-static pgrt::ClassSite pg_site_15; /* cls_PHPStan\BetterReflection\Reflector\Reflector */
+static pt_method_site pg_site_9; /* method_getClass_9 */
+static pt_method_site pg_site_10; /* method_getName_10 */
+static pt_method_site pg_site_11; /* method_isSubclassOf_11 */
+static pt_method_site pg_site_12; /* method_implementsInterface_12 */
+static pgrt::FunctionSite pg_site_13; /* function_array_filter */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\BetterReflection\Reflector\Reflector */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -31,7 +30,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	if (UNEXPECTED(argc < 1)) { pgrt::throwTooFewArguments("PHPStan\\BetterReflection\\Reflection\\Attribute\\ReflectionAttributeHelper::{closure}", argc, 1); return; }
 	zval *a_attribute;
 	a_attribute = zv::Ref(&argv[0]).deref().raw();
-	if (UNEXPECTED(!(pgrt::instanceOfClass(a_attribute, pt_ce_better_reflection_attribute) || pgrt::instanceOfClass(a_attribute, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute", 55))))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\Reflection\\Attribute\\ReflectionAttributeHelper::{closure}", 1, "attribute", "PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute", a_attribute); return; }
+	if (UNEXPECTED(!(pgrt::instanceOfClass(a_attribute, pt_ce_better_reflection_attribute) || pgrt::instanceOfClass(a_attribute, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute", 55))))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\Reflection\\Attribute\\ReflectionAttributeHelper::{closure}", 1, "attribute", "PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute", a_attribute); return; }
 	zval *p_attribute = a_attribute;
 	(void) p_attribute;
 	zv::Val l_class;
@@ -46,7 +45,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			vd1_done = true;
 		}
 		if (!vd1_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_attribute, "getClass", "getclass", 8, 0, NULL, vd1.raw()))) return;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_attribute, "getClass", "getclass", 8, 0, NULL, vd1.raw()))) return;
 		}
 		l_class = std::move(vd1);
 	}
@@ -57,7 +56,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r5.isUndef())) return;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_class.raw(), "getName", "getname", 7, 0, NULL, r5.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_class.raw(), "getName", "getname", 7, 0, NULL, r5.raw(), NULL))) return;
 		}
 		}
 		bool b4 = zend_is_identical(r5.raw(), zv::Ref(&captures[0]).deref().raw());
@@ -75,7 +74,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (!vd6_done) {
 				zval av9[1];
 				ZVAL_COPY_VALUE(&av9[0], zv::Ref(&captures[0]).deref().raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_class.raw(), "isSubclassOf", "issubclassof", 12, 1, av9, vd6.raw()))) return;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_class.raw(), "isSubclassOf", "issubclassof", 12, 1, av9, vd6.raw()))) return;
 			}
 			b4 = (Z_TYPE_P(vd6.raw()) == IS_TRUE);
 		}
@@ -94,7 +93,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (!vd10_done) {
 				zval av13[1];
 				ZVAL_COPY_VALUE(&av13[0], zv::Ref(&captures[0]).deref().raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_class.raw(), "implementsInterface", "implementsinterface", 19, 1, av13, vd10.raw()))) return;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_class.raw(), "implementsInterface", "implementsinterface", 19, 1, av13, vd10.raw()))) return;
 			}
 			b3 = (Z_TYPE_P(vd10.raw()) == IS_TRUE);
 		}
@@ -202,33 +201,39 @@ namespace pgen::BetterReflectionAttributeHelper {
 						l_attributeNode = zv::Ref(it35.current()).deref().raw();
 						 {
 							 {
-								zv::Val o39 = zv::Val::copyOf(zv::Ref(l_attributeNode));
-								zv::Val o40 = zv::Val::copyOf(zv::Ref(l_repeated.raw()));
-								zv::Val o42;
-								zval *p41 = Z_TYPE_P(l_attributeNode) == IS_OBJECT ? pgrt::propCached(pg_site_4, Z_OBJ_P(l_attributeNode), "name", 4) : NULL;
-								if (UNEXPECTED(p41 == NULL || Z_ISUNDEF_P(p41))) {
-									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_attributeNode, pt_ce_better_reflection_attribute_helper, "name", 4, o42.raw()))) return false;
-									p41 = o42.raw();
+								zend_class_entry *nce39 = pgrt::lookupClass(pg_site_4, "PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute", 55);
+								if (UNEXPECTED(nce39 == NULL)) return false;
+								zv::Val o40 = zv::Val::copyOf(zv::Ref(l_attributeNode));
+								zv::Val o41 = zv::Val::copyOf(zv::Ref(l_repeated.raw()));
+								zv::Val o43;
+								zval *p42 = Z_TYPE_P(l_attributeNode) == IS_OBJECT ? pgrt::propCached(pg_site_5, Z_OBJ_P(l_attributeNode), "name", 4) : NULL;
+								if (UNEXPECTED(p42 == NULL || Z_ISUNDEF_P(p42))) {
+									if (UNEXPECTED(!pgrt::readPropertyGeneric(l_attributeNode, pt_ce_better_reflection_attribute_helper, "name", 4, o43.raw()))) return false;
+									p42 = o43.raw();
 								}
-								zv::Val r43;
-								if (UNEXPECTED(!pgrt::nameToLowerString(pg_site_5, zv::Ref(p41).deref().raw(), r43.raw()))) return false;
-								zv::Val et45;
-								zval *e44 = pgrt::dimRead(o40.raw(), r43.raw(), et45.raw());
-								if (UNEXPECTED(e44 == NULL)) return false;
-								zval av46[1];
-								ZVAL_COPY_VALUE(&av46[0], zv::Ref(e44).deref().raw());
-								zv::Val r47;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "count", 5, pt_ce_better_reflection_attribute_helper, 1, av46, r47.raw()))) return false;
-								if (UNEXPECTED(!(pgrt::instanceOfClass(o39.raw(), pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Attribute", 24))))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute::__construct", 2, "node", "PhpParser\\Node\\Attribute", o39.raw()); return false; }
-								zval n38_raw;
-								if (UNEXPECTED(object_init_ex(&n38_raw, pt_ce_better_reflection_attribute) != SUCCESS)) return false;
-								zv::Val n38 = zv::Val::adopt(n38_raw);
-								if (UNEXPECTED(!pgen::BetterReflectionAttribute::m___construct(Z_OBJ_P(n38.raw()), p_reflector, o39.raw(), p_reflection, (Z_LVAL_P(r47.raw()) > 1)))) { zend_object_store_ctor_failed(Z_OBJ_P(n38.raw())); return false; }
-								zv::Val o48 = zv::Val::copyOf(zv::Ref(n38.raw()));
-								zval *w49 = zv::Ref(l_attributes.raw()).deref().raw();
-								if (Z_TYPE_P(w49) <= IS_NULL) { zval_ptr_dtor(w49); array_init(w49); } else if (UNEXPECTED(Z_TYPE_P(w49) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w49);
-								{ zval v = o48.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w49), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val r44;
+								if (UNEXPECTED(!pgrt::nameToLowerString(pg_site_6, zv::Ref(p42).deref().raw(), r44.raw()))) return false;
+								zv::Val et46;
+								zval *e45 = pgrt::dimRead(o41.raw(), r44.raw(), et46.raw());
+								if (UNEXPECTED(e45 == NULL)) return false;
+								zval av47[1];
+								ZVAL_COPY_VALUE(&av47[0], zv::Ref(e45).deref().raw());
+								zv::Val r48;
+								if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "count", 5, pt_ce_better_reflection_attribute_helper, 1, av47, r48.raw()))) return false;
+								zval av49[4];
+								ZVAL_COPY_VALUE(&av49[0], p_reflector);
+								ZVAL_COPY_VALUE(&av49[1], o40.raw());
+								ZVAL_COPY_VALUE(&av49[2], p_reflection);
+								zval z50;
+								ZVAL_BOOL(&z50, (Z_LVAL_P(r48.raw()) > 1));
+								ZVAL_COPY_VALUE(&av49[3], &z50);
+								zv::Val n38;
+								if (UNEXPECTED(!pgrt::newObject(nce39, 4, av49, n38.raw(), NULL))) return false;
+								zv::Val o51 = zv::Val::copyOf(zv::Ref(n38.raw()));
+								zval *w52 = zv::Ref(l_attributes.raw()).deref().raw();
+								if (Z_TYPE_P(w52) <= IS_NULL) { zval_ptr_dtor(w52); array_init(w52); } else if (UNEXPECTED(Z_TYPE_P(w52) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w52);
+								{ zval v = o51.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w52), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 						if (UNEXPECTED(!it35.next())) return false;
@@ -322,7 +327,7 @@ namespace pgen::BetterReflectionAttributeHelper {
 		ZVAL_COPY_VALUE(&av3[0], p_attributes);
 		ZVAL_COPY_VALUE(&av3[1], h2.raw());
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "array_filter", 12, pt_ce_better_reflection_attribute_helper, 2, av3, r4.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "array_filter", 12, pt_ce_better_reflection_attribute_helper, 2, av3, r4.raw(), NULL))) return false;
 		zv::Val r5;
 		if (UNEXPECTED(!pgrt::arrayValues(r4.raw(), r5.raw()))) return false;
 		*ret = r5.take();
@@ -349,7 +354,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAttributeHelper)
 			Z_PARAM_ZVAL(p_reflection)
 			Z_PARAM_ARRAY(p_attrGroups)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_reflector != NULL && UNEXPECTED(Z_TYPE_P(p_reflector) != IS_OBJECT || !pgrt::instanceOfClass(p_reflector, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\BetterReflection\\Reflector\\Reflector", 44)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\BetterReflection\\Reflector\\Reflector", zend_zval_value_name(p_reflector)); RETURN_THROWS(); }
+		if (p_reflector != NULL && UNEXPECTED(Z_TYPE_P(p_reflector) != IS_OBJECT || !pgrt::instanceOfClass(p_reflector, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\BetterReflection\\Reflector\\Reflector", 44)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\BetterReflection\\Reflector\\Reflector", zend_zval_value_name(p_reflector)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionAttributeHelper::m_createAttributes(p_reflector, p_reflection, p_attrGroups, return_value))) RETURN_THROWS();
 	});

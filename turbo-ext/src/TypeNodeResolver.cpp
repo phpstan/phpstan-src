@@ -2171,9 +2171,8 @@ namespace pgen::TypeNodeResolver {
 			[[fallthrough]];
 			case 64: {
 			 {
-				zval n208_raw;
-				if (UNEXPECTED(object_init_ex(&n208_raw, pt_ce_string_always_accepting_object_with_to_string_type) != SUCCESS)) return false;
-				zv::Val n208 = zv::Val::adopt(n208_raw);
+				zv::Val n208;
+				if (UNEXPECTED(!pt_string_always_accepting_object_with_to_string_type_new(n208.raw()))) return false;
 				*ret = n208.take();
 				return true;
 			}
@@ -2181,9 +2180,8 @@ namespace pgen::TypeNodeResolver {
 			[[fallthrough]];
 			case 65: {
 			 {
-				zval n209_raw;
-				if (UNEXPECTED(object_init_ex(&n209_raw, pt_ce_string_never_accepting_object_with_to_string_type) != SUCCESS)) return false;
-				zv::Val n209 = zv::Val::adopt(n209_raw);
+				zv::Val n209;
+				if (UNEXPECTED(!pt_string_never_accepting_object_with_to_string_type_new(n209.raw()))) return false;
 				*ret = n209.take();
 				return true;
 			}

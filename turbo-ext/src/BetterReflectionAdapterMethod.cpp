@@ -63,22 +63,23 @@ static pt_method_site pg_site_50; /* method_invokeArgs_50 */
 static pt_method_site pg_site_51; /* method_getMessage_51 */
 static pt_method_site pg_site_52; /* method_getImplementingClass_52 */
 static pgrt::ClassSite pg_site_53; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass */
-static pt_method_site pg_site_54; /* method_getPrototype_54 */
+static pgrt::ClassSite pg_site_54; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod */
 static pt_method_site pg_site_55; /* method_getPrototype_55 */
-static pgrt::ClassSite pg_site_56; /* cls_PHPStan\BetterReflection\Reflection\Exception\MethodPrototypeNotFound */
-static pt_method_site pg_site_57; /* method_getAttributesByInstance_57 */
-static pt_method_site pg_site_58; /* method_getAttributesByName_58 */
-static pgrt::GetterSite pg_site_59; /* getter_getAttributes_59 */
-static pt_method_site pg_site_60; /* method_getAttributes_60 */
-static pgrt::ClassSite pg_site_61; /* cls_PHPStan\BetterReflection\Reflection\ReflectionAttribute */
-static pgrt::ClassSite pg_site_62; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionAttributeFactory */
-static pt_method_site pg_site_63; /* static_PHPStan\BetterReflection\Reflection\Adapter\ReflectionAttributeFactory::create */
-static pt_method_site pg_site_64; /* method_hasTentativeReturnType_64 */
-static pt_method_site pg_site_65; /* method_getTentativeReturnType_65 */
-static pt_method_site pg_site_66; /* method_getName_66 */
-static pt_method_site pg_site_67; /* method_getImplementingClass_67 */
-static pt_method_site pg_site_68; /* method_getName_68 */
-static pgrt::ClassSite pg_site_69; /* cls_OutOfBoundsException */
+static pt_method_site pg_site_56; /* method_getPrototype_56 */
+static pgrt::ClassSite pg_site_57; /* cls_PHPStan\BetterReflection\Reflection\Exception\MethodPrototypeNotFound */
+static pt_method_site pg_site_58; /* method_getAttributesByInstance_58 */
+static pt_method_site pg_site_59; /* method_getAttributesByName_59 */
+static pgrt::GetterSite pg_site_60; /* getter_getAttributes_60 */
+static pt_method_site pg_site_61; /* method_getAttributes_61 */
+static pgrt::ClassSite pg_site_62; /* cls_PHPStan\BetterReflection\Reflection\ReflectionAttribute */
+static pgrt::ClassSite pg_site_63; /* cls_PHPStan\BetterReflection\Reflection\Adapter\ReflectionAttributeFactory */
+static pt_method_site pg_site_64; /* static_PHPStan\BetterReflection\Reflection\Adapter\ReflectionAttributeFactory::create */
+static pt_method_site pg_site_65; /* method_hasTentativeReturnType_65 */
+static pt_method_site pg_site_66; /* method_getTentativeReturnType_66 */
+static pt_method_site pg_site_67; /* method_getName_67 */
+static pt_method_site pg_site_68; /* method_getImplementingClass_68 */
+static pt_method_site pg_site_69; /* method_getName_69 */
+static pgrt::ClassSite pg_site_70; /* cls_OutOfBoundsException */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -109,16 +110,16 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 	if (UNEXPECTED(argc < 1)) { pgrt::throwTooFewArguments("PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod::{closure}", argc, 1); return; }
 	zval *a_betterReflectionAttribute;
 	a_betterReflectionAttribute = zv::Ref(&argv[0]).deref().raw();
-	if (UNEXPECTED(!(pgrt::instanceOfClass(a_betterReflectionAttribute, pt_ce_better_reflection_attribute) || pgrt::instanceOfClass(a_betterReflectionAttribute, pgrt::lookupClassQuiet(pg_site_61, "PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute", 55))))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod::{closure}", 1, "betterReflectionAttribute", "PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute", a_betterReflectionAttribute); return; }
+	if (UNEXPECTED(!(pgrt::instanceOfClass(a_betterReflectionAttribute, pt_ce_better_reflection_attribute) || pgrt::instanceOfClass(a_betterReflectionAttribute, pgrt::lookupClassQuiet(pg_site_62, "PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute", 55))))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod::{closure}", 1, "betterReflectionAttribute", "PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute", a_betterReflectionAttribute); return; }
 	zval *p_betterReflectionAttribute = a_betterReflectionAttribute;
 	(void) p_betterReflectionAttribute;
 	 {
 		zval av1[1];
 		ZVAL_COPY_VALUE(&av1[0], p_betterReflectionAttribute);
-		zend_class_entry *ce2 = pgrt::lookupClass(pg_site_62, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionAttributeFactory", 70);
+		zend_class_entry *ce2 = pgrt::lookupClass(pg_site_63, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionAttributeFactory", 70);
 		if (UNEXPECTED(ce2 == NULL)) return;
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_63, ce2, "create", 6, 1, av1, r3.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_64, ce2, "create", 6, 1, av1, r3.raw(), NULL))) return;
 		*return_value = r3.take();
 		return;
 	}
@@ -1172,14 +1173,16 @@ namespace pgen::BetterReflectionAdapterMethod {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionAdapterMethod::slot::betterReflectionMethod, "betterReflectionMethod");
-		if (UNEXPECTED(p2 == NULL)) return false;
-		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_54, p2, "getPrototype", "getprototype", 12, 0, NULL, r3.raw(), NULL))) return false;
-		zval n1_raw;
-		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_better_reflection_adapter_method) != SUCCESS)) return false;
-		zv::Val n1 = zv::Val::adopt(n1_raw);
-		if (UNEXPECTED(!pgen::BetterReflectionAdapterMethod::m___construct(Z_OBJ_P(n1.raw()), r3.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
+		zend_class_entry *nce2 = pgrt::lookupClass(pg_site_54, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod", 60);
+		if (UNEXPECTED(nce2 == NULL)) return false;
+		zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionAdapterMethod::slot::betterReflectionMethod, "betterReflectionMethod");
+		if (UNEXPECTED(p3 == NULL)) return false;
+		zv::Val r4;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_55, p3, "getPrototype", "getprototype", 12, 0, NULL, r4.raw(), NULL))) return false;
+		zval av5[1];
+		ZVAL_COPY_VALUE(&av5[0], r4.raw());
+		zv::Val n1;
+		if (UNEXPECTED(!pgrt::newObject(nce2, 1, av5, n1.raw(), NULL))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -1198,7 +1201,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 				zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionAdapterMethod::slot::betterReflectionMethod, "betterReflectionMethod");
 				if (UNEXPECTED(p2 == NULL)) goto catch_c1;
 				zv::Val r3;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_55, p2, "getPrototype", "getprototype", 12, 0, NULL, r3.raw(), NULL))) goto catch_c1;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_56, p2, "getPrototype", "getprototype", 12, 0, NULL, r3.raw(), NULL))) goto catch_c1;
 			}
 			 {
 				*ret = true;
@@ -1210,7 +1213,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 		 {
 			zend_object *thrown = EG(exception);
 			bool caught4 = false;
-			if (!caught4 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_56, "PHPStan\\BetterReflection\\Reflection\\Exception\\MethodPrototypeNotFound", 69)))) {
+			if (!caught4 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_57, "PHPStan\\BetterReflection\\Reflection\\Exception\\MethodPrototypeNotFound", 69)))) {
 				caught4 = true;
 				zval exception;
 				ZVAL_OBJ_COPY(&exception, thrown);
@@ -1278,7 +1281,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 				zval av7[1];
 				ZVAL_COPY_VALUE(&av7[0], p_name);
 				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_57, p6, "getAttributesByInstance", "getattributesbyinstance", 23, 1, av7, r8.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_58, p6, "getAttributesByInstance", "getattributesbyinstance", 23, 1, av7, r8.raw(), NULL))) return false;
 				l_attributes = std::move(r8);
 			}
 		} else {
@@ -1291,7 +1294,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 						zval av10[1];
 						ZVAL_COPY_VALUE(&av10[0], p_name);
 						zv::Val r11;
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_58, p9, "getAttributesByName", "getattributesbyname", 19, 1, av10, r11.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_59, p9, "getAttributesByName", "getattributesbyname", 19, 1, av10, r11.raw(), NULL))) return false;
 						l_attributes = std::move(r11);
 					}
 				} else {
@@ -1299,13 +1302,13 @@ namespace pgen::BetterReflectionAdapterMethod {
 					 {
 						zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionAdapterMethod::slot::betterReflectionMethod, "betterReflectionMethod");
 						if (UNEXPECTED(p12 == NULL)) return false;
-						zval *gs13 = Z_TYPE_P(p12) == IS_OBJECT ? pgrt::trivialGetter(pg_site_59, Z_OBJ_P(p12), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\BetterReflection\\Reflection\\ReflectionMethod", 52), "getattributes", 13, "attributes", 10) : NULL;
+						zval *gs13 = Z_TYPE_P(p12) == IS_OBJECT ? pgrt::trivialGetter(pg_site_60, Z_OBJ_P(p12), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\BetterReflection\\Reflection\\ReflectionMethod", 52), "getattributes", 13, "attributes", 10) : NULL;
 						zv::Val r14;
 						if (EXPECTED(gs13 != NULL)) {
 							ZVAL_COPY(r14.raw(), gs13);
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_60, p12, "getAttributes", "getattributes", 13, 0, NULL, r14.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_61, p12, "getAttributes", "getattributes", 13, 0, NULL, r14.raw()))) return false;
 						}
 						}
 						l_attributes = std::move(r14);
@@ -1338,7 +1341,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionAdapterMethod::slot::betterReflectionMethod, "betterReflectionMethod");
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_64, p1, "hasTentativeReturnType", "hastentativereturntype", 22, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_65, p1, "hasTentativeReturnType", "hastentativereturntype", 22, 0, NULL, r2.raw(), NULL))) return false;
 		*ret = (Z_TYPE_P(r2.raw()) == IS_TRUE);
 		return true;
 	}
@@ -1354,7 +1357,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionAdapterMethod::slot::betterReflectionMethod, "betterReflectionMethod");
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_65, p1, "getTentativeReturnType", "gettentativereturntype", 22, 0, NULL, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_66, p1, "getTentativeReturnType", "gettentativereturntype", 22, 0, NULL, r2.raw(), NULL))) return false;
 		zv::Val r3;
 		if (UNEXPECTED(!pgen::BetterReflectionAdapterType::m_fromTypeOrNull(r2.raw(), r3.raw()))) return false;
 		if (UNEXPECTED(!(pgrt::instanceOfClass(r3.raw(), pgrt::lookupClassQuiet(pg_site_25, "ReflectionType", 14)) || Z_TYPE_P(r3.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod::getTentativeReturnType", "?ReflectionType", r3.raw()); return false; }
@@ -1398,7 +1401,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 					if (UNEXPECTED(r2.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_66, p1, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_67, p1, "getName", "getname", 7, 0, NULL, r2.raw(), NULL))) return false;
 				}
 				}
 				*ret = r2.take();
@@ -1412,14 +1415,14 @@ namespace pgen::BetterReflectionAdapterMethod {
 				zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionAdapterMethod::slot::betterReflectionMethod, "betterReflectionMethod");
 				if (UNEXPECTED(p3 == NULL)) return false;
 				zv::Val r4;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_67, p3, "getImplementingClass", "getimplementingclass", 20, 0, NULL, r4.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_68, p3, "getImplementingClass", "getimplementingclass", 20, 0, NULL, r4.raw(), NULL))) return false;
 				zv::Val r5;
 				if (EXPECTED(Z_TYPE_P(r4.raw()) == IS_OBJECT)) {
 					r5 = pt_type_op(Z_OBJ_P(r4.raw()), PT_OP_GET_NAME, 0, NULL);
 					if (UNEXPECTED(r5.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_68, r4.raw(), "getName", "getname", 7, 0, NULL, r5.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_69, r4.raw(), "getName", "getname", 7, 0, NULL, r5.raw(), NULL))) return false;
 				}
 				}
 				*ret = r5.take();
@@ -1437,7 +1440,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 		zv::Val r8 = sb7.finish();
 		zval av9[1];
 		ZVAL_COPY_VALUE(&av9[0], r8.raw());
-		zend_class_entry *ce10 = pgrt::lookupClass(pg_site_69, "OutOfBoundsException", 20);
+		zend_class_entry *ce10 = pgrt::lookupClass(pg_site_70, "OutOfBoundsException", 20);
 		if (UNEXPECTED(ce10 == NULL)) return false;
 		zv::Val n6;
 		if (UNEXPECTED(!pgrt::newObject(ce10, 1, av9, n6.raw(), NULL))) return false;

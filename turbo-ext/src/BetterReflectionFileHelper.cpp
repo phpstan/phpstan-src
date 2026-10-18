@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_better_reflection_file_helper = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[12];
+static zval pg_lit[14];
 
 static pgrt::FunctionSite pg_site_0; /* function_str_replace */
 static pgrt::FunctionSite pg_site_1; /* function_assert */
@@ -35,12 +35,13 @@ namespace pgen::BetterReflectionFileHelper {
 	 {
 		zv::Val as3 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
-			zval av4[1];
+			zval av4[2];
 			zval z5;
 			ZVAL_BOOL(&z5, !zend_is_identical(l_path.raw(), &pg_lit[2]));
 			ZVAL_COPY_VALUE(&av4[0], &z5);
+			ZVAL_COPY_VALUE(&av4[1], &pg_lit[3]);
 			zv::Val r6;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "assert", 6, pt_ce_better_reflection_file_helper, 1, av4, r6.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "assert", 6, pt_ce_better_reflection_file_helper, 2, av4, r6.raw(), NULL))) return false;
 			zv::Val o7 = zv::Val::boolean((Z_TYPE_P(r6.raw()) == IS_TRUE));
 			as3 = std::move(o7);
 		}
@@ -89,7 +90,7 @@ namespace pgen::BetterReflectionFileHelper {
 				zval *is6 = Z_ISUNDEF_P(l_matches.raw()) ? NULL : l_matches.raw();
 				zv::Val ref7 = zv::Val::adopt([&]() { zval inner; if (is6 != NULL) { ZVAL_COPY(&inner, is6); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
 				zval av8[3];
-				ZVAL_COPY_VALUE(&av8[0], &pg_lit[3]);
+				ZVAL_COPY_VALUE(&av8[0], &pg_lit[4]);
 				ZVAL_COPY_VALUE(&av8[1], p_originalPath);
 				ZVAL_COPY_VALUE(&av8[2], ref7.raw());
 				zv::Val r9;
@@ -139,11 +140,11 @@ namespace pgen::BetterReflectionFileHelper {
 		zv::Val arr17 = zv::Val::adopt([]() { zval a; array_init_size(&a, 4); return a; }());
 		zv::Val o18 = zv::Val::copyOf(zv::Ref(&pg_lit[0]));
 		{ zval v = o18.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr17.raw()), &v); }
-		zv::Val o19 = zv::Val::copyOf(zv::Ref(&pg_lit[4]));
+		zv::Val o19 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
 		{ zval v = o19.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr17.raw()), &v); }
-		zv::Val o20 = zv::Val::copyOf(zv::Ref(&pg_lit[5]));
+		zv::Val o20 = zv::Val::copyOf(zv::Ref(&pg_lit[6]));
 		{ zval v = o20.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr17.raw()), &v); }
-		zv::Val o21 = zv::Val::copyOf(zv::Ref(&pg_lit[6]));
+		zv::Val o21 = zv::Val::copyOf(zv::Ref(&pg_lit[7]));
 		{ zval v = o21.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr17.raw()), &v); }
 		zval av22[3];
 		ZVAL_COPY_VALUE(&av22[0], arr17.raw());
@@ -201,12 +202,12 @@ namespace pgen::BetterReflectionFileHelper {
 			l_pathPart = zv::Ref(v37).deref().raw();
 			 {
 				 {
-					if (zend_is_identical(l_pathPart, &pg_lit[7])) {
+					if (zend_is_identical(l_pathPart, &pg_lit[8])) {
 						goto cont41;
 					}
 				}
 				 {
-					if (zend_is_identical(l_pathPart, &pg_lit[8])) {
+					if (zend_is_identical(l_pathPart, &pg_lit[9])) {
 						 {
 							zval *w42 = zv::Ref(l_normalizedPathParts.raw()).deref().raw();
 							if (Z_TYPE_P(w42) <= IS_NULL) { zval_ptr_dtor(w42); array_init(w42); } else if (UNEXPECTED(Z_TYPE_P(w42) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -219,18 +220,19 @@ namespace pgen::BetterReflectionFileHelper {
 							zv::Val as44 = zv::Val::boolean(true);
 							if (EG(assertions) > 0) {
 								uint8_t ty45 = Z_TYPE_P(zv::Ref(l_removedPart.raw()).deref().raw());
-								zval av46[1];
+								zval av46[2];
 								zval z47;
 								ZVAL_BOOL(&z47, (ty45 == IS_STRING));
 								ZVAL_COPY_VALUE(&av46[0], &z47);
+								ZVAL_COPY_VALUE(&av46[1], &pg_lit[10]);
 								zv::Val r48;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "assert", 6, pt_ce_better_reflection_file_helper, 1, av46, r48.raw(), NULL))) return false;
+								if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "assert", 6, pt_ce_better_reflection_file_helper, 2, av46, r48.raw(), NULL))) return false;
 								zv::Val o49 = zv::Val::boolean((Z_TYPE_P(r48.raw()) == IS_TRUE));
 								as44 = std::move(o49);
 							}
 						}
 						 {
-							bool b50 = zend_is_identical(l_scheme.raw(), &pg_lit[9]);
+							bool b50 = zend_is_identical(l_scheme.raw(), &pg_lit[11]);
 							if (b50) {
 								zend_long neg51;
 								if (UNEXPECTED(!pgrt::negateLong(5, &neg51))) return false;
@@ -241,7 +243,7 @@ namespace pgen::BetterReflectionFileHelper {
 								ZVAL_COPY_VALUE(&av52[1], &z53);
 								zv::Val r54;
 								if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "substr", 6, pt_ce_better_reflection_file_helper, 2, av52, r54.raw(), NULL))) return false;
-								b50 = zend_is_identical(r54.raw(), &pg_lit[10]);
+								b50 = zend_is_identical(r54.raw(), &pg_lit[12]);
 							}
 							if (b50) {
 								 {
@@ -272,7 +274,7 @@ namespace pgen::BetterReflectionFileHelper {
 		zv::Val q59;
 		if (!(Z_TYPE_P(l_scheme.raw()) == IS_NULL)) {
 			zv::Val cat60;
-			if (UNEXPECTED(!pgrt::concat(l_scheme.raw(), &pg_lit[11], cat60.raw()))) return false;
+			if (UNEXPECTED(!pgrt::concat(l_scheme.raw(), &pg_lit[13], cat60.raw()))) return false;
 			q59 = std::move(cat60);
 		} else {
 		 {
@@ -306,7 +308,7 @@ namespace pgen::BetterReflectionFileHelper {
 		zval *is2 = Z_ISUNDEF_P(l_matches.raw()) ? NULL : l_matches.raw();
 		zv::Val ref3 = zv::Val::adopt([&]() { zval inner; if (is2 != NULL) { ZVAL_COPY(&inner, is2); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
 		zval av4[3];
-		ZVAL_COPY_VALUE(&av4[0], &pg_lit[3]);
+		ZVAL_COPY_VALUE(&av4[0], &pg_lit[4]);
 		ZVAL_COPY_VALUE(&av4[1], l_path.raw());
 		ZVAL_COPY_VALUE(&av4[2], ref3.raw());
 		zv::Val r5;
@@ -357,12 +359,13 @@ namespace pgen::BetterReflectionFileHelper {
 	 {
 		zv::Val as15 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
-			zval av16[1];
+			zval av16[2];
 			zval z17;
 			ZVAL_BOOL(&z17, !zend_is_identical(l_path.raw(), &pg_lit[2]));
 			ZVAL_COPY_VALUE(&av16[0], &z17);
+			ZVAL_COPY_VALUE(&av16[1], &pg_lit[3]);
 			zv::Val r18;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "assert", 6, pt_ce_better_reflection_file_helper, 1, av16, r18.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "assert", 6, pt_ce_better_reflection_file_helper, 2, av16, r18.raw(), NULL))) return false;
 			zv::Val o19 = zv::Val::boolean((Z_TYPE_P(r18.raw()) == IS_TRUE));
 			as15 = std::move(o19);
 		}
@@ -399,15 +402,17 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionFileHelper)
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("\\", 1));
 	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("/", 1));
 	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("", 0));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("~^([a-z]+)\\:\\/\\/(.+)~", 21));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("//", 2));
-	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("///", 3));
-	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("////", 4));
-	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral(".", 1));
-	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("..", 2));
-	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("phar", 4));
-	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral(".phar", 5));
-	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("://", 3));
+	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("assert($path !== '')", 20));
+	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("~^([a-z]+)\\:\\/\\/(.+)~", 21));
+	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("//", 2));
+	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("///", 3));
+	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("////", 4));
+	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral(".", 1));
+	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("..", 2));
+	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("assert(\\is_string($removedPart))", 32));
+	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("phar", 4));
+	ZVAL_INTERNED_STR(&pg_lit[12], pgrt::internLiteral(".phar", 5));
+	ZVAL_INTERNED_STR(&pg_lit[13], pgrt::internLiteral("://", 3));
 	reg::Class cls("PHPStan\\BetterReflection\\Util\\FileHelper");
 	ptdecl::BetterReflectionFileHelper::declareClass(cls);
 	ptdecl::BetterReflectionFileHelper::declareProperties(cls);

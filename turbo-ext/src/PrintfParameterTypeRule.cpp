@@ -451,9 +451,8 @@ namespace pgen::PrintfParameterTypeRule {
 	}
 	 {
 		zv::Val arr68 = zv::Val::adopt([]() { zval a; array_init_size(&a, 5); return a; }());
-		zval n69_raw;
-		if (UNEXPECTED(object_init_ex(&n69_raw, pt_ce_string_always_accepting_object_with_to_string_type) != SUCCESS)) return false;
-		zv::Val n69 = zv::Val::adopt(n69_raw);
+		zv::Val n69;
+		if (UNEXPECTED(!pt_string_always_accepting_object_with_to_string_type_new(n69.raw()))) return false;
 		{ zval v = n69.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr68.raw()), &v); }
 		zv::Val n70;
 		if (UNEXPECTED(!pt_integer_type_new(n70.raw()))) return false;

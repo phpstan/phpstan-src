@@ -1142,6 +1142,9 @@ extern zend_class_entry *pt_ce_memoizing_reflector;
 extern zend_class_entry *pt_ce_file_helper;
 extern zend_class_entry *pt_ce_registry;
 extern zend_class_entry *pt_ce_optimized_single_file_source_locator;
+extern zend_class_entry *pt_ce_better_reflection_identifier_type;
+extern zend_class_entry *pt_ce_better_reflection_annotation_helper;
+extern zend_class_entry *pt_ce_php_doc_node_resolver;
 
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
@@ -9903,5 +9906,61 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 [[nodiscard]] bool m_locateIdentifier(zend_object *self, zval *p_reflector, zval *p_identifier, zval *ret);
 [[nodiscard]] bool m_locateIdentifiersByType(zend_object *self, zval *p_reflector, zval *p_identifierType, zval *ret);
 } // namespace pgen::OptimizedSingleFileSourceLocator
+
+namespace pgen::BetterReflectionIdentifierType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_type);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isClass(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isFunction(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isConstant(zend_object *self, bool *ret);
+} // namespace pgen::BetterReflectionIdentifierType
+
+namespace pgen::BetterReflectionAnnotationHelper {
+[[nodiscard]] bool m_isDeprecated(zval *p_docComment, bool *ret);
+[[nodiscard]] bool m_hasTentativeReturnType(zval *p_docComment, bool *ret);
+} // namespace pgen::BetterReflectionAnnotationHelper
+
+namespace pgen::PhpDocNodeResolver {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_typeNodeResolver, zval *p_constExprNodeResolver, zval *p_unresolvableTypeHelper);
+[[nodiscard]] bool m_resolveVarTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolvePropertyTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveMethodTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveExtendsTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveImplementsTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveUsesTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveTemplateTags(zend_object *self, zval *p_templatePhpDocNodes, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveParamTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveParamOutTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveParamImmediatelyInvokedCallable(zend_object *self, zval *p_phpDocNode, zval *ret);
+[[nodiscard]] bool m_resolveParamPureUnlessCallableIsImpure(zend_object *self, zval *p_phpDocNode, zval *ret);
+[[nodiscard]] bool m_resolveParamPureUnlessParameterPassed(zend_object *self, zval *p_phpDocNode, zval *ret);
+[[nodiscard]] bool m_resolveParamClosureThisTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveReturnTag(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveThrowsTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveMixinTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveRequireExtendsTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveRequireImplementsTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveSealedTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveTypeAliasTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveTypeAliasImportTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveAssertTags(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveAssertTagsFor(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *p_tagName, zval *p_if, zval *ret);
+[[nodiscard]] bool m_resolveSelfOutTypeTag(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveDeprecatedTag(zend_object *self, zval *p_phpDocNode, zval *p_nameScope, zval *ret);
+[[nodiscard]] bool m_resolveIsDeprecated(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveIsNotDeprecated(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveIsInternal(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveIsFinal(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveIsPure(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveIsImpure(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveAllMethodsPure(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveAllMethodsImpure(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveIsReadOnly(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveIsImmutable(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveHasConsistentConstructor(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_resolveAcceptsNamedArguments(zend_object *self, zval *p_phpDocNode, bool *ret);
+[[nodiscard]] bool m_shouldSkipType(zend_object *self, zval *p_tagName, zval *p_type, bool *ret);
+[[nodiscard]] bool m_resolveAllowPrivateMutation(zend_object *self, zval *p_phpDocNode, bool *ret);
+} // namespace pgen::PhpDocNodeResolver
 
 #endif

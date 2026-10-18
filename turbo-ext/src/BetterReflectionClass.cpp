@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_better_reflection_class = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[54];
+static zval pg_lit[63];
 
 static pgrt::PropIndexSite pg_site_0; /* slot_namespace_0 */
 static pgrt::PropSite pg_site_1; /* prop_name_1 */
@@ -548,14 +548,15 @@ static void pg_closure_12(zval *captures, uint32_t argc, zval *argv, zval *retur
 		if (EG(assertions) > 0) {
 			bool b2 = (Z_TYPE_P(p_aliasMethodName) == IS_NULL);
 			if (!b2) {
-				b2 = !zend_is_identical(p_aliasMethodName, &pg_lit[27]);
+				b2 = !zend_is_identical(p_aliasMethodName, &pg_lit[30]);
 			}
-			zval av3[1];
+			zval av3[2];
 			zval z4;
 			ZVAL_BOOL(&z4, b2);
 			ZVAL_COPY_VALUE(&av3[0], &z4);
+			ZVAL_COPY_VALUE(&av3[1], &pg_lit[31]);
 			zv::Val r5;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 1, av3, r5.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 2, av3, r5.raw(), NULL))) return;
 			zv::Val o6 = zv::Val::boolean((Z_TYPE_P(r5.raw()) == IS_TRUE));
 			as1 = std::move(o6);
 		}
@@ -715,12 +716,13 @@ static void pg_closure_17(zval *captures, uint32_t argc, zval *argv, zval *retur
 	 {
 		zv::Val as1 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
-			zval av2[1];
+			zval av2[2];
 			zval z3;
-			ZVAL_BOOL(&z3, !zend_is_identical(p_name, &pg_lit[27]));
+			ZVAL_BOOL(&z3, !zend_is_identical(p_name, &pg_lit[30]));
 			ZVAL_COPY_VALUE(&av2[0], &z3);
+			ZVAL_COPY_VALUE(&av2[1], &pg_lit[38]);
 			zv::Val r4;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 1, av2, r4.raw(), NULL))) return;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 2, av2, r4.raw(), NULL))) return;
 			zv::Val o5 = zv::Val::boolean((Z_TYPE_P(r4.raw()) == IS_TRUE));
 			as1 = std::move(o5);
 		}
@@ -728,11 +730,11 @@ static void pg_closure_17(zval *captures, uint32_t argc, zval *argv, zval *retur
 	 {
 		zv::Val arr6 = zv::Val::adopt([]() { zval a; array_init_size(&a, 3); return a; }());
 		zv::Val o7 = zv::Val::integer((1 | 8));
-		{ zval v = o7.take(); zend_symtable_update(Z_ARRVAL_P(arr6.raw()), Z_STR_P(&pg_lit[34]), &v); }
+		{ zval v = o7.take(); zend_symtable_update(Z_ARRVAL_P(arr6.raw()), Z_STR_P(&pg_lit[39]), &v); }
 		zv::Val o8 = zv::Val::copyOf(zv::Ref(p_params));
-		{ zval v = o8.take(); zend_symtable_update(Z_ARRVAL_P(arr6.raw()), Z_STR_P(&pg_lit[35]), &v); }
+		{ zval v = o8.take(); zend_symtable_update(Z_ARRVAL_P(arr6.raw()), Z_STR_P(&pg_lit[40]), &v); }
 		zv::Val o9 = zv::Val::copyOf(zv::Ref(p_returnType));
-		{ zval v = o9.take(); zend_symtable_update(Z_ARRVAL_P(arr6.raw()), Z_STR_P(&pg_lit[36]), &v); }
+		{ zval v = o9.take(); zend_symtable_update(Z_ARRVAL_P(arr6.raw()), Z_STR_P(&pg_lit[41]), &v); }
 		l_classMethodSubnodes = std::move(arr6);
 	}
 	 {
@@ -1447,12 +1449,13 @@ namespace pgen::BetterReflectionClass {
 		if (EG(assertions) > 0) {
 			zval z54;
 			ZVAL_LONG(&z54, 0);
-			zval av55[1];
+			zval av55[2];
 			zval z56;
 			ZVAL_BOOL(&z56, (zend_compare(l_startLine.raw(), &z54) > 0));
 			ZVAL_COPY_VALUE(&av55[0], &z56);
+			ZVAL_COPY_VALUE(&av55[1], &pg_lit[0]);
 			zv::Val r57;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 1, av55, r57.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 2, av55, r57.raw(), NULL))) return false;
 			zv::Val o58 = zv::Val::boolean((Z_TYPE_P(r57.raw()) == IS_TRUE));
 			as53 = std::move(o58);
 		}
@@ -1467,12 +1470,13 @@ namespace pgen::BetterReflectionClass {
 		if (EG(assertions) > 0) {
 			zval z61;
 			ZVAL_LONG(&z61, 0);
-			zval av62[1];
+			zval av62[2];
 			zval z63;
 			ZVAL_BOOL(&z63, (zend_compare(l_endLine.raw(), &z61) > 0));
 			ZVAL_COPY_VALUE(&av62[0], &z63);
+			ZVAL_COPY_VALUE(&av62[1], &pg_lit[1]);
 			zv::Val r64;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 1, av62, r64.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 2, av62, r64.raw(), NULL))) return false;
 			zv::Val o65 = zv::Val::boolean((Z_TYPE_P(r64.raw()) == IS_TRUE));
 			as60 = std::move(o65);
 		}
@@ -1711,43 +1715,43 @@ namespace pgen::BetterReflectionClass {
 		if (!vd3_done) {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_36, p2, "exportToCache", "exporttocache", 13, 0, NULL, vd3.raw()))) return false;
 		}
-		{ zval v = vd3.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[0]), &v); }
+		{ zval v = vd3.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[2]), &v); }
 		zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), pgrt::propIndex(pg_site_37, Z_OBJ_P(&this_zv), "namespace", 9), "namespace");
 		if (UNEXPECTED(p5 == NULL)) return false;
 		zv::Val o6 = zv::Val::copyOf(zv::Ref(p5));
-		{ zval v = o6.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[1]), &v); }
+		{ zval v = o6.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[3]), &v); }
 		zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::name, "name");
 		if (UNEXPECTED(p7 == NULL)) return false;
 		zv::Val o8 = zv::Val::copyOf(zv::Ref(p7));
-		{ zval v = o8.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[2]), &v); }
+		{ zval v = o8.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[4]), &v); }
 		zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::shortName, "shortName");
 		if (UNEXPECTED(p9 == NULL)) return false;
 		zv::Val o10 = zv::Val::copyOf(zv::Ref(p9));
-		{ zval v = o10.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[3]), &v); }
+		{ zval v = o10.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[5]), &v); }
 		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::isInterface, "isInterface");
 		if (UNEXPECTED(p11 == NULL)) return false;
 		zv::Val o12 = zv::Val::boolean((Z_TYPE_P(p11) == IS_TRUE));
-		{ zval v = o12.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[4]), &v); }
+		{ zval v = o12.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[6]), &v); }
 		zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::isTrait, "isTrait");
 		if (UNEXPECTED(p13 == NULL)) return false;
 		zv::Val o14 = zv::Val::boolean((Z_TYPE_P(p13) == IS_TRUE));
-		{ zval v = o14.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[5]), &v); }
+		{ zval v = o14.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[7]), &v); }
 		zval *p15 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::isEnum, "isEnum");
 		if (UNEXPECTED(p15 == NULL)) return false;
 		zv::Val o16 = zv::Val::boolean((Z_TYPE_P(p15) == IS_TRUE));
-		{ zval v = o16.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[6]), &v); }
+		{ zval v = o16.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[8]), &v); }
 		zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::isBackedEnum, "isBackedEnum");
 		if (UNEXPECTED(p17 == NULL)) return false;
 		zv::Val o18 = zv::Val::boolean((Z_TYPE_P(p17) == IS_TRUE));
-		{ zval v = o18.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[7]), &v); }
+		{ zval v = o18.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[9]), &v); }
 		zval *p19 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::modifiers, "modifiers");
 		if (UNEXPECTED(p19 == NULL)) return false;
 		zv::Val o20 = zv::Val::integer(Z_LVAL_P(p19));
-		{ zval v = o20.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[8]), &v); }
+		{ zval v = o20.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[10]), &v); }
 		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::docComment, "docComment");
 		if (UNEXPECTED(p21 == NULL)) return false;
 		zv::Val o22 = zv::Val::copyOf(zv::Ref(p21));
-		{ zval v = o22.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[9]), &v); }
+		{ zval v = o22.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[11]), &v); }
 		zv::Val h23 = pt_native_closure_new(&pg_closure_4, 0, NULL, 0u);
 		zval *p24 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::attributes, "attributes");
 		if (UNEXPECTED(p24 == NULL)) return false;
@@ -1756,35 +1760,35 @@ namespace pgen::BetterReflectionClass {
 		ZVAL_COPY_VALUE(&av25[1], p24);
 		zv::Val r26;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_31, "array_map", 9, pt_ce_better_reflection_class, 2, av25, r26.raw(), NULL))) return false;
-		{ zval v = r26.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[10]), &v); }
+		{ zval v = r26.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[12]), &v); }
 		zval *p27 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::startLine, "startLine");
 		if (UNEXPECTED(p27 == NULL)) return false;
 		zv::Val o28 = zv::Val::integer(Z_LVAL_P(p27));
-		{ zval v = o28.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[11]), &v); }
+		{ zval v = o28.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[13]), &v); }
 		zval *p29 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::endLine, "endLine");
 		if (UNEXPECTED(p29 == NULL)) return false;
 		zv::Val o30 = zv::Val::integer(Z_LVAL_P(p29));
-		{ zval v = o30.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[12]), &v); }
+		{ zval v = o30.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[14]), &v); }
 		zval *p31 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::startColumn, "startColumn");
 		if (UNEXPECTED(p31 == NULL)) return false;
 		zv::Val o32 = zv::Val::integer(Z_LVAL_P(p31));
-		{ zval v = o32.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[13]), &v); }
+		{ zval v = o32.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[15]), &v); }
 		zval *p33 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::endColumn, "endColumn");
 		if (UNEXPECTED(p33 == NULL)) return false;
 		zv::Val o34 = zv::Val::integer(Z_LVAL_P(p33));
-		{ zval v = o34.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[14]), &v); }
+		{ zval v = o34.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[16]), &v); }
 		zval *p35 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::parentClassName, "parentClassName");
 		if (UNEXPECTED(p35 == NULL)) return false;
 		zv::Val o36 = zv::Val::copyOf(zv::Ref(p35));
-		{ zval v = o36.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[15]), &v); }
+		{ zval v = o36.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[17]), &v); }
 		zval *p37 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::implementsClassNames, "implementsClassNames");
 		if (UNEXPECTED(p37 == NULL)) return false;
 		zv::Val o38 = zv::Val::copyOf(zv::Ref(p37));
-		{ zval v = o38.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[16]), &v); }
+		{ zval v = o38.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[18]), &v); }
 		zval *p39 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitClassNames, "traitClassNames");
 		if (UNEXPECTED(p39 == NULL)) return false;
 		zv::Val o40 = zv::Val::copyOf(zv::Ref(p39));
-		{ zval v = o40.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[17]), &v); }
+		{ zval v = o40.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[19]), &v); }
 		zv::Val h41 = pt_native_closure_new(&pg_closure_5, 0, NULL, 0u);
 		zval *p42 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::immediateConstants, "immediateConstants");
 		if (UNEXPECTED(p42 == NULL)) return false;
@@ -1793,7 +1797,7 @@ namespace pgen::BetterReflectionClass {
 		ZVAL_COPY_VALUE(&av43[1], p42);
 		zv::Val r44;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_31, "array_map", 9, pt_ce_better_reflection_class, 2, av43, r44.raw(), NULL))) return false;
-		{ zval v = r44.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[18]), &v); }
+		{ zval v = r44.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[20]), &v); }
 		zv::Val h45 = pt_native_closure_new(&pg_closure_6, 0, NULL, 0u);
 		zval *p46 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::immediateProperties, "immediateProperties");
 		if (UNEXPECTED(p46 == NULL)) return false;
@@ -1802,7 +1806,7 @@ namespace pgen::BetterReflectionClass {
 		ZVAL_COPY_VALUE(&av47[1], p46);
 		zv::Val r48;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_31, "array_map", 9, pt_ce_better_reflection_class, 2, av47, r48.raw(), NULL))) return false;
-		{ zval v = r48.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[19]), &v); }
+		{ zval v = r48.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[21]), &v); }
 		zv::Val h49 = pt_native_closure_new(&pg_closure_7, 0, NULL, 0u);
 		zval *p50 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::immediateMethods, "immediateMethods");
 		if (UNEXPECTED(p50 == NULL)) return false;
@@ -1811,11 +1815,11 @@ namespace pgen::BetterReflectionClass {
 		ZVAL_COPY_VALUE(&av51[1], p50);
 		zv::Val r52;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_31, "array_map", 9, pt_ce_better_reflection_class, 2, av51, r52.raw(), NULL))) return false;
-		{ zval v = r52.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[20]), &v); }
+		{ zval v = r52.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[22]), &v); }
 		zval *p53 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 		if (UNEXPECTED(p53 == NULL)) return false;
 		zv::Val o54 = zv::Val::copyOf(zv::Ref(p53));
-		{ zval v = o54.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[21]), &v); }
+		{ zval v = o54.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[23]), &v); }
 		*ret = arr1.take();
 		return true;
 	}
@@ -1845,11 +1849,11 @@ namespace pgen::BetterReflectionClass {
 	}
 	 {
 		zv::Val o6 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o6.raw(), pt_ce_better_reflection_class, &pg_lit[22], p_reflector))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o6.raw(), pt_ce_better_reflection_class, &pg_lit[24], p_reflector))) return false;
 	}
 	 {
 		zv::Val et8;
-		zval *e7 = pgrt::dimRead(p_data, &pg_lit[0], et8.raw());
+		zval *e7 = pgrt::dimRead(p_data, &pg_lit[2], et8.raw());
 		if (UNEXPECTED(e7 == NULL)) return false;
 		if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(e7).deref().raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource::importFromCache", 1, "data", "array", zv::Ref(e7).deref().raw()); return false; }
 		zv::Val r9;
@@ -1859,79 +1863,79 @@ namespace pgen::BetterReflectionClass {
 	 {
 		zv::Val o10 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val o11 = zv::Val::copyOf(zv::Ref(l_locatedSource.raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o10.raw(), pt_ce_better_reflection_class, &pg_lit[0], o11.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o10.raw(), pt_ce_better_reflection_class, &pg_lit[2], o11.raw()))) return false;
 	}
 	 {
 		zv::Val o12 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et14;
-		zval *e13 = pgrt::dimRead(p_data, &pg_lit[1], et14.raw());
+		zval *e13 = pgrt::dimRead(p_data, &pg_lit[3], et14.raw());
 		if (UNEXPECTED(e13 == NULL)) return false;
 		zv::Val o15 = zv::Val::copyOf(zv::Ref(zv::Ref(e13).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o12.raw(), pt_ce_better_reflection_class, &pg_lit[1], o15.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o12.raw(), pt_ce_better_reflection_class, &pg_lit[3], o15.raw()))) return false;
 	}
 	 {
 		zv::Val o16 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et18;
-		zval *e17 = pgrt::dimRead(p_data, &pg_lit[2], et18.raw());
+		zval *e17 = pgrt::dimRead(p_data, &pg_lit[4], et18.raw());
 		if (UNEXPECTED(e17 == NULL)) return false;
 		zv::Val o19 = zv::Val::copyOf(zv::Ref(zv::Ref(e17).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o16.raw(), pt_ce_better_reflection_class, &pg_lit[2], o19.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o16.raw(), pt_ce_better_reflection_class, &pg_lit[4], o19.raw()))) return false;
 	}
 	 {
 		zv::Val o20 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et22;
-		zval *e21 = pgrt::dimRead(p_data, &pg_lit[3], et22.raw());
+		zval *e21 = pgrt::dimRead(p_data, &pg_lit[5], et22.raw());
 		if (UNEXPECTED(e21 == NULL)) return false;
 		zv::Val o23 = zv::Val::copyOf(zv::Ref(zv::Ref(e21).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o20.raw(), pt_ce_better_reflection_class, &pg_lit[3], o23.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o20.raw(), pt_ce_better_reflection_class, &pg_lit[5], o23.raw()))) return false;
 	}
 	 {
 		zv::Val o24 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et26;
-		zval *e25 = pgrt::dimRead(p_data, &pg_lit[4], et26.raw());
+		zval *e25 = pgrt::dimRead(p_data, &pg_lit[6], et26.raw());
 		if (UNEXPECTED(e25 == NULL)) return false;
 		zv::Val o27 = zv::Val::copyOf(zv::Ref(zv::Ref(e25).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o24.raw(), pt_ce_better_reflection_class, &pg_lit[4], o27.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o24.raw(), pt_ce_better_reflection_class, &pg_lit[6], o27.raw()))) return false;
 	}
 	 {
 		zv::Val o28 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et30;
-		zval *e29 = pgrt::dimRead(p_data, &pg_lit[5], et30.raw());
+		zval *e29 = pgrt::dimRead(p_data, &pg_lit[7], et30.raw());
 		if (UNEXPECTED(e29 == NULL)) return false;
 		zv::Val o31 = zv::Val::copyOf(zv::Ref(zv::Ref(e29).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o28.raw(), pt_ce_better_reflection_class, &pg_lit[5], o31.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o28.raw(), pt_ce_better_reflection_class, &pg_lit[7], o31.raw()))) return false;
 	}
 	 {
 		zv::Val o32 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et34;
-		zval *e33 = pgrt::dimRead(p_data, &pg_lit[6], et34.raw());
+		zval *e33 = pgrt::dimRead(p_data, &pg_lit[8], et34.raw());
 		if (UNEXPECTED(e33 == NULL)) return false;
 		zv::Val o35 = zv::Val::copyOf(zv::Ref(zv::Ref(e33).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o32.raw(), pt_ce_better_reflection_class, &pg_lit[6], o35.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o32.raw(), pt_ce_better_reflection_class, &pg_lit[8], o35.raw()))) return false;
 	}
 	 {
 		zv::Val o36 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et38;
-		zval *e37 = pgrt::dimRead(p_data, &pg_lit[7], et38.raw());
+		zval *e37 = pgrt::dimRead(p_data, &pg_lit[9], et38.raw());
 		if (UNEXPECTED(e37 == NULL)) return false;
 		zv::Val o39 = zv::Val::copyOf(zv::Ref(zv::Ref(e37).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o36.raw(), pt_ce_better_reflection_class, &pg_lit[7], o39.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o36.raw(), pt_ce_better_reflection_class, &pg_lit[9], o39.raw()))) return false;
 	}
 	 {
 		zv::Val o40 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et42;
-		zval *e41 = pgrt::dimRead(p_data, &pg_lit[8], et42.raw());
+		zval *e41 = pgrt::dimRead(p_data, &pg_lit[10], et42.raw());
 		if (UNEXPECTED(e41 == NULL)) return false;
 		zv::Val o43 = zv::Val::copyOf(zv::Ref(zv::Ref(e41).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o40.raw(), pt_ce_better_reflection_class, &pg_lit[8], o43.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o40.raw(), pt_ce_better_reflection_class, &pg_lit[10], o43.raw()))) return false;
 	}
 	 {
 		zv::Val o44 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et46;
-		zval *e45 = pgrt::dimRead(p_data, &pg_lit[9], et46.raw());
+		zval *e45 = pgrt::dimRead(p_data, &pg_lit[11], et46.raw());
 		if (UNEXPECTED(e45 == NULL)) return false;
 		zv::Val o47 = zv::Val::copyOf(zv::Ref(zv::Ref(e45).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o44.raw(), pt_ce_better_reflection_class, &pg_lit[9], o47.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o44.raw(), pt_ce_better_reflection_class, &pg_lit[11], o47.raw()))) return false;
 	}
 	 {
 		zv::Val o48 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
@@ -1940,70 +1944,70 @@ namespace pgen::BetterReflectionClass {
 		ZVAL_COPY_VALUE(&cap49[1], l_ref.raw());
 		zv::Val h50 = pt_native_closure_new(&pg_closure_8, 2, cap49, 0u);
 		zv::Val et52;
-		zval *e51 = pgrt::dimRead(p_data, &pg_lit[10], et52.raw());
+		zval *e51 = pgrt::dimRead(p_data, &pg_lit[12], et52.raw());
 		if (UNEXPECTED(e51 == NULL)) return false;
 		zval av53[2];
 		ZVAL_COPY_VALUE(&av53[0], h50.raw());
 		ZVAL_COPY_VALUE(&av53[1], zv::Ref(e51).deref().raw());
 		zv::Val r54;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_31, "array_map", 9, pt_ce_better_reflection_class, 2, av53, r54.raw(), NULL))) return false;
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o48.raw(), pt_ce_better_reflection_class, &pg_lit[10], r54.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o48.raw(), pt_ce_better_reflection_class, &pg_lit[12], r54.raw()))) return false;
 	}
 	 {
 		zv::Val o55 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et57;
-		zval *e56 = pgrt::dimRead(p_data, &pg_lit[11], et57.raw());
+		zval *e56 = pgrt::dimRead(p_data, &pg_lit[13], et57.raw());
 		if (UNEXPECTED(e56 == NULL)) return false;
 		zv::Val o58 = zv::Val::copyOf(zv::Ref(zv::Ref(e56).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o55.raw(), pt_ce_better_reflection_class, &pg_lit[11], o58.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o55.raw(), pt_ce_better_reflection_class, &pg_lit[13], o58.raw()))) return false;
 	}
 	 {
 		zv::Val o59 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et61;
-		zval *e60 = pgrt::dimRead(p_data, &pg_lit[12], et61.raw());
+		zval *e60 = pgrt::dimRead(p_data, &pg_lit[14], et61.raw());
 		if (UNEXPECTED(e60 == NULL)) return false;
 		zv::Val o62 = zv::Val::copyOf(zv::Ref(zv::Ref(e60).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o59.raw(), pt_ce_better_reflection_class, &pg_lit[12], o62.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o59.raw(), pt_ce_better_reflection_class, &pg_lit[14], o62.raw()))) return false;
 	}
 	 {
 		zv::Val o63 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et65;
-		zval *e64 = pgrt::dimRead(p_data, &pg_lit[13], et65.raw());
+		zval *e64 = pgrt::dimRead(p_data, &pg_lit[15], et65.raw());
 		if (UNEXPECTED(e64 == NULL)) return false;
 		zv::Val o66 = zv::Val::copyOf(zv::Ref(zv::Ref(e64).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o63.raw(), pt_ce_better_reflection_class, &pg_lit[13], o66.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o63.raw(), pt_ce_better_reflection_class, &pg_lit[15], o66.raw()))) return false;
 	}
 	 {
 		zv::Val o67 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et69;
-		zval *e68 = pgrt::dimRead(p_data, &pg_lit[14], et69.raw());
+		zval *e68 = pgrt::dimRead(p_data, &pg_lit[16], et69.raw());
 		if (UNEXPECTED(e68 == NULL)) return false;
 		zv::Val o70 = zv::Val::copyOf(zv::Ref(zv::Ref(e68).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o67.raw(), pt_ce_better_reflection_class, &pg_lit[14], o70.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o67.raw(), pt_ce_better_reflection_class, &pg_lit[16], o70.raw()))) return false;
 	}
 	 {
 		zv::Val o71 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et73;
-		zval *e72 = pgrt::dimRead(p_data, &pg_lit[15], et73.raw());
+		zval *e72 = pgrt::dimRead(p_data, &pg_lit[17], et73.raw());
 		if (UNEXPECTED(e72 == NULL)) return false;
 		zv::Val o74 = zv::Val::copyOf(zv::Ref(zv::Ref(e72).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o71.raw(), pt_ce_better_reflection_class, &pg_lit[15], o74.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o71.raw(), pt_ce_better_reflection_class, &pg_lit[17], o74.raw()))) return false;
 	}
 	 {
 		zv::Val o75 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et77;
-		zval *e76 = pgrt::dimRead(p_data, &pg_lit[16], et77.raw());
+		zval *e76 = pgrt::dimRead(p_data, &pg_lit[18], et77.raw());
 		if (UNEXPECTED(e76 == NULL)) return false;
 		zv::Val o78 = zv::Val::copyOf(zv::Ref(zv::Ref(e76).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o75.raw(), pt_ce_better_reflection_class, &pg_lit[16], o78.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o75.raw(), pt_ce_better_reflection_class, &pg_lit[18], o78.raw()))) return false;
 	}
 	 {
 		zv::Val o79 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et81;
-		zval *e80 = pgrt::dimRead(p_data, &pg_lit[17], et81.raw());
+		zval *e80 = pgrt::dimRead(p_data, &pg_lit[19], et81.raw());
 		if (UNEXPECTED(e80 == NULL)) return false;
 		zv::Val o82 = zv::Val::copyOf(zv::Ref(zv::Ref(e80).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o79.raw(), pt_ce_better_reflection_class, &pg_lit[17], o82.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o79.raw(), pt_ce_better_reflection_class, &pg_lit[19], o82.raw()))) return false;
 	}
 	 {
 		zv::Val o83 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
@@ -2011,14 +2015,14 @@ namespace pgen::BetterReflectionClass {
 		ZVAL_COPY_VALUE(&cap84[0], p_reflector);
 		zv::Val h85 = pt_native_closure_new(&pg_closure_9, 1, cap84, 0u);
 		zv::Val et87;
-		zval *e86 = pgrt::dimRead(p_data, &pg_lit[18], et87.raw());
+		zval *e86 = pgrt::dimRead(p_data, &pg_lit[20], et87.raw());
 		if (UNEXPECTED(e86 == NULL)) return false;
 		zval av88[2];
 		ZVAL_COPY_VALUE(&av88[0], h85.raw());
 		ZVAL_COPY_VALUE(&av88[1], zv::Ref(e86).deref().raw());
 		zv::Val r89;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_31, "array_map", 9, pt_ce_better_reflection_class, 2, av88, r89.raw(), NULL))) return false;
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o83.raw(), pt_ce_better_reflection_class, &pg_lit[18], r89.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o83.raw(), pt_ce_better_reflection_class, &pg_lit[20], r89.raw()))) return false;
 	}
 	 {
 		zv::Val o90 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
@@ -2027,14 +2031,14 @@ namespace pgen::BetterReflectionClass {
 		ZVAL_COPY_VALUE(&cap91[1], l_locatedSource.raw());
 		zv::Val h92 = pt_native_closure_new(&pg_closure_10, 2, cap91, 0u);
 		zv::Val et94;
-		zval *e93 = pgrt::dimRead(p_data, &pg_lit[19], et94.raw());
+		zval *e93 = pgrt::dimRead(p_data, &pg_lit[21], et94.raw());
 		if (UNEXPECTED(e93 == NULL)) return false;
 		zval av95[2];
 		ZVAL_COPY_VALUE(&av95[0], h92.raw());
 		ZVAL_COPY_VALUE(&av95[1], zv::Ref(e93).deref().raw());
 		zv::Val r96;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_31, "array_map", 9, pt_ce_better_reflection_class, 2, av95, r96.raw(), NULL))) return false;
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o90.raw(), pt_ce_better_reflection_class, &pg_lit[19], r96.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o90.raw(), pt_ce_better_reflection_class, &pg_lit[21], r96.raw()))) return false;
 	}
 	 {
 		zv::Val o97 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
@@ -2043,22 +2047,22 @@ namespace pgen::BetterReflectionClass {
 		ZVAL_COPY_VALUE(&cap98[1], l_locatedSource.raw());
 		zv::Val h99 = pt_native_closure_new(&pg_closure_11, 2, cap98, 0u);
 		zv::Val et101;
-		zval *e100 = pgrt::dimRead(p_data, &pg_lit[20], et101.raw());
+		zval *e100 = pgrt::dimRead(p_data, &pg_lit[22], et101.raw());
 		if (UNEXPECTED(e100 == NULL)) return false;
 		zval av102[2];
 		ZVAL_COPY_VALUE(&av102[0], h99.raw());
 		ZVAL_COPY_VALUE(&av102[1], zv::Ref(e100).deref().raw());
 		zv::Val r103;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_31, "array_map", 9, pt_ce_better_reflection_class, 2, av102, r103.raw(), NULL))) return false;
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o97.raw(), pt_ce_better_reflection_class, &pg_lit[20], r103.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o97.raw(), pt_ce_better_reflection_class, &pg_lit[22], r103.raw()))) return false;
 	}
 	 {
 		zv::Val o104 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
 		zv::Val et106;
-		zval *e105 = pgrt::dimRead(p_data, &pg_lit[21], et106.raw());
+		zval *e105 = pgrt::dimRead(p_data, &pg_lit[23], et106.raw());
 		if (UNEXPECTED(e105 == NULL)) return false;
 		zv::Val o107 = zv::Val::copyOf(zv::Ref(zv::Ref(e105).deref().raw()));
-		if (UNEXPECTED(!pgrt::writePropertyGeneric(o104.raw(), pt_ce_better_reflection_class, &pg_lit[21], o107.raw()))) return false;
+		if (UNEXPECTED(!pgrt::writePropertyGeneric(o104.raw(), pt_ce_better_reflection_class, &pg_lit[23], o107.raw()))) return false;
 	}
 	 {
 		if (UNEXPECTED(!(pgrt::instanceOfClass(l_ref.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_ref.raw(), pgrt::lookupClassQuiet(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))))) { pgrt::throwReturnType("PHPStan\\BetterReflection\\Reflection\\ReflectionClass::importFromCache", "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", l_ref.raw()); return false; }
@@ -2104,10 +2108,15 @@ namespace pgen::BetterReflectionClass {
 [[nodiscard]] bool m_createFromNode(zval *p_reflector, zval *p_node, zval *p_locatedSource, zval *p_namespace, zval *ret)
 {
 	 {
-		zval n1_raw;
-		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_better_reflection_class) != SUCCESS)) return false;
-		zv::Val n1 = zv::Val::adopt(n1_raw);
-		if (UNEXPECTED(!pgen::BetterReflectionClass::m___construct(Z_OBJ_P(n1.raw()), p_reflector, p_node, p_locatedSource, p_namespace))) { zend_object_store_ctor_failed(Z_OBJ_P(n1.raw())); return false; }
+		zend_class_entry *nce2 = pgrt::lookupClass(pg_site_50, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51);
+		if (UNEXPECTED(nce2 == NULL)) return false;
+		zval av3[4];
+		ZVAL_COPY_VALUE(&av3[0], p_reflector);
+		ZVAL_COPY_VALUE(&av3[1], p_node);
+		ZVAL_COPY_VALUE(&av3[2], p_locatedSource);
+		ZVAL_COPY_VALUE(&av3[3], p_namespace);
+		zv::Val n1;
+		if (UNEXPECTED(!pgrt::newObject(nce2, 4, av3, n1.raw(), NULL))) return false;
 		*ret = n1.take();
 		return true;
 	}
@@ -2188,10 +2197,10 @@ namespace pgen::BetterReflectionClass {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_58, &this_zv, "getStartLine", "getstartline", 12, 0, NULL, vd11.raw()))) return false;
 		}
 		zval av14[6];
-		ZVAL_COPY_VALUE(&av14[0], &pg_lit[23]);
+		ZVAL_COPY_VALUE(&av14[0], &pg_lit[25]);
 		ZVAL_COPY_VALUE(&av14[1], r9.raw());
-		ZVAL_COPY_VALUE(&av14[2], &pg_lit[24]);
-		ZVAL_COPY_VALUE(&av14[3], &pg_lit[25]);
+		ZVAL_COPY_VALUE(&av14[2], &pg_lit[26]);
+		ZVAL_COPY_VALUE(&av14[3], &pg_lit[27]);
 		ZVAL_COPY_VALUE(&av14[4], o10.raw());
 		zval z15;
 		ZVAL_LONG(&z15, Z_LVAL_P(vd11.raw()));
@@ -2249,7 +2258,7 @@ namespace pgen::BetterReflectionClass {
 		}
 	}
 	 {
-		ZVAL_COPY(ret, &pg_lit[26]);
+		ZVAL_COPY(ret, &pg_lit[28]);
 		return true;
 	}
 }
@@ -2315,12 +2324,13 @@ namespace pgen::BetterReflectionClass {
 		if (EG(assertions) > 0) {
 			zval *p10 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::name, "name");
 			if (UNEXPECTED(p10 == NULL)) return false;
-			zval av11[1];
+			zval av11[2];
 			zval z12;
 			ZVAL_BOOL(&z12, !(Z_TYPE_P(p10) == IS_NULL));
 			ZVAL_COPY_VALUE(&av11[0], &z12);
+			ZVAL_COPY_VALUE(&av11[1], &pg_lit[29]);
 			zv::Val r13;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 1, av11, r13.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 2, av11, r13.raw(), NULL))) return false;
 			zv::Val o14 = zv::Val::boolean((Z_TYPE_P(r13.raw()) == IS_TRUE));
 			as9 = std::move(o14);
 		}
@@ -2468,7 +2478,7 @@ namespace pgen::BetterReflectionClass {
 		zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 		if (UNEXPECTED(p7 == NULL)) return false;
 		zv::Val et9;
-		zval *e8 = pgrt::dimRead(p7, &pg_lit[8], et9.raw());
+		zval *e8 = pgrt::dimRead(p7, &pg_lit[10], et9.raw());
 		if (UNEXPECTED(e8 == NULL)) return false;
 		zval av10[2];
 		ZVAL_COPY_VALUE(&av10[0], l_lowerCasedMethodHash.raw());
@@ -2480,7 +2490,7 @@ namespace pgen::BetterReflectionClass {
 				zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 				if (UNEXPECTED(p12 == NULL)) return false;
 				zv::Val et14;
-				zval *e13 = pgrt::dimRead(p12, &pg_lit[8], et14.raw());
+				zval *e13 = pgrt::dimRead(p12, &pg_lit[10], et14.raw());
 				if (UNEXPECTED(e13 == NULL)) return false;
 				zv::Val et16;
 				zval *e15 = pgrt::dimRead(zv::Ref(e13).deref().raw(), l_lowerCasedMethodHash.raw(), et16.raw());
@@ -2492,7 +2502,7 @@ namespace pgen::BetterReflectionClass {
 				zval *p18 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 				if (UNEXPECTED(p18 == NULL)) return false;
 				zv::Val et20;
-				zval *e19 = pgrt::dimRead(p18, &pg_lit[8], et20.raw());
+				zval *e19 = pgrt::dimRead(p18, &pg_lit[10], et20.raw());
 				if (UNEXPECTED(e19 == NULL)) return false;
 				zv::Val et22;
 				zval *e21 = pgrt::dimRead(zv::Ref(e19).deref().raw(), l_lowerCasedMethodHash.raw(), et22.raw());
@@ -2597,7 +2607,7 @@ namespace pgen::BetterReflectionClass {
 		zval *p38 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 		if (UNEXPECTED(p38 == NULL)) return false;
 		zv::Val et40;
-		zval *e39 = pgrt::dimRead(p38, &pg_lit[28], et40.raw());
+		zval *e39 = pgrt::dimRead(p38, &pg_lit[32], et40.raw());
 		if (UNEXPECTED(e39 == NULL)) return false;
 		zval av41[2];
 		ZVAL_COPY_VALUE(&av41[0], l_lowerCasedMethodHash.raw());
@@ -2617,7 +2627,7 @@ namespace pgen::BetterReflectionClass {
 				zval *p45 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 				if (UNEXPECTED(p45 == NULL)) return false;
 				zv::Val et47;
-				zval *e46 = pgrt::dimRead(p45, &pg_lit[29], et47.raw());
+				zval *e46 = pgrt::dimRead(p45, &pg_lit[33], et47.raw());
 				if (UNEXPECTED(e46 == NULL)) return false;
 				pgrt::ForeachIter it48;
 				if (UNEXPECTED(!it48.begin(zv::Ref(e46).deref().raw()))) return false;
@@ -2632,7 +2642,7 @@ namespace pgen::BetterReflectionClass {
 								 {
 									 {
 										zv::Val et56;
-										zval *e55 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[30], et56.raw());
+										zval *e55 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[34], et56.raw());
 										if (UNEXPECTED(e55 == NULL)) return false;
 										if (zend_is_identical(l_lowerCasedMethodHash.raw(), zv::Ref(e55).deref().raw())) {
 											 {
@@ -2699,7 +2709,7 @@ namespace pgen::BetterReflectionClass {
 		zval *p68 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 		if (UNEXPECTED(p68 == NULL)) return false;
 		zv::Val et70;
-		zval *e69 = pgrt::dimRead(p68, &pg_lit[29], et70.raw());
+		zval *e69 = pgrt::dimRead(p68, &pg_lit[33], et70.raw());
 		if (UNEXPECTED(e69 == NULL)) return false;
 		zval arr71_raw;
 		ZVAL_EMPTY_ARRAY(&arr71_raw);
@@ -2759,7 +2769,7 @@ namespace pgen::BetterReflectionClass {
 				zval *p89 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 				if (UNEXPECTED(p89 == NULL)) return false;
 				zv::Val et91;
-				zval *e90 = pgrt::dimRead(p89, &pg_lit[29], et91.raw());
+				zval *e90 = pgrt::dimRead(p89, &pg_lit[33], et91.raw());
 				if (UNEXPECTED(e90 == NULL)) return false;
 				pgrt::ForeachIter it92;
 				if (UNEXPECTED(!it92.begin(zv::Ref(e90).deref().raw()))) return false;
@@ -2777,7 +2787,7 @@ namespace pgen::BetterReflectionClass {
 								 {
 									 {
 										zv::Val et101;
-										zval *e100 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[30], et101.raw());
+										zval *e100 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[34], et101.raw());
 										if (UNEXPECTED(e100 == NULL)) return false;
 										if (!zend_is_identical(l_lowerCasedMethodHash.raw(), zv::Ref(e100).deref().raw())) {
 											goto cont99;
@@ -2798,7 +2808,7 @@ namespace pgen::BetterReflectionClass {
 										zval *e104 = pgrt::dimRead(l_traits.raw(), l_traitClassName.raw(), et105.raw());
 										if (UNEXPECTED(e104 == NULL)) return false;
 										zv::Val et107;
-										zval *e106 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[31], et107.raw());
+										zval *e106 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[35], et107.raw());
 										if (UNEXPECTED(e106 == NULL)) return false;
 										zval av108[1];
 										ZVAL_COPY_VALUE(&av108[0], zv::Ref(e106).deref().raw());
@@ -2818,7 +2828,7 @@ namespace pgen::BetterReflectionClass {
 									 {
 										zv::Val o110 = zv::Val::copyOf(zv::Ref(l_createMethod.raw()));
 										zv::Val et112;
-										zval *e111 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[32], et112.raw());
+										zval *e111 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[36], et112.raw());
 										if (UNEXPECTED(e111 == NULL)) return false;
 										zval av113[2];
 										ZVAL_COPY_VALUE(&av113[0], zv::Ref(e111).deref().raw());
@@ -3498,9 +3508,9 @@ namespace pgen::BetterReflectionClass {
 		}
 		}
 		zval av4[4];
-		ZVAL_COPY_VALUE(&av4[0], &pg_lit[27]);
+		ZVAL_COPY_VALUE(&av4[0], &pg_lit[30]);
 		ZVAL_COPY_VALUE(&av4[1], r2.raw());
-		ZVAL_COPY_VALUE(&av4[2], &pg_lit[33]);
+		ZVAL_COPY_VALUE(&av4[2], &pg_lit[37]);
 		ZVAL_COPY_VALUE(&av4[3], r3.raw());
 		zend_class_entry *ce5 = pgrt::lookupClass(pg_site_114, "PHPStan\\BetterReflection\\SourceLocator\\Located\\InternalLocatedSource", 68);
 		if (UNEXPECTED(ce5 == NULL)) return false;
@@ -3521,13 +3531,13 @@ namespace pgen::BetterReflectionClass {
 		ZVAL_EMPTY_ARRAY(&arr9_raw);
 		zv::Val o10 = zv::Val::copyOf(zv::Ref(&arr9_raw));
 		zval av12[1];
-		ZVAL_COPY_VALUE(&av12[0], &pg_lit[38]);
+		ZVAL_COPY_VALUE(&av12[0], &pg_lit[43]);
 		zend_class_entry *ce13 = pgrt::lookupClass(pg_site_2, "PhpParser\\Node\\Identifier", 25);
 		if (UNEXPECTED(ce13 == NULL)) return false;
 		zv::Val n11;
 		if (UNEXPECTED(!pgrt::newObject(ce13, 1, av12, n11.raw(), NULL))) return false;
 		zval av14[3];
-		ZVAL_COPY_VALUE(&av14[0], &pg_lit[37]);
+		ZVAL_COPY_VALUE(&av14[0], &pg_lit[42]);
 		ZVAL_COPY_VALUE(&av14[1], o10.raw());
 		ZVAL_COPY_VALUE(&av14[2], n11.raw());
 		zv::Val r15;
@@ -3536,7 +3546,7 @@ namespace pgen::BetterReflectionClass {
 		zval *w17 = zv::Ref(l_methods.raw()).deref().raw();
 		if (Z_TYPE_P(w17) <= IS_NULL) { zval_ptr_dtor(w17); array_init(w17); } else if (UNEXPECTED(Z_TYPE_P(w17) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 		SEPARATE_ARRAY(w17);
-		zval *e18 = pgrt::dimWrite(w17, &pg_lit[37]);
+		zval *e18 = pgrt::dimWrite(w17, &pg_lit[42]);
 		if (UNEXPECTED(e18 == NULL)) return false;
 		zv::Ref(e18).assign(std::move(o16));
 	}
@@ -3556,21 +3566,21 @@ namespace pgen::BetterReflectionClass {
 	}
 	 {
 		zval av23[1];
-		ZVAL_COPY_VALUE(&av23[0], &pg_lit[39]);
+		ZVAL_COPY_VALUE(&av23[0], &pg_lit[44]);
 		zend_class_entry *ce24 = pgrt::lookupClass(pg_site_118, "PhpParser\\Node\\Expr\\Variable", 28);
 		if (UNEXPECTED(ce24 == NULL)) return false;
 		zv::Val n22;
 		if (UNEXPECTED(!pgrt::newObject(ce24, 1, av23, n22.raw(), NULL))) return false;
 		zv::Val arr26 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
 		zval av28[1];
-		ZVAL_COPY_VALUE(&av28[0], &pg_lit[40]);
+		ZVAL_COPY_VALUE(&av28[0], &pg_lit[45]);
 		zend_class_entry *ce29 = pgrt::lookupClass(pg_site_2, "PhpParser\\Node\\Identifier", 25);
 		if (UNEXPECTED(ce29 == NULL)) return false;
 		zv::Val n27;
 		if (UNEXPECTED(!pgrt::newObject(ce29, 1, av28, n27.raw(), NULL))) return false;
 		{ zval v = n27.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr26.raw()), &v); }
 		zval av31[1];
-		ZVAL_COPY_VALUE(&av31[0], &pg_lit[41]);
+		ZVAL_COPY_VALUE(&av31[0], &pg_lit[46]);
 		zend_class_entry *ce32 = pgrt::lookupClass(pg_site_2, "PhpParser\\Node\\Identifier", 25);
 		if (UNEXPECTED(ce32 == NULL)) return false;
 		zv::Val n30;
@@ -3600,13 +3610,13 @@ namespace pgen::BetterReflectionClass {
 		zv::Val o40 = zv::Val::copyOf(zv::Ref(l_valueParameter.raw()));
 		{ zval v = o40.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr39.raw()), &v); }
 		zval av42[1];
-		ZVAL_COPY_VALUE(&av42[0], &pg_lit[43]);
+		ZVAL_COPY_VALUE(&av42[0], &pg_lit[48]);
 		zend_class_entry *ce43 = pgrt::lookupClass(pg_site_2, "PhpParser\\Node\\Identifier", 25);
 		if (UNEXPECTED(ce43 == NULL)) return false;
 		zv::Val n41;
 		if (UNEXPECTED(!pgrt::newObject(ce43, 1, av42, n41.raw(), NULL))) return false;
 		zval av44[3];
-		ZVAL_COPY_VALUE(&av44[0], &pg_lit[42]);
+		ZVAL_COPY_VALUE(&av44[0], &pg_lit[47]);
 		ZVAL_COPY_VALUE(&av44[1], arr39.raw());
 		ZVAL_COPY_VALUE(&av44[2], n41.raw());
 		zv::Val r45;
@@ -3615,7 +3625,7 @@ namespace pgen::BetterReflectionClass {
 		zval *w47 = zv::Ref(l_methods.raw()).deref().raw();
 		if (Z_TYPE_P(w47) <= IS_NULL) { zval_ptr_dtor(w47); array_init(w47); } else if (UNEXPECTED(Z_TYPE_P(w47) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 		SEPARATE_ARRAY(w47);
-		zval *e48 = pgrt::dimWrite(w47, &pg_lit[42]);
+		zval *e48 = pgrt::dimWrite(w47, &pg_lit[47]);
 		if (UNEXPECTED(e48 == NULL)) return false;
 		zv::Ref(e48).assign(std::move(o46));
 	}
@@ -3625,7 +3635,7 @@ namespace pgen::BetterReflectionClass {
 		zv::Val o51 = zv::Val::copyOf(zv::Ref(l_valueParameter.raw()));
 		{ zval v = o51.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr50.raw()), &v); }
 		zval av54[1];
-		ZVAL_COPY_VALUE(&av54[0], &pg_lit[43]);
+		ZVAL_COPY_VALUE(&av54[0], &pg_lit[48]);
 		zend_class_entry *ce55 = pgrt::lookupClass(pg_site_2, "PhpParser\\Node\\Identifier", 25);
 		if (UNEXPECTED(ce55 == NULL)) return false;
 		zv::Val n53;
@@ -3637,7 +3647,7 @@ namespace pgen::BetterReflectionClass {
 		zv::Val n52;
 		if (UNEXPECTED(!pgrt::newObject(ce57, 1, av56, n52.raw(), NULL))) return false;
 		zval av58[3];
-		ZVAL_COPY_VALUE(&av58[0], &pg_lit[44]);
+		ZVAL_COPY_VALUE(&av58[0], &pg_lit[49]);
 		ZVAL_COPY_VALUE(&av58[1], arr50.raw());
 		ZVAL_COPY_VALUE(&av58[2], n52.raw());
 		zv::Val r59;
@@ -3646,7 +3656,7 @@ namespace pgen::BetterReflectionClass {
 		zval *w61 = zv::Ref(l_methods.raw()).deref().raw();
 		if (Z_TYPE_P(w61) <= IS_NULL) { zval_ptr_dtor(w61); array_init(w61); } else if (UNEXPECTED(Z_TYPE_P(w61) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 		SEPARATE_ARRAY(w61);
-		zval *e62 = pgrt::dimWrite(w61, &pg_lit[44]);
+		zval *e62 = pgrt::dimWrite(w61, &pg_lit[49]);
 		if (UNEXPECTED(e62 == NULL)) return false;
 		zv::Ref(e62).assign(std::move(o60));
 	}
@@ -3875,12 +3885,13 @@ namespace pgen::BetterReflectionClass {
 								zv::Val as19 = zv::Val::boolean(true);
 								if (EG(assertions) > 0) {
 									uint8_t ty20 = Z_TYPE_P(zv::Ref(l_constantPositionInNode).deref().raw());
-									zval av21[1];
+									zval av21[2];
 									zval z22;
 									ZVAL_BOOL(&z22, (ty20 == IS_LONG));
 									ZVAL_COPY_VALUE(&av21[0], &z22);
+									ZVAL_COPY_VALUE(&av21[1], &pg_lit[50]);
 									zv::Val r23;
-									if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 1, av21, r23.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 2, av21, r23.raw(), NULL))) return false;
 									zv::Val o24 = zv::Val::boolean((Z_TYPE_P(r23.raw()) == IS_TRUE));
 									as19 = std::move(o24);
 								}
@@ -4481,7 +4492,7 @@ namespace pgen::BetterReflectionClass {
 					}
 					zv::Val r29;
 					if (UNEXPECTED(!pgrt::nameToLowerString(pg_site_153, zv::Ref(p27).deref().raw(), r29.raw()))) return false;
-					if (!zend_is_identical(r29.raw(), &pg_lit[45])) {
+					if (!zend_is_identical(r29.raw(), &pg_lit[51])) {
 						goto cont26;
 					}
 				}
@@ -4533,12 +4544,13 @@ namespace pgen::BetterReflectionClass {
 							 {
 								zv::Val as45 = zv::Val::boolean(true);
 								if (EG(assertions) > 0) {
-									zval av46[1];
+									zval av46[2];
 									zval z47;
 									ZVAL_BOOL(&z47, pgrt::instanceOfClass(l_parameterNameNode.raw(), pgrt::lookupClassQuiet(pg_site_118, "PhpParser\\Node\\Expr\\Variable", 28)));
 									ZVAL_COPY_VALUE(&av46[0], &z47);
+									ZVAL_COPY_VALUE(&av46[1], &pg_lit[52]);
 									zv::Val r48;
-									if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 1, av46, r48.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 2, av46, r48.raw(), NULL))) return false;
 									zv::Val o49 = zv::Val::boolean((Z_TYPE_P(r48.raw()) == IS_TRUE));
 									as45 = std::move(o49);
 								}
@@ -4553,12 +4565,13 @@ namespace pgen::BetterReflectionClass {
 										p51 = o52.raw();
 									}
 									uint8_t ty53 = Z_TYPE_P(zv::Ref(zv::Ref(p51).deref().raw()).deref().raw());
-									zval av54[1];
+									zval av54[2];
 									zval z55;
 									ZVAL_BOOL(&z55, (ty53 == IS_STRING));
 									ZVAL_COPY_VALUE(&av54[0], &z55);
+									ZVAL_COPY_VALUE(&av54[1], &pg_lit[53]);
 									zv::Val r56;
-									if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 1, av54, r56.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 2, av54, r56.raw(), NULL))) return false;
 									zv::Val o57 = zv::Val::boolean((Z_TYPE_P(r56.raw()) == IS_TRUE));
 									as50 = std::move(o57);
 								}
@@ -4743,17 +4756,17 @@ namespace pgen::BetterReflectionClass {
 				l_interfaceName = std::move(r3);
 			}
 			 {
-				if (zend_is_identical(l_interfaceName.raw(), &pg_lit[46])) {
+				if (zend_is_identical(l_interfaceName.raw(), &pg_lit[54])) {
 					 {
 						zv::Val o4 = zv::Val::copyOf(zv::Ref(l_createProperty.raw()));
 						zval av6[1];
-						ZVAL_COPY_VALUE(&av6[0], &pg_lit[40]);
+						ZVAL_COPY_VALUE(&av6[0], &pg_lit[45]);
 						zend_class_entry *ce7 = pgrt::lookupClass(pg_site_2, "PhpParser\\Node\\Identifier", 25);
 						if (UNEXPECTED(ce7 == NULL)) return false;
 						zv::Val n5;
 						if (UNEXPECTED(!pgrt::newObject(ce7, 1, av6, n5.raw(), NULL))) return false;
 						zval av8[2];
-						ZVAL_COPY_VALUE(&av8[0], &pg_lit[2]);
+						ZVAL_COPY_VALUE(&av8[0], &pg_lit[4]);
 						ZVAL_COPY_VALUE(&av8[1], n5.raw());
 						zv::Val r9;
 						if (UNEXPECTED(!pgrt::callValue(o4.raw(), 2, av8, r9.raw(), NULL))) return false;
@@ -4761,26 +4774,26 @@ namespace pgen::BetterReflectionClass {
 						zval *w11 = zv::Ref(l_properties.raw()).deref().raw();
 						if (Z_TYPE_P(w11) <= IS_NULL) { zval_ptr_dtor(w11); array_init(w11); } else if (UNEXPECTED(Z_TYPE_P(w11) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 						SEPARATE_ARRAY(w11);
-						zval *e12 = pgrt::dimWrite(w11, &pg_lit[2]);
+						zval *e12 = pgrt::dimWrite(w11, &pg_lit[4]);
 						if (UNEXPECTED(e12 == NULL)) return false;
 						zv::Ref(e12).assign(std::move(o10));
 					}
 				}
 			}
 			 {
-				if (zend_is_identical(l_interfaceName.raw(), &pg_lit[47])) {
+				if (zend_is_identical(l_interfaceName.raw(), &pg_lit[55])) {
 					 {
 						zv::Val o13 = zv::Val::copyOf(zv::Ref(l_createProperty.raw()));
 						zv::Val arr15 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());
 						zval av17[1];
-						ZVAL_COPY_VALUE(&av17[0], &pg_lit[41]);
+						ZVAL_COPY_VALUE(&av17[0], &pg_lit[46]);
 						zend_class_entry *ce18 = pgrt::lookupClass(pg_site_2, "PhpParser\\Node\\Identifier", 25);
 						if (UNEXPECTED(ce18 == NULL)) return false;
 						zv::Val n16;
 						if (UNEXPECTED(!pgrt::newObject(ce18, 1, av17, n16.raw(), NULL))) return false;
 						{ zval v = n16.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr15.raw()), &v); }
 						zval av20[1];
-						ZVAL_COPY_VALUE(&av20[0], &pg_lit[40]);
+						ZVAL_COPY_VALUE(&av20[0], &pg_lit[45]);
 						zend_class_entry *ce21 = pgrt::lookupClass(pg_site_2, "PhpParser\\Node\\Identifier", 25);
 						if (UNEXPECTED(ce21 == NULL)) return false;
 						zv::Val n19;
@@ -4793,7 +4806,7 @@ namespace pgen::BetterReflectionClass {
 						zv::Val n14;
 						if (UNEXPECTED(!pgrt::newObject(ce23, 1, av22, n14.raw(), NULL))) return false;
 						zval av24[2];
-						ZVAL_COPY_VALUE(&av24[0], &pg_lit[39]);
+						ZVAL_COPY_VALUE(&av24[0], &pg_lit[44]);
 						ZVAL_COPY_VALUE(&av24[1], n14.raw());
 						zv::Val r25;
 						if (UNEXPECTED(!pgrt::callValue(o13.raw(), 2, av24, r25.raw(), NULL))) return false;
@@ -4801,7 +4814,7 @@ namespace pgen::BetterReflectionClass {
 						zval *w27 = zv::Ref(l_properties.raw()).deref().raw();
 						if (Z_TYPE_P(w27) <= IS_NULL) { zval_ptr_dtor(w27); array_init(w27); } else if (UNEXPECTED(Z_TYPE_P(w27) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 						SEPARATE_ARRAY(w27);
-						zval *e28 = pgrt::dimWrite(w27, &pg_lit[39]);
+						zval *e28 = pgrt::dimWrite(w27, &pg_lit[44]);
 						if (UNEXPECTED(e28 == NULL)) return false;
 						zv::Ref(e28).assign(std::move(o26));
 					}
@@ -4812,13 +4825,13 @@ namespace pgen::BetterReflectionClass {
 			 {
 				zv::Val o29 = zv::Val::copyOf(zv::Ref(l_createProperty.raw()));
 				zval av31[1];
-				ZVAL_COPY_VALUE(&av31[0], &pg_lit[40]);
+				ZVAL_COPY_VALUE(&av31[0], &pg_lit[45]);
 				zend_class_entry *ce32 = pgrt::lookupClass(pg_site_2, "PhpParser\\Node\\Identifier", 25);
 				if (UNEXPECTED(ce32 == NULL)) return false;
 				zv::Val n30;
 				if (UNEXPECTED(!pgrt::newObject(ce32, 1, av31, n30.raw(), NULL))) return false;
 				zval av33[2];
-				ZVAL_COPY_VALUE(&av33[0], &pg_lit[2]);
+				ZVAL_COPY_VALUE(&av33[0], &pg_lit[4]);
 				ZVAL_COPY_VALUE(&av33[1], n30.raw());
 				zv::Val r34;
 				if (UNEXPECTED(!pgrt::callValue(o29.raw(), 2, av33, r34.raw(), NULL))) return false;
@@ -4826,7 +4839,7 @@ namespace pgen::BetterReflectionClass {
 				zval *w36 = zv::Ref(l_properties.raw()).deref().raw();
 				if (Z_TYPE_P(w36) <= IS_NULL) { zval_ptr_dtor(w36); array_init(w36); } else if (UNEXPECTED(Z_TYPE_P(w36) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 				SEPARATE_ARRAY(w36);
-				zval *e37 = pgrt::dimWrite(w36, &pg_lit[2]);
+				zval *e37 = pgrt::dimWrite(w36, &pg_lit[4]);
 				if (UNEXPECTED(e37 == NULL)) return false;
 				zv::Ref(e37).assign(std::move(o35));
 			}
@@ -4847,7 +4860,7 @@ namespace pgen::BetterReflectionClass {
 							p41 = o42.raw();
 						}
 						zval av43[2];
-						ZVAL_COPY_VALUE(&av43[0], &pg_lit[39]);
+						ZVAL_COPY_VALUE(&av43[0], &pg_lit[44]);
 						ZVAL_COPY_VALUE(&av43[1], zv::Ref(p41).deref().raw());
 						zv::Val r44;
 						if (UNEXPECTED(!pgrt::callValue(o40.raw(), 2, av43, r44.raw(), NULL))) return false;
@@ -4855,7 +4868,7 @@ namespace pgen::BetterReflectionClass {
 						zval *w46 = zv::Ref(l_properties.raw()).deref().raw();
 						if (Z_TYPE_P(w46) <= IS_NULL) { zval_ptr_dtor(w46); array_init(w46); } else if (UNEXPECTED(Z_TYPE_P(w46) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 						SEPARATE_ARRAY(w46);
-						zval *e47 = pgrt::dimWrite(w46, &pg_lit[39]);
+						zval *e47 = pgrt::dimWrite(w46, &pg_lit[44]);
 						if (UNEXPECTED(e47 == NULL)) return false;
 						zv::Ref(e47).assign(std::move(o45));
 					}
@@ -6221,7 +6234,7 @@ namespace pgen::BetterReflectionClass {
 		}
 	}
 	 {
-		zv::Val o4 = zv::Val::copyOf(zv::Ref(&pg_lit[48]));
+		zv::Val o4 = zv::Val::copyOf(zv::Ref(&pg_lit[56]));
 		l_stringableClassName = std::move(o4);
 	}
 	 {
@@ -6317,7 +6330,7 @@ namespace pgen::BetterReflectionClass {
 					ZVAL_COPY_VALUE(&av32[0], l_immediateMethodName);
 					zv::Val r33;
 					if (UNEXPECTED(!pgrt::callFunction(pg_site_90, "strtolower", 10, pt_ce_better_reflection_class, 1, av32, r33.raw(), NULL))) return false;
-					if (zend_is_identical(r33.raw(), &pg_lit[49])) {
+					if (zend_is_identical(r33.raw(), &pg_lit[57])) {
 						 {
 							 {
 								 {
@@ -6372,18 +6385,19 @@ namespace pgen::BetterReflectionClass {
 		if (EG(assertions) > 0) {
 			zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::isEnum, "isEnum");
 			if (UNEXPECTED(p2 == NULL)) return false;
-			zval av3[1];
+			zval av3[2];
 			zval z4;
 			ZVAL_BOOL(&z4, ((Z_TYPE_P(p2) == IS_TRUE) == true));
 			ZVAL_COPY_VALUE(&av3[0], &z4);
+			ZVAL_COPY_VALUE(&av3[1], &pg_lit[58]);
 			zv::Val r5;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 1, av3, r5.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "assert", 6, pt_ce_better_reflection_class, 2, av3, r5.raw(), NULL))) return false;
 			zv::Val o6 = zv::Val::boolean((Z_TYPE_P(r5.raw()) == IS_TRUE));
 			as1 = std::move(o6);
 		}
 	}
 	 {
-		zv::Val o7 = zv::Val::copyOf(zv::Ref(&pg_lit[46]));
+		zv::Val o7 = zv::Val::copyOf(zv::Ref(&pg_lit[54]));
 		zval *w8 = zv::Ref(l_interfaceClassNames.raw()).deref().raw();
 		if (Z_TYPE_P(w8) <= IS_NULL) { zval_ptr_dtor(w8); array_init(w8); } else if (UNEXPECTED(Z_TYPE_P(w8) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 		SEPARATE_ARRAY(w8);
@@ -6394,7 +6408,7 @@ namespace pgen::BetterReflectionClass {
 		if (UNEXPECTED(p9 == NULL)) return false;
 		if (Z_TYPE_P(p9) == IS_TRUE) {
 			 {
-				zv::Val o10 = zv::Val::copyOf(zv::Ref(&pg_lit[47]));
+				zv::Val o10 = zv::Val::copyOf(zv::Ref(&pg_lit[55]));
 				zval *w11 = zv::Ref(l_interfaceClassNames.raw()).deref().raw();
 				if (Z_TYPE_P(w11) <= IS_NULL) { zval_ptr_dtor(w11); array_init(w11); } else if (UNEXPECTED(Z_TYPE_P(w11) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 				SEPARATE_ARRAY(w11);
@@ -6468,7 +6482,7 @@ namespace pgen::BetterReflectionClass {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 		if (UNEXPECTED(p1 == NULL)) return false;
 		zv::Val et3;
-		zval *e2 = pgrt::dimRead(p1, &pg_lit[29], et3.raw());
+		zval *e2 = pgrt::dimRead(p1, &pg_lit[33], et3.raw());
 		if (UNEXPECTED(e2 == NULL)) return false;
 		zval arr4_raw;
 		ZVAL_EMPTY_ARRAY(&arr4_raw);
@@ -6542,7 +6556,7 @@ namespace pgen::BetterReflectionClass {
 		zval *p25 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 		if (UNEXPECTED(p25 == NULL)) return false;
 		zv::Val et27;
-		zval *e26 = pgrt::dimRead(p25, &pg_lit[29], et27.raw());
+		zval *e26 = pgrt::dimRead(p25, &pg_lit[33], et27.raw());
 		if (UNEXPECTED(e26 == NULL)) return false;
 		pgrt::ForeachIter it28;
 		if (UNEXPECTED(!it28.begin(zv::Ref(e26).deref().raw()))) return false;
@@ -6573,7 +6587,7 @@ namespace pgen::BetterReflectionClass {
 								zval *e38 = pgrt::dimRead(l_traits.raw(), l_traitClassName.raw(), et39.raw());
 								if (UNEXPECTED(e38 == NULL)) return false;
 								zv::Val et41;
-								zval *e40 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[31], et41.raw());
+								zval *e40 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[35], et41.raw());
 								if (UNEXPECTED(e40 == NULL)) return false;
 								zval av42[1];
 								ZVAL_COPY_VALUE(&av42[0], zv::Ref(e40).deref().raw());
@@ -6592,16 +6606,16 @@ namespace pgen::BetterReflectionClass {
 							}
 							 {
 								zv::Val et45;
-								zval *e44 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[32], et45.raw());
+								zval *e44 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[36], et45.raw());
 								if (UNEXPECTED(e44 == NULL)) return false;
 								zv::Val o46 = zv::Val::copyOf(zv::Ref(zv::Ref(e44).deref().raw()));
 								zval *p47 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::traitsData, "traitsData");
 								if (UNEXPECTED(p47 == NULL)) return false;
 								zv::Val et49;
-								zval *e48 = pgrt::dimRead(p47, &pg_lit[50], et49.raw());
+								zval *e48 = pgrt::dimRead(p47, &pg_lit[59], et49.raw());
 								if (UNEXPECTED(e48 == NULL)) return false;
 								zv::Val et51;
-								zval *e50 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[30], et51.raw());
+								zval *e50 = pgrt::dimRead(l_traitAliasDefinition, &pg_lit[34], et51.raw());
 								if (UNEXPECTED(e50 == NULL)) return false;
 								zv::Val et53;
 								zval *e52 = pgrt::dimRead(zv::Ref(e48).deref().raw(), zv::Ref(e50).deref().raw(), et53.raw());
@@ -6647,19 +6661,19 @@ namespace pgen::BetterReflectionClass {
 		zval arr2_raw;
 		ZVAL_EMPTY_ARRAY(&arr2_raw);
 		zv::Val o3 = zv::Val::copyOf(zv::Ref(&arr2_raw));
-		{ zval v = o3.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[29]), &v); }
+		{ zval v = o3.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[33]), &v); }
 		zval arr4_raw;
 		ZVAL_EMPTY_ARRAY(&arr4_raw);
 		zv::Val o5 = zv::Val::copyOf(zv::Ref(&arr4_raw));
-		{ zval v = o5.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[8]), &v); }
+		{ zval v = o5.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[10]), &v); }
 		zval arr6_raw;
 		ZVAL_EMPTY_ARRAY(&arr6_raw);
 		zv::Val o7 = zv::Val::copyOf(zv::Ref(&arr6_raw));
-		{ zval v = o7.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[28]), &v); }
+		{ zval v = o7.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[32]), &v); }
 		zval arr8_raw;
 		ZVAL_EMPTY_ARRAY(&arr8_raw);
 		zv::Val o9 = zv::Val::copyOf(zv::Ref(&arr8_raw));
-		{ zval v = o9.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[50]), &v); }
+		{ zval v = o9.take(); zend_symtable_update(Z_ARRVAL_P(arr1.raw()), Z_STR_P(&pg_lit[59]), &v); }
 		l_traitsData = std::move(arr1);
 	}
 	 {
@@ -6802,7 +6816,7 @@ namespace pgen::BetterReflectionClass {
 					if (Z_TYPE_P(w22) <= IS_NULL) { zval_ptr_dtor(w22); array_init(w22); } else if (UNEXPECTED(Z_TYPE_P(w22) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 					SEPARATE_ARRAY(w22);
 					zval *w21;
-					w21 = pgrt::dimWrite(w22, &pg_lit[50]);
+					w21 = pgrt::dimWrite(w22, &pg_lit[59]);
 					if (UNEXPECTED(w21 == NULL)) return false;
 					ZVAL_DEREF(w21);
 					if (Z_TYPE_P(w21) <= IS_NULL) { zval_ptr_dtor(w21); array_init(w21); } else if (UNEXPECTED(Z_TYPE_P(w21) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -6839,7 +6853,7 @@ namespace pgen::BetterReflectionClass {
 									if (Z_TYPE_P(w32) <= IS_NULL) { zval_ptr_dtor(w32); array_init(w32); } else if (UNEXPECTED(Z_TYPE_P(w32) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 									SEPARATE_ARRAY(w32);
 									zval *w31;
-									w31 = pgrt::dimWrite(w32, &pg_lit[8]);
+									w31 = pgrt::dimWrite(w32, &pg_lit[10]);
 									if (UNEXPECTED(w31 == NULL)) return false;
 									ZVAL_DEREF(w31);
 									if (Z_TYPE_P(w31) <= IS_NULL) { zval_ptr_dtor(w31); array_init(w31); } else if (UNEXPECTED(Z_TYPE_P(w31) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -6878,7 +6892,7 @@ namespace pgen::BetterReflectionClass {
 										p40 = o41.raw();
 									}
 									zv::Val o42 = zv::Val::copyOf(zv::Ref(zv::Ref(p40).deref().raw()));
-									{ zval v = o42.take(); zend_symtable_update(Z_ARRVAL_P(arr37.raw()), Z_STR_P(&pg_lit[32]), &v); }
+									{ zval v = o42.take(); zend_symtable_update(Z_ARRVAL_P(arr37.raw()), Z_STR_P(&pg_lit[36]), &v); }
 									zv::Val o44;
 									zval *p43 = Z_TYPE_P(p_adaptation) == IS_OBJECT ? pgrt::propCached(pg_site_235, Z_OBJ_P(p_adaptation), "method", 6) : NULL;
 									if (UNEXPECTED(p43 == NULL || Z_ISUNDEF_P(p43))) {
@@ -6887,16 +6901,16 @@ namespace pgen::BetterReflectionClass {
 									}
 									zv::Val r45;
 									if (UNEXPECTED(!pgrt::nameToString(pg_site_236, zv::Ref(p43).deref().raw(), r45.raw()))) return false;
-									{ zval v = r45.take(); zend_symtable_update(Z_ARRVAL_P(arr37.raw()), Z_STR_P(&pg_lit[31]), &v); }
+									{ zval v = r45.take(); zend_symtable_update(Z_ARRVAL_P(arr37.raw()), Z_STR_P(&pg_lit[35]), &v); }
 									zv::Val o46 = zv::Val::copyOf(zv::Ref(l_lowerCasedMethodHash.raw()));
-									{ zval v = o46.take(); zend_symtable_update(Z_ARRVAL_P(arr37.raw()), Z_STR_P(&pg_lit[30]), &v); }
+									{ zval v = o46.take(); zend_symtable_update(Z_ARRVAL_P(arr37.raw()), Z_STR_P(&pg_lit[34]), &v); }
 									zv::Val o47 = zv::Val::copyOf(zv::Ref(arr37.raw()));
 									zv::Val o49 = zv::Val::copyOf(zv::Ref(l_usedTraitClassName.raw()));
 									zval *w51 = zv::Ref(l_traitsData.raw()).deref().raw();
 									if (Z_TYPE_P(w51) <= IS_NULL) { zval_ptr_dtor(w51); array_init(w51); } else if (UNEXPECTED(Z_TYPE_P(w51) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 									SEPARATE_ARRAY(w51);
 									zval *w50;
-									w50 = pgrt::dimWrite(w51, &pg_lit[29]);
+									w50 = pgrt::dimWrite(w51, &pg_lit[33]);
 									if (UNEXPECTED(w50 == NULL)) return false;
 									ZVAL_DEREF(w50);
 									if (Z_TYPE_P(w50) <= IS_NULL) { zval_ptr_dtor(w50); array_init(w50); } else if (UNEXPECTED(Z_TYPE_P(w50) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -6955,7 +6969,7 @@ namespace pgen::BetterReflectionClass {
 												if (Z_TYPE_P(w70) <= IS_NULL) { zval_ptr_dtor(w70); array_init(w70); } else if (UNEXPECTED(Z_TYPE_P(w70) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 												SEPARATE_ARRAY(w70);
 												zval *w69;
-												w69 = pgrt::dimWrite(w70, &pg_lit[28]);
+												w69 = pgrt::dimWrite(w70, &pg_lit[32]);
 												if (UNEXPECTED(w69 == NULL)) return false;
 												ZVAL_DEREF(w69);
 												if (Z_TYPE_P(w69) <= IS_NULL) { zval_ptr_dtor(w69); array_init(w69); } else if (UNEXPECTED(Z_TYPE_P(w69) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -7316,7 +7330,7 @@ namespace pgen::BetterReflectionClass {
 	 {
 		zval av1[2];
 		ZVAL_COPY_VALUE(&av1[0], p_className);
-		ZVAL_COPY_VALUE(&av1[1], &pg_lit[51]);
+		ZVAL_COPY_VALUE(&av1[1], &pg_lit[60]);
 		zv::Val r2;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_248, "ltrim", 5, pt_ce_better_reflection_class, 2, av1, r2.raw(), NULL))) return false;
 		zv::Val vd3;
@@ -7345,7 +7359,7 @@ namespace pgen::BetterReflectionClass {
 	 {
 		zval av1[2];
 		ZVAL_COPY_VALUE(&av1[0], p_interfaceName);
-		ZVAL_COPY_VALUE(&av1[1], &pg_lit[51]);
+		ZVAL_COPY_VALUE(&av1[1], &pg_lit[60]);
 		zv::Val r2;
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_248, "ltrim", 5, pt_ce_better_reflection_class, 2, av1, r2.raw(), NULL))) return false;
 		zv::Val vd3;
@@ -7499,13 +7513,13 @@ namespace pgen::BetterReflectionClass {
 		bool vd4_done = false;
 		if (vd4_ce == pt_ce_better_reflection_class) {
 			zv::Val r5;
-			if (UNEXPECTED(!pgen::BetterReflectionClass::m_getMethod(Z_OBJ_P(&this_zv), &pg_lit[52], r5.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionClass::m_getMethod(Z_OBJ_P(&this_zv), &pg_lit[61], r5.raw()))) return false;
 			vd4 = std::move(r5);
 			vd4_done = true;
 		}
 		if (!vd4_done) {
 			zval av6[1];
-			ZVAL_COPY_VALUE(&av6[0], &pg_lit[52]);
+			ZVAL_COPY_VALUE(&av6[0], &pg_lit[61]);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_257, &this_zv, "getMethod", "getmethod", 9, 1, av6, vd4.raw()))) return false;
 		}
 		l_cloneMethod = std::move(vd4);
@@ -7560,14 +7574,14 @@ namespace pgen::BetterReflectionClass {
 			bool vd5_done = false;
 			if (vd5_ce == pt_ce_better_reflection_class) {
 				bool r6;
-				if (UNEXPECTED(!pgen::BetterReflectionClass::m_implementsInterface(Z_OBJ_P(&this_zv), &pg_lit[53], &r6))) return false;
+				if (UNEXPECTED(!pgen::BetterReflectionClass::m_implementsInterface(Z_OBJ_P(&this_zv), &pg_lit[62], &r6))) return false;
 				zv::Val o7 = zv::Val::boolean(r6);
 				vd5 = std::move(o7);
 				vd5_done = true;
 			}
 			if (!vd5_done) {
 				zval av8[1];
-				ZVAL_COPY_VALUE(&av8[0], &pg_lit[53]);
+				ZVAL_COPY_VALUE(&av8[0], &pg_lit[62]);
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_260, &this_zv, "implementsInterface", "implementsinterface", 19, 1, av8, vd5.raw()))) return false;
 			}
 			b1 = (Z_TYPE_P(vd5.raw()) == IS_TRUE);
@@ -8150,60 +8164,69 @@ namespace sigs = ptdecl::BetterReflectionClass::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionClass)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("locatedSource", 13));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("namespace", 9));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("name", 4));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("shortName", 9));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("isInterface", 11));
-	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("isTrait", 7));
-	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("isEnum", 6));
-	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("isBackedEnum", 12));
-	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("modifiers", 9));
-	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("docComment", 10));
-	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("attributes", 10));
-	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("startLine", 9));
-	ZVAL_INTERNED_STR(&pg_lit[12], pgrt::internLiteral("endLine", 7));
-	ZVAL_INTERNED_STR(&pg_lit[13], pgrt::internLiteral("startColumn", 11));
-	ZVAL_INTERNED_STR(&pg_lit[14], pgrt::internLiteral("endColumn", 9));
-	ZVAL_INTERNED_STR(&pg_lit[15], pgrt::internLiteral("parentClassName", 15));
-	ZVAL_INTERNED_STR(&pg_lit[16], pgrt::internLiteral("implementsClassNames", 20));
-	ZVAL_INTERNED_STR(&pg_lit[17], pgrt::internLiteral("traitClassNames", 15));
-	ZVAL_INTERNED_STR(&pg_lit[18], pgrt::internLiteral("immediateConstants", 18));
-	ZVAL_INTERNED_STR(&pg_lit[19], pgrt::internLiteral("immediateProperties", 19));
-	ZVAL_INTERNED_STR(&pg_lit[20], pgrt::internLiteral("immediateMethods", 16));
-	ZVAL_INTERNED_STR(&pg_lit[21], pgrt::internLiteral("traitsData", 10));
-	ZVAL_INTERNED_STR(&pg_lit[22], pgrt::internLiteral("reflector", 9));
-	ZVAL_INTERNED_STR(&pg_lit[23], pgrt::internLiteral("%s%s%c%s(%d)", 12));
-	ZVAL_INTERNED_STR(&pg_lit[24], pgrt::internLiteral("@anonymous", 10));
-	ZVAL_INTERNED_STR(&pg_lit[25], pgrt::internLiteral("\000", 1));
-	ZVAL_INTERNED_STR(&pg_lit[26], pgrt::internLiteral("class", 5));
-	ZVAL_INTERNED_STR(&pg_lit[27], pgrt::internLiteral("", 0));
-	ZVAL_INTERNED_STR(&pg_lit[28], pgrt::internLiteral("precedences", 11));
-	ZVAL_INTERNED_STR(&pg_lit[29], pgrt::internLiteral("aliases", 7));
-	ZVAL_INTERNED_STR(&pg_lit[30], pgrt::internLiteral("hash", 4));
-	ZVAL_INTERNED_STR(&pg_lit[31], pgrt::internLiteral("method", 6));
-	ZVAL_INTERNED_STR(&pg_lit[32], pgrt::internLiteral("alias", 5));
-	ZVAL_INTERNED_STR(&pg_lit[33], pgrt::internLiteral("Core", 4));
-	ZVAL_INTERNED_STR(&pg_lit[34], pgrt::internLiteral("flags", 5));
-	ZVAL_INTERNED_STR(&pg_lit[35], pgrt::internLiteral("params", 6));
-	ZVAL_INTERNED_STR(&pg_lit[36], pgrt::internLiteral("returnType", 10));
-	ZVAL_INTERNED_STR(&pg_lit[37], pgrt::internLiteral("cases", 5));
-	ZVAL_INTERNED_STR(&pg_lit[38], pgrt::internLiteral("array", 5));
-	ZVAL_INTERNED_STR(&pg_lit[39], pgrt::internLiteral("value", 5));
-	ZVAL_INTERNED_STR(&pg_lit[40], pgrt::internLiteral("string", 6));
-	ZVAL_INTERNED_STR(&pg_lit[41], pgrt::internLiteral("int", 3));
-	ZVAL_INTERNED_STR(&pg_lit[42], pgrt::internLiteral("from", 4));
-	ZVAL_INTERNED_STR(&pg_lit[43], pgrt::internLiteral("static", 6));
-	ZVAL_INTERNED_STR(&pg_lit[44], pgrt::internLiteral("tryFrom", 7));
-	ZVAL_INTERNED_STR(&pg_lit[45], pgrt::internLiteral("__construct", 11));
-	ZVAL_INTERNED_STR(&pg_lit[46], pgrt::internLiteral("UnitEnum", 8));
-	ZVAL_INTERNED_STR(&pg_lit[47], pgrt::internLiteral("BackedEnum", 10));
-	ZVAL_INTERNED_STR(&pg_lit[48], pgrt::internLiteral("Stringable", 10));
-	ZVAL_INTERNED_STR(&pg_lit[49], pgrt::internLiteral("__tostring", 10));
-	ZVAL_INTERNED_STR(&pg_lit[50], pgrt::internLiteral("hashes", 6));
-	ZVAL_INTERNED_STR(&pg_lit[51], pgrt::internLiteral("\\", 1));
-	ZVAL_INTERNED_STR(&pg_lit[52], pgrt::internLiteral("__clone", 7));
-	ZVAL_INTERNED_STR(&pg_lit[53], pgrt::internLiteral("Traversable", 11));
+	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("assert($startLine > 0)", 22));
+	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("assert($endLine > 0)", 20));
+	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("locatedSource", 13));
+	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("namespace", 9));
+	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("name", 4));
+	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("shortName", 9));
+	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("isInterface", 11));
+	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("isTrait", 7));
+	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("isEnum", 6));
+	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("isBackedEnum", 12));
+	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("modifiers", 9));
+	ZVAL_INTERNED_STR(&pg_lit[11], pgrt::internLiteral("docComment", 10));
+	ZVAL_INTERNED_STR(&pg_lit[12], pgrt::internLiteral("attributes", 10));
+	ZVAL_INTERNED_STR(&pg_lit[13], pgrt::internLiteral("startLine", 9));
+	ZVAL_INTERNED_STR(&pg_lit[14], pgrt::internLiteral("endLine", 7));
+	ZVAL_INTERNED_STR(&pg_lit[15], pgrt::internLiteral("startColumn", 11));
+	ZVAL_INTERNED_STR(&pg_lit[16], pgrt::internLiteral("endColumn", 9));
+	ZVAL_INTERNED_STR(&pg_lit[17], pgrt::internLiteral("parentClassName", 15));
+	ZVAL_INTERNED_STR(&pg_lit[18], pgrt::internLiteral("implementsClassNames", 20));
+	ZVAL_INTERNED_STR(&pg_lit[19], pgrt::internLiteral("traitClassNames", 15));
+	ZVAL_INTERNED_STR(&pg_lit[20], pgrt::internLiteral("immediateConstants", 18));
+	ZVAL_INTERNED_STR(&pg_lit[21], pgrt::internLiteral("immediateProperties", 19));
+	ZVAL_INTERNED_STR(&pg_lit[22], pgrt::internLiteral("immediateMethods", 16));
+	ZVAL_INTERNED_STR(&pg_lit[23], pgrt::internLiteral("traitsData", 10));
+	ZVAL_INTERNED_STR(&pg_lit[24], pgrt::internLiteral("reflector", 9));
+	ZVAL_INTERNED_STR(&pg_lit[25], pgrt::internLiteral("%s%s%c%s(%d)", 12));
+	ZVAL_INTERNED_STR(&pg_lit[26], pgrt::internLiteral("@anonymous", 10));
+	ZVAL_INTERNED_STR(&pg_lit[27], pgrt::internLiteral("\000", 1));
+	ZVAL_INTERNED_STR(&pg_lit[28], pgrt::internLiteral("class", 5));
+	ZVAL_INTERNED_STR(&pg_lit[29], pgrt::internLiteral("assert($this->name !== null)", 28));
+	ZVAL_INTERNED_STR(&pg_lit[30], pgrt::internLiteral("", 0));
+	ZVAL_INTERNED_STR(&pg_lit[31], pgrt::internLiteral("assert($aliasMethodName === null || $aliasMethodName !== '')", 60));
+	ZVAL_INTERNED_STR(&pg_lit[32], pgrt::internLiteral("precedences", 11));
+	ZVAL_INTERNED_STR(&pg_lit[33], pgrt::internLiteral("aliases", 7));
+	ZVAL_INTERNED_STR(&pg_lit[34], pgrt::internLiteral("hash", 4));
+	ZVAL_INTERNED_STR(&pg_lit[35], pgrt::internLiteral("method", 6));
+	ZVAL_INTERNED_STR(&pg_lit[36], pgrt::internLiteral("alias", 5));
+	ZVAL_INTERNED_STR(&pg_lit[37], pgrt::internLiteral("Core", 4));
+	ZVAL_INTERNED_STR(&pg_lit[38], pgrt::internLiteral("assert($name !== '')", 20));
+	ZVAL_INTERNED_STR(&pg_lit[39], pgrt::internLiteral("flags", 5));
+	ZVAL_INTERNED_STR(&pg_lit[40], pgrt::internLiteral("params", 6));
+	ZVAL_INTERNED_STR(&pg_lit[41], pgrt::internLiteral("returnType", 10));
+	ZVAL_INTERNED_STR(&pg_lit[42], pgrt::internLiteral("cases", 5));
+	ZVAL_INTERNED_STR(&pg_lit[43], pgrt::internLiteral("array", 5));
+	ZVAL_INTERNED_STR(&pg_lit[44], pgrt::internLiteral("value", 5));
+	ZVAL_INTERNED_STR(&pg_lit[45], pgrt::internLiteral("string", 6));
+	ZVAL_INTERNED_STR(&pg_lit[46], pgrt::internLiteral("int", 3));
+	ZVAL_INTERNED_STR(&pg_lit[47], pgrt::internLiteral("from", 4));
+	ZVAL_INTERNED_STR(&pg_lit[48], pgrt::internLiteral("static", 6));
+	ZVAL_INTERNED_STR(&pg_lit[49], pgrt::internLiteral("tryFrom", 7));
+	ZVAL_INTERNED_STR(&pg_lit[50], pgrt::internLiteral("assert(\\is_int($constantPositionInNode))", 40));
+	ZVAL_INTERNED_STR(&pg_lit[51], pgrt::internLiteral("__construct", 11));
+	ZVAL_INTERNED_STR(&pg_lit[52], pgrt::internLiteral("assert($parameterNameNode instanceof \\PhpParser\\Node\\Expr\\Variable)", 67));
+	ZVAL_INTERNED_STR(&pg_lit[53], pgrt::internLiteral("assert(\\is_string($parameterNameNode->name))", 44));
+	ZVAL_INTERNED_STR(&pg_lit[54], pgrt::internLiteral("UnitEnum", 8));
+	ZVAL_INTERNED_STR(&pg_lit[55], pgrt::internLiteral("BackedEnum", 10));
+	ZVAL_INTERNED_STR(&pg_lit[56], pgrt::internLiteral("Stringable", 10));
+	ZVAL_INTERNED_STR(&pg_lit[57], pgrt::internLiteral("__tostring", 10));
+	ZVAL_INTERNED_STR(&pg_lit[58], pgrt::internLiteral("assert($this->isEnum === true)", 30));
+	ZVAL_INTERNED_STR(&pg_lit[59], pgrt::internLiteral("hashes", 6));
+	ZVAL_INTERNED_STR(&pg_lit[60], pgrt::internLiteral("\\", 1));
+	ZVAL_INTERNED_STR(&pg_lit[61], pgrt::internLiteral("__clone", 7));
+	ZVAL_INTERNED_STR(&pg_lit[62], pgrt::internLiteral("Traversable", 11));
 	reg::Class cls("PHPStan\\BetterReflection\\Reflection\\ReflectionClass");
 	ptdecl::BetterReflectionClass::declareClass(cls);
 	ptdecl::BetterReflectionClass::declareProperties(cls);

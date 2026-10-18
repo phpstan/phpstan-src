@@ -437,6 +437,7 @@ enum class PropertyKind
 	TypedLong, /* a `private int $x = 0` typed property with an int default; defaultValue carries the default, the type is int */
 	TypedFalse, /* a typed property defaulting to false (`private string|false|null $x = false`, `private Foo|false|null $x = false`); defaultValue carries the MAY_BE_* mask (the scalar members next to a class name), className as for Typed */
 	TypedString, /* a `private string $x = '...'` typed property with a string default; stringValue carries the default, defaultValue the MAY_BE_* mask of the type (string, or a scalar union containing it) */
+	TypedBuilt, /* a property with a constant array default: buildValue fills a persistent, immutable array, defaultValue carries the MAY_BE_* mask of the type (0 = untyped) */
 };
 
 struct Property
@@ -447,6 +448,7 @@ struct Property
 	zend_long defaultValue;
 	const char *className = nullptr; /* persistent literal: the class of a class-typed property (Typed* kinds), combined with a MAY_BE_NULL bit in defaultValue for `?Foo` */
 	const char *stringValue = nullptr; /* persistent literal: the default of a TypedString property */
+	void (*buildValue)(zval *out) = nullptr; /* the default of a TypedBuilt property */
 };
 
 struct Constant
@@ -596,7 +598,17 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 				zend_string_release(nameStr);
 				break;
 			}
-			case PropertyKind::TypedString: {
+			case PropertyKind::TypedBuilt: {
+				bool persistent = ce->type == ZEND_INTERNAL_CLASS;
+				zend_string *nameStr = zend_string_init(property.name, len, persistent);
+				zval defaultValue;
+				property.buildValue(&defaultValue);
+				zend_type type = property.defaultValue == 0 ? (zend_type) ZEND_TYPE_INIT_NONE(0) : (zend_type) ZEND_TYPE_INIT_MASK((uint32_t) property.defaultValue);
+				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
+				zend_string_release(nameStr);
+				break;
+			}
+						case PropertyKind::TypedString: {
 				/* the default interned like a compiled literal: a user class's
 				 * defaults are released with the class, an internal class's
 				 * must persist */
@@ -1260,6 +1272,16 @@ public:
 	 * any visibility (visibility as for property()); defaultValue is a
 	 * persistent literal, mask the MAY_BE_* bits of a scalar union type
 	 * (`bool|string|null $x = '...'`) */
+	/* a property (static too: visibility | ZEND_ACC_STATIC) whose default is a
+	 * constant array, built by buildValue as a persistent immutable array
+	 * the class references for the process lifetime; mask the MAY_BE_* bits
+	 * of its type, 0 when it is untyped */
+	Class &builtProperty(const char *propertyName, uint32_t visibility, void (*buildValue)(zval *out), uint32_t mask)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedBuilt, visibility, (zend_long) mask, nullptr, nullptr, buildValue });
+		return *this;
+	}
+
 	Class &typedStringProperty(const char *propertyName, uint32_t visibility, const char *defaultValue, uint32_t mask = MAY_BE_STRING)
 	{
 		properties.push_back({ propertyName, PropertyKind::TypedString, visibility, (zend_long) mask, nullptr, defaultValue });

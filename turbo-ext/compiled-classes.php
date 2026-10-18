@@ -1164,4 +1164,7 @@ return [
 	'PHPStan\\File\\FileHelper' => ['ce' => 'pt_ce_file_helper', 'defineCe' => true],
 	'PHPStan\\Collectors\\Registry' => ['ce' => 'pt_ce_registry', 'defineCe' => true],
 	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\OptimizedSingleFileSourceLocator' => ['ce' => 'pt_ce_optimized_single_file_source_locator', 'defineCe' => true],
+	'PHPStan\\BetterReflection\\Identifier\\IdentifierType' => ['ce' => 'pt_ce_better_reflection_identifier_type', 'defineCe' => true],
+	'PHPStan\\BetterReflection\\Reflection\\Annotation\\AnnotationHelper' => ['ce' => 'pt_ce_better_reflection_annotation_helper', 'defineCe' => true],
+	'PHPStan\\PhpDoc\\PhpDocNodeResolver' => ['ce' => 'pt_ce_php_doc_node_resolver', 'defineCe' => true],
 ];

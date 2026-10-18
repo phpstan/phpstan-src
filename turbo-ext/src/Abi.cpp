@@ -301,6 +301,11 @@ static void abi_call_known_function(zend_function *fn, zend_object *object, zend
 	zend_call_known_function(fn, object, calledScope, retval, paramCount, params, namedParams);
 }
 
+static const char *abi_internal_arg_name(const zend_function *fn, uint32_t i)
+{
+	return ((const zend_internal_arg_info *) fn->internal_function.arg_info)[i].name;
+}
+
 static int abi_stream_free(php_stream *stream, int closeOptions)
 {
 	return php_stream_free(stream, closeOptions);
@@ -442,6 +447,7 @@ void pt_abi_init()
 	pt_abi.parse_arg_double_slow = abi_parse_arg_double_slow;
 	pt_abi.parse_arg_str_slow = abi_parse_arg_str_slow;
 	pt_abi.call_known_function = abi_call_known_function;
+	pt_abi.internal_arg_name = abi_internal_arg_name;
 	pt_abi.stream_free = abi_stream_free;
 	pt_abi.stream_read = abi_stream_read;
 	pt_abi.run_on_fresh_stack = abi_run_on_fresh_stack;

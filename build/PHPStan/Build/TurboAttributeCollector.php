@@ -234,6 +234,8 @@ final class TurboAttributeCollector
 	// their pairs are hardcoded. Class name => .cpp
 	private const VENDORED_PAIRS = [
 		NodeTraverser::class => 'turbo-ext/src/NodeTraverser.cpp',
+		'PHPStan\\BetterReflection\\Identifier\\IdentifierType' => 'turbo-ext/src/BetterReflectionIdentifierType.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\Annotation\\AnnotationHelper' => 'turbo-ext/src/BetterReflectionAnnotationHelper.cpp',
 		'PHPStan\\BetterReflection\\Reflection\\ReflectionClass' => 'turbo-ext/src/BetterReflectionClass.cpp',
 		'PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod' => 'turbo-ext/src/BetterReflectionAdapterMethod.cpp',
 		'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType' => 'turbo-ext/src/BetterReflectionNamedType.cpp',

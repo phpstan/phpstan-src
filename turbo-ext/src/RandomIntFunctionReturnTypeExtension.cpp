@@ -7,7 +7,7 @@
 zend_class_entry *pt_ce_random_int_function_return_type_extension = nullptr;
 
 /* the interned string literals, created at module startup */
-static zval pg_lit[3];
+static zval pg_lit[5];
 
 static pt_method_site pg_site_0; /* method_getName_0 */
 static pt_method_site pg_site_1; /* method_getArgs_1 */
@@ -429,12 +429,13 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 	 {
 		zv::Val as15 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
-			zval av16[1];
+			zval av16[2];
 			zval z17;
 			ZVAL_BOOL(&z17, ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_minValues.raw())) > 0));
 			ZVAL_COPY_VALUE(&av16[0], &z17);
+			ZVAL_COPY_VALUE(&av16[1], &pg_lit[3]);
 			zv::Val r18;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "assert", 6, pt_ce_random_int_function_return_type_extension, 1, av16, r18.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "assert", 6, pt_ce_random_int_function_return_type_extension, 2, av16, r18.raw(), NULL))) return false;
 			zv::Val o19 = zv::Val::boolean((Z_TYPE_P(r18.raw()) == IS_TRUE));
 			as15 = std::move(o19);
 		}
@@ -442,12 +443,13 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 	 {
 		zv::Val as20 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
-			zval av21[1];
+			zval av21[2];
 			zval z22;
 			ZVAL_BOOL(&z22, ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_maxValues.raw())) > 0));
 			ZVAL_COPY_VALUE(&av21[0], &z22);
+			ZVAL_COPY_VALUE(&av21[1], &pg_lit[4]);
 			zv::Val r23;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "assert", 6, pt_ce_random_int_function_return_type_extension, 1, av21, r23.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "assert", 6, pt_ce_random_int_function_return_type_extension, 2, av21, r23.raw(), NULL))) return false;
 			zv::Val o24 = zv::Val::boolean((Z_TYPE_P(r23.raw()) == IS_TRUE));
 			as20 = std::move(o24);
 		}
@@ -499,6 +501,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RandomIntFunctionReturnTypeExtension)
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("random_int", 10));
 	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("rand", 4));
 	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("mt_rand", 7));
+	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("assert(\\count($minValues) > 0)", 30));
+	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("assert(\\count($maxValues) > 0)", 30));
 	reg::Class cls("PHPStan\\Type\\Php\\RandomIntFunctionReturnTypeExtension");
 	ptdecl::RandomIntFunctionReturnTypeExtension::declareClass(cls);
 	ptdecl::RandomIntFunctionReturnTypeExtension::declareProperties(cls);

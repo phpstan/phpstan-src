@@ -11,8 +11,6 @@ static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_getAttributes_0 */
 static pt_method_site pg_site_1; /* method_getDocComment_1 */
-static pgrt::ClassSite pg_site_2; /* cls_PHPStan\BetterReflection\Reflection\Annotation\AnnotationHelper */
-static pt_method_site pg_site_3; /* static_PHPStan\BetterReflection\Reflection\Annotation\AnnotationHelper::isDeprecated */
 
 namespace pgen::BetterReflectionDeprecatedHelper {
 
@@ -37,13 +35,10 @@ namespace pgen::BetterReflectionDeprecatedHelper {
 	 {
 		zv::Val r4;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_reflection, "getDocComment", "getdoccomment", 13, 0, NULL, r4.raw(), NULL))) return false;
-		zval av5[1];
-		ZVAL_COPY_VALUE(&av5[0], r4.raw());
-		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_2, "PHPStan\\BetterReflection\\Reflection\\Annotation\\AnnotationHelper", 63);
-		if (UNEXPECTED(ce6 == NULL)) return false;
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, ce6, "isdeprecated", 12, 1, av5, r7.raw(), NULL))) return false;
-		*ret = (Z_TYPE_P(r7.raw()) == IS_TRUE);
+		if (UNEXPECTED(!(Z_TYPE_P(r4.raw()) == IS_STRING || Z_TYPE_P(r4.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\BetterReflection\\Reflection\\Annotation\\AnnotationHelper::isDeprecated", 1, "docComment", "?string", r4.raw()); return false; }
+		bool r5;
+		if (UNEXPECTED(!pgen::BetterReflectionAnnotationHelper::m_isDeprecated(r4.raw(), &r5))) return false;
+		*ret = r5;
 		return true;
 	}
 }

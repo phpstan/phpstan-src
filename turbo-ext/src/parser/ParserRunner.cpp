@@ -296,18 +296,29 @@ NodeClassInfo *ParserEngine::resolveNodeClass(const char *alias, bool useCtor)
 		 * class first cannot deny later slot-write callers the plan */
 		cls->planState = NodeClassInfo::PLAN_FAILED;
 		zend_function *ctor = PT_CE(cls->ce, constructor);
-		if (ctor != NULL && ctor->type == ZEND_USER_FUNCTION && cls->attrsSlot != UINT32_MAX) {
-			uint32_t numArgs = ctor->op_array.num_args;
+		/* a constructor of the node's own (a compiled twin's is internal
+		 * and takes the same parameters) */
+		if (ctor != NULL && cls->attrsSlot != UINT32_MAX) {
+			uint32_t numArgs = ctor->common.num_args;
 			int nprops = 0;
 			bool ok = true;
 			for (uint32_t i = 0; i < numArgs; i++) {
-				zend_string *argName = PT_ARG_INFO(ctor->op_array.arg_info, i)->name;
-				if (zend_string_equals_literal(argName, "attributes")) continue;
+				const char *argName;
+				size_t argNameLen;
+				if (ctor->type == ZEND_USER_FUNCTION) {
+					zend_string *name = PT_ARG_INFO(ctor->op_array.arg_info, i)->name;
+					argName = ZSTR_VAL(name);
+					argNameLen = ZSTR_LEN(name);
+				} else {
+					argName = pt_abi.internal_arg_name(ctor, i);
+					argNameLen = strlen(argName);
+				}
+				if (argNameLen == sizeof("attributes") - 1 && memcmp(argName, "attributes", argNameLen) == 0) continue;
 				if (nprops >= 16) {
 					ok = false;
 					break;
 				}
-				int32_t off = pt_instance_prop_offset(cls->ce, ZSTR_VAL(argName), ZSTR_LEN(argName));
+				int32_t off = pt_instance_prop_offset(cls->ce, argName, argNameLen);
 				if (off < 0) {
 					ok = false;
 					break;
@@ -353,19 +364,35 @@ zv::Val ParserEngine::createNode(const char *alias, bool useCtor, zv::Val attrib
 		return zv::Val::adopt(node);
 	}
 
-	/* exact-semantics path: call the PHP constructor */
+	/* exact-semantics path: call the constructor, $attributes at the
+	 * position it declares (after the properties as a rule, before $name in
+	 * Arg's) */
 	object_init_ex(&node, cls->ce);
-	zval args[16];
+	zend_function *ctor = PT_CE(cls->ce, constructor);
+	uint32_t attributesAt = (uint32_t) nprops;
+	for (uint32_t i = 0; i < ctor->common.num_args && i <= (uint32_t) nprops; i++) {
+		const char *argName = ctor->type == ZEND_USER_FUNCTION ? ZSTR_VAL(PT_ARG_INFO(ctor->op_array.arg_info, i)->name) : pt_abi.internal_arg_name(ctor, i);
+		if (strcmp(argName, "attributes") == 0) {
+			attributesAt = i;
+			break;
+		}
+	}
+	zval args[17];
 	uint32_t argc = 0;
 	for (int i = 0; i < nprops; i++) {
+		if ((uint32_t) i == attributesAt) {
+			ZVAL_COPY_VALUE(&args[argc++], &attrs);
+		}
 		if (props[i] == NULL) {
 			ZVAL_NULL(&args[argc++]);
 		} else {
 			ZVAL_COPY_VALUE(&args[argc++], props[i]);
 		}
 	}
-	ZVAL_COPY_VALUE(&args[argc++], &attrs);
-	zend_call_known_function(PT_CE(cls->ce, constructor), Z_OBJ(node), cls->ce, NULL, argc, args, NULL);
+	if (attributesAt >= (uint32_t) nprops) {
+		ZVAL_COPY_VALUE(&args[argc++], &attrs);
+	}
+	zend_call_known_function(ctor, Z_OBJ(node), cls->ce, NULL, argc, args, NULL);
 	zval_ptr_dtor(&attrs);
 	if (EG(exception) != NULL) {
 		abortForPendingException();

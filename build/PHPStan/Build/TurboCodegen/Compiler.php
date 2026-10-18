@@ -9,6 +9,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\NodeAbstract;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
+use PhpParser\PrettyPrinter;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -124,8 +125,13 @@ final class Compiler
 	/** implementations a virtual call tests the receiver's class against one by one; more go through a cached switch */
 	private const VIRTUAL_DISPATCH_CHAIN_LIMIT = 4;
 
-	/** builtins whose result depends on the calling class (visibility checks, `self`/`static` callables) */
-	private const SCOPE_SENSITIVE_FUNCTIONS = ['array_column', 'get_object_vars', 'property_exists', 'method_exists', 'is_callable', 'call_user_func', 'call_user_func_array', 'array_map', 'array_filter', 'usort', 'uasort', 'uksort', 'array_walk', 'array_reduce', 'get_class_methods', 'get_called_class', 'func_get_args', 'compact', 'extract', 'get_defined_vars'];
+	/**
+	 * builtins whose result depends on the calling class (`self`/`static`
+	 * callables, the frame's scope); the ones resolving visibility through
+	 * the object handlers (get_object_vars(), array_column()) see the
+	 * compiled class as the fake scope callFunction() sets
+	 */
+	private const SCOPE_SENSITIVE_FUNCTIONS = ['is_callable', 'call_user_func', 'call_user_func_array', 'array_map', 'array_filter', 'usort', 'uasort', 'uksort', 'array_walk', 'array_reduce', 'get_class_methods', 'get_called_class', 'func_get_args', 'compact', 'extract', 'get_defined_vars'];
 
 	private const CPP_KEYWORDS = ['and', 'or', 'not', 'xor', 'new', 'delete', 'default', 'namespace', 'class', 'union', 'switch', 'case', 'template', 'typename', 'operator', 'this', 'register', 'auto', 'char', 'short', 'long', 'float', 'double', 'int', 'bool', 'void', 'static', 'extern', 'const', 'volatile', 'goto', 'return', 'if', 'else', 'for', 'while', 'do', 'break', 'continue', 'try', 'catch', 'throw'];
 
@@ -715,6 +721,8 @@ final class Compiler
 		}
 		foreach ($unit->methods as $method) {
 			if ($method->node->isAbstract()) {
+				// declared like the twin's, for the PHP subclasses to implement
+				$out[] = sprintf("\tcls.method(sigs::%s, nullptr);", $method->name);
 				continue;
 			}
 			$out[] = $this->renderGlue($method);
@@ -4128,6 +4136,23 @@ final class Compiler
 
 	private function newExpr(FunctionContext $f, Expr\New_ $expr): Value
 	{
+		if ($expr->class instanceof Node\Name && $expr->class->toLowerString() === 'static' && !$this->unit()->reflection->isFinal()) {
+			// new static in a non-final class: $this's class, or a static
+			// method's called scope (such a method is always entered through
+			// the engine, see usesCalledScope())
+			$t = $f->temp('n');
+			$ce = $f->temp('nce');
+			if ($f->self !== null) {
+				$f->line(sprintf('zend_class_entry *%s = %s->ce;', $ce, $f->self));
+			} else {
+				$f->line(sprintf('zend_class_entry *%s = zend_get_called_scope(EG(current_execute_data));', $ce));
+				$f->line(sprintf('if (%s == NULL) %s = %s;', $ce, $ce, $this->unit()->ce));
+			}
+			[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->failIf(sprintf('!pgrt::newObject(%s, %s, %s, %s.raw(), %s)', $ce, $argc, $argv, $t, $named));
+			return new Value('zval', $t . '.raw()', $t, $this->unit()->className);
+		}
 		if ($expr->class instanceof Expr) {
 			// new $class(...): the class (an object's, or a name, autoloaded) before the arguments
 			$t = $f->temp('n');
@@ -4140,7 +4165,26 @@ final class Compiler
 			return new Value('zval', $t . '.raw()', $t, $this->knownClass($this->unit()->oracle->nativeType($expr)));
 		}
 		$className = $this->className($expr->class);
+		if ($this->isVendoredShadow($className)) {
+			// a shadowed vendor class (a php-parser node): the class its name
+			// means at run time — the native one in production, the PHP
+			// original beside it in the differential tests, where PHP code
+			// type-hinting the name receives the object
+			$t = $f->temp('n');
+			$site = $this->site('pgrt::ClassSite', 'cls_' . $className);
+			$ce = $f->temp('nce');
+			$f->line(sprintf('zend_class_entry *%s = pgrt::lookupClass(%s, "%s", %d);', $ce, $site, addcslashes($className, '\\'), strlen($className)));
+			$f->failIf(sprintf('%s == NULL', $ce));
+			[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->failIf(sprintf('!pgrt::newObject(%s, %s, %s, %s.raw(), %s)', $ce, $argc, $argv, $t, $named));
+			return new Value('zval', $t . '.raw()', $t, $className);
+		}
 		$unit = $this->units[strtolower($className)] ?? null;
+		if ($unit !== null && !isset($unit->methods['__construct']) && $unit->reflection->getConstructor() !== null) {
+			// an inherited constructor: the engine runs it
+			$unit = null;
+		}
 		$t = $f->temp('n');
 		if ($unit !== null) {
 			$constructor = $unit->methods['__construct'] ?? null;
@@ -5641,7 +5685,13 @@ final class Compiler
 			$f->line(sprintf('zv::Val %s = zv::Val::boolean(true);', $t));
 			$f->open('if (EG(assertions) > 0)');
 			$expr->setAttribute('turboAssertCall', true);
+			$args = $expr->args;
+			if (count($args) === 1 && $args[0] instanceof Node\Arg) {
+				// the description the engine's compiler adds: the assertion's source
+				$expr->args[] = new Node\Arg(new Node\Scalar\String_(sprintf('assert(%s)', (new PrettyPrinter\Standard())->prettyPrintExpr($args[0]->value))));
+			}
 			$f->line(sprintf('%s = std::move(%s);', $t, $this->own($f, $this->funcCall($f, $expr))));
+			$expr->args = $args;
 			$expr->setAttribute('turboAssertCall', false);
 			$f->close();
 			return new Value('zval', $t . '.raw()', $t);
@@ -5653,14 +5703,16 @@ final class Compiler
 		if (!function_exists($name) || !(new ReflectionFunction($name))->isInternal()) {
 			throw new CompileError(sprintf('only built-in functions can be called (%s)', $name));
 		}
-		if (in_array($name, self::SCOPE_SENSITIVE_FUNCTIONS, true) && !$this->callbacksAreClosures($expr, $name)) {
-			$intrinsic = $name === 'array_column' ? $this->arrayColumnIntrinsic($f, $expr) : null;
-			if ($intrinsic === null) {
-				// a frameless direct call leaves the native caller's frame current:
-				// the builtin would resolve visibility against the wrong class
-				throw new CompileError(sprintf('%s() depends on the calling scope and has no intrinsic for this call (line %d)', $name, $expr->getStartLine()));
+		if ($name === 'array_column') {
+			$intrinsic = $this->arrayColumnIntrinsic($f, $expr);
+			if ($intrinsic !== null) {
+				return $intrinsic;
 			}
-			return $intrinsic;
+		}
+		if (in_array($name, self::SCOPE_SENSITIVE_FUNCTIONS, true) && !$this->callbacksAreClosures($expr, $name)) {
+			// a frameless direct call leaves the native caller's frame current:
+			// the builtin would resolve the callable against the wrong class
+			throw new CompileError(sprintf('%s() depends on the calling scope and has no intrinsic for this call (line %d)', $name, $expr->getStartLine()));
 		}
 		if ($name === 'count' && count($expr->args) === 1 && $expr->args[0] instanceof Node\Arg && !$expr->args[0]->unpack && $expr->args[0]->name === null) {
 			$array = $this->expr($f, $expr->args[0]->value);
@@ -6410,7 +6462,9 @@ final class Compiler
 			return $class !== '' ? $this->methodReflection($class, $call->name->toString()) : null;
 		}
 		if ($call instanceof Expr\New_ && $call->class instanceof Node\Name) {
-			$class = $this->className($call->class);
+			$lower = $call->class->toLowerString();
+			// new static: this class's constructor (a subclass's takes the same arguments by the LSP-free convention the twin relies on too)
+			$class = in_array($lower, ['self', 'static'], true) ? $this->unit()->className : $this->className($call->class);
 			return class_exists($class) ? (new ReflectionClass($class))->getConstructor() : null;
 		}
 		return null;
@@ -6768,13 +6822,22 @@ final class Compiler
 		}
 	}
 
-	/** whether a static method of a non-final class reads its called scope (static::class): it needs its own frame */
+	/** a vendored class the extension shadows (its pair hardcoded in TurboAttributeCollector) */
+	private function isVendoredShadow(string $className): bool
+	{
+		if (!class_exists($className) || ($this->units[strtolower($className)] ?? null) === null && $this->shadowCe($className) === null) {
+			return false;
+		}
+		return str_contains(str_replace('\\', '/', (string) (new ReflectionClass($className))->getFileName()), '/vendor/');
+	}
+
+	/** whether a static method of a non-final class reads its called scope (static::class, new static): it needs its own frame */
 	private function usesCalledScope(MethodInfo $method): bool
 	{
 		if ($method->unit->reflection->isFinal()) {
 			return false;
 		}
-		return $this->finder->findFirst([$method->node], static fn (Node $n): bool => $n instanceof Expr\ClassConstFetch && $n->class instanceof Node\Name && $n->class->toLowerString() === 'static') !== null;
+		return $this->finder->findFirst([$method->node], static fn (Node $n): bool => ($n instanceof Expr\ClassConstFetch || $n instanceof Expr\New_) && $n->class instanceof Node\Name && $n->class->toLowerString() === 'static') !== null;
 	}
 
 	/**

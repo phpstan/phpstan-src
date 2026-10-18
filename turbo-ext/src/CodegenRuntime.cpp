@@ -27,6 +27,11 @@ void pgrtDump()
 }
 }
 #define PGRT_COUNT_HIT(kind, cls, name) do { if (pgrtCounts == nullptr) { pgrtCounts = new std::map<std::string, unsigned long>(); atexit(pgrtDump); } (*pgrtCounts)[std::string(kind) + " " + (cls) + "::" + (name)]++; } while (0)
+/* the hand-written code's crossings (Engine.cpp, TypeTraits.cpp) */
+void pgrtCountHit(const char *kind, const char *cls, const char *name)
+{
+	PGRT_COUNT_HIT(kind, cls, name);
+}
 #else
 #define PGRT_COUNT_HIT(kind, cls, name) do { } while (0)
 #endif
@@ -143,7 +148,7 @@ bool callStatic(pt_method_site &site, zend_class_entry *ce, const char *lcname, 
 			ZVAL_UNDEF(ret);
 			return false;
 		}
-		site = { ce, fn, pt_engine_generation };
+		site = { ce, fn, pt_engine_generation, {} };
 	}
 	zend_call_known_function(site.fn, NULL, ce, ret, argc, argv, named);
 	if (UNEXPECTED(EG(exception))) {
@@ -220,7 +225,7 @@ bool callMethod0(MethodShapeSite &site, zval *object, const char *name, const ch
 	}
 	const pt_trivial_shape &shape = site.shape[way];
 	if (shape.kind == PT_TRIVIAL_CONST) {
-		ZVAL_COPY_VALUE(ret, &shape.constant);
+		ZVAL_COPY(ret, &shape.constant);
 		return true;
 	}
 	if (shape.kind == PT_TRIVIAL_PROP) {
@@ -250,7 +255,7 @@ bool callBound(pt_method_site &site, zend_class_entry *ce, zend_object *object, 
 			ZVAL_UNDEF(ret);
 			return false;
 		}
-		site = { ce, fn, pt_engine_generation };
+		site = { ce, fn, pt_engine_generation, {} };
 	}
 	zend_call_known_function(site.fn, object, object->ce, ret, argc, argv, named);
 	if (UNEXPECTED(EG(exception))) {

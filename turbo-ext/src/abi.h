@@ -90,7 +90,7 @@ struct FunctionEntry;
 enum pt_trivial_kind : uint8_t
 {
 	PT_TRIVIAL_NONE = 0,  /* run it */
-	PT_TRIVIAL_CONST = 1, /* `return <literal>;`: constant (a scalar or an interned string) */
+	PT_TRIVIAL_CONST = 1, /* `return <literal>;`: constant (a scalar, an interned string or a literal array, copied with ZVAL_COPY) */
 	PT_TRIVIAL_PROP = 2,  /* `return $this->prop;`: the declared instance property at offset */
 };
 

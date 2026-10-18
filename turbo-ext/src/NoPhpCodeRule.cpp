@@ -40,53 +40,60 @@ namespace pgen::NoPhpCodeRule {
 	 {
 		zv::Val r1;
 		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, p_node, "getNodes", "getnodes", 8, r1.raw()))) return false;
-		zval av2[1];
-		ZVAL_COPY_VALUE(&av2[0], r1.raw());
-		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "count", 5, pt_ce_no_php_code_rule, 1, av2, r3.raw()))) return false;
-		if (!(Z_LVAL_P(r3.raw()) == 1)) {
+		zval *ca2 = zv::Ref(r1.raw()).deref().raw();
+		zend_long cn3;
+		if (EXPECTED(Z_TYPE_P(ca2) == IS_ARRAY)) {
+			cn3 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca2));
+		} else {
+		 {
+			zv::Val r4;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "count", 5, pt_ce_no_php_code_rule, 1, ca2, r4.raw()))) return false;
+			cn3 = Z_LVAL_P(r4.raw());
+		}
+		}
+		if (!(cn3 == 1)) {
 			 {
-				zval arr4_raw;
-				ZVAL_EMPTY_ARRAY(&arr4_raw);
-				ZVAL_COPY(ret, &arr4_raw);
+				zval arr5_raw;
+				ZVAL_EMPTY_ARRAY(&arr5_raw);
+				ZVAL_COPY(ret, &arr5_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getNodes", "getnodes", 8, r5.raw()))) return false;
-		zv::Val et7;
-		zval *e6 = Z_TYPE_P(r5.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(r5.raw()), 0) : NULL;
-		if (UNEXPECTED(e6 == NULL)) {
-			zval z8;
-			ZVAL_LONG(&z8, 0);
-			e6 = pgrt::dimRead(r5.raw(), &z8, et7.raw());
-			if (UNEXPECTED(e6 == NULL)) return false;
+		zv::Val r6;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_node, "getNodes", "getnodes", 8, r6.raw()))) return false;
+		zv::Val et8;
+		zval *e7 = Z_TYPE_P(r6.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(r6.raw()), 0) : NULL;
+		if (UNEXPECTED(e7 == NULL)) {
+			zval z9;
+			ZVAL_LONG(&z9, 0);
+			e7 = pgrt::dimRead(r6.raw(), &z9, et8.raw());
+			if (UNEXPECTED(e7 == NULL)) return false;
 		}
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(zv::Ref(e6).deref().raw()));
-		l_html = std::move(o9);
+		zv::Val o10 = zv::Val::copyOf(zv::Ref(zv::Ref(e7).deref().raw()));
+		l_html = std::move(o10);
 	}
 	 {
 		if (!(pgrt::instanceOfClass(l_html.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Stmt\\InlineHTML", 30)))) {
 			 {
-				zval arr10_raw;
-				ZVAL_EMPTY_ARRAY(&arr10_raw);
-				ZVAL_COPY(ret, &arr10_raw);
+				zval arr11_raw;
+				ZVAL_EMPTY_ARRAY(&arr11_raw);
+				ZVAL_COPY(ret, &arr11_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val arr11 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val r12;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r12.raw()))) return false;
+		zv::Val arr12 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zv::Val r13;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r12.raw()), &pg_lit[2], r13.raw()))) return false;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r13.raw()))) return false;
 		zv::Val r14;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r13.raw()), r14.raw()))) return false;
-		{ zval v = r14.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr11.raw()), &v); }
-		*ret = arr11.take();
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r13.raw()), &pg_lit[2], r14.raw()))) return false;
+		zv::Val r15;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r14.raw()), r15.raw()))) return false;
+		{ zval v = r15.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr12.raw()), &v); }
+		*ret = arr12.take();
 		return true;
 	}
 }

@@ -113,36 +113,43 @@ namespace pgen::DefineParametersRule {
 		l_args = std::move(r12);
 	}
 	 {
-		zval av13[1];
-		ZVAL_COPY_VALUE(&av13[0], l_args.raw());
-		zv::Val r14;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "count", 5, pt_ce_define_parameters_rule, 1, av13, r14.raw()))) return false;
-		l_argsCount = Z_LVAL_P(r14.raw());
+		zval *ca13 = zv::Ref(l_args.raw()).deref().raw();
+		zend_long cn14;
+		if (EXPECTED(Z_TYPE_P(ca13) == IS_ARRAY)) {
+			cn14 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca13));
+		} else {
+		 {
+			zv::Val r15;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "count", 5, pt_ce_define_parameters_rule, 1, ca13, r15.raw()))) return false;
+			cn14 = Z_LVAL_P(r15.raw());
+		}
+		}
+		l_argsCount = cn14;
 	}
 	 {
 		if (l_argsCount < 3) {
 			 {
-				zval arr15_raw;
-				ZVAL_EMPTY_ARRAY(&arr15_raw);
-				ZVAL_COPY(ret, &arr15_raw);
+				zval arr16_raw;
+				ZVAL_EMPTY_ARRAY(&arr16_raw);
+				ZVAL_COPY(ret, &arr16_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val arr16 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val r17;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[2], r17.raw()))) return false;
+		zv::Val arr17 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zv::Val r18;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_node, "getStartLine", "getstartline", 12, r18.raw()))) return false;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[2], r18.raw()))) return false;
 		zv::Val r19;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r17.raw()), Z_LVAL_P(r18.raw()), r19.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, p_node, "getStartLine", "getstartline", 12, r19.raw()))) return false;
 		zv::Val r20;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r19.raw()), &pg_lit[3], r20.raw()))) return false;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r18.raw()), Z_LVAL_P(r19.raw()), r20.raw()))) return false;
 		zv::Val r21;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r20.raw()), r21.raw()))) return false;
-		{ zval v = r21.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr16.raw()), &v); }
-		*ret = arr16.take();
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r20.raw()), &pg_lit[3], r21.raw()))) return false;
+		zv::Val r22;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r21.raw()), r22.raw()))) return false;
+		{ zval v = r22.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr17.raw()), &v); }
+		*ret = arr17.take();
 		return true;
 	}
 }

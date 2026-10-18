@@ -102,11 +102,16 @@ namespace pgen::ConsistentConstructorRule {
 			if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_method.raw(), "getName", "getname", 7, r4.raw()))) return false;
 		}
 		}
-		zval av5[1];
-		ZVAL_COPY_VALUE(&av5[0], r4.raw());
-		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_consistent_constructor_rule, 1, av5, r6.raw(), NULL))) return false;
-		if (!zend_is_identical(r6.raw(), &pg_lit[1])) {
+		zval *sa6 = zv::Ref(r4.raw()).deref().raw();
+		zv::Val r5;
+		if (EXPECTED(Z_TYPE_P(sa6) == IS_STRING)) {
+			r5 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa6)));
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_consistent_constructor_rule, 1, sa6, r5.raw()))) return false;
+		}
+		}
+		if (!zend_is_identical(r5.raw(), &pg_lit[1])) {
 			 {
 				zval arr7_raw;
 				ZVAL_EMPTY_ARRAY(&arr7_raw);

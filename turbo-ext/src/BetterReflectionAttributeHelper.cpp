@@ -216,24 +216,31 @@ namespace pgen::BetterReflectionAttributeHelper {
 								zv::Val et46;
 								zval *e45 = pgrt::dimRead(o41.raw(), r44.raw(), et46.raw());
 								if (UNEXPECTED(e45 == NULL)) return false;
-								zval av47[1];
-								ZVAL_COPY_VALUE(&av47[0], zv::Ref(e45).deref().raw());
-								zv::Val r48;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "count", 5, pt_ce_better_reflection_attribute_helper, 1, av47, r48.raw()))) return false;
-								zval av49[4];
-								ZVAL_COPY_VALUE(&av49[0], p_reflector);
-								ZVAL_COPY_VALUE(&av49[1], o40.raw());
-								ZVAL_COPY_VALUE(&av49[2], p_reflection);
-								zval z50;
-								ZVAL_BOOL(&z50, (Z_LVAL_P(r48.raw()) > 1));
-								ZVAL_COPY_VALUE(&av49[3], &z50);
+								zval *ca47 = zv::Ref(zv::Ref(e45).deref().raw()).deref().raw();
+								zend_long cn48;
+								if (EXPECTED(Z_TYPE_P(ca47) == IS_ARRAY)) {
+									cn48 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca47));
+								} else {
+								 {
+									zv::Val r49;
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "count", 5, pt_ce_better_reflection_attribute_helper, 1, ca47, r49.raw()))) return false;
+									cn48 = Z_LVAL_P(r49.raw());
+								}
+								}
+								zval av50[4];
+								ZVAL_COPY_VALUE(&av50[0], p_reflector);
+								ZVAL_COPY_VALUE(&av50[1], o40.raw());
+								ZVAL_COPY_VALUE(&av50[2], p_reflection);
+								zval z51;
+								ZVAL_BOOL(&z51, (cn48 > 1));
+								ZVAL_COPY_VALUE(&av50[3], &z51);
 								zv::Val n38;
-								if (UNEXPECTED(!pgrt::newObject(nce39, 4, av49, n38.raw(), NULL))) return false;
-								zv::Val o51 = zv::Val::copyOf(zv::Ref(n38.raw()));
-								zval *w52 = zv::Ref(l_attributes.raw()).deref().raw();
-								if (Z_TYPE_P(w52) <= IS_NULL) { zval_ptr_dtor(w52); array_init(w52); } else if (UNEXPECTED(Z_TYPE_P(w52) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w52);
-								{ zval v = o51.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w52), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								if (UNEXPECTED(!pgrt::newObject(nce39, 4, av50, n38.raw(), NULL))) return false;
+								zv::Val o52 = zv::Val::copyOf(zv::Ref(n38.raw()));
+								zval *w53 = zv::Ref(l_attributes.raw()).deref().raw();
+								if (Z_TYPE_P(w53) <= IS_NULL) { zval_ptr_dtor(w53); array_init(w53); } else if (UNEXPECTED(Z_TYPE_P(w53) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w53);
+								{ zval v = o52.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w53), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
 						if (UNEXPECTED(!it35.next())) return false;

@@ -110,10 +110,15 @@ namespace pgen::UseAliasVisitor {
 								if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(p18).deref().raw(), pt_ce_use_alias_visitor, "name", 4, o21.raw()))) return false;
 								p20 = o21.raw();
 							}
-							zval av22[1];
-							ZVAL_COPY_VALUE(&av22[0], zv::Ref(p20).deref().raw());
-							zv::Val r23;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_use_alias_visitor, 1, av22, r23.raw(), NULL))) return false;
+							zval *sa23 = zv::Ref(zv::Ref(p20).deref().raw()).deref().raw();
+							zv::Val r22;
+							if (EXPECTED(Z_TYPE_P(sa23) == IS_STRING)) {
+								r22 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa23)));
+							} else {
+							 {
+								if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_use_alias_visitor, 1, sa23, r22.raw()))) return false;
+							}
+							}
 							zv::Val o25;
 							zval *p24 = Z_TYPE_P(l_use) == IS_OBJECT ? pgrt::propCached(pg_site_8, Z_OBJ_P(l_use), "alias", 5) : NULL;
 							if (UNEXPECTED(p24 == NULL || Z_ISUNDEF_P(p24))) {
@@ -131,7 +136,7 @@ namespace pgen::UseAliasVisitor {
 							zval *w30 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::UseAliasVisitor::slot::explicitAliases)).deref().raw();
 							if (Z_TYPE_P(w30) <= IS_NULL) { zval_ptr_dtor(w30); array_init(w30); } else if (UNEXPECTED(Z_TYPE_P(w30) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 							SEPARATE_ARRAY(w30);
-							zval *e31 = pgrt::dimWrite(w30, r23.raw());
+							zval *e31 = pgrt::dimWrite(w30, r22.raw());
 							if (UNEXPECTED(e31 == NULL)) return false;
 							zv::Ref(e31).assign(std::move(o29));
 						}
@@ -205,10 +210,15 @@ namespace pgen::UseAliasVisitor {
 								if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(p48).deref().raw(), pt_ce_use_alias_visitor, "name", 4, o51.raw()))) return false;
 								p50 = o51.raw();
 							}
-							zval av52[1];
-							ZVAL_COPY_VALUE(&av52[0], zv::Ref(p50).deref().raw());
-							zv::Val r53;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_use_alias_visitor, 1, av52, r53.raw(), NULL))) return false;
+							zval *sa53 = zv::Ref(zv::Ref(p50).deref().raw()).deref().raw();
+							zv::Val r52;
+							if (EXPECTED(Z_TYPE_P(sa53) == IS_STRING)) {
+								r52 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa53)));
+							} else {
+							 {
+								if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_use_alias_visitor, 1, sa53, r52.raw()))) return false;
+							}
+							}
 							zv::Val o55;
 							zval *p54 = Z_TYPE_P(l_use) == IS_OBJECT ? pgrt::propCached(pg_site_17, Z_OBJ_P(l_use), "alias", 5) : NULL;
 							if (UNEXPECTED(p54 == NULL || Z_ISUNDEF_P(p54))) {
@@ -226,7 +236,7 @@ namespace pgen::UseAliasVisitor {
 							zval *w60 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::UseAliasVisitor::slot::explicitAliases)).deref().raw();
 							if (Z_TYPE_P(w60) <= IS_NULL) { zval_ptr_dtor(w60); array_init(w60); } else if (UNEXPECTED(Z_TYPE_P(w60) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 							SEPARATE_ARRAY(w60);
-							zval *e61 = pgrt::dimWrite(w60, r53.raw());
+							zval *e61 = pgrt::dimWrite(w60, r52.raw());
 							if (UNEXPECTED(e61 == NULL)) return false;
 							zv::Ref(e61).assign(std::move(o59));
 						}
@@ -262,11 +272,16 @@ namespace pgen::UseAliasVisitor {
 									e64 = pgrt::dimRead(l_originalParts.raw(), &z66, et65.raw());
 									if (UNEXPECTED(e64 == NULL)) return false;
 								}
-								zval av67[1];
-								ZVAL_COPY_VALUE(&av67[0], zv::Ref(e64).deref().raw());
-								zv::Val r68;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_use_alias_visitor, 1, av67, r68.raw(), NULL))) return false;
-								l_lowerOriginal = std::move(r68);
+								zval *sa68 = zv::Ref(zv::Ref(e64).deref().raw()).deref().raw();
+								zv::Val r67;
+								if (EXPECTED(Z_TYPE_P(sa68) == IS_STRING)) {
+									r67 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa68)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_use_alias_visitor, 1, sa68, r67.raw()))) return false;
+								}
+								}
+								l_lowerOriginal = std::move(r67);
 							}
 							 {
 								zval *is71 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::UseAliasVisitor::slot::explicitAliases)).deref().raw();

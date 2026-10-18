@@ -278,11 +278,16 @@ namespace pgen::CallToNonExistentFunctionRule {
 				}
 				}
 				zv::Val r53 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r52.raw())));
-				zval av54[1];
-				ZVAL_COPY_VALUE(&av54[0], l_calledFunctionName.raw());
-				zv::Val r55;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "strtolower", 10, pt_ce_call_to_non_existent_function_rule, 1, av54, r55.raw(), NULL))) return false;
-				bool b51 = zend_is_identical(r53.raw(), r55.raw());
+				zval *sa55 = zv::Ref(l_calledFunctionName.raw()).deref().raw();
+				zv::Val r54;
+				if (EXPECTED(Z_TYPE_P(sa55) == IS_STRING)) {
+					r54 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa55)));
+				} else {
+				 {
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "strtolower", 10, pt_ce_call_to_non_existent_function_rule, 1, sa55, r54.raw()))) return false;
+				}
+				}
+				bool b51 = zend_is_identical(r53.raw(), r54.raw());
 				if (b51) {
 					zv::Val r56;
 					if (EXPECTED(Z_TYPE_P(l_function.raw()) == IS_OBJECT)) {

@@ -1287,11 +1287,16 @@ namespace pgen::FunctionDefinitionCheck {
 											if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(p192).deref().raw(), pt_ce_function_definition_check, "name", 4, o195.raw()))) return false;
 											p194 = o195.raw();
 										}
-										zval av196[1];
-										ZVAL_COPY_VALUE(&av196[0], zv::Ref(p194).deref().raw());
-										zv::Val r197;
-										if (UNEXPECTED(!pgrt::callFunction(pg_site_50, "strtolower", 10, pt_ce_function_definition_check, 1, av196, r197.raw(), NULL))) return false;
-										if (zend_is_identical(r197.raw(), &pg_lit[9])) {
+										zval *sa197 = zv::Ref(zv::Ref(p194).deref().raw()).deref().raw();
+										zv::Val r196;
+										if (EXPECTED(Z_TYPE_P(sa197) == IS_STRING)) {
+											r196 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa197)));
+										} else {
+										 {
+											if (UNEXPECTED(!pgrt::callFunction(pg_site_50, "strtolower", 10, pt_ce_function_definition_check, 1, sa197, r196.raw()))) return false;
+										}
+										}
+										if (zend_is_identical(r196.raw(), &pg_lit[9])) {
 											 {
 												zv::Val r198;
 												if (UNEXPECTED(!pgrt::nameToString(pg_site_51, p_returnTypeNode, r198.raw()))) return false;

@@ -5742,15 +5742,24 @@ final class Compiler
 			if ($array->isArray || $this->unit()->oracle->nativeType($expr->args[0]->value)->isArray()->yes()) {
 				return Value::long(sprintf('(zend_long) zend_hash_num_elements(Z_ARRVAL_P(%s))', $this->asZval($f, $array)));
 			}
-			// the evaluated argument goes to the engine as it is (evaluated once)
-			$argv = $f->temp('av');
-			$f->line(sprintf('zval %s[1];', $argv));
-			$f->line(sprintf('ZVAL_COPY_VALUE(&%s[0], %s);', $argv, $this->asZval($f, $array)));
+			// an array counted here, anything else by the engine (the
+			// evaluated argument as it is: evaluated once)
+			$z = $f->temp('ca');
+			$f->line(sprintf('zval *%s = zv::Ref(%s).deref().raw();', $z, $this->asZval($f, $array)));
+			$count = $f->temp('cn');
+			$f->line(sprintf('zend_long %s;', $count));
+			$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_ARRAY))', $z));
+			$f->line(sprintf('%s = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(%s));', $count, $z));
+			$f->close(' else {');
+			$f->open('');
 			$site = $this->site('pgrt::FunctionSite', 'function_count');
 			$t = $f->temp('r');
 			$f->line(sprintf('zv::Val %s;', $t));
-			$f->failIf(sprintf('!pgrt::callFunction(%s, "count", 5, %s, 1, %s, %s.raw())', $site, $this->unit()->ce, $argv, $t));
-			return $this->fromEngineResult($t, $native);
+			$f->failIf(sprintf('!pgrt::callFunction(%s, "count", 5, %s, 1, %s, %s.raw())', $site, $this->unit()->ce, $z, $t));
+			$f->line(sprintf('%s = Z_LVAL_P(%s.raw());', $count, $t));
+			$f->close();
+			$f->line('}');
+			return Value::long($count);
 		}
 		$intrinsic = $this->builtinIntrinsic($f, $name, $expr);
 		if ($intrinsic !== null) {
@@ -5822,13 +5831,28 @@ final class Compiler
 			case 'in_array':
 				return $this->inArrayIntrinsic($f, $expr);
 			case 'strtolower':
-				if (!$single || !$this->unit()->oracle->nativeType($expr->args[0]->value)->isString()->yes()) {
+				if (!$single) {
 					return null;
 				}
 				$string = $this->asZval($f, $this->expr($f, $expr->args[0]->value));
 				$t = $f->temp('r');
 				// the ASCII fold strtolower() is since PHP 8.2; an already lowercase string comes back addref'd
-				$f->line(sprintf('zv::Val %s = zv::Val::adoptString(zend_string_tolower(Z_STR_P(%s)));', $t, $string));
+				if ($this->unit()->oracle->nativeType($expr->args[0]->value)->isString()->yes()) {
+					$f->line(sprintf('zv::Val %s = zv::Val::adoptString(zend_string_tolower(Z_STR_P(%s)));', $t, $string));
+					return new Value('zval', $t . '.raw()', $t);
+				}
+				// a string folded here, anything else by the engine (its coercion or TypeError)
+				$z = $f->temp('sa');
+				$f->line(sprintf('zval *%s = zv::Ref(%s).deref().raw();', $z, $string));
+				$f->line(sprintf('zv::Val %s;', $t));
+				$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_STRING))', $z));
+				$f->line(sprintf('%s = zv::Val::adoptString(zend_string_tolower(Z_STR_P(%s)));', $t, $z));
+				$f->close(' else {');
+				$f->open('');
+				$site = $this->site('pgrt::FunctionSite', 'function_strtolower');
+				$f->failIf(sprintf('!pgrt::callFunction(%s, "strtolower", 10, %s, 1, %s, %s.raw())', $site, $this->unit()->ce, $z, $t));
+				$f->close();
+				$f->line('}');
 				return new Value('zval', $t . '.raw()', $t);
 			case 'spl_object_id':
 				if (!$single || !$this->unit()->oracle->nativeType($expr->args[0]->value)->isObject()->yes()) {

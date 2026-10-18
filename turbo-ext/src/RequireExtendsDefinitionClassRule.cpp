@@ -70,57 +70,64 @@ namespace pgen::RequireExtendsDefinitionClassRule {
 		l_extendsTags = std::move(r2);
 	}
 	 {
-		zval av3[1];
-		ZVAL_COPY_VALUE(&av3[0], l_extendsTags.raw());
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "count", 5, pt_ce_require_extends_definition_class_rule, 1, av3, r4.raw()))) return false;
-		if (Z_LVAL_P(r4.raw()) == 0) {
-			 {
-				zval arr5_raw;
-				ZVAL_EMPTY_ARRAY(&arr5_raw);
-				ZVAL_COPY(ret, &arr5_raw);
-				return true;
-			}
-		}
-	}
-	 {
-		zv::Val r6;
-		if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-			r6 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_IS_INTERFACE, 0, NULL);
-			if (UNEXPECTED(r6.isUndef())) return false;
+		zval *ca3 = zv::Ref(l_extendsTags.raw()).deref().raw();
+		zend_long cn4;
+		if (EXPECTED(Z_TYPE_P(ca3) == IS_ARRAY)) {
+			cn4 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca3));
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "isInterface", "isinterface", 11, r6.raw()))) return false;
+			zv::Val r5;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "count", 5, pt_ce_require_extends_definition_class_rule, 1, ca3, r5.raw()))) return false;
+			cn4 = Z_LVAL_P(r5.raw());
 		}
 		}
-		if (!(zend_is_true(r6.raw()))) {
+		if (cn4 == 0) {
 			 {
-				zv::Val arr7 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-				zv::Val r8;
-				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r8.raw()))) return false;
-				zv::Val r9;
-				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r9.raw()))) return false;
-				pgrt::StringBuilder sb10;
-				sb10.appendLiteral("requireExtends.on", 17);
-				if (UNEXPECTED(!sb10.append(r9.raw()))) return false;
-				zv::Val r11 = sb10.finish();
-				zv::Val r12;
-				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r8.raw()), r11.raw(), r12.raw()))) return false;
-				zv::Val r13;
-				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r12.raw()), r13.raw()))) return false;
-				{ zval v = r13.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr7.raw()), &v); }
-				*ret = arr7.take();
+				zval arr6_raw;
+				ZVAL_EMPTY_ARRAY(&arr6_raw);
+				ZVAL_COPY(ret, &arr6_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p14 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RequireExtendsDefinitionClassRule::slot::requireExtendsCheck, "requireExtendsCheck");
-		if (UNEXPECTED(p14 == NULL)) return false;
+		zv::Val r7;
+		if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
+			r7 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_IS_INTERFACE, 0, NULL);
+			if (UNEXPECTED(r7.isUndef())) return false;
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "isInterface", "isinterface", 11, r7.raw()))) return false;
+		}
+		}
+		if (!(zend_is_true(r7.raw()))) {
+			 {
+				zv::Val arr8 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+				zv::Val r9;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r9.raw()))) return false;
+				zv::Val r10;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r10.raw()))) return false;
+				pgrt::StringBuilder sb11;
+				sb11.appendLiteral("requireExtends.on", 17);
+				if (UNEXPECTED(!sb11.append(r10.raw()))) return false;
+				zv::Val r12 = sb11.finish();
+				zv::Val r13;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r9.raw()), r12.raw(), r13.raw()))) return false;
+				zv::Val r14;
+				if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r13.raw()), r14.raw()))) return false;
+				{ zval v = r14.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr8.raw()), &v); }
+				*ret = arr8.take();
+				return true;
+			}
+		}
+	}
+	 {
+		zval *p15 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RequireExtendsDefinitionClassRule::slot::requireExtendsCheck, "requireExtendsCheck");
+		if (UNEXPECTED(p15 == NULL)) return false;
 		if (UNEXPECTED(!(Z_TYPE_P(l_extendsTags.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\RequireExtendsCheck::checkExtendsTags", 3, "extendsTags", "array", l_extendsTags.raw()); return false; }
-		zv::Val r15;
-		if (UNEXPECTED(!pgen::RequireExtendsCheck::m_checkExtendsTags(Z_OBJ_P(p14), p_scope, p_node, l_extendsTags.raw(), r15.raw()))) return false;
-		*ret = r15.take();
+		zv::Val r16;
+		if (UNEXPECTED(!pgen::RequireExtendsCheck::m_checkExtendsTags(Z_OBJ_P(p15), p_scope, p_node, l_extendsTags.raw(), r16.raw()))) return false;
+		*ret = r16.take();
 		return true;
 	}
 }

@@ -173,11 +173,16 @@ namespace pgen::OpenSslEncryptParameterOutTypeExtension {
 						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, l_cipherType, "getValue", "getvalue", 8, r25.raw()))) return false;
 					}
 					}
-					zval av26[1];
-					ZVAL_COPY_VALUE(&av26[0], r25.raw());
-					zv::Val r27;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_open_ssl_encrypt_parameter_out_type_extension, 1, av26, r27.raw(), NULL))) return false;
-					l_cipher = std::move(r27);
+					zval *sa27 = zv::Ref(r25.raw()).deref().raw();
+					zv::Val r26;
+					if (EXPECTED(Z_TYPE_P(sa27) == IS_STRING)) {
+						r26 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa27)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_open_ssl_encrypt_parameter_out_type_extension, 1, sa27, r26.raw()))) return false;
+					}
+					}
+					l_cipher = std::move(r26);
 				}
 				 {
 					zend_long neg28;

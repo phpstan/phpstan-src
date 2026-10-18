@@ -92,10 +92,15 @@ namespace pgen::NotAnalysedTraitRule {
 						l_line = zv::Val::copyOf(zv::Ref(zv::Ref(le16).deref().raw()));
 						 {
 							 {
-								zval av19[1];
-								ZVAL_COPY_VALUE(&av19[0], l_name.raw());
-								zv::Val r20;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_not_analysed_trait_rule, 1, av19, r20.raw(), NULL))) return false;
+								zval *sa20 = zv::Ref(l_name.raw()).deref().raw();
+								zv::Val r19;
+								if (EXPECTED(Z_TYPE_P(sa20) == IS_STRING)) {
+									r19 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa20)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_not_analysed_trait_rule, 1, sa20, r19.raw()))) return false;
+								}
+								}
 								zv::Val arr21 = zv::Val::adopt([]() { zval a; array_init_size(&a, 3); return a; }());
 								zv::Val o22 = zv::Val::copyOf(zv::Ref(l_file.raw()));
 								{ zval v = o22.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr21.raw()), &v); }
@@ -107,7 +112,7 @@ namespace pgen::NotAnalysedTraitRule {
 								zval *w26 = zv::Ref(l_declaredTraits.raw()).deref().raw();
 								if (Z_TYPE_P(w26) <= IS_NULL) { zval_ptr_dtor(w26); array_init(w26); } else if (UNEXPECTED(Z_TYPE_P(w26) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 								SEPARATE_ARRAY(w26);
-								zval *e27 = pgrt::dimWrite(w26, r20.raw());
+								zval *e27 = pgrt::dimWrite(w26, r19.raw());
 								if (UNEXPECTED(e27 == NULL)) return false;
 								zv::Ref(e27).assign(std::move(o25));
 							}
@@ -140,14 +145,19 @@ namespace pgen::NotAnalysedTraitRule {
 									l_usedName = zv::Ref(it37.current()).deref().raw();
 									 {
 										 {
-											zval av40[1];
-											ZVAL_COPY_VALUE(&av40[0], l_usedName);
-											zv::Val r41;
-											if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_not_analysed_trait_rule, 1, av40, r41.raw(), NULL))) return false;
+											zval *sa41 = zv::Ref(l_usedName).deref().raw();
+											zv::Val r40;
+											if (EXPECTED(Z_TYPE_P(sa41) == IS_STRING)) {
+												r40 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa41)));
+											} else {
+											 {
+												if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_not_analysed_trait_rule, 1, sa41, r40.raw()))) return false;
+											}
+											}
 											zval *w42 = zv::Ref(l_declaredTraits.raw()).deref().raw();
 											if (Z_TYPE_P(w42) == IS_ARRAY) {
 												SEPARATE_ARRAY(w42);
-												if (Z_TYPE_P(r41.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w42), Z_STR_P(r41.raw())); } else if (Z_TYPE_P(r41.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w42), Z_LVAL_P(r41.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
+												if (Z_TYPE_P(r40.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w42), Z_STR_P(r40.raw())); } else if (Z_TYPE_P(r40.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w42), Z_LVAL_P(r40.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
 											}
 										}
 									}

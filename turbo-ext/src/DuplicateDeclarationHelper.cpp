@@ -627,11 +627,16 @@ namespace pgen::DuplicateDeclarationHelper {
 						if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(p189).deref().raw(), pt_ce_duplicate_declaration_helper, "name", 4, o192.raw()))) return false;
 						p191 = o192.raw();
 					}
-					zval av193[1];
-					ZVAL_COPY_VALUE(&av193[0], zv::Ref(p191).deref().raw());
-					zv::Val r194;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_43, "strtolower", 10, pt_ce_duplicate_declaration_helper, 1, av193, r194.raw(), NULL))) return false;
-					if (zend_symtable_exists(Z_ARRVAL_P(l_declaredFunctions.raw()), Z_STR_P(r194.raw()))) {
+					zval *sa194 = zv::Ref(zv::Ref(p191).deref().raw()).deref().raw();
+					zv::Val r193;
+					if (EXPECTED(Z_TYPE_P(sa194) == IS_STRING)) {
+						r193 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa194)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_43, "strtolower", 10, pt_ce_duplicate_declaration_helper, 1, sa194, r193.raw()))) return false;
+					}
+					}
+					if (zend_symtable_exists(Z_ARRVAL_P(l_declaredFunctions.raw()), Z_STR_P(r193.raw()))) {
 						 {
 							zv::Val o196;
 							zval *p195 = Z_TYPE_P(l_method) == IS_OBJECT ? pgrt::propCached(pg_site_44, Z_OBJ_P(l_method), "name", 4) : NULL;
@@ -690,10 +695,15 @@ namespace pgen::DuplicateDeclarationHelper {
 								if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(p211).deref().raw(), pt_ce_duplicate_declaration_helper, "name", 4, o214.raw()))) return false;
 								p213 = o214.raw();
 							}
-							zval av215[1];
-							ZVAL_COPY_VALUE(&av215[0], zv::Ref(p213).deref().raw());
-							zv::Val r216;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_43, "strtolower", 10, pt_ce_duplicate_declaration_helper, 1, av215, r216.raw(), NULL))) return false;
+							zval *sa216 = zv::Ref(zv::Ref(p213).deref().raw()).deref().raw();
+							zv::Val r215;
+							if (EXPECTED(Z_TYPE_P(sa216) == IS_STRING)) {
+								r215 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa216)));
+							} else {
+							 {
+								if (UNEXPECTED(!pgrt::callFunction(pg_site_43, "strtolower", 10, pt_ce_duplicate_declaration_helper, 1, sa216, r215.raw()))) return false;
+							}
+							}
 							bool k217 = true;
 							zval z219;
 							ZVAL_BOOL(&z219, k217);
@@ -701,7 +711,7 @@ namespace pgen::DuplicateDeclarationHelper {
 							zval *w220 = zv::Ref(l_declaredFunctions.raw()).deref().raw();
 							if (Z_TYPE_P(w220) <= IS_NULL) { zval_ptr_dtor(w220); array_init(w220); } else if (UNEXPECTED(Z_TYPE_P(w220) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 							SEPARATE_ARRAY(w220);
-							zval *e221 = pgrt::dimWrite(w220, r216.raw());
+							zval *e221 = pgrt::dimWrite(w220, r215.raw());
 							if (UNEXPECTED(e221 == NULL)) return false;
 							zv::Ref(e221).assign(std::move(o218));
 						}

@@ -324,7 +324,8 @@ static void abi_trivial_shape(const zend_function *fn, pt_trivial_shape *out)
 	uint32_t count = opArray->last;
 	if (count >= 1 && ops[0].opcode == ZEND_RETURN && ops[0].op1_type == IS_CONST) {
 		zval *constant = RT_CONSTANT(&ops[0], ops[0].op1);
-		if (Z_TYPE_P(constant) <= IS_TRUE || Z_TYPE_P(constant) == IS_LONG || Z_TYPE_P(constant) == IS_DOUBLE || (Z_TYPE_P(constant) == IS_STRING && ZSTR_IS_INTERNED(Z_STR_P(constant)))) {
+		/* a literal array (getSubNodeNames()) lives as long as the function: copied with a reference */
+		if (Z_TYPE_P(constant) <= IS_TRUE || Z_TYPE_P(constant) == IS_LONG || Z_TYPE_P(constant) == IS_DOUBLE || (Z_TYPE_P(constant) == IS_STRING && ZSTR_IS_INTERNED(Z_STR_P(constant))) || Z_TYPE_P(constant) == IS_ARRAY) {
 			ZVAL_COPY_VALUE(&out->constant, constant);
 			out->kind = PT_TRIVIAL_CONST;
 		}

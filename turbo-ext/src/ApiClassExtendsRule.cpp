@@ -280,15 +280,22 @@ namespace pgen::ApiClassExtendsRule {
 					l_apiTags = std::move(r51);
 				}
 				 {
-					zval av52[1];
-					ZVAL_COPY_VALUE(&av52[0], l_apiTags.raw());
-					zv::Val r53;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "count", 5, pt_ce_api_class_extends_rule, 1, av52, r53.raw()))) return false;
-					if (Z_LVAL_P(r53.raw()) > 0) {
+					zval *ca52 = zv::Ref(l_apiTags.raw()).deref().raw();
+					zend_long cn53;
+					if (EXPECTED(Z_TYPE_P(ca52) == IS_ARRAY)) {
+						cn53 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca52));
+					} else {
+					 {
+						zv::Val r54;
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "count", 5, pt_ce_api_class_extends_rule, 1, ca52, r54.raw()))) return false;
+						cn53 = Z_LVAL_P(r54.raw());
+					}
+					}
+					if (cn53 > 0) {
 						 {
-							zval arr54_raw;
-							ZVAL_EMPTY_ARRAY(&arr54_raw);
-							ZVAL_COPY(ret, &arr54_raw);
+							zval arr55_raw;
+							ZVAL_EMPTY_ARRAY(&arr55_raw);
+							ZVAL_COPY(ret, &arr55_raw);
 							return true;
 						}
 					}
@@ -298,10 +305,10 @@ namespace pgen::ApiClassExtendsRule {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val arr55 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val o56 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
-		{ zval v = o56.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr55.raw()), &v); }
-		*ret = arr55.take();
+		zv::Val arr56 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zv::Val o57 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
+		{ zval v = o57.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr56.raw()), &v); }
+		*ret = arr56.take();
 		return true;
 	}
 }

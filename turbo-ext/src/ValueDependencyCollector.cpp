@@ -507,10 +507,15 @@ namespace pgen::ValueDependencyCollector {
 			l_ancestorName = zv::Ref(v14).deref().raw();
 			 {
 				 {
-					zval av19[1];
-					ZVAL_COPY_VALUE(&av19[0], l_ancestorName);
-					zv::Val r20;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "strtolower", 10, pt_ce_value_dependency_collector, 1, av19, r20.raw(), NULL))) return false;
+					zval *sa20 = zv::Ref(l_ancestorName).deref().raw();
+					zv::Val r19;
+					if (EXPECTED(Z_TYPE_P(sa20) == IS_STRING)) {
+						r19 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa20)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "strtolower", 10, pt_ce_value_dependency_collector, 1, sa20, r19.raw()))) return false;
+					}
+					}
 					bool k21 = true;
 					zval z23;
 					ZVAL_BOOL(&z23, k21);
@@ -518,7 +523,7 @@ namespace pgen::ValueDependencyCollector {
 					zval *w24 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::ValueDependencyCollector::slot::dependedOnClasses)).deref().raw();
 					if (Z_TYPE_P(w24) <= IS_NULL) { zval_ptr_dtor(w24); array_init(w24); } else if (UNEXPECTED(Z_TYPE_P(w24) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 					SEPARATE_ARRAY(w24);
-					zval *e25 = pgrt::dimWrite(w24, r20.raw());
+					zval *e25 = pgrt::dimWrite(w24, r19.raw());
 					if (UNEXPECTED(e25 == NULL)) return false;
 					zv::Ref(e25).assign(std::move(o22));
 				}

@@ -125,11 +125,18 @@ namespace pgen::AnonymousClassVisitor {
 			l_nodesOnLine = zv::Ref(v4).deref().raw();
 			 {
 				 {
-					zval av9[1];
-					ZVAL_COPY_VALUE(&av9[0], l_nodesOnLine);
-					zv::Val r10;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "count", 5, pt_ce_anonymous_class_visitor, 1, av9, r10.raw()))) return false;
-					if (Z_LVAL_P(r10.raw()) == 1) {
+					zval *ca9 = zv::Ref(l_nodesOnLine).deref().raw();
+					zend_long cn10;
+					if (EXPECTED(Z_TYPE_P(ca9) == IS_ARRAY)) {
+						cn10 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca9));
+					} else {
+					 {
+						zv::Val r11;
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "count", 5, pt_ce_anonymous_class_visitor, 1, ca9, r11.raw()))) return false;
+						cn10 = Z_LVAL_P(r11.raw());
+					}
+					}
+					if (cn10 == 1) {
 						goto cont8;
 					}
 				}
@@ -139,33 +146,40 @@ namespace pgen::AnonymousClassVisitor {
 					}
 					for (;;) {
 						 {
-							zval av11[1];
-							ZVAL_COPY_VALUE(&av11[0], l_nodesOnLine);
-							zv::Val r12;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "count", 5, pt_ce_anonymous_class_visitor, 1, av11, r12.raw()))) return false;
-							if (!((l_i < Z_LVAL_P(r12.raw())))) break;
+							zval *ca12 = zv::Ref(l_nodesOnLine).deref().raw();
+							zend_long cn13;
+							if (EXPECTED(Z_TYPE_P(ca12) == IS_ARRAY)) {
+								cn13 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca12));
+							} else {
+							 {
+								zv::Val r14;
+								if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "count", 5, pt_ce_anonymous_class_visitor, 1, ca12, r14.raw()))) return false;
+								cn13 = Z_LVAL_P(r14.raw());
+							}
+							}
+							if (!((l_i < cn13))) break;
 						}
 						 {
 							 {
-								zv::Val et16;
-								zval *e15 = Z_TYPE_P(l_nodesOnLine) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_nodesOnLine), l_i) : NULL;
-								if (UNEXPECTED(e15 == NULL)) {
-									zval z17;
-									ZVAL_LONG(&z17, l_i);
-									e15 = pgrt::dimRead(l_nodesOnLine, &z17, et16.raw());
-									if (UNEXPECTED(e15 == NULL)) return false;
+								zv::Val et18;
+								zval *e17 = Z_TYPE_P(l_nodesOnLine) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_nodesOnLine), l_i) : NULL;
+								if (UNEXPECTED(e17 == NULL)) {
+									zval z19;
+									ZVAL_LONG(&z19, l_i);
+									e17 = pgrt::dimRead(l_nodesOnLine, &z19, et18.raw());
+									if (UNEXPECTED(e17 == NULL)) return false;
 								}
-								zend_long ar18;
-								if (UNEXPECTED(!pgrt::addLong(l_i, 1, &ar18))) return false;
-								zval z19;
-								ZVAL_LONG(&z19, ar18);
-								zv::Val r20;
-								if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_7, zv::Ref(e15).deref().raw(), &pg_lit[1], &z19, r20.raw()))) return false;
+								zend_long ar20;
+								if (UNEXPECTED(!pgrt::addLong(l_i, 1, &ar20))) return false;
+								zval z21;
+								ZVAL_LONG(&z21, ar20);
+								zv::Val r22;
+								if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_7, zv::Ref(e17).deref().raw(), &pg_lit[1], &z21, r22.raw()))) return false;
 							}
 						}
 						 {
-							zend_long old21 = l_i;
-							if (UNEXPECTED(!pgrt::addLong(old21, 1, &l_i))) return false;
+							zend_long old23 = l_i;
+							if (UNEXPECTED(!pgrt::addLong(old23, 1, &l_i))) return false;
 						}
 					}
 				}
@@ -175,17 +189,17 @@ namespace pgen::AnonymousClassVisitor {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval arr22_raw;
-		ZVAL_EMPTY_ARRAY(&arr22_raw);
-		zv::Val o23 = zv::Val::copyOf(zv::Ref(&arr22_raw));
-		zval o24;
-		ZVAL_COPY(&o24, o23.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::AnonymousClassVisitor::slot::nodesPerLine, &o24);
+		zval arr24_raw;
+		ZVAL_EMPTY_ARRAY(&arr24_raw);
+		zv::Val o25 = zv::Val::copyOf(zv::Ref(&arr24_raw));
+		zval o26;
+		ZVAL_COPY(&o26, o25.raw());
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::AnonymousClassVisitor::slot::nodesPerLine, &o26);
 	}
 	 {
-		zval z25;
-		ZVAL_NULL(&z25);
-		ZVAL_COPY_VALUE(ret, &z25);
+		zval z27;
+		ZVAL_NULL(&z27);
+		ZVAL_COPY_VALUE(ret, &z27);
 		return true;
 	}
 }

@@ -88,34 +88,41 @@ namespace pgen::MethodConditionalReturnTypeRule {
 		l_variants = std::move(vd4);
 	}
 	 {
-		zval av6[1];
-		ZVAL_COPY_VALUE(&av6[0], l_variants.raw());
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "count", 5, pt_ce_method_conditional_return_type_rule, 1, av6, r7.raw()))) return false;
-		if (!(Z_LVAL_P(r7.raw()) == 1)) {
+		zval *ca6 = zv::Ref(l_variants.raw()).deref().raw();
+		zend_long cn7;
+		if (EXPECTED(Z_TYPE_P(ca6) == IS_ARRAY)) {
+			cn7 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca6));
+		} else {
+		 {
+			zv::Val r8;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "count", 5, pt_ce_method_conditional_return_type_rule, 1, ca6, r8.raw()))) return false;
+			cn7 = Z_LVAL_P(r8.raw());
+		}
+		}
+		if (!(cn7 == 1)) {
 			 {
-				zval arr8_raw;
-				ZVAL_EMPTY_ARRAY(&arr8_raw);
-				ZVAL_COPY(ret, &arr8_raw);
+				zval arr9_raw;
+				ZVAL_EMPTY_ARRAY(&arr9_raw);
+				ZVAL_COPY(ret, &arr9_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MethodConditionalReturnTypeRule::slot::helper, "helper");
-		if (UNEXPECTED(p9 == NULL)) return false;
-		zv::Val et11;
-		zval *e10 = Z_TYPE_P(l_variants.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_variants.raw()), 0) : NULL;
-		if (UNEXPECTED(e10 == NULL)) {
-			zval z12;
-			ZVAL_LONG(&z12, 0);
-			e10 = pgrt::dimRead(l_variants.raw(), &z12, et11.raw());
-			if (UNEXPECTED(e10 == NULL)) return false;
+		zval *p10 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::MethodConditionalReturnTypeRule::slot::helper, "helper");
+		if (UNEXPECTED(p10 == NULL)) return false;
+		zv::Val et12;
+		zval *e11 = Z_TYPE_P(l_variants.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_variants.raw()), 0) : NULL;
+		if (UNEXPECTED(e11 == NULL)) {
+			zval z13;
+			ZVAL_LONG(&z13, 0);
+			e11 = pgrt::dimRead(l_variants.raw(), &z13, et12.raw());
+			if (UNEXPECTED(e11 == NULL)) return false;
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(e10).deref().raw(), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ExtendedParametersAcceptor", 45))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\ConditionalReturnTypeRuleHelper::check", 1, "acceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor", zv::Ref(e10).deref().raw()); return false; }
-		zv::Val r13;
-		if (UNEXPECTED(!pgen::ConditionalReturnTypeRuleHelper::m_check(Z_OBJ_P(p9), zv::Ref(e10).deref().raw(), r13.raw()))) return false;
-		*ret = r13.take();
+		if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(e11).deref().raw(), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ExtendedParametersAcceptor", 45))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\ConditionalReturnTypeRuleHelper::check", 1, "acceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor", zv::Ref(e11).deref().raw()); return false; }
+		zv::Val r14;
+		if (UNEXPECTED(!pgen::ConditionalReturnTypeRuleHelper::m_check(Z_OBJ_P(p10), zv::Ref(e11).deref().raw(), r14.raw()))) return false;
+		*ret = r14.take();
 		return true;
 	}
 }

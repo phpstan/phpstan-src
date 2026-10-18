@@ -497,11 +497,18 @@ namespace pgen::ApiStaticCallRule {
 									l_apiTags = std::move(r18);
 								}
 								 {
-									zval av19[1];
-									ZVAL_COPY_VALUE(&av19[0], l_apiTags.raw());
-									zv::Val r20;
-									if (UNEXPECTED(!pgrt::callFunction(pg_site_23, "count", 5, pt_ce_api_static_call_rule, 1, av19, r20.raw()))) return false;
-									if (Z_LVAL_P(r20.raw()) > 0) {
+									zval *ca19 = zv::Ref(l_apiTags.raw()).deref().raw();
+									zend_long cn20;
+									if (EXPECTED(Z_TYPE_P(ca19) == IS_ARRAY)) {
+										cn20 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca19));
+									} else {
+									 {
+										zv::Val r21;
+										if (UNEXPECTED(!pgrt::callFunction(pg_site_23, "count", 5, pt_ce_api_static_call_rule, 1, ca19, r21.raw()))) return false;
+										cn20 = Z_LVAL_P(r21.raw());
+									}
+									}
+									if (cn20 > 0) {
 										 {
 											*ret = true;
 											return true;
@@ -517,54 +524,54 @@ namespace pgen::ApiStaticCallRule {
 		}
 	}
 	 {
-		zv::Val vd21;
-		zend_class_entry *vd21_ce = Z_TYPE_P(p_methodReflection) == IS_OBJECT ? Z_OBJCE_P(p_methodReflection) : NULL;
-		bool vd21_done = false;
-		static zend_class_entry **const vd21_table[] = { &pt_ce_changed_type_method_reflection, &pt_ce_rewritten_declaring_class_method_reflection, &pt_ce_php_method_reflection, &pt_ce_php_method_from_parser_node_reflection, &pt_ce_union_type_method_reflection };
-		static const uint16_t vd21_cases[] = { 1, 2, 3, 4, 5 };
-		switch (pgrt::dispatchCase(pg_site_24, vd21_ce, vd21_table, vd21_cases, 5)) {
+		zv::Val vd22;
+		zend_class_entry *vd22_ce = Z_TYPE_P(p_methodReflection) == IS_OBJECT ? Z_OBJCE_P(p_methodReflection) : NULL;
+		bool vd22_done = false;
+		static zend_class_entry **const vd22_table[] = { &pt_ce_changed_type_method_reflection, &pt_ce_rewritten_declaring_class_method_reflection, &pt_ce_php_method_reflection, &pt_ce_php_method_from_parser_node_reflection, &pt_ce_union_type_method_reflection };
+		static const uint16_t vd22_cases[] = { 1, 2, 3, 4, 5 };
+		switch (pgrt::dispatchCase(pg_site_24, vd22_ce, vd22_table, vd22_cases, 5)) {
 			case 1: {
-				zv::Val r22;
-				if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r22.raw()))) return false;
-				vd21 = std::move(r22);
-				vd21_done = true;
+				zv::Val r23;
+				if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r23.raw()))) return false;
+				vd22 = std::move(r23);
+				vd22_done = true;
 			}
 			break;
 			case 2: {
-				zv::Val r23;
-				if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r23.raw()))) return false;
-				vd21 = std::move(r23);
-				vd21_done = true;
+				zv::Val r24;
+				if (UNEXPECTED(!pgen::RewrittenDeclaringClassMethodReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r24.raw()))) return false;
+				vd22 = std::move(r24);
+				vd22_done = true;
 			}
 			break;
 			case 3: {
-				zv::Val r24;
-				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r24.raw()))) return false;
-				vd21 = std::move(r24);
-				vd21_done = true;
+				zv::Val r25;
+				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r25.raw()))) return false;
+				vd22 = std::move(r25);
+				vd22_done = true;
 			}
 			break;
 			case 4: {
-				zv::Val r25;
-				if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r25.raw()))) return false;
-				vd21 = std::move(r25);
-				vd21_done = true;
+				zv::Val r26;
+				if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r26.raw()))) return false;
+				vd22 = std::move(r26);
+				vd22_done = true;
 			}
 			break;
 			case 5: {
-				zv::Val r26;
-				if (UNEXPECTED(!pgen::UnionTypeMethodReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r26.raw()))) return false;
-				vd21 = std::move(r26);
-				vd21_done = true;
+				zv::Val r27;
+				if (UNEXPECTED(!pgen::UnionTypeMethodReflection::m_getDocComment(Z_OBJ_P(p_methodReflection), r27.raw()))) return false;
+				vd22 = std::move(r27);
+				vd22_done = true;
 			}
 			break;
 			default:
 			break;
 		}
-		if (!vd21_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_25, p_methodReflection, "getDocComment", "getdoccomment", 13, 0, NULL, vd21.raw()))) return false;
+		if (!vd22_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_25, p_methodReflection, "getDocComment", "getdoccomment", 13, 0, NULL, vd22.raw()))) return false;
 		}
-		l_methodDocComment = std::move(vd21);
+		l_methodDocComment = std::move(vd22);
 	}
 	 {
 		if (Z_TYPE_P(l_methodDocComment.raw()) == IS_NULL) {
@@ -575,10 +582,10 @@ namespace pgen::ApiStaticCallRule {
 		}
 	}
 	 {
-		zv::Val o27 = zv::Val::copyOf(zv::Ref(l_methodDocComment.raw()));
-		zv::Val r28;
-		if (UNEXPECTED(!pgrt::strMatch(pg_site_26, "str_contains", 12, pgrt::StrMatch::CONTAINS, o27.raw(), &pg_lit[4], r28.raw()))) return false;
-		*ret = (Z_TYPE_P(r28.raw()) == IS_TRUE);
+		zv::Val o28 = zv::Val::copyOf(zv::Ref(l_methodDocComment.raw()));
+		zv::Val r29;
+		if (UNEXPECTED(!pgrt::strMatch(pg_site_26, "str_contains", 12, pgrt::StrMatch::CONTAINS, o28.raw(), &pg_lit[4], r29.raw()))) return false;
+		*ret = (Z_TYPE_P(r29.raw()) == IS_TRUE);
 		return true;
 	}
 }

@@ -107,16 +107,21 @@ namespace pgen::CallToConstructorStatementWithoutImpurePointsRule {
 								}
 							}
 							 {
-								zval av21[1];
-								ZVAL_COPY_VALUE(&av21[0], l_class.raw());
-								zv::Val r22;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_constructor_statement_without_impure_points_rule, 1, av21, r22.raw(), NULL))) return false;
+								zval *sa22 = zv::Ref(l_class.raw()).deref().raw();
+								zv::Val r21;
+								if (EXPECTED(Z_TYPE_P(sa22) == IS_STRING)) {
+									r21 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa22)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_constructor_statement_without_impure_points_rule, 1, sa22, r21.raw()))) return false;
+								}
+								}
 								zv::Val o23 = zv::Val::copyOf(zv::Ref(l_class.raw()));
 								zv::Val o24 = zv::Val::copyOf(zv::Ref(o23.raw()));
 								zval *w25 = zv::Ref(l_classesWithConstructors.raw()).deref().raw();
 								if (Z_TYPE_P(w25) <= IS_NULL) { zval_ptr_dtor(w25); array_init(w25); } else if (UNEXPECTED(Z_TYPE_P(w25) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 								SEPARATE_ARRAY(w25);
-								zval *e26 = pgrt::dimWrite(w25, r22.raw());
+								zval *e26 = pgrt::dimWrite(w25, r21.raw());
 								if (UNEXPECTED(e26 == NULL)) return false;
 								zv::Ref(e26).assign(std::move(o24));
 							}
@@ -167,11 +172,16 @@ namespace pgen::CallToConstructorStatementWithoutImpurePointsRule {
 						l_line = zv::Val::copyOf(zv::Ref(zv::Ref(le40).deref().raw()));
 						 {
 							 {
-								zval av43[1];
-								ZVAL_COPY_VALUE(&av43[0], l_class.raw());
-								zv::Val r44;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_constructor_statement_without_impure_points_rule, 1, av43, r44.raw(), NULL))) return false;
-								l_lowerClass = std::move(r44);
+								zval *sa44 = zv::Ref(l_class.raw()).deref().raw();
+								zv::Val r43;
+								if (EXPECTED(Z_TYPE_P(sa44) == IS_STRING)) {
+									r43 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa44)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_constructor_statement_without_impure_points_rule, 1, sa44, r43.raw()))) return false;
+								}
+								}
+								l_lowerClass = std::move(r43);
 							}
 							 {
 								zv::Val o45 = zv::Val::copyOf(zv::Ref(l_lowerClass.raw()));

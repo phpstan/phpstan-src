@@ -281,11 +281,16 @@ namespace pgen::FileHelper {
 				l_path = zv::Val::copyOf(zv::Ref(zv::Ref(le31).deref().raw()));
 			}
 			 {
-				zval av32[1];
-				ZVAL_COPY_VALUE(&av32[0], l_scheme.raw());
-				zv::Val r33;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "strtolower", 10, pt_ce_file_helper, 1, av32, r33.raw(), NULL))) return false;
-				l_scheme = std::move(r33);
+				zval *sa33 = zv::Ref(l_scheme.raw()).deref().raw();
+				zv::Val r32;
+				if (EXPECTED(Z_TYPE_P(sa33) == IS_STRING)) {
+					r32 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa33)));
+				} else {
+				 {
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "strtolower", 10, pt_ce_file_helper, 1, sa33, r32.raw()))) return false;
+				}
+				}
+				l_scheme = std::move(r32);
 			}
 		} else {
 		 {

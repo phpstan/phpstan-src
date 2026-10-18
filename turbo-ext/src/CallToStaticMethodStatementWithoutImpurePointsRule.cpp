@@ -123,29 +123,39 @@ namespace pgen::CallToStaticMethodStatementWithoutImpurePointsRule {
 								}
 							}
 							 {
-								zval av23[1];
-								ZVAL_COPY_VALUE(&av23[0], l_methodName.raw());
-								zv::Val r24;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_static_method_statement_without_impure_points_rule, 1, av23, r24.raw(), NULL))) return false;
+								zval *sa24 = zv::Ref(l_methodName.raw()).deref().raw();
+								zv::Val r23;
+								if (EXPECTED(Z_TYPE_P(sa24) == IS_STRING)) {
+									r23 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa24)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_static_method_statement_without_impure_points_rule, 1, sa24, r23.raw()))) return false;
+								}
+								}
 								zv::Val cat25;
 								if (UNEXPECTED(!pgrt::concat(l_classDisplayName.raw(), &pg_lit[2], cat25.raw()))) return false;
 								zv::Val cat26;
 								if (UNEXPECTED(!pgrt::concat(cat25.raw(), l_methodName.raw(), cat26.raw()))) return false;
 								zv::Val o27 = zv::Val::copyOf(zv::Ref(cat26.raw()));
-								zval av29[1];
-								ZVAL_COPY_VALUE(&av29[0], l_className.raw());
-								zv::Val r30;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_static_method_statement_without_impure_points_rule, 1, av29, r30.raw(), NULL))) return false;
+								zval *sa30 = zv::Ref(l_className.raw()).deref().raw();
+								zv::Val r29;
+								if (EXPECTED(Z_TYPE_P(sa30) == IS_STRING)) {
+									r29 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa30)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_static_method_statement_without_impure_points_rule, 1, sa30, r29.raw()))) return false;
+								}
+								}
 								zval *w31 = zv::Ref(l_methods.raw()).deref().raw();
 								if (Z_TYPE_P(w31) <= IS_NULL) { zval_ptr_dtor(w31); array_init(w31); } else if (UNEXPECTED(Z_TYPE_P(w31) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 								SEPARATE_ARRAY(w31);
 								zval *w28;
-								w28 = pgrt::dimWrite(w31, r30.raw());
+								w28 = pgrt::dimWrite(w31, r29.raw());
 								if (UNEXPECTED(w28 == NULL)) return false;
 								ZVAL_DEREF(w28);
 								if (Z_TYPE_P(w28) <= IS_NULL) { zval_ptr_dtor(w28); array_init(w28); } else if (UNEXPECTED(Z_TYPE_P(w28) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 								SEPARATE_ARRAY(w28);
-								zval *e32 = pgrt::dimWrite(w28, r24.raw());
+								zval *e32 = pgrt::dimWrite(w28, r23.raw());
 								if (UNEXPECTED(e32 == NULL)) return false;
 								zv::Ref(e32).assign(std::move(o27));
 							}
@@ -201,11 +211,16 @@ namespace pgen::CallToStaticMethodStatementWithoutImpurePointsRule {
 						l_line = zv::Val::copyOf(zv::Ref(zv::Ref(le47).deref().raw()));
 						 {
 							 {
-								zval av50[1];
-								ZVAL_COPY_VALUE(&av50[0], l_className.raw());
-								zv::Val r51;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_static_method_statement_without_impure_points_rule, 1, av50, r51.raw(), NULL))) return false;
-								l_lowerClassName = std::move(r51);
+								zval *sa51 = zv::Ref(l_className.raw()).deref().raw();
+								zv::Val r50;
+								if (EXPECTED(Z_TYPE_P(sa51) == IS_STRING)) {
+									r50 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa51)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_static_method_statement_without_impure_points_rule, 1, sa51, r50.raw()))) return false;
+								}
+								}
+								l_lowerClassName = std::move(r50);
 							}
 							 {
 								zv::Val o52 = zv::Val::copyOf(zv::Ref(l_lowerClassName.raw()));
@@ -214,11 +229,16 @@ namespace pgen::CallToStaticMethodStatementWithoutImpurePointsRule {
 								}
 							}
 							 {
-								zval av53[1];
-								ZVAL_COPY_VALUE(&av53[0], l_method.raw());
-								zv::Val r54;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_static_method_statement_without_impure_points_rule, 1, av53, r54.raw(), NULL))) return false;
-								l_lowerMethod = std::move(r54);
+								zval *sa54 = zv::Ref(l_method.raw()).deref().raw();
+								zv::Val r53;
+								if (EXPECTED(Z_TYPE_P(sa54) == IS_STRING)) {
+									r53 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa54)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "strtolower", 10, pt_ce_call_to_static_method_statement_without_impure_points_rule, 1, sa54, r53.raw()))) return false;
+								}
+								}
+								l_lowerMethod = std::move(r53);
 							}
 							 {
 								zv::Val et56;

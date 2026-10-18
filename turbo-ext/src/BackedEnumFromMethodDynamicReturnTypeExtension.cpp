@@ -373,72 +373,79 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 								l_enumCaseValues = std::move(r52);
 							}
 							 {
-								zval av53[1];
-								ZVAL_COPY_VALUE(&av53[0], l_enumCaseValues.raw());
-								zv::Val r54;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_19, "count", 5, pt_ce_backed_enum_from_method_dynamic_return_type_extension, 1, av53, r54.raw()))) return false;
-								if (!(Z_LVAL_P(r54.raw()) == 1)) {
+								zval *ca53 = zv::Ref(l_enumCaseValues.raw()).deref().raw();
+								zend_long cn54;
+								if (EXPECTED(Z_TYPE_P(ca53) == IS_ARRAY)) {
+									cn54 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca53));
+								} else {
+								 {
+									zv::Val r55;
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_19, "count", 5, pt_ce_backed_enum_from_method_dynamic_return_type_extension, 1, ca53, r55.raw()))) return false;
+									cn54 = Z_LVAL_P(r55.raw());
+								}
+								}
+								if (!(cn54 == 1)) {
 									goto cont47;
 								}
 							}
 							 {
-								zv::Val et56;
-								zval *e55 = Z_TYPE_P(l_enumCaseValues.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_enumCaseValues.raw()), 0) : NULL;
-								if (UNEXPECTED(e55 == NULL)) {
-									zval z57;
-									ZVAL_LONG(&z57, 0);
-									e55 = pgrt::dimRead(l_enumCaseValues.raw(), &z57, et56.raw());
-									if (UNEXPECTED(e55 == NULL)) return false;
+								zv::Val et57;
+								zval *e56 = Z_TYPE_P(l_enumCaseValues.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_enumCaseValues.raw()), 0) : NULL;
+								if (UNEXPECTED(e56 == NULL)) {
+									zval z58;
+									ZVAL_LONG(&z58, 0);
+									e56 = pgrt::dimRead(l_enumCaseValues.raw(), &z58, et57.raw());
+									if (UNEXPECTED(e56 == NULL)) return false;
 								}
-								if (zend_is_identical(l_value, zv::Ref(e55).deref().raw())) {
+								if (zend_is_identical(l_value, zv::Ref(e56).deref().raw())) {
 									 {
-										zval *gs59 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_20, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getdeclaringenum", 16, "declaringEnum", 13) : NULL;
-										zv::Val r60;
-										if (EXPECTED(gs59 != NULL)) {
-											ZVAL_COPY(r60.raw(), gs59);
-										} else {
-										 {
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_enumCase, "getDeclaringEnum", "getdeclaringenum", 16, r60.raw()))) return false;
-										}
-										}
+										zval *gs60 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_20, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getdeclaringenum", 16, "declaringEnum", 13) : NULL;
 										zv::Val r61;
-										if (EXPECTED(Z_TYPE_P(r60.raw()) == IS_OBJECT)) {
-											r61 = pt_type_op(Z_OBJ_P(r60.raw()), PT_OP_GET_NAME, 0, NULL);
-											if (UNEXPECTED(r61.isUndef())) return false;
+										if (EXPECTED(gs60 != NULL)) {
+											ZVAL_COPY(r61.raw(), gs60);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, r60.raw(), "getName", "getname", 7, r61.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_enumCase, "getDeclaringEnum", "getdeclaringenum", 16, r61.raw()))) return false;
 										}
 										}
 										zv::Val r62;
-										if (EXPECTED(Z_TYPE_P(l_enumCase) == IS_OBJECT)) {
-											r62 = pt_type_op(Z_OBJ_P(l_enumCase), PT_OP_GET_NAME, 0, NULL);
+										if (EXPECTED(Z_TYPE_P(r61.raw()) == IS_OBJECT)) {
+											r62 = pt_type_op(Z_OBJ_P(r61.raw()), PT_OP_GET_NAME, 0, NULL);
 											if (UNEXPECTED(r62.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_enumCase, "getName", "getname", 7, r62.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, r61.raw(), "getName", "getname", 7, r62.raw()))) return false;
 										}
 										}
-										zval *gs63 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_24, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getdeclaringenum", 16, "declaringEnum", 13) : NULL;
-										zv::Val r64;
-										if (EXPECTED(gs63 != NULL)) {
-											ZVAL_COPY(r64.raw(), gs63);
+										zv::Val r63;
+										if (EXPECTED(Z_TYPE_P(l_enumCase) == IS_OBJECT)) {
+											r63 = pt_type_op(Z_OBJ_P(l_enumCase), PT_OP_GET_NAME, 0, NULL);
+											if (UNEXPECTED(r63.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_enumCase, "getDeclaringEnum", "getdeclaringenum", 16, r64.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_enumCase, "getName", "getname", 7, r63.raw()))) return false;
 										}
 										}
-										zval av65[3];
-										ZVAL_COPY_VALUE(&av65[0], r61.raw());
-										ZVAL_COPY_VALUE(&av65[1], r62.raw());
-										ZVAL_COPY_VALUE(&av65[2], r64.raw());
-										zv::Val n58;
-										if (UNEXPECTED(!pgrt::newObject(pt_ce_enum_case_object_type, 3, av65, n58.raw(), NULL))) return false;
-										zv::Val o66 = zv::Val::copyOf(zv::Ref(n58.raw()));
-										zval *w67 = zv::Ref(l_resultEnumCases.raw()).deref().raw();
-										if (Z_TYPE_P(w67) <= IS_NULL) { zval_ptr_dtor(w67); array_init(w67); } else if (UNEXPECTED(Z_TYPE_P(w67) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-										SEPARATE_ARRAY(w67);
-										{ zval v = o66.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w67), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+										zval *gs64 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_24, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getdeclaringenum", 16, "declaringEnum", 13) : NULL;
+										zv::Val r65;
+										if (EXPECTED(gs64 != NULL)) {
+											ZVAL_COPY(r65.raw(), gs64);
+										} else {
+										 {
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_enumCase, "getDeclaringEnum", "getdeclaringenum", 16, r65.raw()))) return false;
+										}
+										}
+										zval av66[3];
+										ZVAL_COPY_VALUE(&av66[0], r62.raw());
+										ZVAL_COPY_VALUE(&av66[1], r63.raw());
+										ZVAL_COPY_VALUE(&av66[2], r65.raw());
+										zv::Val n59;
+										if (UNEXPECTED(!pgrt::newObject(pt_ce_enum_case_object_type, 3, av66, n59.raw(), NULL))) return false;
+										zv::Val o67 = zv::Val::copyOf(zv::Ref(n59.raw()));
+										zval *w68 = zv::Ref(l_resultEnumCases.raw()).deref().raw();
+										if (Z_TYPE_P(w68) <= IS_NULL) { zval_ptr_dtor(w68); array_init(w68); } else if (UNEXPECTED(Z_TYPE_P(w68) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+										SEPARATE_ARRAY(w68);
+										{ zval v = o67.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w68), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 									}
 									 {
 										l_hasMatching = true;
@@ -468,66 +475,66 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_resultEnumCases.raw())) == 0) {
 			 {
-				zv::Val r68;
+				zv::Val r69;
 				if (EXPECTED(Z_TYPE_P(p_methodReflection) == IS_OBJECT)) {
-					r68 = pt_type_op(Z_OBJ_P(p_methodReflection), PT_OP_GET_NAME, 0, NULL);
-					if (UNEXPECTED(r68.isUndef())) return false;
+					r69 = pt_type_op(Z_OBJ_P(p_methodReflection), PT_OP_GET_NAME, 0, NULL);
+					if (UNEXPECTED(r69.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, p_methodReflection, "getName", "getname", 7, r68.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, p_methodReflection, "getName", "getname", 7, r69.raw()))) return false;
 				}
 				}
-				if (zend_is_identical(r68.raw(), &pg_lit[2])) {
+				if (zend_is_identical(r69.raw(), &pg_lit[2])) {
 					 {
-						zv::Val n69;
-						if (UNEXPECTED(!pt_null_type_new(n69.raw()))) return false;
-						*ret = n69.take();
+						zv::Val n70;
+						if (UNEXPECTED(!pt_null_type_new(n70.raw()))) return false;
+						*ret = n70.take();
 						return true;
 					}
 				}
 			}
 			 {
-				zval z70;
-				ZVAL_NULL(&z70);
-				ZVAL_COPY_VALUE(ret, &z70);
+				zval z71;
+				ZVAL_NULL(&z71);
+				ZVAL_COPY_VALUE(ret, &z71);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val o72 = zv::Val::copyOf(zv::Ref(l_resultEnumCases.raw()));
-		pgrt::ArgVec vec71;
-		if (UNEXPECTED(Z_TYPE_P(o72.raw()) != IS_ARRAY)) { zend_type_error("Only arrays and Traversables can be unpacked, %s given", zend_zval_value_name(o72.raw())); return false; }
-		vec71.spread(o72.raw());
-		zv::Val r73;
+		zv::Val o73 = zv::Val::copyOf(zv::Ref(l_resultEnumCases.raw()));
+		pgrt::ArgVec vec72;
+		if (UNEXPECTED(Z_TYPE_P(o73.raw()) != IS_ARRAY)) { zend_type_error("Only arrays and Traversables can be unpacked, %s given", zend_zval_value_name(o73.raw())); return false; }
+		vec72.spread(o73.raw());
+		zv::Val r74;
 		 {
-			r73 = pt_type_combinator_union(vec71.size(), vec71.argv());
-			if (UNEXPECTED(r73.isUndef())) return false;
+			r74 = pt_type_combinator_union(vec72.size(), vec72.argv());
+			if (UNEXPECTED(r74.isUndef())) return false;
 		}
-		l_result = std::move(r73);
+		l_result = std::move(r74);
 	}
 	 {
-		bool b74 = l_addNull;
-		if (b74) {
-			zv::Val r75;
+		bool b75 = l_addNull;
+		if (b75) {
+			zv::Val r76;
 			if (EXPECTED(Z_TYPE_P(p_methodReflection) == IS_OBJECT)) {
-				r75 = pt_type_op(Z_OBJ_P(p_methodReflection), PT_OP_GET_NAME, 0, NULL);
-				if (UNEXPECTED(r75.isUndef())) return false;
+				r76 = pt_type_op(Z_OBJ_P(p_methodReflection), PT_OP_GET_NAME, 0, NULL);
+				if (UNEXPECTED(r76.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, p_methodReflection, "getName", "getname", 7, r75.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, p_methodReflection, "getName", "getname", 7, r76.raw()))) return false;
 			}
 			}
-			b74 = zend_is_identical(r75.raw(), &pg_lit[2]);
+			b75 = zend_is_identical(r76.raw(), &pg_lit[2]);
 		}
-		if (b74) {
+		if (b75) {
 			 {
-				zv::Val r76;
+				zv::Val r77;
 				 {
-					r76 = pt_type_combinator_add_null(l_result.raw());
-					if (UNEXPECTED(r76.isUndef())) return false;
+					r77 = pt_type_combinator_add_null(l_result.raw());
+					if (UNEXPECTED(r77.isUndef())) return false;
 				}
-				*ret = r76.take();
+				*ret = r77.take();
 				return true;
 			}
 		}

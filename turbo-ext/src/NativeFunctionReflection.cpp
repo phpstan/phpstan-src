@@ -518,11 +518,16 @@ namespace pgen::NativeFunctionReflection {
 						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_attrib, "getName", "getname", 7, r9.raw()))) return false;
 					}
 					}
-					zval av10[1];
-					ZVAL_COPY_VALUE(&av10[0], r9.raw());
-					zv::Val r11;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "strtolower", 10, pt_ce_native_function_reflection, 1, av10, r11.raw(), NULL))) return false;
-					if (zend_is_identical(r11.raw(), &pg_lit[0])) {
+					zval *sa11 = zv::Ref(r9.raw()).deref().raw();
+					zv::Val r10;
+					if (EXPECTED(Z_TYPE_P(sa11) == IS_STRING)) {
+						r10 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa11)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "strtolower", 10, pt_ce_native_function_reflection, 1, sa11, r10.raw()))) return false;
+					}
+					}
+					if (zend_is_identical(r10.raw(), &pg_lit[0])) {
 						 {
 							zv::Val r12;
 							if (UNEXPECTED(!pgen::TrinaryLogic::m_createYes(r12.raw()))) return false;

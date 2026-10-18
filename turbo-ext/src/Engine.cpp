@@ -419,13 +419,44 @@ zval *pt_property_cached_resolve(pt_property_site &site, zend_object *object, co
 	return OBJ_PROP(object, site.offset);
 }
 
+#ifdef PGRT_COUNT
+void pgrtCountHit(const char *kind, const char *cls, const char *name);
+#endif
+
+bool pt_trivial_answer(const pt_trivial_shape &shape, zend_object *object, zval *ret)
+{
+	if (shape.kind == PT_TRIVIAL_CONST) {
+		ZVAL_COPY(ret, &shape.constant);
+		return true;
+	}
+	if (shape.kind == PT_TRIVIAL_PROP) {
+		zval *slot = OBJ_PROP(object, shape.offset);
+		ZVAL_DEREF(slot);
+		if (EXPECTED(Z_TYPE_P(slot) != IS_UNDEF)) {
+			ZVAL_COPY(ret, slot);
+			return true;
+		}
+	}
+	return false;
+}
+
 zv::Val pt_call_method_cached(pt_method_site &site, zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
 {
 	if (UNEXPECTED(site.ce != object->ce || site.generation != pt_engine_generation || site.fn == NULL)) {
 		zend_function *fn = pt_find_method(object->ce, lcname, len);
 		if (UNEXPECTED(fn == NULL)) return zv::Val();
-		site = { object->ce, fn, pt_engine_generation };
+		site = { object->ce, fn, pt_engine_generation, {} };
+		pt_abi.trivial_shape(fn, &site.shape);
 	}
+	if (argc == 0 && site.shape.kind != PT_TRIVIAL_NONE) {
+		zval answer;
+		if (pt_trivial_answer(site.shape, object, &answer)) {
+			return zv::Val::adopt(answer);
+		}
+	}
+#ifdef PGRT_COUNT
+	pgrtCountHit(site.fn->type == ZEND_USER_FUNCTION ? "Hu" : "Hi", ZSTR_VAL(object->ce->name), lcname);
+#endif
 	return callKnown(site.fn, object, argc, argv);
 }
 
@@ -448,7 +479,7 @@ zv::Val pt_call_static_cached(pt_method_site &site, int classIdx, const char *lc
 	if (UNEXPECTED(site.ce != ce || site.generation != pt_engine_generation || site.fn == NULL)) {
 		zend_function *fn = pt_find_method(ce, lcname, len);
 		if (UNEXPECTED(fn == NULL)) return zv::Val();
-		site = { ce, fn, pt_engine_generation };
+		site = { ce, fn, pt_engine_generation, {} };
 	}
 	zval ret;
 	zend_call_known_function(site.fn, NULL, ce, &ret, argc, argv, NULL);

@@ -94,11 +94,16 @@ namespace pgen::CompactVariablesRule {
 		}
 		zv::Val r6;
 		if (UNEXPECTED(!pgrt::nameToString(pg_site_3, zv::Ref(p4).deref().raw(), r6.raw()))) return false;
-		zval av7[1];
-		ZVAL_COPY_VALUE(&av7[0], r6.raw());
-		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "strtolower", 10, pt_ce_compact_variables_rule, 1, av7, r8.raw(), NULL))) return false;
-		l_functionName = std::move(r8);
+		zval *sa8 = zv::Ref(r6.raw()).deref().raw();
+		zv::Val r7;
+		if (EXPECTED(Z_TYPE_P(sa8) == IS_STRING)) {
+			r7 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa8)));
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "strtolower", 10, pt_ce_compact_variables_rule, 1, sa8, r7.raw()))) return false;
+		}
+		}
+		l_functionName = std::move(r7);
 	}
 	 {
 		if (!zend_is_identical(l_functionName.raw(), &pg_lit[1])) {

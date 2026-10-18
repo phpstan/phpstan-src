@@ -75,62 +75,69 @@ namespace pgen::EnumTemplateTypeRule {
 	 {
 		zv::Val r5;
 		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_classReflection.raw(), "getTemplateTags", "gettemplatetags", 15, r5.raw()))) return false;
-		zval av6[1];
-		ZVAL_COPY_VALUE(&av6[0], r5.raw());
-		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "count", 5, pt_ce_enum_template_type_rule, 1, av6, r7.raw()))) return false;
-		l_templateTagsCount = Z_LVAL_P(r7.raw());
+		zval *ca6 = zv::Ref(r5.raw()).deref().raw();
+		zend_long cn7;
+		if (EXPECTED(Z_TYPE_P(ca6) == IS_ARRAY)) {
+			cn7 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca6));
+		} else {
+		 {
+			zv::Val r8;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "count", 5, pt_ce_enum_template_type_rule, 1, ca6, r8.raw()))) return false;
+			cn7 = Z_LVAL_P(r8.raw());
+		}
+		}
+		l_templateTagsCount = cn7;
 	}
 	 {
 		if (l_templateTagsCount == 0) {
 			 {
-				zval arr8_raw;
-				ZVAL_EMPTY_ARRAY(&arr8_raw);
-				ZVAL_COPY(ret, &arr8_raw);
+				zval arr9_raw;
+				ZVAL_EMPTY_ARRAY(&arr9_raw);
+				ZVAL_COPY(ret, &arr9_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val r9;
+		zv::Val r10;
 		if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT && Z_OBJCE_P(l_classReflection.raw()) == pt_ce_class_reflection)) {
-			r9 = pt_class_reflection_get_display_name(Z_OBJ_P(l_classReflection.raw()));
-			if (UNEXPECTED(r9.isUndef())) return false;
+			r10 = pt_class_reflection_get_display_name(Z_OBJ_P(l_classReflection.raw()));
+			if (UNEXPECTED(r10.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r9.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r10.raw()))) return false;
 		}
 		}
-		l_className = std::move(r9);
+		l_className = std::move(r10);
 	}
 	 {
-		zv::Val arr10 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val o11 = zv::Val::copyOf(zv::Ref(l_className.raw()));
-		zv::Val q12;
+		zv::Val arr11 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zv::Val o12 = zv::Val::copyOf(zv::Ref(l_className.raw()));
+		zv::Val q13;
 		if (l_templateTagsCount == 1) {
-			zv::Val o13 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
-			q12 = std::move(o13);
+			zv::Val o14 = zv::Val::copyOf(zv::Ref(&pg_lit[1]));
+			q13 = std::move(o14);
 		} else {
 		 {
-			zv::Val o14 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
-			q12 = std::move(o14);
+			zv::Val o15 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
+			q13 = std::move(o15);
 		}
 		}
-		pgrt::StringBuilder sb15;
-		sb15.appendLiteral("Enum ", 5);
-		if (UNEXPECTED(!sb15.append(o11.raw()))) return false;
-		sb15.appendLiteral(" has PHPDoc @template tag", 25);
-		if (UNEXPECTED(!sb15.append(q12.raw()))) return false;
-		sb15.appendLiteral(" but enums cannot be generic.", 29);
-		zv::Val r16 = sb15.finish();
-		zv::Val r17;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r16.raw(), r17.raw()))) return false;
+		pgrt::StringBuilder sb16;
+		sb16.appendLiteral("Enum ", 5);
+		if (UNEXPECTED(!sb16.append(o12.raw()))) return false;
+		sb16.appendLiteral(" has PHPDoc @template tag", 25);
+		if (UNEXPECTED(!sb16.append(q13.raw()))) return false;
+		sb16.appendLiteral(" but enums cannot be generic.", 29);
+		zv::Val r17 = sb16.finish();
 		zv::Val r18;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r17.raw()), &pg_lit[3], r18.raw()))) return false;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r17.raw(), r18.raw()))) return false;
 		zv::Val r19;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r18.raw()), r19.raw()))) return false;
-		{ zval v = r19.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr10.raw()), &v); }
-		*ret = arr10.take();
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r18.raw()), &pg_lit[3], r19.raw()))) return false;
+		zv::Val r20;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r19.raw()), r20.raw()))) return false;
+		{ zval v = r20.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr11.raw()), &v); }
+		*ret = arr11.take();
 		return true;
 	}
 }

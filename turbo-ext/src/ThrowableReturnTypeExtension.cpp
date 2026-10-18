@@ -174,11 +174,16 @@ namespace pgen::ThrowableReturnTypeExtension {
 								l_methodTag = zv::Ref(v24).deref().raw();
 								 {
 									 {
-										zval av30[1];
-										ZVAL_COPY_VALUE(&av30[0], l_methodName.raw());
-										zv::Val r31;
-										if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_throwable_return_type_extension, 1, av30, r31.raw(), NULL))) return false;
-										if (!zend_is_identical(r31.raw(), &pg_lit[3])) {
+										zval *sa31 = zv::Ref(l_methodName.raw()).deref().raw();
+										zv::Val r30;
+										if (EXPECTED(Z_TYPE_P(sa31) == IS_STRING)) {
+											r30 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa31)));
+										} else {
+										 {
+											if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_throwable_return_type_extension, 1, sa31, r30.raw()))) return false;
+										}
+										}
+										if (!zend_is_identical(r30.raw(), &pg_lit[3])) {
 											goto cont29;
 										}
 									}
@@ -241,12 +246,17 @@ namespace pgen::ThrowableReturnTypeExtension {
 					}
 				}
 				 {
-					zval av45[1];
-					ZVAL_COPY_VALUE(&av45[0], l_class);
-					zv::Val r46;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_throwable_return_type_extension, 1, av45, r46.raw(), NULL))) return false;
+					zval *sa46 = zv::Ref(l_class).deref().raw();
+					zv::Val r45;
+					if (EXPECTED(Z_TYPE_P(sa46) == IS_STRING)) {
+						r45 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa46)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "strtolower", 10, pt_ce_throwable_return_type_extension, 1, sa46, r45.raw()))) return false;
+					}
+					}
 					bool ia47 = false;
-					if (Z_TYPE_P(r46.raw()) == IS_STRING) ia47 = zend_string_equals(Z_STR_P(r46.raw()), Z_STR_P(&pg_lit[4])) || zend_string_equals(Z_STR_P(r46.raw()), Z_STR_P(&pg_lit[5])) || zend_string_equals(Z_STR_P(r46.raw()), Z_STR_P(&pg_lit[6]));
+					if (Z_TYPE_P(r45.raw()) == IS_STRING) ia47 = zend_string_equals(Z_STR_P(r45.raw()), Z_STR_P(&pg_lit[4])) || zend_string_equals(Z_STR_P(r45.raw()), Z_STR_P(&pg_lit[5])) || zend_string_equals(Z_STR_P(r45.raw()), Z_STR_P(&pg_lit[6]));
 					if (ia47) {
 						 {
 							zv::Val arr49 = zv::Val::adopt([]() { zval a; array_init_size(&a, 2); return a; }());

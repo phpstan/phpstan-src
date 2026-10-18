@@ -210,11 +210,16 @@ namespace pgen::MissingMagicSerializationMethodsRule {
 						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_method, "getName", "getname", 7, r26.raw()))) return false;
 					}
 					}
-					zval av27[1];
-					ZVAL_COPY_VALUE(&av27[0], r26.raw());
-					zv::Val r28;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "strtolower", 10, pt_ce_missing_magic_serialization_methods_rule, 1, av27, r28.raw(), NULL))) return false;
-					if (zend_is_identical(r28.raw(), &pg_lit[2])) {
+					zval *sa28 = zv::Ref(r26.raw()).deref().raw();
+					zv::Val r27;
+					if (EXPECTED(Z_TYPE_P(sa28) == IS_STRING)) {
+						r27 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa28)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "strtolower", 10, pt_ce_missing_magic_serialization_methods_rule, 1, sa28, r27.raw()))) return false;
+					}
+					}
+					if (zend_is_identical(r27.raw(), &pg_lit[2])) {
 						 {
 							l_missingMagicSerialize = false;
 						}
@@ -230,11 +235,16 @@ namespace pgen::MissingMagicSerializationMethodsRule {
 						if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_method, "getName", "getname", 7, r29.raw()))) return false;
 					}
 					}
-					zval av30[1];
-					ZVAL_COPY_VALUE(&av30[0], r29.raw());
-					zv::Val r31;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "strtolower", 10, pt_ce_missing_magic_serialization_methods_rule, 1, av30, r31.raw(), NULL))) return false;
-					if (!zend_is_identical(r31.raw(), &pg_lit[3])) {
+					zval *sa31 = zv::Ref(r29.raw()).deref().raw();
+					zv::Val r30;
+					if (EXPECTED(Z_TYPE_P(sa31) == IS_STRING)) {
+						r30 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa31)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "strtolower", 10, pt_ce_missing_magic_serialization_methods_rule, 1, sa31, r30.raw()))) return false;
+					}
+					}
+					if (!zend_is_identical(r30.raw(), &pg_lit[3])) {
 						goto cont25;
 					}
 				}

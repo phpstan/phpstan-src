@@ -56,35 +56,42 @@ namespace pgen::RequireImplementsDefinitionClassRule {
 		l_implementsTags = std::move(r2);
 	}
 	 {
-		zval av3[1];
-		ZVAL_COPY_VALUE(&av3[0], l_implementsTags.raw());
-		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "count", 5, pt_ce_require_implements_definition_class_rule, 1, av3, r4.raw()))) return false;
-		if (Z_LVAL_P(r4.raw()) == 0) {
+		zval *ca3 = zv::Ref(l_implementsTags.raw()).deref().raw();
+		zend_long cn4;
+		if (EXPECTED(Z_TYPE_P(ca3) == IS_ARRAY)) {
+			cn4 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca3));
+		} else {
+		 {
+			zv::Val r5;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "count", 5, pt_ce_require_implements_definition_class_rule, 1, ca3, r5.raw()))) return false;
+			cn4 = Z_LVAL_P(r5.raw());
+		}
+		}
+		if (cn4 == 0) {
 			 {
-				zval arr5_raw;
-				ZVAL_EMPTY_ARRAY(&arr5_raw);
-				ZVAL_COPY(ret, &arr5_raw);
+				zval arr6_raw;
+				ZVAL_EMPTY_ARRAY(&arr6_raw);
+				ZVAL_COPY(ret, &arr6_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val arr6 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val r7;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r7.raw()))) return false;
+		zv::Val arr7 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r8.raw()))) return false;
-		pgrt::StringBuilder sb9;
-		sb9.appendLiteral("requireImplements.on", 20);
-		if (UNEXPECTED(!sb9.append(r8.raw()))) return false;
-		zv::Val r10 = sb9.finish();
-		zv::Val r11;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r7.raw()), r10.raw(), r11.raw()))) return false;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r8.raw()))) return false;
+		zv::Val r9;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r9.raw()))) return false;
+		pgrt::StringBuilder sb10;
+		sb10.appendLiteral("requireImplements.on", 20);
+		if (UNEXPECTED(!sb10.append(r9.raw()))) return false;
+		zv::Val r11 = sb10.finish();
 		zv::Val r12;
-		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r11.raw()), r12.raw()))) return false;
-		{ zval v = r12.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr6.raw()), &v); }
-		*ret = arr6.take();
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r8.raw()), r11.raw(), r12.raw()))) return false;
+		zv::Val r13;
+		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r12.raw()), r13.raw()))) return false;
+		{ zval v = r13.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr7.raw()), &v); }
+		*ret = arr7.take();
 		return true;
 	}
 }

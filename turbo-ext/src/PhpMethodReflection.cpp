@@ -880,11 +880,16 @@ namespace pgen::PhpMethodReflection {
 			l_aliasTraitTarget = zv::Ref(v17).deref().raw();
 			 {
 				 {
-					zval av23[1];
-					ZVAL_COPY_VALUE(&av23[0], l_methodAlias.raw());
-					zv::Val r24;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "strtolower", 10, pt_ce_php_method_reflection, 1, av23, r24.raw(), NULL))) return false;
-					if (zend_is_identical(p_lowercaseMethodName, r24.raw())) {
+					zval *sa24 = zv::Ref(l_methodAlias.raw()).deref().raw();
+					zv::Val r23;
+					if (EXPECTED(Z_TYPE_P(sa24) == IS_STRING)) {
+						r23 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa24)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "strtolower", 10, pt_ce_php_method_reflection, 1, sa24, r23.raw()))) return false;
+					}
+					}
+					if (zend_is_identical(p_lowercaseMethodName, r23.raw())) {
 						 {
 							if (UNEXPECTED(!(Z_TYPE_P(l_methodAlias.raw()) == IS_STRING || Z_TYPE_P(l_methodAlias.raw()) == IS_NULL))) { pgrt::throwReturnType("PHPStan\\Reflection\\Php\\PhpMethodReflection::getMethodNameWithCorrectCase", "?string", l_methodAlias.raw()); return false; }
 							ZVAL_COPY(ret, l_methodAlias.raw());
@@ -1963,11 +1968,16 @@ namespace pgen::PhpMethodReflection {
 						if (UNEXPECTED(!pgrt::callMethod0(pg_site_39, l_attrib, "getName", "getname", 7, r9.raw()))) return false;
 					}
 					}
-					zval av10[1];
-					ZVAL_COPY_VALUE(&av10[0], r9.raw());
-					zv::Val r11;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "strtolower", 10, pt_ce_php_method_reflection, 1, av10, r11.raw(), NULL))) return false;
-					if (zend_is_identical(r11.raw(), &pg_lit[10])) {
+					zval *sa11 = zv::Ref(r9.raw()).deref().raw();
+					zv::Val r10;
+					if (EXPECTED(Z_TYPE_P(sa11) == IS_STRING)) {
+						r10 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa11)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "strtolower", 10, pt_ce_php_method_reflection, 1, sa11, r10.raw()))) return false;
+					}
+					}
+					if (zend_is_identical(r10.raw(), &pg_lit[10])) {
 						 {
 							zv::Val r12;
 							if (UNEXPECTED(!pgen::TrinaryLogic::m_createYes(r12.raw()))) return false;

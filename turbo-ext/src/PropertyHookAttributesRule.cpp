@@ -137,11 +137,16 @@ namespace pgen::PropertyHookAttributesRule {
 								l_name = std::move(r23);
 							}
 							 {
-								zval av24[1];
-								ZVAL_COPY_VALUE(&av24[0], l_name.raw());
-								zv::Val r25;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "strtolower", 10, pt_ce_property_hook_attributes_rule, 1, av24, r25.raw(), NULL))) return false;
-								if (zend_is_identical(r25.raw(), &pg_lit[2])) {
+								zval *sa25 = zv::Ref(l_name.raw()).deref().raw();
+								zv::Val r24;
+								if (EXPECTED(Z_TYPE_P(sa25) == IS_STRING)) {
+									r24 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa25)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "strtolower", 10, pt_ce_property_hook_attributes_rule, 1, sa25, r24.raw()))) return false;
+								}
+								}
+								if (zend_is_identical(r24.raw(), &pg_lit[2])) {
 									 {
 										pgrt::StringBuilder sb26;
 										sb26.appendLiteral("Attribute class ", 16);

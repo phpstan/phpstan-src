@@ -111,23 +111,30 @@ namespace pgen::PropertyAttributesRule {
 				ZVAL_COPY_VALUE(&av9[0], &pg_lit[1]);
 				zv::Val r10;
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r8.raw(), "getAttributes", "getattributes", 13, 1, av9, r10.raw(), NULL))) return false;
-				zval av11[1];
-				ZVAL_COPY_VALUE(&av11[0], r10.raw());
-				zv::Val r12;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "count", 5, pt_ce_property_attributes_rule, 1, av11, r12.raw()))) return false;
-				if (Z_LVAL_P(r12.raw()) > 0) {
+				zval *ca11 = zv::Ref(r10.raw()).deref().raw();
+				zend_long cn12;
+				if (EXPECTED(Z_TYPE_P(ca11) == IS_ARRAY)) {
+					cn12 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca11));
+				} else {
+				 {
+					zv::Val r13;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "count", 5, pt_ce_property_attributes_rule, 1, ca11, r13.raw()))) return false;
+					cn12 = Z_LVAL_P(r13.raw());
+				}
+				}
+				if (cn12 > 0) {
 					 {
-						zv::Val arr13 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-						zv::Val r14;
-						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[2], r14.raw()))) return false;
+						zv::Val arr14 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
 						zv::Val r15;
-						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r14.raw()), &pg_lit[3], r15.raw()))) return false;
+						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[2], r15.raw()))) return false;
 						zv::Val r16;
-						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(r15.raw()), r16.raw()))) return false;
+						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r15.raw()), &pg_lit[3], r16.raw()))) return false;
 						zv::Val r17;
-						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r16.raw()), r17.raw()))) return false;
-						{ zval v = r17.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr13.raw()), &v); }
-						*ret = arr13.take();
+						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(r16.raw()), r17.raw()))) return false;
+						zv::Val r18;
+						if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r17.raw()), r18.raw()))) return false;
+						{ zval v = r18.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr14.raw()), &v); }
+						*ret = arr14.take();
 						return true;
 					}
 				}
@@ -135,48 +142,48 @@ namespace pgen::PropertyAttributesRule {
 		}
 	}
 	 {
-		zv::Val vd18;
-		zend_class_entry *vd18_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
-		bool vd18_done = false;
-		if (vd18_ce == pt_ce_class_property_node) {
-			bool r19;
-			if (UNEXPECTED(!pgen::ClassPropertyNode::m_isPromoted(Z_OBJ_P(p_node), &r19))) return false;
-			zv::Val o20 = zv::Val::boolean(r19);
-			vd18 = std::move(o20);
-			vd18_done = true;
+		zv::Val vd19;
+		zend_class_entry *vd19_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd19_done = false;
+		if (vd19_ce == pt_ce_class_property_node) {
+			bool r20;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_isPromoted(Z_OBJ_P(p_node), &r20))) return false;
+			zv::Val o21 = zv::Val::boolean(r20);
+			vd19 = std::move(o21);
+			vd19_done = true;
 		}
-		if (!vd18_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_node, "isPromoted", "ispromoted", 10, 0, NULL, vd18.raw()))) return false;
+		if (!vd19_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_node, "isPromoted", "ispromoted", 10, 0, NULL, vd19.raw()))) return false;
 		}
-		if (zend_is_true(vd18.raw())) {
+		if (zend_is_true(vd19.raw())) {
 			 {
-				zval arr21_raw;
-				ZVAL_EMPTY_ARRAY(&arr21_raw);
-				ZVAL_COPY(ret, &arr21_raw);
+				zval arr22_raw;
+				ZVAL_EMPTY_ARRAY(&arr22_raw);
+				ZVAL_COPY(ret, &arr22_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p22 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PropertyAttributesRule::slot::attributesCheck, "attributesCheck");
-		if (UNEXPECTED(p22 == NULL)) return false;
-		zv::Val o23 = zv::Val::copyOf(zv::Ref(p22));
-		zv::Val vd24;
-		zend_class_entry *vd24_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
-		bool vd24_done = false;
-		if (vd24_ce == pt_ce_class_property_node) {
-			zv::Val r25;
-			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getAttrGroups(Z_OBJ_P(p_node), r25.raw()))) return false;
-			vd24 = std::move(r25);
-			vd24_done = true;
+		zval *p23 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PropertyAttributesRule::slot::attributesCheck, "attributesCheck");
+		if (UNEXPECTED(p23 == NULL)) return false;
+		zv::Val o24 = zv::Val::copyOf(zv::Ref(p23));
+		zv::Val vd25;
+		zend_class_entry *vd25_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
+		bool vd25_done = false;
+		if (vd25_ce == pt_ce_class_property_node) {
+			zv::Val r26;
+			if (UNEXPECTED(!pgen::ClassPropertyNode::m_getAttrGroups(Z_OBJ_P(p_node), r26.raw()))) return false;
+			vd25 = std::move(r26);
+			vd25_done = true;
 		}
-		if (!vd24_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_node, "getAttrGroups", "getattrgroups", 13, 0, NULL, vd24.raw()))) return false;
+		if (!vd25_done) {
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_node, "getAttrGroups", "getattrgroups", 13, 0, NULL, vd25.raw()))) return false;
 		}
-		if (UNEXPECTED(!(Z_TYPE_P(vd24.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\AttributesCheck::check", 2, "attrGroups", "array", vd24.raw()); return false; }
-		zv::Val r26;
-		if (UNEXPECTED(!pgen::AttributesCheck::m_check(Z_OBJ_P(o23.raw()), p_scope, vd24.raw(), 8, &pg_lit[4], r26.raw()))) return false;
-		*ret = r26.take();
+		if (UNEXPECTED(!(Z_TYPE_P(vd25.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PHPStan\\Rules\\AttributesCheck::check", 2, "attrGroups", "array", vd25.raw()); return false; }
+		zv::Val r27;
+		if (UNEXPECTED(!pgen::AttributesCheck::m_check(Z_OBJ_P(o24.raw()), p_scope, vd25.raw(), 8, &pg_lit[4], r27.raw()))) return false;
+		*ret = r27.take();
 		return true;
 	}
 }

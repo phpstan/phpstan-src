@@ -192,15 +192,20 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 							if (!vd17_done) {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_extension, "getClass", "getclass", 8, 0, NULL, vd17.raw()))) return false;
 							}
-							zval av31[1];
-							ZVAL_COPY_VALUE(&av31[0], vd17.raw());
-							zv::Val r32;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, av31, r32.raw(), NULL))) return false;
+							zval *sa32 = zv::Ref(vd17.raw()).deref().raw();
+							zv::Val r31;
+							if (EXPECTED(Z_TYPE_P(sa32) == IS_STRING)) {
+								r31 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa32)));
+							} else {
+							 {
+								if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, sa32, r31.raw()))) return false;
+							}
+							}
 							zval *w33 = zv::Ref(l_byClass.raw()).deref().raw();
 							if (Z_TYPE_P(w33) <= IS_NULL) { zval_ptr_dtor(w33); array_init(w33); } else if (UNEXPECTED(Z_TYPE_P(w33) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 							SEPARATE_ARRAY(w33);
 							zval *w16;
-							w16 = pgrt::dimWrite(w33, r32.raw());
+							w16 = pgrt::dimWrite(w33, r31.raw());
 							if (UNEXPECTED(w16 == NULL)) return false;
 							ZVAL_DEREF(w16);
 							if (Z_TYPE_P(w16) <= IS_NULL) { zval_ptr_dtor(w16); array_init(w16); } else if (UNEXPECTED(Z_TYPE_P(w16) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -349,15 +354,20 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 							if (!vd17_done) {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_extension, "getClass", "getclass", 8, 0, NULL, vd17.raw()))) return false;
 							}
-							zval av27[1];
-							ZVAL_COPY_VALUE(&av27[0], vd17.raw());
-							zv::Val r28;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, av27, r28.raw(), NULL))) return false;
+							zval *sa28 = zv::Ref(vd17.raw()).deref().raw();
+							zv::Val r27;
+							if (EXPECTED(Z_TYPE_P(sa28) == IS_STRING)) {
+								r27 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa28)));
+							} else {
+							 {
+								if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, sa28, r27.raw()))) return false;
+							}
+							}
 							zval *w29 = zv::Ref(l_byClass.raw()).deref().raw();
 							if (Z_TYPE_P(w29) <= IS_NULL) { zval_ptr_dtor(w29); array_init(w29); } else if (UNEXPECTED(Z_TYPE_P(w29) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
 							SEPARATE_ARRAY(w29);
 							zval *w16;
-							w16 = pgrt::dimWrite(w29, r28.raw());
+							w16 = pgrt::dimWrite(w29, r27.raw());
 							if (UNEXPECTED(w16 == NULL)) return false;
 							ZVAL_DEREF(w16);
 							if (Z_TYPE_P(w16) <= IS_NULL) { zval_ptr_dtor(w16); array_init(w16); } else if (UNEXPECTED(Z_TYPE_P(w16) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -458,11 +468,16 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 			l_extensionClassName = zv::Val::copyOf(zv::Ref(zv::Ref(v16).deref().raw()));
 			 {
 				 {
-					zval av21[1];
-					ZVAL_COPY_VALUE(&av21[0], l_extensionClassName.raw());
-					zv::Val r22;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, av21, r22.raw(), NULL))) return false;
-					l_extensionClassName = std::move(r22);
+					zval *sa22 = zv::Ref(l_extensionClassName.raw()).deref().raw();
+					zv::Val r21;
+					if (EXPECTED(Z_TYPE_P(sa22) == IS_STRING)) {
+						r21 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa22)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, sa22, r21.raw()))) return false;
+					}
+					}
+					l_extensionClassName = std::move(r21);
 				}
 				 {
 					zv::Val o25 = zv::Val::copyOf(zv::Ref(l_extensionClassName.raw()));

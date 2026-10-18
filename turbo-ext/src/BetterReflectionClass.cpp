@@ -3081,11 +3081,16 @@ namespace pgen::BetterReflectionClass {
 												if (UNEXPECTED(!pgrt::callMethod0(pg_site_89, l_traitMethod, "getName", "getname", 7, r58.raw()))) return false;
 											}
 											}
-											zval av59[1];
-											ZVAL_COPY_VALUE(&av59[0], r58.raw());
-											zv::Val r60;
-											if (UNEXPECTED(!pgrt::callFunction(pg_site_90, "strtolower", 10, pt_ce_better_reflection_class, 1, av59, r60.raw(), NULL))) return false;
-											l_lowercasedMethodName = std::move(r60);
+											zval *sa60 = zv::Ref(r58.raw()).deref().raw();
+											zv::Val r59;
+											if (EXPECTED(Z_TYPE_P(sa60) == IS_STRING)) {
+												r59 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa60)));
+											} else {
+											 {
+												if (UNEXPECTED(!pgrt::callFunction(pg_site_90, "strtolower", 10, pt_ce_better_reflection_class, 1, sa60, r59.raw()))) return false;
+											}
+											}
+											l_lowercasedMethodName = std::move(r59);
 										}
 										 {
 											zv::Val o61 = zv::Val::copyOf(zv::Ref(l_lowercasedMethodName.raw()));
@@ -5656,11 +5661,16 @@ namespace pgen::BetterReflectionClass {
 					l_className = std::move(r13);
 				}
 				 {
-					zval av14[1];
-					ZVAL_COPY_VALUE(&av14[0], l_className.raw());
-					zv::Val r15;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_90, "strtolower", 10, pt_ce_better_reflection_class, 1, av14, r15.raw(), NULL))) return false;
-					l_lowercasedClassName = std::move(r15);
+					zval *sa15 = zv::Ref(l_className.raw()).deref().raw();
+					zv::Val r14;
+					if (EXPECTED(Z_TYPE_P(sa15) == IS_STRING)) {
+						r14 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa15)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_90, "strtolower", 10, pt_ce_better_reflection_class, 1, sa15, r14.raw()))) return false;
+					}
+					}
+					l_lowercasedClassName = std::move(r14);
 				}
 				 {
 					if (zend_is_identical(l_lowercasedClassName.raw(), l_lowercasedName.raw())) {
@@ -6328,11 +6338,16 @@ namespace pgen::BetterReflectionClass {
 			l_immediateMethodName = zv::Ref(v27).deref().raw();
 			 {
 				 {
-					zval av32[1];
-					ZVAL_COPY_VALUE(&av32[0], l_immediateMethodName);
-					zv::Val r33;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_90, "strtolower", 10, pt_ce_better_reflection_class, 1, av32, r33.raw(), NULL))) return false;
-					if (zend_is_identical(r33.raw(), &pg_lit[57])) {
+					zval *sa33 = zv::Ref(l_immediateMethodName).deref().raw();
+					zv::Val r32;
+					if (EXPECTED(Z_TYPE_P(sa33) == IS_STRING)) {
+						r32 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa33)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_90, "strtolower", 10, pt_ce_better_reflection_class, 1, sa33, r32.raw()))) return false;
+					}
+					}
+					if (zend_is_identical(r32.raw(), &pg_lit[57])) {
 						 {
 							 {
 								 {

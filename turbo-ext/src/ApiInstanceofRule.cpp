@@ -303,16 +303,23 @@ namespace pgen::ApiInstanceofRule {
 					l_apiTags = std::move(r57);
 				}
 				 {
-					zval av58[1];
-					ZVAL_COPY_VALUE(&av58[0], l_apiTags.raw());
-					zv::Val r59;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "count", 5, pt_ce_api_instanceof_rule, 1, av58, r59.raw()))) return false;
-					if (Z_LVAL_P(r59.raw()) > 0) {
+					zval *ca58 = zv::Ref(l_apiTags.raw()).deref().raw();
+					zend_long cn59;
+					if (EXPECTED(Z_TYPE_P(ca58) == IS_ARRAY)) {
+						cn59 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca58));
+					} else {
+					 {
+						zv::Val r60;
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "count", 5, pt_ce_api_instanceof_rule, 1, ca58, r60.raw()))) return false;
+						cn59 = Z_LVAL_P(r60.raw());
+					}
+					}
+					if (cn59 > 0) {
 						 {
 							if (UNEXPECTED(!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_14, "PhpParser\\Node\\Expr\\Instanceof_", 31))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Api\\ApiInstanceofRule::processCoveredClass", 1, "node", "PhpParser\\Node\\Expr\\Instanceof_", p_node); return false; }
-							zv::Val r60;
-							if (UNEXPECTED(!pgen::ApiInstanceofRule::m_processCoveredClass(Z_OBJ_P(&this_zv), p_node, p_scope, l_classReflection.raw(), r60.raw()))) return false;
-							*ret = r60.take();
+							zv::Val r61;
+							if (UNEXPECTED(!pgen::ApiInstanceofRule::m_processCoveredClass(Z_OBJ_P(&this_zv), p_node, p_scope, l_classReflection.raw(), r61.raw()))) return false;
+							*ret = r61.take();
 							return true;
 						}
 					}
@@ -322,10 +329,10 @@ namespace pgen::ApiInstanceofRule {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val arr61 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val o62 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
-		{ zval v = o62.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr61.raw()), &v); }
-		*ret = arr61.take();
+		zv::Val arr62 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zv::Val o63 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
+		{ zval v = o63.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr62.raw()), &v); }
+		*ret = arr62.take();
 		return true;
 	}
 }

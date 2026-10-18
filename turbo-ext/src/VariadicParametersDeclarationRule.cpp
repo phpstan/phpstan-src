@@ -46,73 +46,80 @@ namespace pgen::VariadicParametersDeclarationRule {
 		l_parameters = std::move(r1);
 	}
 	 {
-		zval av2[1];
-		ZVAL_COPY_VALUE(&av2[0], l_parameters.raw());
-		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "count", 5, pt_ce_variadic_parameters_declaration_rule, 1, av2, r3.raw()))) return false;
-		l_paramCount = Z_LVAL_P(r3.raw());
+		zval *ca2 = zv::Ref(l_parameters.raw()).deref().raw();
+		zend_long cn3;
+		if (EXPECTED(Z_TYPE_P(ca2) == IS_ARRAY)) {
+			cn3 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca2));
+		} else {
+		 {
+			zv::Val r4;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "count", 5, pt_ce_variadic_parameters_declaration_rule, 1, ca2, r4.raw()))) return false;
+			cn3 = Z_LVAL_P(r4.raw());
+		}
+		}
+		l_paramCount = cn3;
 	}
 	 {
 		if (l_paramCount == 0) {
 			 {
-				zval arr4_raw;
-				ZVAL_EMPTY_ARRAY(&arr4_raw);
-				ZVAL_COPY(ret, &arr4_raw);
+				zval arr5_raw;
+				ZVAL_EMPTY_ARRAY(&arr5_raw);
+				ZVAL_COPY(ret, &arr5_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval arr5_raw;
-		ZVAL_EMPTY_ARRAY(&arr5_raw);
-		zv::Val o6 = zv::Val::copyOf(zv::Ref(&arr5_raw));
-		l_errors = std::move(o6);
+		zval arr6_raw;
+		ZVAL_EMPTY_ARRAY(&arr6_raw);
+		zv::Val o7 = zv::Val::copyOf(zv::Ref(&arr6_raw));
+		l_errors = std::move(o7);
 	}
 	 {
-		pgrt::ForeachIter it8;
-		if (UNEXPECTED(!it8.begin(l_parameters.raw()))) return false;
-		while (it8.valid()) {
-			zv::Val k9;
-			it8.key(k9.raw());
-			l_index = zv::Val::copyOf(zv::Ref(k9.raw()));
-			l_parameter = zv::Ref(it8.current()).deref().raw();
+		pgrt::ForeachIter it9;
+		if (UNEXPECTED(!it9.begin(l_parameters.raw()))) return false;
+		while (it9.valid()) {
+			zv::Val k10;
+			it9.key(k10.raw());
+			l_index = zv::Val::copyOf(zv::Ref(k10.raw()));
+			l_parameter = zv::Ref(it9.current()).deref().raw();
 			 {
 				 {
-					zv::Val o13;
-					zval *p12 = Z_TYPE_P(l_parameter) == IS_OBJECT ? pgrt::propCached(pg_site_2, Z_OBJ_P(l_parameter), "variadic", 8) : NULL;
-					if (UNEXPECTED(p12 == NULL || Z_ISUNDEF_P(p12))) {
-						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_parameter, pt_ce_variadic_parameters_declaration_rule, "variadic", 8, o13.raw()))) return false;
-						p12 = o13.raw();
+					zv::Val o14;
+					zval *p13 = Z_TYPE_P(l_parameter) == IS_OBJECT ? pgrt::propCached(pg_site_2, Z_OBJ_P(l_parameter), "variadic", 8) : NULL;
+					if (UNEXPECTED(p13 == NULL || Z_ISUNDEF_P(p13))) {
+						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_parameter, pt_ce_variadic_parameters_declaration_rule, "variadic", 8, o14.raw()))) return false;
+						p13 = o14.raw();
 					}
-					if (!(zend_is_true(zv::Ref(p12).deref().raw()))) {
-						goto cont11;
-					}
-				}
-				 {
-					zend_long ar14;
-					if (UNEXPECTED(!pgrt::subLong(l_paramCount, 1, &ar14))) return false;
-					if (Z_TYPE_P(l_index.raw()) == IS_LONG && Z_LVAL_P(l_index.raw()) == ar14) {
-						goto cont11;
+					if (!(zend_is_true(zv::Ref(p13).deref().raw()))) {
+						goto cont12;
 					}
 				}
 				 {
-					zv::Val r15;
-					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r15.raw()))) return false;
+					zend_long ar15;
+					if (UNEXPECTED(!pgrt::subLong(l_paramCount, 1, &ar15))) return false;
+					if (Z_TYPE_P(l_index.raw()) == IS_LONG && Z_LVAL_P(l_index.raw()) == ar15) {
+						goto cont12;
+					}
+				}
+				 {
 					zv::Val r16;
-					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(r15.raw()), r16.raw()))) return false;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(&pg_lit[1], r16.raw()))) return false;
 					zv::Val r17;
-					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r16.raw()), &pg_lit[2], r17.raw()))) return false;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(r16.raw()), r17.raw()))) return false;
 					zv::Val r18;
-					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r17.raw()), r18.raw()))) return false;
-					zv::Val o19 = zv::Val::copyOf(zv::Ref(r18.raw()));
-					zval *w20 = zv::Ref(l_errors.raw()).deref().raw();
-					if (Z_TYPE_P(w20) <= IS_NULL) { zval_ptr_dtor(w20); array_init(w20); } else if (UNEXPECTED(Z_TYPE_P(w20) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w20);
-					{ zval v = o19.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w20), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_identifier(Z_OBJ_P(r17.raw()), &pg_lit[2], r18.raw()))) return false;
+					zv::Val r19;
+					if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(r18.raw()), r19.raw()))) return false;
+					zv::Val o20 = zv::Val::copyOf(zv::Ref(r19.raw()));
+					zval *w21 = zv::Ref(l_errors.raw()).deref().raw();
+					if (Z_TYPE_P(w21) <= IS_NULL) { zval_ptr_dtor(w21); array_init(w21); } else if (UNEXPECTED(Z_TYPE_P(w21) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w21);
+					{ zval v = o20.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w21), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
-			cont11:;
-			if (UNEXPECTED(!it8.next())) return false;
+			cont12:;
+			if (UNEXPECTED(!it9.next())) return false;
 		}
 		if (UNEXPECTED(EG(exception))) return false;
 	}

@@ -1307,20 +1307,27 @@ namespace pgen::FileAnalyser {
 			l_lines = zv::Ref(v303).deref().raw();
 			 {
 				 {
-					zval av309[1];
-					ZVAL_COPY_VALUE(&av309[0], l_lines);
-					zv::Val r310;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_70, "count", 5, pt_ce_file_analyser, 1, av309, r310.raw()))) return false;
-					if (Z_LVAL_P(r310.raw()) > 0) {
+					zval *ca309 = zv::Ref(l_lines).deref().raw();
+					zend_long cn310;
+					if (EXPECTED(Z_TYPE_P(ca309) == IS_ARRAY)) {
+						cn310 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca309));
+					} else {
+					 {
+						zv::Val r311;
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_70, "count", 5, pt_ce_file_analyser, 1, ca309, r311.raw()))) return false;
+						cn310 = Z_LVAL_P(r311.raw());
+					}
+					}
+					if (cn310 > 0) {
 						goto cont308;
 					}
 				}
 				 {
-					zv::Val o311 = zv::Val::copyOf(zv::Ref(l_fileKey.raw()));
-					zval *w312 = zv::Ref(l_linesToIgnore.raw()).deref().raw();
-					if (Z_TYPE_P(w312) == IS_ARRAY) {
-						SEPARATE_ARRAY(w312);
-						if (Z_TYPE_P(o311.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w312), Z_STR_P(o311.raw())); } else if (Z_TYPE_P(o311.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w312), Z_LVAL_P(o311.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
+					zv::Val o312 = zv::Val::copyOf(zv::Ref(l_fileKey.raw()));
+					zval *w313 = zv::Ref(l_linesToIgnore.raw()).deref().raw();
+					if (Z_TYPE_P(w313) == IS_ARRAY) {
+						SEPARATE_ARRAY(w313);
+						if (Z_TYPE_P(o312.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w313), Z_STR_P(o312.raw())); } else if (Z_TYPE_P(o312.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w313), Z_LVAL_P(o312.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
 					}
 				}
 			}
@@ -1329,87 +1336,94 @@ namespace pgen::FileAnalyser {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val a314 = zv::Val::copyOf(zv::Ref(l_unmatchedLineIgnores.raw()).deref());
-		HashTable *ht313 = Z_ARRVAL_P(a314.raw());
-		zval *v315;
-		zend_ulong n316;
-		zend_string *s317;
-		ZEND_HASH_FOREACH_KEY_VAL(ht313, n316, s317, v315) {
-			(void) n316; (void) s317;
-			zval k318;
-			if (s317 != NULL) { ZVAL_STR(&k318, s317); } else { ZVAL_LONG(&k318, (zend_long) n316); }
-			l_fileKey = zv::Val::copyOf(zv::Ref(&k318));
-			l_lines = zv::Ref(v315).deref().raw();
+		zv::Val a315 = zv::Val::copyOf(zv::Ref(l_unmatchedLineIgnores.raw()).deref());
+		HashTable *ht314 = Z_ARRVAL_P(a315.raw());
+		zval *v316;
+		zend_ulong n317;
+		zend_string *s318;
+		ZEND_HASH_FOREACH_KEY_VAL(ht314, n317, s318, v316) {
+			(void) n317; (void) s318;
+			zval k319;
+			if (s318 != NULL) { ZVAL_STR(&k319, s318); } else { ZVAL_LONG(&k319, (zend_long) n317); }
+			l_fileKey = zv::Val::copyOf(zv::Ref(&k319));
+			l_lines = zv::Ref(v316).deref().raw();
 			 {
 				 {
-					zval av321[1];
-					ZVAL_COPY_VALUE(&av321[0], l_lines);
-					zv::Val r322;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_70, "count", 5, pt_ce_file_analyser, 1, av321, r322.raw()))) return false;
-					if (Z_LVAL_P(r322.raw()) > 0) {
-						goto cont320;
+					zval *ca322 = zv::Ref(l_lines).deref().raw();
+					zend_long cn323;
+					if (EXPECTED(Z_TYPE_P(ca322) == IS_ARRAY)) {
+						cn323 = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(ca322));
+					} else {
+					 {
+						zv::Val r324;
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_70, "count", 5, pt_ce_file_analyser, 1, ca322, r324.raw()))) return false;
+						cn323 = Z_LVAL_P(r324.raw());
+					}
+					}
+					if (cn323 > 0) {
+						goto cont321;
 					}
 				}
 				 {
-					zv::Val o323 = zv::Val::copyOf(zv::Ref(l_fileKey.raw()));
-					zval *w324 = zv::Ref(l_unmatchedLineIgnores.raw()).deref().raw();
-					if (Z_TYPE_P(w324) == IS_ARRAY) {
-						SEPARATE_ARRAY(w324);
-						if (Z_TYPE_P(o323.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w324), Z_STR_P(o323.raw())); } else if (Z_TYPE_P(o323.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w324), Z_LVAL_P(o323.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
+					zv::Val o325 = zv::Val::copyOf(zv::Ref(l_fileKey.raw()));
+					zval *w326 = zv::Ref(l_unmatchedLineIgnores.raw()).deref().raw();
+					if (Z_TYPE_P(w326) == IS_ARRAY) {
+						SEPARATE_ARRAY(w326);
+						if (Z_TYPE_P(o325.raw()) == IS_STRING) { zend_symtable_del(Z_ARRVAL_P(w326), Z_STR_P(o325.raw())); } else if (Z_TYPE_P(o325.raw()) == IS_LONG) { zend_hash_index_del(Z_ARRVAL_P(w326), Z_LVAL_P(o325.raw())); } else { zend_throw_error(NULL, "phpstan_turbo codegen: unset() with this offset type is not compiled"); return false; }
 					}
 				}
 			}
-			cont320:;
+			cont321:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val o326 = zv::Val::copyOf(zv::Ref(l_fileErrors.raw()));
-		zval *p327 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyser::slot::filteredPhpErrors, "filteredPhpErrors");
-		if (UNEXPECTED(p327 == NULL)) return false;
-		zv::Val r328;
-		if (UNEXPECTED(!pgrt::arrayValues(p327, r328.raw()))) return false;
-		zval *p329 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyser::slot::allPhpErrors, "allPhpErrors");
+		zv::Val o328 = zv::Val::copyOf(zv::Ref(l_fileErrors.raw()));
+		zval *p329 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyser::slot::filteredPhpErrors, "filteredPhpErrors");
 		if (UNEXPECTED(p329 == NULL)) return false;
 		zv::Val r330;
 		if (UNEXPECTED(!pgrt::arrayValues(p329, r330.raw()))) return false;
-		zv::Val o331 = zv::Val::copyOf(zv::Ref(l_locallyIgnoredErrors.raw()));
-		zv::Val o332 = zv::Val::copyOf(zv::Ref(l_fileCollectedData.raw()));
-		zv::Val r333;
-		if (UNEXPECTED(!pgrt::arrayUnique(l_fileDependencies.raw(), r333.raw()))) return false;
-		zv::Val r334;
-		if (UNEXPECTED(!pgrt::arrayValues(r333.raw(), r334.raw()))) return false;
+		zval *p331 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyser::slot::allPhpErrors, "allPhpErrors");
+		if (UNEXPECTED(p331 == NULL)) return false;
+		zv::Val r332;
+		if (UNEXPECTED(!pgrt::arrayValues(p331, r332.raw()))) return false;
+		zv::Val o333 = zv::Val::copyOf(zv::Ref(l_locallyIgnoredErrors.raw()));
+		zv::Val o334 = zv::Val::copyOf(zv::Ref(l_fileCollectedData.raw()));
 		zv::Val r335;
-		if (UNEXPECTED(!pgrt::arrayUnique(l_usedTraitFileDependencies.raw(), r335.raw()))) return false;
+		if (UNEXPECTED(!pgrt::arrayUnique(l_fileDependencies.raw(), r335.raw()))) return false;
 		zv::Val r336;
 		if (UNEXPECTED(!pgrt::arrayValues(r335.raw(), r336.raw()))) return false;
-		zval *p337 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyser::slot::valueDependencyCollector, "valueDependencyCollector");
-		if (UNEXPECTED(p337 == NULL)) return false;
+		zv::Val r337;
+		if (UNEXPECTED(!pgrt::arrayUnique(l_usedTraitFileDependencies.raw(), r337.raw()))) return false;
 		zv::Val r338;
-		if (UNEXPECTED(!pgen::ValueDependencyCollector::m_finishFile(Z_OBJ_P(p337), r338.raw()))) return false;
-		zv::Val r339;
-		if (UNEXPECTED(!pgrt::arrayUnique(l_filePackageDependencies.raw(), r339.raw()))) return false;
+		if (UNEXPECTED(!pgrt::arrayValues(r337.raw(), r338.raw()))) return false;
+		zval *p339 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileAnalyser::slot::valueDependencyCollector, "valueDependencyCollector");
+		if (UNEXPECTED(p339 == NULL)) return false;
 		zv::Val r340;
-		if (UNEXPECTED(!pgrt::arrayValues(r339.raw(), r340.raw()))) return false;
-		zval av341[13];
-		ZVAL_COPY_VALUE(&av341[0], o326.raw());
-		ZVAL_COPY_VALUE(&av341[1], r328.raw());
-		ZVAL_COPY_VALUE(&av341[2], r330.raw());
-		ZVAL_COPY_VALUE(&av341[3], o331.raw());
-		ZVAL_COPY_VALUE(&av341[4], o332.raw());
-		ZVAL_COPY_VALUE(&av341[5], r334.raw());
-		ZVAL_COPY_VALUE(&av341[6], r336.raw());
-		ZVAL_COPY_VALUE(&av341[7], r338.raw());
-		ZVAL_COPY_VALUE(&av341[8], r340.raw());
-		ZVAL_COPY_VALUE(&av341[9], l_exportedNodes.raw());
-		ZVAL_COPY_VALUE(&av341[10], l_linesToIgnore.raw());
-		ZVAL_COPY_VALUE(&av341[11], l_unmatchedLineIgnores.raw());
-		ZVAL_COPY_VALUE(&av341[12], l_processedFiles.raw());
-		zend_class_entry *ce342 = pgrt::lookupClass(pg_site_71, "PHPStan\\Analyser\\FileAnalyserResult", 35);
-		if (UNEXPECTED(ce342 == NULL)) return false;
-		zv::Val n325;
-		if (UNEXPECTED(!pgrt::newObject(ce342, 13, av341, n325.raw(), NULL))) return false;
-		*ret = n325.take();
+		if (UNEXPECTED(!pgen::ValueDependencyCollector::m_finishFile(Z_OBJ_P(p339), r340.raw()))) return false;
+		zv::Val r341;
+		if (UNEXPECTED(!pgrt::arrayUnique(l_filePackageDependencies.raw(), r341.raw()))) return false;
+		zv::Val r342;
+		if (UNEXPECTED(!pgrt::arrayValues(r341.raw(), r342.raw()))) return false;
+		zval av343[13];
+		ZVAL_COPY_VALUE(&av343[0], o328.raw());
+		ZVAL_COPY_VALUE(&av343[1], r330.raw());
+		ZVAL_COPY_VALUE(&av343[2], r332.raw());
+		ZVAL_COPY_VALUE(&av343[3], o333.raw());
+		ZVAL_COPY_VALUE(&av343[4], o334.raw());
+		ZVAL_COPY_VALUE(&av343[5], r336.raw());
+		ZVAL_COPY_VALUE(&av343[6], r338.raw());
+		ZVAL_COPY_VALUE(&av343[7], r340.raw());
+		ZVAL_COPY_VALUE(&av343[8], r342.raw());
+		ZVAL_COPY_VALUE(&av343[9], l_exportedNodes.raw());
+		ZVAL_COPY_VALUE(&av343[10], l_linesToIgnore.raw());
+		ZVAL_COPY_VALUE(&av343[11], l_unmatchedLineIgnores.raw());
+		ZVAL_COPY_VALUE(&av343[12], l_processedFiles.raw());
+		zend_class_entry *ce344 = pgrt::lookupClass(pg_site_71, "PHPStan\\Analyser\\FileAnalyserResult", 35);
+		if (UNEXPECTED(ce344 == NULL)) return false;
+		zv::Val n327;
+		if (UNEXPECTED(!pgrt::newObject(ce344, 13, av343, n327.raw(), NULL))) return false;
+		*ret = n327.take();
 		return true;
 	}
 }

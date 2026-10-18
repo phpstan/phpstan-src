@@ -109,14 +109,19 @@ namespace pgen::DuplicateDeclarationRule {
 		}
 		zv::Val r10;
 		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, l_classReflection.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r10.raw()))) return false;
-		zval av11[1];
-		ZVAL_COPY_VALUE(&av11[0], r10.raw());
-		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "strtolower", 10, pt_ce_duplicate_declaration_rule, 1, av11, r12.raw(), NULL))) return false;
+		zval *sa12 = zv::Ref(r10.raw()).deref().raw();
+		zv::Val r11;
+		if (EXPECTED(Z_TYPE_P(sa12) == IS_STRING)) {
+			r11 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa12)));
+		} else {
+		 {
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "strtolower", 10, pt_ce_duplicate_declaration_rule, 1, sa12, r11.raw()))) return false;
+		}
+		}
 		if (UNEXPECTED(!(pgrt::instanceOfClass(vd4.raw(), pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Stmt\\ClassLike", 29))))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\DuplicateDeclarationHelper::checkClassLike", 1, "classLike", "PhpParser\\Node\\Stmt\\ClassLike", vd4.raw()); return false; }
 		if (UNEXPECTED(!(Z_TYPE_P(r9.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Rules\\Classes\\DuplicateDeclarationHelper::checkClassLike", 2, "displayName", "string", r9.raw()); return false; }
 		zv::Val r13;
-		if (UNEXPECTED(!pgen::DuplicateDeclarationHelper::m_checkClassLike(Z_OBJ_P(o3.raw()), vd4.raw(), r9.raw(), r12.raw(), r13.raw()))) return false;
+		if (UNEXPECTED(!pgen::DuplicateDeclarationHelper::m_checkClassLike(Z_OBJ_P(o3.raw()), vd4.raw(), r9.raw(), r11.raw(), r13.raw()))) return false;
 		*ret = r13.take();
 		return true;
 	}

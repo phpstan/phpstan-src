@@ -249,11 +249,16 @@ namespace pgen::FunctionCallableRule {
 								}
 								}
 								zv::Val r34 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r33.raw())));
-								zval av35[1];
-								ZVAL_COPY_VALUE(&av35[0], l_calledFunctionName.raw());
-								zv::Val r36;
-								if (UNEXPECTED(!pgrt::callFunction(pg_site_8, "strtolower", 10, pt_ce_function_callable_rule, 1, av35, r36.raw(), NULL))) return false;
-								bool b32 = zend_is_identical(r34.raw(), r36.raw());
+								zval *sa36 = zv::Ref(l_calledFunctionName.raw()).deref().raw();
+								zv::Val r35;
+								if (EXPECTED(Z_TYPE_P(sa36) == IS_STRING)) {
+									r35 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa36)));
+								} else {
+								 {
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_8, "strtolower", 10, pt_ce_function_callable_rule, 1, sa36, r35.raw()))) return false;
+								}
+								}
+								bool b32 = zend_is_identical(r34.raw(), r35.raw());
 								if (b32) {
 									zv::Val r37;
 									if (EXPECTED(Z_TYPE_P(l_function.raw()) == IS_OBJECT)) {

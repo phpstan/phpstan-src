@@ -295,11 +295,16 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 					}
 				}
 				 {
-					zval av61[1];
-					ZVAL_COPY_VALUE(&av61[0], l_value.raw());
-					zv::Val r62;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "strtolower", 10, pt_ce_date_interval_format_return_type_helper, 1, av61, r62.raw(), NULL))) return false;
-					if (zend_is_identical(r62.raw(), l_value.raw())) {
+					zval *sa62 = zv::Ref(l_value.raw()).deref().raw();
+					zv::Val r61;
+					if (EXPECTED(Z_TYPE_P(sa62) == IS_STRING)) {
+						r61 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa62)));
+					} else {
+					 {
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "strtolower", 10, pt_ce_date_interval_format_return_type_helper, 1, sa62, r61.raw()))) return false;
+					}
+					}
+					if (zend_is_identical(r61.raw(), l_value.raw())) {
 						 {
 							zv::Val n63;
 							if (UNEXPECTED(!pt_accessory_lowercase_string_type_new(n63.raw()))) return false;

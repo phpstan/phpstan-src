@@ -427,54 +427,64 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 		l_maxValues = std::move(r14);
 	}
 	 {
-		zval av15[1];
-		zval z16;
-		ZVAL_BOOL(&z16, ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_minValues.raw())) > 0));
-		ZVAL_COPY_VALUE(&av15[0], &z16);
-		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "assert", 6, pt_ce_random_int_function_return_type_extension, 1, av15, r17.raw(), NULL))) return false;
+		zv::Val as15 = zv::Val::boolean(true);
+		if (EG(assertions) > 0) {
+			zval av16[1];
+			zval z17;
+			ZVAL_BOOL(&z17, ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_minValues.raw())) > 0));
+			ZVAL_COPY_VALUE(&av16[0], &z17);
+			zv::Val r18;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "assert", 6, pt_ce_random_int_function_return_type_extension, 1, av16, r18.raw(), NULL))) return false;
+			zv::Val o19 = zv::Val::boolean((Z_TYPE_P(r18.raw()) == IS_TRUE));
+			as15 = std::move(o19);
+		}
 	}
 	 {
-		zval av18[1];
-		zval z19;
-		ZVAL_BOOL(&z19, ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_maxValues.raw())) > 0));
-		ZVAL_COPY_VALUE(&av18[0], &z19);
-		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "assert", 6, pt_ce_random_int_function_return_type_extension, 1, av18, r20.raw(), NULL))) return false;
+		zv::Val as20 = zv::Val::boolean(true);
+		if (EG(assertions) > 0) {
+			zval av21[1];
+			zval z22;
+			ZVAL_BOOL(&z22, ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_maxValues.raw())) > 0));
+			ZVAL_COPY_VALUE(&av21[0], &z22);
+			zv::Val r23;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "assert", 6, pt_ce_random_int_function_return_type_extension, 1, av21, r23.raw(), NULL))) return false;
+			zv::Val o24 = zv::Val::boolean((Z_TYPE_P(r23.raw()) == IS_TRUE));
+			as20 = std::move(o24);
+		}
 	}
 	 {
-		zval z21;
-		ZVAL_NULL(&z21);
-		zv::Val q22;
-		if (pgrt::inArrayStrict(&z21, l_minValues.raw())) {
-			zv::Val o23 = zv::Val::null();
-			q22 = std::move(o23);
-		} else {
-		 {
-			zv::Val r24;
-			if (UNEXPECTED(!pgrt::arrayMinMax(pg_site_25, false, l_minValues.raw(), pt_ce_random_int_function_return_type_extension, r24.raw()))) return false;
-			q22 = std::move(r24);
-		}
-		}
 		zval z25;
 		ZVAL_NULL(&z25);
 		zv::Val q26;
-		if (pgrt::inArrayStrict(&z25, l_maxValues.raw())) {
+		if (pgrt::inArrayStrict(&z25, l_minValues.raw())) {
 			zv::Val o27 = zv::Val::null();
 			q26 = std::move(o27);
 		} else {
 		 {
 			zv::Val r28;
-			if (UNEXPECTED(!pgrt::arrayMinMax(pg_site_26, true, l_maxValues.raw(), pt_ce_random_int_function_return_type_extension, r28.raw()))) return false;
+			if (UNEXPECTED(!pgrt::arrayMinMax(pg_site_25, false, l_minValues.raw(), pt_ce_random_int_function_return_type_extension, r28.raw()))) return false;
 			q26 = std::move(r28);
 		}
 		}
-		zval av29[2];
-		ZVAL_COPY_VALUE(&av29[0], q22.raw());
-		ZVAL_COPY_VALUE(&av29[1], q26.raw());
-		zv::Val r30;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, pt_ce_integer_range_type, "frominterval", 12, 2, av29, r30.raw(), NULL))) return false;
-		*ret = r30.take();
+		zval z29;
+		ZVAL_NULL(&z29);
+		zv::Val q30;
+		if (pgrt::inArrayStrict(&z29, l_maxValues.raw())) {
+			zv::Val o31 = zv::Val::null();
+			q30 = std::move(o31);
+		} else {
+		 {
+			zv::Val r32;
+			if (UNEXPECTED(!pgrt::arrayMinMax(pg_site_26, true, l_maxValues.raw(), pt_ce_random_int_function_return_type_extension, r32.raw()))) return false;
+			q30 = std::move(r32);
+		}
+		}
+		zval av33[2];
+		ZVAL_COPY_VALUE(&av33[0], q26.raw());
+		ZVAL_COPY_VALUE(&av33[1], q30.raw());
+		zv::Val r34;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_3, pt_ce_integer_range_type, "frominterval", 12, 2, av33, r34.raw(), NULL))) return false;
+		*ret = r34.take();
 		return true;
 	}
 }

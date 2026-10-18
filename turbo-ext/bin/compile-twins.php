@@ -24,6 +24,10 @@ foreach (glob('build/PHPStan/Build/TurboCodegen/*.php') as $file) {
 	require_once $file;
 }
 
+// vendored classes cannot carry the attribute: their pairs come from the
+// manifest (build/PHPStan/Build/TurboAttributeCollector.php hardcodes them)
+$manifest = json_decode((string) file_get_contents('vendor/turbo-shadowed-classes.json'), true);
+
 $classes = [];
 foreach (require 'turbo-ext/compiled-classes.php' as $className => $config) {
 	if (is_string($config)) {
@@ -31,11 +35,14 @@ foreach (require 'turbo-ext/compiled-classes.php' as $className => $config) {
 	}
 	$reflection = new ReflectionClass($className);
 	$attributes = $reflection->getAttributes(ShadowedByTurboExtension::class);
-	if (count($attributes) !== 1) {
+	if (count($attributes) === 1) {
+		$implementation = $attributes[0]->newInstance()->implementation;
+	} elseif (($manifest[$className]['vendored'] ?? false) === true) {
+		$implementation = $manifest[$className]['cpp'];
+	} else {
 		fwrite(STDERR, "$className is not shadowed\n");
 		exit(1);
 	}
-	$implementation = $attributes[0]->newInstance()->implementation;
 	$classes[$className] = [
 		'file' => substr((string) $reflection->getFileName(), strlen($root) + 1),
 		'stem' => basename($implementation, '.cpp'),

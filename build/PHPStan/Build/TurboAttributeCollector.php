@@ -194,6 +194,7 @@ use RecursiveIteratorIterator;
 use ReflectionClass;
 use RuntimeException;
 use Throwable;
+use function array_keys;
 use function class_exists;
 use function count;
 use function file_get_contents;
@@ -206,6 +207,8 @@ use function sprintf;
 use function str_replace;
 use function str_starts_with;
 use function strlen;
+use function strpos;
+use function strrpos;
 use function strtr;
 use function substr;
 use function var_export;
@@ -231,6 +234,19 @@ final class TurboAttributeCollector
 	// their pairs are hardcoded. Class name => .cpp
 	private const VENDORED_PAIRS = [
 		NodeTraverser::class => 'turbo-ext/src/NodeTraverser.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\ReflectionClass' => 'turbo-ext/src/BetterReflectionClass.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod' => 'turbo-ext/src/BetterReflectionAdapterMethod.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType' => 'turbo-ext/src/BetterReflectionNamedType.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionNamedType' => 'turbo-ext/src/BetterReflectionAdapterNamedType.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionType' => 'turbo-ext/src/BetterReflectionAdapterType.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\Attribute\\ReflectionAttributeHelper' => 'turbo-ext/src/BetterReflectionAttributeHelper.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\Deprecated\\DeprecatedHelper' => 'turbo-ext/src/BetterReflectionDeprecatedHelper.cpp',
+		'PHPStan\\BetterReflection\\Util\\FileHelper' => 'turbo-ext/src/BetterReflectionFileHelper.cpp',
+		'PHPStan\\BetterReflection\\Identifier\\Identifier' => 'turbo-ext/src/BetterReflectionIdentifier.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute' => 'turbo-ext/src/BetterReflectionAttribute.cpp',
+		'PHPStan\\BetterReflection\\Reflection\\ReflectionParameter' => 'turbo-ext/src/BetterReflectionParameter.cpp',
+		'PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource' => 'turbo-ext/src/BetterReflectionLocatedSource.cpp',
+		'PhpParser\\NameContext' => 'turbo-ext/src/NameContext.cpp',
 	];
 
 	// Classes the native code references that live in vendor/ cannot carry

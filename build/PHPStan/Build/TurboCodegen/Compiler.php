@@ -1555,6 +1555,10 @@ final class Compiler
 		if ($default instanceof Expr\Array_ && count($default->items) === 0) {
 			return sprintf('ZVAL_EMPTY_ARRAY(&%s);', $cVar);
 		}
+		if ($default instanceof Expr\ConstFetch && $default->name->toString() === 'DIRECTORY_SEPARATOR') {
+			// the platform's, not the compiling machine's
+			return sprintf('ZVAL_CHAR(&%s, DEFAULT_SLASH);', $cVar);
+		}
 		$value = $this->constantValue($default);
 		if ($value === null) {
 			return sprintf('ZVAL_NULL(&%s);', $cVar);
@@ -2337,7 +2341,7 @@ final class Compiler
 	 * that leave these statements: the ones of a nested function or
 	 * closure, and the jumps a nested loop or switch takes, stay inside.
 	 *
-	 * @param array<Node> $stmts
+	 * @param array<mixed> $stmts nodes, or the sub-node values of one
 	 * @return list<Stmt>
 	 */
 	private function escapingJumps(array $stmts, bool $returns, int $depth = 0): array
@@ -2796,6 +2800,18 @@ final class Compiler
 			if ($expr->class instanceof Node\Name && $expr->class->toLowerString() !== 'static') {
 				return $this->literal($this->className($expr->class));
 			}
+			if ($expr->class instanceof Node\Name && $f->self === null) {
+				// static::class in a static method: the called scope of its
+				// frame (the method is only entered through the engine, see
+				// usesCalledScope())
+				if ($this->unit()->reflection->isFinal()) {
+					return $this->literal($this->unit()->className);
+				}
+				$t = $f->temp('cls');
+				$f->line(sprintf('zend_class_entry *%s_ce = zend_get_called_scope(EG(current_execute_data));', $t));
+				$f->line(sprintf('zv::Val %s = zv::Val::string((%s_ce != NULL ? %s_ce : %s)->name);', $t, $t, $t, $this->unit()->ce));
+				return new Value('zval', $t . '.raw()', $t);
+			}
 			$object = $expr->class instanceof Node\Name ? new Value('zval', '&this_zv') : $this->expr($f, $expr->class);
 			$t = $f->temp('cls');
 			$z = $this->asZval($f, $object);
@@ -2982,9 +2998,6 @@ final class Compiler
 		if ($expr instanceof Expr\Instanceof_) {
 			$value = $this->expr($f, $expr->expr);
 			if (!$expr->class instanceof Node\Name) {
-				if (!$expr->class instanceof Expr) {
-					throw new CompileError('instanceof an anonymous class is not supported');
-				}
 				$z = $this->asZval($f, $value);
 				$class = $this->asZval($f, $this->expr($f, $expr->class));
 				$t = $f->temp('io');
@@ -3285,6 +3298,10 @@ final class Compiler
 	private function assign(FunctionContext $f, Expr\Assign $expr): Value
 	{
 		$target = $expr->var;
+		if ($target instanceof Expr\Variable && is_string($target->name) && $expr->expr instanceof Expr\Variable && $expr->expr->name === $target->name) {
+			// `$x = $x;` (a PHPDoc retyping): nothing changes
+			return $this->expr($f, $expr->expr);
+		}
 		if ($target instanceof Expr\Variable && is_string($target->name)) {
 			$local = $f->locals[$target->name] ?? null;
 			if ($local === null) {
@@ -5497,14 +5514,14 @@ final class Compiler
 			$f->failIf(sprintf('!pgrt::callStaticDynamic(%s, %s, %s, %s, %s, %s.raw(), %s)', $class, $this->unit()->ce, $this->literal($name)->code, $argc, $argv, $t, $named));
 			return $this->narrowZval($t . '.raw()', $t, $this->unit()->oracle->nativeType($expr));
 		}
-		$lower = $expr->class instanceof Node\Name ? $expr->class->toLowerString() : '';
+		$lower = $expr->class->toLowerString();
 		if ($lower === 'parent' || (in_array($lower, ['self', 'static'], true) && $f->self !== null && !($this->methodReflection($this->unit()->className, $name)?->isStatic() ?? true))) {
 			return $this->boundInstanceCall($f, $expr, $lower === 'parent');
 		}
 		$className = $this->className($expr->class);
 		$unit = $this->units[strtolower($className)] ?? null;
 		$method = $unit?->methods[strtolower($name)] ?? null;
-		if ($method !== null && $method->isStatic) {
+		if ($method !== null && $method->isStatic && !$this->usesCalledScope($method)) {
 			$args = $this->directArgs($f, $method, $expr->args);
 			return $this->emitDirectCall($f, $method, null, $args);
 		}
@@ -5616,6 +5633,18 @@ final class Compiler
 		$resolved = $expr->name->getAttribute('resolvedName');
 		if ($resolved instanceof Node\Name) {
 			$name = strtolower($resolved->toString());
+		}
+		if (($name === 'assert' || (str_ends_with($name, '\\assert') && !function_exists($name))) && $expr->getAttribute('turboAssertCall') !== true) {
+			// as the engine compiles it: the arguments evaluated and the
+			// call made only while zend.assertions is 1, true otherwise
+			$t = $f->temp('as');
+			$f->line(sprintf('zv::Val %s = zv::Val::boolean(true);', $t));
+			$f->open('if (EG(assertions) > 0)');
+			$expr->setAttribute('turboAssertCall', true);
+			$f->line(sprintf('%s = std::move(%s);', $t, $this->own($f, $this->funcCall($f, $expr))));
+			$expr->setAttribute('turboAssertCall', false);
+			$f->close();
+			return new Value('zval', $t . '.raw()', $t);
 		}
 		if (str_contains($name, '\\')) {
 			$parts = explode('\\', $name);
@@ -6737,6 +6766,15 @@ final class Compiler
 				}
 				return $z;
 		}
+	}
+
+	/** whether a static method of a non-final class reads its called scope (static::class): it needs its own frame */
+	private function usesCalledScope(MethodInfo $method): bool
+	{
+		if ($method->unit->reflection->isFinal()) {
+			return false;
+		}
+		return $this->finder->findFirst([$method->node], static fn (Node $n): bool => $n instanceof Expr\ClassConstFetch && $n->class instanceof Node\Name && $n->class->toLowerString() === 'static') !== null;
 	}
 
 	/**

@@ -20,6 +20,7 @@
 
 #define PT_ABI_EG_FIELDS(X) \
 	X(exception) \
+	X(current_execute_data) \
 	X(uninitialized_zval) \
 	X(class_table) \
 	X(function_table) \

@@ -341,9 +341,19 @@ namespace pgen::ApiClassConstFetchRule {
 					l_methodReflection = zv::Ref(v63).deref().raw();
 					 {
 						 {
-							zv::Val r68;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_methodReflection, "getDocComment", "getdoccomment", 13, 0, NULL, r68.raw(), NULL))) return false;
-							l_methodDocComment = std::move(r68);
+							zv::Val vd68;
+							zend_class_entry *vd68_ce = Z_TYPE_P(l_methodReflection) == IS_OBJECT ? Z_OBJCE_P(l_methodReflection) : NULL;
+							bool vd68_done = false;
+							if (vd68_ce == pt_ce_better_reflection_adapter_method) {
+								zv::Val r69;
+								if (UNEXPECTED(!pgen::BetterReflectionAdapterMethod::m_getDocComment(Z_OBJ_P(l_methodReflection), r69.raw()))) return false;
+								vd68 = std::move(r69);
+								vd68_done = true;
+							}
+							if (!vd68_done) {
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_20, l_methodReflection, "getDocComment", "getdoccomment", 13, 0, NULL, vd68.raw()))) return false;
+							}
+							l_methodDocComment = std::move(vd68);
 						}
 						 {
 							if (Z_TYPE_P(l_methodDocComment.raw()) == (false ? IS_TRUE : IS_FALSE)) {
@@ -351,17 +361,17 @@ namespace pgen::ApiClassConstFetchRule {
 							}
 						}
 						 {
-							zv::Val o69 = zv::Val::copyOf(zv::Ref(l_methodDocComment.raw()));
-							zv::Val r70;
-							if (UNEXPECTED(!pgrt::strMatch(pg_site_21, "str_contains", 12, pgrt::StrMatch::CONTAINS, o69.raw(), &pg_lit[3], r70.raw()))) return false;
-							if (!((Z_TYPE_P(r70.raw()) == IS_TRUE))) {
+							zv::Val o70 = zv::Val::copyOf(zv::Ref(l_methodDocComment.raw()));
+							zv::Val r71;
+							if (UNEXPECTED(!pgrt::strMatch(pg_site_21, "str_contains", 12, pgrt::StrMatch::CONTAINS, o70.raw(), &pg_lit[3], r71.raw()))) return false;
+							if (!((Z_TYPE_P(r71.raw()) == IS_TRUE))) {
 								goto cont67;
 							}
 						}
 						 {
-							zval arr71_raw;
-							ZVAL_EMPTY_ARRAY(&arr71_raw);
-							ZVAL_COPY(ret, &arr71_raw);
+							zval arr72_raw;
+							ZVAL_EMPTY_ARRAY(&arr72_raw);
+							ZVAL_COPY(ret, &arr72_raw);
 							return true;
 						}
 					}
@@ -372,10 +382,10 @@ namespace pgen::ApiClassConstFetchRule {
 		}
 	}
 	 {
-		zv::Val arr72 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zv::Val o73 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
-		{ zval v = o73.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr72.raw()), &v); }
-		*ret = arr72.take();
+		zv::Val arr73 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zv::Val o74 = zv::Val::copyOf(zv::Ref(l_ruleError.raw()));
+		{ zval v = o74.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr73.raw()), &v); }
+		*ret = arr73.take();
 		return true;
 	}
 }

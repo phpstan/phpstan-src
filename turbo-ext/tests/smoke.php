@@ -4660,6 +4660,19 @@ foreach ($lemEngineProbes['php'] as $lemLabel => $lemPhp) {
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.
 $coveredElsewhere = [
+	\PHPStan\BetterReflection\Reflection\ReflectionClass::class => 'make tests',
+	\PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod::class => 'make tests',
+	\PHPStan\BetterReflection\Reflection\ReflectionNamedType::class => 'make tests',
+	\PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType::class => 'make tests',
+	\PHPStan\BetterReflection\Reflection\Adapter\ReflectionType::class => 'make tests',
+	\PHPStan\BetterReflection\Reflection\Attribute\ReflectionAttributeHelper::class => 'make tests',
+	\PHPStan\BetterReflection\Reflection\Deprecated\DeprecatedHelper::class => 'make tests',
+	\PHPStan\BetterReflection\Util\FileHelper::class => 'make tests',
+	\PHPStan\BetterReflection\Identifier\Identifier::class => 'make tests',
+	\PHPStan\BetterReflection\Reflection\ReflectionAttribute::class => 'make tests',
+	\PHPStan\BetterReflection\Reflection\ReflectionParameter::class => 'make tests',
+	\PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::class => 'make tests',
+	\PhpParser\NameContext::class => 'make tests',
 	\PHPStan\Analyser\ValueDependencyCollector::class => 'make tests',
 	\PHPStan\Dependency\DependencyResolver::class => 'make tests',
 	\PHPStan\Parser\GotoLabelVisitor::class => 'make tests',

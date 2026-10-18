@@ -1123,6 +1123,19 @@ extern zend_class_entry *pt_ce_simple_xmlelement_constructor_throw_type_extensio
 extern zend_class_entry *pt_ce_simple_xmlelement_xpath_method_return_type_extension;
 extern zend_class_entry *pt_ce_sprintf_function_dynamic_return_type_extension;
 extern zend_class_entry *pt_ce_sscanf_function_dynamic_return_type_extension;
+extern zend_class_entry *pt_ce_better_reflection_class;
+extern zend_class_entry *pt_ce_better_reflection_adapter_method;
+extern zend_class_entry *pt_ce_better_reflection_named_type;
+extern zend_class_entry *pt_ce_better_reflection_adapter_named_type;
+extern zend_class_entry *pt_ce_better_reflection_adapter_type;
+extern zend_class_entry *pt_ce_better_reflection_attribute_helper;
+extern zend_class_entry *pt_ce_better_reflection_deprecated_helper;
+extern zend_class_entry *pt_ce_better_reflection_file_helper;
+extern zend_class_entry *pt_ce_better_reflection_identifier;
+extern zend_class_entry *pt_ce_better_reflection_attribute;
+extern zend_class_entry *pt_ce_better_reflection_parameter;
+extern zend_class_entry *pt_ce_better_reflection_located_source;
+extern zend_class_entry *pt_ce_name_context;
 
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
@@ -9543,5 +9556,284 @@ namespace pgen::SscanfFunctionDynamicReturnTypeExtension {
 [[nodiscard]] bool m_isFunctionSupported(zend_object *self, zval *p_functionReflection, bool *ret);
 [[nodiscard]] bool m_getTypeFromFunctionCall(zend_object *self, zval *p_functionReflection, zval *p_functionCall, zval *p_scope, zval *ret);
 } // namespace pgen::SscanfFunctionDynamicReturnTypeExtension
+
+namespace pgen::BetterReflectionClass {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflector, zval *p_node, zval *p_locatedSource, zval *p_namespace);
+[[nodiscard]] bool m_exportToCache(zend_object *self, zval *ret);
+[[nodiscard]] bool m_importFromCache(zval *p_reflector, zval *p_data, zval *ret);
+[[nodiscard]] bool m___toString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_createFromInstance(zval *p_instance, zval *ret);
+[[nodiscard]] bool m_createFromNode(zval *p_reflector, zval *p_node, zval *p_locatedSource, zval *p_namespace, zval *ret);
+[[nodiscard]] bool m_getShortName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getAnonymousClassNamePrefix(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getParentClassName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getNamespaceName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_inNamespace(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getExtensionName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_createMethodsFromTrait(zend_object *self, zval *p_method, zval *p_currentMethods, zval *ret);
+[[nodiscard]] bool m_getMethodsIndexedByLowercasedName(zend_object *self, zval *p_alreadyVisitedClasses, zval *ret);
+[[nodiscard]] bool m_getMethods(zend_object *self, zend_long p_filter, zval *ret);
+[[nodiscard]] bool m_getImmediateMethods(zend_object *self, zend_long p_filter, zval *ret);
+[[nodiscard]] bool m_createImmediateMethods(zend_object *self, zval *p_node, zval *p_reflector, zval *ret);
+[[nodiscard]] bool m_addEnumMethods(zend_object *self, zval *p_node, zval *p_methods, zval *ret);
+[[nodiscard]] bool m_getMethod(zend_object *self, zval *p_methodName, zval *ret);
+[[nodiscard]] bool m_hasMethod(zend_object *self, zval *p_methodName, bool *ret);
+[[nodiscard]] bool m_getImmediateConstants(zend_object *self, zend_long p_filter, zval *ret);
+[[nodiscard]] bool m_hasConstant(zend_object *self, zval *p_name, bool *ret);
+[[nodiscard]] bool m_getConstant(zend_object *self, zval *p_name, zval *ret);
+[[nodiscard]] bool m_createImmediateConstants(zend_object *self, zval *p_node, zval *p_reflector, zval *ret);
+[[nodiscard]] bool m_getConstants(zend_object *self, zend_long p_filter, zval *ret);
+[[nodiscard]] bool m_getConstantsConsideringAlreadyVisitedClasses(zend_object *self, zval *p_alreadyVisitedClasses, zval *ret);
+[[nodiscard]] bool m_getConstructor(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getImmediateProperties(zend_object *self, zend_long p_filter, zval *ret);
+[[nodiscard]] bool m_createImmediateProperties(zend_object *self, zval *p_node, zval *p_reflector, zval *ret);
+[[nodiscard]] bool m_addEnumProperties(zend_object *self, zval *p_properties, zval *p_node, zval *p_reflector, zval *ret);
+[[nodiscard]] bool m_getProperties(zend_object *self, zend_long p_filter, zval *ret);
+[[nodiscard]] bool m_getPropertiesConsideringAlreadyVisitedClasses(zend_object *self, zval *p_alreadyVisitedClasses, zval *ret);
+[[nodiscard]] bool m_getProperty(zend_object *self, zval *p_name, zval *ret);
+[[nodiscard]] bool m_hasProperty(zend_object *self, zval *p_name, bool *ret);
+[[nodiscard]] bool m_getDefaultProperties(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getFileName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getLocatedSource(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getStartLine(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getEndLine(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getStartColumn(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getEndColumn(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getParentClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isOnParentClassCycle(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isOnInterfaceCycle(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isOnTraitCycle(zend_object *self, bool *ret);
+[[nodiscard]] bool m_reachesItself(zend_object *self, zval *p_edges, bool *ret);
+[[nodiscard]] bool m_getParentClassNames(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getParentClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getDocComment(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isAnonymous(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isInternal(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isUserDefined(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isDeprecated(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isAbstract(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isFinal(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isReadOnly(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getModifiers(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_computeModifiers(zend_object *self, zval *p_node, zend_long *ret);
+[[nodiscard]] bool m_isTrait(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isInterface(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getTraits(zend_object *self, zval *ret);
+[[nodiscard]] bool m_addStringableInterfaceClassName(zend_object *self, zval *p_interfaceClassNames, zval *ret);
+[[nodiscard]] bool m_addEnumInterfaceClassNames(zend_object *self, zval *p_interfaceClassNames, zval *ret);
+[[nodiscard]] bool m_getTraitClassNames(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getTraitNames(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getTraitAliases(zend_object *self, zval *ret);
+[[nodiscard]] bool m_computeTraitsData(zend_object *self, zval *p_node, zval *ret);
+[[nodiscard]] bool m_processTraitAdaptation(zend_object *self, zval *p_adaptation, zval *p_usedTraits, zval *p_traitsData, zval *ret);
+[[nodiscard]] bool m_methodHash(zend_object *self, zval *p_className, zval *p_methodName, zval *ret);
+[[nodiscard]] bool m_lowerCasedMethodHash(zend_object *self, zval *p_className, zval *p_methodName, zval *ret);
+[[nodiscard]] bool m_getInterfaceClassNames(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getInterfaces(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getImmediateInterfaces(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getInterfaceNames(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isInstance(zend_object *self, zval *p_object, bool *ret);
+[[nodiscard]] bool m_isSubclassOf(zend_object *self, zval *p_className, bool *ret);
+[[nodiscard]] bool m_implementsInterface(zend_object *self, zval *p_interfaceName, bool *ret);
+[[nodiscard]] bool m_isInstantiable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isCloneable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isIterateable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isEnum(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getCurrentClassImplementedInterfacesIndexedByName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getInterfacesHierarchy(zend_object *self, zval *p_alreadyVisitedClasses, zval *ret);
+[[nodiscard]] bool m_getStaticPropertyValue(zend_object *self, zval *p_propertyName, zval *ret);
+[[nodiscard]] bool m_setStaticPropertyValue(zend_object *self, zval *p_propertyName, zval *p_value);
+[[nodiscard]] bool m_getStaticProperties(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getAttributes(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getAttributesByName(zend_object *self, zval *p_name, zval *ret);
+[[nodiscard]] bool m_getAttributesByInstance(zend_object *self, zval *p_className, zval *ret);
+} // namespace pgen::BetterReflectionClass
+
+namespace pgen::BetterReflectionAdapterMethod {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_betterReflectionMethod);
+[[nodiscard]] bool m___toString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_inNamespace(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isClosure(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isDeprecated(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isInternal(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isUserDefined(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getClosureThis(zend_object *self);
+[[nodiscard]] bool m_getClosureScopeClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getClosureCalledClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getDocComment(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getStartLine(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getEndLine(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getExtension(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getExtensionName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getFileName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getNamespaceName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getNumberOfParameters(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getNumberOfRequiredParameters(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getParameters(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasReturnType(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getReturnType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getShortName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getStaticVariables(zend_object *self, zval *ret);
+[[nodiscard]] bool m_returnsReference(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isGenerator(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isVariadic(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isPublic(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isPrivate(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isProtected(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isAbstract(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isFinal(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isStatic(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isConstructor(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isDestructor(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getClosure(zend_object *self, zval *p_object, zval *ret);
+[[nodiscard]] bool m_getModifiers(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_invoke(zend_object *self, zval *p_object, zval *p_arg, zval *p_args, uint32_t p_args_count, zval *ret);
+[[nodiscard]] bool m_invokeArgs(zend_object *self, zval *p_object, zval *p_args, zval *ret);
+[[nodiscard]] bool m_getDeclaringClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getPrototype(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasPrototype(zend_object *self, bool *ret);
+[[nodiscard]] bool m_setAccessible(zend_object *self, zval *p_accessible);
+[[nodiscard]] bool m_getAttributes(zend_object *self, zval *p_name, zend_long p_flags, zval *ret);
+[[nodiscard]] bool m_hasTentativeReturnType(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getTentativeReturnType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getClosureUsedVariables(zend_object *self, zval *ret);
+[[nodiscard]] bool m___get(zend_object *self, zval *p_name, zval *ret);
+[[nodiscard]] bool m_getBetterReflection(zend_object *self, zval *ret);
+} // namespace pgen::BetterReflectionAdapterMethod
+
+namespace pgen::BetterReflectionNamedType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflector, zval *p_owner, zval *p_type);
+[[nodiscard]] bool m_exportToCache(zend_object *self, zval *ret);
+[[nodiscard]] bool m_importFromCache(zval *p_reflector, zval *p_data, zval *p_owner, zval *ret);
+[[nodiscard]] bool m_withOwner(zend_object *self, zval *p_owner, zval *ret);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isBuiltin(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_allowsNull(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isIdentifier(zend_object *self, bool *ret);
+[[nodiscard]] bool m___toString(zend_object *self, zval *ret);
+} // namespace pgen::BetterReflectionNamedType
+
+namespace pgen::BetterReflectionAdapterNamedType {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_type, bool p_allowsNull);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m___toString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_allowsNull(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isBuiltin(zend_object *self, bool *ret);
+[[nodiscard]] bool m_computeIsBuiltin(zval *p_namedType, bool p_isBuiltin, bool *ret);
+[[nodiscard]] bool m_isIdentifier(zend_object *self, bool *ret);
+} // namespace pgen::BetterReflectionAdapterNamedType
+
+namespace pgen::BetterReflectionAdapterType {
+[[nodiscard]] bool m_fromTypeOrNull(zval *p_betterReflectionType, zval *ret);
+[[nodiscard]] bool m_fromType(zval *p_betterReflectionType, zval *ret);
+} // namespace pgen::BetterReflectionAdapterType
+
+namespace pgen::BetterReflectionAttributeHelper {
+[[nodiscard]] bool m_createAttributes(zval *p_reflector, zval *p_reflection, zval *p_attrGroups, zval *ret);
+[[nodiscard]] bool m_filterAttributesByName(zval *p_attributes, zval *p_name, zval *ret);
+[[nodiscard]] bool m_filterAttributesByInstance(zval *p_attributes, zval *p_className, zval *ret);
+} // namespace pgen::BetterReflectionAttributeHelper
+
+namespace pgen::BetterReflectionDeprecatedHelper {
+[[nodiscard]] bool m_isDeprecated(zval *p_reflection, bool *ret);
+} // namespace pgen::BetterReflectionDeprecatedHelper
+
+namespace pgen::BetterReflectionFileHelper {
+[[nodiscard]] bool m_normalizeWindowsPath(zval *p_path, zval *ret);
+[[nodiscard]] bool m_normalizePath(zval *p_originalPath, zval *p_directorySeparator, zval *ret);
+[[nodiscard]] bool m_normalizeSystemPath(zval *p_originalPath, zval *ret);
+} // namespace pgen::BetterReflectionFileHelper
+
+namespace pgen::BetterReflectionIdentifier {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_name, zval *p_type);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isClass(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isFunction(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isConstant(zend_object *self, bool *ret);
+} // namespace pgen::BetterReflectionIdentifier
+
+namespace pgen::BetterReflectionAttribute {
+[[nodiscard]] bool m_argumentExpressions(zend_object *self, zval *ret);
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflector, zval *p_node, zval *p_owner, bool p_isRepeated);
+[[nodiscard]] bool m_exportToCache(zend_object *self, zval *ret);
+[[nodiscard]] bool m_importFromCache(zval *p_reflector, zval *p_data, zval *p_owner, zval *ret);
+[[nodiscard]] bool m_withOwner(zend_object *self, zval *p_owner, zval *ret);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getArgumentsExpressions(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getArguments(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getTarget(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_isRepeated(zend_object *self, bool *ret);
+[[nodiscard]] bool m___toString(zend_object *self, zval *ret);
+} // namespace pgen::BetterReflectionAttribute
+
+namespace pgen::BetterReflectionParameter {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_reflector, zval *p_node, zval *p_function, zend_long p_parameterIndex, bool p_isOptional);
+[[nodiscard]] bool m_exportToCache(zend_object *self, zval *ret);
+[[nodiscard]] bool m_importFromCache(zval *p_reflector, zval *p_data, zval *p_function, zval *ret);
+[[nodiscard]] bool m_createFromClassInstanceAndMethod(zval *p_instance, zval *p_methodName, zval *p_parameterName, zval *ret);
+[[nodiscard]] bool m_createFromClosure(zval *p_closure, zval *p_parameterName, zval *ret);
+[[nodiscard]] bool m___toString(zend_object *self, zval *ret);
+[[nodiscard]] bool m_createFromNode(zval *p_reflector, zval *p_node, zval *p_function, zend_long p_parameterIndex, bool p_isOptional, zval *ret);
+[[nodiscard]] bool m_withFunction(zend_object *self, zval *p_function, zval *ret);
+[[nodiscard]] bool m_getCompiledDefaultValue(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getDeclaringFunction(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getDeclaringClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getImplementingClass(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isOptional(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isDefaultValueAvailable(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getDefaultValueExpression(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getDefaultValue(zend_object *self, zval *ret);
+[[nodiscard]] bool m_allowsNull(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getPosition(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getType(zend_object *self, zval *ret);
+[[nodiscard]] bool m_createType(zend_object *self, zval *p_node, zval *ret);
+[[nodiscard]] bool m_hasType(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isVariadic(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isPassedByReference(zend_object *self, bool *ret);
+[[nodiscard]] bool m_canBePassedByValue(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isPromoted(zend_object *self, bool *ret);
+[[nodiscard]] bool m_isDefaultValueConstant(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getDefaultValueConstantName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getStartLine(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getEndLine(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getStartColumn(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getEndColumn(zend_object *self, zend_long *ret);
+[[nodiscard]] bool m_getAttributes(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getAttributesByName(zend_object *self, zval *p_name, zval *ret);
+[[nodiscard]] bool m_getAttributesByInstance(zend_object *self, zval *p_className, zval *ret);
+} // namespace pgen::BetterReflectionParameter
+
+namespace pgen::BetterReflectionLocatedSource {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_source, zval *p_name, zval *p_filename);
+[[nodiscard]] bool m_getSource(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getFileName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isInternal(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getExtensionName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_isEvaled(zend_object *self, bool *ret);
+[[nodiscard]] bool m_getAliasName(zend_object *self, zval *ret);
+[[nodiscard]] bool m_exportToCache(zend_object *self, zval *ret);
+[[nodiscard]] bool m_importFromCache(zval *p_data, zval *ret);
+} // namespace pgen::BetterReflectionLocatedSource
+
+namespace pgen::NameContext {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_errorHandler);
+[[nodiscard]] bool m_startNamespace(zend_object *self, zval *p_namespace);
+[[nodiscard]] bool m_addAlias(zend_object *self, zval *p_name, zval *p_aliasName, zend_long p_type, zval *p_errorAttrs);
+[[nodiscard]] bool m_getNamespace(zend_object *self, zval *ret);
+[[nodiscard]] bool m_getResolvedName(zend_object *self, zval *p_name, zend_long p_type, zval *ret);
+[[nodiscard]] bool m_getResolvedClassName(zend_object *self, zval *p_name, zval *ret);
+[[nodiscard]] bool m_getPossibleNames(zend_object *self, zval *p_name, zend_long p_type, zval *ret);
+[[nodiscard]] bool m_getShortName(zend_object *self, zval *p_name, zend_long p_type, zval *ret);
+[[nodiscard]] bool m_resolveAlias(zend_object *self, zval *p_name, zend_long p_type, zval *ret);
+[[nodiscard]] bool m_getNamespaceRelativeName(zend_object *self, zval *p_name, zval *p_lcName, zend_long p_type, zval *ret);
+[[nodiscard]] bool m_normalizeConstName(zend_object *self, zval *p_name, zval *ret);
+} // namespace pgen::NameContext
 
 #endif

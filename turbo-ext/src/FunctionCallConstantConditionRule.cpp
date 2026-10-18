@@ -26,10 +26,16 @@ static pt_method_site pg_site_13; /* method_withTraitContexts_13 */
 static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node */
 static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
 
+static const char pg_nul_literal_0[] = "\000null-trait";
+
 static void pg_const_NULL_TRAIT_KEY(zval *out)
 {
-	ZVAL_INTERNED_STR(out, pgrt::internLiteral("\000null-trait", 11));
+	ZVAL_INTERNED_STR(out, pgrt::internLiteral(pg_nul_literal_0, 11));
 }
+
+static const char pg_nul_literal_1[] = "\000";
+
+static const char pg_nul_literal_2[] = "\000null-trait";
 
 namespace pgen::FunctionCallConstantConditionRule {
 
@@ -699,9 +705,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallConstantConditionRule)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("PHPStan\\Node\\CollectedDataNode", 30));
 	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("PHPStan\\Rules\\Comparison\\ImpossibleCheckTypeReportedCollector", 61));
-	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("\000", 1));
+	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral(pg_nul_literal_1, 1));
 	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionCollector", 63));
-	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("\000null-trait", 11));
+	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral(pg_nul_literal_2, 11));
 	reg::Class cls("PHPStan\\Rules\\Comparison\\FunctionCallConstantConditionRule");
 	ptdecl::FunctionCallConstantConditionRule::declareClass(cls);
 	ptdecl::FunctionCallConstantConditionRule::declareProperties(cls);

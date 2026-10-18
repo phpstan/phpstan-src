@@ -81,6 +81,8 @@ static pt_method_site pg_site_68; /* method_getDeclaringClass_68 */
 static pgrt::MethodShapeSite pg_site_69; /* method0_getName_69 */
 static pgrt::ClassSite pg_site_70; /* cls_PHPStan\Node\CollectedDataNode */
 
+static const char pg_nul_literal_0[] = "\000";
+
 namespace pgen::PossiblyPureCallTransitivePurityResolver {
 
 /* PHPStan\Rules\DeadCode\PossiblyPureCallTransitivePurityResolver::__construct() */
@@ -1530,7 +1532,7 @@ namespace sigs = ptdecl::PossiblyPureCallTransitivePurityResolver::sig;
 PT_MINIT_REGISTRATION(pt_register_codegen_PossiblyPureCallTransitivePurityResolver)
 {
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("f", 1));
-	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("\000", 1));
+	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral(pg_nul_literal_0, 1));
 	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("m", 1));
 	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("PHPStan\\Rules\\DeadCode\\FunctionWithoutImpurePointsCollector", 59));
 	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("PHPStan\\Rules\\DeadCode\\MethodWithoutImpurePointsCollector", 57));

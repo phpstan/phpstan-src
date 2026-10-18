@@ -122,7 +122,7 @@ bool callFunction(FunctionSite &site, const char *lcname, size_t len, zend_class
 		}
 		site = { fn, pt_engine_generation };
 	}
-	const zend_class_entry *previousScope = EG(fake_scope);
+	auto previousScope = EG(fake_scope); /* const from PHP 8.5 */
 	EG(fake_scope) = scope;
 	zend_call_known_function(site.fn, NULL, NULL, ret, argc, argv, named);
 	EG(fake_scope) = previousScope;
@@ -306,10 +306,10 @@ bool readPropertyGeneric(zval *value, zend_class_entry *scope, const char *name,
 		return !EG(exception);
 	}
 	zend_string *str = zend_string_init(name, len, 0);
-	const zend_class_entry *previousScope = EG(fake_scope);
+	auto previousScope = EG(fake_scope); /* const from PHP 8.5 */
 	EG(fake_scope) = scope;
 	zval tmp;
-	zval *read = Z_OBJ_HT_P(value)->read_property(Z_OBJ_P(value), str, BP_VAR_R, NULL, &tmp);
+	zval *read = PT_OBJ_HANDLER(Z_OBJ_P(value), read_property)(Z_OBJ_P(value), str, BP_VAR_R, NULL, &tmp);
 	EG(fake_scope) = previousScope;
 	zend_string_release(str);
 	if (UNEXPECTED(EG(exception))) {
@@ -611,9 +611,9 @@ bool writePropertyGeneric(zval *object, zend_class_entry *scope, zval *name, zva
 		zend_throw_error(NULL, "Attempt to assign property \"%s\" on %s", Z_STRVAL_P(name), zend_zval_value_name(object));
 		return false;
 	}
-	const zend_class_entry *previousScope = EG(fake_scope);
+	auto previousScope = EG(fake_scope); /* const from PHP 8.5 */
 	EG(fake_scope) = scope;
-	Z_OBJ_HT_P(object)->write_property(Z_OBJ_P(object), Z_STR_P(name), value, NULL);
+	PT_OBJ_HANDLER(Z_OBJ_P(object), write_property)(Z_OBJ_P(object), Z_STR_P(name), value, NULL);
 	EG(fake_scope) = previousScope;
 	return !EG(exception);
 }
@@ -662,7 +662,7 @@ zval *dimRead(zval *base, zval *key, zval *tmp)
 	}
 	if (Z_TYPE_P(base) == IS_OBJECT) {
 		zend_object *object = Z_OBJ_P(base);
-		zval *read = object->handlers->read_dimension(object, key, BP_VAR_R, tmp);
+		zval *read = PT_OBJ_HANDLER(object, read_dimension)(object, key, BP_VAR_R, tmp);
 		if (UNEXPECTED(EG(exception))) return NULL;
 		if (read == NULL) return &EG(uninitialized_zval);
 		if (read != tmp) {
@@ -697,11 +697,11 @@ bool cloneObject(zval *value, zval *out)
 		return false;
 	}
 	zend_object *object = Z_OBJ_P(value);
-	if (UNEXPECTED(object->handlers->clone_obj == NULL)) {
+	if (UNEXPECTED(PT_OBJ_HANDLER(object, clone_obj) == NULL)) {
 		zend_throw_error(NULL, "Trying to clone an uncloneable object of class %s", ZSTR_VAL(object->ce->name));
 		return false;
 	}
-	zend_object *clone = object->handlers->clone_obj(object);
+	zend_object *clone = PT_OBJ_HANDLER(object, clone_obj)(object);
 	if (UNEXPECTED(EG(exception))) {
 		if (clone != NULL) OBJ_RELEASE(clone);
 		return false;
@@ -793,18 +793,19 @@ bool callStaticDynamic(zval *cls, zend_class_entry *scope, zval *name, uint32_t 
 	if (UNEXPECTED(ce == NULL)) {
 		return false;
 	}
-	const zend_class_entry *previousScope = EG(fake_scope);
+	auto previousScope = EG(fake_scope); /* const from PHP 8.5 */
 	EG(fake_scope) = scope;
 	zend_function *fn = zend_std_get_static_method(ce, Z_STR_P(name), NULL);
 	EG(fake_scope) = previousScope;
 	if (UNEXPECTED(fn == NULL)) {
+		/* the engine's messages (its helpers are exported from PHP 8.5 only) */
 		if (!EG(exception)) {
-			zend_undefined_method(ce, Z_STR_P(name));
+			zend_throw_error(NULL, "Call to undefined method %s::%s()", ZSTR_VAL(ce->name), Z_STRVAL_P(name));
 		}
 		return false;
 	}
 	if (UNEXPECTED(!(fn->common.fn_flags & ZEND_ACC_STATIC))) {
-		zend_non_static_method_call(fn);
+		zend_throw_error(zend_ce_error, "Non-static method %s::%s() cannot be called statically", ZSTR_VAL(fn->common.scope->name), ZSTR_VAL(fn->common.function_name));
 		return false;
 	}
 	zend_call_known_function(fn, NULL, ce, ret, argc, argv, named);
@@ -822,7 +823,7 @@ bool unsetProperty(zval *object, zend_class_entry *scope, zval *name)
 	if (Z_TYPE_P(object) != IS_OBJECT) {
 		return true;
 	}
-	const zend_class_entry *previousScope = EG(fake_scope);
+	auto previousScope = EG(fake_scope); /* const from PHP 8.5 */
 	EG(fake_scope) = scope;
 	PT_OBJ_HANDLER(Z_OBJ_P(object), unset_property)(Z_OBJ_P(object), Z_STR_P(name), NULL);
 	EG(fake_scope) = previousScope;
@@ -923,9 +924,9 @@ zval *dimIs(zval *base, zval *key, zval *tmp)
 	}
 	if (Z_TYPE_P(base) == IS_OBJECT) {
 		zend_object *object = Z_OBJ_P(base);
-		if (!object->handlers->has_dimension(object, key, 0)) return NULL;
+		if (!PT_OBJ_HANDLER(object, has_dimension)(object, key, 0)) return NULL;
 		if (UNEXPECTED(EG(exception))) return NULL;
-		zval *read = object->handlers->read_dimension(object, key, BP_VAR_IS, tmp);
+		zval *read = PT_OBJ_HANDLER(object, read_dimension)(object, key, BP_VAR_IS, tmp);
 		if (read == NULL || UNEXPECTED(EG(exception))) return NULL;
 		if (read != tmp) {
 			ZVAL_COPY_DEREF(tmp, read);
@@ -947,11 +948,11 @@ zval *propIs(zval *base, zend_class_entry *scope, zval *name, zval *tmp)
 	ZVAL_DEREF(base);
 	if (Z_TYPE_P(base) != IS_OBJECT) return NULL;
 	zend_object *object = Z_OBJ_P(base);
-	const zend_class_entry *previousScope = EG(fake_scope);
+	auto previousScope = EG(fake_scope); /* const from PHP 8.5 */
 	EG(fake_scope) = scope;
 	zval *result = NULL;
-	if (object->handlers->has_property(object, Z_STR_P(name), ZEND_PROPERTY_EXISTS, NULL) && !EG(exception)) {
-		zval *read = object->handlers->read_property(object, Z_STR_P(name), BP_VAR_IS, NULL, tmp);
+	if (PT_OBJ_HANDLER(object, has_property)(object, Z_STR_P(name), ZEND_PROPERTY_EXISTS, NULL) && !EG(exception)) {
+		zval *read = PT_OBJ_HANDLER(object, read_property)(object, Z_STR_P(name), BP_VAR_IS, NULL, tmp);
 		if (read != NULL && !EG(exception)) {
 			if (read != tmp) {
 				ZVAL_COPY_DEREF(tmp, read);

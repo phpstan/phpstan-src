@@ -353,7 +353,7 @@ static void abi_trivial_shape(const zend_function *fn, pt_trivial_shape *out)
 	if (Z_TYPE_P(name) != IS_STRING || fn->common.scope == NULL) {
 		return;
 	}
-	const zend_class_entry *previousScope = EG(fake_scope);
+	auto previousScope = EG(fake_scope); /* const from PHP 8.5 */
 	EG(fake_scope) = fn->common.scope;
 	zend_property_info *info = zend_get_property_info(fn->common.scope, Z_STR_P(name), 1);
 	EG(fake_scope) = previousScope;

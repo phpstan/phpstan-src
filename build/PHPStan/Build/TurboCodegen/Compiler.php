@@ -706,7 +706,7 @@ final class Compiler
 			} elseif (is_string($value) && (str_contains($value, "\0") || $constant->isProtected())) {
 				// a C string cannot hold the NUL: built with its length
 				$builder = sprintf('pg_const_%s', $constant->getName());
-				$this->closures[] = sprintf("static void %s(zval *out)\n{\n\tZVAL_INTERNED_STR(out, pgrt::internLiteral(\"%s\", %d));\n}", $builder, self::cString($value), strlen($value));
+				$this->closures[] = sprintf("static void %s(zval *out)\n{\n\tZVAL_INTERNED_STR(out, pgrt::internLiteral(%s, %d));\n}", $builder, $this->stringLiteral($value), strlen($value));
 				$out[] = sprintf("\tcls.%s(\"%s\", %s);", $constant->isPrivate() ? 'privateClassConstantValue' : 'classConstantValue', $constant->getName(), $builder);
 			} elseif (is_string($value)) {
 				$out[] = sprintf("\tcls.%s(\"%s\", \"%s\");", $constant->isPrivate() ? 'privateClassConstantString' : 'publicClassConstantString', $constant->getName(), self::cString($value));
@@ -746,7 +746,7 @@ final class Compiler
 		// the literals the bodies and the glue (defaults) use, interned first
 		$literals = [];
 		foreach ($this->literals as $literal => $index) {
-			$literals[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(\"%s\", %d));", $index, self::cString((string) $literal), strlen((string) $literal));
+			$literals[] = sprintf("\tZVAL_INTERNED_STR(&pg_lit[%d], pgrt::internLiteral(%s, %d));", $index, $this->stringLiteral((string) $literal), strlen((string) $literal));
 		}
 		return str_replace("/*LITERALS*/\n", $literals === [] ? '' : implode("\n", $literals) . "\n", implode("\n", $out));
 	}
@@ -762,7 +762,7 @@ final class Compiler
 	{
 		$lines = [];
 		$counter = 0;
-		$build = static function (array $array) use (&$build, &$lines, &$counter): string {
+		$build = function (array $array) use (&$build, &$lines, &$counter): string {
 			$table = 't' . $counter++;
 			$lines[] = sprintf("\tHashTable *%s = pgrt::constArrayNew(%d);", $table, count($array));
 			foreach ($array as $key => $item) {
@@ -777,7 +777,7 @@ final class Compiler
 				} elseif (is_float($item)) {
 					$lines[] = sprintf("\tZVAL_DOUBLE(&%s, %s);", $z, var_export($item, true));
 				} elseif (is_string($item)) {
-					$lines[] = sprintf("\tZVAL_INTERNED_STR(&%s, pgrt::internLiteral(\"%s\", %d));", $z, self::cString($item), strlen($item));
+					$lines[] = sprintf("\tZVAL_INTERNED_STR(&%s, pgrt::internLiteral(%s, %d));", $z, $this->stringLiteral($item), strlen($item));
 				} elseif (is_array($item)) {
 					$lines[] = sprintf("\tpgrt::constArrayFinish(%s, &%s);", $build($item), $z);
 				} else {
@@ -786,7 +786,7 @@ final class Compiler
 				if (is_int($key)) {
 					$lines[] = sprintf("\tzend_hash_index_update(%s, %d, &%s);", $table, $key, $z);
 				} else {
-					$lines[] = sprintf("\tzend_hash_update(%s, pgrt::internLiteral(\"%s\", %d), &%s);", $table, self::cString($key), strlen($key), $z);
+					$lines[] = sprintf("\tzend_hash_update(%s, pgrt::internLiteral(%s, %d), &%s);", $table, $this->stringLiteral($key), strlen($key), $z);
 				}
 			}
 			return $table;
@@ -3088,6 +3088,23 @@ final class Compiler
 			}
 		}
 		return new Value('zval', $t . '.raw()', $t, isArray: true);
+	}
+
+	/**
+	 * A C string literal of the value, for pgrt::internLiteral(); one with a
+	 * NUL byte is a named array instead: the compiler numbers such literals'
+	 * sections after the ones the engine's headers define, which differ
+	 * between PHP versions, and the shared core must compile to the same
+	 * object against every version.
+	 */
+	private function stringLiteral(string $value): string
+	{
+		if (!str_contains($value, "\0")) {
+			return '"' . self::cString($value) . '"';
+		}
+		$name = sprintf('pg_nul_literal_%d', $this->closureCount++);
+		$this->closures[] = sprintf('static const char %s[] = "%s";', $name, self::cString($value));
+		return $name;
 	}
 
 	private function className(Node $class): string

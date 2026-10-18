@@ -28,6 +28,8 @@ static pgrt::ClassSite pg_site_15; /* cls_PHPStan\ShouldNotHappenException */
 static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
 static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Reflection\ClassReflection */
 
+static const char pg_nul_literal_0[] = "\000";
+
 namespace pgen::ValueDependencyCollector {
 
 /* PHPStan\Analyser\ValueDependencyCollector::__construct() */
@@ -987,7 +989,7 @@ namespace sigs = ptdecl::ValueDependencyCollector::sig;
 
 PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 {
-	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("\000", 1));
+	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral(pg_nul_literal_0, 1));
 	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("analysis", 8));
 	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral("declarations", 12));
 	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("PHPStan\\Analyser\\ResultCache\\FileResultCacheValueExtension", 58));

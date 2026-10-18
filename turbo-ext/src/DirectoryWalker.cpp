@@ -56,6 +56,8 @@ static void pg_const_VCS_DIRECTORIES(zval *out)
 	pgrt::constArrayFinish(t0, out);
 }
 
+static const char pg_nul_literal_0[] = "\000";
+
 namespace pgen::DirectoryWalker {
 
 /* PHPStan\File\DirectoryWalker::__construct() */
@@ -1164,7 +1166,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("/", 1));
 	ZVAL_INTERNED_STR(&pg_lit[5], pgrt::internLiteral("://", 3));
 	ZVAL_INTERNED_STR(&pg_lit[6], pgrt::internLiteral("", 0));
-	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral("\000", 1));
+	ZVAL_INTERNED_STR(&pg_lit[7], pgrt::internLiteral(pg_nul_literal_0, 1));
 	ZVAL_INTERNED_STR(&pg_lit[8], pgrt::internLiteral("l", 1));
 	ZVAL_INTERNED_STR(&pg_lit[9], pgrt::internLiteral("VCS_DIRECTORIES", 15));
 	ZVAL_INTERNED_STR(&pg_lit[10], pgrt::internLiteral("d", 1));

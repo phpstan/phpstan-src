@@ -59,6 +59,10 @@
 	X(compare) \
 	X(clone_obj) \
 	X(read_property) \
+	X(write_property) \
+	X(read_dimension) \
+	X(has_property) \
+	X(has_dimension) \
 	X(unset_property) \
 	X(get_properties) \
 	X(get_closure)

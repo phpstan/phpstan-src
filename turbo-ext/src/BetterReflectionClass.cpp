@@ -1247,6 +1247,8 @@ static void pg_closure_33(zval *captures, uint32_t argc, zval *argv, zval *retur
 	}
 }
 
+static const char pg_nul_literal_33[] = "\000";
+
 namespace pgen::BetterReflectionClass {
 
 /* PHPStan\BetterReflection\Reflection\ReflectionClass::__construct() */
@@ -8191,7 +8193,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionClass)
 	ZVAL_INTERNED_STR(&pg_lit[24], pgrt::internLiteral("reflector", 9));
 	ZVAL_INTERNED_STR(&pg_lit[25], pgrt::internLiteral("%s%s%c%s(%d)", 12));
 	ZVAL_INTERNED_STR(&pg_lit[26], pgrt::internLiteral("@anonymous", 10));
-	ZVAL_INTERNED_STR(&pg_lit[27], pgrt::internLiteral("\000", 1));
+	ZVAL_INTERNED_STR(&pg_lit[27], pgrt::internLiteral(pg_nul_literal_33, 1));
 	ZVAL_INTERNED_STR(&pg_lit[28], pgrt::internLiteral("class", 5));
 	ZVAL_INTERNED_STR(&pg_lit[29], pgrt::internLiteral("assert($this->name !== null)", 28));
 	ZVAL_INTERNED_STR(&pg_lit[30], pgrt::internLiteral("", 0));

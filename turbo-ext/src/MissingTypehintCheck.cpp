@@ -943,6 +943,8 @@ static void pg_const_ITERABLE_GENERIC_CLASS_NAMES(zval *out)
 	pgrt::constArrayFinish(t0, out);
 }
 
+static const char pg_nul_literal_5[] = "\000";
+
 namespace pgen::MissingTypehintCheck {
 
 /* PHPStan\Rules\MissingTypehintCheck::__construct() */
@@ -1087,7 +1089,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingTypehintCheck)
 	ZVAL_INTERNED_STR(&pg_lit[0], pgrt::internLiteral("Traversable", 11));
 	ZVAL_INTERNED_STR(&pg_lit[1], pgrt::internLiteral("ITERABLE_GENERIC_CLASS_NAMES", 28));
 	ZVAL_INTERNED_STR(&pg_lit[2], pgrt::internLiteral(", ", 2));
-	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral("\000", 1));
+	ZVAL_INTERNED_STR(&pg_lit[3], pgrt::internLiteral(pg_nul_literal_5, 1));
 	ZVAL_INTERNED_STR(&pg_lit[4], pgrt::internLiteral("Closure", 7));
 	reg::Class cls("PHPStan\\Rules\\MissingTypehintCheck");
 	ptdecl::MissingTypehintCheck::declareClass(cls);

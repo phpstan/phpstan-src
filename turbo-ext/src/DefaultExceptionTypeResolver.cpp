@@ -120,65 +120,78 @@ namespace pgen::DefaultExceptionTypeResolver {
 			vd21 = std::move(o23);
 			vd21_done = true;
 		}
+		if (vd21_ce == pt_ce_better_reflection_provider) {
+			bool r24;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p20), p_className, &r24))) return false;
+			zv::Val o25 = zv::Val::boolean(r24);
+			vd21 = std::move(o25);
+			vd21_done = true;
+		}
 		if (!vd21_done) {
-			zval av24[1];
-			ZVAL_COPY_VALUE(&av24[0], p_className);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p20, "hasClass", "hasclass", 8, 1, av24, vd21.raw()))) return false;
+			zval av26[1];
+			ZVAL_COPY_VALUE(&av26[0], p_className);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p20, "hasClass", "hasclass", 8, 1, av26, vd21.raw()))) return false;
 		}
 		if (!((Z_TYPE_P(vd21.raw()) == IS_TRUE))) {
 			 {
-				bool r25;
-				if (UNEXPECTED(!pgen::DefaultExceptionTypeResolver::m_isCheckedExceptionInternal(Z_OBJ_P(&this_zv), p_className, &r25))) return false;
-				*ret = r25;
+				bool r27;
+				if (UNEXPECTED(!pgen::DefaultExceptionTypeResolver::m_isCheckedExceptionInternal(Z_OBJ_P(&this_zv), p_className, &r27))) return false;
+				*ret = r27;
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p26 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::reflectionProvider, "reflectionProvider");
-		if (UNEXPECTED(p26 == NULL)) return false;
-		zv::Val vd27;
-		zend_class_entry *vd27_ce = Z_TYPE_P(p26) == IS_OBJECT ? Z_OBJCE_P(p26) : NULL;
-		bool vd27_done = false;
-		if (vd27_ce == pt_ce_memoizing_reflection_provider) {
-			zv::Val r28;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p26), p_className, r28.raw()))) return false;
-			vd27 = std::move(r28);
-			vd27_done = true;
+		zval *p28 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::reflectionProvider, "reflectionProvider");
+		if (UNEXPECTED(p28 == NULL)) return false;
+		zv::Val vd29;
+		zend_class_entry *vd29_ce = Z_TYPE_P(p28) == IS_OBJECT ? Z_OBJCE_P(p28) : NULL;
+		bool vd29_done = false;
+		if (vd29_ce == pt_ce_memoizing_reflection_provider) {
+			zv::Val r30;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p28), p_className, r30.raw()))) return false;
+			vd29 = std::move(r30);
+			vd29_done = true;
 		}
-		if (!vd27_done) {
-			zval av29[1];
-			ZVAL_COPY_VALUE(&av29[0], p_className);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p26, "getClass", "getclass", 8, 1, av29, vd27.raw()))) return false;
+		if (vd29_ce == pt_ce_better_reflection_provider) {
+			zv::Val r31;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p28), p_className, r31.raw()))) return false;
+			vd29 = std::move(r31);
+			vd29_done = true;
 		}
-		l_classReflection = std::move(vd27);
+		if (!vd29_done) {
+			zval av32[1];
+			ZVAL_COPY_VALUE(&av32[0], p_className);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p28, "getClass", "getclass", 8, 1, av32, vd29.raw()))) return false;
+		}
+		l_classReflection = std::move(vd29);
 	}
 	 {
-		zval *p31 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::uncheckedExceptionClasses, "uncheckedExceptionClasses");
-		if (UNEXPECTED(p31 == NULL)) return false;
-		zv::Val a32 = zv::Val::copyOf(zv::Ref(p31).deref());
-		HashTable *ht30 = Z_ARRVAL_P(a32.raw());
-		zval *v33;
-		zend_ulong n34;
-		zend_string *s35;
-		ZEND_HASH_FOREACH_KEY_VAL(ht30, n34, s35, v33) {
-			(void) n34; (void) s35;
-			l_uncheckedExceptionClass = zv::Ref(v33).deref().raw();
+		zval *p34 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::uncheckedExceptionClasses, "uncheckedExceptionClasses");
+		if (UNEXPECTED(p34 == NULL)) return false;
+		zv::Val a35 = zv::Val::copyOf(zv::Ref(p34).deref());
+		HashTable *ht33 = Z_ARRVAL_P(a35.raw());
+		zval *v36;
+		zend_ulong n37;
+		zend_string *s38;
+		ZEND_HASH_FOREACH_KEY_VAL(ht33, n37, s38, v36) {
+			(void) n37; (void) s38;
+			l_uncheckedExceptionClass = zv::Ref(v36).deref().raw();
 			 {
 				 {
-					zval av38[1];
-					ZVAL_COPY_VALUE(&av38[0], l_uncheckedExceptionClass);
-					zv::Val r39;
+					zval av41[1];
+					ZVAL_COPY_VALUE(&av41[0], l_uncheckedExceptionClass);
+					zv::Val r42;
 					if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-						r39 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_IS, 1, av38);
-						if (UNEXPECTED(r39.isUndef())) return false;
+						r42 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_IS, 1, av41);
+						if (UNEXPECTED(r42.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "is", "is", 2, 1, av38, r39.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_classReflection.raw(), "is", "is", 2, 1, av41, r42.raw(), NULL))) return false;
 					}
 					}
-					if (!((Z_TYPE_P(r39.raw()) == IS_TRUE))) {
-						goto cont37;
+					if (!((Z_TYPE_P(r42.raw()) == IS_TRUE))) {
+						goto cont40;
 					}
 				}
 				 {
@@ -186,14 +199,14 @@ namespace pgen::DefaultExceptionTypeResolver {
 					return true;
 				}
 			}
-			cont37:;
+			cont40:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		bool r40;
-		if (UNEXPECTED(!pgen::DefaultExceptionTypeResolver::m_isCheckedExceptionInternal(Z_OBJ_P(&this_zv), p_className, &r40))) return false;
-		*ret = r40;
+		bool r43;
+		if (UNEXPECTED(!pgen::DefaultExceptionTypeResolver::m_isCheckedExceptionInternal(Z_OBJ_P(&this_zv), p_className, &r43))) return false;
+		*ret = r43;
 		return true;
 	}
 }
@@ -275,71 +288,84 @@ namespace pgen::DefaultExceptionTypeResolver {
 			vd21 = std::move(o23);
 			vd21_done = true;
 		}
+		if (vd21_ce == pt_ce_better_reflection_provider) {
+			bool r24;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p20), p_className, &r24))) return false;
+			zv::Val o25 = zv::Val::boolean(r24);
+			vd21 = std::move(o25);
+			vd21_done = true;
+		}
 		if (!vd21_done) {
-			zval av24[1];
-			ZVAL_COPY_VALUE(&av24[0], p_className);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p20, "hasClass", "hasclass", 8, 1, av24, vd21.raw()))) return false;
+			zval av26[1];
+			ZVAL_COPY_VALUE(&av26[0], p_className);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p20, "hasClass", "hasclass", 8, 1, av26, vd21.raw()))) return false;
 		}
 		if (!((Z_TYPE_P(vd21.raw()) == IS_TRUE))) {
 			 {
-				zval *p26 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionRegexes, "checkedExceptionRegexes");
-				if (UNEXPECTED(p26 == NULL)) return false;
-				bool b25 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(p26)) == 0);
-				if (b25) {
-					zval *p27 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionClasses, "checkedExceptionClasses");
-					if (UNEXPECTED(p27 == NULL)) return false;
-					b25 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(p27)) == 0);
+				zval *p28 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionRegexes, "checkedExceptionRegexes");
+				if (UNEXPECTED(p28 == NULL)) return false;
+				bool b27 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(p28)) == 0);
+				if (b27) {
+					zval *p29 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionClasses, "checkedExceptionClasses");
+					if (UNEXPECTED(p29 == NULL)) return false;
+					b27 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(p29)) == 0);
 				}
-				*ret = b25;
+				*ret = b27;
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p28 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::reflectionProvider, "reflectionProvider");
-		if (UNEXPECTED(p28 == NULL)) return false;
-		zv::Val vd29;
-		zend_class_entry *vd29_ce = Z_TYPE_P(p28) == IS_OBJECT ? Z_OBJCE_P(p28) : NULL;
-		bool vd29_done = false;
-		if (vd29_ce == pt_ce_memoizing_reflection_provider) {
-			zv::Val r30;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p28), p_className, r30.raw()))) return false;
-			vd29 = std::move(r30);
-			vd29_done = true;
+		zval *p30 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::reflectionProvider, "reflectionProvider");
+		if (UNEXPECTED(p30 == NULL)) return false;
+		zv::Val vd31;
+		zend_class_entry *vd31_ce = Z_TYPE_P(p30) == IS_OBJECT ? Z_OBJCE_P(p30) : NULL;
+		bool vd31_done = false;
+		if (vd31_ce == pt_ce_memoizing_reflection_provider) {
+			zv::Val r32;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p30), p_className, r32.raw()))) return false;
+			vd31 = std::move(r32);
+			vd31_done = true;
 		}
-		if (!vd29_done) {
-			zval av31[1];
-			ZVAL_COPY_VALUE(&av31[0], p_className);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p28, "getClass", "getclass", 8, 1, av31, vd29.raw()))) return false;
+		if (vd31_ce == pt_ce_better_reflection_provider) {
+			zv::Val r33;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p30), p_className, r33.raw()))) return false;
+			vd31 = std::move(r33);
+			vd31_done = true;
 		}
-		l_classReflection = std::move(vd29);
+		if (!vd31_done) {
+			zval av34[1];
+			ZVAL_COPY_VALUE(&av34[0], p_className);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p30, "getClass", "getclass", 8, 1, av34, vd31.raw()))) return false;
+		}
+		l_classReflection = std::move(vd31);
 	}
 	 {
-		zval *p33 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionClasses, "checkedExceptionClasses");
-		if (UNEXPECTED(p33 == NULL)) return false;
-		zv::Val a34 = zv::Val::copyOf(zv::Ref(p33).deref());
-		HashTable *ht32 = Z_ARRVAL_P(a34.raw());
-		zval *v35;
-		zend_ulong n36;
-		zend_string *s37;
-		ZEND_HASH_FOREACH_KEY_VAL(ht32, n36, s37, v35) {
-			(void) n36; (void) s37;
-			l_checkedExceptionClass = zv::Ref(v35).deref().raw();
+		zval *p36 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionClasses, "checkedExceptionClasses");
+		if (UNEXPECTED(p36 == NULL)) return false;
+		zv::Val a37 = zv::Val::copyOf(zv::Ref(p36).deref());
+		HashTable *ht35 = Z_ARRVAL_P(a37.raw());
+		zval *v38;
+		zend_ulong n39;
+		zend_string *s40;
+		ZEND_HASH_FOREACH_KEY_VAL(ht35, n39, s40, v38) {
+			(void) n39; (void) s40;
+			l_checkedExceptionClass = zv::Ref(v38).deref().raw();
 			 {
 				 {
-					zval av40[1];
-					ZVAL_COPY_VALUE(&av40[0], l_checkedExceptionClass);
-					zv::Val r41;
+					zval av43[1];
+					ZVAL_COPY_VALUE(&av43[0], l_checkedExceptionClass);
+					zv::Val r44;
 					if (EXPECTED(Z_TYPE_P(l_classReflection.raw()) == IS_OBJECT)) {
-						r41 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_IS, 1, av40);
-						if (UNEXPECTED(r41.isUndef())) return false;
+						r44 = pt_type_op(Z_OBJ_P(l_classReflection.raw()), PT_OP_IS, 1, av43);
+						if (UNEXPECTED(r44.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_classReflection.raw(), "is", "is", 2, 1, av40, r41.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_classReflection.raw(), "is", "is", 2, 1, av43, r44.raw(), NULL))) return false;
 					}
 					}
-					if (!((Z_TYPE_P(r41.raw()) == IS_TRUE))) {
-						goto cont39;
+					if (!((Z_TYPE_P(r44.raw()) == IS_TRUE))) {
+						goto cont42;
 					}
 				}
 				 {
@@ -347,20 +373,20 @@ namespace pgen::DefaultExceptionTypeResolver {
 					return true;
 				}
 			}
-			cont39:;
+			cont42:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval *p43 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionRegexes, "checkedExceptionRegexes");
-		if (UNEXPECTED(p43 == NULL)) return false;
-		bool b42 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(p43)) == 0);
-		if (b42) {
-			zval *p44 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionClasses, "checkedExceptionClasses");
-			if (UNEXPECTED(p44 == NULL)) return false;
-			b42 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(p44)) == 0);
+		zval *p46 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionRegexes, "checkedExceptionRegexes");
+		if (UNEXPECTED(p46 == NULL)) return false;
+		bool b45 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(p46)) == 0);
+		if (b45) {
+			zval *p47 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DefaultExceptionTypeResolver::slot::checkedExceptionClasses, "checkedExceptionClasses");
+			if (UNEXPECTED(p47 == NULL)) return false;
+			b45 = ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(p47)) == 0);
 		}
-		*ret = b42;
+		*ret = b45;
 		return true;
 	}
 }

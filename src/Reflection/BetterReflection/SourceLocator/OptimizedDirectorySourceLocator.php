@@ -26,7 +26,9 @@ use function array_values;
 use function current;
 use function sprintf;
 use function strtolower;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/OptimizedDirectorySourceLocator.cpp')]
 final class OptimizedDirectorySourceLocator implements SourceLocator
 {
 

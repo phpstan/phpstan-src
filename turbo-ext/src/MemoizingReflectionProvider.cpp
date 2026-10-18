@@ -93,42 +93,49 @@ namespace pgen::MemoizingReflectionProvider {
 			vd12 = std::move(o14);
 			vd12_done = true;
 		}
+		if (vd12_ce == pt_ce_better_reflection_provider) {
+			bool r15;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p10), o11.raw(), &r15))) return false;
+			zv::Val o16 = zv::Val::boolean(r15);
+			vd12 = std::move(o16);
+			vd12_done = true;
+		}
 		if (!vd12_done) {
-			zval av15[1];
-			ZVAL_COPY_VALUE(&av15[0], o11.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p10, "hasClass", "hasclass", 8, 1, av15, vd12.raw()))) return false;
+			zval av17[1];
+			ZVAL_COPY_VALUE(&av17[0], o11.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p10, "hasClass", "hasclass", 8, 1, av17, vd12.raw()))) return false;
 		}
 		l_result = (Z_TYPE_P(vd12.raw()) == IS_TRUE);
 	}
 	 {
 		if (l_result) {
 			 {
-				zv::Val o16 = zv::Val::copyOf(zv::Ref(l_lowerClassName.raw()));
-				bool k17 = true;
-				zval z19;
-				ZVAL_BOOL(&z19, k17);
-				zv::Val o18 = zv::Val::copyOf(zv::Ref(&z19));
-				zval *w20 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::knownClasses)).deref().raw();
-				if (Z_TYPE_P(w20) <= IS_NULL) { zval_ptr_dtor(w20); array_init(w20); } else if (UNEXPECTED(Z_TYPE_P(w20) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w20);
-				zval *e21 = pgrt::dimWrite(w20, o16.raw());
-				if (UNEXPECTED(e21 == NULL)) return false;
-				zv::Ref(e21).assign(std::move(o18));
+				zv::Val o18 = zv::Val::copyOf(zv::Ref(l_lowerClassName.raw()));
+				bool k19 = true;
+				zval z21;
+				ZVAL_BOOL(&z21, k19);
+				zv::Val o20 = zv::Val::copyOf(zv::Ref(&z21));
+				zval *w22 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::knownClasses)).deref().raw();
+				if (Z_TYPE_P(w22) <= IS_NULL) { zval_ptr_dtor(w22); array_init(w22); } else if (UNEXPECTED(Z_TYPE_P(w22) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w22);
+				zval *e23 = pgrt::dimWrite(w22, o18.raw());
+				if (UNEXPECTED(e23 == NULL)) return false;
+				zv::Ref(e23).assign(std::move(o20));
 			}
 		} else {
 		 {
 			 {
-				zv::Val o22 = zv::Val::copyOf(zv::Ref(p_className));
-				bool k23 = true;
-				zval z25;
-				ZVAL_BOOL(&z25, k23);
-				zv::Val o24 = zv::Val::copyOf(zv::Ref(&z25));
-				zval *w26 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::unknownClasses)).deref().raw();
-				if (Z_TYPE_P(w26) <= IS_NULL) { zval_ptr_dtor(w26); array_init(w26); } else if (UNEXPECTED(Z_TYPE_P(w26) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-				SEPARATE_ARRAY(w26);
-				zval *e27 = pgrt::dimWrite(w26, o22.raw());
-				if (UNEXPECTED(e27 == NULL)) return false;
-				zv::Ref(e27).assign(std::move(o24));
+				zv::Val o24 = zv::Val::copyOf(zv::Ref(p_className));
+				bool k25 = true;
+				zval z27;
+				ZVAL_BOOL(&z27, k25);
+				zv::Val o26 = zv::Val::copyOf(zv::Ref(&z27));
+				zval *w28 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::unknownClasses)).deref().raw();
+				if (Z_TYPE_P(w28) <= IS_NULL) { zval_ptr_dtor(w28); array_init(w28); } else if (UNEXPECTED(Z_TYPE_P(w28) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+				SEPARATE_ARRAY(w28);
+				zval *e29 = pgrt::dimWrite(w28, o24.raw());
+				if (UNEXPECTED(e29 == NULL)) return false;
+				zv::Ref(e29).assign(std::move(o26));
 			}
 		}
 		}
@@ -170,18 +177,24 @@ namespace pgen::MemoizingReflectionProvider {
 				vd9 = std::move(r10);
 				vd9_done = true;
 			}
-			if (!vd9_done) {
-				zval av11[1];
-				ZVAL_COPY_VALUE(&av11[0], o8.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p7, "getClass", "getclass", 8, 1, av11, vd9.raw()))) return false;
+			if (vd9_ce == pt_ce_better_reflection_provider) {
+				zv::Val r11;
+				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r11.raw()))) return false;
+				vd9 = std::move(r11);
+				vd9_done = true;
 			}
-			zv::Val o12 = zv::Val::copyOf(zv::Ref(vd9.raw()));
-			zval *w13 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::classes)).deref().raw();
-			if (Z_TYPE_P(w13) <= IS_NULL) { zval_ptr_dtor(w13); array_init(w13); } else if (UNEXPECTED(Z_TYPE_P(w13) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w13);
-			zval *e14 = pgrt::dimWrite(w13, r6.raw());
-			if (UNEXPECTED(e14 == NULL)) return false;
-			zv::Ref(e14).assign(std::move(o12));
+			if (!vd9_done) {
+				zval av12[1];
+				ZVAL_COPY_VALUE(&av12[0], o8.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p7, "getClass", "getclass", 8, 1, av12, vd9.raw()))) return false;
+			}
+			zv::Val o13 = zv::Val::copyOf(zv::Ref(vd9.raw()));
+			zval *w14 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::classes)).deref().raw();
+			if (Z_TYPE_P(w14) <= IS_NULL) { zval_ptr_dtor(w14); array_init(w14); } else if (UNEXPECTED(Z_TYPE_P(w14) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w14);
+			zval *e15 = pgrt::dimWrite(w14, r6.raw());
+			if (UNEXPECTED(e15 == NULL)) return false;
+			zv::Ref(e15).assign(std::move(o13));
 			ca5 = zv::Val::copyOf(zv::Ref(vd9.raw()));
 		}
 		}
@@ -222,18 +235,24 @@ namespace pgen::MemoizingReflectionProvider {
 				vd9 = std::move(r10);
 				vd9_done = true;
 			}
-			if (!vd9_done) {
-				zval av11[1];
-				ZVAL_COPY_VALUE(&av11[0], o8.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p7, "getClassName", "getclassname", 12, 1, av11, vd9.raw()))) return false;
+			if (vd9_ce == pt_ce_better_reflection_provider) {
+				zv::Val r11;
+				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClassName(Z_OBJ_P(p7), o8.raw(), r11.raw()))) return false;
+				vd9 = std::move(r11);
+				vd9_done = true;
 			}
-			zv::Val o12 = zv::Val::copyOf(zv::Ref(vd9.raw()));
-			zval *w13 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::classNames)).deref().raw();
-			if (Z_TYPE_P(w13) <= IS_NULL) { zval_ptr_dtor(w13); array_init(w13); } else if (UNEXPECTED(Z_TYPE_P(w13) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-			SEPARATE_ARRAY(w13);
-			zval *e14 = pgrt::dimWrite(w13, r6.raw());
-			if (UNEXPECTED(e14 == NULL)) return false;
-			zv::Ref(e14).assign(std::move(o12));
+			if (!vd9_done) {
+				zval av12[1];
+				ZVAL_COPY_VALUE(&av12[0], o8.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p7, "getClassName", "getclassname", 12, 1, av12, vd9.raw()))) return false;
+			}
+			zv::Val o13 = zv::Val::copyOf(zv::Ref(vd9.raw()));
+			zval *w14 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::classNames)).deref().raw();
+			if (Z_TYPE_P(w14) <= IS_NULL) { zval_ptr_dtor(w14); array_init(w14); } else if (UNEXPECTED(Z_TYPE_P(w14) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+			SEPARATE_ARRAY(w14);
+			zval *e15 = pgrt::dimWrite(w14, r6.raw());
+			if (UNEXPECTED(e15 == NULL)) return false;
+			zv::Ref(e15).assign(std::move(o13));
 			ca5 = zv::Val::copyOf(zv::Ref(vd9.raw()));
 		}
 		}
@@ -261,11 +280,17 @@ namespace pgen::MemoizingReflectionProvider {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_better_reflection_provider) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(p1), p_classNode, p_scope, r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
-			zval av4[2];
-			ZVAL_COPY_VALUE(&av4[0], p_classNode);
-			ZVAL_COPY_VALUE(&av4[1], p_scope);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "getAnonymousClassReflection", "getanonymousclassreflection", 27, 2, av4, vd2.raw()))) return false;
+			zval av5[2];
+			ZVAL_COPY_VALUE(&av5[0], p_classNode);
+			ZVAL_COPY_VALUE(&av5[1], p_scope);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "getAnonymousClassReflection", "getanonymousclassreflection", 27, 2, av5, vd2.raw()))) return false;
 		}
 		*ret = vd2.take();
 		return true;
@@ -288,6 +313,12 @@ namespace pgen::MemoizingReflectionProvider {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getUniversalObjectCratesClasses(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
+			vd2_done = true;
+		}
+		if (vd2_ce == pt_ce_better_reflection_provider) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getUniversalObjectCratesClasses(Z_OBJ_P(p1), r4.raw()))) return false;
+			vd2 = std::move(r4);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -317,11 +348,18 @@ namespace pgen::MemoizingReflectionProvider {
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_better_reflection_provider) {
+			bool r5;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r5))) return false;
+			zv::Val o6 = zv::Val::boolean(r5);
+			vd2 = std::move(o6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
-			zval av5[2];
-			ZVAL_COPY_VALUE(&av5[0], p_nameNode);
-			ZVAL_COPY_VALUE(&av5[1], p_namespaceAnswerer);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p1, "hasFunction", "hasfunction", 11, 2, av5, vd2.raw()))) return false;
+			zval av7[2];
+			ZVAL_COPY_VALUE(&av7[0], p_nameNode);
+			ZVAL_COPY_VALUE(&av7[1], p_namespaceAnswerer);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p1, "hasFunction", "hasfunction", 11, 2, av7, vd2.raw()))) return false;
 		}
 		*ret = (Z_TYPE_P(vd2.raw()) == IS_TRUE);
 		return true;
@@ -346,11 +384,17 @@ namespace pgen::MemoizingReflectionProvider {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_better_reflection_provider) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
-			zval av4[2];
-			ZVAL_COPY_VALUE(&av4[0], p_nameNode);
-			ZVAL_COPY_VALUE(&av4[1], p_namespaceAnswerer);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p1, "getFunction", "getfunction", 11, 2, av4, vd2.raw()))) return false;
+			zval av5[2];
+			ZVAL_COPY_VALUE(&av5[0], p_nameNode);
+			ZVAL_COPY_VALUE(&av5[1], p_namespaceAnswerer);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p1, "getFunction", "getfunction", 11, 2, av5, vd2.raw()))) return false;
 		}
 		*ret = vd2.take();
 		return true;
@@ -375,11 +419,17 @@ namespace pgen::MemoizingReflectionProvider {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_better_reflection_provider) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_resolveFunctionName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
-			zval av4[2];
-			ZVAL_COPY_VALUE(&av4[0], p_nameNode);
-			ZVAL_COPY_VALUE(&av4[1], p_namespaceAnswerer);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p1, "resolveFunctionName", "resolvefunctionname", 19, 2, av4, vd2.raw()))) return false;
+			zval av5[2];
+			ZVAL_COPY_VALUE(&av5[0], p_nameNode);
+			ZVAL_COPY_VALUE(&av5[1], p_namespaceAnswerer);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p1, "resolveFunctionName", "resolvefunctionname", 19, 2, av5, vd2.raw()))) return false;
 		}
 		*ret = vd2.take();
 		return true;
@@ -405,11 +455,18 @@ namespace pgen::MemoizingReflectionProvider {
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_better_reflection_provider) {
+			bool r5;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r5))) return false;
+			zv::Val o6 = zv::Val::boolean(r5);
+			vd2 = std::move(o6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
-			zval av5[2];
-			ZVAL_COPY_VALUE(&av5[0], p_nameNode);
-			ZVAL_COPY_VALUE(&av5[1], p_namespaceAnswerer);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p1, "hasConstant", "hasconstant", 11, 2, av5, vd2.raw()))) return false;
+			zval av7[2];
+			ZVAL_COPY_VALUE(&av7[0], p_nameNode);
+			ZVAL_COPY_VALUE(&av7[1], p_namespaceAnswerer);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p1, "hasConstant", "hasconstant", 11, 2, av7, vd2.raw()))) return false;
 		}
 		*ret = (Z_TYPE_P(vd2.raw()) == IS_TRUE);
 		return true;
@@ -434,11 +491,17 @@ namespace pgen::MemoizingReflectionProvider {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_better_reflection_provider) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
-			zval av4[2];
-			ZVAL_COPY_VALUE(&av4[0], p_nameNode);
-			ZVAL_COPY_VALUE(&av4[1], p_namespaceAnswerer);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p1, "getConstant", "getconstant", 11, 2, av4, vd2.raw()))) return false;
+			zval av5[2];
+			ZVAL_COPY_VALUE(&av5[0], p_nameNode);
+			ZVAL_COPY_VALUE(&av5[1], p_namespaceAnswerer);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p1, "getConstant", "getconstant", 11, 2, av5, vd2.raw()))) return false;
 		}
 		*ret = vd2.take();
 		return true;
@@ -463,11 +526,17 @@ namespace pgen::MemoizingReflectionProvider {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_better_reflection_provider) {
+			zv::Val r4;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_resolveConstantName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
+			vd2 = std::move(r4);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
-			zval av4[2];
-			ZVAL_COPY_VALUE(&av4[0], p_nameNode);
-			ZVAL_COPY_VALUE(&av4[1], p_namespaceAnswerer);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p1, "resolveConstantName", "resolveconstantname", 19, 2, av4, vd2.raw()))) return false;
+			zval av5[2];
+			ZVAL_COPY_VALUE(&av5[0], p_nameNode);
+			ZVAL_COPY_VALUE(&av5[1], p_namespaceAnswerer);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p1, "resolveConstantName", "resolveconstantname", 19, 2, av5, vd2.raw()))) return false;
 		}
 		*ret = vd2.take();
 		return true;

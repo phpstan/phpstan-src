@@ -562,10 +562,17 @@ namespace pgen::ClassExistsFunctionTypeSpecifyingExtension {
 						vd16 = std::move(o18);
 						vd16_done = true;
 					}
+					if (vd16_ce == pt_ce_better_reflection_provider) {
+						bool r19;
+						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p14), o15.raw(), &r19))) return false;
+						zv::Val o20 = zv::Val::boolean(r19);
+						vd16 = std::move(o20);
+						vd16_done = true;
+					}
 					if (!vd16_done) {
-						zval av19[1];
-						ZVAL_COPY_VALUE(&av19[0], o15.raw());
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_29, p14, "hasClass", "hasclass", 8, 1, av19, vd16.raw()))) return false;
+						zval av21[1];
+						ZVAL_COPY_VALUE(&av21[0], o15.raw());
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_29, p14, "hasClass", "hasclass", 8, 1, av21, vd16.raw()))) return false;
 					}
 					if (!((Z_TYPE_P(vd16.raw()) == IS_TRUE))) {
 						 {
@@ -575,26 +582,32 @@ namespace pgen::ClassExistsFunctionTypeSpecifyingExtension {
 					}
 				}
 				 {
-					zval *p20 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassExistsFunctionTypeSpecifyingExtension::slot::reflectionProvider, "reflectionProvider");
-					if (UNEXPECTED(p20 == NULL)) return false;
-					zv::Val o21 = zv::Val::copyOf(zv::Ref(l_name.raw()));
-					zv::Val vd22;
-					zend_class_entry *vd22_ce = Z_TYPE_P(p20) == IS_OBJECT ? Z_OBJCE_P(p20) : NULL;
-					bool vd22_done = false;
-					if (vd22_ce == pt_ce_memoizing_reflection_provider) {
-						zv::Val r23;
-						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p20), o21.raw(), r23.raw()))) return false;
-						vd22 = std::move(r23);
-						vd22_done = true;
+					zval *p22 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ClassExistsFunctionTypeSpecifyingExtension::slot::reflectionProvider, "reflectionProvider");
+					if (UNEXPECTED(p22 == NULL)) return false;
+					zv::Val o23 = zv::Val::copyOf(zv::Ref(l_name.raw()));
+					zv::Val vd24;
+					zend_class_entry *vd24_ce = Z_TYPE_P(p22) == IS_OBJECT ? Z_OBJCE_P(p22) : NULL;
+					bool vd24_done = false;
+					if (vd24_ce == pt_ce_memoizing_reflection_provider) {
+						zv::Val r25;
+						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p22), o23.raw(), r25.raw()))) return false;
+						vd24 = std::move(r25);
+						vd24_done = true;
 					}
-					if (!vd22_done) {
-						zval av24[1];
-						ZVAL_COPY_VALUE(&av24[0], o21.raw());
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_30, p20, "getClass", "getclass", 8, 1, av24, vd22.raw()))) return false;
+					if (vd24_ce == pt_ce_better_reflection_provider) {
+						zv::Val r26;
+						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p22), o23.raw(), r26.raw()))) return false;
+						vd24 = std::move(r26);
+						vd24_done = true;
 					}
-					bool r25;
-					if (UNEXPECTED(!pgen::ClassExistsFunctionTypeSpecifyingExtension::m_matchesFunctionKind(Z_OBJ_P(&this_zv), p_functionName, vd22.raw(), &r25))) return false;
-					if (r25) {
+					if (!vd24_done) {
+						zval av27[1];
+						ZVAL_COPY_VALUE(&av27[0], o23.raw());
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_30, p22, "getClass", "getclass", 8, 1, av27, vd24.raw()))) return false;
+					}
+					bool r28;
+					if (UNEXPECTED(!pgen::ClassExistsFunctionTypeSpecifyingExtension::m_matchesFunctionKind(Z_OBJ_P(&this_zv), p_functionName, vd24.raw(), &r28))) return false;
+					if (r28) {
 						 {
 							*ret = false;
 							return true;

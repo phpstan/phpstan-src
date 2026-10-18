@@ -1136,6 +1136,12 @@ extern zend_class_entry *pt_ce_better_reflection_attribute;
 extern zend_class_entry *pt_ce_better_reflection_parameter;
 extern zend_class_entry *pt_ce_better_reflection_located_source;
 extern zend_class_entry *pt_ce_name_context;
+extern zend_class_entry *pt_ce_better_reflection_provider;
+extern zend_class_entry *pt_ce_optimized_directory_source_locator;
+extern zend_class_entry *pt_ce_memoizing_reflector;
+extern zend_class_entry *pt_ce_file_helper;
+extern zend_class_entry *pt_ce_registry;
+extern zend_class_entry *pt_ce_optimized_single_file_source_locator;
 
 namespace pgen::TrinaryLogic {
 [[nodiscard]] bool m___construct(zend_object *self, zend_long p_value);
@@ -9835,5 +9841,67 @@ namespace pgen::NameContext {
 [[nodiscard]] bool m_getNamespaceRelativeName(zend_object *self, zval *p_name, zval *p_lcName, zend_long p_type, zval *ret);
 [[nodiscard]] bool m_normalizeConstName(zend_object *self, zval *p_name, zval *ret);
 } // namespace pgen::NameContext
+
+namespace pgen::BetterReflectionProvider {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_initializerExprTypeResolver, zval *p_classReflectionFactory, zval *p_reflector, zval *p_fileTypeMapper, zval *p_deprecationProvider, zval *p_phpVersion, zval *p_nativeFunctionReflectionProvider, zval *p_signatureMapProvider, zval *p_stubPhpDocProvider, zval *p_functionReflectionFactory, zval *p_relativePathHelper, zval *p_anonymousClassNameHelper, zval *p_fileHelper, zval *p_deduplicatingFileReader, zval *p_phpstormStubsSourceStubber, zval *p_attributeReflectionFactory, zval *p_universalObjectCratesClasses);
+[[nodiscard]] bool m_hasClass(zend_object *self, zval *p_className, bool *ret);
+[[nodiscard]] bool m_getClass(zend_object *self, zval *p_className, zval *ret);
+[[nodiscard]] bool m_getClassName(zend_object *self, zval *p_className, zval *ret);
+[[nodiscard]] bool m_getAnonymousClassReflection(zend_object *self, zval *p_classNode, zval *p_scope, zval *ret);
+[[nodiscard]] bool m_getUniversalObjectCratesClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_hasFunction(zend_object *self, zval *p_nameNode, zval *p_namespaceAnswerer, bool *ret);
+[[nodiscard]] bool m_getFunction(zend_object *self, zval *p_nameNode, zval *p_namespaceAnswerer, zval *ret);
+[[nodiscard]] bool m_getCustomFunction(zend_object *self, zval *p_functionName, zval *ret);
+[[nodiscard]] bool m_resolveFunctionName(zend_object *self, zval *p_nameNode, zval *p_namespaceAnswerer, zval *ret);
+[[nodiscard]] bool m_hasConstant(zend_object *self, zval *p_nameNode, zval *p_namespaceAnswerer, bool *ret);
+[[nodiscard]] bool m_getConstant(zend_object *self, zval *p_nameNode, zval *p_namespaceAnswerer, zval *ret);
+[[nodiscard]] bool m_resolveConstantName(zend_object *self, zval *p_nameNode, zval *p_namespaceAnswerer, zval *ret);
+[[nodiscard]] bool m_nameResolutionCacheKey(zend_object *self, zval *p_nameNode, zval *p_namespaceAnswerer, zval *ret);
+[[nodiscard]] bool m_resolveName(zend_object *self, zval *p_nameNode, zval *p_existsCallback, zval *p_namespaceAnswerer, zval *ret);
+} // namespace pgen::BetterReflectionProvider
+
+namespace pgen::OptimizedDirectorySourceLocator {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_fileNodesFetcher, zval *p_cache, zval *p_phpVersion, zval *p_fileContentHasher, zval *p_classToFile, zval *p_functionToFiles, zval *p_constantToFile, bool p_awaitingScan);
+[[nodiscard]] bool m_fillScanned(zend_object *self, zval *p_classToFile, zval *p_functionToFiles, zval *p_constantToFile);
+[[nodiscard]] bool m_getCacheKeys(zend_object *self, zval *p_file, zval *p_identifier, zval *ret);
+[[nodiscard]] bool m_locateIdentifier(zend_object *self, zval *p_reflector, zval *p_identifier, zval *ret);
+[[nodiscard]] bool m_nodeToReflection(zend_object *self, zval *p_reflector, zval *p_fetchedNode, zval *p_positionInNode, zval *ret);
+[[nodiscard]] bool m_findFileByClass(zend_object *self, zval *p_className, zval *ret);
+[[nodiscard]] bool m_findFileByConstant(zend_object *self, zval *p_constantName, zval *ret);
+[[nodiscard]] bool m_findFilesByFunction(zend_object *self, zval *p_functionName, zval *ret);
+[[nodiscard]] bool m_locateIdentifiersByType(zend_object *self, zval *p_reflector, zval *p_identifierType, zval *ret);
+[[nodiscard]] bool m_findConstantPositionInConstNode(zend_object *self, zval *p_constantNode, zval *p_constantName, zval *ret);
+} // namespace pgen::OptimizedDirectorySourceLocator
+
+namespace pgen::MemoizingReflector {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_sourceLocator);
+[[nodiscard]] bool m_reflectClass(zend_object *self, zval *p_className, zval *ret);
+[[nodiscard]] bool m_reflectConstant(zend_object *self, zval *p_constantName, zval *ret);
+[[nodiscard]] bool m_reflectFunction(zend_object *self, zval *p_functionName, zval *ret);
+[[nodiscard]] bool m_reflectAllClasses(zend_object *self, zval *ret);
+[[nodiscard]] bool m_reflectAllFunctions(zend_object *self, zval *ret);
+[[nodiscard]] bool m_reflectAllConstants(zend_object *self, zval *ret);
+} // namespace pgen::MemoizingReflector
+
+namespace pgen::FileHelper {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_workingDirectory);
+[[nodiscard]] bool m_getWorkingDirectory(zend_object *self, zval *ret);
+[[nodiscard]] bool m_absolutizePath(zend_object *self, zval *p_path, zval *ret);
+[[nodiscard]] bool m_normalizePath(zend_object *self, zval *p_originalPath, zval *p_directorySeparator, zval *ret);
+[[nodiscard]] bool m_normalizeSeparator(zend_object *self, zval *p_path, zval *ret);
+} // namespace pgen::FileHelper
+
+namespace pgen::Registry {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_collectors);
+[[nodiscard]] bool m_getCollectors(zend_object *self, zval *p_nodeType, zval *ret);
+} // namespace pgen::Registry
+
+namespace pgen::OptimizedSingleFileSourceLocator {
+[[nodiscard]] bool m___construct(zend_object *self, zval *p_fileNodesFetcher, zval *p_cache, zval *p_phpVersion, zval *p_fileName);
+[[nodiscard]] bool m_getVariableCacheKey(zend_object *self, zval *p_file, zval *ret);
+[[nodiscard]] bool m_getPresentSymbols(zend_object *self, zval *ret);
+[[nodiscard]] bool m_locateIdentifier(zend_object *self, zval *p_reflector, zval *p_identifier, zval *ret);
+[[nodiscard]] bool m_locateIdentifiersByType(zend_object *self, zval *p_reflector, zval *p_identifierType, zval *ret);
+} // namespace pgen::OptimizedSingleFileSourceLocator
 
 #endif

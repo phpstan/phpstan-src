@@ -12,12 +12,11 @@ static pgrt::FunctionSite pg_site_1; /* function_file_exists */
 static pgrt::ClassSite pg_site_2; /* cls_PHPStan\File\PathNotFoundException */
 static pgrt::FunctionSite pg_site_3; /* function_array_filter */
 static pgrt::FunctionSite pg_site_4; /* function_sort */
-static pt_method_site pg_site_5; /* method_normalizePath_5 */
-static pgrt::FunctionSite pg_site_6; /* function_array_map */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\File\FileFinderResult */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\File\FileExcluder */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\File\FileHelper */
-static pgrt::ClassSite pg_site_10; /* cls_PHPStan\File\DirectoryWalker */
+static pgrt::FunctionSite pg_site_5; /* function_array_map */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\File\FileFinderResult */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\File\FileExcluder */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\File\FileHelper */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\File\DirectoryWalker */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -60,10 +59,10 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileFinder::slot::fileHelper, "fileHelper");
 		if (UNEXPECTED(p1 == NULL)) return;
-		zval av2[1];
-		ZVAL_COPY_VALUE(&av2[0], p_file);
+		zval d2;
+		ZVAL_CHAR(&d2, DEFAULT_SLASH);
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p1, "normalizePath", "normalizepath", 13, 1, av2, r3.raw(), NULL))) return;
+		if (UNEXPECTED(!pgen::FileHelper::m_normalizePath(Z_OBJ_P(p1), p_file, &d2, r3.raw()))) return;
 		*return_value = r3.take();
 		return;
 	}
@@ -275,7 +274,7 @@ namespace pgen::FileFinder {
 		ZVAL_COPY_VALUE(&av49[0], h48.raw());
 		ZVAL_COPY_VALUE(&av49[1], l_files.raw());
 		zv::Val r50;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "array_map", 9, pt_ce_file_finder, 2, av49, r50.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "array_map", 9, pt_ce_file_finder, 2, av49, r50.raw(), NULL))) return false;
 		zv::Val r51;
 		if (UNEXPECTED(!pgrt::arrayUnique(r50.raw(), r51.raw()))) return false;
 		zv::Val r52;
@@ -285,7 +284,7 @@ namespace pgen::FileFinder {
 		zval z54;
 		ZVAL_BOOL(&z54, l_onlyFiles);
 		ZVAL_COPY_VALUE(&av53[1], &z54);
-		zend_class_entry *ce55 = pgrt::lookupClass(pg_site_7, "PHPStan\\File\\FileFinderResult", 29);
+		zend_class_entry *ce55 = pgrt::lookupClass(pg_site_6, "PHPStan\\File\\FileFinderResult", 29);
 		if (UNEXPECTED(ce55 == NULL)) return false;
 		zv::Val n46;
 		if (UNEXPECTED(!pgrt::newObject(ce55, 2, av53, n46.raw(), NULL))) return false;
@@ -315,9 +314,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileFinder)
 			Z_PARAM_ARRAY(p_fileExtensions)
 			Z_PARAM_ZVAL(p_directoryWalker)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_fileExcluder != NULL && UNEXPECTED(Z_TYPE_P(p_fileExcluder) != IS_OBJECT || !((Z_TYPE_P(p_fileExcluder) == IS_OBJECT && Z_OBJCE_P(p_fileExcluder) == pt_ce_file_excluder) || pgrt::instanceOfClass(p_fileExcluder, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\File\\FileExcluder", 25))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\File\\FileExcluder", zend_zval_value_name(p_fileExcluder)); RETURN_THROWS(); }
-		if (p_fileHelper != NULL && UNEXPECTED(Z_TYPE_P(p_fileHelper) != IS_OBJECT || !pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\File\\FileHelper", 23)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
-		if (p_directoryWalker != NULL && UNEXPECTED(Z_TYPE_P(p_directoryWalker) != IS_OBJECT || !((Z_TYPE_P(p_directoryWalker) == IS_OBJECT && Z_OBJCE_P(p_directoryWalker) == pt_ce_directory_walker) || pgrt::instanceOfClass(p_directoryWalker, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\File\\DirectoryWalker", 28))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\File\\DirectoryWalker", zend_zval_value_name(p_directoryWalker)); RETURN_THROWS(); }
+		if (p_fileExcluder != NULL && UNEXPECTED(Z_TYPE_P(p_fileExcluder) != IS_OBJECT || !((Z_TYPE_P(p_fileExcluder) == IS_OBJECT && Z_OBJCE_P(p_fileExcluder) == pt_ce_file_excluder) || pgrt::instanceOfClass(p_fileExcluder, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\File\\FileExcluder", 25))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\File\\FileExcluder", zend_zval_value_name(p_fileExcluder)); RETURN_THROWS(); }
+		if (p_fileHelper != NULL && UNEXPECTED(Z_TYPE_P(p_fileHelper) != IS_OBJECT || !((Z_TYPE_P(p_fileHelper) == IS_OBJECT && Z_OBJCE_P(p_fileHelper) == pt_ce_file_helper) || pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\File\\FileHelper", 23))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
+		if (p_directoryWalker != NULL && UNEXPECTED(Z_TYPE_P(p_directoryWalker) != IS_OBJECT || !((Z_TYPE_P(p_directoryWalker) == IS_OBJECT && Z_OBJCE_P(p_directoryWalker) == pt_ce_directory_walker) || pgrt::instanceOfClass(p_directoryWalker, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\File\\DirectoryWalker", 28))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\File\\DirectoryWalker", zend_zval_value_name(p_directoryWalker)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::FileFinder::m___construct(Z_OBJ_P(ZEND_THIS), p_fileExcluder, p_fileHelper, p_fileExtensions, p_directoryWalker))) RETURN_THROWS();
 	});
 	cls.method(sigs::findFiles, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileFinder::findFiles() */

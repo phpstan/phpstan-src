@@ -848,10 +848,17 @@ namespace pgen::VarTagTypeRuleHelper {
 			vd5 = std::move(o7);
 			vd5_done = true;
 		}
+		if (vd5_ce == pt_ce_better_reflection_provider) {
+			bool r8;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p4), &pg_lit[3], &r8))) return false;
+			zv::Val o9 = zv::Val::boolean(r8);
+			vd5 = std::move(o9);
+			vd5_done = true;
+		}
 		if (!vd5_done) {
-			zval av8[1];
-			ZVAL_COPY_VALUE(&av8[0], &pg_lit[3]);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_35, p4, "hasClass", "hasclass", 8, 1, av8, vd5.raw()))) return false;
+			zval av10[1];
+			ZVAL_COPY_VALUE(&av10[0], &pg_lit[3]);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_35, p4, "hasClass", "hasclass", 8, 1, av10, vd5.raw()))) return false;
 		}
 		if (!((Z_TYPE_P(vd5.raw()) == IS_TRUE))) {
 			 {
@@ -861,48 +868,54 @@ namespace pgen::VarTagTypeRuleHelper {
 		}
 	}
 	 {
-		zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::VarTagTypeRuleHelper::slot::reflectionProvider, "reflectionProvider");
-		if (UNEXPECTED(p9 == NULL)) return false;
-		zv::Val vd10;
-		zend_class_entry *vd10_ce = Z_TYPE_P(p9) == IS_OBJECT ? Z_OBJCE_P(p9) : NULL;
-		bool vd10_done = false;
-		if (vd10_ce == pt_ce_memoizing_reflection_provider) {
-			zv::Val r11;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p9), &pg_lit[3], r11.raw()))) return false;
-			vd10 = std::move(r11);
-			vd10_done = true;
+		zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::VarTagTypeRuleHelper::slot::reflectionProvider, "reflectionProvider");
+		if (UNEXPECTED(p11 == NULL)) return false;
+		zv::Val vd12;
+		zend_class_entry *vd12_ce = Z_TYPE_P(p11) == IS_OBJECT ? Z_OBJCE_P(p11) : NULL;
+		bool vd12_done = false;
+		if (vd12_ce == pt_ce_memoizing_reflection_provider) {
+			zv::Val r13;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p11), &pg_lit[3], r13.raw()))) return false;
+			vd12 = std::move(r13);
+			vd12_done = true;
 		}
-		if (!vd10_done) {
-			zval av12[1];
-			ZVAL_COPY_VALUE(&av12[0], &pg_lit[3]);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_36, p9, "getClass", "getclass", 8, 1, av12, vd10.raw()))) return false;
+		if (vd12_ce == pt_ce_better_reflection_provider) {
+			zv::Val r14;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p11), &pg_lit[3], r14.raw()))) return false;
+			vd12 = std::move(r14);
+			vd12_done = true;
 		}
-		l_typeClass = std::move(vd10);
+		if (!vd12_done) {
+			zval av15[1];
+			ZVAL_COPY_VALUE(&av15[0], &pg_lit[3]);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_36, p11, "getClass", "getclass", 8, 1, av15, vd12.raw()))) return false;
+		}
+		l_typeClass = std::move(vd12);
 	}
 	 {
-		zv::Val a14 = zv::Val::copyOf(zv::Ref(l_classReflections.raw()).deref());
-		HashTable *ht13 = Z_ARRVAL_P(a14.raw());
-		zval *v15;
-		zend_ulong n16;
-		zend_string *s17;
-		ZEND_HASH_FOREACH_KEY_VAL(ht13, n16, s17, v15) {
-			(void) n16; (void) s17;
-			l_classReflection = zv::Ref(v15).deref().raw();
+		zv::Val a17 = zv::Val::copyOf(zv::Ref(l_classReflections.raw()).deref());
+		HashTable *ht16 = Z_ARRVAL_P(a17.raw());
+		zval *v18;
+		zend_ulong n19;
+		zend_string *s20;
+		ZEND_HASH_FOREACH_KEY_VAL(ht16, n19, s20, v18) {
+			(void) n19; (void) s20;
+			l_classReflection = zv::Ref(v18).deref().raw();
 			 {
 				 {
-					zval av20[1];
-					ZVAL_COPY_VALUE(&av20[0], l_typeClass.raw());
-					zv::Val r21;
+					zval av23[1];
+					ZVAL_COPY_VALUE(&av23[0], l_typeClass.raw());
+					zv::Val r24;
 					if (EXPECTED(Z_TYPE_P(l_classReflection) == IS_OBJECT)) {
-						r21 = pt_type_op(Z_OBJ_P(l_classReflection), PT_OP_IS_SUBCLASS_OF_CLASS, 1, av20);
-						if (UNEXPECTED(r21.isUndef())) return false;
+						r24 = pt_type_op(Z_OBJ_P(l_classReflection), PT_OP_IS_SUBCLASS_OF_CLASS, 1, av23);
+						if (UNEXPECTED(r24.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_classReflection, "isSubclassOfClass", "issubclassofclass", 17, 1, av20, r21.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_classReflection, "isSubclassOfClass", "issubclassofclass", 17, 1, av23, r24.raw(), NULL))) return false;
 					}
 					}
-					if (!(zend_is_true(r21.raw()))) {
-						goto cont19;
+					if (!(zend_is_true(r24.raw()))) {
+						goto cont22;
 					}
 				}
 				 {
@@ -910,7 +923,7 @@ namespace pgen::VarTagTypeRuleHelper {
 					return true;
 				}
 			}
-			cont19:;
+			cont22:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}

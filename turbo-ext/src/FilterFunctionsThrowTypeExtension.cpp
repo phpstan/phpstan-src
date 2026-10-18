@@ -90,68 +90,77 @@ namespace pgen::FilterFunctionsThrowTypeExtension {
 				vd10 = std::move(o13);
 				vd10_done = true;
 			}
+			if (vd10_ce == pt_ce_better_reflection_provider) {
+				zval z14;
+				ZVAL_NULL(&z14);
+				bool r15;
+				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(o6.raw()), n7.raw(), &z14, &r15))) return false;
+				zv::Val o16 = zv::Val::boolean(r15);
+				vd10 = std::move(o16);
+				vd10_done = true;
+			}
 			if (!vd10_done) {
-				zval av14[2];
-				ZVAL_COPY_VALUE(&av14[0], n7.raw());
-				zval z15;
-				ZVAL_NULL(&z15);
-				ZVAL_COPY_VALUE(&av14[1], &z15);
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, o6.raw(), "hasConstant", "hasconstant", 11, 2, av14, vd10.raw()))) return false;
+				zval av17[2];
+				ZVAL_COPY_VALUE(&av17[0], n7.raw());
+				zval z18;
+				ZVAL_NULL(&z18);
+				ZVAL_COPY_VALUE(&av17[1], &z18);
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, o6.raw(), "hasConstant", "hasconstant", 11, 2, av17, vd10.raw()))) return false;
 			}
 			b1 = !((Z_TYPE_P(vd10.raw()) == IS_TRUE));
 		}
 		if (b1) {
 			 {
-				zval z16;
-				ZVAL_NULL(&z16);
-				ZVAL_COPY_VALUE(ret, &z16);
+				zval z19;
+				ZVAL_NULL(&z19);
+				ZVAL_COPY_VALUE(ret, &z19);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p18 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FilterFunctionsThrowTypeExtension::slot::filterFunctionFlagsHelper, "filterFunctionFlagsHelper");
-		if (UNEXPECTED(p18 == NULL)) return false;
-		zv::Val r19;
-		if (UNEXPECTED(!pgen::FilterFunctionFlagsHelper::m_getFlagsTypes(Z_OBJ_P(p18), p_functionReflection, p_funcCall, p_scope, r19.raw()))) return false;
-		zv::Val a20 = zv::Val::copyOf(zv::Ref(r19.raw()).deref());
-		HashTable *ht17 = Z_ARRVAL_P(a20.raw());
-		zval *v21;
-		zend_ulong n22;
-		zend_string *s23;
-		ZEND_HASH_FOREACH_KEY_VAL(ht17, n22, s23, v21) {
-			(void) n22; (void) s23;
-			l_flagsType = zv::Ref(v21).deref().raw();
+		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FilterFunctionsThrowTypeExtension::slot::filterFunctionFlagsHelper, "filterFunctionFlagsHelper");
+		if (UNEXPECTED(p21 == NULL)) return false;
+		zv::Val r22;
+		if (UNEXPECTED(!pgen::FilterFunctionFlagsHelper::m_getFlagsTypes(Z_OBJ_P(p21), p_functionReflection, p_funcCall, p_scope, r22.raw()))) return false;
+		zv::Val a23 = zv::Val::copyOf(zv::Ref(r22.raw()).deref());
+		HashTable *ht20 = Z_ARRVAL_P(a23.raw());
+		zval *v24;
+		zend_ulong n25;
+		zend_string *s26;
+		ZEND_HASH_FOREACH_KEY_VAL(ht20, n25, s26, v24) {
+			(void) n25; (void) s26;
+			l_flagsType = zv::Ref(v24).deref().raw();
 			 {
 				 {
-					zval *p26 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FilterFunctionsThrowTypeExtension::slot::filterFunctionReturnTypeHelper, "filterFunctionReturnTypeHelper");
-					if (UNEXPECTED(p26 == NULL)) return false;
-					zval av27[2];
-					ZVAL_COPY_VALUE(&av27[0], &pg_lit[0]);
-					ZVAL_COPY_VALUE(&av27[1], l_flagsType);
-					zv::Val r28;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p26, "hasFlag", "hasflag", 7, 2, av27, r28.raw(), NULL))) return false;
-					bool r29;
-					if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r28.raw()), &r29))) return false;
-					if (r29) {
-						goto cont25;
+					zval *p29 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FilterFunctionsThrowTypeExtension::slot::filterFunctionReturnTypeHelper, "filterFunctionReturnTypeHelper");
+					if (UNEXPECTED(p29 == NULL)) return false;
+					zval av30[2];
+					ZVAL_COPY_VALUE(&av30[0], &pg_lit[0]);
+					ZVAL_COPY_VALUE(&av30[1], l_flagsType);
+					zv::Val r31;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p29, "hasFlag", "hasflag", 7, 2, av30, r31.raw(), NULL))) return false;
+					bool r32;
+					if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r31.raw()), &r32))) return false;
+					if (r32) {
+						goto cont28;
 					}
 				}
 				 {
-					zv::Val n30;
-					if (UNEXPECTED(!pt_object_type_new(n30.raw(), Z_STR_P(&pg_lit[1])))) return false;
-					*ret = n30.take();
+					zv::Val n33;
+					if (UNEXPECTED(!pt_object_type_new(n33.raw(), Z_STR_P(&pg_lit[1])))) return false;
+					*ret = n33.take();
 					return true;
 				}
 			}
-			cont25:;
+			cont28:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z31;
-		ZVAL_NULL(&z31);
-		ZVAL_COPY_VALUE(ret, &z31);
+		zval z34;
+		ZVAL_NULL(&z34);
+		ZVAL_COPY_VALUE(ret, &z34);
 		return true;
 	}
 }

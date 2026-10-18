@@ -5433,11 +5433,22 @@ namespace pgen::BetterReflectionClass {
 			 {
 				zval *p7 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::reflector, "reflector");
 				if (UNEXPECTED(p7 == NULL)) goto catch_c6;
-				zval av8[1];
-				ZVAL_COPY_VALUE(&av8[0], l_parentClassName.raw());
-				zv::Val r9;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_194, p7, "reflectClass", "reflectclass", 12, 1, av8, r9.raw(), NULL))) goto catch_c6;
-				*ret = r9.take();
+				zv::Val o8 = zv::Val::copyOf(zv::Ref(l_parentClassName.raw()));
+				zv::Val vd9;
+				zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
+				bool vd9_done = false;
+				if (vd9_ce == pt_ce_memoizing_reflector) {
+					zv::Val r10;
+					if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectClass(Z_OBJ_P(p7), o8.raw(), r10.raw()))) goto catch_c6;
+					vd9 = std::move(r10);
+					vd9_done = true;
+				}
+				if (!vd9_done) {
+					zval av11[1];
+					ZVAL_COPY_VALUE(&av11[0], o8.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_194, p7, "reflectClass", "reflectclass", 12, 1, av11, vd9.raw()))) goto catch_c6;
+				}
+				*ret = vd9.take();
 				return true;
 			}
 		}
@@ -5445,22 +5456,22 @@ namespace pgen::BetterReflectionClass {
 		catch_c6:
 		 {
 			zend_object *thrown = EG(exception);
-			bool caught10 = false;
-			if (!caught10 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-				caught10 = true;
+			bool caught12 = false;
+			if (!caught12 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+				caught12 = true;
 				zval exception;
 				ZVAL_OBJ_COPY(&exception, thrown);
 				zend_clear_exception();
 				l_exception = zv::Val::copyOf(zv::Ref(&exception));
 				zval_ptr_dtor(&exception);
 				 {
-					zval z11;
-					ZVAL_NULL(&z11);
-					ZVAL_COPY_VALUE(ret, &z11);
+					zval z13;
+					ZVAL_NULL(&z13);
+					ZVAL_COPY_VALUE(ret, &z13);
 					return true;
 				}
 			}
-			if (!caught10) return false;
+			if (!caught12) return false;
 		}
 		}
 	}
@@ -5668,20 +5679,32 @@ namespace pgen::BetterReflectionClass {
 						 {
 							zval *p24 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::reflector, "reflector");
 							if (UNEXPECTED(p24 == NULL)) goto catch_c23;
-							zval av25[1];
-							ZVAL_COPY_VALUE(&av25[0], l_className.raw());
-							zv::Val r26;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_198, p24, "reflectClass", "reflectclass", 12, 1, av25, r26.raw(), NULL))) goto catch_c23;
-							l_class = std::move(r26);
+							zv::Val o25 = zv::Val::copyOf(zv::Ref(l_className.raw()));
+							zv::Val vd26;
+							zend_class_entry *vd26_ce = Z_TYPE_P(p24) == IS_OBJECT ? Z_OBJCE_P(p24) : NULL;
+							bool vd26_done = false;
+							if (vd26_ce == pt_ce_memoizing_reflector) {
+								if (UNEXPECTED(!(Z_TYPE_P(o25.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\Reflector\\MemoizingReflector::reflectClass", 1, "className", "string", o25.raw()); goto catch_c23; }
+								zv::Val r27;
+								if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectClass(Z_OBJ_P(p24), o25.raw(), r27.raw()))) goto catch_c23;
+								vd26 = std::move(r27);
+								vd26_done = true;
+							}
+							if (!vd26_done) {
+								zval av28[1];
+								ZVAL_COPY_VALUE(&av28[0], o25.raw());
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_198, p24, "reflectClass", "reflectclass", 12, 1, av28, vd26.raw()))) goto catch_c23;
+							}
+							l_class = std::move(vd26);
 						}
 					}
 					if (false) {
 					catch_c23:
 					 {
 						zend_object *thrown = EG(exception);
-						bool caught27 = false;
-						if (!caught27 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-							caught27 = true;
+						bool caught29 = false;
+						if (!caught29 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+							caught29 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
@@ -5689,30 +5712,30 @@ namespace pgen::BetterReflectionClass {
 							zval_ptr_dtor(&exception);
 							goto cont9;
 						}
-						if (!caught27) return false;
+						if (!caught29) return false;
 					}
 					}
 				}
 				 {
-					zval av29[1];
-					ZVAL_COPY_VALUE(&av29[0], l_class.raw());
-					zv::Val r30;
-					if (UNEXPECTED(!pgrt::callValue(p_edges, 1, av29, r30.raw(), NULL))) return false;
-					pgrt::ForeachIter it31;
-					if (UNEXPECTED(!it31.begin(r30.raw()))) return false;
-					while (it31.valid()) {
-						l_nextClassName = zv::Ref(it31.current()).deref().raw();
+					zval av31[1];
+					ZVAL_COPY_VALUE(&av31[0], l_class.raw());
+					zv::Val r32;
+					if (UNEXPECTED(!pgrt::callValue(p_edges, 1, av31, r32.raw(), NULL))) return false;
+					pgrt::ForeachIter it33;
+					if (UNEXPECTED(!it33.begin(r32.raw()))) return false;
+					while (it33.valid()) {
+						l_nextClassName = zv::Ref(it33.current()).deref().raw();
 						 {
 							 {
-								zv::Val o34 = zv::Val::copyOf(zv::Ref(l_nextClassName));
-								zv::Val o35 = zv::Val::copyOf(zv::Ref(o34.raw()));
-								zval *w36 = zv::Ref(l_stack.raw()).deref().raw();
-								if (Z_TYPE_P(w36) <= IS_NULL) { zval_ptr_dtor(w36); array_init(w36); } else if (UNEXPECTED(Z_TYPE_P(w36) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-								SEPARATE_ARRAY(w36);
-								{ zval v = o35.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w36), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+								zv::Val o36 = zv::Val::copyOf(zv::Ref(l_nextClassName));
+								zv::Val o37 = zv::Val::copyOf(zv::Ref(o36.raw()));
+								zval *w38 = zv::Ref(l_stack.raw()).deref().raw();
+								if (Z_TYPE_P(w38) <= IS_NULL) { zval_ptr_dtor(w38); array_init(w38); } else if (UNEXPECTED(Z_TYPE_P(w38) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+								SEPARATE_ARRAY(w38);
+								{ zval v = o37.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w38), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 							}
 						}
-						if (UNEXPECTED(!it31.next())) return false;
+						if (UNEXPECTED(!it33.next())) return false;
 					}
 					if (UNEXPECTED(EG(exception))) return false;
 				}
@@ -6116,31 +6139,43 @@ namespace pgen::BetterReflectionClass {
 						 {
 							zval *p20 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::reflector, "reflector");
 							if (UNEXPECTED(p20 == NULL)) goto catch_c19;
-							zval av21[1];
-							ZVAL_COPY_VALUE(&av21[0], l_traitClassName);
-							zv::Val r22;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_206, p20, "reflectClass", "reflectclass", 12, 1, av21, r22.raw(), NULL))) goto catch_c19;
-							zv::Val o23 = zv::Val::copyOf(zv::Ref(r22.raw()));
-							zval *w24 = zv::Ref(l_traits.raw()).deref().raw();
-							if (Z_TYPE_P(w24) <= IS_NULL) { zval_ptr_dtor(w24); array_init(w24); } else if (UNEXPECTED(Z_TYPE_P(w24) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c19; }
-							SEPARATE_ARRAY(w24);
-							{ zval v = o23.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w24), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); goto catch_c19; } }
+							zv::Val o21 = zv::Val::copyOf(zv::Ref(l_traitClassName));
+							zv::Val vd22;
+							zend_class_entry *vd22_ce = Z_TYPE_P(p20) == IS_OBJECT ? Z_OBJCE_P(p20) : NULL;
+							bool vd22_done = false;
+							if (vd22_ce == pt_ce_memoizing_reflector) {
+								if (UNEXPECTED(!(Z_TYPE_P(o21.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\Reflector\\MemoizingReflector::reflectClass", 1, "className", "string", o21.raw()); goto catch_c19; }
+								zv::Val r23;
+								if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectClass(Z_OBJ_P(p20), o21.raw(), r23.raw()))) goto catch_c19;
+								vd22 = std::move(r23);
+								vd22_done = true;
+							}
+							if (!vd22_done) {
+								zval av24[1];
+								ZVAL_COPY_VALUE(&av24[0], o21.raw());
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_206, p20, "reflectClass", "reflectclass", 12, 1, av24, vd22.raw()))) goto catch_c19;
+							}
+							zv::Val o25 = zv::Val::copyOf(zv::Ref(vd22.raw()));
+							zval *w26 = zv::Ref(l_traits.raw()).deref().raw();
+							if (Z_TYPE_P(w26) <= IS_NULL) { zval_ptr_dtor(w26); array_init(w26); } else if (UNEXPECTED(Z_TYPE_P(w26) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c19; }
+							SEPARATE_ARRAY(w26);
+							{ zval v = o25.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w26), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); goto catch_c19; } }
 						}
 					}
 					if (false) {
 					catch_c19:
 					 {
 						zend_object *thrown = EG(exception);
-						bool caught25 = false;
-						if (!caught25 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-							caught25 = true;
+						bool caught27 = false;
+						if (!caught27 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+							caught27 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
 							l_exception = zv::Val::copyOf(zv::Ref(&exception));
 							zval_ptr_dtor(&exception);
 						}
-						if (!caught25) return false;
+						if (!caught27) return false;
 					}
 					}
 				}
@@ -6149,11 +6184,11 @@ namespace pgen::BetterReflectionClass {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val o26 = zv::Val::copyOf(zv::Ref(l_traits.raw()));
-		zval o27;
-		ZVAL_COPY(&o27, o26.raw());
-		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::cachedTraits, &o27);
-		*ret = o26.take();
+		zv::Val o28 = zv::Val::copyOf(zv::Ref(l_traits.raw()));
+		zval o29;
+		ZVAL_COPY(&o29, o28.raw());
+		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::cachedTraits, &o29);
+		*ret = o28.take();
 		return true;
 	}
 }
@@ -7143,26 +7178,38 @@ namespace pgen::BetterReflectionClass {
 							zv::Val o19 = zv::Val::copyOf(zv::Ref(l_interfaceClassName));
 							zval *p20 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::reflector, "reflector");
 							if (UNEXPECTED(p20 == NULL)) goto catch_c18;
-							zval av21[1];
-							ZVAL_COPY_VALUE(&av21[0], l_interfaceClassName);
-							zv::Val r22;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_244, p20, "reflectClass", "reflectclass", 12, 1, av21, r22.raw(), NULL))) goto catch_c18;
-							zv::Val o23 = zv::Val::copyOf(zv::Ref(r22.raw()));
-							zval *w24 = zv::Ref(l_interfaces.raw()).deref().raw();
-							if (Z_TYPE_P(w24) <= IS_NULL) { zval_ptr_dtor(w24); array_init(w24); } else if (UNEXPECTED(Z_TYPE_P(w24) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c18; }
-							SEPARATE_ARRAY(w24);
-							zval *e25 = pgrt::dimWrite(w24, o19.raw());
-							if (UNEXPECTED(e25 == NULL)) goto catch_c18;
-							zv::Ref(e25).assign(std::move(o23));
+							zv::Val o21 = zv::Val::copyOf(zv::Ref(l_interfaceClassName));
+							zv::Val vd22;
+							zend_class_entry *vd22_ce = Z_TYPE_P(p20) == IS_OBJECT ? Z_OBJCE_P(p20) : NULL;
+							bool vd22_done = false;
+							if (vd22_ce == pt_ce_memoizing_reflector) {
+								if (UNEXPECTED(!(Z_TYPE_P(o21.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\Reflector\\MemoizingReflector::reflectClass", 1, "className", "string", o21.raw()); goto catch_c18; }
+								zv::Val r23;
+								if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectClass(Z_OBJ_P(p20), o21.raw(), r23.raw()))) goto catch_c18;
+								vd22 = std::move(r23);
+								vd22_done = true;
+							}
+							if (!vd22_done) {
+								zval av24[1];
+								ZVAL_COPY_VALUE(&av24[0], o21.raw());
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_244, p20, "reflectClass", "reflectclass", 12, 1, av24, vd22.raw()))) goto catch_c18;
+							}
+							zv::Val o25 = zv::Val::copyOf(zv::Ref(vd22.raw()));
+							zval *w26 = zv::Ref(l_interfaces.raw()).deref().raw();
+							if (Z_TYPE_P(w26) <= IS_NULL) { zval_ptr_dtor(w26); array_init(w26); } else if (UNEXPECTED(Z_TYPE_P(w26) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c18; }
+							SEPARATE_ARRAY(w26);
+							zval *e27 = pgrt::dimWrite(w26, o19.raw());
+							if (UNEXPECTED(e27 == NULL)) goto catch_c18;
+							zv::Ref(e27).assign(std::move(o25));
 						}
 					}
 					if (false) {
 					catch_c18:
 					 {
 						zend_object *thrown = EG(exception);
-						bool caught26 = false;
-						if (!caught26 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-							caught26 = true;
+						bool caught28 = false;
+						if (!caught28 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+							caught28 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
@@ -7170,7 +7217,7 @@ namespace pgen::BetterReflectionClass {
 							zval_ptr_dtor(&exception);
 							goto cont17;
 						}
-						if (!caught26) return false;
+						if (!caught28) return false;
 					}
 					}
 				}
@@ -7624,42 +7671,54 @@ namespace pgen::BetterReflectionClass {
 						 {
 							zval *p22 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::reflector, "reflector");
 							if (UNEXPECTED(p22 == NULL)) goto catch_c21;
-							zval av23[1];
-							ZVAL_COPY_VALUE(&av23[0], l_name);
-							zv::Val r24;
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_263, p22, "reflectClass", "reflectclass", 12, 1, av23, r24.raw(), NULL))) goto catch_c21;
-							l_interface = std::move(r24);
+							zv::Val o23 = zv::Val::copyOf(zv::Ref(l_name));
+							zv::Val vd24;
+							zend_class_entry *vd24_ce = Z_TYPE_P(p22) == IS_OBJECT ? Z_OBJCE_P(p22) : NULL;
+							bool vd24_done = false;
+							if (vd24_ce == pt_ce_memoizing_reflector) {
+								if (UNEXPECTED(!(Z_TYPE_P(o23.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\Reflector\\MemoizingReflector::reflectClass", 1, "className", "string", o23.raw()); goto catch_c21; }
+								zv::Val r25;
+								if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectClass(Z_OBJ_P(p22), o23.raw(), r25.raw()))) goto catch_c21;
+								vd24 = std::move(r25);
+								vd24_done = true;
+							}
+							if (!vd24_done) {
+								zval av26[1];
+								ZVAL_COPY_VALUE(&av26[0], o23.raw());
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_263, p22, "reflectClass", "reflectclass", 12, 1, av26, vd24.raw()))) goto catch_c21;
+							}
+							l_interface = std::move(vd24);
 						}
 						 {
-							zv::Val o26 = zv::Val::copyOf(zv::Ref(l_interface.raw()));
-							zend_class_entry *ce27 = pgrt::lookupClass(pg_site_99, "PHPStan\\BetterReflection\\Reflection\\Support\\AlreadyVisitedClasses", 65);
-							if (UNEXPECTED(ce27 == NULL)) goto catch_c21;
-							zv::Val r28;
-							if (UNEXPECTED(!pgrt::callStatic(pg_site_100, ce27, "createempty", 11, 0, NULL, r28.raw(), NULL))) goto catch_c21;
-							zv::Val r29;
-							if (UNEXPECTED(!pgen::BetterReflectionClass::m_getInterfacesHierarchy(Z_OBJ_P(o26.raw()), r28.raw(), r29.raw()))) goto catch_c21;
-							zv::Val a30 = zv::Val::copyOf(zv::Ref(r29.raw()).deref());
-							HashTable *ht25 = Z_ARRVAL_P(a30.raw());
-							zval *v31;
-							zend_ulong n32;
-							zend_string *s33;
-							ZEND_HASH_FOREACH_KEY_VAL(ht25, n32, s33, v31) {
-								(void) n32; (void) s33;
-								zval k34;
-								if (s33 != NULL) { ZVAL_STR(&k34, s33); } else { ZVAL_LONG(&k34, (zend_long) n32); }
-								l_n = zv::Val::copyOf(zv::Ref(&k34));
-								l_i = zv::Ref(v31).deref().raw();
+							zv::Val o28 = zv::Val::copyOf(zv::Ref(l_interface.raw()));
+							zend_class_entry *ce29 = pgrt::lookupClass(pg_site_99, "PHPStan\\BetterReflection\\Reflection\\Support\\AlreadyVisitedClasses", 65);
+							if (UNEXPECTED(ce29 == NULL)) goto catch_c21;
+							zv::Val r30;
+							if (UNEXPECTED(!pgrt::callStatic(pg_site_100, ce29, "createempty", 11, 0, NULL, r30.raw(), NULL))) goto catch_c21;
+							zv::Val r31;
+							if (UNEXPECTED(!pgen::BetterReflectionClass::m_getInterfacesHierarchy(Z_OBJ_P(o28.raw()), r30.raw(), r31.raw()))) goto catch_c21;
+							zv::Val a32 = zv::Val::copyOf(zv::Ref(r31.raw()).deref());
+							HashTable *ht27 = Z_ARRVAL_P(a32.raw());
+							zval *v33;
+							zend_ulong n34;
+							zend_string *s35;
+							ZEND_HASH_FOREACH_KEY_VAL(ht27, n34, s35, v33) {
+								(void) n34; (void) s35;
+								zval k36;
+								if (s35 != NULL) { ZVAL_STR(&k36, s35); } else { ZVAL_LONG(&k36, (zend_long) n34); }
+								l_n = zv::Val::copyOf(zv::Ref(&k36));
+								l_i = zv::Ref(v33).deref().raw();
 								 {
 									 {
-										zv::Val o37 = zv::Val::copyOf(zv::Ref(l_n.raw()));
-										zv::Val o38 = zv::Val::copyOf(zv::Ref(l_i));
-										zv::Val o39 = zv::Val::copyOf(zv::Ref(o38.raw()));
-										zval *w40 = zv::Ref(l_interfaces.raw()).deref().raw();
-										if (Z_TYPE_P(w40) <= IS_NULL) { zval_ptr_dtor(w40); array_init(w40); } else if (UNEXPECTED(Z_TYPE_P(w40) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c21; }
-										SEPARATE_ARRAY(w40);
-										zval *e41 = pgrt::dimWrite(w40, o37.raw());
-										if (UNEXPECTED(e41 == NULL)) goto catch_c21;
-										zv::Ref(e41).assign(std::move(o39));
+										zv::Val o39 = zv::Val::copyOf(zv::Ref(l_n.raw()));
+										zv::Val o40 = zv::Val::copyOf(zv::Ref(l_i));
+										zv::Val o41 = zv::Val::copyOf(zv::Ref(o40.raw()));
+										zval *w42 = zv::Ref(l_interfaces.raw()).deref().raw();
+										if (Z_TYPE_P(w42) <= IS_NULL) { zval_ptr_dtor(w42); array_init(w42); } else if (UNEXPECTED(Z_TYPE_P(w42) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); goto catch_c21; }
+										SEPARATE_ARRAY(w42);
+										zval *e43 = pgrt::dimWrite(w42, o39.raw());
+										if (UNEXPECTED(e43 == NULL)) goto catch_c21;
+										zv::Ref(e43).assign(std::move(o41));
 									}
 								}
 							}
@@ -7670,9 +7729,9 @@ namespace pgen::BetterReflectionClass {
 					catch_c21:
 					 {
 						zend_object *thrown = EG(exception);
-						bool caught42 = false;
-						if (!caught42 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
-							caught42 = true;
+						bool caught44 = false;
+						if (!caught44 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_195, "PHPStan\\BetterReflection\\Reflector\\Exception\\IdentifierNotFound", 63)))) {
+							caught44 = true;
 							zval exception;
 							ZVAL_OBJ_COPY(&exception, thrown);
 							zend_clear_exception();
@@ -7680,7 +7739,7 @@ namespace pgen::BetterReflectionClass {
 							zval_ptr_dtor(&exception);
 							goto cont20;
 						}
-						if (!caught42) return false;
+						if (!caught44) return false;
 					}
 					}
 				}

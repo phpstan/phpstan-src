@@ -26,8 +26,10 @@ use function array_keys;
 use function hash_file;
 use function sprintf;
 use function strtolower;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[GenerateFactory(interface: OptimizedSingleFileSourceLocatorFactory::class)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/OptimizedSingleFileSourceLocator.cpp')]
 final class OptimizedSingleFileSourceLocator implements SourceLocator
 {
 

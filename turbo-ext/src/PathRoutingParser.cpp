@@ -9,24 +9,20 @@ zend_class_entry *pt_ce_path_routing_parser = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[3];
 
-static pt_method_site pg_site_0; /* method_normalizePath_0 */
-static pgrt::FunctionSite pg_site_1; /* function_array_fill_keys */
-static pt_method_site pg_site_2; /* method_normalizePath_2 */
-static pgrt::FunctionSite pg_site_3; /* function_str_contains */
-static pt_method_site pg_site_4; /* method_parseFile_4 */
-static pt_method_site pg_site_5; /* method_parseFile_5 */
-static pt_method_site pg_site_6; /* method_normalizePath_6 */
-static pgrt::FunctionSite pg_site_7; /* function_explode */
-static pgrt::FunctionSite pg_site_8; /* function_array_slice */
-static pgrt::FunctionSite pg_site_9; /* function_is_link */
-static pgrt::FunctionSite pg_site_10; /* function_realpath */
-static pt_method_site pg_site_11; /* method_normalizePath_11 */
-static pt_method_site pg_site_12; /* method_parseFile_12 */
-static pt_method_site pg_site_13; /* method_parseFile_13 */
-static pt_method_site pg_site_14; /* method_parseFile_14 */
-static pt_method_site pg_site_15; /* method_parseString_15 */
-static pgrt::ClassSite pg_site_16; /* cls_PHPStan\File\FileHelper */
-static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Parser\Parser */
+static pgrt::FunctionSite pg_site_0; /* function_array_fill_keys */
+static pgrt::FunctionSite pg_site_1; /* function_str_contains */
+static pt_method_site pg_site_2; /* method_parseFile_2 */
+static pt_method_site pg_site_3; /* method_parseFile_3 */
+static pgrt::FunctionSite pg_site_4; /* function_explode */
+static pgrt::FunctionSite pg_site_5; /* function_array_slice */
+static pgrt::FunctionSite pg_site_6; /* function_is_link */
+static pgrt::FunctionSite pg_site_7; /* function_realpath */
+static pt_method_site pg_site_8; /* method_parseFile_8 */
+static pt_method_site pg_site_9; /* method_parseFile_9 */
+static pt_method_site pg_site_10; /* method_parseFile_10 */
+static pt_method_site pg_site_11; /* method_parseString_11 */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\File\FileHelper */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Parser\Parser */
 
 namespace pgen::PathRoutingParser {
 
@@ -51,10 +47,10 @@ namespace pgen::PathRoutingParser {
 	 {
 		zv::Val q5;
 		if (!(Z_TYPE_P(p_singleReflectionFile) == IS_NULL)) {
-			zval av6[1];
-			ZVAL_COPY_VALUE(&av6[0], p_singleReflectionFile);
+			zval d6;
+			ZVAL_CHAR(&d6, DEFAULT_SLASH);
 			zv::Val r7;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_fileHelper, "normalizePath", "normalizepath", 13, 1, av6, r7.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgen::FileHelper::m_normalizePath(Z_OBJ_P(p_fileHelper), p_singleReflectionFile, &d6, r7.raw()))) return false;
 			q5 = std::move(r7);
 		} else {
 		 {
@@ -82,7 +78,7 @@ namespace pgen::PathRoutingParser {
 		ZVAL_BOOL(&z2, true);
 		ZVAL_COPY_VALUE(&av1[1], &z2);
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "array_fill_keys", 15, pt_ce_path_routing_parser, 2, av1, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "array_fill_keys", 15, pt_ce_path_routing_parser, 2, av1, r3.raw(), NULL))) return false;
 		zval o4;
 		ZVAL_COPY(&o4, r3.raw());
 		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::analysedFiles, &o4);
@@ -106,137 +102,134 @@ namespace pgen::PathRoutingParser {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::fileHelper, "fileHelper");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zval av2[2];
-		ZVAL_COPY_VALUE(&av2[0], l_file.raw());
-		ZVAL_COPY_VALUE(&av2[1], &pg_lit[0]);
-		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p1, "normalizePath", "normalizepath", 13, 2, av2, r3.raw(), NULL))) return false;
-		l_normalizedPath = std::move(r3);
+		zv::Val r2;
+		if (UNEXPECTED(!pgen::FileHelper::m_normalizePath(Z_OBJ_P(p1), l_file.raw(), &pg_lit[0], r2.raw()))) return false;
+		l_normalizedPath = std::move(r2);
 	}
 	 {
-		zv::Val o4 = zv::Val::copyOf(zv::Ref(l_normalizedPath.raw()));
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::strMatch(pg_site_3, "str_contains", 12, pgrt::StrMatch::CONTAINS, o4.raw(), &pg_lit[1], r5.raw()))) return false;
-		if (Z_TYPE_P(r5.raw()) == IS_TRUE) {
+		zv::Val o3 = zv::Val::copyOf(zv::Ref(l_normalizedPath.raw()));
+		zv::Val r4;
+		if (UNEXPECTED(!pgrt::strMatch(pg_site_1, "str_contains", 12, pgrt::StrMatch::CONTAINS, o3.raw(), &pg_lit[1], r4.raw()))) return false;
+		if (Z_TYPE_P(r4.raw()) == IS_TRUE) {
 			 {
-				zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::php8Parser, "php8Parser");
-				if (UNEXPECTED(p6 == NULL)) return false;
-				zv::Val o7 = zv::Val::copyOf(zv::Ref(l_file.raw()));
-				zv::Val vd8;
-				zend_class_entry *vd8_ce = Z_TYPE_P(p6) == IS_OBJECT ? Z_OBJCE_P(p6) : NULL;
-				bool vd8_done = false;
-				if (vd8_ce == pt_ce_rich_parser) {
+				zval *p5 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::php8Parser, "php8Parser");
+				if (UNEXPECTED(p5 == NULL)) return false;
+				zv::Val o6 = zv::Val::copyOf(zv::Ref(l_file.raw()));
+				zv::Val vd7;
+				zend_class_entry *vd7_ce = Z_TYPE_P(p5) == IS_OBJECT ? Z_OBJCE_P(p5) : NULL;
+				bool vd7_done = false;
+				if (vd7_ce == pt_ce_rich_parser) {
+					zv::Val r8;
+					if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p5), o6.raw(), r8.raw()))) return false;
+					vd7 = std::move(r8);
+					vd7_done = true;
+				}
+				if (vd7_ce == pt_ce_cached_parser) {
 					zv::Val r9;
-					if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p6), o7.raw(), r9.raw()))) return false;
-					vd8 = std::move(r9);
-					vd8_done = true;
+					if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p5), o6.raw(), r9.raw()))) return false;
+					vd7 = std::move(r9);
+					vd7_done = true;
 				}
-				if (vd8_ce == pt_ce_cached_parser) {
+				if (vd7_ce == pt_ce_simple_parser) {
 					zv::Val r10;
-					if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p6), o7.raw(), r10.raw()))) return false;
-					vd8 = std::move(r10);
-					vd8_done = true;
+					if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p5), o6.raw(), r10.raw()))) return false;
+					vd7 = std::move(r10);
+					vd7_done = true;
 				}
-				if (vd8_ce == pt_ce_simple_parser) {
+				if (vd7_ce == pt_ce_path_routing_parser) {
 					zv::Val r11;
-					if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p6), o7.raw(), r11.raw()))) return false;
-					vd8 = std::move(r11);
-					vd8_done = true;
+					if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p5), o6.raw(), r11.raw()))) return false;
+					vd7 = std::move(r11);
+					vd7_done = true;
 				}
-				if (vd8_ce == pt_ce_path_routing_parser) {
-					zv::Val r12;
-					if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p6), o7.raw(), r12.raw()))) return false;
-					vd8 = std::move(r12);
-					vd8_done = true;
+				if (!vd7_done) {
+					zval av12[1];
+					ZVAL_COPY_VALUE(&av12[0], o6.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p5, "parseFile", "parsefile", 9, 1, av12, vd7.raw()))) return false;
 				}
-				if (!vd8_done) {
-					zval av13[1];
-					ZVAL_COPY_VALUE(&av13[0], o7.raw());
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p6, "parseFile", "parsefile", 9, 1, av13, vd8.raw()))) return false;
-				}
-				*ret = vd8.take();
+				*ret = vd7.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val o14 = zv::Val::copyOf(zv::Ref(l_normalizedPath.raw()));
-		zv::Val r15;
-		if (UNEXPECTED(!pgrt::strMatch(pg_site_3, "str_contains", 12, pgrt::StrMatch::CONTAINS, o14.raw(), &pg_lit[2], r15.raw()))) return false;
-		if (Z_TYPE_P(r15.raw()) == IS_TRUE) {
+		zv::Val o13 = zv::Val::copyOf(zv::Ref(l_normalizedPath.raw()));
+		zv::Val r14;
+		if (UNEXPECTED(!pgrt::strMatch(pg_site_1, "str_contains", 12, pgrt::StrMatch::CONTAINS, o13.raw(), &pg_lit[2], r14.raw()))) return false;
+		if (Z_TYPE_P(r14.raw()) == IS_TRUE) {
 			 {
-				zval *p16 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::php8Parser, "php8Parser");
-				if (UNEXPECTED(p16 == NULL)) return false;
-				zv::Val o17 = zv::Val::copyOf(zv::Ref(l_file.raw()));
-				zv::Val vd18;
-				zend_class_entry *vd18_ce = Z_TYPE_P(p16) == IS_OBJECT ? Z_OBJCE_P(p16) : NULL;
-				bool vd18_done = false;
-				if (vd18_ce == pt_ce_rich_parser) {
+				zval *p15 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::php8Parser, "php8Parser");
+				if (UNEXPECTED(p15 == NULL)) return false;
+				zv::Val o16 = zv::Val::copyOf(zv::Ref(l_file.raw()));
+				zv::Val vd17;
+				zend_class_entry *vd17_ce = Z_TYPE_P(p15) == IS_OBJECT ? Z_OBJCE_P(p15) : NULL;
+				bool vd17_done = false;
+				if (vd17_ce == pt_ce_rich_parser) {
+					zv::Val r18;
+					if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p15), o16.raw(), r18.raw()))) return false;
+					vd17 = std::move(r18);
+					vd17_done = true;
+				}
+				if (vd17_ce == pt_ce_cached_parser) {
 					zv::Val r19;
-					if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p16), o17.raw(), r19.raw()))) return false;
-					vd18 = std::move(r19);
-					vd18_done = true;
+					if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p15), o16.raw(), r19.raw()))) return false;
+					vd17 = std::move(r19);
+					vd17_done = true;
 				}
-				if (vd18_ce == pt_ce_cached_parser) {
+				if (vd17_ce == pt_ce_simple_parser) {
 					zv::Val r20;
-					if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p16), o17.raw(), r20.raw()))) return false;
-					vd18 = std::move(r20);
-					vd18_done = true;
+					if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p15), o16.raw(), r20.raw()))) return false;
+					vd17 = std::move(r20);
+					vd17_done = true;
 				}
-				if (vd18_ce == pt_ce_simple_parser) {
+				if (vd17_ce == pt_ce_path_routing_parser) {
 					zv::Val r21;
-					if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p16), o17.raw(), r21.raw()))) return false;
-					vd18 = std::move(r21);
-					vd18_done = true;
+					if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p15), o16.raw(), r21.raw()))) return false;
+					vd17 = std::move(r21);
+					vd17_done = true;
 				}
-				if (vd18_ce == pt_ce_path_routing_parser) {
-					zv::Val r22;
-					if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p16), o17.raw(), r22.raw()))) return false;
-					vd18 = std::move(r22);
-					vd18_done = true;
+				if (!vd17_done) {
+					zval av22[1];
+					ZVAL_COPY_VALUE(&av22[0], o16.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p15, "parseFile", "parsefile", 9, 1, av22, vd17.raw()))) return false;
 				}
-				if (!vd18_done) {
-					zval av23[1];
-					ZVAL_COPY_VALUE(&av23[0], o17.raw());
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p16, "parseFile", "parsefile", 9, 1, av23, vd18.raw()))) return false;
-				}
-				*ret = vd18.take();
+				*ret = vd17.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p24 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::fileHelper, "fileHelper");
-		if (UNEXPECTED(p24 == NULL)) return false;
-		zval av25[1];
-		ZVAL_COPY_VALUE(&av25[0], l_file.raw());
-		zv::Val r26;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p24, "normalizePath", "normalizepath", 13, 1, av25, r26.raw(), NULL))) return false;
-		l_file = std::move(r26);
+		zval *p23 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::fileHelper, "fileHelper");
+		if (UNEXPECTED(p23 == NULL)) return false;
+		zval d24;
+		ZVAL_CHAR(&d24, DEFAULT_SLASH);
+		zv::Val r25;
+		if (UNEXPECTED(!pgen::FileHelper::m_normalizePath(Z_OBJ_P(p23), l_file.raw(), &d24, r25.raw()))) return false;
+		l_file = std::move(r25);
 	}
 	 {
-		zval *is29 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::PathRoutingParser::slot::analysedFiles)).deref().raw();
-		if (Z_ISUNDEF_P(is29)) is29 = NULL;
-		zv::Val o30 = zv::Val::copyOf(zv::Ref(l_file.raw()));
-		zv::Val ist31;
-		zval *is28 = is29 == NULL ? NULL : pgrt::dimIs(is29, o30.raw(), ist31.raw());
+		zval *is28 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::PathRoutingParser::slot::analysedFiles)).deref().raw();
+		if (Z_ISUNDEF_P(is28)) is28 = NULL;
+		zv::Val o29 = zv::Val::copyOf(zv::Ref(l_file.raw()));
+		zv::Val ist30;
+		zval *is27 = is28 == NULL ? NULL : pgrt::dimIs(is28, o29.raw(), ist30.raw());
 		if (UNEXPECTED(EG(exception))) return false;
-		bool b27 = !((is28 != NULL && Z_TYPE_P(is28) > IS_NULL));
-		if (b27) {
-			zval *p32 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::singleReflectionFile, "singleReflectionFile");
-			if (UNEXPECTED(p32 == NULL)) return false;
-			b27 = !zend_is_identical(l_file.raw(), p32);
+		bool b26 = !((is27 != NULL && Z_TYPE_P(is27) > IS_NULL));
+		if (b26) {
+			zval *p31 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::singleReflectionFile, "singleReflectionFile");
+			if (UNEXPECTED(p31 == NULL)) return false;
+			b26 = !zend_is_identical(l_file.raw(), p31);
 		}
-		if (b27) {
+		if (b26) {
 			 {
-				zval *cn33 = zend_get_constant_str("DIRECTORY_SEPARATOR", 19);
-				if (UNEXPECTED(cn33 == NULL)) { zend_throw_error(NULL, "Undefined constant \"%s\"", "DIRECTORY_SEPARATOR"); return false; }
-				zval av34[2];
-				ZVAL_COPY_VALUE(&av34[0], cn33);
-				ZVAL_COPY_VALUE(&av34[1], l_file.raw());
-				zv::Val r35;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "explode", 7, pt_ce_path_routing_parser, 2, av34, r35.raw(), NULL))) return false;
-				l_pathParts = std::move(r35);
+				zval *cn32 = zend_get_constant_str("DIRECTORY_SEPARATOR", 19);
+				if (UNEXPECTED(cn32 == NULL)) { zend_throw_error(NULL, "Undefined constant \"%s\"", "DIRECTORY_SEPARATOR"); return false; }
+				zval av33[2];
+				ZVAL_COPY_VALUE(&av33[0], cn32);
+				ZVAL_COPY_VALUE(&av33[1], l_file.raw());
+				zv::Val r34;
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "explode", 7, pt_ce_path_routing_parser, 2, av33, r34.raw(), NULL))) return false;
+				l_pathParts = std::move(r34);
 			}
 			 {
 				 {
@@ -248,192 +241,192 @@ namespace pgen::PathRoutingParser {
 					}
 					 {
 						 {
-							zval *cn38 = zend_get_constant_str("DIRECTORY_SEPARATOR", 19);
-							if (UNEXPECTED(cn38 == NULL)) { zend_throw_error(NULL, "Undefined constant \"%s\"", "DIRECTORY_SEPARATOR"); return false; }
-							zv::Val o39 = zv::Val::copyOf(zv::Ref(cn38));
-							zval av40[3];
-							ZVAL_COPY_VALUE(&av40[0], l_pathParts.raw());
+							zval *cn37 = zend_get_constant_str("DIRECTORY_SEPARATOR", 19);
+							if (UNEXPECTED(cn37 == NULL)) { zend_throw_error(NULL, "Undefined constant \"%s\"", "DIRECTORY_SEPARATOR"); return false; }
+							zv::Val o38 = zv::Val::copyOf(zv::Ref(cn37));
+							zval av39[3];
+							ZVAL_COPY_VALUE(&av39[0], l_pathParts.raw());
+							zval z40;
+							ZVAL_LONG(&z40, 0);
+							ZVAL_COPY_VALUE(&av39[1], &z40);
 							zval z41;
-							ZVAL_LONG(&z41, 0);
-							ZVAL_COPY_VALUE(&av40[1], &z41);
-							zval z42;
-							ZVAL_LONG(&z42, l_i);
-							ZVAL_COPY_VALUE(&av40[2], &z42);
+							ZVAL_LONG(&z41, l_i);
+							ZVAL_COPY_VALUE(&av39[2], &z41);
+							zv::Val r42;
+							if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "array_slice", 11, pt_ce_path_routing_parser, 3, av39, r42.raw(), NULL))) return false;
 							zv::Val r43;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_8, "array_slice", 11, pt_ce_path_routing_parser, 3, av40, r43.raw(), NULL))) return false;
-							zv::Val r44;
-							if (UNEXPECTED(!pgrt::implode(o39.raw(), r43.raw(), r44.raw()))) return false;
-							l_joinedPartOfPath = std::move(r44);
+							if (UNEXPECTED(!pgrt::implode(o38.raw(), r42.raw(), r43.raw()))) return false;
+							l_joinedPartOfPath = std::move(r43);
 						}
 						 {
-							pgrt::Silence silence45;
-							zval av46[1];
-							ZVAL_COPY_VALUE(&av46[0], l_joinedPartOfPath.raw());
-							zv::Val r47;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "is_link", 7, pt_ce_path_routing_parser, 1, av46, r47.raw(), NULL))) return false;
-							zv::Val o48 = zv::Val::boolean((Z_TYPE_P(r47.raw()) == IS_TRUE));
-							silence45.end();
-							if (!(zend_is_true(o48.raw()))) {
-								goto cont37;
+							pgrt::Silence silence44;
+							zval av45[1];
+							ZVAL_COPY_VALUE(&av45[0], l_joinedPartOfPath.raw());
+							zv::Val r46;
+							if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "is_link", 7, pt_ce_path_routing_parser, 1, av45, r46.raw(), NULL))) return false;
+							zv::Val o47 = zv::Val::boolean((Z_TYPE_P(r46.raw()) == IS_TRUE));
+							silence44.end();
+							if (!(zend_is_true(o47.raw()))) {
+								goto cont36;
 							}
 						}
 						 {
-							zval av49[1];
-							ZVAL_COPY_VALUE(&av49[0], l_file.raw());
-							zv::Val r50;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "realpath", 8, pt_ce_path_routing_parser, 1, av49, r50.raw(), NULL))) return false;
-							l_realFilePath = std::move(r50);
+							zval av48[1];
+							ZVAL_COPY_VALUE(&av48[0], l_file.raw());
+							zv::Val r49;
+							if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "realpath", 8, pt_ce_path_routing_parser, 1, av48, r49.raw(), NULL))) return false;
+							l_realFilePath = std::move(r49);
 						}
 						 {
 							if (!(Z_TYPE_P(l_realFilePath.raw()) == (false ? IS_TRUE : IS_FALSE))) {
 								 {
-									zval *p51 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::fileHelper, "fileHelper");
-									if (UNEXPECTED(p51 == NULL)) return false;
-									zval av52[1];
-									ZVAL_COPY_VALUE(&av52[0], l_realFilePath.raw());
-									zv::Val r53;
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p51, "normalizePath", "normalizepath", 13, 1, av52, r53.raw(), NULL))) return false;
-									l_normalizedRealFilePath = std::move(r53);
+									zval *p50 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::fileHelper, "fileHelper");
+									if (UNEXPECTED(p50 == NULL)) return false;
+									zval d51;
+									ZVAL_CHAR(&d51, DEFAULT_SLASH);
+									zv::Val r52;
+									if (UNEXPECTED(!pgen::FileHelper::m_normalizePath(Z_OBJ_P(p50), l_realFilePath.raw(), &d51, r52.raw()))) return false;
+									l_normalizedRealFilePath = std::move(r52);
 								}
 								 {
-									zval *is55 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::PathRoutingParser::slot::analysedFiles)).deref().raw();
-									if (Z_ISUNDEF_P(is55)) is55 = NULL;
-									zv::Val o56 = zv::Val::copyOf(zv::Ref(l_normalizedRealFilePath.raw()));
-									zv::Val ist57;
-									zval *is54 = is55 == NULL ? NULL : pgrt::dimIs(is55, o56.raw(), ist57.raw());
+									zval *is54 = zv::Ref(OBJ_PROP_NUM(self, ptdecl::PathRoutingParser::slot::analysedFiles)).deref().raw();
+									if (Z_ISUNDEF_P(is54)) is54 = NULL;
+									zv::Val o55 = zv::Val::copyOf(zv::Ref(l_normalizedRealFilePath.raw()));
+									zv::Val ist56;
+									zval *is53 = is54 == NULL ? NULL : pgrt::dimIs(is54, o55.raw(), ist56.raw());
 									if (UNEXPECTED(EG(exception))) return false;
-									if (is54 != NULL && Z_TYPE_P(is54) > IS_NULL) {
+									if (is53 != NULL && Z_TYPE_P(is53) > IS_NULL) {
 										 {
-											zval *p58 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::currentPhpVersionRichParser, "currentPhpVersionRichParser");
-											if (UNEXPECTED(p58 == NULL)) return false;
-											zv::Val o59 = zv::Val::copyOf(zv::Ref(l_file.raw()));
-											zv::Val vd60;
-											zend_class_entry *vd60_ce = Z_TYPE_P(p58) == IS_OBJECT ? Z_OBJCE_P(p58) : NULL;
-											bool vd60_done = false;
-											if (vd60_ce == pt_ce_rich_parser) {
+											zval *p57 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::currentPhpVersionRichParser, "currentPhpVersionRichParser");
+											if (UNEXPECTED(p57 == NULL)) return false;
+											zv::Val o58 = zv::Val::copyOf(zv::Ref(l_file.raw()));
+											zv::Val vd59;
+											zend_class_entry *vd59_ce = Z_TYPE_P(p57) == IS_OBJECT ? Z_OBJCE_P(p57) : NULL;
+											bool vd59_done = false;
+											if (vd59_ce == pt_ce_rich_parser) {
+												zv::Val r60;
+												if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p57), o58.raw(), r60.raw()))) return false;
+												vd59 = std::move(r60);
+												vd59_done = true;
+											}
+											if (vd59_ce == pt_ce_cached_parser) {
 												zv::Val r61;
-												if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p58), o59.raw(), r61.raw()))) return false;
-												vd60 = std::move(r61);
-												vd60_done = true;
+												if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p57), o58.raw(), r61.raw()))) return false;
+												vd59 = std::move(r61);
+												vd59_done = true;
 											}
-											if (vd60_ce == pt_ce_cached_parser) {
+											if (vd59_ce == pt_ce_simple_parser) {
 												zv::Val r62;
-												if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p58), o59.raw(), r62.raw()))) return false;
-												vd60 = std::move(r62);
-												vd60_done = true;
+												if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p57), o58.raw(), r62.raw()))) return false;
+												vd59 = std::move(r62);
+												vd59_done = true;
 											}
-											if (vd60_ce == pt_ce_simple_parser) {
+											if (vd59_ce == pt_ce_path_routing_parser) {
 												zv::Val r63;
-												if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p58), o59.raw(), r63.raw()))) return false;
-												vd60 = std::move(r63);
-												vd60_done = true;
+												if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p57), o58.raw(), r63.raw()))) return false;
+												vd59 = std::move(r63);
+												vd59_done = true;
 											}
-											if (vd60_ce == pt_ce_path_routing_parser) {
-												zv::Val r64;
-												if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p58), o59.raw(), r64.raw()))) return false;
-												vd60 = std::move(r64);
-												vd60_done = true;
+											if (!vd59_done) {
+												zval av64[1];
+												ZVAL_COPY_VALUE(&av64[0], o58.raw());
+												if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p57, "parseFile", "parsefile", 9, 1, av64, vd59.raw()))) return false;
 											}
-											if (!vd60_done) {
-												zval av65[1];
-												ZVAL_COPY_VALUE(&av65[0], o59.raw());
-												if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p58, "parseFile", "parsefile", 9, 1, av65, vd60.raw()))) return false;
-											}
-											*ret = vd60.take();
+											*ret = vd59.take();
 											return true;
 										}
 									}
 								}
 							}
 						}
-						goto brk36;
+						goto brk35;
 					}
-					cont37:;
+					cont36:;
 					 {
-						zend_long old66 = l_i;
-						if (UNEXPECTED(!pgrt::subLong(old66, 1, &l_i))) return false;
+						zend_long old65 = l_i;
+						if (UNEXPECTED(!pgrt::subLong(old65, 1, &l_i))) return false;
 					}
 				}
-				brk36:;
+				brk35:;
 			}
 			 {
-				zval *p67 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::currentPhpVersionSimpleParser, "currentPhpVersionSimpleParser");
-				if (UNEXPECTED(p67 == NULL)) return false;
-				zv::Val o68 = zv::Val::copyOf(zv::Ref(l_file.raw()));
-				zv::Val vd69;
-				zend_class_entry *vd69_ce = Z_TYPE_P(p67) == IS_OBJECT ? Z_OBJCE_P(p67) : NULL;
-				bool vd69_done = false;
-				if (vd69_ce == pt_ce_rich_parser) {
+				zval *p66 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::currentPhpVersionSimpleParser, "currentPhpVersionSimpleParser");
+				if (UNEXPECTED(p66 == NULL)) return false;
+				zv::Val o67 = zv::Val::copyOf(zv::Ref(l_file.raw()));
+				zv::Val vd68;
+				zend_class_entry *vd68_ce = Z_TYPE_P(p66) == IS_OBJECT ? Z_OBJCE_P(p66) : NULL;
+				bool vd68_done = false;
+				if (vd68_ce == pt_ce_rich_parser) {
+					zv::Val r69;
+					if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p66), o67.raw(), r69.raw()))) return false;
+					vd68 = std::move(r69);
+					vd68_done = true;
+				}
+				if (vd68_ce == pt_ce_cached_parser) {
 					zv::Val r70;
-					if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p67), o68.raw(), r70.raw()))) return false;
-					vd69 = std::move(r70);
-					vd69_done = true;
+					if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p66), o67.raw(), r70.raw()))) return false;
+					vd68 = std::move(r70);
+					vd68_done = true;
 				}
-				if (vd69_ce == pt_ce_cached_parser) {
+				if (vd68_ce == pt_ce_simple_parser) {
 					zv::Val r71;
-					if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p67), o68.raw(), r71.raw()))) return false;
-					vd69 = std::move(r71);
-					vd69_done = true;
+					if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p66), o67.raw(), r71.raw()))) return false;
+					vd68 = std::move(r71);
+					vd68_done = true;
 				}
-				if (vd69_ce == pt_ce_simple_parser) {
+				if (vd68_ce == pt_ce_path_routing_parser) {
 					zv::Val r72;
-					if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p67), o68.raw(), r72.raw()))) return false;
-					vd69 = std::move(r72);
-					vd69_done = true;
+					if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p66), o67.raw(), r72.raw()))) return false;
+					vd68 = std::move(r72);
+					vd68_done = true;
 				}
-				if (vd69_ce == pt_ce_path_routing_parser) {
-					zv::Val r73;
-					if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p67), o68.raw(), r73.raw()))) return false;
-					vd69 = std::move(r73);
-					vd69_done = true;
+				if (!vd68_done) {
+					zval av73[1];
+					ZVAL_COPY_VALUE(&av73[0], o67.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p66, "parseFile", "parsefile", 9, 1, av73, vd68.raw()))) return false;
 				}
-				if (!vd69_done) {
-					zval av74[1];
-					ZVAL_COPY_VALUE(&av74[0], o68.raw());
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p67, "parseFile", "parsefile", 9, 1, av74, vd69.raw()))) return false;
-				}
-				*ret = vd69.take();
+				*ret = vd68.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p75 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::currentPhpVersionRichParser, "currentPhpVersionRichParser");
-		if (UNEXPECTED(p75 == NULL)) return false;
-		zv::Val o76 = zv::Val::copyOf(zv::Ref(l_file.raw()));
-		zv::Val vd77;
-		zend_class_entry *vd77_ce = Z_TYPE_P(p75) == IS_OBJECT ? Z_OBJCE_P(p75) : NULL;
-		bool vd77_done = false;
-		if (vd77_ce == pt_ce_rich_parser) {
+		zval *p74 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PathRoutingParser::slot::currentPhpVersionRichParser, "currentPhpVersionRichParser");
+		if (UNEXPECTED(p74 == NULL)) return false;
+		zv::Val o75 = zv::Val::copyOf(zv::Ref(l_file.raw()));
+		zv::Val vd76;
+		zend_class_entry *vd76_ce = Z_TYPE_P(p74) == IS_OBJECT ? Z_OBJCE_P(p74) : NULL;
+		bool vd76_done = false;
+		if (vd76_ce == pt_ce_rich_parser) {
+			zv::Val r77;
+			if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p74), o75.raw(), r77.raw()))) return false;
+			vd76 = std::move(r77);
+			vd76_done = true;
+		}
+		if (vd76_ce == pt_ce_cached_parser) {
 			zv::Val r78;
-			if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p75), o76.raw(), r78.raw()))) return false;
-			vd77 = std::move(r78);
-			vd77_done = true;
+			if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p74), o75.raw(), r78.raw()))) return false;
+			vd76 = std::move(r78);
+			vd76_done = true;
 		}
-		if (vd77_ce == pt_ce_cached_parser) {
+		if (vd76_ce == pt_ce_simple_parser) {
 			zv::Val r79;
-			if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p75), o76.raw(), r79.raw()))) return false;
-			vd77 = std::move(r79);
-			vd77_done = true;
+			if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p74), o75.raw(), r79.raw()))) return false;
+			vd76 = std::move(r79);
+			vd76_done = true;
 		}
-		if (vd77_ce == pt_ce_simple_parser) {
+		if (vd76_ce == pt_ce_path_routing_parser) {
 			zv::Val r80;
-			if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p75), o76.raw(), r80.raw()))) return false;
-			vd77 = std::move(r80);
-			vd77_done = true;
+			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p74), o75.raw(), r80.raw()))) return false;
+			vd76 = std::move(r80);
+			vd76_done = true;
 		}
-		if (vd77_ce == pt_ce_path_routing_parser) {
-			zv::Val r81;
-			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p75), o76.raw(), r81.raw()))) return false;
-			vd77 = std::move(r81);
-			vd77_done = true;
+		if (!vd76_done) {
+			zval av81[1];
+			ZVAL_COPY_VALUE(&av81[0], o75.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p74, "parseFile", "parsefile", 9, 1, av81, vd76.raw()))) return false;
 		}
-		if (!vd77_done) {
-			zval av82[1];
-			ZVAL_COPY_VALUE(&av82[0], o76.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p75, "parseFile", "parsefile", 9, 1, av82, vd77.raw()))) return false;
-		}
-		*ret = vd77.take();
+		*ret = vd76.take();
 		return true;
 	}
 }
@@ -477,7 +470,7 @@ namespace pgen::PathRoutingParser {
 		if (!vd2_done) {
 			zval av7[1];
 			ZVAL_COPY_VALUE(&av7[0], p_sourceCode);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p1, "parseString", "parsestring", 11, 1, av7, vd2.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, p1, "parseString", "parsestring", 11, 1, av7, vd2.raw()))) return false;
 		}
 		*ret = vd2.take();
 		return true;
@@ -514,10 +507,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PathRoutingParser)
 			Z_PARAM_ZVAL(p_php8Parser)
 			Z_PARAM_STR_OR_NULL(p_singleReflectionFile_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_fileHelper != NULL && UNEXPECTED(Z_TYPE_P(p_fileHelper) != IS_OBJECT || !pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\File\\FileHelper", 23)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
-		if (p_currentPhpVersionRichParser != NULL && UNEXPECTED(Z_TYPE_P(p_currentPhpVersionRichParser) != IS_OBJECT || !pgrt::instanceOfClass(p_currentPhpVersionRichParser, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Parser\\Parser", 21)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Parser\\Parser", zend_zval_value_name(p_currentPhpVersionRichParser)); RETURN_THROWS(); }
-		if (p_currentPhpVersionSimpleParser != NULL && UNEXPECTED(Z_TYPE_P(p_currentPhpVersionSimpleParser) != IS_OBJECT || !pgrt::instanceOfClass(p_currentPhpVersionSimpleParser, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Parser\\Parser", 21)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Parser\\Parser", zend_zval_value_name(p_currentPhpVersionSimpleParser)); RETURN_THROWS(); }
-		if (p_php8Parser != NULL && UNEXPECTED(Z_TYPE_P(p_php8Parser) != IS_OBJECT || !pgrt::instanceOfClass(p_php8Parser, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Parser\\Parser", 21)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Parser\\Parser", zend_zval_value_name(p_php8Parser)); RETURN_THROWS(); }
+		if (p_fileHelper != NULL && UNEXPECTED(Z_TYPE_P(p_fileHelper) != IS_OBJECT || !((Z_TYPE_P(p_fileHelper) == IS_OBJECT && Z_OBJCE_P(p_fileHelper) == pt_ce_file_helper) || pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\File\\FileHelper", 23))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
+		if (p_currentPhpVersionRichParser != NULL && UNEXPECTED(Z_TYPE_P(p_currentPhpVersionRichParser) != IS_OBJECT || !pgrt::instanceOfClass(p_currentPhpVersionRichParser, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Parser\\Parser", 21)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Parser\\Parser", zend_zval_value_name(p_currentPhpVersionRichParser)); RETURN_THROWS(); }
+		if (p_currentPhpVersionSimpleParser != NULL && UNEXPECTED(Z_TYPE_P(p_currentPhpVersionSimpleParser) != IS_OBJECT || !pgrt::instanceOfClass(p_currentPhpVersionSimpleParser, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Parser\\Parser", 21)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Parser\\Parser", zend_zval_value_name(p_currentPhpVersionSimpleParser)); RETURN_THROWS(); }
+		if (p_php8Parser != NULL && UNEXPECTED(Z_TYPE_P(p_php8Parser) != IS_OBJECT || !pgrt::instanceOfClass(p_php8Parser, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Parser\\Parser", 21)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Parser\\Parser", zend_zval_value_name(p_php8Parser)); RETURN_THROWS(); }
 		if (p_singleReflectionFile_str != NULL) { ZVAL_STR(&p_singleReflectionFile_zv, p_singleReflectionFile_str); p_singleReflectionFile = &p_singleReflectionFile_zv; }
 		if (p_singleReflectionFile == NULL) p_singleReflectionFile = &p_singleReflectionFile_null;
 		if (UNEXPECTED(!pgen::PathRoutingParser::m___construct(Z_OBJ_P(ZEND_THIS), p_fileHelper, p_currentPhpVersionRichParser, p_currentPhpVersionSimpleParser, p_php8Parser, p_singleReflectionFile))) RETURN_THROWS();

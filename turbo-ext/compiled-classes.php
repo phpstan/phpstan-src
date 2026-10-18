@@ -1158,4 +1158,10 @@ return [
 	'PHPStan\\BetterReflection\\Reflection\\ReflectionParameter' => ['ce' => 'pt_ce_better_reflection_parameter', 'defineCe' => true],
 	'PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource' => ['ce' => 'pt_ce_better_reflection_located_source', 'defineCe' => true],
 	'PhpParser\\NameContext' => ['ce' => 'pt_ce_name_context', 'defineCe' => true],
+	'PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider' => ['ce' => 'pt_ce_better_reflection_provider', 'defineCe' => true],
+	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\OptimizedDirectorySourceLocator' => ['ce' => 'pt_ce_optimized_directory_source_locator', 'defineCe' => true],
+	'PHPStan\\Reflection\\BetterReflection\\Reflector\\MemoizingReflector' => ['ce' => 'pt_ce_memoizing_reflector', 'defineCe' => true],
+	'PHPStan\\File\\FileHelper' => ['ce' => 'pt_ce_file_helper', 'defineCe' => true],
+	'PHPStan\\Collectors\\Registry' => ['ce' => 'pt_ce_registry', 'defineCe' => true],
+	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\OptimizedSingleFileSourceLocator' => ['ce' => 'pt_ce_optimized_single_file_source_locator', 'defineCe' => true],
 ];

@@ -4660,6 +4660,12 @@ foreach ($lemEngineProbes['php'] as $lemLabel => $lemPhp) {
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.
 $coveredElsewhere = [
+	\PHPStan\Reflection\BetterReflection\BetterReflectionProvider::class => 'make tests',
+	\PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocator::class => 'make tests',
+	\PHPStan\Reflection\BetterReflection\Reflector\MemoizingReflector::class => 'make tests',
+	\PHPStan\File\FileHelper::class => 'make tests',
+	\PHPStan\Collectors\Registry::class => 'make tests',
+	\PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocator::class => 'make tests',
 	\PHPStan\BetterReflection\Reflection\ReflectionClass::class => 'make tests',
 	\PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod::class => 'make tests',
 	\PHPStan\BetterReflection\Reflection\ReflectionNamedType::class => 'make tests',

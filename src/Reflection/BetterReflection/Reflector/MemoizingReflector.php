@@ -16,8 +16,10 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function strtolower;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService(name: 'betterReflectionReflector', as: Reflector::class)]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/MemoizingReflector.cpp')]
 final class MemoizingReflector implements Reflector
 {
 

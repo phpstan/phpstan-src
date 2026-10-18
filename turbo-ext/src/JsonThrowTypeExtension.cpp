@@ -92,13 +92,22 @@ namespace pgen::JsonThrowTypeExtension {
 				vd9 = std::move(o12);
 				vd9_done = true;
 			}
+			if (vd9_ce == pt_ce_better_reflection_provider) {
+				zval z13;
+				ZVAL_NULL(&z13);
+				bool r14;
+				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(o5.raw()), n6.raw(), &z13, &r14))) return false;
+				zv::Val o15 = zv::Val::boolean(r14);
+				vd9 = std::move(o15);
+				vd9_done = true;
+			}
 			if (!vd9_done) {
-				zval av13[2];
-				ZVAL_COPY_VALUE(&av13[0], n6.raw());
-				zval z14;
-				ZVAL_NULL(&z14);
-				ZVAL_COPY_VALUE(&av13[1], &z14);
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, o5.raw(), "hasConstant", "hasconstant", 11, 2, av13, vd9.raw()))) return false;
+				zval av16[2];
+				ZVAL_COPY_VALUE(&av16[0], n6.raw());
+				zval z17;
+				ZVAL_NULL(&z17);
+				ZVAL_COPY_VALUE(&av16[1], &z17);
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, o5.raw(), "hasConstant", "hasconstant", 11, 2, av16, vd9.raw()))) return false;
 			}
 			b1 = (Z_TYPE_P(vd9.raw()) == IS_TRUE);
 		}

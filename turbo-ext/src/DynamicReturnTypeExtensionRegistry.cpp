@@ -408,88 +408,95 @@ namespace pgen::DynamicReturnTypeExtensionRegistry {
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
+		if (vd2_ce == pt_ce_better_reflection_provider) {
+			bool r5;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p1), p_className, &r5))) return false;
+			zv::Val o6 = zv::Val::boolean(r5);
+			vd2 = std::move(o6);
+			vd2_done = true;
+		}
 		if (!vd2_done) {
-			zval av5[1];
-			ZVAL_COPY_VALUE(&av5[0], p_className);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p1, "hasClass", "hasclass", 8, 1, av5, vd2.raw()))) return false;
+			zval av7[1];
+			ZVAL_COPY_VALUE(&av7[0], p_className);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p1, "hasClass", "hasclass", 8, 1, av7, vd2.raw()))) return false;
 		}
 		if (!((Z_TYPE_P(vd2.raw()) == IS_TRUE))) {
 			 {
-				zval arr6_raw;
-				ZVAL_EMPTY_ARRAY(&arr6_raw);
-				ZVAL_COPY(ret, &arr6_raw);
+				zval arr8_raw;
+				ZVAL_EMPTY_ARRAY(&arr8_raw);
+				ZVAL_COPY(ret, &arr8_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zv::Val arr7 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
-		zval arr8_raw;
-		ZVAL_EMPTY_ARRAY(&arr8_raw);
-		zv::Val o9 = zv::Val::copyOf(zv::Ref(&arr8_raw));
-		{ zval v = o9.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr7.raw()), &v); }
-		l_extensionsForClass = std::move(arr7);
+		zv::Val arr9 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
+		zval arr10_raw;
+		ZVAL_EMPTY_ARRAY(&arr10_raw);
+		zv::Val o11 = zv::Val::copyOf(zv::Ref(&arr10_raw));
+		{ zval v = o11.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr9.raw()), &v); }
+		l_extensionsForClass = std::move(arr9);
 	}
 	 {
-		zval *p10 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::reflectionProvider, "reflectionProvider");
-		if (UNEXPECTED(p10 == NULL)) return false;
-		zv::Val r11;
+		zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DynamicReturnTypeExtensionRegistry::slot::reflectionProvider, "reflectionProvider");
+		if (UNEXPECTED(p12 == NULL)) return false;
+		zv::Val r13;
 		 {
-			r11 = pt_extension_class_helper_get_extension_class_names(p10, p_className);
-			if (UNEXPECTED(r11.isUndef())) return false;
+			r13 = pt_extension_class_helper_get_extension_class_names(p12, p_className);
+			if (UNEXPECTED(r13.isUndef())) return false;
 		}
-		l_extensionClassNames = std::move(r11);
+		l_extensionClassNames = std::move(r13);
 	}
 	 {
-		zv::Val a13 = zv::Val::copyOf(zv::Ref(l_extensionClassNames.raw()).deref());
-		HashTable *ht12 = Z_ARRVAL_P(a13.raw());
-		zval *v14;
-		zend_ulong n15;
-		zend_string *s16;
-		ZEND_HASH_FOREACH_KEY_VAL(ht12, n15, s16, v14) {
-			(void) n15; (void) s16;
-			l_extensionClassName = zv::Val::copyOf(zv::Ref(zv::Ref(v14).deref().raw()));
+		zv::Val a15 = zv::Val::copyOf(zv::Ref(l_extensionClassNames.raw()).deref());
+		HashTable *ht14 = Z_ARRVAL_P(a15.raw());
+		zval *v16;
+		zend_ulong n17;
+		zend_string *s18;
+		ZEND_HASH_FOREACH_KEY_VAL(ht14, n17, s18, v16) {
+			(void) n17; (void) s18;
+			l_extensionClassName = zv::Val::copyOf(zv::Ref(zv::Ref(v16).deref().raw()));
 			 {
 				 {
-					zval av19[1];
-					ZVAL_COPY_VALUE(&av19[0], l_extensionClassName.raw());
-					zv::Val r20;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, av19, r20.raw(), NULL))) return false;
-					l_extensionClassName = std::move(r20);
+					zval av21[1];
+					ZVAL_COPY_VALUE(&av21[0], l_extensionClassName.raw());
+					zv::Val r22;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "strtolower", 10, pt_ce_dynamic_return_type_extension_registry, 1, av21, r22.raw(), NULL))) return false;
+					l_extensionClassName = std::move(r22);
 				}
 				 {
-					zv::Val o23 = zv::Val::copyOf(zv::Ref(l_extensionClassName.raw()));
-					zv::Val ist24;
-					zval *is21 = p_extensions == NULL ? NULL : pgrt::dimIs(p_extensions, o23.raw(), ist24.raw());
+					zv::Val o25 = zv::Val::copyOf(zv::Ref(l_extensionClassName.raw()));
+					zv::Val ist26;
+					zval *is23 = p_extensions == NULL ? NULL : pgrt::dimIs(p_extensions, o25.raw(), ist26.raw());
 					if (UNEXPECTED(EG(exception))) return false;
-					if (!((is21 != NULL && Z_TYPE_P(is21) > IS_NULL))) {
-						goto cont18;
+					if (!((is23 != NULL && Z_TYPE_P(is23) > IS_NULL))) {
+						goto cont20;
 					}
 				}
 				 {
-					zv::Val et26;
-					zval *e25 = pgrt::dimRead(p_extensions, l_extensionClassName.raw(), et26.raw());
-					if (UNEXPECTED(e25 == NULL)) return false;
-					zv::Val o27 = zv::Val::copyOf(zv::Ref(zv::Ref(e25).deref().raw()));
-					zv::Val o28 = zv::Val::copyOf(zv::Ref(o27.raw()));
-					zval *w29 = zv::Ref(l_extensionsForClass.raw()).deref().raw();
-					if (Z_TYPE_P(w29) <= IS_NULL) { zval_ptr_dtor(w29); array_init(w29); } else if (UNEXPECTED(Z_TYPE_P(w29) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w29);
-					{ zval v = o28.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w29), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
+					zv::Val et28;
+					zval *e27 = pgrt::dimRead(p_extensions, l_extensionClassName.raw(), et28.raw());
+					if (UNEXPECTED(e27 == NULL)) return false;
+					zv::Val o29 = zv::Val::copyOf(zv::Ref(zv::Ref(e27).deref().raw()));
+					zv::Val o30 = zv::Val::copyOf(zv::Ref(o29.raw()));
+					zval *w31 = zv::Ref(l_extensionsForClass.raw()).deref().raw();
+					if (Z_TYPE_P(w31) <= IS_NULL) { zval_ptr_dtor(w31); array_init(w31); } else if (UNEXPECTED(Z_TYPE_P(w31) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w31);
+					{ zval v = o30.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w31), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 				}
 			}
-			cont18:;
+			cont20:;
 		}
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zv::Val o31 = zv::Val::copyOf(zv::Ref(l_extensionsForClass.raw()));
-		pgrt::ArgVec vec30;
-		if (UNEXPECTED(Z_TYPE_P(o31.raw()) != IS_ARRAY)) { zend_type_error("Only arrays and Traversables can be unpacked, %s given", zend_zval_value_name(o31.raw())); return false; }
-		vec30.spread(o31.raw());
-		zv::Val r32;
-		if (UNEXPECTED(!pgrt::arrayMerge(vec30.size(), vec30.argv(), r32.raw()))) return false;
-		*ret = r32.take();
+		zv::Val o33 = zv::Val::copyOf(zv::Ref(l_extensionsForClass.raw()));
+		pgrt::ArgVec vec32;
+		if (UNEXPECTED(Z_TYPE_P(o33.raw()) != IS_ARRAY)) { zend_type_error("Only arrays and Traversables can be unpacked, %s given", zend_zval_value_name(o33.raw())); return false; }
+		vec32.spread(o33.raw());
+		zv::Val r34;
+		if (UNEXPECTED(!pgrt::arrayMerge(vec32.size(), vec32.argv(), r34.raw()))) return false;
+		*ret = r34.take();
 		return true;
 	}
 }

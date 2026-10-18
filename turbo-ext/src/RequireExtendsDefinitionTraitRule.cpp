@@ -90,61 +90,75 @@ namespace pgen::RequireExtendsDefinitionTraitRule {
 				vd9 = std::move(o11);
 				vd9_done = true;
 			}
+			if (vd9_ce == pt_ce_better_reflection_provider) {
+				if (UNEXPECTED(!(Z_TYPE_P(r8.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::hasClass", 1, "className", "string", r8.raw()); return false; }
+				bool r12;
+				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(o5.raw()), r8.raw(), &r12))) return false;
+				zv::Val o13 = zv::Val::boolean(r12);
+				vd9 = std::move(o13);
+				vd9_done = true;
+			}
 			if (!vd9_done) {
-				zval av12[1];
-				ZVAL_COPY_VALUE(&av12[0], r8.raw());
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, o5.raw(), "hasClass", "hasclass", 8, 1, av12, vd9.raw()))) return false;
+				zval av14[1];
+				ZVAL_COPY_VALUE(&av14[0], r8.raw());
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_3, o5.raw(), "hasClass", "hasclass", 8, 1, av14, vd9.raw()))) return false;
 			}
 			b1 = !((Z_TYPE_P(vd9.raw()) == IS_TRUE));
 		}
 		if (b1) {
 			 {
-				zval arr13_raw;
-				ZVAL_EMPTY_ARRAY(&arr13_raw);
-				ZVAL_COPY(ret, &arr13_raw);
+				zval arr15_raw;
+				ZVAL_EMPTY_ARRAY(&arr15_raw);
+				ZVAL_COPY(ret, &arr15_raw);
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p14 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RequireExtendsDefinitionTraitRule::slot::reflectionProvider, "reflectionProvider");
-		if (UNEXPECTED(p14 == NULL)) return false;
-		zv::Val o15 = zv::Val::copyOf(zv::Ref(p14));
-		zv::Val o17;
-		zval *p16 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_4, Z_OBJ_P(p_node), "namespacedName", 14) : NULL;
-		if (UNEXPECTED(p16 == NULL || Z_ISUNDEF_P(p16))) {
-			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_require_extends_definition_trait_rule, "namespacedName", 14, o17.raw()))) return false;
-			p16 = o17.raw();
+		zval *p16 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RequireExtendsDefinitionTraitRule::slot::reflectionProvider, "reflectionProvider");
+		if (UNEXPECTED(p16 == NULL)) return false;
+		zv::Val o17 = zv::Val::copyOf(zv::Ref(p16));
+		zv::Val o19;
+		zval *p18 = Z_TYPE_P(p_node) == IS_OBJECT ? pgrt::propCached(pg_site_4, Z_OBJ_P(p_node), "namespacedName", 14) : NULL;
+		if (UNEXPECTED(p18 == NULL || Z_ISUNDEF_P(p18))) {
+			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_require_extends_definition_trait_rule, "namespacedName", 14, o19.raw()))) return false;
+			p18 = o19.raw();
 		}
-		zv::Val r18;
-		if (UNEXPECTED(!pgrt::nameToString(pg_site_5, zv::Ref(p16).deref().raw(), r18.raw()))) return false;
-		zv::Val vd19;
-		zend_class_entry *vd19_ce = Z_TYPE_P(o15.raw()) == IS_OBJECT ? Z_OBJCE_P(o15.raw()) : NULL;
-		bool vd19_done = false;
-		if (vd19_ce == pt_ce_memoizing_reflection_provider) {
-			zv::Val r20;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(o15.raw()), r18.raw(), r20.raw()))) return false;
-			vd19 = std::move(r20);
-			vd19_done = true;
+		zv::Val r20;
+		if (UNEXPECTED(!pgrt::nameToString(pg_site_5, zv::Ref(p18).deref().raw(), r20.raw()))) return false;
+		zv::Val vd21;
+		zend_class_entry *vd21_ce = Z_TYPE_P(o17.raw()) == IS_OBJECT ? Z_OBJCE_P(o17.raw()) : NULL;
+		bool vd21_done = false;
+		if (vd21_ce == pt_ce_memoizing_reflection_provider) {
+			zv::Val r22;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(o17.raw()), r20.raw(), r22.raw()))) return false;
+			vd21 = std::move(r22);
+			vd21_done = true;
 		}
-		if (!vd19_done) {
-			zval av21[1];
-			ZVAL_COPY_VALUE(&av21[0], r18.raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, o15.raw(), "getClass", "getclass", 8, 1, av21, vd19.raw()))) return false;
+		if (vd21_ce == pt_ce_better_reflection_provider) {
+			zv::Val r23;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(o17.raw()), r20.raw(), r23.raw()))) return false;
+			vd21 = std::move(r23);
+			vd21_done = true;
 		}
-		l_traitReflection = std::move(vd19);
+		if (!vd21_done) {
+			zval av24[1];
+			ZVAL_COPY_VALUE(&av24[0], r20.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, o17.raw(), "getClass", "getclass", 8, 1, av24, vd21.raw()))) return false;
+		}
+		l_traitReflection = std::move(vd21);
 	}
 	 {
-		zv::Val r22;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_traitReflection.raw(), "getRequireExtendsTags", "getrequireextendstags", 21, 0, NULL, r22.raw(), NULL))) return false;
-		l_extendsTags = std::move(r22);
+		zv::Val r25;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_traitReflection.raw(), "getRequireExtendsTags", "getrequireextendstags", 21, 0, NULL, r25.raw(), NULL))) return false;
+		l_extendsTags = std::move(r25);
 	}
 	 {
-		zval *p23 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RequireExtendsDefinitionTraitRule::slot::requireExtendsCheck, "requireExtendsCheck");
-		if (UNEXPECTED(p23 == NULL)) return false;
-		zv::Val r24;
-		if (UNEXPECTED(!pgen::RequireExtendsCheck::m_checkExtendsTags(Z_OBJ_P(p23), p_scope, p_node, l_extendsTags.raw(), r24.raw()))) return false;
-		*ret = r24.take();
+		zval *p26 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::RequireExtendsDefinitionTraitRule::slot::requireExtendsCheck, "requireExtendsCheck");
+		if (UNEXPECTED(p26 == NULL)) return false;
+		zv::Val r27;
+		if (UNEXPECTED(!pgen::RequireExtendsCheck::m_checkExtendsTags(Z_OBJ_P(p26), p_scope, p_node, l_extendsTags.raw(), r27.raw()))) return false;
+		*ret = r27.take();
 		return true;
 	}
 }

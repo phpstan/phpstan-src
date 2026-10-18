@@ -10,15 +10,13 @@ zend_class_entry *pt_ce_file_excluder = nullptr;
 static zval pg_lit[4];
 
 static pgrt::FunctionSite pg_site_0; /* function_strlen */
-static pt_method_site pg_site_1; /* method_normalizePath_1 */
-static pgrt::FunctionSite pg_site_2; /* function_is_file */
-static pgrt::FunctionSite pg_site_3; /* function_is_dir */
-static pt_method_site pg_site_4; /* method_normalizePath_4 */
-static pgrt::FunctionSite pg_site_5; /* function_str_starts_with */
-static pgrt::FunctionSite pg_site_6; /* function_fnmatch */
-static pgrt::FunctionSite pg_site_7; /* function_substr */
-static pgrt::FunctionSite pg_site_8; /* function_preg_match */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\File\FileHelper */
+static pgrt::FunctionSite pg_site_1; /* function_is_file */
+static pgrt::FunctionSite pg_site_2; /* function_is_dir */
+static pgrt::FunctionSite pg_site_3; /* function_str_starts_with */
+static pgrt::FunctionSite pg_site_4; /* function_fnmatch */
+static pgrt::FunctionSite pg_site_5; /* function_substr */
+static pgrt::FunctionSite pg_site_6; /* function_preg_match */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\File\FileHelper */
 
 namespace pgen::FileExcluder {
 
@@ -74,10 +72,11 @@ namespace pgen::FileExcluder {
 					l_trailingDirSeparator = b11;
 				}
 				 {
-					zval av18[1];
-					ZVAL_COPY_VALUE(&av18[0], l_exclude);
+					if (UNEXPECTED(!(Z_TYPE_P(l_exclude) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\File\\FileHelper::normalizePath", 1, "originalPath", "string", l_exclude); return false; }
+					zval d18;
+					ZVAL_CHAR(&d18, DEFAULT_SLASH);
 					zv::Val r19;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_fileHelper, "normalizePath", "normalizepath", 13, 1, av18, r19.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgen::FileHelper::m_normalizePath(Z_OBJ_P(p_fileHelper), l_exclude, &d18, r19.raw()))) return false;
 					l_normalized = std::move(r19);
 				}
 				 {
@@ -108,7 +107,7 @@ namespace pgen::FileExcluder {
 							zval av26[1];
 							ZVAL_COPY_VALUE(&av26[0], l_normalized.raw());
 							zv::Val r27;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "is_file", 7, pt_ce_file_excluder, 1, av26, r27.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "is_file", 7, pt_ce_file_excluder, 1, av26, r27.raw(), NULL))) return false;
 							if (Z_TYPE_P(r27.raw()) == IS_TRUE) {
 								 {
 									zv::Val o28 = zv::Val::copyOf(zv::Ref(l_normalized.raw()));
@@ -129,7 +128,7 @@ namespace pgen::FileExcluder {
 									zval av34[1];
 									ZVAL_COPY_VALUE(&av34[0], l_normalized.raw());
 									zv::Val r35;
-									if (UNEXPECTED(!pgrt::callFunction(pg_site_3, "is_dir", 6, pt_ce_file_excluder, 1, av34, r35.raw(), NULL))) return false;
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "is_dir", 6, pt_ce_file_excluder, 1, av34, r35.raw(), NULL))) return false;
 									if (Z_TYPE_P(r35.raw()) == IS_TRUE) {
 										 {
 											if (!(l_trailingDirSeparator)) {
@@ -202,10 +201,10 @@ namespace pgen::FileExcluder {
 	 {
 		zval *p1 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::fileHelper, "fileHelper");
 		if (UNEXPECTED(p1 == NULL)) return false;
-		zval av2[1];
-		ZVAL_COPY_VALUE(&av2[0], l_file.raw());
+		zval d2;
+		ZVAL_CHAR(&d2, DEFAULT_SLASH);
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "normalizePath", "normalizepath", 13, 1, av2, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgen::FileHelper::m_normalizePath(Z_OBJ_P(p1), l_file.raw(), &d2, r3.raw()))) return false;
 		l_file = std::move(r3);
 	}
 	 {
@@ -237,7 +236,7 @@ namespace pgen::FileExcluder {
 				 {
 					zv::Val o16 = zv::Val::copyOf(zv::Ref(l_file.raw()));
 					zv::Val r17;
-					if (UNEXPECTED(!pgrt::strMatch(pg_site_5, "str_starts_with", 15, pgrt::StrMatch::STARTS, o16.raw(), l_exclude, r17.raw()))) return false;
+					if (UNEXPECTED(!pgrt::strMatch(pg_site_3, "str_starts_with", 15, pgrt::StrMatch::STARTS, o16.raw(), l_exclude, r17.raw()))) return false;
 					if (Z_TYPE_P(r17.raw()) == IS_TRUE) {
 						 {
 							*ret = true;
@@ -271,7 +270,7 @@ namespace pgen::FileExcluder {
 					ZVAL_LONG(&z28, Z_LVAL_P(p26));
 					ZVAL_COPY_VALUE(&av27[2], &z28);
 					zv::Val r29;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "fnmatch", 7, pt_ce_file_excluder, 3, av27, r29.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "fnmatch", 7, pt_ce_file_excluder, 3, av27, r29.raw(), NULL))) return false;
 					if (Z_TYPE_P(r29.raw()) == IS_TRUE) {
 						 {
 							*ret = true;
@@ -298,7 +297,7 @@ namespace pgen::FileExcluder {
 		if (zend_is_identical(cn1, &pg_lit[1])) {
 			 {
 				zv::Val r2;
-				if (UNEXPECTED(!pgrt::strMatch(pg_site_5, "str_starts_with", 15, pgrt::StrMatch::STARTS, p_path, &pg_lit[1], r2.raw()))) return false;
+				if (UNEXPECTED(!pgrt::strMatch(pg_site_3, "str_starts_with", 15, pgrt::StrMatch::STARTS, p_path, &pg_lit[1], r2.raw()))) return false;
 				if (Z_TYPE_P(r2.raw()) == IS_TRUE) {
 					 {
 						*ret = true;
@@ -318,7 +317,7 @@ namespace pgen::FileExcluder {
 				ZVAL_LONG(&z5, 1);
 				ZVAL_COPY_VALUE(&av3[2], &z5);
 				zv::Val r6;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "substr", 6, pt_ce_file_excluder, 3, av3, r6.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "substr", 6, pt_ce_file_excluder, 3, av3, r6.raw(), NULL))) return false;
 				if (zend_is_identical(r6.raw(), &pg_lit[2])) {
 					 {
 						*ret = true;
@@ -343,7 +342,7 @@ namespace pgen::FileExcluder {
 		ZVAL_COPY_VALUE(&av1[0], &pg_lit[3]);
 		ZVAL_COPY_VALUE(&av1[1], p_path);
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_8, "preg_match", 10, pt_ce_file_excluder, 2, av1, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "preg_match", 10, pt_ce_file_excluder, 2, av1, r2.raw(), NULL))) return false;
 		zval z3;
 		ZVAL_LONG(&z3, 0);
 		*ret = (zend_compare(r2.raw(), &z3) > 0);
@@ -372,7 +371,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileExcluder)
 			Z_PARAM_ZVAL(p_fileHelper)
 			Z_PARAM_ARRAY(p_analyseExcludes)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_fileHelper != NULL && UNEXPECTED(Z_TYPE_P(p_fileHelper) != IS_OBJECT || !pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\File\\FileHelper", 23)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
+		if (p_fileHelper != NULL && UNEXPECTED(Z_TYPE_P(p_fileHelper) != IS_OBJECT || !((Z_TYPE_P(p_fileHelper) == IS_OBJECT && Z_OBJCE_P(p_fileHelper) == pt_ce_file_helper) || pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\File\\FileHelper", 23))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::FileExcluder::m___construct(Z_OBJ_P(ZEND_THIS), p_fileHelper, p_analyseExcludes))) RETURN_THROWS();
 	});
 	cls.method(sigs::isExcludedFromAnalysing, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileExcluder::isExcludedFromAnalysing() */

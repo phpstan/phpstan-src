@@ -307,94 +307,105 @@ namespace pgen::BetterReflectionNamedType {
 				if (UNEXPECTED(p2 == NULL)) return false;
 				zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::name, "name");
 				if (UNEXPECTED(p3 == NULL)) return false;
-				zval av4[1];
-				ZVAL_COPY_VALUE(&av4[0], p3);
-				zv::Val r5;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p2, "reflectClass", "reflectclass", 12, 1, av4, r5.raw(), NULL))) return false;
-				*ret = r5.take();
+				zv::Val o4 = zv::Val::copyOf(zv::Ref(p3));
+				zv::Val vd5;
+				zend_class_entry *vd5_ce = Z_TYPE_P(p2) == IS_OBJECT ? Z_OBJCE_P(p2) : NULL;
+				bool vd5_done = false;
+				if (vd5_ce == pt_ce_memoizing_reflector) {
+					zv::Val r6;
+					if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectClass(Z_OBJ_P(p2), o4.raw(), r6.raw()))) return false;
+					vd5 = std::move(r6);
+					vd5_done = true;
+				}
+				if (!vd5_done) {
+					zval av7[1];
+					ZVAL_COPY_VALUE(&av7[0], o4.raw());
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p2, "reflectClass", "reflectclass", 12, 1, av7, vd5.raw()))) return false;
+				}
+				*ret = vd5.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
-		if (UNEXPECTED(p8 == NULL)) return false;
-		bool b7 = pgrt::instanceOfClass(p8, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\BetterReflection\\Reflection\\ReflectionEnum", 50));
-		if (!b7) {
-			zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
-			if (UNEXPECTED(p9 == NULL)) return false;
-			b7 = pgrt::instanceOfClass(p9, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\BetterReflection\\Reflection\\ReflectionFunction", 54));
-		}
-		bool b6 = b7;
-		if (!b6) {
+		zval *p10 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
+		if (UNEXPECTED(p10 == NULL)) return false;
+		bool b9 = pgrt::instanceOfClass(p10, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\BetterReflection\\Reflection\\ReflectionEnum", 50));
+		if (!b9) {
 			zval *p11 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
 			if (UNEXPECTED(p11 == NULL)) return false;
-			bool b10 = (pgrt::instanceOfClass(p11, pt_ce_better_reflection_parameter) || pgrt::instanceOfClass(p11, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\BetterReflection\\Reflection\\ReflectionParameter", 55)));
-			if (b10) {
-				zval *p12 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
-				if (UNEXPECTED(p12 == NULL)) return false;
-				zv::Val vd13;
-				zend_class_entry *vd13_ce = Z_TYPE_P(p12) == IS_OBJECT ? Z_OBJCE_P(p12) : NULL;
-				bool vd13_done = false;
-				if (vd13_ce == pt_ce_better_reflection_parameter) {
-					zv::Val r14;
-					if (UNEXPECTED(!pgen::BetterReflectionParameter::m_getDeclaringFunction(Z_OBJ_P(p12), r14.raw()))) return false;
-					vd13 = std::move(r14);
-					vd13_done = true;
-				}
-				if (!vd13_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p12, "getDeclaringFunction", "getdeclaringfunction", 20, 0, NULL, vd13.raw()))) return false;
-				}
-				b10 = pgrt::instanceOfClass(vd13.raw(), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\BetterReflection\\Reflection\\ReflectionFunction", 54));
-			}
-			b6 = b10;
+			b9 = pgrt::instanceOfClass(p11, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\BetterReflection\\Reflection\\ReflectionFunction", 54));
 		}
-		if (b6) {
+		bool b8 = b9;
+		if (!b8) {
+			zval *p13 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
+			if (UNEXPECTED(p13 == NULL)) return false;
+			bool b12 = (pgrt::instanceOfClass(p13, pt_ce_better_reflection_parameter) || pgrt::instanceOfClass(p13, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\BetterReflection\\Reflection\\ReflectionParameter", 55)));
+			if (b12) {
+				zval *p14 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
+				if (UNEXPECTED(p14 == NULL)) return false;
+				zv::Val vd15;
+				zend_class_entry *vd15_ce = Z_TYPE_P(p14) == IS_OBJECT ? Z_OBJCE_P(p14) : NULL;
+				bool vd15_done = false;
+				if (vd15_ce == pt_ce_better_reflection_parameter) {
+					zv::Val r16;
+					if (UNEXPECTED(!pgen::BetterReflectionParameter::m_getDeclaringFunction(Z_OBJ_P(p14), r16.raw()))) return false;
+					vd15 = std::move(r16);
+					vd15_done = true;
+				}
+				if (!vd15_done) {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p14, "getDeclaringFunction", "getdeclaringfunction", 20, 0, NULL, vd15.raw()))) return false;
+				}
+				b12 = pgrt::instanceOfClass(vd15.raw(), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\BetterReflection\\Reflection\\ReflectionFunction", 54));
+			}
+			b8 = b12;
+		}
+		if (b8) {
 			 {
-				zval *p16 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::name, "name");
-				if (UNEXPECTED(p16 == NULL)) return false;
-				pgrt::StringBuilder sb17;
-				sb17.appendLiteral("The type ", 9);
-				if (UNEXPECTED(!sb17.append(p16))) return false;
-				sb17.appendLiteral(" cannot be resolved to class", 28);
-				zv::Val r18 = sb17.finish();
-				zval av19[1];
-				ZVAL_COPY_VALUE(&av19[0], r18.raw());
-				zend_class_entry *ce20 = pgrt::lookupClass(pg_site_11, "LogicException", 14);
-				if (UNEXPECTED(ce20 == NULL)) return false;
-				zv::Val n15;
-				if (UNEXPECTED(!pgrt::newObject(ce20, 1, av19, n15.raw(), NULL))) return false;
-				zend_throw_exception_object(n15.raw()); ZVAL_UNDEF(n15.raw());
+				zval *p18 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::name, "name");
+				if (UNEXPECTED(p18 == NULL)) return false;
+				pgrt::StringBuilder sb19;
+				sb19.appendLiteral("The type ", 9);
+				if (UNEXPECTED(!sb19.append(p18))) return false;
+				sb19.appendLiteral(" cannot be resolved to class", 28);
+				zv::Val r20 = sb19.finish();
+				zval av21[1];
+				ZVAL_COPY_VALUE(&av21[0], r20.raw());
+				zend_class_entry *ce22 = pgrt::lookupClass(pg_site_11, "LogicException", 14);
+				if (UNEXPECTED(ce22 == NULL)) return false;
+				zv::Val n17;
+				if (UNEXPECTED(!pgrt::newObject(ce22, 1, av21, n17.raw(), NULL))) return false;
+				zend_throw_exception_object(n17.raw()); ZVAL_UNDEF(n17.raw());
 				return false;
 			}
 		}
 	}
 	 {
-		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::name, "name");
-		if (UNEXPECTED(p21 == NULL)) return false;
-		zv::Val r22 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p21)));
-		l_lowercaseName = std::move(r22);
+		zval *p23 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::name, "name");
+		if (UNEXPECTED(p23 == NULL)) return false;
+		zv::Val r24 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(p23)));
+		l_lowercaseName = std::move(r24);
 	}
 	 {
 		if (zend_is_identical(l_lowercaseName.raw(), &pg_lit[5])) {
 			 {
-				zval *p23 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
-				if (UNEXPECTED(p23 == NULL)) return false;
-				zv::Val r24;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p23, "getImplementingClass", "getimplementingclass", 20, 0, NULL, r24.raw(), NULL))) return false;
-				l_class = std::move(r24);
+				zval *p25 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
+				if (UNEXPECTED(p25 == NULL)) return false;
+				zv::Val r26;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p25, "getImplementingClass", "getimplementingclass", 20, 0, NULL, r26.raw(), NULL))) return false;
+				l_class = std::move(r26);
 			}
 			 {
-				zv::Val as25 = zv::Val::boolean(true);
+				zv::Val as27 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
-					zval av26[1];
-					zval z27;
-					ZVAL_BOOL(&z27, (pgrt::instanceOfClass(l_class.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_class.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
-					ZVAL_COPY_VALUE(&av26[0], &z27);
-					zv::Val r28;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 1, av26, r28.raw(), NULL))) return false;
-					zv::Val o29 = zv::Val::boolean((Z_TYPE_P(r28.raw()) == IS_TRUE));
-					as25 = std::move(o29);
+					zval av28[1];
+					zval z29;
+					ZVAL_BOOL(&z29, (pgrt::instanceOfClass(l_class.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_class.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
+					ZVAL_COPY_VALUE(&av28[0], &z29);
+					zv::Val r30;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 1, av28, r30.raw(), NULL))) return false;
+					zv::Val o31 = zv::Val::boolean((Z_TYPE_P(r30.raw()) == IS_TRUE));
+					as27 = std::move(o31);
 				}
 			}
 			 {
@@ -406,48 +417,48 @@ namespace pgen::BetterReflectionNamedType {
 	 {
 		if (zend_is_identical(l_lowercaseName.raw(), &pg_lit[6])) {
 			 {
-				zval *p30 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
-				if (UNEXPECTED(p30 == NULL)) return false;
-				zv::Val r31;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p30, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, r31.raw(), NULL))) return false;
-				l_class = std::move(r31);
+				zval *p32 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
+				if (UNEXPECTED(p32 == NULL)) return false;
+				zv::Val r33;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p32, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, r33.raw(), NULL))) return false;
+				l_class = std::move(r33);
 			}
 			 {
-				zv::Val as32 = zv::Val::boolean(true);
+				zv::Val as34 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
-					zval av33[1];
-					zval z34;
-					ZVAL_BOOL(&z34, (pgrt::instanceOfClass(l_class.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_class.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
-					ZVAL_COPY_VALUE(&av33[0], &z34);
-					zv::Val r35;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 1, av33, r35.raw(), NULL))) return false;
-					zv::Val o36 = zv::Val::boolean((Z_TYPE_P(r35.raw()) == IS_TRUE));
-					as32 = std::move(o36);
+					zval av35[1];
+					zval z36;
+					ZVAL_BOOL(&z36, (pgrt::instanceOfClass(l_class.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_class.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
+					ZVAL_COPY_VALUE(&av35[0], &z36);
+					zv::Val r37;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 1, av35, r37.raw(), NULL))) return false;
+					zv::Val o38 = zv::Val::boolean((Z_TYPE_P(r37.raw()) == IS_TRUE));
+					as34 = std::move(o38);
 				}
 			}
 			 {
-				zv::Val r37;
+				zv::Val r39;
 				if (EXPECTED(Z_TYPE_P(l_class.raw()) == IS_OBJECT)) {
-					r37 = pt_type_op(Z_OBJ_P(l_class.raw()), PT_OP_GET_PARENT_CLASS, 0, NULL);
-					if (UNEXPECTED(r37.isUndef())) return false;
+					r39 = pt_type_op(Z_OBJ_P(l_class.raw()), PT_OP_GET_PARENT_CLASS, 0, NULL);
+					if (UNEXPECTED(r39.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_class.raw(), "getParentClass", "getparentclass", 14, 0, NULL, r37.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_class.raw(), "getParentClass", "getparentclass", 14, 0, NULL, r39.raw(), NULL))) return false;
 				}
 				}
-				l_parentClass = std::move(r37);
+				l_parentClass = std::move(r39);
 			}
 			 {
-				zv::Val as38 = zv::Val::boolean(true);
+				zv::Val as40 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
-					zval av39[1];
-					zval z40;
-					ZVAL_BOOL(&z40, (pgrt::instanceOfClass(l_parentClass.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_parentClass.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
-					ZVAL_COPY_VALUE(&av39[0], &z40);
-					zv::Val r41;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 1, av39, r41.raw(), NULL))) return false;
-					zv::Val o42 = zv::Val::boolean((Z_TYPE_P(r41.raw()) == IS_TRUE));
-					as38 = std::move(o42);
+					zval av41[1];
+					zval z42;
+					ZVAL_BOOL(&z42, (pgrt::instanceOfClass(l_parentClass.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_parentClass.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
+					ZVAL_COPY_VALUE(&av41[0], &z42);
+					zv::Val r43;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "assert", 6, pt_ce_better_reflection_named_type, 1, av41, r43.raw(), NULL))) return false;
+					zv::Val o44 = zv::Val::boolean((Z_TYPE_P(r43.raw()) == IS_TRUE));
+					as40 = std::move(o44);
 				}
 			}
 			 {
@@ -457,38 +468,38 @@ namespace pgen::BetterReflectionNamedType {
 		}
 	}
 	 {
-		zval *p44 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
-		if (UNEXPECTED(p44 == NULL)) return false;
-		bool b43 = pgrt::instanceOfClass(p44, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\BetterReflection\\Reflection\\ReflectionMethod", 52));
-		if (b43) {
-			b43 = zend_is_identical(l_lowercaseName.raw(), &pg_lit[7]);
+		zval *p46 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
+		if (UNEXPECTED(p46 == NULL)) return false;
+		bool b45 = pgrt::instanceOfClass(p46, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\BetterReflection\\Reflection\\ReflectionMethod", 52));
+		if (b45) {
+			b45 = zend_is_identical(l_lowercaseName.raw(), &pg_lit[7]);
 		}
-		if (b43) {
+		if (b45) {
 			 {
-				zval *p45 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
-				if (UNEXPECTED(p45 == NULL)) return false;
-				zv::Val r46;
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p45, "getCurrentClass", "getcurrentclass", 15, 0, NULL, r46.raw(), NULL))) return false;
-				*ret = r46.take();
+				zval *p47 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::owner, "owner");
+				if (UNEXPECTED(p47 == NULL)) return false;
+				zv::Val r48;
+				if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p47, "getCurrentClass", "getcurrentclass", 15, 0, NULL, r48.raw(), NULL))) return false;
+				*ret = r48.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval *p48 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::name, "name");
-		if (UNEXPECTED(p48 == NULL)) return false;
-		pgrt::StringBuilder sb49;
-		sb49.appendLiteral("The type ", 9);
-		if (UNEXPECTED(!sb49.append(p48))) return false;
-		sb49.appendLiteral(" cannot be resolved to class", 28);
-		zv::Val r50 = sb49.finish();
-		zval av51[1];
-		ZVAL_COPY_VALUE(&av51[0], r50.raw());
-		zend_class_entry *ce52 = pgrt::lookupClass(pg_site_11, "LogicException", 14);
-		if (UNEXPECTED(ce52 == NULL)) return false;
-		zv::Val n47;
-		if (UNEXPECTED(!pgrt::newObject(ce52, 1, av51, n47.raw(), NULL))) return false;
-		zend_throw_exception_object(n47.raw()); ZVAL_UNDEF(n47.raw());
+		zval *p50 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionNamedType::slot::name, "name");
+		if (UNEXPECTED(p50 == NULL)) return false;
+		pgrt::StringBuilder sb51;
+		sb51.appendLiteral("The type ", 9);
+		if (UNEXPECTED(!sb51.append(p50))) return false;
+		sb51.appendLiteral(" cannot be resolved to class", 28);
+		zv::Val r52 = sb51.finish();
+		zval av53[1];
+		ZVAL_COPY_VALUE(&av53[0], r52.raw());
+		zend_class_entry *ce54 = pgrt::lookupClass(pg_site_11, "LogicException", 14);
+		if (UNEXPECTED(ce54 == NULL)) return false;
+		zv::Val n49;
+		if (UNEXPECTED(!pgrt::newObject(ce54, 1, av53, n49.raw(), NULL))) return false;
+		zend_throw_exception_object(n49.raw()); ZVAL_UNDEF(n49.raw());
 		return false;
 	}
 }

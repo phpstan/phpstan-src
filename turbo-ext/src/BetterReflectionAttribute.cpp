@@ -435,11 +435,21 @@ namespace pgen::BetterReflectionAttribute {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, &this_zv, "getName", "getname", 7, 0, NULL, r3.raw(), NULL))) return false;
 		}
 		}
-		zval av4[1];
-		ZVAL_COPY_VALUE(&av4[0], r3.raw());
-		zv::Val r5;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_14, o2.raw(), "reflectClass", "reflectclass", 12, 1, av4, r5.raw(), NULL))) return false;
-		*ret = r5.take();
+		zv::Val vd4;
+		zend_class_entry *vd4_ce = Z_TYPE_P(o2.raw()) == IS_OBJECT ? Z_OBJCE_P(o2.raw()) : NULL;
+		bool vd4_done = false;
+		if (vd4_ce == pt_ce_memoizing_reflector) {
+			zv::Val r5;
+			if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectClass(Z_OBJ_P(o2.raw()), r3.raw(), r5.raw()))) return false;
+			vd4 = std::move(r5);
+			vd4_done = true;
+		}
+		if (!vd4_done) {
+			zval av6[1];
+			ZVAL_COPY_VALUE(&av6[0], r3.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, o2.raw(), "reflectClass", "reflectclass", 12, 1, av6, vd4.raw()))) return false;
+		}
+		*ret = vd4.take();
 		return true;
 	}
 }

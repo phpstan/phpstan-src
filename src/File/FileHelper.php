@@ -19,8 +19,10 @@ use function strtolower;
 use function substr;
 use function trim;
 use const DIRECTORY_SEPARATOR;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileHelper.cpp')]
 final class FileHelper
 {
 

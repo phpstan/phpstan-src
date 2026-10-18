@@ -66,9 +66,11 @@ use function in_array;
 use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[NonAutowiredService(name: 'betterReflectionProvider')]
 #[ReferencedByTurboExtension(key: 'betterReflectionProvider')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BetterReflectionProvider.cpp')]
 final class BetterReflectionProvider implements ReflectionProvider
 {
 

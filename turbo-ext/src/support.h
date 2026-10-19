@@ -47,6 +47,8 @@ extern "C" {
 zend_result pt_count_object_init_ex(zval *arg, zend_class_entry *ce, const char *file, int line);
 HashTable *pt_count_new_array(uint32_t size, const char *file, int line);
 HashTable *pt_count_array_dup(const HashTable *source, const char *file, int line);
+/* the handler table an object had before the escape census wrapped it */
+const zend_object_handlers *pt_census_original_handlers(zend_object *obj);
 #ifndef PT_ALLOC_COUNT_IMPL
 #define object_init_ex(arg, ce) pt_count_object_init_ex((arg), (ce), __FILE__, __LINE__)
 #undef zend_new_array

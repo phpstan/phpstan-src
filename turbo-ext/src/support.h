@@ -40,6 +40,21 @@ extern "C" {
 
 #include "abi.h"
 
+#ifdef PT_ALLOC_COUNT
+/* allocation census (a -DPT_ALLOC_COUNT build only, AllocCensus.cpp): the
+ * extension's own object and array creations, counted by class and by call
+ * site and written at exit to $PT_ALLOC_COUNT_OUT */
+zend_result pt_count_object_init_ex(zval *arg, zend_class_entry *ce, const char *file, int line);
+HashTable *pt_count_new_array(uint32_t size, const char *file, int line);
+HashTable *pt_count_array_dup(const HashTable *source, const char *file, int line);
+#ifndef PT_ALLOC_COUNT_IMPL
+#define object_init_ex(arg, ce) pt_count_object_init_ex((arg), (ce), __FILE__, __LINE__)
+#undef zend_new_array
+#define zend_new_array(size) pt_count_new_array((size), __FILE__, __LINE__)
+#define zend_array_dup(source) pt_count_array_dup((source), __FILE__, __LINE__)
+#endif
+#endif
+
 #include <initializer_list>
 
 #ifdef _WIN32

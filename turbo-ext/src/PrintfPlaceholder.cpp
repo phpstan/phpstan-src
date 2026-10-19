@@ -318,7 +318,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfPlaceholder)
 		zval *p_acceptingType = NULL;
 		zend_string *p_acceptingType_str = NULL;
 		zval p_acceptingType_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_label_str)
 			Z_PARAM_LONG(p_placeholderNumber)
 			Z_PARAM_STR(p_acceptingType_str)
@@ -330,7 +330,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfPlaceholder)
 	cls.method(sigs::doesArgumentTypeMatchPlaceholder, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfPlaceholder::doesArgumentTypeMatchPlaceholder() */
 		zval *p_argumentType = NULL;
 		bool p_strictPlaceholderTypes = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_argumentType)
 			Z_PARAM_BOOL(p_strictPlaceholderTypes)
 		ZEND_PARSE_PARAMETERS_END();

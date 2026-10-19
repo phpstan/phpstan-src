@@ -92,27 +92,22 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleError197)
 	ptdecl::RuleError197::declareClass(cls);
 	ptdecl::RuleError197::declareProperties(cls);
 	cls.method(sigs::getMessage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError197::getMessage() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError197::m_getMessage(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFile, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError197::getFile() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError197::m_getFile(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFileDescription, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError197::getFileDescription() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError197::m_getFileDescription(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError197::getOriginalNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError197::m_getOriginalNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNewNodeCallable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError197::getNewNodeCallable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError197::m_getNewNodeCallable(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

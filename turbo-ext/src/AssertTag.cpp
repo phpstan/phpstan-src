@@ -336,7 +336,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssertTag)
 		bool p_negated = false;
 		bool p_equality = false;
 		bool p_isExplicit = false;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_STR(p_if_str)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_parameter)
@@ -350,12 +350,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssertTag)
 		if (UNEXPECTED(!pgen::AssertTag::m___construct(Z_OBJ_P(ZEND_THIS), p_if, p_type, p_parameter, p_negated, p_equality, p_isExplicit))) RETURN_THROWS();
 	});
 	cls.method(sigs::getIf, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::getIf() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssertTag::m_getIf(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssertTag::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -366,30 +364,26 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssertTag)
 		return r1;
 	});
 	cls.method(sigs::getOriginalType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::getOriginalType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssertTag::m_getOriginalType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getParameter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::getParameter() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssertTag::m_getParameter(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isNegated, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::isNegated() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::AssertTag::m_isNegated(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isEquality, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::isEquality() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::AssertTag::m_isEquality(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::withType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::withType() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -398,7 +392,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssertTag)
 	});
 	cls.method(sigs::withParameter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::withParameter() */
 		zval *p_parameter = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_parameter)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_parameter != NULL && UNEXPECTED(Z_TYPE_P(p_parameter) != IS_OBJECT || !pgrt::instanceOfClass(p_parameter, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\PhpDoc\\Tag\\AssertTagParameter", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDoc\\Tag\\AssertTagParameter", zend_zval_value_name(p_parameter)); RETURN_THROWS(); }
@@ -406,18 +400,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssertTag)
 		if (UNEXPECTED(!pgen::AssertTag::m_withParameter(Z_OBJ_P(ZEND_THIS), p_parameter, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::negate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::negate() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssertTag::m_negate(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isExplicit, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::isExplicit() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::AssertTag::m_isExplicit(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::toImplicit, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\Tag\AssertTag::toImplicit() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssertTag::m_toImplicit(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

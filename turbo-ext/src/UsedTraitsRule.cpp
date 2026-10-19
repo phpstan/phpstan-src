@@ -401,7 +401,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UsedTraitsRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\UsedTraitsRule::__construct() */
 		zval *p_fileTypeMapper = NULL;
 		zval *p_genericAncestorsCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_fileTypeMapper)
 			Z_PARAM_ZVAL(p_genericAncestorsCheck)
 		ZEND_PARSE_PARAMETERS_END();
@@ -410,14 +410,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UsedTraitsRule)
 		if (UNEXPECTED(!pgen::UsedTraitsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_fileTypeMapper, p_genericAncestorsCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\UsedTraitsRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::UsedTraitsRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\UsedTraitsRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

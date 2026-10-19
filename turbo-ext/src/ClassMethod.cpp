@@ -67,7 +67,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassMethod)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassMethod::__construct() */
 		zval *p_node = NULL;
 		bool p_isDeclaredInTrait = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_BOOL(p_isDeclaredInTrait)
 		ZEND_PARSE_PARAMETERS_END();
@@ -75,12 +75,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassMethod)
 		if (UNEXPECTED(!pgen::ClassMethod::m___construct(Z_OBJ_P(ZEND_THIS), p_node, p_isDeclaredInTrait))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassMethod::getNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassMethod::m_getNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isDeclaredInTrait, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassMethod::isDeclaredInTrait() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassMethod::m_isDeclaredInTrait(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

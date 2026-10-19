@@ -1688,7 +1688,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocInheritanceResolver)
 	ptdecl::PhpDocInheritanceResolver::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocInheritanceResolver::__construct() */
 		zval *p_fileTypeMapper = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_fileTypeMapper)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -1702,7 +1702,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocInheritanceResolver)
 		zval *p_currentResolvedPhpDoc = NULL;
 		zval p_currentResolvedPhpDoc_null;
 		ZVAL_NULL(&p_currentResolvedPhpDoc_null);
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL_OR_NULL(p_currentResolvedPhpDoc)
@@ -1722,7 +1722,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocInheritanceResolver)
 		zval *p_currentResolvedPhpDoc = NULL;
 		zval p_currentResolvedPhpDoc_null;
 		ZVAL_NULL(&p_currentResolvedPhpDoc_null);
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_STR(p_constantName_str)
 			Z_PARAM_ZVAL_OR_NULL(p_currentResolvedPhpDoc)
@@ -1743,7 +1743,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocInheritanceResolver)
 		zval p_currentResolvedPhpDoc_null;
 		ZVAL_NULL(&p_currentResolvedPhpDoc_null);
 		zval *p_currentPositionalParameterNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_STR(p_methodName_str)
 			Z_PARAM_ZVAL_OR_NULL(p_currentResolvedPhpDoc)
@@ -1765,7 +1765,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocInheritanceResolver)
 		zval p_currentResolvedPhpDoc_null;
 		ZVAL_NULL(&p_currentResolvedPhpDoc_null);
 		zval *p_currentPositionalParameterNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_parentMethod)
 			Z_PARAM_ZVAL(p_resolvedPhpDocBlock)
 			Z_PARAM_ZVAL(p_declaringClass)
@@ -1785,7 +1785,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocInheritanceResolver)
 	cls.method(sigs::remapParameterNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocInheritanceResolver::remapParameterNames() */
 		zval *p_originalPositionalParameterNames = NULL;
 		zval *p_newPositionalParameterNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_originalPositionalParameterNames)
 			Z_PARAM_ARRAY(p_newPositionalParameterNames)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1801,7 +1801,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocInheritanceResolver)
 		zval *p_currentResolvedPhpDoc = NULL;
 		zval p_currentResolvedPhpDoc_null;
 		ZVAL_NULL(&p_currentResolvedPhpDoc_null);
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_STR(p_constantName_str)
@@ -1824,7 +1824,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocInheritanceResolver)
 		zval *p_currentResolvedPhpDoc = NULL;
 		zval p_currentResolvedPhpDoc_null;
 		ZVAL_NULL(&p_currentResolvedPhpDoc_null);
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_STR(p_propertyName_str)

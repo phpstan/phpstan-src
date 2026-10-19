@@ -353,7 +353,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodReturnStatementsNode)
 		zval *p_impurePoints = NULL;
 		zval *p_classReflection = NULL;
 		zval *p_methodReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(9, 9)
+		ZEND_PARSE_PARAMETERS_START(9, -1)
 			Z_PARAM_ZVAL(p_method)
 			Z_PARAM_ARRAY(p_returnStatements)
 			Z_PARAM_ARRAY(p_returnStatementsAfterFinally)
@@ -371,54 +371,44 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodReturnStatementsNode)
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m___construct(Z_OBJ_P(ZEND_THIS), p_method, p_returnStatements, p_returnStatementsAfterFinally, p_yieldStatements, p_statementResult, p_executionEnds, p_impurePoints, p_classReflection, p_methodReflection))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReturnStatements, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getReturnStatements() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getReturnStatements(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReturnStatementsAfterFinally, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getReturnStatementsAfterFinally() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getReturnStatementsAfterFinally(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getStatementResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getStatementResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getStatementResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExecutionEnds, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getExecutionEnds() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getExecutionEnds(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getImpurePoints, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getImpurePoints() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getImpurePoints(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::returnsByRef, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::returnsByRef() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_returnsByRef(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::hasNativeReturnTypehint, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::hasNativeReturnTypehint() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_hasNativeReturnTypehint(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getMethodName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getMethodName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getMethodName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getYieldStatements, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getYieldStatements() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getYieldStatements(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getClassReflection() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getClassReflection(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -429,23 +419,19 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodReturnStatementsNode)
 		return r1;
 	});
 	cls.method(sigs::getMethodReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getMethodReflection() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getMethodReflection(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getStatements, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getStatements() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getStatements(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isGenerator, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::isGenerator() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_isGenerator(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -456,7 +442,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodReturnStatementsNode)
 		return r1;
 	});
 	cls.method(sigs::getSubNodeNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodReturnStatementsNode::getSubNodeNames() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getSubNodeNames(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

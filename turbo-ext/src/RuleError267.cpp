@@ -77,23 +77,19 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleError267)
 	ptdecl::RuleError267::declareClass(cls);
 	ptdecl::RuleError267::declareProperties(cls);
 	cls.method(sigs::getMessage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError267::getMessage() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError267::m_getMessage(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getLine, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError267::getLine() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		zend_long r;
 		if (UNEXPECTED(!pgen::RuleError267::m_getLine(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_LONG(r);
 	});
 	cls.method(sigs::getTip, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError267::getTip() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError267::m_getTip(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFileDependencies, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError267::getFileDependencies() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError267::m_getFileDependencies(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

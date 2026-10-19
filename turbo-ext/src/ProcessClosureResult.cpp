@@ -308,7 +308,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ProcessClosureResult)
 		p_dependencies = &p_dependencies_default;
 		zval p_dependencies_null;
 		ZVAL_NULL(&p_dependencies_null);
-		ZEND_PARSE_PARAMETERS_START(8, 11)
+		ZEND_PARSE_PARAMETERS_START(8, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_throwPoints)
 			Z_PARAM_ARRAY(p_impurePoints)
@@ -330,18 +330,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ProcessClosureResult)
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m___construct(Z_OBJ_P(ZEND_THIS), p_scope, p_throwPoints, p_impurePoints, p_invalidateExpressions, p_gatheredReturnStatements, p_gatheredYieldStatements, p_executionEnds, p_closureTypeImpurePoints, p_byRefClosureResultScope, p_byRefUses, p_dependencies))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDependencies, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::getDependencies() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_getDependencies(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::getScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_getScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::applyByRefUseScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::applyByRefUseScope() */
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
@@ -349,37 +347,30 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ProcessClosureResult)
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_applyByRefUseScope(Z_OBJ_P(ZEND_THIS), p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getThrowPoints, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::getThrowPoints() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_getThrowPoints(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getImpurePoints, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::getImpurePoints() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_getImpurePoints(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getInvalidateExpressions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::getInvalidateExpressions() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_getInvalidateExpressions(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getGatheredReturnStatements, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::getGatheredReturnStatements() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_getGatheredReturnStatements(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getGatheredYieldStatements, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::getGatheredYieldStatements() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_getGatheredYieldStatements(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExecutionEnds, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::getExecutionEnds() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_getExecutionEnds(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClosureTypeImpurePoints, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessClosureResult::getClosureTypeImpurePoints() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessClosureResult::m_getClosureTypeImpurePoints(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

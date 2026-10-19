@@ -590,7 +590,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateFunctionReturnTypeHelper)
 	cls.method(sigs::getTypeFromFormatType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\DateFunctionReturnTypeHelper::getTypeFromFormatType() */
 		zval *p_formatType = NULL;
 		bool p_useMicrosec = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_formatType)
 			Z_PARAM_BOOL(p_useMicrosec)
 		ZEND_PARSE_PARAMETERS_END();
@@ -603,7 +603,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateFunctionReturnTypeHelper)
 		zend_string *p_formatString_str = NULL;
 		zval p_formatString_zv;
 		bool p_useMicrosec = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_formatString_str)
 			Z_PARAM_BOOL(p_useMicrosec)
 		ZEND_PARSE_PARAMETERS_END();
@@ -615,7 +615,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateFunctionReturnTypeHelper)
 		zend_long p_min = 0;
 		zend_long p_max = 0;
 		bool p_zeroPad = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_LONG(p_min)
 			Z_PARAM_LONG(p_max)
 			Z_PARAM_BOOL(p_zeroPad)

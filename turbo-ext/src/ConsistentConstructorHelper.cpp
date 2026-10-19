@@ -108,7 +108,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConsistentConstructorHelper)
 	ptdecl::ConsistentConstructorHelper::declareProperties(cls);
 	cls.method(sigs::findConsistentConstructor, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Classes\ConsistentConstructorHelper::findConsistentConstructor() */
 		zval *p_classReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_classReflection != NULL && UNEXPECTED(Z_TYPE_P(p_classReflection) != IS_OBJECT || !(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }

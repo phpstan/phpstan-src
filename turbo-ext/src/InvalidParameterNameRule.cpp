@@ -165,14 +165,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidParameterNameRule)
 	ptdecl::InvalidParameterNameRule::declareClass(cls);
 	ptdecl::InvalidParameterNameRule::declareProperties(cls);
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\InvalidParameterNameRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidParameterNameRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\InvalidParameterNameRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

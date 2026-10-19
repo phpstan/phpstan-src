@@ -413,7 +413,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericCallableRuleHelper)
 	ptdecl::GenericCallableRuleHelper::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\GenericCallableRuleHelper::__construct() */
 		zval *p_templateTypeCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_templateTypeCheck)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -435,7 +435,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericCallableRuleHelper)
 		zval *p_classReflection = NULL;
 		zval p_classReflection_null;
 		ZVAL_NULL(&p_classReflection_null);
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_location_str)

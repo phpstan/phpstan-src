@@ -421,7 +421,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParameterOutTypeCheck)
 	ptdecl::ParameterOutTypeCheck::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\ParameterOutTypeCheck::__construct() */
 		zval *p_ruleLevelHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_ruleLevelHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -434,7 +434,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParameterOutTypeCheck)
 		zval *p_checkedExpr = NULL;
 		zval *p_outType = NULL;
 		bool p_isParamOutType = false;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_inFunction)
 			Z_PARAM_ZVAL(p_parameter)

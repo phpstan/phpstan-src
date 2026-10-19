@@ -367,7 +367,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileExcluder)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileExcluder::__construct() */
 		zval *p_fileHelper = NULL;
 		zval *p_analyseExcludes = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_fileHelper)
 			Z_PARAM_ARRAY(p_analyseExcludes)
 		ZEND_PARSE_PARAMETERS_END();
@@ -378,7 +378,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileExcluder)
 		zval *p_file = NULL;
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
@@ -390,7 +390,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileExcluder)
 		zval *p_path = NULL;
 		zend_string *p_path_str = NULL;
 		zval p_path_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_path_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_path_str != NULL) { ZVAL_STR(&p_path_zv, p_path_str); p_path = &p_path_zv; }
@@ -402,7 +402,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileExcluder)
 		zval *p_path = NULL;
 		zend_string *p_path_str = NULL;
 		zval p_path_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_path_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_path_str != NULL) { ZVAL_STR(&p_path_zv, p_path_str); p_path = &p_path_zv; }

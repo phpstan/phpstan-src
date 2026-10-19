@@ -107,7 +107,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundTypeResult)
 		zval p_tip_zv;
 		zval p_tip_null;
 		ZVAL_NULL(&p_tip_null);
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ARRAY(p_referencedClasses)
 			Z_PARAM_ARRAY(p_unknownClassErrors)
@@ -119,7 +119,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundTypeResult)
 		if (UNEXPECTED(!pgen::FoundTypeResult::m___construct(Z_OBJ_P(ZEND_THIS), p_type, p_referencedClasses, p_unknownClassErrors, p_tip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FoundTypeResult::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundTypeResult::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -130,7 +129,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundTypeResult)
 		return r1;
 	});
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FoundTypeResult::getReferencedClasses() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundTypeResult::m_getReferencedClasses(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -141,12 +139,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundTypeResult)
 		return r1;
 	});
 	cls.method(sigs::getUnknownClassErrors, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FoundTypeResult::getUnknownClassErrors() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundTypeResult::m_getUnknownClassErrors(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTip, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FoundTypeResult::getTip() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundTypeResult::m_getTip(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

@@ -2594,7 +2594,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideTypeCheck)
 		zval *p_propertyReflectionFinder = NULL;
 		bool p_reportTooWideBool = false;
 		bool p_reportNestedTooWideType = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_OBJECT(p_propertyReflectionFinder)
 			Z_PARAM_BOOL(p_reportTooWideBool)
 			Z_PARAM_BOOL(p_reportNestedTooWideType)
@@ -2612,7 +2612,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideTypeCheck)
 		zend_string *p_propertyDescription_str = NULL;
 		zval p_propertyDescription_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_ARRAY(p_propertyAssigns)
@@ -2639,7 +2639,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideTypeCheck)
 		zval p_functionDescription_zv;
 		bool p_checkDescendantClass = false;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_nativeFunctionReturnType)
 			Z_PARAM_ZVAL(p_phpDocFunctionReturnType)
@@ -2677,7 +2677,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideTypeCheck)
 		zval p_tip_zv;
 		zval p_tip_null;
 		ZVAL_NULL(&p_tip_null);
-		ZEND_PARSE_PARAMETERS_START(9, 9)
+		ZEND_PARSE_PARAMETERS_START(9, -1)
 			Z_PARAM_ZVAL(p_parameterOutType)
 			Z_PARAM_ZVAL(p_actualVariableType)
 			Z_PARAM_STR(p_unionMessagePattern_str)
@@ -2718,7 +2718,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideTypeCheck)
 		zval p_tip_zv;
 		zval p_tip_null;
 		ZVAL_NULL(&p_tip_null);
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_narrowedType)
 			Z_PARAM_ZVAL(p_originalType)
 			Z_PARAM_STR(p_unionMessagePattern_str)
@@ -2740,7 +2740,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideTypeCheck)
 	cls.method(sigs::checkAnonymousFunction, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\TooWideTypehints\TooWideTypeCheck::checkAnonymousFunction() */
 		zval *p_returnType = NULL;
 		zval *p_functionReturnType = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_returnType)
 			Z_PARAM_ZVAL(p_functionReturnType)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2755,7 +2755,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideTypeCheck)
 		zval *p_scope = NULL;
 		bool p_checkDescendantClass = false;
 		bool p_native = false;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_declaredType)
 			Z_PARAM_ZVAL(p_actualReturnType)
 			Z_PARAM_ZVAL(p_scope)

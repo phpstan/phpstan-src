@@ -142,7 +142,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodCallExpressionNode)
 		p_argsResult = &p_argsResult_default;
 		zval p_argsResult_null;
 		ZVAL_NULL(&p_argsResult_null);
-		ZEND_PARSE_PARAMETERS_START(2, 3)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_originalNode)
 			Z_PARAM_ZVAL(p_result)
 			Z_PARAM_OPTIONAL
@@ -155,22 +155,18 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodCallExpressionNode)
 		if (UNEXPECTED(!pgen::MethodCallExpressionNode::m___construct(Z_OBJ_P(ZEND_THIS), p_originalNode, p_result, p_argsResult))) RETURN_THROWS();
 	});
 	cls.method(sigs::getArgsResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodCallExpressionNode::getArgsResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getArgsResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodCallExpressionNode::getOriginalNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getOriginalNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodCallExpressionNode::getResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodCallExpressionNode::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -181,7 +177,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodCallExpressionNode)
 		return r1;
 	});
 	cls.method(sigs::getSubNodeNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\MethodCallExpressionNode::getSubNodeNames() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getSubNodeNames(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

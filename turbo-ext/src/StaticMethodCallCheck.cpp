@@ -2416,7 +2416,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StaticMethodCallCheck)
 		bool p_checkFunctionNameCase = false;
 		bool p_discoveringSymbolsTip = false;
 		bool p_reportMagicMethods = false;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_ruleLevelHelper)
 			Z_PARAM_OBJECT(p_classCheck)
@@ -2436,7 +2436,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StaticMethodCallCheck)
 		zval p_methodName_zv;
 		zval *p_class = NULL;
 		zval *p_astName = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_methodName_str)
 			Z_PARAM_ZVAL(p_class)

@@ -242,7 +242,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidKeyInArrayItemRule)
 		zval *p_ruleLevelHelper = NULL;
 		zval *p_phpVersion = NULL;
 		bool p_reportNonIntStringArrayKey = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_ruleLevelHelper)
 			Z_PARAM_ZVAL(p_phpVersion)
 			Z_PARAM_BOOL(p_reportNonIntStringArrayKey)
@@ -252,14 +252,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidKeyInArrayItemRule)
 		if (UNEXPECTED(!pgen::InvalidKeyInArrayItemRule::m___construct(Z_OBJ_P(ZEND_THIS), p_ruleLevelHelper, p_phpVersion, p_reportNonIntStringArrayKey))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\InvalidKeyInArrayItemRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidKeyInArrayItemRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\InvalidKeyInArrayItemRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

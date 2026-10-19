@@ -3024,7 +3024,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExportedNodeResolver)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\ExportedNodeResolver::__construct() */
 		zval *p_reflectionProvider = NULL;
 		zval *p_exprPrinter = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_exprPrinter)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3035,7 +3035,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExportedNodeResolver)
 	cls.method(sigs::resolve, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\ExportedNodeResolver::resolve() */
 		zval *p_node = NULL;
 		zval *p_namespaceUses = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_namespaceUses)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3047,7 +3047,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExportedNodeResolver)
 	cls.method(sigs::exportParameterNodes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\ExportedNodeResolver::exportParameterNodes() */
 		zval *p_params = NULL;
 		zval *p_namespaceUses = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_params)
 			Z_PARAM_ZVAL(p_namespaceUses)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3062,7 +3062,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExportedNodeResolver)
 		zval p_text_null;
 		ZVAL_NULL(&p_text_null);
 		zval *p_namespaceUses = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR_OR_NULL(p_text_str)
 			Z_PARAM_ZVAL(p_namespaceUses)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3078,7 +3078,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExportedNodeResolver)
 		zend_string *p_namespacedName_str = NULL;
 		zval p_namespacedName_zv;
 		zval *p_namespaceUses = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_statements)
 			Z_PARAM_STR(p_namespacedName_str)
 			Z_PARAM_ZVAL(p_namespaceUses)
@@ -3094,7 +3094,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExportedNodeResolver)
 		zend_string *p_namespacedName_str = NULL;
 		zval p_namespacedName_zv;
 		zval *p_namespaceUses = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_STR(p_namespacedName_str)
 			Z_PARAM_ZVAL(p_namespaceUses)
@@ -3107,7 +3107,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExportedNodeResolver)
 	});
 	cls.method(sigs::exportAttributeNodes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\ExportedNodeResolver::exportAttributeNodes() */
 		zval *p_attributeGroups = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_attributeGroups)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -3116,7 +3116,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExportedNodeResolver)
 	cls.method(sigs::exportPropertyHooks, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\ExportedNodeResolver::exportPropertyHooks() */
 		zval *p_hooks = NULL;
 		zval *p_namespaceUses = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_hooks)
 			Z_PARAM_ZVAL(p_namespaceUses)
 		ZEND_PARSE_PARAMETERS_END();

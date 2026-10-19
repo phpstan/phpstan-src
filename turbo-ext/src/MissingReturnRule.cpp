@@ -784,21 +784,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingReturnRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Missing\MissingReturnRule::__construct() */
 		bool p_checkExplicitMixedMissingReturn = false;
 		bool p_checkPhpDocMissingReturn = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_BOOL(p_checkExplicitMixedMissingReturn)
 			Z_PARAM_BOOL(p_checkPhpDocMissingReturn)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::MissingReturnRule::m___construct(Z_OBJ_P(ZEND_THIS), p_checkExplicitMixedMissingReturn, p_checkPhpDocMissingReturn))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Missing\MissingReturnRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MissingReturnRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Missing\MissingReturnRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

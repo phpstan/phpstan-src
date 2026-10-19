@@ -63,18 +63,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleError75)
 	ptdecl::RuleError75::declareClass(cls);
 	ptdecl::RuleError75::declareProperties(cls);
 	cls.method(sigs::getMessage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError75::getMessage() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError75::m_getMessage(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getLine, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError75::getLine() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		zend_long r;
 		if (UNEXPECTED(!pgen::RuleError75::m_getLine(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_LONG(r);
 	});
 	cls.method(sigs::getTip, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError75::getTip() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError75::m_getTip(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

@@ -2123,7 +2123,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedSingleFileSourceLocator)
 		zval *p_fileName = NULL;
 		zend_string *p_fileName_str = NULL;
 		zval p_fileName_zv;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_fileNodesFetcher)
 			Z_PARAM_ZVAL(p_cache)
 			Z_PARAM_ZVAL(p_phpVersion)
@@ -2139,7 +2139,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedSingleFileSourceLocator)
 		zval *p_file = NULL;
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
@@ -2147,14 +2147,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedSingleFileSourceLocator)
 		if (UNEXPECTED(!pgen::OptimizedSingleFileSourceLocator::m_getVariableCacheKey(Z_OBJ_P(ZEND_THIS), p_file, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPresentSymbols, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocator::getPresentSymbols() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::OptimizedSingleFileSourceLocator::m_getPresentSymbols(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::locateIdentifier, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocator::locateIdentifier() */
 		zval *p_reflector = NULL;
 		zval *p_identifier = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_reflector)
 			Z_PARAM_ZVAL(p_identifier)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2166,7 +2165,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedSingleFileSourceLocator)
 	cls.method(sigs::locateIdentifiersByType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocator::locateIdentifiersByType() */
 		zval *p_reflector = NULL;
 		zval *p_identifierType = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_reflector)
 			Z_PARAM_ZVAL(p_identifierType)
 		ZEND_PARSE_PARAMETERS_END();

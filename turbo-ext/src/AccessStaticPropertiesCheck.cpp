@@ -2110,7 +2110,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AccessStaticPropertiesCheck)
 		zval *p_phpVersion = NULL;
 		zval *p_nonStringableDynamicAccessCheck = NULL;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_ruleLevelHelper)
 			Z_PARAM_OBJECT(p_classCheck)
@@ -2129,7 +2129,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AccessStaticPropertiesCheck)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		bool p_write = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_BOOL(p_write)
@@ -2146,7 +2146,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AccessStaticPropertiesCheck)
 		zend_string *p_name_str = NULL;
 		zval p_name_zv;
 		bool p_write = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_STR(p_name_str)

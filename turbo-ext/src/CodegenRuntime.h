@@ -554,6 +554,11 @@ zend_class_entry *fetchClassDynamic(zval *cls);
  * an undefined or non-static method); false with an exception pending */
 [[nodiscard]] bool callStaticDynamic(zval *cls, zend_class_entry *scope, zval *name, uint32_t argc, zval *argv, zval *ret, HashTable *named);
 
+/* `$object->{$name}(...)`: the method looked up like the VM (visibility
+ * from scope, __call, the engine's Error for an undefined method); false
+ * with an exception pending */
+[[nodiscard]] bool callMethodDynamic(zval *object, zend_class_entry *scope, zval *name, uint32_t argc, zval *argv, zval *ret, HashTable *named);
+
 /* the name of `$object->{$name}` as a string in *out (the engine's string
  * conversion); false with an exception pending */
 [[nodiscard]] bool propertyName(zval *name, zval *out);

@@ -680,7 +680,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AnnotationsMethodsClassReflectionExten
 		zval *p_methodName = NULL;
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_STR(p_methodName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -721,7 +721,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AnnotationsMethodsClassReflectionExten
 		zval *p_methodName = NULL;
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_STR(p_methodName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -762,7 +762,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AnnotationsMethodsClassReflectionExten
 		zval *p_methodName = NULL;
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_STR(p_methodName_str)
@@ -775,7 +775,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AnnotationsMethodsClassReflectionExten
 	});
 	cls.method(sigs::detectMethodVariadic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension::detectMethodVariadic() */
 		zval *p_parameters = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_parameters)
 		ZEND_PARSE_PARAMETERS_END();
 		bool r;

@@ -1242,6 +1242,13 @@ public:
 		return *this;
 	}
 
+	/* a `protected const X = <int>` class constant */
+	Class &protectedClassConstantLong(const char *constantName, zend_long value)
+	{
+		constants.push_back({ constantName, value, ZEND_ACC_PROTECTED });
+		return *this;
+	}
+
 	/* a `private const X = '<string>'` class constant; value is a persistent
 	 * literal */
 	Class &privateClassConstantString(const char *constantName, const char *value)
@@ -1299,6 +1306,14 @@ public:
 	Class &privateClassConstantValue(const char *constantName, void (*buildValue)(zval *out))
 	{
 		constants.push_back({ constantName, 0, ZEND_ACC_PRIVATE, nullptr, buildValue });
+		return *this;
+	}
+
+	/* a `protected const X = ...` class constant, filled in like
+	 * classConstantValue() */
+	Class &protectedClassConstantValue(const char *constantName, void (*buildValue)(zval *out))
+	{
+		constants.push_back({ constantName, 0, ZEND_ACC_PROTECTED, nullptr, buildValue });
 		return *this;
 	}
 

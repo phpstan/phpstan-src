@@ -248,7 +248,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParseStrParameterOutTypeExtension)
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ParseStrParameterOutTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
 		zval *p_parameter = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_parameter)
 		ZEND_PARSE_PARAMETERS_END();
@@ -263,7 +263,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParseStrParameterOutTypeExtension)
 		zval *p_funcCall = NULL;
 		zval *p_parameter = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_funcCall)
 			Z_PARAM_ZVAL(p_parameter)

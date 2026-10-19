@@ -528,7 +528,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleCheckTypeFunctionCallRule)
 		bool p_treatPhpDocTypesAsCertain = false;
 		bool p_reportAlwaysTrueInLastCondition = false;
 		bool p_treatPhpDocTypesAsCertainTip = false;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_impossibleCheckTypeHelper)
 			Z_PARAM_ZVAL(p_constantConditionInTraitHelper)
 			Z_PARAM_ZVAL(p_functionCallConstantConditionHelper)
@@ -542,14 +542,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleCheckTypeFunctionCallRule)
 		if (UNEXPECTED(!pgen::ImpossibleCheckTypeFunctionCallRule::m___construct(Z_OBJ_P(ZEND_THIS), p_impossibleCheckTypeHelper, p_constantConditionInTraitHelper, p_functionCallConstantConditionHelper, p_treatPhpDocTypesAsCertain, p_reportAlwaysTrueInLastCondition, p_treatPhpDocTypesAsCertainTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleCheckTypeFunctionCallRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ImpossibleCheckTypeFunctionCallRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleCheckTypeFunctionCallRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

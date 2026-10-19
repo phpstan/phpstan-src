@@ -715,7 +715,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatiblePropertyPhpDocTypeRule)
 		zval *p_genericObjectTypeCheck = NULL;
 		zval *p_unresolvableTypeHelper = NULL;
 		zval *p_genericCallableRuleHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_genericObjectTypeCheck)
 			Z_PARAM_ZVAL(p_unresolvableTypeHelper)
 			Z_PARAM_ZVAL(p_genericCallableRuleHelper)
@@ -726,14 +726,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatiblePropertyPhpDocTypeRule)
 		if (UNEXPECTED(!pgen::IncompatiblePropertyPhpDocTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_genericObjectTypeCheck, p_unresolvableTypeHelper, p_genericCallableRuleHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IncompatiblePropertyPhpDocTypeRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

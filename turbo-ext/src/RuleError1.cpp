@@ -35,7 +35,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleError1)
 	ptdecl::RuleError1::declareClass(cls);
 	ptdecl::RuleError1::declareProperties(cls);
 	cls.method(sigs::getMessage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError1::getMessage() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError1::m_getMessage(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

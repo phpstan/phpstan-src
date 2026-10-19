@@ -261,7 +261,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParentDirectoryRelativePathHelper)
 		zval *p_parentDirectory = NULL;
 		zend_string *p_parentDirectory_str = NULL;
 		zval p_parentDirectory_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_parentDirectory_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_parentDirectory_str != NULL) { ZVAL_STR(&p_parentDirectory_zv, p_parentDirectory_str); p_parentDirectory = &p_parentDirectory_zv; }
@@ -271,7 +271,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParentDirectoryRelativePathHelper)
 		zval *p_filename = NULL;
 		zend_string *p_filename_str = NULL;
 		zval p_filename_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_filename_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_filename_str != NULL) { ZVAL_STR(&p_filename_zv, p_filename_str); p_filename = &p_filename_zv; }
@@ -282,7 +282,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParentDirectoryRelativePathHelper)
 		zval *p_filename = NULL;
 		zend_string *p_filename_str = NULL;
 		zval p_filename_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_filename_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_filename_str != NULL) { ZVAL_STR(&p_filename_zv, p_filename_str); p_filename = &p_filename_zv; }

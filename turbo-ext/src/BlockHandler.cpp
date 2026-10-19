@@ -274,14 +274,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BlockHandler)
 	ptdecl::BlockHandler::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\StmtHandler\BlockHandler::__construct() */
 		bool p_polluteScopeWithBlock = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_polluteScopeWithBlock)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::BlockHandler::m___construct(Z_OBJ_P(ZEND_THIS), p_polluteScopeWithBlock))) RETURN_THROWS();
 	});
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\StmtHandler\BlockHandler::supports() */
 		zval *p_stmt = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_stmt)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_stmt != NULL && UNEXPECTED(Z_TYPE_P(p_stmt) != IS_OBJECT || !pgrt::instanceOfClass(p_stmt, pgrt::lookupClassQuiet(pg_site_14, "PhpParser\\Node\\Stmt", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt", zend_zval_value_name(p_stmt)); RETURN_THROWS(); }
@@ -296,7 +296,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BlockHandler)
 		zval *p_storage = NULL;
 		zval *p_nodeCallback = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_nodeScopeResolver)
 			Z_PARAM_ZVAL(p_stmt)
 			Z_PARAM_ZVAL(p_scope)

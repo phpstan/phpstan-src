@@ -866,7 +866,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidComparisonOperationRule)
 		zval *p_ruleLevelHelper = NULL;
 		zval *p_operatorTypeSpecifyingExtensionRegistry = NULL;
 		bool p_checkExtensionsForComparisonOperators = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_ruleLevelHelper)
 			Z_PARAM_ZVAL(p_operatorTypeSpecifyingExtensionRegistry)
 			Z_PARAM_BOOL(p_checkExtensionsForComparisonOperators)
@@ -876,14 +876,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidComparisonOperationRule)
 		if (UNEXPECTED(!pgen::InvalidComparisonOperationRule::m___construct(Z_OBJ_P(ZEND_THIS), p_ruleLevelHelper, p_operatorTypeSpecifyingExtensionRegistry, p_checkExtensionsForComparisonOperators))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidComparisonOperationRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidComparisonOperationRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidComparisonOperationRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -895,7 +894,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidComparisonOperationRule)
 	cls.method(sigs::isNumberType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidComparisonOperationRule::isNumberType() */
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
@@ -908,7 +907,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidComparisonOperationRule)
 	cls.method(sigs::isPossiblyNullableObjectType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidComparisonOperationRule::isPossiblyNullableObjectType() */
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
@@ -921,7 +920,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidComparisonOperationRule)
 	cls.method(sigs::isPossiblyNullableArrayType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidComparisonOperationRule::isPossiblyNullableArrayType() */
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
@@ -934,7 +933,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidComparisonOperationRule)
 	cls.method(sigs::createError, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidComparisonOperationRule::createError() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

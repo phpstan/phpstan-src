@@ -34,7 +34,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnresolvableTypeResult)
 	ptdecl::UnresolvableTypeResult::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\UnresolvableTypeResult::__construct() */
 		zval *p_reasons = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_reasons)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::UnresolvableTypeResult::m___construct(Z_OBJ_P(ZEND_THIS), p_reasons))) RETURN_THROWS();

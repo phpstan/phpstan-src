@@ -1950,7 +1950,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RichParser)
 		zval *p_nameResolver = NULL;
 		zval *p_nodeVisitors = NULL;
 		zval *p_ignoreLexer = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_parser)
 			Z_PARAM_ZVAL(p_nameResolver)
 			Z_PARAM_ZVAL(p_nodeVisitors)
@@ -1966,7 +1966,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RichParser)
 		zval *p_file = NULL;
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
@@ -1977,7 +1977,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RichParser)
 		zval *p_sourceCode = NULL;
 		zend_string *p_sourceCode_str = NULL;
 		zval p_sourceCode_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_sourceCode_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_sourceCode_str != NULL) { ZVAL_STR(&p_sourceCode_zv, p_sourceCode_str); p_sourceCode = &p_sourceCode_zv; }
@@ -1986,7 +1986,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RichParser)
 	});
 	cls.method(sigs::getLinesToIgnore, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\RichParser::getLinesToIgnore() */
 		zval *p_tokens = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_tokens)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -2001,7 +2001,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RichParser)
 		zend_string *p_ignoreComment_str = NULL;
 		zval p_ignoreComment_zv;
 		bool p_ignoreNextLine = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_STR(p_tokenText_str)
 			Z_PARAM_LONG(p_tokenLine)
 			Z_PARAM_STR(p_ignoreComment_str)
@@ -2017,7 +2017,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RichParser)
 		zend_string *p_text_str = NULL;
 		zval p_text_zv;
 		zend_long p_ignorePos = 0;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_text_str)
 			Z_PARAM_LONG(p_ignorePos)
 		ZEND_PARSE_PARAMETERS_END();

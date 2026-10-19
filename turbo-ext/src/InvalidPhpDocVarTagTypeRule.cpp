@@ -888,7 +888,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidPhpDocVarTagTypeRule)
 		bool p_checkClassCaseSensitivity = false;
 		bool p_checkMissingVarTagTypehint = false;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(9, 9)
+		ZEND_PARSE_PARAMETERS_START(9, -1)
 			Z_PARAM_ZVAL(p_fileTypeMapper)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_classCheck)
@@ -908,14 +908,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidPhpDocVarTagTypeRule)
 		if (UNEXPECTED(!pgen::InvalidPhpDocVarTagTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_fileTypeMapper, p_reflectionProvider, p_classCheck, p_genericObjectTypeCheck, p_missingTypehintCheck, p_unresolvableTypeHelper, p_checkClassCaseSensitivity, p_checkMissingVarTagTypehint, p_discoveringSymbolsTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidPhpDocVarTagTypeRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

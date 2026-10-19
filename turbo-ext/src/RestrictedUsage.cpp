@@ -55,7 +55,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedUsage)
 		zval *p_identifier = NULL;
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_errorMessage_str)
 			Z_PARAM_STR(p_identifier_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -70,7 +70,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedUsage)
 		zval *p_identifier = NULL;
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_errorMessage_str)
 			Z_PARAM_STR(p_identifier_str)
 		ZEND_PARSE_PARAMETERS_END();

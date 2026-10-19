@@ -585,7 +585,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeFunctionReflection)
 		ZVAL_NULL(&p_returnsByReference_null);
 		bool p_acceptsNamedArguments = false;
 		zval *p_attributes = NULL;
-		ZEND_PARSE_PARAMETERS_START(11, 11)
+		ZEND_PARSE_PARAMETERS_START(11, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_ARRAY(p_variants)
 			Z_PARAM_ARRAY_OR_NULL(p_namedArgumentsVariants)
@@ -612,7 +612,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeFunctionReflection)
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_variants, p_namedArgumentsVariants, p_throwType, p_hasSideEffects, p_isDeprecated, p_assertions, p_phpDocComment, p_returnsByReference, p_acceptsNamedArguments, p_attributes))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -623,7 +622,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeFunctionReflection)
 		return r1;
 	});
 	cls.method(sigs::getFileName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getFileName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getFileName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -634,62 +632,50 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeFunctionReflection)
 		return r1;
 	});
 	cls.method(sigs::getVariants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getVariants() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getVariants(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOnlyVariant, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getOnlyVariant() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getOnlyVariant(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNamedArgumentsVariants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getNamedArgumentsVariants() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getNamedArgumentsVariants(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getThrowType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getThrowType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDeprecatedDescription, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getDeprecatedDescription() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getDeprecatedDescription(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isDeprecated, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::isDeprecated() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_isDeprecated(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isInternal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::isInternal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_isInternal(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasSideEffects, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::hasSideEffects() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_hasSideEffects(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isPure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::isPure() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_isPure(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPureUnlessCallableIsImpureParameters, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getPureUnlessCallableIsImpureParameters() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getPureUnlessCallableIsImpureParameters(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPureUnlessParameterPassedParameters, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getPureUnlessParameterPassedParameters() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getPureUnlessParameterPassedParameters(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isVoid, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::isVoid() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_isVoid(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -701,7 +687,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeFunctionReflection)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::isBuiltin, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::isBuiltin() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_isBuiltin(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -713,32 +698,26 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeFunctionReflection)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::getAsserts, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getAsserts() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getAsserts(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDocComment, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getDocComment() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getDocComment(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::returnsByReference, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::returnsByReference() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_returnsByReference(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::acceptsNamedArguments, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::acceptsNamedArguments() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_acceptsNamedArguments(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAttributes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::getAttributes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getAttributes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::mustUseReturnValue, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeFunctionReflection::mustUseReturnValue() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeFunctionReflection::m_mustUseReturnValue(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

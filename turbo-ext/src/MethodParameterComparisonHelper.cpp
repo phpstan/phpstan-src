@@ -2552,7 +2552,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodParameterComparisonHelper)
 	ptdecl::MethodParameterComparisonHelper::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\MethodParameterComparisonHelper::__construct() */
 		zval *p_phpVersion = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_phpVersion)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -2564,7 +2564,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodParameterComparisonHelper)
 		zval *p_method = NULL;
 		zval *p_scope = NULL;
 		bool p_ignorable = false;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_prototype)
 			Z_PARAM_ZVAL(p_prototypeDeclaringClass)
 			Z_PARAM_ZVAL(p_method)
@@ -2582,7 +2582,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodParameterComparisonHelper)
 		zval *p_methodParameterType = NULL;
 		zval *p_prototypeParameterType = NULL;
 		bool p_supportsContravariance = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_methodParameterType)
 			Z_PARAM_ZVAL(p_prototypeParameterType)
 			Z_PARAM_BOOL(p_supportsContravariance)
@@ -2597,7 +2597,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodParameterComparisonHelper)
 		zval *p_methodParameterType = NULL;
 		zval *p_prototypeParameterType = NULL;
 		bool p_supportsCovariance = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_methodParameterType)
 			Z_PARAM_ZVAL(p_prototypeParameterType)
 			Z_PARAM_BOOL(p_supportsCovariance)
@@ -2613,7 +2613,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodParameterComparisonHelper)
 		zval *p_prototypeParameterType = NULL;
 		bool p_supportsContravariance = false;
 		bool p_considerMixedExplicitness = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_methodParameterType)
 			Z_PARAM_ZVAL(p_prototypeParameterType)
 			Z_PARAM_BOOL(p_supportsContravariance)

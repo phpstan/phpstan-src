@@ -1387,7 +1387,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssertRuleHelper)
 		zval *p_genericObjectTypeCheck = NULL;
 		bool p_checkClassCaseSensitivity = false;
 		bool p_checkMissingTypehints = false;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_unresolvableTypeHelper)
 			Z_PARAM_OBJECT(p_classCheck)
@@ -1408,7 +1408,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssertRuleHelper)
 		zval *p_node = NULL;
 		zval *p_reflection = NULL;
 		zval *p_acceptor = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_reflection)

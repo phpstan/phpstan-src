@@ -4638,7 +4638,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 		bool p_checkClassCaseSensitivity = false;
 		bool p_checkThisOnly = false;
 		bool p_checkImportedClassNameCase = false;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_classCheck)
 			Z_PARAM_OBJECT(p_unresolvableTypeHelper)
@@ -4678,7 +4678,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 		zval *p_noDiscardVoidReturnMessage = NULL;
 		zend_string *p_noDiscardVoidReturnMessage_str = NULL;
 		zval p_noDiscardVoidReturnMessage_zv;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		ZEND_PARSE_PARAMETERS_START(10, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_function)
 			Z_PARAM_ZVAL(p_functionReflection)
@@ -4726,7 +4726,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 		zval *p_noDiscardReturnTypeMessage = NULL;
 		zend_string *p_noDiscardReturnTypeMessage_str = NULL;
 		zval p_noDiscardReturnTypeMessage_zv;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		ZEND_PARSE_PARAMETERS_START(10, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_parameters)
 			Z_PARAM_ZVAL(p_returnTypeNode)
@@ -4776,7 +4776,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 		zval *p_noDiscardVoidReturnMessage = NULL;
 		zend_string *p_noDiscardVoidReturnMessage_str = NULL;
 		zval p_noDiscardVoidReturnMessage_zv;
-		ZEND_PARSE_PARAMETERS_START(11, 11)
+		ZEND_PARSE_PARAMETERS_START(11, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_methodReflection)
 			Z_PARAM_ZVAL(p_methodNode)
@@ -4828,7 +4828,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 		zval *p_noDiscardReturnTypeMessage = NULL;
 		zend_string *p_noDiscardReturnTypeMessage_str = NULL;
 		zval p_noDiscardReturnTypeMessage_zv;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		ZEND_PARSE_PARAMETERS_START(10, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_parametersAcceptor)
 			Z_PARAM_ZVAL(p_functionNode)
@@ -4855,7 +4855,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 	});
 	cls.method(sigs::checkRequiredParameterAfterOptional, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FunctionDefinitionCheck::checkRequiredParameterAfterOptional() */
 		zval *p_parameterNodes = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_parameterNodes)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -4866,7 +4866,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 		zend_string *p_parameterName_str = NULL;
 		zval p_parameterName_zv;
 		zval *p_parameterNodes = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_parameterName_str)
 			Z_PARAM_ARRAY(p_parameterNodes)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4876,7 +4876,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 	});
 	cls.method(sigs::getParameterReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FunctionDefinitionCheck::getParameterReferencedClasses() */
 		zval *p_parameter = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_parameter)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_parameter != NULL && UNEXPECTED(Z_TYPE_P(p_parameter) != IS_OBJECT || !pgrt::instanceOfClass(p_parameter, pgrt::lookupClassQuiet(pg_site_87, "PHPStan\\Reflection\\ParameterReflection", 38)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ParameterReflection", zend_zval_value_name(p_parameter)); RETURN_THROWS(); }
@@ -4885,7 +4885,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 	});
 	cls.method(sigs::getReturnTypeReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FunctionDefinitionCheck::getReturnTypeReferencedClasses() */
 		zval *p_parametersAcceptor = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_parametersAcceptor)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_parametersAcceptor != NULL && UNEXPECTED(Z_TYPE_P(p_parametersAcceptor) != IS_OBJECT || !pgrt::instanceOfClass(p_parametersAcceptor, pgrt::lookupClassQuiet(pg_site_225, "PHPStan\\Reflection\\ParametersAcceptor", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ParametersAcceptor", zend_zval_value_name(p_parametersAcceptor)); RETURN_THROWS(); }
@@ -4904,7 +4904,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 		zval *p_name = NULL;
 		zend_string *p_name_str = NULL;
 		zval p_name_zv;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_type)
 			Z_PARAM_ZVAL_OR_NULL(p_default)
 			Z_PARAM_LONG(p_order)
@@ -4923,7 +4923,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionDefinitionCheck)
 		zval *p_typeNode = NULL;
 		zval p_typeNode_null;
 		ZVAL_NULL(&p_typeNode_null);
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_typeNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_typeNode != NULL && UNEXPECTED((Z_TYPE_P(p_typeNode) != IS_OBJECT && Z_TYPE_P(p_typeNode) != IS_NULL) || !(pgrt::instanceOfClass(p_typeNode, pgrt::lookupClassQuiet(pg_site_15, "PhpParser\\Node\\Identifier", 25)) || pgrt::instanceOfClass(p_typeNode, pgrt::lookupClassQuiet(pg_site_16, "PhpParser\\Node\\Name", 19)) || pgrt::instanceOfClass(p_typeNode, pgrt::lookupClassQuiet(pg_site_17, "PhpParser\\Node\\ComplexType", 26))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Identifier|PhpParser\\Node\\Name|PhpParser\\Node\\ComplexType|null", zend_zval_value_name(p_typeNode)); RETURN_THROWS(); }

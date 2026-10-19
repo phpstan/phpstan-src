@@ -589,7 +589,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PreIncHandler)
 		zval *p_incDecTypeHelper = NULL;
 		zval *p_defaultNarrowingHelper = NULL;
 		zval *p_assignHandler = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_OBJECT(p_expressionResultFactory)
 			Z_PARAM_OBJECT(p_incDecTypeHelper)
 			Z_PARAM_OBJECT(p_defaultNarrowingHelper)
@@ -603,7 +603,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PreIncHandler)
 	});
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExprHandler\PreIncHandler::supports() */
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_34, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
@@ -619,7 +619,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PreIncHandler)
 		zval *p_storage = NULL;
 		zval *p_nodeCallback = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_nodeScopeResolver)
 			Z_PARAM_ZVAL(p_stmt)
 			Z_PARAM_ZVAL(p_expr)

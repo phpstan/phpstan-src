@@ -453,7 +453,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonStringableDynamicAccessCheck)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\NonStringableDynamicAccessCheck::__construct() */
 		zval *p_ruleLevelHelper = NULL;
 		bool p_checkNonStringableDynamicAccess = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_OBJECT(p_ruleLevelHelper)
 			Z_PARAM_BOOL(p_checkNonStringableDynamicAccess)
 		ZEND_PARSE_PARAMETERS_END();
@@ -470,7 +470,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonStringableDynamicAccessCheck)
 		zval *p_identifier = NULL;
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_name)
 			Z_PARAM_STR(p_messageFormat_str)
@@ -494,7 +494,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonStringableDynamicAccessCheck)
 		zval *p_identifier = NULL;
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_name)
 			Z_PARAM_STR(p_messageFormat_str)
@@ -519,7 +519,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonStringableDynamicAccessCheck)
 		zval *p_identifier = NULL;
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_name)
 			Z_PARAM_ZVAL(p_nameType)

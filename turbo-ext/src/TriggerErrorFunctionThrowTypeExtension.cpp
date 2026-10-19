@@ -346,14 +346,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TriggerErrorFunctionThrowTypeExtension
 	cls.privateClassConstantValue("NON_FATAL_ERROR_LEVELS", pg_const_NON_FATAL_ERROR_LEVELS);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\TriggerErrorFunctionThrowTypeExtension::__construct() */
 		bool p_implicitThrows = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_implicitThrows)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::TriggerErrorFunctionThrowTypeExtension::m___construct(Z_OBJ_P(ZEND_THIS), p_implicitThrows))) RETURN_THROWS();
 	});
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\TriggerErrorFunctionThrowTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
@@ -365,7 +365,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TriggerErrorFunctionThrowTypeExtension
 		zval *p_functionReflection = NULL;
 		zval *p_funcCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_funcCall)
 			Z_PARAM_ZVAL(p_scope)
@@ -378,7 +378,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TriggerErrorFunctionThrowTypeExtension
 	});
 	cls.method(sigs::getInvalidErrorLevelThrowType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\TriggerErrorFunctionThrowTypeExtension::getInvalidErrorLevelThrowType() */
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }

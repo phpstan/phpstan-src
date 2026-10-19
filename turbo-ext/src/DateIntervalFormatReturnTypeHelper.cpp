@@ -390,7 +390,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateIntervalFormatReturnTypeHelper)
 		zval *p_formatType = NULL;
 		zval *p_intervalType = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_formatType)
 			Z_PARAM_ZVAL(p_intervalType)
 			Z_PARAM_ZVAL(p_scope)

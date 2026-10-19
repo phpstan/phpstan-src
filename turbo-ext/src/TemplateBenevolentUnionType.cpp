@@ -220,7 +220,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateBenevolentUnionType)
 		zval *p_default = NULL;
 		zval p_default_null;
 		ZVAL_NULL(&p_default_null);
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_templateTypeStrategy)
 			Z_PARAM_ZVAL(p_templateTypeVariance)
@@ -239,7 +239,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateBenevolentUnionType)
 	});
 	cls.method(sigs::withTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateBenevolentUnionType::withTypes() */
 		zval *p_types = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_types)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -263,7 +263,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateBenevolentUnionType)
 	});
 	cls.method(sigs::filterTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateBenevolentUnionType::filterTypes() */
 		zval *p_filterCb = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_filterCb)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_filterCb != NULL && UNEXPECTED(!zend_is_callable(p_filterCb, 0, NULL))) { zend_argument_type_error(1, "must be a valid callback, %s given", zend_zval_value_name(p_filterCb)); RETURN_THROWS(); }

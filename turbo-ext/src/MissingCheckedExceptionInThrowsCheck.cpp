@@ -330,7 +330,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingCheckedExceptionInThrowsCheck)
 	ptdecl::MissingCheckedExceptionInThrowsCheck::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\MissingCheckedExceptionInThrowsCheck::__construct() */
 		zval *p_exceptionTypeResolver = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_exceptionTypeResolver)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -341,7 +341,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingCheckedExceptionInThrowsCheck)
 		zval p_throwType_null;
 		ZVAL_NULL(&p_throwType_null);
 		zval *p_throwPoints = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_throwType)
 			Z_PARAM_ARRAY(p_throwPoints)
 		ZEND_PARSE_PARAMETERS_END();

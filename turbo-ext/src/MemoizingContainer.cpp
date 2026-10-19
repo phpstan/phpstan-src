@@ -390,7 +390,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 	ptdecl::MemoizingContainer::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\DependencyInjection\MemoizingContainer::__construct() */
 		zval *p_originalContainer = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_originalContainer)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -400,7 +400,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 		zval *p_serviceName = NULL;
 		zend_string *p_serviceName_str = NULL;
 		zval p_serviceName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_serviceName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_serviceName_str != NULL) { ZVAL_STR(&p_serviceName_zv, p_serviceName_str); p_serviceName = &p_serviceName_zv; }
@@ -412,7 +412,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 		zval *p_serviceName = NULL;
 		zend_string *p_serviceName_str = NULL;
 		zval p_serviceName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_serviceName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_serviceName_str != NULL) { ZVAL_STR(&p_serviceName_zv, p_serviceName_str); p_serviceName = &p_serviceName_zv; }
@@ -423,7 +423,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -434,7 +434,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -445,7 +445,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 		zval *p_tagName = NULL;
 		zend_string *p_tagName_str = NULL;
 		zval p_tagName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_tagName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_tagName_str != NULL) { ZVAL_STR(&p_tagName_zv, p_tagName_str); p_tagName = &p_tagName_zv; }
@@ -456,7 +456,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 		zval *p_extensionInterfaceName = NULL;
 		zend_string *p_extensionInterfaceName_str = NULL;
 		zval p_extensionInterfaceName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_extensionInterfaceName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_extensionInterfaceName_str != NULL) { ZVAL_STR(&p_extensionInterfaceName_zv, p_extensionInterfaceName_str); p_extensionInterfaceName = &p_extensionInterfaceName_zv; }
@@ -464,7 +464,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 		if (UNEXPECTED(!pgen::MemoizingContainer::m_getExtensionsCollection(Z_OBJ_P(ZEND_THIS), p_extensionInterfaceName, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getParameters, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\DependencyInjection\MemoizingContainer::getParameters() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MemoizingContainer::m_getParameters(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -472,7 +471,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 		zval *p_parameterName = NULL;
 		zend_string *p_parameterName_str = NULL;
 		zval p_parameterName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_parameterName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_parameterName_str != NULL) { ZVAL_STR(&p_parameterName_zv, p_parameterName_str); p_parameterName = &p_parameterName_zv; }
@@ -484,7 +483,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingContainer)
 		zval *p_parameterName = NULL;
 		zend_string *p_parameterName_str = NULL;
 		zval p_parameterName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_parameterName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_parameterName_str != NULL) { ZVAL_STR(&p_parameterName_zv, p_parameterName_str); p_parameterName = &p_parameterName_zv; }

@@ -525,7 +525,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideParameterOutTypeCheck)
 	ptdecl::TooWideParameterOutTypeCheck::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\TooWideTypehints\TooWideParameterOutTypeCheck::__construct() */
 		zval *p_tooWideTypeCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_tooWideTypeCheck)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -539,7 +539,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideParameterOutTypeCheck)
 		zval *p_functionDescription = NULL;
 		zend_string *p_functionDescription_str = NULL;
 		zval p_functionDescription_zv;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_LONG(p_startLine)
 			Z_PARAM_ARRAY(p_executionEnds)
 			Z_PARAM_ARRAY(p_returnStatements)
@@ -557,7 +557,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideParameterOutTypeCheck)
 		zend_string *p_functionDescription_str = NULL;
 		zval p_functionDescription_zv;
 		zval *p_parameter = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_LONG(p_startLine)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_functionDescription_str)

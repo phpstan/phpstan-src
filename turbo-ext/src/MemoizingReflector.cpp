@@ -675,7 +675,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflector)
 	ptdecl::MemoizingReflector::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\Reflector\MemoizingReflector::__construct() */
 		zval *p_sourceLocator = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_sourceLocator)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -685,7 +685,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflector)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -696,7 +696,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflector)
 		zval *p_constantName = NULL;
 		zend_string *p_constantName_str = NULL;
 		zval p_constantName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_constantName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_constantName_str != NULL) { ZVAL_STR(&p_constantName_zv, p_constantName_str); p_constantName = &p_constantName_zv; }
@@ -707,7 +707,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflector)
 		zval *p_functionName = NULL;
 		zend_string *p_functionName_str = NULL;
 		zval p_functionName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_functionName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionName_str != NULL) { ZVAL_STR(&p_functionName_zv, p_functionName_str); p_functionName = &p_functionName_zv; }
@@ -715,17 +715,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflector)
 		if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectFunction(Z_OBJ_P(ZEND_THIS), p_functionName, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::reflectAllClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\Reflector\MemoizingReflector::reflectAllClasses() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectAllClasses(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::reflectAllFunctions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\Reflector\MemoizingReflector::reflectAllFunctions() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectAllFunctions(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::reflectAllConstants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\Reflector\MemoizingReflector::reflectAllConstants() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MemoizingReflector::m_reflectAllConstants(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

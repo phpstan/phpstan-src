@@ -741,7 +741,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AttributeReflectionFactory)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\AttributeReflectionFactory::__construct() */
 		zval *p_initializerExprTypeResolver = NULL;
 		zval *p_reflectionProviderProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_OBJECT(p_initializerExprTypeResolver)
 			Z_PARAM_OBJECT(p_reflectionProviderProvider)
 		ZEND_PARSE_PARAMETERS_END();
@@ -752,7 +752,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AttributeReflectionFactory)
 	cls.method(sigs::fromNativeReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\AttributeReflectionFactory::fromNativeReflection() */
 		zval *p_reflections = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_reflections)
 			Z_PARAM_ZVAL(p_context)
 		ZEND_PARSE_PARAMETERS_END();
@@ -763,7 +763,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AttributeReflectionFactory)
 	cls.method(sigs::fromAttrGroups, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\AttributeReflectionFactory::fromAttrGroups() */
 		zval *p_attrGroups = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_attrGroups)
 			Z_PARAM_ZVAL(p_context)
 		ZEND_PARSE_PARAMETERS_END();
@@ -777,7 +777,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AttributeReflectionFactory)
 		zval p_name_zv;
 		zval *p_arguments = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_ARRAY(p_arguments)
 			Z_PARAM_ZVAL(p_context)

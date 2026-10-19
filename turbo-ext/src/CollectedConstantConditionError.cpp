@@ -61,7 +61,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CollectedConstantConditionError)
 	cls.method(sigs::transformPaths, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\CollectedConstantConditionError::transformPaths() */
 		zval *p_error = NULL;
 		zval *p_transformPath = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_error)
 			Z_PARAM_ZVAL(p_transformPath)
 		ZEND_PARSE_PARAMETERS_END();

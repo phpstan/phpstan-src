@@ -415,21 +415,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedClosureUsesRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\UnusedClosureUsesRule::__construct() */
 		bool p_reportExactLine = false;
 		bool p_reportUnusedFlow = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_BOOL(p_reportExactLine)
 			Z_PARAM_BOOL(p_reportUnusedFlow)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::UnusedClosureUsesRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reportExactLine, p_reportUnusedFlow))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\UnusedClosureUsesRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::UnusedClosureUsesRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\UnusedClosureUsesRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

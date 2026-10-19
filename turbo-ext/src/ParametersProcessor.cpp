@@ -221,7 +221,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParametersProcessor)
 	ptdecl::ParametersProcessor::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ParametersProcessor::__construct() */
 		zval *p_attributesHandler = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_attributesHandler)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -234,7 +234,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParametersProcessor)
 		zval *p_scope = NULL;
 		zval *p_storage = NULL;
 		zval *p_nodeCallback = NULL;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_nodeScopeResolver)
 			Z_PARAM_ZVAL(p_stmt)
 			Z_PARAM_ARRAY(p_params)

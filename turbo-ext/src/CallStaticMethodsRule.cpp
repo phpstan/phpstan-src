@@ -971,7 +971,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallStaticMethodsRule)
 		zval *p_methodCallCheck = NULL;
 		zval *p_parametersCheck = NULL;
 		zval *p_nonStringableDynamicAccessCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_methodCallCheck)
 			Z_PARAM_ZVAL(p_parametersCheck)
 			Z_PARAM_ZVAL(p_nonStringableDynamicAccessCheck)
@@ -982,14 +982,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallStaticMethodsRule)
 		if (UNEXPECTED(!pgen::CallStaticMethodsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_methodCallCheck, p_parametersCheck, p_nonStringableDynamicAccessCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\CallStaticMethodsRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::CallStaticMethodsRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\CallStaticMethodsRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1004,7 +1003,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallStaticMethodsRule)
 		zval *p_methodName = NULL;
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_STR(p_methodName_str)

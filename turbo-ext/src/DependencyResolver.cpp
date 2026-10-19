@@ -2008,7 +2008,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyResolver)
 		zval *p_reflectionProvider = NULL;
 		zval *p_exportedNodeResolver = NULL;
 		zval *p_packageDependencyResolver = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_OBJECT(p_fileHelper)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_exportedNodeResolver)
@@ -2022,7 +2022,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyResolver)
 	});
 	cls.method(sigs::canExportNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyResolver::canExportNode() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_61, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
@@ -2033,7 +2033,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyResolver)
 	cls.method(sigs::resolveExportedNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyResolver::resolveExportedNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2047,7 +2047,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyResolver)
 		zval p_dependencies_null;
 		ZVAL_NULL(&p_dependencies_null);
 		zval *p_analysedFiles = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_dependencies)
 			Z_PARAM_ARRAY(p_analysedFiles)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2060,7 +2060,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyResolver)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -2069,7 +2069,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyResolver)
 	});
 	cls.method(sigs::resolveNodeProfile, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyResolver::resolveNodeProfile() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_61, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
@@ -2081,7 +2081,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyResolver)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -2096,7 +2096,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyResolver)
 		zval *p_analysedFiles = NULL;
 		zval *p_files = NULL;
 		zval *p_packages = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_STR(p_scopeFile_str)
 			Z_PARAM_ARRAY(p_reflections)
 			Z_PARAM_ARRAY(p_analysedFiles)

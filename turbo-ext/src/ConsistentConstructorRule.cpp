@@ -339,7 +339,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConsistentConstructorRule)
 		zval *p_consistentConstructorHelper = NULL;
 		zval *p_methodParameterComparisonHelper = NULL;
 		zval *p_methodVisibilityComparisonHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_consistentConstructorHelper)
 			Z_PARAM_ZVAL(p_methodParameterComparisonHelper)
 			Z_PARAM_ZVAL(p_methodVisibilityComparisonHelper)
@@ -350,14 +350,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConsistentConstructorRule)
 		if (UNEXPECTED(!pgen::ConsistentConstructorRule::m___construct(Z_OBJ_P(ZEND_THIS), p_consistentConstructorHelper, p_methodParameterComparisonHelper, p_methodVisibilityComparisonHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\ConsistentConstructorRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConsistentConstructorRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\ConsistentConstructorRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

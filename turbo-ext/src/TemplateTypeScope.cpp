@@ -243,7 +243,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 	ptdecl::TemplateTypeScope::declareClass(cls);
 	ptdecl::TemplateTypeScope::declareProperties(cls);
 	cls.method(sigs::createWithAnonymousFunction, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateTypeScope::createWithAnonymousFunction() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TemplateTypeScope::m_createWithAnonymousFunction(return_value))) RETURN_THROWS();
 	});
@@ -251,7 +250,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 		zval *p_functionName = NULL;
 		zend_string *p_functionName_str = NULL;
 		zval p_functionName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_functionName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionName_str != NULL) { ZVAL_STR(&p_functionName_zv, p_functionName_str); p_functionName = &p_functionName_zv; }
@@ -265,7 +264,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 		zval *p_functionName = NULL;
 		zend_string *p_functionName_str = NULL;
 		zval p_functionName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_STR(p_functionName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -278,7 +277,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -296,7 +295,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 		zval p_functionName_zv;
 		zval p_functionName_null;
 		ZVAL_NULL(&p_functionName_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR_OR_NULL(p_className_str)
 			Z_PARAM_STR_OR_NULL(p_functionName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -307,18 +306,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 		if (UNEXPECTED(!pgen::TemplateTypeScope::m___construct(Z_OBJ_P(ZEND_THIS), p_className, p_functionName))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateTypeScope::getClassName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TemplateTypeScope::m_getClassName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFunctionName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateTypeScope::getFunctionName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TemplateTypeScope::m_getFunctionName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateTypeScope::equals() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_template_type_scope) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Type\\Generic\\TemplateTypeScope", 38))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeScope", zend_zval_value_name(p_other)); RETURN_THROWS(); }
@@ -343,7 +340,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeScope)
 		return zv::Val::boolean(r2);
 	});
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateTypeScope::describe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TemplateTypeScope::m_describe(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

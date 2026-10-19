@@ -659,7 +659,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AcceptsResult)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::__construct() */
 		zval *p_result = NULL;
 		zval *p_reasons = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_result)
 			Z_PARAM_ARRAY(p_reasons)
 		ZEND_PARSE_PARAMETERS_END();
@@ -667,25 +667,21 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AcceptsResult)
 		if (UNEXPECTED(!pgen::AcceptsResult::m___construct(Z_OBJ_P(ZEND_THIS), p_result, p_reasons))) RETURN_THROWS();
 	});
 	cls.method(sigs::yes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::yes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::AcceptsResult::m_yes(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::maybe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::maybe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::AcceptsResult::m_maybe(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::no, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::no() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::AcceptsResult::m_no(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::createYes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::createYes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AcceptsResult::m_createYes(return_value))) RETURN_THROWS();
 	});
@@ -694,7 +690,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AcceptsResult)
 		zval p_reasons_default;
 		ZVAL_EMPTY_ARRAY(&p_reasons_default);
 		p_reasons = &p_reasons_default;
-		ZEND_PARSE_PARAMETERS_START(0, 1)
+		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY(p_reasons)
 		ZEND_PARSE_PARAMETERS_END();
@@ -702,13 +698,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AcceptsResult)
 		if (UNEXPECTED(!pgen::AcceptsResult::m_createNo(p_reasons, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createMaybe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::createMaybe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AcceptsResult::m_createMaybe(return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createFromBoolean, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::createFromBoolean() */
 		bool p_value = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_value)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -716,7 +711,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AcceptsResult)
 	});
 	cls.method(sigs::and_, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::and() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_accepts_result) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\AcceptsResult", 26))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\AcceptsResult", zend_zval_value_name(p_other)); RETURN_THROWS(); }
@@ -741,7 +736,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AcceptsResult)
 	});
 	cls.method(sigs::or_, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::or() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_accepts_result) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\AcceptsResult", 26))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\AcceptsResult", zend_zval_value_name(p_other)); RETURN_THROWS(); }
@@ -766,7 +761,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AcceptsResult)
 	});
 	cls.method(sigs::decorateReasons, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::decorateReasons() */
 		zval *p_cb = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_cb != NULL && UNEXPECTED(!zend_is_callable(p_cb, 0, NULL))) { zend_argument_type_error(1, "must be a valid callback, %s given", zend_zval_value_name(p_cb)); RETURN_THROWS(); }
@@ -806,7 +801,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AcceptsResult)
 	cls.method(sigs::lazyMaxMin, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\AcceptsResult::lazyMaxMin() */
 		zval *p_objects = NULL;
 		zval *p_callback = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_objects)
 			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();

@@ -1064,7 +1064,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SetPropertyHookParameterRule)
 		zval *p_missingTypehintCheck = NULL;
 		bool p_checkPhpDocMethodSignatures = false;
 		bool p_checkMissingTypehints = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_missingTypehintCheck)
 			Z_PARAM_BOOL(p_checkPhpDocMethodSignatures)
 			Z_PARAM_BOOL(p_checkMissingTypehints)
@@ -1073,14 +1073,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SetPropertyHookParameterRule)
 		if (UNEXPECTED(!pgen::SetPropertyHookParameterRule::m___construct(Z_OBJ_P(ZEND_THIS), p_missingTypehintCheck, p_checkPhpDocMethodSignatures, p_checkMissingTypehints))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\SetPropertyHookParameterRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::SetPropertyHookParameterRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\SetPropertyHookParameterRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

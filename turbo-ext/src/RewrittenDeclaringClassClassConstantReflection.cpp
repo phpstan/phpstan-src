@@ -610,7 +610,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::__construct() */
 		zval *p_declaringClass = NULL;
 		zval *p_constantReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_ZVAL(p_constantReflection)
 		ZEND_PARSE_PARAMETERS_END();
@@ -619,12 +619,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_declaringClass, p_constantReflection))) RETURN_THROWS();
 	});
 	cls.method(sigs::getValueExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getValueExpr() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getValueExpr(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isFinal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::isFinal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_isFinal(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -636,7 +634,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::isFinalByKeyword, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::isFinalByKeyword() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_isFinalByKeyword(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -648,51 +645,42 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::hasPhpDocType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::hasPhpDocType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_hasPhpDocType(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getPhpDocType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getPhpDocType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getPhpDocType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasNativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::hasNativeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_hasNativeType(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getNativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getNativeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getNativeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAttributes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getAttributes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getAttributes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDeclaringClass, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getDeclaringClass() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getDeclaringClass(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isStatic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::isStatic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_isStatic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPrivate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::isPrivate() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_isPrivate(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPublic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::isPublic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_isPublic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -704,12 +692,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::getDocComment, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getDocComment() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getDocComment(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -720,7 +706,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 		return r1;
 	});
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::describe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_describe(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -731,7 +716,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 		return r1;
 	});
 	cls.method(sigs::isBuiltin, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::isBuiltin() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_isBuiltin(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -742,27 +726,22 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 		return r1;
 	});
 	cls.method(sigs::getValueType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getValueType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getValueType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isDeprecated, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::isDeprecated() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_isDeprecated(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDeprecatedDescription, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getDeprecatedDescription() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getDeprecatedDescription(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isInternal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::isInternal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_isInternal(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFileName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getFileName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getFileName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -773,7 +752,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RewrittenDeclaringClassClassConstantRe
 		return r1;
 	});
 	cls.method(sigs::getResolvedPhpDoc, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RestrictedUsage\RewrittenDeclaringClassClassConstantReflection::getResolvedPhpDoc() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RewrittenDeclaringClassClassConstantReflection::m_getResolvedPhpDoc(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

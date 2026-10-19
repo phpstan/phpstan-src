@@ -583,7 +583,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarianceCheck)
 		zval *p_identifier = NULL;
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
-		ZEND_PARSE_PARAMETERS_START(8, 8)
+		ZEND_PARSE_PARAMETERS_START(8, -1)
 			Z_PARAM_ZVAL(p_parametersAcceptor)
 			Z_PARAM_STR(p_parameterTypeMessage_str)
 			Z_PARAM_STR(p_parameterOutTypeMessage_str)
@@ -608,7 +608,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarianceCheck)
 		zval *p_messageContext = NULL;
 		zend_string *p_messageContext_str = NULL;
 		zval p_messageContext_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_positionVariance)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_STR(p_messageContext_str)
@@ -622,7 +622,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarianceCheck)
 	cls.method(sigs::isTemplateTypeVarianceValid, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\VarianceCheck::isTemplateTypeVarianceValid() */
 		zval *p_positionVariance = NULL;
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_positionVariance)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();

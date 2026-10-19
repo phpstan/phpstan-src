@@ -557,7 +557,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypesAssignedToPropertiesRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\TypesAssignedToPropertiesRule::__construct() */
 		zval *p_ruleLevelHelper = NULL;
 		zval *p_propertyReflectionFinder = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_ruleLevelHelper)
 			Z_PARAM_ZVAL(p_propertyReflectionFinder)
 		ZEND_PARSE_PARAMETERS_END();
@@ -566,14 +566,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypesAssignedToPropertiesRule)
 		if (UNEXPECTED(!pgen::TypesAssignedToPropertiesRule::m___construct(Z_OBJ_P(ZEND_THIS), p_ruleLevelHelper, p_propertyReflectionFinder))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\TypesAssignedToPropertiesRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TypesAssignedToPropertiesRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\TypesAssignedToPropertiesRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -586,7 +585,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypesAssignedToPropertiesRule)
 		zval *p_propertyReflection = NULL;
 		zval *p_fetch = NULL;
 		zval *p_assignedExpr = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_propertyReflection)
 			Z_PARAM_ZVAL(p_fetch)
 			Z_PARAM_ZVAL(p_assignedExpr)
@@ -602,7 +601,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypesAssignedToPropertiesRule)
 		zval *p_propertyName = NULL;
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_property)
 			Z_PARAM_STR(p_propertyName_str)
 		ZEND_PARSE_PARAMETERS_END();

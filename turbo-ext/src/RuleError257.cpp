@@ -49,12 +49,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleError257)
 	ptdecl::RuleError257::declareClass(cls);
 	ptdecl::RuleError257::declareProperties(cls);
 	cls.method(sigs::getMessage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError257::getMessage() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError257::m_getMessage(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFileDependencies, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\RuleError257::getFileDependencies() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleError257::m_getFileDependencies(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

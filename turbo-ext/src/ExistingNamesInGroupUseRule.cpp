@@ -586,7 +586,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInGroupUseRule)
 		zval *p_classCheck = NULL;
 		bool p_checkFunctionNameCase = false;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_classCheck)
 			Z_PARAM_BOOL(p_checkFunctionNameCase)
@@ -597,14 +597,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInGroupUseRule)
 		if (UNEXPECTED(!pgen::ExistingNamesInGroupUseRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_classCheck, p_checkFunctionNameCase, p_discoveringSymbolsTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExistingNamesInGroupUseRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -615,7 +614,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInGroupUseRule)
 	});
 	cls.method(sigs::checkConstant, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule::checkConstant() */
 		zval *p_name = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_name)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name != NULL && UNEXPECTED(Z_TYPE_P(p_name) != IS_OBJECT || !pgrt::instanceOfClass(p_name, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Name", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Name", zend_zval_value_name(p_name)); RETURN_THROWS(); }
@@ -624,7 +623,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInGroupUseRule)
 	});
 	cls.method(sigs::checkFunction, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule::checkFunction() */
 		zval *p_name = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_name)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name != NULL && UNEXPECTED(Z_TYPE_P(p_name) != IS_OBJECT || !pgrt::instanceOfClass(p_name, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Name", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Name", zend_zval_value_name(p_name)); RETURN_THROWS(); }
@@ -634,7 +633,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInGroupUseRule)
 	cls.method(sigs::checkClass, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInGroupUseRule::checkClass() */
 		zval *p_scope = NULL;
 		zval *p_name = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_name)
 		ZEND_PARSE_PARAMETERS_END();

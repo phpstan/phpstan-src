@@ -8507,7 +8507,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 		zval p_reportUnsafeArrayStringKeyCasting_zv;
 		zval p_reportUnsafeArrayStringKeyCasting_null;
 		ZVAL_NULL(&p_reportUnsafeArrayStringKeyCasting_null);
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_OBJECT(p_extensionRegistryProvider)
 			Z_PARAM_OBJECT(p_reflectionProviderProvider)
 			Z_PARAM_OBJECT(p_typeAliasResolverProvider)
@@ -8527,7 +8527,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolve, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolve() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8539,7 +8539,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveIdentifierTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveIdentifierTypeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8552,7 +8552,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 		zval *p_name = NULL;
 		zend_string *p_name_str = NULL;
 		zval p_name_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_name_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name_str != NULL) { ZVAL_STR(&p_name_zv, p_name_str); p_name = &p_name_zv; }
@@ -8565,7 +8565,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 		zend_string *p_name_str = NULL;
 		zval p_name_zv;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8577,7 +8577,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::tryResolvePseudoTypeClassType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::tryResolvePseudoTypeClassType() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8588,7 +8588,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	});
 	cls.method(sigs::resolveThisTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveThisTypeNode() */
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_nameScope != NULL && UNEXPECTED(Z_TYPE_P(p_nameScope) != IS_OBJECT || !pgrt::instanceOfClass(p_nameScope, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Analyser\\NameScope", 26)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\NameScope", zend_zval_value_name(p_nameScope)); RETURN_THROWS(); }
@@ -8598,7 +8598,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveNullableTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveNullableTypeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8610,7 +8610,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveUnionTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveUnionTypeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8622,7 +8622,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveIntersectionTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveIntersectionTypeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8634,7 +8634,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveConditionalTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveConditionalTypeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8646,7 +8646,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveConditionalTypeForParameterNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveConditionalTypeForParameterNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8658,7 +8658,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveArrayTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveArrayTypeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8670,7 +8670,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveGenericTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveGenericTypeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8681,7 +8681,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	});
 	cls.method(sigs::transformUnsafeArrayKey, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::transformUnsafeArrayKey() */
 		zval *p_keyType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_keyType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_keyType != NULL && UNEXPECTED(Z_TYPE_P(p_keyType) != IS_OBJECT || !pgrt::instanceOfClass(p_keyType, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_keyType)); RETURN_THROWS(); }
@@ -8691,7 +8691,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveCallableTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveCallableTypeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8704,7 +8704,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
 		zval *p_parameters = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 			Z_PARAM_ARRAY(p_parameters)
@@ -8717,7 +8717,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveArrayShapeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveArrayShapeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8729,7 +8729,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveArrayShapeOffsetType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveArrayShapeOffsetType() */
 		zval *p_itemNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_itemNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8741,7 +8741,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveObjectShapeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveObjectShapeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8753,7 +8753,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveConstTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveConstTypeNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8765,7 +8765,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveOffsetAccessNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveOffsetAccessNode() */
 		zval *p_typeNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_typeNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8776,7 +8776,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	});
 	cls.method(sigs::expandIntMaskToType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::expandIntMaskToType() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -8786,7 +8786,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 	cls.method(sigs::resolveMultiple, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::resolveMultiple() */
 		zval *p_typeNodes = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_typeNodes)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -8795,12 +8795,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeNodeResolver)
 		if (UNEXPECTED(!pgen::TypeNodeResolver::m_resolveMultiple(Z_OBJ_P(ZEND_THIS), p_typeNodes, p_nameScope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReflectionProvider, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::getReflectionProvider() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TypeNodeResolver::m_getReflectionProvider(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTypeAliasResolver, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\TypeNodeResolver::getTypeAliasResolver() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TypeNodeResolver::m_getTypeAliasResolver(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

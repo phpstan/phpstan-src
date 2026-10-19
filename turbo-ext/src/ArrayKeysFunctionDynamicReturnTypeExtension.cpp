@@ -269,7 +269,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayKeysFunctionDynamicReturnTypeExte
 	ptdecl::ArrayKeysFunctionDynamicReturnTypeExtension::declareProperties(cls);
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ArrayKeysFunctionDynamicReturnTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
@@ -281,7 +281,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayKeysFunctionDynamicReturnTypeExte
 		zval *p_functionReflection = NULL;
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_functionCall)
 			Z_PARAM_ZVAL(p_scope)

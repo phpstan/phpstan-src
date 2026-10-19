@@ -996,7 +996,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParseUrlFunctionDynamicReturnTypeExten
 	ptdecl::ParseUrlFunctionDynamicReturnTypeExtension::declareProperties(cls);
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ParseUrlFunctionDynamicReturnTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_29, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
@@ -1008,7 +1008,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParseUrlFunctionDynamicReturnTypeExten
 		zval *p_functionReflection = NULL;
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_functionCall)
 			Z_PARAM_ZVAL(p_scope)
@@ -1021,7 +1021,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParseUrlFunctionDynamicReturnTypeExten
 	});
 	cls.method(sigs::createAllComponentsReturnType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ParseUrlFunctionDynamicReturnTypeExtension::createAllComponentsReturnType() */
 		bool p_urlIsLowercase = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_urlIsLowercase)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -1029,14 +1029,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParseUrlFunctionDynamicReturnTypeExten
 	});
 	cls.method(sigs::createComponentsArray, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ParseUrlFunctionDynamicReturnTypeExtension::createComponentsArray() */
 		bool p_urlIsLowercase = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_urlIsLowercase)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ParseUrlFunctionDynamicReturnTypeExtension::m_createComponentsArray(Z_OBJ_P(ZEND_THIS), p_urlIsLowercase, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::cacheReturnTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ParseUrlFunctionDynamicReturnTypeExtension::cacheReturnTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::ParseUrlFunctionDynamicReturnTypeExtension::m_cacheReturnTypes(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.shadow(&pt_ce_parse_url_function_dynamic_return_type_extension);

@@ -650,7 +650,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingClassInTraitUseRule)
 		zval *p_classCheck = NULL;
 		zval *p_reflectionProvider = NULL;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_classCheck)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_BOOL(p_discoveringSymbolsTip)
@@ -660,14 +660,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingClassInTraitUseRule)
 		if (UNEXPECTED(!pgen::ExistingClassInTraitUseRule::m___construct(Z_OBJ_P(ZEND_THIS), p_classCheck, p_reflectionProvider, p_discoveringSymbolsTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Classes\ExistingClassInTraitUseRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExistingClassInTraitUseRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Classes\ExistingClassInTraitUseRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

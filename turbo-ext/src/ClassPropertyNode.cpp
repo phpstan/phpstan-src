@@ -676,7 +676,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassPropertyNode)
 		bool p_isReadonlyClass = false;
 		bool p_isAllowedPrivateMutation = false;
 		zval *p_classReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(14, 14)
+		ZEND_PARSE_PARAMETERS_START(14, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_LONG(p_flags)
 			Z_PARAM_ZVAL_OR_NULL(p_type)
@@ -706,7 +706,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassPropertyNode)
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_flags, p_type, p_default, p_phpDoc, p_phpDocType, p_isPromoted, p_isPromotedFromTrait, p_originalNode, p_isReadonlyByPhpDoc, p_isDeclaredInTrait, p_isReadonlyClass, p_isAllowedPrivateMutation, p_classReflection))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -717,45 +716,37 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassPropertyNode)
 		return r1;
 	});
 	cls.method(sigs::getFlags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getFlags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		zend_long r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getFlags(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_LONG(r);
 	});
 	cls.method(sigs::getDefault, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getDefault() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getDefault(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isPromoted, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isPromoted() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isPromoted(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPromotedFromTrait, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isPromotedFromTrait() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isPromotedFromTrait(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getOriginalNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getOriginalNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getOriginalNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPhpDoc, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getPhpDoc() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getPhpDoc(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPhpDocType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getPhpDocType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getPhpDocType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isPublic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isPublic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isPublic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -767,37 +758,31 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassPropertyNode)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::isProtected, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isProtected() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isProtected(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPrivate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isPrivate() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isPrivate(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPrivateSet, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isPrivateSet() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isPrivateSet(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isProtectedSet, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isProtectedSet() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isProtectedSet(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPublicSet, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isPublicSet() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isPublicSet(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isFinal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isFinal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isFinal(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -809,53 +794,44 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassPropertyNode)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::isStatic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isStatic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isStatic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isReadOnly, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isReadOnly() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isReadOnly(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isReadOnlyByPhpDoc, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isReadOnlyByPhpDoc() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isReadOnlyByPhpDoc(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isDeclaredInTrait, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isDeclaredInTrait() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isDeclaredInTrait(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isAllowedPrivateMutation, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isAllowedPrivateMutation() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isAllowedPrivateMutation(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isAbstract, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isAbstract() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isAbstract(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getNativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getNativeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getNativeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNativeTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getNativeTypeNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getNativeTypeNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getClassReflection() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getClassReflection(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -866,7 +842,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassPropertyNode)
 		return r1;
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -877,41 +852,34 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassPropertyNode)
 		return r1;
 	});
 	cls.method(sigs::getSubNodeNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getSubNodeNames() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getSubNodeNames(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasHooks, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::hasHooks() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_hasHooks(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getHooks, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getHooks() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getHooks(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isVirtual, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isVirtual() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isVirtual(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isWritable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isWritable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isWritable(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isReadable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::isReadable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_isReadable(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getAttrGroups, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ClassPropertyNode::getAttrGroups() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassPropertyNode::m_getAttrGroups(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

@@ -68,14 +68,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LazyReflectionProviderProvider)
 	ptdecl::LazyReflectionProviderProvider::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\ReflectionProvider\LazyReflectionProviderProvider::__construct() */
 		zval *p_container = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_container)
 		ZEND_PARSE_PARAMETERS_END();
 		
 		if (UNEXPECTED(!pgen::LazyReflectionProviderProvider::m___construct(Z_OBJ_P(ZEND_THIS), p_container))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReflectionProvider, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\ReflectionProvider\LazyReflectionProviderProvider::getReflectionProvider() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::LazyReflectionProviderProvider::m_getReflectionProvider(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

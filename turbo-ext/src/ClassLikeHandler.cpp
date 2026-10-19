@@ -1443,7 +1443,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassLikeHandler)
 		zval *p_reflectionProvider = NULL;
 		zval *p_attributesHandler = NULL;
 		zval *p_readWritePropertiesExtensions = NULL;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_OBJECT(p_reflector)
 			Z_PARAM_OBJECT(p_classReflectionFactory)
 			Z_PARAM_OBJECT(p_calledMethodProcessor)
@@ -1461,7 +1461,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassLikeHandler)
 	});
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\StmtHandler\ClassLikeHandler::supports() */
 		zval *p_stmt = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_stmt)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_stmt != NULL && UNEXPECTED(Z_TYPE_P(p_stmt) != IS_OBJECT || !pgrt::instanceOfClass(p_stmt, pgrt::lookupClassQuiet(pg_site_101, "PhpParser\\Node\\Stmt", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt", zend_zval_value_name(p_stmt)); RETURN_THROWS(); }
@@ -1476,7 +1476,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassLikeHandler)
 		zval *p_storage = NULL;
 		zval *p_nodeCallback = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_nodeScopeResolver)
 			Z_PARAM_ZVAL(p_stmt)
 			Z_PARAM_ZVAL(p_scope)
@@ -1496,7 +1496,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassLikeHandler)
 	cls.method(sigs::getDeclarationDependencies, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\StmtHandler\ClassLikeHandler::getDeclarationDependencies() */
 		zval *p_scope = NULL;
 		zval *p_stmt = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_stmt)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1511,7 +1511,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassLikeHandler)
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_stmt)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_ZVAL(p_scope)
@@ -1528,7 +1528,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassLikeHandler)
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_stmt)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_ZVAL(p_scope)

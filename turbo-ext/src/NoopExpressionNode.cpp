@@ -119,7 +119,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NoopExpressionNode)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\NoopExpressionNode::__construct() */
 		zval *p_originalExpr = NULL;
 		bool p_hasAssign = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_originalExpr)
 			Z_PARAM_BOOL(p_hasAssign)
 		ZEND_PARSE_PARAMETERS_END();
@@ -127,18 +127,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NoopExpressionNode)
 		if (UNEXPECTED(!pgen::NoopExpressionNode::m___construct(Z_OBJ_P(ZEND_THIS), p_originalExpr, p_hasAssign))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\NoopExpressionNode::getOriginalExpr() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NoopExpressionNode::m_getOriginalExpr(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasAssign, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\NoopExpressionNode::hasAssign() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::NoopExpressionNode::m_hasAssign(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\NoopExpressionNode::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NoopExpressionNode::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -149,7 +146,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NoopExpressionNode)
 		return r1;
 	});
 	cls.method(sigs::getSubNodeNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\NoopExpressionNode::getSubNodeNames() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NoopExpressionNode::m_getSubNodeNames(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

@@ -302,7 +302,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ApiRuleHelper)
 		zval p_declaringFile_zv;
 		zval p_declaringFile_null;
 		ZVAL_NULL(&p_declaringFile_null);
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_namespace_str)
 			Z_PARAM_STR_OR_NULL(p_declaringFile_str)
@@ -320,7 +320,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ApiRuleHelper)
 		zend_string *p_currentDirectory_str = NULL;
 		zval p_currentDirectory_zv;
 		zval *p_parts = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_currentDirectory_str)
 			Z_PARAM_ARRAY(p_parts)
 		ZEND_PARSE_PARAMETERS_END();
@@ -332,7 +332,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ApiRuleHelper)
 		zval *p_namespace = NULL;
 		zend_string *p_namespace_str = NULL;
 		zval p_namespace_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_namespace_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_namespace_str != NULL) { ZVAL_STR(&p_namespace_zv, p_namespace_str); p_namespace = &p_namespace_zv; }

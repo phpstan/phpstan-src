@@ -212,7 +212,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodPrototypeReflection)
 		zval *p_tentativeReturnType = NULL;
 		zval p_tentativeReturnType_null;
 		ZVAL_NULL(&p_tentativeReturnType_null);
-		ZEND_PARSE_PARAMETERS_START(9, 9)
+		ZEND_PARSE_PARAMETERS_START(9, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_BOOL(p_isStatic)
@@ -230,7 +230,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodPrototypeReflection)
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_declaringClass, p_isStatic, p_isPrivate, p_isPublic, p_isAbstract, p_isInternal, p_variants, p_tentativeReturnType))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -241,24 +240,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodPrototypeReflection)
 		return r1;
 	});
 	cls.method(sigs::getDeclaringClass, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::getDeclaringClass() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_getDeclaringClass(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isStatic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::isStatic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_isStatic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPrivate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::isPrivate() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_isPrivate(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPublic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::isPublic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_isPublic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -270,29 +265,24 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodPrototypeReflection)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::isAbstract, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::isAbstract() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_isAbstract(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isInternal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::isInternal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_isInternal(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getDocComment, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::getDocComment() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_getDocComment(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getVariants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::getVariants() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_getVariants(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTentativeReturnType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\MethodPrototypeReflection::getTentativeReturnType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodPrototypeReflection::m_getTentativeReturnType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

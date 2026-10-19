@@ -82,7 +82,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StandaloneThrowExprVisitor)
 	cls.publicClassConstantString("ATTRIBUTE_NAME", "standaloneThrowExpr");
 	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\StandaloneThrowExprVisitor::enterNode() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }

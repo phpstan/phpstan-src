@@ -160,7 +160,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExecutionEndNode)
 		p_exprResult = &p_exprResult_default;
 		zval p_exprResult_null;
 		ZVAL_NULL(&p_exprResult_null);
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_statementResult)
 			Z_PARAM_BOOL(p_hasNativeReturnTypehint)
@@ -174,28 +174,23 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExecutionEndNode)
 		if (UNEXPECTED(!pgen::ExecutionEndNode::m___construct(Z_OBJ_P(ZEND_THIS), p_node, p_statementResult, p_hasNativeReturnTypehint, p_exprResult))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ExecutionEndNode::getNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExecutionEndNode::m_getNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExprResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ExecutionEndNode::getExprResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExecutionEndNode::m_getExprResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getStatementResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ExecutionEndNode::getStatementResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExecutionEndNode::m_getStatementResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasNativeReturnTypehint, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ExecutionEndNode::hasNativeReturnTypehint() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ExecutionEndNode::m_hasNativeReturnTypehint(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ExecutionEndNode::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExecutionEndNode::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -206,7 +201,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExecutionEndNode)
 		return r1;
 	});
 	cls.method(sigs::getSubNodeNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ExecutionEndNode::getSubNodeNames() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExecutionEndNode::m_getSubNodeNames(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

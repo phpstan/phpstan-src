@@ -314,7 +314,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FilterVarRule)
 		zval *p_filterFunctionReturnTypeHelper = NULL;
 		zval *p_filterFunctionFlagsHelper = NULL;
 		zval *p_phpVersion = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_filterFunctionReturnTypeHelper)
 			Z_PARAM_ZVAL(p_filterFunctionFlagsHelper)
@@ -327,14 +327,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FilterVarRule)
 		if (UNEXPECTED(!pgen::FilterVarRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_filterFunctionReturnTypeHelper, p_filterFunctionFlagsHelper, p_phpVersion))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\FilterVarRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FilterVarRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\FilterVarRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

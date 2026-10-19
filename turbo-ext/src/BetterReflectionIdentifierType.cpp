@@ -143,7 +143,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionIdentifierType)
 		p_type = &p_type_default;
 		zend_string *p_type_str = NULL;
 		zval p_type_zv;
-		ZEND_PARSE_PARAMETERS_START(0, 1)
+		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_STR(p_type_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -151,7 +151,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionIdentifierType)
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifierType::m___construct(Z_OBJ_P(ZEND_THIS), p_type))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\IdentifierType::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifierType::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -162,19 +161,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionIdentifierType)
 		return r1;
 	});
 	cls.method(sigs::isClass, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\IdentifierType::isClass() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifierType::m_isClass(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isFunction, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\IdentifierType::isFunction() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifierType::m_isFunction(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isConstant, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\IdentifierType::isConstant() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifierType::m_isConstant(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

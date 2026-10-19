@@ -1332,7 +1332,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GotoLabelVisitor)
 	cls.publicClassConstantString("LABEL_IS_USED_ATTRIBUTE", "labelIsUsed");
 	cls.method(sigs::beforeTraverse, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\GotoLabelVisitor::beforeTraverse() */
 		zval *p_nodes = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_nodes)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -1340,7 +1340,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GotoLabelVisitor)
 	});
 	cls.method(sigs::afterTraverse, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\GotoLabelVisitor::afterTraverse() */
 		zval *p_nodes = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_nodes)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -1348,7 +1348,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GotoLabelVisitor)
 	});
 	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\GotoLabelVisitor::enterNode() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
@@ -1357,7 +1357,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GotoLabelVisitor)
 	});
 	cls.method(sigs::leaveNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\GotoLabelVisitor::leaveNode() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
@@ -1366,14 +1366,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GotoLabelVisitor)
 	});
 	cls.method(sigs::processStatementList, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\GotoLabelVisitor::processStatementList() */
 		zval *p_stmts = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_stmts)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::GotoLabelVisitor::m_processStatementList(Z_OBJ_P(ZEND_THIS), p_stmts))) RETURN_THROWS();
 	});
 	cls.method(sigs::getStmts, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\GotoLabelVisitor::getStmts() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
@@ -1382,7 +1382,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GotoLabelVisitor)
 	});
 	cls.method(sigs::isScopeBoundary, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\GotoLabelVisitor::isScopeBoundary() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
@@ -1391,11 +1391,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GotoLabelVisitor)
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::pushScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\GotoLabelVisitor::pushScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::GotoLabelVisitor::m_pushScope(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::popScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\GotoLabelVisitor::popScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::GotoLabelVisitor::m_popScope(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.shadow(&pt_ce_goto_label_visitor);

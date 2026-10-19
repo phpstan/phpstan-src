@@ -701,14 +701,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UsedNamesRule)
 	ptdecl::UsedNamesRule::declareClass(cls);
 	ptdecl::UsedNamesRule::declareProperties(cls);
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Names\UsedNamesRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::UsedNamesRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Names\UsedNamesRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -724,7 +723,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UsedNamesRule)
 		zval p_namespace_zv;
 		zval *p_declaredNames = NULL;
 		zval *p_currentScopeNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_STR(p_namespace_str)
 			Z_PARAM_ZVAL(p_declaredNames)
@@ -743,7 +742,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UsedNamesRule)
 		zend_string *p_useGroupPrefix_str = NULL;
 		zval p_useGroupPrefix_zv;
 		zval *p_currentScopeNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_uses)
 			Z_PARAM_STR(p_useGroupPrefix_str)
 			Z_PARAM_ZVAL(p_currentScopeNames)
@@ -755,7 +754,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UsedNamesRule)
 	});
 	cls.method(sigs::shouldBeIgnored, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Names\UsedNamesRule::shouldBeIgnored() */
 		zval *p_use = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_use)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_use != NULL && UNEXPECTED(Z_TYPE_P(p_use) != IS_OBJECT || !(pgrt::instanceOfClass(p_use, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Stmt\\Use_", 24)) || pgrt::instanceOfClass(p_use, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node\\Stmt\\GroupUse", 28)) || pgrt::instanceOfClass(p_use, pgrt::lookupClassQuiet(pg_site_26, "PhpParser\\Node\\UseItem", 22))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt\\Use_|PhpParser\\Node\\Stmt\\GroupUse|PhpParser\\Node\\UseItem", zend_zval_value_name(p_use)); RETURN_THROWS(); }

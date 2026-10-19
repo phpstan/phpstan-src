@@ -315,7 +315,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 		zval *p_expr = NULL;
 		zval *p_type = NULL;
 		zval *p_certainty = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_certainty)
@@ -328,7 +328,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 	cls.method(sigs::createYes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExpressionTypeHolder::createYes() */
 		zval *p_expr = NULL;
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
@@ -340,7 +340,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 	cls.method(sigs::createMaybe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExpressionTypeHolder::createMaybe() */
 		zval *p_expr = NULL;
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
@@ -351,7 +351,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 	});
 	cls.method(sigs::equalTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExpressionTypeHolder::equalTypes() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_other)); RETURN_THROWS(); }
@@ -361,7 +361,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 	});
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExpressionTypeHolder::equals() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_other)); RETURN_THROWS(); }
@@ -387,7 +387,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 	});
 	cls.method(sigs::and_, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExpressionTypeHolder::and() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_expr_type_holder) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\ExpressionTypeHolder", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\ExpressionTypeHolder", zend_zval_value_name(p_other)); RETURN_THROWS(); }
@@ -411,12 +411,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 		return r2;
 	});
 	cls.method(sigs::getExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExpressionTypeHolder::getExpr() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m_getExpr(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExpressionTypeHolder::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -427,7 +425,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionTypeHolder)
 		return r1;
 	});
 	cls.method(sigs::getCertainty, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExpressionTypeHolder::getCertainty() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExpressionTypeHolder::m_getCertainty(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

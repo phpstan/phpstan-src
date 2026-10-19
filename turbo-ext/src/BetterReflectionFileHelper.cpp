@@ -420,7 +420,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionFileHelper)
 		zval *p_path = NULL;
 		zend_string *p_path_str = NULL;
 		zval p_path_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_path_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_path_str != NULL) { ZVAL_STR(&p_path_zv, p_path_str); p_path = &p_path_zv; }
@@ -437,7 +437,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionFileHelper)
 		p_directorySeparator = &p_directorySeparator_default;
 		zend_string *p_directorySeparator_str = NULL;
 		zval p_directorySeparator_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_originalPath_str)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_STR(p_directorySeparator_str)
@@ -451,7 +451,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionFileHelper)
 		zval *p_originalPath = NULL;
 		zend_string *p_originalPath_str = NULL;
 		zval p_originalPath_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_originalPath_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_originalPath_str != NULL) { ZVAL_STR(&p_originalPath_zv, p_originalPath_str); p_originalPath = &p_originalPath_zv; }

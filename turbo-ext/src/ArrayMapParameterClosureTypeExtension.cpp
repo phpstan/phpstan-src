@@ -322,7 +322,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayMapParameterClosureTypeExtension)
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ArrayMapParameterClosureTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
 		zval *p_parameter = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_parameter)
 		ZEND_PARSE_PARAMETERS_END();
@@ -337,7 +337,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayMapParameterClosureTypeExtension)
 		zval *p_functionCall = NULL;
 		zval *p_parameter = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_functionCall)
 			Z_PARAM_ZVAL(p_parameter)
@@ -352,7 +352,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayMapParameterClosureTypeExtension)
 	});
 	cls.method(sigs::createParameter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ArrayMapParameterClosureTypeExtension::createParameter() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }

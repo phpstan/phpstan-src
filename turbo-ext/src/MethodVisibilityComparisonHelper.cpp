@@ -248,7 +248,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodVisibilityComparisonHelper)
 		zval *p_prototypeDeclaringClass = NULL;
 		zval *p_method = NULL;
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_prototype)
 			Z_PARAM_ZVAL(p_prototypeDeclaringClass)
 			Z_PARAM_ZVAL(p_method)

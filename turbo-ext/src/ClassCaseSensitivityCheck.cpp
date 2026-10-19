@@ -408,7 +408,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassCaseSensitivityCheck)
 		zval *p_reflectionProvider = NULL;
 		bool p_checkInternalClassCaseSensitivity = false;
 		bool p_checkImportedClassNameCase = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_BOOL(p_checkInternalClassCaseSensitivity)
 			Z_PARAM_BOOL(p_checkImportedClassNameCase)
@@ -418,7 +418,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassCaseSensitivityCheck)
 	});
 	cls.method(sigs::checkClassNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassCaseSensitivityCheck::checkClassNames() */
 		zval *p_pairs = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_pairs)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -426,7 +426,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassCaseSensitivityCheck)
 	});
 	cls.method(sigs::getClassNameAsWritten, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassCaseSensitivityCheck::getClassNameAsWritten() */
 		zval *p_pair = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_pair)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_pair != NULL && UNEXPECTED(Z_TYPE_P(p_pair) != IS_OBJECT || !((Z_TYPE_P(p_pair) == IS_OBJECT && Z_OBJCE_P(p_pair) == pt_ce_class_name_node_pair) || pgrt::instanceOfClass(p_pair, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Rules\\ClassNameNodePair", 31))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\ClassNameNodePair", zend_zval_value_name(p_pair)); RETURN_THROWS(); }
@@ -435,7 +435,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassCaseSensitivityCheck)
 	});
 	cls.method(sigs::getNameAsWritten, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassCaseSensitivityCheck::getNameAsWritten() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node\\Name", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Name", zend_zval_value_name(p_node)); RETURN_THROWS(); }

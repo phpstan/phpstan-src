@@ -709,7 +709,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantLooseComparisonRule)
 		bool p_treatPhpDocTypesAsCertain = false;
 		bool p_reportAlwaysTrueInLastCondition = false;
 		bool p_treatPhpDocTypesAsCertainTip = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_constantConditionInTraitHelper)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
 			Z_PARAM_BOOL(p_reportAlwaysTrueInLastCondition)
@@ -719,14 +719,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantLooseComparisonRule)
 		if (UNEXPECTED(!pgen::ConstantLooseComparisonRule::m___construct(Z_OBJ_P(ZEND_THIS), p_constantConditionInTraitHelper, p_treatPhpDocTypesAsCertain, p_reportAlwaysTrueInLastCondition, p_treatPhpDocTypesAsCertainTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantLooseComparisonRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConstantLooseComparisonRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantLooseComparisonRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

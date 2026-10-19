@@ -2029,7 +2029,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval *p_regexGroupParser = NULL;
 		zval *p_regexExpressionHelper = NULL;
 		zval *p_phpVersion = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_OBJECT(p_regexGroupParser)
 			Z_PARAM_OBJECT(p_regexExpressionHelper)
 			Z_PARAM_OBJECT(p_phpVersion)
@@ -2046,7 +2046,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		ZVAL_NULL(&p_flagsType_null);
 		zval *p_wasMatched = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_patternExpr)
 			Z_PARAM_ZVAL_OR_NULL(p_flagsType)
 			Z_PARAM_ZVAL(p_wasMatched)
@@ -2067,7 +2067,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		ZVAL_NULL(&p_flagsType_null);
 		zval *p_wasMatched = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_patternExpr)
 			Z_PARAM_ZVAL_OR_NULL(p_flagsType)
 			Z_PARAM_ZVAL(p_wasMatched)
@@ -2084,7 +2084,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 	cls.method(sigs::matchSubjectExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RegexArrayShapeMatcher::matchSubjectExpr() */
 		zval *p_patternExpr = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_patternExpr)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2100,7 +2100,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		ZVAL_NULL(&p_flagsType_null);
 		zval *p_wasMatched = NULL;
 		bool p_matchesAll = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_patternType)
 			Z_PARAM_ZVAL_OR_NULL(p_flagsType)
 			Z_PARAM_ZVAL(p_wasMatched)
@@ -2123,7 +2123,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval p_flags_zv;
 		zval *p_wasMatched = NULL;
 		bool p_matchesAll = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_STR(p_regex_str)
 			Z_PARAM_LONG_OR_NULL(p_flags_raw, p_flags_isNull)
 			Z_PARAM_ZVAL(p_wasMatched)
@@ -2143,7 +2143,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zend_long p_flags = 0;
 		zval *p_markVerbs = NULL;
 		bool p_matchesAll = false;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_subjectBaseType)
 			Z_PARAM_ZVAL(p_captureGroups)
 			Z_PARAM_ZVAL(p_wasMatched)
@@ -2161,7 +2161,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 	cls.method(sigs::isSubjectOptional, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RegexArrayShapeMatcher::isSubjectOptional() */
 		zval *p_wasMatched = NULL;
 		bool p_matchesAll = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_wasMatched)
 			Z_PARAM_BOOL(p_matchesAll)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2175,7 +2175,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zend_long p_flags = 0;
 		bool p_matchesAll = false;
 		zval *p_wasMatched = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_baseType)
 			Z_PARAM_LONG(p_flags)
 			Z_PARAM_BOOL(p_matchesAll)
@@ -2192,7 +2192,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zend_long p_flags = 0;
 		bool p_isTrailingOptional = false;
 		bool p_matchesAll = false;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_captureGroup)
 			Z_PARAM_ZVAL(p_wasMatched)
 			Z_PARAM_LONG(p_flags)
@@ -2212,7 +2212,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		bool p_isTrailingOptional = false;
 		bool p_isLastGroup = false;
 		bool p_matchesAll = false;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_captureGroup)
 			Z_PARAM_ZVAL(p_wasMatched)
 			Z_PARAM_LONG(p_flags)
@@ -2227,7 +2227,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 	});
 	cls.method(sigs::containsOffsetCapture, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RegexArrayShapeMatcher::containsOffsetCapture() */
 		zend_long p_flags = 0;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_LONG(p_flags)
 		ZEND_PARSE_PARAMETERS_END();
 		bool r;
@@ -2236,7 +2236,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 	});
 	cls.method(sigs::containsPatternOrder, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RegexArrayShapeMatcher::containsPatternOrder() */
 		zend_long p_flags = 0;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_LONG(p_flags)
 		ZEND_PARSE_PARAMETERS_END();
 		bool r;
@@ -2245,7 +2245,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 	});
 	cls.method(sigs::containsSetOrder, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RegexArrayShapeMatcher::containsSetOrder() */
 		zend_long p_flags = 0;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_LONG(p_flags)
 		ZEND_PARSE_PARAMETERS_END();
 		bool r;
@@ -2255,7 +2255,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 	cls.method(sigs::containsUnmatchedAsNull, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RegexArrayShapeMatcher::containsUnmatchedAsNull() */
 		zend_long p_flags = 0;
 		bool p_matchesAll = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_LONG(p_flags)
 			Z_PARAM_BOOL(p_matchesAll)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2265,7 +2265,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 	});
 	cls.method(sigs::getUnmatchedGroupType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RegexArrayShapeMatcher::getUnmatchedGroupType() */
 		zend_long p_flags = 0;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_LONG(p_flags)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -2273,7 +2273,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 	});
 	cls.method(sigs::getKeyType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RegexArrayShapeMatcher::getKeyType() */
 		zval *p_key = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_key)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_key != NULL && UNEXPECTED(!(Z_TYPE_P(p_key) == IS_STRING || Z_TYPE_P(p_key) == IS_LONG))) { zend_argument_type_error(1, "must be of type %s, %s given", "string|int", zend_zval_value_name(p_key)); RETURN_THROWS(); }
@@ -2284,7 +2284,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 		zval *p_baseType = NULL;
 		zend_long p_flags = 0;
 		bool p_matchesAll = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_baseType)
 			Z_PARAM_LONG(p_flags)
 			Z_PARAM_BOOL(p_matchesAll)
@@ -2296,7 +2296,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegexArrayShapeMatcher)
 	cls.method(sigs::getPatternType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RegexArrayShapeMatcher::getPatternType() */
 		zval *p_patternExpr = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_patternExpr)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

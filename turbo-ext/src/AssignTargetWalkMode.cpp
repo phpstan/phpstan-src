@@ -149,7 +149,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssignTargetWalkMode)
 		bool p_enterExpressionAssign = false;
 		bool p_producesTargetReadResult = false;
 		bool p_issetSemanticsForRead = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_BOOL(p_enterExpressionAssign)
 			Z_PARAM_BOOL(p_producesTargetReadResult)
 			Z_PARAM_BOOL(p_issetSemanticsForRead)
@@ -157,39 +157,32 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AssignTargetWalkMode)
 		if (UNEXPECTED(!pgen::AssignTargetWalkMode::m___construct(Z_OBJ_P(ZEND_THIS), p_enterExpressionAssign, p_producesTargetReadResult, p_issetSemanticsForRead))) RETURN_THROWS();
 	});
 	cls.method(sigs::assign, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\AssignTargetWalkMode::assign() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssignTargetWalkMode::m_assign(return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::virtualAssign, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\AssignTargetWalkMode::virtualAssign() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssignTargetWalkMode::m_virtualAssign(return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::readModifyWrite, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\AssignTargetWalkMode::readModifyWrite() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssignTargetWalkMode::m_readModifyWrite(return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::coalesceReadModifyWrite, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\AssignTargetWalkMode::coalesceReadModifyWrite() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::AssignTargetWalkMode::m_coalesceReadModifyWrite(return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::enterExpressionAssign, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\AssignTargetWalkMode::enterExpressionAssign() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::AssignTargetWalkMode::m_enterExpressionAssign(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::producesTargetReadResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\AssignTargetWalkMode::producesTargetReadResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::AssignTargetWalkMode::m_producesTargetReadResult(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::issetSemanticsForRead, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\AssignTargetWalkMode::issetSemanticsForRead() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::AssignTargetWalkMode::m_issetSemanticsForRead(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

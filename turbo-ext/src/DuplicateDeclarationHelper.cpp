@@ -747,7 +747,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DuplicateDeclarationHelper)
 		zval *p_identifierType = NULL;
 		zend_string *p_identifierType_str = NULL;
 		zval p_identifierType_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_classLike)
 			Z_PARAM_STR(p_displayName_str)
 			Z_PARAM_STR(p_identifierType_str)

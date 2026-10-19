@@ -306,6 +306,11 @@ static const char *abi_internal_arg_name(const zend_function *fn, uint32_t i)
 	return ((const zend_internal_arg_info *) fn->internal_function.arg_info)[i].name;
 }
 
+static bool abi_arg_sent_by_ref(const zend_function *fn, uint32_t argNum)
+{
+	return ARG_SHOULD_BE_SENT_BY_REF(fn, argNum);
+}
+
 /* `return <literal>;` or `return $this->prop;` (with the return type check
  * the compiler emits when the property's declared type is exactly the
  * return type, so it always passes), as the engine compiled it without
@@ -525,6 +530,7 @@ void pt_abi_init()
 	pt_abi.parse_arg_str_slow = abi_parse_arg_str_slow;
 	pt_abi.call_known_function = abi_call_known_function;
 	pt_abi.internal_arg_name = abi_internal_arg_name;
+	pt_abi.arg_sent_by_ref = abi_arg_sent_by_ref;
 	pt_abi.trivial_shape = abi_trivial_shape;
 	pt_abi.stream_free = abi_stream_free;
 	pt_abi.stream_read = abi_stream_read;

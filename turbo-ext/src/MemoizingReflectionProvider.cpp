@@ -555,7 +555,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 	ptdecl::MemoizingReflectionProvider::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\ReflectionProvider\MemoizingReflectionProvider::__construct() */
 		zval *p_provider = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_provider)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_provider != NULL && UNEXPECTED(Z_TYPE_P(p_provider) != IS_OBJECT || !pgrt::instanceOfClass(p_provider, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_provider)); RETURN_THROWS(); }
@@ -565,7 +565,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -577,7 +577,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -588,7 +588,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -598,7 +598,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 	cls.method(sigs::getAnonymousClassReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\ReflectionProvider\MemoizingReflectionProvider::getAnonymousClassReflection() */
 		zval *p_classNode = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_classNode)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -608,7 +608,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(ZEND_THIS), p_classNode, p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getUniversalObjectCratesClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\ReflectionProvider\MemoizingReflectionProvider::getUniversalObjectCratesClasses() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getUniversalObjectCratesClasses(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -617,7 +616,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -633,7 +632,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -648,7 +647,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -663,7 +662,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -679,7 +678,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -694,7 +693,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MemoizingReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();

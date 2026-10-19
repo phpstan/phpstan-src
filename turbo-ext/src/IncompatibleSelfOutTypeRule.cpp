@@ -505,7 +505,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatibleSelfOutTypeRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule::__construct() */
 		zval *p_unresolvableTypeHelper = NULL;
 		zval *p_genericObjectTypeCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_unresolvableTypeHelper)
 			Z_PARAM_ZVAL(p_genericObjectTypeCheck)
 		ZEND_PARSE_PARAMETERS_END();
@@ -514,14 +514,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatibleSelfOutTypeRule)
 		if (UNEXPECTED(!pgen::IncompatibleSelfOutTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_unresolvableTypeHelper, p_genericObjectTypeCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IncompatibleSelfOutTypeRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

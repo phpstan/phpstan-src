@@ -1769,7 +1769,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConflictingTraitConstantsRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Traits\ConflictingTraitConstantsRule::__construct() */
 		zval *p_initializerExprTypeResolver = NULL;
 		zval *p_reflectionProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_initializerExprTypeResolver)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1778,14 +1778,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConflictingTraitConstantsRule)
 		if (UNEXPECTED(!pgen::ConflictingTraitConstantsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_initializerExprTypeResolver, p_reflectionProvider))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Traits\ConflictingTraitConstantsRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConflictingTraitConstantsRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Traits\ConflictingTraitConstantsRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1798,7 +1797,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConflictingTraitConstantsRule)
 		zval *p_classReflection = NULL;
 		zval *p_traitConstant = NULL;
 		zval *p_classConst = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_traitConstant)
 			Z_PARAM_ZVAL(p_classConst)

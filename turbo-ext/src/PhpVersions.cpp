@@ -1901,14 +1901,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpVersions)
 	ptdecl::PhpVersions::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::__construct() */
 		zval *p_phpVersions = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpVersions)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpVersions != NULL && UNEXPECTED(Z_TYPE_P(p_phpVersions) != IS_OBJECT || !pgrt::instanceOfClass(p_phpVersions, pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpVersions)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::PhpVersions::m___construct(Z_OBJ_P(ZEND_THIS), p_phpVersions))) RETURN_THROWS();
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1919,252 +1918,202 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpVersions)
 		return r1;
 	});
 	cls.method(sigs::supportsNoncapturingCatches, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsNoncapturingCatches() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsNoncapturingCatches(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::producesWarningForFinalPrivateMethods, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::producesWarningForFinalPrivateMethods() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_producesWarningForFinalPrivateMethods(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsNamedArguments, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsNamedArguments() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsNamedArguments(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsNamedArgumentAfterUnpackedArgument, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsNamedArgumentAfterUnpackedArgument() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsNamedArgumentAfterUnpackedArgument(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsNativeTypesInClassConstants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsNativeTypesInClassConstants() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsNativeTypesInClassConstants(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsConstantsInTraits, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsConstantsInTraits() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsConstantsInTraits(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsNeverReturnTypeInArrowFunction, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsNeverReturnTypeInArrowFunction() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsNeverReturnTypeInArrowFunction(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsArrayUnpackingWithStringKeys, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsArrayUnpackingWithStringKeys() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsArrayUnpackingWithStringKeys(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsPropertyHooks, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsPropertyHooks() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsPropertyHooks(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsFinalProperties, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsFinalProperties() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsFinalProperties(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsAsymmetricVisibilityForStaticProperties, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsAsymmetricVisibilityForStaticProperties() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsAsymmetricVisibilityForStaticProperties(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsOverrideAttributeOnProperty, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsOverrideAttributeOnProperty() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsOverrideAttributeOnProperty(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsAttributesOnGlobalConstants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsAttributesOnGlobalConstants() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsAttributesOnGlobalConstants(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsUnsetCast, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsUnsetCast() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsUnsetCast(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsTrueAndFalseStandaloneType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsTrueAndFalseStandaloneType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsTrueAndFalseStandaloneType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::throwsTypeErrorForInternalFunctions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::throwsTypeErrorForInternalFunctions() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_throwsTypeErrorForInternalFunctions(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::throwsValueErrorForInternalFunctions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::throwsValueErrorForInternalFunctions() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_throwsValueErrorForInternalFunctions(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsMaxMemoryLimit, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsMaxMemoryLimit() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsMaxMemoryLimit(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsThrowExpression, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsThrowExpression() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsThrowExpression(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsClassConstantOnExpression, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsClassConstantOnExpression() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsClassConstantOnExpression(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsPromotedProperties, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsPromotedProperties() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsPromotedProperties(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsNativeUnionTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsNativeUnionTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsNativeUnionTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsFinalConstants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsFinalConstants() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsFinalConstants(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsReadOnlyProperties, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsReadOnlyProperties() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsReadOnlyProperties(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsFirstClassCallables, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsFirstClassCallables() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsFirstClassCallables(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsReadOnlyClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsReadOnlyClasses() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsReadOnlyClasses(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsDynamicClassConstantFetch, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsDynamicClassConstantFetch() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsDynamicClassConstantFetch(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsReadOnlyAnonymousClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsReadOnlyAnonymousClasses() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsReadOnlyAnonymousClasses(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsFinalPromotedProperties, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsFinalPromotedProperties() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsFinalPromotedProperties(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsVoidCast, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsVoidCast() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsVoidCast(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::deprecatesNonStandardCasts, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::deprecatesNonStandardCasts() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_deprecatesNonStandardCasts(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsDeprecatedTraits, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsDeprecatedTraits() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsDeprecatedTraits(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::arrayFunctionsReturnNullWithNonArray, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::arrayFunctionsReturnNullWithNonArray() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_arrayFunctionsReturnNullWithNonArray(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasDateTimeExceptions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::hasDateTimeExceptions() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasDateTimeExceptions(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasFilterThrowOnFailureConstant, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::hasFilterThrowOnFailureConstant() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasFilterThrowOnFailureConstant(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasPDOSubclasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::hasPDOSubclasses() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasPDOSubclasses(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasStricterRoundFunctions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::hasStricterRoundFunctions() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasStricterRoundFunctions(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::highlightStringDoesNotReturnFalse, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::highlightStringDoesNotReturnFalse() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_highlightStringDoesNotReturnFalse(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isEmptyStringValidAliasForNoneInMbSubstituteCharacter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::isEmptyStringValidAliasForNoneInMbSubstituteCharacter() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_isEmptyStringValidAliasForNoneInMbSubstituteCharacter(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isNullValidArgInMbSubstituteCharacter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::isNullValidArgInMbSubstituteCharacter() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_isNullValidArgInMbSubstituteCharacter(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isZeroValidCodePointInMbSubstituteCharacter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::isZeroValidCodePointInMbSubstituteCharacter() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_isZeroValidCodePointInMbSubstituteCharacter(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasCorrectReflectionEnumAdapterReturnTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::hasCorrectReflectionEnumAdapterReturnTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_hasCorrectReflectionEnumAdapterReturnTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isNumericStringValidArgInMbSubstituteCharacter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::isNumericStringValidArgInMbSubstituteCharacter() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_isNumericStringValidArgInMbSubstituteCharacter(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::strSplitReturnsEmptyArray, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::strSplitReturnsEmptyArray() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_strSplitReturnsEmptyArray(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::substrReturnFalseInsteadOfEmptyString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::substrReturnFalseInsteadOfEmptyString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_substrReturnFalseInsteadOfEmptyString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsHhPrintfSpecifier, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsHhPrintfSpecifier() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsHhPrintfSpecifier(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::supportsPassNoneEncodings, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::supportsPassNoneEncodings() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_supportsPassNoneEncodings(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::throwsOnInvalidMbStringEncoding, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::throwsOnInvalidMbStringEncoding() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_throwsOnInvalidMbStringEncoding(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::throwsValueErrorForInvalidRoundingMode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Php\PhpVersions::throwsValueErrorForInvalidRoundingMode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpVersions::m_throwsValueErrorForInvalidRoundingMode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

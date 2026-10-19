@@ -177,7 +177,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantHelper)
 		zval *p_constantName = NULL;
 		zend_string *p_constantName_str = NULL;
 		zval p_constantName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_constantName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_constantName_str != NULL) { ZVAL_STR(&p_constantName_zv, p_constantName_str); p_constantName = &p_constantName_zv; }

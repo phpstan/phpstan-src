@@ -353,7 +353,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParameterCastableToStringCheck)
 	ptdecl::ParameterCastableToStringCheck::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ParameterCastableToStringCheck::__construct() */
 		zval *p_ruleLevelHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_ruleLevelHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -372,7 +372,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParameterCastableToStringCheck)
 		zval *p_parameterName = NULL;
 		zend_string *p_parameterName_str = NULL;
 		zval p_parameterName_zv;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_parameter)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_errorMessageTemplate_str)
@@ -395,7 +395,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParameterCastableToStringCheck)
 		zval *p_parameterReflection = NULL;
 		zval p_parameterReflection_null;
 		ZVAL_NULL(&p_parameterReflection_null);
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_parameter)
 			Z_PARAM_LONG(p_parameterIdx)
 			Z_PARAM_ZVAL_OR_NULL(p_parameterReflection)

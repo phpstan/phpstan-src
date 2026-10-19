@@ -356,7 +356,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAttributeHelper)
 		zval *p_reflector = NULL;
 		zval *p_reflection = NULL;
 		zval *p_attrGroups = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_reflector)
 			Z_PARAM_ZVAL(p_reflection)
 			Z_PARAM_ARRAY(p_attrGroups)
@@ -370,7 +370,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAttributeHelper)
 		zval *p_name = NULL;
 		zend_string *p_name_str = NULL;
 		zval p_name_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_attributes)
 			Z_PARAM_STR(p_name_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -383,7 +383,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAttributeHelper)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_attributes)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();

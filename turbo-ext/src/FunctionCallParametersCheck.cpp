@@ -5208,7 +5208,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallParametersCheck)
 		bool p_checkArgumentsPassedByReference = false;
 		bool p_checkExtraArguments = false;
 		bool p_checkMissingTypehints = false;
-		ZEND_PARSE_PARAMETERS_START(9, 9)
+		ZEND_PARSE_PARAMETERS_START(9, -1)
 			Z_PARAM_OBJECT(p_ruleLevelHelper)
 			Z_PARAM_OBJECT(p_nullsafeCheck)
 			Z_PARAM_OBJECT(p_unresolvableTypeHelper)
@@ -5292,7 +5292,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallParametersCheck)
 		zval *p_renamedNamedArgumentParameterData = NULL;
 		zval p_renamedNamedArgumentParameterData_null;
 		ZVAL_NULL(&p_renamedNamedArgumentParameterData_null);
-		ZEND_PARSE_PARAMETERS_START(25, 25)
+		ZEND_PARSE_PARAMETERS_START(25, -1)
 			Z_PARAM_ZVAL(p_parametersAcceptor)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_BOOL(p_isBuiltin)
@@ -5358,7 +5358,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallParametersCheck)
 		zval *p_unknownParameterMessage = NULL;
 		zend_string *p_unknownParameterMessage_str = NULL;
 		zval p_unknownParameterMessage_zv;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_parametersAcceptor)
 			Z_PARAM_LONG(p_line)
 			Z_PARAM_BOOL(p_isBuiltin)
@@ -5376,7 +5376,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallParametersCheck)
 	cls.method(sigs::describeParameter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FunctionCallParametersCheck::describeParameter() */
 		zval *p_parameter = NULL;
 		zval *p_positionOrNamed = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_parameter)
 			Z_PARAM_ZVAL(p_positionOrNamed)
 		ZEND_PARSE_PARAMETERS_END();
@@ -5388,7 +5388,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallParametersCheck)
 	cls.method(sigs::resolveConstantReflections, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FunctionCallParametersCheck::resolveConstantReflections() */
 		zval *p_expr = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -5400,7 +5400,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallParametersCheck)
 	cls.method(sigs::callReturnsByReference, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FunctionCallParametersCheck::callReturnsByReference() */
 		zval *p_expr = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

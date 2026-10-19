@@ -461,7 +461,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LocaltimeFunctionDynamicReturnTypeExte
 	ptdecl::LocaltimeFunctionDynamicReturnTypeExtension::declareProperties(cls);
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\LocaltimeFunctionDynamicReturnTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
@@ -473,7 +473,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LocaltimeFunctionDynamicReturnTypeExte
 		zval *p_functionReflection = NULL;
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_functionCall)
 			Z_PARAM_ZVAL(p_scope)
@@ -485,17 +485,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LocaltimeFunctionDynamicReturnTypeExte
 		if (UNEXPECTED(!pgen::LocaltimeFunctionDynamicReturnTypeExtension::m_getTypeFromFunctionCall(Z_OBJ_P(ZEND_THIS), p_functionReflection, p_functionCall, p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createListType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\LocaltimeFunctionDynamicReturnTypeExtension::createListType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::LocaltimeFunctionDynamicReturnTypeExtension::m_createListType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createAssociativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\LocaltimeFunctionDynamicReturnTypeExtension::createAssociativeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::LocaltimeFunctionDynamicReturnTypeExtension::m_createAssociativeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createFieldTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\LocaltimeFunctionDynamicReturnTypeExtension::createFieldTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::LocaltimeFunctionDynamicReturnTypeExtension::m_createFieldTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

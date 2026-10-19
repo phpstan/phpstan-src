@@ -128,7 +128,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateObjectWithoutClassType)
 		zval *p_default = NULL;
 		zval p_default_null;
 		ZVAL_NULL(&p_default_null);
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_templateTypeStrategy)
 			Z_PARAM_ZVAL(p_templateTypeVariance)
@@ -146,7 +146,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateObjectWithoutClassType)
 		if (UNEXPECTED(!pgen::TemplateObjectWithoutClassType::m___construct(Z_OBJ_P(ZEND_THIS), p_scope, p_templateTypeStrategy, p_templateTypeVariance, p_name, p_bound, p_default))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassStringType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateObjectWithoutClassType::getClassStringType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TemplateObjectWithoutClassType::m_getClassStringType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

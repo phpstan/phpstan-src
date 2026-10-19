@@ -661,7 +661,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfParametersRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfParametersRule::__construct() */
 		zval *p_printfFormatParser = NULL;
 		zval *p_reflectionProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_printfFormatParser)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 		ZEND_PARSE_PARAMETERS_END();
@@ -670,14 +670,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfParametersRule)
 		if (UNEXPECTED(!pgen::PrintfParametersRule::m___construct(Z_OBJ_P(ZEND_THIS), p_printfFormatParser, p_reflectionProvider))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfParametersRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PrintfParametersRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfParametersRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -691,7 +690,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfParametersRule)
 		zend_string *p_format_str = NULL;
 		zval p_format_zv;
 		zval *p_phpVersions = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_format_str)
 			Z_PARAM_ZVAL(p_phpVersions)
 		ZEND_PARSE_PARAMETERS_END();
@@ -704,7 +703,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfParametersRule)
 		zval *p_format = NULL;
 		zend_string *p_format_str = NULL;
 		zval p_format_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_format_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_format_str != NULL) { ZVAL_STR(&p_format_zv, p_format_str); p_format = &p_format_zv; }

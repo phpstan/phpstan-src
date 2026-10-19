@@ -713,7 +713,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ReadOnlyByPhpDocPropertyAssignRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule::__construct() */
 		zval *p_propertyReflectionFinder = NULL;
 		zval *p_constructorsHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_propertyReflectionFinder)
 			Z_PARAM_ZVAL(p_constructorsHelper)
 		ZEND_PARSE_PARAMETERS_END();
@@ -722,14 +722,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ReadOnlyByPhpDocPropertyAssignRule)
 		if (UNEXPECTED(!pgen::ReadOnlyByPhpDocPropertyAssignRule::m___construct(Z_OBJ_P(ZEND_THIS), p_propertyReflectionFinder, p_constructorsHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ReadOnlyByPhpDocPropertyAssignRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

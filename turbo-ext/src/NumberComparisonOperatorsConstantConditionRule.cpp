@@ -518,7 +518,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NumberComparisonOperatorsConstantCondi
 		zval *p_constantConditionInTraitHelper = NULL;
 		bool p_treatPhpDocTypesAsCertain = false;
 		bool p_treatPhpDocTypesAsCertainTip = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_constantConditionInTraitHelper)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertainTip)
@@ -527,14 +527,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NumberComparisonOperatorsConstantCondi
 		if (UNEXPECTED(!pgen::NumberComparisonOperatorsConstantConditionRule::m___construct(Z_OBJ_P(ZEND_THIS), p_constantConditionInTraitHelper, p_treatPhpDocTypesAsCertain, p_treatPhpDocTypesAsCertainTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NumberComparisonOperatorsConstantConditionRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

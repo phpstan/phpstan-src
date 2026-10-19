@@ -438,7 +438,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayDestructuringRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\ArrayDestructuringRule::__construct() */
 		zval *p_ruleLevelHelper = NULL;
 		zval *p_nonexistentOffsetInArrayDimFetchCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_ruleLevelHelper)
 			Z_PARAM_ZVAL(p_nonexistentOffsetInArrayDimFetchCheck)
 		ZEND_PARSE_PARAMETERS_END();
@@ -447,14 +447,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayDestructuringRule)
 		if (UNEXPECTED(!pgen::ArrayDestructuringRule::m___construct(Z_OBJ_P(ZEND_THIS), p_ruleLevelHelper, p_nonexistentOffsetInArrayDimFetchCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\ArrayDestructuringRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayDestructuringRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\ArrayDestructuringRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -467,7 +466,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayDestructuringRule)
 		zval *p_scope = NULL;
 		zval *p_var = NULL;
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_var)
 			Z_PARAM_ZVAL(p_expr)

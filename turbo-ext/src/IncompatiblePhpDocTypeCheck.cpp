@@ -1196,7 +1196,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatiblePhpDocTypeCheck)
 		zval *p_genericObjectTypeCheck = NULL;
 		zval *p_unresolvableTypeHelper = NULL;
 		zval *p_genericCallableRuleHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_OBJECT(p_genericObjectTypeCheck)
 			Z_PARAM_OBJECT(p_unresolvableTypeHelper)
 			Z_PARAM_OBJECT(p_genericCallableRuleHelper)
@@ -1216,7 +1216,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatiblePhpDocTypeCheck)
 		zval *p_nativeParameterTypes = NULL;
 		zval *p_byRefParameters = NULL;
 		zval *p_nativeReturnType = NULL;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_resolvedPhpDoc)
@@ -1235,7 +1235,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatiblePhpDocTypeCheck)
 	});
 	cls.method(sigs::isDeferredClassConstantAccess, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeCheck::isDeferredClassConstantAccess() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }

@@ -405,14 +405,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingMethodImplementationRule)
 	ptdecl::MissingMethodImplementationRule::declareClass(cls);
 	ptdecl::MissingMethodImplementationRule::declareProperties(cls);
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\MissingMethodImplementationRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MissingMethodImplementationRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\MissingMethodImplementationRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -426,7 +425,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MissingMethodImplementationRule)
 		zval *p_interfaceName = NULL;
 		zend_string *p_interfaceName_str = NULL;
 		zval p_interfaceName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_STR(p_interfaceName_str)
 		ZEND_PARSE_PARAMETERS_END();

@@ -837,14 +837,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 		zval *p_message = NULL;
 		zend_string *p_message_str = NULL;
 		zval p_message_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_message_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_message_str != NULL) { ZVAL_STR(&p_message_zv, p_message_str); p_message = &p_message_zv; }
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m___construct(Z_OBJ_P(ZEND_THIS), p_message))) RETURN_THROWS();
 	});
 	cls.method(sigs::getRuleErrorTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::getRuleErrorTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_getRuleErrorTypes(return_value))) RETURN_THROWS();
 	});
@@ -852,7 +851,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 		zval *p_message = NULL;
 		zend_string *p_message_str = NULL;
 		zval p_message_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_message_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_message_str != NULL) { ZVAL_STR(&p_message_zv, p_message_str); p_message = &p_message_zv; }
@@ -861,7 +860,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 	});
 	cls.method(sigs::line, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::line() */
 		zend_long p_line = 0;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_LONG(p_line)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -879,7 +878,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 		zval p_fileDescription_zv;
 		zval p_fileDescription_null;
 		ZVAL_NULL(&p_fileDescription_null);
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_STR_OR_NULL(p_fileDescription_str)
@@ -894,7 +893,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 		zval *p_file = NULL;
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
@@ -905,7 +904,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 		zval *p_tip = NULL;
 		zend_string *p_tip_str = NULL;
 		zval p_tip_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_tip_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_tip_str != NULL) { ZVAL_STR(&p_tip_zv, p_tip_str); p_tip = &p_tip_zv; }
@@ -916,7 +915,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 		zval *p_tip = NULL;
 		zend_string *p_tip_str = NULL;
 		zval p_tip_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_tip_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_tip_str != NULL) { ZVAL_STR(&p_tip_zv, p_tip_str); p_tip = &p_tip_zv; }
@@ -924,26 +923,24 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_addTip(Z_OBJ_P(ZEND_THIS), p_tip, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::discoveringSymbolsTip, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::discoveringSymbolsTip() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_discoveringSymbolsTip(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::acceptsReasonsTip, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::acceptsReasonsTip() */
 		zval *p_reasons = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_reasons)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_acceptsReasonsTip(Z_OBJ_P(ZEND_THIS), p_reasons, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::treatPhpDocTypesAsCertainTip, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::treatPhpDocTypesAsCertainTip() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_treatPhpDocTypesAsCertainTip(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::possiblyImpureTip, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::possiblyImpureTip() */
 		zval *p_callDescriptions = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_callDescriptions)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -953,7 +950,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 		zval *p_identifier = NULL;
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_identifier_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_identifier_str != NULL) { ZVAL_STR(&p_identifier_zv, p_identifier_str); p_identifier = &p_identifier_zv; }
@@ -962,21 +959,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 	});
 	cls.method(sigs::metadata, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::metadata() */
 		zval *p_metadata = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_metadata)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_metadata(Z_OBJ_P(ZEND_THIS), p_metadata, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::nonIgnorable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::nonIgnorable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_nonIgnorable(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::fixNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::fixNode() */
 		zval *p_node = NULL;
 		zval *p_cb = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
@@ -986,7 +982,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleErrorBuilder)
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_fixNode(Z_OBJ_P(ZEND_THIS), p_node, p_cb, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::build, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrorBuilder::build() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RuleErrorBuilder::m_build(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

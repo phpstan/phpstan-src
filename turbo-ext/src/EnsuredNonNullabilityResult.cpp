@@ -86,7 +86,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_EnsuredNonNullabilityResult)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\EnsuredNonNullabilityResult::__construct() */
 		zval *p_scope = NULL;
 		zval *p_specifiedExpressions = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_specifiedExpressions)
 		ZEND_PARSE_PARAMETERS_END();
@@ -94,12 +94,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_EnsuredNonNullabilityResult)
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResult::m___construct(Z_OBJ_P(ZEND_THIS), p_scope, p_specifiedExpressions))) RETURN_THROWS();
 	});
 	cls.method(sigs::getScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\EnsuredNonNullabilityResult::getScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResult::m_getScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getSpecifiedExpressions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\EnsuredNonNullabilityResult::getSpecifiedExpressions() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResult::m_getSpecifiedExpressions(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

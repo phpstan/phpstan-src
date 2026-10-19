@@ -1024,7 +1024,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AttributesCheck)
 		zval *p_functionCallParametersCheck = NULL;
 		zval *p_classCheck = NULL;
 		bool p_deprecationRulesInstalled = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_functionCallParametersCheck)
 			Z_PARAM_OBJECT(p_classCheck)
@@ -1042,7 +1042,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AttributesCheck)
 		zval *p_targetName = NULL;
 		zend_string *p_targetName_str = NULL;
 		zval p_targetName_zv;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_attrGroups)
 			Z_PARAM_LONG(p_requiredTarget)

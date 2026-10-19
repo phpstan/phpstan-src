@@ -225,7 +225,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ReadingWriteOnlyPropertiesRule)
 		zval *p_propertyReflectionFinder = NULL;
 		zval *p_ruleLevelHelper = NULL;
 		bool p_checkThisOnly = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_propertyDescriptor)
 			Z_PARAM_ZVAL(p_propertyReflectionFinder)
 			Z_PARAM_ZVAL(p_ruleLevelHelper)
@@ -237,19 +237,17 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ReadingWriteOnlyPropertiesRule)
 		if (UNEXPECTED(!pgen::ReadingWriteOnlyPropertiesRule::m___construct(Z_OBJ_P(ZEND_THIS), p_propertyDescriptor, p_propertyReflectionFinder, p_ruleLevelHelper, p_checkThisOnly))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\ReadingWriteOnlyPropertiesRule::getNodeTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ReadingWriteOnlyPropertiesRule::m_getNodeTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\ReadingWriteOnlyPropertiesRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ReadingWriteOnlyPropertiesRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\ReadingWriteOnlyPropertiesRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

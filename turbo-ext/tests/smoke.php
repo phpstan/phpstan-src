@@ -4660,6 +4660,9 @@ foreach ($lemEngineProbes['php'] as $lemLabel => $lemPhp) {
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.
 $coveredElsewhere = [
+	\PHPStan\Node\Printer\Printer::class => 'make tests',
+	\PhpParser\PrettyPrinterAbstract::class => 'make tests',
+	\PhpParser\PrettyPrinter\Standard::class => 'make tests',
 	\PHPStan\PhpDoc\PhpDocNodeResolver::class => 'make tests',
 	\PHPStan\BetterReflection\Identifier\IdentifierType::class => 'make tests',
 	\PHPStan\BetterReflection\Reflection\Annotation\AnnotationHelper::class => 'make tests',

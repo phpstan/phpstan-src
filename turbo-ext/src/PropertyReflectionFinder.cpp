@@ -1161,7 +1161,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyReflectionFinder)
 	cls.method(sigs::findPropertyReflectionsFromNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\PropertyReflectionFinder::findPropertyReflectionsFromNode() */
 		zval *p_propertyFetch = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_propertyFetch)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1173,7 +1173,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyReflectionFinder)
 		zval *p_propertyFetch = NULL;
 		zval *p_propertyHolderType = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_propertyFetch)
 			Z_PARAM_ZVAL(p_propertyHolderType)
 			Z_PARAM_ZVAL(p_scope)
@@ -1186,7 +1186,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyReflectionFinder)
 	cls.method(sigs::findPropertyReflectionFromNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\PropertyReflectionFinder::findPropertyReflectionFromNode() */
 		zval *p_propertyFetch = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_propertyFetch)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1200,7 +1200,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyReflectionFinder)
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_propertyHolderType)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL(p_scope)
@@ -1217,7 +1217,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyReflectionFinder)
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_propertyHolderType)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL(p_scope)

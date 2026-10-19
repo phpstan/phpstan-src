@@ -89,7 +89,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocLineHelper)
 	cls.method(sigs::detectLine, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\PhpDocLineHelper::detectLine() */
 		zval *p_node = NULL;
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();

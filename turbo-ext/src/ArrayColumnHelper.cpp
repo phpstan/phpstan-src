@@ -1466,7 +1466,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_arrayType = NULL;
 		zval *p_columnType = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_arrayType)
 			Z_PARAM_ZVAL(p_columnType)
 			Z_PARAM_ZVAL(p_scope)
@@ -1481,7 +1481,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_arrayType = NULL;
 		zval *p_indexType = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_arrayType)
 			Z_PARAM_ZVAL(p_indexType)
 			Z_PARAM_ZVAL(p_scope)
@@ -1497,7 +1497,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_columnType = NULL;
 		zval *p_indexType = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_arrayType)
 			Z_PARAM_ZVAL(p_columnType)
 			Z_PARAM_ZVAL(p_indexType)
@@ -1515,7 +1515,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_columnType = NULL;
 		zval *p_indexType = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_arrayType)
 			Z_PARAM_ZVAL(p_columnType)
 			Z_PARAM_ZVAL(p_indexType)
@@ -1532,7 +1532,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		zval *p_type = NULL;
 		zval *p_offsetOrProperty = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_offsetOrProperty)
 			Z_PARAM_ZVAL(p_scope)
@@ -1546,7 +1546,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 	cls.method(sigs::castToArrayKeyType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ArrayColumnHelper::castToArrayKeyType() */
 		zval *p_type = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

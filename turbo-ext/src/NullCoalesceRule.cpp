@@ -670,7 +670,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NullCoalesceRule)
 		zval *p_issetCheck = NULL;
 		zval *p_constantConditionInTraitHelper = NULL;
 		bool p_unnecessaryNullCoalesce = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_issetCheck)
 			Z_PARAM_ZVAL(p_constantConditionInTraitHelper)
 			Z_PARAM_BOOL(p_unnecessaryNullCoalesce)
@@ -680,14 +680,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NullCoalesceRule)
 		if (UNEXPECTED(!pgen::NullCoalesceRule::m___construct(Z_OBJ_P(ZEND_THIS), p_issetCheck, p_constantConditionInTraitHelper, p_unnecessaryNullCoalesce))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\NullCoalesceRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NullCoalesceRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\NullCoalesceRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -699,7 +698,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NullCoalesceRule)
 	cls.method(sigs::checkUnnecessaryNullCoalesce, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\NullCoalesceRule::checkUnnecessaryNullCoalesce() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -710,7 +709,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NullCoalesceRule)
 	});
 	cls.method(sigs::containsAssign, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\NullCoalesceRule::containsAssign() */
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_7, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }

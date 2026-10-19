@@ -11697,7 +11697,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PromoteParameterRule)
 		zval *p_parameterName = NULL;
 		zend_string *p_parameterName_str = NULL;
 		zval p_parameterName_zv;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_rule)
 			Z_PARAM_ZVAL(p_container)
 			Z_PARAM_STR(p_nodeType_str)
@@ -11711,19 +11711,17 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PromoteParameterRule)
 		if (UNEXPECTED(!pgen::PromoteParameterRule::m___construct(Z_OBJ_P(ZEND_THIS), p_rule, p_container, p_nodeType, p_parameterValue, p_parameterName))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Playground\PromoteParameterRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PromoteParameterRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalRule, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Playground\PromoteParameterRule::getOriginalRule() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PromoteParameterRule::m_getOriginalRule(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Playground\PromoteParameterRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

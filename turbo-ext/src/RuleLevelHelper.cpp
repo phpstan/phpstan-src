@@ -2013,7 +2013,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 		bool p_checkImplicitMixed = false;
 		bool p_checkBenevolentUnionTypes = false;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(8, 8)
+		ZEND_PARSE_PARAMETERS_START(8, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_BOOL(p_checkNullables)
 			Z_PARAM_BOOL(p_checkThisOnly)
@@ -2032,7 +2032,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 		zval p_acceptingType_null;
 		ZVAL_NULL(&p_acceptingType_null);
 		zval *p_traverse = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL_OR_NULL(p_acceptingType)
 			Z_PARAM_ZVAL(p_traverse)
@@ -2046,7 +2046,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 	});
 	cls.method(sigs::isThis, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleLevelHelper::isThis() */
 		zval *p_expression = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_expression)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_expression != NULL && UNEXPECTED(Z_TYPE_P(p_expression) != IS_OBJECT || !pgrt::instanceOfClass(p_expression, pgrt::lookupClassQuiet(pg_site_102, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expression)); RETURN_THROWS(); }
@@ -2056,7 +2056,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 	});
 	cls.method(sigs::transformCommonType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleLevelHelper::transformCommonType() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -2065,7 +2065,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 	});
 	cls.method(sigs::transformMixedType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleLevelHelper::transformMixedType() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -2075,7 +2075,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 	cls.method(sigs::transformGenericObjectTypeArguments, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleLevelHelper::transformGenericObjectTypeArguments() */
 		zval *p_type = NULL;
 		zval *p_traverse = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_traverse)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2087,7 +2087,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 	cls.method(sigs::transformAcceptedType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleLevelHelper::transformAcceptedType() */
 		zval *p_acceptingType = NULL;
 		zval *p_acceptedType = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_acceptingType)
 			Z_PARAM_ZVAL(p_acceptedType)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2100,7 +2100,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 		zval *p_acceptingType = NULL;
 		zval *p_acceptedType = NULL;
 		bool p_strictTypes = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_acceptingType)
 			Z_PARAM_ZVAL(p_acceptedType)
 			Z_PARAM_BOOL(p_strictTypes)
@@ -2153,7 +2153,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 		zend_string *p_unknownClassErrorPattern_str = NULL;
 		zval p_unknownClassErrorPattern_zv;
 		zval *p_unionTypeCriteriaCallback = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_var)
 			Z_PARAM_STR(p_unknownClassErrorPattern_str)
@@ -2175,7 +2175,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelper)
 		zval p_unknownClassErrorPattern_zv;
 		zval *p_unionTypeCriteriaCallback = NULL;
 		bool p_isTopLevel = false;
-		ZEND_PARSE_PARAMETERS_START(5, 6)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_var)
 			Z_PARAM_ZVAL(p_type)

@@ -125,7 +125,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InternalStatementExitPoint)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\InternalStatementExitPoint::__construct() */
 		zval *p_statement = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_statement)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -134,18 +134,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InternalStatementExitPoint)
 		if (UNEXPECTED(!pgen::InternalStatementExitPoint::m___construct(Z_OBJ_P(ZEND_THIS), p_statement, p_scope))) RETURN_THROWS();
 	});
 	cls.method(sigs::toPublic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\InternalStatementExitPoint::toPublic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InternalStatementExitPoint::m_toPublic(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getStatement, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\InternalStatementExitPoint::getStatement() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InternalStatementExitPoint::m_getStatement(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::withScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\InternalStatementExitPoint::withScope() */
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !(pgrt::instanceOfClass(p_scope, pt_ce_mutating_scope) || pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\MutatingScope", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\MutatingScope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
@@ -153,7 +151,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InternalStatementExitPoint)
 		if (UNEXPECTED(!pgen::InternalStatementExitPoint::m_withScope(Z_OBJ_P(ZEND_THIS), p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\InternalStatementExitPoint::getScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InternalStatementExitPoint::m_getScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

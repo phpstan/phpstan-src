@@ -1616,7 +1616,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameUsageLocation)
 		zend_string *p_value_str = NULL;
 		zval p_value_zv;
 		zval *p_data = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_value_str)
 			Z_PARAM_ARRAY(p_data)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1631,7 +1631,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameUsageLocation)
 		zval p_data_default;
 		ZVAL_EMPTY_ARRAY(&p_data_default);
 		p_data = &p_data_default;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_value_str)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY(p_data)
@@ -1641,7 +1641,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameUsageLocation)
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_from(p_value, p_data, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getMethod, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getMethod() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getMethod(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1652,62 +1651,50 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameUsageLocation)
 		return r1;
 	});
 	cls.method(sigs::getProperty, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getProperty() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getProperty(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFunction, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getFunction() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getFunction(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPhpDocTagName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getPhpDocTagName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getPhpDocTagName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAssertedExprString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getAssertedExprString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getAssertedExprString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassConstant, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getClassConstant() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getClassConstant(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getCurrentClassName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getCurrentClassName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getCurrentClassName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getParameterName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getParameterName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getParameterName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTypeAliasName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getTypeAliasName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getTypeAliasName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getMethodTagName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getMethodTagName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getMethodTagName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPropertyTagName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getPropertyTagName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getPropertyTagName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTemplateTagName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::getTemplateTagName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_getTemplateTagName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isInAnomyousFunction, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameUsageLocation::isInAnomyousFunction() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ClassNameUsageLocation::m_isInAnomyousFunction(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -1716,7 +1703,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameUsageLocation)
 		zval *p_part = NULL;
 		zend_string *p_part_str = NULL;
 		zval p_part_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_part_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_part_str != NULL) { ZVAL_STR(&p_part_zv, p_part_str); p_part = &p_part_zv; }
@@ -1727,7 +1714,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameUsageLocation)
 		zval *p_secondPart = NULL;
 		zend_string *p_secondPart_str = NULL;
 		zval p_secondPart_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_secondPart_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_secondPart_str != NULL) { ZVAL_STR(&p_secondPart_zv, p_secondPart_str); p_secondPart = &p_secondPart_zv; }

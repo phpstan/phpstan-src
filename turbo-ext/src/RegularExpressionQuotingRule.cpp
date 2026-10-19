@@ -1208,7 +1208,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Regexp\RegularExpressionQuotingRule::__construct() */
 		zval *p_reflectionProvider = NULL;
 		zval *p_regexExpressionHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_regexExpressionHelper)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1217,14 +1217,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		if (UNEXPECTED(!pgen::RegularExpressionQuotingRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_regexExpressionHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Regexp\RegularExpressionQuotingRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegularExpressionQuotingRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Regexp\RegularExpressionQuotingRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1237,7 +1236,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		zval *p_concat = NULL;
 		zval *p_scope = NULL;
 		zval *p_patternDelimiters = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_concat)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_patternDelimiters)
@@ -1251,7 +1250,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		zval *p_pregQuote = NULL;
 		zval *p_scope = NULL;
 		zval *p_patternDelimiters = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_pregQuote)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_patternDelimiters)
@@ -1263,7 +1262,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 	});
 	cls.method(sigs::removeDefaultEscapedDelimiters, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Regexp\RegularExpressionQuotingRule::removeDefaultEscapedDelimiters() */
 		zval *p_delimiters = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_delimiters)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -1273,7 +1272,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		zval *p_delimiter = NULL;
 		zend_string *p_delimiter_str = NULL;
 		zval p_delimiter_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_delimiter_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_delimiter_str != NULL) { ZVAL_STR(&p_delimiter_zv, p_delimiter_str); p_delimiter = &p_delimiter_zv; }
@@ -1285,7 +1284,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionQuotingRule)
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
 		zval *p_functionReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_functionCall)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_functionReflection)

@@ -185,7 +185,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateGenericObjectType)
 		zval *p_default = NULL;
 		zval p_default_null;
 		ZVAL_NULL(&p_default_null);
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_templateTypeStrategy)
 			Z_PARAM_ZVAL(p_templateTypeVariance)
@@ -214,7 +214,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateGenericObjectType)
 		zval p_variances_default;
 		ZVAL_EMPTY_ARRAY(&p_variances_default);
 		p_variances = &p_variances_default;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_ARRAY(p_types)
 			Z_PARAM_ZVAL_OR_NULL(p_subtractedType)

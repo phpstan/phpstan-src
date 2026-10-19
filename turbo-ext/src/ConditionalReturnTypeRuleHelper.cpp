@@ -842,7 +842,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConditionalReturnTypeRuleHelper)
 	ptdecl::ConditionalReturnTypeRuleHelper::declareProperties(cls);
 	cls.method(sigs::check, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\ConditionalReturnTypeRuleHelper::check() */
 		zval *p_acceptor = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_acceptor)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_acceptor != NULL && UNEXPECTED(Z_TYPE_P(p_acceptor) != IS_OBJECT || !pgrt::instanceOfClass(p_acceptor, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Reflection\\ExtendedParametersAcceptor", 45)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ExtendedParametersAcceptor", zend_zval_value_name(p_acceptor)); RETURN_THROWS(); }

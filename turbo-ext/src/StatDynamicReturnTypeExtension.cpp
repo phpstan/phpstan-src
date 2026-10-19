@@ -284,7 +284,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StatDynamicReturnTypeExtension)
 	ptdecl::StatDynamicReturnTypeExtension::declareProperties(cls);
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\StatDynamicReturnTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
@@ -296,7 +296,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StatDynamicReturnTypeExtension)
 		zval *p_functionReflection = NULL;
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_functionCall)
 			Z_PARAM_ZVAL(p_scope)
@@ -308,13 +308,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StatDynamicReturnTypeExtension)
 		if (UNEXPECTED(!pgen::StatDynamicReturnTypeExtension::m_getTypeFromFunctionCall(Z_OBJ_P(ZEND_THIS), p_functionReflection, p_functionCall, p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClass, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\StatDynamicReturnTypeExtension::getClass() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StatDynamicReturnTypeExtension::m_getClass(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isMethodSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\StatDynamicReturnTypeExtension::isMethodSupported() */
 		zval *p_methodReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_methodReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
@@ -326,7 +325,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StatDynamicReturnTypeExtension)
 		zval *p_methodReflection = NULL;
 		zval *p_methodCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_methodReflection)
 			Z_PARAM_ZVAL(p_methodCall)
 			Z_PARAM_ZVAL(p_scope)
@@ -338,7 +337,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StatDynamicReturnTypeExtension)
 		if (UNEXPECTED(!pgen::StatDynamicReturnTypeExtension::m_getTypeFromMethodCall(Z_OBJ_P(ZEND_THIS), p_methodReflection, p_methodCall, p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReturnType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\StatDynamicReturnTypeExtension::getReturnType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StatDynamicReturnTypeExtension::m_getReturnType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

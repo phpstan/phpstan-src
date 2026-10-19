@@ -88,7 +88,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LazyExtensionsCollection)
 		zval *p_tagName = NULL;
 		zend_string *p_tagName_str = NULL;
 		zval p_tagName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_container)
 			Z_PARAM_STR(p_tagName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -97,7 +97,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LazyExtensionsCollection)
 		if (UNEXPECTED(!pgen::LazyExtensionsCollection::m___construct(Z_OBJ_P(ZEND_THIS), p_container, p_tagName))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAll, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\DependencyInjection\LazyExtensionsCollection::getAll() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::LazyExtensionsCollection::m_getAll(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

@@ -2824,7 +2824,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectRegistry)
 	ptdecl::DirectRegistry::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DirectRegistry::__construct() */
 		zval *p_rules = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_rules)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::DirectRegistry::m___construct(Z_OBJ_P(ZEND_THIS), p_rules))) RETURN_THROWS();
@@ -2833,7 +2833,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectRegistry)
 		zval *p_nodeType = NULL;
 		zend_string *p_nodeType_str = NULL;
 		zval p_nodeType_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_nodeType_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_nodeType_str != NULL) { ZVAL_STR(&p_nodeType_zv, p_nodeType_str); p_nodeType = &p_nodeType_zv; }

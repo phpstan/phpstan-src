@@ -1277,7 +1277,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyTagCheck)
 		bool p_checkClassCaseSensitivity = false;
 		bool p_checkMissingTypehints = false;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(8, 8)
+		ZEND_PARSE_PARAMETERS_START(8, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_classCheck)
 			Z_PARAM_OBJECT(p_genericObjectTypeCheck)
@@ -1298,7 +1298,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyTagCheck)
 		zval *p_scope = NULL;
 		zval *p_classReflection = NULL;
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_node)
@@ -1311,7 +1311,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyTagCheck)
 	});
 	cls.method(sigs::checkInTraitDefinitionContext, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Classes\PropertyTagCheck::checkInTraitDefinitionContext() */
 		zval *p_classReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_classReflection != NULL && UNEXPECTED(Z_TYPE_P(p_classReflection) != IS_OBJECT || !(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
@@ -1323,7 +1323,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyTagCheck)
 		zval *p_classReflection = NULL;
 		zval *p_implementingClass = NULL;
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_implementingClass)
@@ -1338,7 +1338,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyTagCheck)
 	});
 	cls.method(sigs::getTypesAndTagName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Classes\PropertyTagCheck::getTypesAndTagName() */
 		zval *p_propertyTag = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_propertyTag)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyTag != NULL && UNEXPECTED(Z_TYPE_P(p_propertyTag) != IS_OBJECT || !pgrt::instanceOfClass(p_propertyTag, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\PhpDoc\\Tag\\PropertyTag", 30)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDoc\\Tag\\PropertyTag", zend_zval_value_name(p_propertyTag)); RETURN_THROWS(); }
@@ -1354,7 +1354,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyTagCheck)
 		zend_string *p_tagName_str = NULL;
 		zval p_tagName_zv;
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_STR(p_tagName_str)
@@ -1378,7 +1378,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyTagCheck)
 		zval p_tagName_zv;
 		zval *p_type = NULL;
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_STR(p_propertyName_str)

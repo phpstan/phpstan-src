@@ -497,7 +497,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParameterCastableToNumberRule)
 		zval *p_reflectionProvider = NULL;
 		zval *p_parameterCastableToStringCheck = NULL;
 		zval *p_phpVersion = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_parameterCastableToStringCheck)
 			Z_PARAM_ZVAL(p_phpVersion)
@@ -508,14 +508,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParameterCastableToNumberRule)
 		if (UNEXPECTED(!pgen::ParameterCastableToNumberRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_parameterCastableToStringCheck, p_phpVersion))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\ParameterCastableToNumberRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ParameterCastableToNumberRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\ParameterCastableToNumberRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

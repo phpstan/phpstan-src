@@ -1086,14 +1086,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		zval *p_methodName = NULL;
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_methodName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_methodName_str != NULL) { ZVAL_STR(&p_methodName_zv, p_methodName_str); p_methodName = &p_methodName_zv; }
 		if (UNEXPECTED(!pgen::HasMethodType::m___construct(Z_OBJ_P(ZEND_THIS), p_methodName))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getReferencedClasses() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getReferencedClasses(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1104,7 +1103,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getObjectClassNames() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getObjectClassNames(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1115,7 +1113,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getObjectClassReflections() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getObjectClassReflections(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1126,19 +1123,17 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::getClassStringType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getClassStringType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getClassStringType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getCanonicalMethodName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getCanonicalMethodName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getCanonicalMethodName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::accepts() */
 		zval *p_type = NULL;
 		bool p_strictTypes = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_BOOL(p_strictTypes)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1174,7 +1169,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	});
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isSuperTypeOf() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -1199,7 +1194,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	});
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isSubTypeOf() */
 		zval *p_otherType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_otherType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_otherType != NULL && UNEXPECTED(Z_TYPE_P(p_otherType) != IS_OBJECT || !pgrt::instanceOfClass(p_otherType, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_otherType)); RETURN_THROWS(); }
@@ -1225,7 +1220,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isAcceptedBy() */
 		zval *p_acceptingType = NULL;
 		bool p_strictTypes = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_acceptingType)
 			Z_PARAM_BOOL(p_strictTypes)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1235,7 +1230,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	});
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::equals() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -1261,7 +1256,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	});
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::describe() */
 		zval *p_level = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_level)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_level != NULL && UNEXPECTED(Z_TYPE_P(p_level) != IS_OBJECT || !(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
@@ -1288,7 +1283,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		zval *p_methodName = NULL;
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_methodName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_methodName_str != NULL) { ZVAL_STR(&p_methodName_zv, p_methodName_str); p_methodName = &p_methodName_zv; }
@@ -1316,7 +1311,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_methodName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1356,7 +1351,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_methodName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1392,7 +1387,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r3;
 	});
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isCallable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isCallable(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1403,7 +1397,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isNull() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isNull(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1414,12 +1407,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::isConstantValue, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isConstantValue() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isConstantValue(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isConstantScalarValue, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isConstantScalarValue() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isConstantScalarValue(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1430,12 +1421,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::getConstantScalarTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getConstantScalarTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getConstantScalarTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getConstantScalarValues, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getConstantScalarValues() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getConstantScalarValues(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1446,17 +1435,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isTrue() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isTrue(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isFalse, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isFalse() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isFalse(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isBoolean, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isBoolean() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isBoolean(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1467,7 +1453,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isFloat() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isFloat(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1478,7 +1463,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::isInteger, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isInteger() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isInteger(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1489,17 +1473,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		return r1;
 	});
 	cls.method(sigs::getClassStringObjectType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getClassStringObjectType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getClassStringObjectType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getObjectTypeOrClassStringObjectType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getObjectTypeOrClassStringObjectType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isVoid, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::isVoid() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_isVoid(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1512,7 +1493,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::looseCompare() */
 		zval *p_type = NULL;
 		zval *p_phpVersion = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_phpVersion)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1522,42 +1503,34 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		if (UNEXPECTED(!pgen::HasMethodType::m_looseCompare(Z_OBJ_P(ZEND_THIS), p_type, p_phpVersion, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toNumber, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toNumber() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toNumber(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toBitwiseNotType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toBitwiseNotType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toBitwiseNotType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toAbsoluteNumber, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toAbsoluteNumber() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toAbsoluteNumber(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toInteger, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toInteger() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toInteger(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toFloat, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toFloat() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toFloat(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toArray, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toArray() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toArray(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toArrayKey, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toArrayKey() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toArrayKey(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1569,19 +1542,17 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	});
 	cls.method(sigs::toCoercedArgumentType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toCoercedArgumentType() */
 		bool p_strictTypes = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_strictTypes)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toCoercedArgumentType(Z_OBJ_P(ZEND_THIS), p_strictTypes, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getEnumCases, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getEnumCases() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getEnumCases(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getEnumCaseObject() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getEnumCaseObject(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1593,7 +1564,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	});
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::traverse() */
 		zval *p_cb = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_cb != NULL && UNEXPECTED(!zend_is_callable(p_cb, 0, NULL))) { zend_argument_type_error(1, "must be a valid callback, %s given", zend_zval_value_name(p_cb)); RETURN_THROWS(); }
@@ -1619,7 +1590,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::traverseSimultaneously() */
 		zval *p_right = NULL;
 		zval *p_cb = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_right)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1630,7 +1601,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 	});
 	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::exponentiate() */
 		zval *p_exponent = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_exponent)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_exponent != NULL && UNEXPECTED(Z_TYPE_P(p_exponent) != IS_OBJECT || !pgrt::instanceOfClass(p_exponent, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_exponent)); RETURN_THROWS(); }
@@ -1638,22 +1609,18 @@ PT_MINIT_REGISTRATION(pt_register_codegen_HasMethodType)
 		if (UNEXPECTED(!pgen::HasMethodType::m_exponentiate(Z_OBJ_P(ZEND_THIS), p_exponent, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFiniteTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getFiniteTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getFiniteTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDefaultBaseType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::getDefaultBaseType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_getDefaultBaseType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toPhpDocNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::toPhpDocNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::HasMethodType::m_toPhpDocNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasTemplateOrLateResolvableType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Accessory\HasMethodType::hasTemplateOrLateResolvableType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::HasMethodType::m_hasTemplateOrLateResolvableType(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

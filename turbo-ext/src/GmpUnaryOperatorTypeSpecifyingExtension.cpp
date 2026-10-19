@@ -105,7 +105,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GmpUnaryOperatorTypeSpecifyingExtensio
 	ptdecl::GmpUnaryOperatorTypeSpecifyingExtension::declareClass(cls);
 	ptdecl::GmpUnaryOperatorTypeSpecifyingExtension::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\GmpUnaryOperatorTypeSpecifyingExtension::__construct() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::GmpUnaryOperatorTypeSpecifyingExtension::m___construct(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::isOperatorSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\GmpUnaryOperatorTypeSpecifyingExtension::isOperatorSupported() */
@@ -113,7 +112,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GmpUnaryOperatorTypeSpecifyingExtensio
 		zend_string *p_operatorSigil_str = NULL;
 		zval p_operatorSigil_zv;
 		zval *p_operand = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_operatorSigil_str)
 			Z_PARAM_ZVAL(p_operand)
 		ZEND_PARSE_PARAMETERS_END();
@@ -128,7 +127,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GmpUnaryOperatorTypeSpecifyingExtensio
 		zend_string *p_operatorSigil_str = NULL;
 		zval p_operatorSigil_zv;
 		zval *p_operand = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_operatorSigil_str)
 			Z_PARAM_ZVAL(p_operand)
 		ZEND_PARSE_PARAMETERS_END();

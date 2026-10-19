@@ -1129,7 +1129,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericObjectTypeCheck)
 		zval *p_typeProjectionIsRedundantMessage = NULL;
 		zend_string *p_typeProjectionIsRedundantMessage_str = NULL;
 		zval p_typeProjectionIsRedundantMessage_zv;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_phpDocType)
 			Z_PARAM_STR(p_classNotGenericMessage_str)
 			Z_PARAM_STR(p_notEnoughTypesMessage_str)
@@ -1150,7 +1150,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericObjectTypeCheck)
 	});
 	cls.method(sigs::getGenericTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\GenericObjectTypeCheck::getGenericTypes() */
 		zval *p_phpDocType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocType != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocType) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocType, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_phpDocType)); RETURN_THROWS(); }

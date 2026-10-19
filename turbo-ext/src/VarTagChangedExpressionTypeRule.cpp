@@ -89,21 +89,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagChangedExpressionTypeRule)
 	ptdecl::VarTagChangedExpressionTypeRule::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\VarTagChangedExpressionTypeRule::__construct() */
 		zval *p_varTagTypeRuleHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_varTagTypeRuleHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_varTagTypeRuleHelper != NULL && UNEXPECTED(Z_TYPE_P(p_varTagTypeRuleHelper) != IS_OBJECT || !((Z_TYPE_P(p_varTagTypeRuleHelper) == IS_OBJECT && Z_OBJCE_P(p_varTagTypeRuleHelper) == pt_ce_var_tag_type_rule_helper) || pgrt::instanceOfClass(p_varTagTypeRuleHelper, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Rules\\PhpDoc\\VarTagTypeRuleHelper", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\PhpDoc\\VarTagTypeRuleHelper", zend_zval_value_name(p_varTagTypeRuleHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::VarTagChangedExpressionTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_varTagTypeRuleHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\VarTagChangedExpressionTypeRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VarTagChangedExpressionTypeRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\VarTagChangedExpressionTypeRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

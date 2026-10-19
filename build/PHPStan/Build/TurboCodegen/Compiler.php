@@ -261,6 +261,25 @@ final class Compiler
 
 	// ---------------------------------------------------------------- declarations
 
+	/**
+	 * A class constant default as its value: callers in other files lower the
+	 * default where the oracle cannot type the declaring file's nodes.
+	 */
+	private function resolvedDefault(?Expr $default, ReflectionParameter $parameter): ?Expr
+	{
+		if (!$default instanceof Expr\ClassConstFetch || !$parameter->isDefaultValueAvailable()) {
+			return $default;
+		}
+		$value = $parameter->getDefaultValue();
+		if (is_int($value)) {
+			return new Node\Scalar\Int_($value);
+		}
+		if (is_string($value)) {
+			return new Node\Scalar\String_($value);
+		}
+		return $default;
+	}
+
 	private function describeMethod(ClassUnit $unit, Stmt\ClassMethod $method, ?string $trait = null): MethodInfo
 	{
 		$reflection = new ReflectionMethod($unit->className, $method->name->toString());
@@ -283,7 +302,7 @@ final class Compiler
 				$class,
 				$nullable,
 				$param->variadic,
-				$param->default,
+				$this->resolvedDefault($param->default, $rp),
 				$isArray,
 				$param->flags !== 0,
 				($param->flags & Modifiers::READONLY) !== 0,
@@ -706,20 +725,22 @@ final class Compiler
 				continue;
 			}
 			$value = $constant->getValue();
+			$visibility = $constant->isPrivate() ? 'private' : ($constant->isProtected() ? 'protected' : 'public');
 			if (is_int($value)) {
-				$out[] = sprintf("\tcls.%s(\"%s\", %d);", $constant->isPrivate() ? 'privateClassConstantLong' : 'classConstantLong', $constant->getName(), $value);
-			} elseif (is_string($value) && (str_contains($value, "\0") || $constant->isProtected())) {
-				// a C string cannot hold the NUL: built with its length
+				$out[] = sprintf("\tcls.%s(\"%s\", %d);", $visibility === 'public' ? 'classConstantLong' : $visibility . 'ClassConstantLong', $constant->getName(), $value);
+			} elseif (is_string($value) && (str_contains($value, "\0") || $visibility === 'protected')) {
+				// a C string cannot hold the NUL (and reg.h has no protected
+				// string form): built with its length
 				$builder = sprintf('pg_const_%s', $constant->getName());
 				$this->closures[] = sprintf("static void %s(zval *out)\n{\n\tZVAL_INTERNED_STR(out, pgrt::internLiteral(%s, %d));\n}", $builder, $this->stringLiteral($value), strlen($value));
-				$out[] = sprintf("\tcls.%s(\"%s\", %s);", $constant->isPrivate() ? 'privateClassConstantValue' : 'classConstantValue', $constant->getName(), $builder);
+				$out[] = sprintf("\tcls.%s(\"%s\", %s);", $visibility === 'public' ? 'classConstantValue' : $visibility . 'ClassConstantValue', $constant->getName(), $builder);
 			} elseif (is_string($value)) {
-				$out[] = sprintf("\tcls.%s(\"%s\", \"%s\");", $constant->isPrivate() ? 'privateClassConstantString' : 'publicClassConstantString', $constant->getName(), self::cString($value));
-			} elseif (is_array($value) && !$constant->isProtected()) {
+				$out[] = sprintf("\tcls.%s(\"%s\", \"%s\");", $visibility . 'ClassConstantString', $constant->getName(), self::cString($value));
+			} elseif (is_array($value)) {
 				// a persistent immutable array built at declaration
 				$builder = sprintf('pg_const_%s', $constant->getName());
 				$this->closures[] = $this->renderConstantBuilder($builder, $value);
-				$out[] = sprintf("\tcls.%s(\"%s\", %s);", $constant->isPrivate() ? 'privateClassConstantValue' : 'classConstantValue', $constant->getName(), $builder);
+				$out[] = sprintf("\tcls.%s(\"%s\", %s);", $visibility === 'public' ? 'classConstantValue' : $visibility . 'ClassConstantValue', $constant->getName(), $builder);
 			} else {
 				throw new CompileError(sprintf('%s::%s: only int/string/array constants are supported', $unit->className, $constant->getName()));
 			}
@@ -1292,7 +1313,6 @@ final class Compiler
 		$lines = [];
 		$args = [];
 		$required = 0;
-		$max = 0;
 		$parse = [];
 		$after = [];
 		$optionalStarted = false;
@@ -1302,7 +1322,6 @@ final class Compiler
 				$lines[] = sprintf('zval *%s = NULL;', $name);
 				$lines[] = sprintf('uint32_t %s_count = 0;', $name);
 				$parse[] = sprintf("Z_PARAM_VARIADIC('*', %s, %s_count)", $name, $name);
-				$max = -1;
 				if ($param->class !== null) {
 					$after[] = sprintf('for (uint32_t i = 0; i < %s_count; i++) {', $name);
 					$after[] = sprintf("\tif (UNEXPECTED(!%s)) {", $this->instanceCheck(sprintf('zv::Ref(&%s[i]).deref().raw()', $name), $param->class, $param->nullable));
@@ -1323,9 +1342,6 @@ final class Compiler
 				if ($param->default === null) {
 					$required++;
 				}
-				if ($max >= 0) {
-					$max++;
-				}
 				$lines[] = sprintf('zval *%s = NULL;', $name);
 				$parse[] = sprintf('Z_PARAM_ZVAL(%s)', $name);
 				if ($param->default !== null) {
@@ -1342,9 +1358,6 @@ final class Compiler
 			}
 			if ($param->default === null) {
 				$required++;
-			}
-			if ($max >= 0) {
-				$max++;
 			}
 			switch ($param->kind) {
 				case 'long':
@@ -1403,10 +1416,10 @@ final class Compiler
 		foreach ($lines as $line) {
 			$body[] = $line;
 		}
-		if ($parse === []) {
-			$body[] = 'ZEND_PARSE_PARAMETERS_NONE();';
-		} else {
-			$body[] = sprintf('ZEND_PARSE_PARAMETERS_START(%d, %d)', $required, $max);
+		// no upper bound: a userland method ignores the arguments it does
+		// not declare ($this->{$name}($a, $b) on a one-parameter method)
+		if ($parse !== []) {
+			$body[] = sprintf('ZEND_PARSE_PARAMETERS_START(%d, -1)', $required);
 			foreach ($parse as $p) {
 				$body[] = "\t" . $p;
 			}
@@ -1606,7 +1619,7 @@ final class Compiler
 				return false;
 			}
 		}
-		if ($expr instanceof Node\Scalar\Int_) {
+		if ($expr instanceof Node\Scalar\Int_ || $expr instanceof Node\Scalar\String_) {
 			return $expr->value;
 		}
 		$values = $type->getConstantScalarValues();
@@ -4413,7 +4426,14 @@ final class Compiler
 	private function methodCall(FunctionContext $f, Expr\MethodCall $expr): Value
 	{
 		if (!$expr->name instanceof Node\Identifier) {
-			throw new CompileError('dynamic method names are not supported');
+			// $object->{$name}(...): the receiver, then the name, then the arguments
+			$object = $this->asZval($f, $this->stabilize($f, $this->expr($f, $expr->var)));
+			$methodName = $this->asZval($f, $this->stabilize($f, $this->expr($f, $expr->name)));
+			[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
+			$t = $f->temp('r');
+			$f->line(sprintf('zv::Val %s;', $t));
+			$f->failIf(sprintf('!pgrt::callMethodDynamic(%s, %s, %s, %s, %s, %s.raw(), %s)', $object, $this->unit()->ce, $methodName, $argc, $argv, $t, $named));
+			return $this->narrowZval($t . '.raw()', $t, $this->unit()->oracle->nativeType($expr));
 		}
 		$name = $expr->name->toString();
 		$receiver = $this->expr($f, $expr->var);
@@ -5614,13 +5634,21 @@ final class Compiler
 		$f->open(sprintf('if (!%s_done)', $t));
 		$argv = 'NULL';
 		if ($values !== []) {
+			// a subclass's override is called by name: by-reference parameters
+			// get a reference written back after the call, as on the engine path
+			$parameters = $this->methodReflection($class, $name)?->getParameters() ?? [];
 			$argv = $f->temp('av');
 			$f->line(sprintf('zval %s[%d];', $argv, count($values)));
 			foreach ($values as $i => $value) {
-				$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $i, $this->asZval($f, $value)));
+				$parameter = $parameters[$i] ?? (count($parameters) > 0 && $parameters[count($parameters) - 1]->isVariadic() ? $parameters[count($parameters) - 1] : null);
+				$zval = $parameter !== null && $parameter->isPassedByReference()
+					? $this->byRefArg($f, $args[$i]->value)
+					: $this->asZval($f, $value);
+				$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $i, $zval));
 			}
 		}
 		$this->emitDispatchFallback($f, class_exists($class) || interface_exists($class) ? new ReflectionClass($class) : null, $name, $z, count($values), $argv, $t);
+		$this->flushWriteBacks($f);
 		$f->close();
 		return $this->narrowZval($t . '.raw()', $t, $this->unit()->oracle->nativeType($expr));
 	}

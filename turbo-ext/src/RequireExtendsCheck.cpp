@@ -431,7 +431,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RequireExtendsCheck)
 		zval *p_classCheck = NULL;
 		bool p_checkClassCaseSensitivity = false;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_classCheck)
 			Z_PARAM_BOOL(p_checkClassCaseSensitivity)
@@ -445,7 +445,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RequireExtendsCheck)
 		zval *p_scope = NULL;
 		zval *p_node = NULL;
 		zval *p_extendsTags = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ARRAY(p_extendsTags)

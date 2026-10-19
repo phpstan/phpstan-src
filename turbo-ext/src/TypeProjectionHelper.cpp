@@ -91,7 +91,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TypeProjectionHelper)
 		zval p_variance_null;
 		ZVAL_NULL(&p_variance_null);
 		zval *p_level = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL_OR_NULL(p_variance)
 			Z_PARAM_ZVAL(p_level)

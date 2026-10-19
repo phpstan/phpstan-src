@@ -276,14 +276,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantConditionRuleHelper)
 	ptdecl::ConstantConditionRuleHelper::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantConditionRuleHelper::__construct() */
 		bool p_treatPhpDocTypesAsCertain = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::ConstantConditionRuleHelper::m___construct(Z_OBJ_P(ZEND_THIS), p_treatPhpDocTypesAsCertain))) RETURN_THROWS();
 	});
 	cls.method(sigs::shouldSkip, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantConditionRuleHelper::shouldSkip() */
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
@@ -294,7 +294,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantConditionRuleHelper)
 	cls.method(sigs::getBooleanType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantConditionRuleHelper::getBooleanType() */
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
@@ -306,7 +306,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantConditionRuleHelper)
 	cls.method(sigs::getNativeBooleanType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantConditionRuleHelper::getNativeBooleanType() */
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();

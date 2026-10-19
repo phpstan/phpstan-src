@@ -1108,7 +1108,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleInArrayHaystackFiniteTypesRule::__construct() */
 		zval *p_initializerExprTypeResolver = NULL;
 		bool p_treatPhpDocTypesAsCertain = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_initializerExprTypeResolver)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1116,14 +1116,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 		if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m___construct(Z_OBJ_P(ZEND_THIS), p_initializerExprTypeResolver, p_treatPhpDocTypesAsCertain))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleInArrayHaystackFiniteTypesRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ImpossibleInArrayHaystackFiniteTypesRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleInArrayHaystackFiniteTypesRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1135,7 +1134,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 	cls.method(sigs::isAnotherValueOfNeedleType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleInArrayHaystackFiniteTypesRule::isAnotherValueOfNeedleType() */
 		zval *p_needleType = NULL;
 		zval *p_valueType = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_needleType)
 			Z_PARAM_ZVAL(p_valueType)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1149,7 +1148,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 		zval *p_needleType = NULL;
 		zval *p_valueType = NULL;
 		zval *p_isStrict = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_needleType)
 			Z_PARAM_ZVAL(p_valueType)
 			Z_PARAM_ZVAL(p_isStrict)
@@ -1170,7 +1169,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleInArrayHaystackFiniteTypesRu
 		zend_string *p_verb_str = NULL;
 		zval p_verb_zv;
 		zval *p_reasons = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_valueType)
 			Z_PARAM_ZVAL(p_needleType)
 			Z_PARAM_STR(p_functionName_str)

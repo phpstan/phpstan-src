@@ -1838,7 +1838,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 		bool p_checkTypeAgainstPhpDocType = false;
 		bool p_strictWideningCheck = false;
 		zval *p_initializerExprTypeResolver = NULL;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_OBJECT(p_typeNodeResolver)
 			Z_PARAM_OBJECT(p_fileTypeMapper)
 			Z_PARAM_OBJECT(p_reflectionProvider)
@@ -1858,7 +1858,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 		zval *p_expr = NULL;
 		zval *p_varTags = NULL;
 		zval *p_assignedVariables = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_var)
 			Z_PARAM_ZVAL(p_expr)
@@ -1875,7 +1875,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
 		zval *p_varTagType = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL(p_varTagType)
@@ -1888,7 +1888,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 	});
 	cls.method(sigs::containsPhpStanType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\VarTagTypeRuleHelper::containsPhpStanType() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -1901,7 +1901,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 		zval *p_expr = NULL;
 		zval *p_type = NULL;
 		zval *p_varTagType = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL(p_type)
@@ -1919,7 +1919,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 		zval *p_type = NULL;
 		zval *p_varTagType = NULL;
 		zend_long p_depth = 0;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_varTagType)
@@ -1936,7 +1936,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 		zval *p_scope = NULL;
 		zval *p_type = NULL;
 		zval *p_varTagType = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_varTagType)
@@ -1951,7 +1951,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 		zval *p_scope = NULL;
 		zval *p_type = NULL;
 		zval *p_varTagType = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_varTagType)
@@ -1964,7 +1964,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 	});
 	cls.method(sigs::createNameScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\VarTagTypeRuleHelper::createNameScope() */
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_89, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
@@ -1974,7 +1974,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VarTagTypeRuleHelper)
 	cls.method(sigs::priceConstantExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\VarTagTypeRuleHelper::priceConstantExpr() */
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();

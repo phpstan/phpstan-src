@@ -1641,7 +1641,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileAnalyser)
 		bool p_reportIgnoresWithoutComments = false;
 		zval *p_valueDependencyCollector = NULL;
 		zval *p_dependencyResolver = NULL;
-		ZEND_PARSE_PARAMETERS_START(9, 9)
+		ZEND_PARSE_PARAMETERS_START(9, -1)
 			Z_PARAM_OBJECT(p_scopeFactory)
 			Z_PARAM_OBJECT(p_nodeScopeResolver)
 			Z_PARAM_OBJECT(p_parser)
@@ -1672,7 +1672,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileAnalyser)
 		zval *p_outerNodeCallback = NULL;
 		zval p_outerNodeCallback_null;
 		ZVAL_NULL(&p_outerNodeCallback_null);
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_STR(p_file_str)
 			Z_PARAM_ARRAY(p_analysedFiles)
 			Z_PARAM_ZVAL(p_ruleRegistry)
@@ -1689,18 +1689,17 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileAnalyser)
 	});
 	cls.method(sigs::collectErrors, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyser::collectErrors() */
 		zval *p_analysedFiles = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_analysedFiles)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::FileAnalyser::m_collectErrors(Z_OBJ_P(ZEND_THIS), p_analysedFiles))) RETURN_THROWS();
 	});
 	cls.method(sigs::restoreCollectErrorsHandler, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyser::restoreCollectErrorsHandler() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::FileAnalyser::m_restoreCollectErrorsHandler(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::getErrorLabel, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyser::getErrorLabel() */
 		zend_long p_errno = 0;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_LONG(p_errno)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);

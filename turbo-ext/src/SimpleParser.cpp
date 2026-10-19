@@ -258,7 +258,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SimpleParser)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\SimpleParser::__construct() */
 		zval *p_parser = NULL;
 		zval *p_nameResolver = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_parser)
 			Z_PARAM_ZVAL(p_nameResolver)
 		ZEND_PARSE_PARAMETERS_END();
@@ -270,7 +270,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SimpleParser)
 		zval *p_file = NULL;
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
@@ -281,7 +281,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SimpleParser)
 		zval *p_sourceCode = NULL;
 		zend_string *p_sourceCode_str = NULL;
 		zval p_sourceCode_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_sourceCode_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_sourceCode_str != NULL) { ZVAL_STR(&p_sourceCode_zv, p_sourceCode_str); p_sourceCode = &p_sourceCode_zv; }

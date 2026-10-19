@@ -125,7 +125,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelperAcceptsResult)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleLevelHelperAcceptsResult::__construct() */
 		bool p_result = false;
 		zval *p_reasons = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_BOOL(p_result)
 			Z_PARAM_ARRAY(p_reasons)
 		ZEND_PARSE_PARAMETERS_END();
@@ -133,7 +133,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelperAcceptsResult)
 	});
 	cls.method(sigs::and_, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleLevelHelperAcceptsResult::and() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_rule_level_helper_accepts_result) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_0, "PHPStan\\Rules\\RuleLevelHelperAcceptsResult", 42))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\RuleLevelHelperAcceptsResult", zend_zval_value_name(p_other)); RETURN_THROWS(); }
@@ -158,7 +158,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RuleLevelHelperAcceptsResult)
 	});
 	cls.method(sigs::decorateReasons, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleLevelHelperAcceptsResult::decorateReasons() */
 		zval *p_cb = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_cb != NULL && UNEXPECTED(!zend_is_callable(p_cb, 0, NULL))) { zend_argument_type_error(1, "must be a valid callback, %s given", zend_zval_value_name(p_cb)); RETURN_THROWS(); }

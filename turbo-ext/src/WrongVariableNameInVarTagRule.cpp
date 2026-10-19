@@ -1987,7 +1987,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_WrongVariableNameInVarTagRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule::__construct() */
 		zval *p_fileTypeMapper = NULL;
 		zval *p_varTagTypeRuleHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_fileTypeMapper)
 			Z_PARAM_ZVAL(p_varTagTypeRuleHelper)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1996,14 +1996,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_WrongVariableNameInVarTagRule)
 		if (UNEXPECTED(!pgen::WrongVariableNameInVarTagRule::m___construct(Z_OBJ_P(ZEND_THIS), p_fileTypeMapper, p_varTagTypeRuleHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::WrongVariableNameInVarTagRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2017,7 +2016,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_WrongVariableNameInVarTagRule)
 		zval *p_var = NULL;
 		zval *p_expr = NULL;
 		zval *p_varTags = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_var)
 			Z_PARAM_ZVAL(p_expr)
@@ -2031,7 +2030,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_WrongVariableNameInVarTagRule)
 	});
 	cls.method(sigs::getAssignedVariables, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule::getAssignedVariables() */
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_52, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
@@ -2046,7 +2045,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_WrongVariableNameInVarTagRule)
 		ZVAL_NULL(&p_keyVar_null);
 		zval *p_valueVar = NULL;
 		zval *p_varTags = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_iterateeExpr)
 			Z_PARAM_ZVAL_OR_NULL(p_keyVar)
@@ -2065,7 +2064,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_WrongVariableNameInVarTagRule)
 		zval *p_scope = NULL;
 		zval *p_expr = NULL;
 		zval *p_varTags = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ARRAY(p_varTags)
@@ -2079,7 +2078,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_WrongVariableNameInVarTagRule)
 		zval *p_scope = NULL;
 		zval *p_vars = NULL;
 		zval *p_varTags = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_vars)
 			Z_PARAM_ARRAY(p_varTags)
@@ -2094,7 +2093,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_WrongVariableNameInVarTagRule)
 		zval *p_defaultExpr = NULL;
 		zval p_defaultExpr_null;
 		ZVAL_NULL(&p_defaultExpr_null);
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_varTags)
 			Z_PARAM_ZVAL_OR_NULL(p_defaultExpr)
@@ -2108,7 +2107,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_WrongVariableNameInVarTagRule)
 	cls.method(sigs::processGlobal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule::processGlobal() */
 		zval *p_node = NULL;
 		zval *p_varTags = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ARRAY(p_varTags)
 		ZEND_PARSE_PARAMETERS_END();

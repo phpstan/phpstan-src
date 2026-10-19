@@ -446,7 +446,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidPHPStanDocTagRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule::__construct() */
 		zval *p_phpDocLexer = NULL;
 		zval *p_phpDocParser = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocLexer)
 			Z_PARAM_ZVAL(p_phpDocParser)
 		ZEND_PARSE_PARAMETERS_END();
@@ -455,19 +455,17 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidPHPStanDocTagRule)
 		if (UNEXPECTED(!pgen::InvalidPHPStanDocTagRule::m___construct(Z_OBJ_P(ZEND_THIS), p_phpDocLexer, p_phpDocParser))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule::getNodeTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidPHPStanDocTagRule::m_getNodeTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidPHPStanDocTagRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

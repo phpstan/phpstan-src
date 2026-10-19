@@ -556,7 +556,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CachedParser)
 		zval *p_originalParser = NULL;
 		zend_long p_cachedNodesByStringCountMax = 0;
 		zend_long p_cachedSourceBytesMax = 4194304;
-		ZEND_PARSE_PARAMETERS_START(2, 3)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_originalParser)
 			Z_PARAM_LONG(p_cachedNodesByStringCountMax)
 			Z_PARAM_OPTIONAL
@@ -569,7 +569,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CachedParser)
 		zval *p_file = NULL;
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
@@ -580,7 +580,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CachedParser)
 		zval *p_sourceCode = NULL;
 		zend_string *p_sourceCode_str = NULL;
 		zval p_sourceCode_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_sourceCode_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_sourceCode_str != NULL) { ZVAL_STR(&p_sourceCode_zv, p_sourceCode_str); p_sourceCode = &p_sourceCode_zv; }
@@ -592,7 +592,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CachedParser)
 		zend_string *p_sourceCode_str = NULL;
 		zval p_sourceCode_zv;
 		zval *p_nodes = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_sourceCode_str)
 			Z_PARAM_ARRAY(p_nodes)
 		ZEND_PARSE_PARAMETERS_END();
@@ -603,7 +603,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CachedParser)
 		zval *p_file = NULL;
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
@@ -611,19 +611,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CachedParser)
 		if (UNEXPECTED(!pgen::CachedParser::m_readFile(Z_OBJ_P(ZEND_THIS), p_file, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getCachedNodesByStringCount, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\CachedParser::getCachedNodesByStringCount() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		zend_long r;
 		if (UNEXPECTED(!pgen::CachedParser::m_getCachedNodesByStringCount(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_LONG(r);
 	});
 	cls.method(sigs::getCachedNodesByStringCountMax, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\CachedParser::getCachedNodesByStringCountMax() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		zend_long r;
 		if (UNEXPECTED(!pgen::CachedParser::m_getCachedNodesByStringCountMax(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_LONG(r);
 	});
 	cls.method(sigs::getCachedNodesByString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\CachedParser::getCachedNodesByString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::CachedParser::m_getCachedNodesByString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

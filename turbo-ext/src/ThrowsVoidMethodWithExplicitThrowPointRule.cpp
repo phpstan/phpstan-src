@@ -432,7 +432,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ThrowsVoidMethodWithExplicitThrowPoint
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\ThrowsVoidMethodWithExplicitThrowPointRule::__construct() */
 		zval *p_exceptionTypeResolver = NULL;
 		bool p_missingCheckedExceptionInThrows = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_exceptionTypeResolver)
 			Z_PARAM_BOOL(p_missingCheckedExceptionInThrows)
 		ZEND_PARSE_PARAMETERS_END();
@@ -440,14 +440,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ThrowsVoidMethodWithExplicitThrowPoint
 		if (UNEXPECTED(!pgen::ThrowsVoidMethodWithExplicitThrowPointRule::m___construct(Z_OBJ_P(ZEND_THIS), p_exceptionTypeResolver, p_missingCheckedExceptionInThrows))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\ThrowsVoidMethodWithExplicitThrowPointRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ThrowsVoidMethodWithExplicitThrowPointRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\ThrowsVoidMethodWithExplicitThrowPointRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

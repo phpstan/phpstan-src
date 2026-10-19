@@ -308,7 +308,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileFinder)
 		zval *p_fileHelper = NULL;
 		zval *p_fileExtensions = NULL;
 		zval *p_directoryWalker = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_fileExcluder)
 			Z_PARAM_ZVAL(p_fileHelper)
 			Z_PARAM_ARRAY(p_fileExtensions)
@@ -321,7 +321,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileFinder)
 	});
 	cls.method(sigs::findFiles, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileFinder::findFiles() */
 		zval *p_paths = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_paths)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -329,7 +329,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileFinder)
 	});
 	cls.method(sigs::findFilesCached, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileFinder::findFilesCached() */
 		zval *p_paths = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_paths)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -338,7 +338,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileFinder)
 	cls.method(sigs::doFindFiles, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileFinder::doFindFiles() */
 		zval *p_paths = NULL;
 		bool p_cached = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_paths)
 			Z_PARAM_BOOL(p_cached)
 		ZEND_PARSE_PARAMETERS_END();

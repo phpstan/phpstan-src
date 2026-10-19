@@ -487,7 +487,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AllowedArrayKeysTypes)
 		zval p_phpVersion_null;
 		ZVAL_NULL(&p_phpVersion_null);
 		bool p_reportNonIntStringArrayKey = false;
-		ZEND_PARSE_PARAMETERS_START(0, 2)
+		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ZVAL_OR_NULL(p_phpVersion)
 			Z_PARAM_BOOL(p_reportNonIntStringArrayKey)
@@ -500,7 +500,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_AllowedArrayKeysTypes)
 	cls.method(sigs::narrowOffsetKeyType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\AllowedArrayKeysTypes::narrowOffsetKeyType() */
 		zval *p_varType = NULL;
 		zval *p_keyType = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_varType)
 			Z_PARAM_ZVAL(p_keyType)
 		ZEND_PARSE_PARAMETERS_END();

@@ -309,7 +309,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateTimeZoneConstructorThrowTypeExtens
 	ptdecl::DateTimeZoneConstructorThrowTypeExtension::declareProperties(cls);
 	cls.method(sigs::isStaticMethodSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\DateTimeZoneConstructorThrowTypeExtension::isStaticMethodSupported() */
 		zval *p_methodReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_methodReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
@@ -321,7 +321,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateTimeZoneConstructorThrowTypeExtens
 		zval *p_methodReflection = NULL;
 		zval *p_methodCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_methodReflection)
 			Z_PARAM_ZVAL(p_methodCall)
 			Z_PARAM_ZVAL(p_scope)
@@ -334,7 +334,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateTimeZoneConstructorThrowTypeExtens
 	});
 	cls.method(sigs::exceptionType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\DateTimeZoneConstructorThrowTypeExtension::exceptionType() */
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }

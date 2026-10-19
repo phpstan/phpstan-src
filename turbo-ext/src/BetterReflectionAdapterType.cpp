@@ -209,7 +209,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAdapterType)
 	ptdecl::BetterReflectionAdapterType::declareProperties(cls);
 	cls.method(sigs::fromTypeOrNull, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Reflection\Adapter\ReflectionType::fromTypeOrNull() */
 		zval *p_betterReflectionType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_betterReflectionType)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -217,7 +217,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAdapterType)
 	});
 	cls.method(sigs::fromType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Reflection\Adapter\ReflectionType::fromType() */
 		zval *p_betterReflectionType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_betterReflectionType)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);

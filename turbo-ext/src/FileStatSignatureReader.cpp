@@ -176,7 +176,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileStatSignatureReader)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileStatSignatureReader::__construct() */
 		zend_long p_startedAt = 0;
 		bool p_trusted = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_LONG(p_startedAt)
 			Z_PARAM_BOOL(p_trusted)
 		ZEND_PARSE_PARAMETERS_END();
@@ -186,7 +186,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileStatSignatureReader)
 		zval *p_path = NULL;
 		zend_string *p_path_str = NULL;
 		zval p_path_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_path_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_path_str != NULL) { ZVAL_STR(&p_path_zv, p_path_str); p_path = &p_path_zv; }
@@ -195,7 +195,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileStatSignatureReader)
 	});
 	cls.method(sigs::fromStat, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileStatSignatureReader::fromStat() */
 		zval *p_stat = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_stat)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);

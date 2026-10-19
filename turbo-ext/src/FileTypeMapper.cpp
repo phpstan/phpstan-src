@@ -4320,7 +4320,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval *p_fileContentHasher = NULL;
 		zend_long p_resolvedPhpDocBlockCacheCountMax = 0;
 		zend_long p_nameScopeMapMemoryCacheCountMax = 0;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		ZEND_PARSE_PARAMETERS_START(10, -1)
 			Z_PARAM_OBJECT(p_reflectionProviderProvider)
 			Z_PARAM_OBJECT(p_phpParser)
 			Z_PARAM_OBJECT(p_phpDocStringResolver)
@@ -4368,7 +4368,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval p_docComment_zv;
 		zval p_docComment_null;
 		ZVAL_NULL(&p_docComment_null);
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_STR_OR_NULL(p_fileName_str)
 			Z_PARAM_STR_OR_NULL(p_className_str)
 			Z_PARAM_STR_OR_NULL(p_traitName_str)
@@ -4455,7 +4455,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval p_fileName_zv;
 		zval p_fileName_null;
 		ZVAL_NULL(&p_fileName_null);
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 			Z_PARAM_STR(p_phpDocString_str)
@@ -4488,7 +4488,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval p_functionName_zv;
 		zval p_functionName_null;
 		ZVAL_NULL(&p_functionName_null);
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_STR(p_fileName_str)
 			Z_PARAM_STR_OR_NULL(p_className_str)
 			Z_PARAM_STR_OR_NULL(p_traitName_str)
@@ -4523,7 +4523,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval p_functionName_zv;
 		zval p_functionName_null;
 		ZVAL_NULL(&p_functionName_null);
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_STR(p_fileName_str)
 			Z_PARAM_STR_OR_NULL(p_className_str)
 			Z_PARAM_STR_OR_NULL(p_traitName_str)
@@ -4543,7 +4543,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval *p_fileName = NULL;
 		zend_string *p_fileName_str = NULL;
 		zval p_fileName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_fileName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_fileName_str != NULL) { ZVAL_STR(&p_fileName_zv, p_fileName_str); p_fileName = &p_fileName_zv; }
@@ -4557,7 +4557,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval *p_variableCacheKey = NULL;
 		zend_string *p_variableCacheKey_str = NULL;
 		zval p_variableCacheKey_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_cacheKey_str)
 			Z_PARAM_STR(p_variableCacheKey_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4588,7 +4588,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval p_activeTraitResolutions_default;
 		ZVAL_EMPTY_ARRAY(&p_activeTraitResolutions_default);
 		p_activeTraitResolutions = &p_activeTraitResolutions_default;
-		ZEND_PARSE_PARAMETERS_START(5, 6)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_STR(p_fileName_str)
 			Z_PARAM_STR_OR_NULL(p_lookForTrait_str)
 			Z_PARAM_STR_OR_NULL(p_traitUseClass_str)
@@ -4608,7 +4608,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 	});
 	cls.method(sigs::chooseTemplateTagValueNodesByPriority, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\FileTypeMapper::chooseTemplateTagValueNodesByPriority() */
 		zval *p_tags = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_tags)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -4616,7 +4616,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 	});
 	cls.method(sigs::getTypeAliasesMap, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\FileTypeMapper::getTypeAliasesMap() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_197, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4627,7 +4627,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval *p_node = NULL;
 		zval *p_nodeCallback = NULL;
 		zval *p_endNodeCallback = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_nodeCallback)
 			Z_PARAM_ZVAL(p_endNodeCallback)
@@ -4657,7 +4657,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval p_function_zv;
 		zval p_function_null;
 		ZVAL_NULL(&p_function_null);
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_STR_OR_NULL(p_file_str)
 			Z_PARAM_STR_OR_NULL(p_class_str)
 			Z_PARAM_STR_OR_NULL(p_trait_str)
@@ -4681,7 +4681,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval *p_docComment = NULL;
 		zend_string *p_docComment_str = NULL;
 		zval p_docComment_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_nameScopeKey_str)
 			Z_PARAM_STR(p_docComment_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4703,7 +4703,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileTypeMapper)
 		zval *p_originalClassFileName = NULL;
 		zend_string *p_originalClassFileName_str = NULL;
 		zval p_originalClassFileName_zv;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_STR(p_fileName_str)
 			Z_PARAM_STR(p_traitName_str)
 			Z_PARAM_STR(p_className_str)

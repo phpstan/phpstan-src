@@ -234,7 +234,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideThrowTypeCheck)
 	ptdecl::TooWideThrowTypeCheck::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\TooWideThrowTypeCheck::__construct() */
 		bool p_implicitThrows = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_implicitThrows)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::TooWideThrowTypeCheck::m___construct(Z_OBJ_P(ZEND_THIS), p_implicitThrows))) RETURN_THROWS();
@@ -242,7 +242,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideThrowTypeCheck)
 	cls.method(sigs::check, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\TooWideThrowTypeCheck::check() */
 		zval *p_throwType = NULL;
 		zval *p_throwPoints = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_throwType)
 			Z_PARAM_ARRAY(p_throwPoints)
 		ZEND_PARSE_PARAMETERS_END();

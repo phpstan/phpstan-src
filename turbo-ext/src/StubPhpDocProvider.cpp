@@ -1819,7 +1819,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		zval *p_parser = NULL;
 		zval *p_fileTypeMapper = NULL;
 		zval *p_stubFilesProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_OBJECT(p_parser)
 			Z_PARAM_OBJECT(p_fileTypeMapper)
 			Z_PARAM_OBJECT(p_stubFilesProvider)
@@ -1833,7 +1833,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -1847,7 +1847,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		zval *p_propertyName = NULL;
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_STR(p_propertyName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1863,7 +1863,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		zval *p_constantName = NULL;
 		zend_string *p_constantName_str = NULL;
 		zval p_constantName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_STR(p_constantName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1883,7 +1883,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
 		zval *p_positionalParameterNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_STR(p_implementingClassName_str)
 			Z_PARAM_STR(p_methodName_str)
@@ -1900,7 +1900,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		zend_string *p_functionName_str = NULL;
 		zval p_functionName_zv;
 		zval *p_positionalParameterNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_functionName_str)
 			Z_PARAM_ARRAY(p_positionalParameterNames)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1912,7 +1912,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -1924,7 +1924,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		zval *p_functionName = NULL;
 		zend_string *p_functionName_str = NULL;
 		zval p_functionName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_functionName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionName_str != NULL) { ZVAL_STR(&p_functionName_zv, p_functionName_str); p_functionName = &p_functionName_zv; }
@@ -1933,7 +1933,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::initializeKnownElements, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\StubPhpDocProvider::initializeKnownElements() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::StubPhpDocProvider::m_initializeKnownElements(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::initializeKnownElementNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\StubPhpDocProvider::initializeKnownElementNode() */
@@ -1941,7 +1940,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StubPhpDocProvider)
 		zend_string *p_stubFile_str = NULL;
 		zval p_stubFile_zv;
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_stubFile_str)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();

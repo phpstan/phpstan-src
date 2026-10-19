@@ -56,7 +56,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionDeprecatedHelper)
 	ptdecl::BetterReflectionDeprecatedHelper::declareProperties(cls);
 	cls.method(sigs::isDeprecated, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Reflection\Deprecated\DeprecatedHelper::isDeprecated() */
 		zval *p_reflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_reflection)
 		ZEND_PARSE_PARAMETERS_END();
 		bool r;

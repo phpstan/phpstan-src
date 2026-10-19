@@ -1317,7 +1317,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassConstantRule)
 		zval *p_ruleLevelHelper = NULL;
 		zval *p_classCheck = NULL;
 		zval *p_nonStringableDynamicAccessCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_ruleLevelHelper)
 			Z_PARAM_ZVAL(p_classCheck)
@@ -1330,14 +1330,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassConstantRule)
 		if (UNEXPECTED(!pgen::ClassConstantRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_ruleLevelHelper, p_classCheck, p_nonStringableDynamicAccessCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Classes\ClassConstantRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassConstantRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Classes\ClassConstantRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1352,7 +1351,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassConstantRule)
 		zval *p_constantName = NULL;
 		zend_string *p_constantName_str = NULL;
 		zval p_constantName_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_STR(p_constantName_str)

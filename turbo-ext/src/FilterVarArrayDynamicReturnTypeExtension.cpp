@@ -1736,7 +1736,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FilterVarArrayDynamicReturnTypeExtensi
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\FilterVarArrayDynamicReturnTypeExtension::__construct() */
 		zval *p_filterFunctionReturnTypeHelper = NULL;
 		zval *p_reflectionProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_OBJECT(p_filterFunctionReturnTypeHelper)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1746,7 +1746,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FilterVarArrayDynamicReturnTypeExtensi
 	});
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\FilterVarArrayDynamicReturnTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_72, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
@@ -1758,7 +1758,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FilterVarArrayDynamicReturnTypeExtensi
 		zval *p_functionReflection = NULL;
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_functionCall)
 			Z_PARAM_ZVAL(p_scope)
@@ -1771,7 +1771,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FilterVarArrayDynamicReturnTypeExtensi
 	});
 	cls.method(sigs::fetchFilter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\FilterVarArrayDynamicReturnTypeExtension::fetchFilter() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_54, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }

@@ -687,7 +687,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatibleClassConstantPhpDocTypeRul
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule::__construct() */
 		zval *p_genericObjectTypeCheck = NULL;
 		zval *p_unresolvableTypeHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_genericObjectTypeCheck)
 			Z_PARAM_ZVAL(p_unresolvableTypeHelper)
 		ZEND_PARSE_PARAMETERS_END();
@@ -696,14 +696,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatibleClassConstantPhpDocTypeRul
 		if (UNEXPECTED(!pgen::IncompatibleClassConstantPhpDocTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_genericObjectTypeCheck, p_unresolvableTypeHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IncompatibleClassConstantPhpDocTypeRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -720,7 +719,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IncompatibleClassConstantPhpDocTypeRul
 		zval *p_constantName = NULL;
 		zend_string *p_constantName_str = NULL;
 		zval p_constantName_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL_OR_NULL(p_nativeType)
 			Z_PARAM_STR(p_constantName_str)

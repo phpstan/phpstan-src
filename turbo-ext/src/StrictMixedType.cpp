@@ -1494,7 +1494,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	ptdecl::StrictMixedType::declareClass(cls);
 	ptdecl::StrictMixedType::declareProperties(cls);
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getReferencedClasses() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getReferencedClasses(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1505,7 +1504,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getObjectClassNames() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getObjectClassNames(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1516,7 +1514,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getObjectClassReflections() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getObjectClassReflections(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1527,14 +1524,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::getConstantStrings, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getConstantStrings() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getConstantStrings(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::accepts() */
 		zval *p_type = NULL;
 		bool p_strictTypes = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_BOOL(p_strictTypes)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1571,7 +1567,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isAcceptedBy() */
 		zval *p_acceptingType = NULL;
 		bool p_strictTypes = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_acceptingType)
 			Z_PARAM_BOOL(p_strictTypes)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1581,7 +1577,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isSuperTypeOf() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -1606,7 +1602,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isSubTypeOf() */
 		zval *p_otherType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_otherType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_otherType != NULL && UNEXPECTED(Z_TYPE_P(p_otherType) != IS_OBJECT || !pgrt::instanceOfClass(p_otherType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_otherType)); RETURN_THROWS(); }
@@ -1631,7 +1627,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::equals() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -1657,7 +1653,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::describe() */
 		zval *p_level = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_level)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_level != NULL && UNEXPECTED(Z_TYPE_P(p_level) != IS_OBJECT || !(pgrt::instanceOfClass(p_level, pt_ce_verbosity_level) || pgrt::instanceOfClass(p_level, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Type\\VerbosityLevel", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\VerbosityLevel", zend_zval_value_name(p_level)); RETURN_THROWS(); }
@@ -1687,7 +1683,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_templateTypeName = NULL;
 		zend_string *p_templateTypeName_str = NULL;
 		zval p_templateTypeName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_ancestorClassName_str)
 			Z_PARAM_STR(p_templateTypeName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1697,22 +1693,18 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getTemplateType(Z_OBJ_P(ZEND_THIS), p_ancestorClassName, p_templateTypeName, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isObject, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isObject() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isObject(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassStringType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getClassStringType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getClassStringType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isEnum, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isEnum() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isEnum(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::canAccessProperties, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::canAccessProperties() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_canAccessProperties(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1720,7 +1712,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_propertyName = NULL;
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_propertyName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
@@ -1732,7 +1724,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1746,7 +1738,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1759,7 +1751,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_propertyName = NULL;
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_propertyName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
@@ -1787,7 +1779,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1827,7 +1819,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1866,7 +1858,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_propertyName = NULL;
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_propertyName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
@@ -1878,7 +1870,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1892,7 +1884,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1902,7 +1894,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getUnresolvedStaticPropertyPrototype(Z_OBJ_P(ZEND_THIS), p_propertyName, p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::canCallMethods, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::canCallMethods() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_canCallMethods(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1910,7 +1901,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_methodName = NULL;
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_methodName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_methodName_str != NULL) { ZVAL_STR(&p_methodName_zv, p_methodName_str); p_methodName = &p_methodName_zv; }
@@ -1938,7 +1929,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_methodName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1978,7 +1969,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_methodName_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2014,7 +2005,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r3;
 	});
 	cls.method(sigs::canAccessConstants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::canAccessConstants() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_canAccessConstants(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2022,7 +2012,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_constantName = NULL;
 		zend_string *p_constantName_str = NULL;
 		zval p_constantName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_constantName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_constantName_str != NULL) { ZVAL_STR(&p_constantName_zv, p_constantName_str); p_constantName = &p_constantName_zv; }
@@ -2033,7 +2023,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_constantName = NULL;
 		zend_string *p_constantName_str = NULL;
 		zval p_constantName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_constantName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_constantName_str != NULL) { ZVAL_STR(&p_constantName_zv, p_constantName_str); p_constantName = &p_constantName_zv; }
@@ -2041,12 +2031,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getConstant(Z_OBJ_P(ZEND_THIS), p_constantName, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isIterable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isIterable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isIterable(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isIterableAtLeastOnce, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isIterableAtLeastOnce() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isIterableAtLeastOnce(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2057,7 +2045,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::getIterableKeyType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getIterableKeyType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getIterableKeyType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2068,7 +2055,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::getIterableValueType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getIterableValueType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getIterableValueType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2079,7 +2065,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isNull() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isNull(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2090,12 +2075,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::isConstantValue, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isConstantValue() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isConstantValue(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isConstantScalarValue, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isConstantScalarValue() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isConstantScalarValue(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2106,12 +2089,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::getConstantScalarTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getConstantScalarTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getConstantScalarTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getConstantScalarValues, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getConstantScalarValues() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getConstantScalarValues(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2122,17 +2103,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isTrue() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isTrue(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isFalse, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isFalse() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isFalse(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isBoolean, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isBoolean() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isBoolean(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2143,7 +2121,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isFloat() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isFloat(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2154,7 +2131,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::isInteger, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isInteger() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isInteger(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2165,7 +2141,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2176,57 +2151,46 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isNumericString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isNumericString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isDecimalIntegerString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isDecimalIntegerString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isDecimalIntegerString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isNonEmptyString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isNonEmptyString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isNonEmptyString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isNonFalsyString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isNonFalsyString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isNonFalsyString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isLiteralString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isLiteralString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isLiteralString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isLowercaseString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isLowercaseString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isLowercaseString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isUppercaseString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isUppercaseString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isUppercaseString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isClassString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isClassString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isClassString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassStringObjectType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getClassStringObjectType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getClassStringObjectType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getObjectTypeOrClassStringObjectType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getObjectTypeOrClassStringObjectType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isVoid, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isVoid() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isVoid(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2237,14 +2201,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r1;
 	});
 	cls.method(sigs::isScalar, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isScalar() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isScalar(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::looseCompare() */
 		zval *p_type = NULL;
 		zval *p_phpVersion = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_phpVersion)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2254,18 +2217,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		if (UNEXPECTED(!pgen::StrictMixedType::m_looseCompare(Z_OBJ_P(ZEND_THIS), p_type, p_phpVersion, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isOffsetAccessible, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isOffsetAccessible() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isOffsetAccessible(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isOffsetAccessLegal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isOffsetAccessLegal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isOffsetAccessLegal(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::hasOffsetValueType() */
 		zval *p_offsetType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_offsetType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_offsetType != NULL && UNEXPECTED(Z_TYPE_P(p_offsetType) != IS_OBJECT || !pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
@@ -2290,7 +2251,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getOffsetValueType() */
 		zval *p_offsetType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_offsetType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_offsetType != NULL && UNEXPECTED(Z_TYPE_P(p_offsetType) != IS_OBJECT || !pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
@@ -2319,7 +2280,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		ZVAL_NULL(&p_offsetType_null);
 		zval *p_valueType = NULL;
 		bool p_unionValues = true;
-		ZEND_PARSE_PARAMETERS_START(2, 3)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_offsetType)
 			Z_PARAM_ZVAL(p_valueType)
 			Z_PARAM_OPTIONAL
@@ -2334,7 +2295,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::setExistingOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::setExistingOffsetValueType() */
 		zval *p_offsetType = NULL;
 		zval *p_valueType = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_offsetType)
 			Z_PARAM_ZVAL(p_valueType)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2345,7 +2306,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::unsetOffset, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::unsetOffset() */
 		zval *p_offsetType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_offsetType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_offsetType != NULL && UNEXPECTED(Z_TYPE_P(p_offsetType) != IS_OBJECT || !pgrt::instanceOfClass(p_offsetType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetType)); RETURN_THROWS(); }
@@ -2353,7 +2314,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		if (UNEXPECTED(!pgen::StrictMixedType::m_unsetOffset(Z_OBJ_P(ZEND_THIS), p_offsetType, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isCallable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isCallable(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2365,7 +2325,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getCallableParametersAcceptors() */
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Reflection\\ClassMemberAccessAnswerer", 44)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassMemberAccessAnswerer", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
@@ -2373,33 +2333,28 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getCallableParametersAcceptors(Z_OBJ_P(ZEND_THIS), p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isCloneable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::isCloneable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_isCloneable(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toBoolean, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toBoolean() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toBoolean(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toNumber, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toNumber() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toNumber(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toBitwiseNotType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toBitwiseNotType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toBitwiseNotType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toGetClassResultType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toGetClassResultType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toGetClassResultType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toClassConstantType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toClassConstantType() */
 		zval *p_reflectionProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_reflectionProvider != NULL && UNEXPECTED(Z_TYPE_P(p_reflectionProvider) != IS_OBJECT || !pgrt::instanceOfClass(p_reflectionProvider, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_reflectionProvider)); RETURN_THROWS(); }
@@ -2407,7 +2362,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toClassConstantType(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toObjectTypeForInstanceofCheck, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toObjectTypeForInstanceofCheck() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toObjectTypeForInstanceofCheck(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2415,7 +2369,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		zval *p_objectOrClassType = NULL;
 		bool p_allowString = false;
 		bool p_allowSameClass = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_objectOrClassType)
 			Z_PARAM_BOOL(p_allowString)
 			Z_PARAM_BOOL(p_allowSameClass)
@@ -2425,32 +2379,26 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toObjectTypeForIsACheck(Z_OBJ_P(ZEND_THIS), p_objectOrClassType, p_allowString, p_allowSameClass, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toAbsoluteNumber, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toAbsoluteNumber() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toAbsoluteNumber(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toInteger, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toInteger() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toInteger(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toFloat, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toFloat() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toFloat(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toArray, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toArray() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toArray(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toArrayKey, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toArrayKey() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toArrayKey(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2462,7 +2410,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::toCoercedArgumentType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toCoercedArgumentType() */
 		bool p_strictTypes = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_strictTypes)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -2470,7 +2418,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::inferTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::inferTemplateTypes() */
 		zval *p_receivedType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_receivedType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_receivedType != NULL && UNEXPECTED(Z_TYPE_P(p_receivedType) != IS_OBJECT || !pgrt::instanceOfClass(p_receivedType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_receivedType)); RETURN_THROWS(); }
@@ -2479,7 +2427,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::getReferencedTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getReferencedTemplateTypes() */
 		zval *p_positionVariance = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_positionVariance)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_positionVariance != NULL && UNEXPECTED(Z_TYPE_P(p_positionVariance) != IS_OBJECT || !(pgrt::instanceOfClass(p_positionVariance, pt_ce_template_type_variance) || pgrt::instanceOfClass(p_positionVariance, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Generic\\TemplateTypeVariance", 41))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Generic\\TemplateTypeVariance", zend_zval_value_name(p_positionVariance)); RETURN_THROWS(); }
@@ -2503,12 +2451,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		return r2;
 	});
 	cls.method(sigs::getEnumCases, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getEnumCases() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getEnumCases(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getEnumCaseObject() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getEnumCaseObject(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -2520,7 +2466,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::traverse() */
 		zval *p_cb = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_cb != NULL && UNEXPECTED(!zend_is_callable(p_cb, 0, NULL))) { zend_argument_type_error(1, "must be a valid callback, %s given", zend_zval_value_name(p_cb)); RETURN_THROWS(); }
@@ -2546,7 +2492,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::traverseSimultaneously() */
 		zval *p_right = NULL;
 		zval *p_cb = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_right)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2557,7 +2503,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 	});
 	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::exponentiate() */
 		zval *p_exponent = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_exponent)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_exponent != NULL && UNEXPECTED(Z_TYPE_P(p_exponent) != IS_OBJECT || !pgrt::instanceOfClass(p_exponent, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_exponent)); RETURN_THROWS(); }
@@ -2565,17 +2511,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_StrictMixedType)
 		if (UNEXPECTED(!pgen::StrictMixedType::m_exponentiate(Z_OBJ_P(ZEND_THIS), p_exponent, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFiniteTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::getFiniteTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_getFiniteTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toPhpDocNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::toPhpDocNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::StrictMixedType::m_toPhpDocNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasTemplateOrLateResolvableType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\StrictMixedType::hasTemplateOrLateResolvableType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::StrictMixedType::m_hasTemplateOrLateResolvableType(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

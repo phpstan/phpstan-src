@@ -193,7 +193,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConditionalExpressionHolder)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ConditionalExpressionHolder::__construct() */
 		zval *p_conditionExpressionTypeHolders = NULL;
 		zval *p_typeHolder = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_conditionExpressionTypeHolders)
 			Z_PARAM_ZVAL(p_typeHolder)
 		ZEND_PARSE_PARAMETERS_END();
@@ -201,17 +201,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConditionalExpressionHolder)
 		if (UNEXPECTED(!pgen::ConditionalExpressionHolder::m___construct(Z_OBJ_P(ZEND_THIS), p_conditionExpressionTypeHolders, p_typeHolder))) RETURN_THROWS();
 	});
 	cls.method(sigs::getConditionExpressionTypeHolders, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ConditionalExpressionHolder::getConditionExpressionTypeHolders() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConditionalExpressionHolder::m_getConditionExpressionTypeHolders(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTypeHolder, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ConditionalExpressionHolder::getTypeHolder() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConditionalExpressionHolder::m_getTypeHolder(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getKey, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ConditionalExpressionHolder::getKey() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConditionalExpressionHolder::m_getKey(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

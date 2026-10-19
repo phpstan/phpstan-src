@@ -1719,7 +1719,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 	cls.privateClassConstantLong("CONSTANT_COMBINATION_LIMIT", 16);
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ExplodeFunctionDynamicReturnTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_53, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
@@ -1731,7 +1731,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 		zval *p_functionReflection = NULL;
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_functionCall)
 			Z_PARAM_ZVAL(p_scope)
@@ -1745,7 +1745,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 	cls.method(sigs::isDelimiterGuaranteedPresent, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ExplodeFunctionDynamicReturnTypeExtension::isDelimiterGuaranteedPresent() */
 		zval *p_args = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_args)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1761,7 +1761,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 		zval p_limitType_null;
 		ZVAL_NULL(&p_limitType_null);
 		zval *p_phpVersions = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_delimiterType)
 			Z_PARAM_ZVAL(p_stringType)
 			Z_PARAM_ZVAL_OR_NULL(p_limitType)
@@ -1780,7 +1780,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 		zval p_limitType_null;
 		ZVAL_NULL(&p_limitType_null);
 		zend_long p_partsCount = 0;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_limitType)
 			Z_PARAM_LONG(p_partsCount)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1793,7 +1793,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 		zval *p_limitType = NULL;
 		zval p_limitType_null;
 		ZVAL_NULL(&p_limitType_null);
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_limitType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_limitType != NULL && UNEXPECTED((Z_TYPE_P(p_limitType) != IS_OBJECT && Z_TYPE_P(p_limitType) != IS_NULL) || !(Z_TYPE_P(p_limitType) == IS_NULL || pgrt::instanceOfClass(p_limitType, pgrt::lookupClassQuiet(pg_site_55, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_limitType)); RETURN_THROWS(); }
@@ -1806,7 +1806,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 		zval *p_limitType = NULL;
 		zval p_limitType_null;
 		ZVAL_NULL(&p_limitType_null);
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_limitType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_limitType != NULL && UNEXPECTED((Z_TYPE_P(p_limitType) != IS_OBJECT && Z_TYPE_P(p_limitType) != IS_NULL) || !(Z_TYPE_P(p_limitType) == IS_NULL || pgrt::instanceOfClass(p_limitType, pgrt::lookupClassQuiet(pg_site_55, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_limitType)); RETURN_THROWS(); }
@@ -1817,7 +1817,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 	});
 	cls.method(sigs::createSingleElementSplitType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ExplodeFunctionDynamicReturnTypeExtension::createSingleElementSplitType() */
 		zval *p_valueType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_valueType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_valueType != NULL && UNEXPECTED(Z_TYPE_P(p_valueType) != IS_OBJECT || !pgrt::instanceOfClass(p_valueType, pgrt::lookupClassQuiet(pg_site_55, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_valueType)); RETURN_THROWS(); }
@@ -1829,7 +1829,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 		zval *p_limitType = NULL;
 		zval p_limitType_null;
 		ZVAL_NULL(&p_limitType_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_valueType)
 			Z_PARAM_ZVAL_OR_NULL(p_limitType)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1843,7 +1843,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExplodeFunctionDynamicReturnTypeExtens
 		zval *p_limitType = NULL;
 		zval p_limitType_null;
 		ZVAL_NULL(&p_limitType_null);
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_limitType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_limitType != NULL && UNEXPECTED((Z_TYPE_P(p_limitType) != IS_OBJECT && Z_TYPE_P(p_limitType) != IS_NULL) || !(Z_TYPE_P(p_limitType) == IS_NULL || pgrt::instanceOfClass(p_limitType, pgrt::lookupClassQuiet(pg_site_55, "PHPStan\\Type\\Type", 17))))) { zend_argument_type_error(1, "must be of type %s, %s given", "?PHPStan\\Type\\Type", zend_zval_value_name(p_limitType)); RETURN_THROWS(); }

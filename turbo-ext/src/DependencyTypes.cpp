@@ -884,7 +884,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyTypes)
 	ptdecl::DependencyTypes::declareProperties(cls);
 	cls.method(sigs::ofCalledVariants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyTypes::ofCalledVariants() */
 		zval *p_variants = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_variants)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -892,7 +892,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyTypes)
 	});
 	cls.method(sigs::ofCalledParameters, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyTypes::ofCalledParameters() */
 		zval *p_parameters = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_parameters)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -901,7 +901,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyTypes)
 	cls.method(sigs::ofCalledMethod, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyTypes::ofCalledMethod() */
 		zval *p_methodReflection = NULL;
 		bool p_withAssertsAndSelfOut = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_methodReflection)
 			Z_PARAM_BOOL(p_withAssertsAndSelfOut)
 		ZEND_PARSE_PARAMETERS_END();
@@ -911,7 +911,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyTypes)
 	});
 	cls.method(sigs::ofAsserts, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyTypes::ofAsserts() */
 		zval *p_asserts = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_asserts)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_asserts != NULL && UNEXPECTED(Z_TYPE_P(p_asserts) != IS_OBJECT || !(pgrt::instanceOfClass(p_asserts, pt_ce_assertions) || pgrt::instanceOfClass(p_asserts, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Reflection\\Assertions", 29))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\Assertions", zend_zval_value_name(p_asserts)); RETURN_THROWS(); }
@@ -920,7 +920,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyTypes)
 	});
 	cls.method(sigs::classNamesOfClassString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyTypes::classNamesOfClassString() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -929,7 +929,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyTypes)
 	});
 	cls.method(sigs::ofClosureType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyTypes::ofClosureType() */
 		zval *p_closureType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_closureType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_closureType != NULL && UNEXPECTED(Z_TYPE_P(p_closureType) != IS_OBJECT || !pgrt::instanceOfClass(p_closureType, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_closureType)); RETURN_THROWS(); }
@@ -939,7 +939,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DependencyTypes)
 	cls.method(sigs::ofDeclaration, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Dependency\DependencyTypes::ofDeclaration() */
 		zval *p_reflection = NULL;
 		bool p_withAsserts = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_reflection)
 			Z_PARAM_BOOL(p_withAsserts)
 		ZEND_PARSE_PARAMETERS_END();

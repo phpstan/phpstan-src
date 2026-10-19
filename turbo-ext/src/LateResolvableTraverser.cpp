@@ -128,7 +128,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LateResolvableTraverser)
 	ptdecl::LateResolvableTraverser::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Traverser\LateResolvableTraverser::__construct() */
 		bool p_resolveUnresolvableTypes = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_resolveUnresolvableTypes)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::LateResolvableTraverser::m___construct(Z_OBJ_P(ZEND_THIS), p_resolveUnresolvableTypes))) RETURN_THROWS();
@@ -136,7 +136,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LateResolvableTraverser)
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Traverser\LateResolvableTraverser::traverse() */
 		zval *p_type = NULL;
 		zval *p_traverse = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_traverse)
 		ZEND_PARSE_PARAMETERS_END();

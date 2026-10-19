@@ -549,7 +549,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParserNodeTypeToPHPStanType)
 		zval *p_classReflection = NULL;
 		zval p_classReflection_null;
 		ZVAL_NULL(&p_classReflection_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL_OR_NULL(p_classReflection)
 		ZEND_PARSE_PARAMETERS_END();

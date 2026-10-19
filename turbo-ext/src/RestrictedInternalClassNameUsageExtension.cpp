@@ -395,7 +395,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedInternalClassNameUsageExtens
 	ptdecl::RestrictedInternalClassNameUsageExtension::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\InternalTag\RestrictedInternalClassNameUsageExtension::__construct() */
 		zval *p_helper = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_helper)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_restricted_internal_usage_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", 55))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
@@ -405,7 +405,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedInternalClassNameUsageExtens
 		zval *p_classReflection = NULL;
 		zval *p_scope = NULL;
 		zval *p_location = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_location)

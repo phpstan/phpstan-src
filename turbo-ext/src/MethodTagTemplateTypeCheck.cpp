@@ -428,7 +428,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodTagTemplateTypeCheck)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\MethodTagTemplateTypeCheck::__construct() */
 		zval *p_fileTypeMapper = NULL;
 		zval *p_templateTypeCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_OBJECT(p_fileTypeMapper)
 			Z_PARAM_OBJECT(p_templateTypeCheck)
 		ZEND_PARSE_PARAMETERS_END();
@@ -443,7 +443,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodTagTemplateTypeCheck)
 		zval *p_docComment = NULL;
 		zend_string *p_docComment_str = NULL;
 		zval p_docComment_zv;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)

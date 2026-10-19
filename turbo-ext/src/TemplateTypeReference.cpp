@@ -88,7 +88,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeReference)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateTypeReference::__construct() */
 		zval *p_type = NULL;
 		zval *p_positionVariance = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_positionVariance)
 		ZEND_PARSE_PARAMETERS_END();
@@ -97,7 +97,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeReference)
 		if (UNEXPECTED(!pgen::TemplateTypeReference::m___construct(Z_OBJ_P(ZEND_THIS), p_type, p_positionVariance))) RETURN_THROWS();
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateTypeReference::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TemplateTypeReference::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -108,7 +107,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeReference)
 		return r1;
 	});
 	cls.method(sigs::getPositionVariance, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateTypeReference::getPositionVariance() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TemplateTypeReference::m_getPositionVariance(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

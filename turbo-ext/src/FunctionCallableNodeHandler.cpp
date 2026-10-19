@@ -1069,7 +1069,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallableNodeHandler)
 		zval *p_defaultNarrowingHelper = NULL;
 		zval *p_initializerExprTypeResolver = NULL;
 		zval *p_reflectionProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_OBJECT(p_expressionResultFactory)
 			Z_PARAM_OBJECT(p_defaultNarrowingHelper)
 			Z_PARAM_OBJECT(p_initializerExprTypeResolver)
@@ -1083,7 +1083,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallableNodeHandler)
 	});
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExprHandler\Virtual\FunctionCallableNodeHandler::supports() */
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
@@ -1099,7 +1099,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallableNodeHandler)
 		zval *p_storage = NULL;
 		zval *p_nodeCallback = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_nodeScopeResolver)
 			Z_PARAM_ZVAL(p_stmt)
 			Z_PARAM_ZVAL(p_expr)
@@ -1125,7 +1125,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallableNodeHandler)
 		zval p_nameResult_null;
 		ZVAL_NULL(&p_nameResult_null);
 		zval *p_result = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL_OR_NULL(p_nameResult)
@@ -1145,7 +1145,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallableNodeHandler)
 		zval *p_nameResult = NULL;
 		zval p_nameResult_null;
 		ZVAL_NULL(&p_nameResult_null);
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL_OR_NULL(p_nameResult)
@@ -1159,7 +1159,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionCallableNodeHandler)
 	});
 	cls.method(sigs::isClosureObject, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExprHandler\Virtual\FunctionCallableNodeHandler::isClosureObject() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_56, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }

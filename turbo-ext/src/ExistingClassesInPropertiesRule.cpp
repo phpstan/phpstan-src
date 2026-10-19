@@ -585,7 +585,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingClassesInPropertiesRule)
 		bool p_checkClassCaseSensitivity = false;
 		bool p_checkThisOnly = false;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_classCheck)
 			Z_PARAM_ZVAL(p_unresolvableTypeHelper)
@@ -601,14 +601,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingClassesInPropertiesRule)
 		if (UNEXPECTED(!pgen::ExistingClassesInPropertiesRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_classCheck, p_unresolvableTypeHelper, p_phpVersion, p_checkClassCaseSensitivity, p_checkThisOnly, p_discoveringSymbolsTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\ExistingClassesInPropertiesRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExistingClassesInPropertiesRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\ExistingClassesInPropertiesRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

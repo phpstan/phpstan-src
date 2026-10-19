@@ -660,7 +660,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInUseRule)
 		zval *p_classCheck = NULL;
 		bool p_checkFunctionNameCase = false;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_classCheck)
 			Z_PARAM_BOOL(p_checkFunctionNameCase)
@@ -671,14 +671,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInUseRule)
 		if (UNEXPECTED(!pgen::ExistingNamesInUseRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_classCheck, p_checkFunctionNameCase, p_discoveringSymbolsTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInUseRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ExistingNamesInUseRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInUseRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -689,7 +688,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInUseRule)
 	});
 	cls.method(sigs::checkConstants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInUseRule::checkConstants() */
 		zval *p_uses = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_uses)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -697,7 +696,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInUseRule)
 	});
 	cls.method(sigs::checkFunctions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInUseRule::checkFunctions() */
 		zval *p_uses = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_uses)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -706,7 +705,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExistingNamesInUseRule)
 	cls.method(sigs::checkClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Namespaces\ExistingNamesInUseRule::checkClasses() */
 		zval *p_scope = NULL;
 		zval *p_uses = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_uses)
 		ZEND_PARSE_PARAMETERS_END();

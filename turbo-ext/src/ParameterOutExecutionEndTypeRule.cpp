@@ -394,21 +394,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParameterOutExecutionEndTypeRule)
 	ptdecl::ParameterOutExecutionEndTypeRule::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\ParameterOutExecutionEndTypeRule::__construct() */
 		zval *p_parameterOutTypeCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_parameterOutTypeCheck)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_parameterOutTypeCheck != NULL && UNEXPECTED(Z_TYPE_P(p_parameterOutTypeCheck) != IS_OBJECT || !((Z_TYPE_P(p_parameterOutTypeCheck) == IS_OBJECT && Z_OBJCE_P(p_parameterOutTypeCheck) == pt_ce_parameter_out_type_check) || pgrt::instanceOfClass(p_parameterOutTypeCheck, pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Rules\\Variables\\ParameterOutTypeCheck", 45))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Variables\\ParameterOutTypeCheck", zend_zval_value_name(p_parameterOutTypeCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ParameterOutExecutionEndTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_parameterOutTypeCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\ParameterOutExecutionEndTypeRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ParameterOutExecutionEndTypeRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\ParameterOutExecutionEndTypeRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -421,7 +420,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParameterOutExecutionEndTypeRule)
 		zval *p_scope = NULL;
 		zval *p_inFunction = NULL;
 		zval *p_parameter = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_inFunction)
 			Z_PARAM_ZVAL(p_parameter)

@@ -322,21 +322,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyVarianceRule)
 	ptdecl::PropertyVarianceRule::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\PropertyVarianceRule::__construct() */
 		zval *p_varianceCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_varianceCheck)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_varianceCheck != NULL && UNEXPECTED(Z_TYPE_P(p_varianceCheck) != IS_OBJECT || !((Z_TYPE_P(p_varianceCheck) == IS_OBJECT && Z_OBJCE_P(p_varianceCheck) == pt_ce_variance_check) || pgrt::instanceOfClass(p_varianceCheck, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Rules\\Generics\\VarianceCheck", 36))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Generics\\VarianceCheck", zend_zval_value_name(p_varianceCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::PropertyVarianceRule::m___construct(Z_OBJ_P(ZEND_THIS), p_varianceCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\PropertyVarianceRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PropertyVarianceRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\PropertyVarianceRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -347,7 +346,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyVarianceRule)
 	});
 	cls.method(sigs::hasRestrictedWriteAccess, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\PropertyVarianceRule::hasRestrictedWriteAccess() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_node)); RETURN_THROWS(); }

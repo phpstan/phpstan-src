@@ -738,7 +738,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToFunctionParametersRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\CallToFunctionParametersRule::__construct() */
 		zval *p_reflectionProvider = NULL;
 		zval *p_check = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_check)
 		ZEND_PARSE_PARAMETERS_END();
@@ -747,14 +747,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToFunctionParametersRule)
 		if (UNEXPECTED(!pgen::CallToFunctionParametersRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_check))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\CallToFunctionParametersRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::CallToFunctionParametersRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\CallToFunctionParametersRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -767,7 +766,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToFunctionParametersRule)
 		zval *p_args = NULL;
 		zval *p_variants = NULL;
 		zval *p_selectedParametersAcceptor = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_args)
 			Z_PARAM_ARRAY(p_variants)
 			Z_PARAM_ZVAL(p_selectedParametersAcceptor)
@@ -779,7 +778,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToFunctionParametersRule)
 	cls.method(sigs::acceptsArgumentsCount, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\CallToFunctionParametersRule::acceptsArgumentsCount() */
 		zval *p_parametersAcceptor = NULL;
 		zend_long p_argsCount = 0;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_parametersAcceptor)
 			Z_PARAM_LONG(p_argsCount)
 		ZEND_PARSE_PARAMETERS_END();
@@ -790,7 +789,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToFunctionParametersRule)
 	});
 	cls.method(sigs::getArgumentsCountRange, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\CallToFunctionParametersRule::getArgumentsCountRange() */
 		zval *p_parametersAcceptor = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_parametersAcceptor)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_parametersAcceptor != NULL && UNEXPECTED(Z_TYPE_P(p_parametersAcceptor) != IS_OBJECT || !pgrt::instanceOfClass(p_parametersAcceptor, pgrt::lookupClassQuiet(pg_site_30, "PHPStan\\Reflection\\ParametersAcceptor", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ParametersAcceptor", zend_zval_value_name(p_parametersAcceptor)); RETURN_THROWS(); }

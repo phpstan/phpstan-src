@@ -309,26 +309,24 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidAssignVarRule)
 	ptdecl::InvalidAssignVarRule::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidAssignVarRule::__construct() */
 		zval *p_nullsafeCheck = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_nullsafeCheck)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_nullsafeCheck != NULL && UNEXPECTED(Z_TYPE_P(p_nullsafeCheck) != IS_OBJECT || !((Z_TYPE_P(p_nullsafeCheck) == IS_OBJECT && Z_OBJCE_P(p_nullsafeCheck) == pt_ce_nullsafe_check) || pgrt::instanceOfClass(p_nullsafeCheck, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\NullsafeCheck", 27))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\NullsafeCheck", zend_zval_value_name(p_nullsafeCheck)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::InvalidAssignVarRule::m___construct(Z_OBJ_P(ZEND_THIS), p_nullsafeCheck))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidAssignVarRule::getNodeTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidAssignVarRule::m_getNodeTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidAssignVarRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InvalidAssignVarRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidAssignVarRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -339,7 +337,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InvalidAssignVarRule)
 	});
 	cls.method(sigs::containsNonAssignableExpression, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Operators\InvalidAssignVarRule::containsNonAssignableExpression() */
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_13, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }

@@ -132,7 +132,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnsetOffsetExprHandler)
 	ptdecl::UnsetOffsetExprHandler::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExprHandler\Virtual\UnsetOffsetExprHandler::__construct() */
 		zval *p_virtualExprResultHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_virtualExprResultHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -140,7 +140,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnsetOffsetExprHandler)
 	});
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ExprHandler\Virtual\UnsetOffsetExprHandler::supports() */
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_expr)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_expr != NULL && UNEXPECTED(Z_TYPE_P(p_expr) != IS_OBJECT || !pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Expr", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Expr", zend_zval_value_name(p_expr)); RETURN_THROWS(); }
@@ -156,7 +156,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnsetOffsetExprHandler)
 		zval *p_storage = NULL;
 		zval *p_nodeCallback = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_nodeScopeResolver)
 			Z_PARAM_ZVAL(p_stmt)
 			Z_PARAM_ZVAL(p_expr)

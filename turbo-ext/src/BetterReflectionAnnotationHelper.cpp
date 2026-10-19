@@ -82,7 +82,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAnnotationHelper)
 		zval p_docComment_zv;
 		zval p_docComment_null;
 		ZVAL_NULL(&p_docComment_null);
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR_OR_NULL(p_docComment_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_docComment_str != NULL) { ZVAL_STR(&p_docComment_zv, p_docComment_str); p_docComment = &p_docComment_zv; }
@@ -97,7 +97,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAnnotationHelper)
 		zval p_docComment_zv;
 		zval p_docComment_null;
 		ZVAL_NULL(&p_docComment_null);
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR_OR_NULL(p_docComment_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_docComment_str != NULL) { ZVAL_STR(&p_docComment_zv, p_docComment_str); p_docComment = &p_docComment_zv; }

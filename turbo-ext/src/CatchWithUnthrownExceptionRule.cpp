@@ -229,7 +229,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CatchWithUnthrownExceptionRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule::__construct() */
 		zval *p_exceptionTypeResolver = NULL;
 		bool p_reportUncheckedExceptionDeadCatch = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_exceptionTypeResolver)
 			Z_PARAM_BOOL(p_reportUncheckedExceptionDeadCatch)
 		ZEND_PARSE_PARAMETERS_END();
@@ -237,14 +237,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CatchWithUnthrownExceptionRule)
 		if (UNEXPECTED(!pgen::CatchWithUnthrownExceptionRule::m___construct(Z_OBJ_P(ZEND_THIS), p_exceptionTypeResolver, p_reportUncheckedExceptionDeadCatch))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::CatchWithUnthrownExceptionRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\CatchWithUnthrownExceptionRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

@@ -817,7 +817,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileCacheStorage)
 		zval *p_directory = NULL;
 		zend_string *p_directory_str = NULL;
 		zval p_directory_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_directory_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_directory_str != NULL) { ZVAL_STR(&p_directory_zv, p_directory_str); p_directory = &p_directory_zv; }
@@ -830,7 +830,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileCacheStorage)
 		zval *p_variableKey = NULL;
 		zend_string *p_variableKey_str = NULL;
 		zval p_variableKey_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_key_str)
 			Z_PARAM_STR(p_variableKey_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -847,7 +847,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileCacheStorage)
 		zend_string *p_variableKey_str = NULL;
 		zval p_variableKey_zv;
 		zval *p_data = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_key_str)
 			Z_PARAM_STR(p_variableKey_str)
 			Z_PARAM_ZVAL(p_data)
@@ -860,7 +860,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileCacheStorage)
 		zval *p_key = NULL;
 		zend_string *p_key_str = NULL;
 		zval p_key_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_key_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_key_str != NULL) { ZVAL_STR(&p_key_zv, p_key_str); p_key = &p_key_zv; }
@@ -868,14 +868,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileCacheStorage)
 		if (UNEXPECTED(!pgen::FileCacheStorage::m_getFilePaths(Z_OBJ_P(ZEND_THIS), p_key, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::clearUnusedFiles, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Cache\FileCacheStorage::clearUnusedFiles() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::FileCacheStorage::m_clearUnusedFiles(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::isDirectoryEmpty, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Cache\FileCacheStorage::isDirectoryEmpty() */
 		zval *p_directory = NULL;
 		zend_string *p_directory_str = NULL;
 		zval p_directory_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_directory_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_directory_str != NULL) { ZVAL_STR(&p_directory_zv, p_directory_str); p_directory = &p_directory_zv; }

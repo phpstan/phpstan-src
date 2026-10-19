@@ -402,7 +402,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TernaryOperatorConstantConditionRule)
 		zval *p_functionCallConstantConditionHelper = NULL;
 		bool p_treatPhpDocTypesAsCertain = false;
 		bool p_treatPhpDocTypesAsCertainTip = false;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_helper)
 			Z_PARAM_ZVAL(p_constantConditionInTraitHelper)
 			Z_PARAM_ZVAL(p_functionCallConstantConditionHelper)
@@ -415,14 +415,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TernaryOperatorConstantConditionRule)
 		if (UNEXPECTED(!pgen::TernaryOperatorConstantConditionRule::m___construct(Z_OBJ_P(ZEND_THIS), p_helper, p_constantConditionInTraitHelper, p_functionCallConstantConditionHelper, p_treatPhpDocTypesAsCertain, p_treatPhpDocTypesAsCertainTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TernaryOperatorConstantConditionRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

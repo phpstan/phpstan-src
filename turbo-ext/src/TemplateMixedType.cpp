@@ -237,7 +237,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateMixedType)
 		zval *p_default = NULL;
 		zval p_default_null;
 		ZVAL_NULL(&p_default_null);
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_templateTypeStrategy)
 			Z_PARAM_ZVAL(p_templateTypeVariance)
@@ -256,7 +256,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateMixedType)
 	});
 	cls.method(sigs::isSuperTypeOfMixed, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateMixedType::isSuperTypeOfMixed() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !(pgrt::instanceOfClass(p_type, pt_ce_mixed_type) || pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\MixedType", 22))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\MixedType", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -266,7 +266,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateMixedType)
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateMixedType::isAcceptedBy() */
 		zval *p_acceptingType = NULL;
 		bool p_strictTypes = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_acceptingType)
 			Z_PARAM_BOOL(p_strictTypes)
 		ZEND_PARSE_PARAMETERS_END();
@@ -275,12 +275,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateMixedType)
 		if (UNEXPECTED(!pgen::TemplateMixedType::m_isAcceptedBy(Z_OBJ_P(ZEND_THIS), p_acceptingType, p_strictTypes, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toStrictMixedType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateMixedType::toStrictMixedType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TemplateMixedType::m_toStrictMixedType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassStringType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Generic\TemplateMixedType::getClassStringType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TemplateMixedType::m_getClassStringType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

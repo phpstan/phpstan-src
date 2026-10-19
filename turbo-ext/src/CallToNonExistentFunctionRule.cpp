@@ -357,7 +357,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToNonExistentFunctionRule)
 		zval *p_reflectionProvider = NULL;
 		bool p_checkFunctionNameCase = false;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_BOOL(p_checkFunctionNameCase)
 			Z_PARAM_BOOL(p_discoveringSymbolsTip)
@@ -366,14 +366,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CallToNonExistentFunctionRule)
 		if (UNEXPECTED(!pgen::CallToNonExistentFunctionRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_checkFunctionNameCase, p_discoveringSymbolsTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\CallToNonExistentFunctionRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::CallToNonExistentFunctionRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\CallToNonExistentFunctionRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

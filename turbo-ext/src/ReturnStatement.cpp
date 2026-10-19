@@ -70,7 +70,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ReturnStatement)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ReturnStatement::__construct() */
 		zval *p_scope = NULL;
 		zval *p_returnNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_returnNode)
 		ZEND_PARSE_PARAMETERS_END();
@@ -79,12 +79,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ReturnStatement)
 		if (UNEXPECTED(!pgen::ReturnStatement::m___construct(Z_OBJ_P(ZEND_THIS), p_scope, p_returnNode))) RETURN_THROWS();
 	});
 	cls.method(sigs::getScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ReturnStatement::getScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ReturnStatement::m_getScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReturnNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\ReturnStatement::getReturnNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ReturnStatement::m_getReturnNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

@@ -822,6 +822,46 @@ bool callStaticDynamic(zval *cls, zend_class_entry *scope, zval *name, uint32_t 
 	return true;
 }
 
+bool callMethodDynamic(zval *object, zend_class_entry *scope, zval *name, uint32_t argc, zval *argv, zval *ret, HashTable *named)
+{
+	ZVAL_DEREF(object);
+	ZVAL_DEREF(name);
+	if (UNEXPECTED(Z_TYPE_P(name) != IS_STRING)) {
+		zend_throw_error(NULL, "Method name must be a string");
+		return false;
+	}
+	if (UNEXPECTED(Z_TYPE_P(object) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function %s() on %s", Z_STRVAL_P(name), zend_zval_value_name(object));
+		return false;
+	}
+	zend_object *receiver = Z_OBJ_P(object);
+	auto previousScope = EG(fake_scope); /* const from PHP 8.5 */
+	EG(fake_scope) = scope;
+	zend_function *fn = PT_OBJ_HANDLER(receiver, get_method)(&receiver, Z_STR_P(name), NULL);
+	EG(fake_scope) = previousScope;
+	if (UNEXPECTED(fn == NULL)) {
+		if (!EG(exception)) {
+			zend_throw_error(NULL, "Call to undefined method %s::%s()", ZSTR_VAL(receiver->ce->name), Z_STRVAL_P(name));
+		}
+		return false;
+	}
+	/* the compiled caller passes copies: a by-reference parameter would
+	 * silently lose its write, so it fails loudly instead */
+	for (uint32_t i = 0; i < argc; i++) {
+		if (UNEXPECTED(pt_abi.arg_sent_by_ref(fn, i + 1))) {
+			zend_throw_error(NULL, "phpstan_turbo: %s::%s() takes argument #%u by reference, which a compiled dynamic method call cannot pass", ZSTR_VAL(fn->common.scope != NULL ? fn->common.scope->name : receiver->ce->name), ZSTR_VAL(fn->common.function_name), i + 1);
+			return false;
+		}
+	}
+	zend_call_known_function(fn, receiver, receiver->ce, ret, argc, argv, named);
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(ret);
+		ZVAL_UNDEF(ret);
+		return false;
+	}
+	return true;
+}
+
 bool unsetProperty(zval *object, zend_class_entry *scope, zval *name)
 {
 	ZVAL_DEREF(object);

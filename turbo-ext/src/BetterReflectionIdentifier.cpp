@@ -234,7 +234,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionIdentifier)
 		zend_string *p_name_str = NULL;
 		zval p_name_zv;
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
@@ -243,7 +243,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionIdentifier)
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifier::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_type))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\Identifier::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifier::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -254,7 +253,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionIdentifier)
 		return r1;
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\Identifier::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifier::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -265,19 +263,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionIdentifier)
 		return r1;
 	});
 	cls.method(sigs::isClass, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\Identifier::isClass() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifier::m_isClass(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isFunction, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\Identifier::isFunction() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifier::m_isFunction(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isConstant, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Identifier\Identifier::isConstant() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionIdentifier::m_isConstant(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

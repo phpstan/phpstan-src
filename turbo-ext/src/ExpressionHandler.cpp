@@ -984,7 +984,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionHandler)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\StmtHandler\ExpressionHandler::__construct() */
 		zval *p_statementsHandler = NULL;
 		bool p_rememberPossiblyImpureFunctionValues = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_OBJECT(p_statementsHandler)
 			Z_PARAM_BOOL(p_rememberPossiblyImpureFunctionValues)
 		ZEND_PARSE_PARAMETERS_END();
@@ -993,7 +993,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionHandler)
 	});
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\StmtHandler\ExpressionHandler::supports() */
 		zval *p_stmt = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_stmt)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_stmt != NULL && UNEXPECTED(Z_TYPE_P(p_stmt) != IS_OBJECT || !pgrt::instanceOfClass(p_stmt, pgrt::lookupClassQuiet(pg_site_68, "PhpParser\\Node\\Stmt", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Stmt", zend_zval_value_name(p_stmt)); RETURN_THROWS(); }
@@ -1008,7 +1008,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionHandler)
 		zval *p_storage = NULL;
 		zval *p_nodeCallback = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_nodeScopeResolver)
 			Z_PARAM_ZVAL(p_stmt)
 			Z_PARAM_ZVAL(p_scope)
@@ -1028,7 +1028,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ExpressionHandler)
 	cls.method(sigs::isCallRememberedDespiteItsOwnImpurity, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\StmtHandler\ExpressionHandler::isCallRememberedDespiteItsOwnImpurity() */
 		zval *p_impurePoints = NULL;
 		zval *p_call = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_impurePoints)
 			Z_PARAM_ZVAL(p_call)
 		ZEND_PARSE_PARAMETERS_END();

@@ -1632,7 +1632,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 		zval *p_functionToFiles = NULL;
 		zval *p_constantToFile = NULL;
 		bool p_awaitingScan = false;
-		ZEND_PARSE_PARAMETERS_START(7, 8)
+		ZEND_PARSE_PARAMETERS_START(7, -1)
 			Z_PARAM_ZVAL(p_fileNodesFetcher)
 			Z_PARAM_ZVAL(p_cache)
 			Z_PARAM_ZVAL(p_phpVersion)
@@ -1653,7 +1653,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 		zval *p_classToFile = NULL;
 		zval *p_functionToFiles = NULL;
 		zval *p_constantToFile = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_classToFile)
 			Z_PARAM_ARRAY(p_functionToFiles)
 			Z_PARAM_ARRAY(p_constantToFile)
@@ -1665,7 +1665,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
 		zval *p_identifier = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_file_str)
 			Z_PARAM_ZVAL(p_identifier)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1677,7 +1677,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 	cls.method(sigs::locateIdentifier, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocator::locateIdentifier() */
 		zval *p_reflector = NULL;
 		zval *p_identifier = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_reflector)
 			Z_PARAM_ZVAL(p_identifier)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1696,7 +1696,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 		zend_long p_positionInNode_raw = 0;
 		bool p_positionInNode_isNull = true;
 		zval p_positionInNode_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 3)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_reflector)
 			Z_PARAM_ZVAL(p_fetchedNode)
 			Z_PARAM_OPTIONAL
@@ -1712,7 +1712,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -1723,7 +1723,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 		zval *p_constantName = NULL;
 		zend_string *p_constantName_str = NULL;
 		zval p_constantName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_constantName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_constantName_str != NULL) { ZVAL_STR(&p_constantName_zv, p_constantName_str); p_constantName = &p_constantName_zv; }
@@ -1734,7 +1734,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 		zval *p_functionName = NULL;
 		zend_string *p_functionName_str = NULL;
 		zval p_functionName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_functionName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionName_str != NULL) { ZVAL_STR(&p_functionName_zv, p_functionName_str); p_functionName = &p_functionName_zv; }
@@ -1744,7 +1744,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 	cls.method(sigs::locateIdentifiersByType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocator::locateIdentifiersByType() */
 		zval *p_reflector = NULL;
 		zval *p_identifierType = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_reflector)
 			Z_PARAM_ZVAL(p_identifierType)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1758,7 +1758,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_OptimizedDirectorySourceLocator)
 		zval *p_constantName = NULL;
 		zend_string *p_constantName_str = NULL;
 		zval p_constantName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_constantNode)
 			Z_PARAM_STR(p_constantName_str)
 		ZEND_PARSE_PARAMETERS_END();

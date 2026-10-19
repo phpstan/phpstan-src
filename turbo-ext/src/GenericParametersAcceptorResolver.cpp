@@ -1258,7 +1258,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericParametersAcceptorResolver)
 	cls.method(sigs::resolve, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\GenericParametersAcceptorResolver::resolve() */
 		zval *p_argTypes = NULL;
 		zval *p_parametersAcceptor = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_argTypes)
 			Z_PARAM_ZVAL(p_parametersAcceptor)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1269,7 +1269,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericParametersAcceptorResolver)
 	cls.method(sigs::inferPredicateTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\GenericParametersAcceptorResolver::inferPredicateTemplateTypes() */
 		zval *p_paramType = NULL;
 		zval *p_argType = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_paramType)
 			Z_PARAM_ZVAL(p_argType)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1281,7 +1281,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericParametersAcceptorResolver)
 	cls.method(sigs::resolvePredicateTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\GenericParametersAcceptorResolver::resolvePredicateTemplateTypes() */
 		zval *p_type = NULL;
 		zval *p_predicateTypeMap = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_ZVAL(p_predicateTypeMap)
 		ZEND_PARSE_PARAMETERS_END();

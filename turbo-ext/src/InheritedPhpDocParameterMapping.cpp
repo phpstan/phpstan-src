@@ -266,14 +266,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InheritedPhpDocParameterMapping)
 	ptdecl::InheritedPhpDocParameterMapping::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\InheritedPhpDocParameterMapping::__construct() */
 		zval *p_parameterNameMapping = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_parameterNameMapping)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::InheritedPhpDocParameterMapping::m___construct(Z_OBJ_P(ZEND_THIS), p_parameterNameMapping))) RETURN_THROWS();
 	});
 	cls.method(sigs::transformArrayKeysWithParameterNameMapping, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\InheritedPhpDocParameterMapping::transformArrayKeysWithParameterNameMapping() */
 		zval *p_array = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_array)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -281,7 +281,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InheritedPhpDocParameterMapping)
 	});
 	cls.method(sigs::transformConditionalReturnTypeWithParameterNameMapping, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\InheritedPhpDocParameterMapping::transformConditionalReturnTypeWithParameterNameMapping() */
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
@@ -290,7 +290,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InheritedPhpDocParameterMapping)
 	});
 	cls.method(sigs::transformAssertTagParameterWithParameterNameMapping, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\InheritedPhpDocParameterMapping::transformAssertTagParameterWithParameterNameMapping() */
 		zval *p_parameter = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_parameter)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_parameter != NULL && UNEXPECTED(Z_TYPE_P(p_parameter) != IS_OBJECT || !pgrt::instanceOfClass(p_parameter, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\PhpDoc\\Tag\\AssertTagParameter", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDoc\\Tag\\AssertTagParameter", zend_zval_value_name(p_parameter)); RETURN_THROWS(); }

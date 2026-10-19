@@ -506,14 +506,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileHelper)
 		zval *p_workingDirectory = NULL;
 		zend_string *p_workingDirectory_str = NULL;
 		zval p_workingDirectory_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_workingDirectory_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_workingDirectory_str != NULL) { ZVAL_STR(&p_workingDirectory_zv, p_workingDirectory_str); p_workingDirectory = &p_workingDirectory_zv; }
 		if (UNEXPECTED(!pgen::FileHelper::m___construct(Z_OBJ_P(ZEND_THIS), p_workingDirectory))) RETURN_THROWS();
 	});
 	cls.method(sigs::getWorkingDirectory, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileHelper::getWorkingDirectory() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FileHelper::m_getWorkingDirectory(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -521,7 +520,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileHelper)
 		zval *p_path = NULL;
 		zend_string *p_path_str = NULL;
 		zval p_path_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_path_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_path_str != NULL) { ZVAL_STR(&p_path_zv, p_path_str); p_path = &p_path_zv; }
@@ -538,7 +537,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileHelper)
 		p_directorySeparator = &p_directorySeparator_default;
 		zend_string *p_directorySeparator_str = NULL;
 		zval p_directorySeparator_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_originalPath_str)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_STR(p_directorySeparator_str)
@@ -552,7 +551,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileHelper)
 		zval *p_path = NULL;
 		zend_string *p_path_str = NULL;
 		zval p_path_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_path_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_path_str != NULL) { ZVAL_STR(&p_path_zv, p_path_str); p_path = &p_path_zv; }

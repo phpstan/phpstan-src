@@ -881,7 +881,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericAncestorsCheck)
 		zval *p_unresolvableTypeHelper = NULL;
 		zval *p_skipCheckGenericClasses = NULL;
 		bool p_checkMissingTypehints = false;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_genericObjectTypeCheck)
 			Z_PARAM_OBJECT(p_varianceCheck)
@@ -934,7 +934,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GenericAncestorsCheck)
 		zval *p_invalidVarianceMessage = NULL;
 		zend_string *p_invalidVarianceMessage_str = NULL;
 		zval p_invalidVarianceMessage_zv;
-		ZEND_PARSE_PARAMETERS_START(14, 14)
+		ZEND_PARSE_PARAMETERS_START(14, -1)
 			Z_PARAM_ARRAY(p_nameNodes)
 			Z_PARAM_ARRAY(p_ancestorTypes)
 			Z_PARAM_STR(p_incompatibleTypeMessage_str)

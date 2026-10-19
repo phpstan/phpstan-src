@@ -504,7 +504,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyExistsTypeSpecifyingExtension)
 	ptdecl::PropertyExistsTypeSpecifyingExtension::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\PropertyExistsTypeSpecifyingExtension::__construct() */
 		zval *p_propertyReflectionFinder = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_propertyReflectionFinder)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -512,7 +512,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyExistsTypeSpecifyingExtension)
 	});
 	cls.method(sigs::setTypeSpecifier, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\PropertyExistsTypeSpecifyingExtension::setTypeSpecifier() */
 		zval *p_typeSpecifier = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_typeSpecifier)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_typeSpecifier != NULL && UNEXPECTED(Z_TYPE_P(p_typeSpecifier) != IS_OBJECT || !(pgrt::instanceOfClass(p_typeSpecifier, pt_ce_type_specifier) || pgrt::instanceOfClass(p_typeSpecifier, pgrt::lookupClassQuiet(pg_site_27, "PHPStan\\Analyser\\TypeSpecifier", 30))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\TypeSpecifier", zend_zval_value_name(p_typeSpecifier)); RETURN_THROWS(); }
@@ -522,7 +522,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyExistsTypeSpecifyingExtension)
 		zval *p_functionReflection = NULL;
 		zval *p_node = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_context)
@@ -539,7 +539,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyExistsTypeSpecifyingExtension)
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
 		zval *p_context = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
@@ -556,7 +556,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyExistsTypeSpecifyingExtension)
 		zval *p_node = NULL;
 		zval *p_context = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_context)
 			Z_PARAM_ZVAL(p_scope)

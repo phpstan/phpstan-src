@@ -263,7 +263,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GmpOperatorTypeSpecifyingExtension)
 	ptdecl::GmpOperatorTypeSpecifyingExtension::declareClass(cls);
 	ptdecl::GmpOperatorTypeSpecifyingExtension::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\GmpOperatorTypeSpecifyingExtension::__construct() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::GmpOperatorTypeSpecifyingExtension::m___construct(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::isOperatorSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\GmpOperatorTypeSpecifyingExtension::isOperatorSupported() */
@@ -272,7 +271,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GmpOperatorTypeSpecifyingExtension)
 		zval p_operatorSigil_zv;
 		zval *p_leftSide = NULL;
 		zval *p_rightSide = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_operatorSigil_str)
 			Z_PARAM_ZVAL(p_leftSide)
 			Z_PARAM_ZVAL(p_rightSide)
@@ -290,7 +289,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_GmpOperatorTypeSpecifyingExtension)
 		zval p_operatorSigil_zv;
 		zval *p_leftSide = NULL;
 		zval *p_rightSide = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_operatorSigil_str)
 			Z_PARAM_ZVAL(p_leftSide)
 			Z_PARAM_ZVAL(p_rightSide)

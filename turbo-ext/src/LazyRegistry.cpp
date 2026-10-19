@@ -2874,7 +2874,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LazyRegistry)
 	cls.publicClassConstantString("RULE_TAG", "phpstan.rules.rule");
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\LazyRegistry::__construct() */
 		zval *p_rules = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_rules)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -2884,7 +2884,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LazyRegistry)
 		zval *p_nodeType = NULL;
 		zend_string *p_nodeType_str = NULL;
 		zval p_nodeType_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_nodeType_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_nodeType_str != NULL) { ZVAL_STR(&p_nodeType_zv, p_nodeType_str); p_nodeType = &p_nodeType_zv; }
@@ -2892,7 +2892,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LazyRegistry)
 		if (UNEXPECTED(!pgen::LazyRegistry::m_getRules(Z_OBJ_P(ZEND_THIS), p_nodeType, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getRulesByNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\LazyRegistry::getRulesByNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::LazyRegistry::m_getRulesByNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

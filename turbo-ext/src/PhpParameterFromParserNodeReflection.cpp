@@ -464,7 +464,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 		zval *p_attributes = NULL;
 		zval *p_pureUnlessCallableIsImpureParameter = NULL;
 		zval *p_pureUnlessParameterPassedParameter = NULL;
-		ZEND_PARSE_PARAMETERS_START(13, 13)
+		ZEND_PARSE_PARAMETERS_START(13, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_BOOL(p_optional)
 			Z_PARAM_ZVAL(p_realType)
@@ -496,7 +496,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_optional, p_realType, p_phpDocType, p_passedByReference, p_defaultValue, p_variadic, p_outType, p_immediatelyInvokedCallable, p_closureThisType, p_attributes, p_pureUnlessCallableIsImpureParameter, p_pureUnlessParameterPassedParameter))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -507,7 +506,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 		return r1;
 	});
 	cls.method(sigs::isOptional, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::isOptional() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_isOptional(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -519,7 +517,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -530,23 +527,19 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 		return r1;
 	});
 	cls.method(sigs::getPhpDocType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getPhpDocType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_getPhpDocType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasNativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::hasNativeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_hasNativeType(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getNativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getNativeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_getNativeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::passedByReference, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::passedByReference() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_passedByReference(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -557,7 +550,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 		return r1;
 	});
 	cls.method(sigs::isVariadic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::isVariadic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_isVariadic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -569,7 +561,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::getDefaultValue, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getDefaultValue() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_getDefaultValue(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -580,45 +571,38 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpParameterFromParserNodeReflection)
 		return r1;
 	});
 	cls.method(sigs::getOutType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getOutType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_getOutType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isImmediatelyInvokedCallable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::isImmediatelyInvokedCallable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_isImmediatelyInvokedCallable(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClosureThisType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getClosureThisType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_getClosureThisType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAttributes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getAttributes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_getAttributes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAllowedConstants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::getAllowedConstants() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_getAllowedConstants(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::checkAllowedConstants, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::checkAllowedConstants() */
 		zval *p_constants = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_constants)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_checkAllowedConstants(Z_OBJ_P(ZEND_THIS), p_constants, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isPureUnlessCallableIsImpureParameter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::isPureUnlessCallableIsImpureParameter() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_isPureUnlessCallableIsImpureParameter(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isPureUnlessParameterPassedParameter, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Php\PhpParameterFromParserNodeReflection::isPureUnlessParameterPassedParameter() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpParameterFromParserNodeReflection::m_isPureUnlessParameterPassedParameter(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

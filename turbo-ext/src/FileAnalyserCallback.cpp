@@ -5092,7 +5092,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileAnalyserCallback)
 		zval *p_ruleErrorTransformer = NULL;
 		zval *p_processedFiles = NULL;
 		zval *p_dependencyResolver = NULL;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		ZEND_PARSE_PARAMETERS_START(10, -1)
 			Z_PARAM_STR(p_file_str)
 			Z_PARAM_ZVAL(p_ruleRegistry)
 			Z_PARAM_ZVAL(p_collectorRegistry)
@@ -5115,7 +5115,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileAnalyserCallback)
 	cls.method(sigs::__invoke, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::__invoke() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -5125,44 +5125,37 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileAnalyserCallback)
 	});
 	cls.method(sigs::getLinesToIgnoreFromTokens, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::getLinesToIgnoreFromTokens() */
 		zval *p_nodes = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_nodes)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m_getLinesToIgnoreFromTokens(Z_OBJ_P(ZEND_THIS), p_nodes, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFileErrors, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::getFileErrors() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m_getFileErrors(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFileCollectedData, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::getFileCollectedData() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m_getFileCollectedData(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExportedNodes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::getExportedNodes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m_getExportedNodes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getLinesToIgnore, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::getLinesToIgnore() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m_getLinesToIgnore(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getUnmatchedLineIgnores, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::getUnmatchedLineIgnores() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m_getUnmatchedLineIgnores(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTemporaryFileErrors, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::getTemporaryFileErrors() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m_getTemporaryFileErrors(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getProcessedFiles, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\FileAnalyserCallback::getProcessedFiles() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FileAnalyserCallback::m_getProcessedFiles(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

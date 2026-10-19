@@ -1037,7 +1037,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfArrayParametersRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfArrayParametersRule::__construct() */
 		zval *p_printfFormatParser = NULL;
 		zval *p_reflectionProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_printfFormatParser)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1046,14 +1046,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfArrayParametersRule)
 		if (UNEXPECTED(!pgen::PrintfArrayParametersRule::m___construct(Z_OBJ_P(ZEND_THIS), p_printfFormatParser, p_reflectionProvider))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfArrayParametersRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PrintfArrayParametersRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfArrayParametersRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1065,7 +1064,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfArrayParametersRule)
 	cls.method(sigs::placeholdersMatchesArgsCount, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfArrayParametersRule::placeholdersMatchesArgsCount() */
 		zval *p_placeHoldersCount = NULL;
 		zval *p_formatArgsCount = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_placeHoldersCount)
 			Z_PARAM_ZVAL(p_formatArgsCount)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1077,7 +1076,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfArrayParametersRule)
 	});
 	cls.method(sigs::getIntegerRangeAsString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfArrayParametersRule::getIntegerRangeAsString() */
 		zval *p_range = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_range)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_range != NULL && UNEXPECTED(Z_TYPE_P(p_range) != IS_OBJECT || !(pgrt::instanceOfClass(p_range, pt_ce_integer_range_type) || pgrt::instanceOfClass(p_range, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Type\\IntegerRangeType", 29))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\IntegerRangeType", zend_zval_value_name(p_range)); RETURN_THROWS(); }

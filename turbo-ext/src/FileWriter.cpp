@@ -85,7 +85,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileWriter)
 		zval *p_contents = NULL;
 		zend_string *p_contents_str = NULL;
 		zval p_contents_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_fileName_str)
 			Z_PARAM_STR(p_contents_str)
 		ZEND_PARSE_PARAMETERS_END();

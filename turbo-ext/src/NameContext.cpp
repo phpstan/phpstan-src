@@ -1073,7 +1073,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 	ptdecl::NameContext::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PhpParser\NameContext::__construct() */
 		zval *p_errorHandler = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_errorHandler)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_errorHandler != NULL && UNEXPECTED(Z_TYPE_P(p_errorHandler) != IS_OBJECT || !pgrt::instanceOfClass(p_errorHandler, pgrt::lookupClassQuiet(pg_site_42, "PhpParser\\ErrorHandler", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\ErrorHandler", zend_zval_value_name(p_errorHandler)); RETURN_THROWS(); }
@@ -1086,7 +1086,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 		p_namespace = &p_namespace_default;
 		zval p_namespace_null;
 		ZVAL_NULL(&p_namespace_null);
-		ZEND_PARSE_PARAMETERS_START(0, 1)
+		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ZVAL_OR_NULL(p_namespace)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1104,7 +1104,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 		zval p_errorAttrs_default;
 		ZVAL_EMPTY_ARRAY(&p_errorAttrs_default);
 		p_errorAttrs = &p_errorAttrs_default;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_name)
 			Z_PARAM_STR(p_aliasName_str)
 			Z_PARAM_LONG(p_type)
@@ -1116,14 +1116,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 		if (UNEXPECTED(!pgen::NameContext::m_addAlias(Z_OBJ_P(ZEND_THIS), p_name, p_aliasName, p_type, p_errorAttrs))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNamespace, [](INTERNAL_FUNCTION_PARAMETERS) { /* PhpParser\NameContext::getNamespace() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NameContext::m_getNamespace(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getResolvedName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PhpParser\NameContext::getResolvedName() */
 		zval *p_name = NULL;
 		zend_long p_type = 0;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_name)
 			Z_PARAM_LONG(p_type)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1133,7 +1132,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 	});
 	cls.method(sigs::getResolvedClassName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PhpParser\NameContext::getResolvedClassName() */
 		zval *p_name = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_name)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name != NULL && UNEXPECTED(Z_TYPE_P(p_name) != IS_OBJECT || !pgrt::instanceOfClass(p_name, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node\\Name", 19)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node\\Name", zend_zval_value_name(p_name)); RETURN_THROWS(); }
@@ -1145,7 +1144,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 		zend_string *p_name_str = NULL;
 		zval p_name_zv;
 		zend_long p_type = 0;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_LONG(p_type)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1158,7 +1157,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 		zend_string *p_name_str = NULL;
 		zval p_name_zv;
 		zend_long p_type = 0;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_LONG(p_type)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1169,7 +1168,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 	cls.method(sigs::resolveAlias, [](INTERNAL_FUNCTION_PARAMETERS) { /* PhpParser\NameContext::resolveAlias() */
 		zval *p_name = NULL;
 		zend_long p_type = 0;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_name)
 			Z_PARAM_LONG(p_type)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1185,7 +1184,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 		zend_string *p_lcName_str = NULL;
 		zval p_lcName_zv;
 		zend_long p_type = 0;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_STR(p_lcName_str)
 			Z_PARAM_LONG(p_type)
@@ -1199,7 +1198,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NameContext)
 		zval *p_name = NULL;
 		zend_string *p_name_str = NULL;
 		zval p_name_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_name_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_name_str != NULL) { ZVAL_STR(&p_name_zv, p_name_str); p_name = &p_name_zv; }

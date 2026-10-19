@@ -2353,7 +2353,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodSignatureRule)
 		bool p_reportMaybes = false;
 		bool p_reportStatic = false;
 		bool p_reportMethodPurityOverride = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_OBJECT(p_parentMethodHelper)
 			Z_PARAM_BOOL(p_reportMaybes)
 			Z_PARAM_BOOL(p_reportStatic)
@@ -2363,14 +2363,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodSignatureRule)
 		if (UNEXPECTED(!pgen::MethodSignatureRule::m___construct(Z_OBJ_P(ZEND_THIS), p_parentMethodHelper, p_reportMaybes, p_reportStatic, p_reportMethodPurityOverride))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\MethodSignatureRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodSignatureRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\MethodSignatureRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2383,7 +2382,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodSignatureRule)
 		zval *p_declaringClass = NULL;
 		zval *p_currentVariant = NULL;
 		zval *p_parentVariant = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_ZVAL(p_currentVariant)
 			Z_PARAM_ZVAL(p_parentVariant)
@@ -2398,7 +2397,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodSignatureRule)
 		zval *p_declaringClass = NULL;
 		zval *p_parameters = NULL;
 		zval *p_parentParameters = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_ARRAY(p_parameters)
 			Z_PARAM_ARRAY(p_parentParameters)
@@ -2410,7 +2409,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodSignatureRule)
 	cls.method(sigs::transformStaticType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\MethodSignatureRule::transformStaticType() */
 		zval *p_declaringClass = NULL;
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_declaringClass)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();

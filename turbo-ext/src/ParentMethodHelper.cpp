@@ -560,7 +560,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParentMethodHelper)
 	ptdecl::ParentMethodHelper::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Methods\ParentMethodHelper::__construct() */
 		zval *p_phpClassReflectionExtension = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_phpClassReflectionExtension)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -571,7 +571,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ParentMethodHelper)
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
 		zval *p_class = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_methodName_str)
 			Z_PARAM_ZVAL(p_class)
 		ZEND_PARSE_PARAMETERS_END();

@@ -1078,7 +1078,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PreparedAssignTarget)
 		p_dependencies = &p_dependencies_default;
 		zval p_dependencies_null;
 		ZVAL_NULL(&p_dependencies_null);
-		ZEND_PARSE_PARAMETERS_START(11, 27)
+		ZEND_PARSE_PARAMETERS_START(11, -1)
 			Z_PARAM_STR(p_kind_str)
 			Z_PARAM_ZVAL(p_var)
 			Z_PARAM_ZVAL(p_assignedExpr)
@@ -1141,141 +1141,114 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PreparedAssignTarget)
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m___construct(Z_OBJ_P(ZEND_THIS), p_kind, p_var, p_assignedExpr, p_beforeScope, p_scope, p_enterExpressionAssign, p_isAssignOp, p_hasYield, p_throwPoints, p_impurePoints, p_isAlwaysTerminating, p_rootVar, p_varResult, p_dimFetchStack, p_assignedPropertyExpr, p_offsetTypes, p_offsetNativeTypes, p_existingOffsetTypes, p_existingOffsetNativeTypes, p_offsetSetTargetResult, p_objectResult, p_propertyName, p_propertyHolderType, p_targetReadResult, p_targetChainResults, p_variableNameResult, p_dependencies))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDependencies, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getDependencies() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getDependencies(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getKind, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getKind() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getKind(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getVar, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getVar() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getVar(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAssignedExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getAssignedExpr() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getAssignedExpr(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getBeforeScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getBeforeScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getBeforeScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::enterExpressionAssign, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::enterExpressionAssign() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_enterExpressionAssign(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isAssignOp, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::isAssignOp() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_isAssignOp(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::hasYield, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::hasYield() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_hasYield(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getThrowPoints, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getThrowPoints() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getThrowPoints(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getImpurePoints, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getImpurePoints() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getImpurePoints(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isAlwaysTerminating, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::isAlwaysTerminating() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_isAlwaysTerminating(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getRootVar, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getRootVar() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getRootVar(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getVarResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getVarResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getVarResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDimFetchStack, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getDimFetchStack() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getDimFetchStack(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAssignedPropertyExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getAssignedPropertyExpr() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getAssignedPropertyExpr(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOffsetTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getOffsetTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getOffsetTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOffsetNativeTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getOffsetNativeTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getOffsetNativeTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExistingOffsetTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getExistingOffsetTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getExistingOffsetTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExistingOffsetNativeTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getExistingOffsetNativeTypes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getExistingOffsetNativeTypes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOffsetSetTargetResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getOffsetSetTargetResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getOffsetSetTargetResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getObjectResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getObjectResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getObjectResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPropertyName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getPropertyName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getPropertyName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPropertyHolderType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getPropertyHolderType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getPropertyHolderType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTargetReadResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getTargetReadResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getTargetReadResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTargetChainResults, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getTargetChainResults() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getTargetChainResults(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getVariableNameResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\PreparedAssignTarget::getVariableNameResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PreparedAssignTarget::m_getVariableNameResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

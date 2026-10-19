@@ -294,7 +294,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAdapterNamedType)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType::__construct() */
 		zval *p_type = NULL;
 		bool p_allowsNull = false;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(p_allowsNull)
@@ -302,7 +302,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAdapterNamedType)
 		if (UNEXPECTED(!pgen::BetterReflectionAdapterNamedType::m___construct(Z_OBJ_P(ZEND_THIS), p_type, p_allowsNull))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionAdapterNamedType::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -313,18 +312,15 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAdapterNamedType)
 		return r1;
 	});
 	cls.method(sigs::__toString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType::__toString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionAdapterNamedType::m___toString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::allowsNull, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType::allowsNull() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionAdapterNamedType::m_allowsNull(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isBuiltin, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType::isBuiltin() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionAdapterNamedType::m_isBuiltin(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -340,7 +336,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAdapterNamedType)
 		zend_string *p_namedType_str = NULL;
 		zval p_namedType_zv;
 		bool p_isBuiltin = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_namedType_str)
 			Z_PARAM_BOOL(p_isBuiltin)
 		ZEND_PARSE_PARAMETERS_END();
@@ -350,7 +346,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionAdapterNamedType)
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isIdentifier, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType::isIdentifier() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionAdapterNamedType::m_isIdentifier(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);

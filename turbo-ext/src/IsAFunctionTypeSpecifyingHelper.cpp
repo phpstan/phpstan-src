@@ -137,7 +137,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsAFunctionTypeSpecifyingHelper)
 		zval *p_classType = NULL;
 		bool p_allowString = false;
 		bool p_allowSameClass = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_objectOrClassType)
 			Z_PARAM_ZVAL(p_classType)
 			Z_PARAM_BOOL(p_allowString)

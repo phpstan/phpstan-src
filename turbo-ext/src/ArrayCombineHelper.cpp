@@ -951,7 +951,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayCombineHelper)
 		zval *p_firstArg = NULL;
 		zval *p_secondArg = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_firstArg)
 			Z_PARAM_ZVAL(p_secondArg)
 			Z_PARAM_ZVAL(p_scope)
@@ -964,7 +964,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayCombineHelper)
 	});
 	cls.method(sigs::sanitizeConstantArrayKeyTypes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\ArrayCombineHelper::sanitizeConstantArrayKeyTypes() */
 		zval *p_types = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_types)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);

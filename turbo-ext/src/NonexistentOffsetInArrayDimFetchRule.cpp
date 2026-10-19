@@ -1407,7 +1407,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonexistentOffsetInArrayDimFetchRule)
 		zval *p_ruleLevelHelper = NULL;
 		zval *p_nonexistentOffsetInArrayDimFetchCheck = NULL;
 		bool p_reportMaybes = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_ruleLevelHelper)
 			Z_PARAM_ZVAL(p_nonexistentOffsetInArrayDimFetchCheck)
 			Z_PARAM_BOOL(p_reportMaybes)
@@ -1417,14 +1417,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonexistentOffsetInArrayDimFetchRule)
 		if (UNEXPECTED(!pgen::NonexistentOffsetInArrayDimFetchRule::m___construct(Z_OBJ_P(ZEND_THIS), p_ruleLevelHelper, p_nonexistentOffsetInArrayDimFetchCheck, p_reportMaybes))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NonexistentOffsetInArrayDimFetchRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1436,7 +1435,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonexistentOffsetInArrayDimFetchRule)
 	cls.method(sigs::isImplicitArrayCreation, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule::isImplicitArrayCreation() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

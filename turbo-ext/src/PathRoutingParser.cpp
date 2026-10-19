@@ -500,7 +500,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PathRoutingParser)
 		zval p_singleReflectionFile_zv;
 		zval p_singleReflectionFile_null;
 		ZVAL_NULL(&p_singleReflectionFile_null);
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_fileHelper)
 			Z_PARAM_ZVAL(p_currentPhpVersionRichParser)
 			Z_PARAM_ZVAL(p_currentPhpVersionSimpleParser)
@@ -517,7 +517,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PathRoutingParser)
 	});
 	cls.method(sigs::setAnalysedFiles, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\PathRoutingParser::setAnalysedFiles() */
 		zval *p_files = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_files)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::PathRoutingParser::m_setAnalysedFiles(Z_OBJ_P(ZEND_THIS), p_files))) RETURN_THROWS();
@@ -526,7 +526,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PathRoutingParser)
 		zval *p_file = NULL;
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
@@ -537,7 +537,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PathRoutingParser)
 		zval *p_sourceCode = NULL;
 		zend_string *p_sourceCode_str = NULL;
 		zval p_sourceCode_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_sourceCode_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_sourceCode_str != NULL) { ZVAL_STR(&p_sourceCode_zv, p_sourceCode_str); p_sourceCode = &p_sourceCode_zv; }

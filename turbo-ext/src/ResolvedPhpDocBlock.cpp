@@ -4282,7 +4282,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 	ptdecl::ResolvedPhpDocBlock::declareProperties(cls);
 	cls.publicClassConstantString("EMPTY_DOC_STRING", "/** */");
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::__construct() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m___construct(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::create() */
@@ -4300,7 +4299,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_templateTags = NULL;
 		zval *p_phpDocNodeResolver = NULL;
 		zval *p_reflectionProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(8, 8)
+		ZEND_PARSE_PARAMETERS_START(8, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_STR(p_phpDocString_str)
 			Z_PARAM_STR_OR_NULL(p_filename_str)
@@ -4323,7 +4322,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 	});
 	cls.method(sigs::withNameScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::withNameScope() */
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_nameScope != NULL && UNEXPECTED(Z_TYPE_P(p_nameScope) != IS_OBJECT || !pgrt::instanceOfClass(p_nameScope, pgrt::lookupClassQuiet(pg_site_52, "PHPStan\\Analyser\\NameScope", 26)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\NameScope", zend_zval_value_name(p_nameScope)); RETURN_THROWS(); }
@@ -4331,7 +4330,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_withNameScope(Z_OBJ_P(ZEND_THIS), p_nameScope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createEmpty, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::createEmpty() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_createEmpty(return_value))) RETURN_THROWS();
 	});
@@ -4340,7 +4338,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parameterMapping = NULL;
 		zval *p_declaringClass = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
 			Z_PARAM_ZVAL(p_declaringClass)
@@ -4355,183 +4353,149 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 	});
 	cls.method(sigs::changeParameterNamesByMapping, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::changeParameterNamesByMapping() */
 		zval *p_parameterNameMapping = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_parameterNameMapping)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_changeParameterNamesByMapping(Z_OBJ_P(ZEND_THIS), p_parameterNameMapping, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasPhpDocString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::hasPhpDocString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_hasPhpDocString(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getPhpDocString, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getPhpDocString() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getPhpDocString(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPhpDocNodes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getPhpDocNodes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getPhpDocNodes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getFilename, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getFilename() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getFilename(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNameScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getNameScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getNameScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNullableNameScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getNullableNameScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getNullableNameScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getVarTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getVarTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getVarTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getMethodTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getMethodTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getMethodTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getPropertyTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getPropertyTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getPropertyTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTemplateTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getTemplateTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getTemplateTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExtendsTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getExtendsTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getExtendsTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getImplementsTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getImplementsTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getImplementsTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getUsesTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getUsesTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getUsesTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getParamTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getParamTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getParamTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getParamOutTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getParamOutTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getParamOutTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getParamsImmediatelyInvokedCallable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getParamsImmediatelyInvokedCallable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getParamsImmediatelyInvokedCallable(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getParamsPureUnlessCallableIsImpure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getParamsPureUnlessCallableIsImpure() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getParamsPureUnlessCallableIsImpure(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getParamsPureUnlessParameterPassed, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getParamsPureUnlessParameterPassed() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getParamsPureUnlessParameterPassed(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getParamClosureThisTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getParamClosureThisTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getParamClosureThisTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReturnTag, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getReturnTag() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getReturnTag(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getThrowsTag, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getThrowsTag() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getThrowsTag(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getMixinTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getMixinTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getMixinTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getRequireExtendsTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getRequireExtendsTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getRequireExtendsTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getRequireImplementsTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getRequireImplementsTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getRequireImplementsTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getSealedTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getSealedTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getSealedTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTypeAliasTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getTypeAliasTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getTypeAliasTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getTypeAliasImportTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getTypeAliasImportTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getTypeAliasImportTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAssertTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getAssertTags() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getAssertTags(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getSelfOutTag, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getSelfOutTag() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getSelfOutTag(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDeprecatedTag, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getDeprecatedTag() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getDeprecatedTag(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isDeprecated, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::isDeprecated() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isDeprecated(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isNotDeprecated, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::isNotDeprecated() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isNotDeprecated(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isInternal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::isInternal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isInternal(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isFinal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::isFinal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isFinal(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -4543,19 +4507,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::hasConsistentConstructor, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::hasConsistentConstructor() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_hasConsistentConstructor(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::acceptsNamedArguments, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::acceptsNamedArguments() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_acceptsNamedArguments(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getTemplateTypeMap, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::getTemplateTypeMap() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_getTemplateTypeMap(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -4566,36 +4527,30 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		return r1;
 	});
 	cls.method(sigs::isPure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::isPure() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isPure(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::areAllMethodsPure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::areAllMethodsPure() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_areAllMethodsPure(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::areAllMethodsImpure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::areAllMethodsImpure() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_areAllMethodsImpure(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isReadOnly, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::isReadOnly() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isReadOnly(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isImmutable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::isImmutable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isImmutable(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isAllowedPrivateMutation, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::isAllowedPrivateMutation() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isAllowedPrivateMutation(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -4604,7 +4559,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_varTags = NULL;
 		zval *p_parent = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_varTags)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parentClass)
@@ -4617,7 +4572,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 	cls.method(sigs::mergeOneParentVarTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\ResolvedPhpDocBlock::mergeOneParentVarTags() */
 		zval *p_parent = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parentClass)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4631,7 +4586,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ARRAY(p_paramTags)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4648,7 +4603,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ARRAY(p_paramTags)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4668,7 +4623,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_returnTag)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_parent)
@@ -4692,7 +4647,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_returnTag)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_parent)
@@ -4713,7 +4668,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ARRAY(p_assertTags)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4730,7 +4685,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval p_selfOutTypeTag_null;
 		ZVAL_NULL(&p_selfOutTypeTag_null);
 		zval *p_parent = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_selfOutTypeTag)
 			Z_PARAM_ZVAL(p_parent)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4746,7 +4701,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		ZVAL_NULL(&p_deprecatedTag_null);
 		bool p_hasNotDeprecatedTag = false;
 		zval *p_parent = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_deprecatedTag)
 			Z_PARAM_BOOL(p_hasNotDeprecatedTag)
 			Z_PARAM_ZVAL(p_parent)
@@ -4763,7 +4718,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		ZVAL_NULL(&p_throwsTag_null);
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_throwsTag)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4780,7 +4735,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ARRAY(p_paramOutTags)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4797,7 +4752,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ARRAY(p_paramOutTags)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4813,7 +4768,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_paramsImmediatelyInvokedCallable = NULL;
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_paramsImmediatelyInvokedCallable)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4827,7 +4782,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_paramsImmediatelyInvokedCallable = NULL;
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_paramsImmediatelyInvokedCallable)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4841,7 +4796,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_paramsPureUnlessCallableIsImpure = NULL;
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_paramsPureUnlessCallableIsImpure)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4855,7 +4810,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_paramsPureUnlessCallableIsImpure = NULL;
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_paramsPureUnlessCallableIsImpure)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4869,7 +4824,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_paramsPureUnlessParameterPassed = NULL;
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_paramsPureUnlessParameterPassed)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4883,7 +4838,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_paramsPureUnlessParameterPassed = NULL;
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_paramsPureUnlessParameterPassed)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4898,7 +4853,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ARRAY(p_paramsClosureThisTags)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4915,7 +4870,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_parent = NULL;
 		zval *p_parameterMapping = NULL;
 		zval *p_parentClass = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ARRAY(p_paramsClosureThisTags)
 			Z_PARAM_ZVAL(p_parent)
 			Z_PARAM_ZVAL(p_parameterMapping)
@@ -4933,7 +4888,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		bool p_isPure_isNull = true;
 		zval p_isPure_zv;
 		zval *p_parent = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_BOOL_OR_NULL(p_isPure_raw, p_isPure_isNull)
 			Z_PARAM_ZVAL(p_parent)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4946,7 +4901,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ResolvedPhpDocBlock)
 		zval *p_tag = NULL;
 		zval *p_classReflection = NULL;
 		zval *p_positionVariance = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_tag)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_positionVariance)

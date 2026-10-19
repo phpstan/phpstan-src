@@ -949,7 +949,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfFormatParser)
 		zend_string *p_format_str = NULL;
 		zval p_format_zv;
 		zval *p_phpVersions = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_format_str)
 			Z_PARAM_ZVAL(p_phpVersions)
 		ZEND_PARSE_PARAMETERS_END();
@@ -960,7 +960,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfFormatParser)
 	});
 	cls.method(sigs::getRequiredArgumentsCount, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\PrintfFormatParser::getRequiredArgumentsCount() */
 		zval *p_uses = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_uses)
 		ZEND_PARSE_PARAMETERS_END();
 		zend_long r;
@@ -973,7 +973,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfFormatParser)
 		zval p_format_zv;
 		zend_long p_length = 0;
 		zval *p_i = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_format_str)
 			Z_PARAM_LONG(p_length)
 			Z_PARAM_ZVAL(p_i)
@@ -989,7 +989,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfFormatParser)
 		zval p_format_zv;
 		zend_long p_length = 0;
 		zval *p_i = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_format_str)
 			Z_PARAM_LONG(p_length)
 			Z_PARAM_ZVAL(p_i)
@@ -1005,7 +1005,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfFormatParser)
 		zend_string *p_char_str = NULL;
 		zval p_char_zv;
 		zval *p_phpVersions = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_char_str)
 			Z_PARAM_ZVAL(p_phpVersions)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1019,7 +1019,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfFormatParser)
 		zval *p_char = NULL;
 		zend_string *p_char_str = NULL;
 		zval p_char_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_char_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_char_str != NULL) { ZVAL_STR(&p_char_zv, p_char_str); p_char = &p_char_zv; }
@@ -1031,7 +1031,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfFormatParser)
 		zval *p_char = NULL;
 		zend_string *p_char_str = NULL;
 		zval p_char_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_char_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_char_str != NULL) { ZVAL_STR(&p_char_zv, p_char_str); p_char = &p_char_zv; }

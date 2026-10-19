@@ -3970,7 +3970,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleCheckTypeHelper)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper::__construct() */
 		zval *p_reflectionProvider = NULL;
 		bool p_treatPhpDocTypesAsCertain = false;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3989,7 +3989,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleCheckTypeHelper)
 		ZVAL_NULL(&p_argsResult_null);
 		zval *p_reasons = NULL;
 		zv::Val p_reasons_omitted;
-		ZEND_PARSE_PARAMETERS_START(3, 5)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_nodeResult)
@@ -4014,7 +4014,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleCheckTypeHelper)
 		ZVAL_NULL(&p_argsResult_null);
 		zval *p_expr = NULL;
 		bool p_phpDocFlavour = false;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL_OR_NULL(p_argsResult)
 			Z_PARAM_ZVAL(p_expr)
@@ -4036,7 +4036,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleCheckTypeHelper)
 		zval *p_argsResult = NULL;
 		zval p_argsResult_null;
 		ZVAL_NULL(&p_argsResult_null);
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_reasons)
@@ -4056,7 +4056,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleCheckTypeHelper)
 		zval *p_scope = NULL;
 		zval *p_node = NULL;
 		zval *p_expr = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_expr)
@@ -4071,7 +4071,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleCheckTypeHelper)
 	cls.method(sigs::getArgumentsDescription, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper::getArgumentsDescription() */
 		zval *p_scope = NULL;
 		zval *p_args = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_args)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4080,14 +4080,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ImpossibleCheckTypeHelper)
 		if (UNEXPECTED(!pgen::ImpossibleCheckTypeHelper::m_getArgumentsDescription(Z_OBJ_P(ZEND_THIS), p_scope, p_args, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::doNotTreatPhpDocTypesAsCertain, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper::doNotTreatPhpDocTypesAsCertain() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ImpossibleCheckTypeHelper::m_doNotTreatPhpDocTypesAsCertain(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::determineContext, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper::determineContext() */
 		zval *p_scope = NULL;
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();

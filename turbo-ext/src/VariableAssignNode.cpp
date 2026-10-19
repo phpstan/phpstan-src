@@ -118,7 +118,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableAssignNode)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableAssignNode::__construct() */
 		zval *p_variable = NULL;
 		zval *p_assignedExpr = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_variable)
 			Z_PARAM_ZVAL(p_assignedExpr)
 		ZEND_PARSE_PARAMETERS_END();
@@ -127,17 +127,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableAssignNode)
 		if (UNEXPECTED(!pgen::VariableAssignNode::m___construct(Z_OBJ_P(ZEND_THIS), p_variable, p_assignedExpr))) RETURN_THROWS();
 	});
 	cls.method(sigs::getVariable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableAssignNode::getVariable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VariableAssignNode::m_getVariable(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getAssignedExpr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableAssignNode::getAssignedExpr() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VariableAssignNode::m_getAssignedExpr(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableAssignNode::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VariableAssignNode::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -148,7 +145,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VariableAssignNode)
 		return r1;
 	});
 	cls.method(sigs::getSubNodeNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\VariableAssignNode::getSubNodeNames() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VariableAssignNode::m_getSubNodeNames(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

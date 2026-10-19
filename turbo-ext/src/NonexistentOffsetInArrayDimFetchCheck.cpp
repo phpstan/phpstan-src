@@ -758,7 +758,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonexistentOffsetInArrayDimFetchCheck)
 		bool p_reportMaybes = false;
 		bool p_reportPossiblyNonexistentGeneralArrayOffset = false;
 		bool p_reportPossiblyNonexistentConstantArrayOffset = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_OBJECT(p_ruleLevelHelper)
 			Z_PARAM_BOOL(p_reportMaybes)
 			Z_PARAM_BOOL(p_reportPossiblyNonexistentGeneralArrayOffset)
@@ -774,7 +774,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NonexistentOffsetInArrayDimFetchCheck)
 		zend_string *p_unknownClassPattern_str = NULL;
 		zval p_unknownClassPattern_zv;
 		zval *p_dimType = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_var)
 			Z_PARAM_STR(p_unknownClassPattern_str)

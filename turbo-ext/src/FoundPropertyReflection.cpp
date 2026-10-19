@@ -1145,7 +1145,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundPropertyReflection)
 		zval p_propertyName_zv;
 		zval *p_readableType = NULL;
 		zval *p_writableType = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_originalPropertyReflection)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_propertyName_str)
@@ -1160,17 +1160,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundPropertyReflection)
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_originalPropertyReflection, p_scope, p_propertyName, p_readableType, p_writableType))) RETURN_THROWS();
 	});
 	cls.method(sigs::getScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDeclaringClass, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getDeclaringClass() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDeclaringClass(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1181,19 +1178,16 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundPropertyReflection)
 		return r1;
 	});
 	cls.method(sigs::isStatic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isStatic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isStatic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPrivate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isPrivate() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isPrivate(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPublic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isPublic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isPublic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -1205,93 +1199,76 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundPropertyReflection)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::getDocComment, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getDocComment() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDocComment(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasPhpDocType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::hasPhpDocType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_hasPhpDocType(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getPhpDocType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getPhpDocType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getPhpDocType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::hasNativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::hasNativeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_hasNativeType(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getNativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getNativeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getNativeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getReadableType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getReadableType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getReadableType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getWritableType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getWritableType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getWritableType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::canChangeTypeAfterAssignment, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::canChangeTypeAfterAssignment() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_canChangeTypeAfterAssignment(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isReadable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isReadable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isReadable(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isWritable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isWritable() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isWritable(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isDeprecated, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isDeprecated() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isDeprecated(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getDeprecatedDescription, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getDeprecatedDescription() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDeprecatedDescription(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isInternal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isInternal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isInternal(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isNative, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isNative() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isNative(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getNativeReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getNativeReflection() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getNativeReflection(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isAbstract, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isAbstract() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isAbstract(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isFinalByKeyword, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isFinalByKeyword() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isFinalByKeyword(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1302,7 +1279,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundPropertyReflection)
 		return r1;
 	});
 	cls.method(sigs::isFinal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isFinal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isFinal(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1313,7 +1289,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundPropertyReflection)
 		return r1;
 	});
 	cls.method(sigs::isVirtual, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isVirtual() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isVirtual(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1321,7 +1296,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundPropertyReflection)
 		zval *p_hookType = NULL;
 		zend_string *p_hookType_str = NULL;
 		zval p_hookType_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_hookType_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_hookType_str != NULL) { ZVAL_STR(&p_hookType_zv, p_hookType_str); p_hookType = &p_hookType_zv; }
@@ -1333,7 +1308,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundPropertyReflection)
 		zval *p_hookType = NULL;
 		zend_string *p_hookType_str = NULL;
 		zval p_hookType_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_hookType_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_hookType_str != NULL) { ZVAL_STR(&p_hookType_zv, p_hookType_str); p_hookType = &p_hookType_zv; }
@@ -1341,24 +1316,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FoundPropertyReflection)
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getHook(Z_OBJ_P(ZEND_THIS), p_hookType, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isProtectedSet, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isProtectedSet() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isProtectedSet(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::isPrivateSet, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isPrivateSet() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isPrivateSet(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getAttributes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::getAttributes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getAttributes(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isDummy, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Properties\FoundPropertyReflection::isDummy() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isDummy(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

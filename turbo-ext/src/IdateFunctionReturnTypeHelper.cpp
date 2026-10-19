@@ -491,7 +491,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IdateFunctionReturnTypeHelper)
 	ptdecl::IdateFunctionReturnTypeHelper::declareProperties(cls);
 	cls.method(sigs::getTypeFromFormatType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\IdateFunctionReturnTypeHelper::getTypeFromFormatType() */
 		zval *p_formatType = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_formatType)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_formatType != NULL && UNEXPECTED(Z_TYPE_P(p_formatType) != IS_OBJECT || !pgrt::instanceOfClass(p_formatType, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_formatType)); RETURN_THROWS(); }
@@ -502,7 +502,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IdateFunctionReturnTypeHelper)
 		zval *p_formatString = NULL;
 		zend_string *p_formatString_str = NULL;
 		zval p_formatString_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_formatString_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_formatString_str != NULL) { ZVAL_STR(&p_formatString_zv, p_formatString_str); p_formatString = &p_formatString_zv; }

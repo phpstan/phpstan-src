@@ -1010,7 +1010,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ValueDependencyCollector::__construct() */
 		zval *p_valueExtensions = NULL;
 		zval *p_fileHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_OBJECT(p_valueExtensions)
 			Z_PARAM_OBJECT(p_fileHelper)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1025,7 +1025,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval *p_key = NULL;
 		zend_string *p_key_str = NULL;
 		zval p_key_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_extensionClass_str)
 			Z_PARAM_STR(p_key_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1038,7 +1038,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval *p_analysedFile = NULL;
 		zend_string *p_analysedFile_str = NULL;
 		zval p_analysedFile_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_analysedFile_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_analysedFile_str != NULL) { ZVAL_STR(&p_analysedFile_zv, p_analysedFile_str); p_analysedFile = &p_analysedFile_zv; }
@@ -1053,7 +1053,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval p_key_zv;
 		zval *p_scope = NULL;
 		bool p_insideWalk = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_STR(p_extensionClass_str)
 			Z_PARAM_STR(p_key_str)
 			Z_PARAM_ZVAL(p_scope)
@@ -1070,7 +1070,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval p_file_zv;
 		zval *p_scope = NULL;
 		bool p_insideWalk = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_file_str)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_BOOL(p_insideWalk)
@@ -1088,7 +1088,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval p_pattern_zv;
 		zval *p_scope = NULL;
 		bool p_insideWalk = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_STR(p_directory_str)
 			Z_PARAM_STR(p_pattern_str)
 			Z_PARAM_ZVAL(p_scope)
@@ -1105,7 +1105,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval p_className_zv;
 		zval *p_scope = NULL;
 		bool p_insideWalk = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_BOOL(p_insideWalk)
@@ -1118,7 +1118,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval *p_file = NULL;
 		zend_string *p_file_str = NULL;
 		zval p_file_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_file_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
@@ -1132,7 +1132,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval *p_pattern = NULL;
 		zend_string *p_pattern_str = NULL;
 		zval p_pattern_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_directory_str)
 			Z_PARAM_STR(p_pattern_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1151,7 +1151,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval *p_key = NULL;
 		zend_string *p_key_str = NULL;
 		zval p_key_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_STR(p_extensionClass_str)
 			Z_PARAM_STR(p_key_str)
@@ -1163,21 +1163,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 	});
 	cls.method(sigs::noteClassDependency, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ValueDependencyCollector::noteClassDependency() */
 		zval *p_classReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_classReflection != NULL && UNEXPECTED(Z_TYPE_P(p_classReflection) != IS_OBJECT || !(pgrt::instanceOfClass(p_classReflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_classReflection, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_classReflection)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ValueDependencyCollector::m_noteClassDependency(Z_OBJ_P(ZEND_THIS), p_classReflection))) RETURN_THROWS();
 	});
 	cls.method(sigs::finishFile, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ValueDependencyCollector::finishFile() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ValueDependencyCollector::m_finishFile(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::merge, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ValueDependencyCollector::merge() */
 		zval *p_dependencies = NULL;
 		zval *p_newDependencies = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_dependencies)
 			Z_PARAM_ARRAY(p_newDependencies)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1188,7 +1187,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval *p_extensionClass = NULL;
 		zend_string *p_extensionClass_str = NULL;
 		zval p_extensionClass_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_extensionClass_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_extensionClass_str != NULL) { ZVAL_STR(&p_extensionClass_zv, p_extensionClass_str); p_extensionClass = &p_extensionClass_zv; }
@@ -1199,7 +1198,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ValueDependencyCollector)
 		zval *p_extensionClass = NULL;
 		zend_string *p_extensionClass_str = NULL;
 		zval p_extensionClass_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_extensionClass_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_extensionClass_str != NULL) { ZVAL_STR(&p_extensionClass_zv, p_extensionClass_str); p_extensionClass = &p_extensionClass_zv; }

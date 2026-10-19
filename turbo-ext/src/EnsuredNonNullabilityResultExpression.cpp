@@ -130,7 +130,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_EnsuredNonNullabilityResultExpression)
 		zval *p_originalType = NULL;
 		zval *p_originalNativeType = NULL;
 		zval *p_certainty = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_expression)
 			Z_PARAM_ZVAL(p_originalType)
 			Z_PARAM_ZVAL(p_originalNativeType)
@@ -143,22 +143,18 @@ PT_MINIT_REGISTRATION(pt_register_codegen_EnsuredNonNullabilityResultExpression)
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResultExpression::m___construct(Z_OBJ_P(ZEND_THIS), p_expression, p_originalType, p_originalNativeType, p_certainty))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExpression, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\EnsuredNonNullabilityResultExpression::getExpression() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResultExpression::m_getExpression(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\EnsuredNonNullabilityResultExpression::getOriginalType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResultExpression::m_getOriginalType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalNativeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\EnsuredNonNullabilityResultExpression::getOriginalNativeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResultExpression::m_getOriginalNativeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getCertainty, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\EnsuredNonNullabilityResultExpression::getCertainty() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResultExpression::m_getCertainty(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

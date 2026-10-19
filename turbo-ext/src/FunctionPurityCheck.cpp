@@ -1398,7 +1398,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionPurityCheck)
 		zval *p_throwPoints = NULL;
 		zval *p_statements = NULL;
 		bool p_isConstructor = false;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		ZEND_PARSE_PARAMETERS_START(10, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_functionDescription_str)
 			Z_PARAM_STR(p_identifier_str)
@@ -1424,7 +1424,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionPurityCheck)
 		zval *p_functionDescription = NULL;
 		zend_string *p_functionDescription_str = NULL;
 		zval p_functionDescription_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ARRAY(p_impurePoints)
 			Z_PARAM_ARRAY(p_pureUnlessCallableParamNames)
 			Z_PARAM_STR(p_functionDescription_str)
@@ -1436,7 +1436,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionPurityCheck)
 	cls.method(sigs::isPureUnlessCallableInvocation, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Pure\FunctionPurityCheck::isPureUnlessCallableInvocation() */
 		zval *p_impurePoint = NULL;
 		zval *p_pureUnlessCallableParamNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_impurePoint)
 			Z_PARAM_ARRAY(p_pureUnlessCallableParamNames)
 		ZEND_PARSE_PARAMETERS_END();

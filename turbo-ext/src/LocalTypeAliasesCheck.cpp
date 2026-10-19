@@ -1930,7 +1930,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LocalTypeAliasesCheck)
 		bool p_checkMissingTypehints = false;
 		bool p_checkClassCaseSensitivity = false;
 		bool p_discoveringSymbolsTip = false;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		ZEND_PARSE_PARAMETERS_START(10, -1)
 			Z_PARAM_ARRAY(p_globalTypeAliases)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_typeNodeResolver)
@@ -1954,7 +1954,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LocalTypeAliasesCheck)
 		zval *p_scope = NULL;
 		zval *p_reflection = NULL;
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_reflection)
 			Z_PARAM_ZVAL(p_node)
@@ -1967,7 +1967,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LocalTypeAliasesCheck)
 	});
 	cls.method(sigs::checkInTraitDefinitionContext, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Classes\LocalTypeAliasesCheck::checkInTraitDefinitionContext() */
 		zval *p_reflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_reflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_reflection != NULL && UNEXPECTED(Z_TYPE_P(p_reflection) != IS_OBJECT || !(pgrt::instanceOfClass(p_reflection, pt_ce_class_reflection) || pgrt::instanceOfClass(p_reflection, pgrt::lookupClassQuiet(pg_site_61, "PHPStan\\Reflection\\ClassReflection", 34))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassReflection", zend_zval_value_name(p_reflection)); RETURN_THROWS(); }
@@ -1979,7 +1979,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LocalTypeAliasesCheck)
 		zval *p_reflection = NULL;
 		zval *p_implementingClassReflection = NULL;
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_reflection)
 			Z_PARAM_ZVAL(p_implementingClassReflection)
@@ -1999,7 +1999,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LocalTypeAliasesCheck)
 		zval *p_nameScope = NULL;
 		zval p_nameScope_null;
 		ZVAL_NULL(&p_nameScope_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_aliasName_str)
 			Z_PARAM_ZVAL_OR_NULL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2016,7 +2016,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_LocalTypeAliasesCheck)
 		zend_string *p_aliasName_str = NULL;
 		zval p_aliasName_zv;
 		zval *p_errors = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_STR(p_aliasName_str)
 			Z_PARAM_ZVAL(p_errors)

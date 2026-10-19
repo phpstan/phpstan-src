@@ -116,24 +116,21 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TransformedRuleError)
 	ptdecl::TransformedRuleError::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\TransformedRuleError::__construct() */
 		zval *p_error = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_error)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_error != NULL && UNEXPECTED(Z_TYPE_P(p_error) != IS_OBJECT || !pgrt::instanceOfClass(p_error, pgrt::lookupClassQuiet(pg_site_1, "PHPStan\\Analyser\\Error", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Error", zend_zval_value_name(p_error)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::TransformedRuleError::m___construct(Z_OBJ_P(ZEND_THIS), p_error))) RETURN_THROWS();
 	});
 	cls.method(sigs::getError, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\TransformedRuleError::getError() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TransformedRuleError::m_getError(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getIdentifier, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\TransformedRuleError::getIdentifier() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TransformedRuleError::m_getIdentifier(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getMessage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\RuleErrors\TransformedRuleError::getMessage() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TransformedRuleError::m_getMessage(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

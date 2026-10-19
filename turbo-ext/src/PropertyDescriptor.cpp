@@ -307,7 +307,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyDescriptor)
 		zval *p_property = NULL;
 		zval *p_scope = NULL;
 		zval *p_propertyFetch = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_property)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_propertyFetch)

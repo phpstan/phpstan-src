@@ -1061,7 +1061,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfParameterTypeRule)
 		zval *p_reflectionProvider = NULL;
 		zval *p_ruleLevelHelper = NULL;
 		bool p_checkStrictPrintfPlaceholderTypes = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_printfFormatParser)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_ZVAL(p_ruleLevelHelper)
@@ -1073,14 +1073,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfParameterTypeRule)
 		if (UNEXPECTED(!pgen::PrintfParameterTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_printfFormatParser, p_reflectionProvider, p_ruleLevelHelper, p_checkStrictPrintfPlaceholderTypes))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfParameterTypeRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PrintfParameterTypeRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\PrintfParameterTypeRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1094,7 +1093,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfParameterTypeRule)
 		zend_string *p_format_str = NULL;
 		zval p_format_zv;
 		zval *p_phpVersions = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_format_str)
 			Z_PARAM_ZVAL(p_phpVersions)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1107,7 +1106,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PrintfParameterTypeRule)
 		zval *p_specifier = NULL;
 		zend_string *p_specifier_str = NULL;
 		zval p_specifier_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_specifier_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_specifier_str != NULL) { ZVAL_STR(&p_specifier_zv, p_specifier_str); p_specifier = &p_specifier_zv; }

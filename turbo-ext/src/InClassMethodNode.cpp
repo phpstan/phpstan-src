@@ -138,7 +138,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InClassMethodNode)
 		zval *p_classReflection = NULL;
 		zval *p_methodReflection = NULL;
 		zval *p_originalNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_ZVAL(p_methodReflection)
 			Z_PARAM_ZVAL(p_originalNode)
@@ -149,7 +149,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InClassMethodNode)
 		if (UNEXPECTED(!pgen::InClassMethodNode::m___construct(Z_OBJ_P(ZEND_THIS), p_classReflection, p_methodReflection, p_originalNode))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\InClassMethodNode::getClassReflection() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InClassMethodNode::m_getClassReflection(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -160,17 +159,14 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InClassMethodNode)
 		return r1;
 	});
 	cls.method(sigs::getMethodReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\InClassMethodNode::getMethodReflection() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InClassMethodNode::m_getMethodReflection(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getOriginalNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\InClassMethodNode::getOriginalNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InClassMethodNode::m_getOriginalNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\InClassMethodNode::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InClassMethodNode::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -181,7 +177,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_InClassMethodNode)
 		return r1;
 	});
 	cls.method(sigs::getSubNodeNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Node\InClassMethodNode::getSubNodeNames() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::InClassMethodNode::m_getSubNodeNames(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

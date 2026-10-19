@@ -467,12 +467,11 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CleaningVisitor)
 	ptdecl::CleaningVisitor::declareClass(cls);
 	ptdecl::CleaningVisitor::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\CleaningVisitor::__construct() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::CleaningVisitor::m___construct(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Parser\CleaningVisitor::enterNode() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
@@ -486,7 +485,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_CleaningVisitor)
 		zval p_hookedPropertyName_zv;
 		zval p_hookedPropertyName_null;
 		ZVAL_NULL(&p_hookedPropertyName_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_stmts)
 			Z_PARAM_STR_OR_NULL(p_hookedPropertyName_str)
 		ZEND_PARSE_PARAMETERS_END();

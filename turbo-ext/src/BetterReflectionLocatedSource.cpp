@@ -359,7 +359,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionLocatedSource)
 		zval p_filename_zv;
 		zval p_filename_null;
 		ZVAL_NULL(&p_filename_null);
-		ZEND_PARSE_PARAMETERS_START(2, 3)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR_OR_NULL(p_source_str)
 			Z_PARAM_STR_OR_NULL(p_name_str)
 			Z_PARAM_OPTIONAL
@@ -374,12 +374,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionLocatedSource)
 		if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m___construct(Z_OBJ_P(ZEND_THIS), p_source, p_name, p_filename))) RETURN_THROWS();
 	});
 	cls.method(sigs::getSource, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::getSource() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m_getSource(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -390,7 +388,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionLocatedSource)
 		return r1;
 	});
 	cls.method(sigs::getFileName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::getFileName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m_getFileName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -401,35 +398,30 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionLocatedSource)
 		return r1;
 	});
 	cls.method(sigs::isInternal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::isInternal() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m_isInternal(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getExtensionName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::getExtensionName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m_getExtensionName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isEvaled, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::isEvaled() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m_isEvaled(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getAliasName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::getAliasName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m_getAliasName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::exportToCache, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::exportToCache() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionLocatedSource::m_exportToCache(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::importFromCache, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\BetterReflection\SourceLocator\Located\LocatedSource::importFromCache() */
 		zval *p_data = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_data)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);

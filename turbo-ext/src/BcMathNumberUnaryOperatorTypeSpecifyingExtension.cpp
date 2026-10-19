@@ -116,7 +116,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BcMathNumberUnaryOperatorTypeSpecifyin
 	ptdecl::BcMathNumberUnaryOperatorTypeSpecifyingExtension::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\BcMathNumberUnaryOperatorTypeSpecifyingExtension::__construct() */
 		zval *p_phpVersion = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_phpVersion)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -127,7 +127,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BcMathNumberUnaryOperatorTypeSpecifyin
 		zend_string *p_operatorSigil_str = NULL;
 		zval p_operatorSigil_zv;
 		zval *p_operand = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_operatorSigil_str)
 			Z_PARAM_ZVAL(p_operand)
 		ZEND_PARSE_PARAMETERS_END();
@@ -142,7 +142,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BcMathNumberUnaryOperatorTypeSpecifyin
 		zend_string *p_operatorSigil_str = NULL;
 		zval p_operatorSigil_zv;
 		zval *p_operand = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_operatorSigil_str)
 			Z_PARAM_ZVAL(p_operand)
 		ZEND_PARSE_PARAMETERS_END();

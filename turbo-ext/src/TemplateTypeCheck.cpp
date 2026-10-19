@@ -1162,7 +1162,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeCheck)
 		zval *p_genericObjectTypeCheck = NULL;
 		zval *p_typeAliasResolver = NULL;
 		bool p_checkClassCaseSensitivity = false;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_classCheck)
 			Z_PARAM_OBJECT(p_genericObjectTypeCheck)
@@ -1201,7 +1201,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TemplateTypeCheck)
 		zval *p_requiredTypeAfterOptionalMessage = NULL;
 		zend_string *p_requiredTypeAfterOptionalMessage_str = NULL;
 		zval p_requiredTypeAfterOptionalMessage_zv;
-		ZEND_PARSE_PARAMETERS_START(11, 11)
+		ZEND_PARSE_PARAMETERS_START(11, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_templateTypeScope)

@@ -65,7 +65,8 @@
 	X(has_dimension) \
 	X(unset_property) \
 	X(get_properties) \
-	X(get_closure)
+	X(get_closure) \
+	X(get_method)
 
 /* The shared core's API for the version-specific library (main.cpp,
  * Abi.cpp, Shadow.cpp, TrustedTypes.cpp): everything else in the core stays
@@ -203,6 +204,8 @@ struct pt_abi_globals
 	const char *(*internal_arg_name)(const zend_function *fn, uint32_t i);
 	/* a parameterless user method's trivial body, read from its opcodes */
 	void (*trivial_shape)(const zend_function *fn, pt_trivial_shape *out);
+	/* ARG_SHOULD_BE_SENT_BY_REF() (the send mode's bits in the arg info's type differ between minors) */
+	bool (*arg_sent_by_ref)(const zend_function *fn, uint32_t argNum);
 };
 
 /* Defined by the shared core, filled by the version-specific library, which

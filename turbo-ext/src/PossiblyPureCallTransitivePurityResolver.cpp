@@ -1543,7 +1543,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PossiblyPureCallTransitivePurityResolv
 	ptdecl::PossiblyPureCallTransitivePurityResolver::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\PossiblyPureCallTransitivePurityResolver::__construct() */
 		zval *p_reflectionProvider = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -1553,7 +1553,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PossiblyPureCallTransitivePurityResolv
 		zval *p_functionName = NULL;
 		zend_string *p_functionName_str = NULL;
 		zval p_functionName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_functionName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionName_str != NULL) { ZVAL_STR(&p_functionName_zv, p_functionName_str); p_functionName = &p_functionName_zv; }
@@ -1567,7 +1567,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PossiblyPureCallTransitivePurityResolv
 		zval *p_methodName = NULL;
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_STR(p_methodName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1579,7 +1579,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PossiblyPureCallTransitivePurityResolv
 	cls.method(sigs::resolveDependencies, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\PossiblyPureCallTransitivePurityResolver::resolveDependencies() */
 		zval *p_impurePoints = NULL;
 		zval *p_throwPoints = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_impurePoints)
 			Z_PARAM_ARRAY(p_throwPoints)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1588,7 +1588,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PossiblyPureCallTransitivePurityResolv
 	});
 	cls.method(sigs::getPureCallableKeys, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\PossiblyPureCallTransitivePurityResolver::getPureCallableKeys() */
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_65, "PHPStan\\Node\\CollectedDataNode", 30)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Node\\CollectedDataNode", zend_zval_value_name(p_node)); RETURN_THROWS(); }
@@ -1598,7 +1598,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PossiblyPureCallTransitivePurityResolv
 	cls.method(sigs::resolveCall, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\PossiblyPureCallTransitivePurityResolver::resolveCall() */
 		zval *p_expr = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_expr)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

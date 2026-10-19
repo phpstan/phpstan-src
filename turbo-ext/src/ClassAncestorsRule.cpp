@@ -426,7 +426,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassAncestorsRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\ClassAncestorsRule::__construct() */
 		zval *p_genericAncestorsCheck = NULL;
 		zval *p_crossCheckInterfacesHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_genericAncestorsCheck)
 			Z_PARAM_ZVAL(p_crossCheckInterfacesHelper)
 		ZEND_PARSE_PARAMETERS_END();
@@ -435,14 +435,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassAncestorsRule)
 		if (UNEXPECTED(!pgen::ClassAncestorsRule::m___construct(Z_OBJ_P(ZEND_THIS), p_genericAncestorsCheck, p_crossCheckInterfacesHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\ClassAncestorsRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassAncestorsRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Generics\ClassAncestorsRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

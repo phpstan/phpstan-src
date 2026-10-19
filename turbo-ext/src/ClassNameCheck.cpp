@@ -364,7 +364,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameCheck)
 		zval *p_classForbiddenNameCheck = NULL;
 		zval *p_reflectionProvider = NULL;
 		zval *p_extensions = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_OBJECT(p_classCaseSensitivityCheck)
 			Z_PARAM_OBJECT(p_classForbiddenNameCheck)
 			Z_PARAM_OBJECT(p_reflectionProvider)
@@ -383,7 +383,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameCheck)
 		zval p_location_null;
 		ZVAL_NULL(&p_location_null);
 		bool p_checkClassCaseSensitivity = true;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ARRAY(p_pairs)
 			Z_PARAM_ZVAL_OR_NULL(p_location)

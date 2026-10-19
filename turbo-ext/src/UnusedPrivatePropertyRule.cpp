@@ -2175,7 +2175,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedPrivatePropertyRule)
 		zval *p_alwaysWrittenTags = NULL;
 		zval *p_alwaysReadTags = NULL;
 		bool p_checkUninitializedProperties = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_extensions)
 			Z_PARAM_ARRAY(p_alwaysWrittenTags)
 			Z_PARAM_ARRAY(p_alwaysReadTags)
@@ -2185,14 +2185,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedPrivatePropertyRule)
 		if (UNEXPECTED(!pgen::UnusedPrivatePropertyRule::m___construct(Z_OBJ_P(ZEND_THIS), p_extensions, p_alwaysWrittenTags, p_alwaysReadTags, p_checkUninitializedProperties))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::UnusedPrivatePropertyRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2206,7 +2205,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedPrivatePropertyRule)
 		zval *p_propertyName = NULL;
 		zend_string *p_propertyName_str = NULL;
 		zval p_propertyName_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_classReflection)
 			Z_PARAM_STR(p_propertyName_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -2225,7 +2224,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedPrivatePropertyRule)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_usageScope)
 			Z_PARAM_STR(p_propertyName_str)
 			Z_PARAM_ZVAL(p_propertyNode)

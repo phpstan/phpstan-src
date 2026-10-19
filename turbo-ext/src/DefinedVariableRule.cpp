@@ -488,7 +488,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DefinedVariableRule)
 		zval *p_nonStringableDynamicAccessCheck = NULL;
 		bool p_cliArgumentsVariablesRegistered = false;
 		bool p_checkMaybeUndefinedVariables = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_nonStringableDynamicAccessCheck)
 			Z_PARAM_BOOL(p_cliArgumentsVariablesRegistered)
 			Z_PARAM_BOOL(p_checkMaybeUndefinedVariables)
@@ -497,14 +497,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DefinedVariableRule)
 		if (UNEXPECTED(!pgen::DefinedVariableRule::m___construct(Z_OBJ_P(ZEND_THIS), p_nonStringableDynamicAccessCheck, p_cliArgumentsVariablesRegistered, p_checkMaybeUndefinedVariables))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\DefinedVariableRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DefinedVariableRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Variables\DefinedVariableRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -519,7 +518,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DefinedVariableRule)
 		zval *p_variableName = NULL;
 		zend_string *p_variableName_str = NULL;
 		zval p_variableName_zv;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_STR(p_variableName_str)

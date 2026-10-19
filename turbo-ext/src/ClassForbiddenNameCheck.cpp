@@ -318,7 +318,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassForbiddenNameCheck)
 	cls.privateClassConstantValue("INTERNAL_CLASS_PREFIXES", pg_const_INTERNAL_CLASS_PREFIXES);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassForbiddenNameCheck::__construct() */
 		zval *p_extensions = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_extensions)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -326,7 +326,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassForbiddenNameCheck)
 	});
 	cls.method(sigs::checkClassNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassForbiddenNameCheck::checkClassNames() */
 		zval *p_pairs = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_pairs)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);

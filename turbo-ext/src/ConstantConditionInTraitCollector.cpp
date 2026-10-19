@@ -102,14 +102,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantConditionInTraitCollector)
 	ptdecl::ConstantConditionInTraitCollector::declareClass(cls);
 	ptdecl::ConstantConditionInTraitCollector::declareProperties(cls);
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantConditionInTraitCollector::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ConstantConditionInTraitCollector::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantConditionInTraitCollector::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -120,7 +119,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ConstantConditionInTraitCollector)
 	cls.method(sigs::transformCollectedDataPaths, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ConstantConditionInTraitCollector::transformCollectedDataPaths() */
 		zval *p_data = NULL;
 		zval *p_transformPath = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_data)
 			Z_PARAM_ZVAL(p_transformPath)
 		ZEND_PARSE_PARAMETERS_END();

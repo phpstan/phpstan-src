@@ -1193,7 +1193,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		p_tmpDir = &p_tmpDir_default;
 		zend_string *p_tmpDir_str = NULL;
 		zval p_tmpDir_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_fileStatSignatures)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_STR(p_tmpDir_str)
@@ -1207,7 +1207,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		zend_string *p_directory_str = NULL;
 		zval p_directory_zv;
 		zval *p_fileExtensions = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_directory_str)
 			Z_PARAM_ARRAY(p_fileExtensions)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1220,7 +1220,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		zend_string *p_directory_str = NULL;
 		zval p_directory_zv;
 		zval *p_fileExtensions = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_directory_str)
 			Z_PARAM_ARRAY(p_fileExtensions)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1229,7 +1229,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		if (UNEXPECTED(!pgen::DirectoryWalker::m_walkCached(Z_OBJ_P(ZEND_THIS), p_directory, p_fileExtensions, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::clearCachedWalks, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\DirectoryWalker::clearCachedWalks() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::DirectoryWalker::m_clearCachedWalks(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::walkWithListings, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\DirectoryWalker::walkWithListings() */
@@ -1237,7 +1236,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		zend_string *p_directory_str = NULL;
 		zval p_directory_zv;
 		zval *p_fileExtensions = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_directory_str)
 			Z_PARAM_ARRAY(p_fileExtensions)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1255,7 +1254,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		zval *p_signatures = NULL;
 		zval *p_files = NULL;
 		zval *p_visited = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_STR(p_directory_str)
 			Z_PARAM_STR(p_pattern_str)
 			Z_PARAM_ZVAL(p_signatures)
@@ -1275,7 +1274,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		zval *p_directory = NULL;
 		zend_string *p_directory_str = NULL;
 		zval p_directory_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_directory_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_directory_str != NULL) { ZVAL_STR(&p_directory_zv, p_directory_str); p_directory = &p_directory_zv; }
@@ -1283,12 +1282,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		if (UNEXPECTED(!pgen::DirectoryWalker::m_readDirectory(Z_OBJ_P(ZEND_THIS), p_directory, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getListingsFile, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\DirectoryWalker::getListingsFile() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DirectoryWalker::m_getListingsFile(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::loadListings, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\DirectoryWalker::loadListings() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!pgen::DirectoryWalker::m_loadListings(Z_OBJ_P(ZEND_THIS)))) RETURN_THROWS();
 	});
 	cls.method(sigs::saveListings, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\DirectoryWalker::saveListings() */
@@ -1296,7 +1293,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		zend_string *p_root_str = NULL;
 		zval p_root_zv;
 		zval *p_visited = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_root_str)
 			Z_PARAM_ARRAY(p_visited)
 		ZEND_PARSE_PARAMETERS_END();

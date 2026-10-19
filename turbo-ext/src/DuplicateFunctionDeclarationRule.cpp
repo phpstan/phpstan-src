@@ -324,7 +324,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DuplicateFunctionDeclarationRule)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\DuplicateFunctionDeclarationRule::__construct() */
 		zval *p_reflector = NULL;
 		zval *p_relativePathHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_reflector)
 			Z_PARAM_ZVAL(p_relativePathHelper)
 		ZEND_PARSE_PARAMETERS_END();
@@ -333,14 +333,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DuplicateFunctionDeclarationRule)
 		if (UNEXPECTED(!pgen::DuplicateFunctionDeclarationRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflector, p_relativePathHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\DuplicateFunctionDeclarationRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DuplicateFunctionDeclarationRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\DuplicateFunctionDeclarationRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

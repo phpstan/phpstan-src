@@ -150,7 +150,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ProcessArrowFunctionResult)
 		zval *p_closureTypeThrowPoints = NULL;
 		zval *p_closureTypeImpurePoints = NULL;
 		zval *p_invalidateExpressions = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_expressionResult)
 			Z_PARAM_ZVAL(p_arrowFunctionScope)
 			Z_PARAM_ARRAY(p_closureTypeThrowPoints)
@@ -162,27 +162,22 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ProcessArrowFunctionResult)
 		if (UNEXPECTED(!pgen::ProcessArrowFunctionResult::m___construct(Z_OBJ_P(ZEND_THIS), p_expressionResult, p_arrowFunctionScope, p_closureTypeThrowPoints, p_closureTypeImpurePoints, p_invalidateExpressions))) RETURN_THROWS();
 	});
 	cls.method(sigs::getExpressionResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessArrowFunctionResult::getExpressionResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessArrowFunctionResult::m_getExpressionResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getArrowFunctionScope, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessArrowFunctionResult::getArrowFunctionScope() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessArrowFunctionResult::m_getArrowFunctionScope(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClosureTypeThrowPoints, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessArrowFunctionResult::getClosureTypeThrowPoints() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessArrowFunctionResult::m_getClosureTypeThrowPoints(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClosureTypeImpurePoints, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessArrowFunctionResult::getClosureTypeImpurePoints() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessArrowFunctionResult::m_getClosureTypeImpurePoints(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getInvalidateExpressions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Analyser\ProcessArrowFunctionResult::getInvalidateExpressions() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ProcessArrowFunctionResult::m_getInvalidateExpressions(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

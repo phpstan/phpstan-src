@@ -1473,7 +1473,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DynamicReturnTypeExtensionRegistry)
 		zval *p_dynamicMethodReturnTypeExtensions = NULL;
 		zval *p_dynamicStaticMethodReturnTypeExtensions = NULL;
 		zval *p_dynamicFunctionReturnTypeExtensions = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_OBJECT(p_dynamicMethodReturnTypeExtensions)
 			Z_PARAM_OBJECT(p_dynamicStaticMethodReturnTypeExtensions)
@@ -1489,7 +1489,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DynamicReturnTypeExtensionRegistry)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -1500,7 +1500,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DynamicReturnTypeExtensionRegistry)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -1512,7 +1512,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DynamicReturnTypeExtensionRegistry)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_extensions)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1522,7 +1522,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DynamicReturnTypeExtensionRegistry)
 	});
 	cls.method(sigs::getDynamicFunctionReturnTypeExtensions, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\DynamicReturnTypeExtensionRegistry::getDynamicFunctionReturnTypeExtensions() */
 		zval *p_functionReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }

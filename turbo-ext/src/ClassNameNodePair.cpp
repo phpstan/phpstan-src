@@ -69,7 +69,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameNodePair)
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
 		zval *p_node = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_ZVAL(p_node)
 		ZEND_PARSE_PARAMETERS_END();
@@ -78,12 +78,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ClassNameNodePair)
 		if (UNEXPECTED(!pgen::ClassNameNodePair::m___construct(Z_OBJ_P(ZEND_THIS), p_className, p_node))) RETURN_THROWS();
 	});
 	cls.method(sigs::getClassName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameNodePair::getClassName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameNodePair::m_getClassName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\ClassNameNodePair::getNode() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ClassNameNodePair::m_getNode(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

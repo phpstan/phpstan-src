@@ -969,29 +969,26 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	cls.privateClassConstantLong("NO", 0);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::__construct() */
 		zend_long p_value = 0;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_LONG(p_value)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!pgen::TrinaryLogic::m___construct(Z_OBJ_P(ZEND_THIS), p_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createYes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::createYes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_createYes(return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createNo, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::createNo() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_createNo(return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createMaybe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::createMaybe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_createMaybe(return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createFromBoolean, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::createFromBoolean() */
 		bool p_value = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_value)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -999,32 +996,28 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	});
 	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::create() */
 		zend_long p_value = 0;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_LONG(p_value)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_create(p_value, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::yes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::yes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::maybe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::maybe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_maybe(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::no, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::no() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::toBooleanType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::toBooleanType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_toBooleanType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1077,7 +1070,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	cls.method(sigs::lazyAnd, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::lazyAnd() */
 		zval *p_objects = NULL;
 		zval *p_callback = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_objects)
 			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1134,7 +1127,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	cls.method(sigs::lazyOr, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::lazyOr() */
 		zval *p_objects = NULL;
 		zval *p_callback = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_objects)
 			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1160,7 +1153,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	cls.method(sigs::lazyExtremeIdentity, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::lazyExtremeIdentity() */
 		zval *p_objects = NULL;
 		zval *p_callback = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_objects)
 			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1186,7 +1179,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	cls.method(sigs::lazyMaxMin, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::lazyMaxMin() */
 		zval *p_objects = NULL;
 		zval *p_callback = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_objects)
 			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1195,13 +1188,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_lazyMaxMin(p_objects, p_callback, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::negate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::negate() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_negate(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::equals() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_trinary) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_other)); RETURN_THROWS(); }
@@ -1227,7 +1219,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 	});
 	cls.method(sigs::compareTo, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::compareTo() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_trinary) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_other)); RETURN_THROWS(); }
@@ -1235,7 +1227,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TrinaryLogic)
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_compareTo(Z_OBJ_P(ZEND_THIS), p_other, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\TrinaryLogic::describe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_describe(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

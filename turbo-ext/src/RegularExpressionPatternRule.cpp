@@ -560,21 +560,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionPatternRule)
 	ptdecl::RegularExpressionPatternRule::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Regexp\RegularExpressionPatternRule::__construct() */
 		zval *p_regexExpressionHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_regexExpressionHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_regexExpressionHelper != NULL && UNEXPECTED(Z_TYPE_P(p_regexExpressionHelper) != IS_OBJECT || !pgrt::instanceOfClass(p_regexExpressionHelper, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Type\\Regex\\RegexExpressionHelper", 40)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Regex\\RegexExpressionHelper", zend_zval_value_name(p_regexExpressionHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::RegularExpressionPatternRule::m___construct(Z_OBJ_P(ZEND_THIS), p_regexExpressionHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Regexp\RegularExpressionPatternRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RegularExpressionPatternRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Regexp\RegularExpressionPatternRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -586,7 +585,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionPatternRule)
 	cls.method(sigs::extractPatterns, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Regexp\RegularExpressionPatternRule::extractPatterns() */
 		zval *p_functionCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_functionCall)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -599,7 +598,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RegularExpressionPatternRule)
 		zval *p_pattern = NULL;
 		zend_string *p_pattern_str = NULL;
 		zval p_pattern_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_pattern_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_pattern_str != NULL) { ZVAL_STR(&p_pattern_zv, p_pattern_str); p_pattern = &p_pattern_zv; }

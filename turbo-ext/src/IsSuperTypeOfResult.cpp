@@ -1318,7 +1318,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 		zval p_lazyReasons_default;
 		ZVAL_EMPTY_ARRAY(&p_lazyReasons_default);
 		p_lazyReasons = &p_lazyReasons_default;
-		ZEND_PARSE_PARAMETERS_START(2, 3)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_result)
 			Z_PARAM_ARRAY(p_reasons)
 			Z_PARAM_OPTIONAL
@@ -1328,30 +1328,25 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m___construct(Z_OBJ_P(ZEND_THIS), p_result, p_reasons, p_lazyReasons))) RETURN_THROWS();
 	});
 	cls.method(sigs::yes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::yes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::maybe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::maybe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_maybe(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::no, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::no() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_no(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
 	});
 	cls.method(sigs::getReasons, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::getReasons() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_getReasons(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createYes, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::createYes() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_createYes(return_value))) RETURN_THROWS();
 	});
@@ -1364,7 +1359,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 		zval p_lazyReasons_default;
 		ZVAL_EMPTY_ARRAY(&p_lazyReasons_default);
 		p_lazyReasons = &p_lazyReasons_default;
-		ZEND_PARSE_PARAMETERS_START(0, 2)
+		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY(p_reasons)
 			Z_PARAM_ARRAY(p_lazyReasons)
@@ -1373,13 +1368,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_createNo(p_reasons, p_lazyReasons, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createMaybe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::createMaybe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_createMaybe(return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::createFromBoolean, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::createFromBoolean() */
 		bool p_value = false;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_BOOL(p_value)
 		ZEND_PARSE_PARAMETERS_END();
 		ZVAL_UNDEF(return_value);
@@ -1387,7 +1381,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 	});
 	cls.method(sigs::createFromTrinaryLogic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::createFromTrinaryLogic() */
 		zval *p_result = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_result)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_result != NULL && UNEXPECTED(Z_TYPE_P(p_result) != IS_OBJECT || !((Z_TYPE_P(p_result) == IS_OBJECT && Z_OBJCE_P(p_result) == pt_ce_trinary) || pgrt::instanceOfClass(p_result, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\TrinaryLogic", 20))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\TrinaryLogic", zend_zval_value_name(p_result)); RETURN_THROWS(); }
@@ -1398,7 +1392,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 		zval *p_result = NULL;
 		zval *p_reasons = NULL;
 		zval *p_lazyReasons = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_result)
 			Z_PARAM_ARRAY(p_reasons)
 			Z_PARAM_ARRAY(p_lazyReasons)
@@ -1408,7 +1402,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_create(p_result, p_reasons, p_lazyReasons, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::toAcceptsResult, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::toAcceptsResult() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_toAcceptsResult(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -1464,7 +1457,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 	});
 	cls.method(sigs::decorateReasons, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::decorateReasons() */
 		zval *p_cb = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_cb)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_cb != NULL && UNEXPECTED(!zend_is_callable(p_cb, 0, NULL))) { zend_argument_type_error(1, "must be a valid callback, %s given", zend_zval_value_name(p_cb)); RETURN_THROWS(); }
@@ -1504,7 +1497,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 	cls.method(sigs::lazyMaxMin, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::lazyMaxMin() */
 		zval *p_objects = NULL;
 		zval *p_callback = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_objects)
 			Z_PARAM_ZVAL(p_callback)
 		ZEND_PARSE_PARAMETERS_END();
@@ -1513,12 +1506,10 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IsSuperTypeOfResult)
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_lazyMaxMin(p_objects, p_callback, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::negate, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::negate() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_negate(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\IsSuperTypeOfResult::describe() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_describe(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});

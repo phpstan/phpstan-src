@@ -338,7 +338,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 		zval *p_defaultValue = NULL;
 		zval p_defaultValue_null;
 		ZVAL_NULL(&p_defaultValue_null);
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_STR(p_name_str)
 			Z_PARAM_BOOL(p_optional)
 			Z_PARAM_ZVAL(p_type)
@@ -354,7 +354,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m___construct(Z_OBJ_P(ZEND_THIS), p_name, p_optional, p_type, p_passedByReference, p_variadic, p_defaultValue))) RETURN_THROWS();
 	});
 	cls.method(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeParameterReflection::getName() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m_getName(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -365,7 +364,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 		return r1;
 	});
 	cls.method(sigs::isOptional, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeParameterReflection::isOptional() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m_isOptional(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -377,7 +375,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeParameterReflection::getType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m_getType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -388,7 +385,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 		return r1;
 	});
 	cls.method(sigs::passedByReference, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeParameterReflection::passedByReference() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m_passedByReference(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -399,7 +395,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 		return r1;
 	});
 	cls.method(sigs::isVariadic, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeParameterReflection::isVariadic() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		bool r;
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m_isVariadic(Z_OBJ_P(ZEND_THIS), &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -411,7 +406,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 		return zv::Val::boolean(r1);
 	});
 	cls.method(sigs::getDefaultValue, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeParameterReflection::getDefaultValue() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m_getDefaultValue(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -422,13 +416,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_NativeParameterReflection)
 		return r1;
 	});
 	cls.method(sigs::toOptional, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeParameterReflection::toOptional() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::NativeParameterReflection::m_toOptional(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::union_, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\Native\NativeParameterReflection::union() */
 		zval *p_other = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_other)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_other != NULL && UNEXPECTED(Z_TYPE_P(p_other) != IS_OBJECT || !((Z_TYPE_P(p_other) == IS_OBJECT && Z_OBJCE_P(p_other) == pt_ce_native_parameter_reflection) || pgrt::instanceOfClass(p_other, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\Native\\NativeParameterReflection", 51))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\Native\\NativeParameterReflection", zend_zval_value_name(p_other)); RETURN_THROWS(); }

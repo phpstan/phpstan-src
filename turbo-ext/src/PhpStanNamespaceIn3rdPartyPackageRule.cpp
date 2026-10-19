@@ -322,21 +322,20 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpStanNamespaceIn3rdPartyPackageRule)
 	ptdecl::PhpStanNamespaceIn3rdPartyPackageRule::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule::__construct() */
 		zval *p_apiRuleHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_apiRuleHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_apiRuleHelper != NULL && UNEXPECTED(Z_TYPE_P(p_apiRuleHelper) != IS_OBJECT || !((Z_TYPE_P(p_apiRuleHelper) == IS_OBJECT && Z_OBJCE_P(p_apiRuleHelper) == pt_ce_api_rule_helper) || pgrt::instanceOfClass(p_apiRuleHelper, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Rules\\Api\\ApiRuleHelper", 31))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Api\\ApiRuleHelper", zend_zval_value_name(p_apiRuleHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::PhpStanNamespaceIn3rdPartyPackageRule::m___construct(Z_OBJ_P(ZEND_THIS), p_apiRuleHelper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PhpStanNamespaceIn3rdPartyPackageRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Api\PhpStanNamespaceIn3rdPartyPackageRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -349,7 +348,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpStanNamespaceIn3rdPartyPackageRule)
 		zval *p_fromDirectory = NULL;
 		zend_string *p_fromDirectory_str = NULL;
 		zval p_fromDirectory_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_fromDirectory_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_fromDirectory_str != NULL) { ZVAL_STR(&p_fromDirectory_zv, p_fromDirectory_str); p_fromDirectory = &p_fromDirectory_zv; }

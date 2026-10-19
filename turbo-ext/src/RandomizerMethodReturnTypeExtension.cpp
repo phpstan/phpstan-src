@@ -430,13 +430,12 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RandomizerMethodReturnTypeExtension)
 	ptdecl::RandomizerMethodReturnTypeExtension::declareClass(cls);
 	ptdecl::RandomizerMethodReturnTypeExtension::declareProperties(cls);
 	cls.method(sigs::getClass, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RandomizerMethodReturnTypeExtension::getClass() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RandomizerMethodReturnTypeExtension::m_getClass(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::isMethodSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\RandomizerMethodReturnTypeExtension::isMethodSupported() */
 		zval *p_methodReflection = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_methodReflection)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
@@ -448,7 +447,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RandomizerMethodReturnTypeExtension)
 		zval *p_methodReflection = NULL;
 		zval *p_methodCall = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_methodReflection)
 			Z_PARAM_ZVAL(p_methodCall)
 			Z_PARAM_ZVAL(p_scope)
@@ -464,7 +463,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RandomizerMethodReturnTypeExtension)
 		zend_string *p_functionName_str = NULL;
 		zval p_functionName_zv;
 		zval *p_argValues = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_functionName_str)
 			Z_PARAM_ARRAY(p_argValues)
 		ZEND_PARSE_PARAMETERS_END();

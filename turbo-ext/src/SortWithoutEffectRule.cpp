@@ -883,7 +883,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SortWithoutEffectRule)
 		zval *p_reflectionProvider = NULL;
 		bool p_treatPhpDocTypesAsCertain = false;
 		bool p_treatPhpDocTypesAsCertainTip = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertainTip)
@@ -892,14 +892,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SortWithoutEffectRule)
 		if (UNEXPECTED(!pgen::SortWithoutEffectRule::m___construct(Z_OBJ_P(ZEND_THIS), p_reflectionProvider, p_treatPhpDocTypesAsCertain, p_treatPhpDocTypesAsCertainTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\SortWithoutEffectRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::SortWithoutEffectRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Functions\SortWithoutEffectRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -912,7 +911,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SortWithoutEffectRule)
 		zval *p_arrayType = NULL;
 		bool p_keyPreserving = false;
 		bool p_keysAlreadySorted = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_arrayType)
 			Z_PARAM_BOOL(p_keyPreserving)
 			Z_PARAM_BOOL(p_keysAlreadySorted)
@@ -925,7 +924,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_SortWithoutEffectRule)
 		zval *p_scope = NULL;
 		zval *p_parametersAcceptor = NULL;
 		zval *p_args = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_parametersAcceptor)
 			Z_PARAM_ARRAY(p_args)

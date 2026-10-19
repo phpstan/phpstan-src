@@ -407,7 +407,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DefaultExceptionTypeResolver)
 		zval *p_uncheckedExceptionClasses = NULL;
 		zval *p_checkedExceptionRegexes = NULL;
 		zval *p_checkedExceptionClasses = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_OBJECT(p_reflectionProvider)
 			Z_PARAM_ARRAY(p_uncheckedExceptionRegexes)
 			Z_PARAM_ARRAY(p_uncheckedExceptionClasses)
@@ -422,7 +422,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DefaultExceptionTypeResolver)
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_className_str)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -436,7 +436,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DefaultExceptionTypeResolver)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }

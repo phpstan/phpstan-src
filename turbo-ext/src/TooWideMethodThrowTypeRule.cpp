@@ -723,7 +723,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideMethodThrowTypeRule)
 		zval *p_check = NULL;
 		bool p_checkProtectedAndPublicMethods = false;
 		bool p_tooWideImplicitThrows = false;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_fileTypeMapper)
 			Z_PARAM_ZVAL(p_check)
 			Z_PARAM_BOOL(p_checkProtectedAndPublicMethods)
@@ -734,14 +734,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideMethodThrowTypeRule)
 		if (UNEXPECTED(!pgen::TooWideMethodThrowTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_fileTypeMapper, p_check, p_checkProtectedAndPublicMethods, p_tooWideImplicitThrows))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\TooWideMethodThrowTypeRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TooWideMethodThrowTypeRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Exceptions\TooWideMethodThrowTypeRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -759,7 +758,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideMethodThrowTypeRule)
 		zval *p_methodName = NULL;
 		zend_string *p_methodName_str = NULL;
 		zval p_methodName_zv;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_docComment)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_classReflection)

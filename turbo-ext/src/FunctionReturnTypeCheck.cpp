@@ -390,7 +390,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionReturnTypeCheck)
 	ptdecl::FunctionReturnTypeCheck::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\FunctionReturnTypeCheck::__construct() */
 		zval *p_ruleLevelHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_ruleLevelHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -416,7 +416,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FunctionReturnTypeCheck)
 		zend_string *p_neverMessage_str = NULL;
 		zval p_neverMessage_zv;
 		bool p_isGenerator = false;
-		ZEND_PARSE_PARAMETERS_START(9, 9)
+		ZEND_PARSE_PARAMETERS_START(9, -1)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_returnType)
 			Z_PARAM_ZVAL_OR_NULL(p_returnValue)

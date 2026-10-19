@@ -3036,7 +3036,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_phpstormStubsSourceStubber = NULL;
 		zval *p_attributeReflectionFactory = NULL;
 		zval *p_universalObjectCratesClasses = NULL;
-		ZEND_PARSE_PARAMETERS_START(17, 17)
+		ZEND_PARSE_PARAMETERS_START(17, -1)
 			Z_PARAM_ZVAL(p_initializerExprTypeResolver)
 			Z_PARAM_ZVAL(p_classReflectionFactory)
 			Z_PARAM_ZVAL(p_reflector)
@@ -3077,7 +3077,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -3089,7 +3089,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -3100,7 +3100,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_className = NULL;
 		zend_string *p_className_str = NULL;
 		zval p_className_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
@@ -3110,7 +3110,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 	cls.method(sigs::getAnonymousClassReflection, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\BetterReflectionProvider::getAnonymousClassReflection() */
 		zval *p_classNode = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_classNode)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3120,7 +3120,6 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(ZEND_THIS), p_classNode, p_scope, return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::getUniversalObjectCratesClasses, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Reflection\BetterReflection\BetterReflectionProvider::getUniversalObjectCratesClasses() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getUniversalObjectCratesClasses(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
@@ -3129,7 +3128,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3145,7 +3144,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3159,7 +3158,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_functionName = NULL;
 		zend_string *p_functionName_str = NULL;
 		zval p_functionName_zv;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_STR(p_functionName_str)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_functionName_str != NULL) { ZVAL_STR(&p_functionName_zv, p_functionName_str); p_functionName = &p_functionName_zv; }
@@ -3171,7 +3170,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3186,7 +3185,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3202,7 +3201,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3217,7 +3216,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3232,7 +3231,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)
 		ZEND_PARSE_PARAMETERS_END();
@@ -3248,7 +3247,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BetterReflectionProvider)
 		zval *p_namespaceAnswerer = NULL;
 		zval p_namespaceAnswerer_null;
 		ZVAL_NULL(&p_namespaceAnswerer_null);
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_ZVAL(p_nameNode)
 			Z_PARAM_ZVAL(p_existsCallback)
 			Z_PARAM_ZVAL_OR_NULL(p_namespaceAnswerer)

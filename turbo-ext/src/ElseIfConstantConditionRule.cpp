@@ -494,7 +494,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ElseIfConstantConditionRule)
 		bool p_treatPhpDocTypesAsCertain = false;
 		bool p_reportAlwaysTrueInLastCondition = false;
 		bool p_treatPhpDocTypesAsCertainTip = false;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_helper)
 			Z_PARAM_ZVAL(p_constantConditionInTraitHelper)
 			Z_PARAM_ZVAL(p_functionCallConstantConditionHelper)
@@ -508,14 +508,13 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ElseIfConstantConditionRule)
 		if (UNEXPECTED(!pgen::ElseIfConstantConditionRule::m___construct(Z_OBJ_P(ZEND_THIS), p_helper, p_constantConditionInTraitHelper, p_functionCallConstantConditionHelper, p_treatPhpDocTypesAsCertain, p_reportAlwaysTrueInLastCondition, p_treatPhpDocTypesAsCertainTip))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ElseIfConstantConditionRule::getNodeType() */
-		ZEND_PARSE_PARAMETERS_NONE();
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ElseIfConstantConditionRule::m_getNodeType(Z_OBJ_P(ZEND_THIS), return_value))) RETURN_THROWS();
 	});
 	cls.method(sigs::processNode, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Comparison\ElseIfConstantConditionRule::processNode() */
 		zval *p_node = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();

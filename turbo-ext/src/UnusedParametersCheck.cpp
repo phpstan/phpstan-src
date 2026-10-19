@@ -666,7 +666,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedParametersCheck)
 		zval p_unusedFlowIdentifier_zv;
 		zval p_unusedFlowIdentifier_null;
 		ZVAL_NULL(&p_unusedFlowIdentifier_null);
-		ZEND_PARSE_PARAMETERS_START(6, 8)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_function)
 			Z_PARAM_ARRAY(p_parameters)
@@ -690,7 +690,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedParametersCheck)
 	});
 	cls.method(sigs::getContractReferencedParameterNames, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\UnusedParametersCheck::getContractReferencedParameterNames() */
 		zval *p_function = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_function)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_function != NULL && UNEXPECTED(Z_TYPE_P(p_function) != IS_OBJECT || !(pgrt::instanceOfClass(p_function, pt_ce_php_function_from_parser_node_reflection) || pgrt::instanceOfClass(p_function, pgrt::lookupClassQuiet(pg_site_37, "PHPStan\\Reflection\\Php\\PhpFunctionFromParserNodeReflection", 58))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\Php\\PhpFunctionFromParserNodeReflection", zend_zval_value_name(p_function)); RETURN_THROWS(); }
@@ -699,7 +699,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedParametersCheck)
 	});
 	cls.method(sigs::isNoOpBody, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\UnusedParametersCheck::isNoOpBody() */
 		zval *p_stmts = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ARRAY(p_stmts)
 		ZEND_PARSE_PARAMETERS_END();
 		bool r;

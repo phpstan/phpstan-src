@@ -1167,4 +1167,7 @@ return [
 	'PHPStan\\BetterReflection\\Identifier\\IdentifierType' => ['ce' => 'pt_ce_better_reflection_identifier_type', 'defineCe' => true],
 	'PHPStan\\BetterReflection\\Reflection\\Annotation\\AnnotationHelper' => ['ce' => 'pt_ce_better_reflection_annotation_helper', 'defineCe' => true],
 	'PHPStan\\PhpDoc\\PhpDocNodeResolver' => ['ce' => 'pt_ce_php_doc_node_resolver', 'defineCe' => true],
+	'PhpParser\\PrettyPrinterAbstract' => ['ce' => 'pt_ce_php_parser_pretty_printer_abstract', 'defineCe' => true],
+	'PhpParser\\PrettyPrinter\\Standard' => ['ce' => 'pt_ce_php_parser_standard_printer', 'defineCe' => true],
+	'PHPStan\\Node\\Printer\\Printer' => ['ce' => 'pt_ce_printer', 'defineCe' => true],
 ];

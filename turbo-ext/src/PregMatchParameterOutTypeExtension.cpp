@@ -301,7 +301,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PregMatchParameterOutTypeExtension)
 	ptdecl::PregMatchParameterOutTypeExtension::declareProperties(cls);
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\PregMatchParameterOutTypeExtension::__construct() */
 		zval *p_regexShapeMatcher = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_OBJECT(p_regexShapeMatcher)
 		ZEND_PARSE_PARAMETERS_END();
 		
@@ -310,7 +310,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PregMatchParameterOutTypeExtension)
 	cls.method(sigs::isFunctionSupported, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Type\Php\PregMatchParameterOutTypeExtension::isFunctionSupported() */
 		zval *p_functionReflection = NULL;
 		zval *p_parameter = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_parameter)
 		ZEND_PARSE_PARAMETERS_END();
@@ -325,7 +325,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PregMatchParameterOutTypeExtension)
 		zval *p_funcCall = NULL;
 		zval *p_parameter = NULL;
 		zval *p_scope = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 			Z_PARAM_ZVAL(p_funcCall)
 			Z_PARAM_ZVAL(p_parameter)

@@ -1262,7 +1262,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetCheck)
 		zval *p_propertyDescriptor = NULL;
 		bool p_checkAdvancedIsset = false;
 		bool p_treatPhpDocTypesAsCertain = false;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_OBJECT(p_propertyDescriptor)
 			Z_PARAM_BOOL(p_checkAdvancedIsset)
 			Z_PARAM_BOOL(p_treatPhpDocTypesAsCertain)
@@ -1280,7 +1280,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetCheck)
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
 		zval *p_typeMessageCallback = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_exprResult)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_operatorDescription_str)
@@ -1308,7 +1308,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetCheck)
 		zval *p_error = NULL;
 		zval p_error_null;
 		ZVAL_NULL(&p_error_null);
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		ZEND_PARSE_PARAMETERS_START(6, -1)
 			Z_PARAM_ZVAL(p_resolution)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_operatorDescription_str)
@@ -1337,7 +1337,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetCheck)
 		zval *p_identifier = NULL;
 		zend_string *p_identifier_str = NULL;
 		zval p_identifier_zv;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL_OR_NULL(p_resolution)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_STR(p_operatorDescription_str)
@@ -1363,7 +1363,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_IssetCheck)
 		zval *p_identifierSecondPart = NULL;
 		zend_string *p_identifierSecondPart_str = NULL;
 		zval p_identifierSecondPart_zv;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
+		ZEND_PARSE_PARAMETERS_START(5, -1)
 			Z_PARAM_ZVAL(p_type)
 			Z_PARAM_STR(p_message_str)
 			Z_PARAM_ZVAL(p_typeMessageCallback)

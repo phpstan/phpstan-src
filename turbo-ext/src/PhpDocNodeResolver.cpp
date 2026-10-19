@@ -4307,7 +4307,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 		zval *p_typeNodeResolver = NULL;
 		zval *p_constExprNodeResolver = NULL;
 		zval *p_unresolvableTypeHelper = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, -1)
 			Z_PARAM_OBJECT(p_typeNodeResolver)
 			Z_PARAM_OBJECT(p_constExprNodeResolver)
 			Z_PARAM_OBJECT(p_unresolvableTypeHelper)
@@ -4320,7 +4320,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveVarTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveVarTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4332,7 +4332,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolvePropertyTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolvePropertyTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4344,7 +4344,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveMethodTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveMethodTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4356,7 +4356,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveExtendsTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveExtendsTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4368,7 +4368,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveImplementsTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveImplementsTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4380,7 +4380,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveUsesTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveUsesTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4392,7 +4392,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveTemplateTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveTemplateTags() */
 		zval *p_templatePhpDocNodes = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ARRAY(p_templatePhpDocNodes)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4403,7 +4403,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveParamTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveParamTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4415,7 +4415,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveParamOutTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveParamOutTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4426,7 +4426,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveParamImmediatelyInvokedCallable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveParamImmediatelyInvokedCallable() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4435,7 +4435,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveParamPureUnlessCallableIsImpure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveParamPureUnlessCallableIsImpure() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4444,7 +4444,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveParamPureUnlessParameterPassed, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveParamPureUnlessParameterPassed() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4454,7 +4454,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveParamClosureThisTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveParamClosureThisTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4466,7 +4466,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveReturnTag, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveReturnTag() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4478,7 +4478,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveThrowsTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveThrowsTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4490,7 +4490,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveMixinTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveMixinTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4502,7 +4502,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveRequireExtendsTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveRequireExtendsTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4514,7 +4514,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveRequireImplementsTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveRequireImplementsTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4526,7 +4526,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveSealedTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveSealedTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4538,7 +4538,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveTypeAliasTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveTypeAliasTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4550,7 +4550,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveTypeAliasImportTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveTypeAliasImportTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4562,7 +4562,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveAssertTags, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveAssertTags() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4580,7 +4580,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 		zval *p_if = NULL;
 		zend_string *p_if_str = NULL;
 		zval p_if_zv;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		ZEND_PARSE_PARAMETERS_START(4, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 			Z_PARAM_STR(p_tagName_str)
@@ -4596,7 +4596,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveSelfOutTypeTag, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveSelfOutTypeTag() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4608,7 +4608,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	cls.method(sigs::resolveDeprecatedTag, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveDeprecatedTag() */
 		zval *p_phpDocNode = NULL;
 		zval *p_nameScope = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 			Z_PARAM_ZVAL(p_nameScope)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4619,7 +4619,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveIsDeprecated, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveIsDeprecated() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4629,7 +4629,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveIsNotDeprecated, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveIsNotDeprecated() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4639,7 +4639,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveIsInternal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveIsInternal() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4649,7 +4649,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveIsFinal, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveIsFinal() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4659,7 +4659,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveIsPure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveIsPure() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4669,7 +4669,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveIsImpure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveIsImpure() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4679,7 +4679,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveAllMethodsPure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveAllMethodsPure() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4689,7 +4689,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveAllMethodsImpure, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveAllMethodsImpure() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4699,7 +4699,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveIsReadOnly, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveIsReadOnly() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4709,7 +4709,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveIsImmutable, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveIsImmutable() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4719,7 +4719,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveHasConsistentConstructor, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveHasConsistentConstructor() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4729,7 +4729,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveAcceptsNamedArguments, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveAcceptsNamedArguments() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }
@@ -4742,7 +4742,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 		zend_string *p_tagName_str = NULL;
 		zval p_tagName_zv;
 		zval *p_type = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
+		ZEND_PARSE_PARAMETERS_START(2, -1)
 			Z_PARAM_STR(p_tagName_str)
 			Z_PARAM_ZVAL(p_type)
 		ZEND_PARSE_PARAMETERS_END();
@@ -4754,7 +4754,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PhpDocNodeResolver)
 	});
 	cls.method(sigs::resolveAllowPrivateMutation, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\PhpDoc\PhpDocNodeResolver::resolveAllowPrivateMutation() */
 		zval *p_phpDocNode = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
+		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_phpDocNode)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_phpDocNode != NULL && UNEXPECTED(Z_TYPE_P(p_phpDocNode) != IS_OBJECT || !pgrt::instanceOfClass(p_phpDocNode, pgrt::lookupClassQuiet(pg_site_183, "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\PhpDocNode", zend_zval_value_name(p_phpDocNode)); RETURN_THROWS(); }

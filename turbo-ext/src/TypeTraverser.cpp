@@ -24,6 +24,65 @@ zend_class_entry *pt_ce_type_traverser = NULL;
 static zend_string *pt_tt_str_map_internal = NULL;
 static zend_string *pt_tt_str_traverse_internal = NULL;
 
+/* The traversals in progress, innermost last, each with its two bound
+ * callables — [$this, 'mapInternal'] and [$this, 'traverseInternal'] —
+ * built on first use instead of once per traversed type, and released when
+ * its map() returns (each holds the instance). A traversal nested deeper
+ * than the stack, or a callable called after its map() returned, builds
+ * fresh ones as before. */
+#define PT_TT_ACTIVE_LIMIT 64
+
+struct ActiveTraversal
+{
+	zend_object *traverser;
+	zval mapCallable;
+	zval traverseCallable;
+};
+
+static ActiveTraversal pt_tt_active[PT_TT_ACTIVE_LIMIT];
+static uint32_t pt_tt_active_depth = 0;
+
+/* the cache slots of a traversal in progress, NULL when there is none */
+static ActiveTraversal *ttActive(zend_object *traverser)
+{
+	for (uint32_t i = pt_tt_active_depth; i > 0 && i <= PT_TT_ACTIVE_LIMIT; i--) {
+		if (pt_tt_active[i - 1].traverser == traverser) return &pt_tt_active[i - 1];
+	}
+	return NULL;
+}
+
+/* marks the traversal of one map() call as in progress for its lifetime */
+class ActiveTraversalScope
+{
+public:
+	explicit ActiveTraversalScope(zend_object *traverser)
+	{
+		if (pt_tt_active_depth < PT_TT_ACTIVE_LIMIT) {
+			ActiveTraversal &entry = pt_tt_active[pt_tt_active_depth];
+			entry.traverser = traverser;
+			ZVAL_UNDEF(&entry.mapCallable);
+			ZVAL_UNDEF(&entry.traverseCallable);
+		}
+		pt_tt_active_depth++;
+	}
+
+	~ActiveTraversalScope()
+	{
+		pt_tt_active_depth--;
+		if (pt_tt_active_depth < PT_TT_ACTIVE_LIMIT) {
+			ActiveTraversal &entry = pt_tt_active[pt_tt_active_depth];
+			entry.traverser = NULL;
+			zval_ptr_dtor(&entry.mapCallable);
+			zval_ptr_dtor(&entry.traverseCallable);
+			ZVAL_UNDEF(&entry.mapCallable);
+			ZVAL_UNDEF(&entry.traverseCallable);
+		}
+	}
+
+	ActiveTraversalScope(const ActiveTraversalScope &) = delete;
+	ActiveTraversalScope &operator=(const ActiveTraversalScope &) = delete;
+};
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Type\TypeTraverser. State lives in the PHP object's $cb. */
@@ -42,6 +101,7 @@ public:
 		zv::Val holder = zv::Val::adopt(object);
 		TypeTraverser traverser(Z_OBJ(object));
 		traverser.construct(cb);
+		ActiveTraversalScope active(Z_OBJ(object));
 		return traverser.mapInternal(type);
 	}
 
@@ -56,6 +116,7 @@ public:
 		zval *memo = OBJ_PROP_NUM(Z_OBJ(object), slots::memo);
 		zval_ptr_dtor(memo);
 		ZVAL_EMPTY_ARRAY(memo);
+		ActiveTraversalScope active(Z_OBJ(object));
 		return traverser.mapInternal(type);
 	}
 
@@ -110,7 +171,7 @@ public:
 	zv::Val callCallback(zval *type) const
 	{
 		zval *cb = OBJ_PROP_NUM(self, slots::cb);
-		zv::Val traverse = boundCallable(pt_tt_str_traverse_internal);
+		zv::Val traverse = boundCallable(false, pt_tt_str_traverse_internal);
 		zv::Args args{type, traverse.raw()};
 		bool isTraverserCallable;
 		if (UNEXPECTED(!pt_type_instanceof(cb, PT_CLASS_TYPE_TRAVERSER_CALLABLE, isTraverserCallable))) return zv::Val();
@@ -132,16 +193,19 @@ public:
 	/* $type->traverse([$this, 'mapInternal']); UNDEF = pending exception */
 	zv::Val traverseInternal(zval *type) const
 	{
-		zv::Val map = boundCallable(pt_tt_str_map_internal);
+		zv::Val map = boundCallable(true, pt_tt_str_map_internal);
 		return pt_type_op(Z_OBJ_P(type), PT_OP_TRAVERSE, 1, map.raw());
 	}
 
 private:
 	zend_object *self;
 
-	/* [$this, '<method>'] */
-	zv::Val boundCallable(zend_string *method) const
+	/* [$this, '<method>'], kept for the traversal in progress */
+	zv::Val boundCallable(bool map, zend_string *method) const
 	{
+		ActiveTraversal *active = ttActive(self);
+		zval *cache = active == NULL ? NULL : (map ? &active->mapCallable : &active->traverseCallable);
+		if (cache != NULL && Z_TYPE_P(cache) != IS_UNDEF) return zv::Val::copyOf(zv::Ref(cache));
 		zv::Arr callable = zv::Arr::create(2);
 		zval selfZv;
 		ZVAL_OBJ(&selfZv, self);
@@ -149,7 +213,9 @@ private:
 		zval methodZv;
 		ZVAL_INTERNED_STR(&methodZv, method);
 		callable.push(zv::Ref(&methodZv));
-		return zv::Val(std::move(callable));
+		zv::Val built(std::move(callable));
+		if (cache != NULL) ZVAL_COPY(cache, built.raw());
+		return built;
 	}
 };
 
@@ -158,6 +224,20 @@ private:
 using phpstanturbo::TypeTraverser;
 
 /* {{{ exported helpers */
+
+void pt_type_traverser_rshutdown()
+{
+	/* a bailout skipped the scopes of the traversals it interrupted */
+	uint32_t depth = pt_tt_active_depth < PT_TT_ACTIVE_LIMIT ? pt_tt_active_depth : PT_TT_ACTIVE_LIMIT;
+	for (uint32_t i = 0; i < depth; i++) {
+		pt_tt_active[i].traverser = NULL;
+		zval_ptr_dtor(&pt_tt_active[i].mapCallable);
+		zval_ptr_dtor(&pt_tt_active[i].traverseCallable);
+		ZVAL_UNDEF(&pt_tt_active[i].mapCallable);
+		ZVAL_UNDEF(&pt_tt_active[i].traverseCallable);
+	}
+	pt_tt_active_depth = 0;
+}
 
 bool pt_type_traverser_map(zval *out, zval *type, zval *cb)
 {
@@ -208,6 +288,41 @@ static void ZEND_FASTCALL ttTraverseInternal(INTERNAL_FUNCTION_PARAMETERS)
 	zval *type;
 	if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 	PT_RETURN_VAL(TypeTraverser(Z_OBJ_P(ZEND_THIS)).traverseInternal(type));
+}
+
+bool pt_type_traverser_bound_fcc(zval *callable, zend_fcall_info &fci, zend_fcall_info_cache &fcc)
+{
+	HashTable *ht = Z_ARRVAL_P(callable);
+	if (!HT_IS_PACKED(ht) || zend_hash_num_elements(ht) != 2 || ht->nNumUsed != 2) return false;
+	zval *object = zend_hash_index_find(ht, 0);
+	zval *method = zend_hash_index_find(ht, 1);
+	if (Z_TYPE_P(object) != IS_OBJECT || Z_OBJCE_P(object) != pt_ce_type_traverser || Z_TYPE_P(method) != IS_STRING) return false;
+	/* only the arrays boundCallable() builds: the interned names by identity */
+	static zend_class_entry *cachedCe = NULL;
+	static zend_function *mapInternal = NULL;
+	static zend_function *traverseInternal = NULL;
+	if (cachedCe != pt_ce_type_traverser) {
+		mapInternal = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_type_traverser, function_table), "mapinternal", sizeof("mapinternal") - 1);
+		traverseInternal = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_type_traverser, function_table), "traverseinternal", sizeof("traverseinternal") - 1);
+		cachedCe = pt_ce_type_traverser;
+	}
+	zend_function *fn = Z_STR_P(method) == pt_tt_str_map_internal ? mapInternal
+		: (Z_STR_P(method) == pt_tt_str_traverse_internal ? traverseInternal : NULL);
+	if (fn == NULL) return false;
+	/* what zend_fcall_info_init() fills for the resolved [$object, 'method'] */
+	fci.size = sizeof(fci);
+	ZVAL_COPY_VALUE(&fci.function_name, callable);
+	fci.object = Z_OBJ_P(object);
+	fci.retval = NULL;
+	fci.params = NULL;
+	fci.param_count = 0;
+	fci.named_params = NULL;
+	fcc.function_handler = fn;
+	fcc.calling_scope = pt_ce_type_traverser;
+	fcc.called_scope = pt_ce_type_traverser;
+	fcc.object = Z_OBJ_P(object);
+	fcc.closure = NULL;
+	return true;
 }
 
 zif_handler pt_type_traverser_map_internal_handler()

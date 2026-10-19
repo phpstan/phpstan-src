@@ -1011,6 +1011,8 @@ extern zend_class_entry *pt_ce_generic_object_type;
 extern zend_class_entry *pt_ce_enum_case_object_type;
 void pt_object_type_rinit();
 void pt_object_type_rshutdown();
+/* TypeTraverser.cpp: the traversals a bailout left in progress */
+void pt_type_traverser_rshutdown();
 /* new ObjectType($className, $subtractedType, $classReflection) / new
  * GenericObjectType($mainType, $types, $subtractedType, $classReflection,
  * $variances) / new EnumCaseObjectType($className, $enumCaseName,

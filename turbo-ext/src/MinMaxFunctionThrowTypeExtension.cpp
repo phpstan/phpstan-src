@@ -139,6 +139,10 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 			r14 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), zv::Ref(p12).deref().raw());
 			if (UNEXPECTED(r14.isUndef())) return false;
 		}
+		else if (rc15 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p12).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r14 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p12).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r14.isUndef())) return false;
+		}
 		else {
 			zval av16[1];
 			ZVAL_COPY_VALUE(&av16[0], zv::Ref(p12).deref().raw());
@@ -281,6 +285,10 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 					zend_class_entry *rc49 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 					if (rc49 == pt_ce_mutating_scope) {
 						r48 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), zv::Ref(p46).deref().raw());
+						if (UNEXPECTED(r48.isUndef())) return false;
+					}
+					else if (rc49 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p46).deref().raw()).deref().raw()) == IS_OBJECT) {
+						r48 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p46).deref().raw()).deref().raw()));
 						if (UNEXPECTED(r48.isUndef())) return false;
 					}
 					else {

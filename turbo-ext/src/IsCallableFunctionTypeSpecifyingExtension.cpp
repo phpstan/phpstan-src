@@ -163,6 +163,10 @@ namespace pgen::IsCallableFunctionTypeSpecifyingExtension {
 			r18 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_value.raw());
 			if (UNEXPECTED(r18.isUndef())) return false;
 		}
+		else if (rc19 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_value.raw()).deref().raw()) == IS_OBJECT) {
+			r18 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_value.raw()).deref().raw()));
+			if (UNEXPECTED(r18.isUndef())) return false;
+		}
 		else {
 			zval av20[1];
 			ZVAL_COPY_VALUE(&av20[0], l_value.raw());

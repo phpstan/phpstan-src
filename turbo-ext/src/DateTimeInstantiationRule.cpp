@@ -134,6 +134,10 @@ namespace pgen::DateTimeInstantiationRule {
 			r23 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), o22.raw());
 			if (UNEXPECTED(r23.isUndef())) return false;
 		}
+		else if (rc24 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(o22.raw()).deref().raw()) == IS_OBJECT) {
+			r23 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(o22.raw()).deref().raw()));
+			if (UNEXPECTED(r23.isUndef())) return false;
+		}
 		else {
 			zval av25[1];
 			ZVAL_COPY_VALUE(&av25[0], o22.raw());

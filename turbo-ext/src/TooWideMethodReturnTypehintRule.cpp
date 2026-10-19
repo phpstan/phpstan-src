@@ -11,27 +11,20 @@ static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_isInTrait_0 */
 static pt_method_site pg_site_1; /* method_getMethodReflection_1 */
-static pt_method_site pg_site_2; /* method_getPrototype_2 */
-static pgrt::DispatchCache pg_site_3; /* dispatch_getDeclaringClass_3 */
-static pt_method_site pg_site_4; /* method_getDeclaringClass_4 */
-static pt_method_site pg_site_5; /* method_getDeclaringClass_5 */
-static pt_method_site pg_site_6; /* method_isPrivate_6 */
-static pt_method_site pg_site_7; /* method_getDeclaringClass_7 */
-static pgrt::MethodShapeSite pg_site_8; /* method0_isFinal_8 */
-static pgrt::MethodShapeSite pg_site_9; /* method0_isFinal_9 */
-static pt_method_site pg_site_10; /* method_yes_10 */
-static pt_method_site pg_site_11; /* method_getNativeReturnType_11 */
-static pt_method_site pg_site_12; /* method_getPhpDocReturnType_12 */
-static pt_method_site pg_site_13; /* method_getDeclaringClass_13 */
-static pt_method_site pg_site_14; /* method_getDisplayName_14 */
-static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
-static pt_method_site pg_site_16; /* method_isPrivate_16 */
-static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Node\MethodReturnStatementsNode */
-static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Node\FunctionReturnStatementsNode */
-static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Type\Type */
-static pgrt::ClassSite pg_site_20; /* cls_PHPStan\Rules\TooWideTypehints\TooWideTypeCheck */
-static pgrt::ClassSite pg_site_21; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_22; /* cls_PHPStan\Analyser\Scope */
+static pgrt::DispatchCache pg_site_2; /* dispatch_getDeclaringClass_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_isFinal_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isFinal_4 */
+static pt_method_site pg_site_5; /* method_yes_5 */
+static pt_method_site pg_site_6; /* method_getNativeReturnType_6 */
+static pt_method_site pg_site_7; /* method_getPhpDocReturnType_7 */
+static pt_method_site pg_site_8; /* method_getDisplayName_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getName_9 */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Node\MethodReturnStatementsNode */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Node\FunctionReturnStatementsNode */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Type\Type */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Rules\TooWideTypehints\TooWideTypeCheck */
+static pgrt::ClassSite pg_site_14; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::TooWideMethodReturnTypehintRule {
 
@@ -127,14 +120,15 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			vd9_done = true;
 		}
 		if (!vd9_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, l_method.raw(), "getPrototype", "getprototype", 12, 0, NULL, vd9.raw()))) return false;
+			vd9 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_GET_PROTOTYPE);
+			if (UNEXPECTED(vd9.isUndef())) return false;
 		}
 		zv::Val vd11;
 		zend_class_entry *vd11_ce = Z_TYPE_P(vd9.raw()) == IS_OBJECT ? Z_OBJCE_P(vd9.raw()) : NULL;
 		bool vd11_done = false;
 		static zend_class_entry **const vd11_table[] = { &pt_ce_changed_type_method_reflection, &pt_ce_changed_type_property_reflection, &pt_ce_rewritten_declaring_class_method_reflection, &pt_ce_rewritten_declaring_class_class_constant_reflection, &pt_ce_rewritten_declaring_class_property_reflection, &pt_ce_found_property_reflection, &pt_ce_php_method_reflection, &pt_ce_method_prototype_reflection, &pt_ce_php_method_from_parser_node_reflection, &pt_ce_union_type_method_reflection };
 		static const uint16_t vd11_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-		switch (pgrt::dispatchCase(pg_site_3, vd11_ce, vd11_table, vd11_cases, 10)) {
+		switch (pgrt::dispatchCase(pg_site_2, vd11_ce, vd11_table, vd11_cases, 10)) {
 			case 1: {
 				zv::Val r12;
 				if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(vd9.raw()), r12.raw()))) return false;
@@ -209,7 +203,8 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			break;
 		}
 		if (!vd11_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd9.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd11.raw()))) return false;
+			vd11 = pt_class_member_reflection_call(vd9.raw(), PT_CMR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd11.isUndef())) return false;
 		}
 		zv::Val vd22;
 		zend_class_entry *vd22_ce = Z_TYPE_P(l_method.raw()) == IS_OBJECT ? Z_OBJCE_P(l_method.raw()) : NULL;
@@ -221,7 +216,8 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			vd22_done = true;
 		}
 		if (!vd22_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_method.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd22.raw()))) return false;
+			vd22 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd22.isUndef())) return false;
 		}
 		l_isFirstDeclaration = zend_is_identical(vd11.raw(), vd22.raw());
 	}
@@ -237,7 +233,8 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			vd24_done = true;
 		}
 		if (!vd24_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_method.raw(), "isPrivate", "isprivate", 9, 0, NULL, vd24.raw()))) return false;
+			vd24 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_IS_PRIVATE);
+			if (UNEXPECTED(vd24.isUndef())) return false;
 		}
 		if (!(zend_is_true(vd24.raw()))) {
 			 {
@@ -251,7 +248,8 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 					vd28_done = true;
 				}
 				if (!vd28_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_method.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd28.raw()))) return false;
+					vd28 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd28.isUndef())) return false;
 				}
 				zv::Val r30;
 				if (EXPECTED(Z_TYPE_P(vd28.raw()) == IS_OBJECT)) {
@@ -259,7 +257,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 					if (UNEXPECTED(r30.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, vd28.raw(), "isFinal", "isfinal", 7, r30.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, vd28.raw(), "isFinal", "isfinal", 7, r30.raw()))) return false;
 				}
 				}
 				bool b27 = !(zend_is_true(r30.raw()));
@@ -270,7 +268,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 						if (UNEXPECTED(r31.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_method.raw(), "isFinal", "isfinal", 7, r31.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_method.raw(), "isFinal", "isfinal", 7, r31.raw()))) return false;
 					}
 					}
 					zv::Val vd32;
@@ -284,7 +282,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 						vd32_done = true;
 					}
 					if (!vd32_done) {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_10, r31.raw(), "yes", "yes", 3, 0, NULL, vd32.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_5, r31.raw(), "yes", "yes", 3, 0, NULL, vd32.raw()))) return false;
 					}
 					b27 = !(zend_is_true(vd32.raw()));
 				}
@@ -329,7 +327,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			vd40_done = true;
 		}
 		if (!vd40_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, l_method.raw(), "getNativeReturnType", "getnativereturntype", 19, 0, NULL, vd40.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_method.raw(), "getNativeReturnType", "getnativereturntype", 19, 0, NULL, vd40.raw()))) return false;
 		}
 		zv::Val vd42;
 		zend_class_entry *vd42_ce = Z_TYPE_P(l_method.raw()) == IS_OBJECT ? Z_OBJCE_P(l_method.raw()) : NULL;
@@ -341,7 +339,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			vd42_done = true;
 		}
 		if (!vd42_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_method.raw(), "getPhpDocReturnType", "getphpdocreturntype", 19, 0, NULL, vd42.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, l_method.raw(), "getPhpDocReturnType", "getphpdocreturntype", 19, 0, NULL, vd42.raw()))) return false;
 		}
 		zv::Val vd44;
 		zend_class_entry *vd44_ce = Z_TYPE_P(l_method.raw()) == IS_OBJECT ? Z_OBJCE_P(l_method.raw()) : NULL;
@@ -353,7 +351,8 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			vd44_done = true;
 		}
 		if (!vd44_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, l_method.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd44.raw()))) return false;
+			vd44 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd44.isUndef())) return false;
 		}
 		zv::Val r46;
 		if (EXPECTED(Z_TYPE_P(vd44.raw()) == IS_OBJECT && Z_OBJCE_P(vd44.raw()) == pt_ce_class_reflection)) {
@@ -361,7 +360,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			if (UNEXPECTED(r46.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_14, vd44.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r46.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, vd44.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r46.raw()))) return false;
 		}
 		}
 		zv::Val r47;
@@ -370,7 +369,7 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 			if (UNEXPECTED(r47.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_method.raw(), "getName", "getname", 7, r47.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_method.raw(), "getName", "getname", 7, r47.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb48;
@@ -393,13 +392,14 @@ namespace pgen::TooWideMethodReturnTypehintRule {
 				vd51_done = true;
 			}
 			if (!vd51_done) {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_16, l_method.raw(), "isPrivate", "isprivate", 9, 0, NULL, vd51.raw()))) return false;
+				vd51 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_IS_PRIVATE);
+				if (UNEXPECTED(vd51.isUndef())) return false;
 			}
 			b50 = !(zend_is_true(vd51.raw()));
 		}
-		if (UNEXPECTED(!(((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_method_return_statements_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Node\\MethodReturnStatementsNode", 39))) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Node\\FunctionReturnStatementsNode", 41))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 1, "node", "PHPStan\\Node\\MethodReturnStatementsNode|PHPStan\\Node\\FunctionReturnStatementsNode", p_node); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(vd40.raw(), pgrt::lookupClassQuiet(pg_site_19, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 2, "nativeFunctionReturnType", "PHPStan\\Type\\Type", vd40.raw()); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(vd42.raw(), pgrt::lookupClassQuiet(pg_site_19, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 3, "phpDocFunctionReturnType", "PHPStan\\Type\\Type", vd42.raw()); return false; }
+		if (UNEXPECTED(!(((Z_TYPE_P(p_node) == IS_OBJECT && Z_OBJCE_P(p_node) == pt_ce_method_return_statements_node) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Node\\MethodReturnStatementsNode", 39))) || pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Node\\FunctionReturnStatementsNode", 41))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 1, "node", "PHPStan\\Node\\MethodReturnStatementsNode|PHPStan\\Node\\FunctionReturnStatementsNode", p_node); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd40.raw(), pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 2, "nativeFunctionReturnType", "PHPStan\\Type\\Type", vd40.raw()); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd42.raw(), pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck::checkFunctionReturnType", 3, "phpDocFunctionReturnType", "PHPStan\\Type\\Type", vd42.raw()); return false; }
 		zv::Val r54;
 		if (UNEXPECTED(!pgen::TooWideTypeCheck::m_checkFunctionReturnType(Z_OBJ_P(o39.raw()), p_node, vd40.raw(), vd42.raw(), r49.raw(), b50, p_scope, r54.raw()))) return false;
 		*ret = r54.take();
@@ -425,7 +425,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideMethodReturnTypehintRule)
 			Z_PARAM_BOOL(p_checkProtectedAndPublicMethods)
 			Z_PARAM_ZVAL(p_check)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_check != NULL && UNEXPECTED(Z_TYPE_P(p_check) != IS_OBJECT || !((Z_TYPE_P(p_check) == IS_OBJECT && Z_OBJCE_P(p_check) == pt_ce_too_wide_type_check) || pgrt::instanceOfClass(p_check, pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck", 47))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck", zend_zval_value_name(p_check)); RETURN_THROWS(); }
+		if (p_check != NULL && UNEXPECTED(Z_TYPE_P(p_check) != IS_OBJECT || !((Z_TYPE_P(p_check) == IS_OBJECT && Z_OBJCE_P(p_check) == pt_ce_too_wide_type_check) || pgrt::instanceOfClass(p_check, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck", 47))))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Rules\\TooWideTypehints\\TooWideTypeCheck", zend_zval_value_name(p_check)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::TooWideMethodReturnTypehintRule::m___construct(Z_OBJ_P(ZEND_THIS), p_checkProtectedAndPublicMethods, p_check))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule::getNodeType() */
@@ -440,8 +440,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_TooWideMethodReturnTypehintRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_22, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_14, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::TooWideMethodReturnTypehintRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

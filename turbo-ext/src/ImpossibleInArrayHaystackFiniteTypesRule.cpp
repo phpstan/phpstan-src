@@ -269,6 +269,10 @@ namespace pgen::ImpossibleInArrayHaystackFiniteTypesRule {
 				r37 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p35).deref().raw());
 				if (UNEXPECTED(r37.isUndef())) return false;
 			}
+			else if (rc38 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p35).deref().raw()).deref().raw()) == IS_OBJECT) {
+				r37 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p35).deref().raw()).deref().raw()));
+				if (UNEXPECTED(r37.isUndef())) return false;
+			}
 			else {
 				zval av39[1];
 				ZVAL_COPY_VALUE(&av39[0], zv::Ref(p35).deref().raw());
@@ -290,6 +294,10 @@ namespace pgen::ImpossibleInArrayHaystackFiniteTypesRule {
 			zend_class_entry *rc45 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 			if (rc45 == pt_ce_mutating_scope) {
 				r44 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), zv::Ref(p42).deref().raw());
+				if (UNEXPECTED(r44.isUndef())) return false;
+			}
+			else if (rc45 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p42).deref().raw()).deref().raw()) == IS_OBJECT) {
+				r44 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p42).deref().raw()).deref().raw()));
 				if (UNEXPECTED(r44.isUndef())) return false;
 			}
 			else {
@@ -322,6 +330,10 @@ namespace pgen::ImpossibleInArrayHaystackFiniteTypesRule {
 				r53 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p51).deref().raw());
 				if (UNEXPECTED(r53.isUndef())) return false;
 			}
+			else if (rc54 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p51).deref().raw()).deref().raw()) == IS_OBJECT) {
+				r53 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p51).deref().raw()).deref().raw()));
+				if (UNEXPECTED(r53.isUndef())) return false;
+			}
 			else {
 				zval av55[1];
 				ZVAL_COPY_VALUE(&av55[0], zv::Ref(p51).deref().raw());
@@ -343,6 +355,10 @@ namespace pgen::ImpossibleInArrayHaystackFiniteTypesRule {
 			zend_class_entry *rc61 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 			if (rc61 == pt_ce_mutating_scope) {
 				r60 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), zv::Ref(p58).deref().raw());
+				if (UNEXPECTED(r60.isUndef())) return false;
+			}
+			else if (rc61 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p58).deref().raw()).deref().raw()) == IS_OBJECT) {
+				r60 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p58).deref().raw()).deref().raw()));
 				if (UNEXPECTED(r60.isUndef())) return false;
 			}
 			else {
@@ -404,6 +420,10 @@ namespace pgen::ImpossibleInArrayHaystackFiniteTypesRule {
 					r73 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p71).deref().raw());
 					if (UNEXPECTED(r73.isUndef())) return false;
 				}
+				else if (rc74 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p71).deref().raw()).deref().raw()) == IS_OBJECT) {
+					r73 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p71).deref().raw()).deref().raw()));
+					if (UNEXPECTED(r73.isUndef())) return false;
+				}
 				else {
 					zval av75[1];
 					ZVAL_COPY_VALUE(&av75[0], zv::Ref(p71).deref().raw());
@@ -430,6 +450,10 @@ namespace pgen::ImpossibleInArrayHaystackFiniteTypesRule {
 				zend_class_entry *rc82 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 				if (rc82 == pt_ce_mutating_scope) {
 					r81 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), zv::Ref(p79).deref().raw());
+					if (UNEXPECTED(r81.isUndef())) return false;
+				}
+				else if (rc82 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p79).deref().raw()).deref().raw()) == IS_OBJECT) {
+					r81 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p79).deref().raw()).deref().raw()));
 					if (UNEXPECTED(r81.isUndef())) return false;
 				}
 				else {

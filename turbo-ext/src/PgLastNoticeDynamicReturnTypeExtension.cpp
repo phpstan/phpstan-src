@@ -98,6 +98,10 @@ namespace pgen::PgLastNoticeDynamicReturnTypeExtension {
 			r15 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p13).deref().raw());
 			if (UNEXPECTED(r15.isUndef())) return false;
 		}
+		else if (rc16 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p13).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r15 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p13).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r15.isUndef())) return false;
+		}
 		else {
 			zval av17[1];
 			ZVAL_COPY_VALUE(&av17[0], zv::Ref(p13).deref().raw());

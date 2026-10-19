@@ -9,40 +9,22 @@ zend_class_entry *pt_ce_restricted_internal_property_usage_extension = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[4];
 
-static pt_method_site pg_site_0; /* method_isInternal_0 */
-static pt_method_site pg_site_1; /* method_getDeclaringClass_1 */
-static pgrt::MethodShapeSite pg_site_2; /* method0_isInternal_2 */
-static pt_method_site pg_site_3; /* method_isStatic_3 */
-static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
-static pt_method_site pg_site_5; /* method_getDeclaringClass_5 */
-static pgrt::MethodShapeSite pg_site_6; /* method0_getClassTypeDescription_6 */
-static pt_method_site pg_site_7; /* method_getDeclaringClass_7 */
-static pt_method_site pg_site_8; /* method_getDisplayName_8 */
-static pt_method_site pg_site_9; /* method_isStatic_9 */
-static pt_method_site pg_site_10; /* method_getDeclaringClass_10 */
-static pgrt::MethodShapeSite pg_site_11; /* method0_getClassTypeDescription_11 */
-static pt_method_site pg_site_12; /* method_isStatic_12 */
-static pt_method_site pg_site_13; /* method_getDeclaringClass_13 */
-static pt_method_site pg_site_14; /* method_getDisplayName_14 */
-static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
-static pt_method_site pg_site_16; /* method_isStatic_16 */
-static pt_method_site pg_site_17; /* method_isStatic_17 */
-static pgrt::MethodShapeSite pg_site_18; /* method0_getName_18 */
-static pt_method_site pg_site_19; /* method_getDeclaringClass_19 */
-static pgrt::MethodShapeSite pg_site_20; /* method0_getClassTypeDescription_20 */
-static pt_method_site pg_site_21; /* method_getDeclaringClass_21 */
-static pt_method_site pg_site_22; /* method_getDisplayName_22 */
-static pt_method_site pg_site_23; /* method_isStatic_23 */
-static pt_method_site pg_site_24; /* method_getDeclaringClass_24 */
-static pgrt::MethodShapeSite pg_site_25; /* method0_getClassTypeDescription_25 */
-static pt_method_site pg_site_26; /* method_isStatic_26 */
-static pt_method_site pg_site_27; /* method_getDeclaringClass_27 */
-static pt_method_site pg_site_28; /* method_getDisplayName_28 */
-static pgrt::MethodShapeSite pg_site_29; /* method0_getName_29 */
-static pt_method_site pg_site_30; /* method_isStatic_30 */
-static pgrt::ClassSite pg_site_31; /* cls_PHPStan\Rules\InternalTag\RestrictedInternalUsageHelper */
-static pgrt::ClassSite pg_site_32; /* cls_PHPStan\Reflection\ExtendedPropertyReflection */
-static pgrt::ClassSite pg_site_33; /* cls_PHPStan\Analyser\Scope */
+static pgrt::MethodShapeSite pg_site_0; /* method0_isInternal_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_getName_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getClassTypeDescription_2 */
+static pt_method_site pg_site_3; /* method_getDisplayName_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getClassTypeDescription_4 */
+static pt_method_site pg_site_5; /* method_getDisplayName_5 */
+static pgrt::MethodShapeSite pg_site_6; /* method0_getName_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getClassTypeDescription_8 */
+static pt_method_site pg_site_9; /* method_getDisplayName_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getClassTypeDescription_10 */
+static pt_method_site pg_site_11; /* method_getDisplayName_11 */
+static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Rules\InternalTag\RestrictedInternalUsageHelper */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Reflection\ExtendedPropertyReflection */
+static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::RestrictedInternalPropertyUsageExtension {
 
@@ -91,7 +73,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 			vd1_done = true;
 		}
 		if (!vd1_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_0, p_propertyReflection, "isInternal", "isinternal", 10, 0, NULL, vd1.raw()))) return false;
+			vd1 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_IS_INTERNAL);
+			if (UNEXPECTED(vd1.isUndef())) return false;
 		}
 		bool r5;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(vd1.raw()), &r5))) return false;
@@ -120,13 +103,14 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 			vd6_done = true;
 		}
 		if (!vd6_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_propertyReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd6.raw()))) return false;
+			vd6 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd6.isUndef())) return false;
 		}
 		l_declaringClass = std::move(vd6);
 	}
 	 {
 		zv::Val r10;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_declaringClass.raw(), "isInternal", "isinternal", 10, r10.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, l_declaringClass.raw(), "isInternal", "isinternal", 10, r10.raw()))) return false;
 		l_isDeclaringClassInternal = (Z_TYPE_P(r10.raw()) == IS_TRUE);
 	}
 	 {
@@ -194,7 +178,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 							vd18_done = true;
 						}
 						if (!vd18_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_propertyReflection, "isStatic", "isstatic", 8, 0, NULL, vd18.raw()))) return false;
+							vd18 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_IS_STATIC);
+							if (UNEXPECTED(vd18.isUndef())) return false;
 						}
 						zv::Val q25;
 						if (Z_TYPE_P(vd18.raw()) == IS_TRUE) {
@@ -212,7 +197,7 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 							if (UNEXPECTED(r28.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, p_propertyReflection, "getName", "getname", 7, r28.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, p_propertyReflection, "getName", "getname", 7, r28.raw()))) return false;
 						}
 						}
 						zv::Val vd29;
@@ -237,10 +222,11 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 							vd29_done = true;
 						}
 						if (!vd29_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_propertyReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd29.raw()))) return false;
+							vd29 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_GET_DECLARING_CLASS);
+							if (UNEXPECTED(vd29.isUndef())) return false;
 						}
 						zv::Val r33;
-						if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, vd29.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r33.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, vd29.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r33.raw()))) return false;
 						zv::Val r34 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r33.raw())));
 						zv::Val vd35;
 						zend_class_entry *vd35_ce = Z_TYPE_P(p_propertyReflection) == IS_OBJECT ? Z_OBJCE_P(p_propertyReflection) : NULL;
@@ -264,7 +250,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 							vd35_done = true;
 						}
 						if (!vd35_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_7, p_propertyReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd35.raw()))) return false;
+							vd35 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_GET_DECLARING_CLASS);
+							if (UNEXPECTED(vd35.isUndef())) return false;
 						}
 						zv::Val r39;
 						if (EXPECTED(Z_TYPE_P(vd35.raw()) == IS_OBJECT && Z_OBJCE_P(vd35.raw()) == pt_ce_class_reflection)) {
@@ -272,7 +259,7 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 							if (UNEXPECTED(r39.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, vd35.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r39.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_3, vd35.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r39.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb40;
@@ -311,7 +298,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 							vd42_done = true;
 						}
 						if (!vd42_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_propertyReflection, "isStatic", "isstatic", 8, 0, NULL, vd42.raw()))) return false;
+							vd42 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_IS_STATIC);
+							if (UNEXPECTED(vd42.isUndef())) return false;
 						}
 						zv::Val q49;
 						if (Z_TYPE_P(vd42.raw()) == IS_TRUE) {
@@ -345,10 +333,11 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 							vd52_done = true;
 						}
 						if (!vd52_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_propertyReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd52.raw()))) return false;
+							vd52 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_GET_DECLARING_CLASS);
+							if (UNEXPECTED(vd52.isUndef())) return false;
 						}
 						zv::Val r56;
-						if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, vd52.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r56.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, vd52.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r56.raw()))) return false;
 						pgrt::StringBuilder sb57;
 						if (UNEXPECTED(!sb57.append(q49.raw()))) return false;
 						sb57.appendLiteral(".internal", 9);
@@ -387,7 +376,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					vd60_done = true;
 				}
 				if (!vd60_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_propertyReflection, "isStatic", "isstatic", 8, 0, NULL, vd60.raw()))) return false;
+					vd60 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_IS_STATIC);
+					if (UNEXPECTED(vd60.isUndef())) return false;
 				}
 				zv::Val q67;
 				if (Z_TYPE_P(vd60.raw()) == IS_TRUE) {
@@ -421,7 +411,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					vd70_done = true;
 				}
 				if (!vd70_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_propertyReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd70.raw()))) return false;
+					vd70 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd70.isUndef())) return false;
 				}
 				zv::Val r74;
 				if (EXPECTED(Z_TYPE_P(vd70.raw()) == IS_OBJECT && Z_OBJCE_P(vd70.raw()) == pt_ce_class_reflection)) {
@@ -429,7 +420,7 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					if (UNEXPECTED(r74.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, vd70.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r74.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, vd70.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r74.raw()))) return false;
 				}
 				}
 				zv::Val r75;
@@ -438,7 +429,7 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					if (UNEXPECTED(r75.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, p_propertyReflection, "getName", "getname", 7, r75.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_6, p_propertyReflection, "getName", "getname", 7, r75.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb76;
@@ -475,7 +466,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					vd78_done = true;
 				}
 				if (!vd78_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p_propertyReflection, "isStatic", "isstatic", 8, 0, NULL, vd78.raw()))) return false;
+					vd78 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_IS_STATIC);
+					if (UNEXPECTED(vd78.isUndef())) return false;
 				}
 				zv::Val q85;
 				if (Z_TYPE_P(vd78.raw()) == IS_TRUE) {
@@ -526,7 +518,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					vd91_done = true;
 				}
 				if (!vd91_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, p_propertyReflection, "isStatic", "isstatic", 8, 0, NULL, vd91.raw()))) return false;
+					vd91 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_IS_STATIC);
+					if (UNEXPECTED(vd91.isUndef())) return false;
 				}
 				zv::Val q98;
 				if (Z_TYPE_P(vd91.raw()) == IS_TRUE) {
@@ -544,7 +537,7 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					if (UNEXPECTED(r101.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, p_propertyReflection, "getName", "getname", 7, r101.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_propertyReflection, "getName", "getname", 7, r101.raw()))) return false;
 				}
 				}
 				zv::Val vd102;
@@ -569,10 +562,11 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					vd102_done = true;
 				}
 				if (!vd102_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_19, p_propertyReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd102.raw()))) return false;
+					vd102 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd102.isUndef())) return false;
 				}
 				zv::Val r106;
-				if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, vd102.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r106.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, vd102.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r106.raw()))) return false;
 				zv::Val r107 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r106.raw())));
 				zv::Val vd108;
 				zend_class_entry *vd108_ce = Z_TYPE_P(p_propertyReflection) == IS_OBJECT ? Z_OBJCE_P(p_propertyReflection) : NULL;
@@ -596,7 +590,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					vd108_done = true;
 				}
 				if (!vd108_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_21, p_propertyReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd108.raw()))) return false;
+					vd108 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd108.isUndef())) return false;
 				}
 				zv::Val r112;
 				if (EXPECTED(Z_TYPE_P(vd108.raw()) == IS_OBJECT && Z_OBJCE_P(vd108.raw()) == pt_ce_class_reflection)) {
@@ -604,7 +599,7 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					if (UNEXPECTED(r112.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_22, vd108.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r112.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, vd108.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r112.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb113;
@@ -645,7 +640,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					vd115_done = true;
 				}
 				if (!vd115_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_23, p_propertyReflection, "isStatic", "isstatic", 8, 0, NULL, vd115.raw()))) return false;
+					vd115 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_IS_STATIC);
+					if (UNEXPECTED(vd115.isUndef())) return false;
 				}
 				zv::Val q122;
 				if (Z_TYPE_P(vd115.raw()) == IS_TRUE) {
@@ -679,10 +675,11 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 					vd125_done = true;
 				}
 				if (!vd125_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_24, p_propertyReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd125.raw()))) return false;
+					vd125 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd125.isUndef())) return false;
 				}
 				zv::Val r129;
-				if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, vd125.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r129.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, vd125.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r129.raw()))) return false;
 				pgrt::StringBuilder sb130;
 				if (UNEXPECTED(!sb130.append(q122.raw()))) return false;
 				sb130.appendLiteral(".internal", 9);
@@ -721,7 +718,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 			vd133_done = true;
 		}
 		if (!vd133_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_26, p_propertyReflection, "isStatic", "isstatic", 8, 0, NULL, vd133.raw()))) return false;
+			vd133 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_IS_STATIC);
+			if (UNEXPECTED(vd133.isUndef())) return false;
 		}
 		zv::Val q140;
 		if (Z_TYPE_P(vd133.raw()) == IS_TRUE) {
@@ -755,7 +753,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 			vd143_done = true;
 		}
 		if (!vd143_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_27, p_propertyReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd143.raw()))) return false;
+			vd143 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd143.isUndef())) return false;
 		}
 		zv::Val r147;
 		if (EXPECTED(Z_TYPE_P(vd143.raw()) == IS_OBJECT && Z_OBJCE_P(vd143.raw()) == pt_ce_class_reflection)) {
@@ -763,7 +762,7 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 			if (UNEXPECTED(r147.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_28, vd143.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r147.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_11, vd143.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r147.raw()))) return false;
 		}
 		}
 		zv::Val r148;
@@ -772,7 +771,7 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 			if (UNEXPECTED(r148.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_29, p_propertyReflection, "getName", "getname", 7, r148.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_propertyReflection, "getName", "getname", 7, r148.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb149;
@@ -811,7 +810,8 @@ namespace pgen::RestrictedInternalPropertyUsageExtension {
 			vd151_done = true;
 		}
 		if (!vd151_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_30, p_propertyReflection, "isStatic", "isstatic", 8, 0, NULL, vd151.raw()))) return false;
+			vd151 = pt_extended_property_reflection_call(p_propertyReflection, PT_PROP_IS_STATIC);
+			if (UNEXPECTED(vd151.isUndef())) return false;
 		}
 		zv::Val q158;
 		if (Z_TYPE_P(vd151.raw()) == IS_TRUE) {
@@ -853,7 +853,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedInternalPropertyUsageExtensi
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_helper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_restricted_internal_usage_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", 55))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
+		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_restricted_internal_usage_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", 55))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::RestrictedInternalPropertyUsageExtension::m___construct(Z_OBJ_P(ZEND_THIS), p_helper))) RETURN_THROWS();
 	});
 	cls.method(sigs::isRestrictedPropertyUsage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\InternalTag\RestrictedInternalPropertyUsageExtension::isRestrictedPropertyUsage() */
@@ -863,8 +863,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedInternalPropertyUsageExtensi
 			Z_PARAM_ZVAL(p_propertyReflection)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_propertyReflection != NULL && UNEXPECTED(Z_TYPE_P(p_propertyReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_propertyReflection, pgrt::lookupClassQuiet(pg_site_32, "PHPStan\\Reflection\\ExtendedPropertyReflection", 45)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ExtendedPropertyReflection", zend_zval_value_name(p_propertyReflection)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_33, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_propertyReflection != NULL && UNEXPECTED(Z_TYPE_P(p_propertyReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_propertyReflection, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\ExtendedPropertyReflection", 45)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ExtendedPropertyReflection", zend_zval_value_name(p_propertyReflection)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RestrictedInternalPropertyUsageExtension::m_isRestrictedPropertyUsage(Z_OBJ_P(ZEND_THIS), p_propertyReflection, p_scope, return_value))) RETURN_THROWS();
 	});

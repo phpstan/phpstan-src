@@ -11,35 +11,33 @@ static zval pg_lit[3];
 
 static pgrt::MethodShapeSite pg_site_0; /* method0_getName_0 */
 static pgrt::DispatchCache pg_site_1; /* dispatch_getDeclaringClass_1 */
-static pt_method_site pg_site_2; /* method_getDeclaringClass_2 */
-static pgrt::MethodShapeSite pg_site_3; /* method0_isBackedEnum_3 */
-static pt_method_site pg_site_4; /* method_getArgs_4 */
-static pgrt::PropSite pg_site_5; /* prop_value_5 */
-static pt_method_site pg_site_6; /* method_getType_6 */
-static pgrt::DispatchCache pg_site_7; /* dispatch_getDeclaringClass_7 */
-static pt_method_site pg_site_8; /* method_getDeclaringClass_8 */
-static pgrt::MethodShapeSite pg_site_9; /* method0_getEnumCases_9 */
-static pgrt::MethodShapeSite pg_site_10; /* method0_getName_10 */
-static pgrt::MethodShapeSite pg_site_11; /* method0_getConstantScalarValues_11 */
-static pgrt::MethodShapeSite pg_site_12; /* method0_getConstantScalarValues_12 */
-static pgrt::GetterSite pg_site_13; /* getter_getBackingValueType_13 */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Reflection\EnumCaseReflection */
+static pgrt::MethodShapeSite pg_site_2; /* method0_isBackedEnum_2 */
+static pt_method_site pg_site_3; /* method_getArgs_3 */
+static pgrt::PropSite pg_site_4; /* prop_value_4 */
+static pt_method_site pg_site_5; /* method_getType_5 */
+static pgrt::DispatchCache pg_site_6; /* dispatch_getDeclaringClass_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getEnumCases_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
+static pgrt::MethodShapeSite pg_site_9; /* method0_getConstantScalarValues_9 */
+static pgrt::MethodShapeSite pg_site_10; /* method0_getConstantScalarValues_10 */
+static pgrt::GetterSite pg_site_11; /* getter_getBackingValueType_11 */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Reflection\EnumCaseReflection */
+static pgrt::MethodShapeSite pg_site_13; /* method0_getBackingValueType_13 */
+static pgrt::GetterSite pg_site_14; /* getter_getBackingValueType_14 */
 static pgrt::MethodShapeSite pg_site_15; /* method0_getBackingValueType_15 */
-static pgrt::GetterSite pg_site_16; /* getter_getBackingValueType_16 */
-static pgrt::MethodShapeSite pg_site_17; /* method0_getBackingValueType_17 */
-static pgrt::MethodShapeSite pg_site_18; /* method0_getConstantScalarValues_18 */
-static pgrt::FunctionSite pg_site_19; /* function_count */
-static pgrt::GetterSite pg_site_20; /* getter_getDeclaringEnum_20 */
-static pgrt::MethodShapeSite pg_site_21; /* method0_getDeclaringEnum_21 */
-static pgrt::MethodShapeSite pg_site_22; /* method0_getName_22 */
-static pgrt::MethodShapeSite pg_site_23; /* method0_getName_23 */
-static pgrt::GetterSite pg_site_24; /* getter_getDeclaringEnum_24 */
-static pgrt::MethodShapeSite pg_site_25; /* method0_getDeclaringEnum_25 */
-static pgrt::MethodShapeSite pg_site_26; /* method0_getName_26 */
-static pgrt::MethodShapeSite pg_site_27; /* method0_getName_27 */
-static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Reflection\MethodReflection */
-static pgrt::ClassSite pg_site_29; /* cls_PhpParser\Node\Expr\StaticCall */
-static pgrt::ClassSite pg_site_30; /* cls_PHPStan\Analyser\Scope */
+static pgrt::MethodShapeSite pg_site_16; /* method0_getConstantScalarValues_16 */
+static pgrt::FunctionSite pg_site_17; /* function_count */
+static pgrt::GetterSite pg_site_18; /* getter_getDeclaringEnum_18 */
+static pgrt::MethodShapeSite pg_site_19; /* method0_getDeclaringEnum_19 */
+static pgrt::MethodShapeSite pg_site_20; /* method0_getName_20 */
+static pgrt::MethodShapeSite pg_site_21; /* method0_getName_21 */
+static pgrt::GetterSite pg_site_22; /* getter_getDeclaringEnum_22 */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getDeclaringEnum_23 */
+static pgrt::MethodShapeSite pg_site_24; /* method0_getName_24 */
+static pgrt::MethodShapeSite pg_site_25; /* method0_getName_25 */
+static pgrt::ClassSite pg_site_26; /* cls_PHPStan\Reflection\MethodReflection */
+static pgrt::ClassSite pg_site_27; /* cls_PhpParser\Node\Expr\StaticCall */
+static pgrt::ClassSite pg_site_28; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 
@@ -140,10 +138,11 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 			break;
 		}
 		if (!vd1_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_methodReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd1.raw()))) return false;
+			vd1 = pt_class_member_reflection_call(p_methodReflection, PT_CMR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd1.isUndef())) return false;
 		}
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, vd1.raw(), "isBackedEnum", "isbackedenum", 12, r7.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, vd1.raw(), "isBackedEnum", "isbackedenum", 12, r7.raw()))) return false;
 		if (!((Z_TYPE_P(r7.raw()) == IS_TRUE))) {
 			 {
 				zval z8;
@@ -155,7 +154,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 	}
 	 {
 		zv::Val r9;
-		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_4, p_methodCall, r9.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_3, p_methodCall, r9.raw()))) return false;
 		l_arguments = std::move(r9);
 	}
 	 {
@@ -178,7 +177,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 			if (UNEXPECTED(e11 == NULL)) return false;
 		}
 		zv::Val o15;
-		zval *p14 = Z_TYPE_P(zv::Ref(e11).deref().raw()) == IS_OBJECT ? pgrt::propCached(pg_site_5, Z_OBJ_P(zv::Ref(e11).deref().raw()), "value", 5) : NULL;
+		zval *p14 = Z_TYPE_P(zv::Ref(e11).deref().raw()) == IS_OBJECT ? pgrt::propCached(pg_site_4, Z_OBJ_P(zv::Ref(e11).deref().raw()), "value", 5) : NULL;
 		if (UNEXPECTED(p14 == NULL || Z_ISUNDEF_P(p14))) {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(e11).deref().raw(), pt_ce_backed_enum_from_method_dynamic_return_type_extension, "value", 5, o15.raw()))) return false;
 			p14 = o15.raw();
@@ -189,10 +188,14 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 			r16 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p14).deref().raw());
 			if (UNEXPECTED(r16.isUndef())) return false;
 		}
+		else if (rc17 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p14).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r16 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p14).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r16.isUndef())) return false;
+		}
 		else {
 			zval av18[1];
 			ZVAL_COPY_VALUE(&av18[0], zv::Ref(p14).deref().raw());
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "getType", "gettype", 7, 1, av18, r16.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p_scope, "getType", "gettype", 7, 1, av18, r16.raw()))) return false;
 		}
 		l_valueType = std::move(r16);
 	}
@@ -202,7 +205,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 		bool vd19_done = false;
 		static zend_class_entry **const vd19_table[] = { &pt_ce_changed_type_method_reflection, &pt_ce_rewritten_declaring_class_method_reflection, &pt_ce_php_method_reflection, &pt_ce_php_method_from_parser_node_reflection, &pt_ce_union_type_method_reflection };
 		static const uint16_t vd19_cases[] = { 1, 2, 3, 4, 5 };
-		switch (pgrt::dispatchCase(pg_site_7, vd19_ce, vd19_table, vd19_cases, 5)) {
+		switch (pgrt::dispatchCase(pg_site_6, vd19_ce, vd19_table, vd19_cases, 5)) {
 			case 1: {
 				zv::Val r20;
 				if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r20.raw()))) return false;
@@ -242,10 +245,11 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 			break;
 		}
 		if (!vd19_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_methodReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd19.raw()))) return false;
+			vd19 = pt_class_member_reflection_call(p_methodReflection, PT_CMR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd19.isUndef())) return false;
 		}
 		zv::Val r25;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, vd19.raw(), "getEnumCases", "getenumcases", 12, r25.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, vd19.raw(), "getEnumCases", "getenumcases", 12, r25.raw()))) return false;
 		l_enumCases = std::move(r25);
 	}
 	 {
@@ -257,7 +261,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 					if (UNEXPECTED(r26.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p_methodReflection, "getName", "getname", 7, r26.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_methodReflection, "getName", "getname", 7, r26.raw()))) return false;
 				}
 				}
 				if (zend_is_identical(r26.raw(), &pg_lit[2])) {
@@ -284,7 +288,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 			if (UNEXPECTED(r29.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, l_valueType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r29.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_valueType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r29.raw()))) return false;
 		}
 		}
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r29.raw())) == 0) {
@@ -312,7 +316,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 			if (UNEXPECTED(r34.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, l_valueType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r34.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, l_valueType.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r34.raw()))) return false;
 		}
 		}
 		zv::Val a35 = zv::Val::copyOf(zv::Ref(r34.raw()).deref());
@@ -338,13 +342,13 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 						l_enumCase = zv::Ref(v43).deref().raw();
 						 {
 							 {
-								zval *gs48 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_13, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getbackingvaluetype", 19, "backingValueType", 16) : NULL;
+								zval *gs48 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_11, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getbackingvaluetype", 19, "backingValueType", 16) : NULL;
 								zv::Val r49;
 								if (EXPECTED(gs48 != NULL)) {
 									ZVAL_COPY(r49.raw(), gs48);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_enumCase, "getBackingValueType", "getbackingvaluetype", 19, r49.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, l_enumCase, "getBackingValueType", "getbackingvaluetype", 19, r49.raw()))) return false;
 								}
 								}
 								if (Z_TYPE_P(r49.raw()) == IS_NULL) {
@@ -352,13 +356,13 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 								}
 							}
 							 {
-								zval *gs50 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_16, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getbackingvaluetype", 19, "backingValueType", 16) : NULL;
+								zval *gs50 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_14, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getbackingvaluetype", 19, "backingValueType", 16) : NULL;
 								zv::Val r51;
 								if (EXPECTED(gs50 != NULL)) {
 									ZVAL_COPY(r51.raw(), gs50);
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_enumCase, "getBackingValueType", "getbackingvaluetype", 19, r51.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_enumCase, "getBackingValueType", "getbackingvaluetype", 19, r51.raw()))) return false;
 								}
 								}
 								zv::Val r52;
@@ -367,7 +371,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 									if (UNEXPECTED(r52.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod0(pg_site_18, r51.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r52.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, r51.raw(), "getConstantScalarValues", "getconstantscalarvalues", 23, r52.raw()))) return false;
 								}
 								}
 								l_enumCaseValues = std::move(r52);
@@ -380,7 +384,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 								} else {
 								 {
 									zv::Val r55;
-									if (UNEXPECTED(!pgrt::callFunction(pg_site_19, "count", 5, pt_ce_backed_enum_from_method_dynamic_return_type_extension, 1, ca53, r55.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "count", 5, pt_ce_backed_enum_from_method_dynamic_return_type_extension, 1, ca53, r55.raw()))) return false;
 									cn54 = Z_LVAL_P(r55.raw());
 								}
 								}
@@ -399,13 +403,13 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 								}
 								if (zend_is_identical(l_value, zv::Ref(e56).deref().raw())) {
 									 {
-										zval *gs60 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_20, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getdeclaringenum", 16, "declaringEnum", 13) : NULL;
+										zval *gs60 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_18, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getdeclaringenum", 16, "declaringEnum", 13) : NULL;
 										zv::Val r61;
 										if (EXPECTED(gs60 != NULL)) {
 											ZVAL_COPY(r61.raw(), gs60);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_enumCase, "getDeclaringEnum", "getdeclaringenum", 16, r61.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, l_enumCase, "getDeclaringEnum", "getdeclaringenum", 16, r61.raw()))) return false;
 										}
 										}
 										zv::Val r62;
@@ -414,7 +418,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 											if (UNEXPECTED(r62.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, r61.raw(), "getName", "getname", 7, r62.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_20, r61.raw(), "getName", "getname", 7, r62.raw()))) return false;
 										}
 										}
 										zv::Val r63;
@@ -423,16 +427,16 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 											if (UNEXPECTED(r63.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_enumCase, "getName", "getname", 7, r63.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_21, l_enumCase, "getName", "getname", 7, r63.raw()))) return false;
 										}
 										}
-										zval *gs64 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_24, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getdeclaringenum", 16, "declaringEnum", 13) : NULL;
+										zval *gs64 = Z_TYPE_P(l_enumCase) == IS_OBJECT ? pgrt::trivialGetter(pg_site_22, Z_OBJ_P(l_enumCase), pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Reflection\\EnumCaseReflection", 37), "getdeclaringenum", 16, "declaringEnum", 13) : NULL;
 										zv::Val r65;
 										if (EXPECTED(gs64 != NULL)) {
 											ZVAL_COPY(r65.raw(), gs64);
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, l_enumCase, "getDeclaringEnum", "getdeclaringenum", 16, r65.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_enumCase, "getDeclaringEnum", "getdeclaringenum", 16, r65.raw()))) return false;
 										}
 										}
 										zval av66[3];
@@ -481,7 +485,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 					if (UNEXPECTED(r69.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, p_methodReflection, "getName", "getname", 7, r69.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, p_methodReflection, "getName", "getname", 7, r69.raw()))) return false;
 				}
 				}
 				if (zend_is_identical(r69.raw(), &pg_lit[2])) {
@@ -522,7 +526,7 @@ namespace pgen::BackedEnumFromMethodDynamicReturnTypeExtension {
 				if (UNEXPECTED(r76.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod0(pg_site_27, p_methodReflection, "getName", "getname", 7, r76.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_25, p_methodReflection, "getName", "getname", 7, r76.raw()))) return false;
 			}
 			}
 			b75 = zend_is_identical(r76.raw(), &pg_lit[2]);
@@ -568,7 +572,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BackedEnumFromMethodDynamicReturnTypeE
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_methodReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
+		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::BackedEnumFromMethodDynamicReturnTypeExtension::m_isStaticMethodSupported(Z_OBJ_P(ZEND_THIS), p_methodReflection, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -582,9 +586,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_BackedEnumFromMethodDynamicReturnTypeE
 			Z_PARAM_ZVAL(p_methodCall)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
-		if (p_methodCall != NULL && UNEXPECTED(Z_TYPE_P(p_methodCall) != IS_OBJECT || !pgrt::instanceOfClass(p_methodCall, pgrt::lookupClassQuiet(pg_site_29, "PhpParser\\Node\\Expr\\StaticCall", 30)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\StaticCall", zend_zval_value_name(p_methodCall)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_30, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_methodReflection != NULL && UNEXPECTED(Z_TYPE_P(p_methodReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_methodReflection, pgrt::lookupClassQuiet(pg_site_26, "PHPStan\\Reflection\\MethodReflection", 35)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\MethodReflection", zend_zval_value_name(p_methodReflection)); RETURN_THROWS(); }
+		if (p_methodCall != NULL && UNEXPECTED(Z_TYPE_P(p_methodCall) != IS_OBJECT || !pgrt::instanceOfClass(p_methodCall, pgrt::lookupClassQuiet(pg_site_27, "PhpParser\\Node\\Expr\\StaticCall", 30)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\StaticCall", zend_zval_value_name(p_methodCall)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::BackedEnumFromMethodDynamicReturnTypeExtension::m_getTypeFromStaticMethodCall(Z_OBJ_P(ZEND_THIS), p_methodReflection, p_methodCall, p_scope, return_value))) RETURN_THROWS();
 	});

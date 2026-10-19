@@ -284,6 +284,10 @@ namespace pgen::FilterVarArrayDynamicReturnTypeExtension {
 			r10 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p8).deref().raw());
 			if (UNEXPECTED(r10.isUndef())) return false;
 		}
+		else if (rc11 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p8).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r10 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p8).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r10.isUndef())) return false;
+		}
 		else {
 			zval av12[1];
 			ZVAL_COPY_VALUE(&av12[0], zv::Ref(p8).deref().raw());
@@ -675,6 +679,10 @@ namespace pgen::FilterVarArrayDynamicReturnTypeExtension {
 			r111 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p109).deref().raw());
 			if (UNEXPECTED(r111.isUndef())) return false;
 		}
+		else if (rc112 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p109).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r111 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p109).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r111.isUndef())) return false;
+		}
 		else {
 			zval av113[1];
 			ZVAL_COPY_VALUE(&av113[0], zv::Ref(p109).deref().raw());
@@ -735,6 +743,10 @@ namespace pgen::FilterVarArrayDynamicReturnTypeExtension {
 			zend_class_entry *rc132 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 			if (rc132 == pt_ce_mutating_scope) {
 				r131 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p129).deref().raw());
+				if (UNEXPECTED(r131.isUndef())) return false;
+			}
+			else if (rc132 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p129).deref().raw()).deref().raw()) == IS_OBJECT) {
+				r131 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p129).deref().raw()).deref().raw()));
 				if (UNEXPECTED(r131.isUndef())) return false;
 			}
 			else {

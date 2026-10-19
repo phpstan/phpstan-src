@@ -151,6 +151,10 @@ namespace pgen::ClassExistsFunctionTypeSpecifyingExtension {
 			r7 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p5).deref().raw());
 			if (UNEXPECTED(r7.isUndef())) return false;
 		}
+		else if (rc8 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p5).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r7 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p5).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r7.isUndef())) return false;
+		}
 		else {
 			zval av9[1];
 			ZVAL_COPY_VALUE(&av9[0], zv::Ref(p5).deref().raw());

@@ -319,6 +319,10 @@ namespace pgen::PrintfParametersRule {
 			r51 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p49).deref().raw());
 			if (UNEXPECTED(r51.isUndef())) return false;
 		}
+		else if (rc52 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p49).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r51 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p49).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r51.isUndef())) return false;
+		}
 		else {
 			zval av53[1];
 			ZVAL_COPY_VALUE(&av53[0], zv::Ref(p49).deref().raw());

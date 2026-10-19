@@ -15,12 +15,11 @@ static pt_method_site pg_site_2; /* method_getMethodReflection_2 */
 static pt_method_site pg_site_3; /* method_getReturnType_3 */
 static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Node\ReturnStatementsNode */
 static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Type\Type */
-static pt_method_site pg_site_6; /* method_getDeclaringClass_6 */
-static pt_method_site pg_site_7; /* method_getDisplayName_7 */
-static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\Playground\NeverRuleHelper */
-static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_6; /* method_getDisplayName_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\Playground\NeverRuleHelper */
+static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::MethodNeverRule {
 
@@ -157,7 +156,8 @@ namespace pgen::MethodNeverRule {
 			vd16_done = true;
 		}
 		if (!vd16_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, l_method.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd16.raw()))) return false;
+			vd16 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd16.isUndef())) return false;
 		}
 		zv::Val r18;
 		if (EXPECTED(Z_TYPE_P(vd16.raw()) == IS_OBJECT && Z_OBJCE_P(vd16.raw()) == pt_ce_class_reflection)) {
@@ -165,7 +165,7 @@ namespace pgen::MethodNeverRule {
 			if (UNEXPECTED(r18.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, vd16.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r18.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, vd16.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r18.raw()))) return false;
 		}
 		}
 		zv::Val r19;
@@ -174,7 +174,7 @@ namespace pgen::MethodNeverRule {
 			if (UNEXPECTED(r19.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_method.raw(), "getName", "getname", 7, r19.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, l_method.raw(), "getName", "getname", 7, r19.raw()))) return false;
 		}
 		}
 		zv::Val q20;
@@ -227,7 +227,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodNeverRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_helper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_never_rule_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Rules\\Playground\\NeverRuleHelper", 40))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Playground\\NeverRuleHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
+		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_never_rule_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Rules\\Playground\\NeverRuleHelper", 40))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Playground\\NeverRuleHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::MethodNeverRule::m___construct(Z_OBJ_P(ZEND_THIS), p_helper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Playground\MethodNeverRule::getNodeType() */
@@ -242,8 +242,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodNeverRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodNeverRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

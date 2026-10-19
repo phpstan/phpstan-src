@@ -10,12 +10,11 @@ zend_class_entry *pt_ce_method_conditional_return_type_rule = nullptr;
 static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_getMethodReflection_0 */
-static pt_method_site pg_site_1; /* method_getVariants_1 */
-static pgrt::FunctionSite pg_site_2; /* function_count */
-static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
-static pgrt::ClassSite pg_site_4; /* cls_PHPStan\Rules\PhpDoc\ConditionalReturnTypeRuleHelper */
-static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Analyser\Scope */
+static pgrt::FunctionSite pg_site_1; /* function_count */
+static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Reflection\ExtendedParametersAcceptor */
+static pgrt::ClassSite pg_site_3; /* cls_PHPStan\Rules\PhpDoc\ConditionalReturnTypeRuleHelper */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::MethodConditionalReturnTypeRule {
 
@@ -83,7 +82,8 @@ namespace pgen::MethodConditionalReturnTypeRule {
 			vd4_done = true;
 		}
 		if (!vd4_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_method.raw(), "getVariants", "getvariants", 11, 0, NULL, vd4.raw()))) return false;
+			vd4 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_GET_VARIANTS);
+			if (UNEXPECTED(vd4.isUndef())) return false;
 		}
 		l_variants = std::move(vd4);
 	}
@@ -95,7 +95,7 @@ namespace pgen::MethodConditionalReturnTypeRule {
 		} else {
 		 {
 			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "count", 5, pt_ce_method_conditional_return_type_rule, 1, ca6, r8.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "count", 5, pt_ce_method_conditional_return_type_rule, 1, ca6, r8.raw()))) return false;
 			cn7 = Z_LVAL_P(r8.raw());
 		}
 		}
@@ -119,7 +119,7 @@ namespace pgen::MethodConditionalReturnTypeRule {
 			e11 = pgrt::dimRead(l_variants.raw(), &z13, et12.raw());
 			if (UNEXPECTED(e11 == NULL)) return false;
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(e11).deref().raw(), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Reflection\\ExtendedParametersAcceptor", 45))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\ConditionalReturnTypeRuleHelper::check", 1, "acceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor", zv::Ref(e11).deref().raw()); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(e11).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PHPStan\\Reflection\\ExtendedParametersAcceptor", 45))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\ConditionalReturnTypeRuleHelper::check", 1, "acceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor", zv::Ref(e11).deref().raw()); return false; }
 		zv::Val r14;
 		if (UNEXPECTED(!pgen::ConditionalReturnTypeRuleHelper::m_check(Z_OBJ_P(p10), zv::Ref(e11).deref().raw(), r14.raw()))) return false;
 		*ret = r14.take();
@@ -143,7 +143,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodConditionalReturnTypeRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_helper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_conditional_return_type_rule_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_4, "PHPStan\\Rules\\PhpDoc\\ConditionalReturnTypeRuleHelper", 52))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\PhpDoc\\ConditionalReturnTypeRuleHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
+		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_conditional_return_type_rule_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Rules\\PhpDoc\\ConditionalReturnTypeRuleHelper", 52))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\PhpDoc\\ConditionalReturnTypeRuleHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::MethodConditionalReturnTypeRule::m___construct(Z_OBJ_P(ZEND_THIS), p_helper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule::getNodeType() */
@@ -158,8 +158,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodConditionalReturnTypeRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodConditionalReturnTypeRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

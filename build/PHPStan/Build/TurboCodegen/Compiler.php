@@ -4970,6 +4970,7 @@ final class Compiler
 			if ($first === null || $first['type'] !== 'obj' || count($args) > count($params)) {
 				continue;
 			}
+			$objectGuards = [];
 			foreach ($params as $index => $param) {
 				if (!isset($args[$index])) {
 					if ($param['default'] === null) {
@@ -4977,11 +4978,17 @@ final class Compiler
 					}
 					continue;
 				}
+				if ($param['type'] === 'objarg' && !$this->entryArgumentConvertible('objarg', $args[$index]->value)) {
+					// an object the native type does not prove (a PHPDoc-typed
+					// node): the branch tests it, anything else takes the engine
+					$objectGuards[] = $index;
+					continue;
+				}
 				if ($param['type'] === 'enum' || !$this->entryArgumentConvertible($param['type'], $args[$index]->value)) {
 					continue 2;
 				}
 			}
-			$branches[] = [$ce, $entryName, $entry, $params];
+			$branches[] = [$ce, $entryName, $entry, $params, $objectGuards];
 		}
 		if ($branches === []) {
 			return null;
@@ -5004,8 +5011,12 @@ final class Compiler
 		$rc = $f->temp('rc');
 		$f->line(sprintf('zend_class_entry *%s = Z_TYPE_P(%s) == IS_OBJECT ? Z_OBJCE_P(%s) : NULL;', $rc, $z, $z));
 		$first = true;
-		foreach ($branches as [$ce, $entryName, $entry, $params]) {
-			$f->open(sprintf('%sif (%s == %s)', $first ? '' : 'else ', $rc, $ce));
+		foreach ($branches as [$ce, $entryName, $entry, $params, $objectGuards]) {
+			$condition = sprintf('%s == %s', $rc, $ce);
+			foreach ($objectGuards as $index) {
+				$condition .= sprintf(' && Z_TYPE_P(zv::Ref(%s).deref().raw()) == IS_OBJECT', $values[$index]);
+			}
+			$f->open(sprintf('%sif (%s)', $first ? '' : 'else ', $condition));
 			$first = false;
 			$codes = [sprintf('Z_OBJ_P(%s)', $z)];
 			$pending = [];
@@ -5015,7 +5026,10 @@ final class Compiler
 					continue;
 				}
 				[$value, $type] = $evaluated[$index];
-				$codes = [...$codes, ...$pending, (string) $this->nativeNewArgument($f, $param['type'], $value, $type)];
+				$code = in_array($index, $objectGuards, true)
+					? sprintf('Z_OBJ_P(zv::Ref(%s).deref().raw())', $values[$index])
+					: (string) $this->nativeNewArgument($f, $param['type'], $value, $type);
+				$codes = [...$codes, ...$pending, $code];
 				$pending = [];
 			}
 			switch ($entry['kind']) {
@@ -5047,8 +5061,7 @@ final class Compiler
 				$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $i, $value));
 			}
 		}
-		$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
-		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, %d, %s, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), count($values), $argv, $t));
+		$this->emitDispatchFallback($f, count($receiverNames) === 1 ? new ReflectionClass($receiverNames[0]) : null, $name, $z, count($values), $argv, $t);
 		$f->close();
 		if ($returnsVoid) {
 			return Value::void();
@@ -5315,7 +5328,15 @@ final class Compiler
 	 *
 	 * @param ReflectionClass<object> $class
 	 */
-	private function memberDispatchCall(FunctionContext $f, ReflectionClass $class, string $name, Value $receiver, Type $native, bool $returnsVoid): ?Value
+	/**
+	 * The member-enum entry of a reflection family the receiver class belongs
+	 * to (pt_extended_method_reflection_call() and its siblings answer the
+	 * hand ports natively and take the engine for any other class) — the
+	 * function and the member constant, null when there is none.
+	 *
+	 * @return array{string, string}|null
+	 */
+	private function memberDispatchEntry(ReflectionClass $class, string $name): ?array
 	{
 		$families = [
 			ExtendedMethodReflection::class => ['pt_extended_method_reflection_call', 'pt_method_reflection_member', 'PT_MR_'],
@@ -5334,21 +5355,47 @@ final class Compiler
 			if (!array_key_exists($constant, $this->enumMembers($enum, $prefix))) {
 				continue;
 			}
-			$z = $this->asZval($f, $receiver);
-			$t = $f->temp('r');
-			$f->line(sprintf('zv::Val %s;', $t));
-			$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT))', $z));
-			$f->line(sprintf('%s = %s(%s, %s);', $t, $function, $z, $constant));
-			$f->failIf(sprintf('%s.isUndef()', $t));
-			$f->close(' else {');
-			$f->open('');
-			$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
-			$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, 0, NULL, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), $t));
-			$f->close();
-			$f->line('}');
-			return $returnsVoid ? Value::void() : $this->fromEngineResult($t, $native);
+			return [$function, $constant];
 		}
 		return null;
+	}
+
+	/**
+	 * The engine call that ends a dispatch without arguments: the member-enum
+	 * entry when the receiver's family has one, pgrt::callMethod() otherwise.
+	 */
+	private function emitDispatchFallback(FunctionContext $f, ?ReflectionClass $class, string $name, string $z, int $argc, string $argv, string $t): void
+	{
+		$entry = $argc === 0 && $class !== null ? $this->memberDispatchEntry($class, $name) : null;
+		if ($entry !== null) {
+			$f->line(sprintf('%s = %s(%s, %s);', $t, $entry[0], $z, $entry[1]));
+			$f->failIf(sprintf('%s.isUndef()', $t));
+			return;
+		}
+		$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
+		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, %d, %s, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), $argc, $argv, $t));
+	}
+
+	private function memberDispatchCall(FunctionContext $f, ReflectionClass $class, string $name, Value $receiver, Type $native, bool $returnsVoid): ?Value
+	{
+		$entry = $this->memberDispatchEntry($class, $name);
+		if ($entry === null) {
+			return null;
+		}
+		[$function, $constant] = $entry;
+		$z = $this->asZval($f, $receiver);
+		$t = $f->temp('r');
+		$f->line(sprintf('zv::Val %s;', $t));
+		$f->open(sprintf('if (EXPECTED(Z_TYPE_P(%s) == IS_OBJECT))', $z));
+		$f->line(sprintf('%s = %s(%s, %s);', $t, $function, $z, $constant));
+		$f->failIf(sprintf('%s.isUndef()', $t));
+		$f->close(' else {');
+		$f->open('');
+		$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
+		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, 0, NULL, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), $t));
+		$f->close();
+		$f->line('}');
+		return $returnsVoid ? Value::void() : $this->fromEngineResult($t, $native);
 	}
 
 	/**
@@ -5560,8 +5607,7 @@ final class Compiler
 				$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $i, $this->asZval($f, $value)));
 			}
 		}
-		$site = $this->site('pt_method_site', sprintf('method_%s_%d', $name, count($this->siteNames)));
-		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, %d, %s, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), count($values), $argv, $t));
+		$this->emitDispatchFallback($f, class_exists($class) || interface_exists($class) ? new ReflectionClass($class) : null, $name, $z, count($values), $argv, $t);
 		$f->close();
 		return $this->narrowZval($t . '.raw()', $t, $this->unit()->oracle->nativeType($expr));
 	}

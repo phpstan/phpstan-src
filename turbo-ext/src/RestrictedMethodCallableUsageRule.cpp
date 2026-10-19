@@ -147,6 +147,10 @@ namespace pgen::RestrictedMethodCallableUsageRule {
 			r13 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), r12.raw());
 			if (UNEXPECTED(r13.isUndef())) return false;
 		}
+		else if (rc14 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(r12.raw()).deref().raw()) == IS_OBJECT) {
+			r13 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(r12.raw()).deref().raw()));
+			if (UNEXPECTED(r13.isUndef())) return false;
+		}
 		else {
 			zval av15[1];
 			ZVAL_COPY_VALUE(&av15[0], r12.raw());

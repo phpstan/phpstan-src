@@ -10,17 +10,16 @@ zend_class_entry *pt_ce_method_assert_rule = nullptr;
 static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_getMethodReflection_0 */
-static pt_method_site pg_site_1; /* method_getVariants_1 */
-static pgrt::FunctionSite pg_site_2; /* function_count */
-static pt_method_site pg_site_3; /* method_getOriginalNode_3 */
-static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Stmt\Function_ */
-static pgrt::ClassSite pg_site_5; /* cls_PhpParser\Node\Stmt\ClassMethod */
-static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Reflection\ExtendedMethodReflection */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Reflection\FunctionReflection */
-static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Reflection\ParametersAcceptor */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\PhpDoc\AssertRuleHelper */
-static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
+static pgrt::FunctionSite pg_site_1; /* function_count */
+static pt_method_site pg_site_2; /* method_getOriginalNode_2 */
+static pgrt::ClassSite pg_site_3; /* cls_PhpParser\Node\Stmt\Function_ */
+static pgrt::ClassSite pg_site_4; /* cls_PhpParser\Node\Stmt\ClassMethod */
+static pgrt::ClassSite pg_site_5; /* cls_PHPStan\Reflection\ExtendedMethodReflection */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Reflection\FunctionReflection */
+static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Reflection\ParametersAcceptor */
+static pgrt::ClassSite pg_site_8; /* cls_PHPStan\Rules\PhpDoc\AssertRuleHelper */
+static pgrt::ClassSite pg_site_9; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_10; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::MethodAssertRule {
 
@@ -88,7 +87,8 @@ namespace pgen::MethodAssertRule {
 			vd4_done = true;
 		}
 		if (!vd4_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_method.raw(), "getVariants", "getvariants", 11, 0, NULL, vd4.raw()))) return false;
+			vd4 = pt_extended_method_reflection_call(l_method.raw(), PT_MR_GET_VARIANTS);
+			if (UNEXPECTED(vd4.isUndef())) return false;
 		}
 		l_variants = std::move(vd4);
 	}
@@ -100,7 +100,7 @@ namespace pgen::MethodAssertRule {
 		} else {
 		 {
 			zv::Val r8;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_2, "count", 5, pt_ce_method_assert_rule, 1, ca6, r8.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "count", 5, pt_ce_method_assert_rule, 1, ca6, r8.raw()))) return false;
 			cn7 = Z_LVAL_P(r8.raw());
 		}
 		}
@@ -145,7 +145,7 @@ namespace pgen::MethodAssertRule {
 			vd12_done = true;
 		}
 		if (!vd12_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd12.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_node, "getOriginalNode", "getoriginalnode", 15, 0, NULL, vd12.raw()))) return false;
 		}
 		zv::Val et18;
 		zval *e17 = Z_TYPE_P(l_variants.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(l_variants.raw()), 0) : NULL;
@@ -155,9 +155,9 @@ namespace pgen::MethodAssertRule {
 			e17 = pgrt::dimRead(l_variants.raw(), &z19, et18.raw());
 			if (UNEXPECTED(e17 == NULL)) return false;
 		}
-		if (UNEXPECTED(!(pgrt::instanceOfClass(vd12.raw(), pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Stmt\\Function_", 29)) || pgrt::instanceOfClass(vd12.raw(), pgrt::lookupClassQuiet(pg_site_5, "PhpParser\\Node\\Stmt\\ClassMethod", 31))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\AssertRuleHelper::check", 2, "node", "PhpParser\\Node\\Stmt\\Function_|PhpParser\\Node\\Stmt\\ClassMethod", vd12.raw()); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(l_method.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\ExtendedMethodReflection", 43)) || pgrt::instanceOfClass(l_method.raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Reflection\\FunctionReflection", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\AssertRuleHelper::check", 3, "reflection", "PHPStan\\Reflection\\ExtendedMethodReflection|PHPStan\\Reflection\\FunctionReflection", l_method.raw()); return false; }
-		if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(e17).deref().raw(), pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Reflection\\ParametersAcceptor", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\AssertRuleHelper::check", 4, "acceptor", "PHPStan\\Reflection\\ParametersAcceptor", zv::Ref(e17).deref().raw()); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(vd12.raw(), pgrt::lookupClassQuiet(pg_site_3, "PhpParser\\Node\\Stmt\\Function_", 29)) || pgrt::instanceOfClass(vd12.raw(), pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Stmt\\ClassMethod", 31))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\AssertRuleHelper::check", 2, "node", "PhpParser\\Node\\Stmt\\Function_|PhpParser\\Node\\Stmt\\ClassMethod", vd12.raw()); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(l_method.raw(), pgrt::lookupClassQuiet(pg_site_5, "PHPStan\\Reflection\\ExtendedMethodReflection", 43)) || pgrt::instanceOfClass(l_method.raw(), pgrt::lookupClassQuiet(pg_site_6, "PHPStan\\Reflection\\FunctionReflection", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\AssertRuleHelper::check", 3, "reflection", "PHPStan\\Reflection\\ExtendedMethodReflection|PHPStan\\Reflection\\FunctionReflection", l_method.raw()); return false; }
+		if (UNEXPECTED(!(pgrt::instanceOfClass(zv::Ref(e17).deref().raw(), pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Reflection\\ParametersAcceptor", 37))))) { pgrt::throwArgumentType("PHPStan\\Rules\\PhpDoc\\AssertRuleHelper::check", 4, "acceptor", "PHPStan\\Reflection\\ParametersAcceptor", zv::Ref(e17).deref().raw()); return false; }
 		zv::Val r20;
 		if (UNEXPECTED(!pgen::AssertRuleHelper::m_check(Z_OBJ_P(o11.raw()), p_scope, vd12.raw(), l_method.raw(), zv::Ref(e17).deref().raw(), r20.raw()))) return false;
 		*ret = r20.take();
@@ -181,7 +181,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodAssertRule)
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_helper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_assert_rule_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Rules\\PhpDoc\\AssertRuleHelper", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\PhpDoc\\AssertRuleHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
+		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_assert_rule_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Rules\\PhpDoc\\AssertRuleHelper", 37))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\PhpDoc\\AssertRuleHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::MethodAssertRule::m___construct(Z_OBJ_P(ZEND_THIS), p_helper))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\PhpDoc\MethodAssertRule::getNodeType() */
@@ -196,8 +196,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_MethodAssertRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::MethodAssertRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

@@ -228,6 +228,10 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 			r2 = pt_mutating_scope_get_native_type(Z_OBJ_P(zv::Ref(&captures[0]).deref().raw()), zv::Ref(&captures[1]).deref().raw());
 			if (UNEXPECTED(r2.isUndef())) return;
 		}
+		else if (rc3 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(&captures[1]).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r2 = pt_node_callback_scope_get_native_type(Z_OBJ_P(zv::Ref(&captures[0]).deref().raw()), Z_OBJ_P(zv::Ref(zv::Ref(&captures[1]).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r2.isUndef())) return;
+		}
 		else {
 			zval av4[1];
 			ZVAL_COPY_VALUE(&av4[0], zv::Ref(&captures[1]).deref().raw());
@@ -975,6 +979,10 @@ namespace pgen::BooleanOrConstantConditionRule {
 						r158 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_originalNode.raw());
 						if (UNEXPECTED(r158.isUndef())) return false;
 					}
+					else if (rc159 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_originalNode.raw()).deref().raw()) == IS_OBJECT) {
+						r158 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_originalNode.raw()).deref().raw()));
+						if (UNEXPECTED(r158.isUndef())) return false;
+					}
 					else {
 						zval av160[1];
 						ZVAL_COPY_VALUE(&av160[0], l_originalNode.raw());
@@ -987,6 +995,10 @@ namespace pgen::BooleanOrConstantConditionRule {
 					zend_class_entry *rc162 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 					if (rc162 == pt_ce_mutating_scope) {
 						r161 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), l_originalNode.raw());
+						if (UNEXPECTED(r161.isUndef())) return false;
+					}
+					else if (rc162 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_originalNode.raw()).deref().raw()) == IS_OBJECT) {
+						r161 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_originalNode.raw()).deref().raw()));
 						if (UNEXPECTED(r161.isUndef())) return false;
 					}
 					else {

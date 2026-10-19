@@ -123,6 +123,10 @@ namespace pgen::GetDebugTypeFunctionReturnTypeExtension {
 			r10 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), o9.raw());
 			if (UNEXPECTED(r10.isUndef())) return false;
 		}
+		else if (rc11 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(o9.raw()).deref().raw()) == IS_OBJECT) {
+			r10 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(o9.raw()).deref().raw()));
+			if (UNEXPECTED(r10.isUndef())) return false;
+		}
 		else {
 			zval av12[1];
 			ZVAL_COPY_VALUE(&av12[0], o9.raw());

@@ -206,6 +206,10 @@ namespace pgen::SwitchConditionRule {
 						r19 = pt_mutating_scope_get_type(Z_OBJ_P(o18.raw()), l_caseCondition.raw());
 						if (UNEXPECTED(r19.isUndef())) return false;
 					}
+					else if (rc20 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_caseCondition.raw()).deref().raw()) == IS_OBJECT) {
+						r19 = pt_node_callback_scope_get_type(Z_OBJ_P(o18.raw()), Z_OBJ_P(zv::Ref(l_caseCondition.raw()).deref().raw()));
+						if (UNEXPECTED(r19.isUndef())) return false;
+					}
 					else {
 						zval av21[1];
 						ZVAL_COPY_VALUE(&av21[0], l_caseCondition.raw());
@@ -538,6 +542,10 @@ namespace pgen::SwitchConditionRule {
 						r102 = pt_mutating_scope_get_type(Z_OBJ_P(o101.raw()), l_subject.raw());
 						if (UNEXPECTED(r102.isUndef())) return false;
 					}
+					else if (rc103 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_subject.raw()).deref().raw()) == IS_OBJECT) {
+						r102 = pt_node_callback_scope_get_type(Z_OBJ_P(o101.raw()), Z_OBJ_P(zv::Ref(l_subject.raw()).deref().raw()));
+						if (UNEXPECTED(r102.isUndef())) return false;
+					}
 					else {
 						zval av104[1];
 						ZVAL_COPY_VALUE(&av104[0], l_subject.raw());
@@ -745,6 +753,10 @@ namespace pgen::SwitchConditionRule {
 					zend_class_entry *rc152 = Z_TYPE_P(o150.raw()) == IS_OBJECT ? Z_OBJCE_P(o150.raw()) : NULL;
 					if (rc152 == pt_ce_mutating_scope) {
 						r151 = pt_mutating_scope_get_type(Z_OBJ_P(o150.raw()), l_caseCondition.raw());
+						if (UNEXPECTED(r151.isUndef())) return false;
+					}
+					else if (rc152 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_caseCondition.raw()).deref().raw()) == IS_OBJECT) {
+						r151 = pt_node_callback_scope_get_type(Z_OBJ_P(o150.raw()), Z_OBJ_P(zv::Ref(l_caseCondition.raw()).deref().raw()));
 						if (UNEXPECTED(r151.isUndef())) return false;
 					}
 					else {

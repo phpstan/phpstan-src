@@ -10,20 +10,16 @@ zend_class_entry *pt_ce_property_descriptor = nullptr;
 static pgrt::ClassSite pg_site_0; /* cls_PhpParser\Node\Expr\PropertyFetch */
 static pgrt::PropSite pg_site_1; /* prop_var_1 */
 static pt_method_site pg_site_2; /* method_getType_2 */
-static pt_method_site pg_site_3; /* method_getDeclaringClass_3 */
-static pgrt::MethodShapeSite pg_site_4; /* method0_getName_4 */
-static pt_method_site pg_site_5; /* method_isSuperTypeOf_5 */
-static pt_method_site pg_site_6; /* method_getDeclaringClass_6 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
+static pt_method_site pg_site_4; /* method_isSuperTypeOf_4 */
+static pt_method_site pg_site_5; /* method_getDisplayName_5 */
+static pt_method_site pg_site_6; /* method_describe_6 */
 static pt_method_site pg_site_7; /* method_getDisplayName_7 */
-static pt_method_site pg_site_8; /* method_describe_8 */
-static pt_method_site pg_site_9; /* method_getDeclaringClass_9 */
-static pt_method_site pg_site_10; /* method_getDisplayName_10 */
-static pgrt::PropSite pg_site_11; /* prop_name_11 */
-static pt_method_site pg_site_12; /* method_isStatic_12 */
-static pgrt::PropSite pg_site_13; /* prop_name_13 */
-static pgrt::PropSite pg_site_14; /* prop_name_14 */
-static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Reflection\PropertyReflection */
-static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
+static pgrt::PropSite pg_site_8; /* prop_name_8 */
+static pgrt::PropSite pg_site_9; /* prop_name_9 */
+static pgrt::PropSite pg_site_10; /* prop_name_10 */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Reflection\PropertyReflection */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::PropertyDescriptor {
 
@@ -86,7 +82,8 @@ namespace pgen::PropertyDescriptor {
 					vd7_done = true;
 				}
 				if (!vd7_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_property, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd7.raw()))) return false;
+					vd7 = pt_class_member_reflection_call(p_property, PT_CMR_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd7.isUndef())) return false;
 				}
 				zv::Val r11;
 				if (EXPECTED(Z_TYPE_P(vd7.raw()) == IS_OBJECT)) {
@@ -94,7 +91,7 @@ namespace pgen::PropertyDescriptor {
 					if (UNEXPECTED(r11.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, vd7.raw(), "getName", "getname", 7, r11.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, vd7.raw(), "getName", "getname", 7, r11.raw()))) return false;
 				}
 				}
 				zv::Val n6;
@@ -110,7 +107,7 @@ namespace pgen::PropertyDescriptor {
 					if (UNEXPECTED(r13.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_5, l_declaringClassType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av12, r13.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_declaringClassType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av12, r13.raw(), NULL))) return false;
 				}
 				}
 				bool r14;
@@ -139,7 +136,8 @@ namespace pgen::PropertyDescriptor {
 							vd15_done = true;
 						}
 						if (!vd15_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_property, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd15.raw()))) return false;
+							vd15 = pt_class_member_reflection_call(p_property, PT_CMR_GET_DECLARING_CLASS);
+							if (UNEXPECTED(vd15.isUndef())) return false;
 						}
 						zv::Val r19;
 						if (EXPECTED(Z_TYPE_P(vd15.raw()) == IS_OBJECT && Z_OBJCE_P(vd15.raw()) == pt_ce_class_reflection)) {
@@ -147,7 +145,7 @@ namespace pgen::PropertyDescriptor {
 							if (UNEXPECTED(r19.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_7, vd15.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r19.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_5, vd15.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r19.raw()))) return false;
 						}
 						}
 						l_classDescription = std::move(r19);
@@ -167,7 +165,7 @@ namespace pgen::PropertyDescriptor {
 							if (UNEXPECTED(r23.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, o20.raw(), "describe", "describe", 8, 1, av22, r23.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_6, o20.raw(), "describe", "describe", 8, 1, av22, r23.raw(), NULL))) return false;
 						}
 						}
 						l_classDescription = std::move(r23);
@@ -200,7 +198,8 @@ namespace pgen::PropertyDescriptor {
 					vd24_done = true;
 				}
 				if (!vd24_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, p_property, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd24.raw()))) return false;
+					vd24 = pt_class_member_reflection_call(p_property, PT_CMR_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd24.isUndef())) return false;
 				}
 				zv::Val r28;
 				if (EXPECTED(Z_TYPE_P(vd24.raw()) == IS_OBJECT && Z_OBJCE_P(vd24.raw()) == pt_ce_class_reflection)) {
@@ -208,7 +207,7 @@ namespace pgen::PropertyDescriptor {
 					if (UNEXPECTED(r28.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, vd24.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r28.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_7, vd24.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r28.raw()))) return false;
 				}
 				}
 				l_classDescription = std::move(r28);
@@ -218,7 +217,7 @@ namespace pgen::PropertyDescriptor {
 	}
 	 {
 		zv::Val o30;
-		zval *p29 = Z_TYPE_P(p_propertyFetch) == IS_OBJECT ? pgrt::propCached(pg_site_11, Z_OBJ_P(p_propertyFetch), "name", 4) : NULL;
+		zval *p29 = Z_TYPE_P(p_propertyFetch) == IS_OBJECT ? pgrt::propCached(pg_site_8, Z_OBJ_P(p_propertyFetch), "name", 4) : NULL;
 		if (UNEXPECTED(p29 == NULL || Z_ISUNDEF_P(p29))) {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_propertyFetch, pt_ce_property_descriptor, "name", 4, o30.raw()))) return false;
 			p29 = o30.raw();
@@ -252,13 +251,14 @@ namespace pgen::PropertyDescriptor {
 			vd32_done = true;
 		}
 		if (!vd32_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, p_property, "isStatic", "isstatic", 8, 0, NULL, vd32.raw()))) return false;
+			vd32 = pt_class_member_reflection_call(p_property, PT_CMR_IS_STATIC);
+			if (UNEXPECTED(vd32.isUndef())) return false;
 		}
 		if (!((Z_TYPE_P(vd32.raw()) == IS_TRUE))) {
 			 {
 				zv::Val o39 = zv::Val::copyOf(zv::Ref(l_classDescription.raw()));
 				zv::Val o41;
-				zval *p40 = Z_TYPE_P(l_name.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_13, Z_OBJ_P(l_name.raw()), "name", 4) : NULL;
+				zval *p40 = Z_TYPE_P(l_name.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_9, Z_OBJ_P(l_name.raw()), "name", 4) : NULL;
 				if (UNEXPECTED(p40 == NULL || Z_ISUNDEF_P(p40))) {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_name.raw(), pt_ce_property_descriptor, "name", 4, o41.raw()))) return false;
 					p40 = o41.raw();
@@ -277,7 +277,7 @@ namespace pgen::PropertyDescriptor {
 	 {
 		zv::Val o44 = zv::Val::copyOf(zv::Ref(l_classDescription.raw()));
 		zv::Val o46;
-		zval *p45 = Z_TYPE_P(l_name.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_14, Z_OBJ_P(l_name.raw()), "name", 4) : NULL;
+		zval *p45 = Z_TYPE_P(l_name.raw()) == IS_OBJECT ? pgrt::propCached(pg_site_10, Z_OBJ_P(l_name.raw()), "name", 4) : NULL;
 		if (UNEXPECTED(p45 == NULL || Z_ISUNDEF_P(p45))) {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_name.raw(), pt_ce_property_descriptor, "name", 4, o46.raw()))) return false;
 			p45 = o46.raw();
@@ -312,8 +312,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_PropertyDescriptor)
 			Z_PARAM_ZVAL(p_scope)
 			Z_PARAM_ZVAL(p_propertyFetch)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_property != NULL && UNEXPECTED(Z_TYPE_P(p_property) != IS_OBJECT || !pgrt::instanceOfClass(p_property, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Reflection\\PropertyReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\PropertyReflection", zend_zval_value_name(p_property)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_property != NULL && UNEXPECTED(Z_TYPE_P(p_property) != IS_OBJECT || !pgrt::instanceOfClass(p_property, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Reflection\\PropertyReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\PropertyReflection", zend_zval_value_name(p_property)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_12, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::PropertyDescriptor::m_describeProperty(Z_OBJ_P(ZEND_THIS), p_property, p_scope, p_propertyFetch, return_value))) RETURN_THROWS();
 	});

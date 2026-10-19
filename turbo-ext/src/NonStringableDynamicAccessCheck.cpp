@@ -370,6 +370,10 @@ namespace pgen::NonStringableDynamicAccessCheck {
 						r5 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), p_classNode);
 						if (UNEXPECTED(r5.isUndef())) return false;
 					}
+					else if (rc6 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(p_classNode).deref().raw()) == IS_OBJECT) {
+						r5 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(p_classNode).deref().raw()));
+						if (UNEXPECTED(r5.isUndef())) return false;
+					}
 					else {
 						zval av7[1];
 						ZVAL_COPY_VALUE(&av7[0], p_classNode);

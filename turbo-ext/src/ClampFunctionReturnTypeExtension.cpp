@@ -175,6 +175,10 @@ namespace pgen::ClampFunctionReturnTypeExtension {
 			r31 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_valueExpr.raw());
 			if (UNEXPECTED(r31.isUndef())) return false;
 		}
+		else if (rc32 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_valueExpr.raw()).deref().raw()) == IS_OBJECT) {
+			r31 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_valueExpr.raw()).deref().raw()));
+			if (UNEXPECTED(r31.isUndef())) return false;
+		}
 		else {
 			zval av33[1];
 			ZVAL_COPY_VALUE(&av33[0], l_valueExpr.raw());
@@ -187,6 +191,10 @@ namespace pgen::ClampFunctionReturnTypeExtension {
 		zend_class_entry *rc35 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc35 == pt_ce_mutating_scope) {
 			r34 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_minExpr.raw());
+			if (UNEXPECTED(r34.isUndef())) return false;
+		}
+		else if (rc35 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_minExpr.raw()).deref().raw()) == IS_OBJECT) {
+			r34 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_minExpr.raw()).deref().raw()));
 			if (UNEXPECTED(r34.isUndef())) return false;
 		}
 		else {
@@ -203,6 +211,10 @@ namespace pgen::ClampFunctionReturnTypeExtension {
 			r37 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_maxExpr.raw());
 			if (UNEXPECTED(r37.isUndef())) return false;
 		}
+		else if (rc38 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_maxExpr.raw()).deref().raw()) == IS_OBJECT) {
+			r37 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_maxExpr.raw()).deref().raw()));
+			if (UNEXPECTED(r37.isUndef())) return false;
+		}
 		else {
 			zval av39[1];
 			ZVAL_COPY_VALUE(&av39[0], l_maxExpr.raw());
@@ -217,6 +229,10 @@ namespace pgen::ClampFunctionReturnTypeExtension {
 		zend_class_entry *rc44 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc44 == pt_ce_mutating_scope) {
 			r43 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), l_valueExpr.raw());
+			if (UNEXPECTED(r43.isUndef())) return false;
+		}
+		else if (rc44 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_valueExpr.raw()).deref().raw()) == IS_OBJECT) {
+			r43 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_valueExpr.raw()).deref().raw()));
 			if (UNEXPECTED(r43.isUndef())) return false;
 		}
 		else {
@@ -243,6 +259,10 @@ namespace pgen::ClampFunctionReturnTypeExtension {
 			r51 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), l_minExpr.raw());
 			if (UNEXPECTED(r51.isUndef())) return false;
 		}
+		else if (rc52 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_minExpr.raw()).deref().raw()) == IS_OBJECT) {
+			r51 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_minExpr.raw()).deref().raw()));
+			if (UNEXPECTED(r51.isUndef())) return false;
+		}
 		else {
 			zval av53[1];
 			ZVAL_COPY_VALUE(&av53[0], l_minExpr.raw());
@@ -265,6 +285,10 @@ namespace pgen::ClampFunctionReturnTypeExtension {
 		zend_class_entry *rc60 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc60 == pt_ce_mutating_scope) {
 			r59 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), l_maxExpr.raw());
+			if (UNEXPECTED(r59.isUndef())) return false;
+		}
+		else if (rc60 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_maxExpr.raw()).deref().raw()) == IS_OBJECT) {
+			r59 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_maxExpr.raw()).deref().raw()));
 			if (UNEXPECTED(r59.isUndef())) return false;
 		}
 		else {

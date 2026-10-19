@@ -45,17 +45,14 @@ static pgrt::MethodShapeSite pg_site_32; /* method0_getObjectClassReflections_32
 static pt_method_site pg_site_33; /* method_hasMethod_33 */
 static pt_method_site pg_site_34; /* method_hasMethod_34 */
 static pgrt::MethodShapeSite pg_site_35; /* method0_isFinalByKeyword_35 */
-static pt_method_site pg_site_36; /* method_isPrivate_36 */
-static pt_method_site pg_site_37; /* method_getReadableType_37 */
-static pt_method_site pg_site_38; /* method_getReadableType_38 */
-static pt_method_site pg_site_39; /* method_isOffsetAccessible_39 */
-static pt_method_site pg_site_40; /* method_hasOffsetValueType_40 */
-static pt_method_site pg_site_41; /* method_getOffsetValueType_41 */
-static pgrt::MethodShapeSite pg_site_42; /* method0_getPhpVersion_42 */
-static pgrt::MethodShapeSite pg_site_43; /* method0_isArray_43 */
-static pgrt::MethodShapeSite pg_site_44; /* method0_toArrayKey_44 */
-static pgrt::MethodShapeSite pg_site_45; /* method0_toArrayKey_45 */
-static pgrt::ClassSite pg_site_46; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_36; /* method_isOffsetAccessible_36 */
+static pt_method_site pg_site_37; /* method_hasOffsetValueType_37 */
+static pt_method_site pg_site_38; /* method_getOffsetValueType_38 */
+static pgrt::MethodShapeSite pg_site_39; /* method0_getPhpVersion_39 */
+static pgrt::MethodShapeSite pg_site_40; /* method0_isArray_40 */
+static pgrt::MethodShapeSite pg_site_41; /* method0_toArrayKey_41 */
+static pgrt::MethodShapeSite pg_site_42; /* method0_toArrayKey_42 */
+static pgrt::ClassSite pg_site_43; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ArrayColumnHelper {
 
@@ -1121,7 +1118,8 @@ namespace pgen::ArrayColumnHelper {
 															vd56_done = true;
 														}
 														if (!vd56_done) {
-															if (UNEXPECTED(!pgrt::callMethod(pg_site_36, l_property.raw(), "isPrivate", "isprivate", 9, 0, NULL, vd56.raw()))) return false;
+															vd56 = pt_extended_property_reflection_call(l_property.raw(), PT_PROP_IS_PRIVATE);
+															if (UNEXPECTED(vd56.isUndef())) return false;
 														}
 														if (Z_TYPE_P(vd56.raw()) == IS_TRUE) {
 															 {
@@ -1161,7 +1159,8 @@ namespace pgen::ArrayColumnHelper {
 															vd67_done = true;
 														}
 														if (!vd67_done) {
-															if (UNEXPECTED(!pgrt::callMethod(pg_site_37, l_property.raw(), "getReadableType", "getreadabletype", 15, 0, NULL, vd67.raw()))) return false;
+															vd67 = pt_extended_property_reflection_call(l_property.raw(), PT_PROP_GET_READABLE_TYPE);
+															if (UNEXPECTED(vd67.isUndef())) return false;
 														}
 														{ zval v = vd67.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr66.raw()), &v); }
 														zv::Val r71;
@@ -1202,7 +1201,8 @@ namespace pgen::ArrayColumnHelper {
 								vd72_done = true;
 							}
 							if (!vd72_done) {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_38, l_property.raw(), "getReadableType", "getreadabletype", 15, 0, NULL, vd72.raw()))) return false;
+								vd72 = pt_extended_property_reflection_call(l_property.raw(), PT_PROP_GET_READABLE_TYPE);
+								if (UNEXPECTED(vd72.isUndef())) return false;
 							}
 							zv::Val o76 = zv::Val::copyOf(zv::Ref(vd72.raw()));
 							zval *w77 = zv::Ref(l_returnTypes.raw()).deref().raw();
@@ -1233,7 +1233,7 @@ namespace pgen::ArrayColumnHelper {
 			vd79_done = true;
 		}
 		if (!vd79_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_39, p_type, "isOffsetAccessible", "isoffsetaccessible", 18, 0, NULL, vd79.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_36, p_type, "isOffsetAccessible", "isoffsetaccessible", 18, 0, NULL, vd79.raw()))) return false;
 		}
 		bool r81;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(vd79.raw()), &r81))) return false;
@@ -1247,7 +1247,7 @@ namespace pgen::ArrayColumnHelper {
 					if (UNEXPECTED(r83.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_40, p_type, "hasOffsetValueType", "hasoffsetvaluetype", 18, 1, av82, r83.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_37, p_type, "hasOffsetValueType", "hasoffsetvaluetype", 18, 1, av82, r83.raw(), NULL))) return false;
 				}
 				}
 				l_hasOffset = std::move(r83);
@@ -1276,7 +1276,7 @@ namespace pgen::ArrayColumnHelper {
 							if (UNEXPECTED(r88.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_41, p_type, "getOffsetValueType", "getoffsetvaluetype", 18, 1, av87, r88.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_38, p_type, "getOffsetValueType", "getoffsetvaluetype", 18, 1, av87, r88.raw(), NULL))) return false;
 						}
 						}
 						zv::Val o89 = zv::Val::copyOf(zv::Ref(r88.raw()));
@@ -1337,7 +1337,7 @@ namespace pgen::ArrayColumnHelper {
 	(void) this_zv;
 	 {
 		zv::Val r1;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_39, p_scope, "getPhpVersion", "getphpversion", 13, r1.raw()))) return false;
 		zv::Val r2;
 		if (UNEXPECTED(!pgen::PhpVersions::m_throwsTypeErrorForInternalFunctions(Z_OBJ_P(r1.raw()), r2.raw()))) return false;
 		l_throwsTypeError = std::move(r2);
@@ -1349,7 +1349,7 @@ namespace pgen::ArrayColumnHelper {
 			if (UNEXPECTED(r3.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_43, p_type, "isArray", "isarray", 7, r3.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_40, p_type, "isArray", "isarray", 7, r3.raw()))) return false;
 		}
 		}
 		l_isArray = std::move(r3);
@@ -1389,7 +1389,7 @@ namespace pgen::ArrayColumnHelper {
 					if (UNEXPECTED(r9.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_44, p_type, "toArrayKey", "toarraykey", 10, r9.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_41, p_type, "toArrayKey", "toarraykey", 10, r9.raw()))) return false;
 				}
 				}
 				*ret = r9.take();
@@ -1418,7 +1418,7 @@ namespace pgen::ArrayColumnHelper {
 			if (UNEXPECTED(r14.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_45, l_withoutArrayType.raw(), "toArrayKey", "toarraykey", 10, r14.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_42, l_withoutArrayType.raw(), "toArrayKey", "toarraykey", 10, r14.raw()))) return false;
 		}
 		}
 		l_keyType = std::move(r14);
@@ -1473,7 +1473,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_arrayType != NULL && UNEXPECTED(Z_TYPE_P(p_arrayType) != IS_OBJECT || !pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
 		if (p_columnType != NULL && UNEXPECTED(Z_TYPE_P(p_columnType) != IS_OBJECT || !pgrt::instanceOfClass(p_columnType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_columnType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_getReturnValueType(Z_OBJ_P(ZEND_THIS), p_arrayType, p_columnType, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1488,7 +1488,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_arrayType != NULL && UNEXPECTED(Z_TYPE_P(p_arrayType) != IS_OBJECT || !pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
 		if (p_indexType != NULL && UNEXPECTED(Z_TYPE_P(p_indexType) != IS_OBJECT || !pgrt::instanceOfClass(p_indexType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_indexType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_getReturnIndexType(Z_OBJ_P(ZEND_THIS), p_arrayType, p_indexType, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1506,7 +1506,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		if (p_arrayType != NULL && UNEXPECTED(Z_TYPE_P(p_arrayType) != IS_OBJECT || !pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
 		if (p_columnType != NULL && UNEXPECTED(Z_TYPE_P(p_columnType) != IS_OBJECT || !pgrt::instanceOfClass(p_columnType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_columnType)); RETURN_THROWS(); }
 		if (p_indexType != NULL && UNEXPECTED(Z_TYPE_P(p_indexType) != IS_OBJECT || !pgrt::instanceOfClass(p_indexType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_indexType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_handleAnyArray(Z_OBJ_P(ZEND_THIS), p_arrayType, p_columnType, p_indexType, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1524,7 +1524,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		if (p_arrayType != NULL && UNEXPECTED(Z_TYPE_P(p_arrayType) != IS_OBJECT || !(pgrt::instanceOfClass(p_arrayType, pt_ce_constant_array_type) || pgrt::instanceOfClass(p_arrayType, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Type\\Constant\\ConstantArrayType", 39))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Constant\\ConstantArrayType", zend_zval_value_name(p_arrayType)); RETURN_THROWS(); }
 		if (p_columnType != NULL && UNEXPECTED(Z_TYPE_P(p_columnType) != IS_OBJECT || !pgrt::instanceOfClass(p_columnType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_columnType)); RETURN_THROWS(); }
 		if (p_indexType != NULL && UNEXPECTED(Z_TYPE_P(p_indexType) != IS_OBJECT || !pgrt::instanceOfClass(p_indexType, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_indexType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_handleConstantArray(Z_OBJ_P(ZEND_THIS), p_arrayType, p_columnType, p_indexType, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1539,7 +1539,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
 		if (p_offsetOrProperty != NULL && UNEXPECTED(Z_TYPE_P(p_offsetOrProperty) != IS_OBJECT || !pgrt::instanceOfClass(p_offsetOrProperty, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_offsetOrProperty)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_getOffsetOrProperty(Z_OBJ_P(ZEND_THIS), p_type, p_offsetOrProperty, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -1551,7 +1551,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ArrayColumnHelper)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_type != NULL && UNEXPECTED(Z_TYPE_P(p_type) != IS_OBJECT || !pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_type)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_46, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_43, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ArrayColumnHelper::m_castToArrayKeyType(Z_OBJ_P(ZEND_THIS), p_type, p_scope, return_value))) RETURN_THROWS();
 	});

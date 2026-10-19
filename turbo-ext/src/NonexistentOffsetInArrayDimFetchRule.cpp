@@ -236,6 +236,10 @@ namespace pgen::NonexistentOffsetInArrayDimFetchRule {
 					r8 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p6).deref().raw());
 					if (UNEXPECTED(r8.isUndef())) return false;
 				}
+				else if (rc9 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p6).deref().raw()).deref().raw()) == IS_OBJECT) {
+					r8 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p6).deref().raw()).deref().raw()));
+					if (UNEXPECTED(r8.isUndef())) return false;
+				}
 				else {
 					zval av10[1];
 					ZVAL_COPY_VALUE(&av10[0], zv::Ref(p6).deref().raw());
@@ -646,6 +650,10 @@ namespace pgen::NonexistentOffsetInArrayDimFetchRule {
 					r113 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_arrayArg.raw());
 					if (UNEXPECTED(r113.isUndef())) return false;
 				}
+				else if (rc114 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_arrayArg.raw()).deref().raw()) == IS_OBJECT) {
+					r113 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_arrayArg.raw()).deref().raw()));
+					if (UNEXPECTED(r113.isUndef())) return false;
+				}
 				else {
 					zval av115[1];
 					ZVAL_COPY_VALUE(&av115[0], l_arrayArg.raw());
@@ -872,6 +880,10 @@ namespace pgen::NonexistentOffsetInArrayDimFetchRule {
 					r177 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_arrayArg.raw());
 					if (UNEXPECTED(r177.isUndef())) return false;
 				}
+				else if (rc178 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_arrayArg.raw()).deref().raw()) == IS_OBJECT) {
+					r177 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_arrayArg.raw()).deref().raw()));
+					if (UNEXPECTED(r177.isUndef())) return false;
+				}
 				else {
 					zval av179[1];
 					ZVAL_COPY_VALUE(&av179[0], l_arrayArg.raw());
@@ -962,6 +974,10 @@ namespace pgen::NonexistentOffsetInArrayDimFetchRule {
 						zend_class_entry *rc204 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 						if (rc204 == pt_ce_mutating_scope) {
 							r203 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_numArg.raw());
+							if (UNEXPECTED(r203.isUndef())) return false;
+						}
+						else if (rc204 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_numArg.raw()).deref().raw()) == IS_OBJECT) {
+							r203 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_numArg.raw()).deref().raw()));
 							if (UNEXPECTED(r203.isUndef())) return false;
 						}
 						else {
@@ -1162,6 +1178,10 @@ namespace pgen::NonexistentOffsetInArrayDimFetchRule {
 				zend_class_entry *rc263 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 				if (rc263 == pt_ce_mutating_scope) {
 					r262 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), l_arrayArg.raw());
+					if (UNEXPECTED(r262.isUndef())) return false;
+				}
+				else if (rc263 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_arrayArg.raw()).deref().raw()) == IS_OBJECT) {
+					r262 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(l_arrayArg.raw()).deref().raw()));
 					if (UNEXPECTED(r262.isUndef())) return false;
 				}
 				else {

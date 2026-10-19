@@ -165,6 +165,10 @@ namespace pgen::DatePeriodConstructorReturnTypeExtension {
 			r22 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p20).deref().raw());
 			if (UNEXPECTED(r22.isUndef())) return false;
 		}
+		else if (rc23 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p20).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r22 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p20).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r22.isUndef())) return false;
+		}
 		else {
 			zval av24[1];
 			ZVAL_COPY_VALUE(&av24[0], zv::Ref(p20).deref().raw());
@@ -223,6 +227,10 @@ namespace pgen::DatePeriodConstructorReturnTypeExtension {
 				zend_class_entry *rc39 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 				if (rc39 == pt_ce_mutating_scope) {
 					r38 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p36).deref().raw());
+					if (UNEXPECTED(r38.isUndef())) return false;
+				}
+				else if (rc39 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p36).deref().raw()).deref().raw()) == IS_OBJECT) {
+					r38 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p36).deref().raw()).deref().raw()));
 					if (UNEXPECTED(r38.isUndef())) return false;
 				}
 				else {

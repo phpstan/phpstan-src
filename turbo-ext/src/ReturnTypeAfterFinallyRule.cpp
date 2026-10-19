@@ -411,6 +411,10 @@ namespace pgen::ReturnTypeAfterFinallyRule {
 						r86 = pt_mutating_scope_get_type(Z_OBJ_P(o85.raw()), l_returnExpr.raw());
 						if (UNEXPECTED(r86.isUndef())) return false;
 					}
+					else if (rc87 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_returnExpr.raw()).deref().raw()) == IS_OBJECT) {
+						r86 = pt_node_callback_scope_get_type(Z_OBJ_P(o85.raw()), Z_OBJ_P(zv::Ref(l_returnExpr.raw()).deref().raw()));
+						if (UNEXPECTED(r86.isUndef())) return false;
+					}
 					else {
 						zval av88[1];
 						ZVAL_COPY_VALUE(&av88[0], l_returnExpr.raw());
@@ -463,6 +467,10 @@ namespace pgen::ReturnTypeAfterFinallyRule {
 					zend_class_entry *rc100 = Z_TYPE_P(o98.raw()) == IS_OBJECT ? Z_OBJCE_P(o98.raw()) : NULL;
 					if (rc100 == pt_ce_mutating_scope) {
 						r99 = pt_mutating_scope_get_type(Z_OBJ_P(o98.raw()), l_returnExpr.raw());
+						if (UNEXPECTED(r99.isUndef())) return false;
+					}
+					else if (rc100 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_returnExpr.raw()).deref().raw()) == IS_OBJECT) {
+						r99 = pt_node_callback_scope_get_type(Z_OBJ_P(o98.raw()), Z_OBJ_P(zv::Ref(l_returnExpr.raw()).deref().raw()));
 						if (UNEXPECTED(r99.isUndef())) return false;
 					}
 					else {

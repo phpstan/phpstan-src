@@ -187,6 +187,10 @@ namespace pgen::RoundFunctionThrowTypeExtension {
 			r35 = pt_mutating_scope_get_native_type(Z_OBJ_P(p_scope), zv::Ref(p33).deref().raw());
 			if (UNEXPECTED(r35.isUndef())) return false;
 		}
+		else if (rc36 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p33).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r35 = pt_node_callback_scope_get_native_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p33).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r35.isUndef())) return false;
+		}
 		else {
 			zval av37[1];
 			ZVAL_COPY_VALUE(&av37[0], zv::Ref(p33).deref().raw());

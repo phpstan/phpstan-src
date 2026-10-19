@@ -334,6 +334,10 @@ namespace pgen::StrContainingTypeSpecifyingExtension {
 					r19 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p17).deref().raw());
 					if (UNEXPECTED(r19.isUndef())) return false;
 				}
+				else if (rc20 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p17).deref().raw()).deref().raw()) == IS_OBJECT) {
+					r19 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p17).deref().raw()).deref().raw()));
+					if (UNEXPECTED(r19.isUndef())) return false;
+				}
 				else {
 					zval av21[1];
 					ZVAL_COPY_VALUE(&av21[0], zv::Ref(p17).deref().raw());
@@ -355,6 +359,10 @@ namespace pgen::StrContainingTypeSpecifyingExtension {
 				zend_class_entry *rc27 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 				if (rc27 == pt_ce_mutating_scope) {
 					r26 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p24).deref().raw());
+					if (UNEXPECTED(r26.isUndef())) return false;
+				}
+				else if (rc27 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p24).deref().raw()).deref().raw()) == IS_OBJECT) {
+					r26 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p24).deref().raw()).deref().raw()));
 					if (UNEXPECTED(r26.isUndef())) return false;
 				}
 				else {

@@ -78,37 +78,35 @@ static pt_method_site pg_site_65; /* method_getObjectTypeOrClassStringObjectType
 static pt_method_site pg_site_66; /* method_getStaticPropertyReflection_66 */
 static pt_method_site pg_site_67; /* method_getInstancePropertyReflection_67 */
 static pt_method_site pg_site_68; /* method_isSuperTypeOf_68 */
-static pt_method_site pg_site_69; /* method_getDeclaringClass_69 */
+static pgrt::MethodShapeSite pg_site_69; /* method0_getName_69 */
 static pgrt::MethodShapeSite pg_site_70; /* method0_getName_70 */
-static pgrt::MethodShapeSite pg_site_71; /* method0_getName_71 */
-static pt_method_site pg_site_72; /* method_isSuperTypeOf_72 */
-static pgrt::MethodShapeSite pg_site_73; /* method0_getName_73 */
-static pgrt::ClassSite pg_site_74; /* cls_PHPStan\Analyser\Scope */
-static pt_method_site pg_site_75; /* method_isPromoted_75 */
-static pt_method_site pg_site_76; /* method_getUninitializedProperties_76 */
-static pt_method_site pg_site_77; /* method_isStatic_77 */
+static pt_method_site pg_site_71; /* method_isSuperTypeOf_71 */
+static pgrt::MethodShapeSite pg_site_72; /* method0_getName_72 */
+static pgrt::ClassSite pg_site_73; /* cls_PHPStan\Analyser\Scope */
+static pt_method_site pg_site_74; /* method_isPromoted_74 */
+static pt_method_site pg_site_75; /* method_getUninitializedProperties_75 */
+static pt_method_site pg_site_76; /* method_isStatic_76 */
+static pt_method_site pg_site_77; /* method_getDisplayName_77 */
 static pt_method_site pg_site_78; /* method_getDisplayName_78 */
-static pt_method_site pg_site_79; /* method_getDisplayName_79 */
-static pgrt::MethodShapeSite pg_site_80; /* method0_getStartLine_80 */
-static pgrt::FunctionSite pg_site_81; /* function_lcfirst */
+static pgrt::MethodShapeSite pg_site_79; /* method0_getStartLine_79 */
+static pgrt::FunctionSite pg_site_80; /* function_lcfirst */
+static pgrt::MethodShapeSite pg_site_81; /* method0_getStartLine_81 */
 static pgrt::MethodShapeSite pg_site_82; /* method0_getStartLine_82 */
 static pgrt::MethodShapeSite pg_site_83; /* method0_getStartLine_83 */
 static pgrt::MethodShapeSite pg_site_84; /* method0_getStartLine_84 */
-static pgrt::MethodShapeSite pg_site_85; /* method0_getStartLine_85 */
-static pgrt::MethodShapeSite pg_site_86; /* method0_getTraits_86 */
-static pt_method_site pg_site_87; /* method_hasNativeProperty_87 */
-static pt_method_site pg_site_88; /* method_getNativeProperty_88 */
-static pt_method_site pg_site_89; /* method_isPrivate_89 */
-static pgrt::MethodShapeSite pg_site_90; /* method0_getFunctionCallStackWithParameters_90 */
-static pgrt::ClassSite pg_site_91; /* cls_PHPStan\Reflection\MethodReflection */
-static pgrt::MethodShapeSite pg_site_92; /* method0_getName_92 */
-static pgrt::DispatchCache pg_site_93; /* dispatch_getDeclaringClass_93 */
-static pt_method_site pg_site_94; /* method_getDeclaringClass_94 */
-static pgrt::MethodShapeSite pg_site_95; /* method0_getName_95 */
-static pgrt::MethodShapeSite pg_site_96; /* method0_getName_96 */
-static pgrt::ClassSite pg_site_97; /* cls_PHPStan\DependencyInjection\ExtensionsCollection */
-static pgrt::ClassSite pg_site_98; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_99; /* cls_PHPStan\Node\ClassPropertyNode */
+static pgrt::MethodShapeSite pg_site_85; /* method0_getTraits_85 */
+static pt_method_site pg_site_86; /* method_hasNativeProperty_86 */
+static pt_method_site pg_site_87; /* method_getNativeProperty_87 */
+static pt_method_site pg_site_88; /* method_isPrivate_88 */
+static pgrt::MethodShapeSite pg_site_89; /* method0_getFunctionCallStackWithParameters_89 */
+static pgrt::ClassSite pg_site_90; /* cls_PHPStan\Reflection\MethodReflection */
+static pgrt::MethodShapeSite pg_site_91; /* method0_getName_91 */
+static pgrt::DispatchCache pg_site_92; /* dispatch_getDeclaringClass_92 */
+static pgrt::MethodShapeSite pg_site_93; /* method0_getName_93 */
+static pgrt::MethodShapeSite pg_site_94; /* method0_getName_94 */
+static pgrt::ClassSite pg_site_95; /* cls_PHPStan\DependencyInjection\ExtensionsCollection */
+static pgrt::ClassSite pg_site_96; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_97; /* cls_PHPStan\Node\ClassPropertyNode */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -916,6 +914,10 @@ namespace pgen::UnusedPrivatePropertyRule {
 								r170 = pt_mutating_scope_get_type(Z_OBJ_P(o167.raw()), zv::Ref(p168).deref().raw());
 								if (UNEXPECTED(r170.isUndef())) return false;
 							}
+							else if (rc171 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p168).deref().raw()).deref().raw()) == IS_OBJECT) {
+								r170 = pt_node_callback_scope_get_type(Z_OBJ_P(o167.raw()), Z_OBJ_P(zv::Ref(zv::Ref(p168).deref().raw()).deref().raw()));
+								if (UNEXPECTED(r170.isUndef())) return false;
+							}
 							else {
 								zval av172[1];
 								ZVAL_COPY_VALUE(&av172[0], zv::Ref(p168).deref().raw());
@@ -1091,6 +1093,10 @@ namespace pgen::UnusedPrivatePropertyRule {
 									zend_class_entry *rc215 = Z_TYPE_P(o211.raw()) == IS_OBJECT ? Z_OBJCE_P(o211.raw()) : NULL;
 									if (rc215 == pt_ce_mutating_scope) {
 										r214 = pt_mutating_scope_get_type(Z_OBJ_P(o211.raw()), zv::Ref(p212).deref().raw());
+										if (UNEXPECTED(r214.isUndef())) return false;
+									}
+									else if (rc215 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p212).deref().raw()).deref().raw()) == IS_OBJECT) {
+										r214 = pt_node_callback_scope_get_type(Z_OBJ_P(o211.raw()), Z_OBJ_P(zv::Ref(zv::Ref(p212).deref().raw()).deref().raw()));
 										if (UNEXPECTED(r214.isUndef())) return false;
 									}
 									else {
@@ -1312,7 +1318,8 @@ namespace pgen::UnusedPrivatePropertyRule {
 									vd267_done = true;
 								}
 								if (!vd267_done) {
-									if (UNEXPECTED(!pgrt::callMethod(pg_site_69, l_propertyReflection.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd267.raw()))) return false;
+									vd267 = pt_extended_property_reflection_call(l_propertyReflection.raw(), PT_PROP_GET_DECLARING_CLASS);
+									if (UNEXPECTED(vd267.isUndef())) return false;
 								}
 								zv::Val r271;
 								if (EXPECTED(Z_TYPE_P(vd267.raw()) == IS_OBJECT)) {
@@ -1320,7 +1327,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 									if (UNEXPECTED(r271.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod0(pg_site_70, vd267.raw(), "getName", "getname", 7, r271.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_69, vd267.raw(), "getName", "getname", 7, r271.raw()))) return false;
 								}
 								}
 								zv::Val r272;
@@ -1329,7 +1336,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 									if (UNEXPECTED(r272.isUndef())) return false;
 								} else {
 								 {
-									if (UNEXPECTED(!pgrt::callMethod0(pg_site_71, l_classReflection.raw(), "getName", "getname", 7, r272.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_70, l_classReflection.raw(), "getName", "getname", 7, r272.raw()))) return false;
 								}
 								}
 								if (!zend_is_identical(r271.raw(), r272.raw())) {
@@ -1342,7 +1349,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 											if (UNEXPECTED(r274.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod(pg_site_72, l_classType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av273, r274.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callMethod(pg_site_71, l_classType.raw(), "isSuperTypeOf", "issupertypeof", 13, 1, av273, r274.raw(), NULL))) return false;
 										}
 										}
 										bool r275;
@@ -1448,10 +1455,10 @@ namespace pgen::UnusedPrivatePropertyRule {
 											if (UNEXPECTED(r307.isUndef())) return false;
 										} else {
 										 {
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_73, l_classReflection.raw(), "getName", "getname", 7, r307.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_72, l_classReflection.raw(), "getName", "getname", 7, r307.raw()))) return false;
 										}
 										}
-										if (UNEXPECTED(!(pgrt::instanceOfClass(o304.raw(), pgrt::lookupClassQuiet(pg_site_74, "PHPStan\\Analyser\\Scope", 22))))) { pgrt::throwArgumentType("PHPStan\\Rules\\DeadCode\\UnusedPrivatePropertyRule::isPropertySelfWrite", 1, "usageScope", "PHPStan\\Analyser\\Scope", o304.raw()); return false; }
+										if (UNEXPECTED(!(pgrt::instanceOfClass(o304.raw(), pgrt::lookupClassQuiet(pg_site_73, "PHPStan\\Analyser\\Scope", 22))))) { pgrt::throwArgumentType("PHPStan\\Rules\\DeadCode\\UnusedPrivatePropertyRule::isPropertySelfWrite", 1, "usageScope", "PHPStan\\Analyser\\Scope", o304.raw()); return false; }
 										bool r308;
 										if (UNEXPECTED(!pgen::UnusedPrivatePropertyRule::m_isPropertySelfWrite(Z_OBJ_P(&this_zv), o304.raw(), o305.raw(), o306.raw(), r307.raw(), &r308))) return false;
 										if (!(r308)) {
@@ -1554,7 +1561,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 						vd338_done = true;
 					}
 					if (!vd338_done) {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_75, zv::Ref(e336).deref().raw(), "isPromoted", "ispromoted", 10, 0, NULL, vd338.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_74, zv::Ref(e336).deref().raw(), "isPromoted", "ispromoted", 10, 0, NULL, vd338.raw()))) return false;
 					}
 					if (!(zend_is_true(vd338.raw()))) {
 						goto cont330;
@@ -1591,7 +1598,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 		ZVAL_COPY_VALUE(&av349[0], p_scope);
 		ZVAL_COPY_VALUE(&av349[1], &arr348_raw);
 		zv::Val r350;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_76, p_node, "getUninitializedProperties", "getuninitializedproperties", 26, 2, av349, r350.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_75, p_node, "getUninitializedProperties", "getuninitializedproperties", 26, 2, av349, r350.raw(), NULL))) return false;
 		zval *la351 = r350.raw();
 		zval *le352 = NULL;
 		if (Z_TYPE_P(la351) == IS_ARRAY) { le352 = zend_hash_index_find(Z_ARRVAL_P(la351), 0); if (le352 == NULL) { pgrt::warnUndefinedIndex(0); } }
@@ -1637,7 +1644,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 						vd366_done = true;
 					}
 					if (!vd366_done) {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_77, l_propertyNode.raw(), "isStatic", "isstatic", 8, 0, NULL, vd366.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_76, l_propertyNode.raw(), "isStatic", "isstatic", 8, 0, NULL, vd366.raw()))) return false;
 					}
 					if (zend_is_true(vd366.raw())) {
 						 {
@@ -1647,7 +1654,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 								if (UNEXPECTED(r369.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_78, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r369.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_77, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r369.raw()))) return false;
 							}
 							}
 							pgrt::StringBuilder sb370;
@@ -1667,7 +1674,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 								if (UNEXPECTED(r372.isUndef())) return false;
 							} else {
 							 {
-								if (UNEXPECTED(!pgrt::callMethod(pg_site_79, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r372.raw()))) return false;
+								if (UNEXPECTED(!pgrt::callMethod(pg_site_78, l_classReflection.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r372.raw()))) return false;
 							}
 							}
 							pgrt::StringBuilder sb373;
@@ -1706,7 +1713,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 									zv::Val r383;
 									if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r382.raw(), r383.raw()))) return false;
 									zv::Val r384;
-									if (UNEXPECTED(!pgrt::callMethod0(pg_site_80, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r384.raw()))) return false;
+									if (UNEXPECTED(!pgrt::callMethod0(pg_site_79, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r384.raw()))) return false;
 									if (UNEXPECTED(Z_TYPE_P(r384.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r384.raw()); return false; }
 									zv::Val r385;
 									if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r383.raw()), Z_LVAL_P(r384.raw()), r385.raw()))) return false;
@@ -1733,7 +1740,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 											zval av393[1];
 											ZVAL_COPY_VALUE(&av393[0], l_propertyName.raw());
 											zv::Val r394;
-											if (UNEXPECTED(!pgrt::callFunction(pg_site_81, "lcfirst", 7, pt_ce_unused_private_property_rule, 1, av393, r394.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callFunction(pg_site_80, "lcfirst", 7, pt_ce_unused_private_property_rule, 1, av393, r394.raw(), NULL))) return false;
 											pgrt::StringBuilder sb395;
 											sb395.appendLiteral("Readable ", 9);
 											if (UNEXPECTED(!sb395.append(r394.raw()))) return false;
@@ -1742,7 +1749,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 											zv::Val r397;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r396.raw(), r397.raw()))) return false;
 											zv::Val r398;
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_82, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r398.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_81, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r398.raw()))) return false;
 											if (UNEXPECTED(Z_TYPE_P(r398.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r398.raw()); return false; }
 											zv::Val r399;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r397.raw()), Z_LVAL_P(r398.raw()), r399.raw()))) return false;
@@ -1766,7 +1773,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 											zv::Val r406;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r405.raw(), r406.raw()))) return false;
 											zv::Val r407;
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_83, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r407.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_82, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r407.raw()))) return false;
 											if (UNEXPECTED(Z_TYPE_P(r407.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r407.raw()); return false; }
 											zv::Val r408;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r406.raw()), Z_LVAL_P(r407.raw()), r408.raw()))) return false;
@@ -1819,7 +1826,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 											zval av423[1];
 											ZVAL_COPY_VALUE(&av423[0], l_propertyName.raw());
 											zv::Val r424;
-											if (UNEXPECTED(!pgrt::callFunction(pg_site_81, "lcfirst", 7, pt_ce_unused_private_property_rule, 1, av423, r424.raw(), NULL))) return false;
+											if (UNEXPECTED(!pgrt::callFunction(pg_site_80, "lcfirst", 7, pt_ce_unused_private_property_rule, 1, av423, r424.raw(), NULL))) return false;
 											pgrt::StringBuilder sb425;
 											sb425.appendLiteral("Writable ", 9);
 											if (UNEXPECTED(!sb425.append(r424.raw()))) return false;
@@ -1828,7 +1835,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 											zv::Val r427;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r426.raw(), r427.raw()))) return false;
 											zv::Val r428;
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_84, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r428.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_83, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r428.raw()))) return false;
 											if (UNEXPECTED(Z_TYPE_P(r428.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r428.raw()); return false; }
 											zv::Val r429;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r427.raw()), Z_LVAL_P(r428.raw()), r429.raw()))) return false;
@@ -1852,7 +1859,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 											zv::Val r436;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_message(r435.raw(), r436.raw()))) return false;
 											zv::Val r437;
-											if (UNEXPECTED(!pgrt::callMethod0(pg_site_85, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r437.raw()))) return false;
+											if (UNEXPECTED(!pgrt::callMethod0(pg_site_84, l_propertyNode.raw(), "getStartLine", "getstartline", 12, r437.raw()))) return false;
 											if (UNEXPECTED(Z_TYPE_P(r437.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Rules\\RuleErrorBuilder::line", 1, "line", "int", r437.raw()); return false; }
 											zv::Val r438;
 											if (UNEXPECTED(!pgen::RuleErrorBuilder::m_line(Z_OBJ_P(r436.raw()), Z_LVAL_P(r437.raw()), r438.raw()))) return false;
@@ -1895,7 +1902,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 	(void) this_zv;
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_86, p_classReflection, "getTraits", "gettraits", 9, r2.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_85, p_classReflection, "getTraits", "gettraits", 9, r2.raw()))) return false;
 		zv::Val a3 = zv::Val::copyOf(zv::Ref(r2.raw()).deref());
 		HashTable *ht1 = Z_ARRVAL_P(a3.raw());
 		zval *v4;
@@ -1914,7 +1921,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 						if (UNEXPECTED(r10.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_87, l_trait, "hasNativeProperty", "hasnativeproperty", 17, 1, av9, r10.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_86, l_trait, "hasNativeProperty", "hasnativeproperty", 17, 1, av9, r10.raw(), NULL))) return false;
 					}
 					}
 					if (!(zend_is_true(r10.raw()))) {
@@ -1930,7 +1937,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 						if (UNEXPECTED(r12.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_88, l_trait, "getNativeProperty", "getnativeproperty", 17, 1, av11, r12.raw(), NULL))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_87, l_trait, "getNativeProperty", "getnativeproperty", 17, 1, av11, r12.raw(), NULL))) return false;
 					}
 					}
 					zv::Val r13;
@@ -1939,7 +1946,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 						if (UNEXPECTED(r13.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_89, r12.raw(), "isPrivate", "isprivate", 9, 0, NULL, r13.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod(pg_site_88, r12.raw(), "isPrivate", "isprivate", 9, 0, NULL, r13.raw()))) return false;
 					}
 					}
 					if (!(zend_is_true(r13.raw()))) {
@@ -1983,7 +1990,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 	}
 	 {
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_90, p_usageScope, "getFunctionCallStackWithParameters", "getfunctioncallstackwithparameters", 34, r2.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_89, p_usageScope, "getFunctionCallStackWithParameters", "getfunctioncallstackwithparameters", 34, r2.raw()))) return false;
 		l_callStack = std::move(r2);
 	}
 	 {
@@ -2025,7 +2032,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 		l_parameterReflection = zv::Val::copyOf(zv::Ref(zv::Ref(le12).deref().raw()));
 	}
 	 {
-		if (!(pgrt::instanceOfClass(l_calleeReflection.raw(), pgrt::lookupClassQuiet(pg_site_91, "PHPStan\\Reflection\\MethodReflection", 35)))) {
+		if (!(pgrt::instanceOfClass(l_calleeReflection.raw(), pgrt::lookupClassQuiet(pg_site_90, "PHPStan\\Reflection\\MethodReflection", 35)))) {
 			 {
 				*ret = false;
 				return true;
@@ -2039,7 +2046,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 			if (UNEXPECTED(r13.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_92, l_calleeReflection.raw(), "getName", "getname", 7, r13.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_91, l_calleeReflection.raw(), "getName", "getname", 7, r13.raw()))) return false;
 		}
 		}
 		if (!zend_is_identical(r13.raw(), &pg_lit[15])) {
@@ -2055,7 +2062,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 		bool vd14_done = false;
 		static zend_class_entry **const vd14_table[] = { &pt_ce_changed_type_method_reflection, &pt_ce_rewritten_declaring_class_method_reflection, &pt_ce_php_method_reflection, &pt_ce_php_method_from_parser_node_reflection, &pt_ce_union_type_method_reflection };
 		static const uint16_t vd14_cases[] = { 1, 2, 3, 4, 5 };
-		switch (pgrt::dispatchCase(pg_site_93, vd14_ce, vd14_table, vd14_cases, 5)) {
+		switch (pgrt::dispatchCase(pg_site_92, vd14_ce, vd14_table, vd14_cases, 5)) {
 			case 1: {
 				zv::Val r15;
 				if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_calleeReflection.raw()), r15.raw()))) return false;
@@ -2095,7 +2102,8 @@ namespace pgen::UnusedPrivatePropertyRule {
 			break;
 		}
 		if (!vd14_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_94, l_calleeReflection.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd14.raw()))) return false;
+			vd14 = pt_class_member_reflection_call(l_calleeReflection.raw(), PT_CMR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd14.isUndef())) return false;
 		}
 		zv::Val r20;
 		if (EXPECTED(Z_TYPE_P(vd14.raw()) == IS_OBJECT)) {
@@ -2103,7 +2111,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 			if (UNEXPECTED(r20.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_95, vd14.raw(), "getName", "getname", 7, r20.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_93, vd14.raw(), "getName", "getname", 7, r20.raw()))) return false;
 		}
 		}
 		if (!zend_is_identical(r20.raw(), p_className)) {
@@ -2128,7 +2136,7 @@ namespace pgen::UnusedPrivatePropertyRule {
 			if (UNEXPECTED(r21.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_96, l_parameterReflection.raw(), "getName", "getname", 7, r21.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_94, l_parameterReflection.raw(), "getName", "getname", 7, r21.raw()))) return false;
 		}
 		}
 		*ret = zend_is_identical(r21.raw(), p_propertyName);
@@ -2173,7 +2181,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedPrivatePropertyRule)
 			Z_PARAM_ARRAY(p_alwaysReadTags)
 			Z_PARAM_BOOL(p_checkUninitializedProperties)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_extensions != NULL && UNEXPECTED(Z_TYPE_P(p_extensions) != IS_OBJECT || !pgrt::instanceOfClass(p_extensions, pgrt::lookupClassQuiet(pg_site_97, "PHPStan\\DependencyInjection\\ExtensionsCollection", 48)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\DependencyInjection\\ExtensionsCollection", zend_zval_value_name(p_extensions)); RETURN_THROWS(); }
+		if (p_extensions != NULL && UNEXPECTED(Z_TYPE_P(p_extensions) != IS_OBJECT || !pgrt::instanceOfClass(p_extensions, pgrt::lookupClassQuiet(pg_site_95, "PHPStan\\DependencyInjection\\ExtensionsCollection", 48)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\DependencyInjection\\ExtensionsCollection", zend_zval_value_name(p_extensions)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::UnusedPrivatePropertyRule::m___construct(Z_OBJ_P(ZEND_THIS), p_extensions, p_alwaysWrittenTags, p_alwaysReadTags, p_checkUninitializedProperties))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\DeadCode\UnusedPrivatePropertyRule::getNodeType() */
@@ -2188,8 +2196,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedPrivatePropertyRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_98, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_74, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_96, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_73, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::UnusedPrivatePropertyRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -2223,9 +2231,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_UnusedPrivatePropertyRule)
 			Z_PARAM_ZVAL(p_propertyNode)
 			Z_PARAM_STR(p_className_str)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_usageScope != NULL && UNEXPECTED(Z_TYPE_P(p_usageScope) != IS_OBJECT || !pgrt::instanceOfClass(p_usageScope, pgrt::lookupClassQuiet(pg_site_74, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_usageScope)); RETURN_THROWS(); }
+		if (p_usageScope != NULL && UNEXPECTED(Z_TYPE_P(p_usageScope) != IS_OBJECT || !pgrt::instanceOfClass(p_usageScope, pgrt::lookupClassQuiet(pg_site_73, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_usageScope)); RETURN_THROWS(); }
 		if (p_propertyName_str != NULL) { ZVAL_STR(&p_propertyName_zv, p_propertyName_str); p_propertyName = &p_propertyName_zv; }
-		if (p_propertyNode != NULL && UNEXPECTED(Z_TYPE_P(p_propertyNode) != IS_OBJECT || !((Z_TYPE_P(p_propertyNode) == IS_OBJECT && Z_OBJCE_P(p_propertyNode) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_propertyNode, pgrt::lookupClassQuiet(pg_site_99, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_propertyNode)); RETURN_THROWS(); }
+		if (p_propertyNode != NULL && UNEXPECTED(Z_TYPE_P(p_propertyNode) != IS_OBJECT || !((Z_TYPE_P(p_propertyNode) == IS_OBJECT && Z_OBJCE_P(p_propertyNode) == pt_ce_class_property_node) || pgrt::instanceOfClass(p_propertyNode, pgrt::lookupClassQuiet(pg_site_97, "PHPStan\\Node\\ClassPropertyNode", 30))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Node\\ClassPropertyNode", zend_zval_value_name(p_propertyNode)); RETURN_THROWS(); }
 		if (p_className_str != NULL) { ZVAL_STR(&p_className_zv, p_className_str); p_className = &p_className_zv; }
 		bool r;
 		if (UNEXPECTED(!pgen::UnusedPrivatePropertyRule::m_isPropertySelfWrite(Z_OBJ_P(ZEND_THIS), p_usageScope, p_propertyName, p_propertyNode, p_className, &r))) RETURN_THROWS();

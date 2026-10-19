@@ -103,6 +103,10 @@ namespace pgen::NumberFormatFunctionDynamicReturnTypeExtension {
 			r14 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), o13.raw());
 			if (UNEXPECTED(r14.isUndef())) return false;
 		}
+		else if (rc15 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(o13.raw()).deref().raw()) == IS_OBJECT) {
+			r14 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(o13.raw()).deref().raw()));
+			if (UNEXPECTED(r14.isUndef())) return false;
+		}
 		else {
 			zval av16[1];
 			ZVAL_COPY_VALUE(&av16[0], o13.raw());
@@ -132,6 +136,10 @@ namespace pgen::NumberFormatFunctionDynamicReturnTypeExtension {
 		zend_class_entry *rc25 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 		if (rc25 == pt_ce_mutating_scope) {
 			r24 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), o23.raw());
+			if (UNEXPECTED(r24.isUndef())) return false;
+		}
+		else if (rc25 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(o23.raw()).deref().raw()) == IS_OBJECT) {
+			r24 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(o23.raw()).deref().raw()));
 			if (UNEXPECTED(r24.isUndef())) return false;
 		}
 		else {

@@ -126,6 +126,10 @@ namespace pgen::YieldFromTypeRule {
 			r3 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p1).deref().raw());
 			if (UNEXPECTED(r3.isUndef())) return false;
 		}
+		else if (rc4 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p1).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r3 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p1).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r3.isUndef())) return false;
+		}
 		else {
 			zval av5[1];
 			ZVAL_COPY_VALUE(&av5[0], zv::Ref(p1).deref().raw());

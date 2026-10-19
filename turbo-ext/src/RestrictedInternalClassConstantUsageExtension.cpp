@@ -10,31 +10,22 @@ zend_class_entry *pt_ce_restricted_internal_class_constant_usage_extension = nul
 static zval pg_lit[1];
 
 static pt_method_site pg_site_0; /* method_isInternal_0 */
-static pt_method_site pg_site_1; /* method_getDeclaringClass_1 */
-static pgrt::MethodShapeSite pg_site_2; /* method0_isInternal_2 */
-static pgrt::MethodShapeSite pg_site_3; /* method0_getName_3 */
-static pt_method_site pg_site_4; /* method_getDeclaringClass_4 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_isInternal_1 */
+static pgrt::MethodShapeSite pg_site_2; /* method0_getName_2 */
+static pgrt::MethodShapeSite pg_site_3; /* method0_getClassTypeDescription_3 */
+static pt_method_site pg_site_4; /* method_getDisplayName_4 */
 static pgrt::MethodShapeSite pg_site_5; /* method0_getClassTypeDescription_5 */
-static pt_method_site pg_site_6; /* method_getDeclaringClass_6 */
-static pt_method_site pg_site_7; /* method_getDisplayName_7 */
-static pt_method_site pg_site_8; /* method_getDeclaringClass_8 */
+static pt_method_site pg_site_6; /* method_getDisplayName_6 */
+static pgrt::MethodShapeSite pg_site_7; /* method0_getName_7 */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getName_8 */
 static pgrt::MethodShapeSite pg_site_9; /* method0_getClassTypeDescription_9 */
-static pt_method_site pg_site_10; /* method_getDeclaringClass_10 */
-static pt_method_site pg_site_11; /* method_getDisplayName_11 */
-static pgrt::MethodShapeSite pg_site_12; /* method0_getName_12 */
+static pt_method_site pg_site_10; /* method_getDisplayName_10 */
+static pgrt::MethodShapeSite pg_site_11; /* method0_getClassTypeDescription_11 */
+static pt_method_site pg_site_12; /* method_getDisplayName_12 */
 static pgrt::MethodShapeSite pg_site_13; /* method0_getName_13 */
-static pt_method_site pg_site_14; /* method_getDeclaringClass_14 */
-static pgrt::MethodShapeSite pg_site_15; /* method0_getClassTypeDescription_15 */
-static pt_method_site pg_site_16; /* method_getDeclaringClass_16 */
-static pt_method_site pg_site_17; /* method_getDisplayName_17 */
-static pt_method_site pg_site_18; /* method_getDeclaringClass_18 */
-static pgrt::MethodShapeSite pg_site_19; /* method0_getClassTypeDescription_19 */
-static pt_method_site pg_site_20; /* method_getDeclaringClass_20 */
-static pt_method_site pg_site_21; /* method_getDisplayName_21 */
-static pgrt::MethodShapeSite pg_site_22; /* method0_getName_22 */
-static pgrt::ClassSite pg_site_23; /* cls_PHPStan\Rules\InternalTag\RestrictedInternalUsageHelper */
-static pgrt::ClassSite pg_site_24; /* cls_PHPStan\Reflection\ClassConstantReflection */
-static pgrt::ClassSite pg_site_25; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Rules\InternalTag\RestrictedInternalUsageHelper */
+static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Reflection\ClassConstantReflection */
+static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::RestrictedInternalClassConstantUsageExtension {
 
@@ -88,13 +79,14 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 			vd4_done = true;
 		}
 		if (!vd4_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_constantReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd4.raw()))) return false;
+			vd4 = pt_class_member_reflection_call(p_constantReflection, PT_CMR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd4.isUndef())) return false;
 		}
 		l_declaringClass = std::move(vd4);
 	}
 	 {
 		zv::Val r6;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_declaringClass.raw(), "isInternal", "isinternal", 10, r6.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_declaringClass.raw(), "isInternal", "isinternal", 10, r6.raw()))) return false;
 		l_isDeclaringClassInternal = (Z_TYPE_P(r6.raw()) == IS_TRUE);
 	}
 	 {
@@ -143,7 +135,7 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 							if (UNEXPECTED(r14.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, p_constantReflection, "getName", "getname", 7, r14.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, p_constantReflection, "getName", "getname", 7, r14.raw()))) return false;
 						}
 						}
 						zv::Val vd15;
@@ -156,10 +148,11 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 							vd15_done = true;
 						}
 						if (!vd15_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p_constantReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd15.raw()))) return false;
+							vd15 = pt_class_member_reflection_call(p_constantReflection, PT_CMR_GET_DECLARING_CLASS);
+							if (UNEXPECTED(vd15.isUndef())) return false;
 						}
 						zv::Val r17;
-						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, vd15.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r17.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_3, vd15.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r17.raw()))) return false;
 						zv::Val r18 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r17.raw())));
 						zv::Val vd19;
 						zend_class_entry *vd19_ce = Z_TYPE_P(p_constantReflection) == IS_OBJECT ? Z_OBJCE_P(p_constantReflection) : NULL;
@@ -171,7 +164,8 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 							vd19_done = true;
 						}
 						if (!vd19_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_constantReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd19.raw()))) return false;
+							vd19 = pt_class_member_reflection_call(p_constantReflection, PT_CMR_GET_DECLARING_CLASS);
+							if (UNEXPECTED(vd19.isUndef())) return false;
 						}
 						zv::Val r21;
 						if (EXPECTED(Z_TYPE_P(vd19.raw()) == IS_OBJECT && Z_OBJCE_P(vd19.raw()) == pt_ce_class_reflection)) {
@@ -179,7 +173,7 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 							if (UNEXPECTED(r21.isUndef())) return false;
 						} else {
 						 {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_7, vd19.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r21.raw()))) return false;
+							if (UNEXPECTED(!pgrt::callMethod(pg_site_4, vd19.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r21.raw()))) return false;
 						}
 						}
 						pgrt::StringBuilder sb22;
@@ -201,10 +195,11 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 							vd24_done = true;
 						}
 						if (!vd24_done) {
-							if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_constantReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd24.raw()))) return false;
+							vd24 = pt_class_member_reflection_call(p_constantReflection, PT_CMR_GET_DECLARING_CLASS);
+							if (UNEXPECTED(vd24.isUndef())) return false;
 						}
 						zv::Val r26;
-						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, vd24.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r26.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, vd24.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r26.raw()))) return false;
 						pgrt::StringBuilder sb27;
 						sb27.appendLiteral("classConstant.internal", 22);
 						if (UNEXPECTED(!sb27.append(r26.raw()))) return false;
@@ -227,7 +222,8 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 					vd30_done = true;
 				}
 				if (!vd30_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, p_constantReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd30.raw()))) return false;
+					vd30 = pt_class_member_reflection_call(p_constantReflection, PT_CMR_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd30.isUndef())) return false;
 				}
 				zv::Val r32;
 				if (EXPECTED(Z_TYPE_P(vd30.raw()) == IS_OBJECT && Z_OBJCE_P(vd30.raw()) == pt_ce_class_reflection)) {
@@ -235,7 +231,7 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 					if (UNEXPECTED(r32.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_11, vd30.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r32.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, vd30.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r32.raw()))) return false;
 				}
 				}
 				zv::Val r33;
@@ -244,7 +240,7 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 					if (UNEXPECTED(r33.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_12, p_constantReflection, "getName", "getname", 7, r33.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_7, p_constantReflection, "getName", "getname", 7, r33.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb34;
@@ -270,7 +266,7 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 					if (UNEXPECTED(r37.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_constantReflection, "getName", "getname", 7, r37.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p_constantReflection, "getName", "getname", 7, r37.raw()))) return false;
 				}
 				}
 				zv::Val vd38;
@@ -283,10 +279,11 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 					vd38_done = true;
 				}
 				if (!vd38_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_14, p_constantReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd38.raw()))) return false;
+					vd38 = pt_class_member_reflection_call(p_constantReflection, PT_CMR_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd38.isUndef())) return false;
 				}
 				zv::Val r40;
-				if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, vd38.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r40.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, vd38.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r40.raw()))) return false;
 				zv::Val r41 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r40.raw())));
 				zv::Val vd42;
 				zend_class_entry *vd42_ce = Z_TYPE_P(p_constantReflection) == IS_OBJECT ? Z_OBJCE_P(p_constantReflection) : NULL;
@@ -298,7 +295,8 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 					vd42_done = true;
 				}
 				if (!vd42_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_16, p_constantReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd42.raw()))) return false;
+					vd42 = pt_class_member_reflection_call(p_constantReflection, PT_CMR_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd42.isUndef())) return false;
 				}
 				zv::Val r44;
 				if (EXPECTED(Z_TYPE_P(vd42.raw()) == IS_OBJECT && Z_OBJCE_P(vd42.raw()) == pt_ce_class_reflection)) {
@@ -306,7 +304,7 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 					if (UNEXPECTED(r44.isUndef())) return false;
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_17, vd42.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r44.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, vd42.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r44.raw()))) return false;
 				}
 				}
 				pgrt::StringBuilder sb45;
@@ -330,10 +328,11 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 					vd47_done = true;
 				}
 				if (!vd47_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_18, p_constantReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd47.raw()))) return false;
+					vd47 = pt_class_member_reflection_call(p_constantReflection, PT_CMR_GET_DECLARING_CLASS);
+					if (UNEXPECTED(vd47.isUndef())) return false;
 				}
 				zv::Val r49;
-				if (UNEXPECTED(!pgrt::callMethod0(pg_site_19, vd47.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r49.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_11, vd47.raw(), "getClassTypeDescription", "getclasstypedescription", 23, r49.raw()))) return false;
 				pgrt::StringBuilder sb50;
 				sb50.appendLiteral("classConstant.internal", 22);
 				if (UNEXPECTED(!sb50.append(r49.raw()))) return false;
@@ -356,7 +355,8 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 			vd53_done = true;
 		}
 		if (!vd53_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_20, p_constantReflection, "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd53.raw()))) return false;
+			vd53 = pt_class_member_reflection_call(p_constantReflection, PT_CMR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd53.isUndef())) return false;
 		}
 		zv::Val r55;
 		if (EXPECTED(Z_TYPE_P(vd53.raw()) == IS_OBJECT && Z_OBJCE_P(vd53.raw()) == pt_ce_class_reflection)) {
@@ -364,7 +364,7 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 			if (UNEXPECTED(r55.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, vd53.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r55.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, vd53.raw(), "getDisplayName", "getdisplayname", 14, 0, NULL, r55.raw()))) return false;
 		}
 		}
 		zv::Val r56;
@@ -373,7 +373,7 @@ namespace pgen::RestrictedInternalClassConstantUsageExtension {
 			if (UNEXPECTED(r56.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_22, p_constantReflection, "getName", "getname", 7, r56.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_13, p_constantReflection, "getName", "getname", 7, r56.raw()))) return false;
 		}
 		}
 		pgrt::StringBuilder sb57;
@@ -408,7 +408,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedInternalClassConstantUsageEx
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_ZVAL(p_helper)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_restricted_internal_usage_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_23, "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", 55))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
+		if (p_helper != NULL && UNEXPECTED(Z_TYPE_P(p_helper) != IS_OBJECT || !((Z_TYPE_P(p_helper) == IS_OBJECT && Z_OBJCE_P(p_helper) == pt_ce_restricted_internal_usage_helper) || pgrt::instanceOfClass(p_helper, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", 55))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\InternalTag\\RestrictedInternalUsageHelper", zend_zval_value_name(p_helper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::RestrictedInternalClassConstantUsageExtension::m___construct(Z_OBJ_P(ZEND_THIS), p_helper))) RETURN_THROWS();
 	});
 	cls.method(sigs::isRestrictedClassConstantUsage, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\InternalTag\RestrictedInternalClassConstantUsageExtension::isRestrictedClassConstantUsage() */
@@ -418,8 +418,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_RestrictedInternalClassConstantUsageEx
 			Z_PARAM_ZVAL(p_constantReflection)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_constantReflection != NULL && UNEXPECTED(Z_TYPE_P(p_constantReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_constantReflection, pgrt::lookupClassQuiet(pg_site_24, "PHPStan\\Reflection\\ClassConstantReflection", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassConstantReflection", zend_zval_value_name(p_constantReflection)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_25, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_constantReflection != NULL && UNEXPECTED(Z_TYPE_P(p_constantReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_constantReflection, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Reflection\\ClassConstantReflection", 42)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\ClassConstantReflection", zend_zval_value_name(p_constantReflection)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::RestrictedInternalClassConstantUsageExtension::m_isRestrictedClassConstantUsage(Z_OBJ_P(ZEND_THIS), p_constantReflection, p_scope, return_value))) RETURN_THROWS();
 	});

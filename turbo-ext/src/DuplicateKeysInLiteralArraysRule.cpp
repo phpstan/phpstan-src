@@ -279,6 +279,10 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 								r36 = pt_mutating_scope_get_type(Z_OBJ_P(r33.raw()), zv::Ref(p34).deref().raw());
 								if (UNEXPECTED(r36.isUndef())) return false;
 							}
+							else if (rc37 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p34).deref().raw()).deref().raw()) == IS_OBJECT) {
+								r36 = pt_node_callback_scope_get_type(Z_OBJ_P(r33.raw()), Z_OBJ_P(zv::Ref(zv::Ref(p34).deref().raw()).deref().raw()));
+								if (UNEXPECTED(r36.isUndef())) return false;
+							}
 							else {
 								zval av38[1];
 								ZVAL_COPY_VALUE(&av38[0], zv::Ref(p34).deref().raw());
@@ -448,6 +452,10 @@ namespace pgen::DuplicateKeysInLiteralArraysRule {
 									zend_class_entry *rc77 = Z_TYPE_P(r75.raw()) == IS_OBJECT ? Z_OBJCE_P(r75.raw()) : NULL;
 									if (rc77 == pt_ce_mutating_scope) {
 										r76 = pt_mutating_scope_get_type(Z_OBJ_P(r75.raw()), l_key.raw());
+										if (UNEXPECTED(r76.isUndef())) return false;
+									}
+									else if (rc77 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(l_key.raw()).deref().raw()) == IS_OBJECT) {
+										r76 = pt_node_callback_scope_get_type(Z_OBJ_P(r75.raw()), Z_OBJ_P(zv::Ref(l_key.raw()).deref().raw()));
 										if (UNEXPECTED(r76.isUndef())) return false;
 									}
 									else {

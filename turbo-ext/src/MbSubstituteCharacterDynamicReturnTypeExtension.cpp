@@ -214,6 +214,10 @@ namespace pgen::MbSubstituteCharacterDynamicReturnTypeExtension {
 			r46 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), o45.raw());
 			if (UNEXPECTED(r46.isUndef())) return false;
 		}
+		else if (rc47 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(o45.raw()).deref().raw()) == IS_OBJECT) {
+			r46 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(o45.raw()).deref().raw()));
+			if (UNEXPECTED(r46.isUndef())) return false;
+		}
 		else {
 			zval av48[1];
 			ZVAL_COPY_VALUE(&av48[0], o45.raw());

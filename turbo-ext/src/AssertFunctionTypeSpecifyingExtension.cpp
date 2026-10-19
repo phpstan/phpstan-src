@@ -84,13 +84,20 @@ namespace pgen::AssertFunctionTypeSpecifyingExtension {
 		zv::Val o9 = zv::Val::copyOf(zv::Ref(zv::Ref(p7).deref().raw()));
 		zv::Val r10;
 		if (UNEXPECTED(!pgrt::callStatic(pg_site_4, pt_ce_type_specifier_context, "createtruthy", 12, 0, NULL, r10.raw(), NULL))) return false;
-		zval av11[3];
-		ZVAL_COPY_VALUE(&av11[0], p_scope);
-		ZVAL_COPY_VALUE(&av11[1], o9.raw());
-		ZVAL_COPY_VALUE(&av11[2], r10.raw());
-		zv::Val r12;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_5, o2.raw(), "specifyTypesInCondition", "specifytypesincondition", 23, 3, av11, r12.raw(), NULL))) return false;
-		*ret = r12.take();
+		zv::Val r11;
+		zend_class_entry *rc12 = Z_TYPE_P(o2.raw()) == IS_OBJECT ? Z_OBJCE_P(o2.raw()) : NULL;
+		if (rc12 == pt_ce_type_specifier && Z_TYPE_P(zv::Ref(o9.raw()).deref().raw()) == IS_OBJECT) {
+			r11 = pt_type_specifier_specify_types_in_condition(Z_OBJ_P(o2.raw()), p_scope, Z_OBJ_P(zv::Ref(o9.raw()).deref().raw()), Z_OBJ_P(r10.raw()));
+			if (UNEXPECTED(r11.isUndef())) return false;
+		}
+		else {
+			zval av13[3];
+			ZVAL_COPY_VALUE(&av13[0], p_scope);
+			ZVAL_COPY_VALUE(&av13[1], o9.raw());
+			ZVAL_COPY_VALUE(&av13[2], r10.raw());
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, o2.raw(), "specifyTypesInCondition", "specifytypesincondition", 23, 3, av13, r11.raw()))) return false;
+		}
+		*ret = r11.take();
 		return true;
 	}
 }

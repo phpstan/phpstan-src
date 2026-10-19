@@ -289,6 +289,10 @@ namespace pgen::PrintfArrayParametersRule {
 			r37 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p35).deref().raw());
 			if (UNEXPECTED(r37.isUndef())) return false;
 		}
+		else if (rc38 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p35).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r37 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p35).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r37.isUndef())) return false;
+		}
 		else {
 			zval av39[1];
 			ZVAL_COPY_VALUE(&av39[0], zv::Ref(p35).deref().raw());
@@ -479,6 +483,10 @@ namespace pgen::PrintfArrayParametersRule {
 				zend_class_entry *rc91 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
 				if (rc91 == pt_ce_mutating_scope) {
 					r90 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p88).deref().raw());
+					if (UNEXPECTED(r90.isUndef())) return false;
+				}
+				else if (rc91 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p88).deref().raw()).deref().raw()) == IS_OBJECT) {
+					r90 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p88).deref().raw()).deref().raw()));
 					if (UNEXPECTED(r90.isUndef())) return false;
 				}
 				else {

@@ -213,6 +213,10 @@ namespace pgen::GetParentClassDynamicFunctionReturnTypeExtension {
 			r21 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), o20.raw());
 			if (UNEXPECTED(r21.isUndef())) return false;
 		}
+		else if (rc22 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(o20.raw()).deref().raw()) == IS_OBJECT) {
+			r21 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(o20.raw()).deref().raw()));
+			if (UNEXPECTED(r21.isUndef())) return false;
+		}
 		else {
 			zval av23[1];
 			ZVAL_COPY_VALUE(&av23[0], o20.raw());

@@ -86,6 +86,10 @@ namespace pgen::HighlightStringDynamicReturnTypeExtension {
 					r9 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p7).deref().raw());
 					if (UNEXPECTED(r9.isUndef())) return false;
 				}
+				else if (rc10 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p7).deref().raw()).deref().raw()) == IS_OBJECT) {
+					r9 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p7).deref().raw()).deref().raw()));
+					if (UNEXPECTED(r9.isUndef())) return false;
+				}
 				else {
 					zval av11[1];
 					ZVAL_COPY_VALUE(&av11[0], zv::Ref(p7).deref().raw());

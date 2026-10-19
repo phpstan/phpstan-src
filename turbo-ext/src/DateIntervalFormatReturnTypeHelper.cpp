@@ -13,18 +13,17 @@ static pt_method_site pg_site_0; /* method_getConstantStrings_0 */
 static pt_method_site pg_site_1; /* method_isNonEmptyString_1 */
 static pt_method_site pg_site_2; /* method_hasInstanceProperty_2 */
 static pt_method_site pg_site_3; /* method_getInstanceProperty_3 */
-static pt_method_site pg_site_4; /* method_getReadableType_4 */
-static pgrt::MethodShapeSite pg_site_5; /* method0_isInteger_5 */
-static pgrt::ClassSite pg_site_6; /* cls_DateTime */
-static pt_method_site pg_site_7; /* method_diff_7 */
-static pgrt::ClassSite pg_site_8; /* cls_DateInterval */
-static pgrt::MethodShapeSite pg_site_9; /* method0_getValue_9 */
-static pt_method_site pg_site_10; /* method_format_10 */
-static pgrt::FunctionSite pg_site_11; /* function_is_numeric */
-static pgrt::FunctionSite pg_site_12; /* function_strtolower */
-static pgrt::FunctionSite pg_site_13; /* function_strtoupper */
-static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Type\Type */
-static pgrt::ClassSite pg_site_15; /* cls_PHPStan\Analyser\Scope */
+static pgrt::MethodShapeSite pg_site_4; /* method0_isInteger_4 */
+static pgrt::ClassSite pg_site_5; /* cls_DateTime */
+static pt_method_site pg_site_6; /* method_diff_6 */
+static pgrt::ClassSite pg_site_7; /* cls_DateInterval */
+static pgrt::MethodShapeSite pg_site_8; /* method0_getValue_8 */
+static pt_method_site pg_site_9; /* method_format_9 */
+static pgrt::FunctionSite pg_site_10; /* function_is_numeric */
+static pgrt::FunctionSite pg_site_11; /* function_strtolower */
+static pgrt::FunctionSite pg_site_12; /* function_strtoupper */
+static pgrt::ClassSite pg_site_13; /* cls_PHPStan\Type\Type */
+static pgrt::ClassSite pg_site_14; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::DateIntervalFormatReturnTypeHelper {
 
@@ -148,7 +147,8 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 				vd17_done = true;
 			}
 			if (!vd17_done) {
-				if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r16.raw(), "getReadableType", "getreadabletype", 15, 0, NULL, vd17.raw()))) return false;
+				vd17 = pt_extended_property_reflection_call(r16.raw(), PT_PROP_GET_READABLE_TYPE);
+				if (UNEXPECTED(vd17.isUndef())) return false;
 			}
 			zv::Val r21;
 			if (EXPECTED(Z_TYPE_P(vd17.raw()) == IS_OBJECT)) {
@@ -156,7 +156,7 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 				if (UNEXPECTED(r21.isUndef())) return false;
 			} else {
 			 {
-				if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, vd17.raw(), "isInteger", "isinteger", 9, r21.raw()))) return false;
+				if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, vd17.raw(), "isInteger", "isinteger", 9, r21.raw()))) return false;
 			}
 			}
 			bool r22;
@@ -170,26 +170,26 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 		if (l_daysIsInt) {
 			zval av25[1];
 			ZVAL_COPY_VALUE(&av25[0], &pg_lit[1]);
-			zend_class_entry *ce26 = pgrt::lookupClass(pg_site_6, "DateTime", 8);
+			zend_class_entry *ce26 = pgrt::lookupClass(pg_site_5, "DateTime", 8);
 			if (UNEXPECTED(ce26 == NULL)) return false;
 			zv::Val n24;
 			if (UNEXPECTED(!pgrt::newObject(ce26, 1, av25, n24.raw(), NULL))) return false;
 			zval av28[1];
 			ZVAL_COPY_VALUE(&av28[0], &pg_lit[1]);
-			zend_class_entry *ce29 = pgrt::lookupClass(pg_site_6, "DateTime", 8);
+			zend_class_entry *ce29 = pgrt::lookupClass(pg_site_5, "DateTime", 8);
 			if (UNEXPECTED(ce29 == NULL)) return false;
 			zv::Val n27;
 			if (UNEXPECTED(!pgrt::newObject(ce29, 1, av28, n27.raw(), NULL))) return false;
 			zval av30[1];
 			ZVAL_COPY_VALUE(&av30[0], n27.raw());
 			zv::Val r31;
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_7, n24.raw(), "diff", "diff", 4, 1, av30, r31.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_6, n24.raw(), "diff", "diff", 4, 1, av30, r31.raw(), NULL))) return false;
 			q23 = std::move(r31);
 		} else {
 		 {
 			zval av33[1];
 			ZVAL_COPY_VALUE(&av33[0], &pg_lit[2]);
-			zend_class_entry *ce34 = pgrt::lookupClass(pg_site_8, "DateInterval", 12);
+			zend_class_entry *ce34 = pgrt::lookupClass(pg_site_7, "DateInterval", 12);
 			if (UNEXPECTED(ce34 == NULL)) return false;
 			zv::Val n32;
 			if (UNEXPECTED(!pgrt::newObject(ce34, 1, av33, n32.raw(), NULL))) return false;
@@ -218,7 +218,7 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 						if (UNEXPECTED(r42.isUndef())) return false;
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callMethod0(pg_site_9, l_string, "getValue", "getvalue", 8, r42.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, l_string, "getValue", "getvalue", 8, r42.raw()))) return false;
 					}
 					}
 					l_formatString = std::move(r42);
@@ -227,7 +227,7 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 					zval av43[1];
 					ZVAL_COPY_VALUE(&av43[0], l_formatString.raw());
 					zv::Val r44;
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_10, l_dateInterval.raw(), "format", "format", 6, 1, av43, r44.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_9, l_dateInterval.raw(), "format", "format", 6, 1, av43, r44.raw(), NULL))) return false;
 					l_value = std::move(r44);
 				}
 				 {
@@ -240,7 +240,7 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 					zval av47[1];
 					ZVAL_COPY_VALUE(&av47[0], l_value.raw());
 					zv::Val r48;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_11, "is_numeric", 10, pt_ce_date_interval_format_return_type_helper, 1, av47, r48.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "is_numeric", 10, pt_ce_date_interval_format_return_type_helper, 1, av47, r48.raw(), NULL))) return false;
 					if (Z_TYPE_P(r48.raw()) == IS_TRUE) {
 						 {
 							zv::Val n49;
@@ -301,7 +301,7 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 						r61 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa62)));
 					} else {
 					 {
-						if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "strtolower", 10, pt_ce_date_interval_format_return_type_helper, 1, sa62, r61.raw()))) return false;
+						if (UNEXPECTED(!pgrt::callFunction(pg_site_11, "strtolower", 10, pt_ce_date_interval_format_return_type_helper, 1, sa62, r61.raw()))) return false;
 					}
 					}
 					if (zend_is_identical(r61.raw(), l_value.raw())) {
@@ -320,7 +320,7 @@ namespace pgen::DateIntervalFormatReturnTypeHelper {
 					zval av66[1];
 					ZVAL_COPY_VALUE(&av66[0], l_value.raw());
 					zv::Val r67;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "strtoupper", 10, pt_ce_date_interval_format_return_type_helper, 1, av66, r67.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "strtoupper", 10, pt_ce_date_interval_format_return_type_helper, 1, av66, r67.raw(), NULL))) return false;
 					if (zend_is_identical(r67.raw(), l_value.raw())) {
 						 {
 							zv::Val n68;
@@ -395,9 +395,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateIntervalFormatReturnTypeHelper)
 			Z_PARAM_ZVAL(p_intervalType)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_formatType != NULL && UNEXPECTED(Z_TYPE_P(p_formatType) != IS_OBJECT || !pgrt::instanceOfClass(p_formatType, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_formatType)); RETURN_THROWS(); }
-		if (p_intervalType != NULL && UNEXPECTED(Z_TYPE_P(p_intervalType) != IS_OBJECT || !pgrt::instanceOfClass(p_intervalType, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_intervalType)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_formatType != NULL && UNEXPECTED(Z_TYPE_P(p_formatType) != IS_OBJECT || !pgrt::instanceOfClass(p_formatType, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_formatType)); RETURN_THROWS(); }
+		if (p_intervalType != NULL && UNEXPECTED(Z_TYPE_P(p_intervalType) != IS_OBJECT || !pgrt::instanceOfClass(p_intervalType, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Type", 17)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Type\\Type", zend_zval_value_name(p_intervalType)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::DateIntervalFormatReturnTypeHelper::m_getType(Z_OBJ_P(ZEND_THIS), p_formatType, p_intervalType, p_scope, return_value))) RETURN_THROWS();
 	});
@@ -406,7 +406,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateIntervalFormatReturnTypeHelper)
 		zval *pa1;
 		if (argc > 0) {
 			pa1 = zv::Ref(&argv[0]).deref().raw();
-			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\DateIntervalFormatReturnTypeHelper::getType", 1, "formatType", "PHPStan\\Type\\Type", pa1); return zv::Val(); }
+			if (UNEXPECTED(!(pgrt::instanceOfClass(pa1, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\DateIntervalFormatReturnTypeHelper::getType", 1, "formatType", "PHPStan\\Type\\Type", pa1); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Type\\Php\\DateIntervalFormatReturnTypeHelper::getType", argc, 1);
@@ -416,7 +416,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateIntervalFormatReturnTypeHelper)
 		zval *pa2;
 		if (argc > 1) {
 			pa2 = zv::Ref(&argv[1]).deref().raw();
-			if (UNEXPECTED(!(pgrt::instanceOfClass(pa2, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\DateIntervalFormatReturnTypeHelper::getType", 2, "intervalType", "PHPStan\\Type\\Type", pa2); return zv::Val(); }
+			if (UNEXPECTED(!(pgrt::instanceOfClass(pa2, pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\Type\\Type", 17))))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\DateIntervalFormatReturnTypeHelper::getType", 2, "intervalType", "PHPStan\\Type\\Type", pa2); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Type\\Php\\DateIntervalFormatReturnTypeHelper::getType", argc, 2);
@@ -426,7 +426,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DateIntervalFormatReturnTypeHelper)
 		zval *pa3;
 		if (argc > 2) {
 			pa3 = zv::Ref(&argv[2]).deref().raw();
-			if (UNEXPECTED(!(pgrt::instanceOfClass(pa3, pgrt::lookupClassQuiet(pg_site_15, "PHPStan\\Analyser\\Scope", 22))))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\DateIntervalFormatReturnTypeHelper::getType", 3, "scope", "PHPStan\\Analyser\\Scope", pa3); return zv::Val(); }
+			if (UNEXPECTED(!(pgrt::instanceOfClass(pa3, pgrt::lookupClassQuiet(pg_site_14, "PHPStan\\Analyser\\Scope", 22))))) { pgrt::throwArgumentType("PHPStan\\Type\\Php\\DateIntervalFormatReturnTypeHelper::getType", 3, "scope", "PHPStan\\Analyser\\Scope", pa3); return zv::Val(); }
 		} else {
 		 {
 			pgrt::throwTooFewArguments("PHPStan\\Type\\Php\\DateIntervalFormatReturnTypeHelper::getType", argc, 3);

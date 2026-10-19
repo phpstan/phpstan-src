@@ -21,16 +21,14 @@ static pt_method_site pg_site_8; /* method_getDisplayName_8 */
 static pt_method_site pg_site_9; /* method_hasConstructor_9 */
 static pt_method_site pg_site_10; /* method_getConstructor_10 */
 static pgrt::DispatchCache pg_site_11; /* dispatch_getDocComment_11 */
-static pt_method_site pg_site_12; /* method_getDocComment_12 */
-static pgrt::FunctionSite pg_site_13; /* function_str_contains */
-static pgrt::DispatchCache pg_site_14; /* dispatch_getDeclaringClass_14 */
-static pt_method_site pg_site_15; /* method_getDeclaringClass_15 */
-static pgrt::MethodShapeSite pg_site_16; /* method0_getName_16 */
-static pgrt::MethodShapeSite pg_site_17; /* method0_getName_17 */
-static pgrt::ClassSite pg_site_18; /* cls_PHPStan\Rules\Api\ApiRuleHelper */
-static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Reflection\ReflectionProvider */
-static pgrt::ClassSite pg_site_20; /* cls_PhpParser\Node */
-static pgrt::ClassSite pg_site_21; /* cls_PHPStan\Analyser\Scope */
+static pgrt::FunctionSite pg_site_12; /* function_str_contains */
+static pgrt::DispatchCache pg_site_13; /* dispatch_getDeclaringClass_13 */
+static pgrt::MethodShapeSite pg_site_14; /* method0_getName_14 */
+static pgrt::MethodShapeSite pg_site_15; /* method0_getName_15 */
+static pgrt::ClassSite pg_site_16; /* cls_PHPStan\Rules\Api\ApiRuleHelper */
+static pgrt::ClassSite pg_site_17; /* cls_PHPStan\Reflection\ReflectionProvider */
+static pgrt::ClassSite pg_site_18; /* cls_PhpParser\Node */
+static pgrt::ClassSite pg_site_19; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::ApiInstantiationRule {
 
@@ -315,7 +313,8 @@ namespace pgen::ApiInstantiationRule {
 			break;
 		}
 		if (!vd44_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_12, l_constructor.raw(), "getDocComment", "getdoccomment", 13, 0, NULL, vd44.raw()))) return false;
+			vd44 = pt_extended_method_reflection_call(l_constructor.raw(), PT_MR_GET_DOC_COMMENT);
+			if (UNEXPECTED(vd44.isUndef())) return false;
 		}
 		l_docComment = std::move(vd44);
 	}
@@ -333,7 +332,7 @@ namespace pgen::ApiInstantiationRule {
 	 {
 		zv::Val o52 = zv::Val::copyOf(zv::Ref(l_docComment.raw()));
 		zv::Val r53;
-		if (UNEXPECTED(!pgrt::strMatch(pg_site_13, "str_contains", 12, pgrt::StrMatch::CONTAINS, o52.raw(), &pg_lit[3], r53.raw()))) return false;
+		if (UNEXPECTED(!pgrt::strMatch(pg_site_12, "str_contains", 12, pgrt::StrMatch::CONTAINS, o52.raw(), &pg_lit[3], r53.raw()))) return false;
 		if (!((Z_TYPE_P(r53.raw()) == IS_TRUE))) {
 			 {
 				zv::Val arr54 = zv::Val::adopt([]() { zval a; array_init_size(&a, 1); return a; }());
@@ -350,7 +349,7 @@ namespace pgen::ApiInstantiationRule {
 		bool vd56_done = false;
 		static zend_class_entry **const vd56_table[] = { &pt_ce_changed_type_method_reflection, &pt_ce_rewritten_declaring_class_method_reflection, &pt_ce_php_method_reflection, &pt_ce_php_method_from_parser_node_reflection, &pt_ce_union_type_method_reflection };
 		static const uint16_t vd56_cases[] = { 1, 2, 3, 4, 5 };
-		switch (pgrt::dispatchCase(pg_site_14, vd56_ce, vd56_table, vd56_cases, 5)) {
+		switch (pgrt::dispatchCase(pg_site_13, vd56_ce, vd56_table, vd56_cases, 5)) {
 			case 1: {
 				zv::Val r57;
 				if (UNEXPECTED(!pgen::ChangedTypeMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_constructor.raw()), r57.raw()))) return false;
@@ -390,7 +389,8 @@ namespace pgen::ApiInstantiationRule {
 			break;
 		}
 		if (!vd56_done) {
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, l_constructor.raw(), "getDeclaringClass", "getdeclaringclass", 17, 0, NULL, vd56.raw()))) return false;
+			vd56 = pt_extended_method_reflection_call(l_constructor.raw(), PT_MR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(vd56.isUndef())) return false;
 		}
 		zv::Val r62;
 		if (EXPECTED(Z_TYPE_P(vd56.raw()) == IS_OBJECT)) {
@@ -398,7 +398,7 @@ namespace pgen::ApiInstantiationRule {
 			if (UNEXPECTED(r62.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_16, vd56.raw(), "getName", "getname", 7, r62.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_14, vd56.raw(), "getName", "getname", 7, r62.raw()))) return false;
 		}
 		}
 		zv::Val r63;
@@ -407,7 +407,7 @@ namespace pgen::ApiInstantiationRule {
 			if (UNEXPECTED(r63.isUndef())) return false;
 		} else {
 		 {
-			if (UNEXPECTED(!pgrt::callMethod0(pg_site_17, l_classReflection.raw(), "getName", "getname", 7, r63.raw()))) return false;
+			if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_classReflection.raw(), "getName", "getname", 7, r63.raw()))) return false;
 		}
 		}
 		if (!zend_is_identical(r62.raw(), r63.raw())) {
@@ -449,8 +449,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ApiInstantiationRule)
 			Z_PARAM_ZVAL(p_apiRuleHelper)
 			Z_PARAM_ZVAL(p_reflectionProvider)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_apiRuleHelper != NULL && UNEXPECTED(Z_TYPE_P(p_apiRuleHelper) != IS_OBJECT || !((Z_TYPE_P(p_apiRuleHelper) == IS_OBJECT && Z_OBJCE_P(p_apiRuleHelper) == pt_ce_api_rule_helper) || pgrt::instanceOfClass(p_apiRuleHelper, pgrt::lookupClassQuiet(pg_site_18, "PHPStan\\Rules\\Api\\ApiRuleHelper", 31))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Api\\ApiRuleHelper", zend_zval_value_name(p_apiRuleHelper)); RETURN_THROWS(); }
-		if (p_reflectionProvider != NULL && UNEXPECTED(Z_TYPE_P(p_reflectionProvider) != IS_OBJECT || !pgrt::instanceOfClass(p_reflectionProvider, pgrt::lookupClassQuiet(pg_site_19, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_reflectionProvider)); RETURN_THROWS(); }
+		if (p_apiRuleHelper != NULL && UNEXPECTED(Z_TYPE_P(p_apiRuleHelper) != IS_OBJECT || !((Z_TYPE_P(p_apiRuleHelper) == IS_OBJECT && Z_OBJCE_P(p_apiRuleHelper) == pt_ce_api_rule_helper) || pgrt::instanceOfClass(p_apiRuleHelper, pgrt::lookupClassQuiet(pg_site_16, "PHPStan\\Rules\\Api\\ApiRuleHelper", 31))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Rules\\Api\\ApiRuleHelper", zend_zval_value_name(p_apiRuleHelper)); RETURN_THROWS(); }
+		if (p_reflectionProvider != NULL && UNEXPECTED(Z_TYPE_P(p_reflectionProvider) != IS_OBJECT || !pgrt::instanceOfClass(p_reflectionProvider, pgrt::lookupClassQuiet(pg_site_17, "PHPStan\\Reflection\\ReflectionProvider", 37)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Reflection\\ReflectionProvider", zend_zval_value_name(p_reflectionProvider)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::ApiInstantiationRule::m___construct(Z_OBJ_P(ZEND_THIS), p_apiRuleHelper, p_reflectionProvider))) RETURN_THROWS();
 	});
 	cls.method(sigs::getNodeType, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\Rules\Api\ApiInstantiationRule::getNodeType() */
@@ -465,8 +465,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_ApiInstantiationRule)
 			Z_PARAM_ZVAL(p_node)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_20, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_21, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_node != NULL && UNEXPECTED(Z_TYPE_P(p_node) != IS_OBJECT || !pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_18, "PhpParser\\Node", 14)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PhpParser\\Node", zend_zval_value_name(p_node)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_19, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::ApiInstantiationRule::m_processNode(Z_OBJ_P(ZEND_THIS), p_node, p_scope, return_value))) RETURN_THROWS();
 	});

@@ -98,6 +98,10 @@ namespace pgen::DateFunctionReturnTypeExtension {
 			r12 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), o11.raw());
 			if (UNEXPECTED(r12.isUndef())) return false;
 		}
+		else if (rc13 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(o11.raw()).deref().raw()) == IS_OBJECT) {
+			r12 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(o11.raw()).deref().raw()));
+			if (UNEXPECTED(r12.isUndef())) return false;
+		}
 		else {
 			zval av14[1];
 			ZVAL_COPY_VALUE(&av14[0], o11.raw());

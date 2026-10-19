@@ -100,6 +100,10 @@ namespace pgen::IdateFunctionReturnTypeExtension {
 			r11 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), zv::Ref(p9).deref().raw());
 			if (UNEXPECTED(r11.isUndef())) return false;
 		}
+		else if (rc12 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(zv::Ref(p9).deref().raw()).deref().raw()) == IS_OBJECT) {
+			r11 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(zv::Ref(p9).deref().raw()).deref().raw()));
+			if (UNEXPECTED(r11.isUndef())) return false;
+		}
 		else {
 			zval av13[1];
 			ZVAL_COPY_VALUE(&av13[0], zv::Ref(p9).deref().raw());

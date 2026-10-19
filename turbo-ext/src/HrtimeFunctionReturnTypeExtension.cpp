@@ -147,6 +147,10 @@ namespace pgen::HrtimeFunctionReturnTypeExtension {
 			r32 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), o31.raw());
 			if (UNEXPECTED(r32.isUndef())) return false;
 		}
+		else if (rc33 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(o31.raw()).deref().raw()) == IS_OBJECT) {
+			r32 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(o31.raw()).deref().raw()));
+			if (UNEXPECTED(r32.isUndef())) return false;
+		}
 		else {
 			zval av34[1];
 			ZVAL_COPY_VALUE(&av34[0], o31.raw());

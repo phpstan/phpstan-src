@@ -109,6 +109,10 @@ namespace pgen::StrWordCountFunctionDynamicReturnTypeExtension {
 							r17 = pt_mutating_scope_get_type(Z_OBJ_P(p_scope), o16.raw());
 							if (UNEXPECTED(r17.isUndef())) return false;
 						}
+						else if (rc18 == pt_ce_node_callback_scope && Z_TYPE_P(zv::Ref(o16.raw()).deref().raw()) == IS_OBJECT) {
+							r17 = pt_node_callback_scope_get_type(Z_OBJ_P(p_scope), Z_OBJ_P(zv::Ref(o16.raw()).deref().raw()));
+							if (UNEXPECTED(r17.isUndef())) return false;
+						}
 						else {
 							zval av19[1];
 							ZVAL_COPY_VALUE(&av19[0], o16.raw());

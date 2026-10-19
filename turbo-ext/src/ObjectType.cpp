@@ -156,9 +156,27 @@ static zval *pt_ot_enum_cases() { return pt_ot_static(PT_OT_STATIC_ENUM_CASES); 
 static zval *pt_ot_description_cache_order() { return pt_ot_static(PT_OT_STATIC_DESCRIPTION_CACHE_ORDER); }
 static zval *pt_ot_last_touched_description() { return pt_ot_static(PT_OT_STATIC_LAST_TOUCHED_DESCRIPTION); }
 
+/* The plain ObjectTypes (no subtracted type, no class reflection handed
+ * in) native code creates, one per class name: the value is the same, and
+ * the instance's own caches (ancestors, parent, interfaces, the resolved
+ * class reflection) are then computed once. A lazily resolved class
+ * reflection belongs to the container, so the table is dropped with the
+ * container's caches (resetCaches()) and at the end of the request. */
+static HashTable *pt_ot_interned = nullptr;
+
+static void pt_ot_interned_clear()
+{
+	if (pt_ot_interned == nullptr) return;
+	HashTable *interned = pt_ot_interned;
+	pt_ot_interned = nullptr;
+	zend_hash_destroy(interned);
+	FREE_HASHTABLE(interned);
+}
+
 /* resetCaches(): every cache back to [], the LRU and its memo to null */
 static void pt_ot_statics_reset()
 {
+	pt_ot_interned_clear();
 	for (int i = PT_OT_STATIC_SUPER_TYPES; i <= PT_OT_STATIC_ENUM_CASES; i++) {
 		zv::Ref(pt_ot_static((pt_ot_static_kind) i)).assign(zv::Val(zv::Arr::empty()));
 	}
@@ -174,6 +192,7 @@ void pt_object_type_rinit()
 void pt_object_type_rshutdown()
 {
 	pt_ot_statics_ce = nullptr;
+	pt_ot_interned_clear();
 }
 
 /* $cache[$key] — the nested array, created when asked for; NULL when absent */
@@ -3258,7 +3277,25 @@ using phpstanturbo::ObjectType;
 
 bool pt_object_type_new(zval *out, zend_string *className, zval *subtractedType, zval *classReflection)
 {
-	return pt_val_into(ObjectType::create(className, subtractedType, classReflection), out);
+	if ((subtractedType != NULL && Z_TYPE_P(subtractedType) != IS_NULL) || (classReflection != NULL && Z_TYPE_P(classReflection) != IS_NULL)) {
+		return pt_val_into(ObjectType::create(className, subtractedType, classReflection), out);
+	}
+	if (pt_ot_interned != nullptr) {
+		zval *interned = zend_hash_find(pt_ot_interned, className);
+		if (interned != NULL) {
+			ZVAL_COPY(out, interned);
+			return true;
+		}
+	}
+	zv::Val created = ObjectType::create(className);
+	if (UNEXPECTED(created.isUndef())) return false;
+	if (pt_ot_interned == nullptr) {
+		ALLOC_HASHTABLE(pt_ot_interned);
+		zend_hash_init(pt_ot_interned, 64, NULL, ZVAL_PTR_DTOR, 0);
+	}
+	Z_ADDREF_P(created.raw());
+	zend_hash_add_new(pt_ot_interned, className, created.raw());
+	return pt_val_into(std::move(created), out);
 }
 
 zend_string *pt_object_type_class_name(zend_object *object) { return ObjectType::classNameOf(object); }

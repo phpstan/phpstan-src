@@ -22,7 +22,9 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <dlfcn.h>
+#include <execinfo.h>
 #include <map>
 #include <string>
 #include <unordered_map>
@@ -266,11 +268,17 @@ int walkModeDepth[2];
 struct WalkCounts
 {
 	std::string className;
+	std::string file;
+	long line = -1;
 	long startPos = -1;
 	unsigned long walks[3] = {0, 0, 0};
 };
 
 std::unordered_map<zend_object *, WalkCounts> *walkedNodes;
+// $PT_WALK_TRACE=<file>:<line>: the native stacks walking a node there, by count
+std::map<std::string, unsigned long> *walkStacks;
+// $PT_WALK_ORIGINS: on-demand walks by the function that asked for them
+std::map<std::string, unsigned long> *walkOrigins;
 // the counts of nodes whose address a later node took over
 std::vector<WalkCounts> *finishedNodes;
 
@@ -310,9 +318,100 @@ void dumpWalks()
 	for (size_t i = 0; i < patternRows.size() && i < 30; i++) fprintf(out, "W excess %lu %s\n", patternRows[i].first, patternRows[i].second.c_str());
 	for (size_t i = 0; i < rows.size() && i < 40; i++) {
 		const WalkCounts *counts = rows[i].second;
-		fprintf(out, "W top %lu (plain %lu pass %lu ondemand %lu) %s @%ld\n", rows[i].first, counts->walks[2], counts->walks[0], counts->walks[1], counts->className.c_str(), counts->startPos);
+		fprintf(out, "W top %lu (plain %lu pass %lu ondemand %lu) %s %s:%ld\n", rows[i].first, counts->walks[2], counts->walks[0], counts->walks[1], counts->className.c_str(), counts->file.c_str(), counts->line);
+	}
+	/* the source lines whose nodes are walked most, by their most walked node */
+	std::map<std::string, std::pair<unsigned long, std::string>> lines;
+	for (const WalkCounts &node : *finishedNodes) {
+		unsigned long sum = node.walks[0] + node.walks[1] + node.walks[2];
+		if (sum < 4) continue;
+		std::string key = node.file + ":" + std::to_string(node.line);
+		auto &line = lines[key];
+		if (sum > line.first) {
+			char pattern[64];
+			snprintf(pattern, sizeof(pattern), "plain %lu pass %lu ondemand %lu", node.walks[2], node.walks[0], node.walks[1]);
+			line = {sum, pattern};
+		}
+	}
+	std::vector<std::pair<unsigned long, std::string>> lineRows;
+	for (auto &line : lines) lineRows.emplace_back(line.second.first, line.first + " (" + line.second.second + ")");
+	std::sort(lineRows.rbegin(), lineRows.rend());
+	for (size_t i = 0; i < lineRows.size() && i < 80; i++) fprintf(out, "W line %lu %s\n", lineRows[i].first, lineRows[i].second.c_str());
+	if (walkOrigins != nullptr) {
+		std::vector<std::pair<unsigned long, std::string>> origins;
+		for (auto &origin : *walkOrigins) origins.emplace_back(origin.second, origin.first);
+		std::sort(origins.rbegin(), origins.rend());
+		for (size_t i = 0; i < origins.size() && i < 30; i++) fprintf(out, "O %lu %s\n", origins[i].first, origins[i].second.c_str());
+	}
+	if (walkStacks != nullptr) {
+		std::vector<std::pair<unsigned long, std::string>> stacks;
+		for (auto &stack : *walkStacks) stacks.emplace_back(stack.second, stack.first);
+		std::sort(stacks.rbegin(), stacks.rend());
+		for (size_t i = 0; i < stacks.size() && i < 8; i++) fprintf(out, "S %lu%s\n", stacks[i].first, stacks[i].second.c_str());
 	}
 	if (out != stderr) fclose(out);
+}
+
+/* the caller of the outermost on-demand entry on the stack */
+void traceOrigin(const WalkCounts &counts)
+{
+	if (walkOrigins == nullptr) walkOrigins = new std::map<std::string, unsigned long>();
+	void *frames[96];
+	int n = backtrace(frames, 96);
+	std::string origin = "?";
+	bool inOnDemand = false;
+	for (int i = 1; i < n; i++) {
+		Dl_info info;
+		const char *name = dladdr(frames[i], &info) != 0 && info.dli_sname != nullptr ? info.dli_sname : "";
+		bool onDemandFrame = strstr(name, "OnDemand") != nullptr || strstr(name, "on_demand") != nullptr
+			|| strstr(name, "readScopeStateOrSyntheticType") != nullptr || strstr(name, "read_scope_state_or_synthetic_type") != nullptr
+			|| strstr(name, "pt_engine_with_stack") != nullptr;
+		if (onDemandFrame) {
+			inOnDemand = true;
+			continue;
+		}
+		if (inOnDemand && strstr(name, "OnDemand") == nullptr) {
+			origin = name;
+			inOnDemand = false;
+			/* who asked the scope: the first frame past the scope's own type reads */
+			for (int j = i + 1; j < n; j++) {
+				Dl_info askerInfo;
+				const char *asker = dladdr(frames[j], &askerInfo) != 0 && askerInfo.dli_sname != nullptr ? askerInfo.dli_sname : "?";
+				if (strstr(asker, "MutatingScope") != nullptr || strstr(asker, "mutating_scope") != nullptr || strstr(asker, "pt_engine_with_stack") != nullptr
+					|| strstr(asker, "NodeCallbackScope") != nullptr || strstr(asker, "node_callback_scope") != nullptr || strstr(asker, "ScopeOps") != nullptr
+					|| strstr(asker, "abi_call_known_function") != nullptr || strstr(asker, "call_method") != nullptr || strstr(asker, "callMethod") != nullptr
+					|| strstr(asker, "pt_type_call") != nullptr || strstr(asker, "zend_call_function") != nullptr || strstr(asker, "ZEND_DO_") != nullptr
+					|| strstr(asker, "execute_ex") != nullptr || strstr(asker, "zend_execute") != nullptr) {
+					continue;
+				}
+				origin += std::string(" <- ") + asker;
+				break;
+			}
+		}
+	}
+	origin = (counts.line < 0 ? "synthetic " : "real ") + origin;
+	(*walkOrigins)[origin]++;
+}
+
+void traceWalk(const WalkCounts &counts)
+{
+	static const char *target = getenv("PT_WALK_TRACE");
+	if (target == nullptr) return;
+	std::string here = counts.file + ":" + std::to_string(counts.line);
+	if (here.size() < strlen(target) || here.compare(here.size() - strlen(target), strlen(target), target) != 0) return;
+	if (walkStacks == nullptr) walkStacks = new std::map<std::string, unsigned long>();
+	void *frames[48];
+	int n = backtrace(frames, 48);
+	std::string key;
+	for (int i = 2; i < n; i++) {
+		Dl_info info;
+		if (dladdr(frames[i], &info) != 0 && info.dli_sname != nullptr && strstr(info.dli_fname, "phpstan_turbo") == nullptr) {
+			key += std::string(" ") + info.dli_sname;
+		} else {
+			key += " " + caller(frames[i]);
+		}
+	}
+	(*walkStacks)[key]++;
 }
 
 } // namespace
@@ -322,7 +421,7 @@ void pt_census_walk_mode(int mode, int delta)
 	walkModeDepth[mode] += delta;
 }
 
-void pt_census_expr_walk(zend_object *expr)
+void pt_census_expr_walk(zend_object *expr, zend_object *scope)
 {
 	if (walkedNodes == nullptr) {
 		walkedNodes = new std::unordered_map<zend_object *, WalkCounts>();
@@ -333,15 +432,30 @@ void pt_census_expr_walk(zend_object *expr)
 	 * node of another class or position starts over */
 	zv::Val start = pt_engine_node_get_attribute(expr, "startFilePos", sizeof("startFilePos") - 1);
 	long startPos = !start.isUndef() && Z_TYPE_P(start.raw()) == IS_LONG ? (long) Z_LVAL_P(start.raw()) : -1;
+	/* a trait's nodes are shared by its users, each analysing them in its
+	 * own file: one record per node and analysed file */
+	std::string currentFile;
+	zv::Val file = pt_mutating_scope_get_file(scope);
+	if (!file.isUndef() && Z_TYPE_P(file.raw()) == IS_STRING) {
+		const char *path = Z_STRVAL_P(file.raw());
+		const char *src = strstr(path, "/src/");
+		currentFile = src != nullptr ? src + 1 : path;
+	}
 	WalkCounts &counts = (*walkedNodes)[expr];
-	if (counts.startPos != startPos || counts.className != ZSTR_VAL(expr->ce->name)) {
+	if (counts.startPos != startPos || counts.className != ZSTR_VAL(expr->ce->name) || counts.file != currentFile) {
 		if (!counts.className.empty()) finishedNodes->push_back(counts);
 		counts = WalkCounts();
 		counts.startPos = startPos;
 		counts.className = ZSTR_VAL(expr->ce->name);
+		counts.file = currentFile;
+		zv::Val line = pt_engine_node_get_attribute(expr, "startLine", sizeof("startLine") - 1);
+		counts.line = !line.isUndef() && Z_TYPE_P(line.raw()) == IS_LONG ? (long) Z_LVAL_P(line.raw()) : -1;
 	}
 	int mode = walkModeDepth[PT_CENSUS_MODE_ON_DEMAND] > 0 ? 1 : (walkModeDepth[PT_CENSUS_MODE_LOOP_PASS] > 0 ? 0 : 2);
 	counts.walks[mode]++;
+	traceWalk(counts);
+	static const bool origins = getenv("PT_WALK_ORIGINS") != nullptr;
+	if (origins && mode == 1) traceOrigin(counts);
 }
 
 const zend_object_handlers *pt_census_original_handlers(zend_object *obj)

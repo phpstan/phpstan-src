@@ -1983,7 +1983,7 @@ private:
 	zv::Val processExprNodeInternal(zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
 		zend_object *exprObject = Z_OBJ_P(expr);
-		PT_CENSUS_EXPR_WALK(exprObject);
+		PT_CENSUS_EXPR_WALK(exprObject, Z_OBJ_P(scope));
 		bool isCallLike;
 		if (UNEXPECTED(!isInstance(exprObject, PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
 		if (isCallLike) {

@@ -5061,7 +5061,8 @@ final class Compiler
 				$f->line(sprintf('ZVAL_COPY_VALUE(&%s[%d], %s);', $argv, $i, $value));
 			}
 		}
-		$this->emitDispatchFallback($f, count($receiverNames) === 1 ? new ReflectionClass($receiverNames[0]) : null, $name, $z, count($values), $argv, $t);
+		$receiverClass = count($receiverNames) === 1 && (class_exists($receiverNames[0]) || interface_exists($receiverNames[0])) ? new ReflectionClass($receiverNames[0]) : null;
+		$this->emitDispatchFallback($f, $receiverClass, $name, $z, count($values), $argv, $t);
 		$f->close();
 		if ($returnsVoid) {
 			return Value::void();
@@ -5322,18 +5323,12 @@ final class Compiler
 	}
 
 	/**
-	 * $reflection->member() of a reflection family the hand-written ports
-	 * dispatch by member constant (`zv::Val f(zval *, enum member)`: the
-	 * native body of the classes it knows, a cached method site otherwise).
-	 *
-	 * @param ReflectionClass<object> $class
-	 */
-	/**
 	 * The member-enum entry of a reflection family the receiver class belongs
 	 * to (pt_extended_method_reflection_call() and its siblings answer the
 	 * hand ports natively and take the engine for any other class) — the
 	 * function and the member constant, null when there is none.
 	 *
+	 * @param ReflectionClass<object> $class
 	 * @return array{string, string}|null
 	 */
 	private function memberDispatchEntry(ReflectionClass $class, string $name): ?array
@@ -5364,6 +5359,12 @@ final class Compiler
 	 * The engine call that ends a dispatch without arguments: the member-enum
 	 * entry when the receiver's family has one, pgrt::callMethod() otherwise.
 	 */
+	/**
+	 * The by-name call a dispatch falls back to, or the reflection family's
+	 * member-enum entry when the receiver class has one.
+	 *
+	 * @param ReflectionClass<object>|null $class
+	 */
 	private function emitDispatchFallback(FunctionContext $f, ?ReflectionClass $class, string $name, string $z, int $argc, string $argv, string $t): void
 	{
 		$entry = $argc === 0 && $class !== null ? $this->memberDispatchEntry($class, $name) : null;
@@ -5376,6 +5377,13 @@ final class Compiler
 		$f->failIf(sprintf('!pgrt::callMethod(%s, %s, "%s", "%s", %d, %d, %s, %s.raw())', $site, $z, $name, strtolower($name), strlen($name), $argc, $argv, $t));
 	}
 
+	/**
+	 * $reflection->member() of a reflection family the hand-written ports
+	 * dispatch by member constant (`zv::Val f(zval *, enum member)`: the
+	 * native body of the classes it knows, a cached method site otherwise).
+	 *
+	 * @param ReflectionClass<object> $class
+	 */
 	private function memberDispatchCall(FunctionContext $f, ReflectionClass $class, string $name, Value $receiver, Type $native, bool $returnsVoid): ?Value
 	{
 		$entry = $this->memberDispatchEntry($class, $name);

@@ -60,6 +60,7 @@ use function array_values;
 use function basename;
 use function class_exists;
 use function count;
+use function dirname;
 use function explode;
 use function file_get_contents;
 use function function_exists;
@@ -684,7 +685,11 @@ final class Compiler
 
 	private function relativeFile(ClassUnit $unit): string
 	{
-		return (string) preg_replace('~^.*/(src/)~', '$1', (string) $unit->reflection->getFileName());
+		// relative to the repository, the same in every checkout
+		$root = dirname(__DIR__, 4) . '/';
+		$file = (string) $unit->reflection->getFileName();
+
+		return str_starts_with($file, $root) ? substr($file, strlen($root)) : $file;
 	}
 
 	private function renderRegistration(ClassUnit $unit): string

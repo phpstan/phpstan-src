@@ -17,6 +17,7 @@
 
 #define PT_ALLOC_COUNT_IMPL
 #include "support.h"
+#include "Engine.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -260,7 +261,88 @@ void track(zend_object *obj)
 	obj->handlers = clone;
 }
 
+int walkModeDepth[2];
+
+struct WalkCounts
+{
+	std::string className;
+	long startPos = -1;
+	unsigned long walks[3] = {0, 0, 0};
+};
+
+std::unordered_map<zend_object *, WalkCounts> *walkedNodes;
+// the counts of nodes whose address a later node took over
+std::vector<WalkCounts> *finishedNodes;
+
+void dumpWalks()
+{
+	unsigned long total[3] = {0, 0, 0};
+	std::map<unsigned long, unsigned long> histogram;
+	std::vector<std::pair<unsigned long, const WalkCounts *>> rows;
+	for (auto &entry : *walkedNodes) finishedNodes->push_back(entry.second);
+	for (const WalkCounts &node : *finishedNodes) {
+		unsigned long sum = 0;
+		for (int i = 0; i < 3; i++) {
+			total[i] += node.walks[i];
+			sum += node.walks[i];
+		}
+		histogram[sum < 10 ? sum : (sum < 100 ? sum / 10 * 10 : 100)]++;
+		rows.emplace_back(sum, &node);
+	}
+	std::sort(rows.begin(), rows.end(), [](const auto &a, const auto &b) { return a.first > b.first; });
+	const char *path = getenv("PT_ALLOC_COUNT_OUT");
+	FILE *out = path != nullptr ? fopen(path, "a") : stderr;
+	fprintf(out, "W nodes %zu walks plain=%lu loopPass=%lu onDemand=%lu\n", finishedNodes->size(), total[2], total[0], total[1]);
+	for (auto &bucket : histogram) fprintf(out, "W walked %s%lu: %lu nodes\n", bucket.first >= 10 ? ">=" : "", bucket.first, bucket.second);
+	/* how the walks of a node split between plain walks, loop passes and
+	 * on-demand walks, by the walks beyond the first they add up to */
+	std::map<std::string, std::pair<unsigned long, unsigned long>> patterns;
+	for (const WalkCounts &node : *finishedNodes) {
+		char key[64];
+		snprintf(key, sizeof(key), "plain %lu pass %lu ondemand %lu", node.walks[2], node.walks[0], node.walks[1]);
+		auto &pattern = patterns[key];
+		pattern.first++;
+		pattern.second += node.walks[0] + node.walks[1] + node.walks[2] - 1;
+	}
+	std::vector<std::pair<unsigned long, std::string>> patternRows;
+	for (auto &pattern : patterns) patternRows.emplace_back(pattern.second.second, pattern.first + " nodes=" + std::to_string(pattern.second.first));
+	std::sort(patternRows.rbegin(), patternRows.rend());
+	for (size_t i = 0; i < patternRows.size() && i < 30; i++) fprintf(out, "W excess %lu %s\n", patternRows[i].first, patternRows[i].second.c_str());
+	for (size_t i = 0; i < rows.size() && i < 40; i++) {
+		const WalkCounts *counts = rows[i].second;
+		fprintf(out, "W top %lu (plain %lu pass %lu ondemand %lu) %s @%ld\n", rows[i].first, counts->walks[2], counts->walks[0], counts->walks[1], counts->className.c_str(), counts->startPos);
+	}
+	if (out != stderr) fclose(out);
+}
+
 } // namespace
+
+void pt_census_walk_mode(int mode, int delta)
+{
+	walkModeDepth[mode] += delta;
+}
+
+void pt_census_expr_walk(zend_object *expr)
+{
+	if (walkedNodes == nullptr) {
+		walkedNodes = new std::unordered_map<zend_object *, WalkCounts>();
+		finishedNodes = new std::vector<WalkCounts>();
+		atexit(dumpWalks);
+	}
+	/* node objects are freed with their file's AST: an address reused by a
+	 * node of another class or position starts over */
+	zv::Val start = pt_engine_node_get_attribute(expr, "startFilePos", sizeof("startFilePos") - 1);
+	long startPos = !start.isUndef() && Z_TYPE_P(start.raw()) == IS_LONG ? (long) Z_LVAL_P(start.raw()) : -1;
+	WalkCounts &counts = (*walkedNodes)[expr];
+	if (counts.startPos != startPos || counts.className != ZSTR_VAL(expr->ce->name)) {
+		if (!counts.className.empty()) finishedNodes->push_back(counts);
+		counts = WalkCounts();
+		counts.startPos = startPos;
+		counts.className = ZSTR_VAL(expr->ce->name);
+	}
+	int mode = walkModeDepth[PT_CENSUS_MODE_ON_DEMAND] > 0 ? 1 : (walkModeDepth[PT_CENSUS_MODE_LOOP_PASS] > 0 ? 0 : 2);
+	counts.walks[mode]++;
+}
 
 const zend_object_handlers *pt_census_original_handlers(zend_object *obj)
 {

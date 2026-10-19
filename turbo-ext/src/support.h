@@ -49,12 +49,32 @@ HashTable *pt_count_new_array(uint32_t size, const char *file, int line);
 HashTable *pt_count_array_dup(const HashTable *source, const char *file, int line);
 /* the handler table an object had before the escape census wrapped it */
 const zend_object_handlers *pt_census_original_handlers(zend_object *obj);
+/* walk census: every expression handed to its handler, by node and by the
+ * walk it happens in (PT_CENSUS_MODE_* entered for the guard's lifetime) */
+#define PT_CENSUS_MODE_LOOP_PASS 0
+#define PT_CENSUS_MODE_ON_DEMAND 1
+void pt_census_expr_walk(zend_object *expr);
+void pt_census_walk_mode(int mode, int delta);
+struct pt_census_mode_guard
+{
+	int mode;
+	explicit pt_census_mode_guard(int mode) : mode(mode) { pt_census_walk_mode(mode, 1); }
+	~pt_census_mode_guard() { pt_census_walk_mode(mode, -1); }
+	pt_census_mode_guard(const pt_census_mode_guard &) = delete;
+	pt_census_mode_guard &operator=(const pt_census_mode_guard &) = delete;
+};
+#define PT_CENSUS_MODE(mode) pt_census_mode_guard pt_census_mode_guard_instance(mode)
+#define PT_CENSUS_EXPR_WALK(expr) pt_census_expr_walk(expr)
 #ifndef PT_ALLOC_COUNT_IMPL
 #define object_init_ex(arg, ce) pt_count_object_init_ex((arg), (ce), __FILE__, __LINE__)
 #undef zend_new_array
 #define zend_new_array(size) pt_count_new_array((size), __FILE__, __LINE__)
 #define zend_array_dup(source) pt_count_array_dup((source), __FILE__, __LINE__)
 #endif
+#endif
+#ifndef PT_ALLOC_COUNT
+#define PT_CENSUS_MODE(mode) ((void) 0)
+#define PT_CENSUS_EXPR_WALK(expr) ((void) 0)
 #endif
 
 #include <initializer_list>

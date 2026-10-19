@@ -1,0 +1,4 @@
+parameters:
+	# composer.json "php": "<8.4" gives a version range without a lower bound
+	composerAutoloaderProjectPaths:
+		- %rootDir%/tests/PHPStan/Rules/Classes/data/bug-15425-composer

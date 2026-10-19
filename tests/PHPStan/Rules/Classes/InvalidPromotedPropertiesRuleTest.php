@@ -144,7 +144,12 @@ class InvalidPromotedPropertiesRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug15425(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-15425.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-15425.php'], [
+			[
+				'Promoted properties are supported only on PHP 8.0 and later.',
+				19,
+			],
+		]);
 	}
 
 }

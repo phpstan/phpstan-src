@@ -55,6 +55,13 @@ static void ZEND_FASTCALL runtimeActivateShadowing(INTERNAL_FUNCTION_PARAMETERS)
 	if (!zp::parse<zp::Ht, zp::Opt<zp::StrOrNull>>(execute_data, twinFiles, prefix)) RETURN_THROWS();
 
 	if (!pt_shadow_activate(twinFiles, prefix)) RETURN_THROWS();
+
+	/* bin/phpstan runs with gc_disable(), yet the engine still records
+	 * every decremented array and object as a possible cycle root in a
+	 * buffer that only grows (nothing collects it), and every free then
+	 * removes its entry from that buffer again. Protecting the buffer stops
+	 * the recording; no collection would ever have read it. */
+	if (!gc_enabled()) gc_protect(true);
 }
 
 /* PHPStanTurbo\Runtime::isShadowing() — whether activateShadowing() ran */

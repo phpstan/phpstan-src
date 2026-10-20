@@ -8,18 +8,15 @@ use function extension_loaded;
 use function function_exists;
 use function get_cfg_var;
 use function getenv;
-use function getmypid;
 use function in_array;
 use function ini_get;
 use function is_string;
 use function max;
 use function pcntl_exec;
 use function php_ini_loaded_file;
-use function register_shutdown_function;
 use function strtolower;
 use function strtoupper;
 use function trim;
-use function unlink;
 use function xdebug_info;
 use const PHP_BINARY;
 
@@ -65,9 +62,6 @@ final class TurboProcessRestarter
 
 	/** Set by the restart, and by ProcessHelper on spawned workers, so the process never restarts itself */
 	public const RESTARTED_INI = 'phpstan.restarted';
-
-	/** The ini that ProcessRestarter wrote for the exec, see removeTmpIniOnShutdown() */
-	public const RESTART_TMP_INI = 'phpstan.restartTmpIni';
 
 	/** Shared memory reserved (not touched) for the opcode cache, in MB — see resolveOpcacheArgs() for the sizing */
 	private const OPCACHE_MEMORY_CONSUMPTION_MB_LIMIT = 256;
@@ -198,31 +192,6 @@ final class TurboProcessRestarter
 
 		pcntl_exec(PHP_BINARY, $args);
 		// pcntl_exec() returns only on failure — continue as we are
-	}
-
-	/**
-	 * Removes the ini that ProcessRestarter wrote for the exec once the main
-	 * process ends. Nobody waits for the exec, so nobody else deletes it.
-	 * Spawned workers read it through PHPRC until then. Forked workers
-	 * inherit the shutdown function, so the pid check skips them.
-	 *
-	 * @api
-	 */
-	public static function removeTmpIniOnShutdown(): void
-	{
-		$tmpIni = get_cfg_var(self::RESTART_TMP_INI);
-		if (!is_string($tmpIni) || $tmpIni === '') {
-			return;
-		}
-
-		$pid = getmypid();
-		register_shutdown_function(static function () use ($tmpIni, $pid): void {
-			if (getmypid() !== $pid) {
-				return;
-			}
-
-			@unlink($tmpIni);
-		});
 	}
 
 	/**

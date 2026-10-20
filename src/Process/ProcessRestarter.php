@@ -4,22 +4,38 @@ namespace PHPStan\Process;
 
 use Composer\XdebugHandler\XdebugHandler;
 use Override;
-use PHPStan\Turbo\TurboProcessRestarter;
 use function array_merge;
 use function array_slice;
 use function count;
 use function extension_loaded;
+use function fclose;
 use function file_get_contents;
 use function file_put_contents;
 use function function_exists;
+use function getmypid;
 use function ini_get;
 use function pcntl_exec;
+use function pcntl_fork;
+use function pcntl_signal;
+use function posix_getppid;
 use function preg_replace;
+use function unlink;
+use function usleep;
 use const PHP_EOL;
+use const SIG_IGN;
+use const SIGHUP;
+use const SIGINT;
+use const SIGQUIT;
+use const SIGTERM;
+use const STDERR;
+use const STDIN;
+use const STDOUT;
 
 // see https://github.com/composer/xdebug-handler/issues/174
 final class ProcessRestarter extends XdebugHandler
 {
+
+	private const WATCHDOG_POLL_MICROSECONDS = 100_000;
 
 	/** @var array<string> */
 	private array $extensions = [];
@@ -38,6 +54,39 @@ final class ProcessRestarter extends XdebugHandler
 	{
 		$this->execIniArgs = $iniArgs;
 		return $this;
+	}
+
+	/**
+	 * Nobody waits for the exec, so a forked process takes the role of the
+	 * waiting parent of a proc_open() restart: it ignores Ctrl-C, outlives the
+	 * main process and then removes the ini. It ends by exec'ing rm, so PHP's
+	 * shutdown sequence (shutdown functions, destructors, Xdebug output) never
+	 * runs in it.
+	 */
+	private function startTmpIniWatchdog(): bool
+	{
+		$tmpIni = (string) $this->tmpIni;
+		$parentPid = getmypid();
+		$pid = pcntl_fork();
+		if ($pid === -1) {
+			return false;
+		}
+		if ($pid > 0) {
+			return true;
+		}
+
+		foreach ([SIGINT, SIGTERM, SIGHUP, SIGQUIT] as $signal) {
+			pcntl_signal($signal, SIG_IGN);
+		}
+		fclose(STDIN);
+		fclose(STDOUT);
+		fclose(STDERR);
+		while (posix_getppid() === $parentPid) {
+			usleep(self::WATCHDOG_POLL_MICROSECONDS);
+		}
+		pcntl_exec('/bin/rm', ['-f', $tmpIni]);
+		@unlink($tmpIni);
+		exit(0);
 	}
 
 	#[Override]
@@ -71,9 +120,9 @@ final class ProcessRestarter extends XdebugHandler
 			}
 		}
 
-		if ($this->execIniArgs !== null && function_exists('pcntl_exec')) {
+		if ($this->execIniArgs !== null && function_exists('pcntl_exec') && $this->startTmpIniWatchdog()) {
 			$args = [];
-			foreach (array_merge($this->execIniArgs, [TurboProcessRestarter::RESTART_TMP_INI . '=' . $this->tmpIni]) as $iniArg) {
+			foreach ($this->execIniArgs as $iniArg) {
 				$args[] = '-d';
 				$args[] = $iniArg;
 			}

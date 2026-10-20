@@ -352,6 +352,19 @@ void dumpWalks()
 	if (out != stderr) fclose(out);
 }
 
+/* dladdr()'s symbol name of a return address, cached: the lookup scans
+ * the symbol table */
+const char *symbolAt(void *address)
+{
+	static std::unordered_map<void *, const char *> *names = new std::unordered_map<void *, const char *>();
+	auto found = names->find(address);
+	if (found != names->end()) return found->second;
+	Dl_info info;
+	const char *name = dladdr(address, &info) != 0 && info.dli_sname != nullptr ? info.dli_sname : "";
+	(*names)[address] = name;
+	return name;
+}
+
 /* the caller of the outermost on-demand entry on the stack */
 void traceOrigin(const WalkCounts &counts)
 {
@@ -361,8 +374,7 @@ void traceOrigin(const WalkCounts &counts)
 	std::string origin = "?";
 	bool inOnDemand = false;
 	for (int i = 1; i < n; i++) {
-		Dl_info info;
-		const char *name = dladdr(frames[i], &info) != 0 && info.dli_sname != nullptr ? info.dli_sname : "";
+		const char *name = symbolAt(frames[i]);
 		bool onDemandFrame = strstr(name, "OnDemand") != nullptr || strstr(name, "on_demand") != nullptr
 			|| strstr(name, "readScopeStateOrSyntheticType") != nullptr || strstr(name, "read_scope_state_or_synthetic_type") != nullptr
 			|| strstr(name, "pt_engine_with_stack") != nullptr;
@@ -375,13 +387,14 @@ void traceOrigin(const WalkCounts &counts)
 			inOnDemand = false;
 			/* who asked the scope: the first frame past the scope's own type reads */
 			for (int j = i + 1; j < n; j++) {
-				Dl_info askerInfo;
-				const char *asker = dladdr(frames[j], &askerInfo) != 0 && askerInfo.dli_sname != nullptr ? askerInfo.dli_sname : "?";
+				const char *asker = symbolAt(frames[j]);
+				if (*asker == '\0') asker = "?";
 				if (strstr(asker, "MutatingScope") != nullptr || strstr(asker, "mutating_scope") != nullptr || strstr(asker, "pt_engine_with_stack") != nullptr
 					|| strstr(asker, "NodeCallbackScope") != nullptr || strstr(asker, "node_callback_scope") != nullptr || strstr(asker, "ScopeOps") != nullptr
 					|| strstr(asker, "abi_call_known_function") != nullptr || strstr(asker, "call_method") != nullptr || strstr(asker, "callMethod") != nullptr
 					|| strstr(asker, "pt_type_call") != nullptr || strstr(asker, "zend_call_function") != nullptr || strstr(asker, "ZEND_DO_") != nullptr
-					|| strstr(asker, "execute_ex") != nullptr || strstr(asker, "zend_execute") != nullptr) {
+					|| strstr(asker, "execute_ex") != nullptr || strstr(asker, "zend_execute") != nullptr
+					|| strstr(asker, "narrow_scope_with_condition") != nullptr || strstr(asker, "narrowScopeWithCondition") != nullptr) {
 					continue;
 				}
 				origin += std::string(" <- ") + asker;

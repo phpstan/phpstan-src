@@ -3,7 +3,8 @@
  *
  * When the extension is active, PHPStan\Type\TypeTraverser is this class,
  * declared under that name at activation (final, like the twin). map()
- * builds one instance per traversal; the callback receives the instance's
+ * uses one instance per traversal (a pooled one when available — see
+ * ttAcquire()); the callback receives the instance's
  * [$this, 'traverseInternal'] array as its $traverse and Type::traverse()
  * receives [$this, 'mapInternal'] — the same PHP callables the twin hands
  * out, so a callback inspecting them sees no difference.
@@ -83,6 +84,47 @@ public:
 	ActiveTraversalScope &operator=(const ActiveTraversalScope &) = delete;
 };
 
+/* Instances of finished traversals, handed to the next map() instead of a
+ * new one: an instance nothing outlived the traversal with (refcount 1 —
+ * the callables handed out were released) is reset to what the constructor
+ * leaves, so the next traversal cannot tell it from a fresh one; a
+ * self-analysis runs a million and a half traversals. */
+#define PT_TT_POOL_LIMIT 16
+
+static zend_object *pt_tt_pool[PT_TT_POOL_LIMIT];
+static uint32_t pt_tt_pool_count = 0;
+
+/* an instance with $cb and $memo null; NULL = pending exception */
+static zend_object *ttAcquire()
+{
+	while (pt_tt_pool_count > 0) {
+		zend_object *object = pt_tt_pool[--pt_tt_pool_count];
+		if (EXPECTED(object->ce == pt_ce_type_traverser)) return object;
+		OBJ_RELEASE(object);
+	}
+	zval object;
+	if (UNEXPECTED(object_init_ex(&object, pt_ce_type_traverser) != SUCCESS)) return NULL;
+	return Z_OBJ(object);
+}
+
+/* releases the map()'s own reference — into the pool when it is the last */
+static void ttRelease(zend_object *object)
+{
+	if (GC_REFCOUNT(object) != 1 || pt_tt_pool_count >= PT_TT_POOL_LIMIT || object->properties != NULL || (GC_FLAGS(object) & IS_OBJ_WEAKLY_REFERENCED) != 0) {
+		OBJ_RELEASE(object);
+		return;
+	}
+	/* pooled before the old values go: a destructor they run may map() */
+	zval cb, memo;
+	ZVAL_COPY_VALUE(&cb, OBJ_PROP_NUM(object, slots::cb));
+	ZVAL_COPY_VALUE(&memo, OBJ_PROP_NUM(object, slots::memo));
+	ZVAL_NULL(OBJ_PROP_NUM(object, slots::cb));
+	ZVAL_NULL(OBJ_PROP_NUM(object, slots::memo));
+	pt_tt_pool[pt_tt_pool_count++] = object;
+	zval_ptr_dtor(&cb);
+	zval_ptr_dtor(&memo);
+}
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Type\TypeTraverser. State lives in the PHP object's $cb. */
@@ -96,28 +138,36 @@ public:
 	 * UNDEF = pending exception */
 	static zv::Val map(zval *type, zval *cb)
 	{
-		zval object;
-		if (UNEXPECTED(object_init_ex(&object, pt_ce_type_traverser) != SUCCESS)) return zv::Val();
-		zv::Val holder = zv::Val::adopt(object);
-		TypeTraverser traverser(Z_OBJ(object));
+		zend_object *object = ttAcquire();
+		if (UNEXPECTED(object == NULL)) return zv::Val();
+		TypeTraverser traverser(object);
 		traverser.construct(cb);
-		ActiveTraversalScope active(Z_OBJ(object));
-		return traverser.mapInternal(type);
+		zv::Val result;
+		{
+			ActiveTraversalScope active(object);
+			result = traverser.mapInternal(type);
+		}
+		ttRelease(object);
+		return result;
 	}
 
 	/* mapMemoized(): map() with `$self->memo = [];` */
 	static zv::Val mapMemoized(zval *type, zval *cb)
 	{
-		zval object;
-		if (UNEXPECTED(object_init_ex(&object, pt_ce_type_traverser) != SUCCESS)) return zv::Val();
-		zv::Val holder = zv::Val::adopt(object);
-		TypeTraverser traverser(Z_OBJ(object));
+		zend_object *object = ttAcquire();
+		if (UNEXPECTED(object == NULL)) return zv::Val();
+		TypeTraverser traverser(object);
 		traverser.construct(cb);
-		zval *memo = OBJ_PROP_NUM(Z_OBJ(object), slots::memo);
+		zval *memo = OBJ_PROP_NUM(object, slots::memo);
 		zval_ptr_dtor(memo);
 		ZVAL_EMPTY_ARRAY(memo);
-		ActiveTraversalScope active(Z_OBJ(object));
-		return traverser.mapInternal(type);
+		zv::Val result;
+		{
+			ActiveTraversalScope active(object);
+			result = traverser.mapInternal(type);
+		}
+		ttRelease(object);
+		return result;
 	}
 
 	/* __construct(): the callback as given. A TypeTraverserCallable is kept
@@ -237,6 +287,9 @@ void pt_type_traverser_rshutdown()
 		ZVAL_UNDEF(&pt_tt_active[i].traverseCallable);
 	}
 	pt_tt_active_depth = 0;
+	while (pt_tt_pool_count > 0) {
+		OBJ_RELEASE(pt_tt_pool[--pt_tt_pool_count]);
+	}
 }
 
 bool pt_type_traverser_map(zval *out, zval *type, zval *cb)

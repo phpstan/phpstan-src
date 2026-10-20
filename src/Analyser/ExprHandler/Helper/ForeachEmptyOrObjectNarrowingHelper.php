@@ -18,6 +18,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -28,6 +29,7 @@ use PHPStan\Type\Type;
  * to what an unentered loop leaves: `$iteratee === [] || is_object($iteratee)`.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/ForeachEmptyOrObjectNarrowingHelper.cpp')]
 final class ForeachEmptyOrObjectNarrowingHelper
 {
 

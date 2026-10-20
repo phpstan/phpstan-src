@@ -604,39 +604,40 @@ final class ForeachHandler implements StmtHandler
 			}
 		}
 
-		$constantArrays = $iterateeType->getConstantArrays();
 		if (
 			$stmt->getDocComment() === null
 			&& $iterateeType->isConstantArray()->yes()
-			&& count($constantArrays) === 1
 			&& $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
 			&& $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
 		) {
-			$valueConditionalHolders = [];
-			$arrayDimFetchConditionalHolders = [];
-			foreach ($constantArrays[0]->getKeyTypes() as $i => $keyType) {
-				$valueType = $constantArrays[0]->getValueTypes()[$i];
-				$keyExpressionTypeHolder = ExpressionTypeHolder::createYes(new Variable($stmt->keyVar->name), $keyType);
+			$constantArrays = $iterateeType->getConstantArrays();
+			if (count($constantArrays) === 1) {
+				$valueConditionalHolders = [];
+				$arrayDimFetchConditionalHolders = [];
+				foreach ($constantArrays[0]->getKeyTypes() as $i => $keyType) {
+					$valueType = $constantArrays[0]->getValueTypes()[$i];
+					$keyExpressionTypeHolder = ExpressionTypeHolder::createYes(new Variable($stmt->keyVar->name), $keyType);
 
-				$holder = new ConditionalExpressionHolder([
-					'$' . $stmt->keyVar->name => $keyExpressionTypeHolder,
-				], ExpressionTypeHolder::createYes($stmt->valueVar, $valueType));
-				$valueConditionalHolders[$holder->getKey()] = $holder;
-				$arrayDimFetchHolder = new ConditionalExpressionHolder([
-					'$' . $stmt->keyVar->name => $keyExpressionTypeHolder,
-				], ExpressionTypeHolder::createYes(new ArrayDimFetch($stmt->expr, $stmt->keyVar), $valueType));
-				$arrayDimFetchConditionalHolders[$arrayDimFetchHolder->getKey()] = $arrayDimFetchHolder;
-			}
+					$holder = new ConditionalExpressionHolder([
+						'$' . $stmt->keyVar->name => $keyExpressionTypeHolder,
+					], ExpressionTypeHolder::createYes($stmt->valueVar, $valueType));
+					$valueConditionalHolders[$holder->getKey()] = $holder;
+					$arrayDimFetchHolder = new ConditionalExpressionHolder([
+						'$' . $stmt->keyVar->name => $keyExpressionTypeHolder,
+					], ExpressionTypeHolder::createYes(new ArrayDimFetch($stmt->expr, $stmt->keyVar), $valueType));
+					$arrayDimFetchConditionalHolders[$arrayDimFetchHolder->getKey()] = $arrayDimFetchHolder;
+				}
 
-			$scope = $scope->addConditionalExpressions(
-				'$' . $stmt->valueVar->name,
-				$valueConditionalHolders,
-			);
-			if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
 				$scope = $scope->addConditionalExpressions(
-					sprintf('$%s[$%s]', $stmt->expr->name, $stmt->keyVar->name),
-					$arrayDimFetchConditionalHolders,
+					'$' . $stmt->valueVar->name,
+					$valueConditionalHolders,
 				);
+				if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
+					$scope = $scope->addConditionalExpressions(
+						sprintf('$%s[$%s]', $stmt->expr->name, $stmt->keyVar->name),
+						$arrayDimFetchConditionalHolders,
+					);
+				}
 			}
 		}
 

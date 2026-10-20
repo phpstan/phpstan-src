@@ -1295,16 +1295,18 @@ private:
 			}
 		}
 
-		zv::Val constantArrays = typeOp(iterateeType, PT_OP_GET_CONSTANT_ARRAYS, "getConstantArrays");
-		if (UNEXPECTED(constantArrays.isUndef())) return zv::Val();
 		bool noDocComment;
 		if (UNEXPECTED(!hasNoDocComment(stmt, noDocComment))) return zv::Val();
-		if (noDocComment) {
+		if (noDocComment && parts.valueVarName != NULL && parts.keyVarName != NULL) {
 			zend_long isConstantArray = pt_type_op_trinary(Z_OBJ_P(iterateeType), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 			if (UNEXPECTED(isConstantArray < 0)) return zv::Val();
-			if (isConstantArray == PT_TRI_YES && ptlh::countOf(constantArrays.raw()) == 1 && parts.valueVarName != NULL && parts.keyVarName != NULL) {
-				scope = addConstantArrayConditionalHolders(scope.raw(), parts, listAt(constantArrays.raw(), 0));
-				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			if (isConstantArray == PT_TRI_YES) {
+				zv::Val constantArrays = typeOp(iterateeType, PT_OP_GET_CONSTANT_ARRAYS, "getConstantArrays");
+				if (UNEXPECTED(constantArrays.isUndef())) return zv::Val();
+				if (ptlh::countOf(constantArrays.raw()) == 1) {
+					scope = addConstantArrayConditionalHolders(scope.raw(), parts, listAt(constantArrays.raw(), 0));
+					if (UNEXPECTED(scope.isUndef())) return zv::Val();
+				}
 			}
 		}
 

@@ -1410,10 +1410,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	public function obtainResultForNode(Expr $node): ExpressionResult
 	{
-		// see resolveTypeOfNewWorldHandlerNode() - rules ask the dispatcher
-		// with their NodeCallbackScope (e.g. ImpossibleCheckTypeHelper), the engine
-		// side of the boundary works with the mutating flavor
-		$scope = $this->toWalkScope();
 		$storage = $this->expressionResultStorageStack->getCurrent();
 		if ($storage !== null) {
 			$result = $storage->findExpressionResult($node);
@@ -1433,6 +1429,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				$node->getStartLine(),
 			));
 		}
+
+		// see resolveTypeOfNewWorldHandlerNode() - rules ask the dispatcher
+		// with their NodeCallbackScope (e.g. ImpossibleCheckTypeHelper), the engine
+		// side of the boundary works with the mutating flavor
+		$scope = $this->toWalkScope();
 
 		// a synthetic node, or no analysis in progress
 		return $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(

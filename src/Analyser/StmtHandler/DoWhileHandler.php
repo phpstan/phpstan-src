@@ -65,12 +65,12 @@ final class DoWhileHandler implements StmtHandler
 		$replayPassStorage = null;
 		$replayPassResult = null;
 		$prevEntryScope = null;
+		$previousPass = null;
+		$previousPassStorage = null;
 		if ($context->isTopLevel()) {
 			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			// each pass after the first re-walks only the statements whose
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
-			$previousPass = null;
-			$previousPassStorage = null;
 			do {
 				$prevScope = $bodyScope;
 				$bodyScope = $bodyScope->mergeWith($scope);
@@ -87,7 +87,7 @@ final class DoWhileHandler implements StmtHandler
 					// the statements this pass replays answer from the results the previous pass stored
 					$storage->mergeResults($previousPassStorage);
 				}
-				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+				$bodyRecording = new RecordingNodeCallback();
 				$scope->pushExpressionResultStorage($storage);
 				try {
 					$passRecord = null;
@@ -101,7 +101,7 @@ final class DoWhileHandler implements StmtHandler
 					}
 					// the candidate to replace the final body walk when this pass's
 					// entry turns out to be the fixpoint
-					if ($bodyRecording instanceof RecordingNodeCallback) {
+					if ($bodyIsReplayable) {
 						$replayBodyRecording = $bodyRecording;
 						$replayPassStorage = $storage;
 						$replayPassResult = $bodyScopeResult;
@@ -143,6 +143,11 @@ final class DoWhileHandler implements StmtHandler
 			$originalStorage->mergeResults($replayPassStorage);
 			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $scope);
 			$bodyScopeResult = $replayPassResult;
+		} elseif ($previousPass !== null && $previousPass[1] !== null) {
+			// the last pass stands in for the statements whose state it walked
+			// with - they replay through the real callback
+			$originalStorage->mergeResults($previousPassStorage);
+			$bodyScopeResult = $nodeScopeResolver->processLoopFinalStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context, $previousPass)->filterOutLoopExitPoints();
 		} else {
 			$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
 		}

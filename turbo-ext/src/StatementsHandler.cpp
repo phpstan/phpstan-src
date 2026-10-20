@@ -663,6 +663,21 @@ public:
 	zv::Val processLoopPassStmtNodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
 	{
 		bool isRecording = Z_TYPE_P(nodeCallback) == IS_OBJECT && instanceof_function(Z_OBJCE_P(nodeCallback), pt_ce_recording_node_callback);
+		return walkAgainstPreviousPass(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, previous, isRecording ? nodeCallback : NULL, false, &record);
+	}
+
+	/* Mirrors processLoopFinalStmtNodes(). UNDEF = pending exception */
+	zv::Val processLoopFinalStmtNodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass)
+	{
+		return walkAgainstPreviousPass(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, lastPass, nodeCallback, true, NULL);
+	}
+
+	/* Mirrors the private walkAgainstPreviousPass(): replayTarget NULL for
+	 * none; record (a pass's [entries, recording]) is left alone by a final
+	 * walk. UNDEF = pending exception */
+	zv::Val walkAgainstPreviousPass(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zval *replayTarget, bool finalWalk, zv::Val *record)
+	{
+		bool isRecording = !finalWalk && Z_TYPE_P(nodeCallback) == IS_OBJECT && instanceof_function(Z_OBJCE_P(nodeCallback), pt_ce_recording_node_callback);
 		zval *recording = isRecording ? nodeCallback : NULL;
 		bool hasPrevious = previous != NULL && Z_TYPE_P(previous) == IS_ARRAY;
 		zval *previousEntries = hasPrevious ? zend_hash_index_find(Z_ARRVAL_P(previous), 0) : NULL;
@@ -670,7 +685,7 @@ public:
 		if (previousRecording != NULL && Z_TYPE_P(previousRecording) == IS_NULL) previousRecording = NULL;
 		// a replayed statement's emissions come from the previous recording;
 		// labels make the statement order no straight line
-		bool canReplay = hasPrevious && previousEntries != NULL && (recording == NULL || previousRecording != NULL);
+		bool canReplay = hasPrevious && previousEntries != NULL && (replayTarget == NULL || previousRecording != NULL);
 		zv::Val stmtsHeld = zv::Val::copyOf(zv::Ref(stmts));
 		if (canReplay) {
 			bool hasLabels;
@@ -679,21 +694,48 @@ public:
 		}
 		HashTable *stmtsTable = Z_ARRVAL_P(stmtsHeld.raw());
 		zend_long stmtCount = zend_hash_num_elements(stmtsTable);
+		// the last statement a final walk walks whatever the state
+		zend_long lastWalked = -1;
+		if (canReplay && finalWalk) {
+			for (zend_long i = stmtCount - 1; i >= 0; i--) {
+				zval *stmt = zend_hash_index_find(stmtsTable, (zend_ulong) i);
+				if (UNEXPECTED(stmt == NULL)) {
+					zend_throw_error(NULL, "phpstan_turbo: the loop body's statements are not a list");
+					return zv::Val();
+				}
+				ZVAL_DEREF(stmt);
+				bool sensitive;
+				if (UNEXPECTED(!pt_node_scope_resolver_is_context_sensitive_statement(nodeScopeResolver, stmt, sensitive))) return zv::Val();
+				if (sensitive) {
+					lastWalked = i;
+					break;
+				}
+			}
+		}
 		zv::Val state = pt_statement_list_walk_state_new(scope);
 		if (UNEXPECTED(state.isUndef())) return zv::Val();
-		zv::Arr entries = zv::Arr::create((uint32_t) stmtCount + 1);
+		zv::Arr entries = zv::Arr::create(finalWalk ? 0 : (uint32_t) stmtCount + 1);
 		for (zend_long i = 0; i < stmtCount; i++) {
-			zv::Val entry = snapshotPassEntry(state.raw(), recording);
-			if (UNEXPECTED(entry.isUndef())) return zv::Val();
-			zend_long entryCount = zval_get_long(entryOffset(entry.raw()));
-			entries.push(std::move(entry));
+			zend_long entryCount = 0;
+			if (!finalWalk) {
+				zv::Val entry = snapshotPassEntry(state.raw(), recording);
+				if (UNEXPECTED(entry.isUndef())) return zv::Val();
+				entryCount = zval_get_long(entryOffset(entry.raw()));
+				entries.push(std::move(entry));
+			}
 			zval *stmt = zend_hash_index_find(stmtsTable, (zend_ulong) i);
 			if (UNEXPECTED(stmt == NULL)) {
 				zend_throw_error(NULL, "phpstan_turbo: the loop body's statements are not a list");
 				return zv::Val();
 			}
 			ZVAL_DEREF(stmt);
-			if (canReplay) {
+			bool mayReplay = canReplay;
+			if (mayReplay && i <= lastWalked) {
+				bool sensitive;
+				if (UNEXPECTED(!pt_node_scope_resolver_is_context_sensitive_statement(nodeScopeResolver, stmt, sensitive))) return zv::Val();
+				mayReplay = !sensitive;
+			}
+			if (mayReplay) {
 				zval *recordedEntryPair = entryAt(previousEntries, i);
 				zval *recordedExitPair = recordedEntryPair != NULL ? entryAt(previousEntries, i + 1) : NULL;
 				if (UNEXPECTED(recordedExitPair == NULL)) return zv::Val();
@@ -710,15 +752,16 @@ public:
 					differingRoots = pt_mutating_scope_get_differing_variable_roots(Z_OBJ_P(OBJ_PROP_NUM(stateObject, stateSlots::scope)), Z_OBJ_P(OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope)));
 					if (UNEXPECTED(differingRoots.isUndef())) return zv::Val();
 				}
-				if (differingRoots.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(differingRoots.raw())) == 0) {
+				if (i > lastWalked && differingRoots.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(differingRoots.raw())) == 0) {
 					// converged with the previous pass: the rest of it stands
 					zval *recordedEndPair = entryAt(previousEntries, stmtCount);
 					if (UNEXPECTED(recordedEndPair == NULL)) return zv::Val();
 					zval *recordedEnd = entryState(recordedEndPair);
 					zend_long endOffset = zval_get_long(entryOffset(recordedEndPair));
-					if (recording != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, endOffset, recording, storage, scope))) return zv::Val();
+					if (replayTarget != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, endOffset, replayTarget, storage, scope))) return zv::Val();
 					if (UNEXPECTED(!appendRecordedStatementResults(state.raw(), recordedEntry, recordedEnd))) return zv::Val();
 					zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(recordedEnd), stateSlots::scope))));
+					if (finalWalk) return pt_statement_list_walk_state_to_result(state.raw());
 					// $entries[$j] = [$previous[0][$j][0], $base + $previous[0][$j][1] - $offset] for $j >= $i
 					zv::Arr adopted = zv::Arr::create((uint32_t) stmtCount + 1);
 					zend_long j = 0;
@@ -734,7 +777,7 @@ public:
 						shifted.push(zv::Val::integer(entryCount + zval_get_long(entryOffset(pair)) - offset));
 						adopted.push(zv::Val(std::move(shifted)));
 					}
-					record = passRecord(zv::Val(std::move(adopted)), recording);
+					*record = passRecord(zv::Val(std::move(adopted)), recording);
 					return pt_statement_list_walk_state_to_result(state.raw());
 				}
 				bool reWalk = differingRoots.isNull();
@@ -744,7 +787,7 @@ public:
 					if (UNEXPECTED(!statementMentionsAnyVariable(stmt, mentioned.raw(), reWalk))) return zv::Val();
 				}
 				if (!reWalk) {
-					if (recording != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, nextOffset, recording, storage, scope))) return zv::Val();
+					if (replayTarget != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, nextOffset, replayTarget, storage, scope))) return zv::Val();
 					zend_long exitPointCount = zend_hash_num_elements(Z_ARRVAL_P(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints)));
 					zend_long throwPointCount = zend_hash_num_elements(Z_ARRVAL_P(OBJ_PROP_NUM(stateObject, stateSlots::throwPoints)));
 					if (UNEXPECTED(!appendRecordedStatementResults(state.raw(), recordedEntry, recordedExit))) return zv::Val();
@@ -759,10 +802,12 @@ public:
 			}
 			if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state.raw(), storage, nodeCallback, context, false))) return zv::Val();
 		}
-		zv::Val last = snapshotPassEntry(state.raw(), recording);
-		if (UNEXPECTED(last.isUndef())) return zv::Val();
-		entries.push(std::move(last));
-		record = passRecord(zv::Val(std::move(entries)), recording);
+		if (!finalWalk) {
+			zv::Val last = snapshotPassEntry(state.raw(), recording);
+			if (UNEXPECTED(last.isUndef())) return zv::Val();
+			entries.push(std::move(last));
+			*record = passRecord(zv::Val(std::move(entries)), recording);
+		}
 		return pt_statement_list_walk_state_to_result(state.raw());
 	}
 
@@ -3447,6 +3492,13 @@ zv::Val pt_statements_handler_do_process_stmt_nodes(zval *handler, zval *nodeSco
 	return pt_type_call(Z_OBJ_P(handler), PT_LC("doprocessstmtnodes"), 7, argv);
 }
 
+zv::Val pt_statements_handler_process_loop_final_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass)
+{
+	if (isNativeHandler(handler)) return StatementsHandler(Z_OBJ_P(handler)).processLoopFinalStmtNodes(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, lastPass);
+	zv::Args argv{nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, lastPass};
+	return pt_type_call(Z_OBJ_P(handler), PT_LC("processloopfinalstmtnodes"), 8, argv);
+}
+
 zv::Val pt_statements_handler_process_loop_pass_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
 {
 	if (isNativeHandler(handler)) return StatementsHandler(Z_OBJ_P(handler)).processLoopPassStmtNodes(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
@@ -3567,6 +3619,21 @@ PT_MINIT_REGISTRATION(pt_register_statements_handler)
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		ZEND_TRY_ASSIGN_REF_COPY(recordRef, record.raw());
 		PT_RETURN_VAL(std::move(result));
+	});
+
+	cls.method(sigs::processLoopFinalStmtNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *nodeScopeResolver, *parentNode, *stmts, *scope, *storage, *nodeCallback, *context, *lastPass;
+		ZEND_PARSE_PARAMETERS_START(8, 8)
+			Z_PARAM_OBJECT(nodeScopeResolver)
+			Z_PARAM_OBJECT(parentNode)
+			Z_PARAM_ARRAY(stmts)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(storage)
+			Z_PARAM_ZVAL(nodeCallback)
+			Z_PARAM_OBJECT(context)
+			Z_PARAM_ARRAY(lastPass)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(StatementsHandler(Z_OBJ_P(ZEND_THIS)).processLoopFinalStmtNodes(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, lastPass));
 	});
 
 	cls.method(sigs::getVariableMentionFlow, [](INTERNAL_FUNCTION_PARAMETERS) {

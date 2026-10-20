@@ -188,6 +188,8 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		$originalStorage = $storage;
+		$previousPass = null;
+		$previousPassStorage = null;
 		$replayBodyRecording = null;
 		$replayPassStorage = null;
 		$replayPassResult = null;
@@ -228,8 +230,6 @@ final class ForeachHandler implements StmtHandler
 				$prevEntryScope = null;
 				// each pass after the first re-walks only the statements whose
 				// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
-				$previousPass = null;
-				$previousPassStorage = null;
 				$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 				do {
 					$prevScope = $bodyScope;
@@ -246,7 +246,7 @@ final class ForeachHandler implements StmtHandler
 						// the statements this pass replays answer from the results the previous pass stored
 						$storage->mergeResults($previousPassStorage);
 					}
-					$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+					$bodyRecording = new RecordingNodeCallback();
 					$scope->pushExpressionResultStorage($storage);
 					try {
 						$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
@@ -265,7 +265,7 @@ final class ForeachHandler implements StmtHandler
 					}
 					// the candidate to replace the final walk when this pass's
 					// entry turns out to be the fixpoint
-					if ($bodyRecording instanceof RecordingNodeCallback) {
+					if ($bodyIsReplayable) {
 						$replayBodyRecording = $bodyRecording;
 						$replayPassStorage = $storage;
 						$replayPassResult = $bodyScopeResult;
@@ -298,6 +298,11 @@ final class ForeachHandler implements StmtHandler
 			$originalStorage->mergeResults($replayPassStorage);
 			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $scope);
 			$finalScopeResult = $replayPassResult;
+		} elseif ($previousPass !== null && $previousPass[1] !== null) {
+			// the last pass stands in for the statements whose state it walked
+			// with - they replay through the real callback
+			$originalStorage->mergeResults($previousPassStorage);
+			$finalScopeResult = $nodeScopeResolver->processLoopFinalStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context, $previousPass)->filterOutLoopExitPoints();
 		} else {
 			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
 			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext)->filterOutLoopExitPoints();

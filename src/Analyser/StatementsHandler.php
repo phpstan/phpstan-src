@@ -428,42 +428,115 @@ final class StatementsHandler
 	): InternalStatementResult
 	{
 		$recording = $nodeCallback instanceof RecordingNodeCallback ? $nodeCallback : null;
+		[$result, $entries] = $this->walkAgainstPreviousPass($nodeScopeResolver, $parentNode, $stmts, $scope, $storage, $nodeCallback, $context, $previous, $recording, false);
+		$record = [$entries, $recording];
+
+		return $result;
+	}
+
+	/**
+	 * The final walk of a loop body that the last convergence pass could not
+	 * stand in for as a whole: like a later pass against $lastPass, with the
+	 * replayed emissions going to the real callback, and every statement
+	 * holding a construct that walks differently outside a pass (a nested
+	 * loop runs its own convergence only here) walked.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param array{array<int, array{StatementListWalkState, int}>, RecordingNodeCallback} $lastPass
+	 */
+	public function processLoopFinalStmtNodes(
+		NodeScopeResolver $nodeScopeResolver,
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+		array $lastPass,
+	): InternalStatementResult
+	{
+		return $this->walkAgainstPreviousPass($nodeScopeResolver, $parentNode, $stmts, $scope, $storage, $nodeCallback, $context, $lastPass, $nodeCallback, true)[0];
+	}
+
+	/**
+	 * Against the previous pass's per-statement entries, a statement is
+	 * re-walked only when its entry state differs in a key spelling no
+	 * variable, or it mentions a variable whose state differs; otherwise its
+	 * recorded emissions are replayed into $replayTarget (none without one)
+	 * and its recorded effect is carried onto the current scope. Once the
+	 * entry state equals the previous pass's, the rest of the previous pass
+	 * stands. A final walk records no entries.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param array{array<int, array{StatementListWalkState, int}>, ?RecordingNodeCallback}|null $previous
+	 * @param (callable(Node $node, Scope $scope): void)|null $replayTarget
+	 * @return array{InternalStatementResult, array<int, array{StatementListWalkState, int}>}
+	 */
+	private function walkAgainstPreviousPass(
+		NodeScopeResolver $nodeScopeResolver,
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+		?array $previous,
+		?callable $replayTarget,
+		bool $finalWalk,
+	): array
+	{
+		$recording = !$finalWalk && $nodeCallback instanceof RecordingNodeCallback ? $nodeCallback : null;
 		$previousRecording = $previous !== null ? $previous[1] : null;
 		// a replayed statement's emissions come from the previous recording;
 		// labels make the statement order no straight line
 		$canReplay = $previous !== null
-			&& ($recording === null || $previousRecording !== null)
+			&& ($replayTarget === null || $previousRecording !== null)
 			&& !$this->containsLabels($stmts);
 		$stmtCount = count($stmts);
+		// the last statement a final walk walks whatever the state
+		$lastWalked = -1;
+		if ($canReplay && $finalWalk) {
+			for ($i = $stmtCount - 1; $i >= 0; $i--) {
+				if ($nodeScopeResolver->isContextSensitiveStatement($stmts[$i])) {
+					$lastWalked = $i;
+					break;
+				}
+			}
+		}
 		$state = new StatementListWalkState($scope);
 		$entries = [];
 		for ($i = 0; $i < $stmtCount; $i++) {
-			$entries[$i] = [clone $state, $recording !== null ? $recording->count() : 0];
-			if ($canReplay) {
+			if (!$finalWalk) {
+				$entries[$i] = [clone $state, $recording !== null ? $recording->count() : 0];
+			}
+			if ($canReplay && ($i > $lastWalked || !$nodeScopeResolver->isContextSensitiveStatement($stmts[$i]))) {
 				[$recordedEntry, $offset] = $previous[0][$i];
 				[$recordedExit, $nextOffset] = $previous[0][$i + 1];
 				$differingRoots = $state->alreadyTerminated === $recordedEntry->alreadyTerminated
 					? $state->scope->getDifferingVariableRoots($recordedEntry->scope)
 					: null;
-				if ($differingRoots === []) {
+				if ($differingRoots === [] && $i > $lastWalked) {
 					// converged with the previous pass: the rest of it stands
 					[$recordedEnd, $endOffset] = $previous[0][$stmtCount];
-					if ($recording !== null && $previousRecording !== null) {
-						$nodeScopeResolver->replayRecordingRange($previousRecording, $offset, $endOffset, $recording, $storage, $scope);
+					if ($replayTarget !== null && $previousRecording !== null) {
+						$nodeScopeResolver->replayRecordingRange($previousRecording, $offset, $endOffset, $replayTarget, $storage, $scope);
 					}
 					$this->appendRecordedStatementResults($state, $recordedEntry, $recordedEnd);
 					$state->scope = $recordedEnd->scope;
-					$base = $entries[$i][1];
-					for ($j = $i; $j <= $stmtCount; $j++) {
-						$entries[$j] = [$previous[0][$j][0], $base + $previous[0][$j][1] - $offset];
+					if (!$finalWalk) {
+						$base = $entries[$i][1];
+						for ($j = $i; $j <= $stmtCount; $j++) {
+							$entries[$j] = [$previous[0][$j][0], $base + $previous[0][$j][1] - $offset];
+						}
 					}
-					$record = [$entries, $recording];
 
-					return $state->toResult();
+					return [$state->toResult(), $entries];
 				}
 				if ($differingRoots !== null && !$this->statementMentionsAnyVariable($stmts[$i], $this->withByRefClosureHolders($state->scope, $differingRoots))) {
-					if ($recording !== null && $previousRecording !== null) {
-						$nodeScopeResolver->replayRecordingRange($previousRecording, $offset, $nextOffset, $recording, $storage, $scope);
+					if ($replayTarget !== null && $previousRecording !== null) {
+						$nodeScopeResolver->replayRecordingRange($previousRecording, $offset, $nextOffset, $replayTarget, $storage, $scope);
 					}
 					$exitPointCount = count($state->exitPoints);
 					$throwPointCount = count($state->throwPoints);
@@ -475,10 +548,11 @@ final class StatementsHandler
 			}
 			$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmts[$i], $state, $storage, $nodeCallback, $context, false);
 		}
-		$entries[$stmtCount] = [clone $state, $recording !== null ? $recording->count() : 0];
-		$record = [$entries, $recording];
+		if (!$finalWalk) {
+			$entries[$stmtCount] = [clone $state, $recording !== null ? $recording->count() : 0];
+		}
 
-		return $state->toResult();
+		return [$state->toResult(), $entries];
 	}
 
 	/**

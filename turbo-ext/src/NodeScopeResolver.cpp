@@ -645,6 +645,29 @@ public:
 		return result;
 	}
 
+	/* Mirrors processLoopFinalStmtNodes(). */
+	zv::Val processLoopFinalStmtNodes(zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass)
+	{
+		zv::Val result;
+		pt_engine_with_stack([&]() {
+			zv::Val current = pt_mutating_scope_get_current_expression_result_storage(Z_OBJ_P(scope));
+			if (UNEXPECTED(current.isUndef())) return;
+			bool pushStorage = !(current.ref().isObject() && Z_OBJ_P(current.raw()) == Z_OBJ_P(storage));
+			if (pushStorage && UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope), storage))) return;
+			zval thisZv;
+			ZVAL_OBJ(&thisZv, self);
+			zval *statementsHandler = requireStatementsHandler();
+			if (EXPECTED(statementsHandler != NULL)) {
+				result = pt_statements_handler_process_loop_final_stmt_nodes(statementsHandler, &thisZv, parentNode, stmts, scope, storage, nodeCallback, context, lastPass);
+			}
+			if (pushStorage) {
+				pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope)); });
+				if (UNEXPECTED(EG(exception))) result = zv::Val();
+			}
+		});
+		return result;
+	}
+
 	/* Mirrors processLoopPassStmtNodes(); previous IS_NULL for the first
 	 * pass, record receives this pass's [entries, recording] */
 	zv::Val processLoopPassStmtNodes(zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
@@ -1050,6 +1073,29 @@ public:
 
 		zv::Arr empty = zv::Arr::empty();
 		return zv::Val(std::move(empty));
+	}
+
+	/* Mirrors isContextSensitiveStatement(). */
+	[[nodiscard]] bool isContextSensitiveStatement(zval *stmt, bool &out)
+	{
+		zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("convergenceContextSensitiveStatement"));
+		if (UNEXPECTED(cached.isUndef())) return false;
+		if (!cached.isNull()) {
+			if (UNEXPECTED(!cached.ref().isBool())) {
+				zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::isContextSensitiveStatement(): Return value must be of type bool, %s returned", zend_zval_value_name(cached.raw()));
+				return false;
+			}
+			out = cached.ref().isTrue();
+			return true;
+		}
+
+		bool sensitive;
+		if (UNEXPECTED(!hasContextSensitiveConstruct(Z_OBJ_P(stmt), sensitive))) return false;
+		zval value;
+		ZVAL_BOOL(&value, sensitive);
+		if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(stmt), PT_LC("convergenceContextSensitiveStatement"), &value))) return false;
+		out = sensitive;
+		return true;
 	}
 
 	/* Mirrors isReplayableConvergenceBody(). */
@@ -2152,6 +2198,22 @@ zv::Val pt_node_scope_resolver_process_stmt_nodes_internal(zval *nodeScopeResolv
 	return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).thisProcessStmtNodesInternal(parentNode, stmts, scope, storage, nodeCallback, context);
 }
 
+zv::Val pt_node_scope_resolver_process_loop_final_stmt_nodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processLoopFinalStmtNodes(parentNode, stmts, scope, storage, nodeCallback, context, lastPass);
+	zv::Args argv{parentNode, stmts, scope, storage, nodeCallback, context, lastPass};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processloopfinalstmtnodes"), 7, argv);
+}
+
+bool pt_node_scope_resolver_is_context_sensitive_statement(zval *nodeScopeResolver, zval *stmt, bool &out)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).isContextSensitiveStatement(stmt, out);
+	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("iscontextsensitivestatement"), 1, stmt);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 zv::Val pt_node_scope_resolver_process_loop_pass_stmt_nodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
 {
 	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processLoopPassStmtNodes(parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
@@ -2409,6 +2471,7 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 	cls.classConstantLong("LOOP_SCOPE_ITERATIONS", 3);
 	cls.classConstantLong("GENERALIZE_AFTER_ITERATION", 1);
 	cls.privateClassConstantString("REPLAYABLE_BODY_ATTRIBUTE", "convergenceReplayableBody");
+	cls.privateClassConstantString("CONTEXT_SENSITIVE_STATEMENT_ATTRIBUTE", "convergenceContextSensitiveStatement");
 	ptdecl::NodeScopeResolver::declareProperties(cls);
 
 	/* the real parameter class names: the DI container autowires the
@@ -2490,6 +2553,20 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 			Z_PARAM_OBJECT(context)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_NSR_THIS.processStmtNodes(parentNode, stmts, scope, nodeCallback, context));
+	});
+
+	cls.method(sigs::processLoopFinalStmtNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *parentNode, *stmts, *scope, *storage, *nodeCallback, *context, *lastPass;
+		ZEND_PARSE_PARAMETERS_START(7, 7)
+			Z_PARAM_OBJECT(parentNode)
+			Z_PARAM_ARRAY(stmts)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(storage)
+			Z_PARAM_ZVAL(nodeCallback)
+			Z_PARAM_OBJECT(context)
+			Z_PARAM_ARRAY(lastPass)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_NSR_THIS.processLoopFinalStmtNodes(parentNode, stmts, scope, storage, nodeCallback, context, lastPass));
 	});
 
 	cls.method(sigs::processLoopPassStmtNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -2680,6 +2757,16 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 			Z_PARAM_STR(hookName)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_NSR_THIS.getImpurePointsFromPropertyHook(scope, propertyFetch, propertyReflection, hookName));
+	});
+
+	cls.method(sigs::isContextSensitiveStatement, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *stmt;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT(stmt)
+		ZEND_PARSE_PARAMETERS_END();
+		bool out;
+		if (UNEXPECTED(!PT_NSR_THIS.isContextSensitiveStatement(stmt, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.method(sigs::isReplayableConvergenceBody, [](INTERNAL_FUNCTION_PARAMETERS) {

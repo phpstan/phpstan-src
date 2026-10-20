@@ -92,13 +92,11 @@ final class WhileHandler implements StmtHandler
 		$replayPassStorage = null;
 		$replayPassResult = null;
 		$prevEntryScope = null;
+		$previousPass = null;
+		$previousPassStorage = null;
 		if ($context->isTopLevel()) {
 			$count = 0;
 			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
-			// each pass after the first re-walks only the statements whose
-			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
-			$previousPass = null;
-			$previousPassStorage = null;
 			do {
 				$prevScope = $bodyScope;
 				$bodyScope = $bodyScope->mergeWith($scope);
@@ -115,7 +113,7 @@ final class WhileHandler implements StmtHandler
 					$storage->mergeResults($previousPassStorage);
 				}
 				$condRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+				$bodyRecording = new RecordingNodeCallback();
 				$scope->pushExpressionResultStorage($storage);
 				try {
 					$passCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep(resolveTemplateArguments: false));
@@ -177,12 +175,23 @@ final class WhileHandler implements StmtHandler
 			$bodyCondResult = $replayCondResult;
 			$finalScopeResult = $replayPassResult;
 		} else {
+			$lastPass = $previousPass !== null && $previousPass[1] !== null ? $previousPass : null;
+			if ($lastPass !== null) {
+				// before the condition's real walk stores its own results
+				$originalStorage->mergeResults($previousPassStorage);
+			}
 			$bodyCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			// the While_ callback is deferred from processStmtNode(): it fires after
 			// the condition's real walk stored its result, with the entry scope
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
 			$bodyScope = $bodyCondResult->getTruthyScope();
-			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+			if ($lastPass !== null) {
+				// the last pass stands in for the statements whose state it walked
+				// with - they replay through the real callback
+				$finalScopeResult = $nodeScopeResolver->processLoopFinalStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context, $lastPass)->filterOutLoopExitPoints();
+			} else {
+				$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+			}
 		}
 		$backEdgeScope = $finalScopeResult->getLoopBackEdgeScope();
 		$backEdgeDead = $backEdgeScope === null;

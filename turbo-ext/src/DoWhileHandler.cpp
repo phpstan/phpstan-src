@@ -35,6 +35,15 @@ pt_property_site pt_dwh_stmts_site;
 
 } // namespace
 
+/* the last convergence pass when it recorded its emissions (its
+ * [entries, recording] record), NULL otherwise */
+static zval *lastRecordedPass(zv::Val &previousPass)
+{
+	if (!previousPass.ref().isArray()) return NULL;
+	zval *recording = zend_hash_index_find(Z_ARRVAL_P(previousPass.raw()), 1);
+	return recording != NULL && Z_TYPE_P(recording) == IS_OBJECT ? previousPass.raw() : NULL;
+}
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Analyser\StmtHandler\DoWhileHandler; UNDEF = pending
@@ -70,6 +79,8 @@ public:
 
 		zv::Val replayBodyRecording, replayPassStorage, replayPassResult;
 		zv::Val prevEntryScope;
+		zv::Val previousPass = zv::Val::null();
+		zv::Val previousPassStorage = zv::Val::null();
 		if (isTopLevel) {
 			zval *stmts = ptsh::readNodeProperty(pt_dwh_stmts_site, stmt, PT_LC("stmts"));
 			if (UNEXPECTED(stmts == NULL)) return zv::Val();
@@ -77,8 +88,6 @@ public:
 			if (UNEXPECTED(!pt_node_scope_resolver_is_replayable_convergence_body(nodeScopeResolver, stmt, stmts, bodyIsReplayable))) return zv::Val();
 			// each pass after the first re-walks only the statements whose
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
-			zv::Val previousPass = zv::Val::null();
-			zv::Val previousPassStorage = zv::Val::null();
 			do {
 				zv::Val prevScope = zv::Val::copyOf(bodyScope.ref());
 				bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), scope);
@@ -99,7 +108,7 @@ public:
 				if (UNEXPECTED(storage.isUndef())) return zv::Val();
 				// the statements this pass replays answer from the results the previous pass stored
 				if (!previousPassStorage.isNull() && UNEXPECTED(!pt_expression_result_storage_merge_results(storage.raw(), previousPassStorage.raw()))) return zv::Val();
-				zv::Val bodyRecording = ptlh::newPassNodeCallback(bodyIsReplayable);
+				zv::Val bodyRecording = ptlh::newPassNodeCallback(true);
 				if (UNEXPECTED(bodyRecording.isUndef())) return zv::Val();
 				if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope), storage.raw()))) return zv::Val();
 				zv::Val bodyScopeResult, passCondResult;
@@ -197,6 +206,17 @@ public:
 			if (UNEXPECTED(!pt_expression_result_storage_merge_results(originalStorage, replayPassStorage.raw()))) return zv::Val();
 			if (UNEXPECTED(!pt_node_scope_resolver_replay_recording(nodeScopeResolver, replayBodyRecording.raw(), nodeCallback, originalStorage, scope))) return zv::Val();
 			bodyScopeResult = std::move(replayPassResult);
+		} else if (lastRecordedPass(previousPass) != NULL && !previousPassStorage.isNull()) {
+			// the last pass stands in for the statements whose state it walked
+			// with - they replay through the real callback
+			if (UNEXPECTED(!pt_expression_result_storage_merge_results(originalStorage, previousPassStorage.raw()))) return zv::Val();
+			zval *stmts = ptsh::readNodeProperty(pt_dwh_stmts_site, stmt, PT_LC("stmts"));
+			if (UNEXPECTED(stmts == NULL)) return zv::Val();
+			zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
+			zv::Val walked = pt_node_scope_resolver_process_loop_final_stmt_nodes(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage, nodeCallback, context, previousPass.raw());
+			if (UNEXPECTED(walked.isUndef())) return zv::Val();
+			bodyScopeResult = pt_internal_statement_result_filter_out_loop_exit_points(walked.raw());
+			if (UNEXPECTED(bodyScopeResult.isUndef())) return zv::Val();
 		} else {
 			zval *stmts = ptsh::readNodeProperty(pt_dwh_stmts_site, stmt, PT_LC("stmts"));
 			if (UNEXPECTED(stmts == NULL)) return zv::Val();

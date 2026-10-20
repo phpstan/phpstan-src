@@ -4,13 +4,11 @@ namespace PHPStan\Analyser\StmtHandler;
 
 use IteratorAggregate;
 use PhpParser\Node;
-use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\BinaryOp;
-use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\Variable;
@@ -24,6 +22,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ForeachEmptyOrObjectNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -473,15 +472,9 @@ final class ForeachHandler implements StmtHandler
 
 		$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
 		if ($isIterableAtLeastOnce->maybe() || $exprType->isIterable()->no()) {
-			$finalScope = $finalScope->mergeWith($nodeScopeResolver->narrowScopeWithCondition($scope, new BooleanOr(
-				new BinaryOp\Identical(
-					$stmt->expr,
-					new Array_([]),
-				),
-				new FuncCall(new Name\FullyQualified('is_object'), [
-					new Arg($stmt->expr),
-				]),
-			), TypeSpecifierContext::createTruthy()));
+			$finalScope = $finalScope->mergeWith(
+				$this->container->getByType(ForeachEmptyOrObjectNarrowingHelper::class)->narrowToEmptyOrObject($nodeScopeResolver, $scope, $stmt->expr, $condResult, $storage),
+			);
 		} elseif ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 			$finalScope = $scope;
 		} elseif (!$this->polluteScopeWithAlwaysIterableForeach) {

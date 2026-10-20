@@ -66,10 +66,10 @@ pt_method_site pt_feh_get_doc_comment_site;
 
 /* the permanent interned strings of the twin's literals (module startup) */
 zend_string *pt_feh_identical_narrowing_helper_class = nullptr;
+zend_string *pt_feh_empty_or_object_narrowing_helper_class = nullptr;
 zend_string *pt_feh_traversable_class = nullptr;
 zend_string *pt_feh_iterator_aggregate_class = nullptr;
 zend_string *pt_feh_get_iterator = nullptr;
-zend_string *pt_feh_is_object = nullptr;
 
 /* $node->getAttributes() / ->setAttributes($attributes) */
 zv::Val getAttributes(zval *node)
@@ -765,7 +765,7 @@ public:
 		bool resultAlwaysTerminating;
 		if (UNEXPECTED(!pt_internal_statement_result_is_always_terminating(result, resultAlwaysTerminating))) return zv::Val();
 		if (narrowToEmpty) {
-			zv::Val emptyScope = narrowToEmptyOrObject(nodeScopeResolver, scope.raw(), iteratee);
+			zv::Val emptyScope = narrowToEmptyOrObject(nodeScopeResolver, scope.raw(), iteratee, condResult.raw(), originalStorage);
 			if (UNEXPECTED(emptyScope.isUndef())) return zv::Val();
 			zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), emptyScope.raw());
 			if (UNEXPECTED(merged.isUndef())) return zv::Val();
@@ -1224,37 +1224,14 @@ private:
 		return true;
 	}
 
-	/* $nodeScopeResolver->narrowScopeWithCondition($scope, new BooleanOr(new
-	 * Identical($iteratee, new Array_([])), new FuncCall(new
-	 * Name\FullyQualified('is_object'), [new Arg($iteratee)])),
-	 * TypeSpecifierContext::createTruthy()) — the nodes created in the
-	 * twin's order */
-	static zv::Val narrowToEmptyOrObject(zval *nodeScopeResolver, zval *scope, zval *iteratee)
+	/* $this->container->getByType(ForeachEmptyOrObjectNarrowingHelper::class)
+	 *     ->narrowToEmptyOrObject($nodeScopeResolver, $scope, $stmt->expr, $condResult, $storage) */
+	zv::Val narrowToEmptyOrObject(zval *nodeScopeResolver, zval *scope, zval *iteratee, zval *iterateeResult, zval *storage) const
 	{
-		zv::Val emptyArray = newEmptyArrayExpr();
-		if (UNEXPECTED(emptyArray.isUndef())) return zv::Val();
-		zv::Args identicalArgv{iteratee, emptyArray.raw()};
-		zv::Val identical = pt_type_new(PT_CLASS_IDENTICAL_EXPR, 2, identicalArgv);
-		if (UNEXPECTED(identical.isUndef())) return zv::Val();
-		zval isObject;
-		ZVAL_INTERNED_STR(&isObject, pt_feh_is_object);
-		zv::Val name = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, &isObject);
-		if (UNEXPECTED(name.isUndef())) return zv::Val();
-		zv::Val arg = pt_type_new(PT_CLASS_ARG, 1, iteratee);
-		if (UNEXPECTED(arg.isUndef())) return zv::Val();
-		zv::Arr args = zv::Arr::create(1);
-		args.push(std::move(arg));
-		zv::Args callArgv{name.raw(), args.raw()};
-		zv::Val call = pt_type_new(PT_CLASS_FUNC_CALL, 2, callArgv);
-		if (UNEXPECTED(call.isUndef())) return zv::Val();
-		zv::Args orArgv{identical.raw(), call.raw()};
-		zv::Val booleanOr = pt_type_new(PT_CLASS_BOOLEAN_OR_EXPR, 2, orArgv);
-		if (UNEXPECTED(booleanOr.isUndef())) return zv::Val();
-		zend_object *truthy = pt_type_specifier_context_create_truthy();
-		if (UNEXPECTED(truthy == NULL)) return zv::Val();
-		zval truthyContext;
-		ZVAL_OBJ(&truthyContext, truthy);
-		return pt_node_scope_resolver_narrow_scope_with_condition(nodeScopeResolver, scope, booleanOr.raw(), &truthyContext);
+		zv::Val helper = ptlh::containerGetByType(OBJ_PROP_NUM(self, slots::container), pt_feh_empty_or_object_narrowing_helper_class);
+		if (UNEXPECTED(helper.isUndef())) return zv::Val();
+		zv::Args argv{nodeScopeResolver, scope, iteratee, iterateeResult, storage};
+		return pt_type_call(Z_OBJ_P(helper.raw()), PT_LC("narrowtoemptyorobject"), 5, argv);
 	}
 
 	/* Mirrors the private enterForeach(). */
@@ -2012,10 +1989,10 @@ using phpstanturbo::ForeachHandler;
 PT_MINIT_REGISTRATION(pt_register_foreach_handler)
 {
 	pt_feh_identical_narrowing_helper_class = zend_string_init_interned(PT_LC("PHPStan\\Analyser\\ExprHandler\\Helper\\IdenticalNarrowingHelper"), 1);
+	pt_feh_empty_or_object_narrowing_helper_class = zend_string_init_interned(PT_LC("PHPStan\\Analyser\\ExprHandler\\Helper\\ForeachEmptyOrObjectNarrowingHelper"), 1);
 	pt_feh_traversable_class = zend_string_init_interned(PT_LC("Traversable"), 1);
 	pt_feh_iterator_aggregate_class = zend_string_init_interned(PT_LC("IteratorAggregate"), 1);
 	pt_feh_get_iterator = zend_string_init_interned(PT_LC("getIterator"), 1);
-	pt_feh_is_object = zend_string_init_interned(PT_LC("is_object"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\ForeachHandler");
 	ptdecl::ForeachHandler::declareClass(cls);

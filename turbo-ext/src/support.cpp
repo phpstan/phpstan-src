@@ -711,7 +711,29 @@ int32_t pt_instance_prop_offset(zend_class_entry *ce, const char *name, size_t l
 	return (int32_t) info->offset;
 }
 
+/* the infos by class entry in front of the by-name table: every printed,
+ * keyed or attribute-read node asks, over a few hundred node classes */
+static constexpr uint32_t PT_NODE_CLASS_INFO_SLOTS_LIMIT = 256;
+struct pt_node_class_info_slot
+{
+	const zend_class_entry *ce;
+	uint32_t generation;
+	pt_node_class_info *info;
+};
+static pt_node_class_info_slot pt_node_class_info_slots[PT_NODE_CLASS_INFO_SLOTS_LIMIT];
+
+static pt_node_class_info *pt_get_node_class_info_slow(zend_class_entry *ce);
+
 pt_node_class_info *pt_get_node_class_info(zend_class_entry *ce)
+{
+	pt_node_class_info_slot &slot = pt_node_class_info_slots[(((uintptr_t) ce) >> 4) & (PT_NODE_CLASS_INFO_SLOTS_LIMIT - 1)];
+	if (EXPECTED(slot.ce == ce && slot.generation == pt_engine_generation)) return slot.info;
+	pt_node_class_info *info = pt_get_node_class_info_slow(ce);
+	if (EXPECTED(info != NULL)) slot = { ce, pt_engine_generation, info };
+	return info;
+}
+
+static pt_node_class_info *pt_get_node_class_info_slow(zend_class_entry *ce)
 {
 	pt_node_class_info *info;
 	zend_class_entry *variable_ce;

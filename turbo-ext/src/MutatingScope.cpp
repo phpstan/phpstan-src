@@ -2938,8 +2938,6 @@ public:
 
 	zv::Val obtainResultForNode(zend_object *node)
 	{
-		zv::Val scope = thisToWalkScope();
-		if (UNEXPECTED(scope.isUndef())) return zv::Val();
 		zv::Val storage = currentStorage();
 		if (UNEXPECTED(storage.isUndef())) return zv::Val();
 		if (!storage.isNull()) {
@@ -2954,6 +2952,9 @@ public:
 			throwUnprocessedNode(node, "obtainResultForNode() asked about non-synthetic %s on line %d before it was processed by processExprNode() - it should consume the node's ExpressionResult instead.");
 			return zv::Val();
 		}
+
+		zv::Val scope = thisToWalkScope();
+		if (UNEXPECTED(scope.isUndef())) return zv::Val();
 
 		/* a synthetic node, or no analysis in progress */
 		zv::Val resolver = containerGetByType(PT_LC("PHPStan\\Analyser\\NodeScopeResolver"));

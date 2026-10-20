@@ -89,8 +89,21 @@ public:
 	/* resolveToDefaults() / resolveToBounds(): every template type replaced
 	 * by its default-or-bound / its bound, repeatedly; UNDEF = pending
 	 * exception */
-	static zv::Val resolveToDefaults(zval *type) { return mapWith(type, resolveToDefaultsCallback); }
-	static zv::Val resolveToBounds(zval *type) { return mapMemoizedWith(type, resolveToBoundsCallback); }
+	static zv::Val resolveToDefaults(zval *type)
+	{
+		bool containsTemplate;
+		if (UNEXPECTED(!containsTemplateType(type, containsTemplate))) return zv::Val();
+		if (!containsTemplate) return zv::Val::copyOf(zv::Ref(type));
+		return mapWith(type, resolveToDefaultsCallback);
+	}
+
+	static zv::Val resolveToBounds(zval *type)
+	{
+		bool containsTemplate;
+		if (UNEXPECTED(!containsTemplateType(type, containsTemplate))) return zv::Val();
+		if (!containsTemplate) return zv::Val::copyOf(zv::Ref(type));
+		return mapMemoizedWith(type, resolveToBoundsCallback);
+	}
 
 	/* toArgument(): every template type not owned by a callable inside
 	 * $type turned into its argument; UNDEF = pending exception */
@@ -155,6 +168,14 @@ public:
 	}
 
 private:
+	/* the callbacks of resolveToDefaults() / resolveToBounds() change
+	 * TemplateTypes only: a type without one maps to itself; false =
+	 * pending exception */
+	[[nodiscard]] static bool containsTemplateType(zval *type, bool &out)
+	{
+		return pt_type_contains_instance_of(type, pt_class(PT_CLASS_TEMPLATE_TYPE), PT_TYPE_FACT_CONTAINS_TEMPLATE, out);
+	}
+
 	/* TypeTraverser::map($type, $callback); UNDEF = pending exception */
 	static zv::Val map(zval *type, zval *callback)
 	{

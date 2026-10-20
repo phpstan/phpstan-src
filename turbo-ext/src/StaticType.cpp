@@ -772,48 +772,9 @@ static void mapCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *ret
 	*return_value = result.take();
 }
 
-/* the TypeTraverser::map() callback of pt_type_contains_static(), capturing
- * the flag it raises: a StaticType found is returned as is, and nothing is
- * traversed once one was */
-static void containsStaticBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
-{
-	bool *found = (bool *) Z_PTR(captures[0]);
-	zval *type = argc >= 1 ? zv::Ref(&argv[0]).deref().raw() : NULL;
-	if (UNEXPECTED(type == NULL || argc < 2)) {
-		zend_throw_error(NULL, "phpstan_turbo: a traversal callback called without a type and its traverse callable");
-		return;
-	}
-	if (*found || (Z_TYPE_P(type) == IS_OBJECT && instanceof_function(Z_OBJCE_P(type), pt_ce_static_type))) {
-		*found = true;
-		ZVAL_COPY(return_value, type);
-		return;
-	}
-	zv::Val traversed = pt_type_call_callable(zv::Ref(&argv[1]).deref().raw(), 1, type);
-	if (UNEXPECTED(traversed.isUndef())) return;
-	*return_value = traversed.take();
-}
-
 bool pt_type_contains_static(zval *type, bool &out)
 {
-	if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
-		out = true;
-		return true;
-	}
-	int cached = pt_type_cached_fact(Z_OBJ_P(type), PT_TYPE_FACT_CONTAINS_STATIC);
-	if (cached >= 0) {
-		out = cached == 1;
-		return true;
-	}
-	bool found = false;
-	zval capture;
-	ZVAL_PTR(&capture, &found);
-	zv::Val callback = pt_native_closure_new(&containsStaticBody, 1, &capture);
-	if (UNEXPECTED(callback.isUndef())) return false;
-	zv::Val mapped = pt_type_traverser_map_of(type, callback.raw());
-	if (UNEXPECTED(mapped.isUndef())) return false;
-	pt_type_cache_fact(Z_OBJ_P(type), PT_TYPE_FACT_CONTAINS_STATIC, found);
-	out = found;
-	return true;
+	return pt_type_contains_instance_of(type, pt_ce_static_type, PT_TYPE_FACT_CONTAINS_STATIC, out);
 }
 
 /* the RecursionGuard::run() thunk `static fn () => $traverse($type)`,

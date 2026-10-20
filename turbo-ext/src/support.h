@@ -1159,6 +1159,7 @@ extern zend_class_entry *pt_ce_typehint_helper;
 enum : uint32_t
 {
 	PT_TYPE_FACT_CONTAINS_STATIC = 1u << 0,
+	PT_TYPE_FACT_CONTAINS_TEMPLATE = 1u << 2,
 };
 int pt_type_cached_fact(zend_object *type, uint32_t fact);
 void pt_type_cache_fact(zend_object *type, uint32_t fact, bool holds);

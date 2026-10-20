@@ -17,6 +17,7 @@ namespace slots = ptdecl::TypeTraverser::slot;
 namespace sigs = ptdecl::TypeTraverser::sig;
 #include "zv.h"
 #include "TypeTraits.h"
+#include "Engine.h"
 
 zend_class_entry *pt_ce_type_traverser = NULL;
 
@@ -272,6 +273,56 @@ private:
 } // namespace phpstanturbo
 
 using phpstanturbo::TypeTraverser;
+
+/* {{{ facts about what a type contains */
+
+/* the TypeTraverser::map() callback of pt_type_contains_instance_of(),
+ * capturing [the flag it raises, the class]: an instance found is returned
+ * as is, and nothing is traversed once one was */
+static void containsInstanceBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	bool *found = (bool *) Z_PTR(captures[0]);
+	zend_class_entry *ce = (zend_class_entry *) Z_PTR(captures[1]);
+	if (UNEXPECTED(argc < 2)) {
+		zend_throw_error(NULL, "phpstan_turbo: a traversal callback called without a type and its traverse callable");
+		return;
+	}
+	zval *type = zv::Ref(&argv[0]).deref().raw();
+	if (*found || (Z_TYPE_P(type) == IS_OBJECT && instanceof_function(Z_OBJCE_P(type), ce))) {
+		*found = true;
+		ZVAL_COPY(return_value, type);
+		return;
+	}
+	zv::Val traversed = pt_type_call_callable(zv::Ref(&argv[1]).deref().raw(), 1, type);
+	if (UNEXPECTED(traversed.isUndef())) return;
+	*return_value = traversed.take();
+}
+
+bool pt_type_contains_instance_of(zval *type, zend_class_entry *ce, uint32_t fact, bool &out)
+{
+	if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT || ce == NULL)) {
+		out = true;
+		return true;
+	}
+	int cached = pt_type_cached_fact(Z_OBJ_P(type), fact);
+	if (cached >= 0) {
+		out = cached == 1;
+		return true;
+	}
+	bool found = false;
+	zval captures[2];
+	ZVAL_PTR(&captures[0], &found);
+	ZVAL_PTR(&captures[1], ce);
+	zv::Val callback = pt_native_closure_new(&containsInstanceBody, 2, captures);
+	if (UNEXPECTED(callback.isUndef())) return false;
+	zv::Val mapped = TypeTraverser::map(type, callback.raw());
+	if (UNEXPECTED(mapped.isUndef())) return false;
+	pt_type_cache_fact(Z_OBJ_P(type), fact, found);
+	out = found;
+	return true;
+}
+
+/* }}} */
 
 /* {{{ exported helpers */
 

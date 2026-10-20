@@ -119,6 +119,11 @@ static void abi_try_assign_ref_true(zval *zv)
 	ZEND_TRY_ASSIGN_REF_TRUE(zv);
 }
 
+static void abi_try_assign_ref_copy(zval *zv, zval *value)
+{
+	ZEND_TRY_ASSIGN_REF_COPY(zv, value);
+}
+
 /* the neutral ZPP numbering of abi.h, translated for this engine */
 static const int abi_zpp_errors[] = {
 	ZPP_ERROR_OK,
@@ -364,6 +369,7 @@ void pt_abi_init()
 	pt_abi.call_stack_size_error = abi_call_stack_size_error;
 	pt_abi.try_assign_ref_str = abi_try_assign_ref_str;
 	pt_abi.try_assign_ref_true = abi_try_assign_ref_true;
+	pt_abi.try_assign_ref_copy = abi_try_assign_ref_copy;
 	pt_abi.wrong_parameter_error = abi_wrong_parameter_error;
 	pt_abi.parse_arg_bool_slow = abi_parse_arg_bool_slow;
 	pt_abi.parse_arg_double_slow = abi_parse_arg_double_slow;

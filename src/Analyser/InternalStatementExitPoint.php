@@ -23,6 +23,11 @@ final class InternalStatementExitPoint
 		return $this->statement;
 	}
 
+	public function withScope(MutatingScope $scope): self
+	{
+		return new self($this->statement, $scope);
+	}
+
 	public function getScope(): MutatingScope
 	{
 		return $this->scope;

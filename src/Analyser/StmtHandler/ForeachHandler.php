@@ -226,6 +226,10 @@ final class ForeachHandler implements StmtHandler
 				}
 				$count = 0;
 				$prevEntryScope = null;
+				// each pass after the first re-walks only the statements whose
+				// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
+				$previousPass = null;
+				$previousPassStorage = null;
 				$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 				do {
 					$prevScope = $bodyScope;
@@ -238,11 +242,18 @@ final class ForeachHandler implements StmtHandler
 					}
 					$prevEntryScope = $bodyScope;
 					$storage = $originalStorage->duplicate();
+					if ($previousPassStorage !== null) {
+						// the statements this pass replays answer from the results the previous pass stored
+						$storage->mergeResults($previousPassStorage);
+					}
 					$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
 					$scope->pushExpressionResultStorage($storage);
 					try {
 						$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
-						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
+						$passRecord = null;
+						$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+						$previousPass = $passRecord;
+						$previousPassStorage = $storage;
 						$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 						if ($backEdgeScope === null) {
 							$bodyScope = $prevScope;

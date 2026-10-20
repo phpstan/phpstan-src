@@ -645,6 +645,30 @@ public:
 		return result;
 	}
 
+	/* Mirrors processLoopPassStmtNodes(); previous IS_NULL for the first
+	 * pass, record receives this pass's [entries, recording] */
+	zv::Val processLoopPassStmtNodes(zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
+	{
+		zv::Val result;
+		pt_engine_with_stack([&]() {
+			zv::Val current = pt_mutating_scope_get_current_expression_result_storage(Z_OBJ_P(scope));
+			if (UNEXPECTED(current.isUndef())) return;
+			bool pushStorage = !(current.ref().isObject() && Z_OBJ_P(current.raw()) == Z_OBJ_P(storage));
+			if (pushStorage && UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope), storage))) return;
+			zval thisZv;
+			ZVAL_OBJ(&thisZv, self);
+			zval *statementsHandler = requireStatementsHandler();
+			if (EXPECTED(statementsHandler != NULL)) {
+				result = pt_statements_handler_process_loop_pass_stmt_nodes(statementsHandler, &thisZv, parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
+			}
+			if (pushStorage) {
+				pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope)); });
+				if (UNEXPECTED(EG(exception))) result = zv::Val();
+			}
+		});
+		return result;
+	}
+
 	/* Mirrors processStmtNode(). */
 	zv::Val processStmtNode(zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
@@ -2128,6 +2152,21 @@ zv::Val pt_node_scope_resolver_process_stmt_nodes_internal(zval *nodeScopeResolv
 	return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).thisProcessStmtNodesInternal(parentNode, stmts, scope, storage, nodeCallback, context);
 }
 
+zv::Val pt_node_scope_resolver_process_loop_pass_stmt_nodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processLoopPassStmtNodes(parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
+	zval recordRef;
+	ZVAL_NULL(&recordRef);
+	ZVAL_MAKE_REF(&recordRef);
+	zval null;
+	ZVAL_NULL(&null);
+	zv::Args argv{parentNode, stmts, scope, storage, nodeCallback, context, previous != NULL ? previous : &null, &recordRef};
+	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processlooppassstmtnodes"), 8, argv);
+	record = zv::Val::copyOf(zv::Ref(Z_REFVAL(recordRef)));
+	zval_ptr_dtor(&recordRef);
+	return result;
+}
+
 zv::Val pt_node_scope_resolver_process_expr_on_demand(zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage)
 {
 	return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).thisProcessExprOnDemand(expr, scope, storage);
@@ -2451,6 +2490,25 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 			Z_PARAM_OBJECT(context)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_NSR_THIS.processStmtNodes(parentNode, stmts, scope, nodeCallback, context));
+	});
+
+	cls.method(sigs::processLoopPassStmtNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *parentNode, *stmts, *scope, *storage, *nodeCallback, *context, *previous, *recordRef;
+		ZEND_PARSE_PARAMETERS_START(8, 8)
+			Z_PARAM_OBJECT(parentNode)
+			Z_PARAM_ARRAY(stmts)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(storage)
+			Z_PARAM_ZVAL(nodeCallback)
+			Z_PARAM_OBJECT(context)
+			Z_PARAM_ARRAY_OR_NULL(previous)
+			Z_PARAM_ZVAL(recordRef)
+		ZEND_PARSE_PARAMETERS_END();
+		zv::Val record = zv::Val::null();
+		zv::Val result = PT_NSR_THIS.processLoopPassStmtNodes(parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
+		ZEND_TRY_ASSIGN_REF_COPY(recordRef, record.raw());
+		PT_RETURN_VAL(std::move(result));
 	});
 
 	cls.method(sigs::processStmtNodesInternal, [](INTERNAL_FUNCTION_PARAMETERS) {

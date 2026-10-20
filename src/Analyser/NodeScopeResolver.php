@@ -287,6 +287,39 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * One loop convergence pass over $stmts, re-walking only what differs from
+	 * $previous, the previous pass (see StatementsHandler::processLoopPassStmtNodes()).
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param array{array<int, array{StatementListWalkState, int}>, ?RecordingNodeCallback}|null $previous
+	 * @param array{array<int, array{StatementListWalkState, int}>, ?RecordingNodeCallback}|null $record
+	 */
+	public function processLoopPassStmtNodes(
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+		?array $previous,
+		?array &$record,
+	): InternalStatementResult
+	{
+		$pushStorage = $scope->getCurrentExpressionResultStorage() !== $storage;
+		if ($pushStorage) {
+			$scope->pushExpressionResultStorage($storage);
+		}
+		try {
+			return $this->statementsHandler->processLoopPassStmtNodes($this, $parentNode, $stmts, $scope, $storage, $nodeCallback, $context, $previous, $record);
+		} finally {
+			if ($pushStorage) {
+				$scope->popExpressionResultStorage();
+			}
+		}
+	}
+
+	/**
 	 * @param Node\Stmt[] $stmts
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */

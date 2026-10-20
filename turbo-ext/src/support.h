@@ -2277,6 +2277,9 @@ extern zend_class_entry *pt_ce_node_scope_resolver;
 zv::Val pt_node_scope_resolver_process_expr_node(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context);
 zv::Val pt_node_scope_resolver_process_stmt_node(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context);
 zv::Val pt_node_scope_resolver_process_stmt_nodes_internal(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+/* $nodeScopeResolver->processLoopPassStmtNodes(...); previous IS_NULL for
+ * the first pass, record receives this pass's [entries, recording] */
+zv::Val pt_node_scope_resolver_process_loop_pass_stmt_nodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record);
 zv::Val pt_node_scope_resolver_process_expr_on_demand(zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage);
 zv::Val pt_node_scope_resolver_process_synthetic_on_demand(zval *nodeScopeResolver, zval *expr, zval *scope);
 zv::Val pt_node_scope_resolver_find_scope_state_type(zval *nodeScopeResolver, zval *expr, zval *scope);
@@ -2303,6 +2306,10 @@ zv::Val pt_statements_handler_process_nodes_with_storage(zval *handler, zval *no
  * null, UNDEF = pending exception */
 zv::Val pt_statements_handler_get_var_tag_dependencies(zval *handler, zval *stmt, zval *scope);
 zv::Val pt_statements_handler_do_process_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+/* $handler->processLoopPassStmtNodes(...): one loop convergence pass re-walking
+ * only what differs from $previous (IS_NULL for the first pass); record
+ * receives this pass's [entries, recording]. UNDEF = pending exception */
+zv::Val pt_statements_handler_process_loop_pass_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record);
 zv::Val pt_statements_handler_process_stmt_var_annotation(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback);
 zv::Val pt_statements_handler_get_overriding_throw_points(zval *handler, zval *statement, zval *scope);
 zv::Val pt_statements_handler_emit_var_tag_changed_node(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback);

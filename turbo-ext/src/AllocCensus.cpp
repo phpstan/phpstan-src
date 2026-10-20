@@ -25,6 +25,7 @@
 #include <cstring>
 #include <dlfcn.h>
 #include <execinfo.h>
+#include <time.h>
 #include <map>
 #include <string>
 #include <unordered_map>
@@ -95,7 +96,15 @@ struct ClassCounts
 	unsigned long escaped = 0;
 	unsigned long live = 0;
 	std::map<std::string, unsigned long> via;
+	/* free_obj() time of the class's frees: inclusive, and less the nested
+	 * frees of other tracked objects (its property tables, arrays and
+	 * untracked children included) */
+	uint64_t freeInclusiveNs = 0;
+	uint64_t freeSelfNs = 0;
 };
+
+/* the inclusive free time of tracked objects freed under the free in progress */
+std::vector<uint64_t> *freeChildNs;
 
 std::map<std::string, ClassCounts> *classes;
 
@@ -123,6 +132,18 @@ void dumpEscapes()
 	const char *path = getenv("PT_ALLOC_COUNT_OUT");
 	FILE *out = path != nullptr ? fopen(path, "a") : stderr;
 	for (const auto &row : rows) fprintf(out, "%10lu %s\n", row.first, row.second.c_str());
+	/* free time by class, self time first */
+	std::vector<std::pair<uint64_t, std::string>> freeRows;
+	uint64_t totalSelf = 0;
+	for (auto &entry : *classes) {
+		totalSelf += entry.second.freeSelfNs;
+		char line[512];
+		snprintf(line, sizeof(line), "F %-70s self %8.1fms incl %8.1fms frees %9lu self/free %6.0fns", entry.first.c_str(), entry.second.freeSelfNs / 1e6, entry.second.freeInclusiveNs / 1e6, entry.second.created - entry.second.live, entry.second.created > entry.second.live ? (double) entry.second.freeSelfNs / (double) (entry.second.created - entry.second.live) : 0.0);
+		freeRows.emplace_back(entry.second.freeSelfNs, line);
+	}
+	std::sort(freeRows.rbegin(), freeRows.rend());
+	fprintf(out, "F total self %.1fms\n", totalSelf / 1e6);
+	for (size_t i = 0; i < freeRows.size() && i < 40; i++) fprintf(out, "%s\n", freeRows[i].second.c_str());
 	if (out != stderr) fclose(out);
 }
 
@@ -160,7 +181,17 @@ void censusFree(zend_object *obj)
 	tracked->erase(found);
 	tally(census, false);
 	obj->handlers = census.original;
+	if (freeChildNs == nullptr) freeChildNs = new std::vector<uint64_t>();
+	freeChildNs->push_back(0);
+	uint64_t start = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
 	census.original->free_obj(obj);
+	uint64_t inclusive = clock_gettime_nsec_np(CLOCK_UPTIME_RAW) - start;
+	uint64_t children = freeChildNs->back();
+	freeChildNs->pop_back();
+	if (!freeChildNs->empty()) freeChildNs->back() += inclusive;
+	ClassCounts &counts = (*classes)[*census.className];
+	counts.freeInclusiveNs += inclusive;
+	counts.freeSelfNs += inclusive > children ? inclusive - children : 0;
 }
 
 zval *censusReadProperty(zend_object *obj, zend_string *name, int type, void **cache, zval *rv)

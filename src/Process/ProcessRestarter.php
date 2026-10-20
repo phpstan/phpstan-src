@@ -12,13 +12,19 @@ use function fclose;
 use function file_get_contents;
 use function file_put_contents;
 use function function_exists;
+use function fwrite;
+use function getenv;
 use function getmypid;
+use function implode;
+use function in_array;
 use function ini_get;
 use function pcntl_exec;
 use function pcntl_fork;
 use function pcntl_signal;
 use function posix_getppid;
 use function preg_replace;
+use function sprintf;
+use function strtoupper;
 use function unlink;
 use function usleep;
 use const PHP_EOL;
@@ -43,6 +49,14 @@ final class ProcessRestarter extends XdebugHandler
 	/** @var list<string>|null */
 	private ?array $execIniArgs = null;
 
+	private string $envAllowXdebugName;
+
+	public function __construct(string $envPrefix)
+	{
+		parent::__construct($envPrefix);
+		$this->envAllowXdebugName = strtoupper($envPrefix) . self::SUFFIX_ALLOW;
+	}
+
 	/**
 	 * Replaces this process via pcntl_exec() instead of waiting for a child,
 	 * with these `-d` entries on top of the stripped ini. TurboProcessRestarter
@@ -54,6 +68,29 @@ final class ProcessRestarter extends XdebugHandler
 	{
 		$this->execIniArgs = $iniArgs;
 		return $this;
+	}
+
+	/**
+	 * Prints the lines that XdebugHandler::doRestart() prints under
+	 * XDEBUG_HANDLER_DEBUG, which the exec skips. Its Status class is internal,
+	 * so the format is repeated here.
+	 *
+	 * @param non-empty-list<string> $command
+	 */
+	private function reportRestarting(array $command): void
+	{
+		$debug = getenv(self::DEBUG);
+		if (in_array($debug, [false, ''], true)) {
+			return;
+		}
+
+		$lines = [
+			sprintf('Process restarting (%s=%s)', $this->envAllowXdebugName, (string) getenv($this->envAllowXdebugName)),
+			sprintf('Running: [%s]', implode(', ', $command)),
+		];
+		foreach ($lines as $line) {
+			fwrite(STDERR, sprintf('xdebug-handler[%d] %s%s', (int) getmypid(), $line, PHP_EOL));
+		}
 	}
 
 	/**
@@ -126,6 +163,7 @@ final class ProcessRestarter extends XdebugHandler
 				$args[] = '-d';
 				$args[] = $iniArg;
 			}
+			$this->reportRestarting(array_merge([$command[0]], $args, array_slice($command, 1)));
 			pcntl_exec($command[0], array_merge($args, array_slice($command, 1)));
 			// pcntl_exec() returns only on failure, wait for a child instead
 		}

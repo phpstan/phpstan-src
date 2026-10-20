@@ -56,6 +56,11 @@ final class InternalThrowPoint
 		return new self($scope, $throwPoint->getType(), $throwPoint->getNode(), $throwPoint->isExplicit(), $throwPoint->canContainAnyThrowable());
 	}
 
+	public function withScope(MutatingScope $scope): self
+	{
+		return new self($scope, $this->type, $this->node, $this->explicit, $this->canContainAnyThrowable);
+	}
+
 	public function getScope(): MutatingScope
 	{
 		return $this->scope;

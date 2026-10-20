@@ -38,12 +38,16 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\StatementExitPoint\0" /* 80 */
 	"toPublic\0" /* 116 */
 	"getStatement\0" /* 125 */
-	"getScope"; /* 138 */
+	"PHPStan\\Analyser\\InternalStatementExitPoint\0" /* 138 */
+	"withScope\0" /* 182 */
+	"getScope"; /* 192 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 10), /* __construct $statement */
 	reg::packed(30, 0, 36), /* __construct $scope */
 	reg::packed(79, 0, 80), /* toPublic return */
 	reg::packed(79, 0, 10), /* getStatement return */
+	reg::packed(30, 0, 36), /* withScope $scope */
+	reg::packed(79, 0, 138), /* withScope return */
 	reg::packed(79, 0, 36), /* getScope return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -54,7 +58,8 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 67 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPublic = { { 116 /* toPublic */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getStatement = { { 125 /* getStatement */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getScope = { { 138 /* getScope */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withScope = { { 182 /* withScope */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 192 /* getScope */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::InternalStatementExitPoint

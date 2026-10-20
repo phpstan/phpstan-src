@@ -114,6 +114,17 @@ public:
 		return newSelf(scope, type.raw(), node.raw(), zend_is_true(explicit_.raw()), zend_is_true(canContainAnyThrowable.raw()));
 	}
 
+	/* Mirrors withScope(). */
+	zv::Val withScope(zval *scope) const
+	{
+		zval *type = pt_typed_slot(self, slots::type, self->ce, "type");
+		zval *node = type != NULL ? pt_typed_slot(self, slots::node, self->ce, "node") : NULL;
+		zval *explicit_ = node != NULL ? pt_typed_slot(self, slots::explicit_, self->ce, "explicit") : NULL;
+		zval *canContainAnyThrowable = explicit_ != NULL ? pt_typed_slot(self, slots::canContainAnyThrowable, self->ce, "canContainAnyThrowable") : NULL;
+		if (UNEXPECTED(canContainAnyThrowable == NULL)) return zv::Val();
+		return newSelf(scope, type, node, Z_TYPE_P(explicit_) == IS_TRUE, Z_TYPE_P(canContainAnyThrowable) == IS_TRUE);
+	}
+
 	zv::Val getScope() const { return read(slots::scope, "scope"); }
 	zv::Val getType() const { return read(slots::type, "type"); }
 	zv::Val getNode() const { return read(slots::node, "node"); }
@@ -213,6 +224,8 @@ PT_MINIT_REGISTRATION(pt_register_internal_throw_point)
 	});
 
 	cls.method<&InternalThrowPoint::createFromPublic, zp::Obj, zp::Obj>(sigs::createFromPublic);
+
+	cls.method<&InternalThrowPoint::withScope, zp::Obj>(sigs::withScope);
 
 	cls.method<&InternalThrowPoint::getScope>(sigs::getScope);
 

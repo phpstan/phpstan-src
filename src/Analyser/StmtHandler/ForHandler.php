@@ -198,6 +198,10 @@ final class ForHandler implements StmtHandler
 		if ($context->isTopLevel()) {
 			$count = 0;
 			$prevEntryScope = null;
+			// each pass after the first re-walks only the statements whose
+			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
+			$previousPass = null;
+			$previousPassStorage = null;
 			do {
 				$prevScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
@@ -209,6 +213,10 @@ final class ForHandler implements StmtHandler
 					break;
 				}
 				$prevEntryScope = $bodyScope;
+				if ($previousPassStorage !== null) {
+					// the statements this pass replays answer from the results the previous pass stored
+					$storage->mergeResults($previousPassStorage);
+				}
 				$scope->pushExpressionResultStorage($storage);
 				try {
 					$passFlows = [];
@@ -217,7 +225,10 @@ final class ForHandler implements StmtHandler
 						$bodyScope = $passCondResult->getTruthyScope();
 						$passFlows[] = $passCondResult->getVariableFlow();
 					}
-					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
+					$passRecord = null;
+					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+					$previousPass = $passRecord;
+					$previousPassStorage = $storage;
 					$passFlows[] = $bodyScopeResult->getVariableFlow();
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 					if ($backEdgeScope === null) {

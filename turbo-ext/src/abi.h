@@ -158,6 +158,7 @@ struct pt_abi_globals
 	void (*call_stack_size_error)();
 	void (*try_assign_ref_str)(zval *zv, zend_string *str);
 	void (*try_assign_ref_true)(zval *zv);
+	void (*try_assign_ref_copy)(zval *zv, zval *value);
 	/* zend_wrong_parameter_error() with the neutral ZPP numbering (below) */
 	void (*wrong_parameter_error)(int errorCode, uint32_t num, char *name, int expectedType, zval *arg);
 	/* the slow paths of the bool/double/string parameter parsing: 8.6
@@ -206,6 +207,7 @@ inline void pt_abi_weakrefs_hash_destroy(HashTable *ht) { pt_abi.weakrefs_hash_d
 inline void pt_abi_call_stack_size_error() { pt_abi.call_stack_size_error(); }
 inline void pt_abi_try_assign_ref_str(zval *zv, zend_string *str) { pt_abi.try_assign_ref_str(zv, str); }
 inline void pt_abi_try_assign_ref_true(zval *zv) { pt_abi.try_assign_ref_true(zv); }
+inline void pt_abi_try_assign_ref_copy(zval *zv, zval *value) { pt_abi.try_assign_ref_copy(zv, value); }
 
 /* `then` from the given PHP_VERSION_ID on, `otherwise` before it — the
  * runtime form of an #if PHP_VERSION_ID gate */
@@ -571,6 +573,8 @@ static zend_always_inline void *pt_abi_object_alloc(size_t obj_size, zend_class_
 #define ZEND_TRY_ASSIGN_REF_STR(zv, str) pt_abi_try_assign_ref_str(zv, str)
 #undef ZEND_TRY_ASSIGN_REF_TRUE
 #define ZEND_TRY_ASSIGN_REF_TRUE(zv) pt_abi_try_assign_ref_true(zv)
+#undef ZEND_TRY_ASSIGN_REF_COPY
+#define ZEND_TRY_ASSIGN_REF_COPY(zv, value) pt_abi_try_assign_ref_copy(zv, value)
 
 /* arg_info[i] of a user function (zend_arg_info; name and type keep their
  * offsets, the stride moved) */

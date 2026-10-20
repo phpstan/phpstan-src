@@ -287,6 +287,70 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * The final walk of a loop body against its last convergence pass (see
+	 * StatementsHandler::processLoopFinalStmtNodes()).
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param array{array<int, array{StatementListWalkState, int}>, RecordingNodeCallback} $lastPass
+	 */
+	public function processLoopFinalStmtNodes(
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+		array $lastPass,
+	): InternalStatementResult
+	{
+		$pushStorage = $scope->getCurrentExpressionResultStorage() !== $storage;
+		if ($pushStorage) {
+			$scope->pushExpressionResultStorage($storage);
+		}
+		try {
+			return $this->statementsHandler->processLoopFinalStmtNodes($this, $parentNode, $stmts, $scope, $storage, $nodeCallback, $context, $lastPass);
+		} finally {
+			if ($pushStorage) {
+				$scope->popExpressionResultStorage();
+			}
+		}
+	}
+
+	/**
+	 * One loop convergence pass over $stmts, re-walking only what differs from
+	 * $previous, the previous pass (see StatementsHandler::processLoopPassStmtNodes()).
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param array{array<int, array{StatementListWalkState, int}>, ?RecordingNodeCallback}|null $previous
+	 * @param array{array<int, array{StatementListWalkState, int}>, ?RecordingNodeCallback}|null $record
+	 */
+	public function processLoopPassStmtNodes(
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+		?array $previous,
+		?array &$record,
+	): InternalStatementResult
+	{
+		$pushStorage = $scope->getCurrentExpressionResultStorage() !== $storage;
+		if ($pushStorage) {
+			$scope->pushExpressionResultStorage($storage);
+		}
+		try {
+			return $this->statementsHandler->processLoopPassStmtNodes($this, $parentNode, $stmts, $scope, $storage, $nodeCallback, $context, $previous, $record);
+		} finally {
+			if ($pushStorage) {
+				$scope->popExpressionResultStorage();
+			}
+		}
+	}
+
+	/**
 	 * @param Node\Stmt[] $stmts
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
@@ -929,6 +993,8 @@ class NodeScopeResolver
 
 	private const REPLAYABLE_BODY_ATTRIBUTE = 'convergenceReplayableBody';
 
+	private const CONTEXT_SENSITIVE_STATEMENT_ATTRIBUTE = 'convergenceContextSensitiveStatement';
+
 	/**
 	 * Whether a recorded convergence pass over the loop body can replace the
 	 * final walk. A pass runs at deep statement context, the final walk at top
@@ -956,6 +1022,20 @@ class NodeScopeResolver
 		$loopNode->setAttribute(self::REPLAYABLE_BODY_ATTRIBUTE, $replayable);
 
 		return $replayable;
+	}
+
+	/** A statement that walks differently in a convergence pass than in the final walk. */
+	public function isContextSensitiveStatement(Node\Stmt $stmt): bool
+	{
+		$cached = $stmt->getAttribute(self::CONTEXT_SENSITIVE_STATEMENT_ATTRIBUTE);
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$sensitive = $this->hasContextSensitiveConstruct($stmt);
+		$stmt->setAttribute(self::CONTEXT_SENSITIVE_STATEMENT_ATTRIBUTE, $sensitive);
+
+		return $sensitive;
 	}
 
 	private function hasContextSensitiveConstruct(Node $node): bool

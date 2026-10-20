@@ -4,13 +4,11 @@ namespace PHPStan\Analyser\StmtHandler;
 
 use IteratorAggregate;
 use PhpParser\Node;
-use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\BinaryOp;
-use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\Variable;
@@ -24,6 +22,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ForeachEmptyOrObjectNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -188,6 +187,8 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		$originalStorage = $storage;
+		$previousPass = null;
+		$previousPassStorage = null;
 		$replayBodyRecording = null;
 		$replayPassStorage = null;
 		$replayPassResult = null;
@@ -226,6 +227,8 @@ final class ForeachHandler implements StmtHandler
 				}
 				$count = 0;
 				$prevEntryScope = null;
+				// each pass after the first re-walks only the statements whose
+				// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
 				$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 				do {
 					$prevScope = $bodyScope;
@@ -238,11 +241,18 @@ final class ForeachHandler implements StmtHandler
 					}
 					$prevEntryScope = $bodyScope;
 					$storage = $originalStorage->duplicate();
-					$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
+					if ($previousPassStorage !== null) {
+						// the statements this pass replays answer from the results the previous pass stored
+						$storage->mergeResults($previousPassStorage);
+					}
+					$bodyRecording = new RecordingNodeCallback();
 					$scope->pushExpressionResultStorage($storage);
 					try {
 						$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
-						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
+						$passRecord = null;
+						$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+						$previousPass = $passRecord;
+						$previousPassStorage = $storage;
 						$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 						if ($backEdgeScope === null) {
 							$bodyScope = $prevScope;
@@ -254,7 +264,7 @@ final class ForeachHandler implements StmtHandler
 					}
 					// the candidate to replace the final walk when this pass's
 					// entry turns out to be the fixpoint
-					if ($bodyRecording instanceof RecordingNodeCallback) {
+					if ($bodyIsReplayable) {
 						$replayBodyRecording = $bodyRecording;
 						$replayPassStorage = $storage;
 						$replayPassResult = $bodyScopeResult;
@@ -287,6 +297,11 @@ final class ForeachHandler implements StmtHandler
 			$originalStorage->mergeResults($replayPassStorage);
 			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $scope);
 			$finalScopeResult = $replayPassResult;
+		} elseif ($previousPass !== null && $previousPass[1] !== null) {
+			// the last pass stands in for the statements whose state it walked
+			// with - they replay through the real callback
+			$originalStorage->mergeResults($previousPassStorage);
+			$finalScopeResult = $nodeScopeResolver->processLoopFinalStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context, $previousPass)->filterOutLoopExitPoints();
 		} else {
 			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
 			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext)->filterOutLoopExitPoints();
@@ -457,15 +472,9 @@ final class ForeachHandler implements StmtHandler
 
 		$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
 		if ($isIterableAtLeastOnce->maybe() || $exprType->isIterable()->no()) {
-			$finalScope = $finalScope->mergeWith($nodeScopeResolver->narrowScopeWithCondition($scope, new BooleanOr(
-				new BinaryOp\Identical(
-					$stmt->expr,
-					new Array_([]),
-				),
-				new FuncCall(new Name\FullyQualified('is_object'), [
-					new Arg($stmt->expr),
-				]),
-			), TypeSpecifierContext::createTruthy()));
+			$finalScope = $finalScope->mergeWith(
+				$this->container->getByType(ForeachEmptyOrObjectNarrowingHelper::class)->narrowToEmptyOrObject($nodeScopeResolver, $scope, $stmt->expr, $condResult, $storage),
+			);
 		} elseif ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 			$finalScope = $scope;
 		} elseif (!$this->polluteScopeWithAlwaysIterableForeach) {

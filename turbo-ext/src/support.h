@@ -1151,6 +1151,10 @@ extern zend_class_entry *pt_ce_type_utils;
 extern zend_class_entry *pt_ce_typehint_helper;
 
 /* merged from the parallel port branch */
+/* $scope->services->exprPrinter (MutatingScope.cpp); NULL with an Error
+ * pending, an UNDEF zval when $services is unwritten */
+zval *pt_mutating_scope_expr_printer(zval *scope);
+
 /* facts about what a type contains, remembered on the type object (types
  * are immutable) — each fact one bit, its "known" bit the next one up
  * (TypeCombinatorCache.cpp): pt_type_cached_fact() answers 1 / 0, or -1

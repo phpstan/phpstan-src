@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\DependencyInjection\Container;
-use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
@@ -29,28 +28,10 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 	private Parser $currentSimpleVersionParser;
 
-	private ?ReflectionProvider $reflectionProvider = null;
-
-	private ?InitializerExprTypeResolver $initializerExprTypeResolver = null;
-
-	/** @var ExtensionsCollection<ExpressionTypeResolverExtension>|null */
-	private ?ExtensionsCollection $expressionTypeResolverExtensions = null;
-
-	private ?ExprPrinter $exprPrinter = null;
-
-	private ?TypeSpecifier $typeSpecifier = null;
-
-	private ?PropertyReflectionFinder $propertyReflectionFinder = null;
-
-	private ?ConstantResolver $constantResolver = null;
-
 	private ExpressionResultStorageStack $expressionResultStorageStack;
 
-	private ?PhpVersion $phpVersionType = null;
-
-	private ?AttributeReflectionFactory $attributeReflectionFactory = null;
-
-	private ?ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper = null;
+	/** The services the created scopes share, built on the first create(). */
+	private ?ScopeServices $services = null;
 
 	private ?self $twin = null;
 
@@ -97,36 +78,27 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$className = NodeCallbackScope::class;
 		}
 
-		$this->reflectionProvider ??= $this->container->getByType(ReflectionProvider::class);
-		$this->initializerExprTypeResolver ??= $this->container->getByType(InitializerExprTypeResolver::class);
-		$this->expressionTypeResolverExtensions ??= $this->container->getExtensionsCollection(ExpressionTypeResolverExtension::class);
-		$this->exprPrinter ??= $this->container->getByType(ExprPrinter::class);
-		$this->typeSpecifier ??= $this->container->getByType(TypeSpecifier::class);
-		$this->propertyReflectionFinder ??= $this->container->getByType(PropertyReflectionFinder::class);
-
-		$this->constantResolver ??= $this->container->getByType(ConstantResolver::class);
-
-		$this->phpVersionType ??= $this->container->getByType(PhpVersion::class);
-		$this->attributeReflectionFactory ??= $this->container->getByType(AttributeReflectionFactory::class);
-		$this->configuredPhpVersionRangeHelper ??= $this->container->getByType(ConfiguredPhpVersionRangeHelper::class);
+		$this->services ??= new ScopeServices(
+			$this->container,
+			$this->container->getByType(ReflectionProvider::class),
+			$this->container->getByType(InitializerExprTypeResolver::class),
+			$this->container->getExtensionsCollection(ExpressionTypeResolverExtension::class),
+			$this->container->getByType(ExprPrinter::class),
+			$this->container->getByType(TypeSpecifier::class),
+			$this->container->getByType(PropertyReflectionFinder::class),
+			$this->currentSimpleVersionParser,
+			$this->container->getByType(ConstantResolver::class),
+			$this->expressionResultStorageStack,
+			$this->container->getByType(PhpVersion::class),
+			$this->container->getByType(AttributeReflectionFactory::class),
+			$this->container->getByType(ConfiguredPhpVersionRangeHelper::class),
+			$this->nodeCallback,
+		);
 
 		return new $className(
-			$this->container,
+			$this->services,
 			$this,
-			$this->reflectionProvider,
-			$this->initializerExprTypeResolver,
-			$this->expressionTypeResolverExtensions,
-			$this->exprPrinter,
-			$this->typeSpecifier,
-			$this->propertyReflectionFinder,
-			$this->currentSimpleVersionParser,
-			$this->constantResolver,
-			$this->expressionResultStorageStack,
 			$context,
-			$this->phpVersionType,
-			$this->attributeReflectionFactory,
-			$this->configuredPhpVersionRangeHelper,
-			$this->nodeCallback,
 			$declareStrictTypes,
 			$function,
 			$namespace,
@@ -184,6 +156,9 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 		$this->twin = new self($this->container, $this->nodeCallback, !$this->createsNodeCallbackScopes, $this->expressionResultStorageStack);
 		$this->twin->origin = WeakReference::create($this);
+		// the same services for both flavours: the same container, node
+		// callback and storage stack
+		$this->twin->services = $this->services;
 
 		return $this->twin;
 	}

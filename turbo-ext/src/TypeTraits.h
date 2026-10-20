@@ -1366,7 +1366,7 @@ zv::Val pt_type_utils_get_integer_ranges(zval *type);
 
 /* merged from the parallel port branch */
 /* {{{ direct dispatch (TypeOps.h): the callables native code hands around
- * — the PHPStanTurbo\NativeCallback and PHPStanTurbo\ObjectTypeCallback
+ * — the PHPStanTurbo\NativeClosure and PHPStanTurbo\NativeCallback
  * holders' __invoke() and TypeTraverser::mapInternal() /
  * traverseInternal() — entered without a frame by pt_call_fci() and
  * pt_type_call_callable() when a resolved callable is one of them */
@@ -1374,7 +1374,6 @@ zv::Val pt_type_utils_get_integer_ranges(zval *type);
 /* the handlers, for identifying a resolved callable (a Closure over one
  * carries the same handler in its function copy) */
 zif_handler pt_native_callback_invoke_handler();
-zif_handler pt_object_type_callback_invoke_handler(); /* ObjectType.cpp */
 zif_handler pt_type_traverser_map_internal_handler(); /* TypeTraverser.cpp */
 zif_handler pt_type_traverser_traverse_internal_handler();
 
@@ -1383,7 +1382,6 @@ zif_handler pt_type_traverser_traverse_internal_handler();
  * *retval released), and mapInternal($type) / traverseInternal($type) of
  * a TypeTraverser instance (UNDEF = pending exception) */
 [[nodiscard]] bool pt_native_callback_invoke(zend_object *holder, uint32_t argc, zval *argv, zval *retval);
-zv::Val pt_object_type_callback_invoke(zend_object *holder);
 zv::Val pt_type_traverser_map_internal(zend_object *traverser, zval *type);
 zv::Val pt_type_traverser_traverse_internal(zend_object *traverser, zval *type);
 
@@ -1392,10 +1390,9 @@ zv::Val pt_type_traverser_traverse_internal(zend_object *traverser, zval *type);
  * function's copy by its own trampoline, so a closure is recognised by the
  * copy's scope and name, a plain callable by its handler */
 zend_class_entry *pt_native_callback_ce();
-zend_class_entry *pt_object_type_callback_ce(); /* ObjectType.cpp */
 
 /* the direct call of a resolved internal callable (its function and bound
- * object) when it is one of the four; handled = false when it is not
+ * object) when it is one of them; handled = false when it is not
  * (nothing was called); false with handled = true when the call threw
  * (*retval released) */
 bool pt_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled);

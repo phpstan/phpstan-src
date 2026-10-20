@@ -2082,16 +2082,6 @@ bool pt_direct_invoke(const zend_function *fn, zend_object *object, uint32_t arg
 		if (EXPECTED(object != NULL && object->ce == pt_ce_native_closure)) return pt_native_closure_invoke(object, argc, argv, retval);
 	} else if (handler == invokeNativeCallback || (scope == pt_ce_native_callback && zend_string_equals_literal(fn->common.function_name, "__invoke"))) {
 		if (EXPECTED(object != NULL && object->ce == pt_ce_native_callback)) return pt_native_callback_invoke(object, argc, argv, retval);
-	} else if (handler == pt_object_type_callback_invoke_handler() || (scope == pt_object_type_callback_ce() && zend_string_equals_literal(fn->common.function_name, "__invoke"))) {
-		if (EXPECTED(object != NULL && object->ce == pt_object_type_callback_ce())) {
-			zv::Val result = pt_object_type_callback_invoke(object);
-			if (UNEXPECTED(result.isUndef())) {
-				ZVAL_UNDEF(retval);
-				return false;
-			}
-			*retval = result.take();
-			return true;
-		}
 	} else if (handler == pt_type_traverser_map_internal_handler() || handler == pt_type_traverser_traverse_internal_handler()) {
 		/* the twins' (Type $type) parameter: one object, as Z_PARAM_OBJECT
 		 * delivers it */

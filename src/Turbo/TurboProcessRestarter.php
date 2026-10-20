@@ -2,18 +2,25 @@
 
 namespace PHPStan\Turbo;
 
+use PHPStan\Process\ProcessRestarter;
 use function explode;
 use function extension_loaded;
 use function function_exists;
 use function get_cfg_var;
+use function getenv;
+use function getmypid;
 use function in_array;
 use function ini_get;
 use function is_string;
 use function max;
 use function pcntl_exec;
 use function php_ini_loaded_file;
+use function register_shutdown_function;
 use function strtolower;
+use function strtoupper;
 use function trim;
+use function unlink;
+use function xdebug_info;
 use const PHP_BINARY;
 
 /**
@@ -59,6 +66,9 @@ final class TurboProcessRestarter
 	/** Set by the restart, and by ProcessHelper on spawned workers, so the process never restarts itself */
 	public const RESTARTED_INI = 'phpstan.restarted';
 
+	/** The ini that ProcessRestarter wrote for the exec, see removeTmpIniOnShutdown() */
+	public const RESTART_TMP_INI = 'phpstan.restartTmpIni';
+
 	/** Shared memory reserved (not touched) for the opcode cache, in MB — see resolveOpcacheArgs() for the sizing */
 	private const OPCACHE_MEMORY_CONSUMPTION_MB_LIMIT = 256;
 
@@ -100,10 +110,18 @@ final class TurboProcessRestarter
 	 * Another program that loads PHPStan's phar, Rector for example, passes
 	 * the path to that phar: Phar::running() only knows the phar that runs.
 	 *
+	 * When Xdebug, pcov or tideways has to go as well, the same exec does it:
+	 * ProcessRestarter writes the ini without them and execs with the entries
+	 * built here, so the process restarts once instead of three times. That
+	 * path needs the Composer autoloader, which is fine for a process about
+	 * to be replaced. $autoloadPath is required for it when given; a caller
+	 * that already loaded its autoloader passes null. $appName is the
+	 * xdebug-handler prefix of the caller's environment variables.
+	 *
 	 * @api
 	 * @param list<string> $argv
 	 */
-	public static function restartIfSuitable(array $argv, ?string $pharPath = null): void
+	public static function restartIfSuitable(array $argv, ?string $pharPath = null, ?string $autoloadPath = null, string $appName = 'phpstan'): void
 	{
 		if (get_cfg_var(self::RESTARTED_INI) !== false) {
 			// already restarted — whatever did not take effect (a binary that
@@ -127,12 +145,36 @@ final class TurboProcessRestarter
 			|| !function_exists('posix_kill')
 		) {
 			// fork mode is impossible here (see ForkParallelChecker) and
-			// spawned workers get the extension from ProcessHelper already
+			// spawned workers get the extension from ProcessHelper already;
+			// CommandHelper restarts without Xdebug in a child process
 			return;
 		}
 
 		$extensionPath = extension_loaded('phpstan_turbo') ? null : TurboExtensionSelector::findExtension($pharPath);
 		$opcacheArgs = self::getOpcacheArgs();
+
+		$iniArgs = ['memory_limit=' . ini_get('memory_limit')];
+		foreach ($opcacheArgs as $opcacheArg) {
+			$iniArgs[] = $opcacheArg;
+		}
+		if ($extensionPath !== null) {
+			$iniArgs[] = 'extension=' . $extensionPath;
+			$iniArgs[] = self::EXTENSION_PATH_INI . '=' . $extensionPath;
+		}
+		$iniArgs[] = self::RESTARTED_INI . '=1';
+
+		if (self::mayNeedExtensionsRemoved($argv, $appName)) {
+			if ($autoloadPath !== null) {
+				require_once $autoloadPath;
+			}
+			$restarter = new ProcessRestarter($appName);
+			$restarter->setPersistent();
+			$restarter->setExecIniArgs($iniArgs);
+			$restarter->check();
+			// returns when ProcessRestarter decided against a restart
+			unset($restarter);
+		}
+
 		if (
 			$extensionPath === null
 			&& !self::resolveOpcacheRestartNeeded($opcacheArgs, self::getCurrentIniValues($opcacheArgs))
@@ -146,26 +188,62 @@ final class TurboProcessRestarter
 			$args[] = '-c';
 			$args[] = $phpIni;
 		}
-		$args[] = '-d';
-		$args[] = 'memory_limit=' . ini_get('memory_limit');
-		foreach ($opcacheArgs as $opcacheArg) {
+		foreach ($iniArgs as $iniArg) {
 			$args[] = '-d';
-			$args[] = $opcacheArg;
+			$args[] = $iniArg;
 		}
-		if ($extensionPath !== null) {
-			$args[] = '-d';
-			$args[] = 'extension=' . $extensionPath;
-			$args[] = '-d';
-			$args[] = self::EXTENSION_PATH_INI . '=' . $extensionPath;
-		}
-		$args[] = '-d';
-		$args[] = self::RESTARTED_INI . '=1';
 		foreach ($argv as $arg) {
 			$args[] = $arg;
 		}
 
 		pcntl_exec(PHP_BINARY, $args);
 		// pcntl_exec() returns only on failure — continue as we are
+	}
+
+	/**
+	 * Removes the ini that ProcessRestarter wrote for the exec once the main
+	 * process ends. Nobody waits for the exec, so nobody else deletes it.
+	 * Spawned workers read it through PHPRC until then. Forked workers
+	 * inherit the shutdown function, so the pid check skips them.
+	 *
+	 * @api
+	 */
+	public static function removeTmpIniOnShutdown(): void
+	{
+		$tmpIni = get_cfg_var(self::RESTART_TMP_INI);
+		if (!is_string($tmpIni) || $tmpIni === '') {
+			return;
+		}
+
+		$pid = getmypid();
+		register_shutdown_function(static function () use ($tmpIni, $pid): void {
+			if (getmypid() !== $pid) {
+				return;
+			}
+
+			@unlink($tmpIni);
+		});
+	}
+
+	/**
+	 * A cheap pre-check without the autoloader. ProcessRestarter makes the
+	 * real decision, for example about an Xdebug in mode "off".
+	 *
+	 * @param list<string> $argv
+	 */
+	private static function mayNeedExtensionsRemoved(array $argv, string $appName): bool
+	{
+		if (in_array('--xdebug', $argv, true)) {
+			return false;
+		}
+		if ((bool) getenv(strtoupper($appName) . '_ALLOW_XDEBUG')) {
+			return false;
+		}
+
+		// xdebug_info() exists since Xdebug 3.1, older versions count as active
+		return (extension_loaded('xdebug') && (!function_exists('xdebug_info') || xdebug_info('mode') !== []))
+			|| (extension_loaded('pcov') && ini_get('pcov.enabled') === '1')
+			|| extension_loaded('tideways');
 	}
 
 	/**

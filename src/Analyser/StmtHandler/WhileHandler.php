@@ -95,6 +95,10 @@ final class WhileHandler implements StmtHandler
 		if ($context->isTopLevel()) {
 			$count = 0;
 			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
+			// each pass after the first re-walks only the statements whose
+			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
+			$previousPass = null;
+			$previousPassStorage = null;
 			do {
 				$prevScope = $bodyScope;
 				$bodyScope = $bodyScope->mergeWith($scope);
@@ -106,13 +110,20 @@ final class WhileHandler implements StmtHandler
 				}
 				$prevEntryScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
+				if ($previousPassStorage !== null) {
+					// the statements this pass replays answer from the results the previous pass stored
+					$storage->mergeResults($previousPassStorage);
+				}
 				$condRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
 				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
 				$scope->pushExpressionResultStorage($storage);
 				try {
 					$passCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep(resolveTemplateArguments: false));
 					$bodyScope = $passCondResult->getTruthyScope();
-					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
+					$passRecord = null;
+					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+					$previousPass = $passRecord;
+					$previousPassStorage = $storage;
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 				} finally {
 					$scope->popExpressionResultStorage();

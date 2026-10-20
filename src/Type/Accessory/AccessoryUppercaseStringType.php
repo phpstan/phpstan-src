@@ -98,7 +98,7 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return new IsSuperTypeOfResult($type->isUppercaseString(), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isUppercaseString());
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -107,9 +107,8 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isUppercaseString()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[],
 		);
 	}
 

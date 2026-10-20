@@ -24,6 +24,9 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 
 	private ExpressionResultStorageStack $expressionResultStorageStack;
 
+	/** The services the created scopes share, built on the first create(). */
+	private ?ScopeServices $services = null;
+
 	/**
 	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 * @param ExtensionsCollection<ExpressionTypeResolverExtension> $expressionTypeResolverExtensions
@@ -75,9 +78,8 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$className = NodeCallbackScope::class;
 		}
 
-		return new $className(
+		$this->services ??= new ScopeServices(
 			$this->container,
-			$this,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
 			$this->expressionTypeResolverExtensions,
@@ -87,11 +89,16 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->parser,
 			$this->constantResolver,
 			$this->expressionResultStorageStack,
-			$context,
 			$this->phpVersion,
 			$this->attributeReflectionFactory,
 			$this->configuredPhpVersionRangeHelper,
 			$this->nodeCallback,
+		);
+
+		return new $className(
+			$this->services,
+			$this,
+			$context,
 			$declareStrictTypes,
 			$function,
 			$namespace,

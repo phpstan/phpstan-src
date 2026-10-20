@@ -300,22 +300,9 @@ enum : uint32_t
 	PT_MS_PROP_NAMESPACE,
 	PT_MS_PROP_SCOPE_OUT_OF_FIRST_LEVEL_STATEMENT,
 	PT_MS_PROP_SCOPE_WITH_PROMOTED_NATIVE_TYPES,
-	PT_MS_PROP_CONTAINER,
+	PT_MS_PROP_SERVICES,
 	PT_MS_PROP_SCOPE_FACTORY,
-	PT_MS_PROP_REFLECTION_PROVIDER,
-	PT_MS_PROP_INITIALIZER_EXPR_TYPE_RESOLVER,
-	PT_MS_PROP_EXPRESSION_TYPE_RESOLVER_EXTENSIONS,
-	PT_MS_PROP_EXPR_PRINTER,
-	PT_MS_PROP_TYPE_SPECIFIER,
-	PT_MS_PROP_PROPERTY_REFLECTION_FINDER,
-	PT_MS_PROP_PARSER,
-	PT_MS_PROP_CONSTANT_RESOLVER,
-	PT_MS_PROP_EXPRESSION_RESULT_STORAGE_STACK,
 	PT_MS_PROP_CONTEXT,
-	PT_MS_PROP_PHP_VERSION,
-	PT_MS_PROP_ATTRIBUTE_REFLECTION_FACTORY,
-	PT_MS_PROP_CONFIGURED_PHP_VERSION_RANGE_HELPER,
-	PT_MS_PROP_NODE_CALLBACK,
 	PT_MS_PROP_DECLARE_STRICT_TYPES,
 	PT_MS_PROP_FUNCTION,
 	PT_MS_PROP_EXPRESSION_TYPES,
@@ -334,6 +321,73 @@ enum : uint32_t
 	PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS,
 	PT_MS_PROP_COUNT,
 };
+
+/* the properties of the ScopeServices object the scope's $services holds
+ * (ScopeServices.php), in its declaration order */
+enum : uint32_t
+{
+	PT_MSS_CONTAINER = 0,
+	PT_MSS_REFLECTION_PROVIDER,
+	PT_MSS_INITIALIZER_EXPR_TYPE_RESOLVER,
+	PT_MSS_EXPRESSION_TYPE_RESOLVER_EXTENSIONS,
+	PT_MSS_EXPR_PRINTER,
+	PT_MSS_TYPE_SPECIFIER,
+	PT_MSS_PROPERTY_REFLECTION_FINDER,
+	PT_MSS_PARSER,
+	PT_MSS_CONSTANT_RESOLVER,
+	PT_MSS_EXPRESSION_RESULT_STORAGE_STACK,
+	PT_MSS_PHP_VERSION,
+	PT_MSS_ATTRIBUTE_REFLECTION_FACTORY,
+	PT_MSS_CONFIGURED_PHP_VERSION_RANGE_HELPER,
+	PT_MSS_NODE_CALLBACK,
+	PT_MSS_COUNT,
+};
+
+static const char *const pt_mss_names[PT_MSS_COUNT] = {
+	"container",
+	"reflectionProvider",
+	"initializerExprTypeResolver",
+	"expressionTypeResolverExtensions",
+	"exprPrinter",
+	"typeSpecifier",
+	"propertyReflectionFinder",
+	"parser",
+	"constantResolver",
+	"expressionResultStorageStack",
+	"phpVersion",
+	"attributeReflectionFactory",
+	"configuredPhpVersionRangeHelper",
+	"nodeCallback",
+};
+
+/* $services-><name>: the slot of the ScopeServices object, by offsets
+ * resolved once per class entry; a static UNDEF while $services is unwritten
+ * (or not a ScopeServices) */
+static zval pt_mss_undef;
+
+static zval *pt_ms_service_of(zval *services, uint32_t which)
+{
+	static zend_class_entry *ce = nullptr;
+	static int32_t offsets[PT_MSS_COUNT];
+	if (UNEXPECTED(Z_TYPE_P(services) != IS_OBJECT)) {
+		ZVAL_UNDEF(&pt_mss_undef);
+		return &pt_mss_undef;
+	}
+	zend_object *object = Z_OBJ_P(services);
+	if (UNEXPECTED(object->ce != ce)) {
+		for (uint32_t i = 0; i < PT_MSS_COUNT; i++) {
+			offsets[i] = pt_instance_prop_offset(object->ce, pt_mss_names[i], strlen(pt_mss_names[i]));
+		}
+		ce = object->ce;
+	}
+	if (UNEXPECTED(offsets[which] < 0)) {
+		ZVAL_UNDEF(&pt_mss_undef);
+		return &pt_mss_undef;
+	}
+	zval *slot = OBJ_PROP(object, (uint32_t) offsets[which]);
+	ZVAL_DEREF(slot);
+	return slot;
+}
 
 /* private const COMPLEX_UNION_TYPE_MEMBER_LIMIT */
 #define PT_MS_COMPLEX_UNION_TYPE_MEMBER_LIMIT 8
@@ -409,46 +463,12 @@ static void ZEND_FASTCALL msFilterTypeWithMethod(INTERNAL_FUNCTION_PARAMETERS);
  * does, leaving the twin's create() to the first call of each factory (while
  * the memos are still null) and to any other InternalScopeFactory. */
 
-/* the services create() passes on, in the scope constructor's parameter
- * order; all of them are `??=` memos the first create() fills */
-enum : uint32_t
-{
-	PT_ISF_REFLECTION_PROVIDER = 0,
-	PT_ISF_INITIALIZER_EXPR_TYPE_RESOLVER,
-	PT_ISF_EXPRESSION_TYPE_RESOLVER_EXTENSIONS,
-	PT_ISF_EXPR_PRINTER,
-	PT_ISF_TYPE_SPECIFIER,
-	PT_ISF_PROPERTY_REFLECTION_FINDER,
-	PT_ISF_CONSTANT_RESOLVER,
-	PT_ISF_PHP_VERSION,
-	PT_ISF_ATTRIBUTE_REFLECTION_FACTORY,
-	PT_ISF_CONFIGURED_PHP_VERSION_RANGE_HELPER,
-	PT_ISF_MEMO_COUNT
-};
-
-static const char *const pt_isf_memo_names[PT_ISF_MEMO_COUNT] = {
-	"reflectionProvider",
-	"initializerExprTypeResolver",
-	"expressionTypeResolverExtensions",
-	"exprPrinter",
-	"typeSpecifier",
-	"propertyReflectionFinder",
-	"constantResolver",
-	"phpVersionType",
-	"attributeReflectionFactory",
-	"configuredPhpVersionRangeHelper",
-};
-
 /* the instance-property slot offsets of the factory's class entry, resolved
  * once (the twin is final, so there is one) and forgotten at rinit */
 struct InternalScopeFactorySlots
 {
 	zend_class_entry *ce;
-	uint32_t memos[PT_ISF_MEMO_COUNT];
-	uint32_t container;
-	uint32_t parser;
-	uint32_t expressionResultStorageStack;
-	uint32_t nodeCallback;
+	uint32_t services;
 	uint32_t createsNodeCallbackScopes;
 	uint32_t twin;
 	uint32_t origin;
@@ -477,33 +497,21 @@ static const InternalScopeFactorySlots *internalScopeFactorySlots(zend_object *f
 	if (factory->ce != ce) return NULL;
 	InternalScopeFactorySlots slots;
 	slots.ce = ce;
-	int32_t offsets[PT_ISF_MEMO_COUNT + 7];
-	for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT; i++) {
-		offsets[i] = pt_instance_prop_offset(ce, pt_isf_memo_names[i], strlen(pt_isf_memo_names[i]));
-	}
-	offsets[PT_ISF_MEMO_COUNT + 0] = pt_instance_prop_offset(ce, PT_LC("container"));
-	offsets[PT_ISF_MEMO_COUNT + 1] = pt_instance_prop_offset(ce, PT_LC("currentSimpleVersionParser"));
-	offsets[PT_ISF_MEMO_COUNT + 2] = pt_instance_prop_offset(ce, PT_LC("expressionResultStorageStack"));
-	offsets[PT_ISF_MEMO_COUNT + 3] = pt_instance_prop_offset(ce, PT_LC("nodeCallback"));
-	offsets[PT_ISF_MEMO_COUNT + 4] = pt_instance_prop_offset(ce, PT_LC("createsNodeCallbackScopes"));
-	offsets[PT_ISF_MEMO_COUNT + 5] = pt_instance_prop_offset(ce, PT_LC("twin"));
-	offsets[PT_ISF_MEMO_COUNT + 6] = pt_instance_prop_offset(ce, PT_LC("origin"));
-	for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT + 7; i++) {
+	int32_t offsets[4];
+	offsets[0] = pt_instance_prop_offset(ce, PT_LC("services"));
+	offsets[1] = pt_instance_prop_offset(ce, PT_LC("createsNodeCallbackScopes"));
+	offsets[2] = pt_instance_prop_offset(ce, PT_LC("twin"));
+	offsets[3] = pt_instance_prop_offset(ce, PT_LC("origin"));
+	for (uint32_t i = 0; i < 4; i++) {
 		if (UNEXPECTED(offsets[i] < 0)) {
 			/* not the twin this reader knows: every call goes through the method */
 			return NULL;
 		}
 	}
-	for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT; i++) {
-		slots.memos[i] = (uint32_t) offsets[i];
-	}
-	slots.container = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 0];
-	slots.parser = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 1];
-	slots.expressionResultStorageStack = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 2];
-	slots.nodeCallback = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 3];
-	slots.createsNodeCallbackScopes = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 4];
-	slots.twin = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 5];
-	slots.origin = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 6];
+	slots.services = (uint32_t) offsets[0];
+	slots.createsNodeCallbackScopes = (uint32_t) offsets[1];
+	slots.twin = (uint32_t) offsets[2];
+	slots.origin = (uint32_t) offsets[3];
 	pt_isf_slots = slots;
 	return &pt_isf_slots;
 }
@@ -626,6 +634,20 @@ public:
 	}
 
 	zv::Val copyOfSlot(uint32_t index) const { return zv::Val::copyOf(slot(index)); }
+
+	/* $this->services-><name> (PT_MSS_*) — UNDEF while the constructor has
+	 * not written $services */
+	zv::Ref service(uint32_t which) const { return zv::Ref(pt_ms_service_of(slot(PT_MS_PROP_SERVICES).deref().raw(), which)); }
+
+	/* $services written: the twin's Error otherwise */
+	bool requireService()
+	{
+		if (UNEXPECTED(slot(PT_MS_PROP_SERVICES).isUndef())) {
+			(void) uninitializedProperty("services");
+			return false;
+		}
+		return true;
+	}
 
 	bool slotBool(uint32_t index) const { return Z_TYPE_P(slot(index).raw()) == IS_TRUE; }
 
@@ -891,17 +913,10 @@ public:
 		if (UNEXPECTED(nodeCallbackScope == NULL || pt_ce_mutating_scope == NULL || nodeCallbackScope->parent != pt_ce_mutating_scope)) {
 			return factoryCreateCall(factory, args);
 		}
-		for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT; i++) {
-			if (UNEXPECTED(Z_TYPE_P(OBJ_PROP(factory, slots->memos[i])) != IS_OBJECT)) return factoryCreateCall(factory, args);
-		}
-		zval *container = OBJ_PROP(factory, slots->container);
-		zval *parser = OBJ_PROP(factory, slots->parser);
-		zval *storageStack = OBJ_PROP(factory, slots->expressionResultStorageStack);
-		if (UNEXPECTED(Z_TYPE_P(container) != IS_OBJECT || Z_TYPE_P(parser) != IS_OBJECT || Z_TYPE_P(storageStack) != IS_OBJECT)) {
-			/* an uninitialized promoted property — the twin's Error, raised
-			 * by the method reading it */
-			return factoryCreateCall(factory, args);
-		}
+		/* $this->services ??= new ScopeServices(...): the method builds it on
+		 * the first create() */
+		zval *services = OBJ_PROP(factory, slots->services);
+		if (UNEXPECTED(Z_TYPE_P(services) != IS_OBJECT)) return factoryCreateCall(factory, args);
 
 		/* the argument types the twin's create() signature would enforce and
 		 * the new scope reads without checking; anything else is the method's
@@ -930,22 +945,9 @@ public:
 		ConstructArgs a = {};
 		zval factoryZval;
 		ZVAL_OBJ(&factoryZval, factory);
-		a.container = container;
+		a.services = services;
 		a.scopeFactory = &factoryZval;
-		a.reflectionProvider = OBJ_PROP(factory, slots->memos[PT_ISF_REFLECTION_PROVIDER]);
-		a.initializerExprTypeResolver = OBJ_PROP(factory, slots->memos[PT_ISF_INITIALIZER_EXPR_TYPE_RESOLVER]);
-		a.expressionTypeResolverExtensions = OBJ_PROP(factory, slots->memos[PT_ISF_EXPRESSION_TYPE_RESOLVER_EXTENSIONS]);
-		a.exprPrinter = OBJ_PROP(factory, slots->memos[PT_ISF_EXPR_PRINTER]);
-		a.typeSpecifier = OBJ_PROP(factory, slots->memos[PT_ISF_TYPE_SPECIFIER]);
-		a.propertyReflectionFinder = OBJ_PROP(factory, slots->memos[PT_ISF_PROPERTY_REFLECTION_FINDER]);
-		a.parser = parser;
-		a.constantResolver = OBJ_PROP(factory, slots->memos[PT_ISF_CONSTANT_RESOLVER]);
-		a.expressionResultStorageStack = storageStack;
 		a.context = &args.argv[CreateArgs::CONTEXT];
-		a.phpVersion = OBJ_PROP(factory, slots->memos[PT_ISF_PHP_VERSION]);
-		a.attributeReflectionFactory = OBJ_PROP(factory, slots->memos[PT_ISF_ATTRIBUTE_REFLECTION_FACTORY]);
-		a.configuredPhpVersionRangeHelper = OBJ_PROP(factory, slots->memos[PT_ISF_CONFIGURED_PHP_VERSION_RANGE_HELPER]);
-		a.nodeCallback = OBJ_PROP(factory, slots->nodeCallback);
 		a.declareStrictTypes = Z_TYPE(args.argv[CreateArgs::DECLARE_STRICT_TYPES]) == IS_TRUE;
 		a.function = &args.argv[CreateArgs::FUNCTION];
 		a.ns = Z_TYPE(args.argv[CreateArgs::NAMESPACE_]) == IS_STRING ? Z_STR(args.argv[CreateArgs::NAMESPACE_]) : NULL;
@@ -1033,11 +1035,11 @@ public:
 
 	/* {{{ __construct */
 
-	/* the 33 constructor arguments as zpp delivers them (NULL = a defaulted
+	/* the 20 constructor arguments as zpp delivers them (NULL = a defaulted
 	 * optional parameter) */
 	struct ConstructArgs
 	{
-		zval *container, *scopeFactory, *reflectionProvider, *initializerExprTypeResolver, *expressionTypeResolverExtensions, *exprPrinter, *typeSpecifier, *propertyReflectionFinder, *parser, *constantResolver, *expressionResultStorageStack, *context, *phpVersion, *attributeReflectionFactory, *configuredPhpVersionRangeHelper, *nodeCallback;
+		zval *services, *scopeFactory, *context;
 		bool declareStrictTypes;
 		zval *function;
 		zend_string *ns;
@@ -1052,22 +1054,9 @@ public:
 
 	void construct(const ConstructArgs &a)
 	{
-		writeSlot(PT_MS_PROP_CONTAINER, zv::Val::copyOf(zv::Ref(a.container)));
+		writeSlot(PT_MS_PROP_SERVICES, zv::Val::copyOf(zv::Ref(a.services)));
 		writeSlot(PT_MS_PROP_SCOPE_FACTORY, zv::Val::copyOf(zv::Ref(a.scopeFactory)));
-		writeSlot(PT_MS_PROP_REFLECTION_PROVIDER, zv::Val::copyOf(zv::Ref(a.reflectionProvider)));
-		writeSlot(PT_MS_PROP_INITIALIZER_EXPR_TYPE_RESOLVER, zv::Val::copyOf(zv::Ref(a.initializerExprTypeResolver)));
-		writeSlot(PT_MS_PROP_EXPRESSION_TYPE_RESOLVER_EXTENSIONS, zv::Val::copyOf(zv::Ref(a.expressionTypeResolverExtensions)));
-		writeSlot(PT_MS_PROP_EXPR_PRINTER, zv::Val::copyOf(zv::Ref(a.exprPrinter)));
-		writeSlot(PT_MS_PROP_TYPE_SPECIFIER, zv::Val::copyOf(zv::Ref(a.typeSpecifier)));
-		writeSlot(PT_MS_PROP_PROPERTY_REFLECTION_FINDER, zv::Val::copyOf(zv::Ref(a.propertyReflectionFinder)));
-		writeSlot(PT_MS_PROP_PARSER, zv::Val::copyOf(zv::Ref(a.parser)));
-		writeSlot(PT_MS_PROP_CONSTANT_RESOLVER, zv::Val::copyOf(zv::Ref(a.constantResolver)));
-		writeSlot(PT_MS_PROP_EXPRESSION_RESULT_STORAGE_STACK, zv::Val::copyOf(zv::Ref(a.expressionResultStorageStack)));
 		writeSlot(PT_MS_PROP_CONTEXT, zv::Val::copyOf(zv::Ref(a.context)));
-		writeSlot(PT_MS_PROP_PHP_VERSION, zv::Val::copyOf(zv::Ref(a.phpVersion)));
-		writeSlot(PT_MS_PROP_ATTRIBUTE_REFLECTION_FACTORY, zv::Val::copyOf(zv::Ref(a.attributeReflectionFactory)));
-		writeSlot(PT_MS_PROP_CONFIGURED_PHP_VERSION_RANGE_HELPER, zv::Val::copyOf(zv::Ref(a.configuredPhpVersionRangeHelper)));
-		writeSlot(PT_MS_PROP_NODE_CALLBACK, optional(a.nodeCallback));
 		writeSlot(PT_MS_PROP_DECLARE_STRICT_TYPES, zv::Val::boolean(a.declareStrictTypes));
 		writeSlot(PT_MS_PROP_FUNCTION, optional(a.function));
 		/* if ($namespace === '') { $namespace = null; } $this->namespace = $namespace; */
@@ -1373,7 +1362,7 @@ public:
 	/** @internal called by ScopeOps; false = pending exception */
 	[[nodiscard]] bool isReadonlyPropertyFetch(zend_object *exprObject, bool allowOnlyOnThis, bool &out)
 	{
-		zv::Ref phpVersion = slot(PT_MS_PROP_PHP_VERSION);
+		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
 		if (UNEXPECTED(!phpVersion.isObject())) {
 			(void) uninitializedProperty("phpVersion");
 			return false;
@@ -1415,7 +1404,7 @@ public:
 				return true;
 			}
 
-			zv::Ref finder = slot(PT_MS_PROP_PROPERTY_REFLECTION_FINDER);
+			zv::Ref finder = service(PT_MSS_PROPERTY_REFLECTION_FINDER);
 			if (UNEXPECTED(!finder.isObject())) {
 				(void) uninitializedProperty("propertyReflectionFinder");
 				return false;
@@ -2014,7 +2003,7 @@ public:
 			return true;
 		}
 
-		zv::Ref reflectionProvider = slot(PT_MS_PROP_REFLECTION_PROVIDER);
+		zv::Ref reflectionProvider = service(PT_MSS_REFLECTION_PROVIDER);
 		if (UNEXPECTED(!reflectionProvider.isObject())) {
 			(void) uninitializedProperty("reflectionProvider");
 			return false;
@@ -2029,7 +2018,7 @@ public:
 	/* private; false = pending exception */
 	[[nodiscard]] bool fileHasCompilerHaltStatementCalls(bool &out)
 	{
-		zv::Ref parser = slot(PT_MS_PROP_PARSER);
+		zv::Ref parser = service(PT_MSS_PARSER);
 		if (UNEXPECTED(!parser.isObject())) {
 			(void) uninitializedProperty("parser");
 			return false;
@@ -2086,7 +2075,7 @@ public:
 	 * exception, else null or the storage */
 	zv::Val currentStorage()
 	{
-		zv::Ref stack = slot(PT_MS_PROP_EXPRESSION_RESULT_STORAGE_STACK);
+		zv::Ref stack = service(PT_MSS_EXPRESSION_RESULT_STORAGE_STACK);
 		if (UNEXPECTED(!stack.isObject())) return uninitializedProperty("expressionResultStorageStack");
 		return pt_expression_result_storage_stack_current(stack.raw());
 	}
@@ -2118,7 +2107,7 @@ public:
 	/* $this->container->getByType($className); UNDEF = pending exception */
 	zv::Val containerGetByType(const char *className, size_t len)
 	{
-		zv::Ref container = slot(PT_MS_PROP_CONTAINER);
+		zv::Ref container = service(PT_MSS_CONTAINER);
 		if (UNEXPECTED(!container.isObject())) return uninitializedProperty("container");
 		zval name;
 		ZVAL_STRINGL(&name, className, len);
@@ -2698,7 +2687,7 @@ public:
 	/* private */
 	zv::Val resolveType(zend_string *exprString, zend_object *node)
 	{
-		zv::Ref extensions = slot(PT_MS_PROP_EXPRESSION_TYPE_RESOLVER_EXTENSIONS);
+		zv::Ref extensions = service(PT_MSS_EXPRESSION_TYPE_RESOLVER_EXTENSIONS);
 		if (UNEXPECTED(!extensions.isObject())) return uninitializedProperty("expressionTypeResolverExtensions");
 		zv::Val all = pt_extensions_collection_get_all(extensions.asObject());
 		if (UNEXPECTED(all.isUndef())) return zv::Val();
@@ -2736,7 +2725,7 @@ public:
 			if (fcc) return resolveTypeOfNewWorldHandlerNode(node);
 		}
 
-		zv::Ref container = slot(PT_MS_PROP_CONTAINER);
+		zv::Ref container = service(PT_MSS_CONTAINER);
 		if (UNEXPECTED(!container.isObject())) return uninitializedProperty("container");
 		zv::Val exprHandler = pt_expr_handler_registry_resolve(node, container.raw());
 		if (UNEXPECTED(exprHandler.isUndef())) return zv::Val();
@@ -2971,7 +2960,7 @@ public:
 	/* false = pending exception */
 	[[nodiscard]] bool pushExpressionResultStorage(zval *storage)
 	{
-		zv::Ref stack = slot(PT_MS_PROP_EXPRESSION_RESULT_STORAGE_STACK);
+		zv::Ref stack = service(PT_MSS_EXPRESSION_RESULT_STORAGE_STACK);
 		if (UNEXPECTED(!stack.isObject())) {
 			(void) uninitializedProperty("expressionResultStorageStack");
 			return false;
@@ -2981,7 +2970,7 @@ public:
 
 	bool popExpressionResultStorage()
 	{
-		zv::Ref stack = slot(PT_MS_PROP_EXPRESSION_RESULT_STORAGE_STACK);
+		zv::Ref stack = service(PT_MSS_EXPRESSION_RESULT_STORAGE_STACK);
 		if (UNEXPECTED(!stack.isObject())) {
 			(void) uninitializedProperty("expressionResultStorageStack");
 			return false;
@@ -3502,7 +3491,7 @@ public:
 						if (UNEXPECTED(EG(exception))) return zv::Val();
 						first = &nullZv;
 					}
-					zv::Ref provider = slot(PT_MS_PROP_REFLECTION_PROVIDER);
+					zv::Ref provider = service(PT_MSS_REFLECTION_PROVIDER);
 					if (UNEXPECTED(!provider.isObject())) return uninitializedProperty("reflectionProvider");
 					bool hasClass;
 					if (UNEXPECTED(!pt_reflection_provider_has_class(provider.asObject(), first, hasClass))) return zv::Val();
@@ -3533,7 +3522,7 @@ public:
 			if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_CLOSURE_BIND_SCOPE_CLASSES, "inClosureBindScopeClasses"))) return zv::Val();
 			HashTable *bindScopeClasses = Z_ARRVAL_P(slot(PT_MS_PROP_IN_CLOSURE_BIND_SCOPE_CLASSES).raw());
 			if (isSingleStringList(bindScopeClasses, ZSTR_VAL(Z_STR_P(originalClass.raw())), ZSTR_LEN(Z_STR_P(originalClass.raw())))) {
-				zv::Ref provider = slot(PT_MS_PROP_REFLECTION_PROVIDER);
+				zv::Ref provider = service(PT_MSS_REFLECTION_PROVIDER);
 				if (UNEXPECTED(!provider.isObject())) return uninitializedProperty("reflectionProvider");
 				bool hasClass;
 				if (UNEXPECTED(!pt_reflection_provider_has_class(provider.asObject(), originalClass.raw(), hasClass))) return zv::Val();
@@ -3927,8 +3916,8 @@ public:
 		// config or from the composer.json "require.php" constraint - the very same
 		// source ConstantResolver narrows PHP_VERSION_ID with, so that
 		// Scope::getPhpVersion() never contradicts the PHP_VERSION_ID constant.
-		if (UNEXPECTED(!requireSlot(PT_MS_PROP_CONFIGURED_PHP_VERSION_RANGE_HELPER, "configuredPhpVersionRangeHelper"))) return zv::Val();
-		zv::Ref rangeHelper = slot(PT_MS_PROP_CONFIGURED_PHP_VERSION_RANGE_HELPER);
+		if (UNEXPECTED(!requireService())) return zv::Val();
+		zv::Ref rangeHelper = service(PT_MSS_CONFIGURED_PHP_VERSION_RANGE_HELPER);
 		zv::Val range = pt_type_call(rangeHelper.asObject(), PT_LC("getversionrange"), 0, NULL);
 		if (UNEXPECTED(range.isUndef())) return zv::Val();
 		/* [$minPhpVersion, $maxPhpVersion] = ... */
@@ -3975,7 +3964,7 @@ public:
 			return pt_type_new(PT_CLASS_PHP_VERSIONS, 1, versionRange.raw());
 		}
 
-		zv::Ref phpVersion = slot(PT_MS_PROP_PHP_VERSION);
+		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
 		if (UNEXPECTED(!phpVersion.isObject())) return uninitializedProperty("phpVersion");
 		zv::Val versionId = pt_php_version_get_version_id(phpVersion.raw());
 		if (UNEXPECTED(versionId.isUndef())) return zv::Val();
@@ -4099,7 +4088,7 @@ public:
 						if (UNEXPECTED(EG(exception))) return zv::Val();
 						first = &nullZv;
 					}
-					zv::Ref provider = slot(PT_MS_PROP_REFLECTION_PROVIDER);
+					zv::Ref provider = service(PT_MSS_REFLECTION_PROVIDER);
 					if (UNEXPECTED(!provider.isObject())) return uninitializedProperty("reflectionProvider");
 					bool hasClass;
 					if (UNEXPECTED(!pt_reflection_provider_has_class(provider.asObject(), first, hasClass))) return zv::Val();
@@ -4122,7 +4111,7 @@ public:
 	/* $this->initializerExprTypeResolver->getFunctionType($type, $isNullable, false, $context) */
 	zv::Val initializerExprTypeResolverFunctionType(zval *type, bool isNullable, zval *context)
 	{
-		zv::Ref resolver = slot(PT_MS_PROP_INITIALIZER_EXPR_TYPE_RESOLVER);
+		zv::Ref resolver = service(PT_MSS_INITIALIZER_EXPR_TYPE_RESOLVER);
 		if (UNEXPECTED(!resolver.isObject())) return uninitializedProperty("initializerExprTypeResolver");
 		return pt_initializer_expr_type_resolver_get_function_type(resolver.raw(), type, isNullable, false, context);
 	}
@@ -4260,7 +4249,7 @@ public:
 			zv::Str ownedName = zv::Str::copyOf(name);
 			zv::Val context = pt_initializer_expr_context_from_scope(thisZval());
 			if (UNEXPECTED(context.isUndef())) return zv::Val();
-			zv::Ref resolver = slot(PT_MS_PROP_INITIALIZER_EXPR_TYPE_RESOLVER);
+			zv::Ref resolver = service(PT_MSS_INITIALIZER_EXPR_TYPE_RESOLVER);
 			if (UNEXPECTED(!resolver.isObject())) return uninitializedProperty("initializerExprTypeResolver");
 			zv::Val type = pt_initializer_expr_type_resolver_get_type(resolver.raw(), defaultValue.deref().raw(), context.raw());
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
@@ -4324,7 +4313,7 @@ public:
 		ZVAL_OBJ(&functionLikeZv, functionLike);
 		zv::Val context = pt_initializer_expr_context_from_stub_parameter(className, file.raw(), &functionLikeZv);
 		if (UNEXPECTED(context.isUndef())) return zv::Val();
-		zv::Ref factory = slot(PT_MS_PROP_ATTRIBUTE_REFLECTION_FACTORY);
+		zv::Ref factory = service(PT_MSS_ATTRIBUTE_REFLECTION_FACTORY);
 		if (UNEXPECTED(!factory.isObject())) return uninitializedProperty("attributeReflectionFactory");
 		zv::Args argv{attrGroups, context.raw()};
 		return pt_type_call(factory.asObject(), PT_LC("fromattrgroups"), 2, argv);
@@ -5095,7 +5084,7 @@ public:
 	/* $this->phpVersion-><query>() (PhpVersionAccess.cpp); false = pending exception */
 	[[nodiscard]] bool phpVersionQuery(pt_php_version_query query, bool &out)
 	{
-		zv::Ref phpVersion = slot(PT_MS_PROP_PHP_VERSION);
+		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
 		if (UNEXPECTED(!phpVersion.isObject())) {
 			(void) uninitializedProperty("phpVersion");
 			return false;
@@ -5189,6 +5178,25 @@ public:
 			return NULL;
 		}
 		return OBJ_PROP(object, (uint32_t) offset);
+	}
+
+	/* $other->services, deref'd; NULL with an Error pending */
+	[[nodiscard]] static zval *otherServicesSlot(zend_object *object)
+	{
+		zval *services = otherProp(object, PT_MS_PROP_SERVICES, PT_LC("services"));
+		if (UNEXPECTED(services == NULL)) return NULL;
+		ZVAL_DEREF(services);
+		return services;
+	}
+
+	/* $other->services-><name> of another scope object (see otherProp());
+	 * NULL with an Error pending when it has no $services */
+	[[nodiscard]] static zval *otherService(zend_object *object, uint32_t which)
+	{
+		zval *services = otherProp(object, PT_MS_PROP_SERVICES, PT_LC("services"));
+		if (UNEXPECTED(services == NULL)) return NULL;
+		ZVAL_DEREF(services);
+		return pt_ms_service_of(services, which);
 	}
 
 	/* $other-><method>() answering a bool; false = pending exception */
@@ -6832,7 +6840,7 @@ public:
 		zv::Val isFalse = pt_type_call(Z_OBJ_P(type), PT_LC("isfalse"), 0, NULL);
 		if (UNEXPECTED(isFalse.isUndef())) return false;
 		if (pt_type_trinary_value(isFalse.raw()) != PT_TRI_YES) return EXPECTED(EG(exception) == NULL);
-		zv::Ref provider = slot(PT_MS_PROP_REFLECTION_PROVIDER);
+		zv::Ref provider = service(PT_MSS_REFLECTION_PROVIDER);
 		if (UNEXPECTED(!provider.isObject())) {
 			(void) uninitializedProperty("reflectionProvider");
 			return false;
@@ -7150,7 +7158,7 @@ public:
 		bool isClone = zend_string_equals_literal(lowered, "__clone");
 		zend_string_release(lowered);
 		if (!isClone) return scope;
-		zval *phpVersion = otherProp(scopeObject, PT_MS_PROP_PHP_VERSION, PT_LC("phpVersion"));
+		zval *phpVersion = otherService(scopeObject, PT_MSS_PHP_VERSION);
 		if (UNEXPECTED(phpVersion == NULL)) return zv::Val();
 		ZVAL_DEREF(phpVersion);
 		if (UNEXPECTED(Z_TYPE_P(phpVersion) != IS_OBJECT)) {
@@ -7175,7 +7183,7 @@ public:
 		zv::Val exprString = thisGetNodeKey(expressionToInvalidate);
 		if (UNEXPECTED(exprString.isUndef())) return zv::Val();
 		zv::Str key = zv::Str::adopt(zval_get_string(exprString.raw()));
-		zv::Ref exprPrinter = slot(PT_MS_PROP_EXPR_PRINTER);
+		zv::Ref exprPrinter = service(PT_MSS_EXPR_PRINTER);
 		if (UNEXPECTED(!exprPrinter.isObject())) return uninitializedProperty("exprPrinter");
 		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes")
 			|| !requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions"))) {
@@ -7237,7 +7245,7 @@ public:
 			if (UNEXPECTED(!isInstance(zv::Ref(&exprZv), PT_CLASS_PROPERTY_FETCH, isFetch))) return false;
 		}
 		if (!isFetch) return true;
-		zv::Ref finder = slot(PT_MS_PROP_PROPERTY_REFLECTION_FINDER);
+		zv::Ref finder = service(PT_MSS_PROPERTY_REFLECTION_FINDER);
 		if (UNEXPECTED(!finder.isObject())) {
 			(void) uninitializedProperty("propertyReflectionFinder");
 			return false;
@@ -7270,7 +7278,7 @@ public:
 	/* private (twin 3863) */
 	zv::Val invalidateMethodsOnExpression(zend_object *expressionToInvalidate)
 	{
-		zv::Ref exprPrinter = slot(PT_MS_PROP_EXPR_PRINTER);
+		zv::Ref exprPrinter = service(PT_MSS_EXPR_PRINTER);
 		if (UNEXPECTED(!exprPrinter.isObject())) return uninitializedProperty("exprPrinter");
 		zval exprZv;
 		ZVAL_OBJ(&exprZv, expressionToInvalidate);
@@ -7549,7 +7557,7 @@ public:
 	/* (twin 3993 / 4003) */
 	zv::Val filterByValue(zend_object *expr, bool truthy)
 	{
-		zv::Ref typeSpecifier = slot(PT_MS_PROP_TYPE_SPECIFIER);
+		zv::Ref typeSpecifier = service(PT_MSS_TYPE_SPECIFIER);
 		if (UNEXPECTED(!typeSpecifier.isObject())) return uninitializedProperty("typeSpecifier");
 		/* the singleton, borrowed: the context registry holds it */
 		zend_object *context = truthy ? pt_type_specifier_context_create_truthy() : pt_type_specifier_context_create_falsey();
@@ -8640,7 +8648,7 @@ public:
 			if (UNEXPECTED(className.isUndef())) return zv::Val();
 			zv::Val constantName = pt_name_node_to_string(nameNode.deref().raw());
 			if (UNEXPECTED(constantName.isUndef())) return zv::Val();
-			zv::Ref constantResolver = slot(PT_MS_PROP_CONSTANT_RESOLVER);
+			zv::Ref constantResolver = service(PT_MSS_CONSTANT_RESOLVER);
 			if (UNEXPECTED(!constantResolver.isObject())) {
 				(void) uninitializedProperty("constantResolver");
 				return zv::Val();
@@ -9288,7 +9296,7 @@ public:
 
 		zv::Arr generalizedExpressions = zv::Arr::create(0);
 		zv::Arr newVariableTypeHolders = zv::Arr::create(0);
-		zv::Ref exprPrinter = slot(PT_MS_PROP_EXPR_PRINTER);
+		zv::Ref exprPrinter = service(PT_MSS_EXPR_PRINTER);
 		if (UNEXPECTED(!exprPrinter.isObject())) return uninitializedProperty("exprPrinter");
 		for (const SortedEntry &entry : sorted) {
 			zv::Str variableExprString = entryKey(entry.key, entry.index);
@@ -9390,7 +9398,7 @@ public:
 			zend_throw_error(NULL, "Call to a member function getGreaterOrEqualType() on %s", zend_zval_value_name(size.raw()));
 			return false;
 		}
-		zv::Ref phpVersion = slot(PT_MS_PROP_PHP_VERSION);
+		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
 		if (UNEXPECTED(!phpVersion.isObject())) {
 			(void) uninitializedProperty("phpVersion");
 			return false;
@@ -10111,7 +10119,7 @@ public:
 			if (!isProtectedSet) return canAccessClassMember(propertyReflection, out);
 		}
 
-		zv::Ref phpVersion = slot(PT_MS_PROP_PHP_VERSION);
+		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
 		if (UNEXPECTED(!phpVersion.isObject())) {
 			(void) uninitializedProperty("phpVersion");
 			return false;
@@ -10173,7 +10181,7 @@ public:
 			(void) uninitializedProperty("inClosureBindScopeClasses");
 			return false;
 		}
-		zv::Ref reflectionProvider = slot(PT_MS_PROP_REFLECTION_PROVIDER);
+		zv::Ref reflectionProvider = service(PT_MSS_REFLECTION_PROVIDER);
 		if (UNEXPECTED(!reflectionProvider.isObject())) {
 			(void) uninitializedProperty("reflectionProvider");
 			return false;
@@ -10531,7 +10539,7 @@ public:
 	/* (twin 5755) */
 	zv::Val getConstantExplicitTypeFromConfig(zend_string *constantName, zval *constantType)
 	{
-		zv::Ref constantResolver = slot(PT_MS_PROP_CONSTANT_RESOLVER);
+		zv::Ref constantResolver = service(PT_MSS_CONSTANT_RESOLVER);
 		if (UNEXPECTED(!constantResolver.isObject())) return uninitializedProperty("constantResolver");
 		zv::Args args{constantName, constantType};
 		return pt_type_call(constantResolver.asObject(), PT_LC("resolveconstanttype"), 2, args);
@@ -10559,7 +10567,7 @@ public:
 	/* (twin 5858) */
 	bool invokeNodeCallback(zend_object *node)
 	{
-		zv::Ref nodeCallback = slot(PT_MS_PROP_NODE_CALLBACK);
+		zv::Ref nodeCallback = service(PT_MSS_NODE_CALLBACK);
 		if (UNEXPECTED(nodeCallback.isUndef())) {
 			(void) uninitializedProperty("nodeCallback");
 			return false;
@@ -10576,7 +10584,7 @@ public:
 	/* (twin 5874) */
 	bool emitCollectedData(zend_string *collectorType, zval *data)
 	{
-		zv::Ref nodeCallback = slot(PT_MS_PROP_NODE_CALLBACK);
+		zv::Ref nodeCallback = service(PT_MSS_NODE_CALLBACK);
 		if (UNEXPECTED(nodeCallback.isUndef())) {
 			(void) uninitializedProperty("nodeCallback");
 			return false;
@@ -10634,7 +10642,7 @@ public:
 	/* the collector's method (lowercase name) with the arguments, the scope and whether it is inside the walk */
 	bool callValueDependencyCollector(const char *method, size_t methodLength, zval *first, zval *second)
 	{
-		zv::Ref nodeCallback = slot(PT_MS_PROP_NODE_CALLBACK);
+		zv::Ref nodeCallback = service(PT_MSS_NODE_CALLBACK);
 		if (UNEXPECTED(nodeCallback.isUndef())) {
 			(void) uninitializedProperty("nodeCallback");
 			return false;
@@ -10670,7 +10678,7 @@ public:
 
 	zv::Val getNodeKey(zend_object *node)
 	{
-		zv::Ref exprPrinter = slot(PT_MS_PROP_EXPR_PRINTER);
+		zv::Ref exprPrinter = service(PT_MSS_EXPR_PRINTER);
 		if (UNEXPECTED(!exprPrinter.isObject())) return uninitializedProperty("exprPrinter");
 		zend_string *key = pt_node_key(node, exprPrinter.raw());
 		if (UNEXPECTED(key == NULL)) return zv::Val();
@@ -10678,11 +10686,11 @@ public:
 	}
 
 	/** @internal */
-	zv::Val getExprPrinter() const { return copyOfSlot(PT_MS_PROP_EXPR_PRINTER); }
+	zv::Val getExprPrinter() const { return zv::Val::copyOf(service(PT_MSS_EXPR_PRINTER)); }
 
 	zv::Val hasExpressionType(zend_object *node)
 	{
-		zv::Ref exprPrinter = slot(PT_MS_PROP_EXPR_PRINTER);
+		zv::Ref exprPrinter = service(PT_MSS_EXPR_PRINTER);
 		if (UNEXPECTED(!exprPrinter.isObject())) return uninitializedProperty("exprPrinter");
 		return pt_scope_ops_has_expression_type(thisZval(), node, exprPrinter.raw());
 	}
@@ -10972,7 +10980,7 @@ public:
 			if (UNEXPECTED(!isInstance(zv::Ref(&exprZv), PT_CLASS_CONST_FETCH, isConstantExpr))) return zv::Val();
 		}
 		if (isConstantExpr) {
-			zv::Ref resolver = slot(PT_MS_PROP_INITIALIZER_EXPR_TYPE_RESOLVER);
+			zv::Ref resolver = service(PT_MSS_INITIALIZER_EXPR_TYPE_RESOLVER);
 			if (UNEXPECTED(!resolver.isObject())) return uninitializedProperty("initializerExprTypeResolver");
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
@@ -11239,6 +11247,7 @@ namespace pt_ms {
 inline constexpr const char *self = "PHPStan\\Analyser\\MutatingScope";
 inline constexpr const char *container = "PHPStan\\DependencyInjection\\Container";
 inline constexpr const char *internalScopeFactory = "PHPStan\\Analyser\\InternalScopeFactory";
+inline constexpr const char *scopeServices = "PHPStan\\Analyser\\ScopeServices";
 inline constexpr const char *reflectionProvider = "PHPStan\\Reflection\\ReflectionProvider";
 inline constexpr const char *initializerExprTypeResolver = "PHPStan\\Reflection\\InitializerExprTypeResolver";
 inline constexpr const char *extensionsCollection = "PHPStan\\DependencyInjection\\ExtensionsCollection";
@@ -12424,6 +12433,16 @@ zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *o
 
 /* }}} */
 
+/* $scope->services->exprPrinter for ScopeOps (the native class's slot, the
+ * property by name on another class); NULL with an Error pending */
+zval *pt_mutating_scope_expr_printer(zval *scope)
+{
+	zend_object *object = Z_OBJ_P(scope);
+	zval *services = phpstanturbo::MutatingScope::otherServicesSlot(object);
+	if (UNEXPECTED(services == NULL)) return NULL;
+	return pt_ms_service_of(services, PT_MSS_EXPR_PRINTER);
+}
+
 static HashTable *pt_ms_custom_serialization_methods_list = nullptr;
 
 static void pt_ms_custom_serialization_methods_constant(zval *out)
@@ -12450,22 +12469,9 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.property("namespace", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_STRING | MAY_BE_NULL);
 	cls.property("scopeOutOfFirstLevelStatement", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "self");
 	cls.property("scopeWithPromotedNativeTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "self");
-	cls.property("container", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, container);
+	cls.property("services", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, scopeServices);
 	cls.property("scopeFactory", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, 0, internalScopeFactory);
-	cls.property("reflectionProvider", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, reflectionProvider);
-	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, initializerExprTypeResolver);
-	cls.property("expressionTypeResolverExtensions", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, extensionsCollection);
-	cls.property("exprPrinter", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, exprPrinter);
-	cls.property("typeSpecifier", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, typeSpecifier);
-	cls.property("propertyReflectionFinder", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, propertyReflectionFinder);
-	cls.property("parser", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, parser);
-	cls.property("constantResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, constantResolver);
-	cls.property("expressionResultStorageStack", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, expressionResultStorageStack);
 	cls.property("context", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, 0, scopeContext);
-	cls.property("phpVersion", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, phpVersion);
-	cls.property("attributeReflectionFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, attributeReflectionFactory);
-	cls.property("configuredPhpVersionRangeHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, configuredPhpVersionRangeHelper);
-	cls.property("nodeCallback", ZEND_ACC_PRIVATE, reg::PropertyKind::Null, 0);
 	cls.property("declareStrictTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 	cls.property("function", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, phpFunctionFromParserNodeReflection);
 	cls.property("expressionTypes", ZEND_ACC_PUBLIC, reg::PropertyKind::Typed, MAY_BE_ARRAY);
@@ -12494,23 +12500,10 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.privateClassConstantValue("CUSTOM_SERIALIZATION_METHODS", pt_ms_custom_serialization_methods_constant);
 	/* }}} */
 
-	cls.method("__construct", reg::Public, 15, {
-		reg::obj("container", container),
+	cls.method("__construct", reg::Public, 3, {
+		reg::obj("services", scopeServices),
 		reg::obj("scopeFactory", internalScopeFactory),
-		reg::obj("reflectionProvider", reflectionProvider),
-		reg::obj("initializerExprTypeResolver", initializerExprTypeResolver),
-		reg::obj("expressionTypeResolverExtensions", extensionsCollection),
-		reg::obj("exprPrinter", exprPrinter),
-		reg::obj("typeSpecifier", typeSpecifier),
-		reg::obj("propertyReflectionFinder", propertyReflectionFinder),
-		reg::obj("parser", parser),
-		reg::obj("constantResolver", constantResolver),
-		reg::obj("expressionResultStorageStack", expressionResultStorageStack),
 		reg::obj("context", scopeContext),
-		reg::obj("phpVersion", phpVersion),
-		reg::obj("attributeReflectionFactory", attributeReflectionFactory),
-		reg::obj("configuredPhpVersionRangeHelper", configuredPhpVersionRangeHelper),
-		reg::withDefault(reg::any("nodeCallback"), "null"),
 		reg::withDefault(reg::boolArg("declareStrictTypes"), "false"),
 		reg::withDefault(reg::obj("function", phpFunctionFromParserNodeReflection, true), "null"),
 		reg::withDefault(reg::stringArg("namespace", true), "null"),
@@ -12531,24 +12524,11 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		MutatingScope::ConstructArgs a = {};
 		a.inFirstLevelStatement = true;
-		ZEND_PARSE_PARAMETERS_START(15, 33)
-			Z_PARAM_OBJECT(a.container)
+		ZEND_PARSE_PARAMETERS_START(3, 20)
+			Z_PARAM_OBJECT(a.services)
 			Z_PARAM_OBJECT(a.scopeFactory)
-			Z_PARAM_OBJECT(a.reflectionProvider)
-			Z_PARAM_OBJECT(a.initializerExprTypeResolver)
-			Z_PARAM_OBJECT(a.expressionTypeResolverExtensions)
-			Z_PARAM_OBJECT(a.exprPrinter)
-			Z_PARAM_OBJECT(a.typeSpecifier)
-			Z_PARAM_OBJECT(a.propertyReflectionFinder)
-			Z_PARAM_OBJECT(a.parser)
-			Z_PARAM_OBJECT(a.constantResolver)
-			Z_PARAM_OBJECT(a.expressionResultStorageStack)
 			Z_PARAM_OBJECT(a.context)
-			Z_PARAM_OBJECT(a.phpVersion)
-			Z_PARAM_OBJECT(a.attributeReflectionFactory)
-			Z_PARAM_OBJECT(a.configuredPhpVersionRangeHelper)
 			Z_PARAM_OPTIONAL
-			Z_PARAM_ZVAL(a.nodeCallback)
 			Z_PARAM_BOOL(a.declareStrictTypes)
 			Z_PARAM_OBJECT_OR_NULL(a.function)
 			Z_PARAM_STR_OR_NULL(a.ns)
@@ -12567,9 +12547,6 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 			Z_PARAM_OBJECT_OR_NULL(a.templateArgumentFrame)
 			Z_PARAM_OBJECT_OR_NULL(a.templateArgumentConstraints)
 		ZEND_PARSE_PARAMETERS_END();
-		if (a.nodeCallback != NULL) {
-			ZVAL_DEREF(a.nodeCallback);
-		}
 		PT_THIS.construct(a);
 	});
 

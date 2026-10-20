@@ -29,8 +29,6 @@ use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Collectors\Collector;
-use PHPStan\DependencyInjection\Container;
-use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\EmitCollectedDataNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\CloneReinitializationExpr;
@@ -45,15 +43,11 @@ use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
-use PHPStan\Parser\Parser;
-use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
 use PHPStan\Php\PhpVersions;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
-use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -62,15 +56,12 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
-use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -89,7 +80,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\ExpressionTypeResolverExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -189,7 +179,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	private ?self $scopeWithPromotedNativeTypes = null;
 
 	/**
-	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param list<non-empty-string> $inClosureBindScopeClasses
@@ -197,25 +186,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param list<array{MethodReflection|FunctionReflection|null, ParameterReflection|null}> $inFunctionCallsStack
-	 * @param ExtensionsCollection<ExpressionTypeResolverExtension> $expressionTypeResolverExtensions
 	 */
 	public function __construct(
-		private Container $container,
+		private ScopeServices $services,
 		protected InternalScopeFactory $scopeFactory,
-		private ReflectionProvider $reflectionProvider,
-		private InitializerExprTypeResolver $initializerExprTypeResolver,
-		private ExtensionsCollection $expressionTypeResolverExtensions,
-		private ExprPrinter $exprPrinter,
-		private TypeSpecifier $typeSpecifier,
-		private PropertyReflectionFinder $propertyReflectionFinder,
-		private Parser $parser,
-		private ConstantResolver $constantResolver,
-		private ExpressionResultStorageStack $expressionResultStorageStack,
 		protected ScopeContext $context,
-		private PhpVersion $phpVersion,
-		private AttributeReflectionFactory $attributeReflectionFactory,
-		private ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
-		private $nodeCallback = null,
 		private bool $declareStrictTypes = false,
 		private PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
@@ -429,7 +404,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/** @internal called by ScopeOps */
 	public function isReadonlyPropertyFetch(PropertyFetch $expr, bool $allowOnlyOnThis): bool
 	{
-		if (!$this->phpVersion->supportsReadOnlyProperties()) {
+		if (!$this->services->phpVersion->supportsReadOnlyProperties()) {
 			return false;
 		}
 
@@ -449,7 +424,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				return false;
 			}
 
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			$propertyReflection = $this->services->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
 			if ($propertyReflection === null) {
 				return false;
 			}
@@ -997,12 +972,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			return true;
 		}
 
-		return $this->reflectionProvider->hasConstant($name, $this);
+		return $this->services->reflectionProvider->hasConstant($name, $this);
 	}
 
 	private function fileHasCompilerHaltStatementCalls(): bool
 	{
-		$nodes = $this->parser->parseFile($this->getFile());
+		$nodes = $this->services->parser->parseFile($this->getFile());
 		foreach ($nodes as $node) {
 			if ($node instanceof Node\Stmt\HaltCompiler) {
 				return true;
@@ -1108,13 +1083,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	public function getNodeKey(Expr $node): string
 	{
-		return ScopeOps::nodeKey($node, $this->exprPrinter);
+		return ScopeOps::nodeKey($node, $this->services->exprPrinter);
 	}
 
 	/** @internal */
 	public function getExprPrinter(): ExprPrinter
 	{
-		return $this->exprPrinter;
+		return $this->services->exprPrinter;
 	}
 
 	/**
@@ -1220,7 +1195,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	private function resolveType(string $exprString, Expr $node): Type
 	{
-		foreach ($this->expressionTypeResolverExtensions->getAll() as $extension) {
+		foreach ($this->services->expressionTypeResolverExtensions->getAll() as $extension) {
 			$type = $extension->getType($node, $this);
 			if ($type !== null) {
 				return $type;
@@ -1240,7 +1215,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			return $this->resolveTypeOfNewWorldHandlerNode($node);
 		}
 
-		$exprHandler = ExprHandlerRegistry::resolve($node, $this->container);
+		$exprHandler = ExprHandlerRegistry::resolve($node, $this->services->container);
 		if ($exprHandler !== null) {
 			return $this->resolveTypeOfNewWorldHandlerNode($node);
 		}
@@ -1263,7 +1238,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		// engine - a rule's NodeCallbackScope must not flow into result
 		// callbacks or on-demand processing
 		$scope = $this->toWalkScope();
-		$storage = $this->expressionResultStorageStack->getCurrent();
+		$storage = $this->services->expressionResultStorageStack->getCurrent();
 		$counterfactualAsk = false;
 		if ($storage !== null) {
 			$result = $storage->findExpressionResult($node);
@@ -1288,7 +1263,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		// whose result NodeScopeResolver stores without an eager type.
 		// getClosureType()'s own depth guard answers the self-by-ref ask.
 		if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
-			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $node, false, $storage);
+			return $this->services->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $node, false, $storage);
 		}
 
 		if (!$counterfactualAsk && $storage !== null && $storage->findExpressionResult($node) !== null) {
@@ -1299,7 +1274,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		}
 
 		// a synthetic node, or no analysis in progress
-		$onDemandResult = $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
+		$onDemandResult = $this->services->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
 			$node,
 			$scope,
 			$storage !== null ? $storage->duplicate() : new ExpressionResultStorage(),
@@ -1324,7 +1299,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	private function getCurrentTypesOfSpecifiedExpr(Expr $expr): ?array
 	{
-		$storage = $this->expressionResultStorageStack->getCurrent();
+		$storage = $this->services->expressionResultStorageStack->getCurrent();
 		if ($storage === null) {
 			return null;
 		}
@@ -1365,7 +1340,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			// showed repeat asks for the same unstored subject on one scope
 			// never happen (0 hits across corpora)
 			$scope = $this->toWalkScope();
-			$result = $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
+			$result = $this->services->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
 				$expr,
 				$scope,
 				$storage->duplicate(),
@@ -1410,7 +1385,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	public function obtainResultForNode(Expr $node): ExpressionResult
 	{
-		$storage = $this->expressionResultStorageStack->getCurrent();
+		$storage = $this->services->expressionResultStorageStack->getCurrent();
 		if ($storage !== null) {
 			$result = $storage->findExpressionResult($node);
 			if ($result !== null) {
@@ -1436,7 +1411,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$scope = $this->toWalkScope();
 
 		// a synthetic node, or no analysis in progress
-		return $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
+		return $this->services->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
 			$node,
 			$scope,
 			$storage !== null ? $storage->duplicate() : new ExpressionResultStorage(),
@@ -1450,12 +1425,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	public function pushExpressionResultStorage(ExpressionResultStorage $storage): void
 	{
-		$this->expressionResultStorageStack->push($storage);
+		$this->services->expressionResultStorageStack->push($storage);
 	}
 
 	public function popExpressionResultStorage(): void
 	{
-		$this->expressionResultStorageStack->pop();
+		$this->services->expressionResultStorageStack->pop();
 	}
 
 	/**
@@ -1472,7 +1447,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/** The settled stored result of the current storage - NodeCallbackScope's no-switch fast path. */
 	protected function findSettledStoredResult(Expr $node): ?ExpressionResult
 	{
-		$storage = $this->expressionResultStorageStack->getCurrent();
+		$storage = $this->services->expressionResultStorageStack->getCurrent();
 		if ($storage === null) {
 			return null;
 		}
@@ -1482,7 +1457,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	public function getCurrentExpressionResultStorage(): ?ExpressionResultStorage
 	{
-		return $this->expressionResultStorageStack->getCurrent();
+		return $this->services->expressionResultStorageStack->getCurrent();
 	}
 
 	public function withTemplateArgumentFrame(?TemplateArgumentFrame $frame): self
@@ -1726,10 +1701,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		// read directly; a node evaluated on a different scope - e.g. an arrow
 		// body typed on the closure scope - is processed on demand there, its
 		// raw own type keeping void without any keep-void marker on the node.
-		$storage = $this->expressionResultStorageStack->getCurrent();
+		$storage = $this->services->expressionResultStorageStack->getCurrent();
 		$result = $storage !== null ? $storage->findExpressionResult($node) : null;
 		if ($result === null) {
-			$result = $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
+			$result = $this->services->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
 				$node,
 				$this->toWalkScope(),
 				$storage !== null ? $storage->duplicate() : new ExpressionResultStorage(),
@@ -1806,8 +1781,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	{
 		if ($name->toLowerString() === 'static' && $this->isInClass()) {
 			if ($this->inClosureBindScopeClasses !== [] && $this->inClosureBindScopeClasses !== ['static']) {
-				if ($this->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])) {
-					return new StaticType($this->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]));
+				if ($this->services->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])) {
+					return new StaticType($this->services->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]));
 				}
 			}
 
@@ -1817,8 +1792,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$originalClass = $this->resolveName($name);
 		if ($this->isInClass()) {
 			if ($this->inClosureBindScopeClasses === [$originalClass]) {
-				if ($this->reflectionProvider->hasClass($originalClass)) {
-					return new ThisType($this->reflectionProvider->getClass($originalClass));
+				if ($this->services->reflectionProvider->hasClass($originalClass)) {
+					return new ThisType($this->services->reflectionProvider->getClass($originalClass));
 				}
 				return new ObjectType($originalClass);
 			}
@@ -1845,7 +1820,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/** @api */
 	public function hasExpressionType(Expr $node): TrinaryLogic
 	{
-		return ScopeOps::hasExpressionType($this, $node, $this->exprPrinter);
+		return ScopeOps::hasExpressionType($this, $node, $this->services->exprPrinter);
 	}
 
 	/**
@@ -2098,7 +2073,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				$immediatelyInvokedCallableParameters,
 				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $phpDocClosureThisTypeParameters),
 				$isConstructor,
-				$this->attributeReflectionFactory->fromAttrGroups($classMethod->attrGroups, InitializerExprContext::fromStubParameter($this->getClassReflection()->getName(), $this->getFile(), $classMethod)),
+				$this->services->attributeReflectionFactory->fromAttrGroups($classMethod->attrGroups, InitializerExprContext::fromStubParameter($this->getClassReflection()->getName(), $this->getFile(), $classMethod)),
 				$phpDocPureUnlessCallableIsImpureParameters,
 				$phpDocPureUnlessParameterPassedParameters,
 			),
@@ -2190,7 +2165,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				[],
 				[],
 				false,
-				$this->attributeReflectionFactory->fromAttrGroups($hook->attrGroups, InitializerExprContext::fromStubParameter($this->getClassReflection()->getName(), $this->getFile(), $hook)),
+				$this->services->attributeReflectionFactory->fromAttrGroups($hook->attrGroups, InitializerExprContext::fromStubParameter($this->getClassReflection()->getName(), $this->getFile(), $hook)),
 				[],
 				[],
 			),
@@ -2236,7 +2211,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
 				throw new ShouldNotHappenException();
 			}
-			$realParameterDefaultValues[$parameter->var->name] = $this->initializerExprTypeResolver->getType($parameter->default, InitializerExprContext::fromScope($this));
+			$realParameterDefaultValues[$parameter->var->name] = $this->services->initializerExprTypeResolver->getType($parameter->default, InitializerExprContext::fromScope($this));
 		}
 
 		return $realParameterDefaultValues;
@@ -2257,7 +2232,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				throw new ShouldNotHappenException();
 			}
 
-			$parameterAttributes[$parameter->var->name] = $this->attributeReflectionFactory->fromAttrGroups($parameter->attrGroups, InitializerExprContext::fromStubParameter($className, $this->getFile(), $functionLike));
+			$parameterAttributes[$parameter->var->name] = $this->services->attributeReflectionFactory->fromAttrGroups($parameter->attrGroups, InitializerExprContext::fromStubParameter($className, $this->getFile(), $functionLike));
 		}
 
 		return $parameterAttributes;
@@ -2314,7 +2289,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
 				$immediatelyInvokedCallableParameters,
 				$phpDocClosureThisTypeParameters,
-				$this->attributeReflectionFactory->fromAttrGroups($function->attrGroups, InitializerExprContext::fromStubParameter(null, $this->getFile(), $function)),
+				$this->services->attributeReflectionFactory->fromAttrGroups($function->attrGroups, InitializerExprContext::fromStubParameter(null, $this->getFile(), $function)),
 				$pureUnlessCallableIsImpureParameters,
 				$pureUnlessParameterPassedParameters,
 			),
@@ -2603,7 +2578,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		?array $nativeCallableParameters = null,
 	): self
 	{
-		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true, $this->getCurrentExpressionResultStorage());
+		$anonymousFunctionReflection = $this->services->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true, $this->getCurrentExpressionResultStorage());
 
 		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters, $nativeCallableParameters);
 
@@ -2718,7 +2693,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$expressionTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getType($node));
 			$nativeTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getNativeType($node));
 
-			if ($this->phpVersion->supportsReadOnlyProperties()) {
+			if ($this->services->phpVersion->supportsReadOnlyProperties()) {
 				foreach ($nonStaticExpressions as $exprString => $typeHolder) {
 					$expr = $typeHolder->getExpr();
 
@@ -2830,7 +2805,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters, ?array $nativeCallableParameters = null): self
 	{
-		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $arrowFunction, true, $this->getCurrentExpressionResultStorage());
+		$anonymousFunctionReflection = $this->services->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $arrowFunction, true, $this->getCurrentExpressionResultStorage());
 
 		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters, $nativeCallableParameters);
 
@@ -2940,19 +2915,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			&& $this->inClosureBindScopeClasses !== []
 			&& $this->inClosureBindScopeClasses !== ['static']
 			&& in_array($type->toLowerString(), ['static', 'self', 'parent'], true)
-			&& $this->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])
+			&& $this->services->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])
 		) {
-			return $this->initializerExprTypeResolver->getFunctionType(
+			return $this->services->initializerExprTypeResolver->getFunctionType(
 				$type,
 				$isNullable,
 				false,
 				InitializerExprContext::fromClassReflection(
-					$this->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]),
+					$this->services->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]),
 				),
 			);
 		}
 
-		return $this->initializerExprTypeResolver->getFunctionType($type, $isNullable, false, InitializerExprContext::fromScope($this));
+		return $this->services->initializerExprTypeResolver->getFunctionType($type, $isNullable, false, InitializerExprContext::fromScope($this));
 	}
 
 	/**
@@ -3663,7 +3638,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			&& !$expr->isFirstClassCallable()
 			&& $expr->getArgs() === []
 		) {
-			$storage = $this->expressionResultStorageStack->getCurrent();
+			$storage = $this->services->expressionResultStorageStack->getCurrent();
 			if ($storage !== null && $storage->findExpressionResult($expr) !== null) {
 				return $native ? $this->getNativeType($expr) : $this->getType($expr);
 			}
@@ -3693,7 +3668,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			|| ($expr instanceof Expr\ClassConstFetch && $expr->class instanceof Name && $expr->name instanceof Identifier)
 			|| $expr instanceof ConstFetch
 		) {
-			return $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($this));
+			return $this->services->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($this));
 		}
 
 		// genuinely non-narrowed expressions (calls, ...) have no
@@ -3752,7 +3727,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		}
 
 		if ($expr instanceof FuncCall && $expr->name instanceof Name && $type->isFalse()->yes()) {
-			$functionName = $this->reflectionProvider->resolveFunctionName($expr->name, $this);
+			$functionName = $this->services->reflectionProvider->resolveFunctionName($expr->name, $this);
 			if ($functionName !== null && in_array(strtolower($functionName), [
 				'is_dir',
 				'is_file',
@@ -3876,7 +3851,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		if (
 			$function instanceof MethodReflection
 			&& strtolower($function->getName()) === '__clone'
-			&& $scope->phpVersion->supportsReadonlyPropertyReinitializationOnClone()
+			&& $scope->services->phpVersion->supportsReadonlyPropertyReinitializationOnClone()
 		) {
 			$scope = $scope->assignExpression(new CloneReinitializationExpr($propertyName), new MixedType(), new MixedType());
 		}
@@ -3895,7 +3870,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 		$result = ScopeOps::invalidateExpressionEntries(
 			$this,
-			$this->exprPrinter,
+			$this->services->exprPrinter,
 			$exprStringToInvalidate,
 			$expressionToInvalidate,
 			$requireMoreCharacters,
@@ -3927,7 +3902,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	public function isPrivatePropertyOfDifferentClass(Expr $expr, ClassReflection $invalidatingClass): bool
 	{
 		if ($expr instanceof Expr\StaticPropertyFetch || $expr instanceof PropertyFetch) {
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			$propertyReflection = $this->services->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
 			if ($propertyReflection === null) {
 				return false;
 			}
@@ -3943,7 +3918,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
 	{
 		$result = ScopeOps::invalidateMethodsOnExpression(
-			$this->exprPrinter,
+			$this->services->exprPrinter,
 			$this->getNodeKey($expressionToInvalidate),
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
@@ -4071,10 +4046,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	public function filterByTruthyValue(Expr $expr): self
 	{
-		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createTruthy());
+		$specifiedTypes = $this->services->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createTruthy());
 		if ($specifiedTypes->isEquality() && $this->getType($expr)->isBoolean()->yes()) {
 			$specifiedTypes = $specifiedTypes->unionWith(
-				$this->typeSpecifier->create($expr, new ConstantBooleanType(true), TypeSpecifierContext::createTrue(), $this),
+				$this->services->typeSpecifier->create($expr, new ConstantBooleanType(true), TypeSpecifierContext::createTrue(), $this),
 			);
 		}
 
@@ -4086,10 +4061,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	public function filterByFalseyValue(Expr $expr): self
 	{
-		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createFalsey());
+		$specifiedTypes = $this->services->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createFalsey());
 		if ($specifiedTypes->isEquality() && $this->getType($expr)->isBoolean()->yes()) {
 			$specifiedTypes = $specifiedTypes->unionWith(
-				$this->typeSpecifier->create($expr, new ConstantBooleanType(false), TypeSpecifierContext::createTrue(), $this),
+				$this->services->typeSpecifier->create($expr, new ConstantBooleanType(false), TypeSpecifierContext::createTrue(), $this),
 			);
 		}
 
@@ -4622,7 +4597,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				continue;
 			}
 
-			if ($this->constantResolver->isDynamicClassConstant($this->resolveName($expr->class), $expr->name->toString())) {
+			if ($this->services->constantResolver->isDynamicClassConstant($this->resolveName($expr->class), $expr->name->toString())) {
 				continue;
 			}
 
@@ -5092,7 +5067,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$newVariableTypeHolders = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
 			foreach ($generalizedExpressions as $generalizedExprString => $generalizedExpr) {
-				if (!ScopeOps::shouldInvalidateExpression($this, $this->exprPrinter, $generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
+				if (!ScopeOps::shouldInvalidateExpression($this, $this->services->exprPrinter, $generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
 					continue;
 				}
 
@@ -5253,7 +5228,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				$constantArraysB = TypeCombinator::union(...$constantArrays['b']);
 				if (
 					$constantArraysA->getIterableKeyType()->equals($constantArraysB->getIterableKeyType())
-					&& $constantArraysA->getArraySize()->getGreaterOrEqualType($this->phpVersion)->isSuperTypeOf($constantArraysB->getArraySize())->yes()
+					&& $constantArraysA->getArraySize()->getGreaterOrEqualType($this->services->phpVersion)->isSuperTypeOf($constantArraysB->getArraySize())->yes()
 				) {
 					$resultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach (TypeUtils::flattenTypes($constantArraysA->getIterableKeyType()) as $keyType) {
@@ -5310,7 +5285,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					if (
 						$constantArraysA->isIterableAtLeastOnce()->yes()
 						&& $constantArraysB->isIterableAtLeastOnce()->yes()
-						&& $constantArraysA->getArraySize()->getGreaterOrEqualType($this->phpVersion)->isSuperTypeOf($constantArraysB->getArraySize())->yes()
+						&& $constantArraysA->getArraySize()->getGreaterOrEqualType($this->services->phpVersion)->isSuperTypeOf($constantArraysB->getArraySize())->yes()
 					) {
 						$accessories[] = new NonEmptyArrayType();
 					}
@@ -5659,7 +5634,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			return $this->canAccessClassMember($propertyReflection);
 		}
 
-		if (!$this->phpVersion->supportsAsymmetricVisibility()) {
+		if (!$this->services->phpVersion->supportsAsymmetricVisibility()) {
 			return $this->canAccessClassMember($propertyReflection);
 		}
 
@@ -5682,11 +5657,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		};
 
 		foreach ($this->inClosureBindScopeClasses as $inClosureBindScopeClass) {
-			if (!$this->reflectionProvider->hasClass($inClosureBindScopeClass)) {
+			if (!$this->services->reflectionProvider->hasClass($inClosureBindScopeClass)) {
 				continue;
 			}
 
-			if ($canAccessClassMember($this->reflectionProvider->getClass($inClosureBindScopeClass))) {
+			if ($canAccessClassMember($this->services->reflectionProvider->getClass($inClosureBindScopeClass))) {
 				return true;
 			}
 		}
@@ -5739,11 +5714,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		};
 
 		foreach ($this->inClosureBindScopeClasses as $inClosureBindScopeClass) {
-			if (!$this->reflectionProvider->hasClass($inClosureBindScopeClass)) {
+			if (!$this->services->reflectionProvider->hasClass($inClosureBindScopeClass)) {
 				continue;
 			}
 
-			if ($canAccessClassMember($this->reflectionProvider->getClass($inClosureBindScopeClass))) {
+			if ($canAccessClassMember($this->services->reflectionProvider->getClass($inClosureBindScopeClass))) {
 				return true;
 			}
 		}
@@ -5901,7 +5876,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	public function getConstantExplicitTypeFromConfig(string $constantName, Type $constantType): Type
 	{
-		return $this->constantResolver->resolveConstantType($constantName, $constantType);
+		return $this->services->constantResolver->resolveConstantType($constantName, $constantType);
 	}
 
 	/**
@@ -6028,7 +6003,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		// config or from the composer.json "require.php" constraint - the very same
 		// source ConstantResolver narrows PHP_VERSION_ID with, so that
 		// Scope::getPhpVersion() never contradicts the PHP_VERSION_ID constant.
-		[$minPhpVersion, $maxPhpVersion] = $this->configuredPhpVersionRangeHelper->getVersionRange();
+		[$minPhpVersion, $maxPhpVersion] = $this->services->configuredPhpVersionRangeHelper->getVersionRange();
 		if (
 			$minPhpVersion !== null
 			|| ($maxPhpVersion !== null && $maxPhpVersion->getVersionId() !== PhpVersionFactory::MAX_PHP_VERSION)
@@ -6039,7 +6014,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			));
 		}
 
-		return new PhpVersions(new ConstantIntegerType($this->phpVersion->getVersionId()));
+		return new PhpVersions(new ConstantIntegerType($this->services->phpVersion->getVersionId()));
 	}
 
 	/**
@@ -6055,7 +6030,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	public function invokeNodeCallback(Node $node): void
 	{
-		$nodeCallback = $this->nodeCallback;
+		$nodeCallback = $this->services->nodeCallback;
 		if ($nodeCallback === null) {
 			throw new ShouldNotHappenException('Node callback is not present in this scope');
 		}
@@ -6071,7 +6046,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	public function emitCollectedData(string $collectorType, mixed $data): void
 	{
-		$nodeCallback = $this->nodeCallback;
+		$nodeCallback = $this->services->nodeCallback;
 		if ($nodeCallback === null) {
 			throw new ShouldNotHappenException('Node callback is not present in this scope');
 		}
@@ -6082,22 +6057,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	public function trackValueDependency(string $extensionClass, string $key): void
 	{
 		// a scope without a node callback is outside the walk of the analysed file - see ValueDependencyCollector
-		$this->container->getByType(ValueDependencyCollector::class)->record($extensionClass, $key, $this, $this->nodeCallback !== null);
+		$this->services->container->getByType(ValueDependencyCollector::class)->record($extensionClass, $key, $this, $this->services->nodeCallback !== null);
 	}
 
 	public function trackFileDependency(string $file): void
 	{
-		$this->container->getByType(ValueDependencyCollector::class)->recordFile($file, $this, $this->nodeCallback !== null);
+		$this->services->container->getByType(ValueDependencyCollector::class)->recordFile($file, $this, $this->services->nodeCallback !== null);
 	}
 
 	public function trackDirectoryDependency(string $directory, string $pattern = '*'): void
 	{
-		$this->container->getByType(ValueDependencyCollector::class)->recordDirectory($directory, $pattern, $this, $this->nodeCallback !== null);
+		$this->services->container->getByType(ValueDependencyCollector::class)->recordDirectory($directory, $pattern, $this, $this->services->nodeCallback !== null);
 	}
 
 	public function trackClassDependency(string $className): void
 	{
-		$this->container->getByType(ValueDependencyCollector::class)->recordClass($className, $this, $this->nodeCallback !== null);
+		$this->services->container->getByType(ValueDependencyCollector::class)->recordClass($className, $this, $this->services->nodeCallback !== null);
 	}
 
 }

@@ -172,6 +172,8 @@ struct TypeObjectHeader
 	KeyList *memoKeys;
 	uint32_t hashComputed;
 	uint32_t memoGeneration;
+	/* answers about what the type contains, once asked (PT_TYPE_FACT_*) */
+	uint32_t facts;
 	zend_object std;
 };
 
@@ -714,6 +716,7 @@ static zend_object *typeObjectCreate(zend_class_entry *ce)
 	header->hashComputed = 0;
 	header->memoKeys = NULL;
 	header->memoGeneration = 0;
+	header->facts = 0;
 	zend_object_std_init(&header->std, ce);
 	object_properties_init(&header->std, ce);
 	header->std.handlers = pt_type_object_handlers;
@@ -747,6 +750,7 @@ static zend_object *typeObjectClone(zend_object *old)
 	header->hashComputed = 0;
 	header->memoKeys = NULL;
 	header->memoGeneration = 0;
+	header->facts = 0;
 	zend_object_std_init(&header->std, old->ce);
 	header->std.handlers = pt_type_object_handlers;
 	if (PT_CE(old->ce, default_properties_count)) {
@@ -994,6 +998,21 @@ zv::Val pt_type_combinator_cache_remove(zval *fromType, zval *typeToRemove)
  * TypeObjectHeader). Called for every class right after activation declares
  * it; PHP subclasses inherit create_object from it. A class with an allocator
  * of its own is left alone and keeps the weak maps. */
+int pt_type_cached_fact(zend_object *type, uint32_t fact)
+{
+	phpstanturbo::TypeObjectHeader *header = phpstanturbo::typeObjectHeader(type);
+	if (header == NULL || (header->facts & (fact << 1)) == 0) return -1;
+	return (header->facts & fact) != 0;
+}
+
+void pt_type_cache_fact(zend_object *type, uint32_t fact, bool holds)
+{
+	phpstanturbo::TypeObjectHeader *header = phpstanturbo::typeObjectHeader(type);
+	if (header == NULL) return;
+	header->facts |= fact << 1;
+	if (holds) header->facts |= fact;
+}
+
 void pt_type_combinator_cache_adopt_class(zend_class_entry *ce, const char *realName)
 {
 	if (PT_CE(ce, create_object) != NULL) return;

@@ -386,13 +386,10 @@ public:
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 		}
 
-		/* $result->and(new IsSuperTypeOfResult($type->isObject(), [])) */
+		/* $result->and(IsSuperTypeOfResult::createFromTrinaryLogic($type->isObject())) */
 		zv::Val isObject = pt_type_call(Z_OBJ_P(type), PT_LC("isobject"), 0, NULL);
 		if (UNEXPECTED(isObject.isUndef())) return zv::Val();
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], isObject.raw());
-		ZVAL_EMPTY_ARRAY(&args[1]);
-		zv::Val objectResult = pt_type_new_ce(pt_ce_is_super_type_of_result, 2, args);
+		zv::Val objectResult = pt_callable_is_super_type_of_result_of(isObject.raw());
 		if (UNEXPECTED(objectResult.isUndef())) return zv::Val();
 		return resultAnd(std::move(result), objectResult.raw());
 	}

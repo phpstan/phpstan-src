@@ -51,21 +51,23 @@ inline constexpr char strings[] =
 	"createMaybe\0" /* 140 */
 	"value\0" /* 152 */
 	"createFromBoolean\0" /* 158 */
-	"PHPStan\\Type\\AcceptsResult\0" /* 176 */
-	"toAcceptsResult\0" /* 203 */
-	"others\0" /* 219 */
-	"and\0" /* 226 */
-	"or\0" /* 230 */
-	"cb\0" /* 233 */
-	"decorateReasons\0" /* 236 */
-	"operands\0" /* 252 */
-	"extremeIdentity\0" /* 261 */
-	"maxMin\0" /* 277 */
-	"objects\0" /* 284 */
-	"callback\0" /* 292 */
-	"lazyMaxMin\0" /* 301 */
-	"negate\0" /* 312 */
-	"describe"; /* 319 */
+	"createFromTrinaryLogic\0" /* 176 */
+	"create\0" /* 199 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 206 */
+	"toAcceptsResult\0" /* 233 */
+	"others\0" /* 249 */
+	"and\0" /* 256 */
+	"or\0" /* 260 */
+	"cb\0" /* 263 */
+	"decorateReasons\0" /* 266 */
+	"operands\0" /* 282 */
+	"extremeIdentity\0" /* 291 */
+	"maxMin\0" /* 307 */
+	"objects\0" /* 314 */
+	"callback\0" /* 322 */
+	"lazyMaxMin\0" /* 331 */
+	"negate\0" /* 342 */
+	"describe"; /* 349 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 7), /* __construct $result */
 	reg::packed(28, MAY_BE_ARRAY), /* __construct $reasons */
@@ -81,19 +83,25 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(63, 0, 88), /* createMaybe return */
 	reg::packed(152, MAY_BE_BOOL), /* createFromBoolean $value */
 	reg::packed(63, 0, 88), /* createFromBoolean return */
-	reg::packed(63, 0, 176), /* toAcceptsResult return */
-	reg::packed(219, 0, 88, false, true), /* and $others */
+	reg::packed(0, 0, 7), /* createFromTrinaryLogic $result */
+	reg::packed(63, 0, 88), /* createFromTrinaryLogic return */
+	reg::packed(0, 0, 7), /* create $result */
+	reg::packed(28, MAY_BE_ARRAY), /* create $reasons */
+	reg::packed(36, MAY_BE_ARRAY), /* create $lazyReasons */
+	reg::packed(63, 0, 88), /* create return */
+	reg::packed(63, 0, 206), /* toAcceptsResult return */
+	reg::packed(249, 0, 88, false, true), /* and $others */
 	reg::packed(63, 0, 88), /* and return */
-	reg::packed(219, 0, 88, false, true), /* or $others */
+	reg::packed(249, 0, 88, false, true), /* or $others */
 	reg::packed(63, 0, 88), /* or return */
-	reg::packed(233, MAY_BE_CALLABLE), /* decorateReasons $cb */
+	reg::packed(263, MAY_BE_CALLABLE), /* decorateReasons $cb */
 	reg::packed(63, 0, 88), /* decorateReasons return */
-	reg::packed(252, 0, 88, false, true), /* extremeIdentity $operands */
+	reg::packed(282, 0, 88, false, true), /* extremeIdentity $operands */
 	reg::packed(63, 0, 88), /* extremeIdentity return */
-	reg::packed(252, 0, 88, false, true), /* maxMin $operands */
+	reg::packed(282, 0, 88, false, true), /* maxMin $operands */
 	reg::packed(63, 0, 88), /* maxMin return */
-	reg::packed(284, MAY_BE_ARRAY), /* lazyMaxMin $objects */
-	reg::packed(292, MAY_BE_CALLABLE), /* lazyMaxMin $callback */
+	reg::packed(314, MAY_BE_ARRAY), /* lazyMaxMin $objects */
+	reg::packed(322, MAY_BE_CALLABLE), /* lazyMaxMin $callback */
 	reg::packed(63, 0, 88), /* lazyMaxMin return */
 	reg::packed(63, 0, 88), /* negate return */
 	reg::packed(63, MAY_BE_STRING), /* describe return */
@@ -112,15 +120,17 @@ inline constexpr sigtab::Sig createYes = { { 121 /* createYes */, 0, 7, 0, 7, ZE
 inline constexpr sigtab::Sig createNo = { { 131 /* createNo */, 0, 8, 2, 10, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig createMaybe = { { 140 /* createMaybe */, 0, 11, 0, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig createFromBoolean = { { 158 /* createFromBoolean */, 1, 12, 1, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig toAcceptsResult = { { 203 /* toAcceptsResult */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig and_ = { { 226 /* and */, 0, 15, 1, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig or_ = { { 230 /* or */, 0, 17, 1, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig decorateReasons = { { 236 /* decorateReasons */, 1, 19, 1, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig extremeIdentity = { { 261 /* extremeIdentity */, 0, 21, 1, 22, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig maxMin = { { 277 /* maxMin */, 0, 23, 1, 24, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig lazyMaxMin = { { 301 /* lazyMaxMin */, 2, 25, 2, 27, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig negate = { { 312 /* negate */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig describe = { { 319 /* describe */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createFromTrinaryLogic = { { 176 /* createFromTrinaryLogic */, 1, 14, 1, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig create = { { 199 /* create */, 3, 16, 3, 19, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toAcceptsResult = { { 233 /* toAcceptsResult */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig and_ = { { 256 /* and */, 0, 21, 1, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig or_ = { { 260 /* or */, 0, 23, 1, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig decorateReasons = { { 266 /* decorateReasons */, 1, 25, 1, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig extremeIdentity = { { 291 /* extremeIdentity */, 0, 27, 1, 28, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig maxMin = { { 307 /* maxMin */, 0, 29, 1, 30, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig lazyMaxMin = { { 331 /* lazyMaxMin */, 2, 31, 2, 33, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig negate = { { 342 /* negate */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 349 /* describe */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IsSuperTypeOfResult

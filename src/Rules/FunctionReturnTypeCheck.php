@@ -56,7 +56,6 @@ final class FunctionReturnTypeCheck
 		}
 
 		$isVoidSuperType = $returnType->isVoid();
-		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType, null);
 		if ($returnValue === null) {
 			if (!$isVoidSuperType->no()) {
 				return [];
@@ -65,7 +64,7 @@ final class FunctionReturnTypeCheck
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$emptyReturnStatementMessage,
-					$returnType->describe($verbosityLevel),
+					$returnType->describe(VerbosityLevel::getRecommendedLevelByType($returnType, null)),
 				))
 					->line($returnNode->getStartLine())
 					->identifier('return.empty')
@@ -78,13 +77,12 @@ final class FunctionReturnTypeCheck
 		}
 
 		$returnValueType = $scope->getType($returnValue);
-		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType, $returnValueType);
 
 		if ($isVoidSuperType->yes()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$voidMessage,
-					$returnValueType->describe($verbosityLevel),
+					$returnValueType->describe(VerbosityLevel::getRecommendedLevelByType($returnType, $returnValueType)),
 				))
 					->line($returnNode->getStartLine())
 					->identifier('return.void')
@@ -94,6 +92,8 @@ final class FunctionReturnTypeCheck
 
 		$accepts = $this->ruleLevelHelper->accepts($returnType, $returnValueType, $scope->isDeclareStrictTypes());
 		if (!$accepts->result) {
+			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType, $returnValueType);
+
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$typeMismatchMessage,

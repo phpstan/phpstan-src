@@ -24,15 +24,16 @@
  *
  * The closures the twin creates — `fn (Type $type): Type =>
  * $this->transformStaticType($type, $scope)` for the prototype
- * reflections, the TypeTraverser::map() callback inside it, the
- * RecursionGuard::run() thunk, and the TemplateTypeMap::map() callback of
- * getStaticObjectType() — are Closures over the methods of the internal
- * PHPStanTurbo\StaticTypeCallbacks holder, which keeps the captured values
- * in its slots (an internal detail with no PHP twin, like the generalize()
- * holder in TypeTraits.cpp).
+ * reflections, the TypeTraverser::map() callback inside it and the
+ * RecursionGuard::run() thunk — are native closures (Engine.h) over the
+ * captured values; the static TemplateTypeMap::map() callback of
+ * getStaticObjectType() is a Closure over the internal
+ * PHPStanTurbo\StaticTypeCallbacks holder's toArgument() (an internal
+ * detail with no PHP twin, like the generalize() holder in TypeTraits.cpp).
  */
 
 #include "TypeTraits.h"
+#include "Engine.h"
 #include "generated/StaticType.h"
 
 namespace slots = ptdecl::StaticType::slot;
@@ -40,12 +41,14 @@ namespace sigs = ptdecl::StaticType::sig;
 
 zend_class_entry *pt_ce_static_type = nullptr;
 
-/* the callback holder and its methods */
+/* the callback holder and its method */
 static zend_class_entry *pt_ce_static_type_callbacks = nullptr;
-static zend_function *pt_static_type_callbacks_transform = nullptr;
-static zend_function *pt_static_type_callbacks_map = nullptr;
-static zend_function *pt_static_type_callbacks_guard = nullptr;
 static zend_function *pt_static_type_callbacks_to_argument = nullptr;
+
+/* the bodies of the native closures (after the class) */
+static void transformCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value);
+static void mapCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value);
+static void guardCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value);
 
 /* the handlers a $this-call is checked against before the direct path */
 static void ZEND_FASTCALL stGetStaticObjectType(INTERNAL_FUNCTION_PARAMETERS);
@@ -384,7 +387,9 @@ public:
 			if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 		}
 		/* fn (Type $type): Type => $this->transformStaticType($type, $scope) */
-		zv::Val callback = callbackHolder(pt_static_type_callbacks_transform, self, scope, NULL, NULL);
+		zval selfZv;
+		ZVAL_OBJ(&selfZv, self);
+		zv::Val callback = pt_native_closure(&transformCallbackBody, &selfZv, scope);
 		ZVAL_COPY_VALUE(&args[0], naked.raw());
 		ZVAL_COPY_VALUE(&args[1], classReflection.raw());
 		ZVAL_FALSE(&args[2]);
@@ -448,7 +453,14 @@ public:
 	 * UNDEF = pending exception */
 	zv::Val transformStaticType(zval *type, zval *scope) const
 	{
-		zv::Val callback = callbackHolder(pt_static_type_callbacks_map, self, scope, NULL, NULL);
+		/* the callback changes StaticTypes only: a type without one maps to
+		 * itself */
+		bool containsStatic;
+		if (UNEXPECTED(!pt_type_contains_static(type, containsStatic))) return zv::Val();
+		if (!containsStatic) return zv::Val::copyOf(zv::Ref(type));
+		zval selfZv;
+		ZVAL_OBJ(&selfZv, self);
+		zv::Val callback = pt_native_closure(&mapCallbackBody, &selfZv, scope);
 		return pt_type_traverser_map_of(type, callback.raw());
 	}
 
@@ -507,7 +519,7 @@ public:
 
 		if (!isFinal || zv::Ref(mapped.raw()).instanceOf(pt_ce_this_type)) {
 			/* RecursionGuard::run($type, static fn () => $traverse($type)) */
-			zv::Val thunk = callbackHolder(pt_static_type_callbacks_guard, NULL, NULL, mapped.raw(), traverse);
+			zv::Val thunk = pt_native_closure(&guardCallbackBody, mapped.raw(), traverse);
 			return pt_type_recursion_guard_run(mapped.raw(), thunk.raw());
 		}
 
@@ -713,32 +725,6 @@ public:
 		return pt_type_call(self, PT_LC("getclassstringtype"), 0, NULL);
 	}
 
-	/* a Closure over one of the holder's methods with the captured values
-	 * in its slots (each borrowed, NULL for none) */
-	static zv::Val callbackHolder(zend_function *fn, zend_object *staticType, zval *scope, zval *type, zval *traverse)
-	{
-		zval holder;
-		object_init_ex(&holder, pt_ce_static_type_callbacks);
-		zv::ObjRef holderRef(&holder);
-		if (staticType != NULL) {
-			zval staticTypeZv;
-			ZVAL_OBJ(&staticTypeZv, staticType);
-			holderRef.propAtWrite(slots::subtractedType, zv::Val::copyOf(zv::Ref(&staticTypeZv)));
-		}
-		if (scope != NULL) {
-			holderRef.propAtWrite(slots::staticObjectType, zv::Val::copyOf(zv::Ref(scope)));
-		}
-		if (type != NULL) {
-			holderRef.propAtWrite(slots::baseClass, zv::Val::copyOf(zv::Ref(type)));
-		}
-		if (traverse != NULL) {
-			holderRef.propAtWrite(slots::methodCache, zv::Val::copyOf(zv::Ref(traverse)));
-		}
-		zv::Val closure = pt_type_closure_over(fn, pt_ce_static_type_callbacks, Z_OBJ(holder));
-		zval_ptr_dtor(&holder); /* the closure holds its own reference */
-		return closure;
-	}
-
 private:
 	zend_object *self;
 
@@ -759,6 +745,48 @@ private:
 } // namespace phpstanturbo
 
 using phpstanturbo::StaticType;
+
+/* `fn (Type $type): Type => $this->transformStaticType($type, $scope)`,
+ * capturing [$this, $scope] */
+static void transformCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	if (UNEXPECTED(argc < 1 || Z_TYPE_P(zv::Ref(&argv[0]).deref().raw()) != IS_OBJECT)) {
+		zend_throw_error(NULL, "phpstan_turbo: StaticType callback called without a type");
+		return;
+	}
+	zv::Val result = StaticType(Z_OBJ(captures[0])).transformStaticType(zv::Ref(&argv[0]).deref().raw(), &captures[1]);
+	if (UNEXPECTED(result.isUndef())) return;
+	*return_value = result.take();
+}
+
+/* the TypeTraverser::map() callback of transformStaticType(), capturing
+ * [$this, $scope] */
+static void mapCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	if (UNEXPECTED(argc < 2 || Z_TYPE_P(zv::Ref(&argv[0]).deref().raw()) != IS_OBJECT)) {
+		zend_throw_error(NULL, "phpstan_turbo: StaticType callback called without a type and its traverse callable");
+		return;
+	}
+	zv::Val result = StaticType(Z_OBJ(captures[0])).mapStaticType(zv::Ref(&argv[0]).deref().raw(), &captures[1], zv::Ref(&argv[1]).deref().raw());
+	if (UNEXPECTED(result.isUndef())) return;
+	*return_value = result.take();
+}
+
+bool pt_type_contains_static(zval *type, bool &out)
+{
+	return pt_type_contains_instance_of(type, pt_ce_static_type, PT_TYPE_FACT_CONTAINS_STATIC, out);
+}
+
+/* the RecursionGuard::run() thunk `static fn () => $traverse($type)`,
+ * capturing [$type, $traverse] */
+static void guardCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) argc;
+	(void) argv;
+	zv::Val result = pt_type_call_callable(&captures[1], 1, &captures[0]);
+	if (UNEXPECTED(result.isUndef())) return;
+	*return_value = result.take();
+}
 
 bool pt_static_type_new(zval *out, zval *classReflection, zval *subtractedType)
 {
@@ -786,59 +814,6 @@ zv::Val pt_static_type_this_class_name(zend_object *self) { return StaticType(se
 
 #define PT_THIS StaticType(Z_OBJ_P(ZEND_THIS))
 
-/* the holder's $this, an object of the holder class; NULL with an Error
- * pending */
-[[nodiscard]] static zend_object *callbackHolderThis(zval *thisZv)
-{
-	if (UNEXPECTED(Z_TYPE_P(thisZv) != IS_OBJECT)) {
-		zend_throw_error(NULL, "phpstan_turbo: StaticType callback called without its holder");
-		return NULL;
-	}
-	return Z_OBJ_P(thisZv);
-}
-
-/* StaticTypeCallbacks::transform(Type $type): Type — the prototype
- * reflections' `fn (Type $type): Type => $this->transformStaticType($type, $scope)` */
-static void ZEND_FASTCALL callbackTransform(INTERNAL_FUNCTION_PARAMETERS)
-{
-	zval *type;
-	if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
-	zend_object *holder = callbackHolderThis(ZEND_THIS);
-	if (UNEXPECTED(holder == NULL)) RETURN_THROWS();
-	zval *staticType = OBJ_PROP_NUM(holder, slots::subtractedType);
-	if (UNEXPECTED(Z_TYPE_P(staticType) != IS_OBJECT)) {
-		zend_throw_error(NULL, "phpstan_turbo: StaticType callback holder without its type");
-		RETURN_THROWS();
-	}
-	PT_RETURN_VAL(StaticType(Z_OBJ_P(staticType)).transformStaticType(type, OBJ_PROP_NUM(holder, slots::staticObjectType)));
-}
-
-/* StaticTypeCallbacks::map(Type $type, callable $traverse): Type — the
- * TypeTraverser::map() callback of transformStaticType() */
-static void ZEND_FASTCALL callbackMap(INTERNAL_FUNCTION_PARAMETERS)
-{
-	zval *type, *traverse;
-	if (!zp::parse<zp::Obj, zp::Zval>(execute_data, type, traverse)) RETURN_THROWS();
-	zend_object *holder = callbackHolderThis(ZEND_THIS);
-	if (UNEXPECTED(holder == NULL)) RETURN_THROWS();
-	zval *staticType = OBJ_PROP_NUM(holder, slots::subtractedType);
-	if (UNEXPECTED(Z_TYPE_P(staticType) != IS_OBJECT)) {
-		zend_throw_error(NULL, "phpstan_turbo: StaticType callback holder without its type");
-		RETURN_THROWS();
-	}
-	PT_RETURN_VAL(StaticType(Z_OBJ_P(staticType)).mapStaticType(type, OBJ_PROP_NUM(holder, slots::staticObjectType), traverse));
-}
-
-/* StaticTypeCallbacks::guard(): Type — the RecursionGuard::run() thunk
- * `static fn () => $traverse($type)` */
-static void ZEND_FASTCALL callbackGuard(INTERNAL_FUNCTION_PARAMETERS)
-{
-	ZEND_PARSE_PARAMETERS_NONE();
-	zend_object *holder = callbackHolderThis(ZEND_THIS);
-	if (UNEXPECTED(holder == NULL)) RETURN_THROWS();
-	PT_RETURN_VAL(pt_type_call_callable(OBJ_PROP_NUM(holder, slots::methodCache), 1, OBJ_PROP_NUM(holder, slots::baseClass)));
-}
-
 /* StaticTypeCallbacks::toArgument(string $name, Type $type): Type — the
  * TemplateTypeMap::map() callback of getStaticObjectType() */
 static void ZEND_FASTCALL callbackToArgument(INTERNAL_FUNCTION_PARAMETERS)
@@ -848,11 +823,11 @@ static void ZEND_FASTCALL callbackToArgument(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_template_type_helper_to_argument(type));
 }
 
-/* the holder's methods entered without a frame (TypeOps.h, pt_direct_invoke):
- * the callable is recognised by its handler (a plain callable) or by the
- * scope and name of the Closure's function copy; the arguments must be
- * what the handler's zpp would accept — anything else, or a holder without
- * its type, is left to the engine path */
+/* the holder's toArgument() entered without a frame (TypeOps.h,
+ * pt_direct_invoke): the callable is recognised by its handler (a plain
+ * callable) or by the scope and name of the Closure's function copy; the
+ * arguments must be what the handler's zpp would accept — anything else is
+ * left to the engine path */
 bool pt_static_type_callbacks_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled)
 {
 	zif_handler handler = PT_INTERNAL_HANDLER(fn);
@@ -870,31 +845,7 @@ bool pt_static_type_callbacks_direct_invoke(const zend_function *fn, zend_object
 		*retval = result.take();
 		return true;
 	}
-	if (object == NULL || object->ce != pt_ce_static_type_callbacks) return false;
-	zv::Val result;
-	if (handler == callbackTransform || (inHolder && zend_string_equals_literal(name, "transform"))) {
-		zval *staticType = OBJ_PROP_NUM(object, slots::subtractedType);
-		if (argc != 1 || Z_TYPE_P(argv) != IS_OBJECT || Z_TYPE_P(staticType) != IS_OBJECT) return false;
-		handled = true;
-		result = StaticType(Z_OBJ_P(staticType)).transformStaticType(argv, OBJ_PROP_NUM(object, slots::staticObjectType));
-	} else if (handler == callbackMap || (inHolder && zend_string_equals_literal(name, "map"))) {
-		zval *staticType = OBJ_PROP_NUM(object, slots::subtractedType);
-		if (argc != 2 || Z_TYPE_P(argv) != IS_OBJECT || Z_TYPE_P(staticType) != IS_OBJECT) return false;
-		handled = true;
-		result = StaticType(Z_OBJ_P(staticType)).mapStaticType(argv, OBJ_PROP_NUM(object, slots::staticObjectType), &argv[1]);
-	} else if (handler == callbackGuard || (inHolder && zend_string_equals_literal(name, "guard"))) {
-		if (argc != 0) return false;
-		handled = true;
-		result = pt_type_call_callable(OBJ_PROP_NUM(object, slots::methodCache), 1, OBJ_PROP_NUM(object, slots::baseClass));
-	} else {
-		return false;
-	}
-	if (UNEXPECTED(result.isUndef())) {
-		ZVAL_UNDEF(retval);
-		return false;
-	}
-	*retval = result.take();
-	return true;
+	return false;
 }
 
 /* the delegating bodies: $this->getStaticObjectType()->method(...$args)
@@ -1025,21 +976,11 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 	 * `cls.method(...)` lines with the twin's methods, and the holder's
 	 * have none */
 	reg::Class holder("PHPStanTurbo\\StaticTypeCallbacks");
-	holder.privateNullProperty("staticType");
-	holder.privateNullProperty("scope");
-	holder.privateNullProperty("type");
-	holder.privateNullProperty("traverse");
-	holder.method("transform", reg::Public, 1, { reg::obj("type", ptcls::type) }, callbackTransform, &ptret::type);
-	holder.method("map", reg::Public, 2, { reg::obj("type", ptcls::type), reg::callableArg("traverse") }, callbackMap, &ptret::type);
-	holder.method("guard", reg::Public, 0, {}, callbackGuard, &ptret::type);
 	holder.method("toArgument", reg::PublicStatic, 2, { reg::stringArg("name"), reg::obj("type", ptcls::type) }, callbackToArgument, &ptret::type);
 	pt_ce_static_type_callbacks = holder.register_();
 	pt_ce_static_type_callbacks->ce_flags |= ZEND_ACC_FINAL;
-	pt_static_type_callbacks_transform = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_static_type_callbacks, function_table), PT_LC("transform"));
-	pt_static_type_callbacks_map = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_static_type_callbacks, function_table), PT_LC("map"));
-	pt_static_type_callbacks_guard = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_static_type_callbacks, function_table), PT_LC("guard"));
 	pt_static_type_callbacks_to_argument = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_static_type_callbacks, function_table), PT_LC("toargument"));
-	ZEND_ASSERT(pt_static_type_callbacks_transform != NULL && pt_static_type_callbacks_map != NULL && pt_static_type_callbacks_guard != NULL && pt_static_type_callbacks_to_argument != NULL);
+	ZEND_ASSERT(pt_static_type_callbacks_to_argument != NULL);
 
 	reg::Class cls("PHPStan\\Type\\StaticType");
 	ptdecl::StaticType::declareClass(cls);

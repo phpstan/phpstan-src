@@ -39,7 +39,7 @@ class ClassStringType extends StringType
 			return $type->isSubTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult($type->isClassString(), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isClassString());
 	}
 
 	public function isString(): TrinaryLogic

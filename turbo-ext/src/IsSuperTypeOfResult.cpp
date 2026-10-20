@@ -154,6 +154,15 @@ public:
 
 	static zv::Val createFromBoolean(bool value) { return value ? createYes() : createNo(NULL, NULL); }
 
+	/* the createYes() / createNo() / createMaybe() singleton of a
+	 * TrinaryLogic; UNDEF = pending exception */
+	static zv::Val createFromTrinaryLogic(zval *trinary)
+	{
+		zend_long value = pt_type_trinary_value(trinary);
+		if (UNEXPECTED(value < 0)) return zv::Val();
+		return singleton(value);
+	}
+
 	/* new AcceptsResult($this->result, $this->getReasons()) — always a fresh
 	 * instance; UNDEF = pending exception */
 	zv::Val toAcceptsResult() const
@@ -188,8 +197,9 @@ public:
 		zv::Val decoratedLazy = wrapLazyReasons(zv::ArrRef(lazyReasons), zv::Ref(&fci->function_name));
 		if (UNEXPECTED(decoratedLazy.isUndef())) return zv::Val();
 
-		if (UNEXPECTED(resultValue() < 0)) return zv::Val();
-		return create(OBJ_PROP_NUM(self, PT_RESULT_PROP_RESULT), std::move(decorated), std::move(decoratedLazy));
+		zend_long value = resultValue();
+		if (UNEXPECTED(value < 0)) return zv::Val();
+		return fromParts(value, std::move(decorated), std::move(decoratedLazy));
 	}
 
 	/* count >= 1 (the glue throws for none); UNDEF = pending exception */
@@ -246,8 +256,7 @@ public:
 				return zv::Val();
 			}
 		}
-		/* new self(...) — a fresh instance, not the singleton, like the twin */
-		return create(pt_trinary_singleton(hasNo ? PT_TRI_NO : PT_TRI_MAYBE), zv::Val::adopt(reasons), zv::Val::adopt(lazyReasons));
+		return fromParts(hasNo ? PT_TRI_NO : PT_TRI_MAYBE, zv::Val::adopt(reasons), zv::Val::adopt(lazyReasons));
 	}
 
 	/* UNDEF = pending exception */
@@ -259,7 +268,7 @@ public:
 		if (UNEXPECTED(reasons == NULL)) return zv::Val();
 		zval *lazyReasons = pt_result_array_slot(self, slots::lazyReasons, "lazyReasons");
 		if (UNEXPECTED(lazyReasons == NULL)) return zv::Val();
-		return create(pt_trinary_singleton(pt_trinary_negate_value(value)), zv::Val::copyOf(zv::Ref(reasons)), zv::Val::copyOf(zv::Ref(lazyReasons)));
+		return fromParts(pt_trinary_negate_value(value), zv::Val::copyOf(zv::Ref(reasons)), zv::Val::copyOf(zv::Ref(lazyReasons)));
 	}
 
 	/* NULL = pending exception */
@@ -355,6 +364,27 @@ private:
 		return zv::Val::copyOf(zv::Ref(array));
 	}
 
+	/* the twin's private create(): the singleton when there are neither
+	 * reasons nor lazy reasons, new self(...) otherwise; the arrays are
+	 * consumed; UNDEF = pending exception */
+	static zv::Val fromParts(zend_long value, zv::Val reasons, zv::Val lazyReasons)
+	{
+		if (zend_hash_num_elements(Z_ARRVAL_P(reasons.raw())) == 0 && zend_hash_num_elements(Z_ARRVAL_P(lazyReasons.raw())) == 0) return singleton(value);
+		return create(pt_trinary_singleton(value), std::move(reasons), std::move(lazyReasons));
+	}
+
+	/* whether a result carries reasons or lazy reasons; false = pending
+	 * exception */
+	[[nodiscard]] static bool hasReasons(zend_object *result, bool &out)
+	{
+		zval *reasons = pt_result_array_slot(result, PT_RESULT_PROP_REASONS, "reasons");
+		if (UNEXPECTED(reasons == NULL)) return false;
+		zval *lazyReasons = pt_result_array_slot(result, slots::lazyReasons, "lazyReasons");
+		if (UNEXPECTED(lazyReasons == NULL)) return false;
+		out = out || zend_hash_num_elements(Z_ARRVAL_P(reasons)) > 0 || zend_hash_num_elements(Z_ARRVAL_P(lazyReasons)) > 0;
+		return true;
+	}
+
 	/* and()/or(): the trinary fold, the merged and deduplicated reasons, the
 	 * merged lazy reasons */
 	zv::Val combine(zval *others, uint32_t count, bool isAnd) const
@@ -363,6 +393,13 @@ private:
 		if (UNEXPECTED(value < 0)) return zv::Val();
 		zend_long folded = isAnd ? pt_result_and(value, others, count) : pt_result_or(value, others, count);
 		if (UNEXPECTED(folded < 0)) return zv::Val();
+		/* no operand has reasons: the shared instance, nothing to merge */
+		bool anyReasons = false;
+		if (UNEXPECTED(!hasReasons(self, anyReasons))) return zv::Val();
+		for (uint32_t i = 0; i < count && !anyReasons; i++) {
+			if (UNEXPECTED(!hasReasons(Z_OBJ_P(zv::Ref(&others[i]).deref().raw()), anyReasons))) return zv::Val();
+		}
+		if (!anyReasons) return singleton(folded);
 		zval reasons;
 		if (UNEXPECTED(!pt_reasons_merge_operands(&reasons, self, others, count, PT_RESULT_PROP_REASONS, true, true))) return zv::Val();
 		zval lazyReasons;
@@ -370,7 +407,7 @@ private:
 			zval_ptr_dtor(&reasons);
 			return zv::Val();
 		}
-		return create(pt_trinary_singleton(folded), zv::Val::adopt(reasons), zv::Val::adopt(lazyReasons));
+		return fromParts(folded, zv::Val::adopt(reasons), zv::Val::adopt(lazyReasons));
 	}
 
 	/* extremeIdentity()/maxMin(): a folded value plus the operands' reasons
@@ -385,7 +422,7 @@ private:
 			zval_ptr_dtor(&reasons);
 			return zv::Val();
 		}
-		return create(pt_trinary_singleton(folded), zv::Val::adopt(reasons), zv::Val::adopt(lazyReasons));
+		return fromParts(folded, zv::Val::adopt(reasons), zv::Val::adopt(lazyReasons));
 	}
 
 	/* array_map(static fn (Closure $cb): string => $cb(), $lazyReasons):
@@ -637,6 +674,14 @@ PT_MINIT_REGISTRATION(pt_register_is_super_type_of_result)
 		zv::Val result = IsSuperTypeOfResult::createFromBoolean(value);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
+	});
+
+	cls.method(sigs::createFromTrinaryLogic, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *result;
+		if (!zp::parse<zp::Obj>(execute_data, result)) RETURN_THROWS();
+		zv::Val created = IsSuperTypeOfResult::createFromTrinaryLogic(result);
+		if (UNEXPECTED(created.isUndef())) RETURN_THROWS();
+		created.intoReturnValue(return_value);
 	});
 
 	cls.method(sigs::toAcceptsResult, [](INTERNAL_FUNCTION_PARAMETERS) {

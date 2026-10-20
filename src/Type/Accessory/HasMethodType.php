@@ -106,7 +106,7 @@ class HasMethodType implements AccessoryType, CompoundType
 			return $type->isSubTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult($type->hasMethod($this->methodName), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->hasMethod($this->methodName));
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -129,7 +129,7 @@ class HasMethodType implements AccessoryType, CompoundType
 			$limit = TrinaryLogic::createMaybe();
 		}
 
-		return new IsSuperTypeOfResult($limit->and($otherType->hasMethod($this->methodName)), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($limit->and($otherType->hasMethod($this->methodName)));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

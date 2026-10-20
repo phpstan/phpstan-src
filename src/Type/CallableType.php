@@ -163,7 +163,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny, bool $strictTypes = true): IsSuperTypeOfResult
 	{
-		$isCallable = new IsSuperTypeOfResult($type->isCallable(), []);
+		$isCallable = IsSuperTypeOfResult::createFromTrinaryLogic($type->isCallable());
 		if ($isCallable->no()) {
 			return $isCallable;
 		}
@@ -180,7 +180,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 					$typePure = $typePure->and($variant->isPure());
 				}
 
-				return $isCallable->and(new IsSuperTypeOfResult($typePure, []));
+				return $isCallable->and(IsSuperTypeOfResult::createFromTrinaryLogic($typePure));
 			}
 
 			return $isCallable;
@@ -215,9 +215,8 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isCallable()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[],
 		);
 	}
 

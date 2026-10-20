@@ -10,12 +10,12 @@ namespace ptdecl::NodeCallbackScope {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t truthyValueExprs = 37;
-inline constexpr uint32_t falseyValueExprs = 38;
-inline constexpr uint32_t walkScope = 39;
-inline constexpr uint32_t seededWalkScope = 40;
-inline constexpr uint32_t askedTypes = 41;
-inline constexpr uint32_t askedNativeTypes = 42;
+inline constexpr uint32_t truthyValueExprs = 24;
+inline constexpr uint32_t falseyValueExprs = 25;
+inline constexpr uint32_t walkScope = 26;
+inline constexpr uint32_t seededWalkScope = 27;
+inline constexpr uint32_t askedTypes = 28;
+inline constexpr uint32_t askedNativeTypes = 29;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)

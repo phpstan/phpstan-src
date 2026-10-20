@@ -104,7 +104,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 			return $type->isSubTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult($type->isList(), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isList());
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -114,15 +114,13 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		}
 
 		if ($otherType instanceof self) {
-			return new IsSuperTypeOfResult(
+			return IsSuperTypeOfResult::createFromTrinaryLogic(
 				TrinaryLogic::createYes(),
-				[],
 			);
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isList()->and(TrinaryLogic::createMaybe()),
-			[],
 		);
 	}
 

@@ -145,7 +145,7 @@ public:
 	{
 		*keyOut = NULL;
 
-		zval *exprPrinter = scopeProp(scope, "exprPrinter", sizeof("exprPrinter") - 1);
+		zval *exprPrinter = pt_mutating_scope_expr_printer(scope);
 		if (UNEXPECTED(exprPrinter == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(exprPrinter) != IS_OBJECT)) {
 			zend_throw_error(NULL, "phpstan_turbo: exprPrinter is not an object");

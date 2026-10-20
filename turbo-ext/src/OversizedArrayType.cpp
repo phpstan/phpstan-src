@@ -53,7 +53,7 @@ public:
 		}
 		zend_long value = arrayAnd(type, PT_LC("isoversizedarray"));
 		if (UNEXPECTED(value < 0)) return zv::Val();
-		return pt_type_new_is_super_type_of_result(value);
+		return pt_type_is_super_type_of_result(value);
 	}
 
 	/* the union/intersection callback; else the other type's
@@ -73,7 +73,7 @@ public:
 		if (!instanceof_function(Z_OBJCE_P(otherType), pt_ce_oversized_array_type)) {
 			value = pt_trinary_and(value, PT_TRI_MAYBE);
 		}
-		return pt_type_new_is_super_type_of_result(value);
+		return pt_type_is_super_type_of_result(value);
 	}
 
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */

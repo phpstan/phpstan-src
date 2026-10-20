@@ -97,9 +97,8 @@ class HasPropertyType implements AccessoryType, CompoundType
 			return $type->isSubTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$type->hasInstanceProperty($this->propertyName)->or($type->hasStaticProperty($this->propertyName)),
-			[],
 		);
 	}
 
@@ -115,9 +114,8 @@ class HasPropertyType implements AccessoryType, CompoundType
 			$limit = TrinaryLogic::createMaybe();
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$limit->and($otherType->hasInstanceProperty($this->propertyName)->or($otherType->hasStaticProperty($this->propertyName))),
-			[],
 		);
 	}
 

@@ -133,6 +133,34 @@ final class IsSuperTypeOfResult
 		return self::createNo();
 	}
 
+	/**
+	 * The result without reasons - the shared instance of createYes(), createNo() or createMaybe().
+	 *
+	 * @api
+	 */
+	public static function createFromTrinaryLogic(TrinaryLogic $result): self
+	{
+		if ($result->yes()) {
+			return self::createYes();
+		}
+		if ($result->no()) {
+			return self::createNo();
+		}
+		return self::createMaybe();
+	}
+
+	/**
+	 * @param list<string> $reasons
+	 * @param list<Closure(): string> $lazyReasons
+	 */
+	private static function create(TrinaryLogic $result, array $reasons, array $lazyReasons): self
+	{
+		if ($reasons === [] && $lazyReasons === []) {
+			return self::createFromTrinaryLogic($result);
+		}
+		return new self($result, $reasons, $lazyReasons);
+	}
+
 	public function toAcceptsResult(): AcceptsResult
 	{
 		return new AcceptsResult($this->result, $this->getReasons());
@@ -145,11 +173,21 @@ final class IsSuperTypeOfResult
 		$lazyReasons = [];
 		foreach ($others as $other) {
 			$results[] = $other->result;
-			$reasons[] = $other->reasons;
+			if ($other->reasons !== []) {
+				$reasons[] = $other->reasons;
+			}
+			if ($other->lazyReasons === []) {
+				continue;
+			}
+
 			$lazyReasons[] = $other->lazyReasons;
 		}
 
-		return new self(
+		if ($this->reasons === [] && $reasons === [] && $this->lazyReasons === [] && $lazyReasons === []) {
+			return self::createFromTrinaryLogic($this->result->and(...$results));
+		}
+
+		return self::create(
 			$this->result->and(...$results),
 			array_values(array_unique(array_merge($this->reasons, ...$reasons))),
 			array_merge($this->lazyReasons, ...$lazyReasons),
@@ -163,11 +201,21 @@ final class IsSuperTypeOfResult
 		$lazyReasons = [];
 		foreach ($others as $other) {
 			$results[] = $other->result;
-			$reasons[] = $other->reasons;
+			if ($other->reasons !== []) {
+				$reasons[] = $other->reasons;
+			}
+			if ($other->lazyReasons === []) {
+				continue;
+			}
+
 			$lazyReasons[] = $other->lazyReasons;
 		}
 
-		return new self(
+		if ($this->reasons === [] && $reasons === [] && $this->lazyReasons === [] && $lazyReasons === []) {
+			return self::createFromTrinaryLogic($this->result->or(...$results));
+		}
+
+		return self::create(
 			$this->result->or(...$results),
 			array_values(array_unique(array_merge($this->reasons, ...$reasons))),
 			array_merge($this->lazyReasons, ...$lazyReasons),
@@ -187,7 +235,7 @@ final class IsSuperTypeOfResult
 			$lazyReasons[] = static fn (): string => $cb($lazyReason());
 		}
 
-		return new self($this->result, $reasons, $lazyReasons);
+		return self::create($this->result, $reasons, $lazyReasons);
 	}
 
 	/** @see TrinaryLogic::extremeIdentity() */
@@ -210,7 +258,7 @@ final class IsSuperTypeOfResult
 			}
 		}
 
-		return new self(TrinaryLogic::extremeIdentity(...$results), array_values(array_unique($reasons)), $lazyReasons);
+		return self::create(TrinaryLogic::extremeIdentity(...$results), array_values(array_unique($reasons)), $lazyReasons);
 	}
 
 	/** @see TrinaryLogic::maxMin() */
@@ -233,7 +281,7 @@ final class IsSuperTypeOfResult
 			}
 		}
 
-		return new self(TrinaryLogic::maxMin(...$results), array_values(array_unique($reasons)), $lazyReasons);
+		return self::create(TrinaryLogic::maxMin(...$results), array_values(array_unique($reasons)), $lazyReasons);
 	}
 
 	/**
@@ -265,7 +313,7 @@ final class IsSuperTypeOfResult
 			}
 		}
 
-		return new self(
+		return self::create(
 			$hasNo ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe(),
 			array_values(array_unique($reasons)),
 			$lazyReasons,
@@ -274,7 +322,7 @@ final class IsSuperTypeOfResult
 
 	public function negate(): self
 	{
-		return new self($this->result->negate(), $this->reasons, $this->lazyReasons);
+		return self::create($this->result->negate(), $this->reasons, $this->lazyReasons);
 	}
 
 	public function describe(): string

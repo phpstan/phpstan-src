@@ -55,7 +55,7 @@ public:
 		}
 		zend_long isList = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_LIST, 0, NULL);
 		if (UNEXPECTED(isList < 0)) return zv::Val();
-		return pt_type_new_is_super_type_of_result(isList);
+		return pt_type_is_super_type_of_result(isList);
 	}
 
 	/* the union/intersection callback; yes for an AccessoryArrayListType;
@@ -70,10 +70,10 @@ public:
 			ZVAL_OBJ(&selfZv, self);
 			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
-		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_accessory_array_list_type)) return pt_type_new_is_super_type_of_result(PT_TRI_YES);
+		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_accessory_array_list_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
 		zend_long isList = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_LIST, 0, NULL);
 		if (UNEXPECTED(isList < 0)) return zv::Val();
-		return pt_type_new_is_super_type_of_result(pt_trinary_and(isList, PT_TRI_MAYBE));
+		return pt_type_is_super_type_of_result(pt_trinary_and(isList, PT_TRI_MAYBE));
 	}
 
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */

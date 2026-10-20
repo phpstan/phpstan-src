@@ -1011,6 +1011,8 @@ extern zend_class_entry *pt_ce_generic_object_type;
 extern zend_class_entry *pt_ce_enum_case_object_type;
 void pt_object_type_rinit();
 void pt_object_type_rshutdown();
+/* TypeTraverser.cpp: the traversals a bailout left in progress */
+void pt_type_traverser_rshutdown();
 /* new ObjectType($className, $subtractedType, $classReflection) / new
  * GenericObjectType($mainType, $types, $subtractedType, $classReflection,
  * $variances) / new EnumCaseObjectType($className, $enumCaseName,
@@ -1149,6 +1151,23 @@ extern zend_class_entry *pt_ce_type_utils;
 extern zend_class_entry *pt_ce_typehint_helper;
 
 /* merged from the parallel port branch */
+/* $scope->services->exprPrinter (MutatingScope.cpp); NULL with an Error
+ * pending, an UNDEF zval when $services is unwritten */
+zval *pt_mutating_scope_expr_printer(zval *scope);
+
+/* facts about what a type contains, remembered on the type object (types
+ * are immutable) — each fact one bit, its "known" bit the next one up
+ * (TypeCombinatorCache.cpp): pt_type_cached_fact() answers 1 / 0, or -1
+ * when not known (or the object carries no header); pt_type_cache_fact()
+ * records it */
+enum : uint32_t
+{
+	PT_TYPE_FACT_CONTAINS_STATIC = 1u << 0,
+	PT_TYPE_FACT_CONTAINS_TEMPLATE = 1u << 2,
+};
+int pt_type_cached_fact(zend_object *type, uint32_t fact);
+void pt_type_cache_fact(zend_object *type, uint32_t fact, bool holds);
+
 /* the static combinator (TypeCombinator.cpp); TypeCombinatorCache.cpp calls
  * its do*() entry points directly */
 extern zend_class_entry *pt_ce_type_combinator;
